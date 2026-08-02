@@ -58,6 +58,7 @@ public class FileFilters {
 	public static final FileFilter FILE_FILTER_HDF5 		= new ExtensionFilter(new String[] {".hdf5",".hdf"},	"HDF5 Files (.hdf5 .hdf)");
 	public static final FileFilter FILE_FILTER_CSV 		= new ExtensionFilter(".csv",	"CSV Files (*.csv)");
 	public static final FileFilter FILE_FILTER_MOV 		= new ExtensionFilter(".mov",	"MOV Files (*.mov)");
+	public static final FileFilter FILE_FILTER_MP4 		= new ExtensionFilter(".mp4",	"MP4 Files (*.mp4)");
 	public static final FileFilter FILE_FILTER_GIF 		= new ExtensionFilter(".gif",	"GIF Files (*.gif)");
 	public static final FileFilter FILE_FILTER_JPEG 		= new ExtensionFilter(".jpeg",	"JPEG Files (*.jpeg)");
 	public static final FileFilter FILE_FILTER_NRRD 	= new ExtensionFilter(".nrrd", 	"NRRD Files (*.nrrd)");

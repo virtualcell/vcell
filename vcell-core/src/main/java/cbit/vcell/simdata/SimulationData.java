@@ -858,6 +858,37 @@ public synchronized ODEDataBlock getODEDataBlock() throws DataAccessException, I
 		return (sub != null && sub.exists()) ? sub : null;
 	}
 
+	/**
+	 * Resolve the SpringSaLaD {@code SiteIDs.csv}, which names every site of the run. Same two-step
+	 * lookup as {@link #getLangevinViewerFile}: the flat canonical name first (server runs, where
+	 * the solver's postprocess step copies it up out of the run folder, so it survives that folder
+	 * being pruned when the run is archived), then the solver's own
+	 * {@code <base>_FOLDER/data/Run0/} subfolder (local runs, which invoke only 'simulate' and
+	 * never canonicalize).
+	 * <p>
+	 * Returns null when neither exists — runs from before the solver canonicalized this file whose
+	 * folder has since been pruned. Callers must treat the names as optional.
+	 */
+	public synchronized File getLangevinSiteIdsFile() throws DataAccessException {
+		File flat = getLangevinFile(LangevinBatchResultSet.LangevinFileType.SiteIds);
+		if (flat != null && flat.exists()) {
+			return flat;
+		}
+		refreshLogFile();
+		if (dataFilenames == null) {
+			return null;
+		}
+		String baseFilename = dataFilenames[0];
+		int dotIndex = baseFilename.lastIndexOf('.');
+		if (dotIndex <= 0) {
+			return null;
+		}
+		String base = baseFilename.substring(0, dotIndex);
+		File sub = amplistorHelper.getFile(base + "_FOLDER" + File.separator + "data"
+				+ File.separator + "Run0" + File.separator + "SiteIDs.csv");
+		return (sub != null && sub.exists()) ? sub : null;
+	}
+
 
 private synchronized File getODEDataFile() throws DataAccessException {
 	refreshLogFile();

@@ -14,7 +14,11 @@ import cbit.vcell.render.Camera;
 import cbit.vcell.render.Trackball;
 import cbit.vcell.render.Vect3d;
 import cbit.vcell.simdata.SpringSaladTrajectory;
+import org.vcell.util.springsalad.Colors;
+import org.vcell.util.springsalad.NamedColor;
 
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -29,9 +33,11 @@ import java.awt.geom.Path2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 
 /**
@@ -51,6 +57,12 @@ public class SpringSaladViewerCanvas extends JPanel {
 	private static final double MIN_BRIGHT = 0.45;  // farthest-glyph brightness
 	private static final double SCREEN_FILL = 0.45; // fraction of min(w,h) the scene half-extent maps to
 
+	// Default camera: an oblique 3/4 view looking DOWN onto the membrane (the z=0 plane) from above
+	// and off to one side, rather than straight down the z axis — which would show the membrane
+	// face-on, flattening the box and hiding all depth under the parallel projection.
+	private static final double DEFAULT_ELEVATION_DEG = 35; // above the membrane plane
+	private static final double DEFAULT_AZIMUTH_DEG = 30;   // turntable swing off a face-on view
+
 	private SpringSaladTrajectory trajectory;
 	private int frameIndex = 0;
 
@@ -60,6 +72,8 @@ public class SpringSaladViewerCanvas extends JPanel {
 	private boolean showLinks = true;
 	private boolean showBox = true;
 	private boolean showMembrane = true;
+	/** Site types (see {@link SpringSaladTrajectory#siteTypeKey}) the user has switched off. */
+	private final Set<String> hiddenSiteTypes = new HashSet<>();
 
 	private static final Color MEMBRANE_GREEN = new Color(45, 175, 70);
 	private static final int MEMBRANE_GRID = 12;      // NxN quad subdivision — only to depth-sort vs glyphs
@@ -72,10 +86,15 @@ public class SpringSaladViewerCanvas extends JPanel {
 	// world framing (computed from all frames so the box doesn't jitter during playback)
 	private boolean boundsValid = false;
 	private double cx, cy, cz;          // scene center
-	private double halfExtent = 1.0;    // half of the largest axis extent
+	/**
+	 * Radius of the scene's bounding sphere. Framing on the sphere rather than the largest axis
+	 * extent keeps the whole box on screen at ANY rotation — under the oblique default view a box
+	 * framed by its longest axis has its diagonal run off the canvas.
+	 */
+	private double viewRadius = 1.0;
 
 	// base white shaded sphere + tinted/depth-shaded sprite cache
-	private final BufferedImage baseSprite = makeBaseSprite();
+	private static final BufferedImage baseSprite = makeBaseSprite();
 	private final Map<Long, BufferedImage> spriteCache = new HashMap<>();
 
 	// mouse drag state
@@ -112,6 +131,7 @@ public class SpringSaladViewerCanvas extends JPanel {
 		addMouseListener(ma);
 		addMouseMotionListener(ma);
 		addMouseWheelListener(ma);
+		resetView();
 	}
 
 	public void setTrajectory(SpringSaladTrajectory t) {
@@ -138,8 +158,37 @@ public class SpringSaladViewerCanvas extends JPanel {
 	public void setShowBox(boolean b) { showBox = b; repaint(); }
 	public void setShowMembrane(boolean b) { showMembrane = b; repaint(); }
 
+	/**
+	 * Show or hide every site of one site type. Hidden sites still count toward the scene bounds,
+	 * so the framing does not jump as types are switched on and off.
+	 */
+	public void setSiteTypeVisible(String siteTypeKey, boolean visible) {
+		if (visible ? hiddenSiteTypes.remove(siteTypeKey) : hiddenSiteTypes.add(siteTypeKey)) {
+			repaint();
+		}
+	}
+
+	public boolean isSiteTypeVisible(String siteTypeKey) { return !hiddenSiteTypes.contains(siteTypeKey); }
+
+	public void showAllSiteTypes() {
+		if (!hiddenSiteTypes.isEmpty()) {
+			hiddenSiteTypes.clear();
+			repaint();
+		}
+	}
+
+	/**
+	 * Restore the default oblique view. Note this resets the trackball rotation as well as
+	 * zoom/pan — {@code camera.resetView()} alone does not, because the projection is driven by the
+	 * trackball's quaternion, not the camera.
+	 * <p>
+	 * {@link Trackball#setRotation} composes its Euler angles as {@code Rz*Ry*Rx}, so the X angle
+	 * is the pitch (applied first) and the <em>Y</em> angle acts as the turntable azimuth. The Z
+	 * angle would be a roll about the view axis — leave it at zero so the horizon stays level.
+	 */
 	public void resetView() {
 		trackball.getCamera().resetView();
+		trackball.setRotation(Math.toRadians(DEFAULT_ELEVATION_DEG - 90), Math.toRadians(DEFAULT_AZIMUTH_DEG), 0);
 		zoom = 1.0; panX = 0; panY = 0;
 		repaint();
 	}
@@ -152,15 +201,24 @@ public class SpringSaladViewerCanvas extends JPanel {
 
 	/**
 	 * Render the current frame to an offscreen image at the given size (no window/peer required;
-	 * works headless). Also the basis for future frame/movie export.
+	 * works headless).
 	 */
 	public BufferedImage renderToImage(int w, int h) {
-		setSize(w, h);
+		return renderFrameToImage(frameIndex, w, h);
+	}
+
+	/**
+	 * Render any frame offscreen at the given size, in the current view, without disturbing the
+	 * component — it neither resizes it nor changes the displayed frame. That makes it safe to call
+	 * off the EDT (as the movie export does) as long as the user is not simultaneously changing the
+	 * view.
+	 */
+	public BufferedImage renderFrameToImage(int frame, int w, int h) {
 		BufferedImage img = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
 		Graphics2D g = img.createGraphics();
 		g.setColor(getBackground());
 		g.fillRect(0, 0, w, h);
-		paintComponent(g);
+		paintScene(g, w, h, frame);
 		g.dispose();
 		return img;
 	}
@@ -190,11 +248,11 @@ public class SpringSaladViewerCanvas extends JPanel {
 				minZ = Math.min(minZ, -zo); maxZ = Math.max(maxZ, zi);
 			}
 		}
-		if (!any) { cx = cy = cz = 0; halfExtent = 1; }
+		if (!any) { cx = cy = cz = 0; viewRadius = 1; }
 		else {
 			cx = (minX + maxX) / 2; cy = (minY + maxY) / 2; cz = (minZ + maxZ) / 2;
-			double ext = Math.max(maxX - minX, Math.max(maxY - minY, maxZ - minZ));
-			halfExtent = Math.max(ext / 2, 1e-9);
+			double dx = maxX - minX, dy = maxY - minY, dz = maxZ - minZ;
+			viewRadius = Math.max(Math.sqrt(dx * dx + dy * dy + dz * dz) / 2, 1e-9);
 		}
 		boundsValid = true;
 	}
@@ -202,11 +260,18 @@ public class SpringSaladViewerCanvas extends JPanel {
 	@Override
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
-		Graphics2D g2 = (Graphics2D) g;
+		paintScene((Graphics2D) g, getWidth(), getHeight(), frameIndex);
+	}
+
+	/**
+	 * Draw one frame of the scene into {@code g2} for a viewport of {@code w} x {@code h}. Takes the
+	 * size and frame explicitly rather than reading the component, so the same code paints the
+	 * component and renders offscreen frames for export.
+	 */
+	private void paintScene(Graphics2D g2, int w, int h, int frameToPaint) {
 		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 
-		int w = getWidth(), h = getHeight();
 		if (trajectory == null || trajectory.getFrameCount() == 0) {
 			g2.setColor(Color.GRAY);
 			g2.drawString("No trajectory data.", 12, 20);
@@ -214,10 +279,11 @@ public class SpringSaladViewerCanvas extends JPanel {
 		}
 		if (!boundsValid) computeBounds();
 
-		SpringSaladTrajectory.Frame frame = trajectory.getFrames().get(frameIndex);
+		SpringSaladTrajectory.Frame frame =
+				trajectory.getFrames().get(Math.max(0, Math.min(frameToPaint, trajectory.getFrameCount() - 1)));
 		Affine rot = new Affine();
 		trackball.getMatrixGL(rot);
-		double pixelScale = SCREEN_FILL * Math.min(w, h) / halfExtent * zoom;
+		double pixelScale = SCREEN_FILL * Math.min(w, h) / viewRadius * zoom;
 		double ox = w / 2.0 + panX, oy = h / 2.0 + panY;
 
 		// project all sites for this frame
@@ -225,6 +291,9 @@ public class SpringSaladViewerCanvas extends JPanel {
 		double minD = Double.POSITIVE_INFINITY, maxD = Double.NEGATIVE_INFINITY;
 		Map<Integer, Glyph> byId = new HashMap<>();
 		for (SpringSaladTrajectory.Site s : frame.getSites()) {
+			// Hidden sites are dropped before projection; links to them then find no glyph in byId
+			// and are skipped too, so a bond never dangles into empty space.
+			if (hiddenSiteTypes.contains(trajectory.siteTypeKey(s))) continue;
 			double[] p = project(rot, s.getX(), s.getY(), s.getZ(), pixelScale, ox, oy);
 			Glyph gl = new Glyph();
 			gl.id = s.getId();
@@ -236,6 +305,7 @@ public class SpringSaladViewerCanvas extends JPanel {
 			byId.put(gl.id, gl);
 			minD = Math.min(minD, gl.depth); maxD = Math.max(maxD, gl.depth);
 		}
+		if (glyphs.isEmpty()) { minD = 0; maxD = 1; } // every site type hidden: keep the box shading sane
 		double span = (maxD - minD) < 1e-12 ? 1 : (maxD - minD);
 
 		// unified depth-sorted draw list (painter's algorithm): membrane quads + links + glyph sprites,
@@ -386,6 +456,19 @@ public class SpringSaladViewerCanvas extends JPanel {
 
 	// ---- impostor sprite generation / cache ----
 
+	/**
+	 * A small shaded ball in the given color — the same impostor sprite the scene draws, so a
+	 * legend entry looks like the molecules it selects.
+	 */
+	public static Icon ballIcon(Color color, int size) {
+		BufferedImage img = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
+		Graphics2D g = img.createGraphics();
+		g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+		g.drawImage(tint(color, 1.0), 0, 0, size, size, null);
+		g.dispose();
+		return new ImageIcon(img);
+	}
+
 	private BufferedImage getSprite(Color color, double bright) {
 		int bucket = (int) Math.round(bright * (DEPTH_BUCKETS - 1));
 		long key = (((long) (color.getRGB() & 0xFFFFFF)) << 8) | bucket;
@@ -393,6 +476,13 @@ public class SpringSaladViewerCanvas extends JPanel {
 		if (cached != null) return cached;
 
 		double b = MIN_BRIGHT + (1 - MIN_BRIGHT) * ((double) bucket / (DEPTH_BUCKETS - 1));
+		BufferedImage out = tint(color, b);
+		if (spriteCache.size() < 4096) spriteCache.put(key, out);
+		return out;
+	}
+
+	/** Colorize the white base sphere, scaling it to overall brightness {@code b}. */
+	private static BufferedImage tint(Color color, double b) {
 		double cr = color.getRed() / 255.0 * b, cg = color.getGreen() / 255.0 * b, cb = color.getBlue() / 255.0 * b;
 		BufferedImage out = new BufferedImage(SPRITE_SIZE, SPRITE_SIZE, BufferedImage.TYPE_INT_ARGB);
 		for (int y = 0; y < SPRITE_SIZE; y++) {
@@ -405,7 +495,6 @@ public class SpringSaladViewerCanvas extends JPanel {
 				out.setRGB(x, y, (a << 24) | (r << 16) | (gg << 8) | bb);
 			}
 		}
-		if (spriteCache.size() < 4096) spriteCache.put(key, out);
 		return out;
 	}
 
@@ -438,20 +527,35 @@ public class SpringSaladViewerCanvas extends JPanel {
 	private static int clamp255(double v) { return (int) Math.max(0, Math.min(255, Math.round(v))); }
 
 	// ---- SpringSaLaD color-name palette ----
+
+	/**
+	 * The 28 SpringSaLaD color names, resolved from {@link Colors} — the same table VCell uses to
+	 * write the solver input, so every name that can appear in a viewer file is covered. (An earlier
+	 * hand-written subset here silently rendered LIME, LIME_GREEN, PURPLE, TEAL and a dozen others
+	 * as gray.) Built once: the lookup runs per site per frame.
+	 */
 	private static final Map<String, Color> COLORS = new HashMap<>();
 	static {
-		COLORS.put("RED", Color.RED); COLORS.put("GREEN", new Color(0, 200, 0));
-		COLORS.put("BLUE", new Color(60, 90, 255)); COLORS.put("YELLOW", Color.YELLOW);
-		COLORS.put("CYAN", Color.CYAN); COLORS.put("MAGENTA", Color.MAGENTA);
-		COLORS.put("ORANGE", Color.ORANGE); COLORS.put("PINK", Color.PINK);
-		COLORS.put("GRAY", Color.GRAY); COLORS.put("GREY", Color.GRAY);
-		COLORS.put("LIGHT_GRAY", Color.LIGHT_GRAY); COLORS.put("DARK_GRAY", Color.DARK_GRAY);
-		COLORS.put("WHITE", Color.WHITE); COLORS.put("BLACK", new Color(40, 40, 40));
+		for (NamedColor nc : Colors.COLORARRAY) {
+			COLORS.put(nc.getName(), visible(nc.getColor()));
+		}
+		COLORS.put("GREY", COLORS.get(Colors.GRAYSTRING)); // tolerate the British spelling
 	}
 
-	private static Color colorForName(String name) {
+	/** Resolve a SpringSaLaD color name to a paint color; unknown/absent names render light gray. */
+	public static Color colorForName(String name) {
 		if (name == null) return Color.LIGHT_GRAY;
 		Color c = COLORS.get(name.trim().toUpperCase(Locale.ROOT));
 		return c != null ? c : Color.LIGHT_GRAY;
+	}
+
+	/**
+	 * Lift a color that is too dark to survive the sphere shading (which multiplies by luminance) —
+	 * BLACK would otherwise be an invisible disc on the black background.
+	 */
+	private static Color visible(Color c) {
+		int floor = 40;
+		if (c.getRed() >= floor || c.getGreen() >= floor || c.getBlue() >= floor) return c;
+		return new Color(Math.max(c.getRed(), floor), Math.max(c.getGreen(), floor), Math.max(c.getBlue(), floor));
 	}
 }

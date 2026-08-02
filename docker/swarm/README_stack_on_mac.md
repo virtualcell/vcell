@@ -1,10 +1,8 @@
 1. Build Java and Python
 
-```bash
-pushd ../../
-mvn clean install dependency:copy-dependencies -DskipTests=true
-popd
-```
+Build the Python packages first, then Maven — see [docs/BUILDING.md](../../docs/BUILDING.md)
+for why, and for prerequisites.
+
 ```bash
 poetry install -C ../../vcell-cli-utils
 poetry install -C ../swarm/vcell-admin
@@ -13,6 +11,11 @@ poetry install -C ../../pythonVtk
 poetry install -C ../../python-utils
 poetry install -C ../../python-restclient
 poetry install -C ../../pythonData
+```
+```bash
+pushd ../../
+mvn clean install dependency:copy-dependencies -DskipTests=true
+popd
 ```
 
 2. Build and push Docker and Singularity containers (without building clients)

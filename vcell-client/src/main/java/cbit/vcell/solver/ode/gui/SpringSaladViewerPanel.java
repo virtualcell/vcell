@@ -9,33 +9,51 @@
  */
 package cbit.vcell.solver.ode.gui;
 
+import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.math.MathDescription;
 import cbit.vcell.simdata.SpringSaladTrajectory;
+import org.vcell.util.gui.VCFileChooser;
+import org.vcell.util.gui.exporter.FileFilters;
 
 import javax.swing.BorderFactory;
-import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JFileChooser;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
+import javax.swing.JSplitPane;
 import javax.swing.Timer;
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
+import java.io.File;
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Movie player for a {@link SpringSaladTrajectory}: a {@link SpringSaladViewerCanvas} (3D glyph
- * view) with a transport bar (play/pause, frame scrubber, speed, links toggle, reset view) and a
- * time/scene readout. See {@code docs/salad-3d-renderer-design.md} Phase 1.
+ * view) with a transport bar (play/pause, frame scrubber, speed, reset view, movie export) and a
+ * time/scene readout, plus a sidebar of visibility controls — the scene toggles and the
+ * {@link SpringSaladSpeciesPanel} species checklist. See {@code docs/salad-3d-renderer-design.md}
+ * Phase 1.
  */
 @SuppressWarnings("serial")
 public class SpringSaladViewerPanel extends JPanel {
 
 	private final SpringSaladViewerCanvas canvas = new SpringSaladViewerCanvas();
+	private final SpringSaladSpeciesPanel speciesPanel = new SpringSaladSpeciesPanel(canvas::setSiteTypeVisible);
+	private MathDescription mathDescription;
 	private final JSlider frameSlider = new JSlider();
 	private final JButton playButton = new JButton("▶"); // ▶
+	private final JButton saveMovieButton = new JButton("Save movie…");
 	private final JLabel readout = new JLabel(" ");
 	private final JComboBox<String> speedCombo = new JComboBox<>(new String[] { "2 fps", "5 fps", "10 fps", "20 fps", "30 fps" });
 	private final Timer timer;
@@ -48,44 +66,67 @@ public class SpringSaladViewerPanel extends JPanel {
 		speedCombo.setSelectedIndex(2); // 10 fps
 		applySpeed();
 
-		add(canvas, BorderLayout.CENTER);
+		// Everything that controls WHAT is drawn lives in one column beside the view; the bar along
+		// the bottom is purely transport. Keeping the scene toggles out of that bar also stops it
+		// overflowing and dropping controls off the end in a narrow window.
+		JPanel sceneToggles = new JPanel();
+		sceneToggles.setLayout(new BoxLayout(sceneToggles, BoxLayout.Y_AXIS));
+		sceneToggles.setBorder(BorderFactory.createEmptyBorder(4, 6, 6, 4));
+		JLabel sceneTitle = new JLabel("Scene");
+		sceneTitle.setFont(sceneTitle.getFont().deriveFont(Font.BOLD));
+		sceneTitle.setAlignmentX(LEFT_ALIGNMENT);
+		sceneToggles.add(sceneTitle);
+		sceneToggles.add(sceneToggle("Links", true, canvas::setShowLinks));
+		sceneToggles.add(sceneToggle("Box", true, canvas::setShowBox));
+		sceneToggles.add(sceneToggle("Membrane", true, canvas::setShowMembrane));
 
-		JPanel controls = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 4));
+		JPanel sidebar = new JPanel(new BorderLayout());
+		sidebar.add(sceneToggles, BorderLayout.NORTH);
+		sidebar.add(speciesPanel, BorderLayout.CENTER);
+
+		JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, canvas, sidebar);
+		split.setResizeWeight(1.0);   // the canvas takes the extra room when the window grows
+		split.setDividerLocation(-1);
+		split.setContinuousLayout(true);
+		sidebar.setMinimumSize(new Dimension(120, 0));
+		sidebar.setPreferredSize(new Dimension(190, 0));
+		add(split, BorderLayout.CENTER);
+
+		// The scrubber is the ONLY control allowed to absorb width changes, so it goes in the
+		// CENTER and everything else keeps its preferred size at the edges. A FlowLayout here
+		// silently wraps the overflow onto a second row that BorderLayout.SOUTH then clips, which
+		// hid the movie-export button entirely below about 800px wide.
+		JPanel controls = new JPanel(new BorderLayout(6, 0));
 		playButton.setToolTipText("Play / Pause");
 		playButton.addActionListener(e -> togglePlay());
-		controls.add(playButton);
+		controls.add(playButton, BorderLayout.WEST);
 
 		frameSlider.setMinimum(0);
 		frameSlider.setValue(0);
+		frameSlider.setMinimumSize(new Dimension(40, frameSlider.getMinimumSize().height));
 		frameSlider.addChangeListener(e -> {
 			if (adjustingSlider) return;
 			canvas.setFrameIndex(frameSlider.getValue());
 			updateReadout();
 		});
-		controls.add(frameSlider);
+		controls.add(frameSlider, BorderLayout.CENTER);
 
-		controls.add(new JLabel("Speed:"));
+		JPanel transportRight = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
+		transportRight.add(new JLabel("Speed:"));
 		speedCombo.addActionListener(e -> applySpeed());
-		controls.add(speedCombo);
-
-		JCheckBox links = new JCheckBox("Links", true);
-		links.addActionListener(e -> canvas.setShowLinks(links.isSelected()));
-		controls.add(links);
-
-		JCheckBox box = new JCheckBox("Box", true);
-		box.addActionListener(e -> canvas.setShowBox(box.isSelected()));
-		controls.add(box);
-
-		JCheckBox membrane = new JCheckBox("Membrane", true);
-		membrane.addActionListener(e -> canvas.setShowMembrane(membrane.isSelected()));
-		controls.add(membrane);
+		transportRight.add(speedCombo);
 
 		JButton reset = new JButton("Reset view");
 		reset.addActionListener(e -> canvas.resetView());
-		controls.add(reset);
+		transportRight.add(reset);
 
-		controls.add(Box.createHorizontalStrut(8));
-		controls.add(readout);
+		saveMovieButton.setToolTipText("Save the whole trajectory as a movie, in the current view");
+		saveMovieButton.addActionListener(e -> saveMovie());
+		transportRight.add(saveMovieButton);
+
+		readout.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 0));
+		transportRight.add(readout);
+		controls.add(transportRight, BorderLayout.EAST);
 
 		JPanel bottom = new JPanel(new BorderLayout());
 		bottom.setBorder(BorderFactory.createEmptyBorder(2, 4, 2, 4));
@@ -95,10 +136,22 @@ public class SpringSaladViewerPanel extends JPanel {
 		setTrajectory(null);
 	}
 
+	/**
+	 * Supply the math description of the run, which names the species and site types in the
+	 * selector. Optional — without it the selector falls back to color-based labels. Set this
+	 * before {@link #setTrajectory}, or call it again afterwards to relabel.
+	 */
+	public void setMathDescription(MathDescription mathDescription) {
+		this.mathDescription = mathDescription;
+		speciesPanel.setLegend(SpringSaladSpeciesLegend.build(canvas.getTrajectory(), mathDescription));
+	}
+
 	/** Load a trajectory (null clears the view). Resets to the first frame and stops playback. */
 	public void setTrajectory(SpringSaladTrajectory t) {
 		stop();
 		canvas.setTrajectory(t);
+		canvas.showAllSiteTypes();
+		speciesPanel.setLegend(SpringSaladSpeciesLegend.build(t, mathDescription));
 		int n = canvas.getFrameCount();
 		adjustingSlider = true;
 		frameSlider.setMinimum(0);
@@ -106,8 +159,78 @@ public class SpringSaladViewerPanel extends JPanel {
 		frameSlider.setValue(0);
 		frameSlider.setEnabled(n > 1);
 		playButton.setEnabled(n > 1);
+		saveMovieButton.setEnabled(n > 0);
 		adjustingSlider = false;
 		updateReadout();
+	}
+
+	/**
+	 * Ask for a destination and write the whole trajectory out as a movie, in the view currently on
+	 * screen. Rendering runs off the EDT behind a modal progress dialog — which also keeps the user
+	 * from rotating the scene halfway through the export.
+	 */
+	private void saveMovie() {
+		stop();
+		if (canvas.getFrameCount() == 0) {
+			return;
+		}
+		VCFileChooser fileChooser = new VCFileChooser();
+		fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+		fileChooser.setMultiSelectionEnabled(false);
+		fileChooser.removeChoosableFileFilter(fileChooser.getAcceptAllFileFilter());
+		fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_MP4);
+		fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_GIF);
+		fileChooser.setFileFilter(FileFilters.FILE_FILTER_MP4);
+		fileChooser.setDialogTitle("Save trajectory movie");
+		if (fileChooser.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) {
+			return;
+		}
+
+		// the chosen filter picks the format; a typed extension overrides it
+		SpringSaladMovieExporter.Format format =
+				fileChooser.getFileFilter() == FileFilters.FILE_FILTER_GIF
+						? SpringSaladMovieExporter.Format.ANIMATED_GIF
+						: SpringSaladMovieExporter.Format.MP4;
+		File selectedFile = fileChooser.getSelectedFile();
+		String name = selectedFile.getName().toLowerCase(Locale.ROOT);
+		if (name.endsWith(".gif")) {
+			format = SpringSaladMovieExporter.Format.ANIMATED_GIF;
+		} else if (name.endsWith(".mp4")) {
+			format = SpringSaladMovieExporter.Format.MP4;
+		} else {
+			selectedFile = new File(selectedFile.getAbsolutePath() + format.getExtension());
+		}
+		if (selectedFile.exists()) {
+			String overwrite = "Yes";
+			String answer = PopupGenerator.showWarningDialog(this,
+					"Overwrite existing file:\n" + selectedFile.getAbsolutePath() + "?",
+					new String[] { overwrite, "No" }, overwrite);
+			if (!overwrite.equals(answer)) {
+				return;
+			}
+		}
+
+		final File movieFile = selectedFile;
+		final SpringSaladMovieExporter.Format movieFormat = format;
+		final int width = Math.max(320, canvas.getWidth());
+		final int height = Math.max(240, canvas.getHeight());
+		final int fps = selectedFps();
+		AsynchClientTask writeTask = new AsynchClientTask("Saving trajectory movie",
+				AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				SpringSaladMovieExporter.writeMovie(canvas, movieFile, movieFormat,
+						width, height, fps, getClientTaskStatusSupport());
+			}
+		};
+		ClientTaskDispatcher.dispatch(this, new Hashtable<>(), new AsynchClientTask[] { writeTask }, true);
+	}
+
+	private JCheckBox sceneToggle(String label, boolean initial, java.util.function.Consumer<Boolean> apply) {
+		JCheckBox box = new JCheckBox(label, initial);
+		box.setAlignmentX(LEFT_ALIGNMENT);
+		box.addActionListener(e -> apply.accept(box.isSelected()));
+		return box;
 	}
 
 	private void togglePlay() {
@@ -139,8 +262,12 @@ public class SpringSaladViewerPanel extends JPanel {
 	}
 
 	private void applySpeed() {
-		int fps = Integer.parseInt(((String) speedCombo.getSelectedItem()).split(" ")[0]);
-		timer.setDelay(Math.max(1, 1000 / fps));
+		timer.setDelay(Math.max(1, 1000 / selectedFps()));
+	}
+
+	/** The playback rate chosen in the transport bar; movie export uses it too. */
+	private int selectedFps() {
+		return Integer.parseInt(((String) speedCombo.getSelectedItem()).split(" ")[0]);
 	}
 
 	private void updateReadout() {
@@ -169,7 +296,10 @@ public class SpringSaladViewerPanel extends JPanel {
 
 	static SpringSaladTrajectory makeDemoTrajectory() {
 		int nSites = 60, nFrames = 120;
-		String[] palette = { "RED", "GREEN", "BLUE", "YELLOW", "ORANGE", "CYAN" };
+		// spread across the SpringSaLaD palette, including the colors an earlier hand-written
+		// subset in the canvas used to render as gray
+		String[] palette = { "RED", "LIME", "BLUE", "YELLOW", "ORANGE", "CYAN",
+				"LIME_GREEN", "PURPLE", "TEAL", "GOLD", "CRIMSON", "SLATE_BLUE" };
 		// deterministic pseudo-random initial positions/velocities (no Math.random for reproducibility)
 		double[] px = new double[nSites], py = new double[nSites], pz = new double[nSites];
 		double[] vx = new double[nSites], vy = new double[nSites], vz = new double[nSites];
