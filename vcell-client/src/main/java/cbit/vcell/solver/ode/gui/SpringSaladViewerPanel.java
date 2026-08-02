@@ -92,39 +92,45 @@ public class SpringSaladViewerPanel extends JPanel {
 		sidebar.setPreferredSize(new Dimension(190, 0));
 		add(split, BorderLayout.CENTER);
 
-		JPanel controls = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 4));
+		// The scrubber is the ONLY control allowed to absorb width changes, so it goes in the
+		// CENTER and everything else keeps its preferred size at the edges. A FlowLayout here
+		// silently wraps the overflow onto a second row that BorderLayout.SOUTH then clips, which
+		// hid the movie-export button entirely below about 800px wide.
+		JPanel controls = new JPanel(new BorderLayout(6, 0));
 		playButton.setToolTipText("Play / Pause");
 		playButton.addActionListener(e -> togglePlay());
-		controls.add(playButton);
+		controls.add(playButton, BorderLayout.WEST);
 
 		frameSlider.setMinimum(0);
 		frameSlider.setValue(0);
+		frameSlider.setMinimumSize(new Dimension(40, frameSlider.getMinimumSize().height));
 		frameSlider.addChangeListener(e -> {
 			if (adjustingSlider) return;
 			canvas.setFrameIndex(frameSlider.getValue());
 			updateReadout();
 		});
-		controls.add(frameSlider);
+		controls.add(frameSlider, BorderLayout.CENTER);
 
-		controls.add(new JLabel("Speed:"));
+		JPanel transportRight = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
+		transportRight.add(new JLabel("Speed:"));
 		speedCombo.addActionListener(e -> applySpeed());
-		controls.add(speedCombo);
+		transportRight.add(speedCombo);
 
 		JButton reset = new JButton("Reset view");
 		reset.addActionListener(e -> canvas.resetView());
-		controls.add(reset);
+		transportRight.add(reset);
 
 		saveMovieButton.setToolTipText("Save the whole trajectory as a movie, in the current view");
 		saveMovieButton.addActionListener(e -> saveMovie());
-		controls.add(saveMovieButton);
+		transportRight.add(saveMovieButton);
+
+		readout.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 0));
+		transportRight.add(readout);
+		controls.add(transportRight, BorderLayout.EAST);
 
 		JPanel bottom = new JPanel(new BorderLayout());
 		bottom.setBorder(BorderFactory.createEmptyBorder(2, 4, 2, 4));
 		bottom.add(controls, BorderLayout.CENTER);
-		// the readout sits outside the flow of buttons, which would otherwise push it off the end
-		// of the bar in a narrow window
-		readout.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 0));
-		bottom.add(readout, BorderLayout.EAST);
 		add(bottom, BorderLayout.SOUTH);
 
 		setTrajectory(null);
