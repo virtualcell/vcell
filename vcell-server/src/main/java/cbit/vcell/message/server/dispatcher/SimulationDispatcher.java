@@ -242,10 +242,49 @@ public class SimulationDispatcher {
 		}
 		lastSpecialUserCheck = System.currentTimeMillis();
 	}
+	/**
+	 * Lets a test wait for a worker to finish a pass without racing it.
+	 * <p>
+	 * A bare {@code wait()}/{@code notify()} pair cannot do this: these workers start as soon as
+	 * they are constructed, so the pass often completes before the test reaches its {@code wait()},
+	 * the notification is lost, and the test blocks until the suite times out. Counting completed
+	 * passes gives the waiter a condition it can test, so it can see a pass that already happened.
+	 */
+	public static final class CompletionSignal {
+		private int completedPasses;
+
+		/** Called by the worker at the end of every pass. */
+		synchronized void signalCompleted() {
+			completedPasses++;
+			notifyAll();
+		}
+
+		public synchronized int getCompletedPasses() {
+			return completedPasses;
+		}
+
+		/**
+		 * Wait until at least {@code targetPasses} passes have completed.
+		 *
+		 * @return false if the timeout expired first
+		 */
+		public synchronized boolean awaitCompletedPasses(int targetPasses, long timeoutMs) throws InterruptedException {
+			long deadline = System.currentTimeMillis() + timeoutMs;
+			while (completedPasses < targetPasses) {
+				long remaining = deadline - System.currentTimeMillis();
+				if (remaining <= 0) {
+					return false;
+				}
+				wait(remaining);
+			}
+			return true;
+		}
+	}
+
 	public class DispatchThread extends Thread {
 
 		final Object dispatcherNotifyObject = new Object();
-		final Object finishListener = new Object(); //used for tests
+		public final CompletionSignal finishListener = new CompletionSignal(); //used for tests
 
 		public DispatchThread() {
 			super();
@@ -339,9 +378,7 @@ public class SimulationDispatcher {
 					lg.error(ex.getMessage(), ex);
 				}
 				finally {
-					synchronized (finishListener){
-						finishListener.notify();
-					}
+					finishListener.signalCompleted();
 				}
 
 				// if there are no messages or no qualified jobs or exceptions, sleep for a few seconds while
@@ -449,7 +486,7 @@ public class SimulationDispatcher {
 		 class QueueFlusher implements Runnable {
 			protected final static String timeOutFailure = "failed: timed out";
 			protected final static String unreferencedFailure = "failed: unreferenced simulation";
-			protected final Object finishListener = new Object(); //used for tests
+			protected final CompletionSignal finishListener = new CompletionSignal(); //used for tests
 			public void run() {
 				try {
 					traceThread(this);
@@ -468,9 +505,7 @@ public class SimulationDispatcher {
 				} catch (Exception e1) {
 					lg.error(e1.getMessage(), e1);
 				} finally {
-					synchronized (finishListener){
-						finishListener.notify();
-					}
+					finishListener.signalCompleted();
 				}
 			}
 			
