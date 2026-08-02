@@ -73,6 +73,13 @@ Buttons/checkboxes are clicked via `doClick()` posted with `invokeLater` (no
 cursor movement, and the request returns immediately even if the action opens a
 modal dialog); other components get a synthetic `Robot` click at their center.
 
+## Tooling
+
+Committed fixtures live in [`tools/debug-bridge/`](../../../../../../../tools/debug-bridge/README.md):
+`launch-client.sh` (run the client from `target/classes` with the bridge on),
+`bridge.sh` (CLI with `wait`/`assert` exit codes for scripting), and
+`scenarios/` (reusable end-to-end scripts, e.g. `smoke.sh`).
+
 ## Typical loop
 
 ```bash
