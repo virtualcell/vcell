@@ -97,7 +97,9 @@ public class InteractiveLogin {
         // selected ports which are registered
         List<Integer> auth0_redirect_ports = Arrays.asList(51111, 52111, 53111, 54111, 55111, 56111, 57111, 58111, 59111,
                 60111, 61111, 62111, 63111, 64111, 65111);
-        int localHttpServerPort = findAvailablePort(auth0_redirect_ports);
+        // Bound up front, because the redirect URI has to name the port we actually hold.
+        HttpServer callbackServer = createCallbackServer(auth0_redirect_ports);
+        int localHttpServerPort = callbackServer.getAddress().getPort();
         String callback_endpoint_path = "/oidc_test_callback";
 
         URI redirectURI = new URI("http://" + "localhost" + ":" + localHttpServerPort + callback_endpoint_path);
@@ -110,7 +112,7 @@ public class InteractiveLogin {
         if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
             // set up web server to receive redirect and send URL to system browser - will be redirected back to http://localhost:9999/oidc_test_callback
             System.out.println("launched browser with login window, will intercept the authentication response sent to local web server");
-            authorizationResponse = getAuthorizationResponseAutomated(localHttpServerPort, callback_endpoint_path, authRequestURI, successRedirectURI);
+            authorizationResponse = getAuthorizationResponseAutomated(callbackServer, callback_endpoint_path, authRequestURI, successRedirectURI);
             if (authorizationResponse != null) {
                 if (Desktop.getDesktop().isSupported(Desktop.Action.APP_REQUEST_FOREGROUND)) {
                     System.out.println("requesting foreground");
@@ -126,6 +128,7 @@ public class InteractiveLogin {
             }
         } else {
             // manual copy/paste of redirect URL into browser, and copy/paste of redirect URL back into console
+            callbackServer.stop(0);   // nothing will call back into it on this path
             authorizationResponse = getAuthorizationResponseManual(authRequestURI);
         }
 
@@ -134,16 +137,35 @@ public class InteractiveLogin {
         return new AuthApiClient(apiBaseUri, oidcProviderMetadata.getTokenEndpointURI(), oidcTokens.getAccessToken(), oidcTokens.getRefreshToken(), ignoreSSLCertProblems);
     }
 
-    static int findAvailablePort(List<Integer> potentialPorts) {
+    /**
+     * Bind the login callback server to the first of {@code potentialPorts} that is free, and
+     * return it still bound. The caller owns it and must {@code stop} it.
+     * <p>
+     * Deliberately no separate "is this port free" probe. Two ways that went wrong:
+     * <ul>
+     * <li>a plain {@code new ServerSocket(port)} binds the wildcard address, which macOS allows
+     *     even while another process holds {@code 127.0.0.1:port} — so it called a port free that
+     *     the loopback-scoped {@link HttpServer} then could not bind. A second running VCell
+     *     client is exactly that case.</li>
+     * <li>probing with an {@code HttpServer} and stopping it does not help either: {@code stop}
+     *     does not release the socket promptly, so the real bind that follows fails on the very
+     *     port just found to be free.</li>
+     * </ul>
+     * Binding once and keeping it removes both the address mismatch and the gap between checking
+     * and using.
+     */
+    static HttpServer createCallbackServer(List<Integer> potentialPorts) throws IOException {
+        IOException lastFailure = null;
         for (int port: potentialPorts) {
-            try (ServerSocket serverSocket = new ServerSocket(port)) {
-                // The port is available
-                return port;
+            try {
+                return HttpServer.create(new InetSocketAddress("localhost", port), 0);
             } catch (IOException e) {
-                // The port is not available
+                lastFailure = e;    // in use, try the next one
             }
         }
-        throw new IllegalStateException("Could not find an available dynamic port (49152-65535) to receive authorization code from Authentication provider");
+        throw new IOException("Could not open a login callback server on any registered port "
+                + potentialPorts + ". Another VCell client is probably already running - close it "
+                + "and try again.", lastFailure);
     }
 
     private static AuthorizationResponse getAuthorizationResponseManual(URI authRequestURI) throws IOException, ParseException {
@@ -179,14 +201,13 @@ public class InteractiveLogin {
      * @throws ParseException
      */
 
-    private static AuthorizationResponse getAuthorizationResponseAutomated(int localHttpServerPort, String callback_endpoint_path, URI authRequestURI, URI successRedirectURI) throws IOException, ParseException {
+    private static AuthorizationResponse getAuthorizationResponseAutomated(HttpServer httpServer, String callback_endpoint_path, URI authRequestURI, URI successRedirectURI) throws IOException, ParseException {
         AuthorizationResponse authorizationResponse;
         final BlockingQueue<String> authorizationCodeURIQueue = new LinkedBlockingQueue<>(1);
 
-        InetSocketAddress addr = new InetSocketAddress("localhost", localHttpServerPort);
-        HttpServer httpServer = null;
+        InetSocketAddress addr = httpServer.getAddress();
+        int localHttpServerPort = addr.getPort();
         try {
-            httpServer = HttpServer.create(addr, 0);
             String expectedPingResponse = "alive";
             httpServer.createContext("/ping", exchange -> {
                 exchange.sendResponseHeaders(200, expectedPingResponse.length());
