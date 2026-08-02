@@ -59,6 +59,9 @@ Every node in `/tree` and `/windows` carries a stable **`id`** (`c0`, `c1`, …)
 | `GET /selectTreeRow?path=&row=N` | select row N of the JTree; JSON `{"selected": bool}` |
 | `GET /rightClickTreeRow?path=&row=N` | right-click row N (opens its context menu); JSON `{"rightClicked": bool}` |
 | `GET /rightClick?path=` | right-click a component's center; JSON `{"rightClicked": bool}` |
+| `GET /find?type=&name=&text=&textContains=&limit=` | JSON: components matching ALL given criteria (each param optional, at least one required). `type` is a simple class name matched against the class **or any superclass** (`JButton`, `AbstractButton`); `text` is exact, `textContains` case-insensitive. Returns full nodes (path + id + state), no children |
+| `GET /waitFor?{find params}&state=&timeoutMs=&intervalMs=` | Poll the same selector until `state` holds: `showing` (default), `enabled`, or `gone`. JSON `{"satisfied": bool, "elapsedMs": N, "matches": [...]}` — the deterministic-wait primitive for automation (no more sleep-and-hope) |
+| `GET /idle` | Wait for the EDT to drain (two no-op round-trips); JSON `{"idle": true, "waitedMs": N}`. Call between act and observe |
 | `GET /listeners?path=0/3/2` | JSON: registered `ActionListener` classes, action command, mouse-listener count — "is this control actually wired up?" |
 | `GET /log[?lines=N]` | text/plain tail (default 200 lines) of the client's real log — VCell redirects System.out/err to `<vcellHome>/logs/vcellrun_<site>.log`, so exceptions never appear on the launcher's stdout |
 

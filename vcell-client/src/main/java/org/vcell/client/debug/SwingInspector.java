@@ -453,6 +453,170 @@ public final class SwingInspector {
 		return null;
 	}
 
+	// ---------------------------------------------------------------------
+	// Semantic finders: locate components by what they ARE (type/name/text)
+	// instead of where they sit (index path), so automation survives layout
+	// shifts between builds and sessions.
+	// ---------------------------------------------------------------------
+
+	/** A matched component plus the index path it was found at. */
+	private static final class PathMatch {
+		final Component component;
+		final String path;
+
+		PathMatch(Component component, String path) {
+			this.component = component;
+			this.path = path;
+		}
+	}
+
+	/**
+	 * JSON array of components matching ALL given criteria (null criteria are
+	 * ignored). Each element is a full node as in the tree dump, minus children.
+	 *
+	 * @param type         simple class name matched against the component's class
+	 *                     or any superclass (e.g. "JButton", "AbstractButton")
+	 * @param name         exact {@link Component#getName()} match
+	 * @param text         exact match on the node's {@code text} (button/label
+	 *                     text, text-component content, window title)
+	 * @param textContains case-insensitive substring of that text
+	 * @param limit        maximum matches to emit (&lt;=0 = unlimited)
+	 */
+	public static String findMatchesJson(String type, String name, String text, String textContains, int limit) {
+		return onEdt(() -> emitMatches(collectAll(type, name, text, textContains),
+				limit <= 0 ? Integer.MAX_VALUE : limit));
+	}
+
+	/**
+	 * Poll the semantic finder until the requested state holds or the timeout
+	 * elapses. States: {@code showing} (default) — at least one match is showing;
+	 * {@code enabled} — at least one match is showing and enabled; {@code gone} —
+	 * no showing match. Callers must be off the EDT (each poll hops onto it).
+	 *
+	 * @return JSON {@code {"satisfied":bool,"state":..,"elapsedMs":N,"matches":[..]}}
+	 */
+	public static String waitFor(String type, String name, String text, String textContains,
+			String state, long timeoutMs, long intervalMs) {
+		String st = (state == null || state.isEmpty()) ? "showing" : state;
+		boolean wantGone = "gone".equals(st);
+		boolean needEnabled = "enabled".equals(st);
+		long start = System.currentTimeMillis();
+		while (true) {
+			String matches = matchesInStateJson(type, name, text, textContains, needEnabled, 10);
+			boolean present = !"[]".equals(matches);
+			boolean satisfied = wantGone != present;
+			long elapsed = System.currentTimeMillis() - start;
+			if (satisfied || elapsed >= timeoutMs) {
+				return "{\"satisfied\":" + satisfied + ",\"state\":\"" + escape(st) + "\",\"elapsedMs\":" + elapsed
+						+ ",\"matches\":" + matches + '}';
+			}
+			try {
+				Thread.sleep(intervalMs);
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+				return "{\"satisfied\":false,\"interrupted\":true,\"elapsedMs\":"
+						+ (System.currentTimeMillis() - start) + '}';
+			}
+		}
+	}
+
+	/**
+	 * Wait for the EDT to drain: two no-op round-trips (the first flushes events
+	 * queued before the call, the second anything the first batch enqueued).
+	 *
+	 * @return milliseconds the round-trips took
+	 */
+	public static long waitForIdle() {
+		long start = System.currentTimeMillis();
+		onEdt(() -> null);
+		onEdt(() -> null);
+		return System.currentTimeMillis() - start;
+	}
+
+	/** Matches that are showing (and optionally enabled), as a JSON array. EDT-hopping. */
+	private static String matchesInStateJson(String type, String name, String text, String textContains,
+			boolean needEnabled, int limit) {
+		return onEdt(() -> {
+			List<PathMatch> filtered = new ArrayList<>();
+			for (PathMatch m : collectAll(type, name, text, textContains)) {
+				if (m.component.isShowing() && (!needEnabled || m.component.isEnabled())) {
+					filtered.add(m);
+				}
+			}
+			return emitMatches(filtered, limit);
+		});
+	}
+
+	/** DFS every showing window for criteria matches. Must run on the EDT. */
+	private static List<PathMatch> collectAll(String type, String name, String text, String textContains) {
+		List<PathMatch> out = new ArrayList<>();
+		List<Window> windows = new ArrayList<>();
+		for (Window w : Window.getWindows()) {
+			if (w.isShowing()) {
+				windows.add(w);
+			}
+		}
+		for (int i = 0; i < windows.size(); i++) {
+			collectMatches(windows.get(i), Integer.toString(i), type, name, text, textContains, out);
+		}
+		return out;
+	}
+
+	private static void collectMatches(Component c, String path, String type, String name, String text,
+			String textContains, List<PathMatch> out) {
+		if (matchesCriteria(c, type, name, text, textContains)) {
+			out.add(new PathMatch(c, path));
+		}
+		if (c instanceof Container) {
+			Component[] kids = ((Container) c).getComponents();
+			for (int i = 0; i < kids.length; i++) {
+				collectMatches(kids[i], path + '/' + i, type, name, text, textContains, out);
+			}
+		}
+	}
+
+	private static boolean matchesCriteria(Component c, String type, String name, String text, String textContains) {
+		if (type != null) {
+			boolean hit = false;
+			for (Class<?> k = c.getClass(); k != null; k = k.getSuperclass()) {
+				if (k.getSimpleName().equals(type)) {
+					hit = true;
+					break;
+				}
+			}
+			if (!hit) {
+				return false;
+			}
+		}
+		if (name != null && !name.equals(c.getName())) {
+			return false;
+		}
+		String t = textOf(c);
+		if (text != null && !text.equals(t)) {
+			return false;
+		}
+		if (textContains != null && (t == null || !t.toLowerCase().contains(textContains.toLowerCase()))) {
+			return false;
+		}
+		return true;
+	}
+
+	/** Emit matches as a JSON array of childless nodes. Must run on the EDT. */
+	private static String emitMatches(List<PathMatch> hits, int limit) {
+		StringBuilder sb = new StringBuilder(1024);
+		sb.append('[');
+		int shown = Math.min(hits.size(), limit);
+		for (int i = 0; i < shown; i++) {
+			if (i > 0) {
+				sb.append(',');
+			}
+			// depth == maxDepth, so appendNode emits the node without children
+			appendNode(sb, hits.get(i).component, hits.get(i).path, 0, 0);
+		}
+		sb.append(']');
+		return sb.toString();
+	}
+
 	/**
 	 * Click a component identified by node path. Buttons/checkboxes use
 	 * {@link AbstractButton#doClick()} (EDT-safe, no native cursor movement);

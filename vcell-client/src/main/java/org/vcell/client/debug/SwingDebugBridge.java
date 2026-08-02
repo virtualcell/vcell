@@ -49,6 +49,9 @@ import com.sun.net.httpserver.HttpServer;
  *   GET /selectTab?path=..&amp;index=N            -&gt; JSON {"selected": true|false}
  *   GET /listeners?path=0/3/2   -&gt; JSON, registered listeners of the component
  *   GET /log[?lines=N]          -&gt; text/plain tail of the client's real log
+ *   GET /find?type=&amp;name=&amp;text=&amp;textContains=&amp;limit=  -&gt; JSON, semantic component search
+ *   GET /waitFor?{find params}&amp;state=showing|enabled|gone&amp;timeoutMs=&amp;intervalMs=  -&gt; JSON, poll until state holds
+ *   GET /idle                   -&gt; JSON, waits for the EDT to drain
  * </pre>
  *
  * Example: {@code curl -s localhost:9123/tree?maxDepth=6 | jq}
@@ -111,6 +114,9 @@ public final class SwingDebugBridge {
 			s.createContext("/rightClickTreeRow", wrap(SwingDebugBridge::handleRightClickTreeRow));
 			s.createContext("/rightClick", wrap(SwingDebugBridge::handleRightClick));
 			s.createContext("/listeners", wrap(SwingDebugBridge::handleListeners));
+			s.createContext("/find", wrap(SwingDebugBridge::handleFind));
+			s.createContext("/waitFor", wrap(SwingDebugBridge::handleWaitFor));
+			s.createContext("/idle", wrap(SwingDebugBridge::handleIdle));
 			s.createContext("/log", ex -> {
 				try {
 					respond(ex, 200, "text/plain; charset=utf-8", handleLog(ex).getBytes(StandardCharsets.UTF_8));
@@ -217,6 +223,52 @@ public final class SwingDebugBridge {
 		}
 		ConsoleCapture.CurrentContent content = cc.getLastLines(lines);
 		return content.isAvailable ? content.content : "(log content unavailable)";
+	}
+
+	/**
+	 * Shared selector parameters for /find and /waitFor: {@code type} (simple
+	 * class name, superclasses included), {@code name}, {@code text} (exact),
+	 * {@code textContains} (case-insensitive substring). At least one required.
+	 */
+	private static String handleFind(HttpExchange ex) {
+		Map<String, String> q = query(ex);
+		String type = emptyToNull(q.get("type"));
+		String name = emptyToNull(q.get("name"));
+		String text = emptyToNull(q.get("text"));
+		String contains = emptyToNull(q.get("textContains"));
+		if (type == null && name == null && text == null && contains == null) {
+			return "{\"error\":\"require at least one of 'type', 'name', 'text', 'textContains'\"}";
+		}
+		int limit = Integer.parseInt(q.getOrDefault("limit", "25"));
+		return SwingInspector.findMatchesJson(type, name, text, contains, limit);
+	}
+
+	private static String handleWaitFor(HttpExchange ex) {
+		Map<String, String> q = query(ex);
+		String type = emptyToNull(q.get("type"));
+		String name = emptyToNull(q.get("name"));
+		String text = emptyToNull(q.get("text"));
+		String contains = emptyToNull(q.get("textContains"));
+		if (type == null && name == null && text == null && contains == null) {
+			return "{\"error\":\"require at least one of 'type', 'name', 'text', 'textContains'\"}";
+		}
+		String state = q.getOrDefault("state", "showing");
+		if (!state.equals("showing") && !state.equals("enabled") && !state.equals("gone")) {
+			return "{\"error\":\"'state' must be one of showing, enabled, gone\"}";
+		}
+		// cap the wait so a stuck poller can't pin one of the bridge's few worker threads forever
+		long timeoutMs = Math.min(Long.parseLong(q.getOrDefault("timeoutMs", "10000")), 120_000L);
+		long intervalMs = Math.max(Long.parseLong(q.getOrDefault("intervalMs", "250")), 50L);
+		return SwingInspector.waitFor(type, name, text, contains, state, timeoutMs, intervalMs);
+	}
+
+	private static String handleIdle(HttpExchange ex) {
+		long waitedMs = SwingInspector.waitForIdle();
+		return "{\"idle\":true,\"waitedMs\":" + waitedMs + '}';
+	}
+
+	private static String emptyToNull(String s) {
+		return (s == null || s.isEmpty()) ? null : s;
 	}
 
 	private static String handleListeners(HttpExchange ex) {
