@@ -62,6 +62,8 @@ Every node in `/tree` and `/windows` carries a stable **`id`** (`c0`, `c1`, …)
 | `GET /find?type=&name=&text=&textContains=&limit=` | JSON: components matching ALL given criteria (each param optional, at least one required). `type` is a simple class name matched against the class **or any superclass** (`JButton`, `AbstractButton`); `text` is exact, `textContains` case-insensitive. Returns full nodes (path + id + state), no children |
 | `GET /waitFor?{find params}&state=&timeoutMs=&intervalMs=` | Poll the same selector until `state` holds: `showing` (default), `enabled`, or `gone`. JSON `{"satisfied": bool, "elapsedMs": N, "matches": [...]}` — the deterministic-wait primitive for automation (no more sleep-and-hope) |
 | `GET /idle` | Wait for the EDT to drain (two no-op round-trips); JSON `{"idle": true, "waitedMs": N}`. Call between act and observe |
+| `GET /menus` | JSON: complete menu-bar structure of every window (nested items, separators, accelerators), read from the menu models — **no popups are opened**, so this works even for menus you'd otherwise have to click through |
+| `GET /menu?path=Account>Login[&window=N]` | Activate a menu item by visible text (case-insensitive, `>`-separated). Fires the leaf item's `doClick()` directly — replaces the old open-popup-then-click-by-index dance. Lazily-populated menus get their `MenuListener` fired first |
 | `GET /listeners?path=0/3/2` | JSON: registered `ActionListener` classes, action command, mouse-listener count — "is this control actually wired up?" |
 | `GET /log[?lines=N]` | text/plain tail (default 200 lines) of the client's real log — VCell redirects System.out/err to `<vcellHome>/logs/vcellrun_<site>.log`, so exceptions never appear on the launcher's stdout |
 

@@ -52,6 +52,8 @@ import com.sun.net.httpserver.HttpServer;
  *   GET /find?type=&amp;name=&amp;text=&amp;textContains=&amp;limit=  -&gt; JSON, semantic component search
  *   GET /waitFor?{find params}&amp;state=showing|enabled|gone&amp;timeoutMs=&amp;intervalMs=  -&gt; JSON, poll until state holds
  *   GET /idle                   -&gt; JSON, waits for the EDT to drain
+ *   GET /menus                  -&gt; JSON, full menu-bar structure of every window (no popups needed)
+ *   GET /menu?path=Account&gt;Login[&amp;window=N]  -&gt; activate a menu item by its visible text
  * </pre>
  *
  * Example: {@code curl -s localhost:9123/tree?maxDepth=6 | jq}
@@ -117,6 +119,8 @@ public final class SwingDebugBridge {
 			s.createContext("/find", wrap(SwingDebugBridge::handleFind));
 			s.createContext("/waitFor", wrap(SwingDebugBridge::handleWaitFor));
 			s.createContext("/idle", wrap(SwingDebugBridge::handleIdle));
+			s.createContext("/menus", wrap(SwingDebugBridge::handleMenus));
+			s.createContext("/menu", wrap(SwingDebugBridge::handleMenu));
 			s.createContext("/log", ex -> {
 				try {
 					respond(ex, 200, "text/plain; charset=utf-8", handleLog(ex).getBytes(StandardCharsets.UTF_8));
@@ -269,6 +273,20 @@ public final class SwingDebugBridge {
 
 	private static String emptyToNull(String s) {
 		return (s == null || s.isEmpty()) ? null : s;
+	}
+
+	private static String handleMenus(HttpExchange ex) {
+		return SwingInspector.menusJson();
+	}
+
+	private static String handleMenu(HttpExchange ex) {
+		Map<String, String> q = query(ex);
+		String path = q.get("path");
+		if (path == null || path.isEmpty()) {
+			return "{\"error\":\"missing 'path' query parameter (e.g. path=Account>Login)\"}";
+		}
+		int window = Integer.parseInt(q.getOrDefault("window", "-1"));
+		return SwingInspector.clickMenu(path, window);
 	}
 
 	private static String handleListeners(HttpExchange ex) {

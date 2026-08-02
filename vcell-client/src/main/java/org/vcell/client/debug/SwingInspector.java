@@ -35,6 +35,9 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTree;
@@ -277,7 +280,44 @@ public final class SwingInspector {
 			appendTable(sb, (JTable) c);
 		} else if (c instanceof JTree) {
 			appendTree(sb, (JTree) c);
+		} else if (c instanceof JMenu) {
+			// popup contents are not in the component hierarchy until shown;
+			// serialize them statically so menus are discoverable without popups
+			sb.append(",\"menuItems\":");
+			appendMenuItems(sb, (JMenu) c, 0);
 		}
+	}
+
+	private static final int MAX_MENU_DEPTH = 5;
+
+	private static void appendMenuItems(StringBuilder sb, JMenu menu, int depth) {
+		sb.append('[');
+		for (int i = 0; i < menu.getItemCount(); i++) {
+			if (i > 0) {
+				sb.append(',');
+			}
+			JMenuItem item = menu.getItem(i);
+			if (item == null) {
+				sb.append("{\"separator\":true}");
+				continue;
+			}
+			sb.append('{');
+			kv(sb, "text", nz(item.getText()));
+			comma(sb);
+			kv(sb, "id", idFor(item));
+			comma(sb);
+			raw(sb, "enabled", item.isEnabled());
+			if (item.getAccelerator() != null) {
+				comma(sb);
+				kv(sb, "accelerator", String.valueOf(item.getAccelerator()));
+			}
+			if (item instanceof JMenu && depth < MAX_MENU_DEPTH) {
+				sb.append(",\"items\":");
+				appendMenuItems(sb, (JMenu) item, depth + 1);
+			}
+			sb.append('}');
+		}
+		sb.append(']');
 	}
 
 	private static void appendTree(StringBuilder sb, JTree t) {
@@ -615,6 +655,173 @@ public final class SwingInspector {
 		}
 		sb.append(']');
 		return sb.toString();
+	}
+
+	// ---------------------------------------------------------------------
+	// Menus: enumerate and activate by visible text, no popup choreography
+	// ---------------------------------------------------------------------
+
+	/**
+	 * @return JSON array: for every showing window with a {@link JMenuBar}, its
+	 *         complete menu structure (nested items, separators, accelerators),
+	 *         read from the models without opening any popup.
+	 */
+	public static String menusJson() {
+		return onEdt(() -> {
+			StringBuilder sb = new StringBuilder(2048);
+			sb.append('[');
+			List<Window> windows = showingWindows();
+			boolean first = true;
+			for (int i = 0; i < windows.size(); i++) {
+				JMenuBar bar = menuBarOf(windows.get(i));
+				if (bar == null) {
+					continue;
+				}
+				if (!first) {
+					sb.append(',');
+				}
+				first = false;
+				sb.append("{\"window\":").append(i).append(',');
+				kv(sb, "title", nz(textOf(windows.get(i))));
+				sb.append(",\"menus\":[");
+				for (int m = 0; m < bar.getMenuCount(); m++) {
+					if (m > 0) {
+						sb.append(',');
+					}
+					JMenu menu = bar.getMenu(m);
+					if (menu == null) {
+						sb.append("{}");
+						continue;
+					}
+					sb.append('{');
+					kv(sb, "text", nz(menu.getText()));
+					comma(sb);
+					kv(sb, "id", idFor(menu));
+					comma(sb);
+					raw(sb, "enabled", menu.isEnabled());
+					sb.append(",\"items\":");
+					appendMenuItems(sb, menu, 0);
+					sb.append('}');
+				}
+				sb.append("]}");
+			}
+			sb.append(']');
+			return sb.toString();
+		});
+	}
+
+	/**
+	 * Activate a menu item addressed by its visible text, e.g.
+	 * {@code "Account > Login"} — segments separated by {@code '>'}, matched
+	 * case-insensitively against menu/item text. The leaf item's action fires
+	 * via {@code doClick()} without animating popups, so callers no longer walk
+	 * transient popup windows by index. Menus that build their items lazily in
+	 * a {@link javax.swing.event.MenuListener} get that listener fired first,
+	 * the same way opening the menu would.
+	 *
+	 * @param windowIndex restrict the search to one window (index into
+	 *                    {@link #showingWindows()}), or -1 for all windows
+	 * @return JSON describing what was clicked, or an error
+	 */
+	public static String clickMenu(final String menuPath, final int windowIndex) {
+		return onEdt(() -> {
+			String[] segs = menuPath.split(">");
+			for (int i = 0; i < segs.length; i++) {
+				segs[i] = segs[i].trim();
+			}
+			if (segs.length == 0 || segs[0].isEmpty()) {
+				return "{\"clicked\":false,\"error\":\"empty menu path\"}";
+			}
+			List<Window> windows = showingWindows();
+			for (int i = 0; i < windows.size(); i++) {
+				if (windowIndex >= 0 && windowIndex != i) {
+					continue;
+				}
+				JMenuBar bar = menuBarOf(windows.get(i));
+				if (bar == null) {
+					continue;
+				}
+				JMenu top = null;
+				for (int m = 0; m < bar.getMenuCount(); m++) {
+					JMenu menu = bar.getMenu(m);
+					if (menu != null && segs[0].equalsIgnoreCase(nz(menu.getText()).trim())) {
+						top = menu;
+						break;
+					}
+				}
+				if (top == null) {
+					continue;
+				}
+				if (segs.length == 1) {
+					return "{\"clicked\":false,\"error\":\"path must name an item inside menu '"
+							+ escape(segs[0]) + "', e.g. " + escape(segs[0]) + ">Item\"}";
+				}
+				JMenuItem cur = top;
+				StringBuilder resolved = new StringBuilder(nz(top.getText()));
+				for (int s = 1; s < segs.length; s++) {
+					if (!(cur instanceof JMenu)) {
+						return "{\"clicked\":false,\"error\":\"'" + escape(resolved.toString())
+								+ "' is not a submenu\"}";
+					}
+					JMenuItem next = childItem((JMenu) cur, segs[s]);
+					if (next == null) {
+						return "{\"clicked\":false,\"error\":\"no item '" + escape(segs[s]) + "' under '"
+								+ escape(resolved.toString()) + "'\"}";
+					}
+					cur = next;
+					resolved.append(" > ").append(nz(cur.getText()));
+				}
+				if (!cur.isEnabled()) {
+					return "{\"clicked\":false,\"error\":\"item '" + escape(resolved.toString())
+							+ "' is disabled\"}";
+				}
+				final JMenuItem target = cur;
+				// fire-and-forget: the action may open a modal dialog
+				SwingUtilities.invokeLater(target::doClick);
+				return "{\"clicked\":true,\"item\":\"" + escape(resolved.toString()) + "\",\"id\":\""
+						+ idFor(target) + "\",\"window\":" + i + '}';
+			}
+			return "{\"clicked\":false,\"error\":\"no showing window has a menu '" + escape(segs[0]) + "'\"}";
+		});
+	}
+
+	private static JMenuBar menuBarOf(Window w) {
+		if (w instanceof JFrame) {
+			return ((JFrame) w).getJMenuBar();
+		}
+		if (w instanceof JDialog) {
+			return ((JDialog) w).getJMenuBar();
+		}
+		return null;
+	}
+
+	/** Find a direct child item by text, firing lazy-population MenuListeners if needed. */
+	private static JMenuItem childItem(JMenu menu, String text) {
+		JMenuItem hit = scanItems(menu, text);
+		if (hit == null && menu.getMenuListeners().length > 0) {
+			// menus populated on menuSelected (e.g. recent-file lists) are empty
+			// until "opened"; fire their listeners the way opening them would
+			javax.swing.event.MenuEvent ev = new javax.swing.event.MenuEvent(menu);
+			for (javax.swing.event.MenuListener l : menu.getMenuListeners()) {
+				try {
+					l.menuSelected(ev);
+				} catch (RuntimeException e) {
+					// a listener assuming a visible popup may object; matching below still gets its chance
+				}
+			}
+			hit = scanItems(menu, text);
+		}
+		return hit;
+	}
+
+	private static JMenuItem scanItems(JMenu menu, String text) {
+		for (int i = 0; i < menu.getItemCount(); i++) {
+			JMenuItem item = menu.getItem(i);
+			if (item != null && text.equalsIgnoreCase(nz(item.getText()).trim())) {
+				return item;
+			}
+		}
+		return null;
 	}
 
 	/**
