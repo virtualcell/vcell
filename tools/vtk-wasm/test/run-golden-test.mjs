@@ -34,7 +34,15 @@ const { default: puppeteer } = await import(pathToFileURL(PUP).href);
 
 const MIME = { '.html':'text/html', '.js':'text/javascript', '.mjs':'text/javascript',
   '.wasm':'application/wasm', '.json':'application/json', '.gz':'application/gzip' };
-const ROOT = path.resolve(HERE);
+// Fixed allow-list: the request path only selects from constant file paths, so the served path
+// never derives from user input (no path traversal — CodeQL js/path-injection).
+const ROUTES = {
+  '/golden-test.html': path.join(HERE, 'golden-test.html'),
+  '/vtk-umd.js': path.join(HERE, 'vtk-umd.js'),
+  '/fixtures/input_surface.json': path.join(HERE, 'fixtures', 'input_surface.json'),
+  '/fixtures/golden_points.json': path.join(HERE, 'fixtures', 'golden_points.json'),
+  '/bundle.tar.gz': BUNDLE,
+};
 const server = http.createServer((req, res) => {
   const url = decodeURIComponent(req.url.split('?')[0]);
   const headers = {   // cross-origin isolation for wasm
@@ -42,16 +50,8 @@ const server = http.createServer((req, res) => {
     'Cross-Origin-Embedder-Policy': 'require-corp',
     'Cross-Origin-Resource-Policy': 'same-origin',
   };
-  let file;
-  if (url === '/bundle.tar.gz') {
-    file = BUNDLE;
-  } else {
-    // Serve only files under ROOT; reject path traversal (CodeQL js/path-injection).
-    file = path.resolve(ROOT, '.' + path.posix.normalize(url));
-    if (file !== ROOT && !file.startsWith(ROOT + path.sep)) {
-      res.writeHead(403, headers); res.end('forbidden'); return;
-    }
-  }
+  const file = Object.prototype.hasOwnProperty.call(ROUTES, url) ? ROUTES[url] : null;
+  if (!file) { res.writeHead(404, headers); res.end('not found'); return; }
   const ext = file.endsWith('.tar.gz') ? '.gz' : path.extname(file);
   headers['content-type'] = MIME[ext] || 'application/octet-stream';
   fs.readFile(file, (err, buf) => {
