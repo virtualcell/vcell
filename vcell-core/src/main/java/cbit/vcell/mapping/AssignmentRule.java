@@ -11,11 +11,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.vcell.util.Compare;
-import org.vcell.util.Displayable;
-import org.vcell.util.Issue;
-import org.vcell.util.IssueContext;
-import org.vcell.util.Matchable;
+import org.vcell.util.*;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
 
@@ -28,7 +24,7 @@ import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.SymbolTableEntry;
 
 public class AssignmentRule implements Matchable, Serializable, IssueSource, SimulationContextEntity,
-		Displayable, VetoableChangeListener, PropertyChangeListener, VCellSbmlName {
+		Displayable, VetoableChangeListener, PropertyChangeListener, Nameable, VCellSbmlName, RuleVariableAccessible {
 	
 	private String fieldName = null;
 	private String sbmlId = null;
@@ -112,11 +108,20 @@ public class AssignmentRule implements Matchable, Serializable, IssueSource, Sim
 	public SymbolTableEntry getAssignmentRuleVar() {
 		return assignmentRuleVar;
 	}
+
+	public SymbolTableEntry getRuleVar(){
+		return this.getAssignmentRuleVar();
+	}
+
 	public void setAssignmentRuleVar(SymbolTableEntry assignmentRuleVar) {
 		this.assignmentRuleVar = assignmentRuleVar;
 	}
 	public Expression getAssignmentRuleExpression() {
 		return assignmentRuleExpression;
+	}
+	@Override
+	public Expression getRuleExpression() {
+		return this.getAssignmentRuleExpression();
 	}
 	public void setAssignmentRuleExpression(Expression assignmentRuleExpression) {
 		this.assignmentRuleExpression = assignmentRuleExpression;
