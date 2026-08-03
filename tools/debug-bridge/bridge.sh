@@ -15,6 +15,7 @@
 #   click <selector>            rclick <selector>
 #   settext <selector> <text> [--enter]
 #   tab <selector> <index>      row <selector> <row>     rrow <selector> <row>
+#   expand <selector> <row> [true|false]                 drow <selector> <row>
 #   menu "<Menu>Item[>Sub]" [window]
 #   highlight <selector> [ms]
 # Synchronize / assert (exit 0 on success, 1 on failure):
@@ -22,7 +23,10 @@
 #   assert [find opts] [--gone]
 #   idle
 #
-# A <selector> is a tree path ("0/3/2") or a stable component id ("c42").
+# A <selector> is one of:
+#   name=SearchButton[N]  by Component name (best); showing match wins, [N] disambiguates
+#   c42                   stable component id from /tree
+#   0/3/2                 positional node path (brittle)
 
 set -eo pipefail
 
@@ -127,6 +131,9 @@ case "$cmd" in
     ;;
   tab)       get selectTab --data-urlencode "path=$1" --data-urlencode "index=$2" | pretty ;;
   row)       get selectTreeRow --data-urlencode "path=$1" --data-urlencode "row=$2" | pretty ;;
+  expand)    get expandTreeRow --data-urlencode "path=$1" --data-urlencode "row=$2" \
+               --data-urlencode "expand=${3:-true}" | pretty ;;
+  drow)      get doubleClickTreeRow --data-urlencode "path=$1" --data-urlencode "row=$2" | pretty ;;
   rrow)      get rightClickTreeRow --data-urlencode "path=$1" --data-urlencode "row=$2" | pretty ;;
   menu)      get menu --data-urlencode "path=$1" ${2:+--data-urlencode "window=$2"} | pretty ;;
   props)     get props --data-urlencode "path=$1" | pretty ;;

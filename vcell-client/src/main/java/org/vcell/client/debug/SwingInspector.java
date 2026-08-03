@@ -386,19 +386,40 @@ public final class SwingInspector {
 	// Lookup + interaction
 	// ---------------------------------------------------------------------
 
+	private static final java.util.regex.Pattern NAME_WITH_INDEX =
+			java.util.regex.Pattern.compile("^(.*)\\[(\\d+)\\]$");
+
 	/**
-	 * Resolve a selector to a live component. A selector is either a registry id
-	 * ("c42", as emitted in each node's {@code id}) or a node path ("0/3/2", as
-	 * emitted in {@code path}); ids and paths are syntactically distinct, so a
-	 * single method resolves both and every endpoint accepts either. First path
-	 * segment indexes {@link #showingWindows()}; remaining segments index
-	 * {@link Container#getComponents()}.
+	 * Resolve a selector to a live component. Every endpoint that takes a
+	 * {@code path} parameter accepts any of these three forms, which are
+	 * syntactically distinct:
+	 *
+	 * <ul>
+	 * <li><b>registry id</b> — {@code c42}, as emitted in each node's {@code id}.
+	 *     Stable across dumps.</li>
+	 * <li><b>name</b> — {@code name=SearchButton}, matching
+	 *     {@link Component#getName()}. The most robust form: it survives layout
+	 *     changes entirely. When several components share a name (VCell reuses
+	 *     panels — e.g. one database search panel per tab), a <i>showing</i> match
+	 *     wins over a hidden one; add an index, {@code name=SearchButton[1]}, to
+	 *     pick a specific one out of the {@code /find} ordering.</li>
+	 * <li><b>node path</b> — {@code 0/3/2}, as emitted in {@code path}. First
+	 *     segment indexes {@link #showingWindows()}, the rest index
+	 *     {@link Container#getComponents()}. Brittle; prefer the forms above.</li>
+	 * </ul>
 	 *
 	 * @return the component, or {@code null} if the selector does not resolve
+	 *         (including a malformed selector — resolution never throws)
 	 */
 	public static Component findByPath(final String path) {
-		if (path != null && path.matches("c\\d+")) {
+		if (path == null || path.isEmpty()) {
+			return null;
+		}
+		if (path.matches("c\\d+")) {
 			return findById(path);
+		}
+		if (path.startsWith("name=")) {
+			return findByNameSelector(path.substring("name=".length()));
 		}
 		return onEdt(() -> {
 			String[] segs = path.split("/");
@@ -408,23 +429,60 @@ public final class SwingInspector {
 					windows.add(w);
 				}
 			}
-			int wi = Integer.parseInt(segs[0]);
-			if (wi < 0 || wi >= windows.size()) {
-				return null;
-			}
-			Component cur = windows.get(wi);
-			for (int s = 1; s < segs.length; s++) {
+			Component cur = null;
+			for (int s = 0; s < segs.length; s++) {
+				int i;
+				try {
+					i = Integer.parseInt(segs[s]);
+				} catch (NumberFormatException e) {
+					return null; // not a node path after all; report "did not resolve"
+				}
+				if (s == 0) {
+					if (i < 0 || i >= windows.size()) {
+						return null;
+					}
+					cur = windows.get(i);
+					continue;
+				}
 				if (!(cur instanceof Container)) {
 					return null;
 				}
 				Component[] kids = ((Container) cur).getComponents();
-				int ci = Integer.parseInt(segs[s]);
-				if (ci < 0 || ci >= kids.length) {
+				if (i < 0 || i >= kids.length) {
 					return null;
 				}
-				cur = kids[ci];
+				cur = kids[i];
 			}
 			return cur;
+		});
+	}
+
+	/** Resolve the {@code name=...} selector form, with optional {@code [index]} suffix. */
+	private static Component findByNameSelector(String spec) {
+		String name = spec;
+		int index = -1;
+		java.util.regex.Matcher m = NAME_WITH_INDEX.matcher(spec);
+		if (m.matches()) {
+			name = m.group(1);
+			index = Integer.parseInt(m.group(2));
+		}
+		final String targetName = name;
+		final int wanted = index;
+		return onEdt(() -> {
+			List<PathMatch> matches = collectAll(null, targetName, null, null);
+			if (matches.isEmpty()) {
+				return null;
+			}
+			if (wanted >= 0) {
+				return wanted < matches.size() ? matches.get(wanted).component : null;
+			}
+			// an unqualified name should act on what the user can actually see
+			for (PathMatch pm : matches) {
+				if (pm.component.isShowing()) {
+					return pm.component;
+				}
+			}
+			return matches.get(0).component;
 		});
 	}
 
@@ -885,6 +943,77 @@ public final class SwingInspector {
 			tree.scrollRowToVisible(row);
 			return true;
 		});
+	}
+
+	/**
+	 * Expand or collapse a row of the {@link JTree} at the given path. Needed to reach
+	 * nodes that are not visible yet: row indices only cover currently-expanded rows,
+	 * so a driver walks down a tree by expanding and re-reading the rows.
+	 *
+	 * @return true if the tree resolved and the row was in range
+	 */
+	public static boolean expandTreeRow(final String path, final int row, final boolean expand) {
+		return Boolean.TRUE.equals(onEdt(() -> {
+			Component c = findByPath(path);
+			if (!(c instanceof JTree)) {
+				return false;
+			}
+			JTree tree = (JTree) c;
+			if (row < 0 || row >= tree.getRowCount()) {
+				return false;
+			}
+			if (expand) {
+				tree.expandRow(row);
+			} else {
+				tree.collapseRow(row);
+			}
+			tree.scrollRowToVisible(row);
+			return true;
+		}));
+	}
+
+	/**
+	 * Double-click a row of the {@link JTree} at the given path with a synthetic
+	 * {@link Robot} click pair. A real double-click is required (rather than firing a
+	 * listener directly) because VCell's database trees open a document from the raw
+	 * {@link java.awt.event.MouseEvent} — {@code MOUSE_PRESSED} with
+	 * {@code getClickCount() == 2} — so no higher-level API reproduces it.
+	 *
+	 * @return true if the tree/row resolved and the double-click was issued
+	 */
+	public static boolean doubleClickTreeRow(final String path, final int row) {
+		Point screenPt = onEdt(() -> {
+			Component c = findByPath(path);
+			if (!(c instanceof JTree)) {
+				return null;
+			}
+			JTree tree = (JTree) c;
+			if (row < 0 || row >= tree.getRowCount() || !tree.isShowing()) {
+				return null;
+			}
+			tree.setSelectionRow(row);
+			tree.scrollRowToVisible(row);
+			Rectangle rb = tree.getRowBounds(row);
+			if (rb == null) {
+				return null;
+			}
+			Point loc = tree.getLocationOnScreen();
+			return new Point(loc.x + rb.x + Math.min(rb.width / 2, 40), loc.y + rb.y + rb.height / 2);
+		});
+		if (screenPt == null) {
+			return false;
+		}
+		try {
+			Robot robot = new Robot();
+			robot.mouseMove(screenPt.x, screenPt.y);
+			for (int i = 0; i < 2; i++) {
+				robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
+				robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
+			}
+			return true;
+		} catch (Exception e) {
+			throw new RuntimeException("robot double-click failed at " + screenPt, e);
+		}
 	}
 
 	/**

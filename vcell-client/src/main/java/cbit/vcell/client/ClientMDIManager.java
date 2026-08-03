@@ -247,6 +247,9 @@ public DocumentWindow createNewDocumentWindow(final DocumentWindowManager window
 	getRequestManager().updateStatusNow(); // initialize status bar with current status (also syncs all other windows)
 	// done
 	documentWindow.setVisible(true);
+	// the work area is only inside a realized window now, which is what any child
+	// window of this document needs in order to attach itself
+	windowManager.documentWindowShown();
 	return documentWindow;
 }
 
