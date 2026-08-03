@@ -501,25 +501,32 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 	
 	private void initialize() {
 		searchTextField = new TextFieldAutoCompletion();
+		searchTextField.setName("PathwayCommonsSearchTextField");
 		searchTextField.addActionListener(eventHandler);
 		searchTextField.putClientProperty("JTextField.variant", "search");
 
 		filterTextField = new TextFieldAutoCompletion();
+		filterTextField.setName("PathwayCommonsFilterTextField");
 		filterTextField.addActionListener(eventHandler);
 		filterTextField.addKeyListener(eventHandler);
 		filterTextField.putClientProperty("JTextField.variant", "filter");
 
 		searchButton = new JButton("Search");
+		searchButton.setName("PathwayCommonsSearchButton");
 		searchButton.addActionListener(eventHandler);
 		sortButton = new JButton("Sort");
+		sortButton.setName("PathwayCommonsSortButton");
 		sortButton.addActionListener(eventHandler);
 		showPathwayButton = new JButton("Preview");
+		showPathwayButton.setName("PathwayCommonsPreviewButton");
 		showPathwayButton.addActionListener(eventHandler);
 		showPathwayButton.setEnabled(false);
 		gotoPathwayButton = new JButton("Open Web Link");
+		gotoPathwayButton.setName("PathwayCommonsWebLinkButton");
 		gotoPathwayButton.addActionListener(eventHandler);
 		gotoPathwayButton.setEnabled(false);
 		responseTree = new JTree();
+		responseTree.setName("PathwayCommonsResponseTree");
 		responseTreeModel = new ResponseTreeModel();
 		responseTree.setModel(responseTreeModel);
 		ToolTipManager.sharedInstance().registerComponent(responseTree);

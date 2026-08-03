@@ -484,6 +484,7 @@ private JTabbedPane getJTabbedPane1() {
 	if (ivjJTabbedPane1 == null) {
 		try {
 			ivjJTabbedPane1 = new JTabbedPaneEnhanced();
+			ivjJTabbedPane1.setName("DatabaseTabbedPane");
 			ivjJTabbedPane1.insertTab("BioModels", null, getBioModelDbTreePanel1(), null, 0);
 			ivjJTabbedPane1.insertTab("MathModels", null, getMathModelDbTreePanel1(), null, 1);
 			ivjJTabbedPane1.insertTab("Geometries", null, getGeometryTreePanel1(), null, 2);

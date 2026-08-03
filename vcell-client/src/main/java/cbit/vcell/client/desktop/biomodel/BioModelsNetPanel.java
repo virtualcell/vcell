@@ -419,16 +419,21 @@ TODO:
 
 	private void initialize() {
 		searchTextField = new JTextField(10);
+		searchTextField.setName("BioModelsNetSearchTextField");
 		searchTextField.putClientProperty("JTextField.variant", "search");
 		searchTextField.addActionListener(eventHandler);
 		searchButton = new JButton("Search");
+		searchButton.setName("BioModelsNetSearchButton");
 		searchButton.addActionListener(eventHandler);
 		showAllButton = new JButton("Show All");
+		showAllButton.setName("BioModelsNetShowAllButton");
 		showAllButton.addActionListener(eventHandler);
 		importButton = new JButton("Import");
+		importButton.setName("BioModelsNetImportButton");
 		importButton.addActionListener(eventHandler);
 		importButton.setEnabled(false);
 		tree = new JTree();
+		tree.setName("BioModelsNetTree");
 		tree.setCellRenderer(new BioModelsNetTreeCellRenderer());
 		ToolTipManager.sharedInstance().registerComponent(tree);
 		treeModel = new BioModelsNetTreeModel();
