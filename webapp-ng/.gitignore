@@ -43,3 +43,6 @@ testem.log
 # System Files
 .DS_Store
 Thumbs.db
+
+# vtk.wasm bundle fetched at build time from virtualcell/vcell-vtk-wasm (see scripts/fetch-vtk-wasm.mjs)
+src/assets/vtk-wasm/
