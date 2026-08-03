@@ -542,6 +542,10 @@ public class SlurmProxy extends HtcProxy {
 		lsb.write("MESSAGING_CONFIG_FILE=\"" + messagingConfigFilePath + "\"");
 		lsb.write("");
 
+		lsb.write("# Early error detection, used for a clean exit in the fixture");
+		lsb.write("init_stat=0");
+		lsb.write("");
+
 		lsb.write("# Truncate / delete various logs and the solver input file, to start clean");
 		lsb.write(": > " + htcLogDir + "/V_TEST2_${SIM_KEY}_0_.slurm.log");
 		lsb.write("rm -f " + simDataDir + "/${SIM_OWNER_NAME}/SimID_${SIM_KEY}_0_*.log");
@@ -564,7 +568,8 @@ public class SlurmProxy extends HtcProxy {
 		lsb.write("    singularity --version");
 		lsb.write("else");
 		lsb.write("    echo \"Singularity not found\"");
-		lsb.write("    exit 127");
+		// perhaps we should call the JavaPostprocessor64 here too?
+		lsb.write("    init_stat=127");
 		lsb.write("fi");
 		lsb.write("");
 
@@ -654,7 +659,9 @@ public class SlurmProxy extends HtcProxy {
 
 		lsb.write("# Full solver command");
 		writeSifContainerPrefix(lsb, "solver", sifPath);
+		lsb.write("");
 		writeSifContainerPrefix(lsb, "batch", sifPath);
+		lsb.write("");
 
 		lsb.write("slurm_prefix=\"srun -N1 -n1 -c${SLURM_CPUS_PER_TASK}\"");
 		lsb.write("");
@@ -664,7 +671,7 @@ public class SlurmProxy extends HtcProxy {
 		lsb.write(prefix + "_sif=" + sifPath);
 		lsb.write("if [ ! -f \"$" + prefix + "_sif\" ]; then");
 		lsb.write("    echo \"ERROR: missing SIF $" + prefix + "_sif\" >&2");
-		lsb.write("    exit 1");
+		lsb.write("    init_stat=1");
 		lsb.write("fi");
 		lsb.write(prefix + "_container_prefix=\"singularity run --containall " +
 				"${container_bindings} ${container_env} $" + prefix + "_sif\"");

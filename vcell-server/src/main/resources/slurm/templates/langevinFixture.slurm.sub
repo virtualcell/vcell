@@ -13,6 +13,12 @@ callExitProcessor( ) {
 	${batch_container_prefix} JavaPostprocessor64 "${SIM_KEY}" "${SIM_OWNER_NAME}" "${SIM_OWNER_ID}" "${VC_JOB_ID}" "${VC_TASK_ID}" $1 "/htclogs/${SLURM_JOB_NAME}.slurm.sub"
 }
 
+# Exit if early error encountered (with container, SIF file, etc)
+if [ $init_stat -ne 0 ]; then
+    callExitProcessor $init_stat
+    echo "Fatal error during initialization; exiting ${init_stat}" | tee -a "${LOG_FILE}"
+    exit $init_stat
+fi
 
 SIMXML="/simdata/${SIM_OWNER_NAME}/SimID_${SIM_KEY}_0__0.simtask.xml"  # preprocessor XML path (per-user)
 echo "[Preprocess] Running JavaPreprocessor64 ${SIMXML}" | tee -a "${LOG_FILE}"

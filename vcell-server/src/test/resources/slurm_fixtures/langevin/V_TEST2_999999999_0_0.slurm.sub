@@ -30,6 +30,9 @@ JOB_TIMEOUT_SECONDS=345600  # per-job timeout (seconds), adjust per generator
 LOG_FILE="/share/apps/vcell3/htclogs/V_TEST2_999999999_0_.submit.log"
 MESSAGING_CONFIG_FILE="/share/apps/vcell3/users/temp/SimID_999999999_0_.langevinMessagingConfig"
 
+# Early error detection, used for a clean exit in the fixture
+init_stat=0
+
 # Truncate / delete various logs and the solver input file, to start clean
 : > /share/apps/vcell3/htclogs/V_TEST2_${SIM_KEY}_0_.slurm.log
 rm -f /share/apps/vcell3/users/${SIM_OWNER_NAME}/SimID_${SIM_KEY}_0_*.log
@@ -45,7 +48,7 @@ if command -v singularity >/dev/null 2>&1; then
     singularity --version
 else
     echo "Singularity not found"
-    exit 127
+    init_stat=127
 fi
 
 TMPDIR=/scratch/vcell
@@ -105,15 +108,17 @@ container_env+="--env serverid=TEST2 "
 solver_sif=/share/apps/vcell3/singularityImages/ghcr.io_virtualcell_vcell-batch_singularity_7.7.0.39.img
 if [ ! -f "$solver_sif" ]; then
     echo "ERROR: missing SIF $solver_sif" >&2
-    exit 1
+    init_stat=1
 fi
 solver_container_prefix="singularity run --containall ${container_bindings} ${container_env} $solver_sif"
+
 batch_sif=/share/apps/vcell3/singularityImages/ghcr.io_virtualcell_vcell-batch_singularity_7.7.0.39.img
 if [ ! -f "$batch_sif" ]; then
     echo "ERROR: missing SIF $batch_sif" >&2
-    exit 1
+    init_stat=1
 fi
 batch_container_prefix="singularity run --containall ${container_bindings} ${container_env} $batch_sif"
+
 slurm_prefix="srun -N1 -n1 -c${SLURM_CPUS_PER_TASK}"
 
 # === From here down, the code is identical for all jobs and should be copied from a resource file ===
@@ -131,6 +136,12 @@ callExitProcessor( ) {
 	${batch_container_prefix} JavaPostprocessor64 "${SIM_KEY}" "${SIM_OWNER_NAME}" "${SIM_OWNER_ID}" "${VC_JOB_ID}" "${VC_TASK_ID}" $1 "/htclogs/${SLURM_JOB_NAME}.slurm.sub"
 }
 
+# Exit if early error encountered (with container, SIF file, etc)
+if [ $init_stat -ne 0 ]; then
+    callExitProcessor $init_stat
+    echo "Fatal error during initialization; exiting ${init_stat}" | tee -a "${LOG_FILE}"
+    exit $init_stat
+fi
 
 SIMXML="/simdata/${SIM_OWNER_NAME}/SimID_${SIM_KEY}_0__0.simtask.xml"  # preprocessor XML path (per-user)
 echo "[Preprocess] Running JavaPreprocessor64 ${SIMXML}" | tee -a "${LOG_FILE}"
