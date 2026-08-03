@@ -108,14 +108,14 @@ container_env+="--env serverid=TEST2 "
 solver_sif=/share/apps/vcell3/singularityImages/ghcr.io_virtualcell_vcell-batch_singularity_7.7.0.39.img
 if [ ! -f "$solver_sif" ]; then
     echo "ERROR: missing SIF $solver_sif" >&2
-    init_stat=1
+    init_stat=2
 fi
 solver_container_prefix="singularity run --containall ${container_bindings} ${container_env} $solver_sif"
 
 batch_sif=/share/apps/vcell3/singularityImages/ghcr.io_virtualcell_vcell-batch_singularity_7.7.0.39.img
 if [ ! -f "$batch_sif" ]; then
     echo "ERROR: missing SIF $batch_sif" >&2
-    init_stat=1
+    init_stat=2
 fi
 batch_container_prefix="singularity run --containall ${container_bindings} ${container_env} $batch_sif"
 

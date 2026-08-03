@@ -568,7 +568,7 @@ public class SlurmProxy extends HtcProxy {
 		lsb.write("    singularity --version");
 		lsb.write("else");
 		lsb.write("    echo \"Singularity not found\"");
-		// perhaps we should call the JavaPostprocessor64 here too?
+		// code 127: Command not found
 		lsb.write("    init_stat=127");
 		lsb.write("fi");
 		lsb.write("");
@@ -671,7 +671,8 @@ public class SlurmProxy extends HtcProxy {
 		lsb.write(prefix + "_sif=" + sifPath);
 		lsb.write("if [ ! -f \"$" + prefix + "_sif\" ]; then");
 		lsb.write("    echo \"ERROR: missing SIF $" + prefix + "_sif\" >&2");
-		lsb.write("    init_stat=1");
+		// code 2: no such file or directory
+		lsb.write("    init_stat=2");
 		lsb.write("fi");
 		lsb.write(prefix + "_container_prefix=\"singularity run --containall " +
 				"${container_bindings} ${container_env} $" + prefix + "_sif\"");
