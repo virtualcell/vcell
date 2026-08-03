@@ -10,10 +10,12 @@
 
 package cbit.vcell.mapping.gui;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.mapping.*;
@@ -33,396 +35,367 @@ import cbit.vcell.model.Structure;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.SymbolTableEntry;
-/**
- * Insert the type's description here.
- * Creation date: (2/23/01 10:52:36 PM)
- * @author: 
- */
-@SuppressWarnings("serial")
+
+
 public class SpeciesContextSpecsTableModel extends VCellSortTableModel<SpeciesContextSpec> implements java.beans.PropertyChangeListener {
-	
-	public class RulesProvenance implements Displayable {
-		
+	private static Logger lg = LogManager.getLogger(SpeciesContextSpecsTableModel.class);
+
+	// Rules Provenance
+	public static class RulesProvenance implements Displayable {
 		public static final String displayName = "RulesProvenance";
 		public static final String typeName = "RulesProvenance";
+
 		@Override
 		public String getDisplayName() {
 			return displayName;
 		}
+
 		@Override
 		public String getDisplayType() {
 			return typeName;
 		}
 	}
-	
+
+	// Column Type
 	public enum ColumnType {
-		COLUMN_SPECIESCONTEXT("Species"),
-		COLUMN_STRUCTURE("Structure"),
-		COLUMN_DEPICTION("Depiction"),
-		COLUMN_IS2D("Is 2D"),
-		COLUMN_CLAMPED("Clamped"),
-		COLUMN_RULES("Rules"),
-		COLUMN_INITIAL("Initial Condition"),
-		COLUMN_WELLMIXED("Well Mixed"),
-		COLUMN_DIFFUSION("Diffusion Constant"),
-		COLUMN_FORCECONTINUOUS("Force Continuous");
-		
+		SPECIES_CONTEXT("Species"),
+		STRUCTURE("Structure"),
+		DEPICTION("Depiction"),
+		IS_2D("Is 2D"),
+		IS_CLAMPED("Clamped"),
+		RULES("Rules"),
+		INITIAL_CONDITION("Initial Condition"),
+		WELL_MIXED("Well Mixed"),
+		DIFFUSION_CONSTANT("Diffusion Constant"),
+		FORCE_CONTINUOUS("Force Continuous");
+
 		public final String label;
-		private ColumnType(String label){
+
+		ColumnType(String label) {
 			this.label = label;
 		}
 	}
-	
-	ArrayList<ColumnType> columns = new ArrayList<ColumnType>();
-	
-	private SimulationContext fieldSimulationContext = null;
-	private AutoCompleteSymbolFilter autoCompleteSymbolFilter = null;
-	
-	private boolean bEditable = true;	// this.isCellEditable() decides
+
+	// SpeciesContextSpecsTableModel Members
+	private final List<ColumnType> columns;
 	private final DocumentEditorSubPanel owner;
 
-/**
- * ReactionSpecsTableModel constructor comment.
- */
-public SpeciesContextSpecsTableModel(ScrollTable table, DocumentEditorSubPanel owner) {
-	super(table);
-	this.owner = owner;
-	refreshColumns();
-}
+	private SimulationContext simulationContext;
+	private AutoCompleteSymbolFilter autoCompleteSymbolFilter;
+	private boolean isEditable;    // this.isCellEditable() decides
+	private String searchText;
 
-private String searchText;
-public void setSearchText(String searchText){
-	this.searchText = searchText;
-	refreshData();
-}
+	public SpeciesContextSpecsTableModel(ScrollTable table, DocumentEditorSubPanel owner) {
+		super(table);
+		this.columns = new ArrayList<>();
+		this.owner = owner;
 
-protected List<SpeciesContextSpec> computeData() {
-	ArrayList<SpeciesContextSpec> allParameterList = new ArrayList<SpeciesContextSpec>();
-	if(getSimulationContext() != null){
-		allParameterList.addAll(Arrays.asList(getSimulationContext().getReactionContext().getSpeciesContextSpecs()));
-	}else{
-		return null;
-	}
-	boolean bSearchInactive = searchText == null || searchText.length() == 0;
-	if(bSearchInactive){
-		return allParameterList;
-	}
-	String lowerCaseSearchText = bSearchInactive ? null : searchText.toLowerCase();
-	ArrayList<SpeciesContextSpec> parameterList = new ArrayList<SpeciesContextSpec>();
-	for (SpeciesContextSpec parameter : allParameterList) {
-		if (bSearchInactive
-			|| parameter.getSpeciesContext().getName().toLowerCase().contains(lowerCaseSearchText)
-			/*|| parameter.getSpeciesContext().getStructure().getName().toLowerCase().contains(lowerCaseSearchText)*/) {
-			parameterList.add(parameter);
-		}
-	}
-	return parameterList;
-}
-/**
- * Insert the method's description here.
- * Creation date: (2/24/01 12:24:35 AM)
- * @return java.lang.Class
- * @param column int
- */
-public Class<?> getColumnClass(int column) {
-	ColumnType columnType = columns.get(column);
-	switch (columnType){
-		case COLUMN_SPECIESCONTEXT:{
-			return SpeciesContext.class;
-		}
-		case COLUMN_STRUCTURE:{
-			return Structure.class;
-		}
-		case COLUMN_DEPICTION:{
-			return SpeciesPattern.class;
-		}
-		case COLUMN_RULES:{
-			return RulesProvenance.class;
-		}
-		case COLUMN_IS2D:
-		case COLUMN_CLAMPED:
-		case COLUMN_WELLMIXED:
-		case COLUMN_FORCECONTINUOUS:{
-			return Boolean.class;
-		}
-		case COLUMN_INITIAL:
-		case COLUMN_DIFFUSION:{
-			return ScopedExpression.class;
-		}
-		default:{
-			return Object.class;
-		}
-	}
-}
+		this.simulationContext = null;
+		this.autoCompleteSymbolFilter = null;
+		this.isEditable = true;
+		this.searchText = "";
 
-@Override
-public String getColumnName(int columnIndex){
-	return columns.get(columnIndex).label;
-}
+		this.refreshColumns();
+	}
 
-private void refreshColumns(){
-	SimulationContext simContext = getSimulationContext();
-	columns.clear();
-	columns.addAll(Arrays.asList(ColumnType.values())); // initialize to all columns
-	if(simContext == null) {
-		columns.remove(ColumnType.COLUMN_IS2D);
-		columns.remove(ColumnType.COLUMN_FORCECONTINUOUS);
-		columns.remove(ColumnType.COLUMN_WELLMIXED);
-		columns.remove(ColumnType.COLUMN_DIFFUSION);
-		columns.remove(ColumnType.COLUMN_CLAMPED);
-		columns.remove(ColumnType.COLUMN_RULES);
-		return;
+	public boolean isEditable() {
+		return this.isEditable;
 	}
-	if(!simContext.getApplicationType().equals(SimulationContext.Application.SPRINGSALAD)) {
-		columns.remove(ColumnType.COLUMN_IS2D);
-	}
-	if (!simContext.isStoch()){
-		columns.remove(ColumnType.COLUMN_FORCECONTINUOUS);
-	}
-	if (simContext.getGeometry().getDimension() == 0){
-		columns.remove(ColumnType.COLUMN_IS2D);
-		columns.remove(ColumnType.COLUMN_WELLMIXED);
-		columns.remove(ColumnType.COLUMN_DIFFUSION);
-	}
-	if (simContext.isRuleBased()) {
-		// the NFSim simulator used for rule-based doesn't accept clamped or force continuous
-		columns.remove(ColumnType.COLUMN_IS2D);
-		columns.remove(ColumnType.COLUMN_CLAMPED);
-		columns.remove(ColumnType.COLUMN_FORCECONTINUOUS);
-	}
-	if (simContext.getApplicationType().equals(SimulationContext.Application.SPRINGSALAD)) {
-		columns.remove(ColumnType.COLUMN_DIFFUSION);
-		columns.remove(ColumnType.COLUMN_FORCECONTINUOUS);
-		columns.remove(ColumnType.COLUMN_WELLMIXED);
-		columns.remove(ColumnType.COLUMN_RULES);
-	}
-}
-/**
- * getColumnCount method comment.
- */
-@Override
-public int getColumnCount() {
-	return columns.size();
-}
 
-/**
- * Gets the simulationContext property (cbit.vcell.mapping.SimulationContext) value.
- * @return The simulationContext property value.
- * @see #setSimulationContext
- */
-private SimulationContext getSimulationContext() {
-	return fieldSimulationContext;
-}
+	public Class<?> getColumnClass(int column) {
+		ColumnType columnType = this.columns.get(column);
+		return switch (columnType) {
+			case SPECIES_CONTEXT -> SpeciesContext.class;
+			case STRUCTURE -> Structure.class;
+			case DEPICTION -> SpeciesPattern.class;
+			case RULES -> RulesProvenance.class;
+			case IS_2D, IS_CLAMPED, WELL_MIXED, FORCE_CONTINUOUS -> Boolean.class;
+			case INITIAL_CONDITION, DIFFUSION_CONSTANT -> ScopedExpression.class;
+		};
+	}
+
+	@Override
+	public String getColumnName(int columnIndex) {
+		return this.columns.get(columnIndex).label;
+	}
+
+	@Override
+	public int getColumnCount() {
+		return this.columns.size();
+	}
+
+	@Override
+	public SpeciesContextSpec getValueAt(int row) {
+		SpeciesContextSpec scs = super.getValueAt(row);
+		if (scs == null) return null;
+		if (SimulationContext.Application.SPRINGSALAD != this.getSimulationContext().getApplicationType()){
+			scs.provenance = SpeciesContextSpec.Provenance.GeneralInitialConditions;
+			return scs;
+		}
+		scs.provenance = this.owner instanceof MolecularStructuresPanel ?
+				SpeciesContextSpec.Provenance.LangevinSpecs : SpeciesContextSpec.Provenance.LangevinInitialConditions;
+		return scs;
+	}
+
+	public Object getValueAt(int row, int col) {
+		try {
+			SpeciesContextSpec scSpec = this.getValueAt(row);
+			ColumnType columnType = this.columns.get(col);
+			return switch (columnType){
+				case SPECIES_CONTEXT -> scSpec.getSpeciesContext();
+				case STRUCTURE -> scSpec.getSpeciesContext().getStructure();
+				case DEPICTION -> scSpec.getSpeciesContext().getSpeciesPattern();
+				case IS_2D -> scSpec.getIs2D();
+				case IS_CLAMPED -> scSpec.isClamped();
+				case RULES -> null;
+				case WELL_MIXED -> (scSpec.isClamped() || scSpec.isWellMixed())
+						&& this.getSimulationContext().getApplicationType() == SimulationContext.Application.NETWORK_STOCHASTIC;
+				case INITIAL_CONDITION -> this.getScopedExpressionIC(scSpec);
+				case DIFFUSION_CONSTANT -> this.getScopedExpressionDC(scSpec);
+				case FORCE_CONTINUOUS -> scSpec.isForceContinuous();
+			};
+		} catch (Exception ex) {
+			ex.printStackTrace(System.out);
+			return null;
+		}
+	}
+
+	private SimulationContext getSimulationContext() {
+		return this.simulationContext;
+	}
+
+	public void setEditable(boolean bEditable) {
+		this.isEditable = bEditable;
+	}
 
 
-private void refreshData() {
-	List<SpeciesContextSpec> speciesContextSpecList = computeData();
-	setData(speciesContextSpecList);
-	GuiUtils.flexResizeTableColumns(ownerTable);
-}
-
-/**
- * getValueAt method comment.
- */
-public Object getValueAt(int row, int col) {
-	try {
-		SpeciesContextSpec scSpec = getValueAt(row);
-		ColumnType columnType = columns.get(col);
-		switch (columnType){
-			case COLUMN_SPECIESCONTEXT:{
-				return scSpec.getSpeciesContext();
-			}
-			case COLUMN_STRUCTURE:{
-				return scSpec.getSpeciesContext().getStructure();
-			}
-			case COLUMN_DEPICTION:{
-				return scSpec.getSpeciesContext().getSpeciesPattern();
-			}
-			case COLUMN_IS2D: {
-				return scSpec.getIs2D();
-			}
-			case COLUMN_CLAMPED:{
-				return scSpec.isConstant();
-			}
-			case COLUMN_RULES:{
-				return null;
-			}
-			case COLUMN_WELLMIXED:{
-				return (scSpec.isConstant() || scSpec.isWellMixed()) && !getSimulationContext().isStoch();
-			}
-			case COLUMN_INITIAL:{
-				SpeciesContextSpecParameter initialConditionParameter = scSpec.getInitialConditionParameter();
-				if(initialConditionParameter != null) {
-					return new ScopedExpression(initialConditionParameter.getExpression(),initialConditionParameter.getNameScope(),  true, true, autoCompleteSymbolFilter);
-				} else	{
-					return null;
-				}
-			}
-			case COLUMN_DIFFUSION:{
-				SpeciesContextSpecParameter diffusionParameter = scSpec.getDiffusionParameter();
-				if(diffusionParameter != null && !scSpec.isConstant() && scSpec.isWellMixed()!=null && !scSpec.isWellMixed()) 	{
-					return new ScopedExpression(diffusionParameter.getExpression(),diffusionParameter.getNameScope(), true, true, autoCompleteSymbolFilter);
-				} else {
-					return null;
-				}
-			}
-			case COLUMN_FORCECONTINUOUS:{
-				return scSpec.isForceContinuous();
-			}
-			default:{
-				return null;
-			}
-		}
-	} catch (Exception ex) {
-		ex.printStackTrace(System.out);
-		return null;
-	}		
-}
-
-@Override
-public SpeciesContextSpec getValueAt(int row) {
-	SpeciesContextSpec scs = super.getValueAt(row);
-	if(scs == null) {
-		return null;
+	public void setSearchText(String searchText) {
+		this.searchText = null == searchText ? "" : searchText;
+		this.refreshData();
 	}
-	SimulationContext sc = getSimulationContext();
-	if(getSimulationContext().getApplicationType() == SimulationContext.Application.SPRINGSALAD) {
-		if(owner instanceof MolecularStructuresPanel) {
-			scs.provenance = SpeciesContextSpec.Provenance.LangevinSpecs;
-		} else {
-			scs.provenance = SpeciesContextSpec.Provenance.LangevinInitialConditions;
-		}
-	} else {
-		scs.provenance = SpeciesContextSpec.Provenance.GeneralInitialConditions;
-	}
-	return scs;
-}
 
-/**
- * Insert the method's description here.
- * Creation date: (2/24/01 12:27:46 AM)
- * @return boolean
- * @param rowIndex int
- * @param columnIndex int
- */
-public boolean isCellEditable(int rowIndex, int columnIndex) {
-	SpeciesContextSpec speciesContextSpec = getValueAt(rowIndex);
-	ColumnType columnType = columns.get(columnIndex);
-	switch (columnType){
-		case COLUMN_SPECIESCONTEXT:{
-			return false;
-		}
-		case COLUMN_STRUCTURE:{
-			return false;
-		}
-		case COLUMN_DEPICTION:{
-			return false;
-		}
-		case COLUMN_IS2D:{
-			if(!bEditable) {
-				return false;
-			}
-			// is2D flag permanently set to false in this version, the next 4 rows commented out
-//			Structure structure = speciesContextSpec.getSpeciesContext().getStructure();
-//			if(structure instanceof Membrane) {
-//				return true;
-//			}
-			return false;
-		}
-		case COLUMN_CLAMPED:{
-			if(!bEditable) {
-				return false;	// the table wants this column un-editable
-			}
-			return true;
-		}
-		case COLUMN_RULES:{
-			return false;
-		}
-		case COLUMN_WELLMIXED:{
-			return !speciesContextSpec.isConstant() && !getSimulationContext().isStoch();
-		}
-		case COLUMN_FORCECONTINUOUS:{
-			return !speciesContextSpec.isConstant() && getSimulationContext().isStoch();
-		}
-		case COLUMN_INITIAL:{
-//			RateRule rr = fieldSimulationContext.getRateRule(speciesContextSpec.getSpeciesContext());
-			AssignmentRule ar = fieldSimulationContext.getAssignmentRule(speciesContextSpec.getSpeciesContext());
-			if(/*rr != null || */ar != null) {
-				return false;
-			}
-			if(!bEditable) {
-				return false;
-			}
-			return true;
-		}
-		case COLUMN_DIFFUSION: {
-			return !speciesContextSpec.isConstant() && (!speciesContextSpec.isWellMixed() || getSimulationContext().isStoch());
-		}
-		default:{
-			return false;
-		}
-	}
-}
-
-
-/**
-	 * This method gets called when a bound property is changed.
-	 * @param evt A PropertyChangeEvent object describing the event source 
-	 *   and the property that has changed.
+	/**
+	 * Sets the simulationContext property (cbit.vcell.mapping.SimulationContext) value.
+	 *
+	 * @param simulationContext The new value for the property.
+	 * @see #getSimulationContext
 	 */
-public void propertyChange(java.beans.PropertyChangeEvent evt) {
-	
-	if (evt.getSource() instanceof ReactionContext && evt.getPropertyName().equals("speciesContextSpecs")) {
-		updateListenersReactionContext((ReactionContext)evt.getSource(),true);
-		updateListenersReactionContext((ReactionContext)evt.getSource(),false);
-		refreshData();
-	}
-	if (evt.getSource() instanceof SpeciesContext && evt.getPropertyName().equals("name")) {
-		fireTableRowsUpdated(0,getRowCount()-1);
-	}
-	if(evt.getSource() == getSimulationContext() && evt.getPropertyName().equals(SimulationContext.PROPERTY_NAME_ASSIGNMENT_RULE_CHANGE)) {
-		AssignmentRule oldRule = (AssignmentRule)evt.getOldValue();
-		AssignmentRule newRule = (AssignmentRule)evt.getNewValue();
-		onAssignmentRuleVariableChanged(oldRule, newRule);
-	} else if(evt.getSource() == getSimulationContext() && evt.getPropertyName().equals(SimulationContext.PROPERTY_NAME_RATE_RULE_CHANGE)) {
-		RateRule oldRule = (RateRule)evt.getOldValue();
-		RateRule newRule = (RateRule)evt.getNewValue();
-		onRateRuleVariableChanged(oldRule, newRule);
-	} else if(evt.getSource() == getSimulationContext() && evt.getPropertyName().equals(SimulationContext.PROPERTY_NAME_ASSIGNMENTRULES)) {
-		System.out.println(evt.getPropertyName());
-		AssignmentRule[] oldRules = (AssignmentRule[])evt.getOldValue();
-		AssignmentRule[] newRules = (AssignmentRule[])evt.getNewValue();
-		if(oldRules != null && newRules != null && oldRules.length > newRules.length) {
-			onAssignmentRuleDelete(oldRules, newRules);
+	public void setSimulationContext(SimulationContext simulationContext) {
+		SimulationContext oldValue = this.simulationContext;
+		int oldColumnCount = this.getColumnCount();
+		if (oldValue != null) {
+			oldValue.removePropertyChangeListener(this);
+			oldValue.getGeometryContext().removePropertyChangeListener(this);
+			this.updateListenersReactionContext(oldValue.getReactionContext(), true);
 		}
-	} else if(evt.getSource() == getSimulationContext() && evt.getPropertyName().equals(SimulationContext.PROPERTY_NAME_RATERULES)) {
-		System.out.println(evt.getPropertyName());
-		RateRule[] oldRules = (RateRule[])evt.getOldValue();
-		RateRule[] newRules = (RateRule[])evt.getNewValue();
-		if(oldRules != null && newRules != null && oldRules.length > newRules.length) {
-			onRateRuleDelete(oldRules, newRules);
+		this.simulationContext = simulationContext;
+		this.refreshColumns();
+		int newColumnCount = this.getColumnCount();
+		if (oldColumnCount != newColumnCount) {
+			this.fireTableStructureChanged();
 		}
-	}
-	if (evt.getSource() instanceof SpeciesContextSpec) {
-		fireTableRowsUpdated(0,getRowCount()-1);
-	}
-	if (evt.getSource() instanceof SpeciesContextSpec.SpeciesContextSpecParameter) {
-		fireTableRowsUpdated(0,getRowCount()-1);
-	}
-	if (evt.getSource() instanceof GeometryContext) {
-		refreshColumns();
-		fireTableStructureChanged();
-	}
-}
+		if (simulationContext != null) {
+			simulationContext.addPropertyChangeListener(this);
+			simulationContext.getGeometryContext().addPropertyChangeListener(this);
+			this.updateListenersReactionContext(simulationContext.getReactionContext(), false);
 
-private void removeRuleVariableMark(SpeciesContext sc, boolean unclamp) {
-	SpeciesContextSpec[] scss = fieldSimulationContext.getReactionContext().getSpeciesContextSpecs();
-	for(SpeciesContextSpec scs : scss) {
-		if(scs.getSpeciesContext() != null && scs.getSpeciesContext() == sc) {
-			if(unclamp) {
-				scs.setConstant(false);
+			this.autoCompleteSymbolFilter = simulationContext.getAutoCompleteSymbolFilter();
+			this.refreshData();
+		}
+	}
+
+	public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+		SpeciesContextSpec scSpec = this.getValueAt(rowIndex);
+		ColumnType columnType = this.columns.get(columnIndex);
+
+		// Note: We call update after the switch statement (assuming we did actually change something).
+		switch (columnType) {
+			case IS_2D -> scSpec.setIs2D((Boolean) aValue);
+			case IS_CLAMPED -> scSpec.setClamped((Boolean) aValue);
+			case WELL_MIXED -> scSpec.setWellMixed((Boolean) aValue);
+			case FORCE_CONTINUOUS -> scSpec.setForceContinuous((Boolean) aValue);
+			case INITIAL_CONDITION -> {
+				if (!(aValue instanceof String newExpressionString)) return; // no update; we didn't change anything!
+				SpeciesContextSpecParameter targetParameter = this.getSimulationContext().isUsingConcentration() ?
+						scSpec.getInitialConcentrationParameter() : scSpec.getInitialCountParameter();
+				try {
+					targetParameter.setExpression(new Expression(newExpressionString));
+				} catch (ExpressionException e) {
+
+					PopupGenerator.showErrorDialog(this.ownerTable, "Wrong Expression:\n" + e.getMessage());
+				}
+
 			}
+			case DIFFUSION_CONSTANT -> {
+				if (!(aValue instanceof String newExpressionString)) return; // no update; we didn't change anything!
+				try {
+					scSpec.getDiffusionParameter().setExpression(new Expression(newExpressionString));
+				} catch (ExpressionException e) {
+					lg.error(e); // don't handle exception here, InitialConditionsPanel needs it.
+					PopupGenerator.showErrorDialog(this.ownerTable, "Wrong Expression:\n" + e.getMessage());
+				}
+			}
+			default -> { return; } // no update; we didn't change anything!
+		}
+		this.fireTableRowsUpdated(rowIndex, rowIndex);
+	}
+
+	protected List<SpeciesContextSpec> computeData() {
+		if (null == this.getSimulationContext()) return null;
+		List<SpeciesContextSpec> allParameterList = Arrays.asList(this.getSimulationContext().getReactionContext().getSpeciesContextSpecs());
+
+		boolean isSearchInactive = this.searchText == null || this.searchText.isEmpty();
+		if (isSearchInactive) return allParameterList;
+
+		String lowerCaseSearchText = this.searchText.toLowerCase();
+		Predicate<SpeciesContextSpec> paramSpeciesContextContainsSearchText = (SpeciesContextSpec param)->param.getSpeciesContext().getName().toLowerCase().contains(lowerCaseSearchText);
+		return allParameterList.stream().filter(paramSpeciesContextContainsSearchText).toList();
+	}
+
+	private void refreshColumns() {
+		SimulationContext simContext = this.getSimulationContext();
+		this.columns.clear();
+
+		this.columns.add(ColumnType.SPECIES_CONTEXT);
+		this.columns.add(ColumnType.STRUCTURE);
+		this.columns.add(ColumnType.DEPICTION);
+		this.columns.add(ColumnType.INITIAL_CONDITION);
+
+		if (null == simContext) return;
+
+		boolean isSpatial = simContext.getGeometry().getDimension() > 0;
+		switch (simContext.getApplicationType()){
+			case SPRINGSALAD -> { // Always Spatial
+				this.columns.add(ColumnType.IS_2D);
+				this.columns.add(ColumnType.IS_CLAMPED);
+			}
+			case NETWORK_STOCHASTIC -> {
+				this.columns.add(ColumnType.RULES);
+				this.columns.add(ColumnType.IS_CLAMPED);
+				this.columns.add(ColumnType.FORCE_CONTINUOUS);
+				if (isSpatial) {
+					this.columns.add(ColumnType.WELL_MIXED);
+					this.columns.add(ColumnType.DIFFUSION_CONSTANT);
+				}
+			}
+			case RULE_BASED_STOCHASTIC -> {
+				this.columns.add(ColumnType.RULES);
+				if (isSpatial) {
+					this.columns.add(ColumnType.WELL_MIXED);
+					this.columns.add(ColumnType.DIFFUSION_CONSTANT);
+				}
+			}
+			default -> {
+				this.columns.add(ColumnType.RULES);
+				this.columns.add(ColumnType.IS_CLAMPED);
+				if (isSpatial) {
+					this.columns.add(ColumnType.WELL_MIXED);
+					this.columns.add(ColumnType.DIFFUSION_CONSTANT);
+				}
+			}
+		}
+	}
+
+
+	private void refreshData() {
+		List<SpeciesContextSpec> speciesContextSpecList = this.computeData();
+		this.setData(speciesContextSpecList);
+		GuiUtils.flexResizeTableColumns(this.ownerTable);
+	}
+
+
+	private ScopedExpression getScopedExpressionIC(SpeciesContextSpec scSpec){
+		SpeciesContextSpecParameter initialConditionParameter = scSpec.getInitialConditionParameter();
+		if (null == initialConditionParameter) return null;
+		return new ScopedExpression(initialConditionParameter.getExpression(), initialConditionParameter.getNameScope(), true, true, this.autoCompleteSymbolFilter);
+	}
+
+	private ScopedExpression getScopedExpressionDC(SpeciesContextSpec scSpec){
+		SpeciesContextSpecParameter diffusionParameter = scSpec.getDiffusionParameter();
+		if (null == diffusionParameter || scSpec.isClamped() || null == scSpec.isWellMixed() || scSpec.isWellMixed()) return null;
+		return new ScopedExpression(diffusionParameter.getExpression(), diffusionParameter.getNameScope(), true, true, this.autoCompleteSymbolFilter);
+	}
+
+	public boolean isCellEditable(int rowIndex, int columnIndex) {
+		SpeciesContextSpec speciesContextSpec = this.getValueAt(rowIndex);
+		ColumnType columnType = this.columns.get(columnIndex);
+		boolean isStoch = SimulationContext.Application.NETWORK_STOCHASTIC == this.getSimulationContext().getApplicationType();
+		return switch (columnType) {
+			case SPECIES_CONTEXT, STRUCTURE, DEPICTION, RULES -> false;
+			case IS_2D -> {
+				yield false;
+				// is2D flag permanently set to false in this version, consider re-enabling the following lines instead
+//				if (!this.isEditable) return false;
+//			    Structure structure = speciesContextSpec.getSpeciesContext().getStructure();
+//			    return structure instanceof Membrane
+			}
+			case IS_CLAMPED -> this.isEditable;
+			case WELL_MIXED -> !speciesContextSpec.isClamped() && !isStoch;
+			case FORCE_CONTINUOUS -> !speciesContextSpec.isClamped() && isStoch;
+			case INITIAL_CONDITION -> {
+//			    RateRule rr = fieldSimulationContext.getRateRule(speciesContextSpec.getSpeciesContext());
+				AssignmentRule ar = this.simulationContext.getAssignmentRule(speciesContextSpec.getSpeciesContext());
+				if (/*rr != null || */ar != null) {
+					yield false;
+				}
+				yield this.isEditable;
+			}
+			case DIFFUSION_CONSTANT -> !speciesContextSpec.isClamped() && (!speciesContextSpec.isWellMixed() || isStoch);
+		};
+	}
+
+
+	/**
+	 * This method gets called when a bound property is changed.
+	 */
+	public void propertyChange(java.beans.PropertyChangeEvent evt) {
+		if (evt.getSource() instanceof ReactionContext reactionEvent && evt.getPropertyName().equals("speciesContextSpecs")) {
+			this.updateListenersReactionContext(reactionEvent, true);
+			this.updateListenersReactionContext(reactionEvent, false);
+			this.refreshData();
+		}
+
+		if (evt.getSource() instanceof SpeciesContext && evt.getPropertyName().equals("name")) {
+			this.fireTableRowsUpdated(0, this.getRowCount() - 1);
+		}
+
+		if (evt.getSource() == this.getSimulationContext() && evt.getPropertyName().equals(SimulationContext.PROPERTY_NAME_ASSIGNMENT_RULE_CHANGE)) {
+			AssignmentRule oldRule = (AssignmentRule) evt.getOldValue();
+			AssignmentRule newRule = (AssignmentRule) evt.getNewValue();
+			this.onRuleVariableChanged(oldRule, newRule);
+		} else if (evt.getSource() == this.getSimulationContext() && evt.getPropertyName().equals(SimulationContext.PROPERTY_NAME_RATE_RULE_CHANGE)) {
+			RateRule oldRule = (RateRule) evt.getOldValue();
+			RateRule newRule = (RateRule) evt.getNewValue();
+			this.onRuleVariableChanged(oldRule, newRule);
+		} else if (evt.getSource() == this.getSimulationContext() && evt.getPropertyName().equals(SimulationContext.PROPERTY_NAME_ASSIGNMENTRULES)) {
+			lg.info("Resolving assignment rules event");
+			AssignmentRule[] oldRules = (AssignmentRule[]) evt.getOldValue();
+			AssignmentRule[] newRules = (AssignmentRule[]) evt.getNewValue();
+			if (oldRules != null && newRules != null && oldRules.length > newRules.length) this.onRuleDelete(oldRules, newRules);
+		} else if (evt.getSource() == this.getSimulationContext() && evt.getPropertyName().equals(SimulationContext.PROPERTY_NAME_RATERULES)) {
+			lg.info("Resolving rate rules event");
+			RateRule[] oldRules = (RateRule[]) evt.getOldValue();
+			RateRule[] newRules = (RateRule[]) evt.getNewValue();
+			if (oldRules != null && newRules != null && oldRules.length > newRules.length) this.onRuleDelete(oldRules, newRules);
+		}
+
+		if (evt.getSource() instanceof SpeciesContextSpec) this.fireTableRowsUpdated(0, this.getRowCount() - 1);
+
+		if (evt.getSource() instanceof SpeciesContextSpec.SpeciesContextSpecParameter) this.fireTableRowsUpdated(0, this.getRowCount() - 1);
+
+		if (evt.getSource() instanceof GeometryContext) {
+			this.refreshColumns();
+			this.fireTableStructureChanged();
+		}
+	}
+
+	private void removeRuleVariableMark(SpeciesContext sc, boolean unclamp) {
+		SpeciesContextSpec[] scss = this.simulationContext.getReactionContext().getSpeciesContextSpecs();
+		for (SpeciesContextSpec scs : scss) {
+			if (scs.getSpeciesContext() != null && scs.getSpeciesContext() == sc) {
+				if (unclamp) {
+					scs.setClamped(false);
+				}
 //			try {
 //				if(getSimulationContext().isUsingConcentration()) {
 //					scs.getInitialConcentrationParameter().setExpression(new Expression("0"));
@@ -430,18 +403,17 @@ private void removeRuleVariableMark(SpeciesContext sc, boolean unclamp) {
 //					scs.getInitialCountParameter().setExpression(new Expression("0"));
 //				}
 //			} catch(ExpressionException e) {
-//				e.printStackTrace();
+//				lg.error(e);
 //			}
+			}
 		}
 	}
-}
-private void setRuleVariableMark(SpeciesContext sc, Expression ex, boolean clamp) {
-	SpeciesContextSpec[] scss = fieldSimulationContext.getReactionContext().getSpeciesContextSpecs();
-	for(SpeciesContextSpec scs : scss) {
-		if(scs.getSpeciesContext() != null && scs.getSpeciesContext() == sc) {
-			if(clamp) {
-				scs.setConstant(true);
-			}
+
+	private void setRuleVariableMark(SpeciesContext sc, Expression ex, boolean clamp) {
+		for (SpeciesContextSpec scs : this.simulationContext.getReactionContext().getSpeciesContextSpecs()) {
+			if (null == scs.getSpeciesContext() || sc != scs.getSpeciesContext()) continue;
+			if (clamp) scs.setClamped(true);
+
 //			try {
 //				if(getSimulationContext().isUsingConcentration()) {
 //					scs.getInitialConcentrationParameter().setExpression(new Expression(ex));
@@ -449,372 +421,144 @@ private void setRuleVariableMark(SpeciesContext sc, Expression ex, boolean clamp
 //					scs.getInitialCountParameter().setExpression(new Expression(ex));
 //				}
 //			} catch (ExpressionBindingException e) {
-//				e.printStackTrace();
+//				lg.error(e);
 //			}
-			fireTableRowsUpdated(0,getRowCount()-1);
-			break;		// can't find more than one
+			this.fireTableRowsUpdated(0, this.getRowCount() - 1);
+			break;        // can't find more than one
 		}
 	}
-}
-private void onAssignmentRuleVariableChanged(AssignmentRule oldRule, AssignmentRule newRule) {
-	if(oldRule != null && oldRule.getSimulationContext() == fieldSimulationContext && oldRule.getAssignmentRuleVar() != null) {
-		SymbolTableEntry ste = oldRule.getAssignmentRuleVar();
-		if(ste instanceof SpeciesContext) {
-			SpeciesContext sc = (SpeciesContext)ste;
-			removeRuleVariableMark(sc, true);
-		}
-	}
-	if(newRule != null && newRule.getSimulationContext() == fieldSimulationContext && newRule.getAssignmentRuleVar() != null) {
-		SymbolTableEntry ste = newRule.getAssignmentRuleVar();
-		if(ste instanceof SpeciesContext) {
-			SpeciesContext sc = (SpeciesContext)ste;
-			Expression ex = newRule.getAssignmentRuleExpression();
-			setRuleVariableMark(sc, ex, true);
-		}
-	}
-}
-private void onRateRuleVariableChanged(RateRule oldRule, RateRule newRule) {
-	if(oldRule != null && oldRule.getSimulationContext() == fieldSimulationContext && oldRule.getRateRuleVar() != null) {
-		SymbolTableEntry ste = oldRule.getRateRuleVar();
-		if(ste instanceof SpeciesContext) {
-			SpeciesContext sc = (SpeciesContext)ste;
-			removeRuleVariableMark(sc, true);
-		}
-	}
-	if(newRule != null && newRule.getSimulationContext() == fieldSimulationContext && newRule.getRateRuleVar() != null) {
-		SymbolTableEntry ste = newRule.getRateRuleVar();
-		if(ste instanceof SpeciesContext) {
-			SpeciesContext sc = (SpeciesContext)ste;
-			Expression ex = newRule.getRateRuleExpression();
-			setRuleVariableMark(sc, ex, true);
-		}
-	}
-}
-private void onAssignmentRuleDelete(AssignmentRule[] oldRules, AssignmentRule[] newRules ) {
-	System.out.println("old: " + oldRules.length + ", new: " + newRules.length);
-	AssignmentRule deleted = null;
-	for(AssignmentRule candidate : oldRules) {
-		boolean found = false;
-		for(AssignmentRule rule : newRules) {
-			if(candidate.getName().equals(rule.getName())) {
-				found = true;
-				break;
-			}
-		}
-		if(found == false) {
-			deleted = candidate;
-			break;
-		}
-	}
-	if(deleted == null || deleted.getSimulationContext() != fieldSimulationContext) {
-		return;
-	}
-	SymbolTableEntry ste = deleted.getAssignmentRuleVar();
-	if(ste instanceof SpeciesContext) {
-		SpeciesContext sc = (SpeciesContext)ste;
-		removeRuleVariableMark(sc, true);
-	}
-}
-private void onRateRuleDelete(RateRule[] oldRules, RateRule[] newRules ) {
-	System.out.println("old: " + oldRules.length + ", new: " + newRules.length);
-	RateRule deleted = null;
-	for(RateRule candidate : oldRules) {
-		boolean found = false;
-		for(RateRule rule : newRules) {
-			if(candidate.getName().equals(rule.getName())) {
-				found = true;
-				break;
-			}
-		}
-		if(found == false) {
-			deleted = candidate;
-			break;
-		}
-	}
-	if(deleted == null || deleted.getSimulationContext() != fieldSimulationContext) {
-		return;
-	}
-	SymbolTableEntry ste = deleted.getRateRuleVar();
-	if(ste instanceof SpeciesContext) {
-		SpeciesContext sc = (SpeciesContext)ste;
-		removeRuleVariableMark(sc, true);
-	}
-}
 
-/**
- * Sets the simulationContext property (cbit.vcell.mapping.SimulationContext) value.
- * @param simulationContext The new value for the property.
- * @see #getSimulationContext
- */
-public void setSimulationContext(SimulationContext simulationContext) {
-	SimulationContext oldValue = fieldSimulationContext;
-	int oldColumnCount = getColumnCount();
-	if (oldValue != null){
-		oldValue.removePropertyChangeListener(this);
-		oldValue.getGeometryContext().removePropertyChangeListener(this);
-		updateListenersReactionContext(oldValue.getReactionContext(),true);
-	}
-	fieldSimulationContext = simulationContext;
-	refreshColumns();
-	int newColumnCount = getColumnCount();
-	if (oldColumnCount != newColumnCount) {
-		fireTableStructureChanged();
-	}
-	if (simulationContext!=null){
-		simulationContext.addPropertyChangeListener(this);
-		simulationContext.getGeometryContext().addPropertyChangeListener(this);
-		updateListenersReactionContext(simulationContext.getReactionContext(),false);
-		
-		autoCompleteSymbolFilter  = simulationContext.getAutoCompleteSymbolFilter();
-		refreshData();
-	}
-}
-
-
-public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-	SpeciesContextSpec scSpec = getValueAt(rowIndex);
-	ColumnType columnType = columns.get(columnIndex);
-	switch (columnType){
-		case COLUMN_IS2D: {
-			boolean is2D = ((Boolean)aValue).booleanValue();
-			if(is2D) {
-				scSpec.setIs2D(true);
-			} else {
-				scSpec.setIs2D(false);
-			}
-			fireTableRowsUpdated(rowIndex,rowIndex);
-			break;
+	private void onRuleVariableChanged(RuleVariableAccessible oldRule, RuleVariableAccessible newRule) {
+		if (oldRule != null && oldRule.getSimulationContext() == this.simulationContext && oldRule.getRuleVar() instanceof SpeciesContext sc) {
+			this.removeRuleVariableMark(sc, true);
 		}
-		case COLUMN_CLAMPED:{
-			boolean bFixed = ((Boolean)aValue).booleanValue();
-			if (bFixed){
-				scSpec.setConstant(true);
-			}else{
-				scSpec.setConstant(false);
-			}
-			fireTableRowsUpdated(rowIndex,rowIndex);
-			break;
-		}
-		case COLUMN_WELLMIXED:{
-			boolean bWellMixed = ((Boolean)aValue).booleanValue();
-			scSpec.setWellMixed(bWellMixed);
-			fireTableRowsUpdated(rowIndex,rowIndex);
-			break;
-		}
-		case COLUMN_FORCECONTINUOUS:{
-			boolean bForceContinuous = ((Boolean)aValue).booleanValue();
-			scSpec.setForceContinuous(bForceContinuous);
-			fireTableRowsUpdated(rowIndex,rowIndex);
-			break;
-		}
-		case COLUMN_INITIAL:{
-			try {
-				if (aValue instanceof String) {
-					String newExpressionString = (String)aValue;
-					if(getSimulationContext().isUsingConcentration())
-					{
-						scSpec.getInitialConcentrationParameter().setExpression(new Expression(newExpressionString));
-					}
-					else
-					{
-						scSpec.getInitialCountParameter().setExpression(new Expression(newExpressionString));
-					}
-				}
-				fireTableRowsUpdated(rowIndex,rowIndex);
-			}catch (ExpressionException e){
-				e.printStackTrace(System.out);
-				//
-				// don't handle exception here, InitialConditionsPanel needs it.
-				//
-				PopupGenerator.showErrorDialog(ownerTable, "Wrong Expression:\n" + e.getMessage());
-				//throw new RuntimeException(e.getMessage());
-			}
-			break;
-		}
-		case COLUMN_DIFFUSION:{
-			try {
-				if (aValue instanceof String) {
-					String newExpressionString = (String)aValue;
-					scSpec.getDiffusionParameter().setExpression(new Expression(newExpressionString));
-				}
-				fireTableRowsUpdated(rowIndex,rowIndex);
-			}catch (ExpressionException e){
-				e.printStackTrace(System.out);
-				//
-				// don't handle exception here, InitialConditionsPanel needs it.
-				//
-				PopupGenerator.showErrorDialog(ownerTable, "Wrong Expression:\n" + e.getMessage());
-				//throw new RuntimeException(e.getMessage());
-			}
-			break;
+		if (newRule != null && newRule.getSimulationContext() == this.simulationContext && newRule.getRuleVar() instanceof SpeciesContext sc) {
+			this.setRuleVariableMark(sc, newRule.getRuleExpression(), true);
 		}
 	}
-}
 
+	private void onRuleDelete(RuleVariableAccessible[] oldRules, RuleVariableAccessible[] newRules) {
+		lg.info("num old rules: {}, num new rules: {}", oldRules.length, newRules.length);
+		Set<String> newRuleNamesSet = Arrays.stream(newRules).map(RuleVariableAccessible::getName).collect(Collectors.toSet());
 
-/**
- * Insert the method's description here.
- * Creation date: (9/12/2005 2:44:36 PM)
- */
-private void updateListenersReactionContext(ReactionContext reactionContext,boolean bRemove) {
+		// there is one rule in the old rules that has been deleted from the new rules. Find it and perform maintenance
+		for (RuleVariableAccessible oldRuleCandidate : oldRules){
+			if (newRuleNamesSet.contains(oldRuleCandidate.getName())) continue;
+			if (oldRuleCandidate.getSimulationContext() != this.simulationContext) return;
+			if (!(oldRuleCandidate.getRuleVar() instanceof SpeciesContext sc)) return;
+			this.removeRuleVariableMark(sc, true);
+			return;
+		}
+	}
 
-	if(bRemove){
+	private void updateListenersReactionContext(ReactionContext reactionContext, boolean bRemove) {
+		if (bRemove) {
+			this.removeOldListenersReactionContext(reactionContext);
+		} else {
+			this.addNewListenersReactionContext(reactionContext);
+		}
+	}
+
+	private void removeOldListenersReactionContext(ReactionContext reactionContext) {
 		reactionContext.removePropertyChangeListener(this);
-		SpeciesContextSpec oldSpecs[] = reactionContext.getSpeciesContextSpecs();
-		for (int i=0;i<oldSpecs.length;i++){
-			oldSpecs[i].removePropertyChangeListener(this);
-			oldSpecs[i].getSpeciesContext().removePropertyChangeListener(this);
-			Parameter oldParameters[] = oldSpecs[i].getParameters();
-			for (int j = 0; j < oldParameters.length ; j++){
-				oldParameters[j].removePropertyChangeListener(this);
+		for (SpeciesContextSpec oldSpec : reactionContext.getSpeciesContextSpecs()) {
+			oldSpec.removePropertyChangeListener(this);
+			oldSpec.getSpeciesContext().removePropertyChangeListener(this);
+			for (Parameter oldParameter : oldSpec.getParameters()) {
+				oldParameter.removePropertyChangeListener(this);
 			}
 		}
-	}else{
+	}
+
+	private void addNewListenersReactionContext(ReactionContext reactionContext) {
 		reactionContext.addPropertyChangeListener(this);
-		SpeciesContextSpec newSpecs[] = reactionContext.getSpeciesContextSpecs();
-		for (int i=0;i<newSpecs.length;i++){
-			newSpecs[i].addPropertyChangeListener(this);
-			newSpecs[i].getSpeciesContext().addPropertyChangeListener(this);
-			Parameter newParameters[] = newSpecs[i].getParameters();
-			for (int j = 0; j < newParameters.length ; j++){
-				newParameters[j].addPropertyChangeListener(this);
+		for (SpeciesContextSpec newSpec : reactionContext.getSpeciesContextSpecs()) {
+			newSpec.addPropertyChangeListener(this);
+			newSpec.getSpeciesContext().addPropertyChangeListener(this);
+			for (Parameter newParameter : newSpec.getParameters()) {
+				newParameter.addPropertyChangeListener(this);
 			}
 		}
 	}
 
-}
+	@Override
+	public Comparator<SpeciesContextSpec> getComparator(final int col, final boolean ascending) {
+		return new Comparator<>() {
+			/**
+			 * Compares its two arguments for order.  Returns a negative integer,
+			 * zero, or a positive integer as the first argument is less than, equal
+			 * to, or greater than the second.<p>
+			 */
+			public int compare(SpeciesContextSpec speciesContextSpec1, SpeciesContextSpec speciesContextSpec2) {
+				SpeciesContext speciesContext1 = speciesContextSpec1.getSpeciesContext();
+				SpeciesContext speciesContext2 = speciesContextSpec2.getSpeciesContext();
+				ColumnType columnType = SpeciesContextSpecsTableModel.this.columns.get(col);
+				int sortDirectionMultiplier = ascending ? 1 : -1;
 
-
-public Comparator<SpeciesContextSpec> getComparator(final int col, final boolean ascending) {
-	return new Comparator<>() {
-		/**
-		 * Compares its two arguments for order.  Returns a negative integer,
-		 * zero, or a positive integer as the first argument is less than, equal
-		 * to, or greater than the second.<p>
-		 */
-		public int compare(SpeciesContextSpec speciesContextSpec1, SpeciesContextSpec speciesContextSpec2){			
-			
-			SpeciesContext speciesContext1 = speciesContextSpec1.getSpeciesContext();
-			SpeciesContext speciesContext2 = speciesContextSpec2.getSpeciesContext();			
-			ColumnType columnType = columns.get(col);
-			switch (columnType){
-				case COLUMN_SPECIESCONTEXT:{
-					String name1 = speciesContext1.getName();
-					String name2 = speciesContext2.getName();
-					if (ascending){
-						return name1.compareToIgnoreCase(name2);
-					}else{
-						return name2.compareToIgnoreCase(name1);
+				return switch (columnType){
+					case SPECIES_CONTEXT -> {
+						String name1 = speciesContext1.getName();
+						String name2 = speciesContext2.getName();
+						yield name1.compareToIgnoreCase(name2) * sortDirectionMultiplier;
 					}
-				}
-				case COLUMN_STRUCTURE:{
-					String name1 = speciesContext1.getStructure().getName();
-					String name2 = speciesContext2.getStructure().getName();
-					if (ascending){						
-						return name1.compareToIgnoreCase(name2);
-					}else{						
-						return name2.compareToIgnoreCase(name1);
+					case STRUCTURE -> {
+						String name1 = speciesContext1.getStructure().getName();
+						String name2 = speciesContext2.getStructure().getName();
+						yield name1.compareToIgnoreCase(name2) * sortDirectionMultiplier;
 					}
-				}
-				case COLUMN_IS2D: {
-					Boolean bIs2D1 = speciesContextSpec1.getIs2D();
-					Boolean bIs2D2 = speciesContextSpec2.getIs2D();
-					if (ascending){
-						return bIs2D1.compareTo(bIs2D2);
-					}else{
-						return bIs2D2.compareTo(bIs2D1);
+					case IS_2D -> {
+						Boolean is2D1 = speciesContextSpec1.getIs2D();
+						Boolean is2D2 = speciesContextSpec2.getIs2D();
+						yield is2D1.compareTo(is2D2) * sortDirectionMultiplier;
 					}
-				}
-				case COLUMN_CLAMPED : {
-					Boolean bClamped1 = speciesContextSpec1.isConstant();
-					Boolean bClamped2 = speciesContextSpec2.isConstant();
-					if (ascending){
-						return bClamped1.compareTo(bClamped2);
-					}else{
-						return bClamped2.compareTo(bClamped1);
+					case IS_CLAMPED -> {
+						Boolean isClamped1 = speciesContextSpec1.isClamped();
+						Boolean isClamped2 = speciesContextSpec2.isClamped();
+						yield isClamped1.compareTo(isClamped2) * sortDirectionMultiplier;
 					}
-				}
-				case COLUMN_FORCECONTINUOUS : {
-					Boolean bForceContinuous1 = speciesContextSpec1.isForceContinuous();
-					Boolean bForceContinuous2 = speciesContextSpec2.isForceContinuous();
-					if (ascending){
-						return bForceContinuous1.compareTo(bForceContinuous2);
-					}else{
-						return bForceContinuous2.compareTo(bForceContinuous1);
+					case FORCE_CONTINUOUS -> {
+						Boolean bForceContinuous1 = speciesContextSpec1.isForceContinuous();
+						Boolean bForceContinuous2 = speciesContextSpec2.isForceContinuous();
+						yield bForceContinuous1.compareTo(bForceContinuous2) * sortDirectionMultiplier;
 					}
-				}
-				case COLUMN_WELLMIXED : {
-					Boolean bWellMixed1 = speciesContextSpec1.isWellMixed();
-					Boolean bWellMixed2 = speciesContextSpec2.isWellMixed();
-					if (ascending){
-						return bWellMixed1.compareTo(bWellMixed2);
-					}else{
-						return bWellMixed2.compareTo(bWellMixed1);
+					case WELL_MIXED -> {
+						Boolean bWellMixed1 = speciesContextSpec1.isWellMixed();
+						Boolean bWellMixed2 = speciesContextSpec2.isWellMixed();
+						yield bWellMixed1.compareTo(bWellMixed2) * sortDirectionMultiplier;
 					}
-				}
-				case COLUMN_INITIAL: {
-					Expression initExp1 = speciesContextSpec1.getInitialConditionParameter().getExpression();
-					Expression initExp2 = speciesContextSpec2.getInitialConditionParameter().getExpression();
-					return TableUtil.expressionCompare(initExp1, initExp2, ascending);
-				}
-				case COLUMN_DIFFUSION: {
-					Expression diffExp1 = speciesContextSpec1.getDiffusionParameter().getExpression();
-					Expression diffExp2 = speciesContextSpec2.getDiffusionParameter().getExpression();
-					return TableUtil.expressionCompare(diffExp1, diffExp2, ascending);
-				}	
+					case INITIAL_CONDITION -> {
+						Expression initExp1 = speciesContextSpec1.getInitialConditionParameter().getExpression();
+						Expression initExp2 = speciesContextSpec2.getInitialConditionParameter().getExpression();
+						yield TableUtil.expressionCompare(initExp1, initExp2, ascending);
+					}
+					case DIFFUSION_CONSTANT -> {
+						Expression diffExp1 = speciesContextSpec1.getDiffusionParameter().getExpression();
+						Expression diffExp2 = speciesContextSpec2.getDiffusionParameter().getExpression();
+						yield TableUtil.expressionCompare(diffExp1, diffExp2, ascending);
+					}
+					case DEPICTION, RULES -> 1; // why isn't this just an object.compareTo? Or at least sortDirectionMultiplier?
+				};
 			}
-			return 1;
-		}
-	};
-}
+		};
+	}
 
-public void setEditable(boolean bEditable) {
-	this.bEditable = bEditable;
-}
-public boolean isEfitable() {
-	return bEditable;
-}
+	public static class TableUtil {
+		// detects whether expressions within this column contain numbers, alphanumeric expressions or a mix
+		// and sorts accordingly (numbers first (sorted numerically), alphanumeric expr next (sorted alphabetically w. ignore case))
+		public static int expressionCompare(Expression e1, Expression e2, boolean ascending) {
+			int sortDirectionMultiplier = ascending ? 1 : -1;
+			if (e1 == null || e2 == null) return 0;
 
-public static class TableUtil {
-	// detects whether expressions within this column contain numbers, alphanumeric expressions or a mix
-	// and sorts accordingly (numbers first (sorted numerically), alphanumeric expr next (sorted alphabetically w. ignore case))
-	public static int expressionCompare(Expression e1, Expression e2, boolean ascending) {
-		if(e1 == null || e2 == null) {
-			return 0;
-		}
-		if(e1.isNumeric() && !e2.isNumeric()) {
-			if (ascending) {
-				return -1;
-			} else {
-				return 1;
-			}
-		} else if(!e1.isNumeric() && e2.isNumeric()) {
-			if (ascending) {
-				return 1;
-			} else {
-				return -1;
-			}
-		} else if(!e1.isNumeric() && !e2.isNumeric()) {		// both are not-numbers
-			String infix1 = (e1!=null)?(e1.infix()):("");
-			String infix2 = (e2!=null)?(e2.infix()):("");
-			if (ascending){
-				return infix1.compareToIgnoreCase(infix2);
-			}else{
-				return infix2.compareToIgnoreCase(infix1);
-			}
-
-		} else {	// both are numbers
-			String infix1 = (e1!=null)?(e1.infix()):("");
-			Float f1 = Float.valueOf(infix1);
-			String infix2 = (e2!=null)?(e2.infix()):("");
-			Float f2 = Float.valueOf(infix2);
-			if(ascending) {
-				return f1.compareTo(f2);
-			} else {
-				return f2.compareTo(f1);
+			if (e1.isNumeric() && e2.isNumeric()) {  // both are numbers
+				Float f1 = Float.valueOf(e1.infix());
+				Float f2 = Float.valueOf(e2.infix());
+				return f1.compareTo(f2) * sortDirectionMultiplier;
+			} else if (!e1.isNumeric() && !e2.isNumeric()){ // both are not-numbers
+				return e1.infix().compareToIgnoreCase(e2.infix()) * sortDirectionMultiplier;
+			} else { // only one is a number
+				return Boolean.compare(e2.isNumeric(), e1.isNumeric()) * sortDirectionMultiplier;
 			}
 		}
 	}
-}
 
 }

@@ -26,7 +26,6 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.units.VCUnitDefinition;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.vcell.model.rbm.LinkNode;
-import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.Coordinate;
@@ -36,7 +35,6 @@ import org.vcell.util.gui.ScrollTable.ScrollTableBooleanCellRenderer;
 import org.vcell.util.gui.sorttable.SortTableModel;
 import org.vcell.util.springsalad.Colors;
 import org.vcell.util.springsalad.NamedColor;
-import org.vcell.util.ColorUtil;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -53,7 +51,6 @@ import java.awt.event.FocusListener;
 import java.beans.PropertyChangeListener;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -381,10 +378,10 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 				} else if (value instanceof ScopedExpression) {
 					SpeciesContextSpec scSpec = speciesContextSpecsTableModel.getValueAt(row);
 					VCUnitDefinition unit = null;
-					if (table.getColumnName(column).equals(SpeciesContextSpecsTableModel.ColumnType.COLUMN_INITIAL.label)) {
+					if (table.getColumnName(column).equals(SpeciesContextSpecsTableModel.ColumnType.INITIAL_CONDITION.label)) {
 						SpeciesContextSpecParameter initialConditionParameter = scSpec.getInitialConditionParameter();
 						unit = initialConditionParameter.getUnitDefinition();
-					} else if (table.getColumnName(column).equals(SpeciesContextSpecsTableModel.ColumnType.COLUMN_DIFFUSION.label)) {
+					} else if (table.getColumnName(column).equals(SpeciesContextSpecsTableModel.ColumnType.DIFFUSION_CONSTANT.label)) {
 						SpeciesContextSpecParameter diffusionParameter = scSpec.getDiffusionParameter();
 						unit = diffusionParameter.getUnitDefinition();
 					}
