@@ -32,8 +32,6 @@ import javax.swing.table.TableModel;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.vcell.model.rbm.SpeciesPattern;
-import org.vcell.util.ArrayUtils;
-import org.vcell.util.BeanUtils;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.gui.DefaultScrollTableActionManager;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
@@ -525,10 +523,10 @@ public class InitialConditionsPanel extends DocumentEditorSubPanel implements Ap
                     } else if (value instanceof ScopedExpression) {
                         SpeciesContextSpec scSpec = tableModel.getValueAt(row);
                         VCUnitDefinition unit = null;
-                        if (table.getColumnName(column).equals(SpeciesContextSpecsTableModel.ColumnType.COLUMN_INITIAL.label)) {
+                        if (table.getColumnName(column).equals(SpeciesContextSpecsTableModel.ColumnType.INITIAL_CONDITION.label)) {
                             SpeciesContextSpecParameter initialConditionParameter = scSpec.getInitialConditionParameter();
                             unit = initialConditionParameter.getUnitDefinition();
-                        } else if (table.getColumnName(column).equals(SpeciesContextSpecsTableModel.ColumnType.COLUMN_DIFFUSION.label)) {
+                        } else if (table.getColumnName(column).equals(SpeciesContextSpecsTableModel.ColumnType.DIFFUSION_CONSTANT.label)) {
                             SpeciesContextSpecParameter diffusionParameter = scSpec.getDiffusionParameter();
                             unit = diffusionParameter.getUnitDefinition();
                         }
