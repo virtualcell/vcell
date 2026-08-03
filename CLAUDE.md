@@ -8,10 +8,25 @@ Computational cell biology simulation platform (since 1997). Java monorepo with 
 
 ## Build & Test
 
-```bash
-# Full build (skip tests)
-mvn clean install -DskipTests
+**Full instructions: [docs/BUILDING.md](docs/BUILDING.md).** Read it before debugging a
+build or test failure in a fresh checkout or worktree.
 
+Two steps, in this order — the Python packages **first**, then Maven:
+
+```bash
+# 1. Python packages (all seven), needed even for Java-only work
+pip install -r requirements.txt
+for p in vcell-cli-utils docker/swarm/vcell-admin pythonCopasiOpt/vcell-opt \
+         pythonVtk python-utils python-restclient pythonData ; do
+  ( cd "$p" && poetry env use 3.10 && poetry install ) || { echo "FAILED: $p"; break; }
+done
+
+# 2. Java. dependency:copy-dependencies is required, not optional - it populates
+#    target/maven-jars/, which vcell.sh and the Dockerfile put on the classpath.
+mvn --batch-mode clean install dependency:copy-dependencies -DskipTests=true
+```
+
+```bash
 # Fast unit tests only
 mvn test -Dgroups="Fast"
 
@@ -25,6 +40,22 @@ mvn compile test-compile -pl vcell-rest -am
 **Java:** 17
 **Maven:** 3.8+
 **Quarkus:** 3.5.2 (vcell-rest, vcell-server)
+
+Two traps that cost real debugging time:
+
+- **Java tests failing on a missing Python module or solver binary mean step 1 was
+  skipped, not a broken environment.** In a fresh worktree `vcell-core`'s Fast group
+  reports 10 errors (`MathOverrideRoundTripTest`, `CopasiOptimizationSolverTest`,
+  `VCellDataTest`) that all disappear once the Poetry environments exist. Fast tests
+  shell out to them at run time.
+- **Always pass `-am` when testing a module whose dependency you just changed**
+  (`mvn test -pl vcell-client -am`). Without it Maven silently uses the last jar
+  installed into `~/.m2` instead of your working tree, so your change appears to have
+  no effect and compile errors go unnoticed.
+
+**Every `git worktree` is a separate build environment** — Poetry environments,
+`target/`, and the downloaded `localsolvers/` are all per-worktree. Run both steps
+again in a new one; only `~/.m2` is shared.
 
 ## Module Structure
 
@@ -119,7 +150,7 @@ npm run build_prod # Production build
 GitHub Actions, split by concern:
 
 - **`ci.yml`** (fast lane, ~4 min) — every push + merge queue: `build` (compile + Docker image test + Python package tests), `CI-Test-group-Fast` (JUnit class-level parallel, sharded core/other), `CI-Test-group-Quarkus`.
-- **`regression.yml`** (~9 min) — heavy integration suites (MathGen/SBML/SEDML_*/BSTS), sharded, gated by `regression-gate`. Runs on: a PR marked **ready-for-review**, the **merge queue** (`merge_group`), the **nightly** schedule, and manual **`workflow_dispatch`** (with an `include-slow` option for the slow cases the merge gate skips). NOT on ordinary pushes.
+- **`regression.yml`** (~9 min) — heavy integration suites (MathGen/SBML/SEDML_*/BSTS), sharded, gated by `regression-gate`. Runs on: the **merge queue** (`merge_group`) — the authoritative gate before landing — the **nightly** schedule, and manual **`workflow_dispatch`** (any ref; with an `include-slow` option for the slow cases the merge gate skips). Deliberately **NOT** on `pull_request` events: because no PR trigger produces `regression-gate`, GitHub doesn't expect it on the PR, so a PR enters the queue once the fast lane + review pass and the queue runs regression on the merge commit. For an ad-hoc pre-queue run, `gh workflow run regression.yml --ref <pr-branch>`.
 - **`cd.yml`** — Docker push to `ghcr.io` on release.
 - **`codeql-analysis.yml`** — security scan on push/PR to `master`.
 

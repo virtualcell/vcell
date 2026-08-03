@@ -40,7 +40,12 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
+    # Only Java needs a JDK + warm maven cache. The maven cache is essential:
+    # even CodeQL's own build (autobuild OR the manual build below) resolves the
+    # full dependency classpath via Maven, and a cold cache re-downloads ~1200+
+    # artifacts from Central (measured), which dominated the extraction phase.
     - name: setup java 17 with maven cache
+      if: ${{ matrix.language == 'java' }}
       uses: actions/setup-java@v4
       with:
         distribution: 'temurin'
@@ -48,30 +53,28 @@ jobs:
         cache: 'maven'
 
     # Initializes the CodeQL tools for scanning.
+    #
+    # EXPERIMENT: replace Autobuild with build-mode 'manual' + an explicit,
+    # parallel, test-skipping Maven compile (Java only; JS/Python are 'none').
+    # Rationale from phase profiling of the autobuild baseline (~9m24s):
+    #   * query/analysis phase is only ~3 min and roughly fixed - NOT the bottleneck
+    #   * the ~6m30s build+extraction phase IS the bottleneck (serial javac across
+    #     the whole monorepo + dependency resolution)
+    # So we attack the build: -T1C parallelizes across cores, and skipping test
+    # compilation drops both compile time and extraction of test sources.
+    # Trade-off: test code is not scanned by CodeQL (low value; acceptable).
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v3
       with:
         languages: ${{ matrix.language }}
-        # If you wish to specify custom queries, you can do so here or in a config file.
-        # By default, queries listed here will override any specified in a config file.
-        # Prefix the list here with "+" to use these queries and those in the config file.
-        # queries: ./path/to/local/query, your-org/your-repo/queries@main
+        build-mode: ${{ matrix.language == 'java' && 'manual' || 'none' }}
 
-    # Autobuild attempts to build any compiled languages  (C/C++, C#, or Java).
-    # If this step fails, then you should remove it and run the build manually (see below)
-    - name: Autobuild
-      uses: github/codeql-action/autobuild@v3
-
-    # ℹ️ Command-line programs to run using the OS shell.
-    # 📚 https://git.io/JvXDl
-
-    # ✏️ If the Autobuild fails above, remove it and uncomment the following three lines
-    #    and modify them (or add more) to build your code if your project
-    #    uses a compiled language
-
-    #- run: |
-    #   make bootstrap
-    #   make release
+    # Manual build for CodeQL Java tracing. Runs between init and analyze so the
+    # extractor traces the compilation. Guarded to Java so JS/Python (build-mode
+    # 'none') never invoke Maven.
+    - name: Build Java for CodeQL (parallel, tests skipped)
+      if: ${{ matrix.language == 'java' }}
+      run: mvn -B -T1C -DskipTests -Dmaven.test.skip=true -Dmaven.javadoc.skip=true install
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3

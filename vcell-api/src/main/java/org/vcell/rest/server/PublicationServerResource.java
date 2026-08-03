@@ -116,6 +116,9 @@ public class PublicationServerResource extends AbstractServerResource implements
 				PublicationRepresentation publication = getPublicationRepresentation(((VCellApiApplication) getApplication()).getRestDatabaseService(), vcellUser, new KeyValue(pubidObj.toString()));
 				dataModel.put("publicationRepr", publication);
 			} else if (pubop.equals("applyEdit")) {
+				if (form.getFirstValue("pubdate") == null || form.getFirstValue("pubdate").trim().length() == 0) {
+					return new StringRepresentation("publication date is required");
+				}
 				SimpleDateFormat sdf = new java.text.SimpleDateFormat("MM/dd/yyyy", java.util.Locale.US);
 				String[] authors = StringUtils.split(form.getFirstValue("authors"), ";");
 				for (int i = 0; i < authors.length; i++) {

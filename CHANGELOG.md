@@ -16,6 +16,37 @@ followed by flat Keep-a-Changelog categories. API consumers should scan
 
 _(Release-manager scratchpad. Populated at release-cut time.)_
 
+## [8.0.5.01] - 2026-07-31
+
+**Highlights.** Hardens publications against the null publication-date bug
+that broke every desktop-client login on production 8.0.0.03, and fixes
+SpringSaLaD bond rendering so bonds stop at sphere surfaces.
+
+### Added
+- Internal: CI scaffolding for a custom VTK.wasm (WebGL2) build feeding the
+  upcoming web field visualization; not shipped in any release artifact.
+  (#1805, #1806, #1807, #1808, #1809)
+
+### Fixed
+- Publication date is now required end-to-end. A curator could clear the Date
+  field in the webapp publication editor and save; the resulting `NULL`
+  `vc_publication.pubdate` crashed every desktop client at login
+  (`SimpleDateFormat.format(null)` NPE while sorting the published-models
+  tree). The webapp form now requires the field, the REST API rejects a null
+  date with 400, the declared schema is `NOT NULL`, and the client tolerates
+  null dates from legacy rows (sorts last, renders `?` with a warning icon).
+  (#1810)
+- SpringSaLaD 3D viewer: bond edges are truncated by ball radius in world
+  space, so bonds stop at sphere surfaces instead of being drawn into the
+  balls. (#1802)
+
+### Notes for API consumers
+- `createPublication` and `updatePublication` now return **400** when `date`
+  is null — an additive `400` response in the OpenAPI spec (Java/Python
+  clients regenerated, TypeScript client unchanged). No other `/api/v1/`
+  schema changes in this build. A `NOT NULL` constraint on
+  `vc_publication.pubdate` accompanies this in the production database.
+
 ## [8.0.2.07] - 2026-07-27
 
 **Highlights.** Sixth hotfix on the 8.0.2 line, and a **server-only** deploy.

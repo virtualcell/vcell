@@ -165,7 +165,7 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 				}
 			}
 
-			Graphics gc = shapePanel.getGraphics();
+			Graphics gc = LargeShapeCanvas.measuringGraphics(shapePanel);
 			this.font = deriveStateFont(gc, shapePanel);
 			this.height = computeStateHeight(gc, shapePanel);
 			FontMetrics fm = gc.getFontMetrics(font);
@@ -213,7 +213,7 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 		}
 		@Override
 		public Rectangle getLabelOutline() {
-			Graphics gc = shapePanel.getGraphics();
+			Graphics gc = LargeShapeCanvas.measuringGraphics(shapePanel);
 			Font font = getLabelFont();
 			FontMetrics fm = gc.getFontMetrics(font);
 			int stringWidth = fm.stringWidth(getFullName());
@@ -236,7 +236,7 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 			// use this to force a different with, for instance if we want all the rectangles used
 			// for contains() to be equal
 			// we don't allow reducing the width below the width of the text
-			Graphics gc = shapePanel.getGraphics();
+			Graphics gc = LargeShapeCanvas.measuringGraphics(shapePanel);
 			FontMetrics fm = gc.getFontMetrics(font);
 			int minWidth = fm.stringWidth(displayName);
 			if(width > minWidth) {
@@ -461,7 +461,7 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 		height = baseHeight;
 		width = baseWidth;
 		
-		Graphics gc = shapePanel.getGraphics();
+		Graphics gc = LargeShapeCanvas.measuringGraphics(shapePanel);
 		Font font = deriveStateFont(gc, shapePanel);
 		int stateHeight = getStringHeight(font)+2;	// we reserve 2 extra pixels height as separation between states
 		String longestStateName = getLongestStateName(mc);
@@ -508,7 +508,7 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 			ComponentStateDefinition csd = mcp.getComponentStatePattern().getComponentStateDefinition();
 			stateName = adjustForStateSize(csd.getDisplayName());
 		}
-		Graphics gc = shapePanel.getGraphics();
+		Graphics gc = LargeShapeCanvas.measuringGraphics(shapePanel);
 		String longestStateName = getLongestStateName(mc);
 		int displayNameWidth = getStringWidth(displayName);
 		int longestStateNameWidth = getStateStringWidth(longestStateName, gc, shapePanel);
@@ -572,7 +572,7 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 	}
 	@Override
 	public Rectangle getLabelOutline() {
-		Graphics gc = shapePanel.getGraphics();
+		Graphics gc = LargeShapeCanvas.measuringGraphics(shapePanel);
 		Font font = getLabelFont();
 		FontMetrics fm = gc.getFontMetrics(font);
 		int stringWidth = fm.stringWidth(getFullName());
@@ -581,7 +581,7 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 	}
 	@Override
 	public Font getLabelFont() {
-		Graphics gc = shapePanel.getGraphics();
+		Graphics gc = LargeShapeCanvas.measuringGraphics(shapePanel);
 		return MolecularComponentLargeShape.deriveComponentFontBold(gc, shapePanel);
 	}
 	@Override
@@ -649,14 +649,14 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 	
 	private int getStringWidth(String s) {
 //		Font font = graphicsContext.getFont().deriveFont(Font.BOLD);
-		Graphics gc = shapePanel.getGraphics();
+		Graphics gc = LargeShapeCanvas.measuringGraphics(shapePanel);
 		Font font = deriveComponentFontBold(gc, shapePanel);
 		FontMetrics fm = gc.getFontMetrics(font);
 		int stringWidth = fm.stringWidth(s);
 		return stringWidth;
 	}
 	private int getStringHeight(Font font) {
-		Graphics gc = shapePanel.getGraphics();
+		Graphics gc = LargeShapeCanvas.measuringGraphics(shapePanel);
 		FontMetrics fm = gc.getFontMetrics(font);
 		int stringHeight = fm.getHeight();
 		return stringHeight;
@@ -842,7 +842,7 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 			g2.setColor(componentColor);
 		}
 		
-		Graphics gc = shapePanel.getGraphics();
+		Graphics gc = LargeShapeCanvas.measuringGraphics(shapePanel);
 		Font font = deriveComponentFontBold(gc, shapePanel);
 		g.setFont(font);
 		if(hidden == false) {

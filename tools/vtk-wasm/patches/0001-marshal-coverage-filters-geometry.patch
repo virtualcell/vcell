@@ -1,0 +1,50 @@
+diff --git a/Filters/Geometry/vtk.module b/Filters/Geometry/vtk.module
+index 1b060112..77acd839 100644
+--- a/Filters/Geometry/vtk.module
++++ b/Filters/Geometry/vtk.module
+@@ -39,3 +39,5 @@ TEST_DEPENDS
+   VTK::RenderingOpenGL2
+   VTK::TestingDataModel
+   VTK::TestingRendering
++
++INCLUDE_MARSHAL
+diff --git a/Filters/Geometry/vtkDataSetSurfaceFilter.h b/Filters/Geometry/vtkDataSetSurfaceFilter.h
+index d0a78d99..2cf2a19b 100644
+--- a/Filters/Geometry/vtkDataSetSurfaceFilter.h
++++ b/Filters/Geometry/vtkDataSetSurfaceFilter.h
+@@ -102,7 +102,8 @@ struct vtkFastGeomQuadStruct
+ };
+ typedef struct vtkFastGeomQuadStruct vtkFastGeomQuad;
+ 
+-class VTKFILTERSGEOMETRY_EXPORT vtkDataSetSurfaceFilter : public vtkPolyDataAlgorithm
++#include "vtkWrappingHints.h" // marshal-coverage patch
++class VTKFILTERSGEOMETRY_EXPORT VTK_MARSHALAUTO vtkDataSetSurfaceFilter : public vtkPolyDataAlgorithm
+ {
+ public:
+   ///@{
+diff --git a/Filters/Geometry/vtkGeometryFilter.h b/Filters/Geometry/vtkGeometryFilter.h
+index 654cba8c..cf94eb16 100644
+--- a/Filters/Geometry/vtkGeometryFilter.h
++++ b/Filters/Geometry/vtkGeometryFilter.h
+@@ -133,7 +133,8 @@ struct VTKFILTERSGEOMETRY_EXPORT vtkGeometryFilterHelper
+   }
+ };
+ 
+-class VTKFILTERSGEOMETRY_EXPORT vtkGeometryFilter : public vtkPolyDataAlgorithm
++#include "vtkWrappingHints.h" // marshal-coverage patch
++class VTKFILTERSGEOMETRY_EXPORT VTK_MARSHALAUTO vtkGeometryFilter : public vtkPolyDataAlgorithm
+ {
+ public:
+   ///@{
+diff --git a/Web/WebAssembly/vtk.module b/Web/WebAssembly/vtk.module
+index 682c6840..4ebe2351 100644
+--- a/Web/WebAssembly/vtk.module
++++ b/Web/WebAssembly/vtk.module
+@@ -19,6 +19,7 @@ OPTIONAL_DEPENDS
+   VTK::CommonMath
+   VTK::CommonMisc
+   VTK::FiltersCore
++  VTK::FiltersGeometry
+   VTK::FiltersSources
+   VTK::ImagingColor
+   VTK::ImagingCore

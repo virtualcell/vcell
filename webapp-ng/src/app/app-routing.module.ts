@@ -37,6 +37,12 @@ const routes: Routes = [
     canActivate: [AuthGuard],
   },
   {
+    // Phase 2 feasibility spike — vtk.js rendering of a VCell-style .vti (no auth for easy testing).
+    // Lazy-loaded so vtk.js (~1 MB) is code-split out of the initial bundle and only fetched here.
+    path: 'vtk-spike',
+    loadComponent: () => import('./pages/vtk-spike/vtk-spike.component').then((m) => m.VtkSpikeComponent),
+  },
+  {
     path: 'error',
     component: ErrorComponent,
   },

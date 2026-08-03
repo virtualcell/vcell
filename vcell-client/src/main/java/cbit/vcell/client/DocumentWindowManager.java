@@ -268,5 +268,15 @@ public void startExport(Component requester,OutputContext outputContext,ExportSp
 public abstract void updateConnectionStatus(ConnectionStatus connStatus);
 
 public abstract DocumentEditor getDocumentEditor( );
+
+/**
+ * Called once this document's top-level window has been made visible. Only then is
+ * the work-area panel inside a realized window, which is what child windows need in
+ * order to find their {@link cbit.vcell.client.ChildWindowManager}. Managers whose
+ * content lives in a child window rather than in the work area itself override this
+ * to open that child window; the default is to do nothing.
+ */
+public void documentWindowShown() {
+}
 }
 

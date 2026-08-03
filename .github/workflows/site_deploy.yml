@@ -82,35 +82,173 @@ jobs:
         name: variables
         path: docker/swarm/variables
         retention-days: 1
-    - name: build client installers
-      if: ${{ github.event.inputs.server_only != 'true' }}
-      run: |
-        cd docker/swarm
-        echo "${{ secrets.GITHUB_TOKEN }}" | sudo docker login ghcr.io -u ${{ github.actor }} --password-stdin
-        sudo docker pull $VCELL_REPO_NAMESPACE/vcell-clientgen:$VCELL_TAG
-        ./generate_installers.sh ./${VCELL_CONFIG_FILE_NAME}
-    - name: upload generated installers
+    - name: upload deploy config
       if: ${{ github.event.inputs.server_only != 'true' }}
       uses: actions/upload-artifact@v4
       with:
-        name: installers
+        name: deploy-config
+        path: docker/swarm/${{ env.VCELL_CONFIG_FILE_NAME }}
+        retention-days: 1
+
+  # Build the five install4j media (Windows 64/32, Linux 64/32, macOS) in parallel — one per runner —
+  # instead of serially in a single clientgen container. Each job produces its installer plus a
+  # updates_<platform>.xml fragment; the combine job fans them back into one updates.xml.
+  build_installer_other:
+    name: Build installer (media ${{ matrix.build_id }})
+    runs-on: ubuntu-24.04
+    needs: build
+    if: ${{ github.event.inputs.server_only != 'true' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # non-mac install4j build ids: 349=win64, 450=win32, 652=linux64, 547=linux32
+        # (mac 105 is its own job so notarize can start as soon as it finishes)
+        build_id: [349, 450, 652, 547]
+    steps:
+    - name: checkout tag
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ github.event.inputs.vcell_version }}.${{ github.event.inputs.vcell_build }}
+    - name: setup ssh-agent
+      uses: webfactory/ssh-agent@v0.8.0
+      with:
+        ssh-private-key: ${{ secrets.VC_KEY }}
+    - name: retrieve variables
+      uses: actions/download-artifact@v4
+      with:
+        name: variables
+        path: variables
+    - name: setenv
+      run: |
+        for line in $(cat variables/variables); do echo $line >> $GITHUB_ENV; done
+    - name: get installer secrets
+      run: |
+        ssh-keyscan $VCELL_MANAGER_NODE >> ~/.ssh/known_hosts
+        sudo mkdir /usr/local/deploy
+        sudo chmod 777 /usr/local/deploy
+        cd /usr/local/deploy
+        scp ${{ secrets.CD_FULL_USER }}@${VCELL_MANAGER_NODE}:${VCELL_DEPLOY_REMOTE_DIR}/deploy_dir_2025_03_18.tar .
+        cd ..
+        sudo tar -xvf deploy/deploy_dir_2025_03_18.tar
+        sudo chmod 777 -R deploy
+    - name: retrieve deploy config
+      uses: actions/download-artifact@v4
+      with:
+        name: deploy-config
+        path: docker/swarm
+    - name: build one installer media
+      run: |
+        cd docker/swarm
+        echo "${{ secrets.GITHUB_TOKEN }}" | sudo docker login ghcr.io -u ${{ github.actor }} --password-stdin
+        # pull clientgen by the deterministic friendly version tag (version.build), not the git short
+        # SHA (VCELL_TAG) which can abbreviate differently on the build vs deploy runners
+        sudo docker pull $VCELL_REPO_NAMESPACE/vcell-clientgen:${VCELL_VERSION}.${VCELL_BUILD}
+        BUILD_IDS="${{ matrix.build_id }}" ./generate_installers.sh ./${VCELL_CONFIG_FILE_NAME}
+    - name: upload installer media
+      uses: actions/upload-artifact@v4
+      with:
+        name: installers-${{ matrix.build_id }}
         path: docker/swarm/generated_installers
+        retention-days: 1
+
+  # The mac installer is built on its own so notarize can start on it immediately (in parallel with
+  # the win/linux builds) rather than waiting for the fan-in.
+  build_installer_mac:
+    name: Build installer (media 105 mac)
+    runs-on: ubuntu-24.04
+    needs: build
+    if: ${{ github.event.inputs.server_only != 'true' }}
+    steps:
+    - name: checkout tag
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ github.event.inputs.vcell_version }}.${{ github.event.inputs.vcell_build }}
+    - name: setup ssh-agent
+      uses: webfactory/ssh-agent@v0.8.0
+      with:
+        ssh-private-key: ${{ secrets.VC_KEY }}
+    - name: retrieve variables
+      uses: actions/download-artifact@v4
+      with:
+        name: variables
+        path: variables
+    - name: setenv
+      run: |
+        for line in $(cat variables/variables); do echo $line >> $GITHUB_ENV; done
+    - name: get installer secrets
+      run: |
+        ssh-keyscan $VCELL_MANAGER_NODE >> ~/.ssh/known_hosts
+        sudo mkdir /usr/local/deploy
+        sudo chmod 777 /usr/local/deploy
+        cd /usr/local/deploy
+        scp ${{ secrets.CD_FULL_USER }}@${VCELL_MANAGER_NODE}:${VCELL_DEPLOY_REMOTE_DIR}/deploy_dir_2025_03_18.tar .
+        cd ..
+        sudo tar -xvf deploy/deploy_dir_2025_03_18.tar
+        sudo chmod 777 -R deploy
+    - name: retrieve deploy config
+      uses: actions/download-artifact@v4
+      with:
+        name: deploy-config
+        path: docker/swarm
+    - name: build the mac installer
+      run: |
+        cd docker/swarm
+        echo "${{ secrets.GITHUB_TOKEN }}" | sudo docker login ghcr.io -u ${{ github.actor }} --password-stdin
+        sudo docker pull $VCELL_REPO_NAMESPACE/vcell-clientgen:${VCELL_VERSION}.${VCELL_BUILD}
+        BUILD_IDS="105" ./generate_installers.sh ./${VCELL_CONFIG_FILE_NAME}
+    - name: upload mac installer (un-notarized)
+      uses: actions/upload-artifact@v4
+      with:
+        name: mac-raw
+        path: docker/swarm/generated_installers
+        retention-days: 1
+
+  # Fan-in: gather the win/linux installers + the NOTARIZED mac installer and reconstruct updates.xml.
+  combine:
+    name: Combine installers + updates.xml
+    runs-on: ubuntu-24.04
+    needs: [build_installer_other, notarize]
+    if: ${{ always() && needs.build_installer_other.result == 'success' && needs.notarize.result == 'success' }}
+    steps:
+    - name: checkout tag
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ github.event.inputs.vcell_version }}.${{ github.event.inputs.vcell_build }}
+    - name: gather per-media installers
+      uses: actions/download-artifact@v4
+      with:
+        pattern: installers-*
+        path: generated_installers
+        merge-multiple: true
+    - name: reconstruct combined updates.xml
+      run: |
+        chmod +x docker/build/installers/combine_updates.sh
+        ./docker/build/installers/combine_updates.sh generated_installers
+    - name: upload combined installers
+      uses: actions/upload-artifact@v4
+      with:
+        name: installers
+        path: generated_installers
         retention-days: 1
 
   notarize:
     name: Notarize the MacOS client
     runs-on: macos-latest
-    needs: build
+    # depends ONLY on the mac build, so it runs in parallel with the win/linux builds and combine.
+    # skipped for server_only (build_installer_mac is skipped) and if the mac build failed.
+    needs: build_installer_mac
+    if: ${{ always() && needs.build_installer_mac.result == 'success' }}
     steps:
-    - name: download generated installers
-      if: ${{ github.event.inputs.server_only != 'true' }}
+    - name: download mac installer
       uses: actions/download-artifact@v4
+      with:
+        name: mac-raw
+        path: mac
     - name: notarize mac installer
-      if: ${{ github.event.inputs.server_only != 'true' }}
       run: |
         set -x
         set +e
-        cd installers
+        cd mac
         export MAC_INSTALLER=`ls *dmg`
         xcrun notarytool submit --output-format normal --no-progress --no-wait --team-id "${{ secrets.MACTEAMID }}" --apple-id "${{ secrets.MACID }}" --password "${{ secrets.MACPW }}" $MAC_INSTALLER > submit_output
         SUBMIT_EXIT=$?
@@ -144,18 +282,22 @@ jobs:
           xcrun notarytool log --verbose --output-format normal --no-progress --team-id "${{ secrets.MACTEAMID }}" --apple-id "${{ secrets.MACID }}" --password "${{ secrets.MACPW }}" `cat UUID`
           exit 1
         fi
-    - name: update generated installers
-      if: ${{ github.event.inputs.server_only != 'true' }}
+    - name: upload notarized mac installer
       uses: actions/upload-artifact@v4
       with:
-        name: updated_installers
-        path: installers
+        name: installers-mac
+        path: mac
         retention-days: 1
 
   deploy:
     name: Deploy to site
     runs-on: ubuntu-24.04
-    needs: notarize
+    # deploy last. `combine` transitively depends on every installer job (mac -> notarize -> combine,
+    # and the win/linux matrix -> combine), so we only list `combine` for the full path. `build` stays
+    # because a server_only run skips `combine` (no installers) and only `build` can gate the config
+    # artifacts then. Full deploy => combine succeeded; server_only => combine skipped, build gates.
+    needs: [build, combine]
+    if: ${{ always() && needs.build.result == 'success' && (needs.combine.result == 'success' || github.event.inputs.server_only == 'true') }}
     steps:
     - name: checkout tag
       uses: actions/checkout@v4
@@ -165,8 +307,8 @@ jobs:
       if: ${{ github.event.inputs.server_only != 'true' }}
       uses: actions/download-artifact@v4
       with:
-          name: updated_installers
-          path: updated_installers
+          name: installers
+          path: installers
     - name: retrieve variables
       uses: actions/download-artifact@v4
       with:
@@ -178,7 +320,7 @@ jobs:
     - name: stage installers
       if: ${{ github.event.inputs.server_only != 'true' }}
       run: |
-        cd updated_installers
+        cd installers
         mkdir ../docker/swarm/generated_installers
         mv * ../docker/swarm/generated_installers
     - name: setup ssh-agent

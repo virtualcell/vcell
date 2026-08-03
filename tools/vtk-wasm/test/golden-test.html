@@ -1,0 +1,69 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>vtk.wasm WindowedSinc golden-file test</title></head>
+<body><div id="log">running…</div>
+<!-- @kitware/vtk-wasm 2.1.8 UMD loader (exposes `vtkwasm`) -->
+<script src="./vtk-umd.js"></script>
+<script>
+// Builds the pre-smooth VCell boundary surface in the vtk.wasm standalone session,
+// runs vtkWindowedSincPolyDataFilter with the reference params, and compares the output
+// to the pyvcell-reference golden. run-golden-test.mjs reads window.__gt.result and asserts.
+window.__gt = { done:false, stage:'start', log:[] };
+const L = (m)=>{ window.__gt.log.push(m); console.log('[gt] '+m); document.getElementById('log').textContent = window.__gt.log.join('\n'); };
+(async () => {
+  try {
+    const t0 = performance.now();
+    L('loading bundle…'); window.__gt.stage='load';
+    const rt = await vtkwasm.loadAsync({ url: '/bundle.tar.gz' });  // served by the runner (env BUNDLE_TARGZ)
+    const s = rt.createStandaloneSession(); const vtk = s.vtk;
+    L('load+session ms='+Math.round(performance.now()-t0));
+
+    const inp  = await (await fetch('./fixtures/input_surface.json')).json();
+    const gold = await (await fetch('./fixtures/golden_points.json')).json();
+    const S = gold.sinc || { iterations:12, feature_angle:120.0, pass_band:0.05 };
+    L('input pts='+inp.numPoints+' polys='+inp.polys.length+' golden pts='+gold.numPoints+' sinc='+JSON.stringify(S));
+
+    // --- build vtkPolyData (points + quad cells) in-session ---
+    window.__gt.stage='build';
+    const pts = vtk.vtkPoints(); await pts.setNumberOfPoints(inp.numPoints);
+    const P = inp.points;
+    for (let i=0;i<inp.numPoints;i++) await pts.setPoint(i, P[3*i], P[3*i+1], P[3*i+2]);
+    const ca = vtk.vtkCellArray();
+    for (const q of inp.polys) await ca.insertNextCell(q.length, q);   // batched insert
+    const pd = vtk.vtkPolyData(); await pd.setPoints(pts); await pd.setPolys(ca);
+
+    // --- WindowedSinc with the EXACT reference params ---
+    window.__gt.stage='filter';
+    const sinc = vtk.vtkWindowedSincPolyDataFilter();
+    await sinc.setInputData(pd);
+    await sinc.setNumberOfIterations(S.iterations);
+    await sinc.boundarySmoothingOff();
+    await sinc.featureEdgeSmoothingOff();
+    await sinc.setFeatureAngle(S.feature_angle);
+    await sinc.setPassBand(S.pass_band);
+    await sinc.nonManifoldSmoothingOff();
+    await sinc.normalizeCoordinatesOn();
+    try { await sinc.update(); } catch(e){ await sinc.update(0); }
+
+    // --- read output + compare to golden ---
+    window.__gt.stage='compare';
+    const op = await (await sinc.getOutput()).getPoints();
+    const nOut = await op.getNumberOfPoints();
+    let maxDev=0, sumDev=0, maxMoved=0; const G=gold.points, IN=inp.points;
+    for (let i=0;i<nOut;i++){
+      const p = await op.getPoint(i);
+      const d = Math.hypot(p[0]-G[3*i], p[1]-G[3*i+1], p[2]-G[3*i+2]);
+      if(d>maxDev) maxDev=d; sumDev+=d;
+      const m = Math.hypot(p[0]-IN[3*i], p[1]-IN[3*i+1], p[2]-IN[3*i+2]);
+      if(m>maxMoved) maxMoved=m;
+    }
+    window.__gt.result = {
+      clientOutPoints: nOut, goldenPoints: gold.numPoints, countMatch: nOut===gold.numPoints,
+      maxDeviation_vs_golden: maxDev, meanDeviation_vs_golden: sumDev/nOut,
+      maxMovement_output_vs_input: maxMoved,      // > 0 proves the filter actually smoothed
+      totalMs: Math.round(performance.now()-t0),
+    };
+    L('DONE '+JSON.stringify(window.__gt.result));
+    window.__gt.done = true;
+  } catch(e){ window.__gt.err=(e&&e.message)||String(e); window.__gt.stage+=':ERR'; window.__gt.done=true; L('ERR '+window.__gt.err); }
+})();
+</script></body></html>

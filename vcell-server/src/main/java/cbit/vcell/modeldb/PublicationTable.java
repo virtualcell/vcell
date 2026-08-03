@@ -45,7 +45,7 @@ public class PublicationTable extends Table {
 	public final Field endnoteid			= new Field("endnoteid",		SQLDataType.integer,		"");
 	public final Field url					= new Field("url",				SQLDataType.varchar2_128,	"");
 	public final Field wittid				= new Field("wittid",			SQLDataType.integer,		"");
-	public final Field pubdate				= new Field("pubDate",			SQLDataType.date,			"");
+	public final Field pubdate				= new Field("pubDate",			SQLDataType.date,			"NOT NULL");
 	
 	private final Field fields[] = {title,authors,year,citation,pubmedid,doi,endnoteid,url,wittid,pubdate };
 	

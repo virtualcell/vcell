@@ -45,25 +45,22 @@ cd vcell
 - Requirements:  Git, Maven, Poetry, Python 3.10, Java 17
 
 #### Build Java and Python
+
+See **[docs/BUILDING.md](docs/BUILDING.md)** for the full build, including why the
+Python packages must be built first, what `dependency:copy-dependencies` is for, and
+what a `git worktree` needs set up separately. The short version:
+
 ```bash
-mvn clean install -DskipTests
+pip install -r requirements.txt     # installs poetry
 
-INSTALL_DIR=$(pwd)
-cd ${INSTALL_DIR}/pythonCopasiOpt/vcell-opt
-poetry env use 3.10
-poetry install
+# 1. Python packages, all seven
+for p in vcell-cli-utils docker/swarm/vcell-admin pythonCopasiOpt/vcell-opt \
+         pythonVtk python-utils python-restclient pythonData ; do
+  ( cd "$p" && poetry env use 3.10 && poetry install ) || { echo "FAILED: $p"; break; }
+done
 
-cd ${INSTALL_DIR}/docker/swarm/vcell-admin
-poetry env use 3.10
-poetry install
-
-cd ${INSTALL_DIR}/pythonVtk
-poetry env use 3.10
-poetry install
-
-cd ${INSTALL_DIR}/vcell-cli-utils
-poetry env use 3.10
-poetry install
+# 2. Java
+mvn --batch-mode clean install dependency:copy-dependencies -DskipTests=true
 ```
 
 #### Test Java and Python
@@ -71,20 +68,14 @@ poetry install
 mvn test -Dgroups="Fast"
 
 INSTALL_DIR=$(pwd)
-cd ${INSTALL_DIR}/pythonCopasiOpt/vcell-opt
-poetry run python -m pytest
-
-cd ${INSTALL_DIR}/docker/swarm/vcell-admin
-poetry run python -m pytest
-
-cd ${INSTALL_DIR}/pythonVtk
-poetry run python -m pytest
-
-cd ${INSTALL_DIR}/vcell-cli-utils
-poetry run python -m pytest
-
-cd ${INSTALL_DIR}
+for p in vcell-cli-utils docker/swarm/vcell-admin pythonCopasiOpt/vcell-opt \
+         pythonVtk python-utils python-restclient pythonData ; do
+  ( cd "${INSTALL_DIR}/$p" && poetry run python -m pytest )
+done
 ```
+
+Java tests failing with a missing Python module or solver binary usually means the
+Python packages above were not built — see [docs/BUILDING.md](docs/BUILDING.md).
 
 #### Run the VCell client (connects to the VCell servers)
 ```bash

@@ -87,6 +87,11 @@ private DataViewer createODEDataViewer() throws DataAccessException {
 			odeDataViewer.replaceViewDataTab();
 		}
 	}
+	// The per-particle trajectory ("viewer" file) exists for ANY SpringSaLaD run - single or batch,
+	// with or without cluster data - not only the langevin-batch case above. It was loaded off-EDT in
+	// ODEDataManager.connect(); this is a cached read. Null (non-langevin / no viewer file) -> the "3D
+	// Trajectory" tab simply won't appear.
+	odeDataViewer.setSpringSaladTrajectory(((ODEDataManager)dataManager).getLangevinTrajectory());
 	odeDataViewer.setOdeSolverResultSet(odesrs);
 	odeDataViewer.setNFSimMolecularConfigurations(((ODEDataManager)dataManager).getNFSimMolecularConfigurations());
 	odeDataViewer.setVcDataIdentifier(dataManager.getVCDataIdentifier());

@@ -35,6 +35,9 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTree;
@@ -277,7 +280,44 @@ public final class SwingInspector {
 			appendTable(sb, (JTable) c);
 		} else if (c instanceof JTree) {
 			appendTree(sb, (JTree) c);
+		} else if (c instanceof JMenu) {
+			// popup contents are not in the component hierarchy until shown;
+			// serialize them statically so menus are discoverable without popups
+			sb.append(",\"menuItems\":");
+			appendMenuItems(sb, (JMenu) c, 0);
 		}
+	}
+
+	private static final int MAX_MENU_DEPTH = 5;
+
+	private static void appendMenuItems(StringBuilder sb, JMenu menu, int depth) {
+		sb.append('[');
+		for (int i = 0; i < menu.getItemCount(); i++) {
+			if (i > 0) {
+				sb.append(',');
+			}
+			JMenuItem item = menu.getItem(i);
+			if (item == null) {
+				sb.append("{\"separator\":true}");
+				continue;
+			}
+			sb.append('{');
+			kv(sb, "text", nz(item.getText()));
+			comma(sb);
+			kv(sb, "id", idFor(item));
+			comma(sb);
+			raw(sb, "enabled", item.isEnabled());
+			if (item.getAccelerator() != null) {
+				comma(sb);
+				kv(sb, "accelerator", String.valueOf(item.getAccelerator()));
+			}
+			if (item instanceof JMenu && depth < MAX_MENU_DEPTH) {
+				sb.append(",\"items\":");
+				appendMenuItems(sb, (JMenu) item, depth + 1);
+			}
+			sb.append('}');
+		}
+		sb.append(']');
 	}
 
 	private static void appendTree(StringBuilder sb, JTree t) {
@@ -346,19 +386,40 @@ public final class SwingInspector {
 	// Lookup + interaction
 	// ---------------------------------------------------------------------
 
+	private static final java.util.regex.Pattern NAME_WITH_INDEX =
+			java.util.regex.Pattern.compile("^(.*)\\[(\\d+)\\]$");
+
 	/**
-	 * Resolve a selector to a live component. A selector is either a registry id
-	 * ("c42", as emitted in each node's {@code id}) or a node path ("0/3/2", as
-	 * emitted in {@code path}); ids and paths are syntactically distinct, so a
-	 * single method resolves both and every endpoint accepts either. First path
-	 * segment indexes {@link #showingWindows()}; remaining segments index
-	 * {@link Container#getComponents()}.
+	 * Resolve a selector to a live component. Every endpoint that takes a
+	 * {@code path} parameter accepts any of these three forms, which are
+	 * syntactically distinct:
+	 *
+	 * <ul>
+	 * <li><b>registry id</b> — {@code c42}, as emitted in each node's {@code id}.
+	 *     Stable across dumps.</li>
+	 * <li><b>name</b> — {@code name=SearchButton}, matching
+	 *     {@link Component#getName()}. The most robust form: it survives layout
+	 *     changes entirely. When several components share a name (VCell reuses
+	 *     panels — e.g. one database search panel per tab), a <i>showing</i> match
+	 *     wins over a hidden one; add an index, {@code name=SearchButton[1]}, to
+	 *     pick a specific one out of the {@code /find} ordering.</li>
+	 * <li><b>node path</b> — {@code 0/3/2}, as emitted in {@code path}. First
+	 *     segment indexes {@link #showingWindows()}, the rest index
+	 *     {@link Container#getComponents()}. Brittle; prefer the forms above.</li>
+	 * </ul>
 	 *
 	 * @return the component, or {@code null} if the selector does not resolve
+	 *         (including a malformed selector — resolution never throws)
 	 */
 	public static Component findByPath(final String path) {
-		if (path != null && path.matches("c\\d+")) {
+		if (path == null || path.isEmpty()) {
+			return null;
+		}
+		if (path.matches("c\\d+")) {
 			return findById(path);
+		}
+		if (path.startsWith("name=")) {
+			return findByNameSelector(path.substring("name=".length()));
 		}
 		return onEdt(() -> {
 			String[] segs = path.split("/");
@@ -368,23 +429,60 @@ public final class SwingInspector {
 					windows.add(w);
 				}
 			}
-			int wi = Integer.parseInt(segs[0]);
-			if (wi < 0 || wi >= windows.size()) {
-				return null;
-			}
-			Component cur = windows.get(wi);
-			for (int s = 1; s < segs.length; s++) {
+			Component cur = null;
+			for (int s = 0; s < segs.length; s++) {
+				int i;
+				try {
+					i = Integer.parseInt(segs[s]);
+				} catch (NumberFormatException e) {
+					return null; // not a node path after all; report "did not resolve"
+				}
+				if (s == 0) {
+					if (i < 0 || i >= windows.size()) {
+						return null;
+					}
+					cur = windows.get(i);
+					continue;
+				}
 				if (!(cur instanceof Container)) {
 					return null;
 				}
 				Component[] kids = ((Container) cur).getComponents();
-				int ci = Integer.parseInt(segs[s]);
-				if (ci < 0 || ci >= kids.length) {
+				if (i < 0 || i >= kids.length) {
 					return null;
 				}
-				cur = kids[ci];
+				cur = kids[i];
 			}
 			return cur;
+		});
+	}
+
+	/** Resolve the {@code name=...} selector form, with optional {@code [index]} suffix. */
+	private static Component findByNameSelector(String spec) {
+		String name = spec;
+		int index = -1;
+		java.util.regex.Matcher m = NAME_WITH_INDEX.matcher(spec);
+		if (m.matches()) {
+			name = m.group(1);
+			index = Integer.parseInt(m.group(2));
+		}
+		final String targetName = name;
+		final int wanted = index;
+		return onEdt(() -> {
+			List<PathMatch> matches = collectAll(null, targetName, null, null);
+			if (matches.isEmpty()) {
+				return null;
+			}
+			if (wanted >= 0) {
+				return wanted < matches.size() ? matches.get(wanted).component : null;
+			}
+			// an unqualified name should act on what the user can actually see
+			for (PathMatch pm : matches) {
+				if (pm.component.isShowing()) {
+					return pm.component;
+				}
+			}
+			return matches.get(0).component;
 		});
 	}
 
@@ -453,6 +551,337 @@ public final class SwingInspector {
 		return null;
 	}
 
+	// ---------------------------------------------------------------------
+	// Semantic finders: locate components by what they ARE (type/name/text)
+	// instead of where they sit (index path), so automation survives layout
+	// shifts between builds and sessions.
+	// ---------------------------------------------------------------------
+
+	/** A matched component plus the index path it was found at. */
+	private static final class PathMatch {
+		final Component component;
+		final String path;
+
+		PathMatch(Component component, String path) {
+			this.component = component;
+			this.path = path;
+		}
+	}
+
+	/**
+	 * JSON array of components matching ALL given criteria (null criteria are
+	 * ignored). Each element is a full node as in the tree dump, minus children.
+	 *
+	 * @param type         simple class name matched against the component's class
+	 *                     or any superclass (e.g. "JButton", "AbstractButton")
+	 * @param name         exact {@link Component#getName()} match
+	 * @param text         exact match on the node's {@code text} (button/label
+	 *                     text, text-component content, window title)
+	 * @param textContains case-insensitive substring of that text
+	 * @param limit        maximum matches to emit (&lt;=0 = unlimited)
+	 */
+	public static String findMatchesJson(String type, String name, String text, String textContains, int limit) {
+		return onEdt(() -> emitMatches(collectAll(type, name, text, textContains),
+				limit <= 0 ? Integer.MAX_VALUE : limit));
+	}
+
+	/**
+	 * Poll the semantic finder until the requested state holds or the timeout
+	 * elapses. States: {@code showing} (default) — at least one match is showing;
+	 * {@code enabled} — at least one match is showing and enabled; {@code gone} —
+	 * no showing match. Callers must be off the EDT (each poll hops onto it).
+	 *
+	 * @return JSON {@code {"satisfied":bool,"state":..,"elapsedMs":N,"matches":[..]}}
+	 */
+	public static String waitFor(String type, String name, String text, String textContains,
+			String state, long timeoutMs, long intervalMs) {
+		String st = (state == null || state.isEmpty()) ? "showing" : state;
+		boolean wantGone = "gone".equals(st);
+		boolean needEnabled = "enabled".equals(st);
+		long start = System.currentTimeMillis();
+		while (true) {
+			String matches = matchesInStateJson(type, name, text, textContains, needEnabled, 10);
+			boolean present = !"[]".equals(matches);
+			boolean satisfied = wantGone != present;
+			long elapsed = System.currentTimeMillis() - start;
+			if (satisfied || elapsed >= timeoutMs) {
+				return "{\"satisfied\":" + satisfied + ",\"state\":\"" + escape(st) + "\",\"elapsedMs\":" + elapsed
+						+ ",\"matches\":" + matches + '}';
+			}
+			try {
+				Thread.sleep(intervalMs);
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+				return "{\"satisfied\":false,\"interrupted\":true,\"elapsedMs\":"
+						+ (System.currentTimeMillis() - start) + '}';
+			}
+		}
+	}
+
+	/**
+	 * Wait for the EDT to drain: two no-op round-trips (the first flushes events
+	 * queued before the call, the second anything the first batch enqueued).
+	 *
+	 * @return milliseconds the round-trips took
+	 */
+	public static long waitForIdle() {
+		long start = System.currentTimeMillis();
+		onEdt(() -> null);
+		onEdt(() -> null);
+		return System.currentTimeMillis() - start;
+	}
+
+	/** Matches that are showing (and optionally enabled), as a JSON array. EDT-hopping. */
+	private static String matchesInStateJson(String type, String name, String text, String textContains,
+			boolean needEnabled, int limit) {
+		return onEdt(() -> {
+			List<PathMatch> filtered = new ArrayList<>();
+			for (PathMatch m : collectAll(type, name, text, textContains)) {
+				if (m.component.isShowing() && (!needEnabled || m.component.isEnabled())) {
+					filtered.add(m);
+				}
+			}
+			return emitMatches(filtered, limit);
+		});
+	}
+
+	/** DFS every showing window for criteria matches. Must run on the EDT. */
+	private static List<PathMatch> collectAll(String type, String name, String text, String textContains) {
+		List<PathMatch> out = new ArrayList<>();
+		List<Window> windows = new ArrayList<>();
+		for (Window w : Window.getWindows()) {
+			if (w.isShowing()) {
+				windows.add(w);
+			}
+		}
+		for (int i = 0; i < windows.size(); i++) {
+			collectMatches(windows.get(i), Integer.toString(i), type, name, text, textContains, out);
+		}
+		return out;
+	}
+
+	private static void collectMatches(Component c, String path, String type, String name, String text,
+			String textContains, List<PathMatch> out) {
+		if (matchesCriteria(c, type, name, text, textContains)) {
+			out.add(new PathMatch(c, path));
+		}
+		if (c instanceof Container) {
+			Component[] kids = ((Container) c).getComponents();
+			for (int i = 0; i < kids.length; i++) {
+				collectMatches(kids[i], path + '/' + i, type, name, text, textContains, out);
+			}
+		}
+	}
+
+	private static boolean matchesCriteria(Component c, String type, String name, String text, String textContains) {
+		if (type != null) {
+			boolean hit = false;
+			for (Class<?> k = c.getClass(); k != null; k = k.getSuperclass()) {
+				if (k.getSimpleName().equals(type)) {
+					hit = true;
+					break;
+				}
+			}
+			if (!hit) {
+				return false;
+			}
+		}
+		if (name != null && !name.equals(c.getName())) {
+			return false;
+		}
+		String t = textOf(c);
+		if (text != null && !text.equals(t)) {
+			return false;
+		}
+		if (textContains != null && (t == null || !t.toLowerCase().contains(textContains.toLowerCase()))) {
+			return false;
+		}
+		return true;
+	}
+
+	/** Emit matches as a JSON array of childless nodes. Must run on the EDT. */
+	private static String emitMatches(List<PathMatch> hits, int limit) {
+		StringBuilder sb = new StringBuilder(1024);
+		sb.append('[');
+		int shown = Math.min(hits.size(), limit);
+		for (int i = 0; i < shown; i++) {
+			if (i > 0) {
+				sb.append(',');
+			}
+			// depth == maxDepth, so appendNode emits the node without children
+			appendNode(sb, hits.get(i).component, hits.get(i).path, 0, 0);
+		}
+		sb.append(']');
+		return sb.toString();
+	}
+
+	// ---------------------------------------------------------------------
+	// Menus: enumerate and activate by visible text, no popup choreography
+	// ---------------------------------------------------------------------
+
+	/**
+	 * @return JSON array: for every showing window with a {@link JMenuBar}, its
+	 *         complete menu structure (nested items, separators, accelerators),
+	 *         read from the models without opening any popup.
+	 */
+	public static String menusJson() {
+		return onEdt(() -> {
+			StringBuilder sb = new StringBuilder(2048);
+			sb.append('[');
+			List<Window> windows = showingWindows();
+			boolean first = true;
+			for (int i = 0; i < windows.size(); i++) {
+				JMenuBar bar = menuBarOf(windows.get(i));
+				if (bar == null) {
+					continue;
+				}
+				if (!first) {
+					sb.append(',');
+				}
+				first = false;
+				sb.append("{\"window\":").append(i).append(',');
+				kv(sb, "title", nz(textOf(windows.get(i))));
+				sb.append(",\"menus\":[");
+				for (int m = 0; m < bar.getMenuCount(); m++) {
+					if (m > 0) {
+						sb.append(',');
+					}
+					JMenu menu = bar.getMenu(m);
+					if (menu == null) {
+						sb.append("{}");
+						continue;
+					}
+					sb.append('{');
+					kv(sb, "text", nz(menu.getText()));
+					comma(sb);
+					kv(sb, "id", idFor(menu));
+					comma(sb);
+					raw(sb, "enabled", menu.isEnabled());
+					sb.append(",\"items\":");
+					appendMenuItems(sb, menu, 0);
+					sb.append('}');
+				}
+				sb.append("]}");
+			}
+			sb.append(']');
+			return sb.toString();
+		});
+	}
+
+	/**
+	 * Activate a menu item addressed by its visible text, e.g.
+	 * {@code "Account > Login"} — segments separated by {@code '>'}, matched
+	 * case-insensitively against menu/item text. The leaf item's action fires
+	 * via {@code doClick()} without animating popups, so callers no longer walk
+	 * transient popup windows by index. Menus that build their items lazily in
+	 * a {@link javax.swing.event.MenuListener} get that listener fired first,
+	 * the same way opening the menu would.
+	 *
+	 * @param windowIndex restrict the search to one window (index into
+	 *                    {@link #showingWindows()}), or -1 for all windows
+	 * @return JSON describing what was clicked, or an error
+	 */
+	public static String clickMenu(final String menuPath, final int windowIndex) {
+		return onEdt(() -> {
+			String[] segs = menuPath.split(">");
+			for (int i = 0; i < segs.length; i++) {
+				segs[i] = segs[i].trim();
+			}
+			if (segs.length == 0 || segs[0].isEmpty()) {
+				return "{\"clicked\":false,\"error\":\"empty menu path\"}";
+			}
+			List<Window> windows = showingWindows();
+			for (int i = 0; i < windows.size(); i++) {
+				if (windowIndex >= 0 && windowIndex != i) {
+					continue;
+				}
+				JMenuBar bar = menuBarOf(windows.get(i));
+				if (bar == null) {
+					continue;
+				}
+				JMenu top = null;
+				for (int m = 0; m < bar.getMenuCount(); m++) {
+					JMenu menu = bar.getMenu(m);
+					if (menu != null && segs[0].equalsIgnoreCase(nz(menu.getText()).trim())) {
+						top = menu;
+						break;
+					}
+				}
+				if (top == null) {
+					continue;
+				}
+				if (segs.length == 1) {
+					return "{\"clicked\":false,\"error\":\"path must name an item inside menu '"
+							+ escape(segs[0]) + "', e.g. " + escape(segs[0]) + ">Item\"}";
+				}
+				JMenuItem cur = top;
+				StringBuilder resolved = new StringBuilder(nz(top.getText()));
+				for (int s = 1; s < segs.length; s++) {
+					if (!(cur instanceof JMenu)) {
+						return "{\"clicked\":false,\"error\":\"'" + escape(resolved.toString())
+								+ "' is not a submenu\"}";
+					}
+					JMenuItem next = childItem((JMenu) cur, segs[s]);
+					if (next == null) {
+						return "{\"clicked\":false,\"error\":\"no item '" + escape(segs[s]) + "' under '"
+								+ escape(resolved.toString()) + "'\"}";
+					}
+					cur = next;
+					resolved.append(" > ").append(nz(cur.getText()));
+				}
+				if (!cur.isEnabled()) {
+					return "{\"clicked\":false,\"error\":\"item '" + escape(resolved.toString())
+							+ "' is disabled\"}";
+				}
+				final JMenuItem target = cur;
+				// fire-and-forget: the action may open a modal dialog
+				SwingUtilities.invokeLater(target::doClick);
+				return "{\"clicked\":true,\"item\":\"" + escape(resolved.toString()) + "\",\"id\":\""
+						+ idFor(target) + "\",\"window\":" + i + '}';
+			}
+			return "{\"clicked\":false,\"error\":\"no showing window has a menu '" + escape(segs[0]) + "'\"}";
+		});
+	}
+
+	private static JMenuBar menuBarOf(Window w) {
+		if (w instanceof JFrame) {
+			return ((JFrame) w).getJMenuBar();
+		}
+		if (w instanceof JDialog) {
+			return ((JDialog) w).getJMenuBar();
+		}
+		return null;
+	}
+
+	/** Find a direct child item by text, firing lazy-population MenuListeners if needed. */
+	private static JMenuItem childItem(JMenu menu, String text) {
+		JMenuItem hit = scanItems(menu, text);
+		if (hit == null && menu.getMenuListeners().length > 0) {
+			// menus populated on menuSelected (e.g. recent-file lists) are empty
+			// until "opened"; fire their listeners the way opening them would
+			javax.swing.event.MenuEvent ev = new javax.swing.event.MenuEvent(menu);
+			for (javax.swing.event.MenuListener l : menu.getMenuListeners()) {
+				try {
+					l.menuSelected(ev);
+				} catch (RuntimeException e) {
+					// a listener assuming a visible popup may object; matching below still gets its chance
+				}
+			}
+			hit = scanItems(menu, text);
+		}
+		return hit;
+	}
+
+	private static JMenuItem scanItems(JMenu menu, String text) {
+		for (int i = 0; i < menu.getItemCount(); i++) {
+			JMenuItem item = menu.getItem(i);
+			if (item != null && text.equalsIgnoreCase(nz(item.getText()).trim())) {
+				return item;
+			}
+		}
+		return null;
+	}
+
 	/**
 	 * Click a component identified by node path. Buttons/checkboxes use
 	 * {@link AbstractButton#doClick()} (EDT-safe, no native cursor movement);
@@ -494,6 +923,107 @@ public final class SwingInspector {
 		}
 	}
 
+	// ---------------------------------------------------------------------
+	// JTable rows — the counterpart to the JTree row operations below. Needed
+	// for any list-of-things rendered as a table rather than a tree, including
+	// the file chooser, where selecting a row is the only way to pick a file.
+	// ---------------------------------------------------------------------
+
+	/**
+	 * Select (and scroll to) a row of the {@link JTable} at the given path. Rows and
+	 * columns are as reported by the {@code table} block in the JSON dump — note that
+	 * both are <b>view</b> indices, so they follow the user's current sort order.
+	 *
+	 * @param column column to make lead, or -1 to select the whole row
+	 * @return true if the table resolved and the row was in range
+	 */
+	public static boolean selectTableRow(final String path, final int row, final int column) {
+		return Boolean.TRUE.equals(onEdt(() -> {
+			JTable table = tableAt(path, row, column);
+			if (table == null) {
+				return false;
+			}
+			int col = column < 0 ? 0 : column;
+			table.setRowSelectionInterval(row, row);
+			if (column >= 0 && table.getColumnSelectionAllowed()) {
+				table.setColumnSelectionInterval(col, col);
+			}
+			table.scrollRectToVisible(table.getCellRect(row, col, true));
+			return true;
+		}));
+	}
+
+	/**
+	 * Double-click a row of the {@link JTable} at the given path. A synthetic
+	 * {@link Robot} click pair is required rather than a selection change because
+	 * table-backed UIs commonly act on the raw {@code MouseEvent} click count — the
+	 * file chooser opens the selected file that way.
+	 *
+	 * @return true if the table/row resolved and the double-click was issued
+	 */
+	public static boolean doubleClickTableRow(final String path, final int row, final int column) {
+		return clickTableRow(path, row, column, InputEvent.BUTTON1_DOWN_MASK, 2);
+	}
+
+	/**
+	 * Right-click a row of the {@link JTable} at the given path, to open its context
+	 * menu. The row is selected first, as a real right-click would.
+	 *
+	 * @return true if the table/row resolved and the right-click was issued
+	 */
+	public static boolean rightClickTableRow(final String path, final int row, final int column) {
+		return clickTableRow(path, row, column, InputEvent.BUTTON3_DOWN_MASK, 1);
+	}
+
+	private static boolean clickTableRow(final String path, final int row, final int column,
+			final int buttonMask, final int clickCount) {
+		Point screenPt = onEdt(() -> {
+			JTable table = tableAt(path, row, column);
+			if (table == null || !table.isShowing()) {
+				return null;
+			}
+			int col = column < 0 ? 0 : column;
+			table.setRowSelectionInterval(row, row);
+			Rectangle cell = table.getCellRect(row, col, true);
+			table.scrollRectToVisible(cell);
+			// re-read: scrolling moves the cell under the viewport
+			cell = table.getCellRect(row, col, true);
+			Point loc = table.getLocationOnScreen();
+			return new Point(loc.x + cell.x + Math.min(cell.width / 2, 60),
+					loc.y + cell.y + cell.height / 2);
+		});
+		if (screenPt == null) {
+			return false;
+		}
+		try {
+			Robot robot = new Robot();
+			robot.mouseMove(screenPt.x, screenPt.y);
+			for (int i = 0; i < clickCount; i++) {
+				robot.mousePress(buttonMask);
+				robot.mouseRelease(buttonMask);
+			}
+			return true;
+		} catch (Exception e) {
+			throw new RuntimeException("robot table click failed at " + screenPt, e);
+		}
+	}
+
+	/** Resolve a selector to a JTable and bounds-check row/column. Must run on the EDT. */
+	private static JTable tableAt(String path, int row, int column) {
+		Component c = findByPath(path);
+		if (!(c instanceof JTable)) {
+			return null;
+		}
+		JTable table = (JTable) c;
+		if (row < 0 || row >= table.getRowCount()) {
+			return null;
+		}
+		if (column >= table.getColumnCount()) {
+			return null;
+		}
+		return table;
+	}
+
 	/**
 	 * Select (and scroll to) a specific row of the {@link JTree} at the given
 	 * path. Rows are as reported by the {@code tree} block in the JSON dump.
@@ -514,6 +1044,77 @@ public final class SwingInspector {
 			tree.scrollRowToVisible(row);
 			return true;
 		});
+	}
+
+	/**
+	 * Expand or collapse a row of the {@link JTree} at the given path. Needed to reach
+	 * nodes that are not visible yet: row indices only cover currently-expanded rows,
+	 * so a driver walks down a tree by expanding and re-reading the rows.
+	 *
+	 * @return true if the tree resolved and the row was in range
+	 */
+	public static boolean expandTreeRow(final String path, final int row, final boolean expand) {
+		return Boolean.TRUE.equals(onEdt(() -> {
+			Component c = findByPath(path);
+			if (!(c instanceof JTree)) {
+				return false;
+			}
+			JTree tree = (JTree) c;
+			if (row < 0 || row >= tree.getRowCount()) {
+				return false;
+			}
+			if (expand) {
+				tree.expandRow(row);
+			} else {
+				tree.collapseRow(row);
+			}
+			tree.scrollRowToVisible(row);
+			return true;
+		}));
+	}
+
+	/**
+	 * Double-click a row of the {@link JTree} at the given path with a synthetic
+	 * {@link Robot} click pair. A real double-click is required (rather than firing a
+	 * listener directly) because VCell's database trees open a document from the raw
+	 * {@link java.awt.event.MouseEvent} — {@code MOUSE_PRESSED} with
+	 * {@code getClickCount() == 2} — so no higher-level API reproduces it.
+	 *
+	 * @return true if the tree/row resolved and the double-click was issued
+	 */
+	public static boolean doubleClickTreeRow(final String path, final int row) {
+		Point screenPt = onEdt(() -> {
+			Component c = findByPath(path);
+			if (!(c instanceof JTree)) {
+				return null;
+			}
+			JTree tree = (JTree) c;
+			if (row < 0 || row >= tree.getRowCount() || !tree.isShowing()) {
+				return null;
+			}
+			tree.setSelectionRow(row);
+			tree.scrollRowToVisible(row);
+			Rectangle rb = tree.getRowBounds(row);
+			if (rb == null) {
+				return null;
+			}
+			Point loc = tree.getLocationOnScreen();
+			return new Point(loc.x + rb.x + Math.min(rb.width / 2, 40), loc.y + rb.y + rb.height / 2);
+		});
+		if (screenPt == null) {
+			return false;
+		}
+		try {
+			Robot robot = new Robot();
+			robot.mouseMove(screenPt.x, screenPt.y);
+			for (int i = 0; i < 2; i++) {
+				robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
+				robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
+			}
+			return true;
+		} catch (Exception e) {
+			throw new RuntimeException("robot double-click failed at " + screenPt, e);
+		}
 	}
 
 	/**
@@ -624,6 +1225,188 @@ public final class SwingInspector {
 				return false;
 			}
 			tp.setSelectedIndex(index);
+			return true;
+		}));
+	}
+
+	// ---------------------------------------------------------------------
+	// Deep inspection of a single component
+	// ---------------------------------------------------------------------
+
+	/**
+	 * Extended property dump for one component — everything the tree dump
+	 * deliberately omits for brevity: full class hierarchy, focus state,
+	 * colors/font, accessible role/name/description, widget-specific detail
+	 * and listener counts.
+	 */
+	public static String propsJson(final String selector) {
+		return onEdt(() -> {
+			Component c = findByPath(selector);
+			if (c == null) {
+				return "{\"error\":\"selector did not resolve\"}";
+			}
+			StringBuilder sb = new StringBuilder(1024);
+			sb.append('{');
+			kv(sb, "id", idFor(c));
+			sb.append(",\"classChain\":[");
+			boolean first = true;
+			for (Class<?> k = c.getClass(); k != null && k != Object.class; k = k.getSuperclass()) {
+				if (!first) {
+					sb.append(',');
+				}
+				first = false;
+				sb.append('"').append(escape(k.getName())).append('"');
+			}
+			sb.append(']');
+			comma(sb);
+			kv(sb, "name", nz(c.getName()));
+			String text = textOf(c);
+			if (text != null) {
+				comma(sb);
+				kv(sb, "text", text.length() <= 2000 ? text : text.substring(0, 2000) + "…");
+			}
+			comma(sb);
+			raw(sb, "visible", c.isVisible());
+			comma(sb);
+			raw(sb, "showing", c.isShowing());
+			comma(sb);
+			raw(sb, "enabled", c.isEnabled());
+			comma(sb);
+			raw(sb, "focusable", c.isFocusable());
+			comma(sb);
+			raw(sb, "hasFocus", c.hasFocus());
+			comma(sb);
+			raw(sb, "opaque", c.isOpaque());
+			Rectangle b = c.getBounds();
+			sb.append(",\"bounds\":{\"x\":").append(b.x).append(",\"y\":").append(b.y)
+					.append(",\"w\":").append(b.width).append(",\"h\":").append(b.height).append('}');
+			if (c.isShowing()) {
+				Point p = c.getLocationOnScreen();
+				sb.append(",\"screen\":{\"x\":").append(p.x).append(",\"y\":").append(p.y).append('}');
+			}
+			java.awt.Font f = c.getFont();
+			if (f != null) {
+				sb.append(",\"font\":\"").append(escape(f.getName() + ' ' + f.getSize()
+						+ (f.isBold() ? " bold" : "") + (f.isItalic() ? " italic" : ""))).append('"');
+			}
+			sb.append(",\"foreground\":\"").append(hexColor(c.getForeground()));
+			sb.append("\",\"background\":\"").append(hexColor(c.getBackground())).append('"');
+			if (c instanceof JComponent) {
+				JComponent jc = (JComponent) c;
+				if (jc.getToolTipText() != null) {
+					comma(sb);
+					kv(sb, "tooltip", jc.getToolTipText());
+				}
+				if (jc.getBorder() != null) {
+					comma(sb);
+					kv(sb, "border", jc.getBorder().getClass().getName());
+				}
+			}
+			javax.accessibility.AccessibleContext ac = c.getAccessibleContext();
+			if (ac != null) {
+				sb.append(",\"accessible\":{");
+				kv(sb, "role", ac.getAccessibleRole().toDisplayString());
+				comma(sb);
+				kv(sb, "name", nz(ac.getAccessibleName()));
+				comma(sb);
+				kv(sb, "description", nz(ac.getAccessibleDescription()));
+				sb.append('}');
+			}
+			if (c instanceof AbstractButton) {
+				AbstractButton btn = (AbstractButton) c;
+				comma(sb);
+				kv(sb, "actionCommand", nz(btn.getActionCommand()));
+				comma(sb);
+				raw(sb, "selected", btn.isSelected());
+			}
+			if (c instanceof JTextComponent) {
+				JTextComponent tc = (JTextComponent) c;
+				comma(sb);
+				raw(sb, "editable", tc.isEditable());
+				sb.append(",\"caretPosition\":").append(tc.getCaretPosition());
+				sb.append(",\"documentLength\":").append(tc.getDocument().getLength());
+			}
+			sb.append(",\"listeners\":{");
+			if (c instanceof AbstractButton) {
+				sb.append("\"action\":").append(((AbstractButton) c).getActionListeners().length).append(',');
+			}
+			sb.append("\"mouse\":").append(c.getMouseListeners().length);
+			sb.append(",\"key\":").append(c.getKeyListeners().length);
+			sb.append(",\"focus\":").append(c.getFocusListeners().length);
+			sb.append('}');
+			sb.append('}');
+			return sb.toString();
+		});
+	}
+
+	private static String hexColor(java.awt.Color c) {
+		return c == null ? "" : String.format("#%02x%02x%02x", c.getRed(), c.getGreen(), c.getBlue());
+	}
+
+	// ---------------------------------------------------------------------
+	// Highlight: show a human where a selector points
+	// ---------------------------------------------------------------------
+
+	private static final class GlassState {
+		final Component pane;
+		final boolean wasVisible;
+
+		GlassState(Component pane, boolean wasVisible) {
+			this.pane = pane;
+			this.wasVisible = wasVisible;
+		}
+	}
+
+	/** Original glass pane per root, saved while a highlight overlay is up. EDT-confined. */
+	private static final java.util.Map<javax.swing.JRootPane, GlassState> savedGlass = new java.util.IdentityHashMap<>();
+
+	/**
+	 * Flash a translucent red overlay over the component so a human watching the
+	 * screen can see what a selector resolves to. Swaps the window's glass pane
+	 * for the duration and restores the original (and its visibility — VCell
+	 * uses visible glass panes to block input during long tasks) afterwards.
+	 *
+	 * @return true if the component resolved and is showing
+	 */
+	public static boolean highlight(final String selector, final int durationMs) {
+		return Boolean.TRUE.equals(onEdt(() -> {
+			Component c = findByPath(selector);
+			if (c == null || !c.isShowing()) {
+				return false;
+			}
+			javax.swing.JRootPane root = SwingUtilities.getRootPane(c);
+			if (root == null) {
+				return false;
+			}
+			if (!savedGlass.containsKey(root)) {
+				Component old = root.getGlassPane();
+				savedGlass.put(root, new GlassState(old, old != null && old.isVisible()));
+			}
+			final Rectangle r = (c.getParent() == null) ? new Rectangle(0, 0, c.getWidth(), c.getHeight())
+					: SwingUtilities.convertRectangle(c.getParent(), c.getBounds(), root.getGlassPane());
+			JComponent overlay = new JComponent() {
+				@Override
+				protected void paintComponent(java.awt.Graphics g) {
+					java.awt.Graphics2D g2 = (java.awt.Graphics2D) g;
+					g2.setColor(new java.awt.Color(255, 0, 0, 60));
+					g2.fillRect(r.x, r.y, r.width, r.height);
+					g2.setStroke(new java.awt.BasicStroke(3f));
+					g2.setColor(java.awt.Color.RED);
+					g2.drawRect(r.x, r.y, r.width, r.height);
+				}
+			};
+			overlay.setOpaque(false);
+			root.setGlassPane(overlay);
+			overlay.setVisible(true);
+			javax.swing.Timer timer = new javax.swing.Timer(durationMs, e -> {
+				GlassState orig = savedGlass.remove(root);
+				if (orig != null && orig.pane != null) {
+					root.setGlassPane(orig.pane);
+					orig.pane.setVisible(orig.wasVisible);
+				}
+			});
+			timer.setRepeats(false);
+			timer.start();
 			return true;
 		}));
 	}

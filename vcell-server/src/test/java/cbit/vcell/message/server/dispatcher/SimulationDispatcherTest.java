@@ -88,6 +88,13 @@ public class SimulationDispatcherTest {
     @Test
     public void dispatcherThreadFailsJobsWithNoSimulationReference() throws SQLException, DataAccessException, InterruptedException {
         DispatcherTestUtils.insertOrUpdateStatus(mockSimulationDB, SimulationJobStatus.SchedulerStatus.WAITING);
+
+        // The job is WAITING before the dispatcher exists. Asserting this after starting the
+        // dispatcher would be a race: the dispatch thread runs as soon as it is constructed, so it
+        // may already have failed the job by then - which is what made this test flaky.
+        SimulationJobStatus jobStatus = mockSimulationDB.getLatestSimulationJobStatus(DispatcherTestUtils.simKey, 0);
+        Assertions.assertTrue(jobStatus.getSchedulerStatus().isWaiting(), "job starts out waiting");
+
         SimulationDispatcher simulationDispatcher = SimulationDispatcher.simulationDispatcherCreator(mockSimulationDB, mockMessagingServiceInternal,
                 mockMessagingServiceSim, mockHtcProxy, true);
         SimulationDispatcher.DispatchThread thread = simulationDispatcher.dispatchThread;
@@ -95,13 +102,7 @@ public class SimulationDispatcherTest {
             thread.dispatcherNotifyObject.notify();
         }
 
-        // Check that the simulation is in waiting, for the dispatcher hasn't consumed it's request yet
-        SimulationJobStatus jobStatus = mockSimulationDB.getLatestSimulationJobStatus(DispatcherTestUtils.simKey, 0);
-        Assertions.assertTrue(jobStatus.getSchedulerStatus().isWaiting(), "Still waiting.");
-
-        synchronized (thread.finishListener){
-            thread.finishListener.wait();
-        }
+        awaitDispatchPass(thread);
 
         // Makes sure that requests that have no simulation reference within the DB are failed
         jobStatus = mockSimulationDB.getLatestSimulationJobStatus(DispatcherTestUtils.simKey, 0);
@@ -111,23 +112,45 @@ public class SimulationDispatcherTest {
 
     @Test
     public void dispatcherThreadDispatchesWaitingJobsWithSimulationsIn() throws SQLException, DataAccessException, InterruptedException, PropertyVetoException, MathException, ExpressionBindingException {
-        SimulationDispatcher simulationDispatcher = SimulationDispatcher.simulationDispatcherCreator(mockSimulationDB, mockMessagingServiceInternal,
-                mockMessagingServiceSim, mockHtcProxy, true);
-        SimulationDispatcher.DispatchThread thread = simulationDispatcher.dispatchThread;
-        // Create and insert simulation. Then ensure that this simulation has it's job status changed to dispatched
+        // Insert the simulation BEFORE starting the dispatcher, so that any completed pass has
+        // necessarily seen it. Inserting afterwards would mean the first pass might have run
+        // before the insert, and waiting for it would prove nothing.
         Simulation mockSimulation = DispatcherTestUtils.createMockSimulation(20, 20, 20);
         mockSimulationDB.insertSimulation(DispatcherTestUtils.alice, mockSimulation);
         DispatcherTestUtils.insertOrUpdateStatus(mockSimulation.getKey(), DispatcherTestUtils.jobIndex, DispatcherTestUtils.taskID, DispatcherTestUtils.alice,
                 SimulationJobStatus.SchedulerStatus.WAITING, mockSimulationDB);
+
+        SimulationDispatcher simulationDispatcher = SimulationDispatcher.simulationDispatcherCreator(mockSimulationDB, mockMessagingServiceInternal,
+                mockMessagingServiceSim, mockHtcProxy, true);
+        SimulationDispatcher.DispatchThread thread = simulationDispatcher.dispatchThread;
         synchronized (thread.dispatcherNotifyObject){
             thread.dispatcherNotifyObject.notify();
         }
-        synchronized (thread.finishListener){
-            thread.finishListener.wait();
-        }
+        awaitDispatchPass(thread);
 
         SimulationJobStatus jobStatus = mockSimulationDB.getLatestSimulationJobStatus(mockSimulation.getKey(), 0);
         Assertions.assertTrue(jobStatus.getSchedulerStatus().isDispatched(), "Dispatches");
+    }
+
+    /** Timeout for waiting on a worker pass - generous, since it only bites when something hangs. */
+    private static final long PASS_TIMEOUT_MS = 30_000;
+
+    /**
+     * Wait for the dispatch thread to finish a pass over the job table.
+     * <p>
+     * The job under test is inserted before the dispatcher is constructed, so any completed pass
+     * has seen it; waiting for a count rather than a bare notify means a pass that finished before
+     * we got here still counts, instead of hanging forever on a missed notification.
+     */
+    private static void awaitDispatchPass(SimulationDispatcher.DispatchThread thread) throws InterruptedException {
+        Assertions.assertTrue(thread.finishListener.awaitCompletedPasses(1, PASS_TIMEOUT_MS),
+                "dispatch thread did not complete a pass within " + PASS_TIMEOUT_MS + "ms");
+    }
+
+    private static void awaitFlush(SimulationDispatcher.SimulationMonitor.QueueFlusher queueFlusher)
+            throws InterruptedException {
+        Assertions.assertTrue(queueFlusher.finishListener.awaitCompletedPasses(1, PASS_TIMEOUT_MS),
+                "queue flusher did not complete within " + PASS_TIMEOUT_MS + "ms");
     }
 
 
@@ -183,9 +206,7 @@ public class SimulationDispatcherTest {
         synchronized (simMonitor.monitorNotifyObject){
             simMonitor.monitorNotifyObject.notify();
         }
-        synchronized (queueFlusher.finishListener){
-            queueFlusher.finishListener.wait();
-        }
+        awaitFlush(queueFlusher);
 
         SimulationJobStatus status = mockSimulationDB.getLatestSimulationJobStatus(DispatcherTestUtils.simKey, DispatcherTestUtils.jobIndex);
         Assertions.assertTrue(status.getSchedulerStatus().isFailed());
@@ -216,9 +237,7 @@ public class SimulationDispatcherTest {
         synchronized (simMonitor.monitorNotifyObject){
             simMonitor.monitorNotifyObject.notify();
         }
-        synchronized (queueFlusher.finishListener){
-            queueFlusher.finishListener.wait();
-        }
+        awaitFlush(queueFlusher);
         SimulationJobStatus status = mockSimulationDB.getLatestSimulationJobStatus(DispatcherTestUtils.simKey, DispatcherTestUtils.jobIndex);
         Assertions.assertTrue(status.getSchedulerStatus().isFailed());
         Assertions.assertTrue(mockHtcProxy.jobsKilledUnsafely.contains(status.getSimulationExecutionStatus().getHtcJobID()));

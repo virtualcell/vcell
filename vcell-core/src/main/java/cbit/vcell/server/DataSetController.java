@@ -76,6 +76,15 @@ cbit.vcell.solver.ode.ODESimData getODEData(VCDataIdentifier vcdataID) throws Da
  */
  LangevinBatchResultSet getLangevinBatchResultSet(VCDataIdentifier vcdataID) throws DataAccessException, RemoteProxyException;
 
+/**
+ * getLangevinTrajectory - per-particle SpringSaLaD trajectory ("viewer" file) for the 3D
+ * renderer. Default returns null so implementors that do not serve sim data are unaffected;
+ * the real data paths (local + RPC) override it.
+ */
+ default cbit.vcell.simdata.SpringSaladTrajectory getLangevinTrajectory(VCDataIdentifier vcdataID) throws DataAccessException, RemoteProxyException {
+ 	return null;
+ }
+
  /**
  * This method was created in VisualAge.
  * @return ParticleData

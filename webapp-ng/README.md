@@ -10,6 +10,31 @@ This sample demonstrates the following use cases:
 - Protecting routes using the authentication guard
 - Calling APIs with automatically-attached bearer tokens
 
+## VCell TODO — build-time config forces one web image per deployment
+
+**Problem (dev quality-of-life, not urgent).** Each deployment's authoritative site
+URL is **baked in at build time**. `src/environments/environment.<target>.ts` (selected
+per build via the `fileReplacements` in `angular.json`) hard-codes the Auth0
+`authorizationParams.audience` and the `httpInterceptor.allowedList` API URL — e.g.
+`https://vcell-dev.cam.uchc.edu` for dev, `https://vcell.cam.uchc.edu` for prod, plus
+`stage`/`island`/`remote`. Because these are compiled into the bundle, **every
+deployment needs its own `ng build`, hence its own web container image** (`webapp`,
+`webapp-island`, `webapp-remote`, …). That multiplies build time and images on
+Kubernetes for what is otherwise the same code.
+
+**Fix direction (when someone picks this up).** Move the per-environment values to
+**runtime config** so a single image serves all deployments:
+
+- Serve a small `assets/config.json` (or an env-substituted `/config.json`) per
+  deployment and `fetch` it during `APP_INITIALIZER`, before the Auth0 module and the
+  HTTP interceptor read their config; or
+- Derive the site URL from `window.location.origin` where that's sufficient (the API is
+  same-origin behind the ingress), leaving only the Auth0 `audience` to configure.
+
+Either way the goal is **one webapp image, configured at pod startup** — dropping the
+per-environment build/image fan-out. Ingress already routes `/api/*` per host, so the
+API base is largely derivable at runtime.
+
 ## Configuration
 
 The sample needs to be configured with your Auth0 domain and client ID in order to work. In the root of the sample, copy `auth_config.json.example` and rename it to `auth_config.json`. Open the file and replace the values with those from your Auth0 tenant:

@@ -600,7 +600,7 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 			}
 			
 			if(bs.mcp.getBondType().equals(BondType.Possible)) {	//		?  (Possible)
-				Graphics gc = shapePanel.getGraphics();
+				Graphics gc = LargeShapeCanvas.measuringGraphics(shapePanel);
 				
 				if(shapePanel.getZoomFactor() >= LargeShapeCanvas.SmallestZoomFactorWithText) {
 					Font font = MolecularComponentLargeShape.deriveComponentFontBold(gc, shapePanel);
@@ -714,7 +714,7 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 			g2.drawLine(bp.to.x, bp.to.y, bp.to.x, bp.to.y+yDouble+i*separ);
 			g2.drawLine(bp.from.x, bp.from.y+yDouble+i*separ, bp.to.x, bp.to.y+yDouble+i*separ);
 			
-			Graphics gc = shapePanel.getGraphics();
+			Graphics gc = LargeShapeCanvas.measuringGraphics(shapePanel);
 			if(shapePanel.getZoomFactor() >= LargeShapeCanvas.SmallestZoomFactorWithText) {
 				Font font = MolecularComponentLargeShape.deriveComponentFontBold(gc, shapePanel);
 				g.setFont(font);

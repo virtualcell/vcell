@@ -480,10 +480,11 @@ private static void shallowOrderByPublication(LinkedHashMap<KeyValue, LinkedList
 
 			PublicationInfo lpi = p.get(lhs.getKey());
 			PublicationInfo rpi = p.get(rhs.getKey());
-			
-			int ly = Integer.parseInt((new SimpleDateFormat("yyyy")).format(lpi.getPubDate()));
+
+			// null pubdate must not break the sort (see 8.0.0.03 login failure); sort those entries last
+			int ly = lpi.getPubDate() == null ? Integer.MIN_VALUE : Integer.parseInt((new SimpleDateFormat("yyyy")).format(lpi.getPubDate()));
 			String[] lt = lpi.getAuthors();
-			int ry = Integer.parseInt((new SimpleDateFormat("yyyy")).format(rpi.getPubDate()));
+			int ry = rpi.getPubDate() == null ? Integer.MIN_VALUE : Integer.parseInt((new SimpleDateFormat("yyyy")).format(rpi.getPubDate()));
 			String[] rt = rpi.getAuthors();
 
 			

@@ -90,12 +90,14 @@ public class IssuePanel extends DocumentEditorSubPanel {
 	public IssuePanel() {
 		super();
 		refreshButton = new JButton("Refresh");
+		refreshButton.setName("IssuePanelRefreshButton");
 		refreshButton.addActionListener(e -> {
 				if (issueManager != null) {
 					issueManager.updateIssues();
 				}			
 		});
 		showWarningCheckBox = new JCheckBox("Show Warnings");
+		showWarningCheckBox.setName("ShowWarningsCheckBox");
 		showWarningCheckBox.setSelected(true);
 		showWarningCheckBox.addActionListener(e-> {
 				issueTableModel.setShowWarning(showWarningCheckBox.isSelected());

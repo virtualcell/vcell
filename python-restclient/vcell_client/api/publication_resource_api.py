@@ -103,6 +103,7 @@ class PublicationResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "int",
+            '400': "VCellHTTPError",
             '401': "VCellHTTPError",
             '403': "VCellHTTPError",
             '500': "VCellHTTPError"
@@ -173,6 +174,7 @@ class PublicationResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "int",
+            '400': "VCellHTTPError",
             '401': "VCellHTTPError",
             '403': "VCellHTTPError",
             '500': "VCellHTTPError"
@@ -243,6 +245,7 @@ class PublicationResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "int",
+            '400': "VCellHTTPError",
             '401': "VCellHTTPError",
             '403': "VCellHTTPError",
             '500': "VCellHTTPError"
@@ -1431,6 +1434,7 @@ class PublicationResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "Publication",
+            '400': "VCellHTTPError",
             '401': "VCellHTTPError",
             '403': "VCellHTTPError",
             '500': "VCellHTTPError"
@@ -1501,6 +1505,7 @@ class PublicationResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "Publication",
+            '400': "VCellHTTPError",
             '401': "VCellHTTPError",
             '403': "VCellHTTPError",
             '500': "VCellHTTPError"
@@ -1571,6 +1576,7 @@ class PublicationResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "Publication",
+            '400': "VCellHTTPError",
             '401': "VCellHTTPError",
             '403': "VCellHTTPError",
             '500': "VCellHTTPError"

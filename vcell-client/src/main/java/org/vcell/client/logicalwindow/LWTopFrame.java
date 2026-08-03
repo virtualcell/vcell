@@ -78,10 +78,12 @@ public abstract class LWTopFrame extends JFrame implements LWContainerHandle {
 	public static JMenu createWindowMenu(boolean bTextMenu ) {
 		JMenu mnWindow = new JMenu( );
 		if (bTextMenu) {
+			mnWindow.setName("WindowMenu");
 			mnWindow.setText("Window");
 			mnWindow.setMnemonic('W');
 		}
 		else {
+			mnWindow.setName("WindowIconMenu");
 			mnWindow.setIcon(LWButton.SHOW_WINDOW_MENU_ICON);
 			mnWindow.setToolTipText("Show open windows");
 		}

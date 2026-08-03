@@ -236,9 +236,3 @@ src/main/java/org/vcell/restclient/model/VariableType.java
 src/main/java/org/vcell/restclient/model/Vcellopt.java
 src/main/java/org/vcell/restclient/model/VcelloptStatus.java
 src/main/java/org/vcell/restclient/model/VersionRep.java
-src/test/java/org/vcell/restclient/model/GroupAccessRepTest.java
-src/test/java/org/vcell/restclient/model/GroupMemberRepTest.java
-src/test/java/org/vcell/restclient/model/PreviewRepTest.java
-src/test/java/org/vcell/restclient/model/PublicationInfoRepTest.java
-src/test/java/org/vcell/restclient/model/UserRepTest.java
-src/test/java/org/vcell/restclient/model/VersionRepTest.java

@@ -87,7 +87,8 @@
 
     <mat-form-field class="full-width">
       <mat-label>Date</mat-label>
-      <input matInput type="date" [(ngModel)]="publication.date" name="date">
+      <input matInput type="date" [(ngModel)]="publication.date" name="date" required>
+      <mat-error *ngIf="publicationForm.controls['date']?.invalid">Date is required</mat-error>
     </mat-form-field>
 
     <div *ngIf="showPublishControls" class="publish-row">
