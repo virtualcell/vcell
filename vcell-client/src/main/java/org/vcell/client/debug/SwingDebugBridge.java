@@ -116,6 +116,8 @@ public final class SwingDebugBridge {
 			s.createContext("/selectTab", wrap(SwingDebugBridge::handleSelectTab));
 			s.createContext("/selectTreeRow", wrap(SwingDebugBridge::handleSelectTreeRow));
 			s.createContext("/rightClickTreeRow", wrap(SwingDebugBridge::handleRightClickTreeRow));
+			s.createContext("/expandTreeRow", wrap(SwingDebugBridge::handleExpandTreeRow));
+			s.createContext("/doubleClickTreeRow", wrap(SwingDebugBridge::handleDoubleClickTreeRow));
 			s.createContext("/rightClick", wrap(SwingDebugBridge::handleRightClick));
 			s.createContext("/listeners", wrap(SwingDebugBridge::handleListeners));
 			s.createContext("/find", wrap(SwingDebugBridge::handleFind));
@@ -340,6 +342,27 @@ public final class SwingDebugBridge {
 		}
 		boolean ok = SwingInspector.selectTreeRow(path, Integer.parseInt(q.get("row")));
 		return "{\"selected\":" + ok + ",\"path\":\"" + jsonEscape(path) + "\"}";
+	}
+
+	private static String handleExpandTreeRow(HttpExchange ex) {
+		Map<String, String> q = query(ex);
+		String path = q.get("path");
+		if (path == null || path.isEmpty() || !q.containsKey("row")) {
+			return "{\"error\":\"require 'path' and 'row' query parameters\"}";
+		}
+		boolean expand = Boolean.parseBoolean(q.getOrDefault("expand", "true"));
+		boolean ok = SwingInspector.expandTreeRow(path, Integer.parseInt(q.get("row")), expand);
+		return "{\"expanded\":" + ok + ",\"path\":\"" + jsonEscape(path) + "\"}";
+	}
+
+	private static String handleDoubleClickTreeRow(HttpExchange ex) {
+		Map<String, String> q = query(ex);
+		String path = q.get("path");
+		if (path == null || path.isEmpty() || !q.containsKey("row")) {
+			return "{\"error\":\"require 'path' and 'row' query parameters\"}";
+		}
+		boolean ok = SwingInspector.doubleClickTreeRow(path, Integer.parseInt(q.get("row")));
+		return "{\"doubleClicked\":" + ok + ",\"path\":\"" + jsonEscape(path) + "\"}";
 	}
 
 	private static String handleRightClickTreeRow(HttpExchange ex) {

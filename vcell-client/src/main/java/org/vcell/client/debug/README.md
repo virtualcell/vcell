@@ -57,6 +57,8 @@ Every node in `/tree` and `/windows` carries a stable **`id`** (`c0`, `c1`, …)
 | `GET /setText?path=&text=&enter=` | JSON `{"set": true\|false}` |
 | `GET /selectTab?path=&index=` | JSON `{"selected": true\|false}` |
 | `GET /selectTreeRow?path=&row=N` | select row N of the JTree; JSON `{"selected": bool}` |
+| `GET /expandTreeRow?path=&row=N[&expand=false]` | expand (or collapse) row N — row indices only cover *expanded* rows, so this is how a driver walks down a tree; JSON `{"expanded": bool}` |
+| `GET /doubleClickTreeRow?path=&row=N` | synthetic double-click on row N; JSON `{"doubleClicked": bool}`. Needed because VCell's database trees open a document straight from the `MouseEvent` (`MOUSE_PRESSED` + `getClickCount()==2`), which no higher-level API reproduces |
 | `GET /rightClickTreeRow?path=&row=N` | right-click row N (opens its context menu); JSON `{"rightClicked": bool}` |
 | `GET /rightClick?path=` | right-click a component's center; JSON `{"rightClicked": bool}` |
 | `GET /find?type=&name=&text=&textContains=&limit=` | JSON: components matching ALL given criteria (each param optional, at least one required). `type` is a simple class name matched against the class **or any superclass** (`JButton`, `AbstractButton`); `text` is exact, `textContains` case-insensitive. Returns full nodes (path + id + state), no children |

@@ -888,6 +888,77 @@ public final class SwingInspector {
 	}
 
 	/**
+	 * Expand or collapse a row of the {@link JTree} at the given path. Needed to reach
+	 * nodes that are not visible yet: row indices only cover currently-expanded rows,
+	 * so a driver walks down a tree by expanding and re-reading the rows.
+	 *
+	 * @return true if the tree resolved and the row was in range
+	 */
+	public static boolean expandTreeRow(final String path, final int row, final boolean expand) {
+		return Boolean.TRUE.equals(onEdt(() -> {
+			Component c = findByPath(path);
+			if (!(c instanceof JTree)) {
+				return false;
+			}
+			JTree tree = (JTree) c;
+			if (row < 0 || row >= tree.getRowCount()) {
+				return false;
+			}
+			if (expand) {
+				tree.expandRow(row);
+			} else {
+				tree.collapseRow(row);
+			}
+			tree.scrollRowToVisible(row);
+			return true;
+		}));
+	}
+
+	/**
+	 * Double-click a row of the {@link JTree} at the given path with a synthetic
+	 * {@link Robot} click pair. A real double-click is required (rather than firing a
+	 * listener directly) because VCell's database trees open a document from the raw
+	 * {@link java.awt.event.MouseEvent} — {@code MOUSE_PRESSED} with
+	 * {@code getClickCount() == 2} — so no higher-level API reproduces it.
+	 *
+	 * @return true if the tree/row resolved and the double-click was issued
+	 */
+	public static boolean doubleClickTreeRow(final String path, final int row) {
+		Point screenPt = onEdt(() -> {
+			Component c = findByPath(path);
+			if (!(c instanceof JTree)) {
+				return null;
+			}
+			JTree tree = (JTree) c;
+			if (row < 0 || row >= tree.getRowCount() || !tree.isShowing()) {
+				return null;
+			}
+			tree.setSelectionRow(row);
+			tree.scrollRowToVisible(row);
+			Rectangle rb = tree.getRowBounds(row);
+			if (rb == null) {
+				return null;
+			}
+			Point loc = tree.getLocationOnScreen();
+			return new Point(loc.x + rb.x + Math.min(rb.width / 2, 40), loc.y + rb.y + rb.height / 2);
+		});
+		if (screenPt == null) {
+			return false;
+		}
+		try {
+			Robot robot = new Robot();
+			robot.mouseMove(screenPt.x, screenPt.y);
+			for (int i = 0; i < 2; i++) {
+				robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
+				robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
+			}
+			return true;
+		} catch (Exception e) {
+			throw new RuntimeException("robot double-click failed at " + screenPt, e);
+		}
+	}
+
+	/**
 	 * Right-click a specific row of the {@link JTree} at the given path, which is
 	 * how VCell's tree explorer opens a node's context menu (e.g. right-clicking
 	 * the "Applications" node to create a new Application). The row is selected
