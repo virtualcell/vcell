@@ -45,7 +45,17 @@ On startup you'll see a `WARN` log line: `Swing debug bridge listening on http:/
 
 ## Endpoints
 
-Every node in `/tree` and `/windows` carries a stable **`id`** (`c0`, `c1`, …) in addition to its `path`. Any endpoint's `path=` parameter accepts either form — prefer the `id`, which stays valid across dumps and doesn't break when the component tree shifts. (Registry is non-invasive; it never touches `Component.getName()`.)
+Every endpoint's `path=` parameter accepts **three interchangeable selector forms**:
+
+| Form | Example | Notes |
+|---|---|---|
+| **name** | `name=DatabaseSearchButton` | Most robust — survives layout changes entirely. Where several components share a name (VCell reuses panels, e.g. one search panel per database tab), a **showing** match wins over a hidden one; disambiguate with an index, `name=DatabaseSearchButton[1]`, using the `/find` ordering. |
+| **id** | `c42` | Stable registry id emitted as `id` on every node in `/tree` and `/windows`; valid across dumps. The registry is non-invasive — it never touches `Component.getName()`. |
+| **node path** | `0/3/2` | Positional (window 0 → child 3 → child 2). Brittle; prefer the forms above. |
+
+A selector that doesn't resolve reports `did not resolve` (or `false`) rather than erroring — a malformed selector never throws.
+
+> Naming widgets is what makes the `name=` form work: see the tip below on `setName`.
 
 | Endpoint | Returns |
 |---|---|

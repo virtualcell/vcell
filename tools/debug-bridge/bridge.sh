@@ -23,7 +23,10 @@
 #   assert [find opts] [--gone]
 #   idle
 #
-# A <selector> is a tree path ("0/3/2") or a stable component id ("c42").
+# A <selector> is one of:
+#   name=SearchButton[N]  by Component name (best); showing match wins, [N] disambiguates
+#   c42                   stable component id from /tree
+#   0/3/2                 positional node path (brittle)
 
 set -eo pipefail
 
