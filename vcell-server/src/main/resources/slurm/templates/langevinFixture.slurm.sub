@@ -77,7 +77,6 @@ LOG_DIR="/simdata/${SIM_OWNER_NAME}"    # on singularity, each solver instance w
 declare -A job_pid_map
 job_pids=()
 running_jobs=0
-any_fail=0
 max_concurrent_jobs=${SLURM_NTASKS:-4}    # actually these are tasks
 echo "max_concurrent_jobs: ${max_concurrent_jobs}" >> "${LOG_FILE}"
 echo "TOTAL_JOBS to launch: ${TOTAL_JOBS}" >> "${LOG_FILE}"
