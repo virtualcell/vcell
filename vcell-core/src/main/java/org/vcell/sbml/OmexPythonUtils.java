@@ -21,15 +21,19 @@ public class OmexPythonUtils {
         public final List<OmexValidationError> errors;
 
         public OmexValidationException(List<OmexValidationError> errors) {
+            // The detail has to go to super. JUnit, surefire and most logging report getMessage(),
+            // so building it only in toString() left getMessage() null: a validation failure showed
+            // up in CI as a bare "» OmexValidation" with no hint of what was wrong, and callers
+            // logging e.getMessage() printed "null", even though the errors were right here.
+            super(buildMessage(errors));
             this.errors = errors;
         }
 
-        public String toString() {
+        private static String buildMessage(List<OmexValidationError> errors) {
             StringBuilder sb = new StringBuilder();
-            sb.append("OMEX VALIDATION FAILED\n");
+            sb.append("OMEX VALIDATION FAILED with ").append(errors.size()).append(" error(s)");
             for (OmexValidationError error : errors) {
-                sb.append(error.toString());
-                sb.append("\n");
+                sb.append("\n").append(error);
             }
             return sb.toString();
         }
