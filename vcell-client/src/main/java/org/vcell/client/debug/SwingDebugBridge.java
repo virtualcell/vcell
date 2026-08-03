@@ -116,6 +116,9 @@ public final class SwingDebugBridge {
 			s.createContext("/selectTab", wrap(SwingDebugBridge::handleSelectTab));
 			s.createContext("/selectTreeRow", wrap(SwingDebugBridge::handleSelectTreeRow));
 			s.createContext("/rightClickTreeRow", wrap(SwingDebugBridge::handleRightClickTreeRow));
+			s.createContext("/selectTableRow", wrap(SwingDebugBridge::handleSelectTableRow));
+			s.createContext("/doubleClickTableRow", wrap(SwingDebugBridge::handleDoubleClickTableRow));
+			s.createContext("/rightClickTableRow", wrap(SwingDebugBridge::handleRightClickTableRow));
 			s.createContext("/expandTreeRow", wrap(SwingDebugBridge::handleExpandTreeRow));
 			s.createContext("/doubleClickTreeRow", wrap(SwingDebugBridge::handleDoubleClickTreeRow));
 			s.createContext("/rightClick", wrap(SwingDebugBridge::handleRightClick));
@@ -342,6 +345,34 @@ public final class SwingDebugBridge {
 		}
 		boolean ok = SwingInspector.selectTreeRow(path, Integer.parseInt(q.get("row")));
 		return "{\"selected\":" + ok + ",\"path\":\"" + jsonEscape(path) + "\"}";
+	}
+
+	/** Shared parsing for the table-row endpoints: require path + row, optional column. */
+	private interface TableRowAction {
+		boolean apply(String path, int row, int column);
+	}
+
+	private static String tableRowRequest(HttpExchange ex, String resultKey, TableRowAction action) {
+		Map<String, String> q = query(ex);
+		String path = q.get("path");
+		if (path == null || path.isEmpty() || !q.containsKey("row")) {
+			return "{\"error\":\"require 'path' and 'row' query parameters\"}";
+		}
+		int column = Integer.parseInt(q.getOrDefault("column", "-1"));
+		boolean ok = action.apply(path, Integer.parseInt(q.get("row")), column);
+		return "{\"" + resultKey + "\":" + ok + ",\"path\":\"" + jsonEscape(path) + "\"}";
+	}
+
+	private static String handleSelectTableRow(HttpExchange ex) {
+		return tableRowRequest(ex, "selected", SwingInspector::selectTableRow);
+	}
+
+	private static String handleDoubleClickTableRow(HttpExchange ex) {
+		return tableRowRequest(ex, "doubleClicked", SwingInspector::doubleClickTableRow);
+	}
+
+	private static String handleRightClickTableRow(HttpExchange ex) {
+		return tableRowRequest(ex, "rightClicked", SwingInspector::rightClickTableRow);
 	}
 
 	private static String handleExpandTreeRow(HttpExchange ex) {
