@@ -50,7 +50,9 @@ public class PathwaySearchTest {
 
     private static final String reactomeSite = "https://reactome.org";
     private static final String ncbiSite = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/einfo.fcgi?db=taxonomy";
-    private static final String pathwaysSite = "https://www.pathwaycommons.org";
+
+    private static final int CONNECT_TIMEOUT_MS = 10_000;
+    private static final int READ_TIMEOUT_MS = 30_000;
 
 
     @BeforeAll
@@ -89,8 +91,6 @@ public class PathwaySearchTest {
     // returns the searchResponse.xml resource
     @Test
     public void searchTest() throws IOException {
-        Assumptions.assumeTrue(isDatabaseAvailable(pathwaysSite), "PathwayCommons is down — skipping test");
-
         String searchText = "Insulin";
         String encodedQ = URLEncoder.encode('"' + searchText + '"', StandardCharsets.UTF_8.name());
         String uri = "https://www.pathwaycommons.org/pc2/search?"
@@ -100,6 +100,15 @@ public class PathwaySearchTest {
 
         HttpURLConnection conn = (HttpURLConnection) new URL(uri).openConnection();
         conn.setRequestProperty("Accept", "application/xml");
+        conn.setConnectTimeout(CONNECT_TIMEOUT_MS);
+        conn.setReadTimeout(READ_TIMEOUT_MS);
+
+        // Skips if PathwayCommons itself is failing. This deliberately replaces a
+        // pre-flight isDatabaseAvailable(pathwaysSite) check: that probed the site
+        // root, which stays HTTP 200 while /pc2/search returns 502 — so the guard
+        // passed and the request below then failed the build during a real outage.
+        int status = statusOrSkip(conn, "PathwayCommons");
+        assertEquals(200, status, "Unexpected HTTP status from " + uri);
 
         String content = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8))
                 .lines()
@@ -404,6 +413,30 @@ public class PathwaySearchTest {
         } catch (IOException e) {
             lg.warn("Failed to write filtered pathway to file", e);
         }
+    }
+
+    /**
+     * Response status of a live request, skipping the test when the fault is the remote
+     * service's rather than ours. A third party being unreachable or returning 5xx is an
+     * outage, not a VCell regression, and must not fail CI — these tests sit in the
+     * required "Fast" check, so a sustained outage would otherwise block every merge.
+     * A 4xx still fails: that means <em>our</em> request is wrong.
+     *
+     * <p>Prefer this over a pre-flight {@link #isDatabaseAvailable} probe. That probe
+     * asks a different URL than the test goes on to use — a service can serve its home
+     * page while the API path is down — and even a probe of the exact URL races with the
+     * request that follows it.
+     */
+    private static int statusOrSkip(HttpURLConnection conn, String serviceName) {
+        final int status;
+        try {
+            status = conn.getResponseCode();
+        } catch (IOException e) {
+            return Assumptions.abort(serviceName + " is unreachable (" + e + ") — skipping test");
+        }
+        Assumptions.assumeTrue(status < 500,
+                serviceName + " returned HTTP " + status + " — remote service outage, skipping test");
+        return status;
     }
 
     public static boolean isDatabaseAvailable(String urlString) {
