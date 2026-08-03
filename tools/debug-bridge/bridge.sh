@@ -16,6 +16,7 @@
 #   settext <selector> <text> [--enter]
 #   tab <selector> <index>      row <selector> <row>     rrow <selector> <row>
 #   expand <selector> <row> [true|false]                 drow <selector> <row>
+#   trow <selector> <row> [col]   dtrow <selector> <row> [col]   rtrow <selector> <row> [col]
 #   menu "<Menu>Item[>Sub]" [window]
 #   highlight <selector> [ms]
 # Synchronize / assert (exit 0 on success, 1 on failure):
@@ -134,6 +135,12 @@ case "$cmd" in
   expand)    get expandTreeRow --data-urlencode "path=$1" --data-urlencode "row=$2" \
                --data-urlencode "expand=${3:-true}" | pretty ;;
   drow)      get doubleClickTreeRow --data-urlencode "path=$1" --data-urlencode "row=$2" | pretty ;;
+  trow)      get selectTableRow --data-urlencode "path=$1" --data-urlencode "row=$2" \
+               ${3:+--data-urlencode "column=$3"} | pretty ;;
+  dtrow)     get doubleClickTableRow --data-urlencode "path=$1" --data-urlencode "row=$2" \
+               ${3:+--data-urlencode "column=$3"} | pretty ;;
+  rtrow)     get rightClickTableRow --data-urlencode "path=$1" --data-urlencode "row=$2" \
+               ${3:+--data-urlencode "column=$3"} | pretty ;;
   rrow)      get rightClickTreeRow --data-urlencode "path=$1" --data-urlencode "row=$2" | pretty ;;
   menu)      get menu --data-urlencode "path=$1" ${2:+--data-urlencode "window=$2"} | pretty ;;
   props)     get props --data-urlencode "path=$1" | pretty ;;

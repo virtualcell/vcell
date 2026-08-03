@@ -67,6 +67,9 @@ A selector that doesn't resolve reports `did not resolve` (or `false`) rather th
 | `GET /setText?path=&text=&enter=` | JSON `{"set": true\|false}` |
 | `GET /selectTab?path=&index=` | JSON `{"selected": true\|false}` |
 | `GET /selectTreeRow?path=&row=N` | select row N of the JTree; JSON `{"selected": bool}` |
+| `GET /selectTableRow?path=&row=N[&column=M]` | select row N of a `JTable` and scroll it into view; JSON `{"selected": bool}`. Row/column are **view** indices, matching the `table` block in `/tree` and the user's current sort order |
+| `GET /doubleClickTableRow?path=&row=N[&column=M]` | synthetic double-click on a table row; JSON `{"doubleClicked": bool}`. Table-backed UIs commonly act on the raw `MouseEvent` click count — this is how you pick a file in the file chooser |
+| `GET /rightClickTableRow?path=&row=N[&column=M]` | select row N then right-click it (opens its context menu); JSON `{"rightClicked": bool}` |
 | `GET /expandTreeRow?path=&row=N[&expand=false]` | expand (or collapse) row N — row indices only cover *expanded* rows, so this is how a driver walks down a tree; JSON `{"expanded": bool}` |
 | `GET /doubleClickTreeRow?path=&row=N` | synthetic double-click on row N; JSON `{"doubleClicked": bool}`. Needed because VCell's database trees open a document straight from the `MouseEvent` (`MOUSE_PRESSED` + `getClickCount()==2`), which no higher-level API reproduces |
 | `GET /rightClickTreeRow?path=&row=N` | right-click row N (opens its context menu); JSON `{"rightClicked": bool}` |

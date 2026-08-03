@@ -923,6 +923,107 @@ public final class SwingInspector {
 		}
 	}
 
+	// ---------------------------------------------------------------------
+	// JTable rows — the counterpart to the JTree row operations below. Needed
+	// for any list-of-things rendered as a table rather than a tree, including
+	// the file chooser, where selecting a row is the only way to pick a file.
+	// ---------------------------------------------------------------------
+
+	/**
+	 * Select (and scroll to) a row of the {@link JTable} at the given path. Rows and
+	 * columns are as reported by the {@code table} block in the JSON dump — note that
+	 * both are <b>view</b> indices, so they follow the user's current sort order.
+	 *
+	 * @param column column to make lead, or -1 to select the whole row
+	 * @return true if the table resolved and the row was in range
+	 */
+	public static boolean selectTableRow(final String path, final int row, final int column) {
+		return Boolean.TRUE.equals(onEdt(() -> {
+			JTable table = tableAt(path, row, column);
+			if (table == null) {
+				return false;
+			}
+			int col = column < 0 ? 0 : column;
+			table.setRowSelectionInterval(row, row);
+			if (column >= 0 && table.getColumnSelectionAllowed()) {
+				table.setColumnSelectionInterval(col, col);
+			}
+			table.scrollRectToVisible(table.getCellRect(row, col, true));
+			return true;
+		}));
+	}
+
+	/**
+	 * Double-click a row of the {@link JTable} at the given path. A synthetic
+	 * {@link Robot} click pair is required rather than a selection change because
+	 * table-backed UIs commonly act on the raw {@code MouseEvent} click count — the
+	 * file chooser opens the selected file that way.
+	 *
+	 * @return true if the table/row resolved and the double-click was issued
+	 */
+	public static boolean doubleClickTableRow(final String path, final int row, final int column) {
+		return clickTableRow(path, row, column, InputEvent.BUTTON1_DOWN_MASK, 2);
+	}
+
+	/**
+	 * Right-click a row of the {@link JTable} at the given path, to open its context
+	 * menu. The row is selected first, as a real right-click would.
+	 *
+	 * @return true if the table/row resolved and the right-click was issued
+	 */
+	public static boolean rightClickTableRow(final String path, final int row, final int column) {
+		return clickTableRow(path, row, column, InputEvent.BUTTON3_DOWN_MASK, 1);
+	}
+
+	private static boolean clickTableRow(final String path, final int row, final int column,
+			final int buttonMask, final int clickCount) {
+		Point screenPt = onEdt(() -> {
+			JTable table = tableAt(path, row, column);
+			if (table == null || !table.isShowing()) {
+				return null;
+			}
+			int col = column < 0 ? 0 : column;
+			table.setRowSelectionInterval(row, row);
+			Rectangle cell = table.getCellRect(row, col, true);
+			table.scrollRectToVisible(cell);
+			// re-read: scrolling moves the cell under the viewport
+			cell = table.getCellRect(row, col, true);
+			Point loc = table.getLocationOnScreen();
+			return new Point(loc.x + cell.x + Math.min(cell.width / 2, 60),
+					loc.y + cell.y + cell.height / 2);
+		});
+		if (screenPt == null) {
+			return false;
+		}
+		try {
+			Robot robot = new Robot();
+			robot.mouseMove(screenPt.x, screenPt.y);
+			for (int i = 0; i < clickCount; i++) {
+				robot.mousePress(buttonMask);
+				robot.mouseRelease(buttonMask);
+			}
+			return true;
+		} catch (Exception e) {
+			throw new RuntimeException("robot table click failed at " + screenPt, e);
+		}
+	}
+
+	/** Resolve a selector to a JTable and bounds-check row/column. Must run on the EDT. */
+	private static JTable tableAt(String path, int row, int column) {
+		Component c = findByPath(path);
+		if (!(c instanceof JTable)) {
+			return null;
+		}
+		JTable table = (JTable) c;
+		if (row < 0 || row >= table.getRowCount()) {
+			return null;
+		}
+		if (column >= table.getColumnCount()) {
+			return null;
+		}
+		return table;
+	}
+
 	/**
 	 * Select (and scroll to) a specific row of the {@link JTree} at the given
 	 * path. Rows are as reported by the {@code tree} block in the JSON dump.
