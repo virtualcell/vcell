@@ -614,13 +614,20 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 	
 	private void initialize(){
 		newButton = new JButton("New");
+		newButton.setName("ModelNewButton");
 		newButton2 = new JButton("New Rule");
+		newButton2.setName("ModelNewRuleButton");
 		newMemButton = new JButton("New Membrane");
+		newMemButton.setName("ModelNewMembraneButton");
 		deleteButton = new JButton("Delete");
+		deleteButton.setName("ModelDeleteButton");
 		duplicateButton = new JButton("Duplicate");
+		duplicateButton.setName("ModelDuplicateButton");
 		pathwayButton = new JButton("Pathway Links", new DownArrowIcon());
+		pathwayButton.setName("ModelPathwayLinksButton");
 		pathwayButton.setHorizontalTextPosition(SwingConstants.LEFT);
 		textFieldSearch = new JTextField();
+		textFieldSearch.setName("ModelSearchTextField");
 		textFieldSearch.putClientProperty("JTextField.variant", "search");
 		
 		structuresTable = new EditorScrollTable();
@@ -719,6 +726,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		/* button panel */
 		
 		tabbedPane = new JTabbedPaneEnhanced();
+		tabbedPane.setName("ModelTabbedPane");
 		tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 		modelPanelTabs[ModelPanelTabID.reaction_diagram.ordinal()] = new ModelPanelTab(ModelPanelTabID.reaction_diagram, reactionCartoonEditorPanel, VCellIcons.diagramIcon);
 //		modelPanelTabs[ModelPanelTabID.structure_diagram.ordinal()] = new ModelPanelTab(ModelPanelTabID.structure_diagram, cartoonEditorPanel, VCellIcons.structureIcon);

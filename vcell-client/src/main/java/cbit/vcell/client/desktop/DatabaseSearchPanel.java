@@ -335,6 +335,7 @@ public class DatabaseSearchPanel extends CollapsiblePanel {
 	private void initialize() {
 //		JLabel nameLabel = new JLabel("Search ");
 		nameSearchTextField = new TextFieldAutoCompletion();
+		nameSearchTextField.setName("DatabaseSearchTextField");
 		nameSearchTextField.putClientProperty("JTextField.variant", "search");
 		textFieldAutoComSet.add(nameSearchTextField);
 		
@@ -356,8 +357,10 @@ public class DatabaseSearchPanel extends CollapsiblePanel {
 		advancedOptions.add(endDatePanel);
 		
 		searchButton = new JButton("Search");		
+		searchButton.setName("DatabaseSearchButton");
 		searchButton.setActionCommand(SEARCH_Command);
 		cancelButton = new JButton("Show All");
+		cancelButton.setName("DatabaseShowAllButton");
 		cancelButton.setActionCommand(SEARCH_SHOW_ALL_COMMAND);
 		 
 		JPanel mainPanel = new JPanel();
@@ -389,6 +392,7 @@ public class DatabaseSearchPanel extends CollapsiblePanel {
 		mainPanel.add(advancedButton, gbc);
 
 		chckbxHasSpatial = new JCheckBox("Has Spatial");
+		chckbxHasSpatial.setName("HasSpatialCheckBox");
 		GridBagConstraints gbc_chckbxHasSpatial = new GridBagConstraints();
 		gbc_chckbxHasSpatial.anchor = GridBagConstraints.WEST;
 		gbc_chckbxHasSpatial.insets = new Insets(0, 5,5,0);
@@ -444,6 +448,7 @@ public class DatabaseSearchPanel extends CollapsiblePanel {
 		lblSpeciesName.setVisible(bEnableSpeciesSearch);
 		
 		textFieldSpeciesName = new JTextField();
+		textFieldSpeciesName.setName("SpeciesNameSearchTextField");
 		GridBagConstraints gbc_textFieldSpeciesName = new GridBagConstraints();
 		gbc_textFieldSpeciesName.insets = new Insets(0, 0, 5, 0);
 		gbc_textFieldSpeciesName.fill = GridBagConstraints.HORIZONTAL;
