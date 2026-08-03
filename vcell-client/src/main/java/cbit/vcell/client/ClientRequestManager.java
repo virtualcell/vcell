@@ -3548,8 +3548,13 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 							if (inNewWindow) {
 								windowManager = createDocumentWindowManager(doc);
 								// request was to create a new top-level window with this doc
-								getMdiManager().createNewDocumentWindow(windowManager);
-
+								DocumentWindow dw = getMdiManager().createNewDocumentWindow(windowManager);
+								// raise the window we just opened. Without this the only thing that
+								// raises it is task4's setWindowFocus, which goes through
+								// DocumentWindowManager.getDocumentEditor() and so does nothing for a
+								// Geometry (GeometryWindowManager has no DocumentEditor) — the window
+								// then opens behind the window the user launched it from.
+								setFinalWindow(hashTable, dw);
 							} else {
 								// request was to replace the document in an existing window
 								windowManager = (DocumentWindowManager) requester;
