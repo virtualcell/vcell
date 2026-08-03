@@ -300,7 +300,7 @@ public class MolecularTypeLargeShape extends IssueManagerContainer implements La
 	}
 	
 	private int getStringWidth(String s) {
-		Graphics gc = shapePanel.getGraphics();
+		Graphics gc = LargeShapeCanvas.measuringGraphics(shapePanel);
 		Font font = gc.getFont().deriveFont(Font.BOLD);
 		FontMetrics fm = gc.getFontMetrics(font);
 		int stringWidth = fm.stringWidth(s);
@@ -336,7 +336,7 @@ public class MolecularTypeLargeShape extends IssueManagerContainer implements La
 	}
 	@Override
 	public Rectangle getLabelOutline() {
-		Graphics gc = shapePanel.getGraphics();
+		Graphics gc = LargeShapeCanvas.measuringGraphics(shapePanel);
 		Font font = gc.getFont().deriveFont(Font.BOLD);
 		FontMetrics fm = gc.getFontMetrics(font);
 		int stringWidth = fm.stringWidth(getFullName());
@@ -345,7 +345,7 @@ public class MolecularTypeLargeShape extends IssueManagerContainer implements La
 	}
 	@Override
 	public Font getLabelFont() {
-		Graphics gc = shapePanel.getGraphics();
+		Graphics gc = LargeShapeCanvas.measuringGraphics(shapePanel);
 		Font font = gc.getFont().deriveFont(Font.BOLD);
 		return font;
 	}
@@ -745,7 +745,7 @@ public class MolecularTypeLargeShape extends IssueManagerContainer implements La
 		if(mt == null && mtp == null) {		// plain species context
 			 // don't write any text inside
 		} else {							// molecular type, species pattern
-			Graphics gc = shapePanel.getGraphics();
+			Graphics gc = LargeShapeCanvas.measuringGraphics(shapePanel);
 			Font font = deriveMoleculeFontBold(g, shapePanel);
 			g.setFont(font);
 			g.setColor(getDefaultColor(Color.BLACK));	// font color
@@ -878,7 +878,7 @@ public class MolecularTypeLargeShape extends IssueManagerContainer implements La
 			return;
 		}
 		if(mtp != null && mtp.hasExplicitParticipantMatch() && mtp.getParticipantMatchLabel().equals(matchKey)) {
-			Graphics g = shapePanel.getGraphics();
+			Graphics g = LargeShapeCanvas.measuringGraphics(shapePanel);
 			Graphics2D g2 = (Graphics2D)g;
 			Font fontOld = g2.getFont();
 			Color colorOld = g2.getColor();

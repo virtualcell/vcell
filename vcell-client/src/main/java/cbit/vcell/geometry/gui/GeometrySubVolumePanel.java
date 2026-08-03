@@ -340,6 +340,15 @@ private JPopupMenu getAddSubVolumePopupMenu() {
 		addSubVolumePopupMenu.add(addAnalyticSubVolumeMenuItem);
 		addSubVolumePopupMenu.add(addCSGSubVolumeMenuItem);
 	}
+	// Constructed Solid Geometry is 3D-only — the New Geometry chooser offers it as
+	// "Constructive Solid Geometry (3D)". In 1D/2D it stayed selectable and produced
+	// meaningless results (issue #1739). Re-evaluated on every show, since the panel
+	// outlives the geometry it is editing.
+	Geometry geometry = getGeometry();
+	boolean bIs3D = geometry != null && geometry.getDimension() == 3;
+	addCSGSubVolumeMenuItem.setEnabled(bIs3D);
+	addCSGSubVolumeMenuItem.setToolTipText(bIs3D ? null
+			: "Constructed Solid Geometry is only available for 3-dimensional geometries");
 	return addSubVolumePopupMenu;
 }
 /**
