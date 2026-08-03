@@ -45,7 +45,17 @@ On startup you'll see a `WARN` log line: `Swing debug bridge listening on http:/
 
 ## Endpoints
 
-Every node in `/tree` and `/windows` carries a stable **`id`** (`c0`, `c1`, …) in addition to its `path`. Any endpoint's `path=` parameter accepts either form — prefer the `id`, which stays valid across dumps and doesn't break when the component tree shifts. (Registry is non-invasive; it never touches `Component.getName()`.)
+Every endpoint's `path=` parameter accepts **three interchangeable selector forms**:
+
+| Form | Example | Notes |
+|---|---|---|
+| **name** | `name=DatabaseSearchButton` | Most robust — survives layout changes entirely. Where several components share a name (VCell reuses panels, e.g. one search panel per database tab), a **showing** match wins over a hidden one; disambiguate with an index, `name=DatabaseSearchButton[1]`, using the `/find` ordering. |
+| **id** | `c42` | Stable registry id emitted as `id` on every node in `/tree` and `/windows`; valid across dumps. The registry is non-invasive — it never touches `Component.getName()`. |
+| **node path** | `0/3/2` | Positional (window 0 → child 3 → child 2). Brittle; prefer the forms above. |
+
+A selector that doesn't resolve reports `did not resolve` (or `false`) rather than erroring — a malformed selector never throws.
+
+> Naming widgets is what makes the `name=` form work: see the tip below on `setName`.
 
 | Endpoint | Returns |
 |---|---|
@@ -57,14 +67,30 @@ Every node in `/tree` and `/windows` carries a stable **`id`** (`c0`, `c1`, …)
 | `GET /setText?path=&text=&enter=` | JSON `{"set": true\|false}` |
 | `GET /selectTab?path=&index=` | JSON `{"selected": true\|false}` |
 | `GET /selectTreeRow?path=&row=N` | select row N of the JTree; JSON `{"selected": bool}` |
+| `GET /expandTreeRow?path=&row=N[&expand=false]` | expand (or collapse) row N — row indices only cover *expanded* rows, so this is how a driver walks down a tree; JSON `{"expanded": bool}` |
+| `GET /doubleClickTreeRow?path=&row=N` | synthetic double-click on row N; JSON `{"doubleClicked": bool}`. Needed because VCell's database trees open a document straight from the `MouseEvent` (`MOUSE_PRESSED` + `getClickCount()==2`), which no higher-level API reproduces |
 | `GET /rightClickTreeRow?path=&row=N` | right-click row N (opens its context menu); JSON `{"rightClicked": bool}` |
 | `GET /rightClick?path=` | right-click a component's center; JSON `{"rightClicked": bool}` |
+| `GET /find?type=&name=&text=&textContains=&limit=` | JSON: components matching ALL given criteria (each param optional, at least one required). `type` is a simple class name matched against the class **or any superclass** (`JButton`, `AbstractButton`); `text` is exact, `textContains` case-insensitive. Returns full nodes (path + id + state), no children |
+| `GET /waitFor?{find params}&state=&timeoutMs=&intervalMs=` | Poll the same selector until `state` holds: `showing` (default), `enabled`, or `gone`. JSON `{"satisfied": bool, "elapsedMs": N, "matches": [...]}` — the deterministic-wait primitive for automation (no more sleep-and-hope) |
+| `GET /idle` | Wait for the EDT to drain (two no-op round-trips); JSON `{"idle": true, "waitedMs": N}`. Call between act and observe |
+| `GET /menus` | JSON: complete menu-bar structure of every window (nested items, separators, accelerators), read from the menu models — **no popups are opened**, so this works even for menus you'd otherwise have to click through |
+| `GET /menu?path=Account>Login[&window=N]` | Activate a menu item by visible text (case-insensitive, `>`-separated). Fires the leaf item's `doClick()` directly — replaces the old open-popup-then-click-by-index dance. Lazily-populated menus get their `MenuListener` fired first |
 | `GET /listeners?path=0/3/2` | JSON: registered `ActionListener` classes, action command, mouse-listener count — "is this control actually wired up?" |
+| `GET /props?path=` | JSON: extended properties of one component — full class chain, focus state, colors/font, accessible role/name/description, button/text-component detail, listener counts. The "inspect element" panel to `/tree`'s DOM |
+| `GET /highlight?path=[&ms=2000]` | Flash a translucent red overlay over the component so a human watching the screen sees what a selector resolves to. Glass-pane based; restores the original glass pane (and visibility) afterwards |
 | `GET /log[?lines=N]` | text/plain tail (default 200 lines) of the client's real log — VCell redirects System.out/err to `<vcellHome>/logs/vcellrun_<site>.log`, so exceptions never appear on the launcher's stdout |
 
 Buttons/checkboxes are clicked via `doClick()` posted with `invokeLater` (no
 cursor movement, and the request returns immediately even if the action opens a
 modal dialog); other components get a synthetic `Robot` click at their center.
+
+## Tooling
+
+Committed fixtures live in [`tools/debug-bridge/`](../../../../../../../tools/debug-bridge/README.md):
+`launch-client.sh` (run the client from `target/classes` with the bridge on),
+`bridge.sh` (CLI with `wait`/`assert` exit codes for scripting), and
+`scenarios/` (reusable end-to-end scripts, e.g. `smoke.sh`).
 
 ## Typical loop
 

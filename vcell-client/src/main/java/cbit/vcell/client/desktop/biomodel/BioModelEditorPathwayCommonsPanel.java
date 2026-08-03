@@ -128,6 +128,10 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 	private TextFieldAutoCompletion searchTextField;
 	private TextFieldAutoCompletion filterTextField;
 	private Set<String> searchTextList = new HashSet<String>();
+	/** Human-readable Reactome page for a pathway, e.g. .../content/detail/R-HSA-5683177 */
+	private static final String REACTOME_PATHWAY_URL = "https://reactome.org/content/detail/";
+	private static final String REACTOME_ID_PREFIX = "R-HSA-";
+
 	private JButton searchButton = null;
 	private JButton sortButton = null;
 	private boolean bAscending = true;
@@ -342,12 +346,22 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 	
 	public void gotoPathway() {
 		Pathway pathway = computeSelectedPathway();
-		if (pathway != null) {
-			String url = DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.PATHWAY_QUERY_URL) + pathway.primaryId();
-			if (url != null) {
-				DialogUtils.browserLauncher(BioModelEditorPathwayCommonsPanel.this, url, "failed to open " + url);
-			}
+		if (pathway == null) {
+			return;
 		}
+		// primaryId is itself a full URI ("http://bioregistry.io/reactome:R-HSA-5683177"),
+		// so appending it to a base URL produced a nonsense address and the browser just
+		// landed on the site root instead of the pathway. Build the Reactome detail page
+		// from the extracted stable id, the same id showPathway() already uses.
+		String url;
+		try {
+			url = REACTOME_PATHWAY_URL + REACTOME_ID_PREFIX + extractReactomeId(pathway.primaryId());
+		} catch (IllegalArgumentException e) {
+			DialogUtils.showErrorDialog(BioModelEditorPathwayCommonsPanel.this,
+					"No Reactome page for this pathway: " + pathway.primaryId());
+			return;
+		}
+		DialogUtils.browserLauncher(BioModelEditorPathwayCommonsPanel.this, url, "failed to open " + url);
 	}
 
 	public void showPathway() {
@@ -501,25 +515,32 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 	
 	private void initialize() {
 		searchTextField = new TextFieldAutoCompletion();
+		searchTextField.setName("PathwayCommonsSearchTextField");
 		searchTextField.addActionListener(eventHandler);
 		searchTextField.putClientProperty("JTextField.variant", "search");
 
 		filterTextField = new TextFieldAutoCompletion();
+		filterTextField.setName("PathwayCommonsFilterTextField");
 		filterTextField.addActionListener(eventHandler);
 		filterTextField.addKeyListener(eventHandler);
 		filterTextField.putClientProperty("JTextField.variant", "filter");
 
 		searchButton = new JButton("Search");
+		searchButton.setName("PathwayCommonsSearchButton");
 		searchButton.addActionListener(eventHandler);
 		sortButton = new JButton("Sort");
+		sortButton.setName("PathwayCommonsSortButton");
 		sortButton.addActionListener(eventHandler);
 		showPathwayButton = new JButton("Preview");
+		showPathwayButton.setName("PathwayCommonsPreviewButton");
 		showPathwayButton.addActionListener(eventHandler);
 		showPathwayButton.setEnabled(false);
 		gotoPathwayButton = new JButton("Open Web Link");
+		gotoPathwayButton.setName("PathwayCommonsWebLinkButton");
 		gotoPathwayButton.addActionListener(eventHandler);
 		gotoPathwayButton.setEnabled(false);
 		responseTree = new JTree();
+		responseTree.setName("PathwayCommonsResponseTree");
 		responseTreeModel = new ResponseTreeModel();
 		responseTree.setModel(responseTreeModel);
 		ToolTipManager.sharedInstance().registerComponent(responseTree);
@@ -689,12 +710,11 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 	}
 
 	public static String extractReactomeId(String primaryId) {
-		final String PREFIX = "R-HSA-";
-		int index = primaryId.indexOf(PREFIX);
+		int index = primaryId.indexOf(REACTOME_ID_PREFIX);
 		if (index == -1) {
 			throw new IllegalArgumentException("Malformed primaryId: missing 'R-HSA-' prefix");
 		}
-		return primaryId.substring(index + PREFIX.length());
+		return primaryId.substring(index + REACTOME_ID_PREFIX.length());
 	}
 
 }

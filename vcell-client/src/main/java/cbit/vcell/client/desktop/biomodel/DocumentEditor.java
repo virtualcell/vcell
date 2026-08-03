@@ -505,6 +505,7 @@ private void initialize() {
 		JSplitPane leftSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
 		databaseWindowPanel = new DatabaseWindowPanel(false, false);
 		leftBottomTabbedPane  = new JTabbedPaneEnhanced();
+		leftBottomTabbedPane.setName("LeftBottomTabbedPane");
 		leftBottomTabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 		leftBottomTabbedPane.addTab("VCell DB", databaseWindowPanel);
 		
@@ -553,6 +554,7 @@ private void initialize() {
 
 		issuePanel = new IssuePanel();		
 		rightBottomTabbedPane = new JTabbedPaneEnhanced();
+		rightBottomTabbedPane.setName("RightBottomTabbedPane");
 		rightBottomTabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 		rightBottomEmptyPanel.setBorder(GuiConstants.TAB_PANEL_BORDER);
 		rightBottomEmptyAnnotationsPanel.setBorder(GuiConstants.TAB_PANEL_BORDER);

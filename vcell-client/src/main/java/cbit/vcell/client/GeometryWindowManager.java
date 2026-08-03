@@ -343,4 +343,17 @@ public void updateConnectionStatus(ConnectionStatus connStatus) {
 public DocumentEditor getDocumentEditor() {
 	return null;
 }
+
+/**
+ * Open the geometry viewer as soon as the document window is up. The work area of a
+ * geometry window holds only the GeometryEditor toolbar; the geometry itself is drawn
+ * in a child window. GeometryEditor starts with its "Geometry Editor" toggle already
+ * selected, so without this the window shows two buttons and nothing else, and the
+ * user's first click on the toggle merely deselects it (hiding a viewer that was never
+ * shown) — they had to click twice to see anything.
+ */
+@Override
+public void documentWindowShown() {
+	showGeometryViewer();
+}
 }

@@ -1,7 +1,10 @@
 package cbit.vcell.graph;
 
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.image.BufferedImage;
 
 import org.vcell.model.rbm.ComponentStateDefinition;
 import org.vcell.model.rbm.ComponentStatePattern;
@@ -27,6 +30,41 @@ public interface LargeShapeCanvas {
 	
 	int getZoomFactor();
 	Graphics getGraphics();
+
+	/** Off-screen surface backing {@link #measuringGraphics}; never painted to the display. */
+	BufferedImage TEXT_MEASURING_BUFFER = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+
+	/**
+	 * A {@link Graphics} usable for measuring text, <b>never null</b>.
+	 *
+	 * <p>Every implementation of {@link #getGraphics()} ends at
+	 * {@link Component#getGraphics()}, which returns {@code null} while the component
+	 * is not displayable — for instance while shapes are being laid out before their
+	 * panel is part of a visible window. Shape construction measures strings at exactly
+	 * that point, so using the result directly crashed the client with an NPE
+	 * (issue #1749).
+	 *
+	 * <p>When there is no real graphics context this falls back to an off-screen
+	 * buffer, carrying over the canvas's own font so the measurements still match what
+	 * will eventually be painted. Callers get sensible sizes instead of an exception,
+	 * and are re-laid out normally once the panel is realized.
+	 */
+	static Graphics measuringGraphics(LargeShapeCanvas canvas) {
+		if (canvas != null) {
+			Graphics gc = canvas.getGraphics();
+			if (gc != null) {
+				return gc;
+			}
+		}
+		Graphics fallback = TEXT_MEASURING_BUFFER.getGraphics();
+		if (canvas instanceof Component) {
+			Font font = ((Component) canvas).getFont();
+			if (font != null) {
+				fallback.setFont(font);
+			}
+		}
+		return fallback;
+	}
 	DisplayMode getDisplayMode();
 	RuleParticipantSignature getSignature();
 	GroupingCriteria getCriteria();
