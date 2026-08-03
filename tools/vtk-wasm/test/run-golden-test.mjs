@@ -34,16 +34,26 @@ const { default: puppeteer } = await import(pathToFileURL(PUP).href);
 
 const MIME = { '.html':'text/html', '.js':'text/javascript', '.mjs':'text/javascript',
   '.wasm':'application/wasm', '.json':'application/json', '.gz':'application/gzip' };
+const ROOT = path.resolve(HERE);
 const server = http.createServer((req, res) => {
   const url = decodeURIComponent(req.url.split('?')[0]);
-  const file = url === '/bundle.tar.gz' ? BUNDLE : path.join(HERE, url);
-  const ext = file.endsWith('.tar.gz') ? '.gz' : path.extname(file);
   const headers = {   // cross-origin isolation for wasm
     'Cross-Origin-Opener-Policy': 'same-origin',
     'Cross-Origin-Embedder-Policy': 'require-corp',
     'Cross-Origin-Resource-Policy': 'same-origin',
-    'content-type': MIME[ext] || 'application/octet-stream',
   };
+  let file;
+  if (url === '/bundle.tar.gz') {
+    file = BUNDLE;
+  } else {
+    // Serve only files under ROOT; reject path traversal (CodeQL js/path-injection).
+    file = path.resolve(ROOT, '.' + path.posix.normalize(url));
+    if (file !== ROOT && !file.startsWith(ROOT + path.sep)) {
+      res.writeHead(403, headers); res.end('forbidden'); return;
+    }
+  }
+  const ext = file.endsWith('.tar.gz') ? '.gz' : path.extname(file);
+  headers['content-type'] = MIME[ext] || 'application/octet-stream';
   fs.readFile(file, (err, buf) => {
     if (err) { res.writeHead(404, headers); res.end('not found'); return; }
     res.writeHead(200, headers); res.end(buf);
