@@ -3161,7 +3161,9 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 			ExternalDocInfo externalDocInfo = (ExternalDocInfo) documentInfo;
 
 			File file = externalDocInfo.getFile();
-			if (file != null && !file.getName().isEmpty() && file.getName().endsWith("bngl")) {
+			// lower-cased to match the sibling .sedx/.omex/.ssld checks: a file named
+			// Model.BNGL used to skip this pass, then fail as an unrecognized format
+			if (file != null && !file.getName().isEmpty() && file.getName().toLowerCase().endsWith(".bngl")) {
 
 				BngUnitSystem bngUnitSystem = new BngUnitSystem(BngUnitOrigin.DEFAULT);
 				String fileText;
@@ -3496,13 +3498,32 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 							}
 						}
 					}
-					if (doc == null && docs == null) {
-						File f = externalDocInfo.getFile();
-						if (f != null) {
-							throw new RuntimeException("Unable to determine type of file " + f.getCanonicalPath());
-						}
-						throw new ProgrammingException();
+				}
+				// Nothing was produced: the load or import failed without saying so. Until this
+				// was caught here it surfaced as an NPE out of Hashtable.put("doc", null) just
+				// below, which is what users actually saw (issue #1748).
+				//
+				// The previous version of this check was dead code: it tested "docs == null",
+				// but docs is initialized to an empty list and is never null. It also sat
+				// inside the ExternalDocInfo branch, so it could never have covered the other
+				// document types either way.
+				if (doc == null && docs.isEmpty()) {
+					File f = (documentInfo instanceof ExternalDocInfo)
+							? ((ExternalDocInfo) documentInfo).getFile()
+							: null;
+					if (f != null) {
+						throw new RuntimeException("Unable to determine the type of file '" + f.getCanonicalPath()
+								+ "'. It is not a recognized VCML, SBML, SED-ML/OMEX, BNGL or SSLD document.");
 					}
+					// No file: the content arrived as a string, e.g. SBML fetched from
+					// BioModels.net. An empty or non-XML payload means that retrieval failed.
+					String name = (documentInfo instanceof ExternalDocInfo)
+							? ((ExternalDocInfo) documentInfo).getDefaultName()
+							: null;
+					throw new RuntimeException("Unable to read the document"
+							+ (name == null ? "" : " '" + name + "'")
+							+ ": the content is empty or not in a recognized format."
+							+ " If it was retrieved from a remote database, that request may have failed.");
 				}
 				// create biopax objects using annotation
 				if (doc instanceof BioModel) {
