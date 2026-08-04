@@ -25,8 +25,11 @@ import org.vcell.restclient.ApiException;
 import org.vcell.restclient.CustomObjectMapper;
 import org.vcell.restclient.api.UsersResourceApi;
 import org.vcell.restclient.model.BiomodelRef;
+import org.vcell.restclient.model.MathModelSummary;
+import org.vcell.restclient.model.MathmodelRef;
 import org.vcell.restclient.model.Publication;
 import org.vcell.restclient.model.UserLoginInfoForMapping;
+import org.vcell.restclient.model.VersionRep;
 import org.vcell.restq.db.AgroalConnectionFactory;
 import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
@@ -137,6 +140,25 @@ public class TestEndpointUtils {
         ref.setOwnerKey(biomodel.getOwnerKey() != null ? Long.parseLong(biomodel.getOwnerKey()) : -1);
         ref.setVersionFlag(biomodel.getVersionFlag());
         ref.setPrivacy(biomodel.getPrivacy());
+        return ref;
+    }
+
+    /**
+     * Build a MathmodelRef from a saved math model, the way the webapp's publication
+     * editor does: it fetches the summary and reads the reference out of its version.
+     */
+    public static MathmodelRef mathmodelRefFromSummary(MathModelSummary summary) {
+        VersionRep version = summary.getVersion();
+        if (version == null) {
+            throw new IllegalStateException("math model summary has no version: " + summary);
+        }
+        MathmodelRef ref = new MathmodelRef();
+        ref.setMmKey(version.getVersionKey() != null ? Long.parseLong(version.getVersionKey()) : -1);
+        ref.setName(version.getName());
+        ref.setOwnerName(version.getOwner() != null ? version.getOwner().getUserName() : null);
+        ref.setOwnerKey(version.getOwner() != null && version.getOwner().getKey() != null
+                ? Long.parseLong(version.getOwner().getKey()) : -1);
+        ref.setVersionFlag(version.getFlag());
         return ref;
     }
 
