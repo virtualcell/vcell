@@ -108,11 +108,21 @@ export class VtkWasmViewerComponent implements AfterViewInit, OnDestroy {
       await sinc.normalizeCoordinatesOn();
 
       // --- render the smoothed membrane surface ---
+      // Compute surface normals so the mapper shades smoothly (Gouraud) instead of flat/faceted.
+      let surfacePort = await sinc.getOutputPort();
+      try {
+        const normals = vtk.vtkPolyDataNormals();
+        await normals.setInputConnection(surfacePort);
+        await normals.setFeatureAngle(60);
+        surfacePort = await normals.getOutputPort();
+      } catch { /* normals filter unavailable in the session — fall back to flat shading */ }
+
       const mapper = vtk.vtkPolyDataMapper();
-      await mapper.setInputConnection(await sinc.getOutputPort());
+      await mapper.setInputConnection(surfacePort);
       const actor = vtk.vtkActor({ mapper });
-      actor.property.color = [0.30, 0.65, 0.45];
-      actor.property.opacity = 1.0;
+      // Set color via the property object's method (assignment to actor.property.color is a no-op).
+      const prop = await actor.getProperty();
+      await prop.setColor(0.30, 0.65, 0.45);
 
       const renderer = vtk.vtkRenderer({ background: [0.07, 0.07, 0.1] });
       await renderer.addActor(actor);
