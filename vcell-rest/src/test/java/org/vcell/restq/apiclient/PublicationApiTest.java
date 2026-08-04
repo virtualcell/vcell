@@ -1,7 +1,6 @@
 package org.vcell.restq.apiclient;
 
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
@@ -150,9 +149,12 @@ public class PublicationApiTest {
 
         int initialPubSize = apiInstance.getPublications().size();
 
-        MathModel mathModel = TestEndpointUtils.getTestMathModel();
+        // save the VCML resource as-is, the way MathModelApiTest does; round-tripping it
+        // through the object model keeps a reference to a database geometry that does not
+        // exist in the ephemeral test database
+        String testVCML = TestEndpointUtils.getResourceString("/TestMath.vcml");
         String savedMathModelKey = XmlHelper.XMLToMathModel(new XMLSource(
-                        mathModelAPI.saveMathModel(XmlHelper.mathModelToXML(mathModel), null, null)))
+                        mathModelAPI.saveMathModel(testVCML, "MathModelForPublicationTest", null)))
                 .getVersion().getVersionKey().toString();
 
         // the webapp builds the reference from the summary, so do the same here
