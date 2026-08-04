@@ -2,26 +2,35 @@ import { AfterViewInit, Component, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 /**
- * First render increment for the vtk.wasm field viewer (docs/salad-3d-renderer-design.md §8B).
+ * vtk.wasm field viewer (docs/salad-3d-renderer-design.md §8B).
  *
- * Proves the end-to-end path in webapp-ng: load the custom VTK-compiled-to-WebAssembly bundle
- * SAME-ORIGIN from /assets/vtk-wasm/ (the .tar.gz is placed there at build time by
- * scripts/fetch-vtk-wasm.mjs, fetched from the virtualcell/vcell-vtk-wasm release; the UMD loader is
- * copied there by angular.json assets), create a standalone session, and render through it (WebGL2).
+ * Runs VCell's finite-volume surface-smoothing pipeline entirely CLIENT-SIDE in the browser:
+ * build the raw whole-voxel unstructured grid in-memory from server-sent arrays (here a sample
+ * fixture standing in for the server) → vtkGeometryFilter (extract boundary surface) →
+ * vtkWindowedSincPolyDataFilter (the faithful FV smoothing: iters 12, feature angle 120°,
+ * pass-band 0.05) → render via WebGL2. All filters are constructable in the standalone session via
+ * the marshalling-coverage patch (virtualcell/vcell-vtk-wasm).
  *
- * The loader is the UMD build injected as a <script> — the ESM entry's runtime does a dynamic
- * import() of the untar'd glue that webpack breaks; the UMD build isn't webpack-processed. A cone
- * here is a smoke test; the FV pipeline (in-memory unstructured grid → vtkThreshold → vtkGeometryFilter
- * → vtkWindowedSincPolyDataFilter, all constructable via the marshal-coverage patch) is next.
+ * The bundle is loaded same-origin from /assets/vtk-wasm/ (placed there at build time), via the UMD
+ * loader injected as a <script> — the ESM entry's runtime import(blobUrl) is broken by webpack.
  */
 const LOADER_URL = '/assets/vtk-wasm/vtk.umd.js';
 const BUNDLE_URL = '/assets/vtk-wasm/vcell-vtk-wasm32-emscripten.tar.gz';
+const GRID_URL = '/assets/fv-sample-grid.json';
 const CANVAS_SELECTOR = '#vtk-wasm-canvas';
+
+interface FvGrid {
+  numPoints: number;
+  points: number[];
+  cellType: number;         // 11 = VTK_VOXEL
+  cells: number[][];        // per-cell point-id lists
+  sinc: { iterations: number; feature_angle: number; pass_band: number };
+}
 
 function loadUmdLoader(): Promise<void> {
   if (window.vtkwasm) return Promise.resolve();
   return new Promise((resolve, reject) => {
-    const existing = document.querySelector<HTMLScriptElement>(`script[data-vtk-wasm-loader]`);
+    const existing = document.querySelector<HTMLScriptElement>('script[data-vtk-wasm-loader]');
     if (existing) {
       existing.addEventListener('load', () => resolve());
       existing.addEventListener('error', () => reject(new Error('vtk-wasm UMD loader script failed')));
@@ -63,30 +72,58 @@ export class VtkWasmViewerComponent implements AfterViewInit, OnDestroy {
       const t0 = performance.now();
       await loadUmdLoader();
       if (!window.vtkwasm) throw new Error('vtkwasm global not available after loading the UMD loader');
-      this.status = 'loading vtk.wasm bundle…';
 
-      const runtime = await window.vtkwasm.loadAsync({ url: BUNDLE_URL });
+      this.status = 'loading vtk.wasm bundle + FV grid…';
+      const [runtime, grid] = await Promise.all([
+        window.vtkwasm.loadAsync({ url: BUNDLE_URL }),
+        fetch(GRID_URL).then((r) => r.json() as Promise<FvGrid>),
+      ]);
       if (this.disposed) return;
       const vtk = runtime.createStandaloneSession().vtk;
-      this.status = `bundle loaded (${Math.round(performance.now() - t0)} ms) — rendering…`;
+      this.status = `bundle+grid loaded (${Math.round(performance.now() - t0)} ms) — building grid…`;
 
-      const cone = vtk.vtkConeSource({ resolution: 32 });
+      // --- build the raw whole-voxel unstructured grid in-memory ---
+      const points = vtk.vtkPoints();
+      await points.setNumberOfPoints(grid.numPoints);
+      const P = grid.points;
+      for (let i = 0; i < grid.numPoints; i++) await points.setPoint(i, P[3 * i], P[3 * i + 1], P[3 * i + 2]);
+      const cellArray = vtk.vtkCellArray();
+      for (const cell of grid.cells) await cellArray.insertNextCell(cell.length, cell);
+      const ug = vtk.vtkUnstructuredGrid();
+      await ug.setPoints(points);
+      await ug.setCells(grid.cellType, cellArray);   // single cell type (VTK_VOXEL)
+      this.status = `grid built (${grid.numPoints} pts / ${grid.cells.length} voxels) — running pipeline…`;
+
+      // --- FV smoothing pipeline: geometry (boundary surface) -> windowed-sinc ---
+      const geom = vtk.vtkGeometryFilter();
+      await geom.setInputData(ug);
+      const sinc = vtk.vtkWindowedSincPolyDataFilter();
+      await sinc.setInputConnection(await geom.getOutputPort());
+      await sinc.setNumberOfIterations(grid.sinc.iterations);
+      await sinc.boundarySmoothingOff();
+      await sinc.featureEdgeSmoothingOff();
+      await sinc.setFeatureAngle(grid.sinc.feature_angle);
+      await sinc.setPassBand(grid.sinc.pass_band);
+      await sinc.nonManifoldSmoothingOff();
+      await sinc.normalizeCoordinatesOn();
+
+      // --- render the smoothed membrane surface ---
       const mapper = vtk.vtkPolyDataMapper();
-      await mapper.setInputConnection(await cone.getOutputPort());
+      await mapper.setInputConnection(await sinc.getOutputPort());
       const actor = vtk.vtkActor({ mapper });
-      actor.property.color = [0.24, 0.62, 0.86];
+      actor.property.color = [0.30, 0.65, 0.45];
+      actor.property.opacity = 1.0;
 
       const renderer = vtk.vtkRenderer({ background: [0.07, 0.07, 0.1] });
       await renderer.addActor(actor);
       await renderer.resetCamera();
-
       const renderWindow = vtk.vtkRenderWindow({ canvasSelector: CANVAS_SELECTOR });
       await renderWindow.addRenderer(renderer);
       vtk.vtkRenderWindowInteractor({ canvasSelector: CANVAS_SELECTOR, renderWindow });
       await renderWindow.render();
 
       if (this.disposed) return;
-      this.status = `rendered ✓ (total ${Math.round(performance.now() - t0)} ms) — drag to rotate`;
+      this.status = `rendered smoothed membrane ✓ (total ${Math.round(performance.now() - t0)} ms) — drag to rotate`;
     } catch (e: unknown) {
       this.error = 'vtk.wasm viewer failed: ' + ((e as Error)?.message ?? String(e));
       // eslint-disable-next-line no-console
