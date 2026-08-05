@@ -20,6 +20,22 @@ const FIXTURE_GRID_URL = '/assets/fv-sample-grid.json';
 const CANVAS_SELECTOR = '#vtk-wasm-canvas';
 
 /**
+ * Smoothing slider (0-100). The default sits at NOMINAL_STRENGTH, which reproduces the server's
+ * reference parameters exactly, so the viewer still matches the VisIt/pyvcell result out of the box.
+ *
+ * The slider exists because on a coarse mesh the reference parameters cannot remove the voxel
+ * staircase without also eroding thin features — the step and the anatomy are the same spatial
+ * frequency — so the right setting depends on what the user is looking at.
+ */
+const NOMINAL_STRENGTH = 20;
+const MAX_ITERATIONS = 60;
+const MIN_PASS_BAND = 0.005;
+
+function formatPassBand(v: number): string {
+  return v >= 0.01 ? v.toFixed(3) : v.toExponential(1);
+}
+
+/**
  * The desktop client passes ?src=<url> pointing at its own loopback field server
  * (FieldViewerServer in vcell-client); without it we fall back to the bundled fixture.
  *
@@ -78,12 +94,30 @@ function loadUmdLoader(): Promise<void> {
   template: `
     <div class="wrap">
       <canvas id="vtk-wasm-canvas" width="720" height="540" tabindex="0"></canvas>
+      <div class="controls">
+        <label for="smoothing">Smoothing</label>
+        <input id="smoothing" type="range" min="0" max="100" step="1"
+               [value]="smoothing" [disabled]="!ready || busy"
+               (input)="previewSmoothing($any($event.target).valueAsNumber)"
+               (change)="applySmoothing($any($event.target).valueAsNumber)" />
+        <span class="readout">
+          {{ iterations }} iters &middot; pass-band {{ passBandLabel }}
+          <em *ngIf="smoothing === nominalStrength">VCell nominal</em>
+          <em *ngIf="smoothing === 0">off &mdash; raw voxel surface</em>
+        </span>
+        <button type="button" (click)="applySmoothing(nominalStrength)"
+                [disabled]="!ready || busy || smoothing === nominalStrength">Reset</button>
+      </div>
       <div class="status" [class.err]="error">{{ error || status }}</div>
     </div>
   `,
   styles: [`
     .wrap { display:flex; flex-direction:column; gap:8px; padding:12px; }
     canvas { width:720px; height:540px; display:block; background:#12121a; border-radius:6px; }
+    .controls { display:flex; align-items:center; gap:10px; font:12px/1.4 monospace; color:#444; max-width:720px; }
+    .controls input[type=range] { flex:0 0 200px; }
+    .readout { flex:1 1 auto; }
+    .readout em { color:#2a7; font-style:normal; }
     .status { font:12px/1.4 monospace; color:#666; }
     .status.err { color:#c0392b; white-space:pre-wrap; }
   `],
@@ -91,7 +125,73 @@ function loadUmdLoader(): Promise<void> {
 export class VtkWasmViewerComponent implements AfterViewInit, OnDestroy {
   status = 'loading vtk.wasm loader…';
   error = '';
+  ready = false;
+  busy = false;
+
+  /** Slider position whose parameters are exactly the server's (VCell reference) values. */
+  readonly nominalStrength = NOMINAL_STRENGTH;
+  smoothing = NOMINAL_STRENGTH;
+  iterations = 0;
+  passBandLabel = '';
+
   private disposed = false;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private sinc: any = null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private renderWindow: any = null;
+  private nominalSinc: FvGrid['sinc'] | null = null;
+
+  /**
+   * Maps the slider to filter parameters, anchored so the default position reproduces the
+   * server's reference values exactly.
+   *
+   * Below nominal we only reduce the iteration count (0 iterations is an exact pass-through).
+   * Above nominal we add iterations and narrow the pass-band geometrically. The pass-band is
+   * never raised above nominal: WindowedSinc diverges as it approaches 1.0 (measured — a
+   * pass-band of 1.0 displaced points by 26 units where the reference moves 0.45).
+   */
+  private smoothingFor(strength: number): { iterations: number; passBand: number } {
+    const nom = this.nominalSinc ?? { iterations: 12, feature_angle: 120, pass_band: 0.05 };
+    if (strength <= NOMINAL_STRENGTH) {
+      const f = strength / NOMINAL_STRENGTH;
+      return { iterations: Math.round(nom.iterations * f), passBand: nom.pass_band };
+    }
+    const f = (strength - NOMINAL_STRENGTH) / (100 - NOMINAL_STRENGTH);
+    const maxIters = Math.max(MAX_ITERATIONS, nom.iterations);
+    const minPass = Math.min(MIN_PASS_BAND, nom.pass_band);
+    return {
+      iterations: Math.round(nom.iterations + f * (maxIters - nom.iterations)),
+      passBand: nom.pass_band * Math.pow(minPass / nom.pass_band, f),
+    };
+  }
+
+  /** Update the readout while dragging, without re-running the filter. */
+  previewSmoothing(strength: number): void {
+    this.smoothing = strength;
+    const p = this.smoothingFor(strength);
+    this.iterations = p.iterations;
+    this.passBandLabel = formatPassBand(p.passBand);
+  }
+
+  /** Re-run the smoother and redraw. Bound to (change), so it fires on release, not per-pixel. */
+  async applySmoothing(strength: number): Promise<void> {
+    this.previewSmoothing(strength);
+    if (!this.ready || this.busy || !this.sinc || !this.renderWindow) return;
+    this.busy = true;
+    const t0 = performance.now();
+    try {
+      const p = this.smoothingFor(strength);
+      await this.sinc.setNumberOfIterations(p.iterations);
+      await this.sinc.setPassBand(p.passBand);
+      await this.sinc.update();
+      await this.renderWindow.render();
+      this.status = `smoothing: ${p.iterations} iters · pass-band ${this.passBandLabel} ✓ (${Math.round(performance.now() - t0)} ms)`;
+    } catch (e: unknown) {
+      this.error = 'smoothing update failed: ' + ((e as Error)?.message ?? String(e));
+    } finally {
+      this.busy = false;
+    }
+  }
 
   async ngAfterViewInit(): Promise<void> {
     try {
@@ -141,6 +241,9 @@ export class VtkWasmViewerComponent implements AfterViewInit, OnDestroy {
       const geom = vtk.vtkGeometryFilter();
       await geom.setInputData(ug);
       const sinc = vtk.vtkWindowedSincPolyDataFilter();
+      this.sinc = sinc;
+      this.nominalSinc = grid.sinc;
+      this.previewSmoothing(NOMINAL_STRENGTH);   // readout starts at the server's reference values
       await sinc.setInputConnection(await geom.getOutputPort());
       await sinc.setNumberOfIterations(grid.sinc.iterations);
       await sinc.boundarySmoothingOff();
@@ -178,11 +281,13 @@ export class VtkWasmViewerComponent implements AfterViewInit, OnDestroy {
       await renderer.addActor(actor);
       await renderer.resetCamera();
       const renderWindow = vtk.vtkRenderWindow({ canvasSelector: CANVAS_SELECTOR });
+      this.renderWindow = renderWindow;
       await renderWindow.addRenderer(renderer);
       vtk.vtkRenderWindowInteractor({ canvasSelector: CANVAS_SELECTOR, renderWindow });
       await renderWindow.render();
 
       if (this.disposed) return;
+      this.ready = true;
       const label = grid.field
         ? `${grid.field.name} @ t=${grid.time} on ${grid.domain} — range [${grid.field.range[0].toExponential(2)}, ${grid.field.range[1].toExponential(2)}]`
         : 'smoothed membrane';
