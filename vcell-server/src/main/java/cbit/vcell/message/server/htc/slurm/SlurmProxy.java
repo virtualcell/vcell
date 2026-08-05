@@ -542,10 +542,6 @@ public class SlurmProxy extends HtcProxy {
 		lsb.write("MESSAGING_CONFIG_FILE=\"" + messagingConfigFilePath + "\"");
 		lsb.write("");
 
-		lsb.write("# Early error detection, used for a clean exit in the fixture");
-		lsb.write("init_stat=0");
-		lsb.write("");
-
 		lsb.write("# Truncate / delete various logs and the solver input file, to start clean");
 		lsb.write(": > " + htcLogDir + "/V_TEST2_${SIM_KEY}_0_.slurm.log");
 		lsb.write("rm -f " + simDataDir + "/${SIM_OWNER_NAME}/SimID_${SIM_KEY}_0_*.log");
@@ -569,7 +565,7 @@ public class SlurmProxy extends HtcProxy {
 		lsb.write("else");
 		lsb.write("    echo \"Singularity not found\"");
 		// code 127: Command not found
-		lsb.write("    init_stat=127");
+		lsb.write("    exit 1");
 		lsb.write("fi");
 		lsb.write("");
 
@@ -672,7 +668,7 @@ public class SlurmProxy extends HtcProxy {
 		lsb.write("if [ ! -f \"$" + prefix + "_sif\" ]; then");
 		lsb.write("    echo \"ERROR: missing SIF $" + prefix + "_sif\" >&2");
 		// code 2: no such file or directory
-		lsb.write("    init_stat=2");
+		lsb.write("    exit 1");
 		lsb.write("fi");
 		lsb.write(prefix + "_container_prefix=\"singularity run --containall " +
 				"${container_bindings} ${container_env} $" + prefix + "_sif\"");
