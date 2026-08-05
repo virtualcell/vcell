@@ -56,9 +56,10 @@ LABEL \
 
 ENV DEBIAN_FRONTEND=noninteractive
 # Keep the index refresh in the same layer as every install. Split across two RUNs,
-# the second install resolved against whatever index the first layer cached, and once
-# Ubuntu superseded a package the pinned version 404'd out of the pool — which is how
-# the 8.0.6.01 release build failed on linux-libc-dev_5.15.0-187.197.
+# an install resolves against whatever index the earlier layer cached, and once Ubuntu
+# supersedes a package the version that index names is gone from the pool. (Note this
+# is a hazard for cached builds; the release job that prompted the change builds with
+# --no-cache, where a 404 instead means a transient archive.ubuntu.com mirror lag.)
 RUN apt-get update \
     && apt-get install -y software-properties-common \
     && apt-get install -y --no-install-recommends curl python3.10 python3-pip build-essential dnsutils \
