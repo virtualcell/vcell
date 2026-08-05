@@ -320,6 +320,93 @@ public final class SwingInspector {
 		sb.append(']');
 	}
 
+	/**
+	 * The text a {@link JTree} row actually displays.
+	 *
+	 * <p>A node's {@code toString()} is useless in VCell: its database trees hold domain
+	 * objects and render them through a custom {@link javax.swing.tree.TreeCellRenderer},
+	 * so the raw value serializes as {@code PublicationInfo@415f5f4f} while the user sees
+	 * "Lee 2026 Systems-level consequences…". Ask the renderer what it would paint, so a
+	 * driver reads the same labels a person does.
+	 *
+	 * <p>Falls back through {@link JTree#convertValueToText} (honoured by trees that
+	 * override it instead of supplying a renderer) to {@code toString()}, and never
+	 * propagates a renderer's exception — a renderer that assumes a paint context must
+	 * not break the whole tree dump.
+	 */
+	private static String treeRowText(JTree tree, int row, javax.swing.tree.TreePath path) {
+		Object value = path.getLastPathComponent();
+		boolean selected = tree.isRowSelected(row);
+		boolean expanded = tree.isExpanded(row);
+		boolean leaf = tree.getModel().isLeaf(value);
+
+		javax.swing.tree.TreeCellRenderer renderer = tree.getCellRenderer();
+		if (renderer != null) {
+			try {
+				Component rendered = renderer.getTreeCellRendererComponent(
+						tree, value, selected, expanded, leaf, row, false);
+				String text = renderedText(rendered);
+				if (text != null && !text.isEmpty()) {
+					return stripHtml(text);
+				}
+			} catch (RuntimeException e) {
+				// fall through to the plainer forms below
+			}
+		}
+		try {
+			String converted = tree.convertValueToText(value, selected, expanded, leaf, row, false);
+			if (converted != null && !converted.isEmpty()) {
+				return stripHtml(converted);
+			}
+		} catch (RuntimeException e) {
+			// fall through
+		}
+		return String.valueOf(value);
+	}
+
+	/** Text carried by a renderer's component; composite renderers are flattened. */
+	private static String renderedText(Component c) {
+		if (c instanceof JLabel) {
+			return ((JLabel) c).getText();
+		}
+		if (c instanceof AbstractButton) {
+			return ((AbstractButton) c).getText();
+		}
+		if (c instanceof JTextComponent) {
+			return ((JTextComponent) c).getText();
+		}
+		if (c instanceof Container) {
+			StringBuilder sb = new StringBuilder();
+			for (Component kid : ((Container) c).getComponents()) {
+				String kidText = renderedText(kid);
+				if (kidText != null && !kidText.isEmpty()) {
+					if (sb.length() > 0) {
+						sb.append(' ');
+					}
+					sb.append(kidText);
+				}
+			}
+			return sb.toString();
+		}
+		return null;
+	}
+
+	/** VCell renderers often emit {@code <html>…} for styling; report the readable text. */
+	private static String stripHtml(String s) {
+		if (s == null || !s.regionMatches(true, 0, "<html", 0, 5)) {
+			return s;
+		}
+		String text = s.replaceAll("(?i)<br\\s*/?>", " ")
+				.replaceAll("<[^>]*>", "")
+				.replace("&nbsp;", " ")
+				.replace("&amp;", "&")
+				.replace("&lt;", "<")
+				.replace("&gt;", ">")
+				.replaceAll("\\s+", " ")
+				.trim();
+		return text.isEmpty() ? s : text;
+	}
+
 	private static void appendTree(StringBuilder sb, JTree t) {
 		int rows = t.getRowCount();
 		int maxR = Math.min(rows, MAX_TREE_ROWS);
@@ -333,7 +420,7 @@ public final class SwingInspector {
 			javax.swing.tree.TreePath path = t.getPathForRow(r);
 			String text;
 			try {
-				text = String.valueOf(path.getLastPathComponent());
+				text = treeRowText(t, r, path);
 			} catch (Exception e) {
 				text = "?";
 			}
