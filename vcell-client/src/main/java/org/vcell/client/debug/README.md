@@ -67,6 +67,7 @@ A selector that doesn't resolve reports `did not resolve` (or `false`) rather th
 | `GET /setText?path=&text=&enter=` | JSON `{"set": true\|false}` |
 | `GET /selectTab?path=&index=` | JSON `{"selected": true\|false}` |
 | `GET /selectTreeRow?path=&row=N` | select row N of the JTree; JSON `{"selected": bool}` |
+| *(JTree rows in `/tree`)* | Row text is what the tree **displays**, obtained from its `TreeCellRenderer` — VCell's database trees hold domain objects whose `toString()` is useless (`PublicationInfo@415f5f4f`), so this reports "Lee 2026 Systems-level consequences…" as a user sees it. `<html>` markup is stripped; falls back to `convertValueToText` then `toString` |
 | `GET /selectTableRow?path=&row=N[&column=M]` | select row N of a `JTable` and scroll it into view; JSON `{"selected": bool}`. Row/column are **view** indices, matching the `table` block in `/tree` and the user's current sort order |
 | `GET /doubleClickTableRow?path=&row=N[&column=M]` | synthetic double-click on a table row; JSON `{"doubleClicked": bool}`. Table-backed UIs commonly act on the raw `MouseEvent` click count — this is how you pick a file in the file chooser |
 | `GET /rightClickTableRow?path=&row=N[&column=M]` | select row N then right-click it (opens its context menu); JSON `{"rightClicked": bool}` |
