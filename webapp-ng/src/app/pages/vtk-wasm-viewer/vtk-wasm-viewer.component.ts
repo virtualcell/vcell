@@ -93,7 +93,15 @@ function loadUmdLoader(): Promise<void> {
   imports: [CommonModule],
   template: `
     <div class="wrap">
-      <canvas id="vtk-wasm-canvas" width="720" height="540" tabindex="0"></canvas>
+      <!--
+        vtk.wasm takes the canvas over: it stamps position:absolute + width/height:100% on it and
+        resets the width/height attributes. Left in normal flow it escapes and covers the page,
+        hiding everything below it. Giving it a positioned, sized box means "100%" resolves to the
+        box rather than the viewport.
+      -->
+      <div class="canvas-box">
+        <canvas id="vtk-wasm-canvas" tabindex="0"></canvas>
+      </div>
       <div class="controls">
         <label for="smoothing">Smoothing</label>
         <input id="smoothing" type="range" min="0" max="100" step="1"
@@ -112,9 +120,12 @@ function loadUmdLoader(): Promise<void> {
     </div>
   `,
   styles: [`
-    .wrap { display:flex; flex-direction:column; gap:8px; padding:12px; }
-    canvas { width:720px; height:540px; display:block; background:#12121a; border-radius:6px; }
-    .controls { display:flex; align-items:center; gap:10px; font:12px/1.4 monospace; color:#444; max-width:720px; }
+    .wrap { display:flex; flex-direction:column; gap:8px; padding:12px; align-items:flex-start; }
+    .canvas-box { position:relative; width:100%; max-width:960px; aspect-ratio:4/3;
+                  background:#12121a; border-radius:6px; overflow:hidden; }
+    .canvas-box canvas { display:block; width:100%; height:100%; cursor:grab; touch-action:none; }
+    .canvas-box canvas:active { cursor:grabbing; }
+    .controls { display:flex; align-items:center; gap:10px; font:12px/1.4 monospace; color:#444; width:100%; max-width:960px; }
     .controls input[type=range] { flex:0 0 200px; }
     .readout { flex:1 1 auto; }
     .readout em { color:#2a7; font-style:normal; }
@@ -140,6 +151,13 @@ export class VtkWasmViewerComponent implements AfterViewInit, OnDestroy {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private renderWindow: any = null;
   private nominalSinc: FvGrid['sinc'] | null = null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private renderer: any = null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private camera: any = null;
+  private canvasEl: HTMLCanvasElement | null = null;
+  private detachTrackball: (() => void) | null = null;
+  private drawing = false;
 
   /**
    * Maps the slider to filter parameters, anchored so the default position reproduces the
@@ -163,6 +181,118 @@ export class VtkWasmViewerComponent implements AfterViewInit, OnDestroy {
       iterations: Math.round(nom.iterations + f * (maxIters - nom.iterations)),
       passBand: nom.pass_band * Math.pow(minPass / nom.pass_band, f),
     };
+  }
+
+  /**
+   * Size the drawing buffer to the canvas's displayed size. vtk.wasm stamps
+   * width/height:100% on the canvas but leaves the buffer at its 300x300 default, so the
+   * image would otherwise be upscaled from a third of the resolution.
+   */
+  private async matchBufferToCanvas(): Promise<void> {
+    // Measure the BOX, not the canvas: vtk stretches the canvas to fill the box only once it
+    // takes it over, so reading the canvas here yields its 300x150 default and locks the buffer
+    // to that.
+    const box = document.querySelector<HTMLElement>('.canvas-box');
+    if (!box || !this.renderWindow) return;
+    const dpr = window.devicePixelRatio || 1;
+    const w = Math.max(1, Math.round(box.clientWidth * dpr));
+    const h = Math.max(1, Math.round(box.clientHeight * dpr));
+    if (w <= 1 || h <= 1) return;
+    try {
+      await this.renderWindow.setSize(w, h);
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.warn('vtk-wasm-viewer: renderWindow.setSize failed, buffer stays at its default', e);
+    }
+  }
+
+  /**
+   * Trackball interaction driven straight against the camera.
+   *
+   * vtkRenderWindowInteractor cannot be used here: the standalone session has no event loop to
+   * pump it (startEventLoop exists only on vtkRemoteSession), so its handlers never fire. Drag
+   * orbits, wheel dollies, and each gesture renders once it has been applied.
+   */
+  private attachTrackball(): void {
+    const canvas = this.canvasEl;
+    if (!canvas || this.detachTrackball) return;
+
+    let dragging = false;
+    let lastX = 0;
+    let lastY = 0;
+
+    const down = (e: PointerEvent) => {
+      if (e.button !== 0) return;
+      dragging = true;
+      lastX = e.clientX;
+      lastY = e.clientY;
+      canvas.setPointerCapture(e.pointerId);
+      e.preventDefault();
+    };
+    const move = (e: PointerEvent) => {
+      if (!dragging) return;
+      const dx = e.clientX - lastX;
+      const dy = e.clientY - lastY;
+      lastX = e.clientX;
+      lastY = e.clientY;
+      if (dx || dy) void this.orbit(dx, dy);
+      e.preventDefault();
+    };
+    const up = (e: PointerEvent) => {
+      if (!dragging) return;
+      dragging = false;
+      try { canvas.releasePointerCapture(e.pointerId); } catch { /* pointer already released */ }
+    };
+    const wheel = (e: WheelEvent) => {
+      void this.dolly(e.deltaY < 0 ? 1.1 : 1 / 1.1);
+      e.preventDefault();
+    };
+
+    canvas.addEventListener('pointerdown', down);
+    canvas.addEventListener('pointermove', move);
+    canvas.addEventListener('pointerup', up);
+    canvas.addEventListener('pointercancel', up);
+    canvas.addEventListener('wheel', wheel, { passive: false });
+    this.detachTrackball = () => {
+      canvas.removeEventListener('pointerdown', down);
+      canvas.removeEventListener('pointermove', move);
+      canvas.removeEventListener('pointerup', up);
+      canvas.removeEventListener('pointercancel', up);
+      canvas.removeEventListener('wheel', wheel);
+    };
+  }
+
+  /** Orbit by a drag delta in pixels. Degrees-per-pixel is the usual VTK trackball feel. */
+  private async orbit(dx: number, dy: number): Promise<void> {
+    if (!this.camera || this.drawing) return;
+    this.drawing = true;
+    try {
+      await this.camera.azimuth(-dx * 0.5);
+      await this.camera.elevation(dy * 0.5);
+      await this.camera.orthogonalizeViewUp();
+      await this.renderer?.resetCameraClippingRange();
+      await this.renderWindow?.render();
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.warn('vtk-wasm-viewer: orbit failed', e);
+    } finally {
+      this.drawing = false;
+    }
+  }
+
+  private async dolly(factor: number): Promise<void> {
+    if (!this.camera || this.drawing) return;
+    this.drawing = true;
+    try {
+      await this.camera.dolly(factor);
+      await this.renderer?.resetCameraClippingRange();
+      await this.renderWindow?.render();
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.warn('vtk-wasm-viewer: dolly failed', e);
+    } finally {
+      this.drawing = false;
+    }
   }
 
   /** Update the readout while dragging, without re-running the filter. */
@@ -200,6 +330,7 @@ export class VtkWasmViewerComponent implements AfterViewInit, OnDestroy {
       if (!window.vtkwasm) throw new Error('vtkwasm global not available after loading the UMD loader');
 
       const gridUrl = resolveGridUrl(window.location.search);
+      this.canvasEl = document.querySelector<HTMLCanvasElement>(CANVAS_SELECTOR);
       this.status = 'loading vtk.wasm bundle + FV grid…';
       const [runtime, grid] = await Promise.all([
         window.vtkwasm.loadAsync({ url: BUNDLE_URL }),
@@ -209,7 +340,19 @@ export class VtkWasmViewerComponent implements AfterViewInit, OnDestroy {
         }),
       ]);
       if (this.disposed) return;
-      const vtk = runtime.createStandaloneSession().vtk;
+      const session = runtime.createStandaloneSession();
+      const vtk = session.vtk;
+      // vtk.wasm otherwise takes the canvas over (stamps position:absolute + 100%/100% on it and
+      // installs a resize observer that pins the drawing buffer back to its default). The loader's
+      // own RemoteSession turns both off; the standalone session does not, so do it here.
+      const wasmModule = session.wasmModule;
+      try {
+        wasmModule?._setDefaultExpandVTKCanvasToContainer?.(false);
+        wasmModule?._setDefaultInstallHTMLResizeObserver?.(false);
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.warn('vtk-wasm-viewer: could not disable the canvas takeover', e);
+      }
       this.status = `bundle+grid loaded (${Math.round(performance.now() - t0)} ms) — building grid…`;
 
       // --- build the raw whole-voxel unstructured grid in-memory ---
@@ -278,12 +421,21 @@ export class VtkWasmViewerComponent implements AfterViewInit, OnDestroy {
       }
 
       const renderer = vtk.vtkRenderer({ background: [0.07, 0.07, 0.1] });
+      this.renderer = renderer;
       await renderer.addActor(actor);
       await renderer.resetCamera();
       const renderWindow = vtk.vtkRenderWindow({ canvasSelector: CANVAS_SELECTOR });
       this.renderWindow = renderWindow;
       await renderWindow.addRenderer(renderer);
-      vtk.vtkRenderWindowInteractor({ canvasSelector: CANVAS_SELECTOR, renderWindow });
+      // Size the buffer before the interactor exists: the interactor installs its own resize
+      // handling and will otherwise pin the canvas back to its default.
+      await this.matchBufferToCanvas();
+      // NOTE: vtkRenderWindowInteractor is deliberately NOT used. It binds DOM listeners and
+      // accepts a trackball style, but nothing ever pumps it: the event loop (startEventLoop)
+      // exists only on vtkRemoteSession, not on the standalone session we run. Interaction is
+      // therefore driven directly against the camera below.
+      this.camera = await renderer.getActiveCamera();
+      this.attachTrackball();
       await renderWindow.render();
 
       if (this.disposed) return;
@@ -291,7 +443,7 @@ export class VtkWasmViewerComponent implements AfterViewInit, OnDestroy {
       const label = grid.field
         ? `${grid.field.name} @ t=${grid.time} on ${grid.domain} — range [${grid.field.range[0].toExponential(2)}, ${grid.field.range[1].toExponential(2)}]`
         : 'smoothed membrane';
-      this.status = `rendered ${label} ✓ (${Math.round(performance.now() - t0)} ms) — drag to rotate`;
+      this.status = `rendered ${label} ✓ (${Math.round(performance.now() - t0)} ms) — drag to rotate, wheel to zoom`;
     } catch (e: unknown) {
       this.error = 'vtk.wasm viewer failed: ' + ((e as Error)?.message ?? String(e));
       // eslint-disable-next-line no-console
@@ -301,5 +453,7 @@ export class VtkWasmViewerComponent implements AfterViewInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.disposed = true;
+    this.detachTrackball?.();
+    this.detachTrackball = null;
   }
 }

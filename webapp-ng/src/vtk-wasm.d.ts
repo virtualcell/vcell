@@ -5,7 +5,17 @@
 // loadAsync fetches the bundle .tar.gz, untars it in-browser, and returns a runtime whose
 // createStandaloneSession() exposes the `vtk` object (camelCase VTK API, all methods async).
 /* eslint-disable @typescript-eslint/no-explicit-any */
-interface VtkWasmSession { vtk: any; }
+/**
+ * `wasmModule` exposes the Emscripten module. The two `_setDefault*` entry points are how the
+ * loader's own RemoteSession stops vtk from taking the canvas over; the standalone session
+ * leaves them on, so the viewer calls them itself.
+ */
+interface VtkWasmModule {
+  _setDefaultExpandVTKCanvasToContainer?(enabled: boolean): void;
+  _setDefaultInstallHTMLResizeObserver?(enabled: boolean): void;
+  [key: string]: unknown;
+}
+interface VtkWasmSession { vtk: any; wasmModule?: VtkWasmModule; }
 interface VtkWasmRuntime { createStandaloneSession(): VtkWasmSession; }
 interface VtkWasmGlobal { loadAsync(options: { url: string; [key: string]: unknown }): Promise<VtkWasmRuntime>; }
 
