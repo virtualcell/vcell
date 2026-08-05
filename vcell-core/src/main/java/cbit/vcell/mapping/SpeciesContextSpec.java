@@ -1862,7 +1862,7 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
      * @return The parameters property value.
      * @see #setParameters
      */
-    public Parameter[] getParameters(){
+    public SpeciesContextSpecParameter[] getParameters(){
         return fieldParameters;
     }
 
