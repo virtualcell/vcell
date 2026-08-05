@@ -38,7 +38,7 @@ import cbit.vcell.parser.ExpressionException;
 
 
 public class SpeciesContextSpecsTableModel extends VCellSortTableModel<SpeciesContextSpec> implements java.beans.PropertyChangeListener {
-	private static Logger lg = LogManager.getLogger(SpeciesContextSpecsTableModel.class);
+	private static final Logger lg = LogManager.getLogger(SpeciesContextSpecsTableModel.class);
 
 	// Rules Provenance
 	public static class RulesProvenance implements Displayable {
