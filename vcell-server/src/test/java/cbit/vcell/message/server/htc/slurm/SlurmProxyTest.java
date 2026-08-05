@@ -296,12 +296,16 @@ public class SlurmProxyTest {
 
 	@Test
 	public void testSimJobScriptLangevinBatch() throws IOException, XmlParseException, ExpressionException {
-		setProperty(PropertyLoader.htc_vcellopt_apptainer_image, "oras://ghcr.io/virtualcell/vcell-opt_singularity:7.7.0.39");
-		setProperty(PropertyLoader.htcNodeList, "mantis-040");
-		setProperty(PropertyLoader.vcellSoftwareVersion, "Rel_Version_7.7.0_build_39");
+		/*
+		for instruction about server running manually for testing, see:
+		\vcell\vcell-server\src\test\resources\slurm_fixtures\langevin\slurm_array_poc\readme.md
+		 */
+		setProperty(PropertyLoader.htc_vcellopt_apptainer_image, "oras://ghcr.io/virtualcell/vcell-opt_singularity:8.0.5.01");
+		//setProperty(PropertyLoader.htcNodeList, "mantis-040");
+		setProperty(PropertyLoader.vcellSoftwareVersion, "Rel_Version_8.0.5_build_01");
 		setProperty(PropertyLoader.vcellServerIDProperty,"TEST2");
 		setProperty(PropertyLoader.jmsSimHostExternal, "k8s-wn-01.cam.uchc.edu");
-		setProperty(PropertyLoader.htc_vcellbatch_apptainer_image, "oras://ghcr.io/virtualcell/vcell-batch_singularity:7.7.0.39");
+		setProperty(PropertyLoader.htc_vcellbatch_apptainer_image, "oras://ghcr.io/virtualcell/vcell-batch_singularity:8.0.5.01");
 
 		String simTaskResourcePath = "slurm_fixtures/langevin/SimID_999999999_0__0.simtask.xml";
 		String JOB_NAME = "V_TEST2_999999999_0_0";
