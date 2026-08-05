@@ -55,9 +55,15 @@ LABEL \
     maintainer="BioSimulators Team <info@biosimulators.org>"
 
 ENV DEBIAN_FRONTEND=noninteractive
-RUN apt -y update && apt install -y software-properties-common
-RUN apt install -y --no-install-recommends curl python3.10 python3-pip build-essential dnsutils \
-    apt-utils libfreetype6 fontconfig fonts-dejavu
+# Keep the index refresh in the same layer as every install. Split across two RUNs,
+# the second install resolved against whatever index the first layer cached, and once
+# Ubuntu superseded a package the pinned version 404'd out of the pool — which is how
+# the 8.0.6.01 release build failed on linux-libc-dev_5.15.0-187.197.
+RUN apt-get update \
+    && apt-get install -y software-properties-common \
+    && apt-get install -y --no-install-recommends curl python3.10 python3-pip build-essential dnsutils \
+        apt-utils libfreetype6 fontconfig fonts-dejavu \
+    && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /usr/local/app/vcell/lib && \
     mkdir -p /usr/local/app/vcell/simulation && \
