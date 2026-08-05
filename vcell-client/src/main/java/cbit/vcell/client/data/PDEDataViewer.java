@@ -71,6 +71,7 @@ import javax.swing.table.DefaultTableModel;
 
 import cbit.vcell.export.server.SimNameSimDataID;
 import cbit.vcell.solver.*;
+import org.vcell.client.viz.FieldViewerServer;
 import org.vcell.util.gui.GeneralGuiUtils;
 import org.vcell.util.*;
 import org.vcell.util.document.ExternalDataIdentifier;
@@ -306,6 +307,7 @@ public class PDEDataViewer extends DataViewer implements DataJobListenerHolder {
 	private JMenuItem kymographMenuItem;
 	
 	private JButton roiButton = null;
+	private JButton view3DButton = null;
 	private JPopupMenu roiPopupMenu = null;
 	//private JButton imagejButton;
 	private JPopupMenu imagejPopupMenu = null;
@@ -1574,6 +1576,7 @@ private javax.swing.JPanel getJPanelButtons() {
 			ivjJPanelButtons.setName("JPanelButtons");
 			ivjJPanelButtons.add(getPlotButton());
 			ivjJPanelButtons.add(getROIButton());
+			ivjJPanelButtons.add(getView3DButton());
 //			ivjJPanelButtons.add(getImagejButton());
 		} catch (java.lang.Throwable ivjExc) {
 			// user code begin {2}
@@ -1666,6 +1669,68 @@ private JButton getROIButton() {
 		}
 	}
 	return roiButton;
+}
+
+/** System property overriding where the browser-based viewer page is served from. */
+private static final String VIEWER_URL_PROP = "vcell.fieldViewer.url";
+private static final String DEFAULT_VIEWER_URL = "http://localhost:4200/vtk-wasm";
+
+private JButton getView3DButton() {
+	if (view3DButton == null) {
+		try {
+			view3DButton = new JButton("View in 3D");
+			view3DButton.setToolTipText("Render this variable in a browser-based 3D viewer");
+			view3DButton.addActionListener(e -> openInBrowserViewer());
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return view3DButton;
+}
+
+/**
+ * Starts the local field-data server and opens the browser-based viewer on the variable and
+ * time currently displayed. Reads the simulation directory directly rather than going through
+ * the data server, so it only works for runs executed locally.
+ */
+private void openInBrowserViewer() {
+	try {
+		PDEDataContext dataContext = getPdeDataContext();
+		if (dataContext == null || !(dataContext.getVCDataIdentifier() instanceof LocalVCSimulationDataIdentifier)) {
+			DialogUtils.showWarningDialog(this, "The 3D viewer reads local simulation data only. "
+					+ "Run this simulation locally to view it in 3D.");
+			return;
+		}
+		LocalVCSimulationDataIdentifier simDataId =
+				(LocalVCSimulationDataIdentifier) dataContext.getVCDataIdentifier();
+		int port = FieldViewerServer.start();
+		if (port < 0) {
+			DialogUtils.showErrorDialog(this, "Could not start the local field viewer server. See the log for details.");
+			return;
+		}
+
+		StringBuilder dataUrl = new StringBuilder("http://127.0.0.1:").append(port).append("/grid");
+		dataUrl.append("?sim=").append(simDataId.getVcSimID().getSimulationKey());
+		dataUrl.append("&job=").append(simDataId.getJobIndex());
+		DataIdentifier variable = dataContext.getDataIdentifier();
+		if (variable != null) {
+			dataUrl.append("&var=").append(urlEncode(variable.getName()));
+			if (variable.getDomain() != null) {
+				dataUrl.append("&domain=").append(urlEncode(variable.getDomain().getName()));
+			}
+		}
+		dataUrl.append("&time=").append(dataContext.getTimePoint());
+
+		String viewer = System.getProperty(VIEWER_URL_PROP, DEFAULT_VIEWER_URL);
+		String url = viewer + (viewer.contains("?") ? "&" : "?") + "src=" + urlEncode(dataUrl.toString());
+		DialogUtils.browserLauncher(this, url, "Failed to open the 3D viewer at " + viewer);
+	} catch (java.lang.Throwable ivjExc) {
+		handleException(ivjExc);
+	}
+}
+
+private static String urlEncode(String s) {
+	return java.net.URLEncoder.encode(s, java.nio.charset.StandardCharsets.UTF_8);
 }
 
 

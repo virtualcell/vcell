@@ -5,8 +5,8 @@ import { CommonModule } from '@angular/common';
  * vtk.wasm field viewer (docs/salad-3d-renderer-design.md §8B).
  *
  * Runs VCell's finite-volume surface-smoothing pipeline entirely CLIENT-SIDE in the browser:
- * build the raw whole-voxel unstructured grid in-memory from server-sent arrays (here a sample
- * fixture standing in for the server) → vtkGeometryFilter (extract boundary surface) →
+ * build the raw whole-voxel unstructured grid in-memory from server-sent arrays (from the desktop
+ * client's loopback server via ?src=, else a bundled fixture) → vtkGeometryFilter (extract boundary surface) →
  * vtkWindowedSincPolyDataFilter (the faithful FV smoothing: iters 12, feature angle 120°,
  * pass-band 0.05) → render via WebGL2. All filters are constructable in the standalone session via
  * the marshalling-coverage patch (virtualcell/vcell-vtk-wasm).
@@ -16,14 +16,40 @@ import { CommonModule } from '@angular/common';
  */
 const LOADER_URL = '/assets/vtk-wasm/vtk.umd.js';
 const BUNDLE_URL = '/assets/vtk-wasm/vcell-vtk-wasm32-emscripten.tar.gz';
-const GRID_URL = '/assets/fv-sample-grid.json';
+const FIXTURE_GRID_URL = '/assets/fv-sample-grid.json';
 const CANVAS_SELECTOR = '#vtk-wasm-canvas';
+
+/**
+ * The desktop client passes ?src=<url> pointing at its own loopback field server
+ * (FieldViewerServer in vcell-client); without it we fall back to the bundled fixture.
+ *
+ * Only loopback origins are accepted, so a crafted link cannot turn this page into a fetcher
+ * for an arbitrary host.
+ */
+function resolveGridUrl(search: string): string {
+  const src = new URLSearchParams(search).get('src');
+  if (!src) return FIXTURE_GRID_URL;
+  let parsed: URL;
+  try {
+    parsed = new URL(src);
+  } catch {
+    throw new Error(`'src' is not a valid URL: ${src}`);
+  }
+  const loopback = parsed.hostname === '127.0.0.1' || parsed.hostname === 'localhost' || parsed.hostname === '[::1]';
+  if (parsed.protocol !== 'http:' || !loopback) {
+    throw new Error(`'src' must be an http URL on the loopback interface, got ${parsed.origin}`);
+  }
+  return parsed.href;
+}
 
 interface FvGrid {
   numPoints: number;
   points: number[];
   cellType: number;         // 11 = VTK_VOXEL
   cells: number[][];        // per-cell point-id lists
+  field?: { name: string; location: 'cell' | 'point'; values: number[]; range: [number, number] };
+  domain?: string;
+  time?: number;
   sinc: { iterations: number; feature_angle: number; pass_band: number };
 }
 
@@ -73,10 +99,14 @@ export class VtkWasmViewerComponent implements AfterViewInit, OnDestroy {
       await loadUmdLoader();
       if (!window.vtkwasm) throw new Error('vtkwasm global not available after loading the UMD loader');
 
+      const gridUrl = resolveGridUrl(window.location.search);
       this.status = 'loading vtk.wasm bundle + FV grid…';
       const [runtime, grid] = await Promise.all([
         window.vtkwasm.loadAsync({ url: BUNDLE_URL }),
-        fetch(GRID_URL).then((r) => r.json() as Promise<FvGrid>),
+        fetch(gridUrl).then((r) => {
+          if (!r.ok) throw new Error(`grid fetch failed: ${r.status} ${r.statusText} from ${gridUrl}`);
+          return r.json() as Promise<FvGrid>;
+        }),
       ]);
       if (this.disposed) return;
       const vtk = runtime.createStandaloneSession().vtk;
@@ -92,6 +122,19 @@ export class VtkWasmViewerComponent implements AfterViewInit, OnDestroy {
       const ug = vtk.vtkUnstructuredGrid();
       await ug.setPoints(points);
       await ug.setCells(grid.cellType, cellArray);   // single cell type (VTK_VOXEL)
+
+      // Attach the field (e.g. a species concentration) as cell scalars — vtkGeometryFilter carries
+      // cell data through to the extracted surface, so the membrane is colored by the field.
+      if (grid.field) {
+        const arr = vtk.vtkDoubleArray();
+        await arr.setName(grid.field.name);
+        await arr.setNumberOfComponents(1);
+        await arr.setNumberOfTuples(grid.field.values.length);
+        // NB: setValue() is NOT in the marshalled invoker whitelist ("SetValue is not permitted");
+        // setTuple1(i, v) is the permitted per-element scalar setter in the standalone session.
+        for (let i = 0; i < grid.field.values.length; i++) await arr.setTuple1(i, grid.field.values[i]);
+        await (await ug.getCellData()).setScalars(arr);
+      }
       this.status = `grid built (${grid.numPoints} pts / ${grid.cells.length} voxels) — running pipeline…`;
 
       // --- FV smoothing pipeline: geometry (boundary surface) -> windowed-sinc ---
@@ -119,10 +162,17 @@ export class VtkWasmViewerComponent implements AfterViewInit, OnDestroy {
 
       const mapper = vtk.vtkPolyDataMapper();
       await mapper.setInputConnection(surfacePort);
+      if (grid.field) {
+        // colormap by the field's cell scalars (default blue→red LUT over the field range)
+        await mapper.setScalarModeToUseCellData();
+        await mapper.scalarVisibilityOn();   // no-arg form; setScalarVisibility(true) marshals awkwardly
+        await mapper.setScalarRange(grid.field.range[0], grid.field.range[1]);
+      }
       const actor = vtk.vtkActor({ mapper });
-      // Set color via the property object's method (assignment to actor.property.color is a no-op).
-      const prop = await actor.getProperty();
-      await prop.setColor(0.30, 0.65, 0.45);
+      if (!grid.field) {
+        // no field → solid surface (set color via the property method; actor.property.color is a no-op)
+        await (await actor.getProperty()).setColor(0.30, 0.65, 0.45);
+      }
 
       const renderer = vtk.vtkRenderer({ background: [0.07, 0.07, 0.1] });
       await renderer.addActor(actor);
@@ -133,7 +183,10 @@ export class VtkWasmViewerComponent implements AfterViewInit, OnDestroy {
       await renderWindow.render();
 
       if (this.disposed) return;
-      this.status = `rendered smoothed membrane ✓ (total ${Math.round(performance.now() - t0)} ms) — drag to rotate`;
+      const label = grid.field
+        ? `${grid.field.name} @ t=${grid.time} on ${grid.domain} — range [${grid.field.range[0].toExponential(2)}, ${grid.field.range[1].toExponential(2)}]`
+        : 'smoothed membrane';
+      this.status = `rendered ${label} ✓ (${Math.round(performance.now() - t0)} ms) — drag to rotate`;
     } catch (e: unknown) {
       this.error = 'vtk.wasm viewer failed: ' + ((e as Error)?.message ?? String(e));
       // eslint-disable-next-line no-console
