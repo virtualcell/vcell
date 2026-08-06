@@ -235,6 +235,28 @@ public class SBMLSupport implements IXPathToVariableIDResolver {
     			+ mappingID + "']/@spatial:" + compartmentAttribute;
     }
 
+    /**
+     * Gets XPath expression to identify the SBML initialAssignment for a symbol.
+     * <p>
+     * Needed where a species' or parameter's initial value was exported as an
+     * {@code <initialAssignment>} rather than as an {@code initialConcentration} (or
+     * {@code value}) attribute: the attribute is then absent, so an XPath naming it matches
+     * nothing. Note SBML gives an initialAssignment precedence over the attribute, so a change
+     * aimed at the attribute would be ignored even where both are present.
+     *
+     * @param symbol the id of the species, compartment or parameter being initialised
+     * @return An XPath string which can be set into the 'target' field of an
+     *         XPath-containing element in SED-ML.
+     */
+    public String getXPathForInitialAssignment(String symbol) {
+        return getXPathForListOfInitialAssignments() + "/sbml:initialAssignment[@symbol='" + symbol
+                + "']";
+    }
+
+    String getXPathForListOfInitialAssignments() {
+        return "/sbml:sbml/sbml:model/sbml:listOfInitialAssignments";
+    }
+
     String getXPathForListOfCompartments() {
         return "/sbml:sbml/sbml:model/sbml:listOfCompartments";
     }
