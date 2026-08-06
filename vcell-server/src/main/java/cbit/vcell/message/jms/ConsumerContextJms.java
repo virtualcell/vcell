@@ -102,6 +102,28 @@ public class ConsumerContextJms implements Runnable {
 		getThread().setDaemon(true);
 		getThread().start();
 	}
+	/**
+	 * Stop the polling thread and release the JMS resources behind it.
+	 *
+	 * stop() on its own only asks the thread to finish its current loop -- the MessageConsumer
+	 * stays registered with the broker, which keeps dispatching to it. With a prefetch limit
+	 * those messages then sit in a consumer nobody is reading and are not redelivered until
+	 * the connection dies.
+	 */
+	void stopAndClose(){
+		stop();
+		Thread consumerThread = getThread();
+		if (consumerThread != null && consumerThread != Thread.currentThread()){
+			try {
+				// the loop re-checks bProcessing once per receive() timeout
+				consumerThread.join(CONSUMER_POLLING_INTERVAL_MS*2);
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+			}
+		}
+		close();
+	}
+	
 	public void stop(){
 		if (bProcessing){
 			bProcessing=false;
