@@ -4,7 +4,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -28,6 +34,7 @@ import cbit.vcell.message.VCMessageSelector;
 import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCMessagingException;
 import cbit.vcell.message.VCQueueConsumer;
+import cbit.vcell.message.VCRpcMessageHandler;
 import cbit.vcell.message.VCRpcRequest;
 import cbit.vcell.message.VCellQueue;
 import cbit.vcell.resource.PropertyLoader;
@@ -197,6 +204,95 @@ public class MessageProducerSessionJmsTest {
 		}
 	}
 
+	/** An RPC round trip still works: request out, reply back through the temporary queue. */
+	@Test
+	public void rpcRoundTripReturnsTheAnswer() throws Exception {
+		String previous = setBlobProperty();
+		VCellQueue rpcQueue = new VCellQueue("MessageProducerSessionJmsTestRpcQueue-roundtrip");
+		VCQueueConsumer responder = startEchoResponder(rpcQueue);
+		VCMessageSession producerSession = service.createProducerSession();
+		try {
+			Object answer = producerSession.sendRpcMessage(rpcQueue, echoRequest("hello"),
+					true, 30000L, null, null, null);
+			assertEquals("hello", answer, "the RPC should return what the responder echoed");
+		} finally {
+			producerSession.close();
+			service.removeMessageConsumer(responder);
+			restoreBlobProperty(previous);
+		}
+	}
+
+	/**
+	 * The concurrency fix: every RPC gets its own JMS session, so concurrent callers on one
+	 * producer session cannot corrupt each other's producer, transaction or reply consumer.
+	 */
+	@Test
+	public void concurrentRpcsEachGetTheirOwnAnswer() throws Exception {
+		String previous = setBlobProperty();
+		// its own queue: removeMessageConsumer stops the polling thread without closing the
+		// consumer, so a responder from another test would sit on prefetched messages forever
+		VCellQueue rpcQueue = new VCellQueue("MessageProducerSessionJmsTestRpcQueue-concurrent");
+		VCQueueConsumer responder = startEchoResponder(rpcQueue);
+		VCMessageSession producerSession = service.createProducerSession();
+		ExecutorService pool = Executors.newFixedThreadPool(6);
+		try {
+			CountDownLatch startTogether = new CountDownLatch(1);
+			List<Future<Object>> answers = new ArrayList<>();
+			for (int i = 0; i < 6; i++) {
+				final String payload = "request-" + i;
+				answers.add(pool.submit((Callable<Object>) () -> {
+					startTogether.await();
+					return producerSession.sendRpcMessage(rpcQueue, echoRequest(payload),
+							true, 60000L, null, null, null);
+				}));
+			}
+			startTogether.countDown();
+
+			for (int i = 0; i < answers.size(); i++) {
+				assertEquals("request-" + i, answers.get(i).get(90, TimeUnit.SECONDS),
+						"each concurrent caller must get back its own reply, not another caller's");
+			}
+		} finally {
+			pool.shutdownNow();
+			producerSession.close();
+			service.removeMessageConsumer(responder);
+			restoreBlobProperty(previous);
+		}
+	}
+
+	private static VCRpcRequest echoRequest(String payload) {
+		return new VCRpcRequest(new User("testuser", new KeyValue("1")),
+				VCRpcRequest.RpcServiceType.TESTING_SERVICE, "echo", new Object[] { payload });
+	}
+
+	/** Answers RPCs on RPC_QUEUE by echoing the argument back. */
+	private static VCQueueConsumer startEchoResponder(VCellQueue rpcQueue) {
+		VCRpcMessageHandler handler = new VCRpcMessageHandler(new EchoService(), rpcQueue);
+		VCQueueConsumer responder = new VCQueueConsumer(rpcQueue, handler, null, "echo responder", 1);
+		service.addMessageConsumer(responder);
+		return responder;
+	}
+
+	public static class EchoService {
+		public String echo(String value) {
+			return value;
+		}
+	}
+
+	private static String setBlobProperty() {
+		String previous = System.getProperty(PropertyLoader.jmsBlobMessageUseMongo);
+		System.setProperty(PropertyLoader.jmsBlobMessageUseMongo, "false");
+		return previous;
+	}
+
+	private static void restoreBlobProperty(String previous) {
+		if (previous == null) {
+			System.clearProperty(PropertyLoader.jmsBlobMessageUseMongo);
+		} else {
+			System.setProperty(PropertyLoader.jmsBlobMessageUseMongo, previous);
+		}
+	}
+
 	/** An embedded-broker messaging service that counts every JMS connection opened through it. */
 	private static final class CountingMessagingService extends VCMessagingServiceJms {
 		final AtomicInteger connectionsOpened = new AtomicInteger();
@@ -222,7 +318,7 @@ public class MessageProducerSessionJmsTest {
 
 		@Override
 		public ConnectionFactory createConnectionFactory() {
-			return new ActiveMQConnectionFactory("vm://" + BROKER_NAME + "?create=false") {
+			ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory("vm://" + BROKER_NAME + "?create=false") {
 				@Override
 				public Connection createConnection() throws JMSException {
 					if (failConnections) {
@@ -232,6 +328,10 @@ public class MessageProducerSessionJmsTest {
 					return super.createConnection();
 				}
 			};
+			// VCRpcRequest travels as an ObjectMessage; the broker refuses to deserialize
+			// unlisted classes otherwise
+			factory.setTrustAllPackages(true);
+			return factory;
 		}
 
 		@Override

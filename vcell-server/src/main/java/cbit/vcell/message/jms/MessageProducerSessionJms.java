@@ -135,110 +135,112 @@ public class MessageProducerSessionJms implements VCMessageSession {
     }
 
     /**
-     * The temporary queue is a reply destination for sendRpcMessage and nothing else, so it
-     * is created with the first RPC rather than alongside the session.
+     * The temporary queue is a reply destination for sendRpcMessage and nothing else, so it is
+     * created with the first RPC rather than alongside the session.
+     *
+     * It is created on a session of its own so that sendRpcMessage never touches the shared
+     * session: a temporary destination belongs to the connection and outlives the session that
+     * created it (ActiveMQ's createTemporaryQueue delegates to the connection).
      */
     private synchronized TemporaryQueue getReplyQueue() throws JMSException{
         if(commonTemporaryQueue == null){
-            commonTemporaryQueue = getSession().createTemporaryQueue();
+            Session replyQueueSession = getConnection().createSession(false, Session.AUTO_ACKNOWLEDGE);
+            try {
+                commonTemporaryQueue = replyQueueSession.createTemporaryQueue();
+            } finally {
+                replyQueueSession.close();
+            }
         }
         return commonTemporaryQueue;
     }
 
-    public /*synchronized*/ Object sendRpcMessage(VCellQueue queue, VCRpcRequest vcRpcRequest, boolean returnRequired, long timeoutMS, String[] specialProperties, Object[] specialValues, UserLoginInfo userLoginInfo) throws VCMessagingException, VCMessagingInvocationTargetException{
+    /**
+     * Everything one RPC does -- building the request, the producer, the commit, and the
+     * consumer it then blocks on -- happens on a JMS session created for that call alone.
+     *
+     * RpcService creates a single producer session at startup and RpcRestlet hands it to every
+     * request thread, so doing this work on the shared session meant concurrent createProducer,
+     * send, commit, createConsumer and receive on a javax.jms.Session, which is not thread-safe;
+     * one caller's commit() also committed another caller's in-flight send. Marking the method
+     * synchronized is not the answer -- it would serialise every RPC behind a receive() that
+     * blocks for up to the client timeout, which is presumably why the `synchronized` that used
+     * to be here was commented out rather than kept. Connection is thread-safe, so a session per
+     * call is both correct and cheap: it costs no new connection.
+     */
+    public Object sendRpcMessage(VCellQueue queue, VCRpcRequest vcRpcRequest, boolean returnRequired, long timeoutMS, String[] specialProperties, Object[] specialValues, UserLoginInfo userLoginInfo) throws VCMessagingException, VCMessagingInvocationTargetException{
+        Session rpcSession = null;
         MessageProducer messageProducer = null;
-        Session messageSession = null;
+        MessageConsumer replyConsumer = null;
         try {
             if(!bIndependent){
                 throw new VCMessagingException("cannot invoke RpcMessage from within another transaction, create an independent message producer");
             }
-            Session jmsSession = getSession();
-            Destination destination = jmsSession.createQueue(queue.getName());
-            messageProducer = jmsSession.createProducer(destination);
+            boolean bTransacted = true;
+            rpcSession = getConnection().createSession(bTransacted, Session.AUTO_ACKNOWLEDGE);
+            Destination destination = rpcSession.createQueue(queue.getName());
+            messageProducer = rpcSession.createProducer(destination);
 
-            //
-            // Build the request message on a session of its own so that forming it -- which for a
-            // large request means serializing and writing a BLOB -- does not touch the session this
-            // RPC is being sent on. RpcService hands a single producer session to every request
-            // thread, so that session is in concurrent use (see the commented-out `synchronized` on
-            // this method).
-            //
-            // Bug 4668 (2016) got that isolation by building a whole second MessageProducerSessionJms
-            // here, which meant a JMS connection, session and temporary queue per RPC. It had to be
-            // independent only because the same commit added close() in the finally block, and
-            // closing a shared session would have closed the caller's. A session off the connection
-            // we already hold gives the same isolation: Connection is thread-safe, Session is not,
-            // and creating one costs no new connection.
-            //
-            messageSession = getConnection().createSession(false, Session.AUTO_ACKNOWLEDGE);
-            VCMessageJms vcRpcRequestMessage = (VCMessageJms) createObjectMessage(messageSession, vcRpcRequest);
+            // built on this call's own session, so forming a large request (serialize, maybe
+            // write a BLOB) cannot interfere with another thread's RPC
+            VCMessageJms vcRpcRequestMessage = (VCMessageJms) createObjectMessage(rpcSession, vcRpcRequest);
             Message rpcMessage = vcRpcRequestMessage.getJmsMessage();
 
             rpcMessage.setStringProperty(VCMessagingConstants.MESSAGE_TYPE_PROPERTY, VCMessagingConstants.MESSAGE_TYPE_RPC_SERVICE_VALUE);
             rpcMessage.setStringProperty(VCMessagingConstants.SERVICE_TYPE_PROPERTY, vcRpcRequest.getRequestedServiceType().getName());
-//				rpcMessage.setJMSExpiration(5000);
             if(specialValues != null){
                 for(int i = 0; i < specialValues.length; i++){
                     rpcMessage.setObjectProperty(specialProperties[i], specialValues[i]);
                 }
             }
 
-            if(returnRequired){
-                rpcMessage.setJMSReplyTo(getReplyQueue());
-                messageProducer.setTimeToLive(timeoutMS);
-                messageProducer.send(rpcMessage);
-                jmsSession.commit();
-                vcMessagingServiceJms.getDelegate().onRpcRequestSent(vcRpcRequest, userLoginInfo, vcRpcRequestMessage);
-                if(lg.isTraceEnabled())
-                    lg.trace("MessageProducerSessionJms.sendRpcMessage(): looking for reply message with correlationID = " + rpcMessage.getJMSMessageID());
-                String filter = VCMessagingConstants.JMSCORRELATIONID_PROPERTY + "='" + rpcMessage.getJMSMessageID() + "'";
-                MessageConsumer replyConsumer = null;
-                Message replyMessage = null;
-                try {
-                    replyConsumer = jmsSession.createConsumer(getReplyQueue(), filter);
-                    replyMessage = replyConsumer.receive(timeoutMS);
-                } finally {
-                    replyConsumer.close();
-                }
-                if(replyMessage == null){
-                    lg.info("Request timed out");
-                }
+            rpcMessage.setJMSReplyTo(getReplyQueue());
+            messageProducer.setTimeToLive(timeoutMS);
+            messageProducer.send(rpcMessage);
+            rpcSession.commit();
+            vcMessagingServiceJms.getDelegate().onRpcRequestSent(vcRpcRequest, userLoginInfo, vcRpcRequestMessage);
 
-                if(replyMessage == null || !(replyMessage instanceof ObjectMessage)){
-                    throw new JMSException("Server is temporarily not responding, please try again. If problem persists, contact VCell_Support@uchc.edu." +
-                            " (server " + vcRpcRequest.getRequestedServiceType().getName() + ", method " + vcRpcRequest.getMethodName() + ")");
-                } else {
-                    VCMessageJms vcReplyMessage = new VCMessageJms(replyMessage, vcMessagingServiceJms.getDelegate());
-                    vcReplyMessage.loadBlobFile();
-                    Object returnValue = vcReplyMessage.getObjectContent();
-                    vcReplyMessage.removeBlobFile();
-                    if(returnValue instanceof Exception){
-                        throw new VCMessagingInvocationTargetException((Exception) returnValue);
-                    } else {
-                        return returnValue;
-                    }
-                }
-            } else {
-                rpcMessage.setJMSReplyTo(getReplyQueue());
-                messageProducer.setTimeToLive(timeoutMS);
-                messageProducer.send(rpcMessage);
-                commit();
-                vcMessagingServiceJms.getDelegate().onRpcRequestSent(vcRpcRequest, userLoginInfo, vcRpcRequestMessage);
+            if(!returnRequired){
                 return null;
+            }
+
+            if(lg.isTraceEnabled())
+                lg.trace("MessageProducerSessionJms.sendRpcMessage(): looking for reply message with correlationID = " + rpcMessage.getJMSMessageID());
+            // the reply queue is shared by every RPC on this producer session, so each caller
+            // takes only its own reply -- selected by the correlation id of the request it sent
+            String filter = VCMessagingConstants.JMSCORRELATIONID_PROPERTY + "='" + rpcMessage.getJMSMessageID() + "'";
+            replyConsumer = rpcSession.createConsumer(getReplyQueue(), filter);
+            Message replyMessage = replyConsumer.receive(timeoutMS);
+            if(replyMessage == null){
+                lg.info("Request timed out");
+            }
+
+            if(replyMessage == null || !(replyMessage instanceof ObjectMessage)){
+                throw new JMSException("Server is temporarily not responding, please try again. If problem persists, contact VCell_Support@uchc.edu." +
+                        " (server " + vcRpcRequest.getRequestedServiceType().getName() + ", method " + vcRpcRequest.getMethodName() + ")");
+            } else {
+                VCMessageJms vcReplyMessage = new VCMessageJms(replyMessage, vcMessagingServiceJms.getDelegate());
+                vcReplyMessage.loadBlobFile();
+                Object returnValue = vcReplyMessage.getObjectContent();
+                vcReplyMessage.removeBlobFile();
+                if(returnValue instanceof Exception){
+                    throw new VCMessagingInvocationTargetException((Exception) returnValue);
+                } else {
+                    return returnValue;
+                }
             }
         } catch(JMSException e){
             onException(e);
             throw new VCMessagingException(e.getMessage(), e);
         } finally {
             try {
-
-                if(messageSession != null){
-                    // not transacted and never sent on, so there is nothing to commit
-                    messageSession.close();
+                if(replyConsumer != null){
+                    replyConsumer.close();
                 }
-
                 if(messageProducer != null){
                     messageProducer.close();
+                }
+                if(rpcSession != null){
+                    rpcSession.close();
                 }
             } catch(JMSException e){
                 onException(e);
