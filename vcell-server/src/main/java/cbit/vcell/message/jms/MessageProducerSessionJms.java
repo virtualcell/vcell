@@ -293,15 +293,28 @@ public class MessageProducerSessionJms implements VCMessageSession {
         if(message instanceof VCMessageJms){
             VCMessageJms jmsMessage = (VCMessageJms) message;
             Session jmsSession = openSessionForSend();
+            MessageProducer messageProducer = null;
             try {
-                MessageProducer producer = jmsSession.createProducer(jmsSession.createTopic(topic.getName()));
-                producer.send(jmsMessage.getJmsMessage());
+                messageProducer = jmsSession.createProducer(jmsSession.createTopic(topic.getName()));
+                messageProducer.send(jmsMessage.getJmsMessage());
                 if(bIndependent){
                     jmsSession.commit();
                 }
                 vcMessagingServiceJms.getDelegate().onMessageSent(message, topic);
             } catch(JMSException e){
                 onException(e);
+            } finally {
+                // sendQueueMessage has always done this; without it every publish left a
+                // producer on the session. The callers here (SimDataServer's data and export
+                // events, SimulationStateMachine, StatusMessage) publish on sessions that live
+                // as long as the server, so the producers accumulated for the whole run.
+                if(messageProducer != null){
+                    try {
+                        messageProducer.close();
+                    } catch(JMSException e){
+                        lg.error(e.getMessage(), e);
+                    }
+                }
             }
         } else {
             throw new RuntimeException("must send a JMS message to a JMS messaging service");

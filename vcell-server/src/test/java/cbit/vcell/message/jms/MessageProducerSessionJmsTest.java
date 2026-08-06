@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -20,6 +22,7 @@ import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
 import javax.jms.Session;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
@@ -38,6 +41,7 @@ import cbit.vcell.message.VCQueueConsumer;
 import cbit.vcell.message.VCRpcMessageHandler;
 import cbit.vcell.message.VCRpcRequest;
 import cbit.vcell.message.VCellQueue;
+import cbit.vcell.message.VCellTopic;
 import cbit.vcell.resource.PropertyLoader;
 
 import org.vcell.util.document.KeyValue;
@@ -326,6 +330,75 @@ public class MessageProducerSessionJmsTest {
 							+ "consumer must not still be holding one");
 		} finally {
 			producerSession.close();
+		}
+	}
+
+	/**
+	 * sendQueueMessage has always closed its producer in a finally; sendTopicMessage did not, so
+	 * every publish left one behind. The sessions that publish (SimDataServer's data and export
+	 * events, SimulationStateMachine, StatusMessage) live as long as the server, so the producers
+	 * accumulated for the whole run.
+	 */
+	@Test
+	public void sendTopicMessageDoesNotLeakProducers() throws Exception {
+		ProducerCountingService counting = new ProducerCountingService();
+		VCellTopic topic = new VCellTopic("MessageProducerSessionJmsTestTopic");
+		VCMessageSession producerSession = counting.createProducerSession();
+		try {
+			for (int i = 0; i < 5; i++) {
+				producerSession.sendTopicMessage(topic, producerSession.createTextMessage("message " + i));
+			}
+			assertEquals(0, counting.producersOpen.get(),
+					"every publish must close the producer it created");
+		} finally {
+			producerSession.close();
+		}
+	}
+
+	/**
+	 * Wraps the JMS objects in proxies so producers opened and closed can be counted in-process --
+	 * no broker bookkeeping, no timing, so the count is exact.
+	 */
+	private static final class ProducerCountingService extends VCMessagingServiceJms {
+		final AtomicInteger producersOpen = new AtomicInteger();
+
+		@Override
+		public ConnectionFactory createConnectionFactory() {
+			return new ActiveMQConnectionFactory("vm://" + BROKER_NAME + "?create=false") {
+				@Override
+				public Connection createConnection() throws JMSException {
+					return (Connection) countingProxy(Connection.class, super.createConnection());
+				}
+			};
+		}
+
+		@Override
+		public MessageConsumer createConsumer(Session jmsSession, VCDestination vcDestination,
+				VCMessageSelector vcSelector, int prefetchLimit) {
+			throw new UnsupportedOperationException("this service only produces");
+		}
+
+		private Object countingProxy(Class<?> iface, Object target) {
+			return Proxy.newProxyInstance(getClass().getClassLoader(), new Class<?>[] { iface },
+					(proxy, method, args) -> {
+						Object result;
+						try {
+							result = method.invoke(target, args);
+						} catch (InvocationTargetException e) {
+							throw e.getCause();
+						}
+						if ("createSession".equals(method.getName())) {
+							return countingProxy(Session.class, result);
+						}
+						if ("createProducer".equals(method.getName())) {
+							producersOpen.incrementAndGet();
+							return countingProxy(MessageProducer.class, result);
+						}
+						if ("close".equals(method.getName()) && target instanceof MessageProducer) {
+							producersOpen.decrementAndGet();
+						}
+						return result;
+					});
 		}
 	}
 
