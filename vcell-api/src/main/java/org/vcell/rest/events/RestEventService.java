@@ -3,6 +3,10 @@ package org.vcell.rest.events;
 import cbit.rmi.event.*;
 import cbit.vcell.message.VCMessagingService;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonNull;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.api.types.events.*;
@@ -18,6 +22,43 @@ import java.util.concurrent.atomic.AtomicLong;
 public class RestEventService {
 	private final static Logger lg = LogManager.getLogger(RestEventService.class);
 	
+	/**
+	 * Serializes events, tolerating non-finite doubles.
+	 *
+	 * <p>JSON has no representation for Infinity or NaN, so a stock {@link Gson}
+	 * throws {@code IllegalArgumentException} on one. That used to be caught, logged
+	 * and the event dropped — but the message was then redelivered, failed again, and
+	 * kept failing: a single export whose {@code progress} came out Infinity produced
+	 * roughly 4,900 error lines a minute on production, and because the consumer loop
+	 * creates a JMS connection and temporary queue per message, each redelivery cost
+	 * one of each.
+	 *
+	 * <p>A non-finite value is written as {@code null} instead. Every representation
+	 * already declares {@code progress} as a nullable {@link Double} and already sends
+	 * null for events carrying none (EXPORT_START, EXPORT_ASSEMBLING), so consumers
+	 * handle its absence. Losing one progress reading beats losing the event and
+	 * wedging the consumer.
+	 *
+	 * <p>This does not excuse producing a non-finite progress — the WARN below names
+	 * the value so the upstream division stays findable.
+	 */
+	private final static Gson gson = new GsonBuilder()
+			.registerTypeAdapter(Double.class, nonFiniteAsNull())
+			.registerTypeAdapter(double.class, nonFiniteAsNull())
+			.create();
+
+	private static JsonSerializer<Double> nonFiniteAsNull() {
+		return (src, typeOfSrc, context) -> {
+			if (src == null || src.isInfinite() || src.isNaN()) {
+				if (src != null) {
+					lg.warn("non-finite value {} in an outgoing event; sending null instead", src);
+				}
+				return JsonNull.INSTANCE;
+			}
+			return new JsonPrimitive(src);
+		};
+	}
+
 	final static AtomicLong eventSequence = new AtomicLong(0);
 	final static ConcurrentLinkedDeque<EventWrapper> events = new ConcurrentLinkedDeque<>();
 	ClientTopicMessageCollector clientTopicMessageCollector = null;
@@ -52,7 +93,6 @@ public class RestEventService {
 				if (!Compare.isEqual(event2.getJobID(),exportEvent.getJobID())) {
 					throw new RuntimeException("Export event round-trip failed");
 				}
-				Gson gson = new Gson();
 				String eventJSON = gson.toJson(exportEventRep);
 				insert(exportEventRep.username, EventWrapper.EventType.ExportEvent,eventJSON);
 			}catch (Exception e) {
@@ -69,7 +109,6 @@ public class RestEventService {
 				if (!Compare.isEqual(event2.getProgress(),simJobEvent.getProgress())) {
 					throw new RuntimeException("SimulationJobStatus <PROGRESS> event round-trip failed");
 				}
-				Gson gson = new Gson();
 				String eventJSON = gson.toJson(simJobEventRep);
 				insert(simJobEventRep.username, EventWrapper.EventType.SimJob,eventJSON);
 			}catch (Exception e) {
@@ -92,7 +131,6 @@ public class RestEventService {
 					return;
 				}
 				//Add new broadcast message
-				Gson gson = new Gson();
 				String eventJSON = gson.toJson(broadcastEventRepresentation);
 				insert(null, EventWrapper.EventType.Broadcast,eventJSON);
 			}else {
@@ -115,7 +153,6 @@ public class RestEventService {
 				if (!Compare.isEqual(event2.getProgress(),dataJobEvent.getProgress())) {
 					throw new RuntimeException("DataJob <PROGRESS> event round-trip failed");
 				}
-				Gson gson = new Gson();
 				String eventJSON = gson.toJson(dataJobEventRep);
 				insert(dataJobEventRep.username, EventWrapper.EventType.DataJob,eventJSON);
 			}catch (Exception e) {
