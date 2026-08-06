@@ -120,7 +120,6 @@ public class SEDMLExporterSBMLTest extends SEDMLExporterCommon {
 		faults.put("biomodel_2962862.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_32568171.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_32568356.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
-		faults.put("biomodel_34826524.vcml", SEDML_FAULT.MATH_OVERRIDE_NOT_EQUIVALENT); // simulation 'Cap=1, cof, prof varied' in simContext 'Steady State Turnover'
 		faults.put("biomodel_34855932.vcml", SEDML_FAULT.MATH_OVERRIDE_NOT_EQUIVALENT); // simulation 'INIT' in simContext 'cell4'
 		faults.put("biomodel_38086434.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX); // new
 		faults.put("biomodel_55178308.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX); // new
@@ -190,6 +189,14 @@ public class SEDMLExporterSBMLTest extends SEDMLExporterCommon {
 		unsupportedApplications.add(new UnsupportedApplication("biomodel_16804037.vcml","PipDecay","Reaction 'KCNQcurrent' has electric current defined, SBML Export is not supported"));
 		unsupportedApplications.add(new UnsupportedApplication("biomodel_169993006.vcml","Pattern_formation","Species 'A' has FieldData as initial condition, SBML Export is not supported"));
 		unsupportedApplications.add(new UnsupportedApplication("biomodel_17098642.vcml","PipDecay","Reaction 'KCNQcurrent' has electric current defined, SBML Export is not supported"));
+		unsupportedApplications.add(new UnsupportedApplication("biomodel_188880263.vcml","Stochastic mRNA Number Sweep","Application 'Stochastic mRNA Number Sweep' has reaction rules, SBML Export is not supported"));
+		unsupportedApplications.add(new UnsupportedApplication("biomodel_188880263.vcml","Stochastic Make mRNA Sweep Const Prot","Application 'Stochastic Make mRNA Sweep Const Prot' has reaction rules, SBML Export is not supported"));
+		unsupportedApplications.add(new UnsupportedApplication("biomodel_188880263.vcml","Stochastic mRNA Number Sweep Const Nucl Chaparones","Application 'Stochastic mRNA Number Sweep Const Nucl Chaparones' has reaction rules, SBML Export is not supported"));
+		unsupportedApplications.add(new UnsupportedApplication("biomodel_188880263.vcml","Stochastic Make mRNA Sweep","Application 'Stochastic Make mRNA Sweep' has reaction rules, SBML Export is not supported"));
+		unsupportedApplications.add(new UnsupportedApplication("biomodel_188880263.vcml","Stochastic","Application 'Stochastic' has reaction rules, SBML Export is not supported"));
+		unsupportedApplications.add(new UnsupportedApplication("biomodel_188880263.vcml","Continuous_Low L1DNA","Application 'Continuous_Low L1DNA' has reaction rules, SBML Export is not supported"));
+		unsupportedApplications.add(new UnsupportedApplication("biomodel_188880263.vcml","Network Free","Application 'Network Free' has reaction rules, SBML Export is not supported"));
+		unsupportedApplications.add(new UnsupportedApplication("biomodel_188880263.vcml","Continuous_Med L1DNA","Application 'Continuous_Med L1DNA' has reaction rules, SBML Export is not supported"));
 		unsupportedApplications.add(new UnsupportedApplication("biomodel_189321805.vcml","Application0","Application 'Application0' has reaction rules, SBML Export is not supported"));
 		unsupportedApplications.add(new UnsupportedApplication("biomodel_189512756.vcml","Modeling PI cycle","Reaction 'KCNQ2/3' has electric current defined, SBML Export is not supported"));
 		unsupportedApplications.add(new UnsupportedApplication("biomodel_189513183.vcml","modeling PI cycle","Reaction 'KCNQ2/3' has electric current defined, SBML Export is not supported"));
