@@ -97,6 +97,10 @@ public class SEDMLExporter {
     private int simCount;
     private int overrideCount;
 
+    /** Application to the SED-ML id it was exported under; see {@link #getSimContextId}. */
+    private final Map<SimulationContext, String> simContextIdMap = new LinkedHashMap<>();
+    private final Set<String> usedSimContextIds = new LinkedHashSet<>();
+
     private final SBMLSupport sbmlSupport = new SBMLSupport();
 
 
@@ -274,9 +278,34 @@ public class SEDMLExporter {
         }
     }
 
+    /**
+     * The SED-ML id for an application, unique across the exported document.
+     * <p>
+     * {@link TokenMangler#mangleToSName} replaces every non-alphanumeric character with an
+     * underscore, so it is many-to-one: applications named {@code +sorafenib} and {@code -sorafenib}
+     * both mangle to {@code _sorafenib}. Both the model id and the SBML file name are derived from
+     * it, so without disambiguation the second application overwrites the first application's SBML
+     * file and re-uses its model id — leaving that application's data generators pointing at another
+     * application's parameters, and silently shipping the wrong model in the archive.
+     * <p>
+     * The suffix is {@code _app<n>} rather than {@code _<n>} to stay clear of the ids given to
+     * override-derived models, which are {@code <simContextId>_<overrideCount>}.
+     */
+    private String getSimContextId(SimulationContext simContext) {
+        return this.simContextIdMap.computeIfAbsent(simContext, sc -> {
+            String base = TokenMangler.mangleToSName(sc.getName());
+            String candidate = base;
+            int collisionCount = 0;
+            while (!this.usedSimContextIds.add(candidate)) {
+                candidate = base + "_app" + collisionCount++;
+            }
+            return candidate;
+        });
+    }
+
     private void writeModelVCML(String filePathStrRelative, SimulationContext simContext) {
         String simContextName = simContext.getName();
-        String simContextId = TokenMangler.mangleToSName(simContextName);
+        String simContextId = getSimContextId(simContext);
         this.sedmlModel.getSedML().addModel(new Model(new SId(simContextId), simContextName, this.vcmlLanguageURN, filePathStrRelative + "#" + VCMLSupport.getXPathForSimContext(simContextName)));
     }
 
@@ -286,7 +315,7 @@ public class SEDMLExporter {
         // create sedml objects (simulation, task, datagenerators, report, plot) for each simulation in simcontext
         // -------
         String simContextName = simContext.getName();
-        String simContextId = TokenMangler.mangleToSName(simContextName);
+        String simContextId = getSimContextId(simContext);
         this.simCount = 0;
         this.overrideCount = 0;
         simContext.getSimulations();
@@ -1026,7 +1055,7 @@ public class SEDMLExporter {
 
     private void writeModelSBML(String savePath, String sBaseFileName, String sbmlString, SimulationContext simContext) throws IOException {
         String simContextName = simContext.getName();
-        String simContextId = TokenMangler.mangleToSName(simContextName);
+        String simContextId = getSimContextId(simContext);
         String filePathStrAbsolute = Paths.get(savePath, sBaseFileName + "_" + simContextId + ".xml").toString();
         String filePathStrRelative = sBaseFileName + "_" + simContextId + ".xml";
         XmlUtil.writeXMLStringToFile(sbmlString, filePathStrAbsolute, true);
