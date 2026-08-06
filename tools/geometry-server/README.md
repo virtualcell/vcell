@@ -71,8 +71,12 @@ GEOM_DATA_DIR=/path/to/pyvcell/tests/fixtures/data/solver_output \
   /path/to/pyvcell/.venv/bin/python geomserver.py
 
 # 2. render it headlessly and screenshot
-GEOM_SECRET=dev-secret node run-client-test.mjs
+npm install                                   # puppeteer-core, drives headless Chrome
+GEOM_SECRET=dev-secret npm run test:client
 ```
+
+`run-client-test.mjs` is verification only — it drives real headless Chrome because a WebGL render
+cannot be checked with `curl`. Neither the server nor `client.html` depends on it.
 
 `GEOM_DATA_DIR` defaults to a sibling pyvcell checkout if one is found. `GEOM_ALLOW_ANON=1`
 disables capability checks for local poking; the server logs loudly and refuses to start without

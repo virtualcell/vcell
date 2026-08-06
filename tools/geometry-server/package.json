@@ -1,0 +1,13 @@
+{
+  "name": "vcell-geometry-server-spike",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Spike: stateless server-side extraction of VCell finite-volume surfaces, drawn by a dependency-free WebGL2 client",
+  "type": "module",
+  "scripts": {
+    "test:client": "node run-client-test.mjs"
+  },
+  "devDependencies": {
+    "puppeteer-core": "^23.0.0"
+  }
+}

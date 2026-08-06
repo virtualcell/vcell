@@ -15,7 +15,7 @@
 //   DOMAIN, VAR     domain and variable (default cytosol / cytosol::C_cyt)
 //   TIME            timepoint (default 1.0)
 //   CHROME          Chrome executable (default macOS Google Chrome)
-//   PUPPETEER_CORE  path to a puppeteer-core ESM entry (default webapp-ng/node_modules)
+//   PUPPETEER_CORE  path to a puppeteer-core ESM entry (default: the declared dependency)
 //   SHOT            screenshot output path (default ./client-render.png)
 import http from 'node:http';
 import fs from 'node:fs';
@@ -24,7 +24,6 @@ import crypto from 'node:crypto';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
-const REPO = path.resolve(HERE, '../..');
 const PORT = 4350;
 const BASE = process.env.GEOM_BASE ?? 'http://127.0.0.1:9200';
 const SECRET = process.env.GEOM_SECRET ?? 'dev-secret';
@@ -35,8 +34,7 @@ const VAR = process.env.VAR ?? 'cytosol::C_cyt';
 const TIME = process.env.TIME ?? '1.0';
 const SHOT = process.env.SHOT ?? path.join(HERE, 'client-render.png');
 const CHROME = process.env.CHROME ?? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
-const PUP = process.env.PUPPETEER_CORE
-  ?? path.join(REPO, 'webapp-ng/node_modules/puppeteer-core/lib/esm/puppeteer/puppeteer-core.js');
+const PUP = process.env.PUPPETEER_CORE;   // optional: point at a puppeteer-core ESM entry elsewhere
 
 try {
   const r = await fetch(`${BASE}/health`);
@@ -45,7 +43,10 @@ try {
   console.error(`ERROR: no geometry server at ${BASE} (${e.message}). Start geomserver.py first.`);
   process.exit(2);
 }
-const { default: puppeteer } = await import(pathToFileURL(PUP).href);
+// declared in package.json, so resolve by specifier; PUPPETEER_CORE overrides for odd checkouts
+const { default: puppeteer } = PUP
+  ? await import(pathToFileURL(PUP).href)
+  : await import('puppeteer-core');
 
 // Fixed single route: the served path is a constant, never derived from the request
 // (no path traversal -- CodeQL js/path-injection).
