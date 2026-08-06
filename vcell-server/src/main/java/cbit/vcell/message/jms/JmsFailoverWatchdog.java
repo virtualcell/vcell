@@ -2,6 +2,7 @@ package cbit.vcell.message.jms;
 
 import java.io.IOException;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.jms.Connection;
 
@@ -51,6 +52,9 @@ public final class JmsFailoverWatchdog {
 		if (!(connection instanceof ActiveMQConnection)) {
 			return;
 		}
+		// Scoped to this connection: attach() installs a fresh listener per connection,
+		// so this tracks only whether *this* transport was interrupted.
+		final AtomicBoolean wasInterrupted = new AtomicBoolean(false);
 		((ActiveMQConnection) connection).addTransportListener(new TransportListener() {
 			@Override
 			public void onCommand(Object command) {
@@ -62,11 +66,21 @@ public final class JmsFailoverWatchdog {
 			}
 			@Override
 			public void transportInterupted() {
+				wasInterrupted.set(true);
 				lg.warn("JMS transport interrupted, failover reconnecting");
 			}
 			@Override
 			public void transportResumed() {
-				lg.info("JMS transport resumed");
+				// The transport fires this on a first successful connect as well as after a
+				// genuine interruption, and only the latter is a "resume" worth reporting.
+				// Callers that create a connection per message (ConsumerContextJms) make the
+				// former overwhelmingly common: production logged ~3,300 of these a minute,
+				// with zero interruptions, drowning the log for no diagnostic gain.
+				if (wasInterrupted.getAndSet(false)) {
+					lg.info("JMS transport resumed");
+				} else {
+					lg.debug("JMS transport connected");
+				}
 			}
 		});
 	}

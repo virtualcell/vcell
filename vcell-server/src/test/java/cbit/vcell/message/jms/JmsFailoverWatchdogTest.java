@@ -129,13 +129,12 @@ public class JmsFailoverWatchdogTest {
 			ListAppender appender = new ListAppender(logger);
 			appender.start();
 			logger.addAppender(appender);
-			// Configurator, not logger.setLevel(). The root level is warn (log4j2-test.xml), so
-			// the level has to be lowered for a DEBUG/INFO event to reach us at all. setLevel()
-			// on this Logger lowers it only for *this* instance, and the logger the class under
-			// test holds is a different instance of the same name (log4j creates one per message
-			// factory, and warns about exactly that mismatch here). Configurator updates the
-			// shared LoggerConfig and calls updateLoggers(), so both instances see DEBUG.
-			// The instance-local form passed locally but failed in CI's shared-JVM Fast shard.
+			// The root level is warn (log4j2-test.xml), so it has to be lowered for a DEBUG or
+			// INFO event to reach us at all. Configurator rather than logger.setLevel(): the
+			// latter lowers the level only for this Logger instance, and the class under test
+			// holds a different instance of the same name (log4j registers one per message
+			// factory and warns about that mismatch when this test runs). Configurator updates
+			// the shared LoggerConfig and calls updateLoggers(), so every instance sees DEBUG.
 			Configurator.setLevel(cls.getName(), Level.DEBUG);
 			return appender;
 		}
