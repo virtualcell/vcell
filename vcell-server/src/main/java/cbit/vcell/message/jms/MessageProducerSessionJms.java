@@ -111,6 +111,24 @@ public class MessageProducerSessionJms implements VCMessageSession {
     }
 
     /**
+     * Opens the session for a send, failing loudly if it cannot be opened.
+     *
+     * The send methods deliberately swallow a JMSException from send() itself, but failing
+     * to open the connection is not that: before the connection was deferred it happened in
+     * the constructor, so ConsumerContextJms saw it before the listener ran and left the
+     * incoming message uncommitted for redelivery. Throwing here keeps that -- otherwise a
+     * listener would be told its send succeeded and the inbound message would be committed.
+     */
+    private Session openSessionForSend() throws VCMessagingException{
+        try {
+            return getSession();
+        } catch(JMSException e){
+            onException(e);
+            throw new VCMessagingException("unable to open JMS session: " + e.getMessage(), e);
+        }
+    }
+
+    /**
      * The temporary queue is a reply destination for sendRpcMessage and nothing else, so it
      * is created with the first RPC rather than alongside the session.
      */
@@ -223,9 +241,9 @@ public class MessageProducerSessionJms implements VCMessageSession {
     @Override
     public void sendQueueMessage(VCellQueue queue, VCMessage message, Boolean persistent, Long timeToLiveMS) throws VCMessagingException{
         if(message instanceof VCMessageJms){
+            Session jmsSession = openSessionForSend();
             MessageProducer messageProducer = null;
             try {
-                Session jmsSession = getSession();
                 Destination destination = jmsSession.createQueue(queue.getName());
                 messageProducer = jmsSession.createProducer(destination);
                 if(persistent == null || persistent.booleanValue()){
@@ -264,8 +282,8 @@ public class MessageProducerSessionJms implements VCMessageSession {
     public void sendTopicMessage(VCellTopic topic, VCMessage message) throws VCMessagingException{
         if(message instanceof VCMessageJms){
             VCMessageJms jmsMessage = (VCMessageJms) message;
+            Session jmsSession = openSessionForSend();
             try {
-                Session jmsSession = getSession();
                 MessageProducer producer = jmsSession.createProducer(jmsSession.createTopic(topic.getName()));
                 producer.send(jmsMessage.getJmsMessage());
                 if(bIndependent){

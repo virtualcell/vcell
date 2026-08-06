@@ -1,6 +1,7 @@
 package cbit.vcell.message.jms;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.concurrent.CountDownLatch;
@@ -22,8 +23,10 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import cbit.vcell.message.VCDestination;
+import cbit.vcell.message.VCMessage;
 import cbit.vcell.message.VCMessageSelector;
 import cbit.vcell.message.VCMessageSession;
+import cbit.vcell.message.VCMessagingException;
 import cbit.vcell.message.VCQueueConsumer;
 import cbit.vcell.message.VCellQueue;
 
@@ -138,9 +141,31 @@ public class MessageProducerSessionJmsTest {
 		}
 	}
 
+	/**
+	 * Deferring the connection moved the point where a broker problem is noticed from the
+	 * constructor into the send. It must still be noticed: a listener told that its send
+	 * succeeded would let ConsumerContextJms commit the message it was handling.
+	 */
+	@Test
+	public void aSendThatCannotOpenAConnectionThrows() throws Exception {
+		VCMessage message = service.createProducerSession().createTextMessage("never sent");
+
+		MessageProducerSessionJms producerSession = new MessageProducerSessionJms(service);
+		service.failConnections = true;
+		try {
+			assertThrows(VCMessagingException.class,
+					() -> producerSession.sendQueueMessage(TEST_QUEUE, message, Boolean.FALSE, 60000L),
+					"a send that cannot open its connection must not report success");
+		} finally {
+			service.failConnections = false;
+			producerSession.close();
+		}
+	}
+
 	/** An embedded-broker messaging service that counts every JMS connection opened through it. */
 	private static final class CountingMessagingService extends VCMessagingServiceJms {
 		final AtomicInteger connectionsOpened = new AtomicInteger();
+		volatile boolean failConnections = false;
 		private BrokerService broker = null;
 
 		void startBroker() throws Exception {
@@ -165,6 +190,9 @@ public class MessageProducerSessionJmsTest {
 			return new ActiveMQConnectionFactory("vm://" + BROKER_NAME + "?create=false") {
 				@Override
 				public Connection createConnection() throws JMSException {
+					if (failConnections) {
+						throw new JMSException("simulated broker outage");
+					}
 					connectionsOpened.incrementAndGet();
 					return super.createConnection();
 				}
