@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
@@ -328,9 +329,11 @@ public class MessageProducerSessionJmsTest {
 					return super.createConnection();
 				}
 			};
-			// VCRpcRequest travels as an ObjectMessage; the broker refuses to deserialize
-			// unlisted classes otherwise
-			factory.setTrustAllPackages(true);
+			// VCRpcRequest travels as an ObjectMessage, and ActiveMQ refuses to deserialize
+			// classes outside its allowlist. Only the packages this test actually puts on the
+			// wire are listed -- trusting everything is what production does, and it is what
+			// the standing java/unsafe-deserialization alert on VCMessageJms is about.
+			factory.setTrustedPackages(Arrays.asList("java.lang", "java.util", "java.math", "cbit.vcell", "org.vcell"));
 			return factory;
 		}
 
