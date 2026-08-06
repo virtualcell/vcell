@@ -1715,20 +1715,24 @@ private void openInBrowserViewer() {
 			return;
 		}
 
-		StringBuilder dataUrl = new StringBuilder("http://127.0.0.1:").append(port).append("/grid");
-		dataUrl.append("?sim=").append(simDataId.getVcSimID().getSimulationKey());
-		dataUrl.append("&job=").append(simDataId.getJobIndex());
+		// Hand over the DATASET, not a frozen snapshot of it. The variable, domain and time below
+		// are where the viewer opens; it then asks the server what else the run contains and lets the
+		// user move around independently of this panel.
+		StringBuilder params = new StringBuilder();
+		params.append("base=").append(urlEncode("http://127.0.0.1:" + port));
+		params.append("&sim=").append(simDataId.getVcSimID().getSimulationKey());
+		params.append("&job=").append(simDataId.getJobIndex());
 		DataIdentifier variable = dataContext.getDataIdentifier();
 		if (variable != null) {
-			dataUrl.append("&var=").append(urlEncode(variable.getName()));
+			params.append("&var=").append(urlEncode(variable.getName()));
 			if (variable.getDomain() != null) {
-				dataUrl.append("&domain=").append(urlEncode(variable.getDomain().getName()));
+				params.append("&domain=").append(urlEncode(variable.getDomain().getName()));
 			}
 		}
-		dataUrl.append("&time=").append(dataContext.getTimePoint());
+		params.append("&time=").append(dataContext.getTimePoint());
 
 		String viewer = PropertyLoader.getProperty(PropertyLoader.fieldViewerUrl, DEFAULT_VIEWER_URL);
-		String url = viewer + (viewer.contains("?") ? "&" : "?") + "src=" + urlEncode(dataUrl.toString());
+		String url = viewer + (viewer.contains("?") ? "&" : "?") + params;
 		DialogUtils.browserLauncher(this, url, "Failed to open the 3D viewer at " + viewer);
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);

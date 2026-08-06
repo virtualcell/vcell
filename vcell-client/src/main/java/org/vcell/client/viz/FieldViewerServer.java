@@ -149,6 +149,7 @@ public final class FieldViewerServer {
 		s.createContext("/health", ex -> respond(ex, 200, "text/plain", "ok".getBytes(StandardCharsets.UTF_8)));
 		s.createContext("/info", wrap(FieldViewerServer::handleInfo));
 		s.createContext("/grid", wrap(FieldViewerServer::handleGrid));
+		s.createContext("/field", wrap(FieldViewerServer::handleField));
 		s.setExecutor(Executors.newFixedThreadPool(2, r -> {
 			Thread t = new Thread(r, "vcell-field-viewer");
 			t.setDaemon(true);
@@ -222,32 +223,32 @@ public final class FieldViewerServer {
 	}
 
 	/**
-	 * {@code /grid?sim=<simKey>&job=<n>&domain=<name>[&var=<name>&time=<t>]} — the raw grid, and
-	 * optionally one variable's values at one time attached as cell data.
+	 * {@code /grid?sim=<simKey>&job=<n>&domain=<name>} — the geometry alone.
+	 * <p>
+	 * Deliberately NOT documented as immutable for a dataset: it is the geometry <em>for this
+	 * dataset at this time</em>, which happens to be constant for a fixed grid but will not be once
+	 * moving-boundary runs arrive, where vertices move per frame and topology changes at each
+	 * remesh. Callers should re-request it and let the ETag and {@code Cache-Control} decide whether
+	 * that costs a round trip, rather than assuming it never changes.
 	 */
 	private static String handleGrid(HttpExchange ex) throws Exception {
 		Map<String, String> q = query(ex);
 		DataSource source = sourceFor(q);
-		VCSimulationDataIdentifier vcdID = source.vcdID;
-
-		List<String> domains = readMesh(source).getVolumeDomainNames();
-		if (domains.isEmpty()) {
-			throw new IllegalArgumentException("run " + vcdID.getID() + " has no volume domains");
-		}
-		String domain = q.get("domain");
-		if (domain == null || domain.isEmpty()) {
-			domain = domains.get(0);
-		} else if (!domains.contains(domain)) {
-			// an unknown name otherwise yields an empty mesh and a confusing NPE downstream
-			throw new IllegalArgumentException("unknown volume domain '" + domain + "'; this run has " + domains);
-		}
+		String domain = domainOf(q, source);
 		VisMesh visMesh = grid(source, domain);
+
+		// let the cache decide whether a re-request costs a round trip. Short max-age plus an ETag
+		// rather than "immutable": a moving-boundary run's geometry does change over time, and a
+		// client that had cached it forever would draw a stale shape.
+		ex.getResponseHeaders().set("ETag", '"' + geometryId(source, domain) + '"');
+		ex.getResponseHeaders().set("Cache-Control", "public, max-age=60");
 
 		List<VisPoint> points = visMesh.getPoints();
 		List<VisVoxel> voxels = visMesh.getVisVoxels();
 
 		StringBuilder sb = new StringBuilder(32 * points.size() + 32 * voxels.size() + 512);
-		sb.append("{\"numPoints\":").append(points.size());
+		sb.append("{\"geometryId\":\"").append(jsonEscape(geometryId(source, domain))).append('"');
+		sb.append(",\"numPoints\":").append(points.size());
 		sb.append(",\"points\":[");
 		for (int i = 0; i < points.size(); i++) {
 			VisPoint p = points.get(i);
@@ -273,13 +274,6 @@ public final class FieldViewerServer {
 			sb.append(']');
 		}
 		sb.append(']');
-
-		String varName = q.get("var");
-		if (varName != null && !varName.isEmpty()) {
-			double time = parseTime(q, source);
-			appendField(sb, source, voxels, varName, time);
-			sb.append(",\"time\":").append(time);
-		}
 		sb.append(",\"domain\":\"").append(jsonEscape(domain)).append('"');
 		sb.append(",\"sinc\":{\"iterations\":").append(SINC_ITERATIONS)
 			.append(",\"feature_angle\":").append(SINC_FEATURE_ANGLE)
@@ -289,21 +283,36 @@ public final class FieldViewerServer {
 	}
 
 	/**
-	 * Reads one variable at one time and remaps it from mesh order onto grid cells. The grid holds
-	 * only the cells of the requested domain, so each cell carries the mesh's global index of the
-	 * voxel it came from — that index is the position in the solver's data array.
+	 * {@code /field?sim=<simKey>&job=<n>&domain=<name>&var=<name>&time=<t>} — one variable at one
+	 * time, as one value per grid cell.
+	 * <p>
+	 * Split from the geometry because the geometry does not change as the viewer scrubs time or
+	 * switches variable: shipping both together would move roughly seven times the bytes per step.
+	 * <p>
+	 * Carries the {@code geometryId} these values belong to. A client that pairs values with a
+	 * different geometry draws something silently wrong rather than obviously broken, which is a
+	 * real hazard once vertices move over time, so the pairing is explicit.
 	 */
-	private static void appendField(StringBuilder sb, DataSource source,
-			List<VisVoxel> voxels, String varName, double time) throws Exception {
+	private static String handleField(HttpExchange ex) throws Exception {
+		Map<String, String> q = query(ex);
+		DataSource source = sourceFor(q);
+		String domain = domainOf(q, source);
+		String varName = q.get("var");
+		if (varName == null || varName.isEmpty()) {
+			throw new IllegalArgumentException("missing required query parameter 'var'");
+		}
+		double time = parseTime(q, source);
+		List<VisVoxel> voxels = grid(source, domain).getVisVoxels();
+
+		// each cell carries the mesh's global index of the voxel it came from, which is the position
+		// of that cell's value in the solver's data array
 		SimDataBlock block = source.dataManager.getSimDataBlock(emptyOutputContext(), source.vcdID, varName, time);
 		double[] meshData = block.getData();
-
 		double[] values = new double[voxels.size()];
 		double min = Double.POSITIVE_INFINITY;
 		double max = Double.NEGATIVE_INFINITY;
 		for (int c = 0; c < voxels.size(); c++) {
-			int globalIndex = voxels.get(c).getFiniteVolumeIndex().getGlobalIndex();
-			double value = meshData[globalIndex];
+			double value = meshData[voxels.get(c).getFiniteVolumeIndex().getGlobalIndex()];
 			values[c] = value;
 			if (!Double.isNaN(value)) {
 				min = Math.min(min, value);
@@ -315,10 +324,40 @@ public final class FieldViewerServer {
 			max = 0;
 		}
 
-		sb.append(",\"field\":{\"name\":\"").append(jsonEscape(varName)).append('"');
+		StringBuilder sb = new StringBuilder(16 * values.length + 256);
+		sb.append("{\"geometryId\":\"").append(jsonEscape(geometryId(source, domain))).append('"');
+		sb.append(",\"name\":\"").append(jsonEscape(varName)).append('"');
+		sb.append(",\"domain\":\"").append(jsonEscape(domain)).append('"');
+		sb.append(",\"time\":").append(time);
 		sb.append(",\"location\":\"cell\",\"values\":");
 		appendDoubles(sb, values, values.length);
 		sb.append(",\"range\":[").append(min).append(',').append(max).append("]}");
+		return sb.toString();
+	}
+
+	/** Resolves the requested domain, defaulting to the first, and rejecting names the run lacks. */
+	private static String domainOf(Map<String, String> q, DataSource source) throws Exception {
+		List<String> domains = readMesh(source).getVolumeDomainNames();
+		if (domains.isEmpty()) {
+			throw new IllegalArgumentException("run " + source.vcdID.getID() + " has no volume domains");
+		}
+		String domain = q.get("domain");
+		if (domain == null || domain.isEmpty()) {
+			return domains.get(0);
+		}
+		if (!domains.contains(domain)) {
+			// an unknown name otherwise yields an empty mesh and a confusing NPE downstream
+			throw new IllegalArgumentException("unknown volume domain '" + domain + "'; this run has " + domains);
+		}
+		return domain;
+	}
+
+	/**
+	 * Identifies the geometry a response belongs to. Today a dataset and domain pin it down; for a
+	 * moving boundary this is where the ALE segment would join the key.
+	 */
+	private static String geometryId(DataSource source, String domain) {
+		return source.vcdID.getID() + "/" + domain;
 	}
 
 	// ---------------------------------------------------------------------

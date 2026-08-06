@@ -5,11 +5,16 @@ import { CommonModule } from '@angular/common';
  * vtk.wasm field viewer (docs/salad-3d-renderer-design.md §8B).
  *
  * Runs VCell's finite-volume surface-smoothing pipeline entirely CLIENT-SIDE in the browser:
- * build the raw whole-voxel unstructured grid in-memory from server-sent arrays (from the desktop
- * client's loopback server via ?src=, else a bundled fixture) → vtkGeometryFilter (extract boundary surface) →
- * vtkWindowedSincPolyDataFilter (the faithful FV smoothing: iters 12, feature angle 120°,
- * pass-band 0.05) → render via WebGL2. All filters are constructable in the standalone session via
- * the marshalling-coverage patch (virtualcell/vcell-vtk-wasm).
+ * build the raw whole-voxel unstructured grid in-memory from server-sent arrays → vtkGeometryFilter
+ * (extract boundary surface) → vtkWindowedSincPolyDataFilter (the faithful FV smoothing) →
+ * render via WebGL2. All filters are constructable in the standalone session via the
+ * marshalling-coverage patch (virtualcell/vcell-vtk-wasm).
+ *
+ * The desktop client points this at its own loopback field server with ?base=&sim=&job=. The
+ * viewer then drives itself: it asks the server what variables, domains and times exist and lets
+ * the user move between them, rather than being pinned to whatever the Java results panel had
+ * selected when the browser was opened. Geometry and field values come from separate endpoints
+ * because the geometry does not change as you scrub time.
  *
  * The bundle is loaded same-origin from /assets/vtk-wasm/ (placed there at build time), via the UMD
  * loader injected as a <script> — the ESM entry's runtime import(blobUrl) is broken by webpack.
@@ -35,38 +40,70 @@ function formatPassBand(v: number): string {
   return v >= 0.01 ? v.toFixed(3) : v.toExponential(1);
 }
 
+interface Dataset {
+  base: string;
+  sim: string;
+  job: string;
+  variable: string | null;
+  domain: string | null;
+  time: string | null;
+}
+
 /**
- * The desktop client passes ?src=<url> pointing at its own loopback field server
- * (FieldViewerServer in vcell-client); without it we fall back to the bundled fixture.
- *
- * Only loopback origins are accepted, so a crafted link cannot turn this page into a fetcher
- * for an arbitrary host.
+ * The desktop client passes the dataset it registered, not a frozen snapshot URL, so the viewer can
+ * choose variables and times for itself. Only loopback origins are accepted, so a crafted link
+ * cannot turn this page into a fetcher for an arbitrary host.
  */
-function resolveGridUrl(search: string): string {
-  const src = new URLSearchParams(search).get('src');
-  if (!src) return FIXTURE_GRID_URL;
+function datasetFromSearch(search: string): Dataset | null {
+  const p = new URLSearchParams(search);
+  const base = p.get('base');
+  const sim = p.get('sim');
+  if (!base || !sim) return null; // no dataset named → bundled fixture
   let parsed: URL;
   try {
-    parsed = new URL(src);
+    parsed = new URL(base);
   } catch {
-    throw new Error(`'src' is not a valid URL: ${src}`);
+    throw new Error(`'base' is not a valid URL: ${base}`);
   }
   const loopback = parsed.hostname === '127.0.0.1' || parsed.hostname === 'localhost' || parsed.hostname === '[::1]';
   if (parsed.protocol !== 'http:' || !loopback) {
-    throw new Error(`'src' must be an http URL on the loopback interface, got ${parsed.origin}`);
+    throw new Error(`'base' must be an http URL on the loopback interface, got ${parsed.origin}`);
   }
-  return parsed.href;
+  return {
+    base: parsed.origin,
+    sim,
+    job: p.get('job') ?? '0',
+    variable: p.get('var'),
+    domain: p.get('domain'),
+    time: p.get('time'),
+  };
 }
 
-interface FvGrid {
+interface FvInfo {
+  simId: string;
+  times: number[];
+  domains: string[];
+  variables: { name: string; domain: string; isFunction: boolean }[];
+}
+
+interface FvGeometry {
+  geometryId: string;
   numPoints: number;
   points: number[];
-  cellType: number;         // 11 = VTK_VOXEL
-  cells: number[][];        // per-cell point-id lists
-  field?: { name: string; location: 'cell' | 'point'; values: number[]; range: [number, number] };
+  cellType: number; // 11 = VTK_VOXEL
+  cells: number[][];
   domain?: string;
-  time?: number;
   sinc: { iterations: number; feature_angle: number; pass_band: number };
+}
+
+interface FvField {
+  geometryId: string;
+  name: string;
+  domain: string;
+  time: number;
+  location: 'cell' | 'point';
+  values: (number | null)[];
+  range: [number, number];
 }
 
 function loadUmdLoader(): Promise<void> {
@@ -94,14 +131,30 @@ function loadUmdLoader(): Promise<void> {
   template: `
     <div class="wrap">
       <!--
-        vtk.wasm takes the canvas over: it stamps position:absolute + width/height:100% on it and
-        resets the width/height attributes. Left in normal flow it escapes and covers the page,
-        hiding everything below it. Giving it a positioned, sized box means "100%" resolves to the
-        box rather than the viewport.
+        vtk.wasm takes the canvas over unless told otherwise: it stamps position:absolute +
+        width/height:100% on it and installs a resize observer. A positioned, sized box keeps the
+        geometry predictable either way.
       -->
       <div class="canvas-box">
         <canvas id="vtk-wasm-canvas" tabindex="0"></canvas>
       </div>
+
+      <div class="controls" *ngIf="dataset">
+        <label for="variable">Variable</label>
+        <select id="variable" [disabled]="!ready || busy"
+                (change)="onVariableChange($any($event.target).value)">
+          <option *ngFor="let v of variables" [value]="v.name" [selected]="v.name === selectedVar">
+            {{ v.name }} · {{ v.domain }}
+          </option>
+        </select>
+        <label for="time">Time</label>
+        <input id="time" type="range" min="0" [max]="times.length - 1" step="1" [value]="timeIndex"
+               [disabled]="!ready || busy || times.length < 2"
+               (input)="previewTime($any($event.target).valueAsNumber)"
+               (change)="onTimeChange($any($event.target).valueAsNumber)" />
+        <span class="readout">t = {{ timeLabel }}<span *ngIf="rangeLabel"> · {{ rangeLabel }}</span></span>
+      </div>
+
       <div class="controls">
         <label for="smoothing">Smoothing</label>
         <input id="smoothing" type="range" min="0" max="100" step="1"
@@ -116,6 +169,7 @@ function loadUmdLoader(): Promise<void> {
         <button type="button" (click)="applySmoothing(nominalStrength)"
                 [disabled]="!ready || busy || smoothing === nominalStrength">Reset</button>
       </div>
+
       <div class="status" [class.err]="error">{{ error || status }}</div>
     </div>
   `,
@@ -127,6 +181,7 @@ function loadUmdLoader(): Promise<void> {
     .canvas-box canvas:active { cursor:grabbing; }
     .controls { display:flex; align-items:center; gap:10px; font:12px/1.4 monospace; color:#444; width:100%; max-width:960px; }
     .controls input[type=range] { flex:0 0 200px; }
+    .controls select { font:12px monospace; max-width:260px; }
     .readout { flex:1 1 auto; }
     .readout em { color:#2a7; font-style:normal; }
     .status { font:12px/1.4 monospace; color:#666; }
@@ -139,6 +194,15 @@ export class VtkWasmViewerComponent implements AfterViewInit, OnDestroy {
   ready = false;
   busy = false;
 
+  dataset: Dataset | null = null;
+  variables: { name: string; domain: string }[] = [];
+  times: number[] = [];
+  timeIndex = 0;
+  selectedVar = '';
+  selectedDomain = '';
+  timeLabel = '';
+  rangeLabel = '';
+
   /** Slider position whose parameters are exactly the server's (VCell reference) values. */
   readonly nominalStrength = NOMINAL_STRENGTH;
   smoothing = NOMINAL_STRENGTH;
@@ -146,52 +210,320 @@ export class VtkWasmViewerComponent implements AfterViewInit, OnDestroy {
   passBandLabel = '';
 
   private disposed = false;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  private vtk: any = null;
+  private geomFilter: any = null;
   private sinc: any = null;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private renderWindow: any = null;
-  private nominalSinc: FvGrid['sinc'] | null = null;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private mapper: any = null;
+  private actor: any = null;
   private renderer: any = null;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private renderWindow: any = null;
   private camera: any = null;
+  private fieldArray: any = null;
+  /* eslint-enable @typescript-eslint/no-explicit-any */
+  private geometryId = '';
+  private nominalSinc: FvGeometry['sinc'] | null = null;
   private canvasEl: HTMLCanvasElement | null = null;
   private detachTrackball: (() => void) | null = null;
   private drawing = false;
 
-  /**
-   * Maps the slider to filter parameters, anchored so the default position reproduces the
-   * server's reference values exactly.
-   *
-   * Below nominal we only reduce the iteration count (0 iterations is an exact pass-through).
-   * Above nominal we add iterations and narrow the pass-band geometrically. The pass-band is
-   * never raised above nominal: WindowedSinc diverges as it approaches 1.0 (measured — a
-   * pass-band of 1.0 displaced points by 26 units where the reference moves 0.45).
-   */
-  private smoothingFor(strength: number): { iterations: number; passBand: number } {
-    const nom = this.nominalSinc ?? { iterations: 12, feature_angle: 120, pass_band: 0.05 };
-    if (strength <= NOMINAL_STRENGTH) {
-      const f = strength / NOMINAL_STRENGTH;
-      return { iterations: Math.round(nom.iterations * f), passBand: nom.pass_band };
+  // ------------------------------------------------------------------
+  // startup
+  // ------------------------------------------------------------------
+
+  async ngAfterViewInit(): Promise<void> {
+    try {
+      const t0 = performance.now();
+      await loadUmdLoader();
+      if (!window.vtkwasm) throw new Error('vtkwasm global not available after loading the UMD loader');
+
+      this.dataset = datasetFromSearch(window.location.search);
+      this.canvasEl = document.querySelector<HTMLCanvasElement>(CANVAS_SELECTOR);
+      this.status = 'loading vtk.wasm bundle…';
+
+      const runtime = await window.vtkwasm.loadAsync({ url: BUNDLE_URL });
+      if (this.disposed) return;
+      const session = runtime.createStandaloneSession();
+      this.vtk = session.vtk;
+      // vtk.wasm otherwise takes the canvas over (stamps position:absolute + 100%/100% on it and
+      // installs a resize observer that pins the drawing buffer back to its default). The loader's
+      // own RemoteSession turns both off; the standalone session does not, so do it here.
+      try {
+        session.wasmModule?._setDefaultExpandVTKCanvasToContainer?.(false);
+        session.wasmModule?._setDefaultInstallHTMLResizeObserver?.(false);
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.warn('vtk-wasm-viewer: could not disable the canvas takeover', e);
+      }
+
+      const { geometry, field } = await this.loadDataset();
+      if (this.disposed) return;
+
+      await this.buildScene(geometry, field);
+      if (this.disposed) return;
+      this.ready = true;
+      this.status = `rendered ${this.describe()} ✓ (${Math.round(performance.now() - t0)} ms) — drag to rotate, wheel to zoom`;
+    } catch (e: unknown) {
+      this.error = 'vtk.wasm viewer failed: ' + ((e as Error)?.message ?? String(e));
+      // eslint-disable-next-line no-console
+      console.error('vtk-wasm-viewer', e);
     }
-    const f = (strength - NOMINAL_STRENGTH) / (100 - NOMINAL_STRENGTH);
-    const maxIters = Math.max(MAX_ITERATIONS, nom.iterations);
-    const minPass = Math.min(MIN_PASS_BAND, nom.pass_band);
-    return {
-      iterations: Math.round(nom.iterations + f * (maxIters - nom.iterations)),
-      passBand: nom.pass_band * Math.pow(minPass / nom.pass_band, f),
-    };
+  }
+
+  ngOnDestroy(): void {
+    this.disposed = true;
+    this.detachTrackball?.();
+    this.detachTrackball = null;
+  }
+
+  // ------------------------------------------------------------------
+  // data
+  // ------------------------------------------------------------------
+
+  private url(path: string, params: Record<string, string>): string {
+    const d = this.dataset!;
+    const q = new URLSearchParams({ sim: d.sim, job: d.job, ...params });
+    return `${d.base}${path}?${q}`;
+  }
+
+  private async fetchJson<T>(url: string, what: string): Promise<T> {
+    const r = await fetch(url);
+    if (!r.ok) throw new Error(`${what} failed: ${r.status} ${r.statusText}`);
+    return (await r.json()) as T;
+  }
+
+  /** Fixture mode has no server to ask, so it renders one static grid with no field. */
+  private async loadDataset(): Promise<{ geometry: FvGeometry; field: FvField | null }> {
+    if (!this.dataset) {
+      this.status = 'loading bundled fixture…';
+      const geometry = await this.fetchJson<FvGeometry>(FIXTURE_GRID_URL, 'fixture');
+      return { geometry, field: null };
+    }
+
+    this.status = 'asking the server what this run contains…';
+    const info = await this.fetchJson<FvInfo>(this.url('/info', {}), '/info');
+    this.times = info.times ?? [];
+    this.variables = (info.variables ?? []).map((v) => ({ name: v.name, domain: v.domain }));
+    if (!this.variables.length) throw new Error(`run ${info.simId} exposes no volume variables`);
+
+    const requested = this.dataset.variable;
+    const chosen = (requested ? this.variables.find((v) => v.name === requested) : undefined) ?? this.variables[0];
+    this.selectedVar = chosen.name;
+    this.selectedDomain = this.dataset.domain ?? chosen.domain;
+    this.timeIndex = this.nearestTimeIndex(this.dataset.time ? Number(this.dataset.time) : this.times[this.times.length - 1]);
+
+    const geometry = await this.loadGeometry();
+    const field = await this.loadField();
+    return { geometry, field };
+  }
+
+  private nearestTimeIndex(t: number): number {
+    if (!this.times.length) return 0;
+    let best = 0;
+    for (let i = 1; i < this.times.length; i++) {
+      if (Math.abs(this.times[i] - t) < Math.abs(this.times[best] - t)) best = i;
+    }
+    return best;
+  }
+
+  private async loadGeometry(): Promise<FvGeometry> {
+    this.status = `loading geometry for ${this.selectedDomain}…`;
+    const geometry = await this.fetchJson<FvGeometry>(
+      this.url('/grid', { domain: this.selectedDomain }), '/grid');
+    this.geometryId = geometry.geometryId;
+    return geometry;
+  }
+
+  private async loadField(): Promise<FvField> {
+    const time = this.times[this.timeIndex];
+    const field = await this.fetchJson<FvField>(
+      this.url('/field', { domain: this.selectedDomain, var: this.selectedVar, time: String(time) }), '/field');
+    // values are only meaningful against the geometry they were computed for; pairing them with a
+    // different one would draw something silently wrong rather than obviously broken
+    if (this.geometryId && field.geometryId !== this.geometryId) {
+      throw new Error(`field is for geometry ${field.geometryId} but the view holds ${this.geometryId}`);
+    }
+    this.timeLabel = String(field.time);
+    this.rangeLabel = `[${field.range[0].toExponential(2)}, ${field.range[1].toExponential(2)}]`;
+    return field;
+  }
+
+  private describe(): string {
+    if (!this.dataset) return 'bundled fixture';
+    return `${this.selectedVar} @ t=${this.timeLabel} on ${this.selectedDomain} — range ${this.rangeLabel}`;
+  }
+
+  // ------------------------------------------------------------------
+  // controls
+  // ------------------------------------------------------------------
+
+  /** Move the readout while dragging; the refetch waits for release. */
+  previewTime(index: number): void {
+    this.timeIndex = index;
+    this.timeLabel = String(this.times[index] ?? '');
+  }
+
+  async onTimeChange(index: number): Promise<void> {
+    this.previewTime(index);
+    await this.refreshField();
   }
 
   /**
-   * Size the drawing buffer to the canvas's displayed size. vtk.wasm stamps
-   * width/height:100% on the canvas but leaves the buffer at its 300x300 default, so the
-   * image would otherwise be upscaled from a third of the resolution.
+   * Switching variable can also switch domain — a nuclear species lives on different geometry from
+   * a cytosolic one — in which case the grid is rebuilt, not just recoloured.
+   */
+  async onVariableChange(name: string): Promise<void> {
+    const chosen = this.variables.find((v) => v.name === name);
+    if (!chosen || this.busy) return;
+    this.selectedVar = chosen.name;
+    if (chosen.domain && chosen.domain !== this.selectedDomain) {
+      this.selectedDomain = chosen.domain;
+      await this.rebuildGeometry();
+    } else {
+      await this.refreshField();
+    }
+  }
+
+  private async refreshField(): Promise<void> {
+    if (!this.ready || this.busy || !this.dataset) return;
+    this.busy = true;
+    const t0 = performance.now();
+    try {
+      const field = await this.loadField();
+      await this.applyField(field);
+      await this.renderWindow?.render();
+      this.status = `${this.describe()} ✓ (${Math.round(performance.now() - t0)} ms)`;
+    } catch (e: unknown) {
+      this.error = 'field update failed: ' + ((e as Error)?.message ?? String(e));
+    } finally {
+      this.busy = false;
+    }
+  }
+
+  private async rebuildGeometry(): Promise<void> {
+    if (!this.ready || this.busy || !this.dataset) return;
+    this.busy = true;
+    const t0 = performance.now();
+    try {
+      const geometry = await this.loadGeometry();
+      const field = await this.loadField();
+      await this.buildGrid(geometry, field);
+      await this.renderer?.resetCamera();
+      await this.renderWindow?.render();
+      this.status = `${this.describe()} ✓ (${Math.round(performance.now() - t0)} ms)`;
+    } catch (e: unknown) {
+      this.error = 'geometry update failed: ' + ((e as Error)?.message ?? String(e));
+    } finally {
+      this.busy = false;
+    }
+  }
+
+  // ------------------------------------------------------------------
+  // vtk scene
+  // ------------------------------------------------------------------
+
+  /** Builds the in-memory grid and points the pipeline at it. Re-run when the domain changes. */
+  private async buildGrid(geometry: FvGeometry, field: FvField | null): Promise<void> {
+    const vtk = this.vtk;
+    const points = vtk.vtkPoints();
+    await points.setNumberOfPoints(geometry.numPoints);
+    const P = geometry.points;
+    for (let i = 0; i < geometry.numPoints; i++) await points.setPoint(i, P[3 * i], P[3 * i + 1], P[3 * i + 2]);
+    const cellArray = vtk.vtkCellArray();
+    for (const cell of geometry.cells) await cellArray.insertNextCell(cell.length, cell);
+    const ug = vtk.vtkUnstructuredGrid();
+    await ug.setPoints(points);
+    await ug.setCells(geometry.cellType, cellArray); // single cell type (VTK_VOXEL)
+
+    this.fieldArray = null;
+    if (field) {
+      const arr = vtk.vtkDoubleArray();
+      await arr.setName(field.name);
+      await arr.setNumberOfComponents(1);
+      await arr.setNumberOfTuples(field.values.length);
+      // NB: setValue() is NOT in the marshalled invoker whitelist ("SetValue is not permitted");
+      // setTuple1(i, v) is the permitted per-element scalar setter in the standalone session.
+      for (let i = 0; i < field.values.length; i++) await arr.setTuple1(i, field.values[i] ?? 0);
+      await (await ug.getCellData()).setScalars(arr);
+      this.fieldArray = arr;
+    }
+    await this.geomFilter.setInputData(ug);
+
+    if (this.mapper) {
+      if (field) {
+        await this.mapper.setScalarModeToUseCellData();
+        await this.mapper.scalarVisibilityOn(); // no-arg form; the boolean setter marshals awkwardly
+        await this.mapper.setScalarRange(field.range[0], field.range[1]);
+      } else if (this.actor) {
+        // no field → solid surface (via the property method; actor.property.color is a no-op)
+        await (await this.actor.getProperty()).setColor(0.30, 0.65, 0.45);
+      }
+    }
+    this.nominalSinc = geometry.sinc;
+    this.previewSmoothing(this.smoothing);
+  }
+
+  /** Same geometry, new values: rewrite the scalars in place rather than rebuilding the grid. */
+  private async applyField(field: FvField): Promise<void> {
+    if (!this.fieldArray) return;
+    await this.fieldArray.setName(field.name);
+    await this.fieldArray.setNumberOfTuples(field.values.length);
+    for (let i = 0; i < field.values.length; i++) await this.fieldArray.setTuple1(i, field.values[i] ?? 0);
+    await this.fieldArray.modified();
+    await this.mapper?.setScalarRange(field.range[0], field.range[1]);
+  }
+
+  private async buildScene(geometry: FvGeometry, field: FvField | null): Promise<void> {
+    const vtk = this.vtk;
+    this.geomFilter = vtk.vtkGeometryFilter();
+
+    const sinc = vtk.vtkWindowedSincPolyDataFilter();
+    this.sinc = sinc;
+    await sinc.setInputConnection(await this.geomFilter.getOutputPort());
+    await sinc.boundarySmoothingOff();
+    await sinc.featureEdgeSmoothingOff();
+    await sinc.nonManifoldSmoothingOff();
+    await sinc.normalizeCoordinatesOn();
+    await sinc.setNumberOfIterations(geometry.sinc.iterations);
+    await sinc.setFeatureAngle(geometry.sinc.feature_angle);
+    await sinc.setPassBand(geometry.sinc.pass_band);
+
+    // Compute surface normals so the mapper shades smoothly (Gouraud) instead of flat/faceted.
+    let surfacePort = await sinc.getOutputPort();
+    try {
+      const normals = vtk.vtkPolyDataNormals();
+      await normals.setInputConnection(surfacePort);
+      await normals.setFeatureAngle(60);
+      surfacePort = await normals.getOutputPort();
+    } catch { /* normals filter unavailable in the session — fall back to flat shading */ }
+
+    this.mapper = vtk.vtkPolyDataMapper();
+    await this.mapper.setInputConnection(surfacePort);
+    this.actor = vtk.vtkActor({ mapper: this.mapper });
+
+    await this.buildGrid(geometry, field);
+
+    this.renderer = vtk.vtkRenderer({ background: [0.07, 0.07, 0.1] });
+    await this.renderer.addActor(this.actor);
+    await this.renderer.resetCamera();
+    this.renderWindow = vtk.vtkRenderWindow({ canvasSelector: CANVAS_SELECTOR });
+    await this.renderWindow.addRenderer(this.renderer);
+    await this.matchBufferToCanvas();
+    // NOTE: vtkRenderWindowInteractor is deliberately NOT used. It binds DOM listeners and accepts
+    // a trackball style, but nothing ever pumps it: the event loop (startEventLoop) exists only on
+    // vtkRemoteSession, not on the standalone session we run. Interaction is driven directly
+    // against the camera below.
+    this.camera = await this.renderer.getActiveCamera();
+    this.attachTrackball();
+    await this.renderWindow.render();
+  }
+
+  /**
+   * Size the drawing buffer to the canvas's displayed size, measuring the BOX rather than the
+   * canvas: vtk stretches the canvas to fill the box only once it takes it over, so reading the
+   * canvas here yields its 300x150 default and locks the buffer to that.
    */
   private async matchBufferToCanvas(): Promise<void> {
-    // Measure the BOX, not the canvas: vtk stretches the canvas to fill the box only once it
-    // takes it over, so reading the canvas here yields its 300x150 default and locks the buffer
-    // to that.
     const box = document.querySelector<HTMLElement>('.canvas-box');
     if (!box || !this.renderWindow) return;
     const dpr = window.devicePixelRatio || 1;
@@ -206,17 +538,13 @@ export class VtkWasmViewerComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  /**
-   * Trackball interaction driven straight against the camera.
-   *
-   * vtkRenderWindowInteractor cannot be used here: the standalone session has no event loop to
-   * pump it (startEventLoop exists only on vtkRemoteSession), so its handlers never fire. Drag
-   * orbits, wheel dollies, and each gesture renders once it has been applied.
-   */
+  // ------------------------------------------------------------------
+  // interaction
+  // ------------------------------------------------------------------
+
   private attachTrackball(): void {
     const canvas = this.canvasEl;
     if (!canvas || this.detachTrackball) return;
-
     let dragging = false;
     let lastX = 0;
     let lastY = 0;
@@ -241,7 +569,7 @@ export class VtkWasmViewerComponent implements AfterViewInit, OnDestroy {
     const up = (e: PointerEvent) => {
       if (!dragging) return;
       dragging = false;
-      try { canvas.releasePointerCapture(e.pointerId); } catch { /* pointer already released */ }
+      try { canvas.releasePointerCapture(e.pointerId); } catch { /* already released */ }
     };
     const wheel = (e: WheelEvent) => {
       void this.dolly(e.deltaY < 0 ? 1.1 : 1 / 1.1);
@@ -262,7 +590,6 @@ export class VtkWasmViewerComponent implements AfterViewInit, OnDestroy {
     };
   }
 
-  /** Orbit by a drag delta in pixels. Degrees-per-pixel is the usual VTK trackball feel. */
   private async orbit(dx: number, dy: number): Promise<void> {
     if (!this.camera || this.drawing) return;
     this.drawing = true;
@@ -295,6 +622,34 @@ export class VtkWasmViewerComponent implements AfterViewInit, OnDestroy {
     }
   }
 
+  // ------------------------------------------------------------------
+  // smoothing
+  // ------------------------------------------------------------------
+
+  /**
+   * Maps the slider to filter parameters, anchored so the default position reproduces the server's
+   * reference values exactly.
+   *
+   * Below nominal we only reduce the iteration count (0 iterations is an exact pass-through). Above
+   * nominal we add iterations and narrow the pass-band geometrically. The pass-band is never raised
+   * above nominal: WindowedSinc diverges as it approaches 1.0 (measured — a pass-band of 1.0
+   * displaced points by 26 units where the reference moves 0.45).
+   */
+  private smoothingFor(strength: number): { iterations: number; passBand: number } {
+    const nom = this.nominalSinc ?? { iterations: 12, feature_angle: 120, pass_band: 0.05 };
+    if (strength <= NOMINAL_STRENGTH) {
+      const f = strength / NOMINAL_STRENGTH;
+      return { iterations: Math.round(nom.iterations * f), passBand: nom.pass_band };
+    }
+    const f = (strength - NOMINAL_STRENGTH) / (100 - NOMINAL_STRENGTH);
+    const maxIters = Math.max(MAX_ITERATIONS, nom.iterations);
+    const minPass = Math.min(MIN_PASS_BAND, nom.pass_band);
+    return {
+      iterations: Math.round(nom.iterations + f * (maxIters - nom.iterations)),
+      passBand: nom.pass_band * Math.pow(minPass / nom.pass_band, f),
+    };
+  }
+
   /** Update the readout while dragging, without re-running the filter. */
   previewSmoothing(strength: number): void {
     this.smoothing = strength;
@@ -321,139 +676,5 @@ export class VtkWasmViewerComponent implements AfterViewInit, OnDestroy {
     } finally {
       this.busy = false;
     }
-  }
-
-  async ngAfterViewInit(): Promise<void> {
-    try {
-      const t0 = performance.now();
-      await loadUmdLoader();
-      if (!window.vtkwasm) throw new Error('vtkwasm global not available after loading the UMD loader');
-
-      const gridUrl = resolveGridUrl(window.location.search);
-      this.canvasEl = document.querySelector<HTMLCanvasElement>(CANVAS_SELECTOR);
-      this.status = 'loading vtk.wasm bundle + FV grid…';
-      const [runtime, grid] = await Promise.all([
-        window.vtkwasm.loadAsync({ url: BUNDLE_URL }),
-        fetch(gridUrl).then((r) => {
-          if (!r.ok) throw new Error(`grid fetch failed: ${r.status} ${r.statusText} from ${gridUrl}`);
-          return r.json() as Promise<FvGrid>;
-        }),
-      ]);
-      if (this.disposed) return;
-      const session = runtime.createStandaloneSession();
-      const vtk = session.vtk;
-      // vtk.wasm otherwise takes the canvas over (stamps position:absolute + 100%/100% on it and
-      // installs a resize observer that pins the drawing buffer back to its default). The loader's
-      // own RemoteSession turns both off; the standalone session does not, so do it here.
-      const wasmModule = session.wasmModule;
-      try {
-        wasmModule?._setDefaultExpandVTKCanvasToContainer?.(false);
-        wasmModule?._setDefaultInstallHTMLResizeObserver?.(false);
-      } catch (e) {
-        // eslint-disable-next-line no-console
-        console.warn('vtk-wasm-viewer: could not disable the canvas takeover', e);
-      }
-      this.status = `bundle+grid loaded (${Math.round(performance.now() - t0)} ms) — building grid…`;
-
-      // --- build the raw whole-voxel unstructured grid in-memory ---
-      const points = vtk.vtkPoints();
-      await points.setNumberOfPoints(grid.numPoints);
-      const P = grid.points;
-      for (let i = 0; i < grid.numPoints; i++) await points.setPoint(i, P[3 * i], P[3 * i + 1], P[3 * i + 2]);
-      const cellArray = vtk.vtkCellArray();
-      for (const cell of grid.cells) await cellArray.insertNextCell(cell.length, cell);
-      const ug = vtk.vtkUnstructuredGrid();
-      await ug.setPoints(points);
-      await ug.setCells(grid.cellType, cellArray);   // single cell type (VTK_VOXEL)
-
-      // Attach the field (e.g. a species concentration) as cell scalars — vtkGeometryFilter carries
-      // cell data through to the extracted surface, so the membrane is colored by the field.
-      if (grid.field) {
-        const arr = vtk.vtkDoubleArray();
-        await arr.setName(grid.field.name);
-        await arr.setNumberOfComponents(1);
-        await arr.setNumberOfTuples(grid.field.values.length);
-        // NB: setValue() is NOT in the marshalled invoker whitelist ("SetValue is not permitted");
-        // setTuple1(i, v) is the permitted per-element scalar setter in the standalone session.
-        for (let i = 0; i < grid.field.values.length; i++) await arr.setTuple1(i, grid.field.values[i]);
-        await (await ug.getCellData()).setScalars(arr);
-      }
-      this.status = `grid built (${grid.numPoints} pts / ${grid.cells.length} voxels) — running pipeline…`;
-
-      // --- FV smoothing pipeline: geometry (boundary surface) -> windowed-sinc ---
-      const geom = vtk.vtkGeometryFilter();
-      await geom.setInputData(ug);
-      const sinc = vtk.vtkWindowedSincPolyDataFilter();
-      this.sinc = sinc;
-      this.nominalSinc = grid.sinc;
-      this.previewSmoothing(NOMINAL_STRENGTH);   // readout starts at the server's reference values
-      await sinc.setInputConnection(await geom.getOutputPort());
-      await sinc.setNumberOfIterations(grid.sinc.iterations);
-      await sinc.boundarySmoothingOff();
-      await sinc.featureEdgeSmoothingOff();
-      await sinc.setFeatureAngle(grid.sinc.feature_angle);
-      await sinc.setPassBand(grid.sinc.pass_band);
-      await sinc.nonManifoldSmoothingOff();
-      await sinc.normalizeCoordinatesOn();
-
-      // --- render the smoothed membrane surface ---
-      // Compute surface normals so the mapper shades smoothly (Gouraud) instead of flat/faceted.
-      let surfacePort = await sinc.getOutputPort();
-      try {
-        const normals = vtk.vtkPolyDataNormals();
-        await normals.setInputConnection(surfacePort);
-        await normals.setFeatureAngle(60);
-        surfacePort = await normals.getOutputPort();
-      } catch { /* normals filter unavailable in the session — fall back to flat shading */ }
-
-      const mapper = vtk.vtkPolyDataMapper();
-      await mapper.setInputConnection(surfacePort);
-      if (grid.field) {
-        // colormap by the field's cell scalars (default blue→red LUT over the field range)
-        await mapper.setScalarModeToUseCellData();
-        await mapper.scalarVisibilityOn();   // no-arg form; setScalarVisibility(true) marshals awkwardly
-        await mapper.setScalarRange(grid.field.range[0], grid.field.range[1]);
-      }
-      const actor = vtk.vtkActor({ mapper });
-      if (!grid.field) {
-        // no field → solid surface (set color via the property method; actor.property.color is a no-op)
-        await (await actor.getProperty()).setColor(0.30, 0.65, 0.45);
-      }
-
-      const renderer = vtk.vtkRenderer({ background: [0.07, 0.07, 0.1] });
-      this.renderer = renderer;
-      await renderer.addActor(actor);
-      await renderer.resetCamera();
-      const renderWindow = vtk.vtkRenderWindow({ canvasSelector: CANVAS_SELECTOR });
-      this.renderWindow = renderWindow;
-      await renderWindow.addRenderer(renderer);
-      // Size the buffer before the interactor exists: the interactor installs its own resize
-      // handling and will otherwise pin the canvas back to its default.
-      await this.matchBufferToCanvas();
-      // NOTE: vtkRenderWindowInteractor is deliberately NOT used. It binds DOM listeners and
-      // accepts a trackball style, but nothing ever pumps it: the event loop (startEventLoop)
-      // exists only on vtkRemoteSession, not on the standalone session we run. Interaction is
-      // therefore driven directly against the camera below.
-      this.camera = await renderer.getActiveCamera();
-      this.attachTrackball();
-      await renderWindow.render();
-
-      if (this.disposed) return;
-      this.ready = true;
-      const label = grid.field
-        ? `${grid.field.name} @ t=${grid.time} on ${grid.domain} — range [${grid.field.range[0].toExponential(2)}, ${grid.field.range[1].toExponential(2)}]`
-        : 'smoothed membrane';
-      this.status = `rendered ${label} ✓ (${Math.round(performance.now() - t0)} ms) — drag to rotate, wheel to zoom`;
-    } catch (e: unknown) {
-      this.error = 'vtk.wasm viewer failed: ' + ((e as Error)?.message ?? String(e));
-      // eslint-disable-next-line no-console
-      console.error('vtk-wasm-viewer', e);
-    }
-  }
-
-  ngOnDestroy(): void {
-    this.disposed = true;
-    this.detachTrackball?.();
-    this.detachTrackball = null;
   }
 }
