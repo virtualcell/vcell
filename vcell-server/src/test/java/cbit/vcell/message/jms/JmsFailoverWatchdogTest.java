@@ -21,6 +21,7 @@ import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.appender.AbstractAppender;
+import org.apache.logging.log4j.core.config.Configurator;
 import org.apache.logging.log4j.core.config.Property;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -128,13 +129,20 @@ public class JmsFailoverWatchdogTest {
 			ListAppender appender = new ListAppender(logger);
 			appender.start();
 			logger.addAppender(appender);
-			logger.setLevel(Level.DEBUG);   // so a DEBUG "connected" reaches us
+			// Configurator, not logger.setLevel(). The root level is warn (log4j2-test.xml), so
+			// the level has to be lowered for a DEBUG/INFO event to reach us at all. setLevel()
+			// on this Logger lowers it only for *this* instance, and the logger the class under
+			// test holds is a different instance of the same name (log4j creates one per message
+			// factory, and warns about exactly that mismatch here). Configurator updates the
+			// shared LoggerConfig and calls updateLoggers(), so both instances see DEBUG.
+			// The instance-local form passed locally but failed in CI's shared-JVM Fast shard.
+			Configurator.setLevel(cls.getName(), Level.DEBUG);
 			return appender;
 		}
 
 		void detach() {
 			logger.removeAppender(this);
-			logger.setLevel(previousLevel);
+			Configurator.setLevel(logger.getName(), previousLevel);
 			stop();
 		}
 
