@@ -28,7 +28,12 @@ import cbit.vcell.message.VCMessageSelector;
 import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCMessagingException;
 import cbit.vcell.message.VCQueueConsumer;
+import cbit.vcell.message.VCRpcRequest;
 import cbit.vcell.message.VCellQueue;
+import cbit.vcell.resource.PropertyLoader;
+
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
 
 /**
  * Pins the cost of a {@link MessageProducerSessionJms}: it opens a JMS connection when it is
@@ -159,6 +164,36 @@ public class MessageProducerSessionJmsTest {
 		} finally {
 			service.failConnections = false;
 			producerSession.close();
+		}
+	}
+
+	/**
+	 * sendRpcMessage builds its request message on a session of its own, so that forming a large
+	 * request does not touch the session the RPC is sent on (RpcService shares one producer
+	 * session across request threads). That session used to be a whole second
+	 * MessageProducerSessionJms -- a connection, session and temporary queue per RPC.
+	 */
+	@Test
+	public void anRpcOpensNoConnectionToBuildItsMessage() throws Exception {
+		String previous = System.getProperty(PropertyLoader.jmsBlobMessageUseMongo);
+		System.setProperty(PropertyLoader.jmsBlobMessageUseMongo, "false");
+		VCMessageSession producerSession = service.createProducerSession();
+		try {
+			int afterSessionOpened = service.connectionsOpened.get();
+
+			VCRpcRequest request = new VCRpcRequest(new User("testuser", new KeyValue("1")),
+					VCRpcRequest.RpcServiceType.TESTING_SERVICE, "aMethod", new Object[0]);
+			producerSession.sendRpcMessage(TEST_QUEUE, request, false, 60000L, null, null, null);
+
+			assertEquals(afterSessionOpened, service.connectionsOpened.get(),
+					"an RPC must not open a connection just to build its request message");
+		} finally {
+			producerSession.close();
+			if (previous == null) {
+				System.clearProperty(PropertyLoader.jmsBlobMessageUseMongo);
+			} else {
+				System.setProperty(PropertyLoader.jmsBlobMessageUseMongo, previous);
+			}
 		}
 	}
 
