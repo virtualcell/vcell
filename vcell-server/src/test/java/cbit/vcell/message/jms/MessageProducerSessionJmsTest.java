@@ -132,8 +132,9 @@ public class MessageProducerSessionJmsTest {
 			assertEquals(afterSetup, service.connectionsOpened.get(),
 					"a listener that never sends must not cost a connection per message");
 		} finally {
+			// the consumer is left registered so service.close() shuts it down and closes its
+			// connection; removeMessageConsumer only stops the thread and leaks the connection
 			producerSession.close();
-			service.removeMessageConsumer(consumer);
 		}
 	}
 
