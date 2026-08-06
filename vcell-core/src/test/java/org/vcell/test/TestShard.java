@@ -32,7 +32,54 @@ public final class TestShard {
 	 */
 	public static final String INCLUDE_SLOW_PROPERTY = "test.include.slow";
 
+	/**
+	 * Narrow a sharded test to the cases whose name contains any of a comma-separated list of
+	 * substrings, e.g. {@code -Dtest.only=biomodel_59361239}.
+	 * <p>
+	 * These suites iterate hundreds of models and take hours; reproducing one reported failure
+	 * otherwise means running the lot, or hand-editing the parameter source — which is what the
+	 * commented-out {@code return Arrays.asList("biomodel_12522025.vcml:purkinje9")} lines in
+	 * MathGenCompareTest and MathOverrideApplyTest were for.
+	 * <p>
+	 * Matching is a plain substring test against each case's string form, so it works both for
+	 * suites whose cases are filenames ({@code biomodel_123.vcml:appName}) and for those whose
+	 * cases are objects naming a file.
+	 */
+	public static final String ONLY_PROPERTY = "test.only";
+
 	private TestShard() {
+	}
+
+	/**
+	 * Apply {@link #ONLY_PROPERTY}, if set.
+	 * <p>
+	 * A pattern matching nothing is an error rather than an empty run: surefire reports "Tests run:
+	 * 0" as BUILD SUCCESS, so a typo would otherwise look like a pass.
+	 */
+	private static <T> List<T> applyOnlyFilter(List<T> all) {
+		final String only = System.getProperty(ONLY_PROPERTY);
+		if (only == null || only.isBlank()) {
+			return all;
+		}
+		final List<String> patterns = new ArrayList<>();
+		for (String pattern : only.split(",")) {
+			if (!pattern.isBlank()) {
+				patterns.add(pattern.trim());
+			}
+		}
+		final List<T> kept = new ArrayList<>();
+		for (T t : all) {
+			final String name = String.valueOf(t);
+			if (patterns.stream().anyMatch(name::contains)) {
+				kept.add(t);
+			}
+		}
+		if (kept.isEmpty()) {
+			throw new IllegalArgumentException(ONLY_PROPERTY + "=" + only + " matched none of the "
+					+ all.size() + " cases this test would otherwise run. Note that cases excluded as"
+					+ " slow stay excluded - add -D" + INCLUDE_SLOW_PROPERTY + "=true to reach those.");
+		}
+		return kept;
 	}
 
 	/**
@@ -40,10 +87,12 @@ public final class TestShard {
 	 * @return the subset belonging to this shard (all of them if unsharded)
 	 */
 	public static <T> List<T> shard(Iterable<T> all) {
-		final List<T> list = new ArrayList<>();
+		final List<T> everything = new ArrayList<>();
 		for (T t : all) {
-			list.add(t);
+			everything.add(t);
 		}
+		// narrow before sharding, so -Dtest.only picks up its matches whichever shard they land in
+		final List<T> list = applyOnlyFilter(everything);
 		final int count = Integer.getInteger(SHARD_COUNT_PROPERTY, 1);
 		final int index = Integer.getInteger(SHARD_INDEX_PROPERTY, 0);
 		if (count <= 1) {
