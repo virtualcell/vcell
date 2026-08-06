@@ -49,6 +49,7 @@ import org.jlibsedml.modelsupport.SBMLSupport.SpeciesAttribute;
 import org.jlibsedml.modelsupport.SUPPORTED_LANGUAGE;
 import org.jmathml.ASTNode;
 import org.sbml.jsbml.Annotation;
+import org.sbml.jsbml.InitialAssignment;
 import org.sbml.jsbml.Parameter;
 import org.sbml.jsbml.SBMLDocument;
 import org.sbml.jsbml.SBMLReader;
@@ -100,6 +101,14 @@ public class SEDMLExporter {
     /** Application to the SED-ML id it was exported under; see {@link #getSimContextId}. */
     private final Map<SimulationContext, String> simContextIdMap = new LinkedHashMap<>();
     private final Set<String> usedSimContextIds = new LinkedHashSet<>();
+
+    /**
+     * Ids the current application's SBML gave an {@code <initialAssignment>} rather than an
+     * initial-value attribute. Read back from the emitted SBML rather than predicted, so the
+     * SED-ML targets whatever the export actually chose. Reset per application by
+     * {@link #exportSimulations}.
+     */
+    private Set<String> speciesWithInitialAssignment = Collections.emptySet();
 
     private final SBMLSupport sbmlSupport = new SBMLSupport();
 
@@ -316,6 +325,7 @@ public class SEDMLExporter {
         // -------
         String simContextName = simContext.getName();
         String simContextId = getSimContextId(simContext);
+        this.speciesWithInitialAssignment = readInitialAssignmentSymbols(sbmlString);
         this.simCount = 0;
         this.overrideCount = 0;
         simContext.getSimulations();
@@ -1121,6 +1131,32 @@ public class SEDMLExporter {
         }
     }
 
+    /**
+     * The symbols this SBML initialises with an {@code <initialAssignment>}. Empty for the VCML
+     * export path, where {@code sbmlString} is null.
+     */
+    private static Set<String> readInitialAssignmentSymbols(String sbmlString) {
+        if (sbmlString == null) {
+            return Collections.emptySet();
+        }
+        try {
+            SBMLDocument sbmlDoc = new SBMLReader().readSBMLFromString(sbmlString);
+            Set<String> symbols = new LinkedHashSet<>();
+            for (InitialAssignment initialAssignment : sbmlDoc.getModel().getListOfInitialAssignments()) {
+                if (initialAssignment.isSetVariable()) {
+                    symbols.add(initialAssignment.getVariable());
+                }
+            }
+            return symbols;
+        } catch (XMLStreamException e) {
+            // the SBML was produced a moment ago and is parsed again elsewhere; if it somehow will
+            // not parse, fall back to the attribute target rather than fail the whole export
+            logger.warn("could not re-read exported SBML to find initialAssignments; "
+                    + "SED-ML will target initialConcentration attributes", e);
+            return Collections.emptySet();
+        }
+    }
+
     private XPathTarget getTargetAttributeXPath(SymbolTableEntry ste, Map<Pair<String, String>, String> l2gMap, SimulationContext simContext) {
         // VCML model format
         if (l2gMap == null) return this.getVCMLTargetXPath(ste, simContext);
@@ -1147,7 +1183,16 @@ public class SEDMLExporter {
             if (speciesAttr.isEmpty()) {
                 targetXpath = new XPathTarget(sbmlSupport.getXPathForCompartment(speciesId));
             } else if (speciesAttr.equalsIgnoreCase("initialConcentration") || speciesAttr.equalsIgnoreCase("initConc")) {
-                targetXpath = new XPathTarget(sbmlSupport.getXPathForSpecies(speciesId, SpeciesAttribute.initialConcentration));
+                // Follow whichever form the SBML export actually emitted. SBMLExporter writes an
+                // initialConcentration attribute only when the initial expression evaluates to a
+                // constant, and an <initialAssignment> otherwise (a membrane species carrying the
+                // KMOLE unit conversion takes the latter path), in which case the attribute is
+                // absent and an XPath naming it matches nothing. Retargeting rather than adding the
+                // attribute is also the only correct option: SBML gives an initialAssignment
+                // precedence, so a change aimed at the attribute would be silently ignored.
+                targetXpath = this.speciesWithInitialAssignment.contains(speciesId)
+                        ? new XPathTarget(sbmlSupport.getXPathForInitialAssignment(speciesId))
+                        : new XPathTarget(sbmlSupport.getXPathForSpecies(speciesId, SpeciesAttribute.initialConcentration));
             } else if (speciesAttr.equalsIgnoreCase("initialCount") || speciesAttr.equalsIgnoreCase("initCount")) {
                 targetXpath = new XPathTarget(sbmlSupport.getXPathForSpecies(speciesId, SpeciesAttribute.initialAmount));
             } else if (speciesAttr.equalsIgnoreCase("diff")) {
