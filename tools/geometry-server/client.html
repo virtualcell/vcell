@@ -1,0 +1,137 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>geometry-server light client</title>
+<style>
+  body { font: 12px/1.5 monospace; background:#f7f7f8; color:#333; margin:12px; }
+  #c { display:block; width:960px; height:720px; background:#12121a; border-radius:6px; }
+  #status { margin-top:8px; }
+</style>
+<canvas id="c" width="960" height="720"></canvas>
+<div id="status">loading…</div>
+<script>
+// A deliberately dependency-free client: no VTK, no vtk.js, no wasm. It fetches finished geometry
+// from the stateless geometry server and draws it with plain WebGL2. The point is to measure the
+// FLOOR of client weight for the geometry-server approach.
+const P = new URLSearchParams(location.search);
+const BASE  = P.get('base')  || 'http://127.0.0.1:9200';
+const SIM   = P.get('sim')   || '946368938';
+const JOB   = P.get('job')   || '0';
+const DOMAIN= P.get('domain')|| 'cytosol';
+const VAR   = P.get('var')   || 'cytosol::C_cyt';
+const TIME  = P.get('time')  || '1.0';
+const TOKEN = P.get('token') || '';
+const status = (m) => { document.getElementById('status').textContent = m; window.__status = m; };
+
+const VS = `#version 300 es
+in vec3 aPos; in vec3 aNormal; in float aScalar;
+uniform mat4 uMVP; uniform mat3 uNormalMat;
+out vec3 vN; out float vS;
+void main(){ vN = normalize(uNormalMat * aNormal); vS = aScalar; gl_Position = uMVP * vec4(aPos,1.0); }`;
+
+const FS = `#version 300 es
+precision highp float;
+in vec3 vN; in float vS; out vec4 frag;
+uniform vec2 uRange;
+vec3 lut(float t){                       // blue -> cyan -> green -> yellow -> red
+  t = clamp(t,0.0,1.0);
+  return clamp(vec3(1.5-abs(4.0*t-3.0), 1.5-abs(4.0*t-2.0), 1.5-abs(4.0*t-1.0)),0.0,1.0);
+}
+void main(){
+  float t = (uRange.y > uRange.x) ? (vS-uRange.x)/(uRange.y-uRange.x) : 0.5;
+  vec3 base = lut(t);
+  vec3 L = normalize(vec3(0.4,0.6,1.0));
+  float diff = max(dot(normalize(vN), L), 0.0);
+  frag = vec4(base*(0.35 + 0.75*diff), 1.0);
+}`;
+
+function compile(gl, type, src){
+  const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s);
+  if(!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s));
+  return s;
+}
+function mul(a,b){ const o=new Float32Array(16);
+  for(let i=0;i<4;i++)for(let j=0;j<4;j++){let s=0;for(let k=0;k<4;k++)s+=a[k*4+j]*b[i*4+k];o[i*4+j]=s;} return o; }
+function perspective(f,ar,n,fa){ const t=1/Math.tan(f/2); return new Float32Array(
+  [t/ar,0,0,0, 0,t,0,0, 0,0,(fa+n)/(n-fa),-1, 0,0,2*fa*n/(n-fa),0]); }
+function lookAt(e,c,u){
+  const z=[e[0]-c[0],e[1]-c[1],e[2]-c[2]]; let l=Math.hypot(...z); z.forEach((v,i)=>z[i]=v/l);
+  const x=[u[1]*z[2]-u[2]*z[1], u[2]*z[0]-u[0]*z[2], u[0]*z[1]-u[1]*z[0]]; l=Math.hypot(...x)||1; x.forEach((v,i)=>x[i]=v/l);
+  const y=[z[1]*x[2]-z[2]*x[1], z[2]*x[0]-z[0]*x[2], z[0]*x[1]-z[1]*x[0]];
+  return new Float32Array([x[0],y[0],z[0],0, x[1],y[1],z[1],0, x[2],y[2],z[2],0,
+    -(x[0]*e[0]+x[1]*e[1]+x[2]*e[2]), -(y[0]*e[0]+y[1]*e[1]+y[2]*e[2]), -(z[0]*e[0]+z[1]*e[1]+z[2]*e[2]), 1]);
+}
+
+(async () => {
+  try {
+    const t0 = performance.now();
+    const q = `sim=${SIM}&job=${JOB}&domain=${DOMAIN}&token=${encodeURIComponent(TOKEN)}`;
+    const [surf, field] = await Promise.all([
+      fetch(`${BASE}/surface?${q}&format=json`).then(r => { if(!r.ok) throw new Error('surface '+r.status); return r.json(); }),
+      fetch(`${BASE}/field?${q}&var=${encodeURIComponent(VAR)}&time=${TIME}`).then(r => { if(!r.ok) throw new Error('field '+r.status); return r.json(); }),
+    ]);
+    const tFetch = performance.now() - t0;
+
+    // Gather: surface cell i shows the value of the voxel it came from. This is the entire
+    // client-side "computation" the geometry-server approach requires.
+    const orig = surf.origCellIds, polys = surf.polys, pts = surf.points;
+    const pos = [], nrm = [], sca = [];
+    const tri = (a,b,c,val) => {
+      const A=[pts[3*a],pts[3*a+1],pts[3*a+2]], B=[pts[3*b],pts[3*b+1],pts[3*b+2]], C=[pts[3*c],pts[3*c+1],pts[3*c+2]];
+      const u=[B[0]-A[0],B[1]-A[1],B[2]-A[2]], v=[C[0]-A[0],C[1]-A[1],C[2]-A[2]];
+      const n=[u[1]*v[2]-u[2]*v[1], u[2]*v[0]-u[0]*v[2], u[0]*v[1]-u[1]*v[0]];
+      const l=Math.hypot(...n)||1;
+      for(const V of [A,B,C]){ pos.push(V[0],V[1],V[2]); nrm.push(n[0]/l,n[1]/l,n[2]/l); sca.push(val); }
+    };
+    for(let i=0;i<polys.length;i++){
+      const p = polys[i];
+      const raw = field.values[orig[i]];
+      const val = (raw === null || raw === undefined) ? NaN : raw;
+      tri(p[0],p[1],p[2],val);
+      if(p.length === 4) tri(p[0],p[2],p[3],val);   // quad -> 2 triangles
+    }
+    const nVerts = pos.length/3;
+
+    // bounds -> camera
+    let lo=[1e30,1e30,1e30], hi=[-1e30,-1e30,-1e30];
+    for(let i=0;i<pos.length;i+=3) for(let k=0;k<3;k++){ lo[k]=Math.min(lo[k],pos[i+k]); hi[k]=Math.max(hi[k],pos[i+k]); }
+    const ctr=[0,1,2].map(k=>(lo[k]+hi[k])/2), rad=Math.max(...[0,1,2].map(k=>hi[k]-lo[k]))*0.9 || 1;
+
+    const gl = document.getElementById('c').getContext('webgl2');
+    if(!gl) throw new Error('no webgl2');
+    const prog = gl.createProgram();
+    gl.attachShader(prog, compile(gl, gl.VERTEX_SHADER, VS));
+    gl.attachShader(prog, compile(gl, gl.FRAGMENT_SHADER, FS));
+    gl.linkProgram(prog);
+    if(!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(prog));
+    gl.useProgram(prog);
+
+    const bind = (name, data, size) => {
+      const b = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.STATIC_DRAW);
+      const loc = gl.getAttribLocation(prog, name);
+      gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, size, gl.FLOAT, false, 0, 0);
+    };
+    bind('aPos', pos, 3); bind('aNormal', nrm, 3); bind('aScalar', sca, 1);
+
+    const eye=[ctr[0]+rad*1.6, ctr[1]-rad*1.1, ctr[2]+rad*1.2];
+    const mvp = mul(perspective(45*Math.PI/180, 960/720, rad*0.01, rad*20), lookAt(eye, ctr, [0,0,1]));
+    gl.uniformMatrix4fv(gl.getUniformLocation(prog,'uMVP'), false, mvp);
+    gl.uniformMatrix3fv(gl.getUniformLocation(prog,'uNormalMat'), false, new Float32Array([1,0,0, 0,1,0, 0,0,1]));
+    gl.uniform2f(gl.getUniformLocation(prog,'uRange'), field.range[0], field.range[1]);
+
+    gl.enable(gl.DEPTH_TEST); gl.clearColor(0.07,0.07,0.1,1);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    gl.viewport(0,0,960,720);
+    gl.drawArrays(gl.TRIANGLES, 0, nVerts);
+    gl.finish();
+
+    status(`rendered ${field.name} @ t=${field.time} on ${surf.numPoints} pts / ${polys.length} cells `
+      + `(${nVerts} verts) range [${field.range[0].toExponential(2)}, ${field.range[1].toExponential(2)}] `
+      + `— fetch ${Math.round(tFetch)} ms, total ${Math.round(performance.now()-t0)} ms`);
+    window.__ok = true;
+  } catch (e) {
+    status('FAILED: ' + (e && e.message ? e.message : e));
+    window.__ok = false;
+  }
+})();
+</script>
