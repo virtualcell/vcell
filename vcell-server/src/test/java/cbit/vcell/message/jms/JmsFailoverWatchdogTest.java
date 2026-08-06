@@ -11,6 +11,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.jms.Connection;
 
+import org.apache.activemq.ActiveMQConnection;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.broker.BrokerService;
 import org.apache.activemq.broker.TransportConnector;
@@ -77,33 +78,35 @@ public class JmsFailoverWatchdogTest {
 	 */
 	@Test
 	public void transportResumed_isInfoOnlyAfterAnInterruption() throws Exception {
+		// Transport events are fired directly rather than provoked with a real broker:
+		// createConnection() can establish the transport before attach() registers the
+		// listener, so waiting for a natural connect is a race (it passed locally and
+		// failed in CI). ActiveMQConnection exposes these callbacks, so both branches
+		// are driven deterministically with no timing involved.
+		ActiveMQConnection connection =
+				(ActiveMQConnection) new ActiveMQConnectionFactory("vm://localhost?broker.persistent=false")
+						.createConnection();
 		ListAppender captured = ListAppender.attachTo(JmsFailoverWatchdog.class);
-		BrokerService broker = new BrokerService();
-		broker.setPersistent(false);
-		broker.setUseJmx(false);
-		broker.setUseShutdownHook(false);
-		TransportConnector connector = broker.addConnector("tcp://localhost:0");
-		broker.start();
-		broker.waitUntilStarted();
-		int port = connector.getConnectUri().getPort();
-
-		String url = "failover:(tcp://localhost:" + port + ")"
-				+ "?startupMaxReconnectAttempts=-1"
-				+ "&initialReconnectDelay=50"
-				+ "&maxReconnectDelay=100";
-		Connection connection = new ActiveMQConnectionFactory(url).createConnection();
 		try {
 			JmsFailoverWatchdog.logOnly().attach(connection);
-			connection.start();   // first connect — a plain connect, not a resumption
 
-			assertTrue(captured.awaitMessage("JMS transport connected", 10, TimeUnit.SECONDS),
+			// a plain connect: not a resumption, so it must not reach INFO
+			connection.transportResumed();
+			assertTrue(captured.hasMessage("JMS transport connected"),
 					"a first connect should be reported as 'connected'");
 			assertEquals(0, captured.countAtLevel(Level.INFO),
 					"a first connect must not log at INFO — that is the per-message log flood");
+
+			// a genuine failover: interrupted then resumed, still fully visible
+			connection.transportInterupted();
+			connection.transportResumed();
+			assertEquals(1, captured.countAtLevel(Level.WARN), "interruption should log once at WARN");
+			assertEquals(1, captured.countAtLevel(Level.INFO), "a real resumption should log once at INFO");
+			assertTrue(captured.hasMessage("JMS transport resumed"),
+					"a resumption after an interruption should say 'resumed'");
 		} finally {
 			captured.detach();
 			try { connection.close(); } catch (Exception ignored) {}
-			try { broker.stop(); } catch (Exception ignored) {}
 		}
 	}
 
@@ -140,19 +143,10 @@ public class JmsFailoverWatchdogTest {
 			events.add(event.toImmutable());
 		}
 
-		boolean awaitMessage(String needle, long timeout, TimeUnit unit) throws InterruptedException {
-			long deadline = System.nanoTime() + unit.toNanos(timeout);
-			while (System.nanoTime() < deadline) {
-				synchronized (events) {
-					for (LogEvent e : events) {
-						if (e.getMessage().getFormattedMessage().contains(needle)) {
-							return true;
-						}
-					}
-				}
-				Thread.sleep(50);
+		boolean hasMessage(String needle) {
+			synchronized (events) {
+				return events.stream().anyMatch(e -> e.getMessage().getFormattedMessage().contains(needle));
 			}
-			return false;
 		}
 
 		long countAtLevel(Level level) {
