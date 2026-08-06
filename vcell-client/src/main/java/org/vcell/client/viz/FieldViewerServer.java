@@ -9,15 +9,14 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.User;
-import org.vcell.vis.io.CartesianMeshFileReader;
-import org.vcell.vis.io.VCellSimFiles;
 import org.vcell.vis.mapping.vcell.CartesianMeshMapping;
+import org.vcell.vis.vcell.CartesianMeshBuilder;
+import org.vcell.vis.vcell.SubdomainInfo;
 import org.vcell.vis.vismesh.thrift.VisMesh;
 import org.vcell.vis.vismesh.thrift.VisPoint;
 import org.vcell.vis.vismesh.thrift.VisVoxel;
@@ -26,24 +25,29 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
+import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.MathException;
 import cbit.vcell.resource.PropertyLoader;
-import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.simdata.DataIdentifier;
-import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.simdata.SimDataBlock;
+import cbit.vcell.simdata.VCDataManager;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
-import cbit.vcell.solver.VCSimulationIdentifier;
 
 /**
  * Serves finite-volume simulation results to a browser-based vtk.wasm field viewer.
  * <p>
- * Reads a local run straight out of {@code ~/.vcell/simdata} in-process (no RPC), builds the
- * whole-voxel unstructured grid with {@code org.vcell.vis}, and emits the raw points/cells/field
- * arrays as JSON. All smoothing, slicing and contouring happens client-side in vtk.wasm, so this
- * server stays a thin, stateless byte pump — there is deliberately no VTK, Python or native
+ * Builds the whole-voxel unstructured grid with {@code org.vcell.vis} and emits the raw
+ * points/cells/field arrays as JSON. All smoothing, slicing and contouring happens client-side in
+ * vtk.wasm, so this server stays a thin byte pump — there is deliberately no VTK, Python or native
  * dependency here.
+ * <p>
+ * It reaches simulation data only through datasets that results windows {@link #register} with it,
+ * so it never decides how to fetch a run: a window backed by a local run and one backed by a remote
+ * run register the same way and are served by the same code. Requests are self-describing, naming
+ * the dataset they want, which is what lets one server on one port drive several viewer windows at
+ * once.
  * <p>
  * Binds to the loopback interface only. Never throws out of {@link #start()}: a visualization
  * convenience must not be able to take down the client.
@@ -68,10 +72,39 @@ public final class FieldViewerServer {
 	private static final double SINC_PASS_BAND = 0.05;
 
 	private static HttpServer server;
-	private static DataSetControllerImpl dataSetController;
+
+	/**
+	 * Registered datasets, keyed by simulation and job. Comparing results side by side is normal,
+	 * so several windows can be registered at once and each request names its own dataset. Keying
+	 * by dataset rather than by window means opening the same results twice simply re-registers an
+	 * equivalent source, which is why no reference counting is needed.
+	 */
+	private static final Map<String, DataSource> dataSources = new ConcurrentHashMap<>();
 
 	/** Grid construction is the expensive step and depends only on the mesh, so cache per sim+domain. */
 	private static final Map<String, VisMesh> meshCache = new HashMap<>();
+
+	/** A dataset a results window has made available, and the means of reading it. */
+	private static final class DataSource {
+		final VCSimulationDataIdentifier vcdID;
+		final VCDataManager dataManager;
+		final SubdomainInfo subdomainInfo;
+
+		DataSource(VCSimulationDataIdentifier vcdID, VCDataManager dataManager, SubdomainInfo subdomainInfo) {
+			this.vcdID = vcdID;
+			this.dataManager = dataManager;
+			this.subdomainInfo = subdomainInfo;
+		}
+	}
+
+	/** Raised when a request names a dataset no window has registered; reported as 404. */
+	private static final class NoSuchDatasetException extends RuntimeException {
+		private static final long serialVersionUID = 1L;
+
+		NoSuchDatasetException(String message) {
+			super(message);
+		}
+	}
 
 	private FieldViewerServer() {
 	}
@@ -136,14 +169,14 @@ public final class FieldViewerServer {
 		}
 	}
 
-	/** Stop the server and drop cached grids. */
+	/** Stop the server and forget every dataset. */
 	public static synchronized void stop() {
 		if (server != null) {
 			server.stop(0);
 			server = null;
 		}
 		meshCache.clear();
-		dataSetController = null;
+		dataSources.clear();
 	}
 
 	// ---------------------------------------------------------------------
@@ -152,13 +185,12 @@ public final class FieldViewerServer {
 
 	/** {@code /info?sim=<simKey>&job=<n>} — the variables, times and domains available for a run. */
 	private static String handleInfo(HttpExchange ex) throws Exception {
-		Map<String, String> q = query(ex);
-		VCSimulationDataIdentifier vcdID = simDataId(q);
-		DataSetControllerImpl dsci = controller();
+		DataSource source = sourceFor(query(ex));
+		VCSimulationDataIdentifier vcdID = source.vcdID;
 
-		double[] times = dsci.getDataSetTimes(vcdID);
-		DataIdentifier[] ids = dsci.getDataIdentifiers(emptyOutputContext(), vcdID);
-		List<String> domains = readMesh(dsci, vcdID).getVolumeDomainNames();
+		double[] times = source.dataManager.getDataSetTimes(vcdID);
+		DataIdentifier[] ids = source.dataManager.getDataIdentifiers(emptyOutputContext(), vcdID);
+		List<String> domains = readMesh(source).getVolumeDomainNames();
 
 		StringBuilder sb = new StringBuilder(1024);
 		sb.append("{\"simId\":\"").append(jsonEscape(vcdID.getID())).append('"');
@@ -195,10 +227,10 @@ public final class FieldViewerServer {
 	 */
 	private static String handleGrid(HttpExchange ex) throws Exception {
 		Map<String, String> q = query(ex);
-		VCSimulationDataIdentifier vcdID = simDataId(q);
-		DataSetControllerImpl dsci = controller();
+		DataSource source = sourceFor(q);
+		VCSimulationDataIdentifier vcdID = source.vcdID;
 
-		List<String> domains = readMesh(dsci, vcdID).getVolumeDomainNames();
+		List<String> domains = readMesh(source).getVolumeDomainNames();
 		if (domains.isEmpty()) {
 			throw new IllegalArgumentException("run " + vcdID.getID() + " has no volume domains");
 		}
@@ -209,7 +241,7 @@ public final class FieldViewerServer {
 			// an unknown name otherwise yields an empty mesh and a confusing NPE downstream
 			throw new IllegalArgumentException("unknown volume domain '" + domain + "'; this run has " + domains);
 		}
-		VisMesh visMesh = grid(dsci, vcdID, domain);
+		VisMesh visMesh = grid(source, domain);
 
 		List<VisPoint> points = visMesh.getPoints();
 		List<VisVoxel> voxels = visMesh.getVisVoxels();
@@ -244,8 +276,8 @@ public final class FieldViewerServer {
 
 		String varName = q.get("var");
 		if (varName != null && !varName.isEmpty()) {
-			double time = parseTime(q, dsci, vcdID);
-			appendField(sb, dsci, vcdID, voxels, varName, time);
+			double time = parseTime(q, source);
+			appendField(sb, source, voxels, varName, time);
 			sb.append(",\"time\":").append(time);
 		}
 		sb.append(",\"domain\":\"").append(jsonEscape(domain)).append('"');
@@ -261,9 +293,9 @@ public final class FieldViewerServer {
 	 * only the cells of the requested domain, so each cell carries the mesh's global index of the
 	 * voxel it came from — that index is the position in the solver's data array.
 	 */
-	private static void appendField(StringBuilder sb, DataSetControllerImpl dsci, VCSimulationDataIdentifier vcdID,
+	private static void appendField(StringBuilder sb, DataSource source,
 			List<VisVoxel> voxels, String varName, double time) throws Exception {
-		SimDataBlock block = dsci.getSimDataBlock(emptyOutputContext(), vcdID, varName, time);
+		SimDataBlock block = source.dataManager.getSimDataBlock(emptyOutputContext(), source.vcdID, varName, time);
 		double[] meshData = block.getData();
 
 		double[] values = new double[voxels.size()];
@@ -293,55 +325,77 @@ public final class FieldViewerServer {
 	// Data access
 	// ---------------------------------------------------------------------
 
-	private static synchronized DataSetControllerImpl controller() throws IOException {
-		if (dataSetController == null) {
-			dataSetController = new DataSetControllerImpl(null, ResourceUtil.getLocalRootDir(), null);
-		}
-		return dataSetController;
-	}
-
 	/**
-	 * The mesh flavour matters: {@link CartesianMeshMapping} consumes
-	 * {@code org.vcell.vis.vcell.CartesianMesh} from the vis reader, which is a different type from
-	 * the {@code cbit.vcell.solvers.CartesianMesh} that {@code DataSetControllerImpl.getMesh} returns.
+	 * Make a dataset available to the viewer. The caller supplies the data manager it already uses
+	 * for that run, which is what keeps local and remote runs on one code path here.
+	 *
+	 * @param mathDesc supplies the domain names; the mesh carries subvolume numbers but not names
 	 */
-	private static org.vcell.vis.vcell.CartesianMesh readMesh(DataSetControllerImpl dsci,
-			VCSimulationDataIdentifier vcdID) throws Exception {
-		VCellSimFiles simFiles = dsci.getVCellSimFiles(vcdID);
-		return new CartesianMeshFileReader().readFromFiles(simFiles);
+	public static void register(VCSimulationDataIdentifier vcdID, VCDataManager dataManager,
+			MathDescription mathDesc) throws MathException {
+		register(vcdID, dataManager, CartesianMeshBuilder.fromMathDescription(mathDesc));
 	}
 
-	private static synchronized VisMesh grid(DataSetControllerImpl dsci, VCSimulationDataIdentifier vcdID,
-			String domainName) throws Exception {
-		String key = vcdID.getID() + "/" + domainName;
-		VisMesh cached = meshCache.get(key);
-		if (cached != null) {
-			return cached;
+	/** For callers that already hold the domain naming and have no math description to hand. */
+	public static void register(VCSimulationDataIdentifier vcdID, VCDataManager dataManager,
+			SubdomainInfo subdomainInfo) {
+		dataSources.put(key(vcdID), new DataSource(vcdID, dataManager, subdomainInfo));
+		LG.debug("field viewer dataset registered: {}", vcdID.getID());
+	}
+
+	/** Drop a dataset, so later requests fail cleanly rather than serving results nobody is viewing. */
+	public static synchronized void unregister(VCSimulationDataIdentifier vcdID) {
+		if (dataSources.remove(key(vcdID)) != null) {
+			meshCache.keySet().removeIf(cached -> cached.startsWith(vcdID.getID() + "/"));
 		}
-		VisMesh visMesh = new CartesianMeshMapping().fromMeshData(readMesh(dsci, vcdID), domainName, true);
-		meshCache.put(key, visMesh);
-		return visMesh;
 	}
 
-	/** Local runs are owned by {@link User#tempUser}, which selects the {@code temp} simdata subdirectory. */
-	private static VCSimulationDataIdentifier simDataId(Map<String, String> q) {
+	private static String key(VCSimulationDataIdentifier vcdID) {
+		return vcdID.getVcSimID().getSimulationKey() + ":" + vcdID.getJobIndex();
+	}
+
+	private static DataSource sourceFor(Map<String, String> q) {
 		String sim = q.get("sim");
 		if (sim == null || sim.isEmpty()) {
 			throw new IllegalArgumentException("missing required query parameter 'sim'");
 		}
-		if (!sim.chars().allMatch(Character::isDigit)) {
-			throw new IllegalArgumentException("'sim' must be a numeric simulation key, got '" + sim + "'");
+		String job = q.containsKey("job") ? q.get("job") : "0";
+		DataSource source = dataSources.get(sim + ":" + job);
+		if (source == null) {
+			throw new NoSuchDatasetException("simulation " + sim + " (job " + job + ") is not open in "
+					+ "the client; its results window may have been closed");
 		}
-		int job = q.containsKey("job") ? Integer.parseInt(q.get("job")) : 0;
-		return new VCSimulationDataIdentifier(new VCSimulationIdentifier(new KeyValue(sim), User.tempUser), job);
+		return source;
+	}
+
+	/**
+	 * Builds the visualization mesh from the solver mesh the data manager hands back, rather than
+	 * from the simulation's files: the files exist only where the run executed, whereas the mesh
+	 * arrives over whatever transport that window already uses. Note the two mesh types are
+	 * different — {@link CartesianMeshMapping} consumes {@code org.vcell.vis.vcell.CartesianMesh},
+	 * not the {@code cbit.vcell.solvers.CartesianMesh} that comes back here — which is what
+	 * {@link CartesianMeshBuilder} bridges.
+	 */
+	private static org.vcell.vis.vcell.CartesianMesh readMesh(DataSource source) throws Exception {
+		return CartesianMeshBuilder.fromSolverMesh(source.dataManager.getMesh(source.vcdID), source.subdomainInfo);
+	}
+
+	private static synchronized VisMesh grid(DataSource source, String domainName) throws Exception {
+		String key = source.vcdID.getID() + "/" + domainName;
+		VisMesh cached = meshCache.get(key);
+		if (cached != null) {
+			return cached;
+		}
+		VisMesh visMesh = new CartesianMeshMapping().fromMeshData(readMesh(source), domainName, true);
+		meshCache.put(key, visMesh);
+		return visMesh;
 	}
 
 	/** Snaps the requested time to the nearest saved time; defaults to the last one. */
-	private static double parseTime(Map<String, String> q, DataSetControllerImpl dsci, VCSimulationDataIdentifier vcdID)
-			throws Exception {
-		double[] times = dsci.getDataSetTimes(vcdID);
+	private static double parseTime(Map<String, String> q, DataSource source) throws Exception {
+		double[] times = source.dataManager.getDataSetTimes(source.vcdID);
 		if (times == null || times.length == 0) {
-			throw new IllegalArgumentException("run " + vcdID.getID() + " has no saved times");
+			throw new IllegalArgumentException("run " + source.vcdID.getID() + " has no saved times");
 		}
 		String requested = q.get("time");
 		if (requested == null || requested.isEmpty()) {
@@ -373,6 +427,9 @@ public final class FieldViewerServer {
 		return ex -> {
 			try {
 				respond(ex, 200, "application/json", h.handle(ex).getBytes(StandardCharsets.UTF_8));
+			} catch (NoSuchDatasetException e) {
+				respond(ex, 404, "application/json",
+						("{\"error\":\"" + jsonEscape(e.getMessage()) + "\"}").getBytes(StandardCharsets.UTF_8));
 			} catch (IllegalArgumentException e) {
 				// a malformed request, not a server fault - report it as such and don't log a stack trace
 				respond(ex, 400, "application/json",

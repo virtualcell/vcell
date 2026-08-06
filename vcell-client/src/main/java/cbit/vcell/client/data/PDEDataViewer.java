@@ -152,6 +152,7 @@ import cbit.vcell.simdata.DataOperationResults.DataProcessingOutputInfo;
 import cbit.vcell.simdata.MergedDataInfo;
 import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.simdata.PDEDataContext;
+import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.simdata.PDEDataManager;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.simdata.SpatialSelection;
@@ -1697,13 +1698,17 @@ private JButton getView3DButton() {
 private void openInBrowserViewer() {
 	try {
 		PDEDataContext dataContext = getPdeDataContext();
-		if (dataContext == null || !(dataContext.getVCDataIdentifier() instanceof LocalVCSimulationDataIdentifier)) {
-			DialogUtils.showWarningDialog(this, "The 3D viewer reads local simulation data only. "
-					+ "Run this simulation locally to view it in 3D.");
+		MathDescription mathDescription = getSimulation() == null ? null : getSimulation().getMathDescription();
+		if (!(dataContext instanceof ClientPDEDataContext) || mathDescription == null
+				|| !(dataContext.getVCDataIdentifier() instanceof VCSimulationDataIdentifier)) {
+			DialogUtils.showWarningDialog(this, "These results cannot be viewed in 3D.");
 			return;
 		}
-		LocalVCSimulationDataIdentifier simDataId =
-				(LocalVCSimulationDataIdentifier) dataContext.getVCDataIdentifier();
+		VCSimulationDataIdentifier simDataId = (VCSimulationDataIdentifier) dataContext.getVCDataIdentifier();
+		// register the dataset before opening the browser, and hand over the reader this window already
+		// uses -- that is what lets one server serve several windows, local and remote alike
+		FieldViewerServer.register(simDataId,
+				((ClientPDEDataContext) dataContext).getDataManager().getVCDataManager(), mathDescription);
 		int port = FieldViewerServer.start();
 		if (port < 0) {
 			DialogUtils.showErrorDialog(this, "Could not start the local field viewer server. See the log for details.");
