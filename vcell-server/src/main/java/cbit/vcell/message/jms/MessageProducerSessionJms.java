@@ -38,7 +38,6 @@ import cbit.vcell.mongodb.VCMongoDbDriver;
 import cbit.vcell.resource.PropertyLoader;
 
 public class MessageProducerSessionJms implements VCMessageSession {
-    //		private static int tmpQCnt = 0;
     private VCMessagingServiceJms vcMessagingServiceJms = null;
     private TemporaryQueue commonTemporaryQueue = null;
     private Connection connection = null;
@@ -47,21 +46,79 @@ public class MessageProducerSessionJms implements VCMessageSession {
     private static Logger lg = LogManager.getLogger(MessageProducerSessionJms.class);
 
     public MessageProducerSessionJms(VCMessagingServiceJms vcMessagingServiceJms) throws JMSException, VCMessagingException{
-//			lg.info("-----\nmpjms MessageProducerSessionJms(VCMessagingServiceJms vcMessagingServiceJms)\ntmpQCnt="+(++tmpQCnt)+"----------");
-//			Thread.dumpStack();
         this.vcMessagingServiceJms = vcMessagingServiceJms;
-        this.connection = vcMessagingServiceJms.createConnectionFactory().createConnection();
-        vcMessagingServiceJms.getFailoverWatchdog().attach(this.connection);
-        this.connection.setExceptionListener(new ExceptionListener() {
+        this.bIndependent = true;
+    }
+
+    /**
+     * Opens the connection and session on first use rather than in the constructor.
+     *
+     * ConsumerContextJms builds one of these for every message it receives and hands it to
+     * the listener, but most listeners never send anything through it: the pooled consumers
+     * (SimDataServer, DatabaseServer, HtcSimulationWorker) substitute their own shared
+     * session, and the client-status topic listener ignores the argument altogether. Opening
+     * eagerly therefore cost a connection per message for consumers that had no use for one,
+     * which is what turned a redelivery loop in production into ~3,300 connections a minute.
+     * Deferring means those paths pay nothing, while the paths that do send (the dispatcher's
+     * worker-event and sim-request handlers) behave exactly as before.
+     */
+    private synchronized Session getSession() throws JMSException{
+        if(session == null){
+            Connection newConnection = createConnection();
+            try {
+                newConnection.start();
+                boolean bTransacted = true;
+                this.session = newConnection.createSession(bTransacted, Session.AUTO_ACKNOWLEDGE);
+                this.connection = newConnection;
+            } catch(JMSException e){
+                try {
+                    newConnection.close();
+                } catch(JMSException ignored){
+                }
+                throw e;
+            }
+        }
+        return session;
+    }
+
+    /**
+     * Opens the connection now instead of on first use. Long-lived sessions handed out by
+     * {@link VCMessagingServiceJms#createProducerSession()} are opened at server startup and
+     * are always used, so they open eagerly and a broker problem still surfaces there rather
+     * than at the first send.
+     */
+    void open() throws JMSException{
+        getSession();
+    }
+
+    private Connection createConnection() throws JMSException{
+        Connection newConnection;
+        try {
+            newConnection = vcMessagingServiceJms.createConnectionFactory().createConnection();
+        } catch(VCMessagingException e){
+            // callers of getSession() can only propagate JMSException
+            JMSException jmsException = new JMSException("unable to create JMS connection: " + e.getMessage());
+            jmsException.initCause(e);
+            throw jmsException;
+        }
+        vcMessagingServiceJms.getFailoverWatchdog().attach(newConnection);
+        newConnection.setExceptionListener(new ExceptionListener() {
             public void onException(JMSException arg0){
                 MessageProducerSessionJms.this.onException(arg0);
             }
         });
-        this.connection.start();
-        boolean bTransacted = true;
-        this.session = connection.createSession(bTransacted, Session.AUTO_ACKNOWLEDGE);
-        this.commonTemporaryQueue = session.createTemporaryQueue();
-        this.bIndependent = true;
+        return newConnection;
+    }
+
+    /**
+     * The temporary queue is a reply destination for sendRpcMessage and nothing else, so it
+     * is created with the first RPC rather than alongside the session.
+     */
+    private synchronized TemporaryQueue getReplyQueue() throws JMSException{
+        if(commonTemporaryQueue == null){
+            commonTemporaryQueue = getSession().createTemporaryQueue();
+        }
+        return commonTemporaryQueue;
     }
 
 //		public MessageProducerSessionJms(Session session, VCMessagingServiceJms vcMessagingServiceJms) {
@@ -79,8 +136,9 @@ public class MessageProducerSessionJms implements VCMessageSession {
             if(!bIndependent){
                 throw new VCMessagingException("cannot invoke RpcMessage from within another transaction, create an independent message producer");
             }
-            Destination destination = session.createQueue(queue.getName());
-            messageProducer = session.createProducer(destination);
+            Session jmsSession = getSession();
+            Destination destination = jmsSession.createQueue(queue.getName());
+            messageProducer = jmsSession.createProducer(destination);
 
             //
             // use MessageProducerSessionJms to create the rpcRequest message (allows "Blob" messages to be formed as needed).
@@ -100,10 +158,10 @@ public class MessageProducerSessionJms implements VCMessageSession {
             }
 
             if(returnRequired){
-                rpcMessage.setJMSReplyTo(commonTemporaryQueue);
+                rpcMessage.setJMSReplyTo(getReplyQueue());
                 messageProducer.setTimeToLive(timeoutMS);
                 messageProducer.send(rpcMessage);
-                session.commit();
+                jmsSession.commit();
                 vcMessagingServiceJms.getDelegate().onRpcRequestSent(vcRpcRequest, userLoginInfo, vcRpcRequestMessage);
                 if(lg.isTraceEnabled())
                     lg.trace("MessageProducerSessionJms.sendRpcMessage(): looking for reply message with correlationID = " + rpcMessage.getJMSMessageID());
@@ -111,7 +169,7 @@ public class MessageProducerSessionJms implements VCMessageSession {
                 MessageConsumer replyConsumer = null;
                 Message replyMessage = null;
                 try {
-                    replyConsumer = session.createConsumer(commonTemporaryQueue, filter);
+                    replyConsumer = jmsSession.createConsumer(getReplyQueue(), filter);
                     replyMessage = replyConsumer.receive(timeoutMS);
                 } finally {
                     replyConsumer.close();
@@ -135,7 +193,7 @@ public class MessageProducerSessionJms implements VCMessageSession {
                     }
                 }
             } else {
-                rpcMessage.setJMSReplyTo(commonTemporaryQueue);
+                rpcMessage.setJMSReplyTo(getReplyQueue());
                 messageProducer.setTimeToLive(timeoutMS);
                 messageProducer.send(rpcMessage);
                 commit();
@@ -167,8 +225,9 @@ public class MessageProducerSessionJms implements VCMessageSession {
         if(message instanceof VCMessageJms){
             MessageProducer messageProducer = null;
             try {
-                Destination destination = session.createQueue(queue.getName());
-                messageProducer = session.createProducer(destination);
+                Session jmsSession = getSession();
+                Destination destination = jmsSession.createQueue(queue.getName());
+                messageProducer = jmsSession.createProducer(destination);
                 if(persistent == null || persistent.booleanValue()){
                     messageProducer.setDeliveryMode(DeliveryMode.PERSISTENT);
                 } else {
@@ -179,7 +238,7 @@ public class MessageProducerSessionJms implements VCMessageSession {
                 }
                 messageProducer.send(((VCMessageJms) message).getJmsMessage());
                 if(bIndependent){
-                    session.commit();
+                    jmsSession.commit();
                 }
                 vcMessagingServiceJms.getDelegate().onMessageSent(message, queue);
             } catch(JMSException e){
@@ -206,10 +265,11 @@ public class MessageProducerSessionJms implements VCMessageSession {
         if(message instanceof VCMessageJms){
             VCMessageJms jmsMessage = (VCMessageJms) message;
             try {
-                MessageProducer producer = session.createProducer(session.createTopic(topic.getName()));
+                Session jmsSession = getSession();
+                MessageProducer producer = jmsSession.createProducer(jmsSession.createTopic(topic.getName()));
                 producer.send(jmsMessage.getJmsMessage());
                 if(bIndependent){
-                    session.commit();
+                    jmsSession.commit();
                 }
                 vcMessagingServiceJms.getDelegate().onMessageSent(message, topic);
             } catch(JMSException e){
@@ -220,7 +280,10 @@ public class MessageProducerSessionJms implements VCMessageSession {
         }
     }
 
-    public void rollback(){
+    public synchronized void rollback(){
+        if(session == null){
+            return;   // never opened, so there is nothing to roll back
+        }
         try {
             session.rollback();
         } catch(JMSException e){
@@ -228,7 +291,10 @@ public class MessageProducerSessionJms implements VCMessageSession {
         }
     }
 
-    public void commit(){
+    public synchronized void commit(){
+        if(session == null){
+            return;   // never opened, so there is nothing to commit
+        }
         try {
             session.commit();
         } catch(JMSException e){
@@ -238,7 +304,7 @@ public class MessageProducerSessionJms implements VCMessageSession {
 
     public VCMessage createTextMessage(String text){
         try {
-            Message jmsMessage = session.createTextMessage(text);
+            Message jmsMessage = getSession().createTextMessage(text);
             return new VCMessageJms(jmsMessage, vcMessagingServiceJms.getDelegate());
         } catch(JMSException e){
             onException(e);
@@ -278,7 +344,7 @@ public class MessageProducerSessionJms implements VCMessageSession {
                     channel.close();
                     fileOutputStream.close();
 
-                    ObjectMessage objectMessage = session.createObjectMessage("emptyObject");
+                    ObjectMessage objectMessage = getSession().createObjectMessage("emptyObject");
                     objectMessage.setStringProperty(VCMessageJms.BLOB_MESSAGE_PERSISTENCE_TYPE, VCMessageJms.BLOB_MESSAGE_PERSISTENCE_TYPE_FILE);
                     objectMessage.setStringProperty(VCMessageJms.BLOB_MESSAGE_PRODUCER_TEMPDIR, tempdir.getAbsolutePath());
                     objectMessage.setStringProperty(VCMessageJms.BLOB_MESSAGE_FILE_NAME, blobFile.getName());
@@ -289,7 +355,7 @@ public class MessageProducerSessionJms implements VCMessageSession {
                 } else {
                     String hexString = Long.toHexString(Math.abs(new Random().nextLong()));
                     ObjectId objectId = VCMongoDbDriver.getInstance().storeBLOB("jmsblob_name_" + hexString, "jmsblob", serializedBytes);
-                    ObjectMessage objectMessage = session.createObjectMessage("emptyObject");
+                    ObjectMessage objectMessage = getSession().createObjectMessage("emptyObject");
                     objectMessage.setStringProperty(VCMessageJms.BLOB_MESSAGE_PERSISTENCE_TYPE, VCMessageJms.BLOB_MESSAGE_PERSISTENCE_TYPE_MONGODB);
                     objectMessage.setStringProperty(VCMessageJms.BLOB_MESSAGE_MONGODB_OBJECTID, objectId.toHexString());
                     objectMessage.setStringProperty(VCMessageJms.BLOB_MESSAGE_OBJECT_TYPE, object.getClass().getName());
@@ -298,7 +364,7 @@ public class MessageProducerSessionJms implements VCMessageSession {
                     return new VCMessageJms(objectMessage, object, vcMessagingServiceJms.getDelegate());
                 }
             } else {
-                ObjectMessage objectMessage = (ObjectMessage) session.createObjectMessage(object);
+                ObjectMessage objectMessage = (ObjectMessage) getSession().createObjectMessage(object);
                 int size = (serializedBytes != null) ? (serializedBytes.length) : (0);
                 String objectType = (serializedBytes != null) ? (object.getClass().getName()) : ("NULL");
                 vcMessagingServiceJms.getDelegate().onTraceEvent("MessageProducerSessionJms.createObjectMessage: (NOBLOB) size=" + size + ", type=" + objectType + ", elapsedTime = " + (System.currentTimeMillis() - t1) + " ms");
@@ -315,7 +381,7 @@ public class MessageProducerSessionJms implements VCMessageSession {
 
     public VCMessage createMessage(){
         try {
-            Message jmsMessage = session.createMessage();
+            Message jmsMessage = getSession().createMessage();
             return new VCMessageJms(jmsMessage, vcMessagingServiceJms.getDelegate());
         } catch(JMSException e){
             onException(e);
@@ -331,13 +397,9 @@ public class MessageProducerSessionJms implements VCMessageSession {
         lg.error(e);
     }
 
-    public void close(){
+    public synchronized void close(){
+        // a session that was never opened has nothing to close -- see getSession()
         try {
-//				lg.info("---------------\nmpjms close()\ntmpQCnt="+(--tmpQCnt)+"--------------------");
-//				Thread.dumpStack();
-////				if(msgProducers.size() > 0){
-//					Thread.dumpStack();
-//				}
             if(session != null){
                 session.close();
             }

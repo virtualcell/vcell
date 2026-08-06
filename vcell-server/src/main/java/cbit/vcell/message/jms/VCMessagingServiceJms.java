@@ -122,6 +122,7 @@ public abstract class VCMessagingServiceJms implements VCMessagingService {
 					super.close();
 				}
 			};
+			messageProducerSession.open();
 			messagingProducerSessions.add(messageProducerSession);
 			return messageProducerSession;
 		} catch (JMSException | VCMessagingException e) {
