@@ -26,6 +26,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.DataSetControllerImpl;
@@ -51,7 +52,6 @@ public final class FieldViewerServer {
 
 	private static final Logger LG = LogManager.getLogger(FieldViewerServer.class);
 
-	private static final String PORT_PROP = "vcell.fieldViewer.port";
 	private static final int DEFAULT_PORT = 9124;
 
 	/** VTK_VOXEL: the cell type {@link CartesianMeshMapping} emits for 3D volume domains. */
@@ -81,15 +81,30 @@ public final class FieldViewerServer {
 	// ---------------------------------------------------------------------
 
 	/**
+	 * Whether the browser-based 3D field viewer is switched on. Off unless
+	 * {@code -Dvcell.fieldViewer.enabled=true} is set, which an installed client can carry in its
+	 * {@code vmoptions.txt}. Gates both this server and the "View in 3D" button that opens it.
+	 */
+	public static boolean isEnabled() {
+		return PropertyLoader.getBooleanProperty(PropertyLoader.fieldViewerEnabled,
+				PropertyLoader.fieldViewerEnabled_default_value);
+	}
+
+	/**
 	 * Start the server if it is not already running. Safe to call repeatedly.
 	 *
-	 * @return the listening port, or -1 if the server could not be started.
+	 * @return the listening port, -1 if the server could not be started, or -1 if the feature is
+	 *         switched off.
 	 */
 	public static synchronized int start() {
+		if (!isEnabled()) {
+			LG.debug("field viewer is disabled ({}=false)", PropertyLoader.fieldViewerEnabled);
+			return -1;
+		}
 		if (server != null) {
 			return server.getAddress().getPort();
 		}
-		int configuredPort = Integer.getInteger(PORT_PROP, DEFAULT_PORT);
+		int configuredPort = PropertyLoader.getIntProperty(PropertyLoader.fieldViewerPort, DEFAULT_PORT);
 		HttpServer s = bind(configuredPort);
 		if (s == null) {
 			// the fixed port is typically taken by a second client instance; any port will do

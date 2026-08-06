@@ -299,6 +299,18 @@ public class PropertyLoader {
 	public static final String enableSpringSaLaD = record("vcell.enableSpringSaLaD", ValueType.BOOL);
 	public static final boolean enableSpringSaLaD_default_value = true;
 
+	/**
+	 * Browser-based 3D field viewer (the loopback field server + the "View in 3D" button on the
+	 * PDE results panel). Off by default; enable for testing with -Dvcell.fieldViewer.enabled=true,
+	 * which an installed client can carry in its vmoptions.txt.
+	 */
+	public static final String fieldViewerEnabled = record("vcell.fieldViewer.enabled", ValueType.BOOL);
+	public static final boolean fieldViewerEnabled_default_value = false;
+	/** Port for the loopback field server; any free port is used if this one is taken. */
+	public static final String fieldViewerPort = record("vcell.fieldViewer.port", ValueType.GEN);
+	/** Where the browser-based viewer page is served from. */
+	public static final String fieldViewerUrl = record("vcell.fieldViewer.url", ValueType.GEN);
+
 	private static final String headlessGUI = record("headless", ValueType.GEN);
 
 	/**

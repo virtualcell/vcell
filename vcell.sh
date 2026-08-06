@@ -8,12 +8,16 @@
 # image handling, and the server host / prefix / bioformats properties.
 #
 # Usage:
-#   ./vcell.sh [--debug-bridge[=PORT]] [extra VCellClientMain args...]
+#   ./vcell.sh [--debug-bridge[=PORT]] [--field-viewer[=URL]] [extra VCellClientMain args...]
 #
 # Options:
 #   --debug-bridge[=PORT]  Enable the dev-only Swing debug bridge (loopback HTTP,
 #                          default port 9123). See
 #                          vcell-client/src/main/java/org/vcell/client/debug/README.md
+#   --field-viewer[=URL]   Enable the browser-based 3D field viewer (the loopback field
+#                          server + the "View in 3D" button on the PDE results panel).
+#                          URL overrides where the viewer page is served from
+#                          (default http://localhost:4200/vtk-wasm).
 #
 # Environment overrides:
 #   VCELL_API_HOST          api server host[:port]  (default vcell.cam.uchc.edu:443)
@@ -28,6 +32,8 @@
 #   ./vcell.sh                                            # connect to production
 #   VCELL_API_HOST=vcell-dev.cam.uchc.edu:443 ./vcell.sh  # connect to dev
 #   ./vcell.sh --debug-bridge                             # bridge on :9123
+#   ./vcell.sh --field-viewer                             # 3D field viewer on
+#   ./vcell.sh --field-viewer=http://localhost:4300/vtk-wasm
 #   ./vcell.sh --debug-bridge=9200 model.vcml            # bridge on :9200, open model
 
 set -eo pipefail
@@ -40,8 +46,10 @@ CLASSPATH="./vcell-client/target/maven-jars/*:./vcell-client/target/*"
 
 # Separate our own flags from arguments passed through to the client.
 bridge_props=()
+viewer_props=()
 passthrough=()
 bridge_note=""
+viewer_note=""
 for arg in "$@"; do
   case "$arg" in
     --debug-bridge)
@@ -52,6 +60,15 @@ for arg in "$@"; do
       port="${arg#*=}"
       bridge_props=(-Dvcell.debugBridge=true "-Dvcell.debugBridge.port=${port}")
       bridge_note=" debug-bridge=on(:${port})"
+      ;;
+    --field-viewer)
+      viewer_props=(-Dvcell.fieldViewer.enabled=true)
+      viewer_note=" field-viewer=on"
+      ;;
+    --field-viewer=*)
+      url="${arg#*=}"
+      viewer_props=(-Dvcell.fieldViewer.enabled=true "-Dvcell.fieldViewer.url=${url}")
+      viewer_note=" field-viewer=on(${url})"
       ;;
     *)
       passthrough+=("$arg")
@@ -83,8 +100,8 @@ vmopts=(
   -Dvcell.imagej.plugin.url=http://vcell.org/webstart
 )
 
-echo "VCell client (dev): host=${VCELL_API_HOST} version=${VCELL_SOFTWARE_VERSION}${bridge_note}" >&2
+echo "VCell client (dev): host=${VCELL_API_HOST} version=${VCELL_SOFTWARE_VERSION}${bridge_note}${viewer_note}" >&2
 
-exec java "${vmopts[@]}" ${bridge_props[@]+"${bridge_props[@]}"} \
+exec java "${vmopts[@]}" ${bridge_props[@]+"${bridge_props[@]}"} ${viewer_props[@]+"${viewer_props[@]}"} \
   -cp "$CLASSPATH" "$MAIN_CLASS" \
   --api-host="$VCELL_API_HOST" ${passthrough[@]+"${passthrough[@]}"}

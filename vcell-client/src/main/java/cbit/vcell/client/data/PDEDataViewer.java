@@ -145,6 +145,7 @@ import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.render.Vect3d;
 import cbit.vcell.simdata.ClientPDEDataContext;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.DataInfoProvider;
 import cbit.vcell.simdata.DataOperationResults.DataProcessingOutputInfo;
@@ -1576,7 +1577,9 @@ private javax.swing.JPanel getJPanelButtons() {
 			ivjJPanelButtons.setName("JPanelButtons");
 			ivjJPanelButtons.add(getPlotButton());
 			ivjJPanelButtons.add(getROIButton());
-			ivjJPanelButtons.add(getView3DButton());
+			if (FieldViewerServer.isEnabled()) {
+				ivjJPanelButtons.add(getView3DButton());
+			}
 //			ivjJPanelButtons.add(getImagejButton());
 		} catch (java.lang.Throwable ivjExc) {
 			// user code begin {2}
@@ -1671,8 +1674,6 @@ private JButton getROIButton() {
 	return roiButton;
 }
 
-/** System property overriding where the browser-based viewer page is served from. */
-private static final String VIEWER_URL_PROP = "vcell.fieldViewer.url";
 private static final String DEFAULT_VIEWER_URL = "http://localhost:4200/vtk-wasm";
 
 private JButton getView3DButton() {
@@ -1721,7 +1722,7 @@ private void openInBrowserViewer() {
 		}
 		dataUrl.append("&time=").append(dataContext.getTimePoint());
 
-		String viewer = System.getProperty(VIEWER_URL_PROP, DEFAULT_VIEWER_URL);
+		String viewer = PropertyLoader.getProperty(PropertyLoader.fieldViewerUrl, DEFAULT_VIEWER_URL);
 		String url = viewer + (viewer.contains("?") ? "&" : "?") + "src=" + urlEncode(dataUrl.toString());
 		DialogUtils.browserLauncher(this, url, "Failed to open the 3D viewer at " + viewer);
 	} catch (java.lang.Throwable ivjExc) {
