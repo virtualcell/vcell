@@ -100,7 +100,14 @@ public class SEDMLExporter {
 
     /** Application to the SED-ML id it was exported under; see {@link #getSimContextId}. */
     private final Map<SimulationContext, String> simContextIdMap = new LinkedHashMap<>();
-    private final Set<String> usedSimContextIds = new LinkedHashSet<>();
+
+    /**
+     * Every SId this exporter has minted into the current document; see {@link #uniqueId}.
+     */
+    private final Set<String> usedSedmlIds = new LinkedHashSet<>();
+
+    /** The 'time' data generator minted for each task, so outputs can reference it without re-deriving its id. */
+    private final Map<SId, SId> timeDataGeneratorIdByTask = new LinkedHashMap<>();
 
     /**
      * Ids the current application's SBML gave an {@code <initialAssignment>} rather than an
@@ -196,6 +203,9 @@ public class SEDMLExporter {
                                           boolean bRoundTripSBMLValidation, Predicate<SimulationContext> simContextExportFilter) {
         SedML sedml = this.sedmlModel.getSedML();
         this.modelFilePathStrAbsoluteList.clear();
+        this.simContextIdMap.clear();
+        this.usedSedmlIds.clear();
+        this.timeDataGeneratorIdByTask.clear();
         try {
 
             if (modelFormat == ModelFormat.VCML) {
@@ -208,6 +218,7 @@ public class SEDMLExporter {
                 String modelFileNameAbs = Paths.get(savePath, modelFileNameRel).toString();
                 XmlUtil.writeXMLStringToFile(vcmlString, modelFileNameAbs, false);
                 this.modelFilePathStrAbsoluteList.add(modelFileNameRel);
+                this.reserveSimContextIds(this.vcBioModel.getSimulationContexts());
                 for (int i = 0; i < this.vcBioModel.getSimulationContexts().length; i++) {
                     this.writeModelVCML(modelFileNameRel, this.vcBioModel.getSimulationContext(i));
                     this.sedmlRecorder.addTaskRecord(this.vcBioModel.getSimulationContext(i).getName(), TaskType.SIMCONTEXT, TaskResult.SUCCEEDED, null);
@@ -239,6 +250,7 @@ public class SEDMLExporter {
                 if (simContexts.length == 0) {
                     this.sedmlRecorder.addTaskRecord(this.vcBioModel.getName(), TaskType.MODEL, TaskResult.FAILED, new Exception("Model has no Applications"));
                 } else {
+                    this.reserveSimContextIds(simContexts);
                     int simContextCnt = 0;    // for model count, task subcount
                     for (SimulationContext simContext : simContexts) {
                         // Export the application itself to SBML, with default values (overrides will become model changes or repeated tasks)
@@ -288,6 +300,33 @@ public class SEDMLExporter {
     }
 
     /**
+     * Mint an SId that no other object in this document uses.
+     * <p>
+     * SED-ML SIds share one namespace across every kind of object, but the ids here are built from
+     * several independent recipes — application names, simulation names, mangled variable names,
+     * per-kind counters — so nothing stops two of them landing on the same string. A BioModel with
+     * an application <em>and</em> a simulation both named {@code compartmental} produced a document
+     * with {@code <model id="compartmental">} and {@code <uniformTimeCourse id="compartmental">},
+     * which is invalid. Routing every mint through here makes that impossible by construction.
+     * <p>
+     * A free {@code base} is returned unchanged, so ids only move where they previously collided.
+     * {@code kindTag} names the kind of object being identified, so a disambiguated id still reads
+     * as what it is ({@code compartmental_sim0}).
+     */
+    private String uniqueId(String base, String kindTag) {
+        String candidate = base;
+        int collisionCount = 0;
+        while (!this.usedSedmlIds.add(candidate)) {
+            candidate = base + "_" + kindTag + collisionCount++;
+        }
+        return candidate;
+    }
+
+    private SId uniqueSId(String base, String kindTag) {
+        return new SId(this.uniqueId(base, kindTag));
+    }
+
+    /**
      * The SED-ML id for an application, unique across the exported document.
      * <p>
      * {@link TokenMangler#mangleToSName} replaces every non-alphanumeric character with an
@@ -296,20 +335,23 @@ public class SEDMLExporter {
      * it, so without disambiguation the second application overwrites the first application's SBML
      * file and re-uses its model id — leaving that application's data generators pointing at another
      * application's parameters, and silently shipping the wrong model in the archive.
-     * <p>
-     * The suffix is {@code _app<n>} rather than {@code _<n>} to stay clear of the ids given to
-     * override-derived models, which are {@code <simContextId>_<overrideCount>}.
      */
     private String getSimContextId(SimulationContext simContext) {
-        return this.simContextIdMap.computeIfAbsent(simContext, sc -> {
-            String base = TokenMangler.mangleToSName(sc.getName());
-            String candidate = base;
-            int collisionCount = 0;
-            while (!this.usedSimContextIds.add(candidate)) {
-                candidate = base + "_app" + collisionCount++;
-            }
-            return candidate;
-        });
+        return this.simContextIdMap.computeIfAbsent(simContext,
+                sc -> this.uniqueId(TokenMangler.mangleToSName(sc.getName()), "app"));
+    }
+
+    /**
+     * Claim the id of every application before exporting anything else.
+     * <p>
+     * Applications are exported one at a time, so without this an application's id could be taken
+     * first by a simulation of an earlier application. Applications get first refusal because their
+     * id also names the SBML file written for them.
+     */
+    private void reserveSimContextIds(SimulationContext[] simContexts) {
+        for (SimulationContext simContext : simContexts) {
+            this.getSimContextId(simContext);
+        }
     }
 
     private void writeModelVCML(String filePathStrRelative, SimulationContext simContext) {
@@ -380,12 +422,26 @@ public class SEDMLExporter {
         }
     }
 
+    /**
+     * The 'time' data generator for a task, looked up by the id it was actually given rather than
+     * by rebuilding that id here — the allocator is free to move it, and outputs are meaningless
+     * without an x axis.
+     */
+    private DataGenerator findTimeDataGenerator(SId taskRef, SimulationContext simContext) {
+        SId timeDataGenId = this.timeDataGeneratorIdByTask.get(taskRef);
+        DataGenerator dgTime = timeDataGenId == null ? null : this.sedmlModel.findDataGeneratorById(timeDataGenId);
+        if (dgTime == null) {
+            throw new RuntimeException("DataGenerator referring time could not be found (sim context: '" + simContext.getName() + "')");
+        }
+        return dgTime;
+    }
+
     private void createSedMLOutputs(SimulationContext simContext, Simulation vcSimulation, List<DataGenerator> dataGeneratorsOfSim, SId taskRef) {
         // add output to sedml Model : 1 plot2d for each non-spatial simulation with all vars (species/output functions) vs time (1 curve per var)
         // ignoring output for spatial deterministic (spatial stochastic is not exported to SEDML) and non-spatial stochastic applications with histogram
         if (!(simContext.getGeometry().getDimension() > 0)) {
-            String plot2dId = "plot2d_" + TokenMangler.mangleToSName(vcSimulation.getName());
-            String reportId = "report_" + TokenMangler.mangleToSName(vcSimulation.getName());
+            String plot2dId = this.uniqueId("plot2d_" + TokenMangler.mangleToSName(vcSimulation.getName()), "plot");
+            String reportId = this.uniqueId("report_" + TokenMangler.mangleToSName(vcSimulation.getName()), "report");
             //								String reportId = "__plot__" + plot2dId;
             String plotName = simContext.getName() + "_" + vcSimulation.getName() + "_plot";
             Plot2D sedmlPlot2d = new Plot2D(new SId(plot2dId), plotName);
@@ -393,10 +449,9 @@ public class SEDMLExporter {
 
             sedmlPlot2d.setNotes(this.createNotesElement("Plot of all variables and output functions from application '" + simContext.getName() + "' ; simulation '" + vcSimulation.getName() + "' in VCell model"));
             sedmlReport.setNotes(this.createNotesElement("Report of all variables and output functions from application '" + simContext.getName() + "' ; simulation '" + vcSimulation.getName() + "' in VCell model"));
-            DataGenerator dgTime = this.sedmlModel.findDataGeneratorById(new SId(DATA_GENERATOR_TIME_NAME + "_" + taskRef.string()));
-            if (null == dgTime) throw new RuntimeException("DataGenerator referring time could not be found (sim context: '" + simContext.getName() + "')");
+            DataGenerator dgTime = this.findTimeDataGenerator(taskRef, simContext);
             SId xDataRef = dgTime.getId();
-            SId xDatasetXId = new SId("__data_set__" + plot2dId + dgTime.getIdAsString());
+            SId xDatasetXId = this.uniqueSId("__data_set__" + plot2dId + dgTime.getIdAsString(), "dataSet");
             DataSet dataSet = new DataSet(xDatasetXId, DATA_GENERATOR_TIME_NAME, "time", xDataRef);    // id, name, label, data generator reference
             sedmlReport.addDataSet(dataSet);
 
@@ -408,8 +463,8 @@ public class SEDMLExporter {
                 if (dg.getId().equals(xDataRef)) {
                     continue;
                 }
-                SId curveId = new SId("curve_" + plot2dId + "_" + dg.getIdAsString());
-                SId datasetYId = new SId("__data_set__" + plot2dId + dg.getIdAsString());
+                SId curveId = this.uniqueSId("curve_" + plot2dId + "_" + dg.getIdAsString(), "curve");
+                SId datasetYId = this.uniqueSId("__data_set__" + plot2dId + dg.getIdAsString(), "dataSet");
                 Curve curve = new Curve(curveId, dg.getName(), xDataRef, dg.getId());
                 sedmlPlot2d.addCurve(curve);
                 //									// id, name, label, dataRef
@@ -425,18 +480,17 @@ public class SEDMLExporter {
         } else {        // spatial deterministic
             if (simContext.getApplicationType().equals(Application.NETWORK_DETERMINISTIC)) {    // we ignore spatial stochastic (Smoldyn)
                 // TODO: add curves/surfaces to the plots
-                SId plot3dId = new SId("plot3d_" + TokenMangler.mangleToSName(vcSimulation.getName()));
-                SId reportId = new SId("report_" + TokenMangler.mangleToSName(vcSimulation.getName()));
+                SId plot3dId = this.uniqueSId("plot3d_" + TokenMangler.mangleToSName(vcSimulation.getName()), "plot");
+                SId reportId = this.uniqueSId("report_" + TokenMangler.mangleToSName(vcSimulation.getName()), "report");
                 String plotName = simContext.getName() + "plots";
                 Plot3D sedmlPlot3d = new Plot3D(plot3dId, plotName);
                 Report sedmlReport = new Report(reportId, plotName);
 
                 sedmlPlot3d.setNotes(this.createNotesElement("Plot of all variables and output functions from application '" + simContext.getName() + "' ; simulation '" + vcSimulation.getName() + "' in VCell model"));
                 sedmlReport.setNotes(this.createNotesElement("Report of all variables and output functions from application '" + simContext.getName() + "' ; simulation '" + vcSimulation.getName() + "' in VCell model"));
-                DataGenerator dgTime = this.sedmlModel.findDataGeneratorById(new SId(DATA_GENERATOR_TIME_NAME + "_" + taskRef.string()));
-                if (null == dgTime) throw new RuntimeException("DataGenerator referring time could not be found (sim context: '" + simContext.getName() + "')");
+                DataGenerator dgTime = this.findTimeDataGenerator(taskRef, simContext);
                 SId xDataRef = dgTime.getId();
-                SId xDatasetXId = new SId("__data_set__" + plot3dId.string() + dgTime.getIdAsString());
+                SId xDatasetXId = this.uniqueSId("__data_set__" + plot3dId.string() + dgTime.getIdAsString(), "dataSet");
                 DataSet dataSet = new DataSet(xDatasetXId, DATA_GENERATOR_TIME_NAME, "time", xDataRef);    // id, name, label, data generator reference
                 sedmlReport.addDataSet(dataSet);
 
@@ -448,8 +502,8 @@ public class SEDMLExporter {
                     if (dg.getId().equals(xDataRef)) {
                         continue;
                     }
-                    SId curveId = new SId("curve_" + plot3dId.string() + "_" + dg.getIdAsString());
-                    SId datasetYId = new SId("__data_set__" + plot3dId.string() + dg.getIdAsString());
+                    SId curveId = this.uniqueSId("curve_" + plot3dId.string() + "_" + dg.getIdAsString(), "curve");
+                    SId datasetYId = this.uniqueSId("__data_set__" + plot3dId.string() + dg.getIdAsString(), "dataSet");
 
                     DataSet yDataSet = new DataSet(datasetYId, dg.getName(), dg.getIdAsString(), dg.getId());
                     sedmlReport.addDataSet(yDataSet);
@@ -465,8 +519,9 @@ public class SEDMLExporter {
         List<DataGenerator> dataGeneratorsOfSim = new ArrayList<>();
         for (SId taskRef : dataGeneratorTasksSet) {
             // add one DataGenerator for 'time'
-            SId timeDataGenId = new SId(DATA_GENERATOR_TIME_NAME + "_" + taskRef.string());
-            SId timeVarId = new SId(DATA_GENERATOR_TIME_SYMBOL + "_" + taskRef.string());
+            SId timeDataGenId = this.uniqueSId(DATA_GENERATOR_TIME_NAME + "_" + taskRef.string(), "dataGen");
+            this.timeDataGeneratorIdByTask.put(taskRef, timeDataGenId);
+            SId timeVarId = this.uniqueSId(DATA_GENERATOR_TIME_SYMBOL + "_" + taskRef.string(), "var");
             Variable timeVar = new Variable(timeVarId, DATA_GENERATOR_TIME_SYMBOL, taskRef, VariableSymbol.TIME);
             ASTNode math = Libsedml.parseFormulaString(timeVarId.string());
             DataGenerator timeDataGen = new DataGenerator(timeDataGenId, timeDataGenId.string(), math);
@@ -488,11 +543,11 @@ public class SEDMLExporter {
                 }
             }
             for (String varName : varNamesList) {
-                SId varId = new SId(TokenMangler.mangleToSName(varName) + "_" + taskRef.string());
+                SId varId = this.uniqueSId(TokenMangler.mangleToSName(varName) + "_" + taskRef.string(), "var");
                 String xPathForSpecies = sbmlString != null ? this.sbmlSupport.getXPathForSpecies(varName) : VCMLSupport.getXPathForSpeciesContextSpec(simContext.getName(), varName);
                 Variable sedmlVar = new Variable(varId, varName, taskRef, xPathForSpecies);
                 ASTNode varMath = Libsedml.parseFormulaString(varId.string());
-                SId dataGenId = new SId(dataGenIdPrefix + "_" + TokenMangler.mangleToSName(varName)); //"dataGen_" + varCount; - old code
+                SId dataGenId = this.uniqueSId(dataGenIdPrefix + "_" + TokenMangler.mangleToSName(varName), "dataGen"); //"dataGen_" + varCount; - old code
                 DataGenerator dataGen = new DataGenerator(dataGenId, varName, varMath);
                 dataGen.addVariable(sedmlVar);
                 dataGeneratorsOfSim.add(dataGen);
@@ -521,11 +576,11 @@ public class SEDMLExporter {
                 }
             }
             for (String varName : varNamesList) {
-                SId varId = new SId(TokenMangler.mangleToSName(varName) + "_" + taskRef.string());
+                SId varId = this.uniqueSId(TokenMangler.mangleToSName(varName) + "_" + taskRef.string(), "var");
                 String xPathForSpecies = sbmlString != null ? this.sbmlSupport.getXPathForGlobalParameter(varName) : VCMLSupport.getXPathForOutputFunction(simContext.getName(), varName);
                 Variable sedmlVar = new Variable(varId, varName, taskRef, xPathForSpecies);
                 ASTNode varMath = Libsedml.parseFormulaString(varId.string());
-                SId dataGenId = new SId(dataGenIdPrefix + "_" + TokenMangler.mangleToSName(varName)); //"dataGen_" + varCount; - old code
+                SId dataGenId = this.uniqueSId(dataGenIdPrefix + "_" + TokenMangler.mangleToSName(varName), "dataGen"); //"dataGen_" + varCount; - old code
                 DataGenerator dataGen = new DataGenerator(dataGenId, varName, varMath);
                 dataGen.addVariable(sedmlVar);
                 dataGeneratorsOfSim.add(dataGen);
@@ -548,7 +603,7 @@ public class SEDMLExporter {
         TimeBounds vcSimTimeBounds = simTaskDesc.getTimeBounds();
         double startingTime = vcSimTimeBounds.getStartingTime();
         String simName = simTaskDesc.getSimulation().getName();
-        UniformTimeCourse utcSim = new UniformTimeCourse(new SId(TokenMangler.mangleToSName(simName)), simName, startingTime, startingTime,
+        UniformTimeCourse utcSim = new UniformTimeCourse(this.uniqueSId(TokenMangler.mangleToSName(simName), "sim"), simName, startingTime, startingTime,
                 vcSimTimeBounds.getEndingTime(), (int) simTaskDesc.getExpectedNumTimePoints(), sedmlAlgorithm);
 
         boolean enableAbsoluteErrorTolerance;        // --------- deal with error tolerance
@@ -697,7 +752,7 @@ public class SEDMLExporter {
             throws ExpressionException, MappingException {
         if (mathOverrides == null || !mathOverrides.hasOverrides()) {
             // no math overrides, add basic task.
-            SId taskId = new SId("tsk_" + simContextCnt + "_" + this.simCount);
+            SId taskId = this.uniqueSId("tsk_" + simContextCnt + "_" + this.simCount, "tsk");
             Task sedmlTask = new Task(taskId, vcSimulation.getName(), new SId(simContextId), utcSim.getId());
             dataGeneratorTasksSet.add(sedmlTask.getId());
             this.sedmlModel.getSedML().addTask(sedmlTask);
@@ -760,7 +815,7 @@ public class SEDMLExporter {
         if (!unscannedParamHash.isEmpty() && scannedParamHash.isEmpty()) {
             // only parameters with simple overrides (numeric/expression) no scans
             // create new model with change for each parameter that has override; add simple task
-            SId overriddenSimContextId = new SId(simContextId + "_" + this.overrideCount);
+            SId overriddenSimContextId = this.uniqueSId(simContextId + "_" + this.overrideCount, "model");
             String overriddenSimContextName = simContextName + " modified";
             Model sedModel = new Model(overriddenSimContextId, overriddenSimContextName, languageURN, "#" + simContextId);
             this.overrideCount++;
@@ -792,7 +847,7 @@ public class SEDMLExporter {
                     Expression expr = new Expression(unscannedParamExpr);
                     String[] exprSymbols = expr.getSymbols();
                     for (String symbol : exprSymbols) {
-                        SId varName = new SId(overriddenSimContextId.string() + "_" + symbol + "_" + variableCount);
+                        SId varName = this.uniqueSId(overriddenSimContextId.string() + "_" + symbol + "_" + variableCount, "var");
                         Variable sedmlVar = new Variable(varName, varName.string(), symbolToTargetMap.get(symbol).toString(), overriddenSimContextId);
                         expr.substituteInPlace(new Expression(symbol), new Expression(varName.string()));
                         computeChange.addVariable(sedmlVar);
@@ -805,13 +860,13 @@ public class SEDMLExporter {
             }
             this.sedmlModel.getSedML().addModel(sedModel);
 
-            SId taskId = new SId("tsk_" + simContextCnt + "_" + this.simCount);
+            SId taskId = this.uniqueSId("tsk_" + simContextCnt + "_" + this.simCount, "tsk");
             Task sedmlTask = new Task(taskId, vcSimulation.getName(), sedModel.getId(), utcSim.getId());
             dataGeneratorTasksSet.add(sedmlTask.getId());
             this.sedmlModel.getSedML().addTask(sedmlTask);
         } else if (!scannedParamHash.isEmpty() && unscannedParamHash.isEmpty()) {
             // only parameters with scans
-            SId taskId = new SId("tsk_" + simContextCnt + "_" + this.simCount);
+            SId taskId = this.uniqueSId("tsk_" + simContextCnt + "_" + this.simCount, "tsk");
             Task sedmlTask = new Task(taskId, vcSimulation.getName(), new SId(simContextId), utcSim.getId());
             dataGeneratorTasksSet.add(sedmlTask.getId());
             this.sedmlModel.getSedML().addTask(sedmlTask);
@@ -819,8 +874,8 @@ public class SEDMLExporter {
             int repeatedTaskIndex = 0;
             SId ownerTaskId = taskId;
             for (String scannedConstName : scannedConstantsNames) {
-                SId repeatedTaskId = new SId("repTsk_" + simContextCnt + "_" + this.simCount + "_" + repeatedTaskIndex);
-                SId rangeId = new SId("range_" + simContextCnt + "_" + this.simCount + "_" + scannedConstName);
+                SId repeatedTaskId = this.uniqueSId("repTsk_" + simContextCnt + "_" + this.simCount + "_" + repeatedTaskIndex, "repTsk");
+                SId rangeId = this.uniqueSId("range_" + simContextCnt + "_" + this.simCount + "_" + scannedConstName, "range");
                 RepeatedTask rt = this.createSedMLRepeatedTask(rangeId, l2gMap, simContext, dataGeneratorTasksSet, mathOverrides, ownerTaskId, scannedConstName, repeatedTaskId, new SId(simContextId));
                 ownerTaskId = repeatedTaskId;
                 repeatedTaskIndex++;
@@ -833,12 +888,12 @@ public class SEDMLExporter {
             List<RepeatedTask> repeatedTasksList = new ArrayList<>();
 
             // create new model with change for each unscanned parameter that has override
-            SId overriddenSimContextId = new SId(simContextId + "_" + this.overrideCount);
+            SId overriddenSimContextId = this.uniqueSId(simContextId + "_" + this.overrideCount, "model");
             String overriddenSimContextName = simContextName + " modified";
             Model sedModel = new Model(overriddenSimContextId, overriddenSimContextName, languageURN, "#" + simContextId);
             this.overrideCount++;
 
-            SId taskId = new SId("tsk_" + simContextCnt + "_" + this.simCount);
+            SId taskId = this.uniqueSId("tsk_" + simContextCnt + "_" + this.simCount, "tsk");
             Task sedmlTask = new Task(taskId, vcSimulation.getName(), overriddenSimContextId, utcSim.getId());
             dataGeneratorTasksSet.add(sedmlTask.getId());
             this.sedmlModel.getSedML().addTask(sedmlTask);
@@ -848,8 +903,8 @@ public class SEDMLExporter {
             int variableCount = 0;
             SId ownerTaskId = taskId;
             for (String scannedConstName : scannedConstantsNames) {
-                SId repeatedTaskId = new SId("repTsk_" + simContextCnt + "_" + this.simCount + "_" + repeatedTaskIndex);
-                SId rangeId = new SId("range_" + simContextCnt + "_" + this.simCount + "_" + scannedConstName);
+                SId repeatedTaskId = this.uniqueSId("repTsk_" + simContextCnt + "_" + this.simCount + "_" + repeatedTaskIndex, "repTsk");
+                SId rangeId = this.uniqueSId("range_" + simContextCnt + "_" + this.simCount + "_" + scannedConstName, "range");
                 RepeatedTask rt = this.createSedMLRepeatedTask(rangeId, l2gMap, simContext, dataGeneratorTasksSet, mathOverrides, ownerTaskId, scannedConstName, repeatedTaskId, overriddenSimContextId);
                 ownerTaskId = repeatedTaskId;
                 repeatedTaskIndex++;
@@ -906,7 +961,7 @@ public class SEDMLExporter {
                             SetValue setValue = new SetValue(target, rangeId, overriddenSimContextId);    // @TODO: we have no range??
                             Expression expr = new Expression(unscannedParamExpr);
                             for (String symbol : symbols) {
-                                SId symbolName = new SId(rangeId.string() + "_" + symbol + "_" + variableCount);
+                                SId symbolName = this.uniqueSId(rangeId.string() + "_" + symbol + "_" + variableCount, "var");
                                 Variable sedmlVar = new Variable(symbolName, symbolName.string(), symbolToTargetMap.get(symbol).toString(), overriddenSimContextId);    // sbmlSupport.getXPathForSpecies(symbol));
                                 setValue.addVariable(sedmlVar);
                                 expr.substituteInPlace(new Expression(symbol), new Expression(symbolName.string()));
@@ -923,7 +978,7 @@ public class SEDMLExporter {
                         ComputeChange computeChange = new ComputeChange(targetXpath);
                         Expression expr = new Expression(unscannedParamExpr);
                         for (String symbol : exprSymbols) {
-                            SId varName = new SId(overriddenSimContextId.string() + "_" + symbol + "_" + variableCount);
+                            SId varName = this.uniqueSId(overriddenSimContextId.string() + "_" + symbol + "_" + variableCount, "var");
                             Variable sedmlVar = new Variable(varName, varName.string(), symbolToTargetMap.get(symbol).toString(), overriddenSimContextId);
                             expr.substituteInPlace(new Expression(symbol), new Expression(varName.string()));
                             computeChange.addVariable(sedmlVar);
@@ -1003,7 +1058,7 @@ public class SEDMLExporter {
                 r = new UniformRange(rangeId, 1, 2, constantArraySpec.getNumValues(), type);
                 rt.addRange(r);
                 // now make a FunctionalRange with expressions
-                FunctionalRange fr = new FunctionalRange(new SId("fr_" + rangeId.string()), rangeId);
+                FunctionalRange fr = new FunctionalRange(this.uniqueSId("fr_" + rangeId.string(), "range"), rangeId);
                 Expression expMin = constantArraySpec.getMinValue();
                 expMin = this.adjustIfRateParam(vcSim, ste, expMin);
                 Expression expMax = constantArraySpec.getMaxValue();
@@ -1037,7 +1092,7 @@ public class SEDMLExporter {
             r = new VectorRange(rangeId, values);
             rt.addRange(r);
             // now make a FunctionalRange with expressions
-            FunctionalRange fr = new FunctionalRange(new SId("fr_" + rangeId.string()), rangeId);
+            FunctionalRange fr = new FunctionalRange(this.uniqueSId("fr_" + rangeId.string(), "range"), rangeId);
             expFact = Expression.mult(new Expression(rangeId.string()), expFact);
             expFact = this.adjustIfRateParam(vcSim, ste, expFact);
             this.createFunctionalRangeElements(fr, expFact, simContext, l2gMap, modelReferenceId);
@@ -1054,7 +1109,7 @@ public class SEDMLExporter {
             if (symbol.equals(fr.getRange().string())) continue;
             SymbolTableEntry entry = getSymbolTableEntryForModelEntity(msm, symbol);
             XPathTarget target = this.getTargetAttributeXPath(entry, l2gMap, simContext);
-            SId symbolName = new SId(fr.getRange().string() + "_" + symbol);
+            SId symbolName = this.uniqueSId(fr.getRange().string() + "_" + symbol, "var");
             Variable sedmlVar = new Variable(symbolName, symbolName.string(), target.toString(), modelReferenceId);    // sbmlSupport.getXPathForSpecies(symbol));
             fr.addVariable(sedmlVar);
             func.substituteInPlace(new Expression(symbol), new Expression(symbolName.string()));
