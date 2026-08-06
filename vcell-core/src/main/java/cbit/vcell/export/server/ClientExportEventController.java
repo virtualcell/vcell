@@ -4,6 +4,8 @@ import cbit.rmi.event.ExportEvent;
 import cbit.rmi.event.ExportListener;
 import cbit.rmi.event.ExportEventController;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
@@ -13,6 +15,7 @@ import java.util.Hashtable;
 
 // Old implementation of ExportServiceImpl's event controller.
 public class ClientExportEventController implements ExportEventController {
+    private final static Logger lg = LogManager.getLogger(ClientExportEventController.class);
     private javax.swing.event.EventListenerList listenerList = new javax.swing.event.EventListenerList();
     private Hashtable<Long, User> jobRequestIDs = new Hashtable<Long, User>();
 
@@ -90,6 +93,16 @@ public class ClientExportEventController implements ExportEventController {
         Object object = jobRequestIDs.get(new Long(jobID));
         if (object != null) {
             user = (User)object;
+        }
+        // Backstop for every EXPORT_PROGRESS event: this is the one place they are built,
+        // so a non-finite value cannot escape here regardless of which exporter computed
+        // it. JSON has no representation for Infinity or NaN, and such a value used to
+        // make the event permanently undeliverable. Individual exporters guard their own
+        // divisions (see ASCIIExporter.fraction); this catches anything they miss.
+        if (!Double.isFinite(progress)) {
+            lg.warn("export job {} ({}) reported non-finite progress {}; reporting 0 instead",
+                    jobID, format, progress);
+            progress = 0.0;
         }
         ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportEnums.ExportProgressType.EXPORT_PROGRESS, format, null, new Double(progress));
         fireExportEvent(event);

@@ -44,6 +44,24 @@ import java.util.*;
 public class ASCIIExporter {
     private final static Logger lg = LogManager.getLogger(ASCIIExporter.class);
 
+    /**
+     * A completed fraction in [0,1], safe when there is nothing to divide by.
+     *
+     * <p>Export progress denominators are counts that can legitimately be zero — a
+     * geometry selection with no curves and no points, or no variables chosen. They are
+     * doubles, so {@code x / 0.0} silently produces Infinity (or NaN when x is 0) rather
+     * than throwing, and that value used to be published as export progress. It then
+     * reached JSON serialization, which rejects non-finite doubles, and the resulting
+     * failure made the event permanently undeliverable.
+     */
+    static double fraction(double completed, double total) {
+        if (!(total > 0) || !Double.isFinite(completed)) {
+            return 0.0;
+        }
+        double f = completed / total;
+        return f < 0 ? 0.0 : (f > 1 ? 1.0 : f);
+    }
+
     private ExportEventController exportServiceImpl = null;
 
     /**
@@ -452,7 +470,7 @@ public class ASCIIExporter {
                 progressCounter++;
                 if((System.currentTimeMillis() - lastTime) > MESSAGE_LIMIT){
                     lastTime = System.currentTimeMillis();
-                    exportServiceImpl.fireExportProgress(jobID, orig_vcdID, "multisim-point", progressCounter / (SIM_COUNT * TIME_COUNT));
+                    exportServiceImpl.fireExportProgress(jobID, orig_vcdID, "multisim-point", fraction(progressCounter, (double) SIM_COUNT * TIME_COUNT));
                 }
                 int simJobIndex = simNameSimDataIDs[simIndex].getDefaultJobIndex();
                 VCDataIdentifier vcdID = simNameSimDataIDs[simIndex].getVCDataIdentifier(simJobIndex);
@@ -574,6 +592,13 @@ public class ASCIIExporter {
                 TOTAL_EXPORTS_OPS = SIM_COUNT * PARAMSCAN_COUNT * variableSpecs.getVariableNames().length * TIME_COUNT;
                 break;
         }
+        // Any factor above can legitimately be zero — a selection with no curves and no
+        // points, or no variables — and TOTAL_EXPORTS_OPS is a double, so dividing by it
+        // yields Infinity rather than throwing. Divisions below go through fraction().
+        if(TOTAL_EXPORTS_OPS <= 0){
+            lg.warn("export job {} has no work to measure progress against (sims={}, paramScans={}, vars={}, mode={}); progress stays at 0",
+                    jobID, SIM_COUNT, PARAMSCAN_COUNT, variableSpecs.getVariableNames().length, geometrySpecs.getMode());
+        }
         File hdf5TempFile = null;
         if(asciiSpecs.getCSVRoiLayout() == ASCIISpecs.CsvRoiLayout.time_sim_var){
             exportOutputV.add(new ExportOutput[]{sofyaFormat(outputContext, jobID, user, dataServerImpl, orig_vcdID, variableSpecs, timeSpecs, geometrySpecs, asciiSpecs, contextName, fileDataContainerManager)});
@@ -685,7 +710,7 @@ public class ASCIIExporter {
                                                 getPointsTimeSeries(pointsCurvesSlices[v][varNameIndx], hdf5GroupVarID, outputContext, user, dataServerImpl, vcdID, variableSpecs.getVariableNames()[varNameIndx], geometrySpecs, allTimes, beginTimeIndex, endTimeIndex, asciiSpecs.getSwitchRowsColumns(), fileDataContainerManager));
                                         fileDataContainerManager.append(exportOutput1.getFileDataContainerID(), "\n");
                                         progressCounter++;
-                                        exportServiceImpl.fireExportProgress(jobID, orig_vcdID, "CSV", progressCounter / TOTAL_EXPORTS_OPS);
+                                        exportServiceImpl.fireExportProgress(jobID, orig_vcdID, "CSV", fraction(progressCounter, TOTAL_EXPORTS_OPS));
                                         if(hdf5GroupVarID != -1){
                                             H5.H5Gclose(hdf5GroupVarID);
                                         }
@@ -717,7 +742,7 @@ public class ASCIIExporter {
                                                 fileDataContainerManager.append(exportOutput1.getFileDataContainerID(), getCurveTimeSeries(hdf5GroupVarID, pointsCurvesSlices[v][varNameIndx], outputContext, user, dataServerImpl, vcdID, variableSpecs.getVariableNames()[varNameIndx], geometrySpecs.getCurves()[s], allTimes, beginTimeIndex, endTimeIndex, asciiSpecs.getSwitchRowsColumns(), fileDataContainerManager));
                                                 fileDataContainerManager.append(exportOutput1.getFileDataContainerID(), "\n");
                                                 progressCounter++;
-                                                exportServiceImpl.fireExportProgress(jobID, orig_vcdID, "CSV", progressCounter / TOTAL_EXPORTS_OPS);
+                                                exportServiceImpl.fireExportProgress(jobID, orig_vcdID, "CSV", fraction(progressCounter, TOTAL_EXPORTS_OPS));
                                             }
                                         }
                                         if(hdf5GroupVarID != -1){
@@ -769,7 +794,7 @@ public class ASCIIExporter {
 //									}
 //								}
                                         progressCounter++;
-                                        exportServiceImpl.fireExportProgress(jobID, orig_vcdID, "CSV", progressCounter / TOTAL_EXPORTS_OPS);
+                                        exportServiceImpl.fireExportProgress(jobID, orig_vcdID, "CSV", fraction(progressCounter, TOTAL_EXPORTS_OPS));
                                     }
                                     sliceHelper.closeHDF5GroupAndValues();
                                 }
