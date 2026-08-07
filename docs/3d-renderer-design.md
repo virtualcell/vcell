@@ -187,18 +187,21 @@ weight and only reduces bytes through the client.
   **What is not built is the packaging.** Nothing produces or ships that directory:
   `VCell.install4j` has no entry for web content, and the media builds stage none. So in an
   installed client the directory is absent and the fallback URL points at a dev server that is not
-  running. `npm run build_viewer` in `webapp-ng` produces the content — it is the only build that
-  fetches the ~12 MB wasm bundle, deliberately kept out of the shared `build_*` and `start` scripts
-  so the deploy path does not depend on a GitHub release being reachable. What remains is a
-  `dirEntry` mounting the result at `webviewer` and CI wiring to stage it, tracked in
-  [#1851](https://github.com/virtualcell/vcell/issues/1851). A consequence worth noting: the
-  deployed webapp no longer carries the bundle, so its `/vtk-wasm` spike route cannot render until
-  Mode B decides whether a web-facing viewer exists at all. Two decisions ride along: whether to ship
-  the full `webapp-ng` build or a **local-only configuration** (the shipped `index.html` pulls
-  Bootstrap, the Auth0 theme and Google Fonts from CDNs, so an offline desktop user would get
-  unstyled content), and whether ~17 MB — 12 MB of it the wasm blob — is acceptable in every
-  platform installer. The real design work is the data-source seam (local loopback vs remote REST),
-  not the build split.
+  running. The content is [`webapp-viewer/`](../webapp-viewer/), a standalone page extracted from
+  `webapp-ng`: `index.html` plus one module, no framework and no bundler, so **the directory is the
+  deployable** and the only build-time action is downloading the ~12 MB wasm bundle. What remains is
+  a `dirEntry` mounting it at `webviewer` and CI wiring to fetch the bundle and stage it, tracked in
+  [#1851](https://github.com/virtualcell/vcell/issues/1851).
+
+  The extraction settled what was previously an open packaging question — whether to ship the whole
+  webapp or a local-only configuration of it. Neither: as an Angular route the viewer used no Angular
+  feature of substance (no DI, services, `HttpClient`, router or forms) while inheriting a ~5.5 MB
+  shell and an `index.html` that pulls Bootstrap, the Auth0 theme and Google Fonts from CDNs — all
+  wrong for a viewer whose subject is a local simulation and whose user may be offline. Standalone,
+  the page contacts nothing but the client's own loopback server; that is verified in the browser
+  test, which asserts the loopback origin is the only one touched. The remaining cost is the ~12 MB
+  wasm blob in every platform installer. The real design work is the data-source seam (local loopback
+  vs remote REST), not the build split.
 - Whether to pre-seed the feature flag in the install4j vmoptions template so testers flip a value
   rather than add a line.
 - Which client cost is the right one to pay — 12 MB gzipped for the wasm client against 3.1 KB for a
@@ -214,6 +217,8 @@ weight and only reduces bytes through the client.
 
 - [`salad-3d-renderer-design.md`](salad-3d-renderer-design.md) — the SpringSaLaD trajectory viewer,
   and §8/§8B where the field-viz question originated.
+- [`../webapp-viewer/`](../webapp-viewer/) — the standalone viewer page, including the vtk.wasm
+  gotchas worth knowing before editing it.
 - [`../tools/vtk-wasm/`](../tools/vtk-wasm/) — the custom VTK-to-WebAssembly bundle and its
   golden-file test.
 - [`../tools/geometry-server/`](../tools/geometry-server/) — the geometry-server spike.
