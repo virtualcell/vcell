@@ -32,6 +32,18 @@ try {
   for (const name of ['vtkContourTriangulator', 'vtkDelaunay2D']) {
     try { vtk[name](); log(`${name}: constructible`); } catch (e) { log(`${name}: FAILED — ${e?.message ?? e}`); }
   }
+  // marshalled by the 0002 patch in vcell-vtk-wasm >= v1.1.0
+  for (const name of ['vtkClipDataSet', 'vtkTableBasedClipDataSet']) {
+    try {
+      const clip = vtk[name]();
+      const plane = vtk.vtkPlane();
+      await clip.setClipFunction(plane);
+      await clip.insideOutOn();
+      log(`${name}: OK (+setClipFunction +insideOutOn)`);
+    } catch (e) {
+      log(`${name}: FAILED — ${e?.message ?? e}`);
+    }
+  }
   log('done');
 } catch (e) {
   log('bootstrap failed: ' + (e?.message ?? e));
