@@ -169,17 +169,31 @@ weight and only reduces bytes through the client.
 
 ## Open questions
 
-- **Where the viewer page is served from.** It currently defaults to a dev server
-  (`-Dvcell.fieldViewer.url`). Pointing it at a deployed webapp would mean an HTTPS page fetching
-  `http://127.0.0.1`, which sits at the intersection of two independently-evolving browser policies
-  (mixed content, where loopback is treated as potentially trustworthy, and Private Network Access,
-  which has been adding preflight requirements). Rather than characterize a rule we do not control,
-  the likelier direction is to have the loopback server serve the viewer page as well as the data —
-  same origin, plain HTTP, no CORS and no preflight — as a local-only build configuration of
-  `webapp-ng` sharing components with the deployed app. That also couples the page to the client
-  that feeds it, so the JSON contract cannot drift. The real design work is the data-source seam
-  (local loopback vs remote REST), not the build split; the cost is carrying the ~12 MB gzipped
-  bundle in the installer, which has not been weighed against the current installer size.
+- **Serving the viewer page — decided and half-built.** The direction is settled: the loopback
+  server serves the page as well as the data, so the two share an origin. That removes the
+  cross-origin fetch entirely — no CORS, no preflight — and sidesteps the question of whether an
+  HTTPS page may reach `http://127.0.0.1`, which sits at the intersection of two
+  independently-evolving browser policies (mixed content, where loopback is treated as potentially
+  trustworthy, and Private Network Access, which has been adding preflight requirements). We do not
+  control those rules, so the best move is not to depend on them.
+
+  **The server side is implemented and verified** against a production build: the page, its assets
+  and the wasm bundle serve correctly, client-side routes fall back to `index.html`, path traversal
+  is contained, and the viewer renders from a single origin with no dev server running. It reads
+  `vcell.fieldViewer.staticDir`, defaulting to `<vcell.installDir>/webviewer`; with no such
+  directory it registers nothing and falls back to `vcell.fieldViewer.url`, which is how a
+  developer points at a dev server.
+
+  **What is not built is the packaging.** Nothing produces or ships that directory:
+  `VCell.install4j` has no entry for web content, and the media builds stage none. So in an
+  installed client the directory is absent and the fallback URL points at a dev server that is not
+  running. Three things are needed — a build step producing the viewer bundle, a `dirEntry`
+  mounting it at `webviewer`, and CI wiring to stage it. Two decisions ride along: whether to ship
+  the full `webapp-ng` build or a **local-only configuration** (the shipped `index.html` pulls
+  Bootstrap, the Auth0 theme and Google Fonts from CDNs, so an offline desktop user would get
+  unstyled content), and whether ~17 MB — 12 MB of it the wasm blob — is acceptable in every
+  platform installer. The real design work is the data-source seam (local loopback vs remote REST),
+  not the build split.
 - Whether to pre-seed the feature flag in the install4j vmoptions template so testers flip a value
   rather than add a line.
 - Which client cost is the right one to pay — 12 MB gzipped for the wasm client against 3.1 KB for a
