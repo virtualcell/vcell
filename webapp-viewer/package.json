@@ -1,0 +1,12 @@
+{
+  "name": "vcell-webapp-viewer",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Standalone browser viewer for VCell finite-volume fields, served by the desktop client's loopback field server",
+  "type": "module",
+  "scripts": {
+    "fetch:vtk-wasm": "node scripts/fetch-vtk-wasm.mjs",
+    "build": "node scripts/fetch-vtk-wasm.mjs",
+    "serve": "node scripts/fetch-vtk-wasm.mjs && python3 -m http.server 4400"
+  }
+}

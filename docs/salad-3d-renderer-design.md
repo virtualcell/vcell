@@ -1,5 +1,11 @@
 # SpringSaLaD Spatiotemporal 3D Renderer — Design & Decision Record
 
+> **PDE field visualization has moved to [`3d-renderer-design.md`](3d-renderer-design.md).**
+> This document remains the record for the **SpringSaLaD trajectory viewer**. §8 and §8B below
+> record how the field-viz question arose and the thinking as of 2026-07-30; anything later —
+> including the implemented desktop field viewer, the grid/field endpoint split and the
+> geometry-server alternative — lives in the other document, which supersedes them.
+
 **Status:** Phases 0 & 1 **shipped** and deployed to dev/alpha (`8.0.4.01`). Phase 2
 (field viz) — vtk.js `.vti` spike done (merged, structured case). The field-viz
 architecture is **settled** in **§8 / §8B**: **vtk.wasm is the renderer everywhere**
@@ -413,6 +419,11 @@ vtk.wasm spike (§8, accessed 2026-07-30):
 ---
 
 ## 8. Phase 2 field-viz architecture — deep dive & decision (2026-07-30)
+
+> **Superseded for anything after 2026-08-06** by
+> [`3d-renderer-design.md`](3d-renderer-design.md). Kept here as the record of how the
+> architecture was reasoned out; the sections below are accurate as of their date but are no
+> longer where field-viz decisions are made.
 
 The Phase 2 vtk.js spike (§6) proved the *structured* case (`.vti` slice + isosurface).
 Working through the real requirements changed the architecture substantially. This

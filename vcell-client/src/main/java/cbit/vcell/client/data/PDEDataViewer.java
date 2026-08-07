@@ -71,6 +71,7 @@ import javax.swing.table.DefaultTableModel;
 
 import cbit.vcell.export.server.SimNameSimDataID;
 import cbit.vcell.solver.*;
+import org.vcell.client.viz.FieldViewerServer;
 import org.vcell.util.gui.GeneralGuiUtils;
 import org.vcell.util.*;
 import org.vcell.util.document.ExternalDataIdentifier;
@@ -144,12 +145,14 @@ import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.render.Vect3d;
 import cbit.vcell.simdata.ClientPDEDataContext;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.DataInfoProvider;
 import cbit.vcell.simdata.DataOperationResults.DataProcessingOutputInfo;
 import cbit.vcell.simdata.MergedDataInfo;
 import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.simdata.PDEDataContext;
+import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.simdata.PDEDataManager;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.simdata.SpatialSelection;
@@ -306,6 +309,7 @@ public class PDEDataViewer extends DataViewer implements DataJobListenerHolder {
 	private JMenuItem kymographMenuItem;
 	
 	private JButton roiButton = null;
+	private JButton view3DButton = null;
 	private JPopupMenu roiPopupMenu = null;
 	//private JButton imagejButton;
 	private JPopupMenu imagejPopupMenu = null;
@@ -1574,6 +1578,9 @@ private javax.swing.JPanel getJPanelButtons() {
 			ivjJPanelButtons.setName("JPanelButtons");
 			ivjJPanelButtons.add(getPlotButton());
 			ivjJPanelButtons.add(getROIButton());
+			if (FieldViewerServer.isEnabled()) {
+				ivjJPanelButtons.add(getView3DButton());
+			}
 //			ivjJPanelButtons.add(getImagejButton());
 		} catch (java.lang.Throwable ivjExc) {
 			// user code begin {2}
@@ -1666,6 +1673,79 @@ private JButton getROIButton() {
 		}
 	}
 	return roiButton;
+}
+
+private static final String DEFAULT_VIEWER_URL = "http://localhost:4400/";
+
+private JButton getView3DButton() {
+	if (view3DButton == null) {
+		try {
+			view3DButton = new JButton("View in 3D");
+			view3DButton.setToolTipText("Render this variable in a browser-based 3D viewer");
+			view3DButton.addActionListener(e -> openInBrowserViewer());
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return view3DButton;
+}
+
+/**
+ * Starts the local field-data server and opens the browser-based viewer on the variable and
+ * time currently displayed. Reads the simulation directory directly rather than going through
+ * the data server, so it only works for runs executed locally.
+ */
+private void openInBrowserViewer() {
+	try {
+		PDEDataContext dataContext = getPdeDataContext();
+		MathDescription mathDescription = getSimulation() == null ? null : getSimulation().getMathDescription();
+		if (!(dataContext instanceof ClientPDEDataContext) || mathDescription == null
+				|| !(dataContext.getVCDataIdentifier() instanceof VCSimulationDataIdentifier)) {
+			DialogUtils.showWarningDialog(this, "These results cannot be viewed in 3D.");
+			return;
+		}
+		VCSimulationDataIdentifier simDataId = (VCSimulationDataIdentifier) dataContext.getVCDataIdentifier();
+		// register the dataset before opening the browser, and hand over the reader this window already
+		// uses -- that is what lets one server serve several windows, local and remote alike
+		FieldViewerServer.register(simDataId,
+				((ClientPDEDataContext) dataContext).getDataManager().getVCDataManager(), mathDescription);
+		int port = FieldViewerServer.start();
+		if (port < 0) {
+			DialogUtils.showErrorDialog(this, "Could not start the local field viewer server. See the log for details.");
+			return;
+		}
+
+		// Hand over the DATASET, not a frozen snapshot of it. The variable, domain and time below
+		// are where the viewer opens; it then asks the server what else the run contains and lets the
+		// user move around independently of this panel.
+		StringBuilder params = new StringBuilder();
+		params.append("base=").append(urlEncode("http://127.0.0.1:" + port));
+		params.append("&sim=").append(simDataId.getVcSimID().getSimulationKey());
+		params.append("&job=").append(simDataId.getJobIndex());
+		DataIdentifier variable = dataContext.getDataIdentifier();
+		if (variable != null) {
+			params.append("&var=").append(urlEncode(variable.getName()));
+			if (variable.getDomain() != null) {
+				params.append("&domain=").append(urlEncode(variable.getDomain().getName()));
+			}
+		}
+		params.append("&time=").append(dataContext.getTimePoint());
+
+		// Prefer the page the field server serves itself: same origin as the data, so no
+		// cross-origin fetch. Only fall back to an external viewer when it has no page to serve,
+		// which is how a developer points at a dev server.
+		String viewer = FieldViewerServer.isServingViewerPage()
+				? "http://127.0.0.1:" + port + "/"
+				: PropertyLoader.getProperty(PropertyLoader.fieldViewerUrl, DEFAULT_VIEWER_URL);
+		String url = viewer + (viewer.contains("?") ? "&" : "?") + params;
+		DialogUtils.browserLauncher(this, url, "Failed to open the 3D viewer at " + viewer);
+	} catch (java.lang.Throwable ivjExc) {
+		handleException(ivjExc);
+	}
+}
+
+private static String urlEncode(String s) {
+	return java.net.URLEncoder.encode(s, java.nio.charset.StandardCharsets.UTF_8);
 }
 
 

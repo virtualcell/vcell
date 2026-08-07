@@ -8,12 +8,17 @@
 # image handling, and the server host / prefix / bioformats properties.
 #
 # Usage:
-#   ./vcell.sh [--debug-bridge[=PORT]] [extra VCellClientMain args...]
+#   ./vcell.sh [--debug-bridge[=PORT]] [--field-viewer[=URL]] [extra VCellClientMain args...]
 #
 # Options:
 #   --debug-bridge[=PORT]  Enable the dev-only Swing debug bridge (loopback HTTP,
 #                          default port 9123). See
 #                          vcell-client/src/main/java/org/vcell/client/debug/README.md
+#   --field-viewer[=URL]   Enable the browser-based 3D field viewer (the loopback field
+#                          server + the "View in 3D" button on the PDE results panel).
+#                          The page is served from webapp-viewer/ in this checkout, so the
+#                          page and its data share an origin. Pass URL to override that
+#                          and point at a viewer you are serving yourself.
 #
 # Environment overrides:
 #   VCELL_API_HOST          api server host[:port]  (default vcell.cam.uchc.edu:443)
@@ -28,6 +33,8 @@
 #   ./vcell.sh                                            # connect to production
 #   VCELL_API_HOST=vcell-dev.cam.uchc.edu:443 ./vcell.sh  # connect to dev
 #   ./vcell.sh --debug-bridge                             # bridge on :9123
+#   ./vcell.sh --field-viewer                             # 3D field viewer on
+#   ./vcell.sh --field-viewer=http://localhost:4400/      # serve the page yourself instead
 #   ./vcell.sh --debug-bridge=9200 model.vcml            # bridge on :9200, open model
 
 set -eo pipefail
@@ -40,8 +47,10 @@ CLASSPATH="./vcell-client/target/maven-jars/*:./vcell-client/target/*"
 
 # Separate our own flags from arguments passed through to the client.
 bridge_props=()
+viewer_props=()
 passthrough=()
 bridge_note=""
+viewer_note=""
 for arg in "$@"; do
   case "$arg" in
     --debug-bridge)
@@ -52,6 +61,25 @@ for arg in "$@"; do
       port="${arg#*=}"
       bridge_props=(-Dvcell.debugBridge=true "-Dvcell.debugBridge.port=${port}")
       bridge_note=" debug-bridge=on(:${port})"
+      ;;
+    --field-viewer)
+      # webapp-viewer has no build step — the source directory is the deployable — so point
+      # the field server straight at it and let the page and its data share an origin.
+      viewer_props=(-Dvcell.fieldViewer.enabled=true)
+      viewer_note=" field-viewer=on"
+      if [ -f ./webapp-viewer/index.html ]; then
+        viewer_props+=("-Dvcell.fieldViewer.staticDir=${PWD}/webapp-viewer")
+        viewer_note=" field-viewer=on(webapp-viewer/)"
+        if ! ls ./webapp-viewer/assets/vtk-wasm/*.tar.gz >/dev/null 2>&1; then
+          echo "NOTE: the vtk.wasm bundle is missing, so the viewer page will not render." >&2
+          echo "      Fetch it once with:  ( cd webapp-viewer && npm run fetch:vtk-wasm )" >&2
+        fi
+      fi
+      ;;
+    --field-viewer=*)
+      url="${arg#*=}"
+      viewer_props=(-Dvcell.fieldViewer.enabled=true "-Dvcell.fieldViewer.url=${url}")
+      viewer_note=" field-viewer=on(${url})"
       ;;
     *)
       passthrough+=("$arg")
@@ -83,8 +111,8 @@ vmopts=(
   -Dvcell.imagej.plugin.url=http://vcell.org/webstart
 )
 
-echo "VCell client (dev): host=${VCELL_API_HOST} version=${VCELL_SOFTWARE_VERSION}${bridge_note}" >&2
+echo "VCell client (dev): host=${VCELL_API_HOST} version=${VCELL_SOFTWARE_VERSION}${bridge_note}${viewer_note}" >&2
 
-exec java "${vmopts[@]}" ${bridge_props[@]+"${bridge_props[@]}"} \
+exec java "${vmopts[@]}" ${bridge_props[@]+"${bridge_props[@]}"} ${viewer_props[@]+"${viewer_props[@]}"} \
   -cp "$CLASSPATH" "$MAIN_CLASS" \
   --api-host="$VCELL_API_HOST" ${passthrough[@]+"${passthrough[@]}"}

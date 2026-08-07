@@ -227,7 +227,9 @@ public VCDataIdentifier getVCDataIdentifier() {
  * Creation date: (6/11/2004 3:53:21 PM)
  * @return cbit.vcell.client.server.VCDataManager
  */
-private VCDataManager getVCDataManager() {
+// widened from private: a viewer hands this same reader to the 3D field viewer, so that one
+// server can serve local and remote runs without knowing which it has
+public VCDataManager getVCDataManager() {
 	return vcDataManager;
 }
 
