@@ -1731,7 +1731,12 @@ private void openInBrowserViewer() {
 		}
 		params.append("&time=").append(dataContext.getTimePoint());
 
-		String viewer = PropertyLoader.getProperty(PropertyLoader.fieldViewerUrl, DEFAULT_VIEWER_URL);
+		// Prefer the page the field server serves itself: same origin as the data, so no
+		// cross-origin fetch. Only fall back to an external viewer when it has no page to serve,
+		// which is how a developer points at a dev server.
+		String viewer = FieldViewerServer.isServingViewerPage()
+				? "http://127.0.0.1:" + port + "/vtk-wasm"
+				: PropertyLoader.getProperty(PropertyLoader.fieldViewerUrl, DEFAULT_VIEWER_URL);
 		String url = viewer + (viewer.contains("?") ? "&" : "?") + params;
 		DialogUtils.browserLauncher(this, url, "Failed to open the 3D viewer at " + viewer);
 	} catch (java.lang.Throwable ivjExc) {

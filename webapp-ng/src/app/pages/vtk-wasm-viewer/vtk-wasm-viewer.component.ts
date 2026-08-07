@@ -56,9 +56,11 @@ interface Dataset {
  */
 function datasetFromSearch(search: string): Dataset | null {
   const p = new URLSearchParams(search);
-  const base = p.get('base');
   const sim = p.get('sim');
-  if (!base || !sim) return null; // no dataset named → bundled fixture
+  if (!sim) return null; // no dataset named → bundled fixture
+  // When the field server serves this page itself, the data is on our own origin and no explicit
+  // base is needed.
+  const base = p.get('base') ?? window.location.origin;
   let parsed: URL;
   try {
     parsed = new URL(base);

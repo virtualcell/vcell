@@ -310,6 +310,12 @@ public class PropertyLoader {
 	public static final String fieldViewerPort = record("vcell.fieldViewer.port", ValueType.GEN);
 	/** Where the browser-based viewer page is served from. */
 	public static final String fieldViewerUrl = record("vcell.fieldViewer.url", ValueType.GEN);
+	/**
+	 * Directory of built viewer web content. When present the field server serves the page
+	 * itself, so page and data share one origin; otherwise the browser is sent to
+	 * {@link #fieldViewerUrl}.
+	 */
+	public static final String fieldViewerStaticDir = record("vcell.fieldViewer.staticDir", ValueType.DIR);
 
 	private static final String headlessGUI = record("headless", ValueType.GEN);
 

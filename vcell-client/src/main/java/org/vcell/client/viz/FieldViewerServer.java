@@ -2,6 +2,8 @@ package org.vcell.client.viz;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -60,6 +62,8 @@ public final class FieldViewerServer {
 
 	/** VTK_VOXEL: the cell type {@link CartesianMeshMapping} emits for 3D volume domains. */
 	private static final int VTK_VOXEL = 11;
+
+	private static final String INDEX_HTML = "index.html";
 
 	/**
 	 * Smoothing parameters the client applies to the extracted boundary surface. These match
@@ -150,6 +154,12 @@ public final class FieldViewerServer {
 		s.createContext("/info", wrap(FieldViewerServer::handleInfo));
 		s.createContext("/grid", wrap(FieldViewerServer::handleGrid));
 		s.createContext("/field", wrap(FieldViewerServer::handleField));
+		Path viewerRoot = staticRoot();
+		if (viewerRoot != null) {
+			// least-specific context: the data routes above still win, this catches the rest
+			s.createContext("/", ex -> serveStatic(ex, viewerRoot));
+			LG.info("field viewer page served from {}", viewerRoot);
+		}
 		s.setExecutor(Executors.newFixedThreadPool(2, r -> {
 			Thread t = new Thread(r, "vcell-field-viewer");
 			t.setDaemon(true);
@@ -167,6 +177,78 @@ public final class FieldViewerServer {
 		} catch (Exception e) {
 			LG.debug("field viewer server could not bind port " + port, e);
 			return null;
+		}
+	}
+
+	/**
+	 * Directory of built viewer web content, or null if we are not serving the page.
+	 * <p>
+	 * Serving the page from here puts it on the same origin as the data, which removes the
+	 * cross-origin fetch entirely — no CORS, no preflight, and no HTTPS-page-to-loopback question,
+	 * because no HTTPS page is involved. Without it the browser is sent to
+	 * {@link PropertyLoader#fieldViewerUrl} instead, which is how a developer points at a dev server.
+	 */
+	private static Path staticRoot() {
+		String configured = PropertyLoader.getProperty(PropertyLoader.fieldViewerStaticDir, null);
+		Path dir = null;
+		if (configured != null && !configured.isEmpty()) {
+			dir = Path.of(configured);
+		} else {
+			String installDir = PropertyLoader.getProperty(PropertyLoader.installationRoot, null);
+			if (installDir != null && !installDir.isEmpty()) {
+				dir = Path.of(installDir, "webviewer");
+			}
+		}
+		if (dir == null || !Files.isDirectory(dir) || !Files.isRegularFile(dir.resolve(INDEX_HTML))) {
+			return null;
+		}
+		return dir.toAbsolutePath().normalize();
+	}
+
+	/** True when the page is served from this server, so callers can point the browser at us. */
+	public static boolean isServingViewerPage() {
+		return staticRoot() != null;
+	}
+
+	/**
+	 * Serves the built viewer, falling back to {@code index.html} so client-side routes resolve.
+	 * <p>
+	 * The requested path selects a file, so it is normalized and then required to stay under the
+	 * root; anything that escapes is treated as not found rather than served.
+	 */
+	private static void serveStatic(HttpExchange ex, Path root) throws IOException {
+		String requested = ex.getRequestURI().getPath();
+		Path file = null;
+		if (requested != null && !requested.equals("/")) {
+			Path candidate = root.resolve(requested.substring(1)).normalize();
+			if (candidate.startsWith(root) && Files.isRegularFile(candidate)) {
+				file = candidate;
+			}
+		}
+		if (file == null) {
+			file = root.resolve(INDEX_HTML); // an app route, not a file: let the client router take it
+		}
+		byte[] body = Files.readAllBytes(file);
+		respond(ex, 200, contentType(file), body);
+	}
+
+	private static String contentType(Path file) {
+		String name = file.getFileName().toString();
+		int dot = name.lastIndexOf('.');
+		String ext = dot < 0 ? "" : name.substring(dot + 1).toLowerCase();
+		switch (ext) {
+			case "html": return "text/html; charset=utf-8";
+			case "js": case "mjs": return "text/javascript";
+			case "css": return "text/css";
+			case "json": case "map": return "application/json";
+			case "wasm": return "application/wasm";
+			case "gz": case "tgz": return "application/gzip";
+			case "svg": return "image/svg+xml";
+			case "png": return "image/png";
+			case "jpg": case "jpeg": return "image/jpeg";
+			case "ico": return "image/x-icon";
+			case "woff2": return "font/woff2";
+			default: return "application/octet-stream";
 		}
 	}
 
