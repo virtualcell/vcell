@@ -8,12 +8,14 @@ import cbit.vcell.mongodb.VCMongoDbDriver;
 import cbit.vcell.resource.PropertyLoader;
 import org.bouncycastle.util.Arrays;
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.parallel.ResourceLock;
 
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Disabled
 @Tag("Fast")
+@ResourceLock("activemqBrokerRegistry")
 public class BlobMessageTest {
 
 	private static final int NUM_PRODUCERS = 2;
