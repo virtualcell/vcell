@@ -38,6 +38,10 @@ const el = {
   slicePos: document.getElementById('slicePos'),
   sliceReadout: document.getElementById('sliceReadout'),
   pickReadout: document.getElementById('pickReadout'),
+  plotPanel: document.getElementById('plotPanel'),
+  plotTitle: document.getElementById('plotTitle'),
+  plotSvg: document.getElementById('plotSvg'),
+  plotClose: document.getElementById('plotClose'),
   dataControls: document.getElementById('dataControls'),
   variable: document.getElementById('variable'),
   time: document.getElementById('time'),
@@ -647,6 +651,8 @@ function attachTrackball() {
     if (!dragging) return;
     dragging = false;
     try { el.canvas.releasePointerCapture(e.pointerId); } catch { /* already released */ }
+    // a press that never really moved is a pick, not an orbit
+    if (dragDistance < 4) void plotPick(e.clientX, e.clientY);
   };
   el.canvas.addEventListener('pointerup', release);
   el.canvas.addEventListener('pointercancel', release);
@@ -688,7 +694,7 @@ async function dolly(factor) {
 }
 
 // ---------------------------------------------------------------------------
-// picking (#1859 item 6)
+// picking (#1859 items 6 and 8)
 // ---------------------------------------------------------------------------
 
 /** Center coordinates of a picked cell, for the readouts. */
@@ -724,6 +730,69 @@ async function hoverPick(clientX, clientY) {
     hoverBusy = false;
   }
 }
+
+/**
+ * Click → time course at the picked cell. The series comes from /timeseries, which reduces
+ * server-side next to the reader — fetching every timestep to build one curve is the design
+ * explicitly ruled out in #1859.
+ */
+async function plotPick(clientX, clientY) {
+  if (!state.ready || !state.pick || !state.dataset) return;
+  try {
+    const { origin, dir } = await rayFromMouse(clientX, clientY);
+    const cell = castRay(origin, dir);
+    if (cell < 0) return;
+    const c = cellCenter(cell);
+    setStatus(`fetching time series for ${state.selectedVar} at cell ${cell}…`);
+    const series = await fetchJson(
+      url('/timeseries', { domain: state.selectedDomain, var: state.selectedVar, cell: String(cell) }),
+      '/timeseries');
+    renderPlot(series, c);
+    setStatus(`${describe()} ✓`);
+  } catch (e) {
+    setStatus('time-series pick failed: ' + (e?.message ?? e), true);
+  }
+}
+
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
+/** Framework-free line plot: one polyline in an SVG, min/max labels, nothing else to maintain. */
+function renderPlot(series, center) {
+  const { times, values, name } = series;
+  const finite = values.filter((v) => v != null && Number.isFinite(v));
+  if (!times?.length || !finite.length) return;
+  let lo = Math.min(...finite);
+  let hi = Math.max(...finite);
+  if (hi - lo < 1e-300) { hi = lo + 1; }
+  const W = 640;
+  const H = 220;
+  const M = { l: 8, r: 8, t: 8, b: 18 };
+  const sx = (t) => M.l + ((t - times[0]) / (times[times.length - 1] - times[0] || 1)) * (W - M.l - M.r);
+  const sy = (v) => H - M.b - ((v - lo) / (hi - lo)) * (H - M.t - M.b);
+  el.plotSvg.innerHTML = '';
+  const mk = (tag, attrs, text) => {
+    const n = document.createElementNS(SVG_NS, tag);
+    for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v);
+    if (text != null) n.textContent = text;
+    el.plotSvg.appendChild(n);
+    return n;
+  };
+  mk('line', { class: 'axis', x1: M.l, y1: H - M.b, x2: W - M.r, y2: H - M.b });
+  mk('line', { class: 'axis', x1: M.l, y1: M.t, x2: M.l, y2: H - M.b });
+  mk('polyline', {
+    class: 'curve',
+    points: times.map((t, i) => `${sx(t).toFixed(1)},${sy(values[i] ?? lo).toFixed(1)}`).join(' '),
+  });
+  mk('text', { class: 'lbl', x: M.l + 4, y: M.t + 10 }, hi.toExponential(2));
+  mk('text', { class: 'lbl', x: M.l + 4, y: H - M.b - 4 }, lo.toExponential(2));
+  mk('text', { class: 'lbl', x: W - M.r - 4, y: H - 4, 'text-anchor': 'end' }, `t = ${times[times.length - 1]}`);
+  mk('text', { class: 'lbl', x: M.l + 4, y: H - 4 }, `t = ${times[0]}`);
+  const at = center ? ` @ (${center.map((x) => x.toFixed(1)).join(', ')})` : '';
+  el.plotTitle.textContent = `${name}${at} · ${times.length} timepoints`;
+  el.plotPanel.hidden = false;
+}
+
+el.plotClose.addEventListener('click', () => { el.plotPanel.hidden = true; });
 
 // ---------------------------------------------------------------------------
 // smoothing

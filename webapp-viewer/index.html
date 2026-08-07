@@ -39,6 +39,14 @@
   .status { font: 12px/1.4 ui-monospace, monospace; opacity: .7; }
   .status.err { color: #c0392b; opacity: 1; white-space: pre-wrap; }
   .readout.pick { flex: 0 1 auto; opacity: 1; color: #2a7; min-width: 12em; }
+  .plot-panel { width: 100%; max-width: 960px; border: 1px solid color-mix(in srgb, currentColor 25%, transparent);
+                border-radius: 6px; padding: 8px; }
+  .plot-head { display: flex; align-items: center; justify-content: space-between;
+               font: 12px/1.4 ui-monospace, monospace; margin-bottom: 4px; }
+  .plot-panel svg { display: block; width: 100%; height: 220px; }
+  .plot-panel .curve { fill: none; stroke: #2a7; stroke-width: 2; vector-effect: non-scaling-stroke; }
+  .plot-panel .axis { stroke: currentColor; stroke-opacity: .3; vector-effect: non-scaling-stroke; }
+  .plot-panel .lbl { font: 11px ui-monospace, monospace; fill: currentColor; fill-opacity: .7; }
 </style>
 </head>
 <body>
@@ -55,7 +63,15 @@
   <label for="time">Time</label>
   <input id="time" type="range" min="0" max="0" step="1" value="0" disabled>
   <span class="readout" id="dataReadout"></span>
-  <span class="readout pick" id="pickReadout" title="value under the mouse"></span>
+  <span class="readout pick" id="pickReadout" title="value under the mouse — click to plot over time"></span>
+</div>
+
+<div class="plot-panel" id="plotPanel" hidden>
+  <div class="plot-head">
+    <span id="plotTitle"></span>
+    <button id="plotClose" type="button">✕</button>
+  </div>
+  <svg id="plotSvg" viewBox="0 0 640 220" preserveAspectRatio="none" aria-label="time series plot"></svg>
 </div>
 
 <div class="controls">

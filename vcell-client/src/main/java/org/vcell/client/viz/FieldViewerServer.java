@@ -16,6 +16,9 @@ import java.util.concurrent.Executors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.vcell.util.document.TSJobResultsNoStats;
+import org.vcell.util.document.TimeSeriesJobSpec;
+import org.vcell.util.document.VCDataJobID;
 import org.vcell.vis.mapping.vcell.CartesianMeshMapping;
 import org.vcell.vis.vcell.CartesianMeshBuilder;
 import org.vcell.vis.vcell.SubdomainInfo;
@@ -158,6 +161,7 @@ public final class FieldViewerServer {
 		s.createContext("/info", wrap(FieldViewerServer::handleInfo));
 		s.createContext("/grid", wrap(FieldViewerServer::handleGrid));
 		s.createContext("/field", wrap(FieldViewerServer::handleField));
+		s.createContext("/timeseries", wrap(FieldViewerServer::handleTimeSeries));
 		Path viewerRoot = staticRoot();
 		if (viewerRoot != null) {
 			// least-specific context: the data routes above still win, this catches the rest
@@ -426,6 +430,61 @@ public final class FieldViewerServer {
 		sb.append(",\"location\":\"cell\",\"values\":");
 		appendDoubles(sb, values, values.length);
 		sb.append(",\"range\":[").append(min).append(',').append(max).append("]}");
+		return sb.toString();
+	}
+
+	/**
+	 * {@code /timeseries?sim=<simKey>&job=<n>&domain=<name>&var=<name>&cell=<c>} — one variable's
+	 * full time course at one grid cell, for the viewer's click-to-plot.
+	 * <p>
+	 * The reduction happens HERE, next to the reader, through the same
+	 * {@link VCDataManager#getTimeSeriesValues} path the desktop's own time plots use — the design
+	 * the viewer must not replicate is fetching every timestep to the browser to build one curve.
+	 * The browser addresses the cell by its index in the served grid; this is where that maps to
+	 * the solver's global volume index.
+	 */
+	private static String handleTimeSeries(HttpExchange ex) throws Exception {
+		Map<String, String> q = query(ex);
+		DataSource source = sourceFor(q);
+		String domain = domainOf(q, source);
+		String varName = q.get("var");
+		if (varName == null || varName.isEmpty()) {
+			throw new IllegalArgumentException("missing required query parameter 'var'");
+		}
+		String cellParam = q.get("cell");
+		if (cellParam == null || cellParam.isEmpty()) {
+			throw new IllegalArgumentException("missing required query parameter 'cell'");
+		}
+		List<VisVoxel> voxels = grid(source, domain).getVisVoxels();
+		int cell = Integer.parseInt(cellParam);
+		if (cell < 0 || cell >= voxels.size()) {
+			throw new IllegalArgumentException("cell " + cell + " out of range; domain '" + domain
+					+ "' has " + voxels.size() + " cells");
+		}
+		int globalIndex = voxels.get(cell).getFiniteVolumeIndex().getGlobalIndex();
+
+		double[] times = source.dataManager.getDataSetTimes(source.vcdID);
+		if (times == null || times.length == 0) {
+			throw new IllegalArgumentException("run " + source.vcdID.getID() + " has no saved times");
+		}
+		TimeSeriesJobSpec spec = new TimeSeriesJobSpec(new String[] { varName },
+				new int[][] { { globalIndex } }, null, times[0], 1, times[times.length - 1],
+				VCDataJobID.createVCDataJobID(source.vcdID.getOwner(), true));
+		TSJobResultsNoStats results = (TSJobResultsNoStats) source.dataManager
+				.getTimeSeriesValues(emptyOutputContext(), source.vcdID, spec);
+		// row 0 is the times, row 1 the values at our single index
+		double[][] timesAndValues = results.getTimesAndValuesForVariable(varName);
+
+		StringBuilder sb = new StringBuilder(32 * timesAndValues[0].length + 256);
+		sb.append("{\"name\":\"").append(jsonEscape(varName)).append('"');
+		sb.append(",\"domain\":\"").append(jsonEscape(domain)).append('"');
+		sb.append(",\"cell\":").append(cell);
+		sb.append(",\"volumeIndex\":").append(globalIndex);
+		sb.append(",\"times\":");
+		appendDoubles(sb, timesAndValues[0], timesAndValues[0].length);
+		sb.append(",\"values\":");
+		appendDoubles(sb, timesAndValues[1], timesAndValues[1].length);
+		sb.append('}');
 		return sb.toString();
 	}
 
