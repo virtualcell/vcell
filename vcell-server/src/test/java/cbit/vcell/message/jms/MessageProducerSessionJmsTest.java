@@ -294,6 +294,41 @@ public class MessageProducerSessionJmsTest {
 		}
 	}
 
+	/**
+	 * removeMessageConsumer used to stop the polling thread without closing the consumer, so the
+	 * broker went on dispatching to it: with prefetchLimit=1 a message would sit in a consumer
+	 * nobody was reading and was not redelivered until the connection died.
+	 */
+	@Test
+	public void removingAConsumerDoesNotStrandMessages() throws Exception {
+		VCellQueue queue = new VCellQueue("MessageProducerSessionJmsTestStrandedQueue");
+		VCQueueConsumer discarded = new VCQueueConsumer(queue, (m, s) -> { }, null, "discarded consumer", 1);
+		service.addMessageConsumer(discarded);
+		service.removeMessageConsumer(discarded);
+
+		int messageCount = 3;
+		CountDownLatch delivered = new CountDownLatch(messageCount);
+		VCQueueConsumer replacement = new VCQueueConsumer(queue, (m, s) -> delivered.countDown(),
+				null, "replacement consumer", 1);
+
+		VCMessageSession producerSession = service.createProducerSession();
+		try {
+			// sent while only the removed consumer could still be registered -- with a prefetch
+			// limit of one, a leaked consumer takes one of these and never gives it back
+			for (int i = 0; i < messageCount; i++) {
+				producerSession.sendQueueMessage(queue,
+						producerSession.createTextMessage("message " + i), Boolean.FALSE, 60000L);
+			}
+			service.addMessageConsumer(replacement);
+
+			assertTrue(delivered.await(20, TimeUnit.SECONDS),
+					"all " + messageCount + " messages should reach the replacement consumer; a removed "
+							+ "consumer must not still be holding one");
+		} finally {
+			producerSession.close();
+		}
+	}
+
 	/** An embedded-broker messaging service that counts every JMS connection opened through it. */
 	private static final class CountingMessagingService extends VCMessagingServiceJms {
 		final AtomicInteger connectionsOpened = new AtomicInteger();
