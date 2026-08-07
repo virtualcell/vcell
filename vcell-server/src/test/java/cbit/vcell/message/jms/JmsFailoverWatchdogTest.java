@@ -25,8 +25,10 @@ import org.apache.logging.log4j.core.config.Configurator;
 import org.apache.logging.log4j.core.config.Property;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.ResourceLock;
 
 @Tag("Fast")
+@ResourceLock("activemqBrokerRegistry")
 public class JmsFailoverWatchdogTest {
 
 	/**
@@ -38,6 +40,10 @@ public class JmsFailoverWatchdogTest {
 	@Test
 	public void attach_firesTerminalHandlerWhenFailoverGivesUp() throws Exception {
 		BrokerService broker = new BrokerService();
+		// never the ActiveMQ default ("localhost"): BrokerRegistry is JVM-global, and this test
+		// stops its broker on purpose, so a lookup elsewhere would otherwise fall through to
+		// whichever broker is still registered -- see issue #1852
+		broker.setBrokerName("JmsFailoverWatchdogTestBroker");
 		broker.setPersistent(false);
 		broker.setUseJmx(false);
 		broker.setUseShutdownHook(false);
@@ -85,7 +91,7 @@ public class JmsFailoverWatchdogTest {
 		// failed in CI). ActiveMQConnection exposes these callbacks, so both branches
 		// are driven deterministically with no timing involved.
 		ActiveMQConnection connection =
-				(ActiveMQConnection) new ActiveMQConnectionFactory("vm://localhost?broker.persistent=false")
+				(ActiveMQConnection) new ActiveMQConnectionFactory("vm://JmsFailoverWatchdogTestVm?broker.persistent=false")
 						.createConnection();
 		ListAppender captured = ListAppender.attachTo(JmsFailoverWatchdog.class);
 		try {
