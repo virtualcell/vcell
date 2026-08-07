@@ -188,7 +188,8 @@ weight and only reduces bytes through the client.
   `VCell.install4j` has no entry for web content, and the media builds stage none. So in an
   installed client the directory is absent and the fallback URL points at a dev server that is not
   running. Three things are needed — a build step producing the viewer bundle, a `dirEntry`
-  mounting it at `webviewer`, and CI wiring to stage it. Two decisions ride along: whether to ship
+  mounting it at `webviewer`, and CI wiring to stage it — tracked in
+  [#1851](https://github.com/virtualcell/vcell/issues/1851). Two decisions ride along: whether to ship
   the full `webapp-ng` build or a **local-only configuration** (the shipped `index.html` pulls
   Bootstrap, the Auth0 theme and Google Fonts from CDNs, so an offline desktop user would get
   unstyled content), and whether ~17 MB — 12 MB of it the wasm blob — is acceptable in every
