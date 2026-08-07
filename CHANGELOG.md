@@ -16,6 +16,93 @@ followed by flat Keep-a-Changelog categories. API consumers should scan
 
 _(Release-manager scratchpad. Populated at release-cut time.)_
 
+## [8.0.8.01] - 2026-08-07
+
+**Highlights.** Backend stability release. A review of a day's production error
+logs found a single export whose reported progress came out `Infinity`; JSON
+cannot represent that, so the event was undeliverable, was redelivered forever,
+and produced roughly 4,900 error lines a minute until the pods were rolled.
+Fixing it exposed a chain of messaging problems behind it: a JMS connection and
+temporary queue were opened for every message even when the consumer never used
+them, every RPC opened another connection, and all RPCs shared one JMS session
+that is not thread safe. The SED-ML export id collisions that had been failing
+the nightly suite are fixed, and the Langevin solver is updated to 1.4.12.
+
+### Added
+- Internal: `-Dtest.only` to narrow the long sharded test suites when chasing a
+  single case. (#1841)
+- Internal: the 3D field viewer's web content is now packaged into the
+  installers. The viewer itself remains a **flag-off proof of concept** and is
+  not reachable in normal use. (#1829, #1854)
+
+### Changed
+- Langevin solver updated to 1.4.12. Logging configuration is now compiled into
+  the native image and cannot be redirected at runtime; the 1.4.11 binary shipped
+  without GraalVM logging metadata, which left its logging unreliable. (#1857)
+
+### Fixed
+- An export reporting non-finite progress no longer wedges event delivery. The
+  progress value is clamped rather than dropped, and the divisions that produced
+  `Infinity` are guarded — a geometry selection with no curves and no points made
+  the denominator zero. (#1837, #1838)
+- A JMS producer session now opens its connection on first use instead of in its
+  constructor. Five of the seven consumers never send anything through the
+  session handed to them, so they were opening a connection, session and
+  temporary queue per message and using none of it. (#1842)
+- RPC requests no longer open a second JMS connection just to build the request
+  message. (#1844)
+- Concurrent RPCs no longer corrupt each other. All request threads shared one
+  `javax.jms.Session`, which is not thread safe, so one caller's commit could
+  commit another caller's in-flight send. Each call now gets its own session.
+  (#1845)
+- Removing a message consumer now closes it. It was only asked to stop, leaving
+  the broker dispatching to a consumer nobody read, where prefetched messages sat
+  undelivered until the connection died. (#1847)
+- Publishing to a topic no longer leaks a `MessageProducer` per message on
+  sessions that live as long as the server. (#1850)
+- `transportResumed` is logged at INFO only after a genuine interruption. It also
+  fires on a first connect, which with a connection per message meant thousands
+  of lines a minute against zero interruptions. (#1839)
+- SED-ML export no longer produces documents with duplicate ids: every id is
+  minted from one document-wide allocator, applications get unique ids when their
+  names collide, and an `initialAssignment` is targeted when a species has no
+  `initialConcentration`. (#1840, #1843, #1846)
+- OMEX validation errors now appear in the exception message instead of being
+  discarded. (#1827)
+- Internal: JMS test classes no longer interfere with each other through
+  ActiveMQ's JVM-global broker registry, and the simulated-outage test no longer
+  poisons the service the other tests share. (#1853, #1856, #1835)
+
+### Notes for API consumers
+- No `/api/v1/` schema changes in this build; `tools/openapi.yaml` is unchanged
+  since 8.0.5.01, and the generated Java, Python and TypeScript clients are
+  unaffected.
+
+## [8.0.7.01] - 2026-08-06
+
+**Highlights.** Maintenance release. The desktop update alert no longer opens
+behind the main window, and a cancelled or failed update check can no longer
+stop VCell from starting.
+
+### Added
+- Internal: a `swing-debug` skill and supporting tooling for driving the desktop
+  client during development. (#1834)
+
+### Changed
+- Internal: slurm submission gained the variables needed for the upcoming script
+  refactoring, with the Langevin fixture and its tests updated to match. (#1794)
+- Internal: the Dockerfile refreshes the apt index in the same layer as the
+  install, so a cached layer cannot pair a stale index with a new install.
+  (#1832)
+
+### Fixed
+- The update alert now stays on top: the update check runs before the GUI is
+  built and is waited for, and a check that is cancelled or fails no longer
+  prevents VCell from starting. (#1833)
+
+### Notes for API consumers
+- No `/api/v1/` schema changes in this build.
+
 ## [8.0.6.01] - 2026-08-05
 
 **Highlights.** Desktop UI bug-fix release. Five reported client bugs are
