@@ -1708,7 +1708,8 @@ private void openInBrowserViewer() {
 		// register the dataset before opening the browser, and hand over the reader this window already
 		// uses -- that is what lets one server serve several windows, local and remote alike
 		FieldViewerServer.register(simDataId,
-				((ClientPDEDataContext) dataContext).getDataManager().getVCDataManager(), mathDescription);
+				((ClientPDEDataContext) dataContext).getDataManager().getVCDataManager(), mathDescription,
+				displayNameForViewer());
 		int port = FieldViewerServer.start();
 		if (port < 0) {
 			DialogUtils.showErrorDialog(this, "Could not start the local field viewer server. See the log for details.");
@@ -1746,6 +1747,20 @@ private void openInBrowserViewer() {
 
 private static String urlEncode(String s) {
 	return java.net.URLEncoder.encode(s, java.nio.charset.StandardCharsets.UTF_8);
+}
+
+/**
+ * Human-readable name of the run for the 3D viewer's title, e.g. "model::app::sim". The data
+ * files carry only keys, so registration is the one moment anyone can attach a name.
+ */
+private String displayNameForViewer() {
+	SimulationModelInfo modelInfo = getSimulationModelInfo();
+	if (modelInfo != null && modelInfo.getSimulationName() != null) {
+		String context = modelInfo.getContextName();
+		return context == null ? modelInfo.getSimulationName()
+				: context + "::" + modelInfo.getSimulationName();
+	}
+	return getSimulation() == null ? null : getSimulation().getName();
 }
 
 

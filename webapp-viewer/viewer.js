@@ -29,6 +29,9 @@ const MIN_PASS_BAND = 0.005;
 const el = {
   canvas: document.getElementById('canvas'),
   box: document.querySelector('.canvas-box'),
+  runTitle: document.getElementById('runTitle'),
+  runName: document.getElementById('runName'),
+  runId: document.getElementById('runId'),
   dataControls: document.getElementById('dataControls'),
   variable: document.getElementById('variable'),
   time: document.getElementById('time'),
@@ -114,9 +117,25 @@ async function fetchJson(u, what) {
   return r.json();
 }
 
+/**
+ * Label the window and the page with what this run IS — several viewers tile on one screen, and
+ * an unlabeled one cannot be told from its neighbours. The name travels via /info rather than the
+ * URL because the server holds it for the dataset's lifetime, not just for the opening click.
+ * textContent, not innerHTML: the name is user-authored.
+ */
+function showRunTitle(info) {
+  const job = Number(info.jobIndex ?? state.dataset.job);
+  const name = (info.simName ?? info.simId) + (job > 0 ? ` · job ${job}` : '');
+  el.runName.textContent = name;
+  el.runId.textContent = info.simName ? info.simId : '';
+  el.runTitle.hidden = false;
+  document.title = `${name} — VCell 3D`;
+}
+
 async function loadInfo() {
   setStatus('asking the server what this run contains…');
   const info = await fetchJson(url('/info', {}), '/info');
+  showRunTitle(info);
   state.times = info.times ?? [];
   state.variables = (info.variables ?? []).map((v) => ({ name: v.name, domain: v.domain }));
   if (!state.variables.length) throw new Error(`run ${info.simId} exposes no volume variables`);

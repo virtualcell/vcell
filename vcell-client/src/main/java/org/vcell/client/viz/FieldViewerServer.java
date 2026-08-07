@@ -93,11 +93,15 @@ public final class FieldViewerServer {
 		final VCSimulationDataIdentifier vcdID;
 		final VCDataManager dataManager;
 		final SubdomainInfo subdomainInfo;
+		/** Human-readable name of the run, e.g. "model::app::sim"; may be null — the ID always exists, a name may not. */
+		final String simName;
 
-		DataSource(VCSimulationDataIdentifier vcdID, VCDataManager dataManager, SubdomainInfo subdomainInfo) {
+		DataSource(VCSimulationDataIdentifier vcdID, VCDataManager dataManager, SubdomainInfo subdomainInfo,
+				String simName) {
 			this.vcdID = vcdID;
 			this.dataManager = dataManager;
 			this.subdomainInfo = subdomainInfo;
+			this.simName = simName;
 		}
 	}
 
@@ -281,6 +285,10 @@ public final class FieldViewerServer {
 
 		StringBuilder sb = new StringBuilder(1024);
 		sb.append("{\"simId\":\"").append(jsonEscape(vcdID.getID())).append('"');
+		if (source.simName != null && !source.simName.isEmpty()) {
+			sb.append(",\"simName\":\"").append(jsonEscape(source.simName)).append('"');
+		}
+		sb.append(",\"jobIndex\":").append(vcdID.getJobIndex());
 		sb.append(",\"times\":");
 		appendDoubles(sb, times, times.length);
 		sb.append(",\"domains\":[");
@@ -455,16 +463,18 @@ public final class FieldViewerServer {
 	 * for that run, which is what keeps local and remote runs on one code path here.
 	 *
 	 * @param mathDesc supplies the domain names; the mesh carries subvolume numbers but not names
+	 * @param simName human-readable name for the run (registration is the only moment anyone holds
+	 *            it — the data files carry only keys); may be null
 	 */
 	public static void register(VCSimulationDataIdentifier vcdID, VCDataManager dataManager,
-			MathDescription mathDesc) throws MathException {
-		register(vcdID, dataManager, CartesianMeshBuilder.fromMathDescription(mathDesc));
+			MathDescription mathDesc, String simName) throws MathException {
+		register(vcdID, dataManager, CartesianMeshBuilder.fromMathDescription(mathDesc), simName);
 	}
 
 	/** For callers that already hold the domain naming and have no math description to hand. */
 	public static void register(VCSimulationDataIdentifier vcdID, VCDataManager dataManager,
-			SubdomainInfo subdomainInfo) {
-		dataSources.put(key(vcdID), new DataSource(vcdID, dataManager, subdomainInfo));
+			SubdomainInfo subdomainInfo, String simName) {
+		dataSources.put(key(vcdID), new DataSource(vcdID, dataManager, subdomainInfo, simName));
 		LG.debug("field viewer dataset registered: {}", vcdID.getID());
 	}
 
