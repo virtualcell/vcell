@@ -167,17 +167,48 @@ public class MessageProducerSessionJmsTest {
 	 */
 	@Test
 	public void aSendThatCannotOpenAConnectionThrows() throws Exception {
-		VCMessage message = service.createProducerSession().createTextMessage("never sent");
-
-		MessageProducerSessionJms producerSession = new MessageProducerSessionJms(service);
-		service.failConnections = true;
+		// Its own service instance, sharing only the broker. This test deliberately breaks
+		// connection creation, and doing that to the service every other test shares tore down
+		// connections their temporary reply destinations live on -- a later RPC then published
+		// to a deleted temp queue and waited out its whole timeout (issue #1855). failConnections
+		// is per-instance, so an isolated service cannot reach the shared one.
+		CountingMessagingService isolated = new CountingMessagingService();
+		VCMessageSession messageBuilder = isolated.createProducerSession();
+		MessageProducerSessionJms producerSession = new MessageProducerSessionJms(isolated);
 		try {
+			VCMessage message = messageBuilder.createTextMessage("never sent");
+			isolated.failConnections = true;
 			assertThrows(VCMessagingException.class,
 					() -> producerSession.sendQueueMessage(TEST_QUEUE, message, Boolean.FALSE, 60000L),
 					"a send that cannot open its connection must not report success");
 		} finally {
-			service.failConnections = false;
-			producerSession.close();
+			isolated.failConnections = false;
+			producerSession.close();  // never opened a connection -- the send failed at createConnection
+			messageBuilder.close();   // was leaked into the shared service before
+			// `isolated` itself is deliberately not close()d: both its sessions are closed above and
+			// it has no consumers, so close() would reclaim nothing -- it would only add its
+			// unconditional 4s Thread.sleep. The one thing an instance does leave behind, the daemon
+			// Timer built in the VCMessagingServiceJms constructor, is not cancelled by close() either.
+		}
+
+		// The actual regression from #1855: simulating the outage must leave the shared service
+		// untouched. An RPC is the sharp check, because it needs both a live connection and a live
+		// temporary reply queue -- dead reply destinations were what made a later test wait out its
+		// whole timeout. Asserting it here pins it deterministically instead of relying on a later
+		// test happening to run afterwards.
+		String previous = setBlobProperty();
+		VCellQueue afterOutageQueue = new VCellQueue("MessageProducerSessionJmsTestRpcQueue-afterOutage");
+		VCQueueConsumer responder = startEchoResponder(afterOutageQueue);
+		VCMessageSession sharedSession = service.createProducerSession();
+		try {
+			assertEquals("still alive",
+					sharedSession.sendRpcMessage(afterOutageQueue, echoRequest("still alive"),
+							true, 30000L, null, null, null),
+					"the shared service must still complete an RPC after the simulated outage");
+		} finally {
+			sharedSession.close();
+			service.removeMessageConsumer(responder);
+			restoreBlobProperty(previous);
 		}
 	}
 
