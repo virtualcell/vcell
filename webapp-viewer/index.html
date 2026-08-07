@@ -17,7 +17,14 @@
                flex-wrap: wrap; min-height: 1.2em; }
   .run-title .name { font-weight: 600; }
   .run-title .id { font: 11px/1.4 ui-monospace, monospace; opacity: .6; }
+  /*
+    aspect-ratio names the preferred shape; the viewport clamps cap it so a viewer window that is
+    tiled small (several runs side by side) still shows its controls without scrolling. The buffer
+    is re-synced to the box on resize (see matchBufferToCanvas), so a clamped box is not a
+    stretched image.
+  */
   .canvas-box { position: relative; width: 100%; max-width: 960px; aspect-ratio: 4 / 3;
+                max-height: calc(100dvh - 170px); min-height: 160px; min-width: 240px;
                 background: #12121a; border-radius: 6px; overflow: hidden; }
   .canvas-box canvas { display: block; width: 100%; height: 100%; cursor: grab; touch-action: none; }
   .canvas-box canvas:active { cursor: grabbing; }

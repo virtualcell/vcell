@@ -307,6 +307,24 @@ async function matchBufferToCanvas() {
   }
 }
 
+/**
+ * Re-sync the buffer when the window resizes. The box's viewport-height clamp means resizing can
+ * change its aspect ratio, and a buffer left at the old shape would draw stretched. Debounced:
+ * setSize allocates a new buffer, far too heavy to run per resize event.
+ */
+let resizeTimer = 0;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(async () => {
+    try {
+      await matchBufferToCanvas();
+      if (renderWindow) await renderWindow.render();
+    } catch (e) {
+      console.warn('resize re-render failed', e);
+    }
+  }, 150);
+});
+
 // ---------------------------------------------------------------------------
 // interaction
 // ---------------------------------------------------------------------------
