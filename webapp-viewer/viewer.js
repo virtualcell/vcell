@@ -32,6 +32,8 @@ const el = {
   runTitle: document.getElementById('runTitle'),
   runName: document.getElementById('runName'),
   runId: document.getElementById('runId'),
+  colorbar: document.getElementById('colorbar'),
+  axes: document.getElementById('axes'),
   dataControls: document.getElementById('dataControls'),
   variable: document.getElementById('variable'),
   time: document.getElementById('time'),
@@ -50,6 +52,7 @@ const state = {
   selectedVar: '',
   selectedDomain: '',
   geometryId: '',
+  bounds: null,
   nominalSinc: null,
   smoothing: NOMINAL_STRENGTH,
   ready: false,
@@ -67,6 +70,9 @@ let renderer = null;
 let renderWindow = null;
 let camera = null;
 let fieldArray = null;
+let lut = null;
+let scalarBar = null;
+let cubeAxes = null;
 
 const setStatus = (text, isError = false) => {
   el.status.textContent = text;
@@ -198,6 +204,34 @@ const describe = () =>
 // scene
 // ---------------------------------------------------------------------------
 
+/**
+ * Point the mapper, the lookup table and the color bar at one field together. The scalar bar
+ * labels the LUT's range — mapper.setScalarRange alone never reaches it, and a bar labelling
+ * [0,1] under a differently-colored surface is silently wrong, so the two update as one.
+ */
+async function applyFieldRange(field) {
+  await mapper.setScalarRange(field.range[0], field.range[1]);
+  if (lut) {
+    await lut.setTableRange(field.range[0], field.range[1]);
+    await lut.build();
+  }
+  if (scalarBar) await scalarBar.setTitle(field.name);
+}
+
+/** Axis-aligned bounds of the raw grid — the axes box frames the data, not the smoothed surface. */
+function boundsOf(geometry) {
+  const b = [Infinity, -Infinity, Infinity, -Infinity, Infinity, -Infinity];
+  const P = geometry.points;
+  for (let i = 0; i < geometry.numPoints; i++) {
+    for (let a = 0; a < 3; a++) {
+      const v = P[3 * i + a];
+      if (v < b[2 * a]) b[2 * a] = v;
+      if (v > b[2 * a + 1]) b[2 * a + 1] = v;
+    }
+  }
+  return b;
+}
+
 /** Builds the in-memory grid and points the pipeline at it. Re-run when the domain changes. */
 async function buildGrid(geometry, field) {
   const points = vtk.vtkPoints();
@@ -227,11 +261,13 @@ async function buildGrid(geometry, field) {
   if (field) {
     await mapper.setScalarModeToUseCellData();
     await mapper.scalarVisibilityOn(); // no-arg form; the boolean setter marshals awkwardly
-    await mapper.setScalarRange(field.range[0], field.range[1]);
+    await applyFieldRange(field);
   } else {
     // no field → solid surface (via the property method; actor.property.color is a no-op)
     await (await actor.getProperty()).setColor(0.30, 0.65, 0.45);
   }
+  state.bounds = boundsOf(geometry);
+  if (cubeAxes) await cubeAxes.setBounds(...state.bounds);
   state.nominalSinc = geometry.sinc;
   previewSmoothing(state.smoothing);
 }
@@ -243,7 +279,7 @@ async function applyField(field) {
   await fieldArray.setNumberOfTuples(field.values.length);
   for (let i = 0; i < field.values.length; i++) await fieldArray.setTuple1(i, field.values[i] ?? 0);
   await fieldArray.modified();
-  await mapper.setScalarRange(field.range[0], field.range[1]);
+  await applyFieldRange(field);
 }
 
 async function buildScene(geometry, field) {
@@ -270,12 +306,29 @@ async function buildScene(geometry, field) {
 
   mapper = vtk.vtkPolyDataMapper();
   await mapper.setInputConnection(surfacePort);
+  // Own the lookup table rather than borrowing the mapper's implicit one, so the surface and the
+  // color bar read the same table and cannot disagree about what color means what value.
+  lut = vtk.vtkLookupTable();
+  // low→high as blue→red, the direction the desktop results viewer already taught users;
+  // VTK's default rainbow runs the other way
+  await lut.setHueRange(0.66667, 0.0);
+  await mapper.setLookupTable(lut);
+  await mapper.useLookupTableScalarRangeOn(); // no-arg form, as for scalarVisibilityOn
   actor = vtk.vtkActor({ mapper });
+
+  scalarBar = vtk.vtkScalarBarActor();
+  await scalarBar.setLookupTable(lut);
+  // the default bar spans most of the viewport and auto-scales its text to match — huge; keep it
+  // a slim strip on the right edge
+  await scalarBar.setWidth(0.08);
+  await scalarBar.setHeight(0.72);
+  await scalarBar.setPosition(0.9, 0.14);
 
   await buildGrid(geometry, field);
 
   renderer = vtk.vtkRenderer({ background: [0.07, 0.07, 0.1] });
   await renderer.addActor(actor);
+  await renderer.addViewProp(scalarBar); // addActor2D is refused by the invoker; addViewProp is the route
   await renderer.resetCamera();
   renderWindow = vtk.vtkRenderWindow({ canvasSelector: '#canvas' });
   await renderWindow.addRenderer(renderer);
@@ -285,6 +338,15 @@ async function buildScene(geometry, field) {
   // vtkRemoteSession, not on the standalone session we run. Interaction is driven directly against
   // the camera below.
   camera = await renderer.getActiveCamera();
+  // The axes box needs the camera: its labels and fly-to-a-corner behaviour track the view. That
+  // is exactly what an HTML fallback cannot fake, which is why this actor earns its keep.
+  cubeAxes = vtk.vtkCubeAxesActor();
+  await cubeAxes.setBounds(...state.bounds);
+  await cubeAxes.setCamera(camera);
+  await cubeAxes.setXTitle('X');
+  await cubeAxes.setYTitle('Y');
+  await cubeAxes.setZTitle('Z');
+  await renderer.addViewProp(cubeAxes);
   attachTrackball();
   await renderWindow.render();
 }
@@ -508,6 +570,21 @@ el.variable.addEventListener('change', () => {
     void refreshField();
   }
 });
+/** Show/hide an annotation prop. visibilityOn/Off: the boolean setter marshals awkwardly. */
+async function toggleProp(prop, on) {
+  if (!prop || !state.ready) return;
+  try {
+    if (on) await prop.visibilityOn();
+    else await prop.visibilityOff();
+    await renderWindow.render();
+  } catch (e) {
+    console.warn('toggling annotation failed', e);
+  }
+}
+
+el.colorbar.addEventListener('change', () => void toggleProp(scalarBar, el.colorbar.checked));
+el.axes.addEventListener('change', () => void toggleProp(cubeAxes, el.axes.checked));
+
 el.smoothing.addEventListener('input', () => previewSmoothing(Number(el.smoothing.value)));
 el.smoothing.addEventListener('change', () => void applySmoothing(Number(el.smoothing.value)));
 el.smoothingReset.addEventListener('click', () => {
@@ -553,6 +630,8 @@ el.smoothingReset.addEventListener('click', () => {
     el.variable.disabled = false;
     el.time.disabled = state.times.length < 2;
     el.smoothing.disabled = false;
+    el.colorbar.disabled = false;
+    el.axes.disabled = false;
     previewSmoothing(state.smoothing);
     setStatus(`rendered ${describe()} ✓ (${Math.round(performance.now() - t0)} ms) — drag to rotate, wheel to zoom`);
   } catch (e) {

@@ -34,6 +34,7 @@
   .controls input[type=range] { flex: 0 0 200px; }
   .controls select { font: 12px ui-monospace, monospace; max-width: 260px; }
   .readout { flex: 1 1 auto; opacity: .8; }
+  .toggle { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
   .readout em { color: #2a7; font-style: normal; }
   .status { font: 12px/1.4 ui-monospace, monospace; opacity: .7; }
   .status.err { color: #c0392b; opacity: 1; white-space: pre-wrap; }
@@ -60,6 +61,8 @@
   <input id="smoothing" type="range" min="0" max="100" step="1" value="20" disabled>
   <span class="readout" id="smoothingReadout"></span>
   <button id="smoothingReset" type="button" disabled>Reset</button>
+  <label class="toggle"><input id="colorbar" type="checkbox" checked disabled> Color bar</label>
+  <label class="toggle"><input id="axes" type="checkbox" checked disabled> Axes</label>
 </div>
 
 <div class="status" id="status">loading…</div>

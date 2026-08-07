@@ -72,6 +72,11 @@ scrub time — a time step costs about 5.7× less than shipping both.
   actively misleading unless they read the console.
 - **`renderer.addActor2D` is refused; `renderer.addViewProp` is not.** That is the route for 2D
   props such as `vtkScalarBarActor`.
+- **The scalar bar labels the lookup table's range, not the mapper's.** `mapper.setScalarRange`
+  alone never reaches the bar — it would label [0,1] under a correctly-colored surface. The viewer
+  therefore owns one `vtkLookupTable` (hue range flipped to blue-low→red-high, the desktop
+  convention) shared by mapper and bar, with `useLookupTableScalarRangeOn()` so the table's range
+  drives both. Verified with a monotonic ramp field: surface sweep and bar direction agree.
 - Probed 2026-08-07 and available through the standalone session: `vtkScalarBarActor`,
   `vtkCubeAxesActor` (incl. `setBounds`/`setXTitle`/`setCamera`), `vtkPlane` + `vtkCutter`
   (`setCutFunction`), `vtkColorTransferFunction`, `vtkLookupTable`, `vtkCellPicker` (incl. `pick`).
