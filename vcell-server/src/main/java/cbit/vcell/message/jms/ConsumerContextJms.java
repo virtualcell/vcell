@@ -23,8 +23,10 @@ public class ConsumerContextJms implements Runnable {
 	private Session jmsSession = null;
 	private Connection jmsConnection = null;
 	private MessageConsumer jmsMessageConsumer = null;
-	private boolean bProcessing = false;
-	private Thread thread = null;
+	// volatile: stop() and stopAndClose() run on a different thread from the polling loop,
+	// which must see the change promptly or it will keep calling receive() after close()
+	private volatile boolean bProcessing = false;
+	private volatile Thread thread = null;
 	private static Logger lg = LogManager.getLogger(ConsumerContextJms.class);
 	
 	public ConsumerContextJms(VCMessagingServiceJms vcMessagingServiceJms, VCMessagingConsumer consumer){
@@ -73,6 +75,12 @@ public class ConsumerContextJms implements Runnable {
 //						lg.info(toString()+"no message received within "+CONSUMER_POLLING_INTERVAL_MS+" ms");
 				}
 			} catch (JMSException e) {
+				if (!bProcessing || e instanceof javax.jms.IllegalStateException){
+					// close() unblocks a thread parked in receive(); that is shutdown, not a
+					// failure. Logging it as one and looping would spin on the closed consumer.
+					lg.debug(toString()+" consumer closed while polling", e);
+					break;
+				}
 				onException(e);
 			} catch (RollbackException e) {
 				lg.error(e.getMessage(),e);
