@@ -72,6 +72,10 @@ scrub time — a time step costs about 5.7× less than shipping both.
   actively misleading unless they read the console.
 - **`renderer.addActor2D` is refused; `renderer.addViewProp` is not.** That is the route for 2D
   props such as `vtkScalarBarActor`.
+- **The cut plane slices the raw grid, not the smoothed surface.** `vtkCutter` passes cell data
+  through, so each cut polygon carries its source voxel's exact value; the boundary surface drops
+  to 25% opacity while a slice is shown, or it would hide it. Axis-aligned only, by design — an
+  interactive plane widget needs interactor infrastructure the standalone session lacks.
 - **The scalar bar labels the lookup table's range, not the mapper's.** `mapper.setScalarRange`
   alone never reaches the bar — it would label [0,1] under a correctly-colored surface. The viewer
   therefore owns one `vtkLookupTable` (hue range flipped to blue-low→red-high, the desktop

@@ -57,6 +57,18 @@
 </div>
 
 <div class="controls">
+  <label for="sliceAxis">Slice</label>
+  <select id="sliceAxis" disabled>
+    <option value="" selected>Off</option>
+    <option value="0">X</option>
+    <option value="1">Y</option>
+    <option value="2">Z</option>
+  </select>
+  <input id="slicePos" type="range" min="0" max="100" step="1" value="50" disabled>
+  <span class="readout" id="sliceReadout"></span>
+</div>
+
+<div class="controls">
   <label for="smoothing">Smoothing</label>
   <input id="smoothing" type="range" min="0" max="100" step="1" value="20" disabled>
   <span class="readout" id="smoothingReadout"></span>

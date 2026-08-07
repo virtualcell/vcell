@@ -34,6 +34,9 @@ const el = {
   runId: document.getElementById('runId'),
   colorbar: document.getElementById('colorbar'),
   axes: document.getElementById('axes'),
+  sliceAxis: document.getElementById('sliceAxis'),
+  slicePos: document.getElementById('slicePos'),
+  sliceReadout: document.getElementById('sliceReadout'),
   dataControls: document.getElementById('dataControls'),
   variable: document.getElementById('variable'),
   time: document.getElementById('time'),
@@ -53,6 +56,8 @@ const state = {
   selectedDomain: '',
   geometryId: '',
   bounds: null,
+  sliceAxis: -1,
+  slicePos: 50,
   nominalSinc: null,
   smoothing: NOMINAL_STRENGTH,
   ready: false,
@@ -73,6 +78,9 @@ let fieldArray = null;
 let lut = null;
 let scalarBar = null;
 let cubeAxes = null;
+let slicePlane = null;
+let cutter = null;
+let sliceActor = null;
 
 const setStatus = (text, isError = false) => {
   el.status.textContent = text;
@@ -257,6 +265,7 @@ async function buildGrid(geometry, field) {
     fieldArray = arr;
   }
   await geomFilter.setInputData(ug);
+  if (cutter) await cutter.setInputData(ug);
 
   if (field) {
     await mapper.setScalarModeToUseCellData();
@@ -268,8 +277,54 @@ async function buildGrid(geometry, field) {
   }
   state.bounds = boundsOf(geometry);
   if (cubeAxes) await cubeAxes.setBounds(...state.bounds);
+  await applySlice(); // a domain switch changes the bounds the slider position maps into
   state.nominalSinc = geometry.sinc;
   previewSmoothing(state.smoothing);
+}
+
+/**
+ * Position the cut plane and the actors around it. The slice cuts the RAW grid, not the smoothed
+ * surface: its purpose is the interior field, and the cutter passes cell data through, so each
+ * cut polygon carries its source voxel's exact value. While a slice is shown the boundary surface
+ * drops to 25% opacity — opaque, it would hide the slice entirely.
+ */
+async function applySlice() {
+  if (!sliceActor) return;
+  const axis = state.sliceAxis;
+  if (axis < 0) {
+    await sliceActor.visibilityOff();
+    await (await actor.getProperty()).setOpacity(1);
+    el.sliceReadout.textContent = '';
+    return;
+  }
+  const b = state.bounds;
+  // inset from the ends: a plane exactly on the outermost voxel faces cuts a degenerate sliver
+  const frac = 0.005 + 0.99 * (state.slicePos / 100);
+  const pos = b[2 * axis] + frac * (b[2 * axis + 1] - b[2 * axis]);
+  const origin = [(b[0] + b[1]) / 2, (b[2] + b[3]) / 2, (b[4] + b[5]) / 2];
+  origin[axis] = pos;
+  const normal = [0, 0, 0];
+  normal[axis] = 1;
+  await slicePlane.setOrigin(...origin);
+  await slicePlane.setNormal(...normal);
+  await sliceActor.visibilityOn();
+  await (await actor.getProperty()).setOpacity(0.25);
+  el.sliceReadout.textContent = `${'xyz'[axis]} = ${pos.toFixed(2)}`;
+}
+
+/** Re-cut and re-render as the slider drags; in-flight guard, as for orbit. */
+let sliceInFlight = false;
+async function refreshSlice() {
+  if (!state.ready || sliceInFlight) return;
+  sliceInFlight = true;
+  try {
+    await applySlice();
+    await renderWindow.render();
+  } catch (e) {
+    setStatus('slice update failed: ' + (e?.message ?? e), true);
+  } finally {
+    sliceInFlight = false;
+  }
 }
 
 /** Same geometry, new values: rewrite the scalars in place rather than rebuilding the grid. */
@@ -324,10 +379,25 @@ async function buildScene(geometry, field) {
   await scalarBar.setHeight(0.72);
   await scalarBar.setPosition(0.9, 0.14);
 
+  // slice pipeline — built before buildGrid so the grid can be fed to the cutter; invisible and
+  // therefore never executed until a slice axis is chosen
+  slicePlane = vtk.vtkPlane();
+  cutter = vtk.vtkCutter();
+  await cutter.setCutFunction(slicePlane);
+  const sliceMapper = vtk.vtkPolyDataMapper();
+  await sliceMapper.setInputConnection(await cutter.getOutputPort());
+  await sliceMapper.setLookupTable(lut); // same table as the surface and the bar
+  await sliceMapper.useLookupTableScalarRangeOn();
+  await sliceMapper.setScalarModeToUseCellData();
+  await sliceMapper.scalarVisibilityOn();
+  sliceActor = vtk.vtkActor({ mapper: sliceMapper });
+  await sliceActor.visibilityOff();
+
   await buildGrid(geometry, field);
 
   renderer = vtk.vtkRenderer({ background: [0.07, 0.07, 0.1] });
   await renderer.addActor(actor);
+  await renderer.addActor(sliceActor);
   await renderer.addViewProp(scalarBar); // addActor2D is refused by the invoker; addViewProp is the route
   await renderer.resetCamera();
   renderWindow = vtk.vtkRenderWindow({ canvasSelector: '#canvas' });
@@ -585,6 +655,16 @@ async function toggleProp(prop, on) {
 el.colorbar.addEventListener('change', () => void toggleProp(scalarBar, el.colorbar.checked));
 el.axes.addEventListener('change', () => void toggleProp(cubeAxes, el.axes.checked));
 
+el.sliceAxis.addEventListener('change', () => {
+  state.sliceAxis = el.sliceAxis.value === '' ? -1 : Number(el.sliceAxis.value);
+  el.slicePos.disabled = state.sliceAxis < 0;
+  void refreshSlice();
+});
+el.slicePos.addEventListener('input', () => {
+  state.slicePos = Number(el.slicePos.value);
+  void refreshSlice();
+});
+
 el.smoothing.addEventListener('input', () => previewSmoothing(Number(el.smoothing.value)));
 el.smoothing.addEventListener('change', () => void applySmoothing(Number(el.smoothing.value)));
 el.smoothingReset.addEventListener('click', () => {
@@ -632,6 +712,7 @@ el.smoothingReset.addEventListener('click', () => {
     el.smoothing.disabled = false;
     el.colorbar.disabled = false;
     el.axes.disabled = false;
+    el.sliceAxis.disabled = false;
     previewSmoothing(state.smoothing);
     setStatus(`rendered ${describe()} ✓ (${Math.round(performance.now() - t0)} ms) — drag to rotate, wheel to zoom`);
   } catch (e) {
