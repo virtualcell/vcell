@@ -211,22 +211,26 @@ public final class FieldViewerServer {
 	}
 
 	/**
-	 * Serves the built viewer, falling back to {@code index.html} so client-side routes resolve.
+	 * Serves the built viewer: {@code index.html} at the root, files by path below it.
 	 * <p>
 	 * The requested path selects a file, so it is normalized and then required to stay under the
 	 * root; anything that escapes is treated as not found rather than served.
+	 * <p>
+	 * A missing file is a 404 rather than a fallback to {@code index.html}. The viewer is a plain
+	 * static page with no client-side router, so a fallback would answer a missing script or a
+	 * missing wasm bundle with HTML and a 200, turning a clear failure into a confusing one.
 	 */
 	private static void serveStatic(HttpExchange ex, Path root) throws IOException {
 		String requested = ex.getRequestURI().getPath();
-		Path file = null;
+		Path file = root.resolve(INDEX_HTML);
 		if (requested != null && !requested.equals("/")) {
 			Path candidate = root.resolve(requested.substring(1)).normalize();
-			if (candidate.startsWith(root) && Files.isRegularFile(candidate)) {
-				file = candidate;
+			if (!candidate.startsWith(root) || !Files.isRegularFile(candidate)) {
+				respond(ex, 404, "text/plain; charset=utf-8",
+						"not found".getBytes(StandardCharsets.UTF_8));
+				return;
 			}
-		}
-		if (file == null) {
-			file = root.resolve(INDEX_HTML); // an app route, not a file: let the client router take it
+			file = candidate;
 		}
 		byte[] body = Files.readAllBytes(file);
 		respond(ex, 200, contentType(file), body);
