@@ -30,21 +30,22 @@ WindowedSinc is deterministic and unchanged 9.6.2 → 9.7, so the wasm binding i
 
 ## Run it
 
-Needs the wasm bundle (not in git — it's the ~78 MB artifact from the *Build custom VTK.wasm bundle*
-GitHub Actions run, or a local `tools/vtk-wasm/build.sh` output), plus a Chrome and `puppeteer-core`
-(available via `webapp-ng`'s dependencies).
+By default it downloads the pinned released bundle from
+[`virtualcell/vcell-vtk-wasm`](https://github.com/virtualcell/vcell-vtk-wasm) (the artifact
+`webapp-ng` consumes) and validates it. Needs a Chrome and `puppeteer-core` (available via
+`webapp-ng`'s dependencies).
 
 ```bash
-BUNDLE_TARGZ=/path/to/vcell-vtk-wasm32-emscripten.tar.gz \
-  node tools/vtk-wasm/test/run-golden-test.mjs
+node tools/vtk-wasm/test/run-golden-test.mjs        # downloads + validates the pinned release
 # exits 0 on pass, prints max deviation; 1 on regression
 ```
 
-Env: `BUNDLE_TARGZ` (required), `CHROME`, `PUPPETEER_CORE`, `TOL` (default `1e-6`; reference is `0`),
-`VERBOSE=1` to stream the in-page stages.
+Env: `BUNDLE_TAG` (release to fetch, default `v1.0.0`), `BUNDLE_TARGZ` (use a local `.tar.gz`
+instead — overrides `BUNDLE_TAG`), `CHROME`, `PUPPETEER_CORE`, `TOL` (default `1e-6`; reference is
+`0`), `VERBOSE=1` to stream the in-page stages.
 
 `vtk-umd.js` is the vendored `@kitware/vtk-wasm` 2.1.8 UMD loader (BSD-3-Clause), pinned to match the
-bundle; bump it together with the VTK commit in `../build.sh`.
+bundle; bump it together with the VTK commit in the `vcell-vtk-wasm` build repo.
 
 ## Regenerate the fixtures
 
@@ -58,8 +59,9 @@ the reference VTK 9.6.2) and a VCell `.mesh`:
 
 ## Status / follow-up
 
-Today this is a **manual / prototype** test — it needs the bundle artifact, which isn't published yet.
-Once the bundle is published (an `@virtualcell/vtk-wasm` package or a pinned release asset), wire this
-into CI: download the bundle → `node run-golden-test.mjs`. A natural extension is to feed the
-**voxel volume grid** instead of the pre-smooth surface, exercising `vtkUnstructuredGridGeometryFilter`
-+ `vtkGeometryFilter` in wasm end-to-end (both are constructable via the marshal-coverage patch).
+The build now gates on this same test in `virtualcell/vcell-vtk-wasm` before publishing a release, so
+the released bundle is already validated at build time. This copy is VCell's **consumer-side** check
+of the release it actually loads; wiring it into vcell CI (a job with Chrome + `puppeteer-core`) is a
+follow-up. A natural extension is to feed the **voxel volume grid** instead of the pre-smooth surface,
+exercising `vtkUnstructuredGridGeometryFilter` + `vtkGeometryFilter` in wasm end-to-end (both are
+constructable via the marshal-coverage patch).
