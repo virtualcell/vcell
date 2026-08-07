@@ -167,17 +167,24 @@ public class MessageProducerSessionJmsTest {
 	 */
 	@Test
 	public void aSendThatCannotOpenAConnectionThrows() throws Exception {
-		VCMessage message = service.createProducerSession().createTextMessage("never sent");
-
-		MessageProducerSessionJms producerSession = new MessageProducerSessionJms(service);
-		service.failConnections = true;
+		// Its own service instance, sharing only the broker. This test deliberately breaks
+		// connection creation, and doing that to the service every other test shares tore down
+		// connections their temporary reply destinations live on -- a later RPC then published
+		// to a deleted temp queue and waited out its whole timeout (issue #1855). failConnections
+		// is per-instance, so an isolated service cannot reach the shared one.
+		CountingMessagingService isolated = new CountingMessagingService();
+		VCMessageSession messageBuilder = isolated.createProducerSession();
+		MessageProducerSessionJms producerSession = new MessageProducerSessionJms(isolated);
 		try {
+			VCMessage message = messageBuilder.createTextMessage("never sent");
+			isolated.failConnections = true;
 			assertThrows(VCMessagingException.class,
 					() -> producerSession.sendQueueMessage(TEST_QUEUE, message, Boolean.FALSE, 60000L),
 					"a send that cannot open its connection must not report success");
 		} finally {
-			service.failConnections = false;
+			isolated.failConnections = false;
 			producerSession.close();
+			messageBuilder.close();   // was leaked into the shared service before
 		}
 	}
 
