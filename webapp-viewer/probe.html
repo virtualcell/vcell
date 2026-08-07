@@ -1,0 +1,39 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>clip probe</title>
+<pre id="out">probing…</pre>
+<script src="vendor/vtk.umd.js"></script>
+<script type="module">
+const out = document.getElementById('out');
+const lines = [];
+const log = (s) => { lines.push(s); out.textContent = lines.join('\n'); };
+try {
+  const runtime = await window.vtkwasm.loadAsync({ url: 'assets/vtk-wasm/vcell-vtk-wasm32-emscripten.tar.gz' });
+  const session = runtime.createStandaloneSession();
+  const vtk = session.vtk;
+  try {
+    const clip = vtk.vtkClipPolyData();
+    const plane = vtk.vtkPlane();
+    await clip.setClipFunction(plane);
+    await clip.insideOutOn();
+    log('vtkClipPolyData: OK (+setClipFunction +insideOutOn)');
+  } catch (e) {
+    log(`vtkClipPolyData: FAILED — ${e?.message ?? e}`);
+  }
+  try {
+    const dist = vtk.vtkImplicitPolyDataDistance();
+    const sphere = vtk.vtkSphereSource();
+    await sphere.update();
+    await dist.setInput(await sphere.getOutput());
+    log('vtkImplicitPolyDataDistance: OK (+setInput with polydata proxy)');
+  } catch (e) {
+    log(`vtkImplicitPolyDataDistance: FAILED — ${e?.message ?? e}`);
+  }
+  for (const name of ['vtkContourTriangulator', 'vtkDelaunay2D']) {
+    try { vtk[name](); log(`${name}: constructible`); } catch (e) { log(`${name}: FAILED — ${e?.message ?? e}`); }
+  }
+  log('done');
+} catch (e) {
+  log('bootstrap failed: ' + (e?.message ?? e));
+}
+</script>

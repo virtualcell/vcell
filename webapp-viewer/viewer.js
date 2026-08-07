@@ -83,6 +83,10 @@ let clipPlane = null;
 let cutter = null;
 let sliceActor = null;
 let surfaceClipped = false;
+let capDist = null;
+let capTrim = null;
+/** True when the smoothed surface changed since the cap was last trimmed against it. */
+let capTrimDirty = true;
 
 const setStatus = (text, isError = false) => {
   el.status.textContent = text;
@@ -279,6 +283,7 @@ async function buildGrid(geometry, field) {
   }
   state.bounds = boundsOf(geometry);
   if (cubeAxes) await cubeAxes.setBounds(...state.bounds);
+  capTrimDirty = true; // new geometry, new smoothed surface
   await applySlice(); // a domain switch changes the bounds the slider position maps into
   state.nominalSinc = geometry.sinc;
   previewSmoothing(state.smoothing);
@@ -322,6 +327,13 @@ async function applySlice() {
   if (!surfaceClipped) {
     await mapper.addClippingPlane(clipPlane);
     surfaceClipped = true;
+  }
+  if (capTrimDirty) {
+    // re-anchor the trim to the smoothed surface as it is NOW; setInput rebuilds the distance
+    // locator, so this happens only when the surface changed, not on every slider drag
+    await sinc.update();
+    await capDist.setInput(await sinc.getOutput());
+    capTrimDirty = false;
   }
   await sliceActor.visibilityOn();
   el.sliceReadout.textContent = `${'xyz'[axis]} = ${pos.toFixed(2)}`;
@@ -400,8 +412,19 @@ async function buildScene(geometry, field) {
   clipPlane = vtk.vtkPlane();
   cutter = vtk.vtkCutter();
   await cutter.setCutFunction(slicePlane);
+  // Trim the cap to the SMOOTHED silhouette. The order is smooth-then-cut: the shell is smoothed
+  // first and cropped at the plane, and the cap — planar by construction, so the cut face stays
+  // flat and sharp — has its in-plane OUTLINE carved to match, via the smoothed surface turned
+  // into an implicit function (negative inside; insideOut keeps the inside). Clipping the volume
+  // first and smoothing after would round the cut edge off, which is exactly what is not wanted.
+  // (Grid-level clip filters have no registered constructor in this bundle anyway.)
+  capDist = vtk.vtkImplicitPolyDataDistance();
+  capTrim = vtk.vtkClipPolyData();
+  await capTrim.setInputConnection(await cutter.getOutputPort());
+  await capTrim.setClipFunction(capDist);
+  await capTrim.insideOutOn();
   const sliceMapper = vtk.vtkPolyDataMapper();
-  await sliceMapper.setInputConnection(await cutter.getOutputPort());
+  await sliceMapper.setInputConnection(await capTrim.getOutputPort());
   await sliceMapper.setLookupTable(lut); // same table as the surface and the bar
   await sliceMapper.useLookupTableScalarRangeOn();
   await sliceMapper.setScalarModeToUseCellData();
@@ -589,6 +612,8 @@ async function applySmoothing(strength) {
     await sinc.setNumberOfIterations(p.iterations);
     await sinc.setPassBand(p.passBand);
     await sinc.update();
+    capTrimDirty = true; // the surface the cap is trimmed against just moved
+    if (state.sliceAxis >= 0) await applySlice();
     await renderWindow.render();
     setStatus(`smoothing: ${p.iterations} iters · pass-band ${formatPassBand(p.passBand)} ✓ (${Math.round(performance.now() - t0)} ms)`);
   } catch (e) {

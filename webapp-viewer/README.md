@@ -80,6 +80,16 @@ scrub time — a time step costs about 5.7× less than shipping both.
   interactive plane widget needs interactor infrastructure the standalone session lacks. When
   judging whether a crop "worked" from a screenshot, orbit toward the REMOVED side: the kept
   hemisphere looks whole from its own side by definition.
+- **The order is smooth-then-cut, and the cap rim follows the smoothing slider.** The cap stays
+  planar (flat, sharp cut — never smoothed), but its in-plane outline is trimmed to the smoothed
+  silhouette: `vtkClipPolyData` insideOut with a `vtkImplicitPolyDataDistance` built from the sinc
+  output (negative inside). Re-anchor the distance function (`setInput`) only when the smoothed
+  surface changes — it rebuilds its locator — not on every slider drag. Clip-the-grid-then-smooth
+  would round the cut edge off; it is also impossible here: `vtkClipDataSet`,
+  `vtkTableBasedClipDataSet` and `vtkBoxClipDataSet` are compiled in but have **no registered
+  constructor** (probed 2026-08-07), like `vtkOutlineFilter`.
+- `probe.html` is a scratch page for exactly these capability probes: point it at a suspect class,
+  read the on-page result, and keep the console open for `is not permitted`.
 - **The scalar bar labels the lookup table's range, not the mapper's.** `mapper.setScalarRange`
   alone never reaches the bar — it would label [0,1] under a correctly-colored surface. The viewer
   therefore owns one `vtkLookupTable` (hue range flipped to blue-low→red-high, the desktop
