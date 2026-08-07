@@ -187,9 +187,13 @@ weight and only reduces bytes through the client.
   **What is not built is the packaging.** Nothing produces or ships that directory:
   `VCell.install4j` has no entry for web content, and the media builds stage none. So in an
   installed client the directory is absent and the fallback URL points at a dev server that is not
-  running. Three things are needed — a build step producing the viewer bundle, a `dirEntry`
-  mounting it at `webviewer`, and CI wiring to stage it — tracked in
-  [#1851](https://github.com/virtualcell/vcell/issues/1851). Two decisions ride along: whether to ship
+  running. `npm run build_viewer` in `webapp-ng` produces the content — it is the only build that
+  fetches the ~12 MB wasm bundle, deliberately kept out of the shared `build_*` and `start` scripts
+  so the deploy path does not depend on a GitHub release being reachable. What remains is a
+  `dirEntry` mounting the result at `webviewer` and CI wiring to stage it, tracked in
+  [#1851](https://github.com/virtualcell/vcell/issues/1851). A consequence worth noting: the
+  deployed webapp no longer carries the bundle, so its `/vtk-wasm` spike route cannot render until
+  Mode B decides whether a web-facing viewer exists at all. Two decisions ride along: whether to ship
   the full `webapp-ng` build or a **local-only configuration** (the shipped `index.html` pulls
   Bootstrap, the Auth0 theme and Google Fonts from CDNs, so an offline desktop user would get
   unstyled content), and whether ~17 MB — 12 MB of it the wasm blob — is acceptable in every
