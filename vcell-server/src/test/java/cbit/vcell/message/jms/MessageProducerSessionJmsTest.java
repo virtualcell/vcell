@@ -31,6 +31,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.ResourceLock;
 
 import cbit.vcell.message.VCDestination;
 import cbit.vcell.message.VCMessage;
@@ -55,6 +56,7 @@ import org.vcell.util.document.User;
  * hands it to the listener, and most listeners never send through it.
  */
 @Tag("Fast")
+@ResourceLock("activemqBrokerRegistry")
 public class MessageProducerSessionJmsTest {
 
 	private static final String BROKER_NAME = "MessageProducerSessionJmsTestBroker";
