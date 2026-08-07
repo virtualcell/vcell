@@ -10,7 +10,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
-const DEST = path.resolve(HERE, '../src/assets/vtk-wasm');   // served at /assets/vtk-wasm/
+const DEST = path.resolve(HERE, '../assets/vtk-wasm');   // served at assets/vtk-wasm/
 const TAG = process.env.VTK_WASM_TAG ?? 'v1.0.0';
 const ASSET = 'vcell-vtk-wasm32-emscripten.tar.gz';
 const TARGET = path.join(DEST, ASSET);

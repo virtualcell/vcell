@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VCell field viewer</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { font: 13px/1.5 system-ui, sans-serif; margin: 0; padding: 12px;
+         display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+  /*
+    vtk.wasm takes the canvas over unless told otherwise: it stamps position:absolute with
+    width/height 100% on it and installs a resize observer. A positioned, sized box keeps the
+    geometry predictable either way.
+  */
+  .canvas-box { position: relative; width: 100%; max-width: 960px; aspect-ratio: 4 / 3;
+                background: #12121a; border-radius: 6px; overflow: hidden; }
+  .canvas-box canvas { display: block; width: 100%; height: 100%; cursor: grab; touch-action: none; }
+  .canvas-box canvas:active { cursor: grabbing; }
+  .controls { display: flex; align-items: center; gap: 10px; font: 12px/1.4 ui-monospace, monospace;
+              width: 100%; max-width: 960px; flex-wrap: wrap; }
+  .controls[hidden] { display: none; }
+  .controls input[type=range] { flex: 0 0 200px; }
+  .controls select { font: 12px ui-monospace, monospace; max-width: 260px; }
+  .readout { flex: 1 1 auto; opacity: .8; }
+  .readout em { color: #2a7; font-style: normal; }
+  .status { font: 12px/1.4 ui-monospace, monospace; opacity: .7; }
+  .status.err { color: #c0392b; opacity: 1; white-space: pre-wrap; }
+</style>
+</head>
+<body>
+
+<div class="canvas-box"><canvas id="canvas" tabindex="0"></canvas></div>
+
+<div class="controls" id="dataControls" hidden>
+  <label for="variable">Variable</label>
+  <select id="variable" disabled></select>
+  <label for="time">Time</label>
+  <input id="time" type="range" min="0" max="0" step="1" value="0" disabled>
+  <span class="readout" id="dataReadout"></span>
+</div>
+
+<div class="controls">
+  <label for="smoothing">Smoothing</label>
+  <input id="smoothing" type="range" min="0" max="100" step="1" value="20" disabled>
+  <span class="readout" id="smoothingReadout"></span>
+  <button id="smoothingReset" type="button" disabled>Reset</button>
+</div>
+
+<div class="status" id="status">loading…</div>
+
+<!-- The UMD loader, not the ESM entry: the ESM runtime does a dynamic import() of the in-browser
+     untar'd glue, which bundlers rewrite and break. Loaded plainly here, so nothing rewrites it. -->
+<script src="vendor/vtk.umd.js"></script>
+<script type="module" src="viewer.js"></script>
+
+</body>
+</html>

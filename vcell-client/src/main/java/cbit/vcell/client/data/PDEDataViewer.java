@@ -1675,7 +1675,7 @@ private JButton getROIButton() {
 	return roiButton;
 }
 
-private static final String DEFAULT_VIEWER_URL = "http://localhost:4200/vtk-wasm";
+private static final String DEFAULT_VIEWER_URL = "http://localhost:4400/";
 
 private JButton getView3DButton() {
 	if (view3DButton == null) {
@@ -1735,7 +1735,7 @@ private void openInBrowserViewer() {
 		// cross-origin fetch. Only fall back to an external viewer when it has no page to serve,
 		// which is how a developer points at a dev server.
 		String viewer = FieldViewerServer.isServingViewerPage()
-				? "http://127.0.0.1:" + port + "/vtk-wasm"
+				? "http://127.0.0.1:" + port + "/"
 				: PropertyLoader.getProperty(PropertyLoader.fieldViewerUrl, DEFAULT_VIEWER_URL);
 		String url = viewer + (viewer.contains("?") ? "&" : "?") + params;
 		DialogUtils.browserLauncher(this, url, "Failed to open the 3D viewer at " + viewer);

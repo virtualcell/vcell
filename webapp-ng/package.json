@@ -6,7 +6,6 @@
     "start": "ng serve",
     "start_with_proxy": "ng serve --proxy-config proxy.conf.json",
     "build_prod": "ng build -c configuration_prod",
-    "build_viewer": "npm run fetch:vtk-wasm && ng build -c configuration_prod",
     "build_dev": "ng build -c configuration_dev",
     "build_stage": "ng build -c configuration_stage",
     "build_island": "ng build -c configuration_island",
@@ -21,8 +20,7 @@
     "dev": "npm-run-all --parallel start server:api",
     "prod": "npm-run-all --parallel server:app server:api",
     "postbuild": "npm run copy:server",
-    "copy:server": "copyfiles server.js auth_config.json dist/login-demo",
-    "fetch:vtk-wasm": "node scripts/fetch-vtk-wasm.mjs"
+    "copy:server": "copyfiles server.js auth_config.json dist/login-demo"
   },
   "private": true,
   "dependencies": {
@@ -41,7 +39,6 @@
     "@fortawesome/angular-fontawesome": "^0.14.0",
     "@fortawesome/fontawesome-svg-core": "^1.2.36",
     "@fortawesome/free-solid-svg-icons": "^5.15.4",
-    "@kitware/vtk-wasm": "^2.1.8",
     "@kitware/vtk.js": "^36.6.0",
     "@ng-bootstrap/ng-bootstrap": "^16.0.0",
     "@popperjs/core": "^2.11.6",

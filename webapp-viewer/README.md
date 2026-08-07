@@ -1,0 +1,69 @@
+# VCell field viewer (standalone)
+
+A browser viewer for VCell finite-volume fields. The desktop client serves this page from its own
+loopback field server and opens a browser at it; page and data then share one origin.
+
+Design record: [`../docs/3d-renderer-design.md`](../docs/3d-renderer-design.md).
+
+## Deliberately framework-free, and with no build step
+
+The whole app is `index.html` plus `viewer.js`. There is no bundler, no framework and no
+`node_modules` — **this directory is the deployable**. The only build-time action is fetching the
+wasm bundle, which is a download, not a compile.
+
+It began as a component inside `webapp-ng`, which turned out to be a poor fit:
+
+- It used no Angular features of substance — no dependency injection, services, `HttpClient`, router
+  or forms. Just a template and two lifecycle hooks.
+- It dragged ~5.5 MB of application shell along to render one canvas.
+- The Angular `index.html` pulls Bootstrap, the Auth0 theme and Google Fonts from CDNs, which is
+  wrong for a viewer whose purpose is looking at a local simulation, possibly offline.
+- It put the ~12 MB wasm bundle on the webapp's build and deploy path for a feature that is off by
+  default.
+
+Standalone, none of that applies: the page loads from the client's own server and contacts nothing
+else. Verified — the only origin it talks to is the loopback server.
+
+## Running it
+
+```bash
+npm run fetch:vtk-wasm     # downloads the pinned wasm bundle into assets/ (gitignored)
+npm run serve              # fetch + a static server on :4400
+```
+
+Then open `http://localhost:4400/?sim=<simulationKey>&job=<n>`, or just use **View in 3D** in the
+desktop client, which starts its field server and opens the right URL for you.
+
+Query parameters:
+
+| parameter | meaning |
+|---|---|
+| `sim`, `job` | the dataset to view (required) |
+| `var`, `domain`, `time` | initial selection; the viewer then drives itself from `/info` |
+| `base` | data origin, if not this page's own; **loopback only** |
+
+## What it does
+
+Runs VCell's finite-volume pipeline client-side: build the whole-voxel unstructured grid in memory
+from the server's arrays → `vtkGeometryFilter` → `vtkWindowedSincPolyDataFilter` → render via WebGL2,
+using the custom bundle from [virtualcell/vcell-vtk-wasm](https://github.com/virtualcell/vcell-vtk-wasm).
+The client-side smoothing is bit-identical to the pyvcell/VisIt reference.
+
+Geometry and field values come from separate endpoints, because the geometry does not change as you
+scrub time — a time step costs about 5.7× less than shipping both.
+
+## Notes for anyone editing this
+
+- **Load the UMD loader, not the ESM entry.** The ESM runtime does a dynamic `import()` of the
+  in-browser untar'd glue; bundlers rewrite that and it breaks. `vendor/vtk.umd.js` is vendored so
+  nothing processes it.
+- **`vtkRenderWindowInteractor` does not work here** and is deliberately unused. It binds DOM
+  listeners and accepts a trackball style, but `startEventLoop` exists only on `vtkRemoteSession`,
+  so nothing pumps it — it looks wired while being inert. Camera control is driven directly.
+- **`vtkDoubleArray.setValue()` is not in the marshalling invoker whitelist**; use `setTuple1()`.
+  Likewise prefer `mapper.scalarVisibilityOn()` over the boolean setter.
+- **Turn off the canvas takeover** with `_setDefaultExpandVTKCanvasToContainer(false)` and
+  `_setDefaultInstallHTMLResizeObserver(false)`, or vtk stamps the canvas to fill the page and pins
+  the drawing buffer to its 300×150 default.
+- Size the drawing buffer from the **box**, not the canvas: the canvas is still at its default until
+  vtk takes it over.

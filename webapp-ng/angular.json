@@ -28,12 +28,7 @@
             "tsConfig": "tsconfig.app.json",
             "assets": [
               "src/favicon.ico",
-              "src/assets",
-              {
-                "glob": "vtk.umd.js",
-                "input": "node_modules/@kitware/vtk-wasm/dist/umd",
-                "output": "assets/vtk-wasm"
-              }
+              "src/assets"
             ],
             "styles": [
               "@angular/material/prebuilt-themes/indigo-pink.css",

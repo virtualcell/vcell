@@ -1,0 +1,2 @@
+# the wasm bundle is fetched, not committed (see scripts/fetch-vtk-wasm.mjs)
+assets/vtk-wasm/

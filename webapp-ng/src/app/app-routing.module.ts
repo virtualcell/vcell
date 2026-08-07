@@ -43,12 +43,6 @@ const routes: Routes = [
     loadComponent: () => import('./pages/vtk-spike/vtk-spike.component').then((m) => m.VtkSpikeComponent),
   },
   {
-    // vtk.wasm field viewer — loads the custom VTK-compiled-to-wasm bundle (same-origin from
-    // /assets/vtk-wasm, placed there at build time) and renders through a standalone session.
-    path: 'vtk-wasm',
-    loadComponent: () => import('./pages/vtk-wasm-viewer/vtk-wasm-viewer.component').then((m) => m.VtkWasmViewerComponent),
-  },
-  {
     path: 'error',
     component: ErrorComponent,
   },
