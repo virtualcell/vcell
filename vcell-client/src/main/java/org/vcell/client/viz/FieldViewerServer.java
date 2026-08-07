@@ -8,15 +8,20 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.util.document.TSJobResultsNoStats;
+import org.vcell.util.document.TSJobResultsSpaceStats;
 import org.vcell.util.document.TimeSeriesJobSpec;
 import org.vcell.util.document.VCDataJobID;
 import org.vcell.vis.mapping.vcell.CartesianMeshMapping;
@@ -162,6 +167,7 @@ public final class FieldViewerServer {
 		s.createContext("/grid", wrap(FieldViewerServer::handleGrid));
 		s.createContext("/field", wrap(FieldViewerServer::handleField));
 		s.createContext("/timeseries", wrap(FieldViewerServer::handleTimeSeries));
+		s.createContext("/stats", wrap(FieldViewerServer::handleStats));
 		Path viewerRoot = staticRoot();
 		if (viewerRoot != null) {
 			// least-specific context: the data routes above still win, this catches the rest
@@ -485,6 +491,98 @@ public final class FieldViewerServer {
 		sb.append(",\"values\":");
 		appendDoubles(sb, timesAndValues[1], timesAndValues[1].length);
 		sb.append('}');
+		return sb.toString();
+	}
+
+	/**
+	 * {@code /stats?sim=<simKey>&job=<n>[&var=<a,b,c>]} — min, max and spatial mean per saved time
+	 * for the named volume variables (default: all of them), each computed over its own domain.
+	 * <p>
+	 * This is the aggregation the issue insists must NOT happen client-side: computing these curves
+	 * in the browser would mean pulling every timestep of every selected variable. One
+	 * {@link TimeSeriesJobSpec} with {@code calcSpaceStats} carries all the variables, so the
+	 * reduction runs next to the reader in a single pass.
+	 */
+	private static String handleStats(HttpExchange ex) throws Exception {
+		Map<String, String> q = query(ex);
+		DataSource source = sourceFor(q);
+		DataIdentifier[] ids = source.dataManager.getDataIdentifiers(emptyOutputContext(), source.vcdID);
+		Set<String> requested = null;
+		String varParam = q.get("var");
+		if (varParam != null && !varParam.isEmpty()) {
+			requested = new LinkedHashSet<>(Arrays.asList(varParam.split(",")));
+		}
+		List<DataIdentifier> chosen = new ArrayList<>();
+		for (DataIdentifier id : ids) {
+			if (!id.getVariableType().equals(cbit.vcell.math.VariableType.VOLUME)) {
+				continue;
+			}
+			if (requested == null || requested.contains(id.getName())) {
+				chosen.add(id);
+			}
+		}
+		if (chosen.isEmpty()) {
+			throw new IllegalArgumentException("no volume variables match " + varParam);
+		}
+		double[] times = source.dataManager.getDataSetTimes(source.vcdID);
+		if (times == null || times.length == 0) {
+			throw new IllegalArgumentException("run " + source.vcdID.getID() + " has no saved times");
+		}
+
+		// each variable's stats run over ITS domain's cells; domains repeat, so index once each
+		List<String> domains = readMesh(source).getVolumeDomainNames();
+		Map<String, int[]> indicesByDomain = new HashMap<>();
+		String[] names = new String[chosen.size()];
+		String[] varDomains = new String[chosen.size()];
+		int[][] indices = new int[chosen.size()][];
+		for (int v = 0; v < chosen.size(); v++) {
+			DataIdentifier id = chosen.get(v);
+			names[v] = id.getName();
+			varDomains[v] = id.getDomain() != null ? id.getDomain().getName() : domains.get(0);
+			final String dom = varDomains[v];
+			indices[v] = indicesByDomain.computeIfAbsent(dom, d -> {
+				try {
+					List<VisVoxel> voxels = grid(source, d).getVisVoxels();
+					int[] idx = new int[voxels.size()];
+					for (int c = 0; c < idx.length; c++) {
+						idx[c] = voxels.get(c).getFiniteVolumeIndex().getGlobalIndex();
+					}
+					return idx;
+				} catch (Exception e) {
+					throw new RuntimeException("building index set for domain '" + d + "'", e);
+				}
+			});
+		}
+
+		TimeSeriesJobSpec spec = new TimeSeriesJobSpec(names, indices, times[0], 1,
+				times[times.length - 1], true, false,
+				VCDataJobID.createVCDataJobID(source.vcdID.getOwner(), true));
+		TSJobResultsSpaceStats stats = (TSJobResultsSpaceStats) source.dataManager
+				.getTimeSeriesValues(emptyOutputContext(), source.vcdID, spec);
+		// on a uniform Cartesian grid the volume weighting is uniform; prefer weighted when present
+		double[][] means = stats.getWeightedMean() != null ? stats.getWeightedMean()
+				: stats.getUnweightedMean();
+
+		double[] statTimes = stats.getTimes();
+		StringBuilder sb = new StringBuilder(64 * statTimes.length * names.length + 512);
+		sb.append("{\"times\":");
+		appendDoubles(sb, statTimes, statTimes.length);
+		sb.append(",\"series\":[");
+		for (int v = 0; v < names.length; v++) {
+			if (v > 0) {
+				sb.append(',');
+			}
+			sb.append("{\"name\":\"").append(jsonEscape(names[v])).append('"');
+			sb.append(",\"domain\":\"").append(jsonEscape(varDomains[v])).append('"');
+			sb.append(",\"min\":");
+			appendDoubles(sb, stats.getMinimums()[v], statTimes.length);
+			sb.append(",\"max\":");
+			appendDoubles(sb, stats.getMaximums()[v], statTimes.length);
+			sb.append(",\"mean\":");
+			appendDoubles(sb, means[v], statTimes.length);
+			sb.append('}');
+		}
+		sb.append("]}");
 		return sb.toString();
 	}
 

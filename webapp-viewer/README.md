@@ -92,7 +92,9 @@ scrub time — a time step costs about 5.7× less than shipping both.
   hover readout is an occupancy map + 3D-DDA ray walk over the Cartesian lattice — no round trip,
   no registry dependence. The walk applies the same crop keep-rule as the renderer, so picking the
   cut face reads the cap voxel. A click sends the picked cell to `/timeseries`, which reduces
-  server-side next to the reader — never fetch every timestep to build one curve.
+  server-side next to the reader — never fetch every timestep to build one curve. The Stats button
+  does the same for whole-domain min/mean/max per variable via `/stats` (one space-stats
+  `TimeSeriesJobSpec` carrying all the variables at once).
 - `probe.html` is a scratch page for exactly these capability probes: point it at a suspect class,
   read the on-page result, and keep the console open for `is not permitted`.
 - **The scalar bar labels the lookup table's range, not the mapper's.** `mapper.setScalarRange`

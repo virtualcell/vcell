@@ -40,8 +40,10 @@ const el = {
   pickReadout: document.getElementById('pickReadout'),
   plotPanel: document.getElementById('plotPanel'),
   plotTitle: document.getElementById('plotTitle'),
+  plotLegend: document.getElementById('plotLegend'),
   plotSvg: document.getElementById('plotSvg'),
   plotClose: document.getElementById('plotClose'),
+  statsBtn: document.getElementById('statsBtn'),
   dataControls: document.getElementById('dataControls'),
   variable: document.getElementById('variable'),
   time: document.getElementById('time'),
@@ -756,14 +758,9 @@ async function plotPick(clientX, clientY) {
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
-/** Framework-free line plot: one polyline in an SVG, min/max labels, nothing else to maintain. */
-function renderPlot(series, center) {
-  const { times, values, name } = series;
-  const finite = values.filter((v) => v != null && Number.isFinite(v));
-  if (!times?.length || !finite.length) return;
-  let lo = Math.min(...finite);
-  let hi = Math.max(...finite);
-  if (hi - lo < 1e-300) { hi = lo + 1; }
+/** Fresh axes + scales in the plot SVG; both plot modes draw on top of this. */
+function plotFrame(times, lo, hi) {
+  if (hi - lo < 1e-300) hi = lo + 1;
   const W = 640;
   const H = 220;
   const M = { l: 8, r: 8, t: 8, b: 18 };
@@ -779,19 +776,81 @@ function renderPlot(series, center) {
   };
   mk('line', { class: 'axis', x1: M.l, y1: H - M.b, x2: W - M.r, y2: H - M.b });
   mk('line', { class: 'axis', x1: M.l, y1: M.t, x2: M.l, y2: H - M.b });
-  mk('polyline', {
-    class: 'curve',
-    points: times.map((t, i) => `${sx(t).toFixed(1)},${sy(values[i] ?? lo).toFixed(1)}`).join(' '),
-  });
   mk('text', { class: 'lbl', x: M.l + 4, y: M.t + 10 }, hi.toExponential(2));
   mk('text', { class: 'lbl', x: M.l + 4, y: H - M.b - 4 }, lo.toExponential(2));
   mk('text', { class: 'lbl', x: W - M.r - 4, y: H - 4, 'text-anchor': 'end' }, `t = ${times[times.length - 1]}`);
   mk('text', { class: 'lbl', x: M.l + 4, y: H - 4 }, `t = ${times[0]}`);
+  return { mk, sx, sy, lo };
+}
+
+/** Framework-free line plot: one polyline in an SVG, min/max labels, nothing else to maintain. */
+function renderPlot(series, center) {
+  const { times, values, name } = series;
+  const finite = values.filter((v) => v != null && Number.isFinite(v));
+  if (!times?.length || !finite.length) return;
+  const f = plotFrame(times, Math.min(...finite), Math.max(...finite));
+  f.mk('polyline', {
+    class: 'curve',
+    points: times.map((t, i) => `${f.sx(t).toFixed(1)},${f.sy(values[i] ?? f.lo).toFixed(1)}`).join(' '),
+  });
   const at = center ? ` @ (${center.map((x) => x.toFixed(1)).join(', ')})` : '';
   el.plotTitle.textContent = `${name}${at} · ${times.length} timepoints`;
+  el.plotLegend.innerHTML = '';
   el.plotPanel.hidden = false;
 }
 
+const SERIES_COLORS = ['#2a7', '#d70', '#07c', '#c2c', '#a33', '#578'];
+
+/**
+ * Item 9 (#1859): per-variable spatial min/max/mean over time — mean as a solid curve, the
+ * min-to-max envelope as a translucent band in the same color. One shared scale across all
+ * series, so the curves are directly comparable.
+ */
+function renderStatsPlot(stats) {
+  const { times, series } = stats;
+  if (!times?.length || !series?.length) return;
+  const finite = series.flatMap((s) => [...s.min, ...s.max]).filter((v) => v != null && Number.isFinite(v));
+  if (!finite.length) return;
+  const f = plotFrame(times, Math.min(...finite), Math.max(...finite));
+  series.forEach((s, k) => {
+    const color = SERIES_COLORS[k % SERIES_COLORS.length];
+    const fwd = times.map((t, i) => `${f.sx(t).toFixed(1)},${f.sy(s.min[i] ?? f.lo).toFixed(1)}`);
+    const back = [...times.keys()].reverse().map((i) => `${f.sx(times[i]).toFixed(1)},${f.sy(s.max[i] ?? f.lo).toFixed(1)}`);
+    f.mk('path', { d: `M${fwd.join('L')}L${back.join('L')}Z`, fill: color, 'fill-opacity': '0.15', stroke: 'none' });
+    f.mk('polyline', {
+      class: 'curve', stroke: color,
+      points: times.map((t, i) => `${f.sx(t).toFixed(1)},${f.sy(s.mean[i] ?? f.lo).toFixed(1)}`).join(' '),
+    });
+  });
+  el.plotTitle.textContent = `min / mean / max over space · ${times.length} timepoints`;
+  el.plotLegend.innerHTML = '';
+  series.forEach((s, k) => {
+    const item = document.createElement('span');
+    const swatch = document.createElement('span');
+    swatch.className = 'swatch';
+    swatch.style.background = SERIES_COLORS[k % SERIES_COLORS.length];
+    item.appendChild(swatch);
+    item.appendChild(document.createTextNode(s.name));
+    el.plotLegend.appendChild(item);
+  });
+  el.plotPanel.hidden = false;
+}
+
+async function plotStats() {
+  if (!state.ready || !state.dataset) return;
+  try {
+    // the server defaults to all volume variables; ask for a handful so the plot stays readable
+    const vars = state.variables.slice(0, SERIES_COLORS.length).map((v) => v.name);
+    setStatus(`fetching space statistics for ${vars.length} variable(s)…`);
+    const stats = await fetchJson(url('/stats', { var: vars.join(',') }), '/stats');
+    renderStatsPlot(stats);
+    setStatus(`${describe()} ✓`);
+  } catch (e) {
+    setStatus('stats failed: ' + (e?.message ?? e), true);
+  }
+}
+
+el.statsBtn.addEventListener('click', () => void plotStats());
 el.plotClose.addEventListener('click', () => { el.plotPanel.hidden = true; });
 
 // ---------------------------------------------------------------------------
@@ -987,6 +1046,7 @@ el.smoothingReset.addEventListener('click', () => {
     el.colorbar.disabled = false;
     el.axes.disabled = false;
     el.sliceAxis.disabled = false;
+    el.statsBtn.disabled = false;
     previewSmoothing(state.smoothing);
     setStatus(`rendered ${describe()} ✓ (${Math.round(performance.now() - t0)} ms) — drag to rotate, wheel to zoom`);
   } catch (e) {
