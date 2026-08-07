@@ -79,8 +79,10 @@ let lut = null;
 let scalarBar = null;
 let cubeAxes = null;
 let slicePlane = null;
+let clipPlane = null;
 let cutter = null;
 let sliceActor = null;
+let surfaceClipped = false;
 
 const setStatus = (text, isError = false) => {
   el.status.textContent = text;
@@ -283,17 +285,22 @@ async function buildGrid(geometry, field) {
 }
 
 /**
- * Position the cut plane and the actors around it. The slice cuts the RAW grid, not the smoothed
- * surface: its purpose is the interior field, and the cutter passes cell data through, so each
- * cut polygon carries its source voxel's exact value. While a slice is shown the boundary surface
- * drops to 25% opacity — opaque, it would hide the slice entirely.
+ * Position the cut and crop the volume at it. This is a CROP, not a floating cross-section: the
+ * half above the plane is genuinely discarded (a GPU clipping plane on the surface mapper, so no
+ * new geometry pipeline), and the slice actor caps the exposed face. The cap is cut from the RAW
+ * grid — its purpose is the interior field, and the cutter passes cell data through, so each cut
+ * polygon carries its source voxel's exact value. Its jagged voxel rim standing slightly proud of
+ * the smoothed shell is honest: that is where the smoothing moved the boundary.
  */
 async function applySlice() {
   if (!sliceActor) return;
   const axis = state.sliceAxis;
   if (axis < 0) {
     await sliceActor.visibilityOff();
-    await (await actor.getProperty()).setOpacity(1);
+    if (surfaceClipped) {
+      await mapper.removeAllClippingPlanes();
+      surfaceClipped = false;
+    }
     el.sliceReadout.textContent = '';
     return;
   }
@@ -307,8 +314,16 @@ async function applySlice() {
   normal[axis] = 1;
   await slicePlane.setOrigin(...origin);
   await slicePlane.setNormal(...normal);
+  // a clipping plane keeps the side its normal points toward, so -axis keeps everything below
+  // the cut; the slider sweeps from almost-nothing (0) to the whole volume (100)
+  normal[axis] = -1;
+  await clipPlane.setOrigin(...origin);
+  await clipPlane.setNormal(...normal);
+  if (!surfaceClipped) {
+    await mapper.addClippingPlane(clipPlane);
+    surfaceClipped = true;
+  }
   await sliceActor.visibilityOn();
-  await (await actor.getProperty()).setOpacity(0.25);
   el.sliceReadout.textContent = `${'xyz'[axis]} = ${pos.toFixed(2)}`;
 }
 
@@ -382,6 +397,7 @@ async function buildScene(geometry, field) {
   // slice pipeline — built before buildGrid so the grid can be fed to the cutter; invisible and
   // therefore never executed until a slice axis is chosen
   slicePlane = vtk.vtkPlane();
+  clipPlane = vtk.vtkPlane();
   cutter = vtk.vtkCutter();
   await cutter.setCutFunction(slicePlane);
   const sliceMapper = vtk.vtkPolyDataMapper();

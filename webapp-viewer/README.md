@@ -72,10 +72,14 @@ scrub time — a time step costs about 5.7× less than shipping both.
   actively misleading unless they read the console.
 - **`renderer.addActor2D` is refused; `renderer.addViewProp` is not.** That is the route for 2D
   props such as `vtkScalarBarActor`.
-- **The cut plane slices the raw grid, not the smoothed surface.** `vtkCutter` passes cell data
-  through, so each cut polygon carries its source voxel's exact value; the boundary surface drops
-  to 25% opacity while a slice is shown, or it would hide it. Axis-aligned only, by design — an
-  interactive plane widget needs interactor infrastructure the standalone session lacks.
+- **The cut plane CROPS the volume; the slice caps the exposed face.** The surface mapper carries
+  a GPU clipping plane (`mapper.addClippingPlane`) that discards the half above the cut — this
+  works in the wasm build even though WebGL2 has no `gl_ClipDistance`, because VTK emulates
+  clipping in-shader. The cap is `vtkCutter` output from the raw grid: cell data passes through,
+  so each cut polygon carries its source voxel's exact value. Axis-aligned only, by design — an
+  interactive plane widget needs interactor infrastructure the standalone session lacks. When
+  judging whether a crop "worked" from a screenshot, orbit toward the REMOVED side: the kept
+  hemisphere looks whole from its own side by definition.
 - **The scalar bar labels the lookup table's range, not the mapper's.** `mapper.setScalarRange`
   alone never reaches the bar — it would label [0,1] under a correctly-colored surface. The viewer
   therefore owns one `vtkLookupTable` (hue range flipped to blue-low→red-high, the desktop
