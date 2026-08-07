@@ -16,8 +16,9 @@
 #                          vcell-client/src/main/java/org/vcell/client/debug/README.md
 #   --field-viewer[=URL]   Enable the browser-based 3D field viewer (the loopback field
 #                          server + the "View in 3D" button on the PDE results panel).
-#                          URL overrides where the viewer page is served from
-#                          (default http://localhost:4200/vtk-wasm).
+#                          The page is served from webapp-viewer/ in this checkout, so the
+#                          page and its data share an origin. Pass URL to override that
+#                          and point at a viewer you are serving yourself.
 #
 # Environment overrides:
 #   VCELL_API_HOST          api server host[:port]  (default vcell.cam.uchc.edu:443)
@@ -33,7 +34,7 @@
 #   VCELL_API_HOST=vcell-dev.cam.uchc.edu:443 ./vcell.sh  # connect to dev
 #   ./vcell.sh --debug-bridge                             # bridge on :9123
 #   ./vcell.sh --field-viewer                             # 3D field viewer on
-#   ./vcell.sh --field-viewer=http://localhost:4300/vtk-wasm
+#   ./vcell.sh --field-viewer=http://localhost:4400/      # serve the page yourself instead
 #   ./vcell.sh --debug-bridge=9200 model.vcml            # bridge on :9200, open model
 
 set -eo pipefail
@@ -62,8 +63,18 @@ for arg in "$@"; do
       bridge_note=" debug-bridge=on(:${port})"
       ;;
     --field-viewer)
+      # webapp-viewer has no build step — the source directory is the deployable — so point
+      # the field server straight at it and let the page and its data share an origin.
       viewer_props=(-Dvcell.fieldViewer.enabled=true)
       viewer_note=" field-viewer=on"
+      if [ -f ./webapp-viewer/index.html ]; then
+        viewer_props+=("-Dvcell.fieldViewer.staticDir=${PWD}/webapp-viewer")
+        viewer_note=" field-viewer=on(webapp-viewer/)"
+        if ! ls ./webapp-viewer/assets/vtk-wasm/*.tar.gz >/dev/null 2>&1; then
+          echo "NOTE: the vtk.wasm bundle is missing, so the viewer page will not render." >&2
+          echo "      Fetch it once with:  ( cd webapp-viewer && npm run fetch:vtk-wasm )" >&2
+        fi
+      fi
       ;;
     --field-viewer=*)
       url="${arg#*=}"
