@@ -181,6 +181,7 @@ jobs:
             needs_maven: true
             needs_secrets: false
             needs_installer_secrets: true
+            needs_vtk_wasm: true
           - name: admin
             dockerfile: docker/build/Dockerfile-admin-dev
             context: .
@@ -232,6 +233,14 @@ jobs:
         cd ..
         sudo tar -xvf deploy/deploy_dir_2025_03_18.tar
         sudo chmod 777 -R deploy
+
+    # The 3D field viewer's wasm bundle is a pinned release asset, not a repo file, and only the
+    # clientgen image ships it. Fetching it here rather than in the maven build keeps a 12 MB
+    # download off every developer's machine for a feature that is disabled by default; developers
+    # who want the viewer locally run the same script themselves (see webapp-viewer/README.md).
+    - name: fetch vtk.wasm bundle for the field viewer
+      if: ${{ matrix.image.needs_vtk_wasm }}
+      run: node webapp-viewer/scripts/fetch-vtk-wasm.mjs
 
     - name: Pre-build step
       if: ${{ matrix.image.pre_build }}

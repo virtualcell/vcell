@@ -19,6 +19,7 @@
       <variable name="vcellLocalSolversDirPath" value="${compiler:mavenRootDir}/localsolvers" />
       <variable name="vcellLicenseFilePath" value="${compiler:mavenRootDir}/thirdpartylicenses.txt" />
       <variable name="vcellbngPerlPath" value="${compiler:mavenRootDir}/bionetgen" />
+      <variable name="vcellWebViewerPath" value="${compiler:mavenRootDir}/webviewer" />
     </variables>
     <codeSigning macEnabled="true" macPkcs12File="${compiler:macKeystore}" windowsEnabled="true" windowsPkcs12File="${compiler:winKeystore}">
       <macAdditionalBinaries>
@@ -56,6 +57,7 @@
       <mountPoint id="1473" location="resources" />
       <mountPoint id="1474" location="localsolvers" />
       <mountPoint id="1750" location="bionetgen" />
+      <mountPoint id="3200" location="webviewer" />
       <mountPoint id="1348" root="1114" location="nativelibs" />
       <mountPoint id="1349" root="1114" location="nativelibs/mac64" />
       <mountPoint id="1342" root="1114" location="localsolvers" />
@@ -81,6 +83,7 @@
       <dirEntry mountPoint="719" file="${compiler:vcellLibSourcePath}" subDirectory="maven-jars" />
       <fileEntry mountPoint="1473" file="${compiler:vcellLicenseFilePath}" />
       <dirEntry mountPoint="1750" file="${compiler:vcellbngPerlPath}" />
+      <dirEntry mountPoint="3200" file="${compiler:vcellWebViewerPath}" />
       <dirEntry mountPoint="1349" file="${compiler:vcellNativeLibsDirSourcePath}/mac64" />
       <dirEntry mountPoint="1353" file="${compiler:vcellLocalSolversDirPath}/mac64" fileMode="755" overrideFileMode="true" />
       <dirEntry mountPoint="1355" file="${compiler:vcellNativeLibsDirSourcePath}/win64" />

@@ -38,6 +38,20 @@ COPY ./vcell-client/target/vcell-client-0.0.1-SNAPSHOT.jar \
     ./vcell-client/target/maven-jars/*.jar \
     /vcellclient/vcell-client/target/maven-jars/
 
+#
+# The 3D field viewer's web content, served by the client's own loopback field server from
+# <installDir>/webviewer. webapp-viewer has no build step — the source directory is the deployable —
+# so only what the browser actually loads is copied; the fetch script and package.json stay behind.
+#
+# assets/ holds the vtk.wasm bundle, which is gitignored and downloaded by CI before this image is
+# built. If that step did not run, this COPY fails and the image build stops — which is the point:
+# an installer that shipped the page without the bundle would 404 at the moment a user clicks
+# "View in 3D".
+#
+COPY ./webapp-viewer/index.html ./webapp-viewer/viewer.js /vcellclient/webviewer/
+COPY ./webapp-viewer/vendor    /vcellclient/webviewer/vendor
+COPY ./webapp-viewer/assets    /vcellclient/webviewer/assets
+
 COPY ./docker/build/installers /config/
 
 WORKDIR /config

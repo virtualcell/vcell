@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Build-time fetch of VCell's VTK.wasm bundle into webapp-ng's assets, so the field viewer loads it
+// Build-time fetch of VCell's VTK.wasm bundle into webapp-viewer's assets, so the field viewer loads it
 // SAME-ORIGIN (GitHub release assets can't be fetched cross-origin from the browser — no CORS header).
 // The @kitware/vtk-wasm loader's loadAsync({url}) takes the .tar.gz and untars it in-browser
 // (DecompressionStream + untar), so we serve the .tar.gz as-is. Idempotent. Env:
