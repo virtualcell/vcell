@@ -37,6 +37,7 @@ const el = {
   sliceAxis: document.getElementById('sliceAxis'),
   slicePos: document.getElementById('slicePos'),
   sliceReadout: document.getElementById('sliceReadout'),
+  pickReadout: document.getElementById('pickReadout'),
   dataControls: document.getElementById('dataControls'),
   variable: document.getElementById('variable'),
   time: document.getElementById('time'),
@@ -58,6 +59,8 @@ const state = {
   bounds: null,
   sliceAxis: -1,
   slicePos: 50,
+  pick: null, // Cartesian occupancy index of the current grid, for mouse picking
+  fieldValues: null, // raw per-cell values of the shown field (nulls = blanked cells)
   nominalSinc: null,
   smoothing: NOMINAL_STRENGTH,
   ready: false,
@@ -232,6 +235,120 @@ async function applyFieldRange(field) {
   if (scalarBar) await scalarBar.setTitle(field.name);
 }
 
+/**
+ * Cartesian occupancy index for mouse picking, built once per geometry. The voxels are
+ * axis-aligned boxes on a regular lattice, so a pick is a 3D-DDA walk along the mouse ray —
+ * a few dozen lattice steps — not a test against every cell. Resolved entirely in JS: the
+ * browser already holds the grid and the field, so no round trip and no picker object.
+ */
+function buildPickIndex(geometry, bounds) {
+  const P = geometry.points;
+  const first = geometry.cells[0];
+  if (!first) return null;
+  let mins = [Infinity, Infinity, Infinity];
+  let maxs = [-Infinity, -Infinity, -Infinity];
+  for (const pi of first) {
+    for (let a = 0; a < 3; a++) {
+      mins[a] = Math.min(mins[a], P[3 * pi + a]);
+      maxs[a] = Math.max(maxs[a], P[3 * pi + a]);
+    }
+  }
+  const d = [maxs[0] - mins[0], maxs[1] - mins[1], maxs[2] - mins[2]];
+  const o = [bounds[0], bounds[2], bounds[4]];
+  const n = [0, 1, 2].map((a) => Math.max(1, Math.round((bounds[2 * a + 1] - bounds[2 * a]) / d[a])));
+  const occ = new Map();
+  const keyByCell = new Array(geometry.cells.length);
+  for (let c = 0; c < geometry.cells.length; c++) {
+    let cmin = [Infinity, Infinity, Infinity];
+    for (const pi of geometry.cells[c]) {
+      for (let a = 0; a < 3; a++) cmin[a] = Math.min(cmin[a], P[3 * pi + a]);
+    }
+    const i = [0, 1, 2].map((a) => Math.round((cmin[a] - o[a]) / d[a]));
+    const key = i[0] + n[0] * (i[1] + n[1] * i[2]);
+    occ.set(key, c);
+    keyByCell[c] = key;
+  }
+  return { o, d, n, occ, keyByCell };
+}
+
+/** Cell under the given ray, honoring the crop: cells above an active cut are not pickable. */
+function castRay(origin, dir) {
+  const pk = state.pick;
+  if (!pk) return -1;
+  const b = state.bounds;
+  // slab-clip the ray to the grid bounds
+  let t0 = 0;
+  let t1 = Infinity;
+  for (let a = 0; a < 3; a++) {
+    if (Math.abs(dir[a]) < 1e-12) {
+      if (origin[a] < b[2 * a] || origin[a] > b[2 * a + 1]) return -1;
+      continue;
+    }
+    let near = (b[2 * a] - origin[a]) / dir[a];
+    let far = (b[2 * a + 1] - origin[a]) / dir[a];
+    if (near > far) [near, far] = [far, near];
+    t0 = Math.max(t0, near);
+    t1 = Math.min(t1, far);
+  }
+  if (t0 > t1) return -1;
+  // crop plane: same keep-rule as the renderer (low side of the sliced axis survives)
+  let cropAxis = -1;
+  let cropPos = 0;
+  if (state.sliceAxis >= 0) {
+    cropAxis = state.sliceAxis;
+    const frac = 0.005 + 0.99 * (state.slicePos / 100);
+    cropPos = b[2 * cropAxis] + frac * (b[2 * cropAxis + 1] - b[2 * cropAxis]);
+  }
+  // Amanatides & Woo lattice walk
+  const eps = 1e-9;
+  const start = [0, 1, 2].map((a) => origin[a] + (t0 + eps) * dir[a]);
+  const i = [0, 1, 2].map((a) =>
+    Math.min(pk.n[a] - 1, Math.max(0, Math.floor((start[a] - pk.o[a]) / pk.d[a]))));
+  const step = dir.map((v) => (v > 0 ? 1 : -1));
+  const tDelta = [0, 1, 2].map((a) => Math.abs(pk.d[a] / (Math.abs(dir[a]) < 1e-12 ? Infinity : dir[a])));
+  const tMax = [0, 1, 2].map((a) => {
+    if (Math.abs(dir[a]) < 1e-12) return Infinity;
+    const edge = pk.o[a] + (i[a] + (step[a] > 0 ? 1 : 0)) * pk.d[a];
+    return t0 + (edge - start[a]) / dir[a];
+  });
+  for (let guard = pk.n[0] + pk.n[1] + pk.n[2] + 3; guard > 0; guard--) {
+    const cell = pk.occ.get(i[0] + pk.n[0] * (i[1] + pk.n[1] * i[2]));
+    if (cell !== undefined) {
+      if (cropAxis < 0) return cell;
+      const center = pk.o[cropAxis] + (i[cropAxis] + 0.5) * pk.d[cropAxis];
+      if (center <= cropPos) return cell;
+    }
+    const a = tMax[0] <= tMax[1] ? (tMax[0] <= tMax[2] ? 0 : 2) : (tMax[1] <= tMax[2] ? 1 : 2);
+    i[a] += step[a];
+    if (i[a] < 0 || i[a] >= pk.n[a] || tMax[a] > t1) return -1;
+    tMax[a] += tDelta[a];
+  }
+  return -1;
+}
+
+/** Mouse position → world-space ray through the camera. Perspective camera, vertical FOV. */
+async function rayFromMouse(clientX, clientY) {
+  const rect = el.canvas.getBoundingClientRect();
+  const xN = ((clientX - rect.left) / rect.width) * 2 - 1;
+  const yN = 1 - ((clientY - rect.top) / rect.height) * 2;
+  const P = await camera.getPosition();
+  const F = await camera.getFocalPoint();
+  const U = await camera.getViewUp();
+  const halfTan = Math.tan(((await camera.getViewAngle()) * Math.PI) / 360);
+  const norm = (v) => {
+    const l = Math.hypot(v[0], v[1], v[2]) || 1;
+    return [v[0] / l, v[1] / l, v[2] / l];
+  };
+  const cross = (u, v) => [u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2], u[0] * v[1] - u[1] * v[0]];
+  const fwd = norm([F[0] - P[0], F[1] - P[1], F[2] - P[2]]);
+  const right = norm(cross(fwd, U));
+  const up = cross(right, fwd);
+  const aspect = rect.width / rect.height;
+  const dir = norm([0, 1, 2].map((a) =>
+    fwd[a] + right[a] * xN * aspect * halfTan + up[a] * yN * halfTan));
+  return { origin: P, dir };
+}
+
 /** Axis-aligned bounds of the raw grid — the axes box frames the data, not the smoothed surface. */
 function boundsOf(geometry) {
   const b = [Infinity, -Infinity, Infinity, -Infinity, Infinity, -Infinity];
@@ -282,6 +399,8 @@ async function buildGrid(geometry, field) {
     await (await actor.getProperty()).setColor(0.30, 0.65, 0.45);
   }
   state.bounds = boundsOf(geometry);
+  state.pick = buildPickIndex(geometry, state.bounds);
+  state.fieldValues = field ? field.values : null;
   if (cubeAxes) await cubeAxes.setBounds(...state.bounds);
   capTrimDirty = true; // new geometry, new smoothed surface
   await applySlice(); // a domain switch changes the bounds the slider position maps into
@@ -357,6 +476,7 @@ async function refreshSlice() {
 /** Same geometry, new values: rewrite the scalars in place rather than rebuilding the grid. */
 async function applyField(field) {
   if (!fieldArray) return;
+  state.fieldValues = field.values;
   await fieldArray.setName(field.name);
   await fieldArray.setNumberOfTuples(field.values.length);
   for (let i = 0; i < field.values.length; i++) await fieldArray.setTuple1(i, field.values[i] ?? 0);
@@ -504,17 +624,22 @@ function attachTrackball() {
   let dragging = false;
   let lastX = 0;
   let lastY = 0;
+  let dragDistance = 0;
   el.canvas.addEventListener('pointerdown', (e) => {
     if (e.button !== 0) return;
-    dragging = true; lastX = e.clientX; lastY = e.clientY;
+    dragging = true; lastX = e.clientX; lastY = e.clientY; dragDistance = 0;
     el.canvas.setPointerCapture(e.pointerId);
     e.preventDefault();
   });
   el.canvas.addEventListener('pointermove', (e) => {
-    if (!dragging) return;
+    if (!dragging) {
+      void hoverPick(e.clientX, e.clientY);
+      return;
+    }
     const dx = e.clientX - lastX;
     const dy = e.clientY - lastY;
     lastX = e.clientX; lastY = e.clientY;
+    dragDistance += Math.abs(dx) + Math.abs(dy);
     if (dx || dy) void orbit(dx, dy);
     e.preventDefault();
   });
@@ -525,6 +650,7 @@ function attachTrackball() {
   };
   el.canvas.addEventListener('pointerup', release);
   el.canvas.addEventListener('pointercancel', release);
+  el.canvas.addEventListener('pointerleave', () => { el.pickReadout.textContent = ''; });
   el.canvas.addEventListener('wheel', (e) => {
     void dolly(e.deltaY < 0 ? 1.1 : 1 / 1.1);
     e.preventDefault();
@@ -558,6 +684,44 @@ async function dolly(factor) {
     console.warn('dolly failed', e);
   } finally {
     state.drawing = false;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// picking (#1859 item 6)
+// ---------------------------------------------------------------------------
+
+/** Center coordinates of a picked cell, for the readouts. */
+function cellCenter(cell) {
+  const pk = state.pick;
+  const key = pk.keyByCell[cell];
+  if (key === undefined) return null;
+  const iz = Math.floor(key / (pk.n[0] * pk.n[1]));
+  const iy = Math.floor((key - iz * pk.n[0] * pk.n[1]) / pk.n[0]);
+  const ix = key % pk.n[0];
+  return [pk.o[0] + (ix + 0.5) * pk.d[0], pk.o[1] + (iy + 0.5) * pk.d[1], pk.o[2] + (iz + 0.5) * pk.d[2]];
+}
+
+let hoverBusy = false;
+async function hoverPick(clientX, clientY) {
+  if (!state.ready || !state.pick || hoverBusy) return;
+  hoverBusy = true;
+  try {
+    const { origin, dir } = await rayFromMouse(clientX, clientY);
+    const cell = castRay(origin, dir);
+    if (cell < 0) {
+      el.pickReadout.textContent = '';
+      return;
+    }
+    const v = state.fieldValues?.[cell];
+    const c = cellCenter(cell);
+    const at = c ? ` @ (${c.map((x) => x.toFixed(1)).join(', ')})` : '';
+    el.pickReadout.textContent =
+      v == null ? `no data${at}` : `${state.selectedVar} = ${v.toExponential(3)}${at}`;
+  } catch (e) {
+    console.warn('hover pick failed', e);
+  } finally {
+    hoverBusy = false;
   }
 }
 

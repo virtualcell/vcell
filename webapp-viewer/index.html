@@ -38,6 +38,7 @@
   .readout em { color: #2a7; font-style: normal; }
   .status { font: 12px/1.4 ui-monospace, monospace; opacity: .7; }
   .status.err { color: #c0392b; opacity: 1; white-space: pre-wrap; }
+  .readout.pick { flex: 0 1 auto; opacity: 1; color: #2a7; min-width: 12em; }
 </style>
 </head>
 <body>
@@ -54,6 +55,7 @@
   <label for="time">Time</label>
   <input id="time" type="range" min="0" max="0" step="1" value="0" disabled>
   <span class="readout" id="dataReadout"></span>
+  <span class="readout pick" id="pickReadout" title="value under the mouse"></span>
 </div>
 
 <div class="controls">
