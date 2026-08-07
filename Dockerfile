@@ -55,9 +55,16 @@ LABEL \
     maintainer="BioSimulators Team <info@biosimulators.org>"
 
 ENV DEBIAN_FRONTEND=noninteractive
-RUN apt -y update && apt install -y software-properties-common
-RUN apt install -y --no-install-recommends curl python3.10 python3-pip build-essential dnsutils \
-    apt-utils libfreetype6 fontconfig fonts-dejavu
+# Keep the index refresh in the same layer as every install. Split across two RUNs,
+# an install resolves against whatever index the earlier layer cached, and once Ubuntu
+# supersedes a package the version that index names is gone from the pool. (Note this
+# is a hazard for cached builds; the release job that prompted the change builds with
+# --no-cache, where a 404 instead means a transient archive.ubuntu.com mirror lag.)
+RUN apt-get update \
+    && apt-get install -y software-properties-common \
+    && apt-get install -y --no-install-recommends curl python3.10 python3-pip build-essential dnsutils \
+        apt-utils libfreetype6 fontconfig fonts-dejavu \
+    && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /usr/local/app/vcell/lib && \
     mkdir -p /usr/local/app/vcell/simulation && \

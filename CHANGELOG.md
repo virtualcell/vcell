@@ -16,6 +16,66 @@ followed by flat Keep-a-Changelog categories. API consumers should scan
 
 _(Release-manager scratchpad. Populated at release-cut time.)_
 
+## [8.0.6.01] - 2026-08-05
+
+**Highlights.** Desktop UI bug-fix release. Five reported client bugs are
+fixed: the geometry viewer opening behind the main window and appearing
+blank, a crash while sizing species-pattern text, PathwayCommons links
+landing on the wrong site, Constructed Solid Geometry being offered for
+2D geometries, and a failed import crashing instead of explaining itself.
+The SpringSaLaD 3D viewer gains a species selector and MP4 export, login
+no longer fails when a second client is already running, and a
+third-party outage can no longer block CI.
+
+### Added
+- SpringSaLaD 3D viewer: per-species visibility selector and MP4 export of
+  trajectory animations, plus a color correction. (#1814)
+- Swing debug bridge — a developer tool for inspecting and driving the
+  desktop client, **off unless `-Dvcell.debugBridge=true`** and bound to
+  loopback only. Semantic `name=`/type selectors, deterministic waits,
+  popup-free menu activation, JTree/JTable row interaction, component
+  property inspection, and committed launch/CLI/scenario tooling under
+  `tools/debug-bridge/`. (#1817, #1823, #1830)
+- Internal: CI build of a custom VTK.wasm and a golden-file test for
+  client-side WindowedSinc smoothing, feeding the upcoming web field
+  visualization; not shipped in any release artifact. (#1812, #1822)
+- Internal: test coverage for MathModel references on publications, which
+  previously had none — every publication test passed an empty list. (#1828)
+
+### Fixed
+- Opening a geometry from the Database window's Geometries tab no longer
+  puts the viewer behind the main window, and it now shows the geometry
+  immediately. The window was never raised (only BioModel/MathModel windows
+  were, via a path a geometry has no equivalent for), and its editor toggle
+  started selected while no viewer had been opened, so the first click
+  merely deselected it. (#1818, issue #1737)
+- Client no longer crashes with a `NullPointerException` while sizing
+  species-pattern text before the drawing canvas is displayable. The same
+  fault existed at 17 call sites across the shape classes and was fixed at
+  all of them. (#1820, issue #1749)
+- PathwayCommons "Open Web Link" now opens the pathway's Reactome page
+  instead of the PathwayCommons site root. (#1820, issue #1744)
+- Constructed Solid Geometry is no longer offered for 1D/2D geometries,
+  where it produced meaningless results; it is 3D-only. (#1820, issue #1739)
+- A document import that produces nothing now reports what went wrong —
+  naming the file, or noting that a remote fetch returned no usable
+  content — instead of failing with a `NullPointerException`. (#1821,
+  issue #1748)
+- Login no longer fails when another VCell client is already running; the
+  authentication callback server now binds its port up front rather than
+  probing for a free one. (#1815)
+- Pathway Commons searches in the model editor now time out instead of
+  hanging when the service is slow or unreachable. (#1826)
+- Internal: `SimulationDispatcherTest` flakiness (#1816), and
+  `PathwaySearchTest` now skips when PathwayCommons, Reactome or NCBI is
+  unreachable or failing, instead of failing the required CI check — a
+  multi-hour third-party outage had been blocking every merge. (#1819, #1825)
+
+### Notes for API consumers
+- No `/api/v1/` schema changes in this build; `tools/openapi.yaml` is
+  unchanged since 8.0.5.01, and the generated Java, Python and
+  TypeScript clients are unaffected.
+
 ## [8.0.5.01] - 2026-07-31
 
 **Highlights.** Hardens publications against the null publication-date bug

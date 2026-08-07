@@ -79,7 +79,6 @@ public class SEDMLExporterSBMLTest extends SEDMLExporterCommon {
 		faults.put("biomodel_123465505.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_124562627.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_12522025.vcml", SEDML_FAULT.MATH_OVERRIDE_NAMES_DIFFERENT);  // simulation 'Simulation 1' in simContext 'purkinje9-ss'
-		faults.put("biomodel_13717231.vcml", SEDML_FAULT.SIMCONTEXT_NOT_FOUND_BY_NAME);  // round-tripped simulationContext not found with name 'double -'
 		faults.put("biomodel_13736736.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_145545992.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_148700996.vcml", SEDML_FAULT.MATH_OVERRIDE_NAMES_DIFFERENT); // simulation 'Full sim' in simContext 'Fast B Compartmental'
@@ -120,7 +119,6 @@ public class SEDMLExporterSBMLTest extends SEDMLExporterCommon {
 		faults.put("biomodel_2962862.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_32568171.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_32568356.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
-		faults.put("biomodel_34826524.vcml", SEDML_FAULT.MATH_OVERRIDE_NOT_EQUIVALENT); // simulation 'Cap=1, cof, prof varied' in simContext 'Steady State Turnover'
 		faults.put("biomodel_34855932.vcml", SEDML_FAULT.MATH_OVERRIDE_NOT_EQUIVALENT); // simulation 'INIT' in simContext 'cell4'
 		faults.put("biomodel_38086434.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX); // new
 		faults.put("biomodel_55178308.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX); // new
@@ -158,12 +156,14 @@ public class SEDMLExporterSBMLTest extends SEDMLExporterCommon {
 
 
 		// SEDML Validator Errors
-		faults.put("biomodel_82065439.vcml", SEDML_FAULT.OMEX_PARSER_ERRORS);  //  NON_UNIQUE_IDS:    Each identified SED object must have a unique id. Multiple objects have the following ids:",[["compartmental"]]
+		// biosimulators-utils 0.2.3 validates every repeatedTask setValue target against the LAST model in the
+		// document instead of the one the change references (sedml/validation.py:509 passes a leaked `model`
+		// loop variable, not `change.model`), so these XPaths are reported against a model they never named.
+		// The archive is correct - the parameters resolve against their own model sources. Remove once fixed upstream.
+		faults.put("biomodel_28625786.vcml", SEDML_FAULT.OMEX_PARSER_ERRORS);  //  XPATH_BAD:  XPath `/sbml:sbml/sbml:model/sbml:listOfParameters/sbml:parameter[@id='Km_PKA_activates_Raf']/@value` does not match any elements of model `simple_1`.
 		faults.put("biomodel_220138948.vcml",SEDML_FAULT.OMEX_VALIDATION_ERRORS);  //  XPATH_BAD:  XPath `/sbml:sbml/sbml:model/sbml:listOfSpecies/sbml:species[@id='OAT1']/@initialConcentration` does not match any elements of model `_0D`.
 		faults.put("biomodel_31523791.vcml", SEDML_FAULT.OMEX_PARSER_ERRORS);      //  XPATH_BAD:  XPath `/sbml:sbml/sbml:model/sbml:listOfSpecies/sbml:species[@id='cAMP_Intracellular']/@initialConcentration` does not match any elements of model `Dose_response`.
 		faults.put("biomodel_34855932.vcml", SEDML_FAULT.OMEX_PARSER_ERRORS);      //  XPATH_BAD:  XPath `/sbml:sbml/sbml:model/sbml:listOfParameters/sbml:parameter[@id='Kf_GPCR_to_ICSC']/@value` does not match any elements of model `cell5`
-		faults.put("biomodel_40882931.vcml", SEDML_FAULT.OMEX_PARSER_ERRORS);  //  XPATH_BAD:  XPath `/sbml:sbml/sbml:model/sbml:listOfSpecies/sbml:species[@id='ZO1staticF_PM']/@initialConcentration` does not match any elements of model `_3d_image`
-		faults.put("biomodel_40883509.vcml", SEDML_FAULT.OMEX_PARSER_ERRORS);  //  XPATH_BAD:  XPath `/sbml:sbml/sbml:model/sbml:listOfSpecies/sbml:species[@id='PIK_PM']/@initialConcentration` does not match any elements of model `_3d_image`
 		faults.put("biomodel_65311813.vcml", SEDML_FAULT.OMEX_PARSER_ERRORS);  //  XPATH_BAD:  XPath `/sbml:sbml/sbml:model/sbml:listOfParameters/sbml:parameter[@id='Ran_nuc_diff']/@value` does not match any elements of model `_3d_image_0`
 		return faults;
 	}
@@ -190,6 +190,14 @@ public class SEDMLExporterSBMLTest extends SEDMLExporterCommon {
 		unsupportedApplications.add(new UnsupportedApplication("biomodel_16804037.vcml","PipDecay","Reaction 'KCNQcurrent' has electric current defined, SBML Export is not supported"));
 		unsupportedApplications.add(new UnsupportedApplication("biomodel_169993006.vcml","Pattern_formation","Species 'A' has FieldData as initial condition, SBML Export is not supported"));
 		unsupportedApplications.add(new UnsupportedApplication("biomodel_17098642.vcml","PipDecay","Reaction 'KCNQcurrent' has electric current defined, SBML Export is not supported"));
+		unsupportedApplications.add(new UnsupportedApplication("biomodel_188880263.vcml","Stochastic mRNA Number Sweep","Application 'Stochastic mRNA Number Sweep' has reaction rules, SBML Export is not supported"));
+		unsupportedApplications.add(new UnsupportedApplication("biomodel_188880263.vcml","Stochastic Make mRNA Sweep Const Prot","Application 'Stochastic Make mRNA Sweep Const Prot' has reaction rules, SBML Export is not supported"));
+		unsupportedApplications.add(new UnsupportedApplication("biomodel_188880263.vcml","Stochastic mRNA Number Sweep Const Nucl Chaparones","Application 'Stochastic mRNA Number Sweep Const Nucl Chaparones' has reaction rules, SBML Export is not supported"));
+		unsupportedApplications.add(new UnsupportedApplication("biomodel_188880263.vcml","Stochastic Make mRNA Sweep","Application 'Stochastic Make mRNA Sweep' has reaction rules, SBML Export is not supported"));
+		unsupportedApplications.add(new UnsupportedApplication("biomodel_188880263.vcml","Stochastic","Application 'Stochastic' has reaction rules, SBML Export is not supported"));
+		unsupportedApplications.add(new UnsupportedApplication("biomodel_188880263.vcml","Continuous_Low L1DNA","Application 'Continuous_Low L1DNA' has reaction rules, SBML Export is not supported"));
+		unsupportedApplications.add(new UnsupportedApplication("biomodel_188880263.vcml","Network Free","Application 'Network Free' has reaction rules, SBML Export is not supported"));
+		unsupportedApplications.add(new UnsupportedApplication("biomodel_188880263.vcml","Continuous_Med L1DNA","Application 'Continuous_Med L1DNA' has reaction rules, SBML Export is not supported"));
 		unsupportedApplications.add(new UnsupportedApplication("biomodel_189321805.vcml","Application0","Application 'Application0' has reaction rules, SBML Export is not supported"));
 		unsupportedApplications.add(new UnsupportedApplication("biomodel_189512756.vcml","Modeling PI cycle","Reaction 'KCNQ2/3' has electric current defined, SBML Export is not supported"));
 		unsupportedApplications.add(new UnsupportedApplication("biomodel_189513183.vcml","modeling PI cycle","Reaction 'KCNQ2/3' has electric current defined, SBML Export is not supported"));

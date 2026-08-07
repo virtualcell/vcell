@@ -122,6 +122,7 @@ public abstract class VCMessagingServiceJms implements VCMessagingService {
 					super.close();
 				}
 			};
+			messageProducerSession.open();
 			messagingProducerSessions.add(messageProducerSession);
 			return messageProducerSession;
 		} catch (JMSException | VCMessagingException e) {
@@ -186,16 +187,18 @@ public abstract class VCMessagingServiceJms implements VCMessagingService {
 
 	@Override
 	public void removeMessageConsumer(VCMessagingConsumer vcMessagingConsumer) {
+		ConsumerContextJms removed = null;
 		for (ConsumerContextJms context : consumerContexts){
 			if (context.getVCConsumer() == vcMessagingConsumer){
-				try {
-					context.stop();
-				} finally {
-					consumerContexts.remove(context);
-				}
-				return;
+				removed = context;
+				break;
 			}
 		}
+		if (removed == null){
+			return;
+		}
+		consumerContexts.remove(removed);
+		removed.stopAndClose();
 	}
 
 	@Override

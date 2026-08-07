@@ -467,7 +467,9 @@ private NrrdInfo[] exportPDEData(OutputContext outputContext,long jobID, User us
 	private static long fireThrottledProgress(ExportEventController exportServiceImpl, long lastUpdateTime, String message, long jobID, VCDataIdentifier vcdID, int progressIndex, int endIndex){
 		if(lastUpdateTime == 0 || (System.currentTimeMillis() - lastUpdateTime)>5000){
 			lastUpdateTime = System.currentTimeMillis();
-			exportServiceImpl.fireExportProgress(jobID, vcdID, message,(double)(progressIndex)/(double)(endIndex+1));
+			// endIndex+1 is zero for an empty range; the double division would then publish
+			// Infinity as progress, which JSON cannot represent (see ASCIIExporter.fraction).
+			exportServiceImpl.fireExportProgress(jobID, vcdID, message, ASCIIExporter.fraction(progressIndex, endIndex + 1));
 		}
 		return lastUpdateTime;
 	}

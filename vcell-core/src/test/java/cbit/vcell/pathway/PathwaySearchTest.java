@@ -48,8 +48,6 @@ public class PathwaySearchTest {
     private static final Namespace BP_NS = Namespace.getNamespace("bp",
             "http://www.biopax.org/release/biopax-level2.owl#");
 
-    private static final String reactomeSite = "https://reactome.org";
-    private static final String ncbiSite = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/einfo.fcgi?db=taxonomy";
 
     private static final int CONNECT_TIMEOUT_MS = 10_000;
     private static final int READ_TIMEOUT_MS = 30_000;
@@ -77,10 +75,10 @@ public class PathwaySearchTest {
     corresponds to insulinPathway-5683177.xml
     */
     @Test
-    public void pathwayDownloadTest() throws MalformedURLException {
-        // skips the test if the external database is down, no point failing CI over something that's not our fault
-        Assumptions.assumeTrue(isDatabaseAvailable(reactomeSite), "Reactome is down — skipping test");
-
+    public void pathwayDownloadTest() throws IOException {
+        // Reactome being down is handled inside pathwayDownload, by inspecting the status of
+        // the request the test actually makes. The pre-flight isDatabaseAvailable(reactomeSite)
+        // probe that used to guard this checked the site root, not the API path below.
         String pathwayId = "5683177";  // Reactome pathway ID
         pathwayDownload(pathwayId);
         lg.debug("pathwayDownloadTest - done");
@@ -132,25 +130,35 @@ public class PathwaySearchTest {
 
     @Test
     public void fetchTaxonomyNameFromIdTest() {
-        Assumptions.assumeTrue(isDatabaseAvailable(ncbiSite), "Taxonomy Database is down — skipping test");
-
+        // As above, no pre-flight probe: the status of the real request decides. A timeout
+        // or unreachable host means NCBI is down, which used to fail() this test and, since
+        // it carries the Fast tag, block every merge in the repo.
         String taxonId = "9940"; // Ovis aries (sheep)
+        HttpResponse<String> response;
         try {
-            HttpResponse<String> response = OrganismLookup.fetchTaxonomyResponse(taxonId);
-            assertEquals(200, response.statusCode(), "Unexpected HTTP status");
-
-            String result = OrganismLookup.parseTaxonomyName(taxonId, response.body());
-            assertEquals("Ovis aries (sheep)", result, "Incorrect taxonomy name");
-
+            response = OrganismLookup.fetchTaxonomyResponse(taxonId);
         } catch (HttpTimeoutException e) {
-            fail("Timeout occurred while fetching taxonomy data");
+            Assumptions.abort("NCBI Taxonomy timed out — skipping test");
+            return;
         } catch (UnknownHostException e) {
-            fail("Host unreachable: check network or endpoint");
+            Assumptions.abort("NCBI Taxonomy is unreachable (check network or endpoint) — skipping test");
+            return;
         } catch (IOException e) {
-            fail("I/O error during taxonomy fetch: " + e.getMessage());
+            Assumptions.abort("I/O error contacting NCBI Taxonomy (" + e.getMessage() + ") — skipping test");
+            return;
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            fail("Request interrupted");
+            Assumptions.abort("Request interrupted — skipping test");
+            return;
+        }
+
+        // their outage skips; a 4xx or the wrong name is still a real failure
+        assertEquals(200, statusOrSkip(response, "NCBI Taxonomy"), "Unexpected HTTP status");
+        try {
+            assertEquals("Ovis aries (sheep)", OrganismLookup.parseTaxonomyName(taxonId, response.body()),
+                    "Incorrect taxonomy name");
+        } catch (IOException e) {
+            fail("Malformed taxonomy response: " + e.getMessage());
         }
     }
 
@@ -163,11 +171,11 @@ public class PathwaySearchTest {
         return XmlUtil.stringToXML(xmlContent, null);
     }
 
-    private static String pathwayDownload(String pathwayId) throws MalformedURLException {
+    private static String pathwayDownload(String pathwayId) throws IOException {
         final URL url = new URL("https://reactome.org/ReactomeRESTfulAPI/RESTfulWS/biopaxExporter/Level2/" + pathwayId);
 
         String ERROR_CODE_TAG = "error_code";
-        String contentString = downloadBytes(url, Duration.ofSeconds(20));      // download
+        String contentString = downloadOrSkip(url, "Reactome");      // download, or skip if Reactome is down
 
         // assert response is XML
         assertTrue(contentString.trim().startsWith("<?xml"), "Response does not start with XML declaration");
@@ -434,26 +442,45 @@ public class PathwaySearchTest {
         } catch (IOException e) {
             return Assumptions.abort(serviceName + " is unreachable (" + e + ") — skipping test");
         }
+        return checkStatus(status, serviceName);
+    }
+
+    /** {@link #statusOrSkip(HttpURLConnection, String)} for the java.net.http client. */
+    private static int statusOrSkip(HttpResponse<?> response, String serviceName) {
+        return checkStatus(response.statusCode(), serviceName);
+    }
+
+    private static int checkStatus(int status, String serviceName) {
         Assumptions.assumeTrue(status < 500,
                 serviceName + " returned HTTP " + status + " — remote service outage, skipping test");
         return status;
     }
 
-    public static boolean isDatabaseAvailable(String urlString) {
-        try {
-            URL url = new URL(urlString);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setConnectTimeout(3000);   // 3 seconds
-            conn.setReadTimeout(3000);
-            conn.setRequestMethod("GET");   // HEAD is ideal, but some APIs reject it
-            conn.connect();
-
-            int code = conn.getResponseCode();
-            return code == 200;     // true only if return code is HTTP 200 OK
-        } catch (Exception e) {
-            return false;
+    /**
+     * GET the URL, skipping the test if the service is unreachable or failing on its
+     * side, and returning the body otherwise.
+     *
+     * <p>Deliberately does not use {@code ClientDownloader.downloadBytes}: that returns
+     * {@code response.body()} whatever the status, so during an outage the test received
+     * an HTML error page and failed on a content assertion — reporting a VCell
+     * regression when the truth was that the remote service was down.
+     */
+    private static String downloadOrSkip(URL url, String serviceName) throws IOException {
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setConnectTimeout(CONNECT_TIMEOUT_MS);
+        conn.setReadTimeout(READ_TIMEOUT_MS);
+        int status = statusOrSkip(conn, serviceName);
+        assertEquals(200, status, "Unexpected HTTP status from " + url);
+        try (BufferedReader r = new BufferedReader(
+                new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8))) {
+            return r.lines().collect(Collectors.joining("\n"));
         }
     }
+
+    // isDatabaseAvailable(String) was removed deliberately. It probed a URL the test did
+    // not go on to use — a service can serve its home page (HTTP 200) while the API path
+    // is returning 502 — which is how a real PathwayCommons outage broke CI despite the
+    // guard. Every network test here now decides from the status of its own request.
 
 
 // ------------------------------------------------------------------------------------------------------------------

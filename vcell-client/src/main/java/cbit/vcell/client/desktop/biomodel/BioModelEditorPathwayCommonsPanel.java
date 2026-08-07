@@ -132,6 +132,11 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 	private static final String REACTOME_PATHWAY_URL = "https://reactome.org/content/detail/";
 	private static final String REACTOME_ID_PREFIX = "R-HSA-";
 
+	// Pathway Commons is a third party; without these an outage hangs the search task for
+	// minutes (observed ~130s before the server returned 502) instead of failing promptly.
+	private static final int PATHWAY_COMMONS_CONNECT_TIMEOUT_MS = 10_000;
+	private static final int PATHWAY_COMMONS_READ_TIMEOUT_MS = 30_000;
+
 	private JButton searchButton = null;
 	private JButton sortButton = null;
 	private boolean bAscending = true;
@@ -454,6 +459,8 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 				System.out.println(uri);
 
 				HttpURLConnection conn = (HttpURLConnection)new URL(uri).openConnection();
+				conn.setConnectTimeout(PATHWAY_COMMONS_CONNECT_TIMEOUT_MS);
+				conn.setReadTimeout(PATHWAY_COMMONS_READ_TIMEOUT_MS);
 				conn.setRequestProperty("Accept", "application/xml");
 
 				Element searchResponse = null;

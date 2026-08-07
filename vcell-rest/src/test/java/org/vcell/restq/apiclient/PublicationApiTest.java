@@ -13,7 +13,10 @@ import org.junit.jupiter.api.*;
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.api.BioModelResourceApi;
+import org.vcell.restclient.api.MathModelResourceApi;
 import org.vcell.restclient.api.PublicationResourceApi;
+import org.vcell.restclient.model.MathModelSummary;
+import org.vcell.restclient.model.MathmodelRef;
 import org.vcell.restclient.model.Publication;
 import org.vcell.restclient.model.PublishModelsRequest;
 import org.vcell.restq.TestEndpointUtils;
@@ -128,6 +131,67 @@ public class PublicationApiTest {
 
         // remove added BioModel
         bioModelAPI.deleteBioModel(savedModelKey);
+    }
+
+    /**
+     * A publication must be able to carry a MathModel, not just BioModels.
+     *
+     * <p>Attaching a MathModel was unimplemented in the webapp for a long time — the
+     * editor popped "adding MathModels not yet implemented - requires API changes" —
+     * and the surrounding tests only ever exercised empty mathmodelRefs, so nothing
+     * covered the round trip. This asserts the reference survives create → read back
+     * (issue #1741).
+     */
+    @Test
+    public void testAddMathModelToPublication() throws Exception {
+        PublicationResourceApi apiInstance = new PublicationResourceApi(aliceAPIClient);
+        MathModelResourceApi mathModelAPI = new MathModelResourceApi(aliceAPIClient);
+
+        int initialPubSize = apiInstance.getPublications().size();
+
+        // save the VCML resource as-is, the way MathModelApiTest does; round-tripping it
+        // through the object model keeps a reference to a database geometry that does not
+        // exist in the ephemeral test database
+        String testVCML = TestEndpointUtils.getResourceString("/TestMath.vcml");
+        String savedMathModelKey = XmlHelper.XMLToMathModel(new XMLSource(
+                        mathModelAPI.saveMathModel(testVCML, "MathModelForPublicationTest", null)))
+                .getVersion().getVersionKey().toString();
+
+        // the webapp builds the reference from the summary, so do the same here
+        MathModelSummary summary = mathModelAPI.getSummary(savedMathModelKey);
+        MathmodelRef mathmodelRef = TestEndpointUtils.mathmodelRefFromSummary(summary);
+
+        Publication publication = TestEndpointUtils.defaultPublication();
+        assert publication.getMathmodelRefs() != null;
+        publication.getMathmodelRefs().add(mathmodelRef);
+
+        Long newPubKey = apiInstance.createPublication(publication);
+        Assertions.assertNotNull(newPubKey);
+        try {
+            Publication roundTripped = apiInstance.getPublicationById(newPubKey);
+            Assertions.assertNotNull(roundTripped.getMathmodelRefs());
+            Assertions.assertEquals(1, roundTripped.getMathmodelRefs().size(),
+                    "the MathModel reference did not survive the round trip");
+
+            MathmodelRef persisted = roundTripped.getMathmodelRefs().get(0);
+            Assertions.assertEquals(Long.parseLong(savedMathModelKey), persisted.getMmKey());
+            Assertions.assertEquals(mathmodelRef.getName(), persisted.getName());
+            Assertions.assertEquals(mathmodelRef.getOwnerName(), persisted.getOwnerName());
+
+            // and it must still be there when the publication is listed, which is what
+            // the desktop client and the website both read
+            Publication listed = apiInstance.getPublications().stream()
+                    .filter(p -> newPubKey.equals(p.getPubKey()))
+                    .findFirst()
+                    .orElseThrow(() -> new AssertionError("new publication missing from the list"));
+            Assertions.assertEquals(1, listed.getMathmodelRefs().size());
+            Assertions.assertEquals(Long.parseLong(savedMathModelKey), listed.getMathmodelRefs().get(0).getMmKey());
+        } finally {
+            apiInstance.deletePublication(newPubKey);
+            mathModelAPI.deleteMathModel(savedMathModelKey);
+        }
+
+        Assertions.assertEquals(initialPubSize, apiInstance.getPublications().size());
     }
 
     @Test

@@ -188,8 +188,32 @@ variables of interest for multiple runs under slurm, in containers, are:
 
 #### important directories on mantis-040
 ```powershell
-/share/apps/vcell3/htclogs/   - slurm script and logs
-/share/apps/vcell3/users/danv - user's home directory, xml input file, results
+/share/apps/vcell3/htclogs/          - slurm script and logs
+/share/apps/vcell3/users/danv        - user's home directory, xml input file, results
+/share/apps/vcell3/singularityImages - singularity images
+```
+
+
+##### Working with the container on vcell nodes
+```bash
+from: /share/apps/vcell3/singularityImages
+
+- run the solver in the container, check version
+singularity exec ghcr.io_virtualcell_vcell-batch_singularity_8.0.5.01.img langevin_x64 --version
+
+- open a shell inside the container
+singularity shell ghcr.io_virtualcell_vcell-batch_singularity_8.0.2.07.img
+
+- java version inside the container
+ singularity exec ghcr.io_virtualcell_vcell-batch_singularity_8.0.5.01.img java --version
+ 
+ from /share/apps/vcell3/users/danv
+ 
+ - run the solver in the container, check version
+ singularity exec /share/apps/vcell3/singularityImages/ghcr.io_virtualcell_vcell-batch_singularity_8.0.5.01.img langevin_x64 --version
+ 
+ - run the solver on a real input file
+ 
 ```
 
 #### useful commands

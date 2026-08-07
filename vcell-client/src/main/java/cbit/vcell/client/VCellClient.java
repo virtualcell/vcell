@@ -22,6 +22,7 @@ import cbit.vcell.server.VCellConnectionFactory;
 import com.google.inject.Inject;
 import com.install4j.api.launcher.ApplicationLauncher;
 import org.vcell.api.client.VCellApiClient;
+import org.vcell.util.gui.DialogUtils;
 import org.vcell.api.messaging.RemoteProxyVCellConnectionFactory;
 import org.vcell.api.server.ClientServerManager;
 import org.vcell.api.server.ClientServerManager.InteractiveContextDefaultProvider;
@@ -38,6 +39,14 @@ import java.util.Hashtable;
  * @author: Ion Moraru
  */
 public class VCellClient {
+	private static final org.apache.logging.log4j.Logger lg =
+			org.apache.logging.log4j.LogManager.getLogger(VCellClient.class);
+
+	/** install4j id of the "Updater with silent version check" application in VCell.install4j. */
+	private static final String UPDATER_APPLICATION_ID = "127";
+	/** Set by the update-check task when it fails, so the GUI task can report it with an owner. */
+	private static final String UPDATE_CHECK_FAILURE = "updateCheckFailure";
+
 	private final VCellConnectionFactory vcellConnectionFactory; // injected in constructor
 	private final Auth0ConnectionUtils auth0ConnectionUtils;
 
@@ -204,6 +213,17 @@ public void startClient(final VCDocument startupDoc, final ClientServerInfo clie
 
 		    // dev-only introspection surface; no-op unless -Dvcell.debugBridge=true
 		    org.vcell.client.debug.SwingDebugBridge.startIfEnabled();
+
+		    // Report a failed update check now that there is a window to own the dialog.
+		    // Startup continues either way — the user is told, not blocked.
+		    String updateCheckFailure = (String) hashTable.get(UPDATE_CHECK_FAILURE);
+		    if (updateCheckFailure != null) {
+		    	DialogUtils.showWarningDialog(currWindowManager == null ? null : currWindowManager.getComponent(),
+		    			"VCell could not check whether a newer version is available:\n\n"
+		    			+ updateCheckFailure
+		    			+ "\n\nVCell will continue with the version already installed."
+		    			+ " The latest version can be downloaded from https://vcell.org.");
+		    }
 		}
 	};
 	
@@ -212,17 +232,32 @@ public void startClient(final VCDocument startupDoc, final ClientServerInfo clie
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			try {
-				String[] install4jArgs = null;
-				boolean blocking = false;
-				ApplicationLauncher.Callback callback = null;
-				ApplicationLauncher.launchApplication("127", install4jArgs, blocking, callback);
-
-			} catch (Exception e) {
-				e.printStackTrace();
+				// Blocking, and scheduled before the GUI is created. The updater's dialog belongs
+				// to install4j, so it can never be an LW-owned child and nothing can raise it back
+				// once something covers it. Previously this launched non-blocking, so the main
+				// window appeared and the Auth0 browser flow handed focus back while the update
+				// alert was still up — the alert flashed and sank behind VCell. Holding startup
+				// here means nothing of ours is on screen to bury it.
+				//
+				// Declining the update just ends the updater, which returns normally: VCell then
+				// carries on starting with the installed version.
+				ApplicationLauncher.launchApplication(UPDATER_APPLICATION_ID, null, true, null);
+			} catch (Throwable e) {
+				// A failed update check must never stop VCell from starting. Throwable rather than
+				// Exception because a source build has no install4j runtime, which surfaces as a
+				// LinkageError; and an AsynchClientTask that throws aborts every later task,
+				// including login.
+				//
+				// It also must not be silent — this used to be swallowed by printStackTrace. The
+				// message is handed to the GUI task so the dialog is owned by the main window,
+				// rather than floating unparented here where no window exists yet.
+				lg.error("VCell update check failed", e);
+				if (System.getProperty("install4j.launcherId") != null) {
+					hashTable.put(UPDATE_CHECK_FAILURE, e.getMessage() == null ? e.toString() : e.getMessage());
+				}
 			}
-			
 		}
-		
+
 	};
 
 	AsynchClientTask task3a = ClientLogin.popupLogin();
@@ -231,7 +266,9 @@ public void startClient(final VCDocument startupDoc, final ClientServerInfo clie
 	
 	AsynchClientTask task4  = ClientLogin.connectToServer(auth0ConnectionUtils, clientServerInfo);
 
-	AsynchClientTask[] taskArray = new AsynchClientTask[] { task1, task2,  task2a, task3a, task3b, task4};
+	// task2a (update check) runs before task2 (GUI) so the install4j update alert has the
+	// screen to itself; it blocks, so login only starts once the user has dealt with it.
+	AsynchClientTask[] taskArray = new AsynchClientTask[] { task1, task2a, task2, task3a, task3b, task4};
 	ClientTaskDispatcher.dispatch(null, hash, taskArray);
 }
 
