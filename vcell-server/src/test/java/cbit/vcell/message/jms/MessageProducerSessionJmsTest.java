@@ -421,12 +421,20 @@ public class MessageProducerSessionJmsTest {
 
 		@Override
 		public ConnectionFactory createConnectionFactory() {
-			return new ActiveMQConnectionFactory("vm://" + BROKER_NAME + "?create=false") {
+			ActiveMQConnectionFactory factory =
+					new ActiveMQConnectionFactory("vm://" + BROKER_NAME + "?create=false") {
 				@Override
 				public Connection createConnection() throws JMSException {
 					return (Connection) countingProxy(Connection.class, super.createConnection());
 				}
 			};
+			// Mirror production (VCMessagingServiceActiveMQ): without this the client answers
+			// "is this temp queue deleted?" from its own advisory state and can refuse to
+			// publish to a live reply queue it has not heard about yet -- issue #1863. The test
+			// harness has to carry the same setting, or it exercises a configuration that no
+			// longer ships. Explicitly subscribing to the advisory topic (below) still works.
+			factory.setWatchTopicAdvisories(false);
+			return factory;
 		}
 
 		@Override
@@ -568,6 +576,12 @@ public class MessageProducerSessionJmsTest {
 			// wire are listed -- trusting everything is what production does, and it is what
 			// the standing java/unsafe-deserialization alert on VCMessageJms is about.
 			factory.setTrustedPackages(Arrays.asList("java.lang", "java.util", "java.math", "cbit.vcell", "org.vcell"));
+			// Mirror production (VCMessagingServiceActiveMQ): without this the client answers
+			// "is this temp queue deleted?" from its own advisory state and can refuse to
+			// publish to a live reply queue it has not heard about yet -- issue #1863. The test
+			// harness has to carry the same setting, or it exercises a configuration that no
+			// longer ships. Explicitly subscribing to the advisory topic (below) still works.
+			factory.setWatchTopicAdvisories(false);
 			return factory;
 		}
 
