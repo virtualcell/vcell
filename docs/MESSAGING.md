@@ -183,6 +183,32 @@ that RPC wait out its full timeout — the shape of issue #1863.
 ActiveMQ's `createQueue(name)` special-cases names beginning with `ID:` and returns an
 `ActiveMQTempQueue`. **Artemis does not share this convention** — see §7.
 
+**"Cannot publish to a deleted Destination" may be a false negative (Classic client).**
+`ActiveMQConnection.isDeleted(dest)` does not ask the broker. It answers
+`!activeTempDestinations.contains(dest)`, and that set is populated by the connection's own
+**advisory consumer**. A connection that has not yet learned about *another* connection's
+temporary queue will therefore refuse to publish to it, reporting it as deleted when it is
+alive. `ConsumerContextJms` opens a connection per message, so an RPC reply is published from a
+connection that may be seconds old — the exposure is real, though unproven (a 25-iteration probe
+could not reproduce it locally, where propagation is instant).
+
+Practical consequences when debugging:
+
+- treat that exception as "this connection does not know about the queue", not as proof of
+  deletion — confirm with a temp-queue advisory before concluding;
+- `ActiveMQConnectionFactory.setWatchTopicAdvisories(false)` disables the client-side check
+  entirely (`isDeleted()` then always returns false), which is the one-line lever if this is ever
+  confirmed;
+- it is **Classic-client behaviour**, not JMS. It does not exist for AMQP or Artemis core
+  clients, so it disappears with the migration rather than needing to be ported.
+
+**Temp-queue advisories, and how fast they arrive (measured).** Subscribing to
+`ActiveMQ.Advisory.TempQueue` yields a `DestinationInfo` per create/destroy carrying the
+**connection id that requested it** — which is how to tell "the owner tore down its own queue"
+from "something else deleted it". Measured latency on a healthy local run is about **1 ms**, so
+an advisory arriving seconds after the event it should describe is itself evidence. The
+recorder lives in `MessageProducerSessionJmsTest` (test-only, deliberately — see §7).
+
 **Artemis already dead-letters.** Contrary to "we don't use DLQs", `broker.xml` configures it for
 the export path:
 
@@ -236,7 +262,10 @@ Ordered roughly by risk.
    one.
 3. **Advisories have no equivalent.** Classic publishes `ActiveMQ.Advisory.*`; Artemis publishes
    `activemq.notifications`. Any diagnostic built on advisories must be rewritten, which argues
-   for not building one on the Classic side at all.
+   for not building one on the Classic side at all. Note this cuts both ways: the client-side
+   temp-destination tracking described in §5 — and the spurious "deleted Destination" errors it
+   can produce — is a property of the Classic *client*, so it goes away with the migration
+   instead of needing to be carried across.
 4. **Selectors and correlation IDs.** RPC replies are matched with
    `JMSCorrelationID='<id>'` selectors on a shared reply queue. Artemis supports selectors, but
    this is worth an explicit test rather than an assumption, given it is how every RPC completes.
