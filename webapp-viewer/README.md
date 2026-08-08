@@ -98,6 +98,14 @@ scrub time — a time step costs about 5.7× less than shipping both.
   server-side next to the reader — never fetch every timestep to build one curve. The Stats button
   does the same for whole-domain min/mean/max per variable via `/stats` (one space-stats
   `TimeSeriesJobSpec` carrying all the variables at once).
+- **2D runs are first-class, through the same convention.** The server emits the mesh's
+  `VisPolygon` quads (`cellType` 9, `dimension: 2` in `/grid`) — reading `getVisVoxels()` on a 2D
+  mesh returns null (thrift optional), which is how 2D used to 500. The identical deform pipeline
+  smooths the domain OUTLINE: with `boundarySmoothingOn`, a flat regular interior is already a
+  Laplacian fixed point, so only the boundary polyline relaxes. The camera becomes top-down
+  parallel projection (drag pans, wheel scales — `dolly` does nothing under an ortho camera), the
+  slice row is hidden, and picking switches to a parallel-projection ray. 1D runs get a clear
+  dialog in the desktop client instead of a broken page.
 - `probe.html` is a scratch page for exactly these capability probes: point it at a suspect class,
   read the on-page result, and keep the console open for `is not permitted`.
 - **The scalar bar labels the lookup table's range, not the mapper's.** `mapper.setScalarRange`
