@@ -4,8 +4,6 @@ import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.mapping.ReactionRuleSpec;
-import cbit.vcell.mapping.ReactionRuleSpec.Subtype;
-import cbit.vcell.mapping.ReactionRuleSpec.TransitionCondition;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.math.*;
 import cbit.vcell.math.ParticleProperties.ParticleInitialCondition;
@@ -301,8 +299,8 @@ public class LangevinLngvWriter {
 		Map<String, LangevinParticleJumpProcess> nameToProcessReverse = new LinkedHashMap<> ();		// need this only for reverse rate
 		for(Map.Entry<LangevinParticleJumpProcess, SubDomain> entry : particleJumpProcessMap.entrySet()) {
 			LangevinParticleJumpProcess lpjp = entry.getKey();
-			Subtype subtype = lpjp.getSubtype();
-			if(Subtype.BINDING == subtype) {
+			LangevinParticleJumpProcess.ParticleSubtype subtype = lpjp.getSubtype();
+			if(LangevinParticleJumpProcess.ParticleSubtype.BINDING == subtype) {
 				if(!lpjp.getName().endsWith("_reverse")) {
 					String lpjpName = lpjp.getName();
 					nameToProcessDirect.put(lpjpName, lpjp);
@@ -456,8 +454,8 @@ public class LangevinLngvWriter {
 	private void writeAllostericReactions(StringBuilder sb) {
 		for(Map.Entry<LangevinParticleJumpProcess, SubDomain> entry : particleJumpProcessMap.entrySet()) {
 			LangevinParticleJumpProcess lpjp = entry.getKey();
-			Subtype subtype = lpjp.getSubtype();
-			if(Subtype.ALLOSTERIC == subtype) {
+			LangevinParticleJumpProcess.ParticleSubtype subtype = lpjp.getSubtype();
+			if(LangevinParticleJumpProcess.ParticleSubtype.ALLOSTERIC == subtype) {
 				ParticleSpeciesPattern pspReactant = null;
 				ParticleSpeciesPattern pspProduct = null;
 				for(Action action : lpjp.getActions()) {
@@ -567,8 +565,8 @@ public class LangevinLngvWriter {
 		for(Map.Entry<LangevinParticleJumpProcess, SubDomain> entry : particleJumpProcessMap.entrySet()) {
 			LangevinParticleJumpProcess lpjp = entry.getKey();
 //			SubDomain subDomain = entry.getValue();
-			Subtype subtype = lpjp.getSubtype();
-			if(Subtype.TRANSITION == subtype) {
+			LangevinParticleJumpProcess.ParticleSubtype subtype = lpjp.getSubtype();
+			if(LangevinParticleJumpProcess.ParticleSubtype.TRANSITION == subtype) {
 				ParticleSpeciesPattern pspReactant = null;
 				ParticleSpeciesPattern pspProduct = null;
 				for(Action action : lpjp.getActions()) {
@@ -626,8 +624,8 @@ public class LangevinLngvWriter {
 				ParticleMolecularComponentPattern pmcpConditionReactant = null;		// condition reactant site
 				ParticleComponentStateDefinition pcsdConditionReactant = null;		// condition state
 
-				TransitionCondition transitionCondition = lpjp.getTransitionCondition();
-				if(TransitionCondition.BOUND == transitionCondition) {
+				LangevinParticleJumpProcess.ParticleTransitionCondition transitionCondition = lpjp.getTransitionCondition();
+				if(LangevinParticleJumpProcess.ParticleTransitionCondition.BOUND == transitionCondition) {
 					if(pspReactant.getParticleMolecularTypePatterns().size() == 1) {
 						// illegal, bound transitions must have separate condition and transition molecules by convention
 						throw new RuntimeException("Bound conditional transition reactant size must be 2");
@@ -666,10 +664,10 @@ public class LangevinLngvWriter {
 						pcsdConditionReactant = pcsp.getParticleComponentStateDefinition();
 						break;		// found the one and only condition
 					}
-				} else if(TransitionCondition.NONE == transitionCondition) {
+				} else if(LangevinParticleJumpProcess.ParticleTransitionCondition.NONE == transitionCondition) {
 					pmtpTransitionReactant = pspReactant.getParticleMolecularTypePatterns().get(0);
 					pmtpTransitionProduct = pspProduct.getParticleMolecularTypePatterns().get(0);
-				} else if(TransitionCondition.FREE == transitionCondition) {
+				} else if(LangevinParticleJumpProcess.ParticleTransitionCondition.FREE == transitionCondition) {
 					pmtpTransitionReactant = pspReactant.getParticleMolecularTypePatterns().get(0);
 					pmtpTransitionProduct = pspProduct.getParticleMolecularTypePatterns().get(0);
 				} else {
@@ -707,13 +705,13 @@ public class LangevinLngvWriter {
 				sb.append(pcsdTransitionProduct.getName());
 				sb.append("'  Rate ").append(onRate);
 				sb.append("  Condition ").append(transitionCondition.lngvName);
-				if(TransitionCondition.BOUND == transitionCondition) {
+				if(LangevinParticleJumpProcess.ParticleTransitionCondition.BOUND == transitionCondition) {
 					sb.append(" '").append(pmtpConditionReactant.getMolecularType().getName()).append("' : '")
 					.append(pmcpConditionReactant.getMolecularComponent().getName()).append("' : '")
 					.append(pmcpConditionReactant.getComponentStatePattern().isAny() ? ReactionRuleSpec.ANY_STATE_STRING : pcsdConditionReactant.getName());
 				}
 				sb.append("\n");
-			}						// end if Subtype.TRANSITION
+			}						// end if LangevinParticleJumpProcess.ParticleSubtype.TRANSITION
 		}
 		String ret = sb.toString();
 		System.out.println(ret);
@@ -730,8 +728,8 @@ public class LangevinLngvWriter {
 		}
 		for(Map.Entry<LangevinParticleJumpProcess, SubDomain> entry : particleJumpProcessMap.entrySet()) {
 			LangevinParticleJumpProcess lpjp = entry.getKey();
-			Subtype subtype = lpjp.getSubtype();
-			if(Subtype.CREATION == subtype) {
+			LangevinParticleJumpProcess.ParticleSubtype subtype = lpjp.getSubtype();
+			if(LangevinParticleJumpProcess.ParticleSubtype.CREATION == subtype) {
 				for(Action action : lpjp.getActions()) {
 					if(Action.ACTION_CREATE.equals(action.getOperation())) {	// species being created
 						Pair<String, String> rates = null;
@@ -776,7 +774,7 @@ public class LangevinLngvWriter {
 						creationDecayVariableMap.put(var, rates);
 					}
 				}
-			} else if(Subtype.DECAY == subtype) {
+			} else if(LangevinParticleJumpProcess.ParticleSubtype.DECAY == subtype) {
 				for(Action action : lpjp.getActions()) {
 					if(Action.ACTION_DESTROY.equals(action.getOperation())) {	// species being destroyed
 						Pair<String, String> rates = null;
@@ -1158,7 +1156,7 @@ public class LangevinLngvWriter {
 	public void writeBondCounters(StringBuilder sb) {
 		for (Map.Entry<LangevinParticleJumpProcess,SubDomain> entry : particleJumpProcessMap.entrySet()) {
 			LangevinParticleJumpProcess lpjp = entry.getKey();
-			if(lpjp.getSubtype() == ReactionRuleSpec.Subtype.BINDING) {
+			if(lpjp.getSubtype() == LangevinParticleJumpProcess.ParticleSubtype.BINDING) {
 				if(lpjp.getName().endsWith("_reverse")) {
 					continue;
 				}

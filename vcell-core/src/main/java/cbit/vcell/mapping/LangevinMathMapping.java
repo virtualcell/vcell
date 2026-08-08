@@ -937,8 +937,8 @@ protected LangevinMathMapping(SimulationContext simContext, MathMappingCallback 
 		ReactionRuleAnalysisReport rrarBiomodelForward = ruleBasedTransformation.getRulesForwardMap().get(reactionRule);
 		ProcessSymmetryFactor forwardSymmetryFactor = new ProcessSymmetryFactor(rrarBiomodelForward.getSymmetryFactor());
 		LangevinParticleJumpProcess forward_particleJumpProcess = new LangevinParticleJumpProcess(forward_name,reactantParticles,forward_rateDefinition,forwardActions,forwardSymmetryFactor);
-		forward_particleJumpProcess.setSubtype(subtype);
-		forward_particleJumpProcess.setTransitionCondition(transitionCondition);
+		forward_particleJumpProcess.setSubtype(toMath(subtype));
+		forward_particleJumpProcess.setTransitionCondition(toMath(transitionCondition));
 		forward_particleJumpProcess.setBondLength(bondLength);
 		subDomain.addParticleJumpProcess(forward_particleJumpProcess);
 		
@@ -1028,8 +1028,8 @@ protected LangevinMathMapping(SimulationContext simContext, MathMappingCallback 
 			ReactionRuleAnalysisReport rrarBiomodelReverse = ruleBasedTransformation.getRulesReverseMap().get(reactionRule);
 			ProcessSymmetryFactor reverseSymmetryFactor = new ProcessSymmetryFactor(rrarBiomodelReverse.getSymmetryFactor());
 			LangevinParticleJumpProcess reverse_particleJumpProcess = new LangevinParticleJumpProcess(reverse_name,productParticles,reverse_rateDefinition,reverseActions,reverseSymmetryFactor);
-			reverse_particleJumpProcess.setSubtype(subtype);
-			reverse_particleJumpProcess.setTransitionCondition(transitionCondition);
+			reverse_particleJumpProcess.setSubtype(toMath(subtype));
+			reverse_particleJumpProcess.setTransitionCondition(toMath(transitionCondition));
 			reverse_particleJumpProcess.setBondLength(bondLength);
 			subDomain.addParticleJumpProcess(reverse_particleJumpProcess);
 			
@@ -1462,5 +1462,35 @@ protected void refreshVariables() throws MappingException {
 	}
 }
 
+	/**
+	 * Translate an application-level reaction subtype into its math-namespace equivalent.
+	 * <p>
+	 * The math description must be describable without reference to the application that
+	 * produced it, so the two enums are separate types. They are matched on the VCML wire
+	 * name rather than on {@code ordinal()} or {@code name()}, so that reordering or renaming
+	 * a constant on either side fails loudly here instead of silently mis-translating.
+	 */
+	private static LangevinParticleJumpProcess.ParticleSubtype toMath(ReactionRuleSpec.Subtype subtype) {
+		if(subtype == null) {
+			return null;
+		}
+		LangevinParticleJumpProcess.ParticleSubtype translated = LangevinParticleJumpProcess.ParticleSubtype.fromName(subtype.columnName);
+		if(translated == null) {
+			throw new IllegalStateException("no math equivalent for reaction subtype '" + subtype.columnName + "'");
+		}
+		return translated;
+	}
 
+	/** @see #toMath(ReactionRuleSpec.Subtype) */
+	private static LangevinParticleJumpProcess.ParticleTransitionCondition toMath(ReactionRuleSpec.TransitionCondition transitionCondition) {
+		if(transitionCondition == null) {
+			return null;		// null unless the subtype is TRANSITION
+		}
+		LangevinParticleJumpProcess.ParticleTransitionCondition translated =
+				LangevinParticleJumpProcess.ParticleTransitionCondition.fromVcellName(transitionCondition.vcellName);
+		if(translated == null) {
+			throw new IllegalStateException("no math equivalent for transition condition '" + transitionCondition.vcellName + "'");
+		}
+		return translated;
+	}
 }

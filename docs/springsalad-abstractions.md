@@ -142,17 +142,49 @@ is relocating shared vocabulary rather than restructuring dataflow.
 
 18 biological imports across 5 files. Five are dead on arrival.
 
-| # | file | imports | verdict |
+**Status: the SpringSaLaD path is clean.** `LangevinParticleJumpProcess`,
+`LangevinParticleMolecularComponent` and `LangevinParticleMolecularType` have no biological
+imports. Two groups remain, both outside the SpringSaLaD path, and both are recorded as
+explicit exceptions in `MathNamespaceSeparationTest`.
+
+| # | file | imports | status |
 |---|---|---|---|
-| 1 | `LangevinParticleJumpProcess` | `ReactionRuleSpec` | **stale** (referenced only by a commented-out field) — deleted |
-| 2 | `LangevinParticleMolecularComponent` | `cbit.vcell.model.Structure` | **stale** — deleted |
-| 3 | `LangevinParticleMolecularComponent` | `rbm.ComponentStateDefinition` | **stale** — deleted |
-| 4 | `ParticleMolecularTypePattern` | `MolecularTypePattern.TRIVIAL_MATCH` | one string constant |
-| 5 | `MathDescription` | `AbstractMathMapping.*_SUFFIX` | naming-convention constants |
-| 6 | `MathDescription` | `VCellErrorMessages` | message catalog; mechanical |
-| 7 | `MathDescription` | `Model.ReservedSymbol` | live — used by `updateReservedSymbols(...)` |
-| 8 | `LangevinParticleJumpProcess` | `Subtype`, `TransitionCondition` | **value enums** — math-side equivalents |
-| 9 | `MathRuleFactory` | `RuleAnalysis`, `RuleEntry`, `*Entry`, `ParticipantType`, bond entries, `RbmUtils` | shared contract declared in a biological package — move the contract |
+| 1 | `LangevinParticleJumpProcess` | `ReactionRuleSpec` | **done** — stale (only a commented-out field referenced it) |
+| 2 | `LangevinParticleMolecularComponent` | `cbit.vcell.model.Structure` | **done** — stale |
+| 3 | `LangevinParticleMolecularComponent` | `rbm.ComponentStateDefinition` | **done** — stale |
+| 4 | `ParticleMolecularTypePattern` | `MolecularTypePattern.TRIVIAL_MATCH` | **done** — math class declares its own |
+| 5 | `MathDescription` | `AbstractMathMapping.*_SUFFIX` | **done** — moved to `MathNamingConventions`; mapping re-exports |
+| 6 | `LangevinParticleJumpProcess` | `Subtype`, `TransitionCondition` | **done** — `ParticleSubtype` / `ParticleTransitionCondition`, translated at the mapping boundary |
+| 7 | `MathDescription` | `Model.ReservedSymbol`, `VCellErrorMessages` | remaining — reserved-symbol vocabulary and the shared message catalog |
+| 8 | `MathRuleFactory` | `RuleAnalysis` contract, `RbmUtils` | remaining — move the shared contract to a neutral package |
+
+### How the enum separation was done
+
+`LangevinParticleJumpProcess` now declares `ParticleSubtype` and `ParticleTransitionCondition`,
+mirroring `ParticleBondType`. The wire names are reproduced exactly — verified constant by
+constant against the biological enums — because `columnName` and `vcellName` are written to
+VCML and `lngvName` to the solver input, so a divergence would stop stored models loading.
+
+`LangevinMathMapping` translates at the boundary, matching on the **wire name** rather than
+`ordinal()` or `name()`:
+
+```java
+private static LangevinParticleJumpProcess.ParticleSubtype toMath(ReactionRuleSpec.Subtype subtype) {
+    ...
+    ParticleSubtype translated = ParticleSubtype.fromName(subtype.columnName);
+    if(translated == null) {
+        throw new IllegalStateException("no math equivalent for reaction subtype '" + ... + "'");
+    }
+```
+
+so that reordering or renaming a constant on either side fails loudly at the boundary instead
+of silently mis-translating.
+
+Three call sites had to be split rather than rewritten wholesale: `XmlReader`, `Xmlproducer`
+and `LangevinLngvWriter` each use these enum names in **both** a math context (reading or
+writing a `LangevinParticleJumpProcess`) and a biological one (`ReactionRuleSpec`). Only the
+math-context uses were retyped; the biological ones keep the unqualified import. A blanket
+find-and-replace would have compiled and been wrong.
 
 > **Counting caution.** An earlier revision of this table listed `Model.ReservedSymbol` and
 > `RuleAnalysis`/`RuleEntry` as stale. They are not — `ReservedSymbol` appears in the
