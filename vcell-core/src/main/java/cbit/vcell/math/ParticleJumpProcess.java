@@ -180,7 +180,9 @@ public void remove(ParticleVariable particleVariable) {
  */
 public boolean compareEqual(org.vcell.util.Matchable object) 
 {
-	if (!(object instanceof ParticleJumpProcess)) {
+	// exact class, not instanceof: otherwise a subclass instance compares equal to a plain one
+	// in one direction only, and Compare.isEqual(List,List) evaluates just v1[i].compareEqual(v2[i]).
+	if (object == null || !getClass().equals(object.getClass())) {
 		return false;
 	}
 	

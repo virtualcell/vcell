@@ -36,12 +36,32 @@ public class LangevinParticleMolecularComponent extends ParticleMolecularCompone
 
 	@Override
 	public boolean compareEqual(Matchable obj) {
-		if (!(obj instanceof LangevinParticleMolecularComponent)) {
+		// exact class, not instanceof: the superclass accepts any ParticleMolecularComponent, so an
+		// instanceof test here would make comparison depend on which side it is called from.
+		if (obj == null || !getClass().equals(obj.getClass())) {
 			return false;
 		}
 		LangevinParticleMolecularComponent other = (LangevinParticleMolecularComponent)obj;
 
-		if(false) {			// TODO: compare everything that needs comparing
+		// Exact comparison: this is the "identical" tier. Tolerance belongs to the equivalence tier,
+		// as it does for expressions (ExpressionUtils.functionallyEquivalent).
+		if(Double.compare(fieldRadius, other.fieldRadius) != 0) {
+			return false;
+		}
+		if(Double.compare(fieldDiffusionRate, other.fieldDiffusionRate) != 0) {
+			return false;
+		}
+		if(!Compare.isEqualOrNull(fieldLocation, other.fieldLocation)) {
+			return false;
+		}
+		if(!Compare.isEqualOrNull(fieldCoordinate, other.fieldCoordinate)) {
+			return false;
+		}
+		// Colour is part of the persisted math, so it is compared here to keep "identical" meaning
+		// identical - without it a colour edit would not be saved. It does not reach the solver
+		// input, so an equivalence tier may legitimately ignore it.
+		if(!Compare.isEqualOrNull(fieldColor == null ? null : fieldColor.getName(),
+				other.fieldColor == null ? null : other.fieldColor.getName())) {
 			return false;
 		}
 		return super.compareEqual(obj);

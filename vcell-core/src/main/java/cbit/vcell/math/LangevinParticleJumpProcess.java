@@ -114,10 +114,21 @@ public LangevinParticleJumpProcess(String name, List<ParticleVariable> particles
  */
 public boolean compareEqual(org.vcell.util.Matchable object) 
 {
-	if (!(object instanceof LangevinParticleJumpProcess)) {
+	// exact class, not instanceof: the superclass accepts any ParticleJumpProcess, so an instanceof
+	// test here would make comparison depend on which side it is called from.
+	if (object == null || !getClass().equals(object.getClass())) {
 		return false;
 	}
-	if(false) {			// TODO: compare everything that needs comparing
+	LangevinParticleJumpProcess other = (LangevinParticleJumpProcess)object;
+	if(subtype != other.subtype) {
+		return false;
+	}
+	if(transitionCondition != other.transitionCondition) {	// null unless the subtype is TRANSITION
+		return false;
+	}
+	// Exact comparison: this is the "identical" tier. Tolerance belongs to the equivalence tier,
+	// as it does for expressions (ExpressionUtils.functionallyEquivalent).
+	if(Double.compare(bondLength, other.bondLength) != 0) {
 		return false;
 	}
 	return super.compareEqual(object);

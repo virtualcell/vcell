@@ -8033,7 +8033,11 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
         String name = unMangle(param.getAttributeValue(XMLTags.NameAttrTag));
         ParticleMolecularType var;
         if(isLangevin){
-            var = new LangevinParticleMolecularType(name);
+			LangevinParticleMolecularType langevinVar = new LangevinParticleMolecularType(name);
+			if(param.getAttribute(XMLTags.ParticleMolecularTypeIs2DTag) != null){
+				langevinVar.setIs2D(Boolean.parseBoolean(param.getAttributeValue(XMLTags.ParticleMolecularTypeIs2DTag)));
+			}
+			var = langevinVar;
         } else {
             var = new ParticleMolecularType(name);
         }
