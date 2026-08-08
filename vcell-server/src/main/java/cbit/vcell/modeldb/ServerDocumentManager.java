@@ -41,6 +41,7 @@ import cbit.vcell.math.MathCompareResults.Decision;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.mathmodel.MathModelMetaData;
+import cbit.vcell.parser.Expression;
 import cbit.vcell.model.Model;
 import cbit.vcell.server.SimulationStatusPersistent;
 import cbit.vcell.solver.AnnotatedFunction;
@@ -1023,7 +1024,13 @@ public class ServerDocumentManager {
                             roundtripTimer += l2 - l1;
                         }
                     }
-                    MathDescription.updateReservedSymbols(databaseMathDescription, (origBioModel == null ? bioModel : origBioModel).getModel().getReservedSymbols());
+                    Map<String, Expression> reservedSymbolExpressions = new LinkedHashMap<>();
+                        for(Model.ReservedSymbol reservedSymbol : (origBioModel == null ? bioModel : origBioModel).getModel().getReservedSymbols()){
+                            if(reservedSymbol.getExpression() != null){
+                                reservedSymbolExpressions.put(reservedSymbol.getName(), reservedSymbol.getExpression());
+                            }
+                        }
+                        MathDescription.updateReservedSymbols(databaseMathDescription, reservedSymbolExpressions);
                     if(databaseMathDescription != null && !databaseMathDescription.compareEqual(memoryMathDescription)){
                         bMustSaveMathDescription = true;
                     }

@@ -21,8 +21,6 @@ import cbit.vcell.math.ParticleObservable.ObservableType;
 import cbit.vcell.math.PdeEquation.BoundaryConditionValue;
 import cbit.vcell.math.SubDomain.BoundaryConditionSpec;
 import cbit.vcell.math.Variable.Domain;
-import cbit.vcell.model.Model.ReservedSymbol;
-import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.parser.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -268,17 +266,19 @@ public class MathDescription implements Versionable, Matchable, SymbolTable, Ser
     }
 
 
-    public static void updateReservedSymbols(MathDescription updateThis, ReservedSymbol[] reservedSymbols){
+    /**
+     * @param reservedSymbolExpressions reserved symbol name to its defining expression. Plain math-level
+     *        data rather than {@code Model.ReservedSymbol}, so a math description never needs the
+     *        biological model in order to describe itself; the caller adapts.
+     */
+    public static void updateReservedSymbols(MathDescription updateThis, Map<String, Expression> reservedSymbolExpressions){
         //Code to make ServerDocumentManager.saveBioModel(...) ignore old LowPrecisionMathConstants that were converted to HighPrecisionMathConstants
         //
         for(int i = 0; i < updateThis.variableList.size(); i++){
             //Deal with Model.reservedConstantsMap
-            for(int j = 0; j < reservedSymbols.length; j++){
-                if(reservedSymbols[j].getName().equals(updateThis.variableList.get(i).getName()) && reservedSymbols[j].getExpression() != null){
-                    //System.out.println("--Found "+updateThis.variableList.get(i)+" "+reservedSymbols[j].getName()+" "+reservedSymbols[j].getExpression().infix());
-                    updateThis.variableList.get(i).getExpression().substituteInPlace(updateThis.variableList.get(i).getExpression(), reservedSymbols[j].getExpression());
-                    break;
-                }
+            Expression reservedExpression = reservedSymbolExpressions.get(updateThis.variableList.get(i).getName());
+            if(reservedExpression != null){
+                updateThis.variableList.get(i).getExpression().substituteInPlace(updateThis.variableList.get(i).getExpression(), reservedExpression);
             }
             //Deal with VCUnitDefinition.getDimensionlessScale().molecules_per_uM_um3
             if(updateThis.variableList.get(i) instanceof Function){
@@ -2080,7 +2080,7 @@ public class MathDescription implements Versionable, Matchable, SymbolTable, Ser
         issueContext = issueContext.newChildContext(ContextType.MathDescription, this);
         setWarning(null);
         if(geometry == null){
-            Issue issue = new Issue(this, issueContext, IssueCategory.MathDescription_NoGeometry, VCellErrorMessages.MATH_DESCRIPTION_GEOMETRY_1, Issue.SEVERITY_ERROR);
+            Issue issue = new Issue(this, issueContext, IssueCategory.MathDescription_NoGeometry, MathDescriptionMessages.MATH_DESCRIPTION_GEOMETRY_1, Issue.SEVERITY_ERROR);
             issueList.add(issue);
         }
 
@@ -2097,7 +2097,7 @@ public class MathDescription implements Versionable, Matchable, SymbolTable, Ser
                 } catch(Exception ex){
                     String msg = "Constant cannot be evaluated to a number, " + var.getName() + "=" + var.getExpression().infix();
                     lg.error(msg, ex);
-                    Issue issue = new Issue(var, issueContext, IssueCategory.MathDescription_Constant_NotANumber, VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_CONSTANT, var.getExpression().infix()), Issue.SEVERITY_ERROR);
+                    Issue issue = new Issue(var, issueContext, IssueCategory.MathDescription_Constant_NotANumber, MathDescriptionMessages.getErrorMessage(MathDescriptionMessages.MATH_DESCRIPTION_CONSTANT, var.getExpression().infix()), Issue.SEVERITY_ERROR);
                     issueList.add(issue);
                 }
             }
@@ -2209,22 +2209,22 @@ public class MathDescription implements Versionable, Matchable, SymbolTable, Ser
             // Check that only 1 subdomain is defined and that it is a volumeSubdomain
             //
             if(subDomainList.size() != 1){
-                Issue issue = new Issue(this, issueContext, IssueCategory.MathDescription_CompartmentalModel, VCellErrorMessages.MATH_DESCRIPTION_COMPARTMENT_MODEL_1, Issue.SEVERITY_ERROR);
+                Issue issue = new Issue(this, issueContext, IssueCategory.MathDescription_CompartmentalModel, MathDescriptionMessages.MATH_DESCRIPTION_COMPARTMENT_MODEL_1, Issue.SEVERITY_ERROR);
                 issueList.add(issue);
             } else if(subDomainList.size() == 1){
                 if(!(subDomainList.get(0) instanceof CompartmentSubDomain)){
-                    Issue issue = new Issue(this, issueContext, IssueCategory.MathDescription_CompartmentalModel, VCellErrorMessages.MATH_DESCRIPTION_COMPARTMENT_MODEL_2, Issue.SEVERITY_ERROR);
+                    Issue issue = new Issue(this, issueContext, IssueCategory.MathDescription_CompartmentalModel, MathDescriptionMessages.MATH_DESCRIPTION_COMPARTMENT_MODEL_2, Issue.SEVERITY_ERROR);
                     issueList.add(issue);
                 }
                 CompartmentSubDomain subDomain = (CompartmentSubDomain) subDomainList.get(0);
                 //distinguish ODE model and stochastic model
                 if(isNonSpatialStoch()){
                     if(stochVarCount == 0){
-                        Issue issue = new Issue(this, issueContext, IssueCategory.MathDescription_StochasticModel, VCellErrorMessages.MATH_DESCRIPTION_COMPARTMENT_STOCHASTIC_MODEL_1, Issue.SEVERITY_ERROR);
+                        Issue issue = new Issue(this, issueContext, IssueCategory.MathDescription_StochasticModel, MathDescriptionMessages.MATH_DESCRIPTION_COMPARTMENT_STOCHASTIC_MODEL_1, Issue.SEVERITY_ERROR);
                         issueList.add(issue);
                     }
                     if(subDomain.getJumpProcesses().size() == 0){
-                        Issue issue = new Issue(this, issueContext, IssueCategory.MathDescription_StochasticModel, VCellErrorMessages.MATH_DESCRIPTION_COMPARTMENT_STOCHASTIC_MODEL_2, Issue.SEVERITY_ERROR);
+                        Issue issue = new Issue(this, issueContext, IssueCategory.MathDescription_StochasticModel, MathDescriptionMessages.MATH_DESCRIPTION_COMPARTMENT_STOCHASTIC_MODEL_2, Issue.SEVERITY_ERROR);
                         issueList.add(issue);
                     }
                     //check variable initial condition
@@ -2277,44 +2277,44 @@ public class MathDescription implements Versionable, Matchable, SymbolTable, Ser
                             odeCount++;
                         } else {
                             Issue issue = new Issue(this, issueContext, IssueCategory.MathDescription_CompartmentalModel,
-                                    VCellErrorMessages.MATH_DESCRIPTION_COMPARTMENT_MODEL_3, Issue.SEVERITY_ERROR);
+                                    MathDescriptionMessages.MATH_DESCRIPTION_COMPARTMENT_MODEL_3, Issue.SEVERITY_ERROR);
                             issueList.add(issue);
                         }
                     }
                     if(odeCount == 0){
                         Issue issue = new Issue(this, issueContext, IssueCategory.MathDescription_CompartmentalModel,
-                                VCellErrorMessages.MATH_DESCRIPTION_COMPARTMENT_MODEL_4, Issue.Severity.WARNING);
+                                MathDescriptionMessages.MATH_DESCRIPTION_COMPARTMENT_MODEL_4, Issue.Severity.WARNING);
                         issueList.add(issue);
                     }
 
                     if(volVarCount != odeCount){
                         Issue issue = new Issue(this, issueContext, IssueCategory.MathDescription_CompartmentalModel,
-                                VCellErrorMessages.MATH_DESCRIPTION_COMPARTMENT_MODEL_5, Issue.SEVERITY_ERROR);
+                                MathDescriptionMessages.MATH_DESCRIPTION_COMPARTMENT_MODEL_5, Issue.SEVERITY_ERROR);
                         issueList.add(issue);
                     }
                     if(memVarCount > 0){
                         Issue issue = new Issue(this, issueContext, IssueCategory.MathDescription_CompartmentalModel,
-                                VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_COMPARTMENT_MODEL_6, VCML.MembraneVariable), Issue.SEVERITY_ERROR);
+                                MathDescriptionMessages.getErrorMessage(MathDescriptionMessages.MATH_DESCRIPTION_COMPARTMENT_MODEL_6, VCML.MembraneVariable), Issue.SEVERITY_ERROR);
                         issueList.add(issue);
                     }
                     if(filVarCount > 0){
                         Issue issue = new Issue(this, issueContext, IssueCategory.MathDescription_CompartmentalModel,
-                                VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_COMPARTMENT_MODEL_6, VCML.FilamentVariable), Issue.SEVERITY_ERROR);
+                                MathDescriptionMessages.getErrorMessage(MathDescriptionMessages.MATH_DESCRIPTION_COMPARTMENT_MODEL_6, VCML.FilamentVariable), Issue.SEVERITY_ERROR);
                         issueList.add(issue);
                     }
                     if(volRegionVarCount > 0){
                         Issue issue = new Issue(this, issueContext, IssueCategory.MathDescription_CompartmentalModel,
-                                VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_COMPARTMENT_MODEL_6, VCML.VolumeRegionVariable), Issue.SEVERITY_ERROR);
+                                MathDescriptionMessages.getErrorMessage(MathDescriptionMessages.MATH_DESCRIPTION_COMPARTMENT_MODEL_6, VCML.VolumeRegionVariable), Issue.SEVERITY_ERROR);
                         issueList.add(issue);
                     }
                     if(memRegionVarCount > 0){
                         Issue issue = new Issue(this, issueContext, IssueCategory.MathDescription_CompartmentalModel,
-                                VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_COMPARTMENT_MODEL_6, VCML.MembraneRegionVariable), Issue.SEVERITY_ERROR);
+                                MathDescriptionMessages.getErrorMessage(MathDescriptionMessages.MATH_DESCRIPTION_COMPARTMENT_MODEL_6, VCML.MembraneRegionVariable), Issue.SEVERITY_ERROR);
                         issueList.add(issue);
                     }
                     if(filRegionVarCount > 0){
                         Issue issue = new Issue(this, issueContext, IssueCategory.MathDescription_CompartmentalModel,
-                                VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_COMPARTMENT_MODEL_6, VCML.FilamentRegionVariable), Issue.SEVERITY_ERROR);
+                                MathDescriptionMessages.getErrorMessage(MathDescriptionMessages.MATH_DESCRIPTION_COMPARTMENT_MODEL_6, VCML.FilamentRegionVariable), Issue.SEVERITY_ERROR);
                         issueList.add(issue);
                     }
                 }
@@ -2336,7 +2336,7 @@ public class MathDescription implements Versionable, Matchable, SymbolTable, Ser
                 if(subDomain instanceof CompartmentSubDomain){
                     if(geometry.getGeometrySpec().getSubVolume(subDomain.getName()) == null){
                         Issue issue = new Issue(subDomain, issueContext, IssueCategory.MathDescription_SpatialModel_Subdomain,
-                                VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_1, subDomain.getName()), Issue.SEVERITY_ERROR);
+                                MathDescriptionMessages.getErrorMessage(MathDescriptionMessages.MATH_DESCRIPTION_SPATIAL_MODEL_1, subDomain.getName()), Issue.SEVERITY_ERROR);
                         issueList.add(issue);
                     }
                     compartmentCount++;
@@ -2348,13 +2348,13 @@ public class MathDescription implements Versionable, Matchable, SymbolTable, Ser
                     pointCount++;
                 } else {
                     Issue issue = new Issue(subDomain, issueContext, IssueCategory.MathDescription_SpatialModel_Subdomain,
-                            VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_2, subDomain.getName()), Issue.SEVERITY_ERROR);
+                            MathDescriptionMessages.getErrorMessage(MathDescriptionMessages.MATH_DESCRIPTION_SPATIAL_MODEL_2, subDomain.getName()), Issue.SEVERITY_ERROR);
                     issueList.add(issue);
                 }
             }
             if(geometry.getGeometrySpec().getNumSubVolumes() != compartmentCount){
                 Issue issue = new Issue(this, issueContext, IssueCategory.MathDescription_SpatialModel,
-                        VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_3, geometry.getGeometrySpec().getNumSubVolumes(), compartmentCount), Issue.SEVERITY_ERROR);
+                        MathDescriptionMessages.getErrorMessage(MathDescriptionMessages.MATH_DESCRIPTION_SPATIAL_MODEL_3, geometry.getGeometrySpec().getNumSubVolumes(), compartmentCount), Issue.SEVERITY_ERROR);
                 issueList.add(issue);
             }
             if(geometry.getGeometrySpec().getFilamentGroup().getFilamentCount() != filamentCount){
@@ -2363,12 +2363,12 @@ public class MathDescription implements Versionable, Matchable, SymbolTable, Ser
             }
             if(filamentCount == 0 && (filVarCount > 0 || filRegionVarCount > 0)){
                 Issue issue = new Issue(this, issueContext, IssueCategory.MathDescription_SpatialModel,
-                        VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_4, Issue.SEVERITY_ERROR);
+                        MathDescriptionMessages.MATH_DESCRIPTION_SPATIAL_MODEL_4, Issue.SEVERITY_ERROR);
                 issueList.add(issue);
             }
             if(membraneCount == 0 && (memVarCount > 0 || memRegionVarCount > 0)){
                 Issue issue = new Issue(this, issueContext, IssueCategory.MathDescription_SpatialModel,
-                        VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_5, Issue.SEVERITY_ERROR);
+                        MathDescriptionMessages.MATH_DESCRIPTION_SPATIAL_MODEL_5, Issue.SEVERITY_ERROR);
                 issueList.add(issue);
             }
             //
@@ -2381,7 +2381,7 @@ public class MathDescription implements Versionable, Matchable, SymbolTable, Ser
                         SubDomain subDomain2 = subDomainList.get(j);
                         if(subDomain1.getName().equals(subDomain2.getName())){
                             Issue issue = new Issue(subDomain1, issueContext, IssueCategory.MathDescription_SpatialModel_Subdomain,
-                                    VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_6, subDomain1.getName(), subDomain2.getName()), Issue.SEVERITY_ERROR);
+                                    MathDescriptionMessages.getErrorMessage(MathDescriptionMessages.MATH_DESCRIPTION_SPATIAL_MODEL_6, subDomain1.getName(), subDomain2.getName()), Issue.SEVERITY_ERROR);
                             issueList.add(issue);
                         }
                         if(subDomain1 instanceof MembraneSubDomain && subDomain2 instanceof MembraneSubDomain){
@@ -2390,7 +2390,7 @@ public class MathDescription implements Versionable, Matchable, SymbolTable, Ser
                             if((memSubDomain1.getInsideCompartment() == memSubDomain2.getInsideCompartment() && memSubDomain1.getOutsideCompartment() == memSubDomain2.getOutsideCompartment()) ||
                                     (memSubDomain1.getInsideCompartment() == memSubDomain2.getOutsideCompartment() && memSubDomain1.getOutsideCompartment() == memSubDomain2.getInsideCompartment())){
                                 Issue issue = new Issue(subDomain1, issueContext, IssueCategory.MathDescription_SpatialModel_Subdomain,
-                                        VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_7, memSubDomain1.getInsideCompartment().getName(), memSubDomain1.getOutsideCompartment().getName()), Issue.SEVERITY_ERROR);
+                                        MathDescriptionMessages.getErrorMessage(MathDescriptionMessages.MATH_DESCRIPTION_SPATIAL_MODEL_7, memSubDomain1.getInsideCompartment().getName(), memSubDomain1.getOutsideCompartment().getName()), Issue.SEVERITY_ERROR);
                                 issueList.add(issue);
                             }
                         }
@@ -2407,21 +2407,21 @@ public class MathDescription implements Versionable, Matchable, SymbolTable, Ser
                     BoundaryConditionType bctP = compartmentSubDomain.getBoundaryConditionXp();
                     if(bctM.isPERIODIC() && !bctP.isPERIODIC() || !bctM.isPERIODIC() && bctP.isPERIODIC()){
                         Issue issue = new Issue(subDomain, issueContext, IssueCategory.MathDescription_SpatialModel_Subdomain,
-                                VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_9, "Xm", "Xp", subDomain.getName()), Issue.SEVERITY_ERROR);
+                                MathDescriptionMessages.getErrorMessage(MathDescriptionMessages.MATH_DESCRIPTION_SPATIAL_MODEL_9, "Xm", "Xp", subDomain.getName()), Issue.SEVERITY_ERROR);
                         issueList.add(issue);
                     }
                     bctM = compartmentSubDomain.getBoundaryConditionYm();
                     bctP = compartmentSubDomain.getBoundaryConditionYp();
                     if(bctM.isPERIODIC() && !bctP.isPERIODIC() || !bctM.isPERIODIC() && bctP.isPERIODIC()){
                         Issue issue = new Issue(subDomain, issueContext, IssueCategory.MathDescription_SpatialModel_Subdomain,
-                                VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_9, "Ym", "Yp", subDomain.getName()), Issue.SEVERITY_ERROR);
+                                MathDescriptionMessages.getErrorMessage(MathDescriptionMessages.MATH_DESCRIPTION_SPATIAL_MODEL_9, "Ym", "Yp", subDomain.getName()), Issue.SEVERITY_ERROR);
                         issueList.add(issue);
                     }
                     bctM = compartmentSubDomain.getBoundaryConditionZm();
                     bctP = compartmentSubDomain.getBoundaryConditionZp();
                     if(bctM.isPERIODIC() && !bctP.isPERIODIC() || !bctM.isPERIODIC() && bctP.isPERIODIC()){
                         Issue issue = new Issue(subDomain, issueContext, IssueCategory.MathDescription_SpatialModel_Subdomain,
-                                VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_9, "Zm", "Zp", subDomain.getName()), Issue.SEVERITY_ERROR);
+                                MathDescriptionMessages.getErrorMessage(MathDescriptionMessages.MATH_DESCRIPTION_SPATIAL_MODEL_9, "Zm", "Zp", subDomain.getName()), Issue.SEVERITY_ERROR);
                         issueList.add(issue);
                     }
                 } else if(subDomain instanceof MembraneSubDomain){
@@ -2430,21 +2430,21 @@ public class MathDescription implements Versionable, Matchable, SymbolTable, Ser
                     BoundaryConditionType bctP = membraneSubDomain.getBoundaryConditionXp();
                     if(bctM.isPERIODIC() && !bctP.isPERIODIC() || !bctM.isPERIODIC() && bctP.isPERIODIC()){
                         Issue issue = new Issue(subDomain, issueContext, IssueCategory.MathDescription_SpatialModel_Subdomain,
-                                VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_9, "Xm", "Xp", subDomain.getName()), Issue.SEVERITY_ERROR);
+                                MathDescriptionMessages.getErrorMessage(MathDescriptionMessages.MATH_DESCRIPTION_SPATIAL_MODEL_9, "Xm", "Xp", subDomain.getName()), Issue.SEVERITY_ERROR);
                         issueList.add(issue);
                     }
                     bctM = membraneSubDomain.getBoundaryConditionYm();
                     bctP = membraneSubDomain.getBoundaryConditionYp();
                     if(bctM.isPERIODIC() && !bctP.isPERIODIC() || !bctM.isPERIODIC() && bctP.isPERIODIC()){
                         Issue issue = new Issue(subDomain, issueContext, IssueCategory.MathDescription_SpatialModel_Subdomain,
-                                VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_9, "Ym", "Yp", subDomain.getName()), Issue.SEVERITY_ERROR);
+                                MathDescriptionMessages.getErrorMessage(MathDescriptionMessages.MATH_DESCRIPTION_SPATIAL_MODEL_9, "Ym", "Yp", subDomain.getName()), Issue.SEVERITY_ERROR);
                         issueList.add(issue);
                     }
                     bctM = membraneSubDomain.getBoundaryConditionZm();
                     bctP = membraneSubDomain.getBoundaryConditionZp();
                     if(bctM.isPERIODIC() && !bctP.isPERIODIC() || !bctM.isPERIODIC() && bctP.isPERIODIC()){
                         Issue issue = new Issue(subDomain, issueContext, IssueCategory.MathDescription_SpatialModel_Subdomain,
-                                VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_9, "Zm", "Zp", subDomain.getName()), Issue.SEVERITY_ERROR);
+                                MathDescriptionMessages.getErrorMessage(MathDescriptionMessages.MATH_DESCRIPTION_SPATIAL_MODEL_9, "Zm", "Zp", subDomain.getName()), Issue.SEVERITY_ERROR);
                         issueList.add(issue);
                     }
                 }
@@ -2467,7 +2467,7 @@ public class MathDescription implements Versionable, Matchable, SymbolTable, Ser
                     //}
                     if(regions == null){
                         Issue issue = new Issue(geometry, issueContext, IssueCategory.MathDescription_SpatialModel_Geometry,
-                                VCellErrorMessages.MATH_DESCRIPTION_GEOMETRY_2, Issue.SEVERITY_ERROR);
+                                MathDescriptionMessages.MATH_DESCRIPTION_GEOMETRY_2, Issue.SEVERITY_ERROR);
                         issueList.add(issue);
                     } else {
                         for(int i = 0; i < regions.length; i++){
@@ -2477,20 +2477,20 @@ public class MathDescription implements Versionable, Matchable, SymbolTable, Ser
                                 CompartmentSubDomain compartment1 = getCompartmentSubDomain(subVolume1.getName());
                                 if(compartment1 == null){
                                     Issue issue = new Issue(geometry, issueContext, IssueCategory.MathDescription_SpatialModel_Geometry,
-                                            VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_GEOMETRY_3, getGeometry().getName(), subVolume1.getName()), Issue.SEVERITY_ERROR);
+                                            MathDescriptionMessages.getErrorMessage(MathDescriptionMessages.MATH_DESCRIPTION_GEOMETRY_3, getGeometry().getName(), subVolume1.getName()), Issue.SEVERITY_ERROR);
                                     issueList.add(issue);
                                 }
                                 SubVolume subVolume2 = ((VolumeGeometricRegion) surfaceRegion.getAdjacentGeometricRegions()[1]).getSubVolume();
                                 CompartmentSubDomain compartment2 = getCompartmentSubDomain(subVolume2.getName());
                                 if(compartment2 == null){
                                     Issue issue = new Issue(geometry, issueContext, IssueCategory.MathDescription_SpatialModel_Geometry,
-                                            VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_GEOMETRY_3, getGeometry().getName(), subVolume2.getName()), Issue.SEVERITY_ERROR);
+                                            MathDescriptionMessages.getErrorMessage(MathDescriptionMessages.MATH_DESCRIPTION_GEOMETRY_3, getGeometry().getName(), subVolume2.getName()), Issue.SEVERITY_ERROR);
                                     issueList.add(issue);
                                 }
                                 MembraneSubDomain membraneSubDomain = getMembraneSubDomain(compartment1, compartment2);
                                 if(compartment2 != null && compartment1 != null && membraneSubDomain == null){
                                     Issue issue = new Issue(geometry, issueContext, IssueCategory.MathDescription_SpatialModel_Geometry,
-                                            VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_GEOMETRY_4, compartment1.getName(), compartment2.getName()), Issue.SEVERITY_ERROR);
+                                            MathDescriptionMessages.getErrorMessage(MathDescriptionMessages.MATH_DESCRIPTION_GEOMETRY_4, compartment1.getName(), compartment2.getName()), Issue.SEVERITY_ERROR);
                                     issueList.add(issue);
                                 }
                             }
@@ -2518,7 +2518,7 @@ public class MathDescription implements Versionable, Matchable, SymbolTable, Ser
                                 }
                                 if(!bFoundSurfaceInGeometry){
                                     Issue issue = new Issue(geometry, issueContext, IssueCategory.MathDescription_SpatialModel_Geometry,
-                                            VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_GEOMETRY_5, membraneSubDomain.getInsideCompartment().getName(), membraneSubDomain.getOutsideCompartment().getName()), Issue.SEVERITY_ERROR);
+                                            MathDescriptionMessages.getErrorMessage(MathDescriptionMessages.MATH_DESCRIPTION_GEOMETRY_5, membraneSubDomain.getInsideCompartment().getName(), membraneSubDomain.getOutsideCompartment().getName()), Issue.SEVERITY_ERROR);
                                     issueList.add(issue);
                                 }
                             }
@@ -2578,12 +2578,12 @@ public class MathDescription implements Versionable, Matchable, SymbolTable, Ser
                                         // if PDE variable does not have jump condition OR boundaryValue (neither or both are not allowed), its an error.
                                         if((jumpCondition == null && boundaryValue == null) || (jumpCondition != null && boundaryValue != null)){
                                             Issue issue = new Issue(equ, issueContext, IssueCategory.MathDescription_SpatialModel_Equation,
-                                                    VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_10, varName, subDomain.getName(), membraneSubDomain.getName()), Issue.SEVERITY_ERROR);
+                                                    MathDescriptionMessages.getErrorMessage(MathDescriptionMessages.MATH_DESCRIPTION_SPATIAL_MODEL_10, varName, subDomain.getName(), membraneSubDomain.getName()), Issue.SEVERITY_ERROR);
                                             issueList.add(issue);
                                         }
                                         if(boundaryValue != null && (subDomain.getBoundaryConditionSpec(membraneSubDomain.getName()) == null)){
                                             Issue issue = new Issue(equ, issueContext, IssueCategory.MathDescription_SpatialModel_Equation,
-                                                    VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_10A, varName, subDomain.getName(), membraneSubDomain.getName(), membraneSubDomain.getName(), subDomain.getName()), Issue.SEVERITY_ERROR);
+                                                    MathDescriptionMessages.getErrorMessage(MathDescriptionMessages.MATH_DESCRIPTION_SPATIAL_MODEL_10A, varName, subDomain.getName(), membraneSubDomain.getName(), membraneSubDomain.getName(), subDomain.getName()), Issue.SEVERITY_ERROR);
                                             issueList.add(issue);
                                         }
                                     }
@@ -2606,7 +2606,7 @@ public class MathDescription implements Versionable, Matchable, SymbolTable, Ser
                                 boolean bOutsidePresent = (memSubDomain.getOutsideCompartment().getEquation(volVar) instanceof PdeEquation);
                                 if(!bInsidePresent && !bOutsidePresent){
                                     Issue issue = new Issue(equ, issueContext, IssueCategory.MathDescription_SpatialModel_Equation,
-                                            VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_11, varName, memSubDomain.getName(), memSubDomain.getInsideCompartment().getName(), memSubDomain.getOutsideCompartment().getName()), Issue.SEVERITY_ERROR);
+                                            MathDescriptionMessages.getErrorMessage(MathDescriptionMessages.MATH_DESCRIPTION_SPATIAL_MODEL_11, varName, memSubDomain.getName(), memSubDomain.getInsideCompartment().getName(), memSubDomain.getOutsideCompartment().getName()), Issue.SEVERITY_ERROR);
                                     issueList.add(issue);
                                 }
                                 //
@@ -2614,12 +2614,12 @@ public class MathDescription implements Versionable, Matchable, SymbolTable, Ser
                                 //
                                 if(!bInsidePresent && !jumpCondition.getInFluxExpression().isZero()){
                                     Issue issue = new Issue(equ, issueContext, IssueCategory.MathDescription_SpatialModel_Equation,
-                                            VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_12, varName, memSubDomain.getName(), memSubDomain.getInsideCompartment().getName()), Issue.SEVERITY_ERROR);
+                                            MathDescriptionMessages.getErrorMessage(MathDescriptionMessages.MATH_DESCRIPTION_SPATIAL_MODEL_12, varName, memSubDomain.getName(), memSubDomain.getInsideCompartment().getName()), Issue.SEVERITY_ERROR);
                                     issueList.add(issue);
                                 }
                                 if(!bOutsidePresent && !jumpCondition.getOutFluxExpression().isZero()){
                                     Issue issue = new Issue(equ, issueContext, IssueCategory.MathDescription_SpatialModel_Equation,
-                                            VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_13, varName, memSubDomain.getName(), memSubDomain.getOutsideCompartment().getName()), Issue.SEVERITY_ERROR);
+                                            MathDescriptionMessages.getErrorMessage(MathDescriptionMessages.MATH_DESCRIPTION_SPATIAL_MODEL_13, varName, memSubDomain.getName(), memSubDomain.getOutsideCompartment().getName()), Issue.SEVERITY_ERROR);
                                     issueList.add(issue);
                                 }
 
@@ -2628,17 +2628,17 @@ public class MathDescription implements Versionable, Matchable, SymbolTable, Ser
                     }
                     if(odeRefCount > 0 && pdeRefCount > 0){
                         Issue issue = new Issue(this, issueContext, IssueCategory.MathDescription_SpatialModel,
-                                VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_14, varName), Issue.SEVERITY_ERROR);
+                                MathDescriptionMessages.getErrorMessage(MathDescriptionMessages.MATH_DESCRIPTION_SPATIAL_MODEL_14, varName), Issue.SEVERITY_ERROR);
                         issueList.add(issue);
                     }
                     if(steadyPdeCount > 0 && pdeRefCount > 0){
                         Issue issue = new Issue(this, issueContext, IssueCategory.MathDescription_SpatialModel,
-                                VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_15, varName), Issue.SEVERITY_ERROR);
+                                MathDescriptionMessages.getErrorMessage(MathDescriptionMessages.MATH_DESCRIPTION_SPATIAL_MODEL_15, varName), Issue.SEVERITY_ERROR);
                         issueList.add(issue);
                     }
                     if(odeRefCount == 0 && pdeRefCount == 0 && steadyPdeCount == 0 && measureCount == 0){
                         Issue issue = new Issue(this, issueContext, IssueCategory.MathDescription_SpatialModel,
-                                VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_16, varName), Issue.SEVERITY_ERROR);
+                                MathDescriptionMessages.getErrorMessage(MathDescriptionMessages.MATH_DESCRIPTION_SPATIAL_MODEL_16, varName), Issue.SEVERITY_ERROR);
                         issueList.add(issue);
                     }
                 }
@@ -2665,17 +2665,17 @@ public class MathDescription implements Versionable, Matchable, SymbolTable, Ser
                     }
                     if(odeRefCount > 0 && pdeRefCount > 0){
                         Issue issue = new Issue(var, issueContext, IssueCategory.MathDescription_SpatialModel_Variable,
-                                VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_14, varName), Issue.SEVERITY_ERROR);
+                                MathDescriptionMessages.getErrorMessage(MathDescriptionMessages.MATH_DESCRIPTION_SPATIAL_MODEL_14, varName), Issue.SEVERITY_ERROR);
                         issueList.add(issue);
                     }
                     if(steadyPdeCount > 0 && pdeRefCount > 0){
                         Issue issue = new Issue(var, issueContext, IssueCategory.MathDescription_SpatialModel_Variable,
-                                VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_15, varName), Issue.SEVERITY_ERROR);
+                                MathDescriptionMessages.getErrorMessage(MathDescriptionMessages.MATH_DESCRIPTION_SPATIAL_MODEL_15, varName), Issue.SEVERITY_ERROR);
                         issueList.add(issue);
                     }
                     if(odeRefCount == 0 && pdeRefCount == 0 && steadyPdeCount == 0){
                         Issue issue = new Issue(var, issueContext, IssueCategory.MathDescription_SpatialModel_Variable,
-                                VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_16, varName), Issue.SEVERITY_ERROR);
+                                MathDescriptionMessages.getErrorMessage(MathDescriptionMessages.MATH_DESCRIPTION_SPATIAL_MODEL_16, varName), Issue.SEVERITY_ERROR);
                         issueList.add(issue);
                     }
                 }
@@ -2689,7 +2689,7 @@ public class MathDescription implements Versionable, Matchable, SymbolTable, Ser
                             Equation equ = subDomain.getEquation(var);
                             if(!(equ instanceof OdeEquation)){
                                 Issue issue = new Issue(var, issueContext, IssueCategory.MathDescription_SpatialModel_Variable,
-                                        VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_21, varName, subDomain.getName()), Issue.SEVERITY_ERROR);
+                                        MathDescriptionMessages.getErrorMessage(MathDescriptionMessages.MATH_DESCRIPTION_SPATIAL_MODEL_21, varName, subDomain.getName()), Issue.SEVERITY_ERROR);
                                 issueList.add(issue);
                             }
                         }
@@ -2718,7 +2718,7 @@ public class MathDescription implements Versionable, Matchable, SymbolTable, Ser
                                         if(membraneSubDomain.getInsideCompartment() == subDomain || membraneSubDomain.getOutsideCompartment() == subDomain){
                                             if(membraneSubDomain.getJumpCondition(volRegionVar) == null){
                                                 Issue issue = new Issue(var, issueContext, IssueCategory.MathDescription_SpatialModel_Variable,
-                                                        VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_17, varName, subDomain.getName(), membraneSubDomain.getName()), Issue.SEVERITY_ERROR);
+                                                        MathDescriptionMessages.getErrorMessage(MathDescriptionMessages.MATH_DESCRIPTION_SPATIAL_MODEL_17, varName, subDomain.getName(), membraneSubDomain.getName()), Issue.SEVERITY_ERROR);
                                                 issueList.add(issue);
                                             }
                                         }
@@ -2729,7 +2729,7 @@ public class MathDescription implements Versionable, Matchable, SymbolTable, Ser
                     }
                     if(count == 0){
                         Issue issue = new Issue(var, issueContext, IssueCategory.MathDescription_SpatialModel_Variable,
-                                VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_18, varName), Issue.SEVERITY_ERROR);
+                                MathDescriptionMessages.getErrorMessage(MathDescriptionMessages.MATH_DESCRIPTION_SPATIAL_MODEL_18, varName), Issue.SEVERITY_ERROR);
                         issueList.add(issue);
                     }
                 }
@@ -2749,7 +2749,7 @@ public class MathDescription implements Versionable, Matchable, SymbolTable, Ser
                     }
                     if(count == 0){
                         Issue issue = new Issue(var, issueContext, IssueCategory.MathDescription_SpatialModel_Variable,
-                                VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_19, varName), Issue.SEVERITY_ERROR);
+                                MathDescriptionMessages.getErrorMessage(MathDescriptionMessages.MATH_DESCRIPTION_SPATIAL_MODEL_19, varName), Issue.SEVERITY_ERROR);
                         issueList.add(issue);
                     }
                 }
@@ -2763,7 +2763,7 @@ public class MathDescription implements Versionable, Matchable, SymbolTable, Ser
                             Equation equ = subDomain.getEquation(var);
                             if(!(equ instanceof FilamentRegionEquation)){
                                 Issue issue = new Issue(var, issueContext, IssueCategory.MathDescription_SpatialModel_Variable,
-                                        VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_20, varName, subDomain.getName()), Issue.SEVERITY_ERROR);
+                                        MathDescriptionMessages.getErrorMessage(MathDescriptionMessages.MATH_DESCRIPTION_SPATIAL_MODEL_20, varName, subDomain.getName()), Issue.SEVERITY_ERROR);
                                 issueList.add(issue);
                             }
                         }
@@ -2772,7 +2772,7 @@ public class MathDescription implements Versionable, Matchable, SymbolTable, Ser
             }
         }
         if(eventList.size() > 0 && isSpatial()){
-            Issue issue = new Issue(this, issueContext, IssueCategory.MathDescription_SpatialModel, VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_22, Issue.SEVERITY_ERROR);
+            Issue issue = new Issue(this, issueContext, IssueCategory.MathDescription_SpatialModel, MathDescriptionMessages.MATH_DESCRIPTION_SPATIAL_MODEL_22, Issue.SEVERITY_ERROR);
             issueList.add(issue);
         }
         for(Event event : eventList){

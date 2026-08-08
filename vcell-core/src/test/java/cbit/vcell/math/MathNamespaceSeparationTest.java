@@ -71,12 +71,7 @@ public class MathNamespaceSeparationTest {
 			"MathRuleFactory.java -> org.vcell.model.rbm.RuleAnalysis.ParticipantType",
 			"MathRuleFactory.java -> org.vcell.model.rbm.RuleAnalysis.ProductBondEntry",
 			"MathRuleFactory.java -> org.vcell.model.rbm.RuleAnalysis.ReactantBondEntry",
-			"MathRuleFactory.java -> org.vcell.model.rbm.RuleAnalysis.RuleEntry",
-
-			// Reserved-symbol vocabulary (KMOLE and friends) and the shared error-message catalog,
-			// which lives under cbit.vcell.model.common but is not itself a biological concept.
-			"MathDescription.java -> cbit.vcell.model.Model.ReservedSymbol",
-			"MathDescription.java -> cbit.vcell.model.common.VCellErrorMessages"));
+			"MathRuleFactory.java -> org.vcell.model.rbm.RuleAnalysis.RuleEntry"));
 
 	private static final Pattern IMPORT = Pattern.compile("^\\s*import\\s+(?:static\\s+)?([\\w.]+)\\s*;");
 
