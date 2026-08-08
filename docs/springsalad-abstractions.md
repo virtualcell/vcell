@@ -142,18 +142,27 @@ is relocating shared vocabulary rather than restructuring dataflow.
 
 18 biological imports across 5 files. Five are dead on arrival.
 
-| # | file | imports | body refs | verdict |
-|---|---|---|---|---|
-| 1 | `LangevinParticleJumpProcess` | `ReactionRuleSpec` | 0 | **stale** — delete |
-| 2 | `LangevinParticleMolecularComponent` | `cbit.vcell.model.Structure` | 0 | **stale** — delete |
-| 3 | `LangevinParticleMolecularComponent` | `rbm.ComponentStateDefinition` | 0 | **stale** — delete |
-| 4 | `MathDescription` | `Model.ReservedSymbol` | 0 | **stale** — delete |
-| 5 | `MathRuleFactory` | `RuleAnalysis`, `RuleAnalysis.RuleEntry` | 0 | **stale** — delete |
-| 6 | `ParticleMolecularTypePattern` | `MolecularTypePattern.TRIVIAL_MATCH` | 3 | one string constant |
-| 7 | `MathDescription` | `AbstractMathMapping.*_SUFFIX` | 5 | naming-convention constants |
-| 8 | `MathDescription` | `VCellErrorMessages` | 48 | message catalog; mechanical |
-| 9 | `LangevinParticleJumpProcess` | `Subtype`, `TransitionCondition` | 14 | **value enums** — needs design |
-| 10 | `MathRuleFactory` | `RuleAnalysis.*Entry`, `RbmUtils` | 16 | **structural** — implements biological interfaces |
+| # | file | imports | verdict |
+|---|---|---|---|
+| 1 | `LangevinParticleJumpProcess` | `ReactionRuleSpec` | **stale** (referenced only by a commented-out field) — deleted |
+| 2 | `LangevinParticleMolecularComponent` | `cbit.vcell.model.Structure` | **stale** — deleted |
+| 3 | `LangevinParticleMolecularComponent` | `rbm.ComponentStateDefinition` | **stale** — deleted |
+| 4 | `ParticleMolecularTypePattern` | `MolecularTypePattern.TRIVIAL_MATCH` | one string constant |
+| 5 | `MathDescription` | `AbstractMathMapping.*_SUFFIX` | naming-convention constants |
+| 6 | `MathDescription` | `VCellErrorMessages` | message catalog; mechanical |
+| 7 | `MathDescription` | `Model.ReservedSymbol` | live — used by `updateReservedSymbols(...)` |
+| 8 | `LangevinParticleJumpProcess` | `Subtype`, `TransitionCondition` | **value enums** — math-side equivalents |
+| 9 | `MathRuleFactory` | `RuleAnalysis`, `RuleEntry`, `*Entry`, `ParticipantType`, bond entries, `RbmUtils` | shared contract declared in a biological package — move the contract |
+
+> **Counting caution.** An earlier revision of this table listed `Model.ReservedSymbol` and
+> `RuleAnalysis`/`RuleEntry` as stale. They are not — `ReservedSymbol` appears in the
+> signature of `MathDescription.updateReservedSymbols`, and `MathRuleEntry implements
+> RuleEntry`. The error came from counting "body references" as *matching lines minus one
+> for the import*: for a **nested** import such as `RuleAnalysis.RuleEntry`, the import line
+> does not match an identifier pattern anchored on non-identifier characters (the preceding
+> `.` is excluded), so subtracting one discarded a real use. Decide staleness by grepping
+> for the symbol and excluding lines that *begin with* `import`, never by arithmetic on
+> counts. The compiler caught this immediately; a `grep`-only review would not have.
 
 Notes on the two that are not mechanical:
 

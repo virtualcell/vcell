@@ -181,12 +181,15 @@ at all).
 
 Only one, and it is the `RuleAnalysis` contract location described above:
 
-| file | imports | body refs | verdict |
-|---|---|---|---|
-| `MathRuleFactory` | `RuleAnalysis`, `RuleAnalysis.RuleEntry` | 0 | **stale** — delete |
-| `MathRuleFactory` | `RuleAnalysis.{MolecularType,MolecularComponent,Participant}Entry`, `ParticipantType`, `{Reactant,Product}BondEntry` | 16 | interfaces in a biological package — **move the contract** |
-| `MathRuleFactory` | `RbmUtils` | 1 | utility; relocate or duplicate |
-| `ParticleMolecularTypePattern` | `MolecularTypePattern.TRIVIAL_MATCH` | 3 | one string constant |
+| file | imports | verdict |
+|---|---|---|
+| `MathRuleFactory` | `RuleAnalysis`, `RuleEntry`, `{MolecularType,MolecularComponent,Participant}Entry`, `ParticipantType`, `{Reactant,Product}BondEntry` | all live — the shared contract, declared in a biological package: **move the contract** |
+| `MathRuleFactory` | `RbmUtils` | utility; relocate or duplicate |
+| `ParticleMolecularTypePattern` | `MolecularTypePattern.TRIVIAL_MATCH` | one string constant |
+
+`RuleAnalysis` and `RuleAnalysis.RuleEntry` were briefly mis-classified as unused imports;
+`MathRuleEntry implements RuleEntry` and `RuleAnalysis.getID(...)` is called from
+`MathRuleFactory`. See the counting caution in the SpringSaLaD document.
 
 `NFsimXMLWriter` also imports `RbmUtils`, `RuleAnalysis` and `RuleAnalysisReport`, but it
 is a **solver-layer** class, and solver depending on the shared rule-analysis contract is

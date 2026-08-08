@@ -17,7 +17,6 @@ import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 
-import cbit.vcell.mapping.ReactionRuleSpec;
 import cbit.vcell.mapping.ReactionRuleSpec.Subtype;
 import cbit.vcell.mapping.ReactionRuleSpec.TransitionCondition;
 import cbit.vcell.parser.Expression;
@@ -25,7 +24,6 @@ import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 
 public class LangevinParticleJumpProcess extends ParticleJumpProcess {
-//	private ReactionRuleSpec rrr = null;
 	private Subtype subtype = null;
 	private TransitionCondition transitionCondition = null;
 	private double bondLength = 0;

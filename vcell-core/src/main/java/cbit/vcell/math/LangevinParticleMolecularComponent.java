@@ -5,7 +5,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.vcell.model.rbm.ComponentStateDefinition;
 import org.vcell.solver.langevin.LangevinLngvWriter;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
@@ -15,7 +14,6 @@ import org.vcell.util.springsalad.Colors;
 import org.vcell.util.springsalad.IOHelp;
 import org.vcell.util.springsalad.NamedColor;
 
-import cbit.vcell.model.Structure;
 
 @SuppressWarnings("serial")
 public class LangevinParticleMolecularComponent extends ParticleMolecularComponent {
