@@ -892,7 +892,7 @@ el.plotClose.addEventListener('click', () => { el.plotPanel.hidden = true; });
  * points by 26 units where the reference moves 0.45).
  */
 function smoothingFor(strength) {
-  const nom = state.nominalSinc ?? { iterations: 12, feature_angle: 120, pass_band: 0.05 };
+  const nom = state.nominalSinc ?? { iterations: 16, feature_angle: 120, pass_band: 0.05 };
   if (strength <= NOMINAL_STRENGTH) {
     return { iterations: Math.round(nom.iterations * (strength / NOMINAL_STRENGTH)), passBand: nom.pass_band };
   }
