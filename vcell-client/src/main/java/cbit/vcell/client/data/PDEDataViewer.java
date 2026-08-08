@@ -1704,6 +1704,13 @@ private void openInBrowserViewer() {
 			DialogUtils.showWarningDialog(this, "These results cannot be viewed in 3D.");
 			return;
 		}
+		if (dataContext.getCartesianMesh() != null
+				&& dataContext.getCartesianMesh().getGeometryDimension() < 2) {
+			// the browser viewer renders 2D quads and 3D voxels; a 1D run has neither
+			DialogUtils.showWarningDialog(this,
+					"1D results are not supported by the 3D viewer; use the Plot button instead.");
+			return;
+		}
 		VCSimulationDataIdentifier simDataId = (VCSimulationDataIdentifier) dataContext.getVCDataIdentifier();
 		// register the dataset before opening the browser, and hand over the reader this window already
 		// uses -- that is what lets one server serve several windows, local and remote alike

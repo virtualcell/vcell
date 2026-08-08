@@ -70,6 +70,7 @@ const state = {
   selectedVar: '',
   selectedDomain: '',
   geometryId: '',
+  dimension: 3,
   bounds: null,
   sliceAxis: -1,
   slicePos: 50,
@@ -264,6 +265,9 @@ function buildPickIndex(geometry, bounds) {
     }
   }
   const d = [maxs[0] - mins[0], maxs[1] - mins[1], maxs[2] - mins[2]];
+  for (let a = 0; a < 3; a++) {
+    if (!(d[a] > 0)) d[a] = 1; // a 2D grid is flat along one axis: one unit-thick layer
+  }
   const o = [bounds[0], bounds[2], bounds[4]];
   const n = [0, 1, 2].map((a) => Math.max(1, Math.round((bounds[2 * a + 1] - bounds[2 * a]) / d[a])));
   const occ = new Map();
@@ -336,7 +340,11 @@ function castRay(origin, dir) {
   return -1;
 }
 
-/** Mouse position → world-space ray through the camera. Perspective camera, vertical FOV. */
+/**
+ * Mouse position → world-space ray through the camera. Perspective (vertical FOV) for 3D;
+ * parallel projection for the 2D top-down camera, where the ray origin shifts in-plane and the
+ * direction is the constant view direction.
+ */
 async function rayFromMouse(clientX, clientY) {
   const rect = el.canvas.getBoundingClientRect();
   const xN = ((clientX - rect.left) / rect.width) * 2 - 1;
@@ -344,7 +352,6 @@ async function rayFromMouse(clientX, clientY) {
   const P = await camera.getPosition();
   const F = await camera.getFocalPoint();
   const U = await camera.getViewUp();
-  const halfTan = Math.tan(((await camera.getViewAngle()) * Math.PI) / 360);
   const norm = (v) => {
     const l = Math.hypot(v[0], v[1], v[2]) || 1;
     return [v[0] / l, v[1] / l, v[2] / l];
@@ -354,6 +361,13 @@ async function rayFromMouse(clientX, clientY) {
   const right = norm(cross(fwd, U));
   const up = cross(right, fwd);
   const aspect = rect.width / rect.height;
+  if (state.dimension === 2) {
+    const ps = await camera.getParallelScale();
+    const origin = [0, 1, 2].map((a) =>
+      P[a] + right[a] * xN * aspect * ps + up[a] * yN * ps);
+    return { origin, dir: fwd };
+  }
+  const halfTan = Math.tan(((await camera.getViewAngle()) * Math.PI) / 360);
   const dir = norm([0, 1, 2].map((a) =>
     fwd[a] + right[a] * xN * aspect * halfTan + up[a] * yN * halfTan));
   return { origin: P, dir };
@@ -375,6 +389,7 @@ function boundsOf(geometry) {
 
 /** Builds the in-memory grid and points the pipeline at it. Re-run when the domain changes. */
 async function buildGrid(geometry, field) {
+  state.dimension = geometry.dimension ?? 3;
   const points = vtk.vtkPoints();
   await points.setNumberOfPoints(geometry.numPoints);
   const P = geometry.points;
@@ -524,7 +539,15 @@ async function buildScene(geometry, field) {
 
   sinc = vtk.vtkWindowedSincPolyDataFilter();
   await sinc.setInputConnection(await surfSource.getOutputPort());
-  await sinc.boundarySmoothingOff();
+  state.dimension = geometry.dimension ?? 3;
+  if (state.dimension === 2) {
+    // 2D: the quads ARE the display and the mesh's boundary edge is the domain outline — exactly
+    // what the convention smooths. A flat regular interior is already a Laplacian fixed point,
+    // so with boundary smoothing ON only the outline relaxes and the interior stays put.
+    await sinc.boundarySmoothingOn();
+  } else {
+    await sinc.boundarySmoothingOff();
+  }
   await sinc.featureEdgeSmoothingOff();
   await sinc.nonManifoldSmoothingOff();
   await sinc.normalizeCoordinatesOn();
@@ -598,6 +621,12 @@ async function buildScene(geometry, field) {
   // vtkRemoteSession, not on the standalone session we run. Interaction is driven directly against
   // the camera below.
   camera = await renderer.getActiveCamera();
+  if (state.dimension === 2) {
+    // top-down orthographic view of the z=0 plane; interaction becomes pan/zoom (no orbit)
+    await camera.parallelProjectionOn();
+    const sliceRow = el.sliceAxis.closest('.controls');
+    if (sliceRow) sliceRow.hidden = true;
+  }
   // The axes box needs the camera: its labels and fly-to-a-corner behaviour track the view. That
   // is exactly what an HTML fallback cannot fake, which is why this actor earns its keep.
   cubeAxes = vtk.vtkCubeAxesActor();
@@ -671,7 +700,7 @@ function attachTrackball() {
     const dy = e.clientY - lastY;
     lastX = e.clientX; lastY = e.clientY;
     dragDistance += Math.abs(dx) + Math.abs(dy);
-    if (dx || dy) void orbit(dx, dy);
+    if (dx || dy) void (state.dimension === 2 ? pan2d(dx, dy) : orbit(dx, dy));
     e.preventDefault();
   });
   const release = (e) => {
@@ -685,7 +714,8 @@ function attachTrackball() {
   el.canvas.addEventListener('pointercancel', release);
   el.canvas.addEventListener('pointerleave', () => { el.pickReadout.textContent = ''; });
   el.canvas.addEventListener('wheel', (e) => {
-    void dolly(e.deltaY < 0 ? 1.1 : 1 / 1.1);
+    const f = e.deltaY < 0 ? 1.1 : 1 / 1.1;
+    void (state.dimension === 2 ? zoom2d(f) : dolly(f));
     e.preventDefault();
   }, { passive: false });
 }
@@ -720,6 +750,41 @@ async function dolly(factor) {
   }
 }
 
+/** 2D drag: pan the top-down orthographic camera; the world under the cursor follows it. */
+async function pan2d(dx, dy) {
+  if (!camera || state.drawing) return;
+  state.drawing = true;
+  try {
+    const rect = el.canvas.getBoundingClientRect();
+    const worldPerPixel = (2 * (await camera.getParallelScale())) / rect.height;
+    const P = await camera.getPosition();
+    const F = await camera.getFocalPoint();
+    const mx = -dx * worldPerPixel;
+    const my = dy * worldPerPixel; // screen y grows downward; world y grows upward
+    await camera.setPosition(P[0] + mx, P[1] + my, P[2]);
+    await camera.setFocalPoint(F[0] + mx, F[1] + my, F[2]);
+    await renderWindow.render();
+  } catch (e) {
+    console.warn('pan failed', e);
+  } finally {
+    state.drawing = false;
+  }
+}
+
+/** 2D wheel: zoom by shrinking the parallel scale (dolly does nothing under an ortho camera). */
+async function zoom2d(factor) {
+  if (!camera || state.drawing) return;
+  state.drawing = true;
+  try {
+    await camera.setParallelScale((await camera.getParallelScale()) / factor);
+    await renderWindow.render();
+  } catch (e) {
+    console.warn('zoom failed', e);
+  } finally {
+    state.drawing = false;
+  }
+}
+
 // ---------------------------------------------------------------------------
 // picking (#1859 items 6 and 8)
 // ---------------------------------------------------------------------------
@@ -748,7 +813,7 @@ async function hoverPick(clientX, clientY) {
     }
     const v = state.fieldValues?.[cell];
     const c = cellCenter(cell);
-    const at = c ? ` @ (${c.map((x) => x.toFixed(1)).join(', ')})` : '';
+    const at = c ? ` @ (${c.slice(0, state.dimension === 2 ? 2 : 3).map((x) => x.toFixed(1)).join(', ')})` : '';
     el.pickReadout.textContent =
       v == null ? `no data${at}` : `${state.selectedVar} = ${v.toExponential(3)}${at}`;
   } catch (e) {
@@ -818,7 +883,7 @@ function renderPlot(series, center) {
     class: 'curve',
     points: times.map((t, i) => `${f.sx(t).toFixed(1)},${f.sy(values[i] ?? f.lo).toFixed(1)}`).join(' '),
   });
-  const at = center ? ` @ (${center.map((x) => x.toFixed(1)).join(', ')})` : '';
+  const at = center ? ` @ (${center.slice(0, state.dimension === 2 ? 2 : 3).map((x) => x.toFixed(1)).join(', ')})` : '';
   el.plotTitle.textContent = `${name}${at} · ${times.length} timepoints`;
   el.plotLegend.innerHTML = '';
   el.plotPanel.hidden = false;

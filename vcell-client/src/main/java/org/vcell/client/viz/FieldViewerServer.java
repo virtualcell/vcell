@@ -71,6 +71,9 @@ public final class FieldViewerServer {
 	/** VTK_VOXEL: the cell type {@link CartesianMeshMapping} emits for 3D volume domains. */
 	private static final int VTK_VOXEL = 11;
 
+	/** VTK_QUAD: the in-plane cell type it emits for 2D volume domains. */
+	private static final int VTK_QUAD = 9;
+
 	private static final String INDEX_HTML = "index.html";
 
 	/**
@@ -350,10 +353,11 @@ public final class FieldViewerServer {
 		ex.getResponseHeaders().set("Cache-Control", "public, max-age=60");
 
 		List<VisPoint> points = visMesh.getPoints();
-		List<VisVoxel> voxels = visMesh.getVisVoxels();
+		Cells cells = new Cells(visMesh);
 
-		StringBuilder sb = new StringBuilder(32 * points.size() + 32 * voxels.size() + 512);
+		StringBuilder sb = new StringBuilder(32 * points.size() + 32 * cells.size() + 512);
 		sb.append("{\"geometryId\":\"").append(jsonEscape(geometryId(source, domain))).append('"');
+		sb.append(",\"dimension\":").append(cells.vtkCellType == VTK_QUAD ? 2 : 3);
 		sb.append(",\"numPoints\":").append(points.size());
 		sb.append(",\"points\":[");
 		for (int i = 0; i < points.size(); i++) {
@@ -363,10 +367,10 @@ public final class FieldViewerServer {
 			}
 			sb.append(p.getX()).append(',').append(p.getY()).append(',').append(p.getZ());
 		}
-		sb.append("],\"cellType\":").append(VTK_VOXEL);
+		sb.append("],\"cellType\":").append(cells.vtkCellType);
 		sb.append(",\"cells\":[");
-		for (int c = 0; c < voxels.size(); c++) {
-			List<Integer> idx = voxels.get(c).getPointIndices();
+		for (int c = 0; c < cells.size(); c++) {
+			List<Integer> idx = cells.pointIndices.get(c);
 			if (c > 0) {
 				sb.append(',');
 			}
@@ -408,17 +412,17 @@ public final class FieldViewerServer {
 			throw new IllegalArgumentException("missing required query parameter 'var'");
 		}
 		double time = parseTime(q, source);
-		List<VisVoxel> voxels = grid(source, domain).getVisVoxels();
+		Cells cells = new Cells(grid(source, domain));
 
-		// each cell carries the mesh's global index of the voxel it came from, which is the position
-		// of that cell's value in the solver's data array
+		// each cell carries the mesh's global index of the element it came from, which is the
+		// position of that cell's value in the solver's data array
 		SimDataBlock block = source.dataManager.getSimDataBlock(emptyOutputContext(), source.vcdID, varName, time);
 		double[] meshData = block.getData();
-		double[] values = new double[voxels.size()];
+		double[] values = new double[cells.size()];
 		double min = Double.POSITIVE_INFINITY;
 		double max = Double.NEGATIVE_INFINITY;
-		for (int c = 0; c < voxels.size(); c++) {
-			double value = meshData[voxels.get(c).getFiniteVolumeIndex().getGlobalIndex()];
+		for (int c = 0; c < cells.size(); c++) {
+			double value = meshData[cells.globalIndices[c]];
 			values[c] = value;
 			if (!Double.isNaN(value)) {
 				min = Math.min(min, value);
@@ -463,13 +467,13 @@ public final class FieldViewerServer {
 		if (cellParam == null || cellParam.isEmpty()) {
 			throw new IllegalArgumentException("missing required query parameter 'cell'");
 		}
-		List<VisVoxel> voxels = grid(source, domain).getVisVoxels();
+		Cells cells = new Cells(grid(source, domain));
 		int cell = Integer.parseInt(cellParam);
-		if (cell < 0 || cell >= voxels.size()) {
+		if (cell < 0 || cell >= cells.size()) {
 			throw new IllegalArgumentException("cell " + cell + " out of range; domain '" + domain
-					+ "' has " + voxels.size() + " cells");
+					+ "' has " + cells.size() + " cells");
 		}
-		int globalIndex = voxels.get(cell).getFiniteVolumeIndex().getGlobalIndex();
+		int globalIndex = cells.globalIndices[cell];
 
 		double[] times = source.dataManager.getDataSetTimes(source.vcdID);
 		if (times == null || times.length == 0) {
@@ -544,12 +548,7 @@ public final class FieldViewerServer {
 			final String dom = varDomains[v];
 			indices[v] = indicesByDomain.computeIfAbsent(dom, d -> {
 				try {
-					List<VisVoxel> voxels = grid(source, d).getVisVoxels();
-					int[] idx = new int[voxels.size()];
-					for (int c = 0; c < idx.length; c++) {
-						idx[c] = voxels.get(c).getFiniteVolumeIndex().getGlobalIndex();
-					}
-					return idx;
+					return new Cells(grid(source, d)).globalIndices.clone();
 				} catch (Exception e) {
 					throw new RuntimeException("building index set for domain '" + d + "'", e);
 				}
@@ -611,6 +610,48 @@ public final class FieldViewerServer {
 	 */
 	private static String geometryId(DataSource source, String domain) {
 		return source.vcdID.getID() + "/" + domain;
+	}
+
+	/**
+	 * The finite-volume cells of a mesh, uniformly for 2D and 3D. A 3D domain arrives as
+	 * {@link VisVoxel}s and a 2D one as in-plane {@link VisPolygon} quads — thrift types with no
+	 * common interface, and the one NOT produced is left null, which is how a 2D run used to 500
+	 * on {@code /grid}. Everything downstream (geometry, field values, time series, statistics)
+	 * needs only the point indices and the solver's global index, so that is the whole interface.
+	 */
+	private static final class Cells {
+		final int vtkCellType;
+		final List<List<Integer>> pointIndices;
+		final int[] globalIndices;
+
+		Cells(VisMesh visMesh) {
+			List<VisVoxel> voxels = visMesh.getVisVoxels();
+			List<org.vcell.vis.vismesh.thrift.VisPolygon> polygons = visMesh.getPolygons();
+			if (voxels != null && !voxels.isEmpty()) {
+				vtkCellType = VTK_VOXEL;
+				pointIndices = new ArrayList<>(voxels.size());
+				globalIndices = new int[voxels.size()];
+				for (int c = 0; c < voxels.size(); c++) {
+					pointIndices.add(voxels.get(c).getPointIndices());
+					globalIndices[c] = voxels.get(c).getFiniteVolumeIndex().getGlobalIndex();
+				}
+			} else if (polygons != null && !polygons.isEmpty()) {
+				vtkCellType = VTK_QUAD;
+				pointIndices = new ArrayList<>(polygons.size());
+				globalIndices = new int[polygons.size()];
+				for (int c = 0; c < polygons.size(); c++) {
+					pointIndices.add(polygons.get(c).getPointIndices());
+					globalIndices[c] = polygons.get(c).getFiniteVolumeIndex().getGlobalIndex();
+				}
+			} else {
+				throw new IllegalArgumentException("mesh has neither voxels nor polygons; "
+						+ "1D runs are not supported by the field viewer");
+			}
+		}
+
+		int size() {
+			return globalIndices.length;
+		}
 	}
 
 	// ---------------------------------------------------------------------
