@@ -74,12 +74,14 @@ public final class FieldViewerServer {
 	private static final String INDEX_HTML = "index.html";
 
 	/**
-	 * Smoothing parameters the client applies to the extracted boundary surface. These match
-	 * the reference pipeline in {@code org.vcell.vis.mapping.vcell.CartesianMeshVtkFileWriter}
-	 * (and pyvcell's {@code smooth_unstructured_grid_surface}) so the browser reproduces the
-	 * same smoothed membrane the desktop/VTK path produces.
+	 * Default smoothing parameters for the viewer's deformed display mesh. Feature angle and
+	 * pass band match the reference pipeline in
+	 * {@code org.vcell.vis.mapping.vcell.CartesianMeshVtkFileWriter} (and pyvcell's
+	 * {@code smooth_unstructured_grid_surface}); the iteration count is deliberately 16 where
+	 * the pyvcell/VisIt reference uses 12 — chosen by eye in the installed client as the better
+	 * default. The viewer's smoothing slider can still reach the 12-iteration reference.
 	 */
-	private static final int SINC_ITERATIONS = 12;
+	private static final int SINC_ITERATIONS = 16;
 	private static final double SINC_FEATURE_ANGLE = 120.0;
 	private static final double SINC_PASS_BAND = 0.05;
 
