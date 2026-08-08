@@ -262,8 +262,10 @@ public class MessageProducerSessionJmsTest {
 		VCQueueConsumer responder = startEchoResponder(rpcQueue);
 		VCMessageSession producerSession = service.createProducerSession();
 		try {
+			System.out.println("TEMPQ-ADVISORY " + java.time.Instant.now() + " RPC-SEND  roundtrip");
 			Object answer = producerSession.sendRpcMessage(rpcQueue, echoRequest("hello"),
 					true, 30000L, null, null, null);
+			System.out.println("TEMPQ-ADVISORY " + java.time.Instant.now() + " RPC-DONE  roundtrip");
 			assertEquals("hello", answer, "the RPC should return what the responder echoed");
 		} finally {
 			producerSession.close();
@@ -489,8 +491,9 @@ public class MessageProducerSessionJmsTest {
 			}
 			DestinationInfo info = (DestinationInfo) data;
 			boolean removed = info.getOperationType() == DestinationInfo.REMOVE_OPERATION_TYPE;
-			String line = String.format("TEMPQ-ADVISORY %-6s %s  requested-by-connection=%s",
-					removed ? "REMOVE" : "ADD", info.getDestination(), info.getConnectionId());
+			String line = String.format("TEMPQ-ADVISORY %s %-6s %s  requested-by-connection=%s",
+					java.time.Instant.now(), removed ? "REMOVE" : "ADD",
+					info.getDestination(), info.getConnectionId());
 			events.add(line);
 			System.out.println(line);
 			if (removed) {
