@@ -7,8 +7,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -21,11 +23,16 @@ import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 import javax.jms.JMSException;
+import javax.jms.Message;
 import javax.jms.MessageConsumer;
+import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
+import org.apache.activemq.advisory.AdvisorySupport;
+import org.apache.activemq.command.ActiveMQMessage;
+import org.apache.activemq.command.DestinationInfo;
 import org.apache.activemq.broker.BrokerService;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -63,15 +70,20 @@ public class MessageProducerSessionJmsTest {
 	private static final VCellQueue TEST_QUEUE = new VCellQueue("MessageProducerSessionJmsTestQueue");
 
 	private static CountingMessagingService service;
+	private static TempQueueAdvisoryWatcher advisories;
 
 	@BeforeAll
 	public static void startBroker() throws Exception {
 		service = new CountingMessagingService();
 		service.startBroker();
+		advisories = new TempQueueAdvisoryWatcher(service.createConnectionFactory());
 	}
 
 	@AfterAll
 	public static void stopBroker() throws Exception {
+		if (advisories != null) {
+			advisories.close();
+		}
 		if (service != null) {
 			try {
 				service.close();
@@ -287,7 +299,17 @@ public class MessageProducerSessionJmsTest {
 			startTogether.countDown();
 
 			for (int i = 0; i < answers.size(); i++) {
-				assertEquals("request-" + i, answers.get(i).get(90, TimeUnit.SECONDS),
+				Object answer;
+				try {
+					answer = answers.get(i).get(90, TimeUnit.SECONDS);
+				} catch (Exception e) {
+					// issue #1863: a caller times out because the shared reply queue was deleted
+					// mid-test. The advisory record names the connection that removed it, which
+					// inference across three rounds of this flake never managed to pin down.
+					throw new AssertionError("concurrent caller " + i + " did not get an answer.\n"
+							+ advisories.report(), e);
+				}
+				assertEquals("request-" + i, answer,
 						"each concurrent caller must get back its own reply, not another caller's");
 			}
 		} finally {
@@ -432,6 +454,74 @@ public class MessageProducerSessionJmsTest {
 						}
 						return result;
 					});
+		}
+	}
+
+	/**
+	 * Subscribes to ActiveMQ's temp-queue advisory topic and records every create/destroy, with
+	 * the id of the connection that asked for it.
+	 *
+	 * Added for issue #1863, the fourth appearance of a reply queue being deleted while RPCs
+	 * still referenced it. Three plausible mechanisms were probed and disproved (the creating
+	 * session closing, consumer churn, a publishing connection closing), so the next occurrence
+	 * should name its cause rather than be inferred: an advisory REMOVE carries the requesting
+	 * connection id, which says whether the owner tore its own queue down or something else did.
+	 */
+	private static final class TempQueueAdvisoryWatcher implements MessageListener, AutoCloseable {
+		private final List<String> events = Collections.synchronizedList(new ArrayList<>());
+		private final Connection connection;
+
+		TempQueueAdvisoryWatcher(ConnectionFactory factory) throws JMSException {
+			connection = factory.createConnection();
+			connection.start();
+			Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+			session.createConsumer(AdvisorySupport.TEMP_QUEUE_ADVISORY_TOPIC).setMessageListener(this);
+		}
+
+		@Override
+		public void onMessage(Message message) {
+			if (!(message instanceof ActiveMQMessage)) {
+				return;
+			}
+			Object data = ((ActiveMQMessage) message).getDataStructure();
+			if (!(data instanceof DestinationInfo)) {
+				return;
+			}
+			DestinationInfo info = (DestinationInfo) data;
+			boolean removed = info.getOperationType() == DestinationInfo.REMOVE_OPERATION_TYPE;
+			String line = String.format("TEMPQ-ADVISORY %-6s %s  requested-by-connection=%s",
+					removed ? "REMOVE" : "ADD", info.getDestination(), info.getConnectionId());
+			events.add(line);
+			System.out.println(line);
+			if (removed) {
+				// what was running when it went away
+				for (Map.Entry<Thread, StackTraceElement[]> e : Thread.getAllStackTraces().entrySet()) {
+					for (StackTraceElement frame : e.getValue()) {
+						if (frame.getClassName().startsWith("cbit.vcell.message")) {
+							String at = "TEMPQ-ADVISORY   thread " + e.getKey().getName() + " at " + frame;
+							events.add(at);
+							System.out.println(at);
+							break;
+						}
+					}
+				}
+			}
+		}
+
+		String report() {
+			synchronized (events) {
+				return events.isEmpty()
+						? "temp-queue advisories: (none recorded)"
+						: "temp-queue advisories:\n  " + String.join("\n  ", events);
+			}
+		}
+
+		@Override
+		public void close() {
+			try {
+				connection.close();
+			} catch (JMSException ignored) {
+			}
 		}
 	}
 
