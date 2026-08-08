@@ -28,6 +28,20 @@ public class VCMessagingServiceActiveMQ extends VCMessagingServiceJms implements
 		//return new ActiveMQConnectionFactory("vm://localhost?broker.persistent=false&broker.useJmx=false&create=false");
 		ActiveMQConnectionFactory activeMQConnectionFactory = new ActiveMQConnectionFactory(jmsUrl(jmshost, jmsport ));
 		activeMQConnectionFactory.setTrustAllPackages(true);
+		// Do not let the client second-guess whether a temporary destination exists.
+		//
+		// ActiveMQConnection.isDeleted() answers from the connection's OWN advisory-populated
+		// set of temp destinations, not from the broker, and refuses to publish to anything
+		// missing from it. A connection that has not yet received the advisory for someone
+		// else's reply queue therefore reports it as deleted while it is alive. Since
+		// ConsumerContextJms opens a connection per message, an RPC reply is published from a
+		// connection that may be milliseconds old -- measured in CI, a reply was refused 3.4ms
+		// after the queue was created, and the genuine removal advisory arrived 60s later at
+		// teardown. The caller then waits out its whole timeout for a reply that was never sent.
+		//
+		// With advisory watching off, isDeleted() always returns false and the broker decides,
+		// which is the correct authority. See docs/MESSAGING.md and issue #1863.
+		activeMQConnectionFactory.setWatchTopicAdvisories(false);
 		return activeMQConnectionFactory;
 	}
 	
