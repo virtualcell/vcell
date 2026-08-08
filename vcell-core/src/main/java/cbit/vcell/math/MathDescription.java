@@ -16,7 +16,6 @@ import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
 import cbit.vcell.geometry.surface.VolumeGeometricRegion;
-import cbit.vcell.mapping.AbstractMathMapping;
 import cbit.vcell.math.MathCompareResults.Decision;
 import cbit.vcell.math.ParticleObservable.ObservableType;
 import cbit.vcell.math.PdeEquation.BoundaryConditionValue;
@@ -3805,10 +3804,10 @@ public class MathDescription implements Versionable, Matchable, SymbolTable, Ser
                 if(v2.get(j).contains("_init")
                         || v2.get(j).endsWith(InsideVariable.INSIDE_VARIABLE_SUFFIX)
                         || v2.get(j).endsWith(OutsideVariable.OUTSIDE_VARIABLE_SUFFIX)
-                        || v2.get(j).endsWith(AbstractMathMapping.PARAMETER_DIFFUSION_RATE_SUFFIX)
-                        || v2.get(j).endsWith(AbstractMathMapping.PARAMETER_VELOCITY_X_SUFFIX)
-                        || v2.get(j).endsWith(AbstractMathMapping.PARAMETER_VELOCITY_Y_SUFFIX)
-                        || v2.get(j).endsWith(AbstractMathMapping.PARAMETER_VELOCITY_Z_SUFFIX)
+                        || v2.get(j).endsWith(MathNamingConventions.PARAMETER_DIFFUSION_RATE_SUFFIX)
+                        || v2.get(j).endsWith(MathNamingConventions.PARAMETER_VELOCITY_X_SUFFIX)
+                        || v2.get(j).endsWith(MathNamingConventions.PARAMETER_VELOCITY_Y_SUFFIX)
+                        || v2.get(j).endsWith(MathNamingConventions.PARAMETER_VELOCITY_Z_SUFFIX)
                 )
                     continue;
                 if(v2.get(j).equals(oldName)) bMatch = true;
@@ -3895,7 +3894,7 @@ public class MathDescription implements Versionable, Matchable, SymbolTable, Ser
             for(String oldName : multiDomainVarMap.keySet()){
                 String oldNameIN = oldName + InsideVariable.INSIDE_VARIABLE_SUFFIX;
                 String oldNameOUT = oldName + OutsideVariable.OUTSIDE_VARIABLE_SUFFIX;
-                String oldNameSTOCHINIT = oldName + AbstractMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_COUNT;
+                String oldNameSTOCHINIT = oldName + MathNamingConventions.MATH_FUNC_SUFFIX_SPECIES_INIT_COUNT;
                 List<String> newNames = multiDomainVarMap.get(oldName);
                 Variable oldVar = mathDescription1.getVariable(oldName);
                 HashMap<SubDomain, String> subDomainMap = new HashMap<SubDomain, String>();
@@ -3984,7 +3983,7 @@ public class MathDescription implements Versionable, Matchable, SymbolTable, Ser
                 // replace variable for equations which should stay
                 boolean bStochastic = false;
                 for(String newName : newNames){
-                    String newNameSTOCHINIT = newName + AbstractMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_COUNT;
+                    String newNameSTOCHINIT = newName + MathNamingConventions.MATH_FUNC_SUFFIX_SPECIES_INIT_COUNT;
                     Variable newVar = mathDescription1.getVariable(newName);
                     SubDomain sd = mathDescription1.getSubDomain(newVar.getDomain().getName());
                     if(!sd.getEquationCollection().isEmpty() && !existingVars.contains(newName)){
@@ -4017,9 +4016,9 @@ public class MathDescription implements Versionable, Matchable, SymbolTable, Ser
                                 vic.getVar().rename(newName);
                             }
 //							vic.getIniVal().substituteInPlace(
-//									new Expression(oldName + AbstractMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_COUNT),
+//									new Expression(oldName + MathNamingConventions.MATH_FUNC_SUFFIX_SPECIES_INIT_COUNT),
 //									new Expression(
-//											newName + AbstractMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_COUNT));
+//											newName + MathNamingConventions.MATH_FUNC_SUFFIX_SPECIES_INIT_COUNT));
 //						}
                         }
                     }
