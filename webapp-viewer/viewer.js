@@ -1,10 +1,17 @@
 /**
  * VCell field viewer — see docs/3d-renderer-design.md.
  *
- * Runs VCell's finite-volume surface-smoothing pipeline entirely CLIENT-SIDE: build the raw
- * whole-voxel unstructured grid in memory from server-sent arrays → vtkGeometryFilter (extract the
- * boundary surface) → vtkWindowedSincPolyDataFilter (the faithful FV smoothing) → render via WebGL2,
- * through a custom VTK-compiled-to-WebAssembly bundle (virtualcell/vcell-vtk-wasm).
+ * Implements VCell's finite-volume DISPLAY CONVENTION entirely client-side: build the raw
+ * whole-voxel unstructured grid in memory from server-sent arrays, extract its boundary
+ * (vtkGeometryFilter, passing original point ids), smooth the boundary vertices
+ * (vtkWindowedSincPolyDataFilter, the faithful FV smoothing), then write the displaced positions
+ * BACK INTO THE GRID (vtkVCellDeformGridToSurface, our filter in the custom bundle) — yielding
+ * ONE unstructured mesh whose boundary cells are distorted hexahedra reaching the smoothed
+ * surface. The shell, the crop/cut face (vtkTableBasedClipDataSet) and the display-mesh
+ * statistics (vtkIntegrateAttributes) all derive from that one mesh, so geometry, mesh and
+ * statistics tell one consistent story. Solver-grid statistics (/stats, uniform voxel volumes)
+ * remain the reference analysis family; the two converge as the mesh refines. Rendered via
+ * WebGL2 through the custom VTK-to-WebAssembly bundle (virtualcell/vcell-vtk-wasm >= v1.2.0).
  *
  * Deliberately framework-free. The desktop client serves this page from its own loopback field
  * server, so page and data share an origin, and it must work with no network beyond that server.
@@ -32,6 +39,19 @@ const el = {
   runTitle: document.getElementById('runTitle'),
   runName: document.getElementById('runName'),
   runId: document.getElementById('runId'),
+  colorbar: document.getElementById('colorbar'),
+  axes: document.getElementById('axes'),
+  sliceAxis: document.getElementById('sliceAxis'),
+  slicePos: document.getElementById('slicePos'),
+  sliceReadout: document.getElementById('sliceReadout'),
+  cropStats: document.getElementById('cropStats'),
+  pickReadout: document.getElementById('pickReadout'),
+  plotPanel: document.getElementById('plotPanel'),
+  plotTitle: document.getElementById('plotTitle'),
+  plotLegend: document.getElementById('plotLegend'),
+  plotSvg: document.getElementById('plotSvg'),
+  plotClose: document.getElementById('plotClose'),
+  statsBtn: document.getElementById('statsBtn'),
   dataControls: document.getElementById('dataControls'),
   variable: document.getElementById('variable'),
   time: document.getElementById('time'),
@@ -50,6 +70,11 @@ const state = {
   selectedVar: '',
   selectedDomain: '',
   geometryId: '',
+  bounds: null,
+  sliceAxis: -1,
+  slicePos: 50,
+  pick: null, // Cartesian occupancy index of the current grid, for mouse picking
+  fieldValues: null, // raw per-cell values of the shown field (nulls = blanked cells)
   nominalSinc: null,
   smoothing: NOMINAL_STRENGTH,
   ready: false,
@@ -59,14 +84,22 @@ const state = {
 
 // vtk handles, kept so controls can update the scene without rebuilding it
 let vtk = null;
-let geomFilter = null;
+let surfSource = null; // raw-boundary extractor feeding the smoother (passThroughPointIds on)
 let sinc = null;
+let deform = null; // vtkVCellDeformGridToSurface: writes the sinc'd points back into the grid
+let tableClip = null; // the cut plane, when active: clips the DEFORMED grid
+let geomFilter = null; // display boundary extractor (deformed or clipped-deformed grid)
+let integ = null; // vtkIntegrateAttributes for display-mesh statistics (null if unavailable)
 let mapper = null;
 let actor = null;
 let renderer = null;
 let renderWindow = null;
 let camera = null;
 let fieldArray = null;
+let lut = null;
+let scalarBar = null;
+let cubeAxes = null;
+let clipPlane = null;
 
 const setStatus = (text, isError = false) => {
   el.status.textContent = text;
@@ -198,6 +231,148 @@ const describe = () =>
 // scene
 // ---------------------------------------------------------------------------
 
+/**
+ * Point the mapper, the lookup table and the color bar at one field together. The scalar bar
+ * labels the LUT's range — mapper.setScalarRange alone never reaches it, and a bar labelling
+ * [0,1] under a differently-colored surface is silently wrong, so the two update as one.
+ */
+async function applyFieldRange(field) {
+  await mapper.setScalarRange(field.range[0], field.range[1]);
+  if (lut) {
+    await lut.setTableRange(field.range[0], field.range[1]);
+    await lut.build();
+  }
+  if (scalarBar) await scalarBar.setTitle(field.name);
+}
+
+/**
+ * Cartesian occupancy index for mouse picking, built once per geometry. The voxels are
+ * axis-aligned boxes on a regular lattice, so a pick is a 3D-DDA walk along the mouse ray —
+ * a few dozen lattice steps — not a test against every cell. Resolved entirely in JS: the
+ * browser already holds the grid and the field, so no round trip and no picker object.
+ */
+function buildPickIndex(geometry, bounds) {
+  const P = geometry.points;
+  const first = geometry.cells[0];
+  if (!first) return null;
+  let mins = [Infinity, Infinity, Infinity];
+  let maxs = [-Infinity, -Infinity, -Infinity];
+  for (const pi of first) {
+    for (let a = 0; a < 3; a++) {
+      mins[a] = Math.min(mins[a], P[3 * pi + a]);
+      maxs[a] = Math.max(maxs[a], P[3 * pi + a]);
+    }
+  }
+  const d = [maxs[0] - mins[0], maxs[1] - mins[1], maxs[2] - mins[2]];
+  const o = [bounds[0], bounds[2], bounds[4]];
+  const n = [0, 1, 2].map((a) => Math.max(1, Math.round((bounds[2 * a + 1] - bounds[2 * a]) / d[a])));
+  const occ = new Map();
+  const keyByCell = new Array(geometry.cells.length);
+  for (let c = 0; c < geometry.cells.length; c++) {
+    let cmin = [Infinity, Infinity, Infinity];
+    for (const pi of geometry.cells[c]) {
+      for (let a = 0; a < 3; a++) cmin[a] = Math.min(cmin[a], P[3 * pi + a]);
+    }
+    const i = [0, 1, 2].map((a) => Math.round((cmin[a] - o[a]) / d[a]));
+    const key = i[0] + n[0] * (i[1] + n[1] * i[2]);
+    occ.set(key, c);
+    keyByCell[c] = key;
+  }
+  return { o, d, n, occ, keyByCell };
+}
+
+/** Cell under the given ray, honoring the crop: cells above an active cut are not pickable. */
+function castRay(origin, dir) {
+  const pk = state.pick;
+  if (!pk) return -1;
+  const b = state.bounds;
+  // slab-clip the ray to the grid bounds
+  let t0 = 0;
+  let t1 = Infinity;
+  for (let a = 0; a < 3; a++) {
+    if (Math.abs(dir[a]) < 1e-12) {
+      if (origin[a] < b[2 * a] || origin[a] > b[2 * a + 1]) return -1;
+      continue;
+    }
+    let near = (b[2 * a] - origin[a]) / dir[a];
+    let far = (b[2 * a + 1] - origin[a]) / dir[a];
+    if (near > far) [near, far] = [far, near];
+    t0 = Math.max(t0, near);
+    t1 = Math.min(t1, far);
+  }
+  if (t0 > t1) return -1;
+  // crop plane: same keep-rule as the renderer (low side of the sliced axis survives)
+  let cropAxis = -1;
+  let cropPos = 0;
+  if (state.sliceAxis >= 0) {
+    cropAxis = state.sliceAxis;
+    const frac = 0.005 + 0.99 * (state.slicePos / 100);
+    cropPos = b[2 * cropAxis] + frac * (b[2 * cropAxis + 1] - b[2 * cropAxis]);
+  }
+  // Amanatides & Woo lattice walk
+  const eps = 1e-9;
+  const start = [0, 1, 2].map((a) => origin[a] + (t0 + eps) * dir[a]);
+  const i = [0, 1, 2].map((a) =>
+    Math.min(pk.n[a] - 1, Math.max(0, Math.floor((start[a] - pk.o[a]) / pk.d[a]))));
+  const step = dir.map((v) => (v > 0 ? 1 : -1));
+  const tDelta = [0, 1, 2].map((a) => Math.abs(pk.d[a] / (Math.abs(dir[a]) < 1e-12 ? Infinity : dir[a])));
+  const tMax = [0, 1, 2].map((a) => {
+    if (Math.abs(dir[a]) < 1e-12) return Infinity;
+    const edge = pk.o[a] + (i[a] + (step[a] > 0 ? 1 : 0)) * pk.d[a];
+    return t0 + (edge - start[a]) / dir[a];
+  });
+  for (let guard = pk.n[0] + pk.n[1] + pk.n[2] + 3; guard > 0; guard--) {
+    const cell = pk.occ.get(i[0] + pk.n[0] * (i[1] + pk.n[1] * i[2]));
+    if (cell !== undefined) {
+      if (cropAxis < 0) return cell;
+      const center = pk.o[cropAxis] + (i[cropAxis] + 0.5) * pk.d[cropAxis];
+      if (center <= cropPos) return cell;
+    }
+    const a = tMax[0] <= tMax[1] ? (tMax[0] <= tMax[2] ? 0 : 2) : (tMax[1] <= tMax[2] ? 1 : 2);
+    i[a] += step[a];
+    if (i[a] < 0 || i[a] >= pk.n[a] || tMax[a] > t1) return -1;
+    tMax[a] += tDelta[a];
+  }
+  return -1;
+}
+
+/** Mouse position → world-space ray through the camera. Perspective camera, vertical FOV. */
+async function rayFromMouse(clientX, clientY) {
+  const rect = el.canvas.getBoundingClientRect();
+  const xN = ((clientX - rect.left) / rect.width) * 2 - 1;
+  const yN = 1 - ((clientY - rect.top) / rect.height) * 2;
+  const P = await camera.getPosition();
+  const F = await camera.getFocalPoint();
+  const U = await camera.getViewUp();
+  const halfTan = Math.tan(((await camera.getViewAngle()) * Math.PI) / 360);
+  const norm = (v) => {
+    const l = Math.hypot(v[0], v[1], v[2]) || 1;
+    return [v[0] / l, v[1] / l, v[2] / l];
+  };
+  const cross = (u, v) => [u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2], u[0] * v[1] - u[1] * v[0]];
+  const fwd = norm([F[0] - P[0], F[1] - P[1], F[2] - P[2]]);
+  const right = norm(cross(fwd, U));
+  const up = cross(right, fwd);
+  const aspect = rect.width / rect.height;
+  const dir = norm([0, 1, 2].map((a) =>
+    fwd[a] + right[a] * xN * aspect * halfTan + up[a] * yN * halfTan));
+  return { origin: P, dir };
+}
+
+/** Axis-aligned bounds of the raw grid — the axes box frames the data, not the smoothed surface. */
+function boundsOf(geometry) {
+  const b = [Infinity, -Infinity, Infinity, -Infinity, Infinity, -Infinity];
+  const P = geometry.points;
+  for (let i = 0; i < geometry.numPoints; i++) {
+    for (let a = 0; a < 3; a++) {
+      const v = P[3 * i + a];
+      if (v < b[2 * a]) b[2 * a] = v;
+      if (v > b[2 * a + 1]) b[2 * a + 1] = v;
+    }
+  }
+  return b;
+}
+
 /** Builds the in-memory grid and points the pipeline at it. Re-run when the domain changes. */
 async function buildGrid(geometry, field) {
   const points = vtk.vtkPoints();
@@ -222,35 +397,133 @@ async function buildGrid(geometry, field) {
     await (await ug.getCellData()).setScalars(arr);
     fieldArray = arr;
   }
-  await geomFilter.setInputData(ug);
+  // the raw grid feeds the smoothing chain and the deform filter; everything the user sees
+  // (shell, crop, cut face) derives from the ONE deformed grid downstream of them
+  await surfSource.setInputData(ug);
+  await deform.setInputData(ug);
 
   if (field) {
     await mapper.setScalarModeToUseCellData();
     await mapper.scalarVisibilityOn(); // no-arg form; the boolean setter marshals awkwardly
-    await mapper.setScalarRange(field.range[0], field.range[1]);
+    await applyFieldRange(field);
   } else {
     // no field → solid surface (via the property method; actor.property.color is a no-op)
     await (await actor.getProperty()).setColor(0.30, 0.65, 0.45);
   }
+  state.bounds = boundsOf(geometry);
+  state.pick = buildPickIndex(geometry, state.bounds);
+  state.fieldValues = field ? field.values : null;
+  if (cubeAxes) await cubeAxes.setBounds(...state.bounds);
+  await applyCrop(); // a domain switch changes the bounds the slider position maps into
   state.nominalSinc = geometry.sinc;
   previewSmoothing(state.smoothing);
+}
+
+/**
+ * Position the cut plane and crop the volume at it. The clip runs on the DEFORMED grid — the one
+ * mesh everything derives from — so the exposed cross-section is flat, its rim lies on the
+ * smoothed surface because the boundary cells themselves reach it (distorted hexahedra, VCell's
+ * FV display convention), and every cut polygon carries its cell's value. No cap, no trim, no
+ * second actor: the shell and the cut face are one boundary of one clipped mesh.
+ */
+async function applyCrop() {
+  if (!tableClip) return;
+  const axis = state.sliceAxis;
+  if (axis < 0) {
+    await geomFilter.setInputConnection(await deform.getOutputPort());
+    el.sliceReadout.textContent = '';
+    el.cropStats.textContent = '';
+    return;
+  }
+  const b = state.bounds;
+  // inset from the ends: a plane exactly on the outermost faces clips a degenerate sliver
+  const frac = 0.005 + 0.99 * (state.slicePos / 100);
+  const pos = b[2 * axis] + frac * (b[2 * axis + 1] - b[2 * axis]);
+  const origin = [(b[0] + b[1]) / 2, (b[2] + b[3]) / 2, (b[4] + b[5]) / 2];
+  origin[axis] = pos;
+  // the clip keeps the side where the plane function is positive: -axis keeps everything below
+  // the cut, so the slider sweeps from almost-nothing (0) to the whole volume (100)
+  const normal = [0, 0, 0];
+  normal[axis] = -1;
+  await clipPlane.setOrigin(...origin);
+  await clipPlane.setNormal(...normal);
+  await geomFilter.setInputConnection(await tableClip.getOutputPort());
+  el.sliceReadout.textContent = `${'xyz'[axis]} = ${pos.toFixed(2)}`;
+}
+
+/** Re-crop and re-render as the slider drags; in-flight guard, as for orbit. */
+let cropInFlight = false;
+async function refreshCrop() {
+  if (!state.ready || cropInFlight) return;
+  cropInFlight = true;
+  try {
+    await applyCrop();
+    await renderWindow.render();
+    await updateCropStats();
+  } catch (e) {
+    setStatus('crop update failed: ' + (e?.message ?? e), true);
+  } finally {
+    cropInFlight = false;
+  }
+}
+
+/**
+ * Display-mesh statistics of the cropped region (#1859 discussion): min/max from the clipped
+ * mesh's scalar range, volume-weighted mean from vtkIntegrateAttributes with
+ * DivideAllCellDataByVolume — integrated over the DEFORMED mesh, so the numbers are
+ * self-consistent with the geometry on screen and labeled as such. The solver-grid statistics
+ * (/stats, uniform voxel volumes, the solver's own bookkeeping) remain the reference family;
+ * near membranes the two differ by design and converge as the mesh refines.
+ */
+async function updateCropStats() {
+  if (!integ || state.sliceAxis < 0) return;
+  try {
+    await tableClip.update();
+    const clipped = await tableClip.getOutput();
+    const scalars = await (await clipped.getCellData()).getScalars();
+    const range = await scalars.getRange();
+    await integ.update();
+    const integrated = await (await integ.getOutput()).getCellData();
+    // integrated scalars are ∫f dV; "Volume" is ∫dV of the clipped smoothed mesh
+    const sumArr = (await integrated.getScalars()) ?? (await integrated.getArray(state.selectedVar));
+    const volArr = await integrated.getArray('Volume');
+    const integral = sumArr ? await sumArr.getTuple1(0) : null;
+    const volume = volArr ? await volArr.getTuple1(0) : null;
+    const mean = integral != null && volume ? integral / volume : null;
+    const p = smoothingFor(state.smoothing);
+    el.cropStats.textContent =
+      `display-mesh (cropped): min ${range[0].toExponential(3)} · `
+      + (mean != null && Number.isFinite(mean) ? `mean ${mean.toExponential(3)} · ` : '')
+      + `max ${range[1].toExponential(3)}`
+      + (volume != null && Number.isFinite(volume) ? ` · volume ${volume.toExponential(3)}` : '')
+      + ` (smoothing ${p.iterations} iters · pass-band ${formatPassBand(p.passBand)})`;
+  } catch (e) {
+    console.warn('display-mesh stats failed', e);
+    el.cropStats.textContent = '';
+  }
 }
 
 /** Same geometry, new values: rewrite the scalars in place rather than rebuilding the grid. */
 async function applyField(field) {
   if (!fieldArray) return;
+  state.fieldValues = field.values;
   await fieldArray.setName(field.name);
   await fieldArray.setNumberOfTuples(field.values.length);
   for (let i = 0; i < field.values.length; i++) await fieldArray.setTuple1(i, field.values[i] ?? 0);
   await fieldArray.modified();
-  await mapper.setScalarRange(field.range[0], field.range[1]);
+  await applyFieldRange(field);
 }
 
 async function buildScene(geometry, field) {
-  geomFilter = vtk.vtkGeometryFilter();
+  // The deformed-grid convention (VCell FV display): extract the raw boundary, smooth its
+  // vertices, then write the displaced positions BACK INTO THE VOLUME GRID — boundary cells
+  // become distorted hexahedra reaching the smoothed surface, interior cells stay regular, and
+  // every downstream operation (shell, crop, cut face) derives from that one mesh.
+  surfSource = vtk.vtkGeometryFilter();
+  await surfSource.passThroughPointIdsOn(); // the write-back addresses grid points by original id
 
   sinc = vtk.vtkWindowedSincPolyDataFilter();
-  await sinc.setInputConnection(await geomFilter.getOutputPort());
+  await sinc.setInputConnection(await surfSource.getOutputPort());
   await sinc.boundarySmoothingOff();
   await sinc.featureEdgeSmoothingOff();
   await sinc.nonManifoldSmoothingOff();
@@ -259,8 +532,31 @@ async function buildScene(geometry, field) {
   await sinc.setFeatureAngle(geometry.sinc.feature_angle);
   await sinc.setPassBand(geometry.sinc.pass_band);
 
+  deform = vtk.vtkVCellDeformGridToSurface(); // our custom filter; bundle >= v1.2.0
+  await deform.setSourceConnection(await sinc.getOutputPort());
+
+  clipPlane = vtk.vtkPlane();
+  tableClip = vtk.vtkTableBasedClipDataSet();
+  await tableClip.setClipFunction(clipPlane);
+  await tableClip.setInputConnection(await deform.getOutputPort());
+
+  // display boundary extractor; applyCrop points it at the deformed grid or its clipped half
+  geomFilter = vtk.vtkGeometryFilter();
+
+  // display-mesh statistics of the cropped region; degrade quietly if the bundle lacks the filter
+  try {
+    integ = vtk.vtkIntegrateAttributes();
+    await integ.setInputConnection(await tableClip.getOutputPort());
+    // NB: DivideAllCellDataByVolume is a plain vtkSetMacro (no On/Off variants) and boolean
+    // setters marshal awkwardly — left at its default (off), so the integrated scalars are
+    // ∫f dV and the mean is computed in JS from them and the "Volume" array
+  } catch (e) {
+    integ = null;
+    console.warn('vtkIntegrateAttributes unavailable — display-mesh statistics disabled', e);
+  }
+
   // Surface normals so the mapper shades smoothly (Gouraud) instead of flat/faceted.
-  let surfacePort = await sinc.getOutputPort();
+  let surfacePort = await geomFilter.getOutputPort();
   try {
     const normals = vtk.vtkPolyDataNormals();
     await normals.setInputConnection(surfacePort);
@@ -270,12 +566,29 @@ async function buildScene(geometry, field) {
 
   mapper = vtk.vtkPolyDataMapper();
   await mapper.setInputConnection(surfacePort);
+  // Own the lookup table rather than borrowing the mapper's implicit one, so the surface and the
+  // color bar read the same table and cannot disagree about what color means what value.
+  lut = vtk.vtkLookupTable();
+  // low→high as blue→red, the direction the desktop results viewer already taught users;
+  // VTK's default rainbow runs the other way
+  await lut.setHueRange(0.66667, 0.0);
+  await mapper.setLookupTable(lut);
+  await mapper.useLookupTableScalarRangeOn(); // no-arg form, as for scalarVisibilityOn
   actor = vtk.vtkActor({ mapper });
+
+  scalarBar = vtk.vtkScalarBarActor();
+  await scalarBar.setLookupTable(lut);
+  // the default bar spans most of the viewport and auto-scales its text to match — huge; keep it
+  // a slim strip on the right edge
+  await scalarBar.setWidth(0.08);
+  await scalarBar.setHeight(0.72);
+  await scalarBar.setPosition(0.9, 0.14);
 
   await buildGrid(geometry, field);
 
   renderer = vtk.vtkRenderer({ background: [0.07, 0.07, 0.1] });
   await renderer.addActor(actor);
+  await renderer.addViewProp(scalarBar); // addActor2D is refused by the invoker; addViewProp is the route
   await renderer.resetCamera();
   renderWindow = vtk.vtkRenderWindow({ canvasSelector: '#canvas' });
   await renderWindow.addRenderer(renderer);
@@ -285,6 +598,15 @@ async function buildScene(geometry, field) {
   // vtkRemoteSession, not on the standalone session we run. Interaction is driven directly against
   // the camera below.
   camera = await renderer.getActiveCamera();
+  // The axes box needs the camera: its labels and fly-to-a-corner behaviour track the view. That
+  // is exactly what an HTML fallback cannot fake, which is why this actor earns its keep.
+  cubeAxes = vtk.vtkCubeAxesActor();
+  await cubeAxes.setBounds(...state.bounds);
+  await cubeAxes.setCamera(camera);
+  await cubeAxes.setXTitle('X');
+  await cubeAxes.setYTitle('Y');
+  await cubeAxes.setZTitle('Z');
+  await renderer.addViewProp(cubeAxes);
   attachTrackball();
   await renderWindow.render();
 }
@@ -333,17 +655,22 @@ function attachTrackball() {
   let dragging = false;
   let lastX = 0;
   let lastY = 0;
+  let dragDistance = 0;
   el.canvas.addEventListener('pointerdown', (e) => {
     if (e.button !== 0) return;
-    dragging = true; lastX = e.clientX; lastY = e.clientY;
+    dragging = true; lastX = e.clientX; lastY = e.clientY; dragDistance = 0;
     el.canvas.setPointerCapture(e.pointerId);
     e.preventDefault();
   });
   el.canvas.addEventListener('pointermove', (e) => {
-    if (!dragging) return;
+    if (!dragging) {
+      void hoverPick(e.clientX, e.clientY);
+      return;
+    }
     const dx = e.clientX - lastX;
     const dy = e.clientY - lastY;
     lastX = e.clientX; lastY = e.clientY;
+    dragDistance += Math.abs(dx) + Math.abs(dy);
     if (dx || dy) void orbit(dx, dy);
     e.preventDefault();
   });
@@ -351,9 +678,12 @@ function attachTrackball() {
     if (!dragging) return;
     dragging = false;
     try { el.canvas.releasePointerCapture(e.pointerId); } catch { /* already released */ }
+    // a press that never really moved is a pick, not an orbit
+    if (dragDistance < 4) void plotPick(e.clientX, e.clientY);
   };
   el.canvas.addEventListener('pointerup', release);
   el.canvas.addEventListener('pointercancel', release);
+  el.canvas.addEventListener('pointerleave', () => { el.pickReadout.textContent = ''; });
   el.canvas.addEventListener('wheel', (e) => {
     void dolly(e.deltaY < 0 ? 1.1 : 1 / 1.1);
     e.preventDefault();
@@ -389,6 +719,164 @@ async function dolly(factor) {
     state.drawing = false;
   }
 }
+
+// ---------------------------------------------------------------------------
+// picking (#1859 items 6 and 8)
+// ---------------------------------------------------------------------------
+
+/** Center coordinates of a picked cell, for the readouts. */
+function cellCenter(cell) {
+  const pk = state.pick;
+  const key = pk.keyByCell[cell];
+  if (key === undefined) return null;
+  const iz = Math.floor(key / (pk.n[0] * pk.n[1]));
+  const iy = Math.floor((key - iz * pk.n[0] * pk.n[1]) / pk.n[0]);
+  const ix = key % pk.n[0];
+  return [pk.o[0] + (ix + 0.5) * pk.d[0], pk.o[1] + (iy + 0.5) * pk.d[1], pk.o[2] + (iz + 0.5) * pk.d[2]];
+}
+
+let hoverBusy = false;
+async function hoverPick(clientX, clientY) {
+  if (!state.ready || !state.pick || hoverBusy) return;
+  hoverBusy = true;
+  try {
+    const { origin, dir } = await rayFromMouse(clientX, clientY);
+    const cell = castRay(origin, dir);
+    if (cell < 0) {
+      el.pickReadout.textContent = '';
+      return;
+    }
+    const v = state.fieldValues?.[cell];
+    const c = cellCenter(cell);
+    const at = c ? ` @ (${c.map((x) => x.toFixed(1)).join(', ')})` : '';
+    el.pickReadout.textContent =
+      v == null ? `no data${at}` : `${state.selectedVar} = ${v.toExponential(3)}${at}`;
+  } catch (e) {
+    console.warn('hover pick failed', e);
+  } finally {
+    hoverBusy = false;
+  }
+}
+
+/**
+ * Click → time course at the picked cell. The series comes from /timeseries, which reduces
+ * server-side next to the reader — fetching every timestep to build one curve is the design
+ * explicitly ruled out in #1859.
+ */
+async function plotPick(clientX, clientY) {
+  if (!state.ready || !state.pick || !state.dataset) return;
+  try {
+    const { origin, dir } = await rayFromMouse(clientX, clientY);
+    const cell = castRay(origin, dir);
+    if (cell < 0) return;
+    const c = cellCenter(cell);
+    setStatus(`fetching time series for ${state.selectedVar} at cell ${cell}…`);
+    const series = await fetchJson(
+      url('/timeseries', { domain: state.selectedDomain, var: state.selectedVar, cell: String(cell) }),
+      '/timeseries');
+    renderPlot(series, c);
+    setStatus(`${describe()} ✓`);
+  } catch (e) {
+    setStatus('time-series pick failed: ' + (e?.message ?? e), true);
+  }
+}
+
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
+/** Fresh axes + scales in the plot SVG; both plot modes draw on top of this. */
+function plotFrame(times, lo, hi) {
+  if (hi - lo < 1e-300) hi = lo + 1;
+  const W = 640;
+  const H = 220;
+  const M = { l: 8, r: 8, t: 8, b: 18 };
+  const sx = (t) => M.l + ((t - times[0]) / (times[times.length - 1] - times[0] || 1)) * (W - M.l - M.r);
+  const sy = (v) => H - M.b - ((v - lo) / (hi - lo)) * (H - M.t - M.b);
+  el.plotSvg.innerHTML = '';
+  const mk = (tag, attrs, text) => {
+    const n = document.createElementNS(SVG_NS, tag);
+    for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v);
+    if (text != null) n.textContent = text;
+    el.plotSvg.appendChild(n);
+    return n;
+  };
+  mk('line', { class: 'axis', x1: M.l, y1: H - M.b, x2: W - M.r, y2: H - M.b });
+  mk('line', { class: 'axis', x1: M.l, y1: M.t, x2: M.l, y2: H - M.b });
+  mk('text', { class: 'lbl', x: M.l + 4, y: M.t + 10 }, hi.toExponential(2));
+  mk('text', { class: 'lbl', x: M.l + 4, y: H - M.b - 4 }, lo.toExponential(2));
+  mk('text', { class: 'lbl', x: W - M.r - 4, y: H - 4, 'text-anchor': 'end' }, `t = ${times[times.length - 1]}`);
+  mk('text', { class: 'lbl', x: M.l + 4, y: H - 4 }, `t = ${times[0]}`);
+  return { mk, sx, sy, lo };
+}
+
+/** Framework-free line plot: one polyline in an SVG, min/max labels, nothing else to maintain. */
+function renderPlot(series, center) {
+  const { times, values, name } = series;
+  const finite = values.filter((v) => v != null && Number.isFinite(v));
+  if (!times?.length || !finite.length) return;
+  const f = plotFrame(times, Math.min(...finite), Math.max(...finite));
+  f.mk('polyline', {
+    class: 'curve',
+    points: times.map((t, i) => `${f.sx(t).toFixed(1)},${f.sy(values[i] ?? f.lo).toFixed(1)}`).join(' '),
+  });
+  const at = center ? ` @ (${center.map((x) => x.toFixed(1)).join(', ')})` : '';
+  el.plotTitle.textContent = `${name}${at} · ${times.length} timepoints`;
+  el.plotLegend.innerHTML = '';
+  el.plotPanel.hidden = false;
+}
+
+const SERIES_COLORS = ['#2a7', '#d70', '#07c', '#c2c', '#a33', '#578'];
+
+/**
+ * Item 9 (#1859): per-variable spatial min/max/mean over time — mean as a solid curve, the
+ * min-to-max envelope as a translucent band in the same color. One shared scale across all
+ * series, so the curves are directly comparable.
+ */
+function renderStatsPlot(stats) {
+  const { times, series } = stats;
+  if (!times?.length || !series?.length) return;
+  const finite = series.flatMap((s) => [...s.min, ...s.max]).filter((v) => v != null && Number.isFinite(v));
+  if (!finite.length) return;
+  const f = plotFrame(times, Math.min(...finite), Math.max(...finite));
+  series.forEach((s, k) => {
+    const color = SERIES_COLORS[k % SERIES_COLORS.length];
+    const fwd = times.map((t, i) => `${f.sx(t).toFixed(1)},${f.sy(s.min[i] ?? f.lo).toFixed(1)}`);
+    const back = [...times.keys()].reverse().map((i) => `${f.sx(times[i]).toFixed(1)},${f.sy(s.max[i] ?? f.lo).toFixed(1)}`);
+    f.mk('path', { d: `M${fwd.join('L')}L${back.join('L')}Z`, fill: color, 'fill-opacity': '0.15', stroke: 'none' });
+    f.mk('polyline', {
+      class: 'curve', stroke: color,
+      points: times.map((t, i) => `${f.sx(t).toFixed(1)},${f.sy(s.mean[i] ?? f.lo).toFixed(1)}`).join(' '),
+    });
+  });
+  el.plotTitle.textContent = `min / mean / max over space · ${times.length} timepoints`;
+  el.plotLegend.innerHTML = '';
+  series.forEach((s, k) => {
+    const item = document.createElement('span');
+    const swatch = document.createElement('span');
+    swatch.className = 'swatch';
+    swatch.style.background = SERIES_COLORS[k % SERIES_COLORS.length];
+    item.appendChild(swatch);
+    item.appendChild(document.createTextNode(s.name));
+    el.plotLegend.appendChild(item);
+  });
+  el.plotPanel.hidden = false;
+}
+
+async function plotStats() {
+  if (!state.ready || !state.dataset) return;
+  try {
+    // the server defaults to all volume variables; ask for a handful so the plot stays readable
+    const vars = state.variables.slice(0, SERIES_COLORS.length).map((v) => v.name);
+    setStatus(`fetching space statistics for ${vars.length} variable(s)…`);
+    const stats = await fetchJson(url('/stats', { var: vars.join(',') }), '/stats');
+    renderStatsPlot(stats);
+    setStatus(`${describe()} ✓`);
+  } catch (e) {
+    setStatus('stats failed: ' + (e?.message ?? e), true);
+  }
+}
+
+el.statsBtn.addEventListener('click', () => void plotStats());
+el.plotClose.addEventListener('click', () => { el.plotPanel.hidden = true; });
 
 // ---------------------------------------------------------------------------
 // smoothing
@@ -440,8 +928,10 @@ async function applySmoothing(strength) {
     const p = smoothingFor(strength);
     await sinc.setNumberOfIterations(p.iterations);
     await sinc.setPassBand(p.passBand);
-    await sinc.update();
+    // the deform filter re-executes downstream at render, re-shaping the ONE mesh that the
+    // shell, the crop and the display-mesh statistics all derive from
     await renderWindow.render();
+    await updateCropStats();
     setStatus(`smoothing: ${p.iterations} iters · pass-band ${formatPassBand(p.passBand)} ✓ (${Math.round(performance.now() - t0)} ms)`);
   } catch (e) {
     setStatus('smoothing update failed: ' + (e?.message ?? e), true);
@@ -462,6 +952,7 @@ async function refreshField() {
   try {
     await applyField(await loadField());
     await renderWindow.render();
+    await updateCropStats(); // new values, same mesh
     setStatus(`${describe()} ✓ (${Math.round(performance.now() - t0)} ms)`);
   } catch (e) {
     setStatus('field update failed: ' + (e?.message ?? e), true);
@@ -508,6 +999,31 @@ el.variable.addEventListener('change', () => {
     void refreshField();
   }
 });
+/** Show/hide an annotation prop. visibilityOn/Off: the boolean setter marshals awkwardly. */
+async function toggleProp(prop, on) {
+  if (!prop || !state.ready) return;
+  try {
+    if (on) await prop.visibilityOn();
+    else await prop.visibilityOff();
+    await renderWindow.render();
+  } catch (e) {
+    console.warn('toggling annotation failed', e);
+  }
+}
+
+el.colorbar.addEventListener('change', () => void toggleProp(scalarBar, el.colorbar.checked));
+el.axes.addEventListener('change', () => void toggleProp(cubeAxes, el.axes.checked));
+
+el.sliceAxis.addEventListener('change', () => {
+  state.sliceAxis = el.sliceAxis.value === '' ? -1 : Number(el.sliceAxis.value);
+  el.slicePos.disabled = state.sliceAxis < 0;
+  void refreshCrop();
+});
+el.slicePos.addEventListener('input', () => {
+  state.slicePos = Number(el.slicePos.value);
+  void refreshCrop();
+});
+
 el.smoothing.addEventListener('input', () => previewSmoothing(Number(el.smoothing.value)));
 el.smoothing.addEventListener('change', () => void applySmoothing(Number(el.smoothing.value)));
 el.smoothingReset.addEventListener('click', () => {
@@ -553,6 +1069,10 @@ el.smoothingReset.addEventListener('click', () => {
     el.variable.disabled = false;
     el.time.disabled = state.times.length < 2;
     el.smoothing.disabled = false;
+    el.colorbar.disabled = false;
+    el.axes.disabled = false;
+    el.sliceAxis.disabled = false;
+    el.statsBtn.disabled = false;
     previewSmoothing(state.smoothing);
     setStatus(`rendered ${describe()} ✓ (${Math.round(performance.now() - t0)} ms) — drag to rotate, wheel to zoom`);
   } catch (e) {

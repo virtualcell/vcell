@@ -3,7 +3,7 @@
 // SAME-ORIGIN (GitHub release assets can't be fetched cross-origin from the browser — no CORS header).
 // The @kitware/vtk-wasm loader's loadAsync({url}) takes the .tar.gz and untars it in-browser
 // (DecompressionStream + untar), so we serve the .tar.gz as-is. Idempotent. Env:
-//   VTK_WASM_TAG     release tag in virtualcell/vcell-vtk-wasm (default v1.0.0)
+//   VTK_WASM_TAG     release tag in virtualcell/vcell-vtk-wasm (default v1.2.0)
 //   VTK_WASM_BUNDLE  use a local .tar.gz instead of downloading (offline/dev)
 import fs from 'node:fs';
 import path from 'node:path';
@@ -11,7 +11,7 @@ import { fileURLToPath } from 'node:url';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const DEST = path.resolve(HERE, '../assets/vtk-wasm');   // served at assets/vtk-wasm/
-const TAG = process.env.VTK_WASM_TAG ?? 'v1.0.0';
+const TAG = process.env.VTK_WASM_TAG ?? 'v1.2.0';
 const ASSET = 'vcell-vtk-wasm32-emscripten.tar.gz';
 const TARGET = path.join(DEST, ASSET);
 const URL = `https://github.com/virtualcell/vcell-vtk-wasm/releases/download/${TAG}/${ASSET}`;
