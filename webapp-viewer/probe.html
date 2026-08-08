@@ -32,6 +32,94 @@ try {
   for (const name of ['vtkContourTriangulator', 'vtkDelaunay2D']) {
     try { vtk[name](); log(`${name}: constructible`); } catch (e) { log(`${name}: FAILED — ${e?.message ?? e}`); }
   }
+  // --- deformed-grid feasibility probes ---
+  try {
+    log('session keys: ' + Object.keys(session).join(','));
+    log('runtime keys: ' + Object.keys(runtime).join(','));
+  } catch (e) { log('introspection failed: ' + e); }
+  try {
+    const gf = vtk.vtkGeometryFilter();
+    await gf.passThroughPointIdsOn();
+    log('vtkGeometryFilter.passThroughPointIdsOn: OK');
+  } catch (e) { log('passThroughPointIdsOn: FAILED — ' + (e?.message ?? e)); }
+  try {
+    // bulk readback: can we get a data array's contents without per-element calls?
+    const pts = vtk.vtkPoints();
+    await pts.setNumberOfPoints(3);
+    for (let i = 0; i < 3; i++) await pts.setPoint(i, i, 2 * i, 3 * i);
+    const candidates = [];
+    const dataObj = await pts.getData(); // vtkDataArray proxy?
+    for (const m of ['getState', 'get', 'toJSON', 'getValues', 'getArrays']) {
+      try {
+        const r = await (session[m]?.(pts) ?? Promise.reject());
+        candidates.push(`session.${m}: ${JSON.stringify(r).slice(0, 120)}`);
+      } catch { /* not available */ }
+    }
+    try {
+      const r = await dataObj.getValue(4); // element 4 = point 1 y = 2? sanity single-value
+      candidates.push(`dataArray.getValue(4)=${r}`);
+    } catch (e) { candidates.push('dataArray.getValue: refused'); }
+    log(candidates.length ? candidates.join(' | ') : 'no bulk readback candidates succeeded');
+  } catch (e) { log('bulk readback probe FAILED — ' + (e?.message ?? e)); }
+  try {
+    const pd = vtk.vtkPolyData();
+    const pts = vtk.vtkPoints();
+    await pts.setNumberOfPoints(4);
+    for (let i = 0; i < 4; i++) await pts.setPoint(i, i, i, 0);
+    const polys = vtk.vtkCellArray();
+    await polys.insertNextCell(4, [0, 1, 2, 3]);
+    await pd.setPoints(pts);
+    await pd.setPolys(polys);
+    const arr = vtk.vtkDoubleArray();
+    await arr.setNumberOfComponents(1);
+    await arr.setNumberOfTuples(1);
+    await arr.setTuple1(0, 42);
+    await (await pd.getCellData()).setScalars(arr);
+    let resetNote = 'cellArray.reset REFUSED';
+    try { await polys.reset(); await polys.insertNextCell(4, [0, 1, 2, 3]); resetNote = 'cellArray.reset OK'; } catch { /* keep note */ }
+    log(`vtkPolyData build: OK (${resetNote})`);
+  } catch (e) {
+    log(`vtkPolyData build: FAILED — ${e?.message ?? e}`);
+  }
+  for (const name of ['vtkTriangleFilter', 'vtkLinearSubdivisionFilter', 'vtkAdaptiveSubdivisionFilter']) {
+    try {
+      const f = vtk[name]();
+      if (name === 'vtkLinearSubdivisionFilter') await f.setNumberOfSubdivisions(2);
+      if (name === 'vtkAdaptiveSubdivisionFilter') await f.setMaximumEdgeLength(1);
+      log(`${name}: OK`);
+    } catch (e) {
+      log(`${name}: FAILED — ${e?.message ?? e}`);
+    }
+  }
+  // --- VTK-based statistics probes: filters + small-scalar readback ---
+  for (const name of ['vtkCellSizeFilter', 'vtkIntegrateAttributes', 'vtkArrayCalculator', 'vtkDescriptiveStatistics']) {
+    try { vtk[name](); log(`${name}: constructible`); } catch (e) { log(`${name}: FAILED — ${e?.message ?? e}`); }
+  }
+  try {
+    const a = vtk.vtkDoubleArray();
+    await a.setNumberOfComponents(1);
+    await a.setNumberOfTuples(3);
+    await a.setTuple1(0, 5); await a.setTuple1(1, -2); await a.setTuple1(2, 9);
+    const t1 = await a.getTuple1(1);
+    log(`dataArray.getTuple1(1) = ${JSON.stringify(t1)} (want -2)`);
+    let r;
+    try { r = await a.getRange(); } catch (e) { r = 'threw: ' + (e?.message ?? e); }
+    log(`dataArray.getRange() = ${JSON.stringify(r)} (want [-2,9])`);
+    let vr;
+    try { vr = await a.getValueRange(); } catch (e) { vr = 'threw'; }
+    log(`dataArray.getValueRange() = ${JSON.stringify(vr)}`);
+  } catch (e) { log('scalar readback probe FAILED — ' + (e?.message ?? e)); }
+  // 0003/0004 additions in vcell-vtk-wasm >= v1.2.0
+  try {
+    const d = vtk.vtkVCellDeformGridToSurface();
+    await d.setOriginalPointIdsArrayName('vtkOriginalPointIds');
+    log('vtkVCellDeformGridToSurface: OK (+setOriginalPointIdsArrayName)');
+  } catch (e) { log('vtkVCellDeformGridToSurface: FAILED — ' + (e?.message ?? e)); }
+  try {
+    const ia = vtk.vtkIntegrateAttributes();
+    await ia.divideAllCellDataByVolumeOn();
+    log('vtkIntegrateAttributes: OK (+divideAllCellDataByVolumeOn)');
+  } catch (e) { log('vtkIntegrateAttributes: FAILED — ' + (e?.message ?? e)); }
   // marshalled by the 0002 patch in vcell-vtk-wasm >= v1.1.0
   for (const name of ['vtkClipDataSet', 'vtkTableBasedClipDataSet']) {
     try {

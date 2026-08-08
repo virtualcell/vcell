@@ -72,22 +72,25 @@ scrub time — a time step costs about 5.7× less than shipping both.
   actively misleading unless they read the console.
 - **`renderer.addActor2D` is refused; `renderer.addViewProp` is not.** That is the route for 2D
   props such as `vtkScalarBarActor`.
-- **The cut plane CROPS the volume; the slice caps the exposed face.** The surface mapper carries
-  a GPU clipping plane (`mapper.addClippingPlane`) that discards the half above the cut — this
-  works in the wasm build even though WebGL2 has no `gl_ClipDistance`, because VTK emulates
-  clipping in-shader. The cap is `vtkCutter` output from the raw grid: cell data passes through,
-  so each cut polygon carries its source voxel's exact value. Axis-aligned only, by design — an
-  interactive plane widget needs interactor infrastructure the standalone session lacks. When
-  judging whether a crop "worked" from a screenshot, orbit toward the REMOVED side: the kept
-  hemisphere looks whole from its own side by definition.
-- **The order is smooth-then-cut, and the cap rim follows the smoothing slider.** The cap stays
-  planar (flat, sharp cut — never smoothed), but its in-plane outline is trimmed to the smoothed
-  silhouette: `vtkClipPolyData` insideOut with a `vtkImplicitPolyDataDistance` built from the sinc
-  output (negative inside). Re-anchor the distance function (`setInput`) only when the smoothed
-  surface changes — it rebuilds its locator — not on every slider drag. Clip-the-grid-then-smooth
-  would round the cut edge off; it is also impossible here: `vtkClipDataSet`,
-  `vtkTableBasedClipDataSet` and `vtkBoxClipDataSet` are compiled in but have **no registered
-  constructor** (probed 2026-08-07), like `vtkOutlineFilter`.
+- **The mesh IS the convention: one deformed grid, everything derives from it.** VCell's FV
+  display convention smooths the boundary VERTICES OF THE VOLUME MESH (raw boundary →
+  `vtkGeometryFilter` with `passThroughPointIds` → windowed sinc → `vtkVCellDeformGridToSurface`,
+  our custom write-back filter in the bundle, ≥ v1.2.0), so boundary cells are distorted
+  hexahedra reaching the smoothed surface. The shell is that mesh's boundary; the cut plane is
+  `vtkTableBasedClipDataSet` on that mesh — the cut face is flat and sharp, its rim lies on the
+  smoothed surface *because the cells reach it*, and every cut polygon carries its cell's value.
+  No cap, no trim, no GPU clipping planes, one actor. (History, so nobody re-walks it: a GPU-clip
+  + raw-grid-cap + implicit-distance-trim approach was built first and rejected in review — the
+  trim's per-cell chords can't follow the smoothed silhouette at nominal smoothing. When judging
+  a crop from a screenshot, orbit toward the REMOVED side; the kept hemisphere looks whole from
+  its own side by definition.)
+- **Two statistics families, both documented, neither hidden.** *Solver-grid* (`/stats`): uniform
+  voxel volumes, the solver's own bookkeeping, fast, reader-side; min/max exact; means carry the
+  known full-voxel distortion near membranes. *Display-mesh* (`vtkIntegrateAttributes` with
+  `divideAllCellDataByVolumeOn` over the deformed, possibly clipped mesh): self-consistent with
+  what is rendered; means carry the deformation convention instead. The two means converge as h→0
+  and their difference is a boundary-resolution diagnostic; min/max are identical by construction.
+  Label every displayed number with its family and, for display-mesh, the smoothing parameters.
 - **Picking is plain JS, not a VTK picker.** The browser holds the whole grid and field, so the
   hover readout is an occupancy map + 3D-DDA ray walk over the Cartesian lattice — no round trip,
   no registry dependence. The walk applies the same crop keep-rule as the renderer, so picking the

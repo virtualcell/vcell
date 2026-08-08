@@ -1,10 +1,17 @@
 /**
  * VCell field viewer — see docs/3d-renderer-design.md.
  *
- * Runs VCell's finite-volume surface-smoothing pipeline entirely CLIENT-SIDE: build the raw
- * whole-voxel unstructured grid in memory from server-sent arrays → vtkGeometryFilter (extract the
- * boundary surface) → vtkWindowedSincPolyDataFilter (the faithful FV smoothing) → render via WebGL2,
- * through a custom VTK-compiled-to-WebAssembly bundle (virtualcell/vcell-vtk-wasm).
+ * Implements VCell's finite-volume DISPLAY CONVENTION entirely client-side: build the raw
+ * whole-voxel unstructured grid in memory from server-sent arrays, extract its boundary
+ * (vtkGeometryFilter, passing original point ids), smooth the boundary vertices
+ * (vtkWindowedSincPolyDataFilter, the faithful FV smoothing), then write the displaced positions
+ * BACK INTO THE GRID (vtkVCellDeformGridToSurface, our filter in the custom bundle) — yielding
+ * ONE unstructured mesh whose boundary cells are distorted hexahedra reaching the smoothed
+ * surface. The shell, the crop/cut face (vtkTableBasedClipDataSet) and the display-mesh
+ * statistics (vtkIntegrateAttributes) all derive from that one mesh, so geometry, mesh and
+ * statistics tell one consistent story. Solver-grid statistics (/stats, uniform voxel volumes)
+ * remain the reference analysis family; the two converge as the mesh refines. Rendered via
+ * WebGL2 through the custom VTK-to-WebAssembly bundle (virtualcell/vcell-vtk-wasm >= v1.2.0).
  *
  * Deliberately framework-free. The desktop client serves this page from its own loopback field
  * server, so page and data share an origin, and it must work with no network beyond that server.
@@ -37,6 +44,7 @@ const el = {
   sliceAxis: document.getElementById('sliceAxis'),
   slicePos: document.getElementById('slicePos'),
   sliceReadout: document.getElementById('sliceReadout'),
+  cropStats: document.getElementById('cropStats'),
   pickReadout: document.getElementById('pickReadout'),
   plotPanel: document.getElementById('plotPanel'),
   plotTitle: document.getElementById('plotTitle'),
@@ -76,8 +84,12 @@ const state = {
 
 // vtk handles, kept so controls can update the scene without rebuilding it
 let vtk = null;
-let geomFilter = null;
+let surfSource = null; // raw-boundary extractor feeding the smoother (passThroughPointIds on)
 let sinc = null;
+let deform = null; // vtkVCellDeformGridToSurface: writes the sinc'd points back into the grid
+let tableClip = null; // the cut plane, when active: clips the DEFORMED grid
+let geomFilter = null; // display boundary extractor (deformed or clipped-deformed grid)
+let integ = null; // vtkIntegrateAttributes for display-mesh statistics (null if unavailable)
 let mapper = null;
 let actor = null;
 let renderer = null;
@@ -87,15 +99,7 @@ let fieldArray = null;
 let lut = null;
 let scalarBar = null;
 let cubeAxes = null;
-let slicePlane = null;
 let clipPlane = null;
-let cutter = null;
-let sliceActor = null;
-let surfaceClipped = false;
-let capDist = null;
-let capTrim = null;
-/** True when the smoothed surface changed since the cap was last trimmed against it. */
-let capTrimDirty = true;
 
 const setStatus = (text, isError = false) => {
   el.status.textContent = text;
@@ -393,8 +397,10 @@ async function buildGrid(geometry, field) {
     await (await ug.getCellData()).setScalars(arr);
     fieldArray = arr;
   }
-  await geomFilter.setInputData(ug);
-  if (cutter) await cutter.setInputData(ug);
+  // the raw grid feeds the smoothing chain and the deform filter; everything the user sees
+  // (shell, crop, cut face) derives from the ONE deformed grid downstream of them
+  await surfSource.setInputData(ug);
+  await deform.setInputData(ug);
 
   if (field) {
     await mapper.setScalarModeToUseCellData();
@@ -408,74 +414,92 @@ async function buildGrid(geometry, field) {
   state.pick = buildPickIndex(geometry, state.bounds);
   state.fieldValues = field ? field.values : null;
   if (cubeAxes) await cubeAxes.setBounds(...state.bounds);
-  capTrimDirty = true; // new geometry, new smoothed surface
-  await applySlice(); // a domain switch changes the bounds the slider position maps into
+  await applyCrop(); // a domain switch changes the bounds the slider position maps into
   state.nominalSinc = geometry.sinc;
   previewSmoothing(state.smoothing);
 }
 
 /**
- * Position the cut and crop the volume at it. This is a CROP, not a floating cross-section: the
- * half above the plane is genuinely discarded (a GPU clipping plane on the surface mapper, so no
- * new geometry pipeline), and the slice actor caps the exposed face. The cap is cut from the RAW
- * grid — its purpose is the interior field, and the cutter passes cell data through, so each cut
- * polygon carries its source voxel's exact value. Its jagged voxel rim standing slightly proud of
- * the smoothed shell is honest: that is where the smoothing moved the boundary.
+ * Position the cut plane and crop the volume at it. The clip runs on the DEFORMED grid — the one
+ * mesh everything derives from — so the exposed cross-section is flat, its rim lies on the
+ * smoothed surface because the boundary cells themselves reach it (distorted hexahedra, VCell's
+ * FV display convention), and every cut polygon carries its cell's value. No cap, no trim, no
+ * second actor: the shell and the cut face are one boundary of one clipped mesh.
  */
-async function applySlice() {
-  if (!sliceActor) return;
+async function applyCrop() {
+  if (!tableClip) return;
   const axis = state.sliceAxis;
   if (axis < 0) {
-    await sliceActor.visibilityOff();
-    if (surfaceClipped) {
-      await mapper.removeAllClippingPlanes();
-      surfaceClipped = false;
-    }
+    await geomFilter.setInputConnection(await deform.getOutputPort());
     el.sliceReadout.textContent = '';
+    el.cropStats.textContent = '';
     return;
   }
   const b = state.bounds;
-  // inset from the ends: a plane exactly on the outermost voxel faces cuts a degenerate sliver
+  // inset from the ends: a plane exactly on the outermost faces clips a degenerate sliver
   const frac = 0.005 + 0.99 * (state.slicePos / 100);
   const pos = b[2 * axis] + frac * (b[2 * axis + 1] - b[2 * axis]);
   const origin = [(b[0] + b[1]) / 2, (b[2] + b[3]) / 2, (b[4] + b[5]) / 2];
   origin[axis] = pos;
+  // the clip keeps the side where the plane function is positive: -axis keeps everything below
+  // the cut, so the slider sweeps from almost-nothing (0) to the whole volume (100)
   const normal = [0, 0, 0];
-  normal[axis] = 1;
-  await slicePlane.setOrigin(...origin);
-  await slicePlane.setNormal(...normal);
-  // a clipping plane keeps the side its normal points toward, so -axis keeps everything below
-  // the cut; the slider sweeps from almost-nothing (0) to the whole volume (100)
   normal[axis] = -1;
   await clipPlane.setOrigin(...origin);
   await clipPlane.setNormal(...normal);
-  if (!surfaceClipped) {
-    await mapper.addClippingPlane(clipPlane);
-    surfaceClipped = true;
-  }
-  if (capTrimDirty) {
-    // re-anchor the trim to the smoothed surface as it is NOW; setInput rebuilds the distance
-    // locator, so this happens only when the surface changed, not on every slider drag
-    await sinc.update();
-    await capDist.setInput(await sinc.getOutput());
-    capTrimDirty = false;
-  }
-  await sliceActor.visibilityOn();
+  await geomFilter.setInputConnection(await tableClip.getOutputPort());
   el.sliceReadout.textContent = `${'xyz'[axis]} = ${pos.toFixed(2)}`;
 }
 
-/** Re-cut and re-render as the slider drags; in-flight guard, as for orbit. */
-let sliceInFlight = false;
-async function refreshSlice() {
-  if (!state.ready || sliceInFlight) return;
-  sliceInFlight = true;
+/** Re-crop and re-render as the slider drags; in-flight guard, as for orbit. */
+let cropInFlight = false;
+async function refreshCrop() {
+  if (!state.ready || cropInFlight) return;
+  cropInFlight = true;
   try {
-    await applySlice();
+    await applyCrop();
     await renderWindow.render();
+    await updateCropStats();
   } catch (e) {
-    setStatus('slice update failed: ' + (e?.message ?? e), true);
+    setStatus('crop update failed: ' + (e?.message ?? e), true);
   } finally {
-    sliceInFlight = false;
+    cropInFlight = false;
+  }
+}
+
+/**
+ * Display-mesh statistics of the cropped region (#1859 discussion): min/max from the clipped
+ * mesh's scalar range, volume-weighted mean from vtkIntegrateAttributes with
+ * DivideAllCellDataByVolume — integrated over the DEFORMED mesh, so the numbers are
+ * self-consistent with the geometry on screen and labeled as such. The solver-grid statistics
+ * (/stats, uniform voxel volumes, the solver's own bookkeeping) remain the reference family;
+ * near membranes the two differ by design and converge as the mesh refines.
+ */
+async function updateCropStats() {
+  if (!integ || state.sliceAxis < 0) return;
+  try {
+    await tableClip.update();
+    const clipped = await tableClip.getOutput();
+    const scalars = await (await clipped.getCellData()).getScalars();
+    const range = await scalars.getRange();
+    await integ.update();
+    const integrated = await (await integ.getOutput()).getCellData();
+    // integrated scalars are ∫f dV; "Volume" is ∫dV of the clipped smoothed mesh
+    const sumArr = (await integrated.getScalars()) ?? (await integrated.getArray(state.selectedVar));
+    const volArr = await integrated.getArray('Volume');
+    const integral = sumArr ? await sumArr.getTuple1(0) : null;
+    const volume = volArr ? await volArr.getTuple1(0) : null;
+    const mean = integral != null && volume ? integral / volume : null;
+    const p = smoothingFor(state.smoothing);
+    el.cropStats.textContent =
+      `display-mesh (cropped): min ${range[0].toExponential(3)} · `
+      + (mean != null && Number.isFinite(mean) ? `mean ${mean.toExponential(3)} · ` : '')
+      + `max ${range[1].toExponential(3)}`
+      + (volume != null && Number.isFinite(volume) ? ` · volume ${volume.toExponential(3)}` : '')
+      + ` (smoothing ${p.iterations} iters · pass-band ${formatPassBand(p.passBand)})`;
+  } catch (e) {
+    console.warn('display-mesh stats failed', e);
+    el.cropStats.textContent = '';
   }
 }
 
@@ -491,10 +515,15 @@ async function applyField(field) {
 }
 
 async function buildScene(geometry, field) {
-  geomFilter = vtk.vtkGeometryFilter();
+  // The deformed-grid convention (VCell FV display): extract the raw boundary, smooth its
+  // vertices, then write the displaced positions BACK INTO THE VOLUME GRID — boundary cells
+  // become distorted hexahedra reaching the smoothed surface, interior cells stay regular, and
+  // every downstream operation (shell, crop, cut face) derives from that one mesh.
+  surfSource = vtk.vtkGeometryFilter();
+  await surfSource.passThroughPointIdsOn(); // the write-back addresses grid points by original id
 
   sinc = vtk.vtkWindowedSincPolyDataFilter();
-  await sinc.setInputConnection(await geomFilter.getOutputPort());
+  await sinc.setInputConnection(await surfSource.getOutputPort());
   await sinc.boundarySmoothingOff();
   await sinc.featureEdgeSmoothingOff();
   await sinc.nonManifoldSmoothingOff();
@@ -503,8 +532,31 @@ async function buildScene(geometry, field) {
   await sinc.setFeatureAngle(geometry.sinc.feature_angle);
   await sinc.setPassBand(geometry.sinc.pass_band);
 
+  deform = vtk.vtkVCellDeformGridToSurface(); // our custom filter; bundle >= v1.2.0
+  await deform.setSourceConnection(await sinc.getOutputPort());
+
+  clipPlane = vtk.vtkPlane();
+  tableClip = vtk.vtkTableBasedClipDataSet();
+  await tableClip.setClipFunction(clipPlane);
+  await tableClip.setInputConnection(await deform.getOutputPort());
+
+  // display boundary extractor; applyCrop points it at the deformed grid or its clipped half
+  geomFilter = vtk.vtkGeometryFilter();
+
+  // display-mesh statistics of the cropped region; degrade quietly if the bundle lacks the filter
+  try {
+    integ = vtk.vtkIntegrateAttributes();
+    await integ.setInputConnection(await tableClip.getOutputPort());
+    // NB: DivideAllCellDataByVolume is a plain vtkSetMacro (no On/Off variants) and boolean
+    // setters marshal awkwardly — left at its default (off), so the integrated scalars are
+    // ∫f dV and the mean is computed in JS from them and the "Volume" array
+  } catch (e) {
+    integ = null;
+    console.warn('vtkIntegrateAttributes unavailable — display-mesh statistics disabled', e);
+  }
+
   // Surface normals so the mapper shades smoothly (Gouraud) instead of flat/faceted.
-  let surfacePort = await sinc.getOutputPort();
+  let surfacePort = await geomFilter.getOutputPort();
   try {
     const normals = vtk.vtkPolyDataNormals();
     await normals.setInputConnection(surfacePort);
@@ -532,37 +584,10 @@ async function buildScene(geometry, field) {
   await scalarBar.setHeight(0.72);
   await scalarBar.setPosition(0.9, 0.14);
 
-  // slice pipeline — built before buildGrid so the grid can be fed to the cutter; invisible and
-  // therefore never executed until a slice axis is chosen
-  slicePlane = vtk.vtkPlane();
-  clipPlane = vtk.vtkPlane();
-  cutter = vtk.vtkCutter();
-  await cutter.setCutFunction(slicePlane);
-  // Trim the cap to the SMOOTHED silhouette. The order is smooth-then-cut: the shell is smoothed
-  // first and cropped at the plane, and the cap — planar by construction, so the cut face stays
-  // flat and sharp — has its in-plane OUTLINE carved to match, via the smoothed surface turned
-  // into an implicit function (negative inside; insideOut keeps the inside). Clipping the volume
-  // first and smoothing after would round the cut edge off, which is exactly what is not wanted.
-  // (Grid-level clip filters have no registered constructor in this bundle anyway.)
-  capDist = vtk.vtkImplicitPolyDataDistance();
-  capTrim = vtk.vtkClipPolyData();
-  await capTrim.setInputConnection(await cutter.getOutputPort());
-  await capTrim.setClipFunction(capDist);
-  await capTrim.insideOutOn();
-  const sliceMapper = vtk.vtkPolyDataMapper();
-  await sliceMapper.setInputConnection(await capTrim.getOutputPort());
-  await sliceMapper.setLookupTable(lut); // same table as the surface and the bar
-  await sliceMapper.useLookupTableScalarRangeOn();
-  await sliceMapper.setScalarModeToUseCellData();
-  await sliceMapper.scalarVisibilityOn();
-  sliceActor = vtk.vtkActor({ mapper: sliceMapper });
-  await sliceActor.visibilityOff();
-
   await buildGrid(geometry, field);
 
   renderer = vtk.vtkRenderer({ background: [0.07, 0.07, 0.1] });
   await renderer.addActor(actor);
-  await renderer.addActor(sliceActor);
   await renderer.addViewProp(scalarBar); // addActor2D is refused by the invoker; addViewProp is the route
   await renderer.resetCamera();
   renderWindow = vtk.vtkRenderWindow({ canvasSelector: '#canvas' });
@@ -903,10 +928,10 @@ async function applySmoothing(strength) {
     const p = smoothingFor(strength);
     await sinc.setNumberOfIterations(p.iterations);
     await sinc.setPassBand(p.passBand);
-    await sinc.update();
-    capTrimDirty = true; // the surface the cap is trimmed against just moved
-    if (state.sliceAxis >= 0) await applySlice();
+    // the deform filter re-executes downstream at render, re-shaping the ONE mesh that the
+    // shell, the crop and the display-mesh statistics all derive from
     await renderWindow.render();
+    await updateCropStats();
     setStatus(`smoothing: ${p.iterations} iters · pass-band ${formatPassBand(p.passBand)} ✓ (${Math.round(performance.now() - t0)} ms)`);
   } catch (e) {
     setStatus('smoothing update failed: ' + (e?.message ?? e), true);
@@ -927,6 +952,7 @@ async function refreshField() {
   try {
     await applyField(await loadField());
     await renderWindow.render();
+    await updateCropStats(); // new values, same mesh
     setStatus(`${describe()} ✓ (${Math.round(performance.now() - t0)} ms)`);
   } catch (e) {
     setStatus('field update failed: ' + (e?.message ?? e), true);
@@ -991,11 +1017,11 @@ el.axes.addEventListener('change', () => void toggleProp(cubeAxes, el.axes.check
 el.sliceAxis.addEventListener('change', () => {
   state.sliceAxis = el.sliceAxis.value === '' ? -1 : Number(el.sliceAxis.value);
   el.slicePos.disabled = state.sliceAxis < 0;
-  void refreshSlice();
+  void refreshCrop();
 });
 el.slicePos.addEventListener('input', () => {
   state.slicePos = Number(el.slicePos.value);
-  void refreshSlice();
+  void refreshCrop();
 });
 
 el.smoothing.addEventListener('input', () => previewSmoothing(Number(el.smoothing.value)));
