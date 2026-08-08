@@ -106,6 +106,16 @@ Config: `vcell-rest/src/main/resources/application.properties`
 - **OpenAPI:** SmallRye OpenAPI at `/openapi`, Swagger UI at `/q/swagger-ui/`
 - **Tests:** `@QuarkusTest` with Keycloak + PostgreSQL testcontainers
 
+## Messaging
+
+**Full picture: [docs/MESSAGING.md](docs/MESSAGING.md).** Read it before changing anything under
+`cbit.vcell.message`, or before assuming how a message reaches a service.
+
+Three brokers (`activemqint`, `activemqsim` — ActiveMQ Classic; `artemismq` — Artemis) and three
+client stacks (the legacy `VCMessagingService` IoC wrapper, a raw OpenWire client, and Quarkus
+SmallRye Reactive Messaging over AMQP). Artemis is the intended destination for all of it, so
+**do not invest in ActiveMQ Classic-side machinery** (redelivery policies, advisory watchdogs).
+
 ## Key Domain Concepts
 
 - **versionFlag** — Curation/archive status of a model (Published, Archived, Current). This is NOT privacy. Privacy/access control uses `GroupAccess`.
