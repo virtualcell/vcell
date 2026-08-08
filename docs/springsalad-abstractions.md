@@ -62,6 +62,41 @@ SpringSaLaD's own math types extend the shared `Particle*` base classes:
 - `LangevinParticleMolecularComponent extends ParticleMolecularComponent`
 - `LangevinParticleJumpProcess extends ParticleJumpProcess`
 
+### The naming convention, and how to extend it
+
+Two tiers are already in use, and they should be stated explicitly because the remaining
+work is simply to finish applying them:
+
+| tier | prefix | meaning |
+|---|---|---|
+| shared math vocabulary | `Particle*` | math-namespace twin of a rule-based biological entity, used by both NFSim and SpringSaLaD |
+| SpringSaLaD-specific math | `Langevin*` | extends the shared tier with Langevin physics |
+
+The convention already reaches enums on the NFSim side —
+`rbm.MolecularComponentPattern.BondType` has the math twin
+`math.ParticleMolecularComponentPattern.ParticleBondType`, same constants and symbols,
+no import from biology. SpringSaLaD is the one place the convention was not carried
+through: `LangevinParticleJumpProcess` imports `ReactionRuleSpec.Subtype` and
+`ReactionRuleSpec.TransitionCondition` from the mapping layer rather than owning
+equivalents.
+
+Applying the convention gives the missing types their names directly — for example
+`LangevinParticleJumpProcess.ParticleTransitionCondition` and
+`...ParticleJumpProcessSubtype`, or free-standing `math` enums if other Langevin types
+come to need them. Whichever shape is chosen, two constraints hold:
+
+- **VCML wire names must not change.** `subtype.columnName` and
+  `transitionCondition.vcellName` are what gets written and parsed
+  (`LangevinParticleJumpProcess.java:74-76`, and `Subtype.fromName(...)` on read), so the
+  math-side enum must reproduce those strings exactly or stored models stop loading.
+- **The mapping layer translates.** `LangevinMathMapping` converts the biological enum to
+  the math one at generation time; the dependency stays biological → mathematical.
+
+The biological `BondType` comments already document how the two vocabularies correspond
+(`Possible("?")` is SpringSaLaD's `TransitionCondition.NONE`, `None("-")` is `FREE`,
+`Specified("")` is `BOUND`), which is a useful cross-check when writing the translation —
+and a warning that the terminology is genuinely confusing in this area.
+
 ## Biological → mathematical
 
 `cbit.vcell.mapping.LangevinMathMapping` is the translator. It reads the application
@@ -129,12 +164,16 @@ layer translating at generation time. Watch out: `ReactionRuleSpec` contains a *
 nested `TransitionCondition`** (`ReactionRuleSpec.java:464`) with the same constants as the
 top-level one (`:110`), so confirm which the math path actually binds to before moving anything.
 
-**#10 is not SpringSaLaD at all** — it is rule-based/NFSim territory, and it is a genuine
-inversion: `MathRuleFactory`'s inner classes *implement* biological contracts
-(`MathRuleEntry implements RuleEntry`, `MathParticipantEntry implements ParticipantEntry`,
-`MathMolecularTypeEntry`, `MathMolecularComponentEntry`). Fixing it means moving those
-interfaces into the math namespace and updating `RuleAnalysis`. It belongs to the NFSim
-companion document, not here.
+**#10 is not SpringSaLaD at all** — it is rule-based/NFSim territory. `MathRuleFactory`'s
+inner classes *implement* biological contracts (`MathRuleEntry implements RuleEntry`,
+`MathParticipantEntry implements ParticipantEntry`, and so on), which looks like a layering
+inversion. It is not: there is a parallel `cbit.vcell.model.ModelRuleFactory` implementing
+the same interfaces over biological objects, so `RuleAnalysis` is a deliberate shared
+contract — one algorithm, one adapter per layer. The only defect is that the interfaces are
+declared in `org.vcell.model.rbm`; moving them to a neutral package removes the violation
+and leaves both adapters unchanged. See
+[nfsim-abstractions.md](nfsim-abstractions.md#the-ruleanalysis-bridge--a-shared-abstraction-not-an-inversion),
+where this is analysed in full.
 
 There is **no ArchUnit dependency and no architecture test** in the repo, so nothing prevents
 these from reappearing via an IDE auto-import. A guard test that fails the build when
