@@ -67,3 +67,13 @@ scrub time — a time step costs about 5.7× less than shipping both.
   the drawing buffer to its 300×150 default.
 - Size the drawing buffer from the **box**, not the canvas: the canvas is still at its default until
   vtk takes it over.
+- **`vtkObjectManager` logs refusals, it does not throw.** A call can appear to succeed in JS while
+  doing nothing at all — watch the console for `is not permitted`. This makes capability probes
+  actively misleading unless they read the console.
+- **`renderer.addActor2D` is refused; `renderer.addViewProp` is not.** That is the route for 2D
+  props such as `vtkScalarBarActor`.
+- Probed 2026-08-07 and available through the standalone session: `vtkScalarBarActor`,
+  `vtkCubeAxesActor` (incl. `setBounds`/`setXTitle`/`setCamera`), `vtkPlane` + `vtkCutter`
+  (`setCutFunction`), `vtkColorTransferFunction`, `vtkLookupTable`, `vtkCellPicker` (incl. `pick`).
+  **`vtkOutlineFilter` has no registered constructor** — compiled into the `.wasm`, but absent from
+  the deserializer, which is the distinction that matters.
