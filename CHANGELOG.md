@@ -16,6 +16,44 @@ followed by flat Keep-a-Changelog categories. API consumers should scan
 
 _(Release-manager scratchpad. Populated at release-cut time.)_
 
+## [8.0.9.01] - 2026-08-08
+
+**Highlights.** Experimental 3D field viewer feature release — everything in it
+is behind `-Dvcell.fieldViewer.enabled=true` and invisible in normal use. The
+browser-based viewer for finite-volume results now renders VCell's display
+convention faithfully: the volume mesh's boundary vertices are smoothed, so
+boundary cells are distorted hexahedra reaching the smoothed surface, and the
+shell, the cut plane and the on-screen statistics all derive from that one
+mesh. The viewer gains run labeling, a color bar, tick-labeled axes, an
+orthogonal cut plane, value-under-mouse picking with click-to-plot time
+courses, and two documented statistics families.
+
+### Added
+- Field viewer (flag-off, #1860): each viewer window is labeled with its
+  simulation's `model::app::sim` name and `SimID`, in the page and the browser
+  tab; the canvas now shrinks with the window so several viewers tile on one
+  screen.
+- Field viewer (flag-off, #1861): color bar and camera-tracking tick-labeled
+  axes, both with toggles; an axis-aligned cut plane implemented as a clip of
+  the deformed display mesh — the cut face is flat and sharp and its rim lies
+  on the smoothed surface at every smoothing setting; value under the mouse
+  (plain-JS lattice ray walk, crop-aware) with click-to-plot of a picked
+  point's full time course; a Stats button plotting per-variable spatial
+  min/mean/max over time; and a live cropped-region readout
+  (min / volume-weighted mean / max / volume of the smoothed mesh).
+- Field server (loopback, flag-off): `/timeseries` and `/stats` endpoints
+  reduce time-course and spatial-statistics queries server-side through the
+  same `VCDataManager.getTimeSeriesValues` path as the desktop's own plots;
+  `/info` now carries the simulation's display name and job index. (#1861)
+- Custom VTK.wasm bundle v1.2.0 (vcell-vtk-wasm): marshals the volumetric clip
+  filters and the statistics operators, and adds `vtkVCellDeformGridToSurface`,
+  the write-back filter that produces the deformed display mesh. (#1861)
+
+### Notes for API consumers
+- No `/api/v1/` schema changes; `tools/openapi.yaml` is unchanged and the
+  generated clients are unaffected. The new endpoints exist only on the desktop
+  client's loopback field-viewer server, which is off by default.
+
 ## [8.0.8.01] - 2026-08-07
 
 **Highlights.** Backend stability release. A review of a day's production error
