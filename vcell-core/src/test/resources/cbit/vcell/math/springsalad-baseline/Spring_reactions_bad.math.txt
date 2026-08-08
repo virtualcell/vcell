@@ -1,0 +1,6 @@
+GENERATION_FAILED: MappingException: failed to generate math: Unable to perform operation. Errors found: 
+
+SpringSaLaD requires that each compartmental reaction and all its participants must be in the same compartment
+SpringSaLaD requires that each compartmental reaction and all its participants must be in the same compartment
+
+ See the Problems panel for a full list of errors and detailed error information.

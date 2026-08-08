@@ -1,0 +1,8 @@
+GENERATION_FAILED: MappingException: failed to generate math: Unable to perform operation. Errors found: 
+
+SpringSaLaD requires exactly 3 Structures: one Membrane and two Features (Compartments)
+'c0' not legal identifier for SpringSaLaD applications. Try using 'Intracellular' or 'Extracellular'.
+The Species and the Molecular Type must share the same name.
+The Species and the Molecular Type must share the same name.
+
+ See the Problems panel for a full list of errors and detailed error information.

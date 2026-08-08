@@ -1,0 +1,149 @@
+MathDescription {
+
+Constant  _F_	96485.3321;
+Constant  _F_nmol_	9.64853321E-5;
+Constant  _N_pmol_	6.02214179E11;
+Constant  _PI_	3.141592653589793;
+Constant  _R_	8314.46261815;
+Constant  _T_	300.0;
+Constant  Kf	50.0;
+Constant  KMOLE	0.001660538783162726;
+Constant  MT0_Count_init_molecules_um_3	0.0;
+Constant  Size_Extracellular	1.0499999999999999E-4;
+Constant  Size_Intracellular	8.949999999999999E-4;
+Constant  Size_Membrane	0.009999999999999827;
+Constant  Voltage_Membrane	0.0;
+
+LangevinParticleMolecularType MT0 {
+        Is2D  false
+        Links  {
+            Site0 :: Site1
+        }
+        Component Site0 { 
+            Radius 1.0
+            DiffusionRate 1.0
+            Location Intracellular
+            Coordinate X=0.0 Y=4.0 Z=4.0
+            NamedColor DARK_GRAY
+            AllowableState state0
+        }
+        Component Site1 { 
+            Radius 1.0
+            DiffusionRate 1.0
+            Location Intracellular
+            Coordinate X=0.0 Y=4.0 Z=8.0
+            NamedColor BLUE
+            AllowableState state0
+            AllowableState state1
+        }
+}
+
+VolumeParticleSpeciesPattern    Intracellular::speciesPattern0 {
+    SpeciesPatternLocation    Intracellular
+    MolecularType MT0 {
+        MatchLabel *
+    
+            Component Site0 State * Bond ?
+            Component Site1 State * Bond ?
+    }
+}
+VolumeParticleSpeciesPattern    Intracellular::speciesPattern1 {
+    SpeciesPatternLocation    Intracellular
+    MolecularType MT0 {
+        MatchLabel *
+    
+            Component Site0 State * Bond ?
+            Component Site1 State state0 Bond ?
+    }
+}
+VolumeParticleSpeciesPattern    Intracellular::speciesPattern2 {
+    SpeciesPatternLocation    Intracellular
+    MolecularType MT0 {
+        MatchLabel *
+    
+            Component Site0 State * Bond ?
+            Component Site1 State state1 Bond ?
+    }
+}
+VolumeParticleSpeciesPattern    Intracellular::speciesPattern3 {
+    SpeciesPatternLocation    Intracellular
+    MolecularType MT0 {
+        MatchLabel *
+    
+            Component Site0 State state0 Bond -
+            Component Site1 State state0 Bond -
+    }
+}
+
+VolumeParticleObservable    Intracellular::MT0_Count {
+    ParticleMolecularType    Species
+    VolumeParticleSpeciesPatterns {
+        speciesPattern3
+    }
+}
+VolumeParticleObservable    Intracellular::O0_MT0_tot_Count {
+    ParticleMolecularType    Molecules
+    VolumeParticleSpeciesPatterns {
+        speciesPattern0
+    }
+}
+
+Function  Intracellular::MT0	 (MT0_Count / Size_Intracellular);
+Function  Intracellular::MT0_Count_initCount	 (Size_Intracellular * MT0_Count_init_molecules_um_3);
+Function  Intracellular::O0_MT0_tot	 (O0_MT0_tot_Count / Size_Intracellular);
+Function  Intracellular::P_r0_probabilityRate	 Kf;
+
+CompartmentSubDomain Intracellular {
+	BoundaryXm	 Flux
+	BoundaryXp	 Flux
+	BoundaryYm	 Flux
+	BoundaryYp	 Flux
+	BoundaryZm	 Flux
+	BoundaryZp	 Flux
+	ParticleProperties speciesPattern3 {
+		ParticleInitialCount {
+			ParticleCount MT0_Count_initCount;
+			ParticleLocationX 0.0;
+			ParticleLocationY 0.0;
+			ParticleLocationZ 0.0;
+		 }
+
+		ParticleDiffusion 0.0;
+		ParticleDriftX 0.0;
+		ParticleDriftY 0.0;
+		ParticleDriftZ 0.0;
+	}
+
+	LangevinParticleJumpProcess	r0 {
+		Subtype			Transition
+		TransitionCondition		Any
+		BondLength			 - 
+		SelectedParticle		speciesPattern1
+		MacroscopicRateConstant	P_r0_probabilityRate;
+		Effect	speciesPattern1	DestroyParticle
+		Effect	speciesPattern2	CreateParticle
+		ProcessSymmetryFactor		1.0
+	 }
+
+}
+
+CompartmentSubDomain Extracellular {
+	BoundaryXm	 Flux
+	BoundaryXp	 Flux
+	BoundaryYm	 Flux
+	BoundaryYp	 Flux
+	BoundaryZm	 Flux
+	BoundaryZp	 Flux
+}
+
+MembraneSubDomain Extracellular Intracellular {
+	Name	 Extracellular_Intracellular_membrane
+	BoundaryXm	 Value
+	BoundaryXp	 Value
+	BoundaryYm	 Value
+	BoundaryYp	 Value
+	BoundaryZm	 Value
+	BoundaryZp	 Value
+}
+
+}
