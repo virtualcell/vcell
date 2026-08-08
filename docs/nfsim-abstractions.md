@@ -179,21 +179,46 @@ at all).
 
 ## Layering violations in the NFSim path
 
-Only one, and it is the `RuleAnalysis` contract location described above:
+After the separation pass, everything in `cbit.vcell.math` is clean except one file,
+`MathRuleFactory`, which holds the **only remaining violations in the math namespace** —
+nine imports, and they are all the same thing: shared contracts declared in a biological
+package.
 
-| file | imports | verdict |
-|---|---|---|
-| `MathRuleFactory` | `RuleAnalysis`, `RuleEntry`, `{MolecularType,MolecularComponent,Participant}Entry`, `ParticipantType`, `{Reactant,Product}BondEntry` | all live — the shared contract, declared in a biological package: **move the contract** |
-| `MathRuleFactory` | `RbmUtils` | utility; relocate or duplicate |
-| `ParticleMolecularTypePattern` | `MolecularTypePattern.TRIVIAL_MATCH` | one string constant |
+| contract | declared in | math adapter | biological adapter |
+|---|---|---|---|
+| `RuleAnalysis` + its `*Entry` interfaces | `org.vcell.model.rbm` | `MathRuleFactory` | `cbit.vcell.model.ModelRuleFactory` |
+| `RbmUtils` BNGL conversion | `org.vcell.model.rbm` | `toBnglString(Particle*)` overloads | `toBnglString(MolecularType, ...)` overloads |
 
-`RuleAnalysis` and `RuleAnalysis.RuleEntry` were briefly mis-classified as unused imports;
-`MathRuleEntry implements RuleEntry` and `RuleAnalysis.getID(...)` is called from
-`MathRuleFactory`. See the counting caution in the SpringSaLaD document.
+`RuleAnalysis` is already layer-neutral in substance: it imports **no concrete biological
+type** — only the JDK, log4j, jdom and its own `RuleAnalysisReport`. It is a static
+algorithm over interfaces, with one adapter per layer.
 
-`NFsimXMLWriter` also imports `RbmUtils`, `RuleAnalysis` and `RuleAnalysisReport`, but it
-is a **solver-layer** class, and solver depending on the shared rule-analysis contract is
-legitimate once that contract sits in a neutral package.
+`RbmUtils` is the same pattern, less obviously. It carries **paired overloads** throughout,
+one biological and one math, for every BNGL conversion:
+
+```java
+toBnglString(ComponentStatePattern)      /  toBnglString(ParticleComponentStatePattern)
+toBnglString(MolecularType, Model, ...)  /  toBnglString(ParticleMolecularType)
+toBnglStringShort(ReactionRule, ...)     /  toBnglStringShort(ParticleJumpProcess, ...)
+```
+
+Eight such pairs. So roughly half of a 2191-line class in a biological package operates
+purely on math types — a math-side BNGL writer that never got separated out.
+
+### Why this is deferred rather than done
+
+Resolving it is well-defined but is a different piece of work from the SpringSaLaD
+separation, in a different subsystem:
+
+- moving `RuleAnalysis` + `RuleAnalysisReport` to a neutral package rewrites **~36 import
+  statements across 8 files**, four of them GUI classes in `vcell-client`
+  (`RulesShapePanel`, `ParticipantSignatureShapePanel`, and others);
+- splitting `RbmUtils` means extracting the math-typed overloads into a math-side BNGL
+  writer and updating their callers.
+
+Neither changes behaviour, and neither is needed for the SpringSaLaD math comparison. Both
+are recorded as explicit exceptions in `MathNamespaceSeparationTest`, so they stay visible
+and cannot be quietly added to.
 
 ## Compare and contrast: NFSim vs SpringSaLaD
 
