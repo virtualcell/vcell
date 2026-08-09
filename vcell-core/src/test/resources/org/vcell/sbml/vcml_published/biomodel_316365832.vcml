@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--This biomodel was generated in VCML Version Alpha_Version_8.0.0_build_06-->
-<vcml xmlns="http://sourceforge.net/projects/vcell/vcml" Version="Alpha_Version_8.0.0_build_06">
+<!--This biomodel was generated in VCML Version Regenerated_baseline_a9d3049b8d-->
+<vcml xmlns="http://sourceforge.net/projects/vcell/vcml" Version="Regenerated_baseline_a9d3049b8d">
   <BioModel Name="aaaaa_illegal">
     <Annotation>cloned from 'Ribohop_plus_RNA_clustering' owned by user les
 cloned from 'ayse_VCell_mRNA_sim_with_ribo_state_transition_fixed_by_Dan' owned by user danv
@@ -437,7 +437,7 @@ cloned from 'model' owned by user ayseecer</Annotation>
         <Constant Name="Size_Extracellular">1.0499999999999999E-4</Constant>
         <Constant Name="Size_Intracellular">8.949999999999999E-4</Constant>
         <Constant Name="Size_Membrane">0.009999999999999827</Constant>
-        <Constant Name="UnitFactor_molecules_uM_neg_1_um_neg_3">(1.0 * pow(KMOLE, - 1.0))</Constant>
+        <Constant Name="UnitFactor_molecules_uM_neg_1_um_neg_3">(1.0 * pow(KMOLE,-1.0))</Constant>
         <Constant Name="UnitFactor_uM_um3_molecules_neg_1">(1.0 * pow(KMOLE,1.0))</Constant>
         <Constant Name="Voltage_Membrane">0.0</Constant>
         <VolumeParticleSpeciesPattern Location="Intracellular" Name="speciesPattern0" Domain="Intracellular">
@@ -545,16 +545,16 @@ cloned from 'model' owned by user ayseecer</Annotation>
             <SelectedParticle Name="speciesPattern0" />
             <SelectedParticle Name="speciesPattern1" />
             <MacroscopicRateConstant>P_rib_init_probabilityRate</MacroscopicRateConstant>
-            <Effect VarName="speciesPattern0" Operation="destroy" />
-            <Effect VarName="speciesPattern1" Operation="destroy" />
-            <Effect VarName="speciesPattern2" Operation="create" />
+            <Effect VarName="speciesPattern0" Operation="destroy">1.0</Effect>
+            <Effect VarName="speciesPattern1" Operation="destroy">1.0</Effect>
+            <Effect VarName="speciesPattern2" Operation="create">1.0</Effect>
           </LangevinParticleJumpProcess>
           <LangevinParticleJumpProcess Name="rib_init_reverse" Subtype="Binding" BondLength="1.0" ProcessSymmetryFactor="1.0">
             <SelectedParticle Name="speciesPattern2" />
             <MacroscopicRateConstant>P_rib_init_reverse_probabilityRate</MacroscopicRateConstant>
-            <Effect VarName="speciesPattern0" Operation="create" />
-            <Effect VarName="speciesPattern1" Operation="create" />
-            <Effect VarName="speciesPattern2" Operation="destroy" />
+            <Effect VarName="speciesPattern0" Operation="create">1.0</Effect>
+            <Effect VarName="speciesPattern1" Operation="create">1.0</Effect>
+            <Effect VarName="speciesPattern2" Operation="destroy">1.0</Effect>
           </LangevinParticleJumpProcess>
           <ParticleProperties Name="speciesPattern5">
             <ParticleInitialCount>

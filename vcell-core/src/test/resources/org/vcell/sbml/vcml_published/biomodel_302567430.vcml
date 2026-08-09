@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--This biomodel was generated in VCML Version Alpha_Version_7.7.0_build_43-->
-<vcml xmlns="http://sourceforge.net/projects/vcell/vcml" Version="Alpha_Version_7.7.0_build_43">
+<!--This biomodel was generated in VCML Version Regenerated_baseline_a9d3049b8d-->
+<vcml xmlns="http://sourceforge.net/projects/vcell/vcml" Version="Regenerated_baseline_a9d3049b8d">
   <BioModel Name="a-simple">
     <Model Name="model">
       <Compound Name="MT0">
@@ -220,16 +220,16 @@
             <SelectedParticle Name="speciesPattern0" />
             <SelectedParticle Name="speciesPattern1" />
             <MacroscopicRateConstant>P_binding_probabilityRate</MacroscopicRateConstant>
-            <Effect VarName="speciesPattern0" Operation="destroy" />
-            <Effect VarName="speciesPattern1" Operation="destroy" />
-            <Effect VarName="speciesPattern2" Operation="create" />
+            <Effect VarName="speciesPattern0" Operation="destroy">1.0</Effect>
+            <Effect VarName="speciesPattern1" Operation="destroy">1.0</Effect>
+            <Effect VarName="speciesPattern2" Operation="create">1.0</Effect>
           </LangevinParticleJumpProcess>
           <LangevinParticleJumpProcess Name="binding_reverse" Subtype="Binding" BondLength="1.0" ProcessSymmetryFactor="1.0">
             <SelectedParticle Name="speciesPattern2" />
             <MacroscopicRateConstant>P_binding_reverse_probabilityRate</MacroscopicRateConstant>
-            <Effect VarName="speciesPattern0" Operation="create" />
-            <Effect VarName="speciesPattern1" Operation="create" />
-            <Effect VarName="speciesPattern2" Operation="destroy" />
+            <Effect VarName="speciesPattern0" Operation="create">1.0</Effect>
+            <Effect VarName="speciesPattern1" Operation="create">1.0</Effect>
+            <Effect VarName="speciesPattern2" Operation="destroy">1.0</Effect>
           </LangevinParticleJumpProcess>
           <ParticleProperties Name="speciesPattern3">
             <ParticleInitialCount>

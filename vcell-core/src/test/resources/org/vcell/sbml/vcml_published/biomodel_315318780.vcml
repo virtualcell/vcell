@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--This biomodel was generated in VCML Version Alpha_Version_8.0.0_build_04-->
-<vcml xmlns="http://sourceforge.net/projects/vcell/vcml" Version="Alpha_Version_8.0.0_build_04">
+<!--This biomodel was generated in VCML Version Regenerated_baseline_a9d3049b8d-->
+<vcml xmlns="http://sourceforge.net/projects/vcell/vcml" Version="Regenerated_baseline_a9d3049b8d">
   <BioModel Name="aaa-aSpringSaLaD-Good">
     <Model Name="model">
       <ModelParameters>
@@ -818,47 +818,47 @@
           <LangevinParticleJumpProcess Name="creation" Subtype="Creation" ProcessSymmetryFactor="1.0">
             <SelectedParticle Name="speciesPattern2" />
             <MacroscopicRateConstant>P_creation_probabilityRate</MacroscopicRateConstant>
-            <Effect VarName="speciesPattern2" Operation="destroy" />
-            <Effect VarName="speciesPattern4" Operation="create" />
+            <Effect VarName="speciesPattern2" Operation="destroy">1.0</Effect>
+            <Effect VarName="speciesPattern4" Operation="create">1.0</Effect>
           </LangevinParticleJumpProcess>
           <LangevinParticleJumpProcess Name="decay" Subtype="Decay" ProcessSymmetryFactor="1.0">
             <SelectedParticle Name="speciesPattern4" />
             <MacroscopicRateConstant>P_decay_probabilityRate</MacroscopicRateConstant>
-            <Effect VarName="speciesPattern4" Operation="destroy" />
-            <Effect VarName="speciesPattern3" Operation="create" />
+            <Effect VarName="speciesPattern4" Operation="destroy">1.0</Effect>
+            <Effect VarName="speciesPattern3" Operation="create">1.0</Effect>
           </LangevinParticleJumpProcess>
           <LangevinParticleJumpProcess Name="transition_none" Subtype="Transition" TransitionCondition="Unbound" ProcessSymmetryFactor="1.0">
             <SelectedParticle Name="speciesPattern5" />
             <MacroscopicRateConstant>P_transition_none_probabilityRate</MacroscopicRateConstant>
-            <Effect VarName="speciesPattern5" Operation="destroy" />
-            <Effect VarName="speciesPattern6" Operation="create" />
+            <Effect VarName="speciesPattern5" Operation="destroy">1.0</Effect>
+            <Effect VarName="speciesPattern6" Operation="create">1.0</Effect>
           </LangevinParticleJumpProcess>
           <LangevinParticleJumpProcess Name="binding" Subtype="Binding" BondLength="1.0" ProcessSymmetryFactor="1.0">
             <SelectedParticle Name="speciesPattern7" />
             <SelectedParticle Name="speciesPattern5" />
             <MacroscopicRateConstant>P_binding_probabilityRate</MacroscopicRateConstant>
-            <Effect VarName="speciesPattern7" Operation="destroy" />
-            <Effect VarName="speciesPattern5" Operation="destroy" />
-            <Effect VarName="speciesPattern8" Operation="create" />
+            <Effect VarName="speciesPattern7" Operation="destroy">1.0</Effect>
+            <Effect VarName="speciesPattern5" Operation="destroy">1.0</Effect>
+            <Effect VarName="speciesPattern8" Operation="create">1.0</Effect>
           </LangevinParticleJumpProcess>
           <LangevinParticleJumpProcess Name="binding_reverse" Subtype="Binding" BondLength="1.0" ProcessSymmetryFactor="1.0">
             <SelectedParticle Name="speciesPattern8" />
             <MacroscopicRateConstant>P_binding_reverse_probabilityRate</MacroscopicRateConstant>
-            <Effect VarName="speciesPattern7" Operation="create" />
-            <Effect VarName="speciesPattern5" Operation="create" />
-            <Effect VarName="speciesPattern8" Operation="destroy" />
+            <Effect VarName="speciesPattern7" Operation="create">1.0</Effect>
+            <Effect VarName="speciesPattern5" Operation="create">1.0</Effect>
+            <Effect VarName="speciesPattern8" Operation="destroy">1.0</Effect>
           </LangevinParticleJumpProcess>
           <LangevinParticleJumpProcess Name="allosteric" Subtype="Allosteric" ProcessSymmetryFactor="1.0">
             <SelectedParticle Name="speciesPattern9" />
             <MacroscopicRateConstant>P_allosteric_probabilityRate</MacroscopicRateConstant>
-            <Effect VarName="speciesPattern9" Operation="destroy" />
-            <Effect VarName="speciesPattern10" Operation="create" />
+            <Effect VarName="speciesPattern9" Operation="destroy">1.0</Effect>
+            <Effect VarName="speciesPattern10" Operation="create">1.0</Effect>
           </LangevinParticleJumpProcess>
           <LangevinParticleJumpProcess Name="transition_free" Subtype="Transition" TransitionCondition="Any" ProcessSymmetryFactor="1.0">
             <SelectedParticle Name="speciesPattern11" />
             <MacroscopicRateConstant>P_transition_free_probabilityRate</MacroscopicRateConstant>
-            <Effect VarName="speciesPattern11" Operation="destroy" />
-            <Effect VarName="speciesPattern12" Operation="create" />
+            <Effect VarName="speciesPattern11" Operation="destroy">1.0</Effect>
+            <Effect VarName="speciesPattern12" Operation="create">1.0</Effect>
           </LangevinParticleJumpProcess>
           <ParticleProperties Name="speciesPattern13">
             <ParticleInitialCount>
@@ -1027,19 +1027,6 @@
   &lt;/body&gt;&#xD;
 &lt;/html&gt;</freetext>
         </nonrdfAnnotation>
-        <nonrdfAnnotation vcid="ReactionRule(transition_bound)">
-          <freetext>&lt;html&gt;&#xD;
-  &lt;head&gt;&#xD;
-&#xD;
-  &lt;/head&gt;&#xD;
-  &lt;body&gt;&#xD;
-    &lt;p style="margin-top: 0"&gt;&#xD;
-      Transition bound reactions always show, by convention, 2 molecules. One &#xD;
-      depicts the binding condition, the other depicts the state transition&#xD;
-    &lt;/p&gt;&#xD;
-  &lt;/body&gt;&#xD;
-&lt;/html&gt;</freetext>
-        </nonrdfAnnotation>
         <nonrdfAnnotation vcid="ReactionRule(transition_bound_same_1)">
           <freetext>&lt;html&gt;&#xD;
   &lt;head&gt;&#xD;
@@ -1050,6 +1037,19 @@
       Note that there is no conflict here, the meaning is that there must &#xD;
       really be 2 molecules of the same tipe, one with the binding condition &#xD;
       site in state 1, the other one transitioning from state 0 to state 1&#xD;
+    &lt;/p&gt;&#xD;
+  &lt;/body&gt;&#xD;
+&lt;/html&gt;</freetext>
+        </nonrdfAnnotation>
+        <nonrdfAnnotation vcid="ReactionRule(transition_bound)">
+          <freetext>&lt;html&gt;&#xD;
+  &lt;head&gt;&#xD;
+&#xD;
+  &lt;/head&gt;&#xD;
+  &lt;body&gt;&#xD;
+    &lt;p style="margin-top: 0"&gt;&#xD;
+      Transition bound reactions always show, by convention, 2 molecules. One &#xD;
+      depicts the binding condition, the other depicts the state transition&#xD;
     &lt;/p&gt;&#xD;
   &lt;/body&gt;&#xD;
 &lt;/html&gt;</freetext>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--This biomodel was generated in VCML Version Alpha_Version_8.0.0_build_06-->
-<vcml xmlns="http://sourceforge.net/projects/vcell/vcml" Version="Alpha_Version_8.0.0_build_06">
+<!--This biomodel was generated in VCML Version Regenerated_baseline_a9d3049b8d-->
+<vcml xmlns="http://sourceforge.net/projects/vcell/vcml" Version="Regenerated_baseline_a9d3049b8d">
   <BioModel Name="Ribohop_plus_RNA_clustering">
     <Annotation>cloned from 'ayse_VCell_mRNA_sim_with_ribo_state_transition_fixed_by_Dan' owned by user danv
 cloned from 'VCell_mRNA_sim_with_ribo_state_transition_fixed_by_Dan' owned by user ayseecer</Annotation>
@@ -4997,97 +4997,97 @@ cloned from 'Application0_generated' owned by user ayseecer</Annotation>
             <SelectedParticle Name="speciesPattern17" />
             <SelectedParticle Name="speciesPattern18" />
             <MacroscopicRateConstant>P_rib_init_probabilityRate</MacroscopicRateConstant>
-            <Effect VarName="speciesPattern17" Operation="destroy" />
-            <Effect VarName="speciesPattern18" Operation="destroy" />
-            <Effect VarName="speciesPattern19" Operation="create" />
+            <Effect VarName="speciesPattern17" Operation="destroy">1.0</Effect>
+            <Effect VarName="speciesPattern18" Operation="destroy">1.0</Effect>
+            <Effect VarName="speciesPattern19" Operation="create">1.0</Effect>
           </LangevinParticleJumpProcess>
           <LangevinParticleJumpProcess Name="rib_init_reverse" Subtype="Binding" BondLength="2.0" ProcessSymmetryFactor="1.0">
             <SelectedParticle Name="speciesPattern19" />
             <MacroscopicRateConstant>P_rib_init_reverse_probabilityRate</MacroscopicRateConstant>
-            <Effect VarName="speciesPattern17" Operation="create" />
-            <Effect VarName="speciesPattern18" Operation="create" />
-            <Effect VarName="speciesPattern19" Operation="destroy" />
+            <Effect VarName="speciesPattern17" Operation="create">1.0</Effect>
+            <Effect VarName="speciesPattern18" Operation="create">1.0</Effect>
+            <Effect VarName="speciesPattern19" Operation="destroy">1.0</Effect>
           </LangevinParticleJumpProcess>
           <LangevinParticleJumpProcess Name="rib_elong_2" Subtype="Binding" BondLength="1.0" ProcessSymmetryFactor="1.0">
             <SelectedParticle Name="speciesPattern15" />
             <SelectedParticle Name="speciesPattern20" />
             <MacroscopicRateConstant>P_rib_elong_2_probabilityRate</MacroscopicRateConstant>
-            <Effect VarName="speciesPattern15" Operation="destroy" />
-            <Effect VarName="speciesPattern20" Operation="destroy" />
-            <Effect VarName="speciesPattern21" Operation="create" />
+            <Effect VarName="speciesPattern15" Operation="destroy">1.0</Effect>
+            <Effect VarName="speciesPattern20" Operation="destroy">1.0</Effect>
+            <Effect VarName="speciesPattern21" Operation="create">1.0</Effect>
           </LangevinParticleJumpProcess>
           <LangevinParticleJumpProcess Name="rib_elong_2_reverse" Subtype="Binding" BondLength="1.0" ProcessSymmetryFactor="1.0">
             <SelectedParticle Name="speciesPattern21" />
             <MacroscopicRateConstant>P_rib_elong_2_reverse_probabilityRate</MacroscopicRateConstant>
-            <Effect VarName="speciesPattern15" Operation="create" />
-            <Effect VarName="speciesPattern20" Operation="create" />
-            <Effect VarName="speciesPattern21" Operation="destroy" />
+            <Effect VarName="speciesPattern15" Operation="create">1.0</Effect>
+            <Effect VarName="speciesPattern20" Operation="create">1.0</Effect>
+            <Effect VarName="speciesPattern21" Operation="destroy">1.0</Effect>
           </LangevinParticleJumpProcess>
           <LangevinParticleJumpProcess Name="rib_elong_1" Subtype="Binding" BondLength="1.0" ProcessSymmetryFactor="1.0">
             <SelectedParticle Name="speciesPattern15" />
             <SelectedParticle Name="speciesPattern22" />
             <MacroscopicRateConstant>P_rib_elong_1_probabilityRate</MacroscopicRateConstant>
-            <Effect VarName="speciesPattern15" Operation="destroy" />
-            <Effect VarName="speciesPattern22" Operation="destroy" />
-            <Effect VarName="speciesPattern23" Operation="create" />
+            <Effect VarName="speciesPattern15" Operation="destroy">1.0</Effect>
+            <Effect VarName="speciesPattern22" Operation="destroy">1.0</Effect>
+            <Effect VarName="speciesPattern23" Operation="create">1.0</Effect>
           </LangevinParticleJumpProcess>
           <LangevinParticleJumpProcess Name="rib_elong_1_reverse" Subtype="Binding" BondLength="1.0" ProcessSymmetryFactor="1.0">
             <SelectedParticle Name="speciesPattern23" />
             <MacroscopicRateConstant>P_rib_elong_1_reverse_probabilityRate</MacroscopicRateConstant>
-            <Effect VarName="speciesPattern15" Operation="create" />
-            <Effect VarName="speciesPattern22" Operation="create" />
-            <Effect VarName="speciesPattern23" Operation="destroy" />
+            <Effect VarName="speciesPattern15" Operation="create">1.0</Effect>
+            <Effect VarName="speciesPattern22" Operation="create">1.0</Effect>
+            <Effect VarName="speciesPattern23" Operation="destroy">1.0</Effect>
           </LangevinParticleJumpProcess>
           <LangevinParticleJumpProcess Name="rib_elong_3" Subtype="Binding" BondLength="1.0" ProcessSymmetryFactor="1.0">
             <SelectedParticle Name="speciesPattern15" />
             <SelectedParticle Name="speciesPattern24" />
             <MacroscopicRateConstant>P_rib_elong_3_probabilityRate</MacroscopicRateConstant>
-            <Effect VarName="speciesPattern15" Operation="destroy" />
-            <Effect VarName="speciesPattern24" Operation="destroy" />
-            <Effect VarName="speciesPattern25" Operation="create" />
+            <Effect VarName="speciesPattern15" Operation="destroy">1.0</Effect>
+            <Effect VarName="speciesPattern24" Operation="destroy">1.0</Effect>
+            <Effect VarName="speciesPattern25" Operation="create">1.0</Effect>
           </LangevinParticleJumpProcess>
           <LangevinParticleJumpProcess Name="rib_elong_3_reverse" Subtype="Binding" BondLength="1.0" ProcessSymmetryFactor="1.0">
             <SelectedParticle Name="speciesPattern25" />
             <MacroscopicRateConstant>P_rib_elong_3_reverse_probabilityRate</MacroscopicRateConstant>
-            <Effect VarName="speciesPattern15" Operation="create" />
-            <Effect VarName="speciesPattern24" Operation="create" />
-            <Effect VarName="speciesPattern25" Operation="destroy" />
+            <Effect VarName="speciesPattern15" Operation="create">1.0</Effect>
+            <Effect VarName="speciesPattern24" Operation="create">1.0</Effect>
+            <Effect VarName="speciesPattern25" Operation="destroy">1.0</Effect>
           </LangevinParticleJumpProcess>
           <LangevinParticleJumpProcess Name="rib_elong_4" Subtype="Binding" BondLength="1.0" ProcessSymmetryFactor="1.0">
             <SelectedParticle Name="speciesPattern15" />
             <SelectedParticle Name="speciesPattern26" />
             <MacroscopicRateConstant>P_rib_elong_4_probabilityRate</MacroscopicRateConstant>
-            <Effect VarName="speciesPattern15" Operation="destroy" />
-            <Effect VarName="speciesPattern26" Operation="destroy" />
-            <Effect VarName="speciesPattern27" Operation="create" />
+            <Effect VarName="speciesPattern15" Operation="destroy">1.0</Effect>
+            <Effect VarName="speciesPattern26" Operation="destroy">1.0</Effect>
+            <Effect VarName="speciesPattern27" Operation="create">1.0</Effect>
           </LangevinParticleJumpProcess>
           <LangevinParticleJumpProcess Name="rib_elong_4_reverse" Subtype="Binding" BondLength="1.0" ProcessSymmetryFactor="1.0">
             <SelectedParticle Name="speciesPattern27" />
             <MacroscopicRateConstant>P_rib_elong_4_reverse_probabilityRate</MacroscopicRateConstant>
-            <Effect VarName="speciesPattern15" Operation="create" />
-            <Effect VarName="speciesPattern26" Operation="create" />
-            <Effect VarName="speciesPattern27" Operation="destroy" />
+            <Effect VarName="speciesPattern15" Operation="create">1.0</Effect>
+            <Effect VarName="speciesPattern26" Operation="create">1.0</Effect>
+            <Effect VarName="speciesPattern27" Operation="destroy">1.0</Effect>
           </LangevinParticleJumpProcess>
           <LangevinParticleJumpProcess Name="rib_elong_exit" Subtype="Binding" BondLength="1.0" ProcessSymmetryFactor="1.0">
             <SelectedParticle Name="speciesPattern15" />
             <SelectedParticle Name="speciesPattern28" />
             <MacroscopicRateConstant>P_rib_elong_exit_probabilityRate</MacroscopicRateConstant>
-            <Effect VarName="speciesPattern15" Operation="destroy" />
-            <Effect VarName="speciesPattern28" Operation="destroy" />
-            <Effect VarName="speciesPattern29" Operation="create" />
+            <Effect VarName="speciesPattern15" Operation="destroy">1.0</Effect>
+            <Effect VarName="speciesPattern28" Operation="destroy">1.0</Effect>
+            <Effect VarName="speciesPattern29" Operation="create">1.0</Effect>
           </LangevinParticleJumpProcess>
           <LangevinParticleJumpProcess Name="rib_elong_exit_reverse" Subtype="Binding" BondLength="1.0" ProcessSymmetryFactor="1.0">
             <SelectedParticle Name="speciesPattern29" />
             <MacroscopicRateConstant>P_rib_elong_exit_reverse_probabilityRate</MacroscopicRateConstant>
-            <Effect VarName="speciesPattern15" Operation="create" />
-            <Effect VarName="speciesPattern28" Operation="create" />
-            <Effect VarName="speciesPattern29" Operation="destroy" />
+            <Effect VarName="speciesPattern15" Operation="create">1.0</Effect>
+            <Effect VarName="speciesPattern28" Operation="create">1.0</Effect>
+            <Effect VarName="speciesPattern29" Operation="destroy">1.0</Effect>
           </LangevinParticleJumpProcess>
           <LangevinParticleJumpProcess Name="init_to_elong_trans" Subtype="Transition" TransitionCondition="Bound" ProcessSymmetryFactor="1.0">
             <SelectedParticle Name="speciesPattern19" />
             <MacroscopicRateConstant>P_init_to_elong_trans_probabilityRate</MacroscopicRateConstant>
-            <Effect VarName="speciesPattern19" Operation="destroy" />
-            <Effect VarName="speciesPattern30" Operation="create" />
+            <Effect VarName="speciesPattern19" Operation="destroy">1.0</Effect>
+            <Effect VarName="speciesPattern30" Operation="create">1.0</Effect>
           </LangevinParticleJumpProcess>
           <ParticleProperties Name="speciesPattern51">
             <ParticleInitialCount>
@@ -6258,200 +6258,200 @@ cloned from 'initialPara' owned by user ayseecer</Annotation>
             <SelectedParticle Name="speciesPattern17" />
             <SelectedParticle Name="speciesPattern18" />
             <MacroscopicRateConstant>P_rib_init_probabilityRate</MacroscopicRateConstant>
-            <Effect VarName="speciesPattern17" Operation="destroy" />
-            <Effect VarName="speciesPattern18" Operation="destroy" />
-            <Effect VarName="speciesPattern19" Operation="create" />
+            <Effect VarName="speciesPattern17" Operation="destroy">1.0</Effect>
+            <Effect VarName="speciesPattern18" Operation="destroy">1.0</Effect>
+            <Effect VarName="speciesPattern19" Operation="create">1.0</Effect>
           </ParticleJumpProcess>
           <ParticleJumpProcess Name="rib_init_reverse" ProcessSymmetryFactor="1.0">
             <SelectedParticle Name="speciesPattern19" />
             <MacroscopicRateConstant>P_rib_init_reverse_probabilityRate</MacroscopicRateConstant>
-            <Effect VarName="speciesPattern17" Operation="create" />
-            <Effect VarName="speciesPattern18" Operation="create" />
-            <Effect VarName="speciesPattern19" Operation="destroy" />
+            <Effect VarName="speciesPattern17" Operation="create">1.0</Effect>
+            <Effect VarName="speciesPattern18" Operation="create">1.0</Effect>
+            <Effect VarName="speciesPattern19" Operation="destroy">1.0</Effect>
           </ParticleJumpProcess>
           <ParticleJumpProcess Name="rib_elong_2" ProcessSymmetryFactor="1.0">
             <SelectedParticle Name="speciesPattern15" />
             <SelectedParticle Name="speciesPattern20" />
             <MacroscopicRateConstant>P_rib_elong_2_probabilityRate</MacroscopicRateConstant>
-            <Effect VarName="speciesPattern15" Operation="destroy" />
-            <Effect VarName="speciesPattern20" Operation="destroy" />
-            <Effect VarName="speciesPattern21" Operation="create" />
+            <Effect VarName="speciesPattern15" Operation="destroy">1.0</Effect>
+            <Effect VarName="speciesPattern20" Operation="destroy">1.0</Effect>
+            <Effect VarName="speciesPattern21" Operation="create">1.0</Effect>
           </ParticleJumpProcess>
           <ParticleJumpProcess Name="rib_elong_2_reverse" ProcessSymmetryFactor="1.0">
             <SelectedParticle Name="speciesPattern21" />
             <MacroscopicRateConstant>P_rib_elong_2_reverse_probabilityRate</MacroscopicRateConstant>
-            <Effect VarName="speciesPattern15" Operation="create" />
-            <Effect VarName="speciesPattern20" Operation="create" />
-            <Effect VarName="speciesPattern21" Operation="destroy" />
+            <Effect VarName="speciesPattern15" Operation="create">1.0</Effect>
+            <Effect VarName="speciesPattern20" Operation="create">1.0</Effect>
+            <Effect VarName="speciesPattern21" Operation="destroy">1.0</Effect>
           </ParticleJumpProcess>
           <ParticleJumpProcess Name="rib_elong_1" ProcessSymmetryFactor="1.0">
             <SelectedParticle Name="speciesPattern15" />
             <SelectedParticle Name="speciesPattern22" />
             <MacroscopicRateConstant>P_rib_elong_1_probabilityRate</MacroscopicRateConstant>
-            <Effect VarName="speciesPattern15" Operation="destroy" />
-            <Effect VarName="speciesPattern22" Operation="destroy" />
-            <Effect VarName="speciesPattern23" Operation="create" />
+            <Effect VarName="speciesPattern15" Operation="destroy">1.0</Effect>
+            <Effect VarName="speciesPattern22" Operation="destroy">1.0</Effect>
+            <Effect VarName="speciesPattern23" Operation="create">1.0</Effect>
           </ParticleJumpProcess>
           <ParticleJumpProcess Name="rib_elong_1_reverse" ProcessSymmetryFactor="1.0">
             <SelectedParticle Name="speciesPattern23" />
             <MacroscopicRateConstant>P_rib_elong_1_reverse_probabilityRate</MacroscopicRateConstant>
-            <Effect VarName="speciesPattern15" Operation="create" />
-            <Effect VarName="speciesPattern22" Operation="create" />
-            <Effect VarName="speciesPattern23" Operation="destroy" />
+            <Effect VarName="speciesPattern15" Operation="create">1.0</Effect>
+            <Effect VarName="speciesPattern22" Operation="create">1.0</Effect>
+            <Effect VarName="speciesPattern23" Operation="destroy">1.0</Effect>
           </ParticleJumpProcess>
           <ParticleJumpProcess Name="rib_elong_3" ProcessSymmetryFactor="1.0">
             <SelectedParticle Name="speciesPattern15" />
             <SelectedParticle Name="speciesPattern24" />
             <MacroscopicRateConstant>P_rib_elong_3_probabilityRate</MacroscopicRateConstant>
-            <Effect VarName="speciesPattern15" Operation="destroy" />
-            <Effect VarName="speciesPattern24" Operation="destroy" />
-            <Effect VarName="speciesPattern25" Operation="create" />
+            <Effect VarName="speciesPattern15" Operation="destroy">1.0</Effect>
+            <Effect VarName="speciesPattern24" Operation="destroy">1.0</Effect>
+            <Effect VarName="speciesPattern25" Operation="create">1.0</Effect>
           </ParticleJumpProcess>
           <ParticleJumpProcess Name="rib_elong_3_reverse" ProcessSymmetryFactor="1.0">
             <SelectedParticle Name="speciesPattern25" />
             <MacroscopicRateConstant>P_rib_elong_3_reverse_probabilityRate</MacroscopicRateConstant>
-            <Effect VarName="speciesPattern15" Operation="create" />
-            <Effect VarName="speciesPattern24" Operation="create" />
-            <Effect VarName="speciesPattern25" Operation="destroy" />
+            <Effect VarName="speciesPattern15" Operation="create">1.0</Effect>
+            <Effect VarName="speciesPattern24" Operation="create">1.0</Effect>
+            <Effect VarName="speciesPattern25" Operation="destroy">1.0</Effect>
           </ParticleJumpProcess>
           <ParticleJumpProcess Name="rib_elong_4" ProcessSymmetryFactor="1.0">
             <SelectedParticle Name="speciesPattern15" />
             <SelectedParticle Name="speciesPattern26" />
             <MacroscopicRateConstant>P_rib_elong_4_probabilityRate</MacroscopicRateConstant>
-            <Effect VarName="speciesPattern15" Operation="destroy" />
-            <Effect VarName="speciesPattern26" Operation="destroy" />
-            <Effect VarName="speciesPattern27" Operation="create" />
+            <Effect VarName="speciesPattern15" Operation="destroy">1.0</Effect>
+            <Effect VarName="speciesPattern26" Operation="destroy">1.0</Effect>
+            <Effect VarName="speciesPattern27" Operation="create">1.0</Effect>
           </ParticleJumpProcess>
           <ParticleJumpProcess Name="rib_elong_4_reverse" ProcessSymmetryFactor="1.0">
             <SelectedParticle Name="speciesPattern27" />
             <MacroscopicRateConstant>P_rib_elong_4_reverse_probabilityRate</MacroscopicRateConstant>
-            <Effect VarName="speciesPattern15" Operation="create" />
-            <Effect VarName="speciesPattern26" Operation="create" />
-            <Effect VarName="speciesPattern27" Operation="destroy" />
+            <Effect VarName="speciesPattern15" Operation="create">1.0</Effect>
+            <Effect VarName="speciesPattern26" Operation="create">1.0</Effect>
+            <Effect VarName="speciesPattern27" Operation="destroy">1.0</Effect>
           </ParticleJumpProcess>
           <ParticleJumpProcess Name="rib_elong_exit" ProcessSymmetryFactor="1.0">
             <SelectedParticle Name="speciesPattern15" />
             <SelectedParticle Name="speciesPattern28" />
             <MacroscopicRateConstant>P_rib_elong_exit_probabilityRate</MacroscopicRateConstant>
-            <Effect VarName="speciesPattern15" Operation="destroy" />
-            <Effect VarName="speciesPattern28" Operation="destroy" />
-            <Effect VarName="speciesPattern29" Operation="create" />
+            <Effect VarName="speciesPattern15" Operation="destroy">1.0</Effect>
+            <Effect VarName="speciesPattern28" Operation="destroy">1.0</Effect>
+            <Effect VarName="speciesPattern29" Operation="create">1.0</Effect>
           </ParticleJumpProcess>
           <ParticleJumpProcess Name="rib_elong_exit_reverse" ProcessSymmetryFactor="1.0">
             <SelectedParticle Name="speciesPattern29" />
             <MacroscopicRateConstant>P_rib_elong_exit_reverse_probabilityRate</MacroscopicRateConstant>
-            <Effect VarName="speciesPattern15" Operation="create" />
-            <Effect VarName="speciesPattern28" Operation="create" />
-            <Effect VarName="speciesPattern29" Operation="destroy" />
+            <Effect VarName="speciesPattern15" Operation="create">1.0</Effect>
+            <Effect VarName="speciesPattern28" Operation="create">1.0</Effect>
+            <Effect VarName="speciesPattern29" Operation="destroy">1.0</Effect>
           </ParticleJumpProcess>
           <ParticleJumpProcess Name="init_to_elong_trans" ProcessSymmetryFactor="1.0">
             <SelectedParticle Name="speciesPattern19" />
             <MacroscopicRateConstant>P_init_to_elong_trans_probabilityRate</MacroscopicRateConstant>
-            <Effect VarName="speciesPattern19" Operation="destroy" />
-            <Effect VarName="speciesPattern30" Operation="create" />
+            <Effect VarName="speciesPattern19" Operation="destroy">1.0</Effect>
+            <Effect VarName="speciesPattern30" Operation="create">1.0</Effect>
           </ParticleJumpProcess>
           <ParticleJumpProcess Name="init_to_elong_trans_reverse" ProcessSymmetryFactor="1.0">
             <SelectedParticle Name="speciesPattern30" />
             <MacroscopicRateConstant>P_init_to_elong_trans_reverse_probabilityRate</MacroscopicRateConstant>
-            <Effect VarName="speciesPattern19" Operation="create" />
-            <Effect VarName="speciesPattern30" Operation="destroy" />
+            <Effect VarName="speciesPattern19" Operation="create">1.0</Effect>
+            <Effect VarName="speciesPattern30" Operation="destroy">1.0</Effect>
           </ParticleJumpProcess>
           <ParticleJumpProcess Name="dissociation" ProcessSymmetryFactor="1.0">
             <SelectedParticle Name="speciesPattern30" />
             <MacroscopicRateConstant>P_dissociation_probabilityRate</MacroscopicRateConstant>
-            <Effect VarName="speciesPattern30" Operation="destroy" />
-            <Effect VarName="speciesPattern15" Operation="create" />
-            <Effect VarName="speciesPattern18" Operation="create" />
+            <Effect VarName="speciesPattern30" Operation="destroy">1.0</Effect>
+            <Effect VarName="speciesPattern15" Operation="create">1.0</Effect>
+            <Effect VarName="speciesPattern18" Operation="create">1.0</Effect>
           </ParticleJumpProcess>
           <ParticleJumpProcess Name="dissociation_reverse" ProcessSymmetryFactor="1.0">
             <SelectedParticle Name="speciesPattern15" />
             <SelectedParticle Name="speciesPattern18" />
             <MacroscopicRateConstant>P_dissociation_reverse_probabilityRate</MacroscopicRateConstant>
-            <Effect VarName="speciesPattern30" Operation="create" />
-            <Effect VarName="speciesPattern15" Operation="destroy" />
-            <Effect VarName="speciesPattern18" Operation="destroy" />
+            <Effect VarName="speciesPattern30" Operation="create">1.0</Effect>
+            <Effect VarName="speciesPattern15" Operation="destroy">1.0</Effect>
+            <Effect VarName="speciesPattern18" Operation="destroy">1.0</Effect>
           </ParticleJumpProcess>
           <ParticleJumpProcess Name="exit_elong_to_init" ProcessSymmetryFactor="1.0">
             <SelectedParticle Name="speciesPattern29" />
             <MacroscopicRateConstant>P_exit_elong_to_init_probabilityRate</MacroscopicRateConstant>
-            <Effect VarName="speciesPattern29" Operation="destroy" />
-            <Effect VarName="speciesPattern17" Operation="create" />
-            <Effect VarName="speciesPattern28" Operation="create" />
+            <Effect VarName="speciesPattern29" Operation="destroy">1.0</Effect>
+            <Effect VarName="speciesPattern17" Operation="create">1.0</Effect>
+            <Effect VarName="speciesPattern28" Operation="create">1.0</Effect>
           </ParticleJumpProcess>
           <ParticleJumpProcess Name="exit_elong_to_init_reverse" ProcessSymmetryFactor="1.0">
             <SelectedParticle Name="speciesPattern17" />
             <SelectedParticle Name="speciesPattern28" />
             <MacroscopicRateConstant>P_exit_elong_to_init_reverse_probabilityRate</MacroscopicRateConstant>
-            <Effect VarName="speciesPattern29" Operation="create" />
-            <Effect VarName="speciesPattern17" Operation="destroy" />
-            <Effect VarName="speciesPattern28" Operation="destroy" />
+            <Effect VarName="speciesPattern29" Operation="create">1.0</Effect>
+            <Effect VarName="speciesPattern17" Operation="destroy">1.0</Effect>
+            <Effect VarName="speciesPattern28" Operation="destroy">1.0</Effect>
           </ParticleJumpProcess>
           <ParticleJumpProcess Name="Ribo1Inact" ProcessSymmetryFactor="1.0">
             <SelectedParticle Name="speciesPattern31" />
             <MacroscopicRateConstant>P_Ribo1Inact_probabilityRate</MacroscopicRateConstant>
-            <Effect VarName="speciesPattern31" Operation="destroy" />
-            <Effect VarName="speciesPattern32" Operation="create" />
+            <Effect VarName="speciesPattern31" Operation="destroy">1.0</Effect>
+            <Effect VarName="speciesPattern32" Operation="create">1.0</Effect>
           </ParticleJumpProcess>
           <ParticleJumpProcess Name="Ribo2Act" ProcessSymmetryFactor="1.0">
             <SelectedParticle Name="speciesPattern33" />
             <MacroscopicRateConstant>P_Ribo2Act_probabilityRate</MacroscopicRateConstant>
-            <Effect VarName="speciesPattern33" Operation="destroy" />
-            <Effect VarName="speciesPattern34" Operation="create" />
+            <Effect VarName="speciesPattern33" Operation="destroy">1.0</Effect>
+            <Effect VarName="speciesPattern34" Operation="create">1.0</Effect>
           </ParticleJumpProcess>
           <ParticleJumpProcess Name="Ribo3Act" ProcessSymmetryFactor="1.0">
             <SelectedParticle Name="speciesPattern35" />
             <MacroscopicRateConstant>P_Ribo3Act_probabilityRate</MacroscopicRateConstant>
-            <Effect VarName="speciesPattern35" Operation="destroy" />
-            <Effect VarName="speciesPattern36" Operation="create" />
+            <Effect VarName="speciesPattern35" Operation="destroy">1.0</Effect>
+            <Effect VarName="speciesPattern36" Operation="create">1.0</Effect>
           </ParticleJumpProcess>
           <ParticleJumpProcess Name="Ribo4Act" ProcessSymmetryFactor="1.0">
             <SelectedParticle Name="speciesPattern37" />
             <MacroscopicRateConstant>P_Ribo4Act_probabilityRate</MacroscopicRateConstant>
-            <Effect VarName="speciesPattern37" Operation="destroy" />
-            <Effect VarName="speciesPattern38" Operation="create" />
+            <Effect VarName="speciesPattern37" Operation="destroy">1.0</Effect>
+            <Effect VarName="speciesPattern38" Operation="create">1.0</Effect>
           </ParticleJumpProcess>
           <ParticleJumpProcess Name="ExitAct" ProcessSymmetryFactor="1.0">
             <SelectedParticle Name="speciesPattern39" />
             <MacroscopicRateConstant>P_ExitAct_probabilityRate</MacroscopicRateConstant>
-            <Effect VarName="speciesPattern39" Operation="destroy" />
-            <Effect VarName="speciesPattern40" Operation="create" />
+            <Effect VarName="speciesPattern39" Operation="destroy">1.0</Effect>
+            <Effect VarName="speciesPattern40" Operation="create">1.0</Effect>
           </ParticleJumpProcess>
           <ParticleJumpProcess Name="Ribo1Act" ProcessSymmetryFactor="1.0">
             <SelectedParticle Name="speciesPattern41" />
             <MacroscopicRateConstant>P_Ribo1Act_probabilityRate</MacroscopicRateConstant>
-            <Effect VarName="speciesPattern41" Operation="destroy" />
-            <Effect VarName="speciesPattern42" Operation="create" />
+            <Effect VarName="speciesPattern41" Operation="destroy">1.0</Effect>
+            <Effect VarName="speciesPattern42" Operation="create">1.0</Effect>
           </ParticleJumpProcess>
           <ParticleJumpProcess Name="Ribo2Inact" ProcessSymmetryFactor="1.0">
             <SelectedParticle Name="speciesPattern43" />
             <MacroscopicRateConstant>P_Ribo2Inact_probabilityRate</MacroscopicRateConstant>
-            <Effect VarName="speciesPattern43" Operation="destroy" />
-            <Effect VarName="speciesPattern44" Operation="create" />
+            <Effect VarName="speciesPattern43" Operation="destroy">1.0</Effect>
+            <Effect VarName="speciesPattern44" Operation="create">1.0</Effect>
           </ParticleJumpProcess>
           <ParticleJumpProcess Name="Ribo3Inact" ProcessSymmetryFactor="1.0">
             <SelectedParticle Name="speciesPattern45" />
             <MacroscopicRateConstant>P_Ribo3Inact_probabilityRate</MacroscopicRateConstant>
-            <Effect VarName="speciesPattern45" Operation="destroy" />
-            <Effect VarName="speciesPattern46" Operation="create" />
+            <Effect VarName="speciesPattern45" Operation="destroy">1.0</Effect>
+            <Effect VarName="speciesPattern46" Operation="create">1.0</Effect>
           </ParticleJumpProcess>
           <ParticleJumpProcess Name="Ribo4Inact" ProcessSymmetryFactor="1.0">
             <SelectedParticle Name="speciesPattern47" />
             <MacroscopicRateConstant>P_Ribo4Inact_probabilityRate</MacroscopicRateConstant>
-            <Effect VarName="speciesPattern47" Operation="destroy" />
-            <Effect VarName="speciesPattern48" Operation="create" />
+            <Effect VarName="speciesPattern47" Operation="destroy">1.0</Effect>
+            <Effect VarName="speciesPattern48" Operation="create">1.0</Effect>
           </ParticleJumpProcess>
           <ParticleJumpProcess Name="ExitInact" ProcessSymmetryFactor="1.0">
             <SelectedParticle Name="speciesPattern49" />
             <MacroscopicRateConstant>P_ExitInact_probabilityRate</MacroscopicRateConstant>
-            <Effect VarName="speciesPattern49" Operation="destroy" />
-            <Effect VarName="speciesPattern50" Operation="create" />
+            <Effect VarName="speciesPattern49" Operation="destroy">1.0</Effect>
+            <Effect VarName="speciesPattern50" Operation="create">1.0</Effect>
           </ParticleJumpProcess>
           <ParticleProperties Name="speciesPattern51">
             <ParticleInitialCount>
               <ParticleCount>mRNA_Count_initCount</ParticleCount>
               <ParticleLocationX>0.0</ParticleLocationX>
-              <ParticleLocationY>u</ParticleLocationY>
-              <ParticleLocationZ>u</ParticleLocationZ>
+              <ParticleLocationY>0.0</ParticleLocationY>
+              <ParticleLocationZ>0.0</ParticleLocationZ>
             </ParticleInitialCount>
             <ParticleDiffusion>0.0</ParticleDiffusion>
             <ParticleDriftX>0.0</ParticleDriftX>
@@ -6462,8 +6462,8 @@ cloned from 'initialPara' owned by user ayseecer</Annotation>
             <ParticleInitialCount>
               <ParticleCount>Ribo_Count_initCount</ParticleCount>
               <ParticleLocationX>0.0</ParticleLocationX>
-              <ParticleLocationY>u</ParticleLocationY>
-              <ParticleLocationZ>u</ParticleLocationZ>
+              <ParticleLocationY>0.0</ParticleLocationY>
+              <ParticleLocationZ>0.0</ParticleLocationZ>
             </ParticleInitialCount>
             <ParticleDiffusion>0.0</ParticleDiffusion>
             <ParticleDriftX>0.0</ParticleDriftX>

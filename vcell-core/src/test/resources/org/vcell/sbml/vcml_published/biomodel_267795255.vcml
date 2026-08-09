@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--This biomodel was generated in VCML Version DanDev_Version_7.0_build_99-->
-<vcml xmlns="http://sourceforge.net/projects/vcell/vcml" Version="DanDev_Version_7.0_build_99">
+<!--This biomodel was generated in VCML Version Regenerated_baseline_a9d3049b8d-->
+<vcml xmlns="http://sourceforge.net/projects/vcell/vcml" Version="Regenerated_baseline_a9d3049b8d">
   <BioModel Name="aaa-SpringSaLaD-transition-free-good">
     <Model Name="model">
       <Compound Name="s0" />
@@ -165,9 +165,9 @@
         <Constant Name="Kf">100.0</Constant>
         <Constant Name="KMOLE">0.001660538783162726</Constant>
         <Constant Name="MT0_Count_init_molecules_um_3">2.0E-4</Constant>
-        <Constant Name="Size_Extracellular">50000.0</Constant>
-        <Constant Name="Size_Intracellular">50000.0</Constant>
-        <Constant Name="Size_Membrane">6563.0</Constant>
+        <Constant Name="Size_Extracellular">1.0499999999999999E-4</Constant>
+        <Constant Name="Size_Intracellular">8.949999999999999E-4</Constant>
+        <Constant Name="Size_Membrane">0.009999999999999827</Constant>
         <Constant Name="Voltage_Membrane">0.0</Constant>
         <VolumeParticleSpeciesPattern Location="Intracellular" Name="speciesPattern0" Domain="Intracellular">
           <MolecularType Name="MT0" MatchLabel="*">
@@ -217,8 +217,8 @@
           <LangevinParticleJumpProcess Name="r0" Subtype="Transition" TransitionCondition="Any" ProcessSymmetryFactor="1.0">
             <SelectedParticle Name="speciesPattern1" />
             <MacroscopicRateConstant>P_r0_probabilityRate</MacroscopicRateConstant>
-            <Effect VarName="speciesPattern1" Operation="destroy" />
-            <Effect VarName="speciesPattern2" Operation="create" />
+            <Effect VarName="speciesPattern1" Operation="destroy">1.0</Effect>
+            <Effect VarName="speciesPattern2" Operation="create">1.0</Effect>
           </LangevinParticleJumpProcess>
           <ParticleProperties Name="speciesPattern3">
             <ParticleInitialCount>
@@ -261,9 +261,13 @@
           <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
           <OutputOptions OutputTimeStep="1.0E-4" />
           <LangevinSimulationOptions>
-            <NumOfTrials>1</NumOfTrials>
             <IntervalSpring>1.0E-9</IntervalSpring>
             <IntervalImage>1.0E-4</IntervalImage>
+            <PartitionNx>10</PartitionNx>
+            <PartitionNy>10</PartitionNy>
+            <PartitionNz>10</PartitionNz>
+            <TotalNumberOfJobs>1</TotalNumberOfJobs>
+            <NumberOfConcurrentJobs>1</NumberOfConcurrentJobs>
           </LangevinSimulationOptions>
           <NumberProcessors>1</NumberProcessors>
         </SolverTaskDescription>
@@ -328,4 +332,3 @@
     </vcmetadata>
   </BioModel>
 </vcml>
-
