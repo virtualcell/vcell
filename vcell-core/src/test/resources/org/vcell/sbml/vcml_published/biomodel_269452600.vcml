@@ -1,0 +1,432 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--This biomodel was generated in VCML Version Alpha_Version_7.5.0_build_105-->
+<vcml xmlns="http://sourceforge.net/projects/vcell/vcml" Version="Alpha_Version_7.5.0_build_105">
+  <BioModel Name="aaa-SpringSaLaD-clusters-good">
+    <Model Name="model">
+      <Compound Name="s0" />
+      <Feature Name="Intracellular" KeyValue="269451565" />
+      <Feature Name="Extracellular" KeyValue="269451567" />
+      <Membrane MembraneVoltage="Voltage_Membrane" Name="Membrane" KeyValue="269451569" />
+      <LocalizedCompound Name="MT0" CompoundRef="s0" Structure="Intracellular" OverrideName="true" KeyValue="269451571">
+        <SpeciesPattern>
+          <MolecularTypePattern Index="1">
+            <MolecularType Name="MT0" />
+            <ComponentPattern MolecularComponent="Site0" ComponentStatePattern="state0" BondType="-" />
+            <ComponentPattern MolecularComponent="Site1" ComponentStatePattern="state0" BondType="-" />
+          </MolecularTypePattern>
+        </SpeciesPattern>
+      </LocalizedCompound>
+      <RbmModelContainer>
+        <MolecularTypeList>
+          <MolecularType Name="MT0" AnchorAll="true">
+            <MolecularComponent Name="Site0" Index="1">
+              <AllowableState Name="state0" />
+            </MolecularComponent>
+            <MolecularComponent Name="Site1" Index="2">
+              <AllowableState Name="state0" />
+              <AllowableState Name="state1" />
+            </MolecularComponent>
+          </MolecularType>
+        </MolecularTypeList>
+        <RbmObservableList>
+          <Observable Name="O0_MT0_tot" ObservableType="Molecules" Sequence="Multimolecular" LengthEqual="2" LengthGreater="1" Structure="Intracellular">
+            <SpeciesPattern>
+              <MolecularTypePattern Index="1">
+                <MolecularType Name="MT0" />
+                <ComponentPattern MolecularComponent="Site0" Any="true" BondType="?" />
+                <ComponentPattern MolecularComponent="Site1" Any="true" BondType="?" />
+              </MolecularTypePattern>
+            </SpeciesPattern>
+          </Observable>
+        </RbmObservableList>
+        <ReactionRuleList>
+          <ReactionRule Name="r0" Structure="Intracellular" ReactionRuleLabel="r0" ReactionRuleReversible="false">
+            <ReactantPatternsList>
+              <ReactantPattern Structure="Intracellular">
+                <SpeciesPattern>
+                  <MolecularTypePattern Index="1">
+                    <MolecularType Name="MT0" />
+                    <ComponentPattern MolecularComponent="Site0" Any="true" BondType="?" />
+                    <ComponentPattern MolecularComponent="Site1" ComponentStatePattern="state0" BondType="?" />
+                  </MolecularTypePattern>
+                </SpeciesPattern>
+              </ReactantPattern>
+            </ReactantPatternsList>
+            <ProductPatternsList>
+              <ProductPattern Structure="Intracellular">
+                <SpeciesPattern>
+                  <MolecularTypePattern Index="1">
+                    <MolecularType Name="MT0" />
+                    <ComponentPattern MolecularComponent="Site0" Any="true" BondType="?" />
+                    <ComponentPattern MolecularComponent="Site1" ComponentStatePattern="state1" BondType="?" />
+                  </MolecularTypePattern>
+                </SpeciesPattern>
+              </ProductPattern>
+            </ProductPatternsList>
+            <Kinetics KineticsType="MassAction">
+              <Parameter Name="ruleRate" Role="RuleRate" Unit="molecules.um-3.s-1" />
+              <Parameter Name="Kf" Role="MassActionKf" Unit="s-1">10.0</Parameter>
+              <Parameter Name="Kr" Role="MassActionKr" Unit="s-1">0.0</Parameter>
+            </Kinetics>
+          </ReactionRule>
+          <ReactionRule Name="r1" Structure="Intracellular" ReactionRuleLabel="r1" ReactionRuleReversible="true">
+            <ReactantPatternsList>
+              <ReactantPattern Structure="Intracellular">
+                <SpeciesPattern>
+                  <MolecularTypePattern ParticipantMatch="1" Index="1">
+                    <MolecularType Name="MT0" />
+                    <ComponentPattern MolecularComponent="Site0" Any="true" BondType="-" />
+                    <ComponentPattern MolecularComponent="Site1" Any="true" BondType="?" />
+                  </MolecularTypePattern>
+                </SpeciesPattern>
+              </ReactantPattern>
+              <ReactantPattern Structure="Intracellular">
+                <SpeciesPattern>
+                  <MolecularTypePattern ParticipantMatch="2" Index="1">
+                    <MolecularType Name="MT0" />
+                    <ComponentPattern MolecularComponent="Site0" Any="true" BondType="-" />
+                    <ComponentPattern MolecularComponent="Site1" Any="true" BondType="?" />
+                  </MolecularTypePattern>
+                </SpeciesPattern>
+              </ReactantPattern>
+            </ReactantPatternsList>
+            <ProductPatternsList>
+              <ProductPattern Structure="Intracellular">
+                <SpeciesPattern>
+                  <MolecularTypePattern ParticipantMatch="1" Index="1">
+                    <MolecularType Name="MT0" />
+                    <ComponentPattern MolecularComponent="Site0" Any="true" BondType="1">
+                      <Bond MolecularTypePattern="MT0" ComponentPattern="Site0" />
+                    </ComponentPattern>
+                    <ComponentPattern MolecularComponent="Site1" Any="true" BondType="?" />
+                  </MolecularTypePattern>
+                  <MolecularTypePattern ParticipantMatch="2" Index="2">
+                    <MolecularType Name="MT0" />
+                    <ComponentPattern MolecularComponent="Site0" Any="true" BondType="1">
+                      <Bond MolecularTypePattern="MT0" ComponentPattern="Site0" />
+                    </ComponentPattern>
+                    <ComponentPattern MolecularComponent="Site1" Any="true" BondType="?" />
+                  </MolecularTypePattern>
+                </SpeciesPattern>
+              </ProductPattern>
+            </ProductPatternsList>
+            <Kinetics KineticsType="MassAction">
+              <Parameter Name="ruleRate" Role="RuleRate" Unit="molecules.um-3.s-1" />
+              <Parameter Name="Kf" Role="MassActionKf" Unit="um3.s-1.molecules-1">0.2</Parameter>
+              <Parameter Name="Kr" Role="MassActionKr" Unit="s-1">0.0</Parameter>
+            </Kinetics>
+          </ReactionRule>
+        </ReactionRuleList>
+      </RbmModelContainer>
+      <Diagram Name="c1" Structure="Extracellular">
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="full" ReactionRuleRef2AttrTag="r1" LocationX="270" LocationY="227" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="full" ReactionRuleRef2AttrTag="r0" LocationX="213" LocationY="70" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="MT0" LocationX="590" LocationY="153" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r1" LocationX="325" LocationY="117" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r0" LocationX="68" LocationY="202" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="MT0" LocationX="598" LocationY="251" />
+      </Diagram>
+      <Diagram Name="m0" Structure="Membrane">
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="full" ReactionRuleRef2AttrTag="r1" LocationX="270" LocationY="227" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="full" ReactionRuleRef2AttrTag="r0" LocationX="213" LocationY="70" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="MT0" LocationX="590" LocationY="153" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r1" LocationX="325" LocationY="117" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r0" LocationX="68" LocationY="202" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="MT0" LocationX="598" LocationY="251" />
+      </Diagram>
+      <Diagram Name="c0" Structure="Intracellular">
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="full" ReactionRuleRef2AttrTag="r1" LocationX="270" LocationY="227" />
+        <RuleParticipantFullShapeTag NodeReferenceModeAttrTag="full" RuleParticipantRefAttrTag="MT0(Site1~state0!?)" LocationX="63" LocationY="76" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="full" ReactionRuleRef2AttrTag="r0" LocationX="213" LocationY="70" />
+        <RuleParticipantFullShapeTag NodeReferenceModeAttrTag="full" RuleParticipantRefAttrTag="MT0(Site0!1)%1.MT0(Site0!1)%2" LocationX="433" LocationY="232" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="MT0" LocationX="590" LocationY="153" />
+        <RuleParticipantFullShapeTag NodeReferenceModeAttrTag="full" RuleParticipantRefAttrTag="MT0(Site0)%2" LocationX="76" LocationY="285" />
+        <RuleParticipantFullShapeTag NodeReferenceModeAttrTag="full" RuleParticipantRefAttrTag="MT0(Site0)%1" LocationX="124" LocationY="195" />
+        <RuleParticipantFullShapeTag NodeReferenceModeAttrTag="full" RuleParticipantRefAttrTag="MT0(Site1~state1!?)" LocationX="346" LocationY="73" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r1" LocationX="325" LocationY="117" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r0" LocationX="68" LocationY="202" />
+        <RuleParticipantShortShapeTag NodeReferenceModeAttrTag="molecule" RuleParticipantRefAttrTag="MT0(Site0!1)%1.MT0(Site0!1)%2" LocationX="464" LocationY="126" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="MT0" LocationX="598" LocationY="251" />
+        <RuleParticipantShortShapeTag NodeReferenceModeAttrTag="molecule" RuleParticipantRefAttrTag="MT0(Site1~state0!?)" LocationX="214" LocationY="121" />
+      </Diagram>
+      <Version Name="model" KeyValue="269451562" BranchId="258602768" Archived="0" Date="06-Mar-2024 19:54:36" FromVersionable="false">
+        <Owner Name="danv" Identifier="26766043" />
+        <GroupAccess Type="1" />
+      </Version>
+      <ModelUnitSystem VolumeSubstanceUnit="molecules" MembraneSubstanceUnit="molecules" LumpedReactionSubstanceUnit="molecules" VolumeUnit="um3" AreaUnit="um2" LengthUnit="um" TimeUnit="s" />
+    </Model>
+    <SimulationSpec Name="Application0" Stochastic="false" UseConcentration="true" SpringSaLaD="true" RuleBased="false" MassConservationModelReduction="false" InsufficientIterations="false" InsufficientMaxMolecules="false" CharacteristicSize="5.201580382836481E-4">
+      <NetworkConstraints RbmMaxIteration="1" RbmMaxMoleculesPerSpecies="10" RbmSpeciesLimit="800" RbmReactionsLimit="2500">
+        <MaxStoichiometry MolecularType="MT0" Integer="100" />
+      </NetworkConstraints>
+      <Annotation />
+      <Geometry Name="spatial1206168707" Dimension="3">
+        <Extent X="0.1" Y="0.1" Z="0.1" />
+        <Origin X="0.0" Y="0.0" Z="0.0" />
+        <SubVolume Name="Intracellular" Handle="0" Type="Analytical" KeyValue="269451651">
+          <AnalyticExpression>(z &lt; 0.09)</AnalyticExpression>
+        </SubVolume>
+        <SubVolume Name="Extracellular" Handle="1" Type="Analytical" KeyValue="269451652">
+          <AnalyticExpression>1.0</AnalyticExpression>
+        </SubVolume>
+        <SurfaceClass Name="Extracellular_Intracellular_membrane" SubVolume1Ref="Extracellular" SubVolume2Ref="Intracellular" KeyValue="269451653" />
+        <SurfaceDescription NumSamplesX="101" NumSamplesY="101" NumSamplesZ="101" CutoffFrequency="0.3">
+          <VolumeRegion Name="Intracellular0" RegionID="0" SubVolume="Intracellular" Size="8.949999999999999E-4" Unit="um3" />
+          <VolumeRegion Name="Extracellular1" RegionID="1" SubVolume="Extracellular" Size="1.0499999999999999E-4" Unit="um3" />
+          <MembraneRegion Name="membrane_Intracellular0_Extracellular1" VolumeRegion1="Extracellular1" VolumeRegion2="Intracellular0" Size="0.009999999999999827" Unit="um2" />
+        </SurfaceDescription>
+        <Version Name="spatial1206168707" KeyValue="269451647" BranchId="269451648" Archived="0" Date="06-Mar-2024 19:56:05" FromVersionable="false">
+          <Owner Name="danv" Identifier="26766043" />
+          <GroupAccess Type="1" />
+        </Version>
+      </Geometry>
+      <GeometryContext>
+        <FeatureMapping Feature="Intracellular" GeometryClass="Intracellular" SubVolume="Intracellular" Size="50000.0" VolumePerUnitVolume="1.0">
+          <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+        </FeatureMapping>
+        <FeatureMapping Feature="Extracellular" GeometryClass="Extracellular" SubVolume="Extracellular" Size="50000.0" VolumePerUnitVolume="1.0">
+          <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+        </FeatureMapping>
+        <MembraneMapping Membrane="Membrane" Size="6563.0" AreaPerUnitArea="1.0" CalculateVoltage="false" SpecificCapacitance="1.0" InitialVoltage="0.0" GeometryClass="Extracellular_Intracellular_membrane">
+          <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+        </MembraneMapping>
+      </GeometryContext>
+      <ReactionContext>
+        <LocalizedCompoundSpec LocalizedCompoundRef="MT0" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>20000.0</InitialConcentration>
+          <InternalLinkSpec MoleculeRef="MT0" SiteOneRef="Site0" SiteTwoRef="Site1" />
+          <SiteAttributesSpec SiteRef="Site0" MoleculeRef="MT0" SiteLocationRef="Intracellular" SiteCoordX="0.0" SiteCoordY="0.0" SiteCoordZ="0.0" SiteRadius="1.0" SiteDiffusion="1.0" SiteColor="RED" />
+          <SiteAttributesSpec SiteRef="Site1" MoleculeRef="MT0" SiteLocationRef="Intracellular" SiteCoordX="0.0" SiteCoordY="0.0" SiteCoordZ="0.0" SiteRadius="1.0" SiteDiffusion="1.0" SiteColor="RED" />
+        </LocalizedCompoundSpec>
+        <ReactionRuleSpecs>
+          <ReactionRuleSpec ReactionRuleRef="r0" ReactionRuleMapping="included" SubType="Transition" TransitionCondition="Any" />
+          <ReactionRuleSpec ReactionRuleRef="r1" ReactionRuleMapping="included" SubType="Binding" BondLength="1.0" />
+        </ReactionRuleSpecs>
+      </ReactionContext>
+      <MathDescription Name="Application0_generated">
+        <LangevinParticleMolecularType Name="MT0">
+          <Link One="Site0" Two="Site1" />
+          <Component Name="Site0" Radius="1.0" DiffusionRate="1.0" Location="Intracellular" SiteCoordX="0.0" SiteCoordY="0.0" SiteCoordZ="0.0" NamedColor="RED">
+            <AllowableState Name="state0" />
+          </Component>
+          <Component Name="Site1" Radius="1.0" DiffusionRate="1.0" Location="Intracellular" SiteCoordX="0.0" SiteCoordY="0.0" SiteCoordZ="0.0" NamedColor="RED">
+            <AllowableState Name="state0" />
+            <AllowableState Name="state1" />
+          </Component>
+        </LangevinParticleMolecularType>
+        <Constant Name="_F_">96485.3321</Constant>
+        <Constant Name="_F_nmol_">9.64853321E-5</Constant>
+        <Constant Name="_N_pmol_">6.02214179E11</Constant>
+        <Constant Name="_PI_">3.141592653589793</Constant>
+        <Constant Name="_R_">8314.46261815</Constant>
+        <Constant Name="_T_">300.0</Constant>
+        <Constant Name="Kf_r0">10.0</Constant>
+        <Constant Name="Kf_r1">0.2</Constant>
+        <Constant Name="KMOLE">0.001660538783162726</Constant>
+        <Constant Name="Kr_r1">0.0</Constant>
+        <Constant Name="MT0_Count_init_molecules_um_3">20000.0</Constant>
+        <Constant Name="Size_Extracellular">1.0499999999999999E-4</Constant>
+        <Constant Name="Size_Intracellular">8.949999999999999E-4</Constant>
+        <Constant Name="Size_Membrane">0.009999999999999827</Constant>
+        <Constant Name="Voltage_Membrane">0.0</Constant>
+        <VolumeParticleSpeciesPattern Location="Intracellular" Name="speciesPattern0" Domain="Intracellular">
+          <MolecularType Name="MT0" MatchLabel="*">
+            <Component Name="Site0" State="*" Bond="?" />
+            <Component Name="Site1" State="*" Bond="?" />
+          </MolecularType>
+        </VolumeParticleSpeciesPattern>
+        <VolumeParticleSpeciesPattern Location="Intracellular" Name="speciesPattern1" Domain="Intracellular">
+          <MolecularType Name="MT0" MatchLabel="*">
+            <Component Name="Site0" State="*" Bond="?" />
+            <Component Name="Site1" State="state0" Bond="?" />
+          </MolecularType>
+        </VolumeParticleSpeciesPattern>
+        <VolumeParticleSpeciesPattern Location="Intracellular" Name="speciesPattern2" Domain="Intracellular">
+          <MolecularType Name="MT0" MatchLabel="*">
+            <Component Name="Site0" State="*" Bond="?" />
+            <Component Name="Site1" State="state1" Bond="?" />
+          </MolecularType>
+        </VolumeParticleSpeciesPattern>
+        <VolumeParticleSpeciesPattern Location="Intracellular" Name="speciesPattern3" Domain="Intracellular">
+          <MolecularType Name="MT0" MatchLabel="1">
+            <Component Name="Site0" State="*" Bond="-" />
+            <Component Name="Site1" State="*" Bond="?" />
+          </MolecularType>
+        </VolumeParticleSpeciesPattern>
+        <VolumeParticleSpeciesPattern Location="Intracellular" Name="speciesPattern4" Domain="Intracellular">
+          <MolecularType Name="MT0" MatchLabel="2">
+            <Component Name="Site0" State="*" Bond="-" />
+            <Component Name="Site1" State="*" Bond="?" />
+          </MolecularType>
+        </VolumeParticleSpeciesPattern>
+        <VolumeParticleSpeciesPattern Location="Intracellular" Name="speciesPattern5" Domain="Intracellular">
+          <MolecularType Name="MT0" MatchLabel="1">
+            <Component Name="Site0" State="*" Bond="1" />
+            <Component Name="Site1" State="*" Bond="?" />
+          </MolecularType>
+          <MolecularType Name="MT0" MatchLabel="2">
+            <Component Name="Site0" State="*" Bond="1" />
+            <Component Name="Site1" State="*" Bond="?" />
+          </MolecularType>
+        </VolumeParticleSpeciesPattern>
+        <VolumeParticleSpeciesPattern Location="Intracellular" Name="speciesPattern6" Domain="Intracellular">
+          <MolecularType Name="MT0" MatchLabel="*">
+            <Component Name="Site0" State="state0" Bond="-" />
+            <Component Name="Site1" State="state0" Bond="-" />
+          </MolecularType>
+        </VolumeParticleSpeciesPattern>
+        <VolumeParticleObservable Name="MT0_Count" Domain="Intracellular" MolecularType="Species" SequenceType="Multimolecular">
+          <VolumeParticleSpeciesPatterns>
+            <VolumeParticleSpeciesPattern Name="speciesPattern6" />
+          </VolumeParticleSpeciesPatterns>
+        </VolumeParticleObservable>
+        <VolumeParticleObservable Name="O0_MT0_tot_Count" Domain="Intracellular" MolecularType="Molecules" SequenceType="Multimolecular">
+          <VolumeParticleSpeciesPatterns>
+            <VolumeParticleSpeciesPattern Name="speciesPattern0" />
+          </VolumeParticleSpeciesPatterns>
+        </VolumeParticleObservable>
+        <Function Name="MT0" Domain="Intracellular">(MT0_Count / Size_Intracellular)</Function>
+        <Function Name="MT0_Count_initCount" Domain="Intracellular">(Size_Intracellular * MT0_Count_init_molecules_um_3)</Function>
+        <Function Name="O0_MT0_tot" Domain="Intracellular">(O0_MT0_tot_Count / Size_Intracellular)</Function>
+        <Function Name="P_r0_probabilityRate" Domain="Intracellular">Kf_r0</Function>
+        <Function Name="P_r1_probabilityRate" Domain="Intracellular">Kf_r1</Function>
+        <Function Name="P_r1_reverse_probabilityRate" Domain="Intracellular">Kr_r1</Function>
+        <CompartmentSubDomain Name="Intracellular">
+          <BoundaryType Boundary="Xm" Type="Flux" />
+          <BoundaryType Boundary="Xp" Type="Flux" />
+          <BoundaryType Boundary="Ym" Type="Flux" />
+          <BoundaryType Boundary="Yp" Type="Flux" />
+          <BoundaryType Boundary="Zm" Type="Flux" />
+          <BoundaryType Boundary="Zp" Type="Flux" />
+          <LangevinParticleJumpProcess Name="r0" Subtype="Transition" TransitionCondition="Any" ProcessSymmetryFactor="1.0">
+            <SelectedParticle Name="speciesPattern1" />
+            <MacroscopicRateConstant>P_r0_probabilityRate</MacroscopicRateConstant>
+            <Effect VarName="speciesPattern1" Operation="destroy" />
+            <Effect VarName="speciesPattern2" Operation="create" />
+          </LangevinParticleJumpProcess>
+          <LangevinParticleJumpProcess Name="r1" Subtype="Binding" BondLength="1.0" ProcessSymmetryFactor="0.5">
+            <SelectedParticle Name="speciesPattern3" />
+            <SelectedParticle Name="speciesPattern4" />
+            <MacroscopicRateConstant>P_r1_probabilityRate</MacroscopicRateConstant>
+            <Effect VarName="speciesPattern3" Operation="destroy" />
+            <Effect VarName="speciesPattern4" Operation="destroy" />
+            <Effect VarName="speciesPattern5" Operation="create" />
+          </LangevinParticleJumpProcess>
+          <LangevinParticleJumpProcess Name="r1_reverse" Subtype="Binding" BondLength="1.0" ProcessSymmetryFactor="0.5">
+            <SelectedParticle Name="speciesPattern5" />
+            <MacroscopicRateConstant>P_r1_reverse_probabilityRate</MacroscopicRateConstant>
+            <Effect VarName="speciesPattern3" Operation="create" />
+            <Effect VarName="speciesPattern4" Operation="create" />
+            <Effect VarName="speciesPattern5" Operation="destroy" />
+          </LangevinParticleJumpProcess>
+          <ParticleProperties Name="speciesPattern6">
+            <ParticleInitialCount>
+              <ParticleCount>MT0_Count_initCount</ParticleCount>
+              <ParticleLocationX>0.0</ParticleLocationX>
+              <ParticleLocationY>0.0</ParticleLocationY>
+              <ParticleLocationZ>0.0</ParticleLocationZ>
+            </ParticleInitialCount>
+            <ParticleDiffusion>0.0</ParticleDiffusion>
+            <ParticleDriftX>0.0</ParticleDriftX>
+            <ParticleDriftY>0.0</ParticleDriftY>
+            <ParticleDriftZ>0.0</ParticleDriftZ>
+          </ParticleProperties>
+        </CompartmentSubDomain>
+        <CompartmentSubDomain Name="Extracellular">
+          <BoundaryType Boundary="Xm" Type="Flux" />
+          <BoundaryType Boundary="Xp" Type="Flux" />
+          <BoundaryType Boundary="Ym" Type="Flux" />
+          <BoundaryType Boundary="Yp" Type="Flux" />
+          <BoundaryType Boundary="Zm" Type="Flux" />
+          <BoundaryType Boundary="Zp" Type="Flux" />
+        </CompartmentSubDomain>
+        <MembraneSubDomain Name="Extracellular_Intracellular_membrane" InsideCompartment="Extracellular" OutsideCompartment="Intracellular">
+          <BoundaryType Boundary="Xm" Type="Value" />
+          <BoundaryType Boundary="Xp" Type="Value" />
+          <BoundaryType Boundary="Ym" Type="Value" />
+          <BoundaryType Boundary="Yp" Type="Value" />
+          <BoundaryType Boundary="Zm" Type="Value" />
+          <BoundaryType Boundary="Zp" Type="Value" />
+        </MembraneSubDomain>
+        <Version Name="Application0_generated" KeyValue="269452592" BranchId="269451659" Archived="0" Date="06-Mar-2024 20:21:59" FromVersionable="false">
+          <Owner Name="danv" Identifier="26766043" />
+          <GroupAccess Type="1" />
+        </Version>
+      </MathDescription>
+      <Simulation Name="Simulation0">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Langevin">
+          <TimeBound StartTime="0.0" EndTime="1.0" />
+          <TimeStep DefaultTime="1.0E-5" MinTime="1.0E-8" MaxTime="1.0" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+          <OutputOptions OutputTimeStep="0.001" />
+          <LangevinSimulationOptions>
+            <NumOfTrials>1</NumOfTrials>
+            <IntervalSpring>1.0E-9</IntervalSpring>
+            <IntervalImage>1.0E-4</IntervalImage>
+          </LangevinSimulationOptions>
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides />
+        <MeshSpecification>
+          <Size X="51" Y="51" Z="51" />
+        </MeshSpecification>
+        <Version Name="Simulation0" KeyValue="269451668" BranchId="269451669" Archived="0" Date="06-Mar-2024 19:56:05" FromVersionable="false">
+          <Owner Name="danv" Identifier="26766043" />
+          <GroupAccess Type="1" />
+        </Version>
+      </Simulation>
+      <SpatialObjects>
+        <SpatialObject Name="vobj_Intracellular0" Type="Volume" subVolume="Intracellular" regionId="0">
+          <QuantityCategoryList>
+            <QuantityCategory Name="VolumeCentroid" Enabled="false" />
+            <QuantityCategory Name="InteriorVelocity" Enabled="false" />
+            <QuantityCategory Name="VolumeRegionSize" Enabled="true" />
+          </QuantityCategoryList>
+        </SpatialObject>
+        <SpatialObject Name="vobj_Extracellular1" Type="Volume" subVolume="Extracellular" regionId="1">
+          <QuantityCategoryList>
+            <QuantityCategory Name="VolumeCentroid" Enabled="false" />
+            <QuantityCategory Name="InteriorVelocity" Enabled="false" />
+            <QuantityCategory Name="VolumeRegionSize" Enabled="true" />
+          </QuantityCategoryList>
+        </SpatialObject>
+        <SpatialObject Name="sobj_Extracellular1_Intracellular0" Type="Surface" subVolumeInside="Extracellular" regionIdInside="1" subVolumeOutside="Intracellular" regionIdOutside="0">
+          <QuantityCategoryList>
+            <QuantityCategory Name="SurfaceNormal" Enabled="false" />
+            <QuantityCategory Name="SurfaceVelocity" Enabled="false" />
+            <QuantityCategory Name="DistanceToSurface" Enabled="false" />
+            <QuantityCategory Name="DirectionToSurface" Enabled="false" />
+            <QuantityCategory Name="SurfaceSize" Enabled="true" />
+          </QuantityCategoryList>
+        </SpatialObject>
+      </SpatialObjects>
+      <Version Name="Application0" KeyValue="269452594" BranchId="269451662" Archived="0" Date="06-Mar-2024 20:21:59" FromVersionable="false">
+        <Owner Name="danv" Identifier="26766043" />
+        <GroupAccess Type="1" />
+      </Version>
+      <MicroscopeMeasurement Name="fluor">
+        <ConvolutionKernel Type="ProjectionZKernel" />
+      </MicroscopeMeasurement>
+    </SimulationSpec>
+    <Version Name="aaa-SpringSaLaD-clusters-good" KeyValue="269452600" BranchId="267929201" Archived="0" Date="06-Mar-2024 20:21:59" FromVersionable="false">
+      <Owner Name="danv" Identifier="26766043" />
+      <GroupAccess Type="115224794" Hash="467507498">
+        <User Name="schaff" KeyValue="17" IsHidden="false" />
+        <User Name="les" KeyValue="6" IsHidden="false" />
+        <User Name="mblinov" KeyValue="12487253" IsHidden="false" />
+      </GroupAccess>
+    </Version>
+    <pathwayModel>
+      <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bp="http://www.biopax.org/release/biopax-level3.owl#" version="3.0" />
+    </pathwayModel>
+    <relationshipModel>
+      <RMNS version="3.0" />
+    </relationshipModel>
+    <vcmetadata>
+      <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" />
+      <nonrdfAnnotationList />
+      <uriBindingList />
+    </vcmetadata>
+  </BioModel>
+</vcml>
+
