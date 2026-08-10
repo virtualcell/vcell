@@ -1,6 +1,11 @@
 package cbit.vcell.solver.ode.gui;
 
+import cbit.vcell.math.LangevinParticleMolecularComponent;
+import cbit.vcell.math.LangevinParticleMolecularType;
+import cbit.vcell.math.MathDescription;
+import cbit.vcell.parser.Expression;
 import cbit.vcell.simdata.SpringSaladTrajectory;
+import org.vcell.util.springsalad.NamedColor;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -124,6 +129,75 @@ public class SpringSaladSpeciesLegendTest {
 
 		canvas.showAllSiteTypes();
 		assertEquals(visiblePixels, countGlyphPixels(canvas.renderToImage(300, 300)));
+	}
+
+
+	/**
+	 * The fallback naming path -- a run with no SiteIDs.csv, named by joining against the math.
+	 *
+	 * Every other test in this class passed null for the math description, so this path had no
+	 * coverage at all, and it threw IllegalFormatConversionException the moment it ran: the site
+	 * radius is an Expression in the math and a double on the trajectory side, and the Expression
+	 * was being handed straight to "%.5f". That took down the whole simulation results viewer,
+	 * reported as "DataAccessException-f != cbit.vcell.parser.Expression".
+	 */
+	@Test
+	public void namesSitesFromTheMathWhenTheRunHasNoSiteIds() throws Exception {
+		SpringSaladTrajectory traj = singleTypeTrajectory();   // radius 3.0, colour LIME
+		MathDescription math = mathWithSite("MolA", "SiteA", 3.0, Colors.LIME);
+
+		SpringSaladSpeciesLegend legend = SpringSaladSpeciesLegend.build(traj, math);
+
+		assertTrue(legend.isNamed(), "the model should have supplied a name");
+		assertEquals(List.of("MolA"), new ArrayList<>(legend.bySpecies().keySet()));
+		assertEquals("SiteA", legend.getSiteTypes().get(0).getSiteLabel());
+	}
+
+	/** A radius that does not match any trajectory entry simply names nothing -- and never throws. */
+	@Test
+	public void aRadiusThatMatchesNothingLeavesTheLegendUnnamed() throws Exception {
+		SpringSaladTrajectory traj = singleTypeTrajectory();   // radius 3.0
+		MathDescription math = mathWithSite("MolA", "SiteA", 99.0, Colors.LIME);
+
+		SpringSaladSpeciesLegend legend = SpringSaladSpeciesLegend.build(traj, math);
+
+		assertFalse(legend.isNamed());
+		assertEquals(List.of(SpringSaladSpeciesLegend.UNNAMED_SPECIES),
+				new ArrayList<>(legend.bySpecies().keySet()));
+	}
+
+	/**
+	 * A non-constant radius cannot be matched against a numeric key, but naming is a convenience:
+	 * it must leave the site unnamed rather than abort the legend and take the viewer with it.
+	 */
+	@Test
+	public void aNonConstantRadiusIsSkippedRatherThanFatal() throws Exception {
+		SpringSaladTrajectory traj = singleTypeTrajectory();
+		MathDescription math = mathWithSiteRadius("MolA", "SiteA", new Expression("someParameter * 2"), Colors.LIME);
+
+		SpringSaladSpeciesLegend legend = SpringSaladSpeciesLegend.build(traj, math);
+
+		assertFalse(legend.isNamed(), "an unevaluable radius names nothing");
+		assertFalse(legend.isEmpty(), "but the legend itself must still be built");
+	}
+
+	private static MathDescription mathWithSite(String molecule, String site, double radius, NamedColor color)
+			throws Exception {
+		return mathWithSiteRadius(molecule, site, new Expression(radius), color);
+	}
+
+	private static MathDescription mathWithSiteRadius(String molecule, String site, Expression radius,
+			NamedColor color) throws Exception {
+		LangevinParticleMolecularComponent component =
+				new LangevinParticleMolecularComponent(molecule + "_" + site, site);
+		component.setRadius(radius);
+		component.setColor(color);
+		LangevinParticleMolecularType type = new LangevinParticleMolecularType(molecule);
+		type.addMolecularComponent(component);
+
+		MathDescription math = new MathDescription("test");
+		math.addParticleMolecularType(type);
+		return math;
 	}
 
 	private static SpringSaladTrajectory singleTypeTrajectory() {
