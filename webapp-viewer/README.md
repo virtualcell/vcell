@@ -106,6 +106,15 @@ scrub time — a time step costs about 5.7× less than shipping both.
   parallel projection (drag pans, wheel scales — `dolly` does nothing under an ortho camera), the
   slice row is hidden, and picking switches to a parallel-projection ray. 1D runs get a clear
   dialog in the desktop client instead of a broken page.
+- **MovingBoundary (mbsolver) runs are a third mode: body-fitted, time-varying geometry.** The
+  server detects the run from its mesh type and switches to the VTU seam (`getVtuTimes` /
+  `getEmptyVtuMeshFiles(timeIndex)` / `getVtuMeshData`), parsing the Python VTK service's
+  binary-uncompressed `.vtu` into the same JSON contract (`bodyFitted: true`, `cellType` 7 cut
+  polygons, `geometryId` carrying the time index). The viewer bypasses the whole smooth/deform
+  chain — the mesh IS the solver's geometry — and re-fetches `/grid` on every time step, keeping
+  the camera where the user put it. Smoothing, crop, picking and statistics are gated off
+  (per-cell ordinals are not stable across time on a moving mesh; spatial-point formulations are
+  the #1879 follow-up).
 - `probe.html` is a scratch page for exactly these capability probes: point it at a suspect class,
   read the on-page result, and keep the console open for `is not permitted`.
 - **The scalar bar labels the lookup table's range, not the mapper's.** `mapper.setScalarRange`
