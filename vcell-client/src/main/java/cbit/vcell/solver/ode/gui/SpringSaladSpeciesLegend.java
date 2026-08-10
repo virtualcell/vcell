@@ -14,7 +14,12 @@ import cbit.vcell.math.LangevinParticleMolecularType;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.ParticleMolecularComponent;
 import cbit.vcell.math.ParticleMolecularType;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.simdata.SpringSaladTrajectory;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.awt.Color;
 import java.util.ArrayList;
@@ -48,6 +53,8 @@ import java.util.Set;
  * cannot be told apart and collapse into a single entry.
  */
 public class SpringSaladSpeciesLegend {
+
+	private static final Logger lg = LogManager.getLogger(SpringSaladSpeciesLegend.class);
 
 	/** Molecule name used for site types the model could not name. */
 	public static final String UNNAMED_SPECIES = "Unidentified";
@@ -181,12 +188,42 @@ public class SpringSaladSpeciesLegend {
 				}
 				String color = lpmc.getColor().getName() == null
 						? "" : lpmc.getColor().getName().trim().toUpperCase(Locale.ROOT);
-				SiteType st = byKey.get(String.format(Locale.ROOT, "color:%s@%.5f", color, lpmc.getRadius()));
+				// The radius is an Expression here and a double on the trajectory side, so it has
+				// to be evaluated before it can be formatted -- passing the Expression to "%.5f"
+				// threw IllegalFormatConversionException and took the whole results viewer down.
+				Double radius = constantRadius(lpmc);
+				if (radius == null) {
+					continue;   // a non-constant radius cannot match a key built from a number
+				}
+				SiteType st = byKey.get(String.format(Locale.ROOT, "color:%s@%.5f", color, radius));
 				if (st != null) {
 					st.moleculeNames.add(pmt.getName());
 					st.siteNames.add(lpmc.getName());
 				}
 			}
+		}
+	}
+
+	/**
+	 * The site radius as a number, or null if it is missing or not a constant.
+	 *
+	 * Naming is a convenience: a radius that cannot be evaluated means this site simply goes
+	 * unnamed in the legend, which is what happens today for any run without {@code SiteIDs.csv}.
+	 * It must never abort building the legend, because the legend failing takes the results
+	 * viewer with it.
+	 */
+	private static Double constantRadius(LangevinParticleMolecularComponent lpmc) {
+		Expression radius = lpmc.getRadius();
+		if (radius == null) {
+			return null;
+		}
+		try {
+			return radius.evaluateConstant();
+		} catch (ExpressionException e) {
+			// infix(), not toString(), is the readable form of an Expression
+			lg.warn("site '" + lpmc.getName() + "' has a non-constant radius '" + radius.infix()
+					+ "'; it will not be named in the SpringSaLaD legend", e);
+			return null;
 		}
 	}
 
