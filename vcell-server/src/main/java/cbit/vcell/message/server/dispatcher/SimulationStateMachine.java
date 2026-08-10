@@ -303,7 +303,14 @@ public class SimulationStateMachine {
                 endDate = new Date();
                 SimulationExecutionStatus newExeStatus = new SimulationExecutionStatus(startDate, computeHost, lastUpdateDate, endDate, hasData, htcJobID);
 
-                SimulationMessage simulationMessage = SimulationMessage.workerFailure("solver stopped unexpectedly, "+workerEventSimulationMessage.getDisplayMessage());
+                // "stopped unexpectedly" is right for a crash and wrong for a configured limit:
+                // a timed-out solver stopped exactly as instructed, and prefixing it here would
+                // contradict the message the worker already wrote.
+                String failureDetail = workerEventSimulationMessage.getDisplayMessage();
+                SimulationMessage simulationMessage = SimulationMessage.workerFailure(
+                        SimulationMessage.describesTimeLimit(failureDetail)
+                                ? failureDetail
+                                : "solver stopped unexpectedly, " + failureDetail);
                 newJobStatus = new SimulationJobStatus(vcServerID, vcSimDataID.getVcSimID(), jobIndex, submitDate, SchedulerStatus.FAILED,
                         taskID, simulationMessage, newQueueStatus, newExeStatus);
 

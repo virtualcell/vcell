@@ -249,7 +249,10 @@ public class SimulationMessagePersistent implements Serializable {
 		if (solverExitCode==0){
 			return new SimulationMessagePersistent(DetailedState.WORKEREVENT_WORKEREXIT_NORMAL,"solver exited (code="+solverExitCode+")");
 		}else{
-			return new SimulationMessagePersistent(DetailedState.WORKEREVENT_WORKEREXIT_ERROR,"solver exited (code="+solverExitCode+")");
+			// same text as SimulationMessage: this one is what gets persisted and shown later,
+			// so the two must not drift
+			return new SimulationMessagePersistent(DetailedState.WORKEREVENT_WORKEREXIT_ERROR,
+					SimulationMessage.describeSolverExit(solverExitCode));
 		}
 	}
 

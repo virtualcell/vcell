@@ -16,6 +16,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.util.Compare;
 
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.server.HtcJobID;
 
 public class SimulationMessage implements Serializable {
@@ -201,11 +202,73 @@ public class SimulationMessage implements Serializable {
 		return new SimulationMessage(DetailedState.JOB_FAILED,failureMessage);
 	}
 
+	/**
+	 * GNU {@code timeout} returns this when it kills the process it wraps, and every Langevin
+	 * (SpringSaLaD) task runs inside {@code timeout "${JOB_TIMEOUT_SECONDS}s"} -- see
+	 * {@code slurm/templates/langevinFixture.slurm.sub}.
+	 */
+	public static final int EXIT_CODE_KILLED_BY_TIMEOUT = 124;
+
+	/**
+	 * Describes a non-zero solver exit for the user.
+	 *
+	 * A bare "solver exited (code=124)" reads as a crash, which cost a real user four days:
+	 * two multi-day SpringSaLaD runs were killed at exactly their 4-day mark by the configured
+	 * per-task limit, and nothing in the message said a limit existed, let alone what it was.
+	 * The limit is a deliberate setting, so the message says so and names the value when the
+	 * property is readable (it is on the compute side, where this message is built).
+	 */
+	private static final String TIME_LIMIT_PHRASE = "solver exceeded its time limit";
+
+	static String describeSolverExit(int solverExitCode){
+		if (solverExitCode != EXIT_CODE_KILLED_BY_TIMEOUT){
+			return "solver exited (code="+solverExitCode+")";
+		}
+		String limit = describeConfiguredTaskTimeLimit();
+		return TIME_LIMIT_PHRASE+limit+" and was stopped (code="+solverExitCode+"). "
+				+ "The simulation did not fail -- it ran out of allotted time. Shorten the run "
+				+ "or ask a VCell administrator whether the limit can be raised.";
+	}
+
+	/**
+	 * Whether a worker-exit message already explains a configured time limit.
+	 *
+	 * The dispatcher prefixes worker failures with "solver stopped unexpectedly", which is right
+	 * for a crash and wrong here -- a timed-out solver stopped exactly as instructed. Asking this
+	 * class keeps the wording in one place instead of matching a literal at each call site.
+	 */
+	public static boolean describesTimeLimit(String displayMessage){
+		return displayMessage != null && displayMessage.startsWith(TIME_LIMIT_PHRASE);
+	}
+
+	/** " of 4 days" when the property is set where this runs, "" when it is not. */
+	private static String describeConfiguredTaskTimeLimit(){
+		try {
+			String seconds = PropertyLoader.getProperty(PropertyLoader.slurm_langevin_timeoutPerTaskSeconds, null);
+			if (seconds == null){
+				return "";
+			}
+			long totalSeconds = Long.parseLong(seconds.trim());
+			if (totalSeconds <= 0){
+				return "";
+			}
+			if (totalSeconds % 86400 == 0){
+				long days = totalSeconds / 86400;
+				return " of "+days+(days == 1 ? " day" : " days");
+			}
+			long hours = totalSeconds / 3600;
+			return hours > 0 ? " of "+hours+(hours == 1 ? " hour" : " hours") : "";
+		} catch (NumberFormatException e){
+			// a malformed property must not turn a solver message into an exception
+			return "";
+		}
+	}
+
 	public static SimulationMessage WorkerExited(int solverExitCode){
 		if (solverExitCode==0){
 			return new SimulationMessage(DetailedState.WORKEREVENT_WORKEREXIT_NORMAL,"solver exited (code="+solverExitCode+")");
 		}else{
-			return new SimulationMessage(DetailedState.WORKEREVENT_WORKEREXIT_ERROR,"solver exited (code="+solverExitCode+")");
+			return new SimulationMessage(DetailedState.WORKEREVENT_WORKEREXIT_ERROR,describeSolverExit(solverExitCode));
 		}
 	}
 	
