@@ -66,20 +66,11 @@ public class MathNamespaceSeparationTest {
 	 * javadoc above summarises.
 	 */
 	private static final Set<String> ACCEPTED = new LinkedHashSet<>(Arrays.asList(
-			// The shared rule-analysis contract. RuleAnalysis is an algorithm over interfaces with
-			// one adapter per layer - cbit.vcell.model.ModelRuleFactory over biological rules,
-			// MathRuleFactory over ParticleJumpProcesses - so this is a deliberate abstraction whose
-			// interfaces simply happen to be declared in a biological package. Resolved by moving
-			// the contract to a neutral package, not by changing the design.
-			"MathRuleFactory.java -> org.vcell.model.rbm.RbmUtils",
-			"MathRuleFactory.java -> org.vcell.model.rbm.RuleAnalysis",
-			"MathRuleFactory.java -> org.vcell.model.rbm.RuleAnalysis.MolecularComponentEntry",
-			"MathRuleFactory.java -> org.vcell.model.rbm.RuleAnalysis.MolecularTypeEntry",
-			"MathRuleFactory.java -> org.vcell.model.rbm.RuleAnalysis.ParticipantEntry",
-			"MathRuleFactory.java -> org.vcell.model.rbm.RuleAnalysis.ParticipantType",
-			"MathRuleFactory.java -> org.vcell.model.rbm.RuleAnalysis.ProductBondEntry",
-			"MathRuleFactory.java -> org.vcell.model.rbm.RuleAnalysis.ReactantBondEntry",
-			"MathRuleFactory.java -> org.vcell.model.rbm.RuleAnalysis.RuleEntry"));
+			// RbmUtils carries paired biological/math overloads for every BNGL conversion, so roughly half
+			// of a 2191-line class in a biological package is really a math-side BNGL writer. Splitting it
+			// out is the remaining half of the RuleAnalysis work; the shared analysis contract itself has
+			// moved to cbit.vcell.math.
+			"MathRuleFactory.java -> org.vcell.model.rbm.RbmUtils"));
 
 	private static final Pattern IMPORT = Pattern.compile("^\\s*import\\s+(?:static\\s+)?([\\w.]+)\\s*;");
 

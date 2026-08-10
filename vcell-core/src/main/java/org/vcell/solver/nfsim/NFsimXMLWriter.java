@@ -15,8 +15,26 @@ import org.jdom2.Element;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 import org.vcell.model.rbm.RbmUtils;
-import org.vcell.model.rbm.RuleAnalysis;
-import org.vcell.model.rbm.RuleAnalysisReport;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import cbit.vcell.math.RuleAnalysis;
+import cbit.vcell.math.RuleAnalysis.ParticipantType;
+import cbit.vcell.math.RuleAnalysis.RuleEntry;
+import cbit.vcell.math.RuleAnalysis.ParticipantEntry;
+import cbit.vcell.math.RuleAnalysis.MolecularTypeEntry;
+import cbit.vcell.math.RuleAnalysis.MolecularComponentEntry;
+import cbit.vcell.math.RuleAnalysis.ReactantBondEntry;
+import cbit.vcell.math.RuleAnalysis.ProductBondEntry;
+import cbit.vcell.math.RuleAnalysisReport;
+import cbit.vcell.math.RuleAnalysisReport.Operation;
+import cbit.vcell.math.RuleAnalysisReport.ChangeStateOperation;
+import cbit.vcell.math.RuleAnalysisReport.AddBondOperation;
+import cbit.vcell.math.RuleAnalysisReport.DeleteBondOperation;
+import cbit.vcell.math.RuleAnalysisReport.AddMolecularTypeOperation;
+import cbit.vcell.math.RuleAnalysisReport.DeleteMolecularTypeOperation;
+import cbit.vcell.math.RuleAnalysisReport.DeleteParticipantOperation;
 import org.vcell.util.BeanUtils;
 
 import cbit.vcell.math.Action;
@@ -411,7 +429,7 @@ public class NFsimXMLWriter {
 			MathRuleFactory mathRuleFactory = new MathRuleFactory();
 			MathRuleEntry rule = mathRuleFactory.createRuleEntry(particleJumpProcess, reactionRuleIndex);
 			RuleAnalysisReport report = RuleAnalysis.analyze(rule, true);
-			Element reactionRuleElement = RuleAnalysis.getNFSimXML(rule, report); // remember, we have to add RateLaw
+			Element reactionRuleElement = getNFSimXML(rule, report); // remember, we have to add RateLaw
 			
 //			ArrayList<MolecularTypeOfReactionParticipant> currentReactantElementsOfReaction = new ArrayList<MolecularTypeOfReactionParticipant>();
 //			ArrayList<ComponentOfMolecularTypeOfReactionParticipant> currentComponentOfReactantElementsOfReaction = new ArrayList<ComponentOfMolecularTypeOfReactionParticipant>();
@@ -803,6 +821,270 @@ public class NFsimXMLWriter {
 		return sbmlElement;
 	}
 	
+
+	/**
+	 * Build the NFSim XML for one analysed rule.
+	 * <p>
+	 * Lives here rather than on {@code RuleAnalysis}: the analysis itself is layer-neutral and now sits
+	 * in the math namespace with an adapter per layer, but generating a solver's input format is this
+	 * wrapper's concern. See docs/architecture-layers.md, P4.
+	 */
+	private static Element getNFSimXML(RuleEntry rule, RuleAnalysisReport report){
+		Element root = new Element("ReactionRule");
+		root.setAttribute("id",RuleAnalysis.getID(rule));
+		root.setAttribute("name",rule.getRuleName());
+		root.setAttribute("symmetry_factor",""+report.getSymmetryFactor());
+		
+		Element listOfReactantPatterns = new Element("ListOfReactantPatterns");
+		root.addContent(listOfReactantPatterns);
+		for (ParticipantEntry reactantEntry : rule.getReactantEntries()){
+			Element reactantElement = getParticipantEntry(rule,reactantEntry);
+			listOfReactantPatterns.addContent(reactantElement);
+		}
+		if(rule.getReactantEntries().isEmpty()) {
+			listOfReactantPatterns.addContent(" ");	// we want <ListOfReactantPatterns> </ListOfReactantPatterns> rather than <ListOfReactantPatterns/>
+		}
+		
+		Element listOfProductPatterns = new Element("ListOfProductPatterns");
+		root.addContent(listOfProductPatterns);
+		for (ParticipantEntry productEntry : rule.getProductEntries()){
+			Element productElement = getParticipantEntry(rule,productEntry);
+			listOfProductPatterns.addContent(productElement);
+		}
+		if(rule.getProductEntries().isEmpty()) {
+			listOfProductPatterns.addContent(" ");	// we want <ListOfProductPatterns> </ListOfProductPatterns> rather than <ListOfProductPatterns/>
+		}
+
+		
+//		Element rateLaw = new Element("RateLaw");
+//		root.addContent(rateLaw);
+//		Element listOfRateConstants = new Element("ListOfRateConstants");
+//		rateLaw.addContent(listOfRateConstants);
+//		Element rateConstant = new Element("RateConstant");
+//		listOfRateConstants.addContent(rateConstant);
+//		rateConstant.setAttribute("value",rule.getForwardRateConstantName());
+		
+		// we build a map of strings with the source ID as keys and target ID as content
+		Map<String, String> idMap = new LinkedHashMap<String, String>();
+		for (MolecularTypeEntry ractantMolecule : report.getMappedReactantMolecules()){
+			MolecularTypeEntry productMolecule = report.getMappedProductMolecules(ractantMolecule).get(0);
+			if(productMolecule == null) {
+				idMap.put(RuleAnalysis.getID(ractantMolecule), null);
+			} else {
+				idMap.put(RuleAnalysis.getID(ractantMolecule), RuleAnalysis.getID(productMolecule));
+			}
+			for (MolecularComponentEntry reactantComponent : ractantMolecule.getMolecularComponentEntries()){
+				MolecularComponentEntry productComponent = report.getMappedProductComponent(reactantComponent);
+				if(productComponent == null) {
+					idMap.put(RuleAnalysis.getID(reactantComponent), null);
+				} else {
+					idMap.put(RuleAnalysis.getID(reactantComponent), RuleAnalysis.getID(productComponent));
+				}
+			}
+		}
+		Element map = new Element("Map");
+		root.addContent(map);
+		SortedSet<String> keys = new TreeSet<String>(idMap.keySet());	// we create the map sorted by sourceID
+		for (String sourceID : keys) {
+			String targetID = idMap.get(sourceID);
+			Element mapItem = new Element("MapItem");
+			map.addContent(mapItem);
+			mapItem.setAttribute("sourceID", sourceID);
+			if(targetID != null) {
+				mapItem.setAttribute("targetID", targetID);
+			}
+		}
+		if(keys.isEmpty()) {
+			map.addContent(" ");	// we want <Map> </Map> rather than <Map/>
+		}
+	
+		
+//		Element map = new Element("Map");
+//		root.addContent(map);
+//		for (MolecularTypeEntry mappedReactantMolecule : report.getMappedReactantMolecules()){
+//			Element moleculeMapEntry = new Element("MapItem");
+//			map.addContent(moleculeMapEntry);
+//			MolecularTypeEntry productMolecule = report.getMappedProductMolecules(mappedReactantMolecule).get(0);
+//			moleculeMapEntry.setAttribute("sourceID",RuleAnalysis.getID(mappedReactantMolecule));
+//			if(productMolecule != null) {
+//				moleculeMapEntry.setAttribute("targetID",RuleAnalysis.getID(productMolecule));
+//			}
+//			for (MolecularComponentEntry reactantComponent : mappedReactantMolecule.getMolecularComponentEntries()){
+//				Element componentMapEntry = new Element("MapItem");
+//				map.addContent(componentMapEntry);
+//				MolecularComponentEntry productComponent = report.getMappedProductComponent(reactantComponent);
+//				componentMapEntry.setAttribute("sourceID",RuleAnalysis.getID(reactantComponent));
+//				if(productComponent != null) {
+//					componentMapEntry.setAttribute("targetID",RuleAnalysis.getID(productComponent));
+//				}
+//			}
+//		}
+		
+		Element listOfOperations = new Element("ListOfOperations");
+		root.addContent(listOfOperations);
+		if(report.getOperations().isEmpty()) {
+			listOfOperations.addContent(" ");	// we want <ListOfOperations> </ListOfOperations> rather than <ListOfOperations/>
+		}
+		
+		for (Operation op : report.getOperations()){
+			if (op instanceof ChangeStateOperation){
+				ChangeStateOperation changeStateOp = (ChangeStateOperation)op;
+				Element changeState = new Element("StateChange");
+				listOfOperations.addContent(changeState);
+				changeState.setAttribute("site",RuleAnalysis.getID(changeStateOp.reactantComponentEntry));
+				changeState.setAttribute("finalState",changeStateOp.newState);
+			}
+		}
+		for (Operation op : report.getOperations()){
+			if (op instanceof DeleteBondOperation){
+				DeleteBondOperation deleteBondOp = (DeleteBondOperation)op;
+				Element deleteBond = new Element("DeleteBond");
+				listOfOperations.addContent(deleteBond);
+				deleteBond.setAttribute("site1",RuleAnalysis.getID(deleteBondOp.removedBondEntry.reactantComponent1));
+				deleteBond.setAttribute("site2",RuleAnalysis.getID(deleteBondOp.removedBondEntry.reactantComponent2));
+			}
+		}
+		for (Operation op : report.getOperations()){
+			if (op instanceof AddBondOperation){
+				AddBondOperation addBondOp = (AddBondOperation)op;
+				Element addBond = new Element("AddBond");
+				listOfOperations.addContent(addBond);
+				addBond.setAttribute("site1",RuleAnalysis.getID(addBondOp.addedProductBondEntry.reactantComponent1));
+				addBond.setAttribute("site2",RuleAnalysis.getID(addBondOp.addedProductBondEntry.reactantComponent2));
+			}
+		}
+		for (Operation op : report.getOperations()){
+			if (op instanceof AddMolecularTypeOperation){
+				AddMolecularTypeOperation addMoleculeOp = (AddMolecularTypeOperation)op;
+				Element addMolecule = new Element("Add");
+				listOfOperations.addContent(addMolecule);
+				addMolecule.setAttribute("id",RuleAnalysis.getID(addMoleculeOp.unmatchedProductMoleculeEntry));
+			}
+		}
+		for (Operation op : report.getOperations()){
+			if (op instanceof DeleteMolecularTypeOperation){
+				DeleteMolecularTypeOperation deleteMolecule = (DeleteMolecularTypeOperation)op;
+				Element delete = new Element("Delete");
+				listOfOperations.addContent(delete);
+				delete.setAttribute("id",RuleAnalysis.getID(deleteMolecule.removedReactantMolecularEntry));
+				delete.setAttribute("DeleteMolecules","1");
+			}
+		}
+		for (Operation op : report.getOperations()){
+			if (op instanceof DeleteParticipantOperation){
+				DeleteParticipantOperation deleteParticipant = (DeleteParticipantOperation)op;
+				Element delete = new Element("Delete");
+				listOfOperations.addContent(delete);
+				delete.setAttribute("id",RuleAnalysis.getID(deleteParticipant.removedParticipantEntry));
+				delete.setAttribute("DeleteMolecules","0");
+			}
+		}
+		return root;
+	}
+
+	private static Element getParticipantEntry(RuleEntry rule, ParticipantEntry participant) {
+		Element root = null;
+		if (participant.getParticipantType() == ParticipantType.Reactant){
+			root = new Element("ReactantPattern");
+		}else{
+			root = new Element("ProductPattern");
+		}
+		root.setAttribute("id", RuleAnalysis.getID(participant));
+		Element listOfMolecules = new Element("ListOfMolecules");
+		root.addContent(listOfMolecules);
+		for (MolecularTypeEntry molecule : participant.getMolecularTypeEntries()){
+			Element moleculeElement = new Element("Molecule");
+			listOfMolecules.addContent(moleculeElement);
+			moleculeElement.setAttribute("id",RuleAnalysis.getID(molecule));
+			moleculeElement.setAttribute("name",molecule.getMolecularTypeName());
+			if (molecule.getMatchLabel()!=null){
+				moleculeElement.setAttribute("label",molecule.getMatchLabel());
+			}
+			if (molecule.getMolecularComponentEntries().size()>0){
+				Element listOfComponents = new Element("ListOfComponents");
+				moleculeElement.addContent(listOfComponents);
+				for (MolecularComponentEntry component : molecule.getMolecularComponentEntries()){
+					boolean bStateSpecified = false;
+					boolean bBondSpecified = false;
+					Element componentElement = new Element("Component");
+					componentElement.setAttribute("id",RuleAnalysis.getID(component));
+					componentElement.setAttribute("name",component.getMolecularComponentName());
+					String state = component.getExplicitState();
+					if (state != null){
+						bStateSpecified = true;
+						componentElement.setAttribute("state",state);
+					}
+					if(component.isBondExists()) {
+						componentElement.setAttribute("numberOfBonds","+");
+						bBondSpecified = true;
+					} else if (component.isBondPossible()){
+						componentElement.setAttribute("numberOfBonds","?");
+					} else if (component.hasBond()){
+						componentElement.setAttribute("numberOfBonds","1");
+						bBondSpecified = true;
+					} else {
+						componentElement.setAttribute("numberOfBonds","0");
+						bBondSpecified = true;
+					}
+					if (bStateSpecified || bBondSpecified){
+						listOfComponents.addContent(componentElement);
+					}
+				}
+			}
+		}
+		Element listOfBonds = new Element("ListOfBonds");
+		boolean bAnyBonds = false;
+		if (participant.getParticipantType() == ParticipantType.Reactant){
+			int count = 0;
+			Map<String,String> bondSiteMap = new HashMap<String, String>();
+			for (ReactantBondEntry bond : rule.getReactantBondEntries()){
+				if (bond.reactantComponent1.getMolecularTypeEntry().getParticipantEntry() == participant){
+					if(bond.reactantComponent1 == null || bond.reactantComponent2 == null) {
+						throw new RuntimeException("Bond site(s) are null when trying to build the bond map.");
+					}
+					bondSiteMap.put(RuleAnalysis.getID(bond.reactantComponent1), RuleAnalysis.getID(bond.reactantComponent2));
+				}
+			}
+			SortedSet<String> keys = new TreeSet<String>(bondSiteMap.keySet());
+			for (String key : keys) { 
+				String value = bondSiteMap.get(key);
+				Element bondElement = new Element("Bond");
+				listOfBonds.addContent(bondElement);
+				bondElement.setAttribute("id",RuleAnalysis.getID(participant)+"_B"+(count+RuleAnalysis.INDEX_OFFSET));
+				bondElement.setAttribute("site1", key);
+				bondElement.setAttribute("site2", value);
+				bAnyBonds = true;
+				count++;
+			}
+		}else{
+			int count = 0;
+			Map<String,String> bondSiteMap = new HashMap<String, String>();
+			for (ProductBondEntry bond : rule.getProductBondEntries()){
+				if (bond.productComponent1.getMolecularTypeEntry().getParticipantEntry() == participant){
+					if(bond.productComponent1 == null || bond.productComponent2 == null) {
+						throw new RuntimeException("Bond site(s) are null when trying to build the bond map.");
+					}
+					bondSiteMap.put(RuleAnalysis.getID(bond.productComponent1), RuleAnalysis.getID(bond.productComponent2));
+				}
+			}
+			SortedSet<String> keys = new TreeSet<String>(bondSiteMap.keySet());
+			for (String key : keys) { 
+				String value = bondSiteMap.get(key);
+				Element bondElement = new Element("Bond");
+				listOfBonds.addContent(bondElement);
+				bondElement.setAttribute("id",RuleAnalysis.getID(participant)+"_B"+(count+RuleAnalysis.INDEX_OFFSET));
+				bondElement.setAttribute("site1", key);
+				bondElement.setAttribute("site2", value);
+				bAnyBonds = true;
+				count++;
+			}
+		}
+		if (bAnyBonds){
+			root.addContent(listOfBonds);
+		}
+		return root;
+	}
+
 	private static boolean isFunction(String candidate, MathDescription mathDesc, SimulationSymbolTable simulationSymbolTable) throws SolverException {
 		
 		Element listOfParametersElement = new Element("ListOfFunctions");

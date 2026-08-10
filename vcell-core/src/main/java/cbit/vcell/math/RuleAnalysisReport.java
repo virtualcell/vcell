@@ -1,4 +1,10 @@
-package org.vcell.model.rbm;
+package cbit.vcell.math;
+
+import cbit.vcell.math.RuleAnalysis.MolecularComponentEntry;
+import cbit.vcell.math.RuleAnalysis.MolecularTypeEntry;
+import cbit.vcell.math.RuleAnalysis.ParticipantEntry;
+import cbit.vcell.math.RuleAnalysis.ReactantBondEntry;
+import cbit.vcell.math.RuleAnalysis.ProductBondEntry;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -7,9 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.vcell.model.rbm.RuleAnalysis.MolecularComponentEntry;
-import org.vcell.model.rbm.RuleAnalysis.MolecularTypeEntry;
-import org.vcell.model.rbm.RuleAnalysis.ReactantBondEntry;
 
 public class RuleAnalysisReport {
 	public static abstract class Operation {
