@@ -5,15 +5,16 @@
 // runs golden-test.html in headless Chrome, and asserts the client output matches the golden.
 // Exits 0 on pass, 1 on failure/regression.
 //
-// Required:
-//   BUNDLE_TARGZ   path to the vtk.wasm bundle (vcell-vtk-wasm-*.tar.gz from the
-//                  "Build custom VTK.wasm bundle" GitHub Actions artifact, or a local build)
-// Optional:
+// By default it downloads the pinned vcell-vtk-wasm release bundle (the artifact webapp-ng
+// consumes) and validates that. Env:
+//   BUNDLE_TAG      release tag to fetch from virtualcell/vcell-vtk-wasm (default: v1.2.0)
+//   BUNDLE_TARGZ    use a local bundle .tar.gz instead of downloading (overrides BUNDLE_TAG)
 //   CHROME          Chrome/Chromium executable (default: macOS Google Chrome)
 //   PUPPETEER_CORE  path to a puppeteer-core ESM entry (default: webapp-ng/node_modules)
 //   TOL             max allowed max-deviation vs golden (default 1e-6; reference is bit-exact = 0)
 import http from 'node:http';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
@@ -24,12 +25,27 @@ const TOL = Number(process.env.TOL ?? 1e-6);
 const CHROME = process.env.CHROME ?? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 const PUP = process.env.PUPPETEER_CORE
   ?? path.join(REPO, 'webapp-ng/node_modules/puppeteer-core/lib/esm/puppeteer/puppeteer-core.js');
-const BUNDLE = process.env.BUNDLE_TARGZ;
+const RELEASE_TAG = process.env.BUNDLE_TAG ?? 'v1.2.0';
+const RELEASE_URL =
+  `https://github.com/virtualcell/vcell-vtk-wasm/releases/download/${RELEASE_TAG}/vcell-vtk-wasm32-emscripten.tar.gz`;
 
-if (!BUNDLE || !fs.existsSync(BUNDLE)) {
-  console.error('ERROR: set BUNDLE_TARGZ to the vtk.wasm bundle .tar.gz (see header).');
-  process.exit(2);
+// Bundle: a local BUNDLE_TARGZ if given, otherwise download the pinned vcell-vtk-wasm release
+// (the artifact webapp-ng actually consumes) and validate that.
+let BUNDLE = process.env.BUNDLE_TARGZ;
+if (!BUNDLE) {
+  BUNDLE = path.join(os.tmpdir(), `vcell-vtk-wasm-${RELEASE_TAG}.tar.gz`);
+  if (!fs.existsSync(BUNDLE)) {
+    console.log(`downloading released bundle ${RELEASE_TAG} …`);
+    const r = await fetch(RELEASE_URL);
+    if (!r.ok) {
+      console.error(`ERROR: could not download the bundle (HTTP ${r.status}) from\n  ${RELEASE_URL}\n` +
+        `  Is the ${RELEASE_TAG} release published? Override with BUNDLE_TAG=<tag> or BUNDLE_TARGZ=<local .tar.gz>.`);
+      process.exit(2);
+    }
+    fs.writeFileSync(BUNDLE, Buffer.from(await r.arrayBuffer()));
+  }
 }
+if (!fs.existsSync(BUNDLE)) { console.error('ERROR: bundle not found: ' + BUNDLE); process.exit(2); }
 const { default: puppeteer } = await import(pathToFileURL(PUP).href);
 
 const MIME = { '.html':'text/html', '.js':'text/javascript', '.mjs':'text/javascript',
