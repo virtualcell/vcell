@@ -31,9 +31,16 @@ import cbit.vcell.message.SimpleMessagingDelegate;
 import cbit.vcell.message.VCMessage;
 import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCQueueConsumer;
+import cbit.vcell.message.VCRpcMessageHandler;
+import cbit.vcell.message.VCRpcRequest;
 import cbit.vcell.message.VCTopicConsumer;
 import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.VCellTopic;
+
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+
+import cbit.vcell.resource.PropertyLoader;
 
 /**
  * Exercises {@link VCMessagingServiceArtemis} against a real Artemis broker in a container —
@@ -214,6 +221,50 @@ public class VCMessagingServiceArtemisTest {
 		} finally {
 			producer.close();
 			plain.close();
+		}
+	}
+
+	/**
+	 * The highest-risk item on the migration list, and until now untested either way
+	 * (`docs/MESSAGING.md` §7.1): the RPC pattern round-trips a temporary reply queue through a
+	 * *string* — `getReplyTo()` returns its name and `sendQueueMessage()` turns that name back
+	 * into a destination. That works on Classic only because the client special-cases names
+	 * beginning with {@code ID:}. It is a property of the client/broker pairing, not of JMS, so
+	 * whether it survives against Artemis is a question the code cannot answer by inspection.
+	 *
+	 * It does survive, with the OpenWire client — Artemis emulates OpenWire temp destinations.
+	 * This says nothing about an AMQP or Artemis-core client, where the reply address is modelled
+	 * differently; that remains the open risk.
+	 */
+	@Test
+	public void rpcRoundTripSurvivesTheTempQueueNameRoundTrip() throws Exception {
+		String previousBlobProperty = System.getProperty(PropertyLoader.jmsBlobMessageUseMongo);
+		System.setProperty(PropertyLoader.jmsBlobMessageUseMongo, "false");
+		VCellQueue rpcQueue = new VCellQueue("artemis.test.rpc");
+		VCRpcMessageHandler handler = new VCRpcMessageHandler(new EchoService(), rpcQueue);
+		VCQueueConsumer responder = new VCQueueConsumer(rpcQueue, handler, null, "echo responder", 1);
+		service.addMessageConsumer(responder);
+		VCMessageSession producer = service.createProducerSession();
+		try {
+			VCRpcRequest request = new VCRpcRequest(new User("testuser", new KeyValue("1")),
+					VCRpcRequest.RpcServiceType.TESTING_SERVICE, "echo", new Object[] { "hello" });
+			Object answer = producer.sendRpcMessage(rpcQueue, request, true, 30000L, null, null, null);
+			assertEquals("hello", answer,
+					"the reply must find its way back through a temp queue addressed by name");
+		} finally {
+			producer.close();
+			service.removeMessageConsumer(responder);
+			if (previousBlobProperty == null) {
+				System.clearProperty(PropertyLoader.jmsBlobMessageUseMongo);
+			} else {
+				System.setProperty(PropertyLoader.jmsBlobMessageUseMongo, previousBlobProperty);
+			}
+		}
+	}
+
+	public static class EchoService {
+		public String echo(String value) {
+			return value;
 		}
 	}
 
