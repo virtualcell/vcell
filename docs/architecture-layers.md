@@ -56,6 +56,18 @@ to the application that generated it**, even where names, structure and semantic
 The molecules, sites and bonds of a SpringSaLaD math description are math entities whose sole
 purpose is to drive the solver. They are *not* the biological entities they were generated from.
 
+### Corollary — everything the solver reads must be persisted
+
+**[stated]** If the solver consumes a value, the math description must persist it. A stored math that
+omits such a value is incomplete: reload it without regenerating from biology and it drives a
+different simulation.
+
+This settles cases that otherwise look like judgement calls. `is2D` is copied from
+`SpeciesContextSpec` and written into the `.lngv`, so it must survive both serialization paths -
+it was previously written to VCML but read back with `Boolean.getBoolean` (which reads a *system
+property*, not the token, so it was always `false`), and omitted from the XML path entirely although
+its tag was declared. Both are now fixed. Being derivable from biology is not a reason to omit it.
+
 ## P2 — Duplicate shared concepts into math; do not import them
 
 **[stated, by precedent]** Where the math layer needs a concept that also exists in biology,
@@ -136,6 +148,28 @@ but never reaches the solver — site colour — must be a difference for **iden
 never saved) and must *not* be a difference for **equivalent** (or a cosmetic edit discards the
 user's results).
 
+### Comparison is by exact class
+
+**[stated]** A subclass never compares equal to its plain parent: the guard is
+`getClass().equals(obj.getClass())`, not `instanceof`.
+
+With `instanceof` on the parent and a stricter test on the subclass, `plain.compareEqual(langevin)`
+was true while `langevin.compareEqual(plain)` was false - and since `Compare.isEqual(List,List)`
+only ever evaluates `v1[i].compareEqual(v2[i])`, list comparison silently depended on argument
+order. Beyond the asymmetry, a SpringSaLaD math and an NFSim math that happen to share molecule
+names are statements for different solvers and should not compare equal.
+
+Safe because the class is decided by the document: `ParticleMolecularTypeTag` reads back plain,
+`LangevinParticleMolecularTypeTag` reads back Langevin, so the type round-trips stably. There is no
+workflow in which an application changes mathematical framework between saves.
+
+### Structural relationships are compared as stored
+
+**[stated]** Internal links between sites are compared **directed** - `(A,B)` is not `(B,A)` - because
+springs are written to the solver input in stored order (`LINK: Site n ::: Site m`), and the
+orientation is preserved from the biological link through both serialization paths. Comparison is by
+site *name* rather than object identity, so set iteration order cannot manufacture a difference.
+
 ### Equivalence idioms actually used
 
 **[inferred]** Equivalence is not one mechanism. Four are in use, and they are chosen by what kind
@@ -172,8 +206,13 @@ Listed so they are not mistaken for precedent. Each is tracked as an explicit ex
 |---|---|
 | `MathRuleFactory` → `org.vcell.model.rbm.RuleAnalysis` and its `*Entry` interfaces | a genuinely shared contract with one adapter per layer (`ModelRuleFactory` / `MathRuleFactory`), whose interfaces are merely *declared* in a biological package. A package move, not a redesign. |
 | `MathRuleFactory` → `RbmUtils` | `RbmUtils` carries paired biological/math overloads for every BNGL conversion; roughly half of a 2191-line class in a biological package is really a math-side BNGL writer. |
-| `LangevinParticleMolecularComponent.writeType` / `.writeSite` | `.lngv` format written from inside math — violates P4, and is the only reason `cbit.vcell.math` imports `org.vcell.solver.*`. |
 | `SiteAttributesSpec.writeType`, `MolecularInternalLinkSpec.writeLink` | a parallel `.lngv` export from the **biological** layer; same violation on a different axis, and apparently a deliberate second export path. |
+
+`LangevinParticleMolecularComponent.writeType` / `.writeSite` were previously listed here: `.lngv`
+syntax emitted from inside math, and the only reason `cbit.vcell.math` imported `org.vcell.solver.*`.
+Both have moved to `LangevinLngvWriter`, and `MathNamespaceSeparationTest` now forbids
+`org.vcell.solver.*` in math as well as the biological packages, so the rule is enforced in both
+directions.
 
 ## See also
 

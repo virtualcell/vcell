@@ -3080,8 +3080,8 @@ private Element getXML(ParticleMolecularComponent param) {
 	
 	if(param instanceof LangevinParticleMolecularComponent) {
 		LangevinParticleMolecularComponent lParam = (LangevinParticleMolecularComponent)param;
-		e.setAttribute(XMLTags.ParticleMolecularComponentRadiusTag, Double.toString(lParam.getRadius()));
-		e.setAttribute(XMLTags.ParticleMolecularComponentDiffusionRateTag, Double.toString(lParam.getDiffusionRate()));
+		e.setAttribute(XMLTags.ParticleMolecularComponentRadiusTag, lParam.getRadius().infix());
+		e.setAttribute(XMLTags.ParticleMolecularComponentDiffusionRateTag, lParam.getDiffusionRate().infix());
 		if (lParam.getLocation()!=null) {
 			e.setAttribute(XMLTags.ParticleMolecularComponentLocationTag, lParam.getLocation().toString());
 		}

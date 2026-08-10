@@ -7983,17 +7983,27 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
         return var;
     }
 
-    private ParticleMolecularComponent getParticleMolecularComponent(String pmtName, Element param, boolean isLangevin){
+    private ParticleMolecularComponent getParticleMolecularComponent(String pmtName, Element param, boolean isLangevin) throws XmlParseException {
         String name = unMangle(param.getAttributeValue(XMLTags.NameAttrTag));
         ParticleMolecularComponent var;
         if(isLangevin){
             var = new LangevinParticleMolecularComponent(pmtName + "_" + name, name);
             if(param.getAttributeValue(XMLTags.ParticleMolecularComponentRadiusTag) != null){
-                double radius = Double.parseDouble(param.getAttributeValue(XMLTags.ParticleMolecularComponentRadiusTag));
+                Expression radius;
+                try {
+                    radius = new Expression(param.getAttributeValue(XMLTags.ParticleMolecularComponentRadiusTag));
+                } catch(ExpressionException e){
+                    throw new XmlParseException("unparseable " + XMLTags.ParticleMolecularComponentRadiusTag, e);
+                }
                 ((LangevinParticleMolecularComponent) var).setRadius(radius);
             }
             if(param.getAttributeValue(XMLTags.ParticleMolecularComponentDiffusionRateTag) != null){
-                double diff = Double.parseDouble(param.getAttributeValue(XMLTags.ParticleMolecularComponentDiffusionRateTag));
+                Expression diff;
+                try {
+                    diff = new Expression(param.getAttributeValue(XMLTags.ParticleMolecularComponentDiffusionRateTag));
+                } catch(ExpressionException e){
+                    throw new XmlParseException("unparseable " + XMLTags.ParticleMolecularComponentDiffusionRateTag, e);
+                }
                 ((LangevinParticleMolecularComponent) var).setDiffusionRate(diff);
             }
             if(param.getAttributeValue(XMLTags.ParticleMolecularComponentLocationTag) != null){
@@ -8034,7 +8044,7 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
         return var;
     }
 
-    private ParticleMolecularType getParticleMolecularType(Element param, boolean isLangevin){
+    private ParticleMolecularType getParticleMolecularType(Element param, boolean isLangevin) throws XmlParseException {
         String name = unMangle(param.getAttributeValue(XMLTags.NameAttrTag));
         ParticleMolecularType var;
         if(isLangevin){

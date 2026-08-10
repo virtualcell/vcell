@@ -31,8 +31,8 @@ public class LangevinCompareEqualTest {
 
 	private static LangevinParticleMolecularComponent component(String name) {
 		final LangevinParticleMolecularComponent component = new LangevinParticleMolecularComponent("mt_" + name, name);
-		component.setRadius(1.0);
-		component.setDiffusionRate(2.0);
+		component.setRadius(new cbit.vcell.parser.Expression(1.0));
+		component.setDiffusionRate(new cbit.vcell.parser.Expression(2.0));
 		component.setLocation("Intracellular");
 		component.setCoordinate(new Coordinate(1, 2, 3));
 		component.setColor(Colors.RED);
@@ -63,14 +63,14 @@ public class LangevinCompareEqualTest {
 	@Test
 	public void componentRadiusIsCompared() {
 		final LangevinParticleMolecularComponent changed = component("s0");
-		changed.setRadius(9.0);
+		changed.setRadius(new cbit.vcell.parser.Expression(9.0));
 		assertFalse(component("s0").compareEqual(changed), "a different radius must be detected");
 	}
 
 	@Test
 	public void componentDiffusionRateIsCompared() {
 		final LangevinParticleMolecularComponent changed = component("s0");
-		changed.setDiffusionRate(9.0);
+		changed.setDiffusionRate(new cbit.vcell.parser.Expression(9.0));
 		assertFalse(component("s0").compareEqual(changed), "a different diffusion rate must be detected");
 	}
 

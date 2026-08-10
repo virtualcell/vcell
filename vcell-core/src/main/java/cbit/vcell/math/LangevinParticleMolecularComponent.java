@@ -6,6 +6,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.vcell.util.CommentStringTokenizer;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.ExpressionUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Coordinate;
 import org.vcell.util.Matchable;
@@ -16,8 +19,9 @@ import org.vcell.util.springsalad.NamedColor;
 @SuppressWarnings("serial")
 public class LangevinParticleMolecularComponent extends ParticleMolecularComponent {
 
-	private double fieldRadius = 1.0;
-	private double fieldDiffusionRate = 1.0;
+	/** An {@link Expression}, like every scalar in a math description - see docs/architecture-layers.md P3. */
+	private Expression fieldRadius = new Expression(1.0);
+	private Expression fieldDiffusionRate = new Expression(1.0);
 	private String fieldLocation = null;		// feature or membrane name, identical to subdomain name
 	private Coordinate fieldCoordinate = new Coordinate(0,0,0);	// double x,y,z; has distanceTo()
 	private NamedColor fieldColor = Colors.RED;
@@ -43,10 +47,10 @@ public class LangevinParticleMolecularComponent extends ParticleMolecularCompone
 
 		// Exact comparison: this is the "identical" tier. Tolerance belongs to the equivalence tier,
 		// as it does for expressions (ExpressionUtils.functionallyEquivalent).
-		if(Double.compare(fieldRadius, other.fieldRadius) != 0) {
+		if(!Compare.isEqualOrNull(fieldRadius, other.fieldRadius, new ExpressionUtils.ExpressionEquivalencePredicate())) {
 			return false;
 		}
-		if(Double.compare(fieldDiffusionRate, other.fieldDiffusionRate) != 0) {
+		if(!Compare.isEqualOrNull(fieldDiffusionRate, other.fieldDiffusionRate, new ExpressionUtils.ExpressionEquivalencePredicate())) {
 			return false;
 		}
 		if(!Compare.isEqualOrNull(fieldLocation, other.fieldLocation)) {
@@ -68,8 +72,8 @@ public class LangevinParticleMolecularComponent extends ParticleMolecularCompone
 	public String getVCML() {
 		StringBuffer buffer = new StringBuffer();
 		buffer.append("    "+VCML.ParticleMolecularComponent + " " + getName()+" { ");
-		buffer.append("\n            "+VCML.ParticleComponentRadius + " " + fieldRadius + "");
-		buffer.append("\n            "+VCML.ParticleComponentDiffusionRate + " " + fieldDiffusionRate + "");
+		buffer.append("\n            "+VCML.ParticleComponentRadius + " " + fieldRadius.infix() + "");
+		buffer.append("\n            "+VCML.ParticleComponentDiffusionRate + " " + fieldDiffusionRate.infix() + "");
 		buffer.append("\n            "+VCML.ParticleComponentLocation + " " + fieldLocation + "");
 		buffer.append("\n            "+VCML.ParticleComponentCoordinate + " " + fieldCoordinate + "");
 		buffer.append("\n            "+VCML.ParticleComponentColor + " " + fieldColor + "");
@@ -106,14 +110,20 @@ public class LangevinParticleMolecularComponent extends ParticleMolecularCompone
 			}
 			if(token.equalsIgnoreCase(VCML.ParticleComponentRadius)) {
 				token = tokens.nextToken();
-				Double radius = Double.parseDouble(token);
-				setRadius(radius);
+				try {
+					setRadius(new Expression(token));
+				} catch(ExpressionException e) {
+					throw new MathFormatException("unparseable " + VCML.ParticleComponentRadius + " '" + token + "': " + e.getMessage());
+				}
 				continue;
 			}
 			if(token.equalsIgnoreCase(VCML.ParticleComponentDiffusionRate)) {
 				token = tokens.nextToken();
-				Double dr = Double.parseDouble(token);
-				setDiffusionRate(dr);
+				try {
+					setDiffusionRate(new Expression(token));
+				} catch(ExpressionException e) {
+					throw new MathFormatException("unparseable " + VCML.ParticleComponentDiffusionRate + " '" + token + "': " + e.getMessage());
+				}
 				continue;
 			}
 			if(token.equalsIgnoreCase(VCML.ParticleComponentLocation)) {
@@ -147,16 +157,16 @@ public class LangevinParticleMolecularComponent extends ParticleMolecularCompone
 	}
 	
 	
-	public double getRadius() {
+	public Expression getRadius() {
 		return fieldRadius;
 	}
-	public void setRadius(double fieldRadius) {
+	public void setRadius(Expression fieldRadius) {
 		this.fieldRadius = fieldRadius;
 	}
-	public double getDiffusionRate() {
+	public Expression getDiffusionRate() {
 		return fieldDiffusionRate;
 	}
-	public void setDiffusionRate(double fieldDiffusionRate) {
+	public void setDiffusionRate(Expression fieldDiffusionRate) {
 		this.fieldDiffusionRate = fieldDiffusionRate;
 	}
 	public String getLocation() {

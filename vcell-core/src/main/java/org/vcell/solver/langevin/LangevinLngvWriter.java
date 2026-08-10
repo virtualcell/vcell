@@ -99,10 +99,10 @@ public class LangevinLngvWriter {
 	 * description must be describable without knowing how any particular solver reads it. See
 	 * docs/architecture-layers.md, P4.
 	 */
-	private static void writeType(StringBuilder sb, LangevinParticleMolecularComponent component) {
+	private static void writeType(StringBuilder sb, LangevinParticleMolecularComponent component) throws SolverException {
 		sb.append("TYPE: Name \"" + component.getName() + "\"");
-		sb.append(" Radius " + IOHelp.DF[5].format(component.getRadius())
-				+ " D " + IOHelp.DF[3].format(component.getDiffusionRate())
+		sb.append(" Radius " + IOHelp.DF[5].format(evaluateForSolver(component.getRadius(), "Radius", component.getName()))
+				+ " D " + IOHelp.DF[3].format(evaluateForSolver(component.getDiffusionRate(), "D", component.getName()))
 				+ " Color " + component.getColor().getName());
 		sb.append(" STATES ");
 		if(component.getComponentStateDefinitions() == null || component.getComponentStateDefinitions().size() == 0) {
@@ -116,7 +116,7 @@ public class LangevinLngvWriter {
 	}
 
 	/** Write the .lngv SITE block for a site. @see #writeType(StringBuilder, LangevinParticleMolecularComponent) */
-	private static void writeSite(StringBuilder sb, LangevinParticleMolecularComponent component, int index, String initialState) {
+	private static void writeSite(StringBuilder sb, LangevinParticleMolecularComponent component, int index, String initialState) throws SolverException {
 		sb.append("SITE " + index +
 				" : " + component.getLocation() + " : Initial State '" + initialState + "'");
 		sb.append("\n");
@@ -918,7 +918,7 @@ public class LangevinLngvWriter {
 		}
 	}
 	
-	private void writeSpeciesInfo(StringBuilder sb) {
+	private void writeSpeciesInfo(StringBuilder sb) throws SolverException {
 		structuralSiteSet.clear();		// we will populate this map as we write the species info, and then use it
 										// to exclude them from tracking
 		for( Map.Entry<ParticleProperties, SubDomain> entry : particlePropertiesMap.entrySet()) {

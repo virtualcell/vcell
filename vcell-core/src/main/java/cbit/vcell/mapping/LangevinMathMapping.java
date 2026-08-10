@@ -1174,8 +1174,8 @@ protected LangevinMathMapping(SimulationContext simContext, MathMappingCallback 
 					particleMolecularComponent.setColor(sas.getColor());
 					particleMolecularComponent.setLocation(sas.getLocation().getName());
 					particleMolecularComponent.setCoordinate(sas.getCoordinate());
-					particleMolecularComponent.setRadius(sas.getRadius());
-					particleMolecularComponent.setDiffusionRate(sas.getDiffusionRate());
+					particleMolecularComponent.setRadius(new Expression(sas.getRadius()));
+					particleMolecularComponent.setDiffusionRate(new Expression(sas.getDiffusionRate()));
 					mcpToLpmc.put(mcp, particleMolecularComponent);
 				}
 				particleMolecularType.addMolecularComponent(particleMolecularComponent);
@@ -1192,8 +1192,8 @@ protected LangevinMathMapping(SimulationContext simContext, MathMappingCallback 
 					particleMolecularComponent.setColor(sas.getColor());
 					particleMolecularComponent.setLocation(sas.getLocation().getName());
 					particleMolecularComponent.setCoordinate(sas.getCoordinate());
-					particleMolecularComponent.setRadius(sas.getRadius());
-					particleMolecularComponent.setDiffusionRate(sas.getDiffusionRate());
+					particleMolecularComponent.setRadius(new Expression(sas.getRadius()));
+					particleMolecularComponent.setDiffusionRate(new Expression(sas.getDiffusionRate()));
 					mcpToLpmc.put(structuralSite, particleMolecularComponent);
 					particleMolecularType.addMolecularComponent(particleMolecularComponent);
 					siteIndex++;

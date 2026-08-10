@@ -129,7 +129,9 @@ public class SpringSaLaDMathCompareRegressionTest {
 			}
 		}
 		assertNotNull(site, resource + ": expected at least one Langevin site");
-		site.setRadius(site.getRadius() + 1.0);
+		// a genuinely different value, not merely a different expression for the same number - the
+		// comparison is by functional equivalence, so 'r' and 'r + 0' would compare equal
+		site.setRadius(cbit.vcell.parser.Expression.add(site.getRadius(), new cbit.vcell.parser.Expression(1.0)));
 
 		assertTrue(!model.getMathDescription().compareEqual(mutated.getMathDescription()),
 				resource + ": a changed site radius was not detected");
