@@ -127,10 +127,34 @@ public class MessageProducerSessionJms implements VCMessageSession {
      */
     private Session openSessionForSend() throws VCMessagingException{
         try {
-            return getSession();
+            // A session of this call's own, for the same reason sendRpcMessage uses one:
+            // javax.jms.Session is not thread-safe, and a producer session is routinely shared
+            // across threads -- VCPooledQueueConsumer hands one to every worker thread in
+            // SimDataServer, DatabaseServer and HtcSimulationWorker. createProducer/send/commit
+            // on one shared session is the race that produced "Transaction TX:<id> has not been
+            // started" (#1845). Connection is thread-safe, so this costs no new connection.
+            //
+            // It also removes the reason a caller would create a whole producer session per
+            // event to stay safe: SimDataServer.dataJobMessage did exactly that, and each one
+            // opened its own connection -- 209 connections in one minute on the dev site for a
+            // single user's data session.
+            boolean bTransacted = true;
+            return getConnection().createSession(bTransacted, Session.AUTO_ACKNOWLEDGE);
         } catch(JMSException e){
             onException(e);
             throw new VCMessagingException("unable to open JMS session: " + e.getMessage(), e);
+        }
+    }
+
+    /** Closes a per-send session; failure to close must not mask a send failure. */
+    private void closeSessionAfterSend(Session sendSession){
+        if(sendSession == null){
+            return;
+        }
+        try {
+            sendSession.close();
+        } catch(JMSException e){
+            lg.error("failed to close per-send JMS session: " + e.getMessage(), e);
         }
     }
 
@@ -254,6 +278,7 @@ public class MessageProducerSessionJms implements VCMessageSession {
             Session jmsSession = openSessionForSend();
             MessageProducer messageProducer = null;
             try {
+                // jmsSession is this call's own session -- see openSessionForSend()
                 Destination destination = jmsSession.createQueue(queue.getName());
                 messageProducer = jmsSession.createProducer(destination);
                 if(persistent == null || persistent.booleanValue()){
@@ -279,6 +304,7 @@ public class MessageProducerSessionJms implements VCMessageSession {
                         lg.error(e.getMessage(), e);
                     }
                 }
+                closeSessionAfterSend(jmsSession);
             }
         } else {
             throw new RuntimeException("expected JMS message for JMS message service");
@@ -315,6 +341,7 @@ public class MessageProducerSessionJms implements VCMessageSession {
                         lg.error(e.getMessage(), e);
                     }
                 }
+                closeSessionAfterSend(jmsSession);
             }
         } else {
             throw new RuntimeException("must send a JMS message to a JMS messaging service");

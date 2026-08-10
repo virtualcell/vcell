@@ -117,15 +117,21 @@ public void init(SimDataServiceType serviceType) throws Exception {
 	vcMessagingService_int.addMessageConsumer(rpcConsumer);
 }
 
+/**
+ * Data and export events are published on {@link #sharedProducerSession} rather than on a
+ * producer session created per event. Each of those cost a whole JMS connection --
+ * createProducerSession() opens eagerly -- which on the dev site meant 209 connections in one
+ * minute for a single user's data session. Sends now take a session of their own from the
+ * shared connection (see MessageProducerSessionJms.openSessionForSend), so reusing this
+ * session is safe from the pooled consumer's worker threads.
+ */
 public void dataJobMessage(cbit.rmi.event.DataJobEvent event) {
 	try {
-		VCMessageSession dataSession = vcMessagingService_int.createProducerSession();
-		VCMessage dataEventMessage = dataSession.createObjectMessage(event);
+		VCMessage dataEventMessage = sharedProducerSession.createObjectMessage(event);
 		dataEventMessage.setStringProperty(VCMessagingConstants.MESSAGE_TYPE_PROPERTY, MessageConstants.MESSAGE_TYPE_DATA_EVENT_VALUE);
 		dataEventMessage.setStringProperty(VCMessagingConstants.USERNAME_PROPERTY, event.getUser().getName());
-		
-		dataSession.sendTopicMessage(VCellTopic.ClientStatusTopic, dataEventMessage);
-		dataSession.close();
+
+		sharedProducerSession.sendTopicMessage(VCellTopic.ClientStatusTopic, dataEventMessage);
 	} catch (VCMessagingException ex) {
 		lg.error(ex.getMessage(), ex);
 	}
@@ -133,13 +139,11 @@ public void dataJobMessage(cbit.rmi.event.DataJobEvent event) {
 
 public void exportMessage(cbit.rmi.event.ExportEvent event) {
 	try {
-		VCMessageSession dataSession = vcMessagingService_int.createProducerSession();
-		VCMessage exportEventMessage = dataSession.createObjectMessage(event);
+		VCMessage exportEventMessage = sharedProducerSession.createObjectMessage(event);
 		exportEventMessage.setStringProperty(VCMessagingConstants.MESSAGE_TYPE_PROPERTY, MessageConstants.MESSAGE_TYPE_EXPORT_EVENT_VALUE);
 		exportEventMessage.setStringProperty(VCMessagingConstants.USERNAME_PROPERTY, event.getUser().getName());
-		
-		dataSession.sendTopicMessage(VCellTopic.ClientStatusTopic, exportEventMessage);
-		dataSession.close();
+
+		sharedProducerSession.sendTopicMessage(VCellTopic.ClientStatusTopic, exportEventMessage);
 	} catch (VCMessagingException ex) {
 		lg.error(ex.getMessage(), ex);
 	}

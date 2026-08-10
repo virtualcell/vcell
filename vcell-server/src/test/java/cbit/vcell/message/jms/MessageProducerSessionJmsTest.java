@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
@@ -533,6 +534,104 @@ public class MessageProducerSessionJmsTest {
 				connection.close();
 			} catch (JMSException ignored) {
 			}
+		}
+	}
+
+	/**
+	 * The property SimDataServer now depends on: a producer session reused for many sends costs
+	 * ONE connection, however many messages go through it.
+	 *
+	 * It used to build a producer session per data event instead, and the contrast measured here
+	 * is why that mattered -- createProducerSession() opens eagerly, so each event cost a whole
+	 * connection. On the dev site that was 209 connections in one minute for a single user
+	 * browsing simulation data.
+	 */
+	@Test
+	public void manySendsOnOneProducerSessionCostOneConnection() throws Exception {
+		VCellTopic topic = new VCellTopic("MessageProducerSessionJmsTestReuseTopic");
+		int before = service.connectionsOpened.get();
+		MessageProducerSessionJms shared = new MessageProducerSessionJms(service);
+		try {
+			for (int i = 0; i < 25; i++) {
+				shared.sendTopicMessage(topic, shared.createTextMessage("event-" + i));
+			}
+			assertEquals(before + 1, service.connectionsOpened.get(),
+					"25 sends through one producer session must open exactly one connection");
+		} finally {
+			shared.close();
+		}
+
+		// the pattern it replaced, for contrast: a producer session per event
+		int beforePerEvent = service.connectionsOpened.get();
+		for (int i = 0; i < 5; i++) {
+			VCMessageSession perEvent = service.createProducerSession();
+			perEvent.sendTopicMessage(topic, perEvent.createTextMessage("per-event-" + i));
+			perEvent.close();
+		}
+		assertEquals(beforePerEvent + 5, service.connectionsOpened.get(),
+				"a producer session per event costs a connection per event -- this is what was fixed");
+	}
+
+	/**
+	 * A producer session is shared across threads by design -- VCPooledQueueConsumer hands one to
+	 * every worker thread in SimDataServer, DatabaseServer and HtcSimulationWorker -- so its send
+	 * path must tolerate that. javax.jms.Session does not: concurrent createProducer/send/commit
+	 * on one session is what produced "Transaction 'TX:<id>' has not been started" (#1845), and
+	 * the same shape applies to plain sends, not just RPC.
+	 *
+	 * Every message must arrive exactly once, and no send may fail.
+	 */
+	@Test
+	public void concurrentSendsOnOneSharedProducerSessionAllSucceed() throws Exception {
+		VCellQueue queue = new VCellQueue("MessageProducerSessionJmsTestConcurrentSend");
+		int threads = 8;
+		int perThread = 10;
+		MessageProducerSessionJms shared = new MessageProducerSessionJms(service);
+		ExecutorService pool = Executors.newFixedThreadPool(threads);
+		List<String> failures = Collections.synchronizedList(new ArrayList<>());
+		Set<String> delivered = Collections.synchronizedSet(new java.util.HashSet<>());
+		CountDownLatch allArrived = new CountDownLatch(threads * perThread);
+
+		VCQueueConsumer collector = new VCQueueConsumer(queue, (vcMessage, ignored) -> {
+			delivered.add(vcMessage.getTextContent());
+			allArrived.countDown();
+		}, null, "concurrent send collector", 1);
+		service.addMessageConsumer(collector);
+
+		try {
+			CountDownLatch startTogether = new CountDownLatch(1);
+			List<Future<?>> done = new ArrayList<>();
+			for (int t = 0; t < threads; t++) {
+				final int threadIndex = t;
+				done.add(pool.submit(() -> {
+					try {
+						startTogether.await();
+						for (int i = 0; i < perThread; i++) {
+							shared.sendQueueMessage(queue,
+									shared.createTextMessage("t" + threadIndex + "-m" + i),
+									Boolean.FALSE, 60000L);
+						}
+					} catch (Exception e) {
+						failures.add(e.toString());
+					}
+					return null;
+				}));
+			}
+			startTogether.countDown();
+			for (Future<?> f : done) {
+				f.get(90, TimeUnit.SECONDS);
+			}
+
+			assertTrue(failures.isEmpty(), "no concurrent send should fail, but got: " + failures);
+			assertTrue(allArrived.await(60, TimeUnit.SECONDS),
+					"every message must be delivered; missing " + allArrived.getCount()
+							+ " of " + (threads * perThread));
+			assertEquals(threads * perThread, delivered.size(),
+					"each message must arrive exactly once and unmangled");
+		} finally {
+			pool.shutdownNow();
+			service.removeMessageConsumer(collector);
+			shared.close();
 		}
 	}
 
