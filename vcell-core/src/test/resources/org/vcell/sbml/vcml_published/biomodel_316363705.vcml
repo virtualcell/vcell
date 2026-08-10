@@ -1,0 +1,778 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--This biomodel was generated in VCML Version Regenerated_baseline_a9d3049b8d-->
+<vcml xmlns="http://sourceforge.net/projects/vcell/vcml" Version="Regenerated_baseline_a9d3049b8d">
+  <BioModel Name="aaaaa_workaround">
+    <Annotation>cloned from 'Ribohop_plus_RNA_clustering' owned by user les
+cloned from 'ayse_VCell_mRNA_sim_with_ribo_state_transition_fixed_by_Dan' owned by user danv
+cloned from 'VCell_mRNA_sim_with_ribo_state_transition_fixed_by_Dan' owned by user ayseecer</Annotation>
+    <Model Name="model">
+      <Annotation>cloned from 'model' owned by user les
+cloned from 'model' owned by user danv
+cloned from 'model' owned by user ayseecer</Annotation>
+      <ModelParameters>
+        <Parameter Name="Globkf" Role="user defined" Unit="s-1.uM-1">1.0</Parameter>
+        <Parameter Name="Glbkr" Role="user defined" Unit="s-1">2.0</Parameter>
+        <Parameter Name="Global_rib_kf" Role="user defined" Unit="s-1.uM-1">80.0</Parameter>
+        <Parameter Name="Global_rib_kr" Role="user defined" Unit="s-1">25.0</Parameter>
+      </ModelParameters>
+      <Compound Name="s0" />
+      <Compound Name="s1" />
+      <Feature Name="Extracellular" KeyValue="316363594" />
+      <Feature Name="Intracellular" KeyValue="316363592" />
+      <Membrane MembraneVoltage="Voltage_Membrane" Name="Membrane" KeyValue="316363596" />
+      <LocalizedCompound Name="mRNA" CompoundRef="s0" Structure="Intracellular" OverrideName="true" KeyValue="316363598">
+        <SpeciesPattern>
+          <MolecularTypePattern Index="1">
+            <MolecularType Name="mRNA" />
+            <ComponentPattern MolecularComponent="Init" ComponentStatePattern="unbound" BondType="-" />
+            <ComponentPattern MolecularComponent="Ribo1" ComponentStatePattern="inactive" BondType="-" />
+            <ComponentPattern MolecularComponent="Homo1" BondType="-" />
+            <ComponentPattern MolecularComponent="Ribo2" ComponentStatePattern="Inactive" BondType="-" />
+            <ComponentPattern MolecularComponent="Homo2" BondType="-" />
+            <ComponentPattern MolecularComponent="Ribo3" ComponentStatePattern="Inactive" BondType="-" />
+            <ComponentPattern MolecularComponent="Homo3" BondType="-" />
+            <ComponentPattern MolecularComponent="Ribo4" ComponentStatePattern="Inactive" BondType="-" />
+            <ComponentPattern MolecularComponent="Homo4" BondType="-" />
+            <ComponentPattern MolecularComponent="Exit" ComponentStatePattern="Inactive" BondType="-" />
+          </MolecularTypePattern>
+        </SpeciesPattern>
+      </LocalizedCompound>
+      <LocalizedCompound Name="Ribo" CompoundRef="s1" Structure="Intracellular" OverrideName="true" KeyValue="316363599">
+        <SpeciesPattern>
+          <MolecularTypePattern Index="1">
+            <MolecularType Name="Ribo" />
+            <ComponentPattern MolecularComponent="Bind" ComponentStatePattern="init" BondType="-" />
+          </MolecularTypePattern>
+        </SpeciesPattern>
+      </LocalizedCompound>
+      <RbmModelContainer>
+        <MolecularTypeList>
+          <MolecularType Name="mRNA" AnchorAll="false">
+            <Anchor Structure="Intracellular" />
+            <MolecularComponent Name="Init" Index="1">
+              <AllowableState Name="unbound" />
+              <AllowableState Name="bound" />
+            </MolecularComponent>
+            <MolecularComponent Name="Ribo1" Index="2">
+              <AllowableState Name="inactive" />
+              <AllowableState Name="Active" />
+            </MolecularComponent>
+            <MolecularComponent Name="Homo1" Index="3" />
+            <MolecularComponent Name="Ribo2" Index="4">
+              <AllowableState Name="Inactive" />
+              <AllowableState Name="Active" />
+            </MolecularComponent>
+            <MolecularComponent Name="Homo2" Index="5" />
+            <MolecularComponent Name="Ribo3" Index="6">
+              <AllowableState Name="Inactive" />
+              <AllowableState Name="Active" />
+            </MolecularComponent>
+            <MolecularComponent Name="Homo3" Index="7" />
+            <MolecularComponent Name="Ribo4" Index="8">
+              <AllowableState Name="Inactive" />
+              <AllowableState Name="Active" />
+            </MolecularComponent>
+            <MolecularComponent Name="Homo4" Index="9" />
+            <MolecularComponent Name="Exit" Index="10">
+              <AllowableState Name="Inactive" />
+              <AllowableState Name="Active" />
+            </MolecularComponent>
+          </MolecularType>
+          <MolecularType Name="Ribo" AnchorAll="true">
+            <MolecularComponent Name="Bind" Index="1">
+              <AllowableState Name="init" />
+              <AllowableState Name="elong" />
+            </MolecularComponent>
+          </MolecularType>
+        </MolecularTypeList>
+        <ReactionRuleList>
+          <ReactionRule Name="rib_init" Structure="Intracellular" ReactionRuleLabel="rib_init" ReactionRuleReversible="true">
+            <ReactantPatternsList>
+              <ReactantPattern Structure="Intracellular">
+                <SpeciesPattern>
+                  <MolecularTypePattern Index="1">
+                    <MolecularType Name="Ribo" />
+                    <ComponentPattern MolecularComponent="Bind" ComponentStatePattern="init" BondType="-" />
+                  </MolecularTypePattern>
+                </SpeciesPattern>
+              </ReactantPattern>
+              <ReactantPattern Structure="Intracellular">
+                <SpeciesPattern>
+                  <MolecularTypePattern Index="1">
+                    <MolecularType Name="mRNA" />
+                    <ComponentPattern MolecularComponent="Init" ComponentStatePattern="unbound" BondType="-" />
+                    <ComponentPattern MolecularComponent="Ribo1" Any="true" BondType="?" />
+                    <ComponentPattern MolecularComponent="Homo1" BondType="?" />
+                    <ComponentPattern MolecularComponent="Ribo2" Any="true" BondType="?" />
+                    <ComponentPattern MolecularComponent="Homo2" BondType="?" />
+                    <ComponentPattern MolecularComponent="Ribo3" Any="true" BondType="?" />
+                    <ComponentPattern MolecularComponent="Homo3" BondType="?" />
+                    <ComponentPattern MolecularComponent="Ribo4" Any="true" BondType="?" />
+                    <ComponentPattern MolecularComponent="Homo4" BondType="?" />
+                    <ComponentPattern MolecularComponent="Exit" Any="true" BondType="?" />
+                  </MolecularTypePattern>
+                </SpeciesPattern>
+              </ReactantPattern>
+            </ReactantPatternsList>
+            <ProductPatternsList>
+              <ProductPattern Structure="Intracellular">
+                <SpeciesPattern>
+                  <MolecularTypePattern Index="1">
+                    <MolecularType Name="Ribo" />
+                    <ComponentPattern MolecularComponent="Bind" ComponentStatePattern="init" BondType="1">
+                      <Bond MolecularTypePattern="mRNA" ComponentPattern="Init" />
+                    </ComponentPattern>
+                  </MolecularTypePattern>
+                  <MolecularTypePattern Index="2">
+                    <MolecularType Name="mRNA" />
+                    <ComponentPattern MolecularComponent="Init" ComponentStatePattern="unbound" BondType="1">
+                      <Bond MolecularTypePattern="Ribo" ComponentPattern="Bind" />
+                    </ComponentPattern>
+                    <ComponentPattern MolecularComponent="Ribo1" Any="true" BondType="?" />
+                    <ComponentPattern MolecularComponent="Homo1" BondType="?" />
+                    <ComponentPattern MolecularComponent="Ribo2" Any="true" BondType="?" />
+                    <ComponentPattern MolecularComponent="Homo2" BondType="?" />
+                    <ComponentPattern MolecularComponent="Ribo3" Any="true" BondType="?" />
+                    <ComponentPattern MolecularComponent="Homo3" BondType="?" />
+                    <ComponentPattern MolecularComponent="Ribo4" Any="true" BondType="?" />
+                    <ComponentPattern MolecularComponent="Homo4" BondType="?" />
+                    <ComponentPattern MolecularComponent="Exit" Any="true" BondType="?" />
+                  </MolecularTypePattern>
+                </SpeciesPattern>
+              </ProductPattern>
+            </ProductPatternsList>
+            <Kinetics KineticsType="MassAction">
+              <Parameter Name="ruleRate" Role="RuleRate" Unit="uM.s-1" />
+              <Parameter Name="Kf" Role="MassActionKf" Unit="s-1.uM-1">30.0</Parameter>
+              <Parameter Name="Kr" Role="MassActionKr" Unit="s-1">10.0</Parameter>
+            </Kinetics>
+          </ReactionRule>
+          <ReactionRule Name="mark_init_bound" Structure="Intracellular" ReactionRuleLabel="mark_init_bound" ReactionRuleReversible="false">
+            <ReactantPatternsList>
+              <ReactantPattern Structure="Intracellular">
+                <SpeciesPattern>
+                  <MolecularTypePattern Index="1">
+                    <MolecularType Name="Ribo" />
+                    <ComponentPattern MolecularComponent="Bind" Any="true" BondType="1">
+                      <Bond MolecularTypePattern="mRNA" ComponentPattern="Init" />
+                    </ComponentPattern>
+                  </MolecularTypePattern>
+                  <MolecularTypePattern Index="2">
+                    <MolecularType Name="mRNA" />
+                    <ComponentPattern MolecularComponent="Init" ComponentStatePattern="unbound" BondType="1">
+                      <Bond MolecularTypePattern="Ribo" ComponentPattern="Bind" />
+                    </ComponentPattern>
+                    <ComponentPattern MolecularComponent="Ribo1" Any="true" BondType="?" />
+                    <ComponentPattern MolecularComponent="Homo1" BondType="?" />
+                    <ComponentPattern MolecularComponent="Ribo2" Any="true" BondType="?" />
+                    <ComponentPattern MolecularComponent="Homo2" BondType="?" />
+                    <ComponentPattern MolecularComponent="Ribo3" Any="true" BondType="?" />
+                    <ComponentPattern MolecularComponent="Homo3" BondType="?" />
+                    <ComponentPattern MolecularComponent="Ribo4" Any="true" BondType="?" />
+                    <ComponentPattern MolecularComponent="Homo4" BondType="?" />
+                    <ComponentPattern MolecularComponent="Exit" Any="true" BondType="?" />
+                  </MolecularTypePattern>
+                </SpeciesPattern>
+              </ReactantPattern>
+            </ReactantPatternsList>
+            <ProductPatternsList>
+              <ProductPattern Structure="Intracellular">
+                <SpeciesPattern>
+                  <MolecularTypePattern Index="1">
+                    <MolecularType Name="Ribo" />
+                    <ComponentPattern MolecularComponent="Bind" Any="true" BondType="1">
+                      <Bond MolecularTypePattern="mRNA" ComponentPattern="Init" />
+                    </ComponentPattern>
+                  </MolecularTypePattern>
+                  <MolecularTypePattern Index="2">
+                    <MolecularType Name="mRNA" />
+                    <ComponentPattern MolecularComponent="Init" ComponentStatePattern="bound" BondType="1">
+                      <Bond MolecularTypePattern="Ribo" ComponentPattern="Bind" />
+                    </ComponentPattern>
+                    <ComponentPattern MolecularComponent="Ribo1" Any="true" BondType="?" />
+                    <ComponentPattern MolecularComponent="Homo1" BondType="?" />
+                    <ComponentPattern MolecularComponent="Ribo2" Any="true" BondType="?" />
+                    <ComponentPattern MolecularComponent="Homo2" BondType="?" />
+                    <ComponentPattern MolecularComponent="Ribo3" Any="true" BondType="?" />
+                    <ComponentPattern MolecularComponent="Homo3" BondType="?" />
+                    <ComponentPattern MolecularComponent="Ribo4" Any="true" BondType="?" />
+                    <ComponentPattern MolecularComponent="Homo4" BondType="?" />
+                    <ComponentPattern MolecularComponent="Exit" Any="true" BondType="?" />
+                  </MolecularTypePattern>
+                </SpeciesPattern>
+              </ProductPattern>
+            </ProductPatternsList>
+            <Kinetics KineticsType="MassAction">
+              <Parameter Name="ruleRate" Role="RuleRate" Unit="uM.s-1" />
+              <Parameter Name="Kf" Role="MassActionKf" Unit="s-1">1000.0</Parameter>
+              <Parameter Name="Kr" Role="MassActionKr" Unit="s-1">0.0</Parameter>
+            </Kinetics>
+          </ReactionRule>
+          <ReactionRule Name="Ribo1ActEquivalent" Structure="Intracellular" ReactionRuleLabel="Ribo1ActEquivalent" ReactionRuleReversible="false">
+            <ReactantPatternsList>
+              <ReactantPattern Structure="Intracellular">
+                <SpeciesPattern>
+                  <MolecularTypePattern Index="1">
+                    <MolecularType Name="mRNA" />
+                    <ComponentPattern MolecularComponent="Init" ComponentStatePattern="bound" BondType="?" />
+                    <ComponentPattern MolecularComponent="Ribo1" ComponentStatePattern="inactive" BondType="?" />
+                    <ComponentPattern MolecularComponent="Homo1" BondType="?" />
+                    <ComponentPattern MolecularComponent="Ribo2" Any="true" BondType="?" />
+                    <ComponentPattern MolecularComponent="Homo2" BondType="?" />
+                    <ComponentPattern MolecularComponent="Ribo3" Any="true" BondType="?" />
+                    <ComponentPattern MolecularComponent="Homo3" BondType="?" />
+                    <ComponentPattern MolecularComponent="Ribo4" Any="true" BondType="?" />
+                    <ComponentPattern MolecularComponent="Homo4" BondType="?" />
+                    <ComponentPattern MolecularComponent="Exit" Any="true" BondType="?" />
+                  </MolecularTypePattern>
+                </SpeciesPattern>
+              </ReactantPattern>
+            </ReactantPatternsList>
+            <ProductPatternsList>
+              <ProductPattern Structure="Intracellular">
+                <SpeciesPattern>
+                  <MolecularTypePattern Index="1">
+                    <MolecularType Name="mRNA" />
+                    <ComponentPattern MolecularComponent="Init" ComponentStatePattern="bound" BondType="?" />
+                    <ComponentPattern MolecularComponent="Ribo1" ComponentStatePattern="Active" BondType="?" />
+                    <ComponentPattern MolecularComponent="Homo1" BondType="?" />
+                    <ComponentPattern MolecularComponent="Ribo2" Any="true" BondType="?" />
+                    <ComponentPattern MolecularComponent="Homo2" BondType="?" />
+                    <ComponentPattern MolecularComponent="Ribo3" Any="true" BondType="?" />
+                    <ComponentPattern MolecularComponent="Homo3" BondType="?" />
+                    <ComponentPattern MolecularComponent="Ribo4" Any="true" BondType="?" />
+                    <ComponentPattern MolecularComponent="Homo4" BondType="?" />
+                    <ComponentPattern MolecularComponent="Exit" Any="true" BondType="?" />
+                  </MolecularTypePattern>
+                </SpeciesPattern>
+              </ProductPattern>
+            </ProductPatternsList>
+            <Kinetics KineticsType="MassAction">
+              <Parameter Name="ruleRate" Role="RuleRate" Unit="uM.s-1" />
+              <Parameter Name="Kf" Role="MassActionKf" Unit="s-1">1000.0</Parameter>
+              <Parameter Name="Kr" Role="MassActionKr" Unit="s-1">0.0</Parameter>
+            </Kinetics>
+          </ReactionRule>
+        </ReactionRuleList>
+      </RbmModelContainer>
+      <Diagram Name="c1" Structure="Extracellular">
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r3_4" LocationX="101" LocationY="34" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="mRNA" LocationX="256" LocationY="128" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r2_4" LocationX="14" LocationY="244" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r3_1_int" LocationX="188" LocationY="104" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r2_3" LocationX="108" LocationY="95" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r3_3_int" LocationX="188" LocationY="71" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r1_2" LocationX="14" LocationY="168" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r1_4_int" LocationX="188" LocationY="160" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r4_1_int" LocationX="112" LocationY="142" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r2_4_int" LocationX="47" LocationY="244" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r4_3" LocationX="14" LocationY="120" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r1_2_int" LocationX="60" LocationY="134" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r4_2" LocationX="14" LocationY="197" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r2_1_int" LocationX="188" LocationY="188" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r2_2" LocationX="129" LocationY="244" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r3_2_int" LocationX="188" LocationY="34" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r3_1" LocationX="175" LocationY="34" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r2_3_int" LocationX="79" LocationY="244" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r3_2" LocationX="14" LocationY="225" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r4_2_int" LocationX="53" LocationY="34" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r1_3" LocationX="103" LocationY="244" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r4_1" LocationX="14" LocationY="34" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r3_4_int" LocationX="160" LocationY="244" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r4_3_int" LocationX="28" LocationY="34" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r4_4" LocationX="14" LocationY="142" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r1_1_int" LocationX="188" LocationY="244" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r1_1" LocationX="90" LocationY="136" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r1_3_int" LocationX="14" LocationY="63" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r2_2_int" LocationX="123" LocationY="34" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r1_4" LocationX="188" LocationY="219" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r3_3" LocationX="150" LocationY="34" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r2_1" LocationX="78" LocationY="34" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r4_4_int" LocationX="14" LocationY="92" />
+      </Diagram>
+      <Diagram Name="m0" Structure="Membrane">
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r3_4" LocationX="101" LocationY="34" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="mRNA" LocationX="256" LocationY="128" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r2_4" LocationX="14" LocationY="244" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r3_1_int" LocationX="188" LocationY="104" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r2_3" LocationX="108" LocationY="95" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r3_3_int" LocationX="188" LocationY="71" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r1_2" LocationX="14" LocationY="168" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r1_4_int" LocationX="188" LocationY="160" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r4_1_int" LocationX="112" LocationY="142" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r2_4_int" LocationX="47" LocationY="244" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r4_3" LocationX="14" LocationY="120" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r1_2_int" LocationX="60" LocationY="134" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r4_2" LocationX="14" LocationY="197" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r2_1_int" LocationX="188" LocationY="188" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r2_2" LocationX="129" LocationY="244" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r3_2_int" LocationX="188" LocationY="34" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r3_1" LocationX="175" LocationY="34" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r2_3_int" LocationX="79" LocationY="244" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r3_2" LocationX="14" LocationY="225" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r4_2_int" LocationX="53" LocationY="34" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r1_3" LocationX="103" LocationY="244" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r4_1" LocationX="14" LocationY="34" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r3_4_int" LocationX="160" LocationY="244" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r4_3_int" LocationX="28" LocationY="34" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r4_4" LocationX="14" LocationY="142" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r1_1_int" LocationX="188" LocationY="244" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r1_1" LocationX="90" LocationY="136" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r1_3_int" LocationX="14" LocationY="63" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r2_2_int" LocationX="123" LocationY="34" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r1_4" LocationX="188" LocationY="219" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r3_3" LocationX="150" LocationY="34" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r2_1" LocationX="78" LocationY="34" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r4_4_int" LocationX="14" LocationY="92" />
+      </Diagram>
+      <Diagram Name="c0" Structure="Intracellular">
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r3_4" LocationX="101" LocationY="34" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="mRNA" LocationX="256" LocationY="128" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r2_4" LocationX="14" LocationY="244" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r3_1_int" LocationX="188" LocationY="104" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r2_3" LocationX="108" LocationY="95" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r3_3_int" LocationX="188" LocationY="71" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r1_2" LocationX="14" LocationY="168" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r1_4_int" LocationX="188" LocationY="160" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r4_1_int" LocationX="112" LocationY="142" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r2_4_int" LocationX="47" LocationY="244" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r4_3" LocationX="14" LocationY="120" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r1_2_int" LocationX="60" LocationY="134" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r4_2" LocationX="14" LocationY="197" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r2_1_int" LocationX="188" LocationY="188" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r2_2" LocationX="129" LocationY="244" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r3_2_int" LocationX="188" LocationY="34" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r3_1" LocationX="175" LocationY="34" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r2_3_int" LocationX="79" LocationY="244" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r3_2" LocationX="14" LocationY="225" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r4_2_int" LocationX="53" LocationY="34" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r1_3" LocationX="103" LocationY="244" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r4_1" LocationX="14" LocationY="34" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r3_4_int" LocationX="160" LocationY="244" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r4_3_int" LocationX="28" LocationY="34" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r4_4" LocationX="14" LocationY="142" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r1_1_int" LocationX="188" LocationY="244" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r1_1" LocationX="90" LocationY="136" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r1_3_int" LocationX="14" LocationY="63" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r2_2_int" LocationX="123" LocationY="34" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r1_4" LocationX="188" LocationY="219" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r3_3" LocationX="150" LocationY="34" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r2_1" LocationX="78" LocationY="34" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r4_4_int" LocationX="14" LocationY="92" />
+      </Diagram>
+      <Version Name="model" KeyValue="316363588" BranchId="316353799" Archived="0" Date="15-Jun-2026 04:45:16" FromVersionable="false">
+        <Owner Name="danv" Identifier="26766043" />
+        <GroupAccess Type="1" />
+        <Annotation>cloned from 'model' owned by user les
+cloned from 'model' owned by user danv
+cloned from 'model' owned by user ayseecer</Annotation>
+      </Version>
+      <ModelUnitSystem VolumeSubstanceUnit="uM.um3" MembraneSubstanceUnit="molecules" LumpedReactionSubstanceUnit="molecules" VolumeUnit="um3" AreaUnit="um2" LengthUnit="um" TimeUnit="s" />
+    </Model>
+    <SimulationSpec Name="Application0" Stochastic="false" UseConcentration="true" SpringSaLaD="true" RuleBased="false" MassConservationModelReduction="false" InsufficientIterations="false" InsufficientMaxMolecules="false" CharacteristicSize="5.201580382836481E-4">
+      <NetworkConstraints RbmMaxIteration="1" RbmMaxMoleculesPerSpecies="10" RbmSpeciesLimit="800" RbmReactionsLimit="2500">
+        <MaxStoichiometry MolecularType="mRNA" Integer="100" />
+        <MaxStoichiometry MolecularType="Ribo" Integer="100" />
+      </NetworkConstraints>
+      <Annotation />
+      <Geometry Name="spatial1780478512" Dimension="3">
+        <Extent X="0.1" Y="0.1" Z="0.1" />
+        <Origin X="0.0" Y="0.0" Z="0.0" />
+        <SubVolume Name="Intracellular" Handle="0" Type="Analytical" KeyValue="316360847">
+          <AnalyticExpression>(z &lt; 0.09)</AnalyticExpression>
+        </SubVolume>
+        <SubVolume Name="Extracellular" Handle="1" Type="Analytical" KeyValue="316360848">
+          <AnalyticExpression>1.0</AnalyticExpression>
+        </SubVolume>
+        <SurfaceClass Name="Extracellular_Intracellular_membrane" SubVolume1Ref="Extracellular" SubVolume2Ref="Intracellular" KeyValue="316360849" />
+        <SurfaceDescription NumSamplesX="101" NumSamplesY="101" NumSamplesZ="101" CutoffFrequency="0.3">
+          <VolumeRegion Name="Intracellular0" RegionID="0" SubVolume="Intracellular" Size="8.949999999999999E-4" Unit="um3" />
+          <VolumeRegion Name="Extracellular1" RegionID="1" SubVolume="Extracellular" Size="1.0499999999999999E-4" Unit="um3" />
+          <MembraneRegion Name="membrane_Intracellular0_Extracellular1" VolumeRegion1="Extracellular1" VolumeRegion2="Intracellular0" Size="0.009999999999999827" Unit="um2" />
+        </SurfaceDescription>
+        <Version Name="spatial1780478512" KeyValue="316360843" BranchId="316360844" Archived="0" Date="15-Jun-2026 04:03:33" FromVersionable="false">
+          <Owner Name="danv" Identifier="26766043" />
+          <GroupAccess Type="1" />
+        </Version>
+      </Geometry>
+      <GeometryContext>
+        <FeatureMapping Feature="Extracellular" GeometryClass="Extracellular" SubVolume="Extracellular" Size="50000.0" VolumePerUnitVolume="1.0">
+          <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+        </FeatureMapping>
+        <FeatureMapping Feature="Intracellular" GeometryClass="Intracellular" SubVolume="Intracellular" Size="50000.0" VolumePerUnitVolume="1.0">
+          <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+        </FeatureMapping>
+        <MembraneMapping Membrane="Membrane" Size="6563.0" AreaPerUnitArea="1.0" CalculateVoltage="false" SpecificCapacitance="1.0" InitialVoltage="0.0" GeometryClass="Extracellular_Intracellular_membrane">
+          <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+        </MembraneMapping>
+      </GeometryContext>
+      <ReactionContext>
+        <LocalizedCompoundSpec LocalizedCompoundRef="mRNA" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>0.0</InitialConcentration>
+          <InternalLinkSpec MoleculeRef="mRNA" SiteOneRef="Init" SiteTwoRef="Ribo1" />
+          <InternalLinkSpec MoleculeRef="mRNA" SiteOneRef="Homo1" SiteTwoRef="Ribo1" />
+          <InternalLinkSpec MoleculeRef="mRNA" SiteOneRef="Homo1" SiteTwoRef="Ribo2" />
+          <InternalLinkSpec MoleculeRef="mRNA" SiteOneRef="Homo2" SiteTwoRef="Ribo2" />
+          <InternalLinkSpec MoleculeRef="mRNA" SiteOneRef="Homo2" SiteTwoRef="Ribo3" />
+          <InternalLinkSpec MoleculeRef="mRNA" SiteOneRef="Homo3" SiteTwoRef="Ribo3" />
+          <InternalLinkSpec MoleculeRef="mRNA" SiteOneRef="Homo3" SiteTwoRef="Ribo4" />
+          <InternalLinkSpec MoleculeRef="mRNA" SiteOneRef="Homo4" SiteTwoRef="Ribo4" />
+          <InternalLinkSpec MoleculeRef="mRNA" SiteOneRef="Exit" SiteTwoRef="Homo4" />
+          <SiteAttributesSpec SiteRef="Init" MoleculeRef="mRNA" SiteLocationRef="Intracellular" SiteCoordX="0.0" SiteCoordY="4.0" SiteCoordZ="4.0" SiteRadius="1.0" SiteDiffusion="1.0" SiteColor="DARK_GRAY" />
+          <SiteAttributesSpec SiteRef="Ribo1" MoleculeRef="mRNA" SiteLocationRef="Intracellular" SiteCoordX="0.0" SiteCoordY="4.0" SiteCoordZ="8.0" SiteRadius="1.0" SiteDiffusion="1.0" SiteColor="BLUE" />
+          <SiteAttributesSpec SiteRef="Homo1" MoleculeRef="mRNA" SiteLocationRef="Intracellular" SiteCoordX="0.0" SiteCoordY="4.0" SiteCoordZ="12.0" SiteRadius="1.0" SiteDiffusion="1.0" SiteColor="LIME" />
+          <SiteAttributesSpec SiteRef="Ribo2" MoleculeRef="mRNA" SiteLocationRef="Intracellular" SiteCoordX="0.0" SiteCoordY="4.0" SiteCoordZ="16.0" SiteRadius="1.0" SiteDiffusion="1.0" SiteColor="ORANGE" />
+          <SiteAttributesSpec SiteRef="Homo2" MoleculeRef="mRNA" SiteLocationRef="Intracellular" SiteCoordX="0.0" SiteCoordY="4.0" SiteCoordZ="20.0" SiteRadius="1.0" SiteDiffusion="1.0" SiteColor="CYAN" />
+          <SiteAttributesSpec SiteRef="Ribo3" MoleculeRef="mRNA" SiteLocationRef="Intracellular" SiteCoordX="0.0" SiteCoordY="4.0" SiteCoordZ="24.0" SiteRadius="1.0" SiteDiffusion="1.0" SiteColor="MAGENTA" />
+          <SiteAttributesSpec SiteRef="Homo3" MoleculeRef="mRNA" SiteLocationRef="Intracellular" SiteCoordX="0.0" SiteCoordY="4.0" SiteCoordZ="28.0" SiteRadius="1.0" SiteDiffusion="1.0" SiteColor="PINK" />
+          <SiteAttributesSpec SiteRef="Ribo4" MoleculeRef="mRNA" SiteLocationRef="Intracellular" SiteCoordX="0.0" SiteCoordY="4.0" SiteCoordZ="32.0" SiteRadius="1.0" SiteDiffusion="1.0" SiteColor="YELLOW" />
+          <SiteAttributesSpec SiteRef="Homo4" MoleculeRef="mRNA" SiteLocationRef="Intracellular" SiteCoordX="0.0" SiteCoordY="4.0" SiteCoordZ="36.0" SiteRadius="1.0" SiteDiffusion="1.0" SiteColor="GRAY" />
+          <SiteAttributesSpec SiteRef="Exit" MoleculeRef="mRNA" SiteLocationRef="Intracellular" SiteCoordX="0.0" SiteCoordY="4.0" SiteCoordZ="40.0" SiteRadius="1.0" SiteDiffusion="1.0" SiteColor="PURPLE" />
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="Ribo" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>0.0</InitialConcentration>
+          <SiteAttributesSpec SiteRef="Bind" MoleculeRef="Ribo" SiteLocationRef="Intracellular" SiteCoordX="0.0" SiteCoordY="4.0" SiteCoordZ="4.0" SiteRadius="1.0" SiteDiffusion="1.0" SiteColor="DARK_GRAY" />
+        </LocalizedCompoundSpec>
+        <ReactionRuleSpecs>
+          <ReactionRuleSpec ReactionRuleRef="rib_init" ReactionRuleMapping="included" SubType="Binding" BondLength="1.0" />
+          <ReactionRuleSpec ReactionRuleRef="mark_init_bound" ReactionRuleMapping="included" SubType="Transition" TransitionCondition="Bound" />
+          <ReactionRuleSpec ReactionRuleRef="Ribo1ActEquivalent" ReactionRuleMapping="included" SubType="Allosteric" />
+        </ReactionRuleSpecs>
+      </ReactionContext>
+      <MathDescription Name="Application0_generated">
+        <LangevinParticleMolecularType Name="mRNA">
+          <Link One="Init" Two="Ribo1" />
+          <Link One="Homo1" Two="Ribo1" />
+          <Link One="Homo1" Two="Ribo2" />
+          <Link One="Homo2" Two="Ribo2" />
+          <Link One="Homo2" Two="Ribo3" />
+          <Link One="Homo3" Two="Ribo3" />
+          <Link One="Homo3" Two="Ribo4" />
+          <Link One="Homo4" Two="Ribo4" />
+          <Link One="Exit" Two="Homo4" />
+          <Component Name="Init" Radius="1.0" DiffusionRate="1.0" Location="Intracellular" SiteCoordX="0.0" SiteCoordY="4.0" SiteCoordZ="4.0" NamedColor="DARK_GRAY">
+            <AllowableState Name="unbound" />
+            <AllowableState Name="bound" />
+          </Component>
+          <Component Name="Ribo1" Radius="1.0" DiffusionRate="1.0" Location="Intracellular" SiteCoordX="0.0" SiteCoordY="4.0" SiteCoordZ="8.0" NamedColor="BLUE">
+            <AllowableState Name="inactive" />
+            <AllowableState Name="Active" />
+          </Component>
+          <Component Name="Homo1" Radius="1.0" DiffusionRate="1.0" Location="Intracellular" SiteCoordX="0.0" SiteCoordY="4.0" SiteCoordZ="12.0" NamedColor="LIME" />
+          <Component Name="Ribo2" Radius="1.0" DiffusionRate="1.0" Location="Intracellular" SiteCoordX="0.0" SiteCoordY="4.0" SiteCoordZ="16.0" NamedColor="ORANGE">
+            <AllowableState Name="Inactive" />
+            <AllowableState Name="Active" />
+          </Component>
+          <Component Name="Homo2" Radius="1.0" DiffusionRate="1.0" Location="Intracellular" SiteCoordX="0.0" SiteCoordY="4.0" SiteCoordZ="20.0" NamedColor="CYAN" />
+          <Component Name="Ribo3" Radius="1.0" DiffusionRate="1.0" Location="Intracellular" SiteCoordX="0.0" SiteCoordY="4.0" SiteCoordZ="24.0" NamedColor="MAGENTA">
+            <AllowableState Name="Inactive" />
+            <AllowableState Name="Active" />
+          </Component>
+          <Component Name="Homo3" Radius="1.0" DiffusionRate="1.0" Location="Intracellular" SiteCoordX="0.0" SiteCoordY="4.0" SiteCoordZ="28.0" NamedColor="PINK" />
+          <Component Name="Ribo4" Radius="1.0" DiffusionRate="1.0" Location="Intracellular" SiteCoordX="0.0" SiteCoordY="4.0" SiteCoordZ="32.0" NamedColor="YELLOW">
+            <AllowableState Name="Inactive" />
+            <AllowableState Name="Active" />
+          </Component>
+          <Component Name="Homo4" Radius="1.0" DiffusionRate="1.0" Location="Intracellular" SiteCoordX="0.0" SiteCoordY="4.0" SiteCoordZ="36.0" NamedColor="GRAY" />
+          <Component Name="Exit" Radius="1.0" DiffusionRate="1.0" Location="Intracellular" SiteCoordX="0.0" SiteCoordY="4.0" SiteCoordZ="40.0" NamedColor="PURPLE">
+            <AllowableState Name="Inactive" />
+            <AllowableState Name="Active" />
+          </Component>
+          <Anchor Name="Intracellular" />
+        </LangevinParticleMolecularType>
+        <LangevinParticleMolecularType Name="Ribo">
+          <Component Name="Bind" Radius="1.0" DiffusionRate="1.0" Location="Intracellular" SiteCoordX="0.0" SiteCoordY="4.0" SiteCoordZ="4.0" NamedColor="DARK_GRAY">
+            <AllowableState Name="init" />
+            <AllowableState Name="elong" />
+          </Component>
+        </LangevinParticleMolecularType>
+        <Constant Name="_F_">96485.3321</Constant>
+        <Constant Name="_F_nmol_">9.64853321E-5</Constant>
+        <Constant Name="_N_pmol_">6.02214179E11</Constant>
+        <Constant Name="_PI_">3.141592653589793</Constant>
+        <Constant Name="_R_">8314.46261815</Constant>
+        <Constant Name="_T_">300.0</Constant>
+        <Constant Name="Glbkr">2.0</Constant>
+        <Constant Name="Global_rib_kf">80.0</Constant>
+        <Constant Name="Global_rib_kr">25.0</Constant>
+        <Constant Name="Globkf">1.0</Constant>
+        <Constant Name="Kf_mark_init_bound">1000.0</Constant>
+        <Constant Name="Kf_rib_init">30.0</Constant>
+        <Constant Name="Kf_Ribo1ActEquivalent">1000.0</Constant>
+        <Constant Name="KMOLE">0.001660538783162726</Constant>
+        <Constant Name="Kr_rib_init">10.0</Constant>
+        <Constant Name="mRNA_Count_init_uM">0.0</Constant>
+        <Constant Name="Ribo_Count_init_uM">0.0</Constant>
+        <Constant Name="Size_Extracellular">1.0499999999999999E-4</Constant>
+        <Constant Name="Size_Intracellular">8.949999999999999E-4</Constant>
+        <Constant Name="Size_Membrane">0.009999999999999827</Constant>
+        <Constant Name="UnitFactor_molecules_uM_neg_1_um_neg_3">(1.0 * pow(KMOLE,-1.0))</Constant>
+        <Constant Name="UnitFactor_uM_um3_molecules_neg_1">(1.0 * pow(KMOLE,1.0))</Constant>
+        <Constant Name="Voltage_Membrane">0.0</Constant>
+        <VolumeParticleSpeciesPattern Location="Intracellular" Name="speciesPattern0" Domain="Intracellular">
+          <MolecularType Name="Ribo" MatchLabel="*">
+            <Component Name="Bind" State="init" Bond="-" />
+          </MolecularType>
+        </VolumeParticleSpeciesPattern>
+        <VolumeParticleSpeciesPattern Location="Intracellular" Name="speciesPattern1" Domain="Intracellular">
+          <MolecularType Name="mRNA" MatchLabel="*">
+            <Component Name="Init" State="unbound" Bond="-" />
+            <Component Name="Ribo1" State="*" Bond="?" />
+            <Component Name="Homo1" State="*" Bond="?" />
+            <Component Name="Ribo2" State="*" Bond="?" />
+            <Component Name="Homo2" State="*" Bond="?" />
+            <Component Name="Ribo3" State="*" Bond="?" />
+            <Component Name="Homo3" State="*" Bond="?" />
+            <Component Name="Ribo4" State="*" Bond="?" />
+            <Component Name="Homo4" State="*" Bond="?" />
+            <Component Name="Exit" State="*" Bond="?" />
+          </MolecularType>
+        </VolumeParticleSpeciesPattern>
+        <VolumeParticleSpeciesPattern Location="Intracellular" Name="speciesPattern2" Domain="Intracellular">
+          <MolecularType Name="Ribo" MatchLabel="*">
+            <Component Name="Bind" State="init" Bond="1" />
+          </MolecularType>
+          <MolecularType Name="mRNA" MatchLabel="*">
+            <Component Name="Init" State="unbound" Bond="1" />
+            <Component Name="Ribo1" State="*" Bond="?" />
+            <Component Name="Homo1" State="*" Bond="?" />
+            <Component Name="Ribo2" State="*" Bond="?" />
+            <Component Name="Homo2" State="*" Bond="?" />
+            <Component Name="Ribo3" State="*" Bond="?" />
+            <Component Name="Homo3" State="*" Bond="?" />
+            <Component Name="Ribo4" State="*" Bond="?" />
+            <Component Name="Homo4" State="*" Bond="?" />
+            <Component Name="Exit" State="*" Bond="?" />
+          </MolecularType>
+        </VolumeParticleSpeciesPattern>
+        <VolumeParticleSpeciesPattern Location="Intracellular" Name="speciesPattern3" Domain="Intracellular">
+          <MolecularType Name="Ribo" MatchLabel="*">
+            <Component Name="Bind" State="*" Bond="1" />
+          </MolecularType>
+          <MolecularType Name="mRNA" MatchLabel="*">
+            <Component Name="Init" State="unbound" Bond="1" />
+            <Component Name="Ribo1" State="*" Bond="?" />
+            <Component Name="Homo1" State="*" Bond="?" />
+            <Component Name="Ribo2" State="*" Bond="?" />
+            <Component Name="Homo2" State="*" Bond="?" />
+            <Component Name="Ribo3" State="*" Bond="?" />
+            <Component Name="Homo3" State="*" Bond="?" />
+            <Component Name="Ribo4" State="*" Bond="?" />
+            <Component Name="Homo4" State="*" Bond="?" />
+            <Component Name="Exit" State="*" Bond="?" />
+          </MolecularType>
+        </VolumeParticleSpeciesPattern>
+        <VolumeParticleSpeciesPattern Location="Intracellular" Name="speciesPattern4" Domain="Intracellular">
+          <MolecularType Name="Ribo" MatchLabel="*">
+            <Component Name="Bind" State="*" Bond="1" />
+          </MolecularType>
+          <MolecularType Name="mRNA" MatchLabel="*">
+            <Component Name="Init" State="bound" Bond="1" />
+            <Component Name="Ribo1" State="*" Bond="?" />
+            <Component Name="Homo1" State="*" Bond="?" />
+            <Component Name="Ribo2" State="*" Bond="?" />
+            <Component Name="Homo2" State="*" Bond="?" />
+            <Component Name="Ribo3" State="*" Bond="?" />
+            <Component Name="Homo3" State="*" Bond="?" />
+            <Component Name="Ribo4" State="*" Bond="?" />
+            <Component Name="Homo4" State="*" Bond="?" />
+            <Component Name="Exit" State="*" Bond="?" />
+          </MolecularType>
+        </VolumeParticleSpeciesPattern>
+        <VolumeParticleSpeciesPattern Location="Intracellular" Name="speciesPattern5" Domain="Intracellular">
+          <MolecularType Name="mRNA" MatchLabel="*">
+            <Component Name="Init" State="bound" Bond="?" />
+            <Component Name="Ribo1" State="inactive" Bond="?" />
+            <Component Name="Homo1" State="*" Bond="?" />
+            <Component Name="Ribo2" State="*" Bond="?" />
+            <Component Name="Homo2" State="*" Bond="?" />
+            <Component Name="Ribo3" State="*" Bond="?" />
+            <Component Name="Homo3" State="*" Bond="?" />
+            <Component Name="Ribo4" State="*" Bond="?" />
+            <Component Name="Homo4" State="*" Bond="?" />
+            <Component Name="Exit" State="*" Bond="?" />
+          </MolecularType>
+        </VolumeParticleSpeciesPattern>
+        <VolumeParticleSpeciesPattern Location="Intracellular" Name="speciesPattern6" Domain="Intracellular">
+          <MolecularType Name="mRNA" MatchLabel="*">
+            <Component Name="Init" State="bound" Bond="?" />
+            <Component Name="Ribo1" State="Active" Bond="?" />
+            <Component Name="Homo1" State="*" Bond="?" />
+            <Component Name="Ribo2" State="*" Bond="?" />
+            <Component Name="Homo2" State="*" Bond="?" />
+            <Component Name="Ribo3" State="*" Bond="?" />
+            <Component Name="Homo3" State="*" Bond="?" />
+            <Component Name="Ribo4" State="*" Bond="?" />
+            <Component Name="Homo4" State="*" Bond="?" />
+            <Component Name="Exit" State="*" Bond="?" />
+          </MolecularType>
+        </VolumeParticleSpeciesPattern>
+        <VolumeParticleSpeciesPattern Location="Intracellular" Name="speciesPattern7" Domain="Intracellular">
+          <MolecularType Name="mRNA" MatchLabel="*">
+            <Component Name="Init" State="unbound" Bond="-" />
+            <Component Name="Ribo1" State="inactive" Bond="-" />
+            <Component Name="Homo1" State="*" Bond="-" />
+            <Component Name="Ribo2" State="Inactive" Bond="-" />
+            <Component Name="Homo2" State="*" Bond="-" />
+            <Component Name="Ribo3" State="Inactive" Bond="-" />
+            <Component Name="Homo3" State="*" Bond="-" />
+            <Component Name="Ribo4" State="Inactive" Bond="-" />
+            <Component Name="Homo4" State="*" Bond="-" />
+            <Component Name="Exit" State="Inactive" Bond="-" />
+          </MolecularType>
+        </VolumeParticleSpeciesPattern>
+        <VolumeParticleObservable Name="mRNA_Count" Domain="Intracellular" MolecularType="Species" SequenceType="Multimolecular">
+          <VolumeParticleSpeciesPatterns>
+            <VolumeParticleSpeciesPattern Name="speciesPattern7" />
+          </VolumeParticleSpeciesPatterns>
+        </VolumeParticleObservable>
+        <VolumeParticleObservable Name="Ribo_Count" Domain="Intracellular" MolecularType="Species" SequenceType="Multimolecular">
+          <VolumeParticleSpeciesPatterns>
+            <VolumeParticleSpeciesPattern Name="speciesPattern0" />
+          </VolumeParticleSpeciesPatterns>
+        </VolumeParticleObservable>
+        <Function Name="mRNA" Domain="Intracellular">((UnitFactor_uM_um3_molecules_neg_1 * mRNA_Count) / Size_Intracellular)</Function>
+        <Function Name="mRNA_Count_initCount" Domain="Intracellular">(Size_Intracellular * UnitFactor_molecules_uM_neg_1_um_neg_3 * mRNA_Count_init_uM)</Function>
+        <Function Name="P_mark_init_bound_probabilityRate" Domain="Intracellular">Kf_mark_init_bound</Function>
+        <Function Name="P_rib_init_probabilityRate" Domain="Intracellular">Kf_rib_init</Function>
+        <Function Name="P_rib_init_reverse_probabilityRate" Domain="Intracellular">Kr_rib_init</Function>
+        <Function Name="P_Ribo1ActEquivalent_probabilityRate" Domain="Intracellular">Kf_Ribo1ActEquivalent</Function>
+        <Function Name="Ribo" Domain="Intracellular">((Ribo_Count * UnitFactor_uM_um3_molecules_neg_1) / Size_Intracellular)</Function>
+        <Function Name="Ribo_Count_initCount" Domain="Intracellular">(Size_Intracellular * Ribo_Count_init_uM * UnitFactor_molecules_uM_neg_1_um_neg_3)</Function>
+        <CompartmentSubDomain Name="Intracellular">
+          <BoundaryType Boundary="Xm" Type="Flux" />
+          <BoundaryType Boundary="Xp" Type="Flux" />
+          <BoundaryType Boundary="Ym" Type="Flux" />
+          <BoundaryType Boundary="Yp" Type="Flux" />
+          <BoundaryType Boundary="Zm" Type="Flux" />
+          <BoundaryType Boundary="Zp" Type="Flux" />
+          <LangevinParticleJumpProcess Name="rib_init" Subtype="Binding" BondLength="1.0" ProcessSymmetryFactor="1.0">
+            <SelectedParticle Name="speciesPattern0" />
+            <SelectedParticle Name="speciesPattern1" />
+            <MacroscopicRateConstant>P_rib_init_probabilityRate</MacroscopicRateConstant>
+            <Effect VarName="speciesPattern0" Operation="destroy">1.0</Effect>
+            <Effect VarName="speciesPattern1" Operation="destroy">1.0</Effect>
+            <Effect VarName="speciesPattern2" Operation="create">1.0</Effect>
+          </LangevinParticleJumpProcess>
+          <LangevinParticleJumpProcess Name="rib_init_reverse" Subtype="Binding" BondLength="1.0" ProcessSymmetryFactor="1.0">
+            <SelectedParticle Name="speciesPattern2" />
+            <MacroscopicRateConstant>P_rib_init_reverse_probabilityRate</MacroscopicRateConstant>
+            <Effect VarName="speciesPattern0" Operation="create">1.0</Effect>
+            <Effect VarName="speciesPattern1" Operation="create">1.0</Effect>
+            <Effect VarName="speciesPattern2" Operation="destroy">1.0</Effect>
+          </LangevinParticleJumpProcess>
+          <LangevinParticleJumpProcess Name="mark_init_bound" Subtype="Transition" TransitionCondition="Bound" ProcessSymmetryFactor="1.0">
+            <SelectedParticle Name="speciesPattern3" />
+            <MacroscopicRateConstant>P_mark_init_bound_probabilityRate</MacroscopicRateConstant>
+            <Effect VarName="speciesPattern3" Operation="destroy">1.0</Effect>
+            <Effect VarName="speciesPattern4" Operation="create">1.0</Effect>
+          </LangevinParticleJumpProcess>
+          <LangevinParticleJumpProcess Name="Ribo1ActEquivalent" Subtype="Allosteric" ProcessSymmetryFactor="1.0">
+            <SelectedParticle Name="speciesPattern5" />
+            <MacroscopicRateConstant>P_Ribo1ActEquivalent_probabilityRate</MacroscopicRateConstant>
+            <Effect VarName="speciesPattern5" Operation="destroy">1.0</Effect>
+            <Effect VarName="speciesPattern6" Operation="create">1.0</Effect>
+          </LangevinParticleJumpProcess>
+          <ParticleProperties Name="speciesPattern7">
+            <ParticleInitialCount>
+              <ParticleCount>mRNA_Count_initCount</ParticleCount>
+              <ParticleLocationX>0.0</ParticleLocationX>
+              <ParticleLocationY>0.0</ParticleLocationY>
+              <ParticleLocationZ>0.0</ParticleLocationZ>
+            </ParticleInitialCount>
+            <ParticleDiffusion>0.0</ParticleDiffusion>
+            <ParticleDriftX>0.0</ParticleDriftX>
+            <ParticleDriftY>0.0</ParticleDriftY>
+            <ParticleDriftZ>0.0</ParticleDriftZ>
+          </ParticleProperties>
+          <ParticleProperties Name="speciesPattern0">
+            <ParticleInitialCount>
+              <ParticleCount>Ribo_Count_initCount</ParticleCount>
+              <ParticleLocationX>0.0</ParticleLocationX>
+              <ParticleLocationY>0.0</ParticleLocationY>
+              <ParticleLocationZ>0.0</ParticleLocationZ>
+            </ParticleInitialCount>
+            <ParticleDiffusion>0.0</ParticleDiffusion>
+            <ParticleDriftX>0.0</ParticleDriftX>
+            <ParticleDriftY>0.0</ParticleDriftY>
+            <ParticleDriftZ>0.0</ParticleDriftZ>
+          </ParticleProperties>
+        </CompartmentSubDomain>
+        <CompartmentSubDomain Name="Extracellular">
+          <BoundaryType Boundary="Xm" Type="Flux" />
+          <BoundaryType Boundary="Xp" Type="Flux" />
+          <BoundaryType Boundary="Ym" Type="Flux" />
+          <BoundaryType Boundary="Yp" Type="Flux" />
+          <BoundaryType Boundary="Zm" Type="Flux" />
+          <BoundaryType Boundary="Zp" Type="Flux" />
+        </CompartmentSubDomain>
+        <MembraneSubDomain Name="Extracellular_Intracellular_membrane" InsideCompartment="Extracellular" OutsideCompartment="Intracellular">
+          <BoundaryType Boundary="Xm" Type="Value" />
+          <BoundaryType Boundary="Xp" Type="Value" />
+          <BoundaryType Boundary="Ym" Type="Value" />
+          <BoundaryType Boundary="Yp" Type="Value" />
+          <BoundaryType Boundary="Zm" Type="Value" />
+          <BoundaryType Boundary="Zp" Type="Value" />
+        </MembraneSubDomain>
+        <Version Name="Application0_generated" KeyValue="316363696" BranchId="316360855" Archived="0" Date="15-Jun-2026 04:46:51" FromVersionable="false">
+          <Owner Name="danv" Identifier="26766043" />
+          <GroupAccess Type="1" />
+        </Version>
+      </MathDescription>
+      <SpatialObjects>
+        <SpatialObject Name="vobj_Intracellular0" Type="Volume" subVolume="Intracellular" regionId="0">
+          <QuantityCategoryList>
+            <QuantityCategory Name="VolumeCentroid" Enabled="false" />
+            <QuantityCategory Name="InteriorVelocity" Enabled="false" />
+            <QuantityCategory Name="VolumeRegionSize" Enabled="true" />
+          </QuantityCategoryList>
+        </SpatialObject>
+        <SpatialObject Name="vobj_Extracellular1" Type="Volume" subVolume="Extracellular" regionId="1">
+          <QuantityCategoryList>
+            <QuantityCategory Name="VolumeCentroid" Enabled="false" />
+            <QuantityCategory Name="InteriorVelocity" Enabled="false" />
+            <QuantityCategory Name="VolumeRegionSize" Enabled="true" />
+          </QuantityCategoryList>
+        </SpatialObject>
+        <SpatialObject Name="sobj_Extracellular1_Intracellular0" Type="Surface" subVolumeInside="Extracellular" regionIdInside="1" subVolumeOutside="Intracellular" regionIdOutside="0">
+          <QuantityCategoryList>
+            <QuantityCategory Name="SurfaceNormal" Enabled="false" />
+            <QuantityCategory Name="SurfaceVelocity" Enabled="false" />
+            <QuantityCategory Name="DistanceToSurface" Enabled="false" />
+            <QuantityCategory Name="DirectionToSurface" Enabled="false" />
+            <QuantityCategory Name="SurfaceSize" Enabled="true" />
+          </QuantityCategoryList>
+        </SpatialObject>
+      </SpatialObjects>
+      <Version Name="Application0" KeyValue="316363698" BranchId="316360874" Archived="0" Date="15-Jun-2026 04:46:51" FromVersionable="false">
+        <Owner Name="danv" Identifier="26766043" />
+        <GroupAccess Type="1" />
+      </Version>
+      <MicroscopeMeasurement Name="fluor">
+        <ConvolutionKernel Type="ProjectionZKernel" />
+      </MicroscopeMeasurement>
+    </SimulationSpec>
+    <Version Name="aaaaa_workaround" KeyValue="316363705" BranchId="316361175" Archived="0" Date="15-Jun-2026 04:46:51" FromVersionable="false">
+      <Owner Name="danv" Identifier="26766043" />
+      <GroupAccess Type="115224794" Hash="467507498">
+        <User Name="schaff" KeyValue="17" IsHidden="false" />
+        <User Name="mblinov" KeyValue="12487253" IsHidden="false" />
+        <User Name="les" KeyValue="6" IsHidden="false" />
+      </GroupAccess>
+      <Annotation>cloned from 'Ribohop_plus_RNA_clustering' owned by user les
+cloned from 'ayse_VCell_mRNA_sim_with_ribo_state_transition_fixed_by_Dan' owned by user danv
+cloned from 'VCell_mRNA_sim_with_ribo_state_transition_fixed_by_Dan' owned by user ayseecer</Annotation>
+    </Version>
+    <pathwayModel>
+      <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bp="http://www.biopax.org/release/biopax-level3.owl#" version="3.0" />
+    </pathwayModel>
+    <relationshipModel>
+      <RMNS version="3.0" />
+    </relationshipModel>
+    <vcmetadata>
+      <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" />
+      <nonrdfAnnotationList />
+      <uriBindingList />
+    </vcmetadata>
+  </BioModel>
+</vcml>

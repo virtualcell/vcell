@@ -2464,21 +2464,26 @@ public class XmlReader extends XmlBase {
         //name
         String name = unMangle(param.getAttributeValue(XMLTags.NameAttrTag));
 
-        Subtype subtype = Subtype.INCOMPATIBLE;
+        LangevinParticleJumpProcess.ParticleSubtype subtype = LangevinParticleJumpProcess.ParticleSubtype.INCOMPATIBLE;
         boolean isLangevin = false;
         if(param.getAttribute(XMLTags.LangevinParticleJumpProcessSubtypeTag) != null){
             isLangevin = true;
             String stString = param.getAttributeValue(XMLTags.LangevinParticleJumpProcessSubtypeTag);
-            subtype = Subtype.fromName(stString);
+            subtype = LangevinParticleJumpProcess.ParticleSubtype.fromName(stString);
         }
-        TransitionCondition transitionCondition = null;
-        double bondLength = 1;        // that's the default, even for non-binding rules (we hide it anyway for those)
+        LangevinParticleJumpProcess.ParticleTransitionCondition transitionCondition = null;
+        Expression bondLength = new Expression(1.0);        // that's the default, even for non-binding rules (we hide it anyway for those)
         if(isLangevin && param.getAttribute(XMLTags.LangevinParticleJumpProcessBondLengthTag) != null){
-            bondLength = Double.valueOf(param.getAttributeValue(XMLTags.LangevinParticleJumpProcessBondLengthTag));
+            try {
+                bondLength = new Expression(param.getAttributeValue(XMLTags.LangevinParticleJumpProcessBondLengthTag));
+            } catch(ExpressionException e){
+                throw new XmlParseException("unparseable " + XMLTags.LangevinParticleJumpProcessBondLengthTag
+                        + " '" + param.getAttributeValue(XMLTags.LangevinParticleJumpProcessBondLengthTag) + "'", e);
+            }
         }
         if(isLangevin && param.getAttribute(XMLTags.LangevinParticleJumpProcessTransitionConditionTag) != null){
             String tcString = param.getAttributeValue(XMLTags.LangevinParticleJumpProcessTransitionConditionTag);
-            transitionCondition = TransitionCondition.fromVcellName(tcString);
+            transitionCondition = LangevinParticleJumpProcess.ParticleTransitionCondition.fromVcellName(tcString);
         }
 
         ProcessSymmetryFactor processSymmetryFactor = null;
@@ -2539,9 +2544,9 @@ public class XmlReader extends XmlBase {
         if(isLangevin){
             jump = new LangevinParticleJumpProcess(name, varList, jprd, actionList, processSymmetryFactor);
             ((LangevinParticleJumpProcess) jump).setSubtype(subtype);
-            if(Subtype.TRANSITION == subtype){
+            if(LangevinParticleJumpProcess.ParticleSubtype.TRANSITION == subtype){
                 ((LangevinParticleJumpProcess) jump).setTransitionCondition(transitionCondition);
-            } else if(Subtype.BINDING == subtype){
+            } else if(LangevinParticleJumpProcess.ParticleSubtype.BINDING == subtype){
                 ((LangevinParticleJumpProcess) jump).setBondLength(bondLength);
             }
         } else {
@@ -7978,17 +7983,27 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
         return var;
     }
 
-    private ParticleMolecularComponent getParticleMolecularComponent(String pmtName, Element param, boolean isLangevin){
+    private ParticleMolecularComponent getParticleMolecularComponent(String pmtName, Element param, boolean isLangevin) throws XmlParseException {
         String name = unMangle(param.getAttributeValue(XMLTags.NameAttrTag));
         ParticleMolecularComponent var;
         if(isLangevin){
             var = new LangevinParticleMolecularComponent(pmtName + "_" + name, name);
             if(param.getAttributeValue(XMLTags.ParticleMolecularComponentRadiusTag) != null){
-                double radius = Double.parseDouble(param.getAttributeValue(XMLTags.ParticleMolecularComponentRadiusTag));
+                Expression radius;
+                try {
+                    radius = new Expression(param.getAttributeValue(XMLTags.ParticleMolecularComponentRadiusTag));
+                } catch(ExpressionException e){
+                    throw new XmlParseException("unparseable " + XMLTags.ParticleMolecularComponentRadiusTag, e);
+                }
                 ((LangevinParticleMolecularComponent) var).setRadius(radius);
             }
             if(param.getAttributeValue(XMLTags.ParticleMolecularComponentDiffusionRateTag) != null){
-                double diff = Double.parseDouble(param.getAttributeValue(XMLTags.ParticleMolecularComponentDiffusionRateTag));
+                Expression diff;
+                try {
+                    diff = new Expression(param.getAttributeValue(XMLTags.ParticleMolecularComponentDiffusionRateTag));
+                } catch(ExpressionException e){
+                    throw new XmlParseException("unparseable " + XMLTags.ParticleMolecularComponentDiffusionRateTag, e);
+                }
                 ((LangevinParticleMolecularComponent) var).setDiffusionRate(diff);
             }
             if(param.getAttributeValue(XMLTags.ParticleMolecularComponentLocationTag) != null){
@@ -8029,11 +8044,15 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
         return var;
     }
 
-    private ParticleMolecularType getParticleMolecularType(Element param, boolean isLangevin){
+    private ParticleMolecularType getParticleMolecularType(Element param, boolean isLangevin) throws XmlParseException {
         String name = unMangle(param.getAttributeValue(XMLTags.NameAttrTag));
         ParticleMolecularType var;
         if(isLangevin){
-            var = new LangevinParticleMolecularType(name);
+			LangevinParticleMolecularType langevinVar = new LangevinParticleMolecularType(name);
+			if(param.getAttribute(XMLTags.ParticleMolecularTypeIs2DTag) != null){
+				langevinVar.setIs2D(Boolean.parseBoolean(param.getAttributeValue(XMLTags.ParticleMolecularTypeIs2DTag)));
+			}
+			var = langevinVar;
         } else {
             var = new ParticleMolecularType(name);
         }

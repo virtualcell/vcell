@@ -5,23 +5,23 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.vcell.model.rbm.ComponentStateDefinition;
-import org.vcell.solver.langevin.LangevinLngvWriter;
 import org.vcell.util.CommentStringTokenizer;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.ExpressionUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Coordinate;
 import org.vcell.util.Matchable;
 import org.vcell.util.springsalad.Colors;
-import org.vcell.util.springsalad.IOHelp;
 import org.vcell.util.springsalad.NamedColor;
 
-import cbit.vcell.model.Structure;
 
 @SuppressWarnings("serial")
 public class LangevinParticleMolecularComponent extends ParticleMolecularComponent {
 
-	private double fieldRadius = 1.0;
-	private double fieldDiffusionRate = 1.0;
+	/** An {@link Expression}, like every scalar in a math description - see docs/architecture-layers.md P3. */
+	private Expression fieldRadius = new Expression(1.0);
+	private Expression fieldDiffusionRate = new Expression(1.0);
 	private String fieldLocation = null;		// feature or membrane name, identical to subdomain name
 	private Coordinate fieldCoordinate = new Coordinate(0,0,0);	// double x,y,z; has distanceTo()
 	private NamedColor fieldColor = Colors.RED;
@@ -38,12 +38,46 @@ public class LangevinParticleMolecularComponent extends ParticleMolecularCompone
 
 	@Override
 	public boolean compareEqual(Matchable obj) {
-		if (!(obj instanceof LangevinParticleMolecularComponent)) {
+		return compareEqual(obj, false);
+	}
+
+	/**
+	 * @param bIgnoreDisplayAttributes skip attributes that are persisted but never reach the solver, so
+	 *        they cannot change what a simulation computes - currently just colour.
+	 *        <p>
+	 *        Used by the equivalence tier, where a difference clears
+	 *        {@code SimulationVersion.parentSimulationReference} and hides the user's existing results;
+	 *        a colour change must not cost them their results. The identical tier passes {@code false},
+	 *        because the math still has to be saved or the edit is lost.
+	 */
+	public boolean compareEqual(Matchable obj, boolean bIgnoreDisplayAttributes) {
+		// exact class, not instanceof: the superclass accepts any ParticleMolecularComponent, so an
+		// instanceof test here would make comparison depend on which side it is called from.
+		if (obj == null || !getClass().equals(obj.getClass())) {
 			return false;
 		}
 		LangevinParticleMolecularComponent other = (LangevinParticleMolecularComponent)obj;
 
-		if(false) {			// TODO: compare everything that needs comparing
+		// Exact comparison: this is the "identical" tier. Tolerance belongs to the equivalence tier,
+		// as it does for expressions (ExpressionUtils.functionallyEquivalent).
+		if(!Compare.isEqualOrNull(fieldRadius, other.fieldRadius, new ExpressionUtils.ExpressionEquivalencePredicate())) {
+			return false;
+		}
+		if(!Compare.isEqualOrNull(fieldDiffusionRate, other.fieldDiffusionRate, new ExpressionUtils.ExpressionEquivalencePredicate())) {
+			return false;
+		}
+		if(!Compare.isEqualOrNull(fieldLocation, other.fieldLocation)) {
+			return false;
+		}
+		if(!Compare.isEqualOrNull(fieldCoordinate, other.fieldCoordinate)) {
+			return false;
+		}
+		// Colour is part of the persisted math, so it is compared here to keep "identical" meaning
+		// identical - without it a colour edit would not be saved. It does not reach the solver
+		// input, so an equivalence tier may legitimately ignore it.
+		if(!bIgnoreDisplayAttributes
+				&& !Compare.isEqualOrNull(fieldColor == null ? null : fieldColor.getName(),
+						other.fieldColor == null ? null : other.fieldColor.getName())) {
 			return false;
 		}
 		return super.compareEqual(obj);
@@ -52,8 +86,8 @@ public class LangevinParticleMolecularComponent extends ParticleMolecularCompone
 	public String getVCML() {
 		StringBuffer buffer = new StringBuffer();
 		buffer.append("    "+VCML.ParticleMolecularComponent + " " + getName()+" { ");
-		buffer.append("\n            "+VCML.ParticleComponentRadius + " " + fieldRadius + "");
-		buffer.append("\n            "+VCML.ParticleComponentDiffusionRate + " " + fieldDiffusionRate + "");
+		buffer.append("\n            "+VCML.ParticleComponentRadius + " " + fieldRadius.infix() + "");
+		buffer.append("\n            "+VCML.ParticleComponentDiffusionRate + " " + fieldDiffusionRate.infix() + "");
 		buffer.append("\n            "+VCML.ParticleComponentLocation + " " + fieldLocation + "");
 		buffer.append("\n            "+VCML.ParticleComponentCoordinate + " " + fieldCoordinate + "");
 		buffer.append("\n            "+VCML.ParticleComponentColor + " " + fieldColor + "");
@@ -90,14 +124,20 @@ public class LangevinParticleMolecularComponent extends ParticleMolecularCompone
 			}
 			if(token.equalsIgnoreCase(VCML.ParticleComponentRadius)) {
 				token = tokens.nextToken();
-				Double radius = Double.parseDouble(token);
-				setRadius(radius);
+				try {
+					setRadius(new Expression(token));
+				} catch(ExpressionException e) {
+					throw new MathFormatException("unparseable " + VCML.ParticleComponentRadius + " '" + token + "': " + e.getMessage());
+				}
 				continue;
 			}
 			if(token.equalsIgnoreCase(VCML.ParticleComponentDiffusionRate)) {
 				token = tokens.nextToken();
-				Double dr = Double.parseDouble(token);
-				setDiffusionRate(dr);
+				try {
+					setDiffusionRate(new Expression(token));
+				} catch(ExpressionException e) {
+					throw new MathFormatException("unparseable " + VCML.ParticleComponentDiffusionRate + " '" + token + "': " + e.getMessage());
+				}
 				continue;
 			}
 			if(token.equalsIgnoreCase(VCML.ParticleComponentLocation)) {
@@ -130,41 +170,17 @@ public class LangevinParticleMolecularComponent extends ParticleMolecularCompone
 		}	
 	}
 	
-	public void writeType(StringBuilder sb) {
-		sb.append("TYPE: Name \"" + getName() + "\"");
-		sb.append(" Radius " + IOHelp.DF[5].format(getRadius()) + " D " + IOHelp.DF[3].format(getDiffusionRate()) + " Color " + getColor().getName());
-		sb.append(" STATES ");
-		if(getComponentStateDefinitions() == null || getComponentStateDefinitions().size() == 0) {
-			sb.append("\"" + LangevinLngvWriter.StateZero + "\"" + " ");
-		} else {
-			for (ParticleComponentStateDefinition state : getComponentStateDefinitions()) {
-				sb.append("\"" + state.getName() + "\"" + " ");
-			}
-		}
-		sb.append("\n");
-	}
-	public void writeSite(StringBuilder sb, int index, String initialState) {
-		sb.append("SITE " + index + 
-				" : " + getLocation() + " : Initial State '" + initialState + "'");
-		sb.append("\n");
-		sb.append("          ");
-		this.writeType(sb);	// ex: TYPE: Name "Type2" Radius 1.00000 D 1.000 Color LIME STATES "State0" "State1" 
-		sb.append("          " + "x " + IOHelp.DF[5].format(getCoordinate().getX()) + " y " + 
-				IOHelp.DF[5].format(getCoordinate().getY()) + " z " + 
-				IOHelp.DF[5].format(getCoordinate().getZ()) + " ");		// ex: x 4.00000 y 4.00000 z 20.00000
-		sb.append("\n");
-	}
 	
-	public double getRadius() {
+	public Expression getRadius() {
 		return fieldRadius;
 	}
-	public void setRadius(double fieldRadius) {
+	public void setRadius(Expression fieldRadius) {
 		this.fieldRadius = fieldRadius;
 	}
-	public double getDiffusionRate() {
+	public Expression getDiffusionRate() {
 		return fieldDiffusionRate;
 	}
-	public void setDiffusionRate(double fieldDiffusionRate) {
+	public void setDiffusionRate(Expression fieldDiffusionRate) {
 		this.fieldDiffusionRate = fieldDiffusionRate;
 	}
 	public String getLocation() {

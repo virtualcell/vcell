@@ -8,14 +8,14 @@ import org.vcell.model.rbm.MolecularComponentPattern.BondType;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.RbmNetworkGenerator.CompartmentMode;
 import org.vcell.model.rbm.RbmUtils;
-import org.vcell.model.rbm.RuleAnalysis;
-import org.vcell.model.rbm.RuleAnalysis.MolecularComponentEntry;
-import org.vcell.model.rbm.RuleAnalysis.MolecularTypeEntry;
-import org.vcell.model.rbm.RuleAnalysis.ParticipantEntry;
-import org.vcell.model.rbm.RuleAnalysis.ParticipantType;
-import org.vcell.model.rbm.RuleAnalysis.ProductBondEntry;
-import org.vcell.model.rbm.RuleAnalysis.ReactantBondEntry;
-import org.vcell.model.rbm.RuleAnalysis.RuleEntry;
+import cbit.vcell.math.RuleAnalysis;
+import cbit.vcell.math.RuleAnalysis.MolecularComponentEntry;
+import cbit.vcell.math.RuleAnalysis.MolecularTypeEntry;
+import cbit.vcell.math.RuleAnalysis.ParticipantEntry;
+import cbit.vcell.math.RuleAnalysis.ParticipantType;
+import cbit.vcell.math.RuleAnalysis.ProductBondEntry;
+import cbit.vcell.math.RuleAnalysis.ReactantBondEntry;
+import cbit.vcell.math.RuleAnalysis.RuleEntry;
 import org.vcell.model.rbm.SpeciesPattern.Bond;
 
 public class ModelRuleFactory {

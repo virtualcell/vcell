@@ -4,10 +4,9 @@ import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.mapping.ReactionRuleSpec;
-import cbit.vcell.mapping.ReactionRuleSpec.Subtype;
-import cbit.vcell.mapping.ReactionRuleSpec.TransitionCondition;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.math.*;
+import org.vcell.util.springsalad.IOHelp;
 import cbit.vcell.math.ParticleProperties.ParticleInitialCondition;
 import cbit.vcell.math.ParticleProperties.ParticleInitialConditionCount;
 import cbit.vcell.model.Structure;
@@ -72,6 +71,63 @@ public class LangevinLngvWriter {
 	}
 
 	// main work being done here
+	/**
+	 * The number the solver input needs, from a math expression.
+	 * <p>
+	 * Math descriptions carry scalars as expressions, but the .lngv format is numeric, so the value has
+	 * to resolve to a constant here. If it cannot - because it references a symbol, say - that is a
+	 * defect in the math or in this writer, and writing a wrong number would produce a silently wrong
+	 * simulation. So it fails loudly instead.
+	 */
+	private static double evaluateForSolver(Expression expression, String what, String owner) throws SolverException {
+		if(expression == null){
+			throw new SolverException("SpringSaLaD: missing " + what + " for '" + owner + "'");
+		}
+		try {
+			return expression.flatten().evaluateConstant();
+		} catch(ExpressionException e){
+			throw new SolverException("SpringSaLaD: " + what + " for '" + owner + "' is '" + expression.infix()
+					+ "', which does not resolve to a number: " + e.getMessage(), e);
+		}
+	}
+
+
+	/**
+	 * Write the .lngv TYPE line for a site.
+	 * <p>
+	 * Lives here, not on the math class: the solver input format is this wrapper's concern, and a math
+	 * description must be describable without knowing how any particular solver reads it. See
+	 * docs/architecture-layers.md, P4.
+	 */
+	private static void writeType(StringBuilder sb, LangevinParticleMolecularComponent component) throws SolverException {
+		sb.append("TYPE: Name \"" + component.getName() + "\"");
+		sb.append(" Radius " + IOHelp.DF[5].format(evaluateForSolver(component.getRadius(), "Radius", component.getName()))
+				+ " D " + IOHelp.DF[3].format(evaluateForSolver(component.getDiffusionRate(), "D", component.getName()))
+				+ " Color " + component.getColor().getName());
+		sb.append(" STATES ");
+		if(component.getComponentStateDefinitions() == null || component.getComponentStateDefinitions().size() == 0) {
+			sb.append("\"" + StateZero + "\"" + " ");
+		} else {
+			for (ParticleComponentStateDefinition state : component.getComponentStateDefinitions()) {
+				sb.append("\"" + state.getName() + "\"" + " ");
+			}
+		}
+		sb.append("\n");
+	}
+
+	/** Write the .lngv SITE block for a site. @see #writeType(StringBuilder, LangevinParticleMolecularComponent) */
+	private static void writeSite(StringBuilder sb, LangevinParticleMolecularComponent component, int index, String initialState) throws SolverException {
+		sb.append("SITE " + index +
+				" : " + component.getLocation() + " : Initial State '" + initialState + "'");
+		sb.append("\n");
+		sb.append("          ");
+		writeType(sb, component);	// ex: TYPE: Name "Type2" Radius 1.00000 D 1.000 Color LIME STATES "State0" "State1"
+		sb.append("          " + "x " + IOHelp.DF[5].format(component.getCoordinate().getX()) + " y " +
+				IOHelp.DF[5].format(component.getCoordinate().getY()) + " z " +
+				IOHelp.DF[5].format(component.getCoordinate().getZ()) + " ");		// ex: x 4.00000 y 4.00000 z 20.00000
+		sb.append("\n");
+	}
+
 	public String writeLangevinLngv() throws SolverException, DivideByZeroException, ExpressionException {
 //		try {
 //			System.out.println("VCML ORIGINAL .... START\n"+simulation.getMathDescription().getVCML_database()+"\nVCML ORIGINAL .... END\n====================\n");
@@ -296,13 +352,13 @@ public class LangevinLngvWriter {
 
 	}
 	
-	private void writeBindingReactions(StringBuilder sb) {
+	private void writeBindingReactions(StringBuilder sb) throws SolverException {
 		Map<String, LangevinParticleJumpProcess> nameToProcessDirect = new LinkedHashMap<> ();
 		Map<String, LangevinParticleJumpProcess> nameToProcessReverse = new LinkedHashMap<> ();		// need this only for reverse rate
 		for(Map.Entry<LangevinParticleJumpProcess, SubDomain> entry : particleJumpProcessMap.entrySet()) {
 			LangevinParticleJumpProcess lpjp = entry.getKey();
-			Subtype subtype = lpjp.getSubtype();
-			if(Subtype.BINDING == subtype) {
+			LangevinParticleJumpProcess.ParticleSubtype subtype = lpjp.getSubtype();
+			if(LangevinParticleJumpProcess.ParticleSubtype.BINDING == subtype) {
 				if(!lpjp.getName().endsWith("_reverse")) {
 					String lpjpName = lpjp.getName();
 					nameToProcessDirect.put(lpjpName, lpjp);
@@ -445,7 +501,7 @@ public class LangevinLngvWriter {
 			
 			sb.append("'  kon  ").append(onRate);
 			sb.append("  koff ").append(offRate);
-			sb.append("  Bond_Length ").append(Double.toString(lpjpDirect.getBondLength()));
+			sb.append("  Bond_Length ").append(Double.toString(evaluateForSolver(lpjpDirect.getBondLength(), "Bond_Length", lpjpDirect.getName())));
 			sb.append("\n");
 		}
 		String ret = sb.toString();
@@ -456,8 +512,8 @@ public class LangevinLngvWriter {
 	private void writeAllostericReactions(StringBuilder sb) {
 		for(Map.Entry<LangevinParticleJumpProcess, SubDomain> entry : particleJumpProcessMap.entrySet()) {
 			LangevinParticleJumpProcess lpjp = entry.getKey();
-			Subtype subtype = lpjp.getSubtype();
-			if(Subtype.ALLOSTERIC == subtype) {
+			LangevinParticleJumpProcess.ParticleSubtype subtype = lpjp.getSubtype();
+			if(LangevinParticleJumpProcess.ParticleSubtype.ALLOSTERIC == subtype) {
 				ParticleSpeciesPattern pspReactant = null;
 				ParticleSpeciesPattern pspProduct = null;
 				for(Action action : lpjp.getActions()) {
@@ -567,8 +623,8 @@ public class LangevinLngvWriter {
 		for(Map.Entry<LangevinParticleJumpProcess, SubDomain> entry : particleJumpProcessMap.entrySet()) {
 			LangevinParticleJumpProcess lpjp = entry.getKey();
 //			SubDomain subDomain = entry.getValue();
-			Subtype subtype = lpjp.getSubtype();
-			if(Subtype.TRANSITION == subtype) {
+			LangevinParticleJumpProcess.ParticleSubtype subtype = lpjp.getSubtype();
+			if(LangevinParticleJumpProcess.ParticleSubtype.TRANSITION == subtype) {
 				ParticleSpeciesPattern pspReactant = null;
 				ParticleSpeciesPattern pspProduct = null;
 				for(Action action : lpjp.getActions()) {
@@ -626,8 +682,8 @@ public class LangevinLngvWriter {
 				ParticleMolecularComponentPattern pmcpConditionReactant = null;		// condition reactant site
 				ParticleComponentStateDefinition pcsdConditionReactant = null;		// condition state
 
-				TransitionCondition transitionCondition = lpjp.getTransitionCondition();
-				if(TransitionCondition.BOUND == transitionCondition) {
+				LangevinParticleJumpProcess.ParticleTransitionCondition transitionCondition = lpjp.getTransitionCondition();
+				if(LangevinParticleJumpProcess.ParticleTransitionCondition.BOUND == transitionCondition) {
 					if(pspReactant.getParticleMolecularTypePatterns().size() == 1) {
 						// illegal, bound transitions must have separate condition and transition molecules by convention
 						throw new RuntimeException("Bound conditional transition reactant size must be 2");
@@ -666,10 +722,10 @@ public class LangevinLngvWriter {
 						pcsdConditionReactant = pcsp.getParticleComponentStateDefinition();
 						break;		// found the one and only condition
 					}
-				} else if(TransitionCondition.NONE == transitionCondition) {
+				} else if(LangevinParticleJumpProcess.ParticleTransitionCondition.NONE == transitionCondition) {
 					pmtpTransitionReactant = pspReactant.getParticleMolecularTypePatterns().get(0);
 					pmtpTransitionProduct = pspProduct.getParticleMolecularTypePatterns().get(0);
-				} else if(TransitionCondition.FREE == transitionCondition) {
+				} else if(LangevinParticleJumpProcess.ParticleTransitionCondition.FREE == transitionCondition) {
 					pmtpTransitionReactant = pspReactant.getParticleMolecularTypePatterns().get(0);
 					pmtpTransitionProduct = pspProduct.getParticleMolecularTypePatterns().get(0);
 				} else {
@@ -707,13 +763,13 @@ public class LangevinLngvWriter {
 				sb.append(pcsdTransitionProduct.getName());
 				sb.append("'  Rate ").append(onRate);
 				sb.append("  Condition ").append(transitionCondition.lngvName);
-				if(TransitionCondition.BOUND == transitionCondition) {
+				if(LangevinParticleJumpProcess.ParticleTransitionCondition.BOUND == transitionCondition) {
 					sb.append(" '").append(pmtpConditionReactant.getMolecularType().getName()).append("' : '")
 					.append(pmcpConditionReactant.getMolecularComponent().getName()).append("' : '")
 					.append(pmcpConditionReactant.getComponentStatePattern().isAny() ? ReactionRuleSpec.ANY_STATE_STRING : pcsdConditionReactant.getName());
 				}
 				sb.append("\n");
-			}						// end if Subtype.TRANSITION
+			}						// end if LangevinParticleJumpProcess.ParticleSubtype.TRANSITION
 		}
 		String ret = sb.toString();
 		System.out.println(ret);
@@ -730,8 +786,8 @@ public class LangevinLngvWriter {
 		}
 		for(Map.Entry<LangevinParticleJumpProcess, SubDomain> entry : particleJumpProcessMap.entrySet()) {
 			LangevinParticleJumpProcess lpjp = entry.getKey();
-			Subtype subtype = lpjp.getSubtype();
-			if(Subtype.CREATION == subtype) {
+			LangevinParticleJumpProcess.ParticleSubtype subtype = lpjp.getSubtype();
+			if(LangevinParticleJumpProcess.ParticleSubtype.CREATION == subtype) {
 				for(Action action : lpjp.getActions()) {
 					if(Action.ACTION_CREATE.equals(action.getOperation())) {	// species being created
 						Pair<String, String> rates = null;
@@ -776,7 +832,7 @@ public class LangevinLngvWriter {
 						creationDecayVariableMap.put(var, rates);
 					}
 				}
-			} else if(Subtype.DECAY == subtype) {
+			} else if(LangevinParticleJumpProcess.ParticleSubtype.DECAY == subtype) {
 				for(Action action : lpjp.getActions()) {
 					if(Action.ACTION_DESTROY.equals(action.getOperation())) {	// species being destroyed
 						Pair<String, String> rates = null;
@@ -862,7 +918,7 @@ public class LangevinLngvWriter {
 		}
 	}
 	
-	private void writeSpeciesInfo(StringBuilder sb) {
+	private void writeSpeciesInfo(StringBuilder sb) throws SolverException {
 		structuralSiteSet.clear();		// we will populate this map as we write the species info, and then use it
 										// to exclude them from tracking
 		for( Map.Entry<ParticleProperties, SubDomain> entry : particlePropertiesMap.entrySet()) {
@@ -935,7 +991,7 @@ public class LangevinLngvWriter {
 				}
 				LangevinParticleMolecularComponent lpmc = (LangevinParticleMolecularComponent)pmc;
 				sb.append("     ");
-				lpmc.writeType(sb);
+				writeType(sb, lpmc);
 			}
 			sb.append("\n");
 			for(int siteIndex = 0; siteIndex < lpmt.getComponentList().size(); siteIndex++) {
@@ -957,7 +1013,7 @@ public class LangevinLngvWriter {
 					}
 					LangevinParticleMolecularComponent lpmc = (LangevinParticleMolecularComponent) pmc;
 					sb.append("     ");
-					lpmc.writeSite(sb, lpmt.getComponentList().indexOf(lpmc), initialState);
+					writeSite(sb, lpmc, lpmt.getComponentList().indexOf(lpmc), initialState);
 				} else {
 					structuralSiteSet.add(pmc);
 					// if there is no pattern for the component, we assume it's a structural site with no state,
@@ -967,7 +1023,7 @@ public class LangevinLngvWriter {
 					sb.append("     ");
 					// for structural sites, the index is just the position in the component list, starting with 0,
 					// which is exactly what we have here with siteIndex
-					lpmc.writeSite(sb, siteIndex, initialState);
+					writeSite(sb, lpmc, siteIndex, initialState);
 				}
 			}
 			sb.append("\n");
@@ -1158,7 +1214,7 @@ public class LangevinLngvWriter {
 	public void writeBondCounters(StringBuilder sb) {
 		for (Map.Entry<LangevinParticleJumpProcess,SubDomain> entry : particleJumpProcessMap.entrySet()) {
 			LangevinParticleJumpProcess lpjp = entry.getKey();
-			if(lpjp.getSubtype() == ReactionRuleSpec.Subtype.BINDING) {
+			if(lpjp.getSubtype() == LangevinParticleJumpProcess.ParticleSubtype.BINDING) {
 				if(lpjp.getName().endsWith("_reverse")) {
 					continue;
 				}

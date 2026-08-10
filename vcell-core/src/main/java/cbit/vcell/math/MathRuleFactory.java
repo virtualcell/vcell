@@ -4,15 +4,14 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
-import org.vcell.model.rbm.RbmUtils;
-import org.vcell.model.rbm.RuleAnalysis;
-import org.vcell.model.rbm.RuleAnalysis.MolecularComponentEntry;
-import org.vcell.model.rbm.RuleAnalysis.MolecularTypeEntry;
-import org.vcell.model.rbm.RuleAnalysis.ParticipantEntry;
-import org.vcell.model.rbm.RuleAnalysis.ParticipantType;
-import org.vcell.model.rbm.RuleAnalysis.ProductBondEntry;
-import org.vcell.model.rbm.RuleAnalysis.ReactantBondEntry;
-import org.vcell.model.rbm.RuleAnalysis.RuleEntry;
+import cbit.vcell.math.RuleAnalysis;
+import cbit.vcell.math.RuleAnalysis.MolecularComponentEntry;
+import cbit.vcell.math.RuleAnalysis.MolecularTypeEntry;
+import cbit.vcell.math.RuleAnalysis.ParticipantEntry;
+import cbit.vcell.math.RuleAnalysis.ParticipantType;
+import cbit.vcell.math.RuleAnalysis.ProductBondEntry;
+import cbit.vcell.math.RuleAnalysis.ReactantBondEntry;
+import cbit.vcell.math.RuleAnalysis.RuleEntry;
 
 import cbit.vcell.math.ParticleJumpProcess.ProcessSymmetryFactor;
 import cbit.vcell.math.ParticleMolecularComponentPattern.ParticleBondType;
@@ -88,7 +87,7 @@ public class MathRuleFactory {
 			for (MathParticipantEntry product : getProductEntries()){
 				productPatterns.add(product.particleSpeciesPattern);
 			}
-			return RbmUtils.toBnglStringShort(particleJumpProcess, reactantPatterns, productPatterns);
+			return ParticleBnglStringWriter.toBnglStringShort(particleJumpProcess, reactantPatterns, productPatterns);
 		}
 
 		@Override
@@ -227,7 +226,7 @@ public class MathRuleFactory {
 
 		@Override
 		public String getMolecularTypeBNGL() {
-			return RbmUtils.toBnglString(particleMolecularTypePattern.getMolecularType());
+			return ParticleBnglStringWriter.toBnglString(particleMolecularTypePattern.getMolecularType());
 		}
 	}
 	

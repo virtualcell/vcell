@@ -17,18 +17,89 @@ import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 
-import cbit.vcell.mapping.ReactionRuleSpec;
-import cbit.vcell.mapping.ReactionRuleSpec.Subtype;
-import cbit.vcell.mapping.ReactionRuleSpec.TransitionCondition;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionUtils;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 
 public class LangevinParticleJumpProcess extends ParticleJumpProcess {
-//	private ReactionRuleSpec rrr = null;
-	private Subtype subtype = null;
-	private TransitionCondition transitionCondition = null;
-	private double bondLength = 0;
+
+	/**
+	 * Math-namespace equivalent of the biological {@code ReactionRuleSpec.Subtype}.
+	 * <p>
+	 * Duplicated rather than imported, following {@code ParticleMolecularComponentPattern.ParticleBondType}:
+	 * a math description must be describable without reference to the application that generated it.
+	 * {@code columnName} is the VCML wire name and must not change.
+	 */
+	public enum ParticleSubtype {
+		INCOMPATIBLE("Not Compatible"),
+		CREATION("Creation"),
+		DECAY("Decay"),
+		TRANSITION("Transition"),
+		ALLOSTERIC("Allosteric"),
+		BINDING("Binding");
+
+		final public String columnName;
+		private ParticleSubtype(String columnName) {
+			this.columnName = columnName;
+		}
+		public static ParticleSubtype fromName(String nameCandidate) {
+			for(ParticleSubtype st : ParticleSubtype.values()) {
+				if(st.columnName.equals(nameCandidate)) {
+					return st;
+				}
+			}
+			return null;
+		}
+	}
+
+	/**
+	 * Math-namespace equivalent of the biological {@code ReactionRuleSpec.TransitionCondition}.
+	 * <p>
+	 * {@code vcellName} is the VCML wire name; {@code lngvName} is what the Langevin solver input uses.
+	 * Neither may change. The terminology is genuinely confusing across layers - see the biological
+	 * {@code MolecularComponentPattern.BondType} comments for the correspondence.
+	 */
+	public enum ParticleTransitionCondition {
+		NONE("Any", "None"),
+		FREE("Unbound", "Free"),
+		BOUND("Bound", "Bound");
+
+		final public String vcellName;
+		final public String lngvName;
+		private ParticleTransitionCondition(String vcellName, String lngvName) {
+			this.vcellName = vcellName;
+			this.lngvName = lngvName;
+		}
+		public static ParticleTransitionCondition fromVcellName(String nameCandidate) {
+			for(ParticleTransitionCondition tc : ParticleTransitionCondition.values()) {
+				if(tc.vcellName.equals(nameCandidate)) {
+					return tc;
+				}
+			}
+			return null;
+		}
+		public static ParticleTransitionCondition fromLngvName(String nameCandidate) {
+			for(ParticleTransitionCondition tc : ParticleTransitionCondition.values()) {
+				if(tc.lngvName.equals(nameCandidate)) {
+					return tc;
+				}
+			}
+			return null;
+		}
+	}
+
+	private ParticleSubtype subtype = null;
+	private ParticleTransitionCondition transitionCondition = null;
+	/**
+	 * Bond length for BINDING reactions.
+	 * <p>
+	 * An {@link Expression} rather than a double because every scalar quantity in a math description
+	 * is an expression, even where math generation only ever produces a literal today - it may later
+	 * be linked to a {@link Constant} symbol, and comparison then follows the same functional
+	 * equivalence rules as the rest of the math layer rather than exact bit equality.
+	 */
+	private Expression bondLength = new Expression(0.0);
 	
 
 
@@ -52,10 +123,21 @@ public LangevinParticleJumpProcess(String name, List<ParticleVariable> particles
  */
 public boolean compareEqual(org.vcell.util.Matchable object) 
 {
-	if (!(object instanceof LangevinParticleJumpProcess)) {
+	// exact class, not instanceof: the superclass accepts any ParticleJumpProcess, so an instanceof
+	// test here would make comparison depend on which side it is called from.
+	if (object == null || !getClass().equals(object.getClass())) {
 		return false;
 	}
-	if(false) {			// TODO: compare everything that needs comparing
+	LangevinParticleJumpProcess other = (LangevinParticleJumpProcess)object;
+	if(subtype != other.subtype) {
+		return false;
+	}
+	if(transitionCondition != other.transitionCondition) {	// null unless the subtype is TRANSITION
+		return false;
+	}
+	// Exact comparison: this is the "identical" tier. Tolerance belongs to the equivalence tier,
+	// as it does for expressions (ExpressionUtils.functionallyEquivalent).
+	if(!Compare.isEqualOrNull(bondLength, other.bondLength, new ExpressionUtils.ExpressionEquivalencePredicate())) {
 		return false;
 	}
 	return super.compareEqual(object);
@@ -72,13 +154,13 @@ public String getVCML()
 	// the jump process will be written inside compartment brackets, therefore a "\t" is needed
 	buffer.append("\t"+VCML.LangevinParticleJumpProcess+"\t"+getName()+" "+VCML.BeginBlock+"\n");
 	buffer.append("\t\t" + VCML.Subtype + "\t\t\t" + subtype.columnName+"\n");
-	if(Subtype.TRANSITION == subtype) {
+	if(ParticleSubtype.TRANSITION == subtype) {
 		buffer.append("\t\t" + VCML.TransitionCondition + "\t\t" + transitionCondition.vcellName + "\n");
 	} else {
 		buffer.append("\t\t" + VCML.TransitionCondition + "\t\t" + " - " + "\n");
 	}
-	if(Subtype.BINDING == subtype) {
-		buffer.append("\t\t" + VCML.BondLength + "\t\t\t" + bondLength + "\n");
+	if(ParticleSubtype.BINDING == subtype) {
+		buffer.append("\t\t" + VCML.BondLength + "\t\t\t" + bondLength.infix() + "\n");
 	} else {
 		buffer.append("\t\t" + VCML.BondLength + "\t\t\t" + " - " + "\n");
 	}
@@ -117,9 +199,9 @@ public static LangevinParticleJumpProcess fromVCML(MathDescription mathDesc, Com
 		throw new MathFormatException("expecting "+VCML.BeginBlock+", found "+token);
 	}
 	
-	Subtype subtype = null;
-	TransitionCondition transitionCondition = null;		// may be null if Subtype is not TRANSITION
-	double bondLength = -1;
+	ParticleSubtype subtype = null;
+	ParticleTransitionCondition transitionCondition = null;		// may be null if ParticleSubtype is not TRANSITION
+	Expression bondLength = null;
 	ArrayList<ParticleVariable> particles = new ArrayList<ParticleVariable>();
 	JumpProcessRateDefinition particleRateDef = null;
 	ArrayList<Action> actions = new ArrayList<Action>();
@@ -130,25 +212,26 @@ public static LangevinParticleJumpProcess fromVCML(MathDescription mathDesc, Com
 		if(token.equals(VCML.Subtype)) {
 			token = tokens.nextToken();
 			String subtypeName = token;
-			subtype = Subtype.fromName(subtypeName);
+			subtype = ParticleSubtype.fromName(subtypeName);
 			if(subtype == null) {
-				throw new IllegalArgumentException("Invalid Subtype: " + subtypeName);
+				throw new IllegalArgumentException("Invalid ParticleSubtype: " + subtypeName);
 			}
 		} else if(token.equals(VCML.TransitionCondition)) {
-			if(Subtype.TRANSITION == subtype) {
+			if(ParticleSubtype.TRANSITION == subtype) {
 				token = tokens.nextToken();
 				String transitionConditionName = token;
-				transitionCondition = TransitionCondition.fromVcellName(transitionConditionName);
+				transitionCondition = ParticleTransitionCondition.fromVcellName(transitionConditionName);
 				if(subtype == null) {
-					throw new IllegalArgumentException("Invalid TransitionCondition: " + transitionConditionName);
+					throw new IllegalArgumentException("Invalid ParticleTransitionCondition: " + transitionConditionName);
 				}
 			}
 		} else if(token.equals(VCML.BondLength)) {
 			token = tokens.nextToken();
-			try {
-				bondLength = Double.parseDouble(token);
-			} catch(NumberFormatException ex) {
-				;	// do nothing, the token was '-' which is legal if not a binding reaction
+			// only BINDING reactions carry a bond length; the writer emits '-' for the rest, so guard on the
+			// subtype rather than parsing and swallowing the failure - a genuinely malformed value should be
+			// reported, not silently ignored.
+			if(ParticleSubtype.BINDING == subtype) {
+				bondLength = new Expression(token);
 			}
 		} else if (token.equals(VCML.SelectedParticle)){
 			token = tokens.nextToken();
@@ -196,22 +279,22 @@ public static LangevinParticleJumpProcess fromVCML(MathDescription mathDesc, Com
 	return pjp;
 }
 
-public void setSubtype(Subtype subtype) {
+public void setSubtype(ParticleSubtype subtype) {
 	this.subtype = subtype;
 }
-public Subtype getSubtype() {
+public ParticleSubtype getSubtype() {
 	return subtype;
 }
-public void setTransitionCondition(TransitionCondition transitionCondition) {
+public void setTransitionCondition(ParticleTransitionCondition transitionCondition) {
 	this.transitionCondition = transitionCondition;
 }
-public TransitionCondition getTransitionCondition() {
+public ParticleTransitionCondition getTransitionCondition() {
 	return transitionCondition;
 }
-public void setBondLength(double bondLength) {
+public void setBondLength(Expression bondLength) {
 	this.bondLength  = bondLength;
 }
-public double getBondLength() {
+public Expression getBondLength() {
 	return bondLength;
 }
 

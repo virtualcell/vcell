@@ -98,6 +98,15 @@ public class MathGenCompareTest {
 		Set<String> faults = new HashSet<>();
 		// public models
 
+		// SpringSaLaD: these applications no longer pass validation, so math cannot be generated for
+		// them and their stored math could not be regenerated when the corpus baseline was refreshed.
+		// Failing on validation is arguably correct - the point of listing them is that the corpus still
+		// covers the rejection, and we find out if it ever changes.
+		faults.add("biomodel_274672138.vcml:Application1");                    // springsalad: The Species and the Molecular Type must share the same name
+		faults.add("biomodel_268258319.vcml:Application0");                    // springsalad: forward rate Kf exceeds the diffusion limited rate
+		faults.add("biomodel_316608477.vcml:SS_Ribohop_only_Stiff_RNA");       // springsalad: forward rate Kf exceeds the diffusion limited rate
+		faults.add("biomodel_316608477.vcml:SS_Ribohop_only_flexible_RNA");    // springsalad: forward rate Kf exceeds the diffusion limited rate
+
 		// all flux models
 		faults.add("biomodel_158988094.vcml:Application1"); // local/flux: NPE in StructureSizeSolver.updateUnitStructureSizes_symbolic(StructureSizeSolver.java:649)
 

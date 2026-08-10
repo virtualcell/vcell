@@ -93,9 +93,20 @@ public class ParticleMolecularType implements Serializable, Matchable {
 
 	@Override
 	public boolean compareEqual(Matchable obj) {
-		if (obj instanceof ParticleMolecularType){
+		return compareEqual(obj, false);
+	}
+
+	/** @see LangevinParticleMolecularComponent#compareEqual(Matchable, boolean) */
+	public boolean compareEqual(Matchable obj, boolean bIgnoreDisplayAttributes) {
+		// exact class, not instanceof: otherwise a subclass instance compares equal to a plain one
+		// in one direction only, and Compare.isEqual(List,List) evaluates just v1[i].compareEqual(v2[i]).
+		if (obj != null && getClass().equals(obj.getClass())){
 			ParticleMolecularType other = (ParticleMolecularType)obj;
-			if (!Compare.isEqual(componentList, other.componentList)){
+			// cascade the flag, so a display-only difference inside a site does not surface here
+			if (!Compare.isEqual(componentList, other.componentList, (one, two) ->
+					one instanceof LangevinParticleMolecularComponent
+							? ((LangevinParticleMolecularComponent) one).compareEqual(two, bIgnoreDisplayAttributes)
+							: one.compareEqual(two))){
 				return false;
 			}
 			if (!Compare.isEqual(anchorList.toArray(new String[0]), other.anchorList.toArray(new String[0]))){

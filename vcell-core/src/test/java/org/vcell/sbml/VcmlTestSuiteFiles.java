@@ -994,6 +994,23 @@ public class VcmlTestSuiteFiles {
 //            "biomodel_98707721.vcml",
 //            //"biomodel_98730962.vcml", // public
 //            "biomodel_98745308.vcml",
+
+            // SpringSaLaD (Langevin) applications - the only rule-based particle flavour
+            // that had no math-generation coverage at all.
+            "biomodel_267795255.vcml",
+            "biomodel_268258319.vcml",
+            "biomodel_268643392.vcml",
+            "biomodel_268643453.vcml",
+            "biomodel_269452600.vcml",
+            "biomodel_274672138.vcml",
+            "biomodel_302567430.vcml",
+            "biomodel_310275319.vcml",
+            "biomodel_313167724.vcml",
+            "biomodel_315318780.vcml",
+            "biomodel_316331449.vcml",
+            "biomodel_316363705.vcml",
+            "biomodel_316365832.vcml",
+            "biomodel_316608477.vcml",
     };
 
     public static String[] getVcmlTestCases() {

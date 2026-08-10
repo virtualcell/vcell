@@ -28,14 +28,25 @@ public class LangevinParticleMolecularType extends ParticleMolecularType {
 	
 	@Override
 	public boolean compareEqual(Matchable obj) {
-		if(!(obj instanceof LangevinParticleMolecularType)) {
+		return compareEqual(obj, false);
+	}
+
+	/** is2D and the internal links both reach the solver, so the flag only affects the sites below. */
+	@Override
+	public boolean compareEqual(Matchable obj, boolean bIgnoreDisplayAttributes) {
+		// exact class, not instanceof: the superclass accepts any ParticleMolecularType, so an
+		// instanceof test here would make comparison depend on which side it is called from.
+		if(obj == null || !getClass().equals(obj.getClass())) {
 			return false;
 		}
 		LangevinParticleMolecularType other = (LangevinParticleMolecularType)obj;
-		if (false) {
-			return false;			// TODO: compare everything that needs comparing
+		if(is2D != other.is2D) {
+			return false;
 		}
-		return super.compareEqual(obj);
+		if(!linkNames(internalLinkSpec).equals(linkNames(other.internalLinkSpec))) {
+			return false;
+		}
+		return super.compareEqual(obj, bIgnoreDisplayAttributes);
 	}
 	
 	public String getVCML() {
@@ -79,7 +90,7 @@ public class LangevinParticleMolecularType extends ParticleMolecularType {
 			}
 			if(token.equalsIgnoreCase(VCML.Is2D)) {
 				token = tokens.nextToken();
-				setIs2D(Boolean.getBoolean(token));
+				setIs2D(Boolean.parseBoolean(token));	// getBoolean reads a system property, not the token
 				continue;
 			}
 			if (token.equalsIgnoreCase(VCML.Links)) {
@@ -138,5 +149,20 @@ public class LangevinParticleMolecularType extends ParticleMolecularType {
 	}
 	public void setIs2D(boolean is2D) {
 		this.is2D = is2D;
+	}
+
+	/**
+	 * Internal links reduced to the pair of site names they join, so two molecular types can be
+	 * compared without depending on the iteration order of the link set or on component identity.
+	 * Links are treated as directed, matching how they are written to VCML and to the solver input.
+	 */
+	private static Set<String> linkNames(Set<Pair<LangevinParticleMolecularComponent, LangevinParticleMolecularComponent>> links) {
+		Set<String> names = new LinkedHashSet<>();
+		if(links != null) {
+			for(Pair<LangevinParticleMolecularComponent, LangevinParticleMolecularComponent> link : links) {
+				names.add(link.one.getName() + VCML.LinkSeparator + link.two.getName());
+			}
+		}
+		return names;
 	}
 }

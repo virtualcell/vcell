@@ -39,6 +39,18 @@ public class SEDMLExporterVCMLTest extends SEDMLExporterCommon {
 		faults.put("biomodel_55178308.vcml", FAULT.MATHOVERRIDES_INVALID); // VolFract_ER_spine invalid override.
 		faults.put("biomodel_84982474.vcml", FAULT.UNSUPPORTED_NONSPATIAL_STOCH_HISTOGRAM); // not supported nonspatial histogram
 		faults.put("biomodel_259882394.vcml", FAULT.SEDML_UNSUPPORTED_ENTITY); // Unsupported entity in VCML model export: class cbit.vcell.mapping.SimulationContext$SimulationContextParameter"
+
+		// SpringSaLaD models added to the corpus for MathGenCompareTest. Both faults below are in
+		// existing code, not in the SpringSaLaD support - they are simply newly exercised.
+		//
+		// applications that cannot generate math at all - tracked in issue #1876, and registered in
+		// MathGenCompareTest.knownMathGenerationFailures() for the same reason
+		faults.put("biomodel_268258319.vcml", FAULT.MATH_GENERATION_FAILURE);  // rate-limited application
+		faults.put("biomodel_274672138.vcml", FAULT.MATH_GENERATION_FAILURE);  // species s0/s1 vs molecular types MT0/MT1
+		faults.put("biomodel_316608477.vcml", FAULT.MATH_GENERATION_FAILURE);  // rate-limited application
+		// the same exporter limitation already recorded above for biomodel_188880263.vcml
+		faults.put("biomodel_268643392.vcml", FAULT.SEDML_UNSUPPORTED_ENTITY); // Unsupported entity in VCML model export: class cbit.vcell.mapping.ParameterContext$LocalParameter"
+		faults.put("biomodel_268643453.vcml", FAULT.SEDML_UNSUPPORTED_ENTITY); // Unsupported entity in VCML model export: class cbit.vcell.mapping.ParameterContext$LocalParameter"
 		return faults;
 	}
 

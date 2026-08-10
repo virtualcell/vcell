@@ -5,10 +5,10 @@ import java.util.Map;
 
 import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularTypePattern;
-import org.vcell.model.rbm.RuleAnalysis;
-import org.vcell.model.rbm.RuleAnalysis.MolecularComponentEntry;
-import org.vcell.model.rbm.RuleAnalysis.MolecularTypeEntry;
-import org.vcell.model.rbm.RuleAnalysisReport;
+import cbit.vcell.math.RuleAnalysis;
+import cbit.vcell.math.RuleAnalysis.MolecularComponentEntry;
+import cbit.vcell.math.RuleAnalysis.MolecularTypeEntry;
+import cbit.vcell.math.RuleAnalysisReport;
 
 import cbit.vcell.graph.ReactionCartoon.RuleAnalysisChanged;
 import cbit.vcell.graph.ShapeModeInterface;

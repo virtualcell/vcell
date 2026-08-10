@@ -14,6 +14,37 @@ import java.util.stream.Stream;
 public class SEDMLExporterSBMLTest extends SEDMLExporterCommon {
 
 	/**
+	 * SBML export and import of rule-based models is not supported, so a model whose every
+	 * application is rule-based has nothing to contribute to an SBML round-trip test - the export
+	 * yields no models and the test fails on the empty result rather than on anything meaningful.
+	 * <p>
+	 * These are the SpringSaLaD models in the corpus, which are rule-based by construction. They are
+	 * excluded here rather than registered as {@code unsupportedApplications}, because that
+	 * mechanism records an application the exporter is expected to skip within a model it can still
+	 * export - here there is no exportable remainder.
+	 * <p>
+	 * They remain fully exercised by {@code MathGenCompareTest}, which is what the corpus was added for.
+	 */
+	static Set<String> ruleBasedSet() {
+		Set<String> ruleBasedModels = new HashSet<>();
+		ruleBasedModels.add("biomodel_267795255.vcml");
+		ruleBasedModels.add("biomodel_268258319.vcml");
+		ruleBasedModels.add("biomodel_268643392.vcml");
+		ruleBasedModels.add("biomodel_268643453.vcml");
+		ruleBasedModels.add("biomodel_269452600.vcml");
+		ruleBasedModels.add("biomodel_274672138.vcml");
+		ruleBasedModels.add("biomodel_302567430.vcml");
+		ruleBasedModels.add("biomodel_310275319.vcml");
+		ruleBasedModels.add("biomodel_313167724.vcml");
+		ruleBasedModels.add("biomodel_315318780.vcml");
+		ruleBasedModels.add("biomodel_316331449.vcml");
+		ruleBasedModels.add("biomodel_316363705.vcml");
+		ruleBasedModels.add("biomodel_316365832.vcml");
+		ruleBasedModels.add("biomodel_316608477.vcml");
+		return ruleBasedModels;
+	}
+
+	/**
 	 * 	each file in the slowTestSet takes > 10s on disk and is not included in the unit test (move to integration testing)
 	 */
 	static Set<String> slowTestSet() {
@@ -338,6 +369,7 @@ public class SEDMLExporterSBMLTest extends SEDMLExporterCommon {
 		Predicate<String> skipFilter_SBML = (t) ->
 				!outOfMemorySet().contains(t) &&
 				!largeFileSet().contains(t) &&
+				!ruleBasedSet().contains(t) &&
 				(includeSlow || !slowTestSet().contains(t));
 		Stream<TestCase> sbml_test_cases = Arrays.stream(VcmlTestSuiteFiles.getVcmlTestCases()).filter(skipFilter_SBML).map(fName -> new TestCase(fName, ModelFormat.SBML));
 		return org.vcell.test.TestShard.shard(sbml_test_cases.collect(Collectors.toList()));
