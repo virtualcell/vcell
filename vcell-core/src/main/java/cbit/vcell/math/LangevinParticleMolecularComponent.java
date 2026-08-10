@@ -38,6 +38,19 @@ public class LangevinParticleMolecularComponent extends ParticleMolecularCompone
 
 	@Override
 	public boolean compareEqual(Matchable obj) {
+		return compareEqual(obj, false);
+	}
+
+	/**
+	 * @param bIgnoreDisplayAttributes skip attributes that are persisted but never reach the solver, so
+	 *        they cannot change what a simulation computes - currently just colour.
+	 *        <p>
+	 *        Used by the equivalence tier, where a difference clears
+	 *        {@code SimulationVersion.parentSimulationReference} and hides the user's existing results;
+	 *        a colour change must not cost them their results. The identical tier passes {@code false},
+	 *        because the math still has to be saved or the edit is lost.
+	 */
+	public boolean compareEqual(Matchable obj, boolean bIgnoreDisplayAttributes) {
 		// exact class, not instanceof: the superclass accepts any ParticleMolecularComponent, so an
 		// instanceof test here would make comparison depend on which side it is called from.
 		if (obj == null || !getClass().equals(obj.getClass())) {
@@ -62,8 +75,9 @@ public class LangevinParticleMolecularComponent extends ParticleMolecularCompone
 		// Colour is part of the persisted math, so it is compared here to keep "identical" meaning
 		// identical - without it a colour edit would not be saved. It does not reach the solver
 		// input, so an equivalence tier may legitimately ignore it.
-		if(!Compare.isEqualOrNull(fieldColor == null ? null : fieldColor.getName(),
-				other.fieldColor == null ? null : other.fieldColor.getName())) {
+		if(!bIgnoreDisplayAttributes
+				&& !Compare.isEqualOrNull(fieldColor == null ? null : fieldColor.getName(),
+						other.fieldColor == null ? null : other.fieldColor.getName())) {
 			return false;
 		}
 		return super.compareEqual(obj);

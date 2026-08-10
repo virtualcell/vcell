@@ -28,6 +28,12 @@ public class LangevinParticleMolecularType extends ParticleMolecularType {
 	
 	@Override
 	public boolean compareEqual(Matchable obj) {
+		return compareEqual(obj, false);
+	}
+
+	/** is2D and the internal links both reach the solver, so the flag only affects the sites below. */
+	@Override
+	public boolean compareEqual(Matchable obj, boolean bIgnoreDisplayAttributes) {
 		// exact class, not instanceof: the superclass accepts any ParticleMolecularType, so an
 		// instanceof test here would make comparison depend on which side it is called from.
 		if(obj == null || !getClass().equals(obj.getClass())) {
@@ -40,7 +46,7 @@ public class LangevinParticleMolecularType extends ParticleMolecularType {
 		if(!linkNames(internalLinkSpec).equals(linkNames(other.internalLinkSpec))) {
 			return false;
 		}
-		return super.compareEqual(obj);
+		return super.compareEqual(obj, bIgnoreDisplayAttributes);
 	}
 	
 	public String getVCML() {

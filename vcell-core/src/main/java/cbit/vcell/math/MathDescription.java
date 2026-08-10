@@ -357,6 +357,23 @@ public class MathDescription implements Versionable, Matchable, SymbolTable, Ser
             if(oldMathDesc.compareEqual(newMathDesc)){
                 return new MathCompareResults(Decision.MathEquivalent_FLATTENED);
             } else {
+                //
+                // Particle molecular types describe the molecules the particle solvers move - sites, radii,
+                // diffusion rates, internal links. Canonicalisation only flattens equations over state
+                // variables, so it neither compares nor preserves them; without this a changed site radius
+                // reaches the end of this method and is called equivalent, leaving stale results attached to
+                // an edited model.
+                //
+                // Display-only attributes are ignored here: a difference at this tier clears
+                // SimulationVersion.parentSimulationReference and hides the user's results, which a colour
+                // change must not do. compareEqual (the identical tier) still sees colour, so the edit saves.
+                //
+                if(!Compare.isEqual(oldMathDesc.particleMolecularTypes, newMathDesc.particleMolecularTypes,
+                        (one, two) -> ((ParticleMolecularType) one).compareEqual(two, true))){
+                    String msg = oldMathDesc.particleMolecularTypes.size() + " vs " + newMathDesc.particleMolecularTypes.size() + " molecular type(s)";
+                    logMathTexts(this, newMathDesc, Decision.MathDifferent_DIFFERENT_PARTICLE_MOLECULAR_TYPES, msg);
+                    return new MathCompareResults(Decision.MathDifferent_DIFFERENT_PARTICLE_MOLECULAR_TYPES, msg);
+                }
                 //if (!bSilent) System.out.println("------NATIVE MATHS ARE DIFFERENT----------------------");
                 if(!oldMathDesc.postProcessingBlock.compareEqual(newMathDesc.postProcessingBlock)){
                     logMathTexts(this, newMathDesc, Decision.MathDifferent_DIFFERENT_PostProcessingBlock, "");

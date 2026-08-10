@@ -33,6 +33,7 @@ public class MathCompareResults {
 		MathDifferent_EQUATION_REMOVED(false,"MathDifferent:EquationRemoved"),
 		MathDifferent_UNKNOWN_DIFFERENCE_IN_EQUATION(false,"MathDifferent:UnknownDifferenceInEquation"),
 		MathDifferent_DIFFERENT_PARTICLE_PROPERTIES(false,"MathDifferent:DifferentParticleProperties"),
+		MathDifferent_DIFFERENT_PARTICLE_MOLECULAR_TYPES(false,"MathDifferent:DifferentParticleMolecularTypes"),
 		MathDifferent_DIFFERENT_NUMBER_OF_JUMP_PROCESS(false,"MathDifferent:DifferentNumJumpProcs"),
 		MathDifferent_DIFFERENT_JUMP_PROCESS(false,"MathDifferent:DifferentJumpProc"),
 		MathDifferent_DIFFERENT_NUMBER_OF_PARTICLE_JUMP_PROCESS(false,"MathDifferent:DifferentNumParticleJumpProcs"),
