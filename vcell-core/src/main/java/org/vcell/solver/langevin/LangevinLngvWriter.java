@@ -6,6 +6,7 @@ import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.mapping.ReactionRuleSpec;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.math.*;
+import org.vcell.util.springsalad.IOHelp;
 import cbit.vcell.math.ParticleProperties.ParticleInitialCondition;
 import cbit.vcell.math.ParticleProperties.ParticleInitialConditionCount;
 import cbit.vcell.model.Structure;
@@ -88,6 +89,43 @@ public class LangevinLngvWriter {
 			throw new SolverException("SpringSaLaD: " + what + " for '" + owner + "' is '" + expression.infix()
 					+ "', which does not resolve to a number: " + e.getMessage(), e);
 		}
+	}
+
+
+	/**
+	 * Write the .lngv TYPE line for a site.
+	 * <p>
+	 * Lives here, not on the math class: the solver input format is this wrapper's concern, and a math
+	 * description must be describable without knowing how any particular solver reads it. See
+	 * docs/architecture-layers.md, P4.
+	 */
+	private static void writeType(StringBuilder sb, LangevinParticleMolecularComponent component) {
+		sb.append("TYPE: Name \"" + component.getName() + "\"");
+		sb.append(" Radius " + IOHelp.DF[5].format(component.getRadius())
+				+ " D " + IOHelp.DF[3].format(component.getDiffusionRate())
+				+ " Color " + component.getColor().getName());
+		sb.append(" STATES ");
+		if(component.getComponentStateDefinitions() == null || component.getComponentStateDefinitions().size() == 0) {
+			sb.append("\"" + StateZero + "\"" + " ");
+		} else {
+			for (ParticleComponentStateDefinition state : component.getComponentStateDefinitions()) {
+				sb.append("\"" + state.getName() + "\"" + " ");
+			}
+		}
+		sb.append("\n");
+	}
+
+	/** Write the .lngv SITE block for a site. @see #writeType(StringBuilder, LangevinParticleMolecularComponent) */
+	private static void writeSite(StringBuilder sb, LangevinParticleMolecularComponent component, int index, String initialState) {
+		sb.append("SITE " + index +
+				" : " + component.getLocation() + " : Initial State '" + initialState + "'");
+		sb.append("\n");
+		sb.append("          ");
+		writeType(sb, component);	// ex: TYPE: Name "Type2" Radius 1.00000 D 1.000 Color LIME STATES "State0" "State1"
+		sb.append("          " + "x " + IOHelp.DF[5].format(component.getCoordinate().getX()) + " y " +
+				IOHelp.DF[5].format(component.getCoordinate().getY()) + " z " +
+				IOHelp.DF[5].format(component.getCoordinate().getZ()) + " ");		// ex: x 4.00000 y 4.00000 z 20.00000
+		sb.append("\n");
 	}
 
 	public String writeLangevinLngv() throws SolverException, DivideByZeroException, ExpressionException {
@@ -953,7 +991,7 @@ public class LangevinLngvWriter {
 				}
 				LangevinParticleMolecularComponent lpmc = (LangevinParticleMolecularComponent)pmc;
 				sb.append("     ");
-				lpmc.writeType(sb);
+				writeType(sb, lpmc);
 			}
 			sb.append("\n");
 			for(int siteIndex = 0; siteIndex < lpmt.getComponentList().size(); siteIndex++) {
@@ -975,7 +1013,7 @@ public class LangevinLngvWriter {
 					}
 					LangevinParticleMolecularComponent lpmc = (LangevinParticleMolecularComponent) pmc;
 					sb.append("     ");
-					lpmc.writeSite(sb, lpmt.getComponentList().indexOf(lpmc), initialState);
+					writeSite(sb, lpmc, lpmt.getComponentList().indexOf(lpmc), initialState);
 				} else {
 					structuralSiteSet.add(pmc);
 					// if there is no pattern for the component, we assume it's a structural site with no state,
@@ -985,7 +1023,7 @@ public class LangevinLngvWriter {
 					sb.append("     ");
 					// for structural sites, the index is just the position in the component list, starting with 0,
 					// which is exactly what we have here with siteIndex
-					lpmc.writeSite(sb, siteIndex, initialState);
+					writeSite(sb, lpmc, siteIndex, initialState);
 				}
 			}
 			sb.append("\n");

@@ -46,11 +46,19 @@ public class MathNamespaceSeparationTest {
 
 	private static final Path MATH_SOURCE_DIR = Paths.get("src/main/java/cbit/vcell/math");
 
-	private static final List<String> BIOLOGICAL_PACKAGES = Arrays.asList(
+	/**
+	 * Packages the math namespace must not depend on: the layer above it and the layer below.
+	 * <p>
+	 * Biological, because a math description must stand alone (architecture P1). Solver, because a
+	 * solver's input format is that solver wrapper's concern (P4) - a {@code writeXxx(StringBuilder)}
+	 * on a math class emitting solver syntax is how the dependency creeps back in.
+	 */
+	private static final List<String> FORBIDDEN_PACKAGES = Arrays.asList(
 			"cbit.vcell.model.",
 			"cbit.vcell.mapping.",
 			"cbit.vcell.biomodel.",
-			"org.vcell.model.");
+			"org.vcell.model.",
+			"org.vcell.solver.");
 
 	/**
 	 * Known remaining violations, each with the reason it is still here. This list may shrink,
@@ -89,7 +97,7 @@ public class MathNamespaceSeparationTest {
 						continue;
 					}
 					final String imported = matcher.group(1);
-					if (BIOLOGICAL_PACKAGES.stream().anyMatch(imported::startsWith)) {
+					if (FORBIDDEN_PACKAGES.stream().anyMatch(imported::startsWith)) {
 						found.add(source.getFileName() + " -> " + imported);
 					}
 				}
@@ -103,7 +111,8 @@ public class MathNamespaceSeparationTest {
 		staleExceptions.removeAll(found);
 
 		if (!unexpected.isEmpty()) {
-			fail("cbit.vcell.math must not import biological types - the math description has to stand alone.\n"
+			fail("cbit.vcell.math must not import biological or solver types - the math description has to\n"
+					+ "stand alone, and solver formats belong to the solver wrapper.\n"
 					+ "New violation(s):\n  " + String.join("\n  ", unexpected) + "\n\n"
 					+ "Duplicate the concept into cbit.vcell.math under a Particle* name and translate at the\n"
 					+ "mapping boundary; see docs/springsalad-abstractions.md. Do not add it to ACCEPTED.");
