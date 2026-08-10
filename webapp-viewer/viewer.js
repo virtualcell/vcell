@@ -71,6 +71,7 @@ const state = {
   selectedDomain: '',
   geometryId: '',
   dimension: 3,
+  bodyFitted: false, // MovingBoundary runs: solver's body-fitted mesh, geometry varies per time
   bounds: null,
   sliceAxis: -1,
   slicePos: 50,
@@ -204,7 +205,10 @@ function nearestTimeIndex(t) {
 
 async function loadGeometry() {
   setStatus(`loading geometry for ${state.selectedDomain}…`);
-  const geometry = await fetchJson(url('/grid', { domain: state.selectedDomain }), '/grid');
+  const geometry = await fetchJson(url('/grid', {
+    domain: state.selectedDomain,
+    ...(state.bodyFitted ? { time: String(state.times[state.timeIndex]) } : {}),
+  }), '/grid');
   state.geometryId = geometry.geometryId;
   return geometry;
 }
@@ -412,10 +416,16 @@ async function buildGrid(geometry, field) {
     await (await ug.getCellData()).setScalars(arr);
     fieldArray = arr;
   }
-  // the raw grid feeds the smoothing chain and the deform filter; everything the user sees
-  // (shell, crop, cut face) derives from the ONE deformed grid downstream of them
-  await surfSource.setInputData(ug);
-  await deform.setInputData(ug);
+  if (state.bodyFitted) {
+    // MovingBoundary: the mesh IS the solver's body-fitted geometry — no smoothing, no deform,
+    // no crop; the display shows it exactly as computed
+    await geomFilter.setInputData(ug);
+  } else {
+    // the raw grid feeds the smoothing chain and the deform filter; everything the user sees
+    // (shell, crop, cut face) derives from the ONE deformed grid downstream of them
+    await surfSource.setInputData(ug);
+    await deform.setInputData(ug);
+  }
 
   if (field) {
     await mapper.setScalarModeToUseCellData();
@@ -443,6 +453,7 @@ async function buildGrid(geometry, field) {
  */
 async function applyCrop() {
   if (!tableClip) return;
+  if (state.bodyFitted) return; // geomFilter is fed the solver mesh directly in buildGrid
   const axis = state.sliceAxis;
   if (axis < 0) {
     await geomFilter.setInputConnection(await deform.getOutputPort());
@@ -540,6 +551,7 @@ async function buildScene(geometry, field) {
   sinc = vtk.vtkWindowedSincPolyDataFilter();
   await sinc.setInputConnection(await surfSource.getOutputPort());
   state.dimension = geometry.dimension ?? 3;
+  state.bodyFitted = !!geometry.bodyFitted;
   if (state.dimension === 2) {
     // 2D: the quads ARE the display and the mesh's boundary edge is the domain outline — exactly
     // what the convention smooths. A flat regular interior is already a Laplacian fixed point,
@@ -551,9 +563,11 @@ async function buildScene(geometry, field) {
   await sinc.featureEdgeSmoothingOff();
   await sinc.nonManifoldSmoothingOff();
   await sinc.normalizeCoordinatesOn();
-  await sinc.setNumberOfIterations(geometry.sinc.iterations);
-  await sinc.setFeatureAngle(geometry.sinc.feature_angle);
-  await sinc.setPassBand(geometry.sinc.pass_band);
+  if (geometry.sinc) {
+    await sinc.setNumberOfIterations(geometry.sinc.iterations);
+    await sinc.setFeatureAngle(geometry.sinc.feature_angle);
+    await sinc.setPassBand(geometry.sinc.pass_band);
+  }
 
   deform = vtk.vtkVCellDeformGridToSurface(); // our custom filter; bundle >= v1.2.0
   await deform.setSourceConnection(await sinc.getOutputPort());
@@ -802,7 +816,7 @@ function cellCenter(cell) {
 
 let hoverBusy = false;
 async function hoverPick(clientX, clientY) {
-  if (!state.ready || !state.pick || hoverBusy) return;
+  if (!state.ready || !state.pick || hoverBusy || state.bodyFitted) return;
   hoverBusy = true;
   try {
     const { origin, dir } = await rayFromMouse(clientX, clientY);
@@ -829,7 +843,7 @@ async function hoverPick(clientX, clientY) {
  * explicitly ruled out in #1859.
  */
 async function plotPick(clientX, clientY) {
-  if (!state.ready || !state.pick || !state.dataset) return;
+  if (!state.ready || !state.pick || !state.dataset || state.bodyFitted) return;
   try {
     const { origin, dir } = await rayFromMouse(clientX, clientY);
     const cell = castRay(origin, dir);
@@ -974,6 +988,7 @@ const formatPassBand = (v) => (v >= 0.01 ? v.toFixed(3) : v.toExponential(1));
 
 /** Update the readout while dragging, without re-running the filter. */
 function previewSmoothing(strength) {
+  if (state.bodyFitted) return; // the readout explains the mode; there is nothing to preview
   state.smoothing = strength;
   const p = smoothingFor(strength);
   let note = '';
@@ -1026,14 +1041,14 @@ async function refreshField() {
   }
 }
 
-async function rebuildGeometry() {
+async function rebuildGeometry(resetCam = true) {
   if (!state.ready || state.busy || !state.dataset) return;
   state.busy = true;
   const t0 = performance.now();
   try {
     const geometry = await loadGeometry();
     await buildGrid(geometry, await loadField());
-    await renderer.resetCamera();
+    if (resetCam) await renderer.resetCamera();
     await renderWindow.render();
     setStatus(`${describe()} ✓ (${Math.round(performance.now() - t0)} ms)`);
   } catch (e) {
@@ -1049,7 +1064,8 @@ el.time.addEventListener('input', () => {
 });
 el.time.addEventListener('change', () => {
   state.timeIndex = Number(el.time.value);
-  void refreshField();
+  // a body-fitted mesh is a different geometry at each time; keep the camera where the user put it
+  void (state.bodyFitted ? rebuildGeometry(false) : refreshField());
 });
 el.variable.addEventListener('change', () => {
   const chosen = state.variables.find((v) => v.name === el.variable.value);
@@ -1133,11 +1149,15 @@ el.smoothingReset.addEventListener('click', () => {
     state.ready = true;
     el.variable.disabled = false;
     el.time.disabled = state.times.length < 2;
-    el.smoothing.disabled = false;
+    el.smoothing.disabled = state.bodyFitted;
     el.colorbar.disabled = false;
     el.axes.disabled = false;
-    el.sliceAxis.disabled = false;
-    el.statsBtn.disabled = false;
+    el.sliceAxis.disabled = state.bodyFitted;
+    el.statsBtn.disabled = state.bodyFitted;
+    if (state.bodyFitted) {
+      el.smoothingReadout.textContent = 'body-fitted solver mesh — shown as computed';
+      el.smoothingReset.disabled = true;
+    }
     previewSmoothing(state.smoothing);
     setStatus(`rendered ${describe()} ✓ (${Math.round(performance.now() - t0)} ms) — drag to rotate, wheel to zoom`);
   } catch (e) {

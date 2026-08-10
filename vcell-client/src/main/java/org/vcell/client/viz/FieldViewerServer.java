@@ -24,6 +24,8 @@ import org.vcell.util.document.TSJobResultsNoStats;
 import org.vcell.util.document.TSJobResultsSpaceStats;
 import org.vcell.util.document.TimeSeriesJobSpec;
 import org.vcell.util.document.VCDataJobID;
+import org.vcell.vis.io.VtuFileContainer;
+import org.vcell.vis.io.VtuVarInfo;
 import org.vcell.vis.mapping.vcell.CartesianMeshMapping;
 import org.vcell.vis.vcell.CartesianMeshBuilder;
 import org.vcell.vis.vcell.SubdomainInfo;
@@ -42,6 +44,8 @@ import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.simdata.VCDataManager;
+import cbit.vcell.solvers.CartesianMeshMovingBoundary;
+import cbit.vcell.solvers.mb.MovingBoundaryReader;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 
@@ -108,6 +112,9 @@ public final class FieldViewerServer {
 		final SubdomainInfo subdomainInfo;
 		/** Human-readable name of the run, e.g. "model::app::sim"; may be null — the ID always exists, a name may not. */
 		final String simName;
+		/** Lazily detected: MovingBoundary runs serve per-timestep body-fitted meshes via the VTU seam. */
+		volatile Boolean movingBoundary;
+		volatile VtuVarInfo[] vtuVarInfos;
 
 		DataSource(VCSimulationDataIdentifier vcdID, VCDataManager dataManager, SubdomainInfo subdomainInfo,
 				String simName) {
@@ -116,6 +123,30 @@ public final class FieldViewerServer {
 			this.subdomainInfo = subdomainInfo;
 			this.simName = simName;
 		}
+	}
+
+	/**
+	 * Whether this run is a MovingBoundary (mbsolver) run. Detected from the mesh type the data
+	 * manager returns rather than from the simulation, so it works identically for a re-opened
+	 * remote run where only the data still exists. MovingBoundary is a server-only solver, so this
+	 * path always reaches the data over the same remote {@link VCDataManager} seam.
+	 */
+	private static boolean isMovingBoundary(DataSource source) throws Exception {
+		Boolean mb = source.movingBoundary;
+		if (mb == null) {
+			mb = source.dataManager.getMesh(source.vcdID) instanceof CartesianMeshMovingBoundary;
+			source.movingBoundary = mb;
+		}
+		return mb;
+	}
+
+	private static VtuVarInfo[] vtuVarInfos(DataSource source) throws Exception {
+		VtuVarInfo[] infos = source.vtuVarInfos;
+		if (infos == null) {
+			infos = source.dataManager.getVtuVarInfos(emptyOutputContext(), source.vcdID);
+			source.vtuVarInfos = infos;
+		}
+		return infos;
 	}
 
 	/** Raised when a request names a dataset no window has registered; reported as 404. */
@@ -293,6 +324,9 @@ public final class FieldViewerServer {
 	private static String handleInfo(HttpExchange ex) throws Exception {
 		DataSource source = sourceFor(query(ex));
 		VCSimulationDataIdentifier vcdID = source.vcdID;
+		if (isMovingBoundary(source)) {
+			return handleInfoMovingBoundary(source);
+		}
 
 		double[] times = source.dataManager.getDataSetTimes(vcdID);
 		DataIdentifier[] ids = source.dataManager.getDataIdentifiers(emptyOutputContext(), vcdID);
@@ -343,6 +377,9 @@ public final class FieldViewerServer {
 	private static String handleGrid(HttpExchange ex) throws Exception {
 		Map<String, String> q = query(ex);
 		DataSource source = sourceFor(q);
+		if (isMovingBoundary(source)) {
+			return handleGridMovingBoundary(source, q);
+		}
 		String domain = domainOf(q, source);
 		VisMesh visMesh = grid(source, domain);
 
@@ -392,6 +429,184 @@ public final class FieldViewerServer {
 		return sb.toString();
 	}
 
+	// ---------------------------------------------------------------------
+	// MovingBoundary (mbsolver) — per-timestep body-fitted meshes via the VTU seam (#1879)
+	// ---------------------------------------------------------------------
+
+	/**
+	 * MovingBoundary runs serve a DIFFERENT geometry per saved time: the solver's body-fitted 2D
+	 * mesh, whose boundary cells are true cut polygons. These handlers reach it through the
+	 * VTU-era {@link VCDataManager} methods, which are already time-indexed for MovingBoundary
+	 * and already pair each mesh with a per-cell value array by shared ordinal — and which work
+	 * against today's deployed servers with no interface changes (MovingBoundary is server-only,
+	 * so the data always arrives over this remote seam; the server side runs the Python VTK
+	 * service that writes the .vtu). {@link VtuGridParser} converts those bytes to the viewer's
+	 * JSON contract; the geometryId carries the time index, which is what tells the viewer to
+	 * re-fetch geometry as time moves.
+	 */
+	private static String handleInfoMovingBoundary(DataSource source) throws Exception {
+		VCSimulationDataIdentifier vcdID = source.vcdID;
+		double[] times = source.dataManager.getDataSetTimes(vcdID);
+		StringBuilder sb = new StringBuilder(1024);
+		sb.append("{\"simId\":\"").append(jsonEscape(vcdID.getID())).append('"');
+		if (source.simName != null && !source.simName.isEmpty()) {
+			sb.append(",\"simName\":\"").append(jsonEscape(source.simName)).append('"');
+		}
+		sb.append(",\"jobIndex\":").append(vcdID.getJobIndex());
+		sb.append(",\"times\":");
+		appendDoubles(sb, times, times.length);
+		String domain = MovingBoundaryReader.getFakeInsideDomainName();
+		sb.append(",\"domains\":[\"").append(jsonEscape(domain)).append("\"]");
+		sb.append(",\"variables\":[");
+		boolean first = true;
+		for (VtuVarInfo var : vtuVarInfos(source)) {
+			if (var.bMeshVariable || var.dataType != VtuVarInfo.DataType.CellData) {
+				continue;
+			}
+			if (!first) {
+				sb.append(',');
+			}
+			first = false;
+			sb.append("{\"name\":\"").append(jsonEscape(var.name)).append('"');
+			sb.append(",\"domain\":\"").append(jsonEscape(domain)).append('"');
+			sb.append(",\"isFunction\":").append(var.functionExpression != null).append('}');
+		}
+		sb.append("]}");
+		return sb.toString();
+	}
+
+	/** Snaps the requested time to the nearest saved index; defaults to the last one. */
+	private static int timeIndexFor(DataSource source, Map<String, String> q) throws Exception {
+		double[] times = source.dataManager.getDataSetTimes(source.vcdID);
+		if (times == null || times.length == 0) {
+			throw new IllegalArgumentException("run " + source.vcdID.getID() + " has no saved times");
+		}
+		String requested = q.get("time");
+		if (requested == null || requested.isEmpty()) {
+			return times.length - 1;
+		}
+		double target = Double.parseDouble(requested);
+		int best = 0;
+		for (int i = 1; i < times.length; i++) {
+			if (Math.abs(times[i] - target) < Math.abs(times[best] - target)) {
+				best = i;
+			}
+		}
+		return best;
+	}
+
+	private static String mbGeometryId(DataSource source, String domain, int timeIndex) {
+		return source.vcdID.getID() + "/" + domain + "@t" + timeIndex;
+	}
+
+	/** Parsed per-time meshes; a run's meshes are dropped with it in {@link #unregister}. */
+	private static final Map<String, VtuGridParser.VtuGrid> mbGridCache = new HashMap<>();
+
+	private static synchronized VtuGridParser.VtuGrid mbGrid(DataSource source, String domain,
+			int timeIndex) throws Exception {
+		String key = mbGeometryId(source, domain, timeIndex);
+		VtuGridParser.VtuGrid cached = mbGridCache.get(key);
+		if (cached != null) {
+			return cached;
+		}
+		VtuFileContainer container = source.dataManager.getEmptyVtuMeshFiles(source.vcdID, timeIndex);
+		for (VtuFileContainer.VtuMesh mesh : container.vtuMeshes) {
+			if (mesh.domainName.equals(domain)) {
+				VtuGridParser.VtuGrid grid = VtuGridParser.parse(mesh.vtuMeshContents);
+				mbGridCache.put(key, grid);
+				return grid;
+			}
+		}
+		throw new IllegalArgumentException("no VTU mesh for domain '" + domain + "' at time index "
+				+ timeIndex + "; this run has "
+				+ container.vtuMeshes.stream().map(m -> m.domainName).toList());
+	}
+
+	private static String handleGridMovingBoundary(DataSource source, Map<String, String> q) throws Exception {
+		String domain = q.getOrDefault("domain", "");
+		if (domain.isEmpty()) {
+			domain = MovingBoundaryReader.getFakeInsideDomainName();
+		}
+		int timeIndex = timeIndexFor(source, q);
+		VtuGridParser.VtuGrid grid = mbGrid(source, domain, timeIndex);
+
+		StringBuilder sb = new StringBuilder(32 * grid.numPoints() + 32 * grid.cells.length + 512);
+		sb.append("{\"geometryId\":\"").append(jsonEscape(mbGeometryId(source, domain, timeIndex))).append('"');
+		sb.append(",\"dimension\":2,\"bodyFitted\":true");
+		sb.append(",\"timeIndex\":").append(timeIndex);
+		sb.append(",\"numPoints\":").append(grid.numPoints());
+		sb.append(",\"points\":");
+		appendDoubles(sb, grid.points, grid.points.length);
+		sb.append(",\"cellType\":").append(grid.cellTypes.length > 0 ? grid.cellTypes[0] : 7);
+		sb.append(",\"cells\":[");
+		for (int c = 0; c < grid.cells.length; c++) {
+			if (c > 0) {
+				sb.append(',');
+			}
+			sb.append('[');
+			for (int v = 0; v < grid.cells[c].length; v++) {
+				if (v > 0) {
+					sb.append(',');
+				}
+				sb.append(grid.cells[c][v]);
+			}
+			sb.append(']');
+		}
+		sb.append(']');
+		sb.append(",\"domain\":\"").append(jsonEscape(domain)).append('"');
+		sb.append('}');
+		return sb.toString();
+	}
+
+	private static String handleFieldMovingBoundary(DataSource source, Map<String, String> q) throws Exception {
+		String varName = q.get("var");
+		if (varName == null || varName.isEmpty()) {
+			throw new IllegalArgumentException("missing required query parameter 'var'");
+		}
+		String domain = q.getOrDefault("domain", "");
+		if (domain.isEmpty()) {
+			domain = MovingBoundaryReader.getFakeInsideDomainName();
+		}
+		int timeIndex = timeIndexFor(source, q);
+		double[] times = source.dataManager.getDataSetTimes(source.vcdID);
+		double time = times[timeIndex];
+
+		VtuVarInfo varInfo = null;
+		for (VtuVarInfo v : vtuVarInfos(source)) {
+			if (v.name.equals(varName)) {
+				varInfo = v;
+				break;
+			}
+		}
+		if (varInfo == null) {
+			throw new IllegalArgumentException("unknown variable '" + varName + "'");
+		}
+		// the VTU seam's contract: values are ordered by the same sequential inside-cell ordinal
+		// the mesh's cells were written in, so values[i] belongs to cells[i] of the SAME timeIndex
+		double[] values = source.dataManager.getVtuMeshData(emptyOutputContext(), source.vcdID, varInfo, time);
+		double min = Double.POSITIVE_INFINITY;
+		double max = Double.NEGATIVE_INFINITY;
+		for (double v : values) {
+			if (!Double.isNaN(v)) {
+				min = Math.min(min, v);
+				max = Math.max(max, v);
+			}
+		}
+		if (min > max) {
+			min = 0;
+			max = 0;
+		}
+		StringBuilder sb = new StringBuilder(16 * values.length + 256);
+		sb.append("{\"geometryId\":\"").append(jsonEscape(mbGeometryId(source, domain, timeIndex))).append('"');
+		sb.append(",\"name\":\"").append(jsonEscape(varName)).append('"');
+		sb.append(",\"domain\":\"").append(jsonEscape(domain)).append('"');
+		sb.append(",\"time\":").append(time);
+		sb.append(",\"location\":\"cell\",\"values\":");
+		appendDoubles(sb, values, values.length);
+		sb.append(",\"range\":[").append(min).append(',').append(max).append("]}");
+		return sb.toString();
+	}
+
 	/**
 	 * {@code /field?sim=<simKey>&job=<n>&domain=<name>&var=<name>&time=<t>} — one variable at one
 	 * time, as one value per grid cell.
@@ -406,6 +621,9 @@ public final class FieldViewerServer {
 	private static String handleField(HttpExchange ex) throws Exception {
 		Map<String, String> q = query(ex);
 		DataSource source = sourceFor(q);
+		if (isMovingBoundary(source)) {
+			return handleFieldMovingBoundary(source, q);
+		}
 		String domain = domainOf(q, source);
 		String varName = q.get("var");
 		if (varName == null || varName.isEmpty()) {
@@ -458,6 +676,12 @@ public final class FieldViewerServer {
 	private static String handleTimeSeries(HttpExchange ex) throws Exception {
 		Map<String, String> q = query(ex);
 		DataSource source = sourceFor(q);
+		if (isMovingBoundary(source)) {
+			// per-cell ordinals are not stable across time on a moving mesh; needs a
+			// spatial-point formulation (#1879 follow-up)
+			throw new IllegalArgumentException(
+					"not yet supported for MovingBoundary runs");
+		}
 		String domain = domainOf(q, source);
 		String varName = q.get("var");
 		if (varName == null || varName.isEmpty()) {
@@ -512,6 +736,12 @@ public final class FieldViewerServer {
 	private static String handleStats(HttpExchange ex) throws Exception {
 		Map<String, String> q = query(ex);
 		DataSource source = sourceFor(q);
+		if (isMovingBoundary(source)) {
+			// per-cell ordinals are not stable across time on a moving mesh; needs a
+			// spatial-point formulation (#1879 follow-up)
+			throw new IllegalArgumentException(
+					"not yet supported for MovingBoundary runs");
+		}
 		DataIdentifier[] ids = source.dataManager.getDataIdentifiers(emptyOutputContext(), source.vcdID);
 		Set<String> requested = null;
 		String varParam = q.get("var");
@@ -682,6 +912,7 @@ public final class FieldViewerServer {
 	public static synchronized void unregister(VCSimulationDataIdentifier vcdID) {
 		if (dataSources.remove(key(vcdID)) != null) {
 			meshCache.keySet().removeIf(cached -> cached.startsWith(vcdID.getID() + "/"));
+			mbGridCache.keySet().removeIf(cached -> cached.startsWith(vcdID.getID() + "/"));
 		}
 	}
 
