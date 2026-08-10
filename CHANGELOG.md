@@ -16,6 +16,71 @@ followed by flat Keep-a-Changelog categories. API consumers should scan
 
 _(Release-manager scratchpad. Populated at release-cut time.)_
 
+## [8.0.10.01] - 2026-08-10
+
+**Highlights.** Editing a SpringSaLaD model now behaves correctly when the model
+is saved. Comparison of two SpringSaLaD math descriptions was never implemented —
+three of its methods returned a hard-coded "not equal" — so VCell could neither
+tell that a molecule, site or bond had changed nor tell that it had not. Changes
+to site radius, diffusion rate, colour, internal links, the 2D flag, and reaction
+subtype/condition are now compared properly, and each of the three outcomes has
+the consequence it should: an identical math is recognised as identical, an
+equivalent one keeps existing simulation results attached, and a genuinely
+different one hides results that no longer correspond to the math. A comparison
+that fails now also reports *which* object and attribute differ, rather than only
+that something did. Separately, an ActiveMQ client setting that could silently
+drop RPC replies — leaving the caller to wait out its full timeout — is fixed.
+
+### Added
+- SpringSaLaD math descriptions report their differences: `MathCompareResults`
+  carries a list of (path, attribute, old, new) entries, so a non-equivalent
+  result names the molecular type, site or jump process that changed. (#1873)
+- `docs/architecture-layers.md` — the responsibilities of, and permitted
+  dependencies between, the biological, mathematical and solver layers, with each
+  rule marked as stated or inferred so the inferred ones can be corrected. (#1873)
+- Field viewer (flag-off, #1868): 2D simulation results, using the same
+  deformation convention as 3D via `boundarySmoothingOn`, with orthogonal pan and
+  zoom; 1D results explain themselves in a dialog rather than failing.
+- `docs/MESSAGING.md` — the three brokers, the three client stacks, and why
+  Artemis is the intended destination for all of them. (#1864, #1870)
+
+### Changed
+- Field viewer (flag-off, #1866): default boundary smoothing is now 16
+  iterations, and the enable flag is discoverable in the installed
+  `.vmoptions` file instead of having to be known in advance.
+- `cbit.vcell.math` no longer imports anything from the biological or solver
+  layers — 18 violations to zero, enforced by a test that also fails when an
+  accepted exception goes stale. SpringSaLaD scalars in the math layer are now
+  `Expression`s rather than raw doubles, and `.lngv` solver-input writing moved
+  out of the math classes into `LangevinLngvWriter`, which fails loudly when a
+  value does not resolve to a number. (#1873)
+
+### Fixed
+- The ActiveMQ client no longer decides for itself whether a temporary queue
+  still exists. It answered from its own advisory-populated state rather than
+  from the broker, so a connection that had not yet heard about someone else's
+  reply queue refused to publish to it while it was alive — measured at 3.4 ms
+  after creation, with the genuine removal advisory arriving 60 s later. Because
+  a connection is opened per message, RPC replies could be dropped and the caller
+  would wait out its entire timeout. (#1871, issue #1863)
+- `is2D` on a SpringSaLaD molecular type now survives a save and reload. It was
+  read back with `Boolean.getBoolean`, which reads a system property rather than
+  the stored token, and it had no XML path at all despite its tag being
+  declared — so it always came back false. (#1873)
+
+### Notes for API consumers
+- No `/api/v1/` schema changes; `tools/openapi.yaml` is unchanged and the
+  generated Java, Python and TypeScript clients are unaffected.
+- `RuleAnalysis` and `RuleAnalysisReport` moved from `org.vcell.model.rbm` to
+  `cbit.vcell.math`, and the BNGL writing methods that take math types moved from
+  `RbmUtils` to a new `ParticleBnglStringWriter`. These are internal Java types,
+  not part of the REST surface, but they are a source-breaking change for anything
+  compiling against `vcell-core`.
+- `RulebasedTransformer.compareOutputs`, which cross-checked VCell's generated
+  NFSim XML against BioNetGen's, has been removed. It was unreachable, and its
+  loss is noted in `docs/nfsim-abstractions.md` as worth resurrecting as a
+  maintained tool.
+
 ## [8.0.9.01] - 2026-08-08
 
 **Highlights.** Experimental 3D field viewer feature release — everything in it
