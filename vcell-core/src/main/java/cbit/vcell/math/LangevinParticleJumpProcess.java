@@ -18,6 +18,7 @@ import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionUtils;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 
@@ -90,7 +91,15 @@ public class LangevinParticleJumpProcess extends ParticleJumpProcess {
 
 	private ParticleSubtype subtype = null;
 	private ParticleTransitionCondition transitionCondition = null;
-	private double bondLength = 0;
+	/**
+	 * Bond length for BINDING reactions.
+	 * <p>
+	 * An {@link Expression} rather than a double because every scalar quantity in a math description
+	 * is an expression, even where math generation only ever produces a literal today - it may later
+	 * be linked to a {@link Constant} symbol, and comparison then follows the same functional
+	 * equivalence rules as the rest of the math layer rather than exact bit equality.
+	 */
+	private Expression bondLength = new Expression(0.0);
 	
 
 
@@ -128,7 +137,7 @@ public boolean compareEqual(org.vcell.util.Matchable object)
 	}
 	// Exact comparison: this is the "identical" tier. Tolerance belongs to the equivalence tier,
 	// as it does for expressions (ExpressionUtils.functionallyEquivalent).
-	if(Double.compare(bondLength, other.bondLength) != 0) {
+	if(!Compare.isEqualOrNull(bondLength, other.bondLength, new ExpressionUtils.ExpressionEquivalencePredicate())) {
 		return false;
 	}
 	return super.compareEqual(object);
@@ -151,7 +160,7 @@ public String getVCML()
 		buffer.append("\t\t" + VCML.TransitionCondition + "\t\t" + " - " + "\n");
 	}
 	if(ParticleSubtype.BINDING == subtype) {
-		buffer.append("\t\t" + VCML.BondLength + "\t\t\t" + bondLength + "\n");
+		buffer.append("\t\t" + VCML.BondLength + "\t\t\t" + bondLength.infix() + "\n");
 	} else {
 		buffer.append("\t\t" + VCML.BondLength + "\t\t\t" + " - " + "\n");
 	}
@@ -192,7 +201,7 @@ public static LangevinParticleJumpProcess fromVCML(MathDescription mathDesc, Com
 	
 	ParticleSubtype subtype = null;
 	ParticleTransitionCondition transitionCondition = null;		// may be null if ParticleSubtype is not TRANSITION
-	double bondLength = -1;
+	Expression bondLength = null;
 	ArrayList<ParticleVariable> particles = new ArrayList<ParticleVariable>();
 	JumpProcessRateDefinition particleRateDef = null;
 	ArrayList<Action> actions = new ArrayList<Action>();
@@ -218,10 +227,11 @@ public static LangevinParticleJumpProcess fromVCML(MathDescription mathDesc, Com
 			}
 		} else if(token.equals(VCML.BondLength)) {
 			token = tokens.nextToken();
-			try {
-				bondLength = Double.parseDouble(token);
-			} catch(NumberFormatException ex) {
-				;	// do nothing, the token was '-' which is legal if not a binding reaction
+			// only BINDING reactions carry a bond length; the writer emits '-' for the rest, so guard on the
+			// subtype rather than parsing and swallowing the failure - a genuinely malformed value should be
+			// reported, not silently ignored.
+			if(ParticleSubtype.BINDING == subtype) {
+				bondLength = new Expression(token);
 			}
 		} else if (token.equals(VCML.SelectedParticle)){
 			token = tokens.nextToken();
@@ -281,10 +291,10 @@ public void setTransitionCondition(ParticleTransitionCondition transitionConditi
 public ParticleTransitionCondition getTransitionCondition() {
 	return transitionCondition;
 }
-public void setBondLength(double bondLength) {
+public void setBondLength(Expression bondLength) {
 	this.bondLength  = bondLength;
 }
-public double getBondLength() {
+public Expression getBondLength() {
 	return bondLength;
 }
 

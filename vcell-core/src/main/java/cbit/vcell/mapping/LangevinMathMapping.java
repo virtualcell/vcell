@@ -939,7 +939,7 @@ protected LangevinMathMapping(SimulationContext simContext, MathMappingCallback 
 		LangevinParticleJumpProcess forward_particleJumpProcess = new LangevinParticleJumpProcess(forward_name,reactantParticles,forward_rateDefinition,forwardActions,forwardSymmetryFactor);
 		forward_particleJumpProcess.setSubtype(toMath(subtype));
 		forward_particleJumpProcess.setTransitionCondition(toMath(transitionCondition));
-		forward_particleJumpProcess.setBondLength(bondLength);
+		forward_particleJumpProcess.setBondLength(new Expression(bondLength));
 		subDomain.addParticleJumpProcess(forward_particleJumpProcess);
 		
 		//
@@ -1030,7 +1030,7 @@ protected LangevinMathMapping(SimulationContext simContext, MathMappingCallback 
 			LangevinParticleJumpProcess reverse_particleJumpProcess = new LangevinParticleJumpProcess(reverse_name,productParticles,reverse_rateDefinition,reverseActions,reverseSymmetryFactor);
 			reverse_particleJumpProcess.setSubtype(toMath(subtype));
 			reverse_particleJumpProcess.setTransitionCondition(toMath(transitionCondition));
-			reverse_particleJumpProcess.setBondLength(bondLength);
+			reverse_particleJumpProcess.setBondLength(new Expression(bondLength));
 			subDomain.addParticleJumpProcess(reverse_particleJumpProcess);
 			
 			//

@@ -51,7 +51,7 @@ public class LangevinCompareEqualTest {
 				new MacroscopicRateConstant(new cbit.vcell.parser.Expression(1.0)),
 				new ArrayList<Action>(), null);
 		jumpProcess.setSubtype(LangevinParticleJumpProcess.ParticleSubtype.BINDING);
-		jumpProcess.setBondLength(1.5);
+		jumpProcess.setBondLength(new cbit.vcell.parser.Expression(1.5));
 		return jumpProcess;
 	}
 
@@ -119,7 +119,7 @@ public class LangevinCompareEqualTest {
 	@Test
 	public void jumpProcessBondLengthIsCompared() {
 		final LangevinParticleJumpProcess changed = jumpProcess();
-		changed.setBondLength(9.0);
+		changed.setBondLength(new cbit.vcell.parser.Expression(9.0));
 		assertFalse(jumpProcess().compareEqual(changed), "a different bond length must be detected");
 	}
 

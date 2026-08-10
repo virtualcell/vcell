@@ -70,6 +70,26 @@ public class LangevinLngvWriter {
 	}
 
 	// main work being done here
+	/**
+	 * The number the solver input needs, from a math expression.
+	 * <p>
+	 * Math descriptions carry scalars as expressions, but the .lngv format is numeric, so the value has
+	 * to resolve to a constant here. If it cannot - because it references a symbol, say - that is a
+	 * defect in the math or in this writer, and writing a wrong number would produce a silently wrong
+	 * simulation. So it fails loudly instead.
+	 */
+	private static double evaluateForSolver(Expression expression, String what, String owner) throws SolverException {
+		if(expression == null){
+			throw new SolverException("SpringSaLaD: missing " + what + " for '" + owner + "'");
+		}
+		try {
+			return expression.flatten().evaluateConstant();
+		} catch(ExpressionException e){
+			throw new SolverException("SpringSaLaD: " + what + " for '" + owner + "' is '" + expression.infix()
+					+ "', which does not resolve to a number: " + e.getMessage(), e);
+		}
+	}
+
 	public String writeLangevinLngv() throws SolverException, DivideByZeroException, ExpressionException {
 //		try {
 //			System.out.println("VCML ORIGINAL .... START\n"+simulation.getMathDescription().getVCML_database()+"\nVCML ORIGINAL .... END\n====================\n");
@@ -294,7 +314,7 @@ public class LangevinLngvWriter {
 
 	}
 	
-	private void writeBindingReactions(StringBuilder sb) {
+	private void writeBindingReactions(StringBuilder sb) throws SolverException {
 		Map<String, LangevinParticleJumpProcess> nameToProcessDirect = new LinkedHashMap<> ();
 		Map<String, LangevinParticleJumpProcess> nameToProcessReverse = new LinkedHashMap<> ();		// need this only for reverse rate
 		for(Map.Entry<LangevinParticleJumpProcess, SubDomain> entry : particleJumpProcessMap.entrySet()) {
@@ -443,7 +463,7 @@ public class LangevinLngvWriter {
 			
 			sb.append("'  kon  ").append(onRate);
 			sb.append("  koff ").append(offRate);
-			sb.append("  Bond_Length ").append(Double.toString(lpjpDirect.getBondLength()));
+			sb.append("  Bond_Length ").append(Double.toString(evaluateForSolver(lpjpDirect.getBondLength(), "Bond_Length", lpjpDirect.getName())));
 			sb.append("\n");
 		}
 		String ret = sb.toString();

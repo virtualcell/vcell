@@ -2011,8 +2011,8 @@ private Element getXML(ParticleJumpProcess param) {
 		LangevinParticleJumpProcess.ParticleSubtype subtype = lParam.getSubtype();
 		particleJumpProcessElement.setAttribute(XMLTags.LangevinParticleJumpProcessSubtypeTag, subtype.columnName);
 		if(LangevinParticleJumpProcess.ParticleSubtype.BINDING == subtype) {
-			double bondLength = lParam.getBondLength();
-			particleJumpProcessElement.setAttribute(XMLTags.LangevinParticleJumpProcessBondLengthTag, Double.toString(bondLength));
+			Expression bondLength = lParam.getBondLength();
+			particleJumpProcessElement.setAttribute(XMLTags.LangevinParticleJumpProcessBondLengthTag, bondLength.infix());
 		} else if(LangevinParticleJumpProcess.ParticleSubtype.TRANSITION == subtype) {
 			LangevinParticleJumpProcess.ParticleTransitionCondition transitionCondition = lParam.getTransitionCondition();
 			particleJumpProcessElement.setAttribute(XMLTags.LangevinParticleJumpProcessTransitionConditionTag, transitionCondition.vcellName);

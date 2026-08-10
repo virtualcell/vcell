@@ -2472,9 +2472,14 @@ public class XmlReader extends XmlBase {
             subtype = LangevinParticleJumpProcess.ParticleSubtype.fromName(stString);
         }
         LangevinParticleJumpProcess.ParticleTransitionCondition transitionCondition = null;
-        double bondLength = 1;        // that's the default, even for non-binding rules (we hide it anyway for those)
+        Expression bondLength = new Expression(1.0);        // that's the default, even for non-binding rules (we hide it anyway for those)
         if(isLangevin && param.getAttribute(XMLTags.LangevinParticleJumpProcessBondLengthTag) != null){
-            bondLength = Double.valueOf(param.getAttributeValue(XMLTags.LangevinParticleJumpProcessBondLengthTag));
+            try {
+                bondLength = new Expression(param.getAttributeValue(XMLTags.LangevinParticleJumpProcessBondLengthTag));
+            } catch(ExpressionException e){
+                throw new XmlParseException("unparseable " + XMLTags.LangevinParticleJumpProcessBondLengthTag
+                        + " '" + param.getAttributeValue(XMLTags.LangevinParticleJumpProcessBondLengthTag) + "'", e);
+            }
         }
         if(isLangevin && param.getAttribute(XMLTags.LangevinParticleJumpProcessTransitionConditionTag) != null){
             String tcString = param.getAttributeValue(XMLTags.LangevinParticleJumpProcessTransitionConditionTag);
