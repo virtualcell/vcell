@@ -3552,7 +3552,28 @@ public class MathDescription implements Versionable, Matchable, SymbolTable, Ser
         return testEquivalency(mathSymbolTableFactory, mathDescription1, mathDescription2);
     }
 
+    /**
+     * Compare two maths, and when they are not equivalent, attach a description of how they differ.
+     * <p>
+     * The decision and its details are produced exactly as before - they are persisted, and
+     * {@link MathCompareResults#toDatabaseStatus()} is written to a length-limited column, so their
+     * format must not move. The differences are additive detail for a person, a log or a failing test,
+     * and are computed only when the maths are not equivalent, which is the only time anyone reads them.
+     */
     public static MathCompareResults testEquivalency(MathSymbolTableFactory mathSymbolTableFactory, MathDescription oldMath, MathDescription newMath){
+        MathCompareResults results = testEquivalencyWithoutDifferences(mathSymbolTableFactory, oldMath, newMath);
+        if(results == null || results.isEquivalent() || results.hasDifferences()){
+            return results;
+        }
+        List<MathCompareResults.Difference> differences = MathDescriptionDifferences.describe(oldMath, newMath);
+        if(differences.isEmpty()){
+            return results;
+        }
+        return new MathCompareResults(results.decision, results.details,
+                results.varsNotFoundMath1, results.varsNotFoundMath2, differences);
+    }
+
+    private static MathCompareResults testEquivalencyWithoutDifferences(MathSymbolTableFactory mathSymbolTableFactory, MathDescription oldMath, MathDescription newMath){
         try {
             MathCompareResults invariantResults = newMath.compareInvariantAttributes(oldMath, false);
             if(!invariantResults.isEquivalent()){

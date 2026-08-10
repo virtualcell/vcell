@@ -155,4 +155,59 @@ public class LangevinEquivalenceTest {
 		assertTrue(compare(before, after).isEquivalent(),
 				"'r' and 'r + 0' describe the same radius and must remain equivalent");
 	}
+
+	/**
+	 * A non-equivalent result must carry the differences, and they must name the field that changed —
+	 * a {@code Decision} alone tells you the math changed, not what to go and look at.
+	 */
+	@Test
+	public void aNonEquivalentResultNamesWhatChanged() throws Exception {
+		final MathDescription before = load();
+		final MathDescription after = load();
+		firstSite(after).setRadius(new Expression(99.0));
+
+		final MathCompareResults results = compare(before, after);
+		assertTrue(results.hasDifferences(),
+				"a non-equivalent result should carry differences, got: " + results.toDatabaseStatus());
+
+		final String report = results.toDifferenceReport();
+		assertTrue(report.contains("radius"), "the report should name the radius: " + report);
+		assertTrue(report.contains("99.0"), "the report should carry the new value: " + report);
+		assertTrue(report.contains("site '"), "the report should identify the site: " + report);
+
+		// the persisted status format must not move - it is written to a length-limited column
+		assertTrue(results.toDatabaseStatus().startsWith(results.decision.description),
+				"unexpected database status: " + results.toDatabaseStatus());
+	}
+
+	/**
+	 * The describer never contradicts {@code compareEqual}: it is asked whether objects differ, and
+	 * only then descends to name the attribute. So an equivalent math yields no differences at all.
+	 */
+	@Test
+	public void anEquivalentMathYieldsNoDifferences() throws Exception {
+		assertTrue(MathDescriptionDifferences.describe(load(), load()).isEmpty(),
+				"identical maths must produce no differences");
+	}
+
+	/** Matching is by name, so reordering must not be reported as a change. */
+	@Test
+	public void reorderingIsNotADifference() throws Exception {
+		final MathDescription before = load();
+		final MathDescription after = load();
+		final java.util.List<ParticleMolecularType> types = after.getParticleMolecularTypes();
+		if (types.size() >= 2) {
+			final ParticleMolecularType first = types.get(0);
+			types.set(0, types.get(1));
+			types.set(1, first);
+		}
+		assertTrue(MathDescriptionDifferences.describe(before, after).isEmpty(),
+				"reordering molecular types must not be reported as a difference");
+	}
+
+	/** Diagnostics must never change an outcome. */
+	@Test
+	public void describingNeverThrows() {
+		assertTrue(MathDescriptionDifferences.describe(null, null).isEmpty(), "null input must be tolerated");
+	}
 }
