@@ -689,10 +689,16 @@ public class SlurmProxy extends HtcProxy {
 		MemLimitResults memoryMBAllowed = HtcProxy.getMemoryLimit(vcellUserid, simID, solverDescription, memSizeMB, simTask.isPowerUser());
 
 		// next 3 will fire exception if prop not set
-		String sTimeoutPerTaskSeconds = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_langevin_timeoutPerTaskSeconds);	// seconds. 7 days
+		// Wall-clock cap per Langevin task. The fixture wraps each task in
+		// `timeout "${JOB_TIMEOUT_SECONDS}s"`, so exceeding this kills the task with exit
+		// code 124 -- it is not a solver crash. Deployed value is 345600 (4 days); the two
+		// comments that used to sit here said "7 days" and "24 hours", and neither was right,
+		// which is part of why a user lost two multi-day SpringSaLaD runs to it before anyone
+		// looked at the number.
+		String sTimeoutPerTaskSeconds = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_langevin_timeoutPerTaskSeconds);
 		String sHardbBtchMemoryLimitPerTask = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_langevin_batchMemoryLimitPerTaskMB);
 		String sBlockSizeMB =  PropertyLoader.getRequiredProperty(PropertyLoader.slurm_langevin_memoryBlockSizeMB);
-		int timeoutPerTaskSeconds = Integer.parseInt(sTimeoutPerTaskSeconds);				// seconds. 24 hours
+		int timeoutPerTaskSeconds = Integer.parseInt(sTimeoutPerTaskSeconds);
 		long hardbBtchMemoryLimitPerTask = Long.parseLong(sHardbBtchMemoryLimitPerTask);	// MB. we hard limit mem to 2G for langevin batch jobs
 		int blockSizeMB = Integer.parseInt(sBlockSizeMB); 						// MB. SLURM memory allocation granularity
 		String slurmJobTimeout = computeSlurmTimeLimit(totalNumberOfJobs, numberOfConcurrentTasks, timeoutPerTaskSeconds);
