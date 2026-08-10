@@ -61,16 +61,14 @@ public class MathNamespaceSeparationTest {
 			"org.vcell.solver.");
 
 	/**
-	 * Known remaining violations, each with the reason it is still here. This list may shrink,
-	 * never grow: adding an entry re-couples the layers and needs the design discussion the
-	 * javadoc above summarises.
+	 * Known remaining violations. Currently none: the math namespace imports nothing from the
+	 * biological or solver layers.
+	 * <p>
+	 * This list may shrink, never grow. Adding an entry re-couples the layers, and the remedy is
+	 * almost always to duplicate the concept into math under a {@code Particle*} name and translate
+	 * at the mapping boundary — see the class javadoc and docs/architecture-layers.md.
 	 */
-	private static final Set<String> ACCEPTED = new LinkedHashSet<>(Arrays.asList(
-			// RbmUtils carries paired biological/math overloads for every BNGL conversion, so roughly half
-			// of a 2191-line class in a biological package is really a math-side BNGL writer. Splitting it
-			// out is the remaining half of the RuleAnalysis work; the shared analysis contract itself has
-			// moved to cbit.vcell.math.
-			"MathRuleFactory.java -> org.vcell.model.rbm.RbmUtils"));
+	private static final Set<String> ACCEPTED = new LinkedHashSet<>();
 
 	private static final Pattern IMPORT = Pattern.compile("^\\s*import\\s+(?:static\\s+)?([\\w.]+)\\s*;");
 

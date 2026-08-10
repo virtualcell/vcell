@@ -220,6 +220,33 @@ Neither changes behaviour, and neither is needed for the SpringSaLaD math compar
 are recorded as explicit exceptions in `MathNamespaceSeparationTest`, so they stay visible
 and cannot be quietly added to.
 
+## Follow-up: BNGL tooling worth revisiting
+
+**Revisit once the current work has shipped.** Two loose threads around BNGL and BioNetGen, recorded
+here rather than left as folklore.
+
+**The BioNetGen cross-check was deleted, and it was the only one.**
+`RulebasedTransformer.compareOutputs` took the rule XML BioNetGen produced and compared it against the
+XML we build from the same rules, operation by operation. It was unreachable — every call site
+commented out in `RulebasedMathMapping` and `LangevinMathMapping` — and it was removed when the
+`RuleAnalysis` contract moved, because it was the only thing forcing a biological → solver dependency.
+It is in git history.
+
+That deletion is worth revisiting deliberately, because nothing else validates our NFSim XML against
+BioNetGen's. As commented-out debug code it was already providing no protection; as a **maintained
+tool** — a tagged test over a small corpus, or a diagnostic a developer can invoke — it would be
+genuinely useful, and would have a natural home in the solver layer beside `NFsimXMLWriter` now that
+`getNFSimXML` lives there.
+
+**BNGL generation is now split across two layers.** `RbmUtils` keeps the biological overloads (which
+need a `Model`, a `Structure` or a `CompartmentMode`); the math-typed half is
+`cbit.vcell.math.ParticleBnglStringWriter`. Both exist to satisfy the `RuleAnalysis` contract, which
+is expressed in terms of BNGL strings (`getReactionBNGLShort()`, `toBngl()`, `getMolecularTypeBNGL()`).
+Neither half is currently exercised as a BNGL *export*; they produce identifiers and labels consumed
+inside rule analysis. If BNGL export is ever wanted as a supported feature, these two are the
+starting point, and the question of whether the contract should be expressed in BNGL at all is worth
+asking at the same time.
+
 ## Compare and contrast: NFSim vs SpringSaLaD
 
 Both pipelines have the same shape — application → `MathDescription` → solver input writer —

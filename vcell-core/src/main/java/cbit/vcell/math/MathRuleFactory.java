@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
-import org.vcell.model.rbm.RbmUtils;
 import cbit.vcell.math.RuleAnalysis;
 import cbit.vcell.math.RuleAnalysis.MolecularComponentEntry;
 import cbit.vcell.math.RuleAnalysis.MolecularTypeEntry;
@@ -88,7 +87,7 @@ public class MathRuleFactory {
 			for (MathParticipantEntry product : getProductEntries()){
 				productPatterns.add(product.particleSpeciesPattern);
 			}
-			return RbmUtils.toBnglStringShort(particleJumpProcess, reactantPatterns, productPatterns);
+			return ParticleBnglStringWriter.toBnglStringShort(particleJumpProcess, reactantPatterns, productPatterns);
 		}
 
 		@Override
@@ -227,7 +226,7 @@ public class MathRuleFactory {
 
 		@Override
 		public String getMolecularTypeBNGL() {
-			return RbmUtils.toBnglString(particleMolecularTypePattern.getMolecularType());
+			return ParticleBnglStringWriter.toBnglString(particleMolecularTypePattern.getMolecularType());
 		}
 	}
 	
