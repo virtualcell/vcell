@@ -50,6 +50,8 @@ public final class JmsFailoverWatchdog {
 
 	public void attach(Connection connection) {
 		if (!(connection instanceof ActiveMQConnection)) {
+			lg.warn("no failover watchdog for connection type {} -- a wedged transport will not "
+					+ "be escalated", connection.getClass().getName());
 			return;
 		}
 		// Scoped to this connection: attach() installs a fresh listener per connection,
@@ -84,4 +86,5 @@ public final class JmsFailoverWatchdog {
 			}
 		});
 	}
+
 }

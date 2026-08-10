@@ -11,7 +11,7 @@ subsystem turned out to be wrong when tested.
 
 ## 1. The short version
 
-There are **three brokers** and **three client stacks**, and they overlap:
+There are **three brokers** and **two client stacks**, and they overlap:
 
 | broker | image / kind | port | protocol(s) | carries |
 |---|---|---|---|---|
@@ -21,8 +21,7 @@ There are **three brokers** and **three client stacks**, and they overlap:
 
 | client stack | where | talks to |
 |---|---|---|
-| `VCMessagingService` — the legacy IoC wrapper | `vcell-core` API, `vcell-server` JMS impl | Classic only (`activemqint`, `activemqsim`) |
-| raw ActiveMQ OpenWire client | `OptimizationBatchServer` | **Artemis** |
+| `VCMessagingService` — the legacy IoC wrapper | `vcell-core` API, `vcell-server` JMS impl | Classic (`activemqint`, `activemqsim`) **and Artemis** |
 | Quarkus / SmallRye Reactive Messaging (AMQP 1.0) | `vcell-rest` | **Artemis** |
 
 The single most surprising fact, and the one that makes migration tractable: **Artemis exposes
@@ -60,7 +59,8 @@ A thin inversion-of-control layer over JMS 1.1, so callers never touch `javax.jm
 | class | role |
 |---|---|
 | `VCMessagingServiceJms` | abstract base: consumer registry, producer-session registry, blob GC timer |
-| `VCMessagingServiceActiveMQ` | the only concrete impl — builds `failover:(tcp://host:port)`, `setTrustAllPackages(true)` |
+| `VCMessagingServiceActiveMQ` | Classic impl — builds `failover:(tcp://host:port)`, `setTrustAllPackages(true)` |
+| `VCMessagingServiceArtemis` | Artemis impl — same OpenWire client and failover policy; prefetch on the connection rather than in the destination name (see §4) |
 | `MessageProducerSessionJms` | the send side; owns a connection, a session, and a temporary reply queue |
 | `ConsumerContextJms` | one polling thread per consumer: `receive(2000)` in a loop |
 | `VCMessageJms` | `VCMessage` over a `javax.jms.Message`, including BLOB offload |
@@ -124,25 +124,35 @@ Two things to check before relying on this (flagged, not diagnosed):
 
 ## 4. How the legacy stack talks to Artemis
 
-It does — but **not through the IoC wrapper**. The single bridge is
-`OptimizationBatchServer.initOptimizationQueue(host, port)`, called from `HtcSimulationWorker`:
+Through `VCMessagingServiceArtemis`, the Artemis implementation of the IoC wrapper. Callers see
+no difference from the Classic implementation — the interface is broker-agnostic, so a
+destination moves broker by constructing a different service, not by changing producers or
+consumers.
 
-```java
-ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory("tcp://" + jmsHost + ":" + jmsPort);
-factory.setTrustAllPackages(true);
-…
-Destination requestQueue = session.createQueue("opt-request");   // consume
-Destination statusQueue  = session.createQueue("opt-status");    // produce
-```
+The one caller today is `OptimizationBatchServer.initOptimizationQueue(host, port)`, called from
+`HtcSimulationWorker`. It exchanges **JSON text messages** on `opt-request` / `opt-status` with
+`vcell-rest`, which addresses the same queues over **AMQP 1.0**. Artemis performs the protocol
+translation; neither side knows the other's protocol.
 
-So: a **raw ActiveMQ Classic OpenWire client**, pointed at **Artemis**, exchanging **JSON text
-messages** with `vcell-rest`, which addresses the same queues over **AMQP 1.0**. Artemis performs
-the protocol translation; neither side knows the other's protocol. It bypasses
-`VCMessagingService` entirely — no `VCMessageSession`, no `VCMessagingDelegate`, its own polling
-thread.
+Two implementation notes that matter if you write another Artemis caller:
+
+- **Prefetch is set on the connection, not appended to the destination name.** ActiveMQ's
+  `?consumer.prefetchSize=N` suffix does work against Artemis, but only because the OpenWire
+  *client* strips it before the broker sees the address (measured in
+  `VCMessagingServiceArtemisTest`). An AMQP client would take it as part of the address and sit
+  on a queue nobody publishes to, so the name is kept portable.
+- **The client is OpenWire, not AMQP**, despite AMQP being the parity choice with the Quarkus
+  side. qpid-jms 2.x implements *Jakarta* Messaging while this wrapper is `javax.jms` throughout;
+  adopting it means migrating the namespace first. Switching later is a change to
+  `createConnectionFactory()` alone.
 
 **This is the template for migration**: it proves the legacy OpenWire client can drive Artemis
 unchanged, so destinations can move broker-by-broker without rewriting client code first.
+
+*Before this was ported, the bridge was a raw `ActiveMQConnectionFactory` on a plain
+`tcp://host:port` URL with its own polling thread — so no bounded failover and no
+`JmsFailoverWatchdog`. Worth remembering as the failure mode of going around the framework: the
+gap was never a decision, just an unrouted path.*
 
 ---
 
@@ -251,10 +261,12 @@ Ordered roughly by risk.
    *string*: `getReplyTo()` returns its name, and `sendQueueMessage()` turns that name back into
    a destination — which only works because the ActiveMQ Classic client special-cases names
    beginning with `ID:`. That behaviour belongs to the **client library and broker pairing**, not
-   to JMS. It may well survive an OpenWire client pointed at Artemis (Artemis emulates OpenWire
-   temp destinations), but it will **not** survive a client-stack change to AMQP or Artemis core,
-   where the reply address is modelled differently. Untested either way. **Test an RPC round trip
-   first** — this is the piece most likely to fail quietly, and every RPC depends on it.
+   to JMS. **Measured: it survives an OpenWire client pointed at Artemis** — Artemis emulates
+   OpenWire temp destinations, and `VCMessagingServiceArtemisTest` drives a full round trip
+   through `VCRpcMessageHandler` to prove it. That removes the risk from a broker migration
+   (Classic → Artemis, same client). It does **not** clear a *client-stack* change to AMQP or
+   Artemis core, where the reply address is modelled differently — that remains untested and is
+   still the piece most likely to fail quietly, since every RPC depends on it.
 2. **Dead-lettering and redelivery move from client to broker.** Classic bounds redelivery
    client-side (`RedeliveryPolicy`, default 6 → `ActiveMQ.DLQ`). Artemis does it broker-side via
    `address-settings`. Anything relying on the Classic default gets *different* behaviour on
@@ -285,8 +297,8 @@ Ordered roughly by risk.
 
 ### A pragmatic order
 
-1. Point one low-risk Classic destination at Artemis by configuration only (the wrapper builds
-   `tcp://host:port`, so this is a host/port change) and confirm send/receive.
+1. Point one low-risk Classic destination at Artemis by constructing `VCMessagingServiceArtemis`
+   instead of `VCMessagingServiceActiveMQ`, and confirm send/receive.
 2. Then an RPC destination, to flush out item 1 above.
 3. Then `clientStatus`, to flush out item 5 (multiple subscribers).
 4. Leave `workerEvent` until last, because of the external NodePort and out-of-cluster solvers.

@@ -1,6 +1,13 @@
 package cbit.vcell.message.server.batch.opt;
 
 import cbit.vcell.message.server.htc.HtcProxy;
+import cbit.vcell.message.SimpleMessagingDelegate;
+import cbit.vcell.message.VCMessageSession;
+import cbit.vcell.message.VCMessagingException;
+import cbit.vcell.message.VCMessagingService;
+import cbit.vcell.message.VCQueueConsumer;
+import cbit.vcell.message.VCellQueue;
+import cbit.vcell.message.jms.artemis.VCMessagingServiceArtemis;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.server.HtcJobID;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -13,12 +20,19 @@ import org.vcell.optimization.jtd.OptProblem;
 import org.vcell.optimization.jtd.Vcellopt;
 import org.vcell.util.exe.ExecutableException;
 
-import javax.jms.*;
-import org.apache.activemq.ActiveMQConnectionFactory;
 
 import java.io.*;
 
 public class OptimizationBatchServer {
+
+    private static final VCellQueue OPT_REQUEST_QUEUE = new VCellQueue("opt-request");
+    private static final VCellQueue OPT_STATUS_QUEUE = new VCellQueue("opt-status");
+    /** status updates are only useful while the caller is still waiting */
+    private static final long STATUS_TIME_TO_LIVE_MS = 3600_000L;
+
+    private VCMessagingService optMessagingService;
+    private VCMessageSession optStatusSession;
+
 
     private final static Logger lg = LogManager.getLogger(OptimizationBatchServer.class);
     private HtcProxy.HtcProxyFactory htcProxyFactory = null;
@@ -36,52 +50,55 @@ public class OptimizationBatchServer {
      * Receives submit/stop commands as JSON text messages, dispatches to SLURM, and sends status updates
      * back on "opt-status".
      */
+    /**
+     * Listen for optimization requests on the Artemis broker.
+     *
+     * This used to hand-roll its own JMS: a raw ActiveMQConnectionFactory on a plain
+     * "tcp://host:port" URL, its own daemon thread, and a while(true) receive loop. That worked,
+     * but it sat outside {@link VCMessagingService} and so inherited none of its policy -- no
+     * bounded failover URL, no {@link cbit.vcell.message.jms.JmsFailoverWatchdog}, no delegate,
+     * no shared connection handling. Nobody decided the optimization path should be less
+     * resilient than everything else; it simply was not routed through the place that decides.
+     *
+     * Going through VCMessagingServiceArtemis gets all of that, and the request/reply shape is
+     * unchanged on the wire: JSON text on "opt-request" and "opt-status", which is what
+     * vcell-rest publishes and consumes over AMQP 1.0 on the same addresses.
+     */
     public void initOptimizationQueue(String jmsHost, int jmsPort) {
-        Thread optQueueThread = new Thread(() -> {
-            ObjectMapper objectMapper = new ObjectMapper();
+        VCMessagingServiceArtemis messagingService = new VCMessagingServiceArtemis();
+        messagingService.setConfiguration(new SimpleMessagingDelegate(), jmsHost, jmsPort);
+        initOptimizationQueue(messagingService);
+    }
+
+    /** Package-visible so tests can supply a service pointed at a broker container. */
+    void initOptimizationQueue(VCMessagingService messagingService) {
+        this.optMessagingService = messagingService;
+        this.optStatusSession = messagingService.createProducerSession();
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        VCQueueConsumer consumer = new VCQueueConsumer(OPT_REQUEST_QUEUE, (vcMessage, session) -> {
+            String json = vcMessage.getTextContent();
+            if (json == null) {
+                lg.warn("optimization request had no text content, ignoring");
+                return;
+            }
             try {
-                ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(
-                        "tcp://" + jmsHost + ":" + jmsPort);
-                connectionFactory.setTrustAllPackages(true);
-                Connection connection = connectionFactory.createConnection();
-                connection.start();
-
-                Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-                Destination requestQueue = session.createQueue("opt-request");
-                Destination statusQueue = session.createQueue("opt-status");
-                MessageConsumer consumer = session.createConsumer(requestQueue);
-                MessageProducer producer = session.createProducer(statusQueue);
-
-                lg.info("Optimization JMS queue listener started on opt-request");
-
-                while (true) {
-                    Message message = consumer.receive(2000); // 2 second poll
-                    if (message == null) continue;
-
-                    if (message instanceof TextMessage textMessage) {
-                        try {
-                            String json = textMessage.getText();
-                            OptRequestMessage request = objectMapper.readValue(json, OptRequestMessage.class);
-                            lg.info("Received optimization request: command={}, jobId={}", request.command, request.jobId);
-
-                            if ("submit".equals(request.command)) {
-                                handleSubmitRequest(request, session, producer, objectMapper);
-                            } else if ("stop".equals(request.command)) {
-                                handleStopRequest(request);
-                            } else {
-                                lg.warn("Unknown optimization command: {}", request.command);
-                            }
-                        } catch (Exception e) {
-                            lg.error("Error processing optimization request: {}", e.getMessage(), e);
-                        }
-                    }
+                OptRequestMessage request = objectMapper.readValue(json, OptRequestMessage.class);
+                lg.info("Received optimization request: command={}, jobId={}", request.command, request.jobId);
+                if ("submit".equals(request.command)) {
+                    handleSubmitRequest(request, objectMapper);
+                } else if ("stop".equals(request.command)) {
+                    handleStopRequest(request);
+                } else {
+                    lg.warn("Unknown optimization command: {}", request.command);
                 }
             } catch (Exception e) {
-                lg.error("Optimization JMS queue listener failed: {}", e.getMessage(), e);
+                lg.error("Error processing optimization request: {}", e.getMessage(), e);
             }
-        }, "optQueueListener");
-        optQueueThread.setDaemon(true);
-        optQueueThread.start();
+        }, null, "optQueueListener", 1);
+
+        messagingService.addMessageConsumer(consumer);
+        lg.info("Optimization queue listener started on {}", OPT_REQUEST_QUEUE.getName());
     }
 
     /**
@@ -97,8 +114,7 @@ public class OptimizationBatchServer {
         return file;
     }
 
-    private void handleSubmitRequest(OptRequestMessage request, Session session,
-                                     MessageProducer producer, ObjectMapper objectMapper) {
+    private void handleSubmitRequest(OptRequestMessage request, ObjectMapper objectMapper) {
         try {
             // Validate jobId is numeric (database key) to prevent injection in file names
             Long.parseLong(request.jobId);
@@ -126,14 +142,14 @@ public class OptimizationBatchServer {
             lg.info("Submitted SLURM job {} for optimization jobId={}", htcJobID, request.jobId);
 
             // Send QUEUED status back with htcJobId
-            sendStatusMessage(session, producer, objectMapper,
+            sendStatusMessage(objectMapper,
                     request.jobId, OptJobStatus.QUEUED, null, htcJobID.toDatabase());
         } catch (Exception e) {
             lg.error("Failed to submit optimization job {}: {}", request.jobId, e.getMessage(), e);
             try {
-                sendStatusMessage(session, producer, objectMapper,
+                sendStatusMessage(objectMapper,
                         request.jobId, OptJobStatus.FAILED, e.getMessage(), null);
-            } catch (JMSException jmsEx) {
+            } catch (VCMessagingException jmsEx) {
                 lg.error("Failed to send FAILED status for job {}: {}", request.jobId, jmsEx.getMessage(), jmsEx);
             }
         }
@@ -162,18 +178,18 @@ public class OptimizationBatchServer {
         }
     }
 
-    private void sendStatusMessage(Session session, MessageProducer producer, ObjectMapper objectMapper,
+    private void sendStatusMessage(ObjectMapper objectMapper,
                                    String jobId, OptJobStatus status, String statusMessage, String htcJobId)
-            throws JMSException {
+            throws VCMessagingException {
         try {
             OptStatusMessage statusMsg = new OptStatusMessage(jobId, status, statusMessage, htcJobId);
             String json = objectMapper.writeValueAsString(statusMsg);
-            TextMessage textMessage = session.createTextMessage(json);
-            producer.send(textMessage);
+            optStatusSession.sendQueueMessage(OPT_STATUS_QUEUE, optStatusSession.createTextMessage(json),
+                    Boolean.FALSE, STATUS_TIME_TO_LIVE_MS);
             lg.info("Sent optimization status: jobId={}, status={}", jobId, status);
         } catch (Exception e) {
             lg.error("Failed to send status message for job {}: {}", jobId, e.getMessage(), e);
-            throw new JMSException("Failed to serialize status message: " + e.getMessage());
+            throw new VCMessagingException("Failed to serialize status message: " + e.getMessage(), e);
         }
     }
 
