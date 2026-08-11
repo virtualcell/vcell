@@ -205,9 +205,15 @@ function nearestTimeIndex(t) {
 
 async function loadGeometry() {
   setStatus(`loading geometry for ${state.selectedDomain}…`);
+  // ALWAYS send the time: on the very first load the client cannot yet know the run is
+  // body-fitted (that flag arrives IN this response), and without a time the server defaults a
+  // body-fitted run's geometry to its last frame while the first /field honors the requested
+  // initial time — the exact mismatch seen live ("field is for ...@t0 but the view holds
+  // ...@tN"). Cartesian runs ignore the parameter.
+  const t = state.times[state.timeIndex];
   const geometry = await fetchJson(url('/grid', {
     domain: state.selectedDomain,
-    ...(state.bodyFitted ? { time: String(state.times[state.timeIndex]) } : {}),
+    ...(t !== undefined ? { time: String(t) } : {}),
   }), '/grid');
   state.geometryId = geometry.geometryId;
   return geometry;
