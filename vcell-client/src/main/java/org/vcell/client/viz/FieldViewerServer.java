@@ -44,8 +44,8 @@ import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.simdata.VCDataManager;
+import cbit.vcell.solvers.CartesianMeshChombo;
 import cbit.vcell.solvers.CartesianMeshMovingBoundary;
-import cbit.vcell.solvers.mb.MovingBoundaryReader;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 
@@ -112,8 +112,9 @@ public final class FieldViewerServer {
 		final SubdomainInfo subdomainInfo;
 		/** Human-readable name of the run, e.g. "model::app::sim"; may be null — the ID always exists, a name may not. */
 		final String simName;
-		/** Lazily detected: MovingBoundary runs serve per-timestep body-fitted meshes via the VTU seam. */
-		volatile Boolean movingBoundary;
+		/** Lazily detected; non-null for runs served through the VTU seam (see {@link VtuMode}). */
+		volatile VtuMode vtuMode;
+		volatile boolean vtuModeResolved;
 		volatile VtuVarInfo[] vtuVarInfos;
 
 		DataSource(VCSimulationDataIdentifier vcdID, VCDataManager dataManager, SubdomainInfo subdomainInfo,
@@ -126,18 +127,30 @@ public final class FieldViewerServer {
 	}
 
 	/**
-	 * Whether this run is a MovingBoundary (mbsolver) run. Detected from the mesh type the data
-	 * manager returns rather than from the simulation, so it works identically for a re-opened
-	 * remote run where only the data still exists. MovingBoundary is a server-only solver, so this
-	 * path always reaches the data over the same remote {@link VCDataManager} seam.
+	 * Runs served through the VTU-era {@link VCDataManager} seam rather than the raw Cartesian
+	 * path: body-fitted meshes the solver itself produced. MovingBoundary meshes change per saved
+	 * time; Chombo (retired solver, but its stored solutions remain viewable) has one static mesh
+	 * with per-time values.
 	 */
-	private static boolean isMovingBoundary(DataSource source) throws Exception {
-		Boolean mb = source.movingBoundary;
-		if (mb == null) {
-			mb = source.dataManager.getMesh(source.vcdID) instanceof CartesianMeshMovingBoundary;
-			source.movingBoundary = mb;
+	private enum VtuMode {
+		TIME_VARYING, // MovingBoundary: a different geometry at every saved time
+		STATIC // Chombo: one embedded-boundary mesh, values vary over time
+	}
+
+	/**
+	 * Detected from the mesh type the data manager returns rather than from the simulation, so it
+	 * works identically for a re-opened remote run where only the data still exists. Both solvers
+	 * are server-only, so these paths always reach the data over the remote seam, where the
+	 * server-side Python VTK service that writes the .vtu is available.
+	 */
+	private static VtuMode vtuMode(DataSource source) throws Exception {
+		if (!source.vtuModeResolved) {
+			Object mesh = source.dataManager.getMesh(source.vcdID);
+			source.vtuMode = mesh instanceof CartesianMeshMovingBoundary ? VtuMode.TIME_VARYING
+					: mesh instanceof CartesianMeshChombo ? VtuMode.STATIC : null;
+			source.vtuModeResolved = true;
 		}
-		return mb;
+		return source.vtuMode;
 	}
 
 	private static VtuVarInfo[] vtuVarInfos(DataSource source) throws Exception {
@@ -324,8 +337,9 @@ public final class FieldViewerServer {
 	private static String handleInfo(HttpExchange ex) throws Exception {
 		DataSource source = sourceFor(query(ex));
 		VCSimulationDataIdentifier vcdID = source.vcdID;
-		if (isMovingBoundary(source)) {
-			return handleInfoMovingBoundary(source);
+		VtuMode vtuMode = vtuMode(source);
+		if (vtuMode != null) {
+			return handleInfoVtu(source, vtuMode);
 		}
 
 		double[] times = source.dataManager.getDataSetTimes(vcdID);
@@ -377,8 +391,9 @@ public final class FieldViewerServer {
 	private static String handleGrid(HttpExchange ex) throws Exception {
 		Map<String, String> q = query(ex);
 		DataSource source = sourceFor(q);
-		if (isMovingBoundary(source)) {
-			return handleGridMovingBoundary(source, q);
+		VtuMode gridVtuMode = vtuMode(source);
+		if (gridVtuMode != null) {
+			return handleGridVtu(source, q, gridVtuMode);
 		}
 		String domain = domainOf(q, source);
 		VisMesh visMesh = grid(source, domain);
@@ -444,7 +459,7 @@ public final class FieldViewerServer {
 	 * JSON contract; the geometryId carries the time index, which is what tells the viewer to
 	 * re-fetch geometry as time moves.
 	 */
-	private static String handleInfoMovingBoundary(DataSource source) throws Exception {
+	private static String handleInfoVtu(DataSource source, VtuMode mode) throws Exception {
 		VCSimulationDataIdentifier vcdID = source.vcdID;
 		double[] times = source.dataManager.getDataSetTimes(vcdID);
 		StringBuilder sb = new StringBuilder(1024);
@@ -455,8 +470,15 @@ public final class FieldViewerServer {
 		sb.append(",\"jobIndex\":").append(vcdID.getJobIndex());
 		sb.append(",\"times\":");
 		appendDoubles(sb, times, times.length);
-		String domain = MovingBoundaryReader.getFakeInsideDomainName();
-		sb.append(",\"domains\":[\"").append(jsonEscape(domain)).append("\"]");
+		List<String> domains = vtuDomains(source);
+		sb.append(",\"domains\":[");
+		for (int i = 0; i < domains.size(); i++) {
+			if (i > 0) {
+				sb.append(',');
+			}
+			sb.append('"').append(jsonEscape(domains.get(i))).append('"');
+		}
+		sb.append("]");
 		sb.append(",\"variables\":[");
 		boolean first = true;
 		for (VtuVarInfo var : vtuVarInfos(source)) {
@@ -468,11 +490,29 @@ public final class FieldViewerServer {
 			}
 			first = false;
 			sb.append("{\"name\":\"").append(jsonEscape(var.name)).append('"');
-			sb.append(",\"domain\":\"").append(jsonEscape(domain)).append('"');
+			sb.append(",\"domain\":\"").append(jsonEscape(var.domainName == null ? "" : var.domainName)).append('"');
 			sb.append(",\"isFunction\":").append(var.functionExpression != null).append('}');
 		}
 		sb.append("]}");
 		return sb.toString();
+	}
+
+	/** Distinct domains of the run's cell-data variables, in first-seen order. */
+	private static List<String> vtuDomains(DataSource source) throws Exception {
+		List<String> domains = new ArrayList<>();
+		for (VtuVarInfo var : vtuVarInfos(source)) {
+			if (var.bMeshVariable || var.dataType != VtuVarInfo.DataType.CellData) {
+				continue;
+			}
+			if (var.domainName != null && !domains.contains(var.domainName)) {
+				domains.add(var.domainName);
+			}
+		}
+		if (domains.isEmpty()) {
+			throw new IllegalArgumentException("run " + source.vcdID.getID()
+					+ " exposes no cell-data variables over the VTU seam");
+		}
+		return domains;
 	}
 
 	/** Snaps the requested time to the nearest saved index; defaults to the last one. */
@@ -495,8 +535,9 @@ public final class FieldViewerServer {
 		return best;
 	}
 
-	private static String mbGeometryId(DataSource source, String domain, int timeIndex) {
-		return source.vcdID.getID() + "/" + domain + "@t" + timeIndex;
+	private static String vtuGeometryId(DataSource source, String domain, VtuMode mode, int timeIndex) {
+		String base = source.vcdID.getID() + "/" + domain;
+		return mode == VtuMode.TIME_VARYING ? base + "@t" + timeIndex : base;
 	}
 
 	/** Parsed per-time meshes; a run's meshes are dropped with it in {@link #unregister}. */
@@ -504,7 +545,8 @@ public final class FieldViewerServer {
 
 	private static synchronized VtuGridParser.VtuGrid mbGrid(DataSource source, String domain,
 			int timeIndex) throws Exception {
-		String key = mbGeometryId(source, domain, timeIndex);
+		// internal cache key is always time-qualified; the public geometryId may not be
+		String key = source.vcdID.getID() + "/" + domain + "@t" + timeIndex;
 		VtuGridParser.VtuGrid cached = mbGridCache.get(key);
 		if (cached != null) {
 			return cached;
@@ -522,22 +564,43 @@ public final class FieldViewerServer {
 				+ container.vtuMeshes.stream().map(m -> m.domainName).toList());
 	}
 
-	private static String handleGridMovingBoundary(DataSource source, Map<String, String> q) throws Exception {
+	private static String handleGridVtu(DataSource source, Map<String, String> q, VtuMode mode) throws Exception {
 		String domain = q.getOrDefault("domain", "");
 		if (domain.isEmpty()) {
-			domain = MovingBoundaryReader.getFakeInsideDomainName();
+			domain = vtuDomains(source).get(0);
 		}
-		int timeIndex = timeIndexFor(source, q);
+		// a Chombo mesh is static — the server refuses any other index — while a MovingBoundary
+		// mesh is a different geometry at every saved time
+		int timeIndex = mode == VtuMode.TIME_VARYING ? timeIndexFor(source, q) : 0;
 		VtuGridParser.VtuGrid grid = mbGrid(source, domain, timeIndex);
 
+		boolean threeD = false;
+		boolean uniform = true;
+		for (int c = 0; c < grid.cellTypes.length; c++) {
+			// tets (10), voxels (11), hexes (12), wedges (13), pyramids (14) are volume cells
+			threeD |= grid.cellTypes[c] >= 10 && grid.cellTypes[c] <= 14;
+			uniform &= grid.cellTypes[c] == grid.cellTypes[0];
+		}
 		StringBuilder sb = new StringBuilder(32 * grid.numPoints() + 32 * grid.cells.length + 512);
-		sb.append("{\"geometryId\":\"").append(jsonEscape(mbGeometryId(source, domain, timeIndex))).append('"');
-		sb.append(",\"dimension\":2,\"bodyFitted\":true");
+		sb.append("{\"geometryId\":\"").append(jsonEscape(vtuGeometryId(source, domain, mode, timeIndex))).append('"');
+		sb.append(",\"dimension\":").append(threeD ? 3 : 2).append(",\"bodyFitted\":true");
 		sb.append(",\"timeIndex\":").append(timeIndex);
 		sb.append(",\"numPoints\":").append(grid.numPoints());
 		sb.append(",\"points\":");
 		appendDoubles(sb, grid.points, grid.points.length);
 		sb.append(",\"cellType\":").append(grid.cellTypes.length > 0 ? grid.cellTypes[0] : 7);
+		if (!uniform) {
+			// Chombo 3D mixes voxels with tetrahedra (converted cut polyhedra); the viewer inserts
+			// per-cell types when this array is present
+			sb.append(",\"cellTypes\":[");
+			for (int c = 0; c < grid.cellTypes.length; c++) {
+				if (c > 0) {
+					sb.append(',');
+				}
+				sb.append(grid.cellTypes[c]);
+			}
+			sb.append(']');
+		}
 		sb.append(",\"cells\":[");
 		for (int c = 0; c < grid.cells.length; c++) {
 			if (c > 0) {
@@ -558,14 +621,14 @@ public final class FieldViewerServer {
 		return sb.toString();
 	}
 
-	private static String handleFieldMovingBoundary(DataSource source, Map<String, String> q) throws Exception {
+	private static String handleFieldVtu(DataSource source, Map<String, String> q, VtuMode mode) throws Exception {
 		String varName = q.get("var");
 		if (varName == null || varName.isEmpty()) {
 			throw new IllegalArgumentException("missing required query parameter 'var'");
 		}
 		String domain = q.getOrDefault("domain", "");
 		if (domain.isEmpty()) {
-			domain = MovingBoundaryReader.getFakeInsideDomainName();
+			domain = vtuDomains(source).get(0);
 		}
 		int timeIndex = timeIndexFor(source, q);
 		double[] times = source.dataManager.getDataSetTimes(source.vcdID);
@@ -597,7 +660,7 @@ public final class FieldViewerServer {
 			max = 0;
 		}
 		StringBuilder sb = new StringBuilder(16 * values.length + 256);
-		sb.append("{\"geometryId\":\"").append(jsonEscape(mbGeometryId(source, domain, timeIndex))).append('"');
+		sb.append("{\"geometryId\":\"").append(jsonEscape(vtuGeometryId(source, domain, mode, timeIndex))).append('"');
 		sb.append(",\"name\":\"").append(jsonEscape(varName)).append('"');
 		sb.append(",\"domain\":\"").append(jsonEscape(domain)).append('"');
 		sb.append(",\"time\":").append(time);
@@ -621,8 +684,9 @@ public final class FieldViewerServer {
 	private static String handleField(HttpExchange ex) throws Exception {
 		Map<String, String> q = query(ex);
 		DataSource source = sourceFor(q);
-		if (isMovingBoundary(source)) {
-			return handleFieldMovingBoundary(source, q);
+		VtuMode fieldVtuMode = vtuMode(source);
+		if (fieldVtuMode != null) {
+			return handleFieldVtu(source, q, fieldVtuMode);
 		}
 		String domain = domainOf(q, source);
 		String varName = q.get("var");
@@ -676,11 +740,11 @@ public final class FieldViewerServer {
 	private static String handleTimeSeries(HttpExchange ex) throws Exception {
 		Map<String, String> q = query(ex);
 		DataSource source = sourceFor(q);
-		if (isMovingBoundary(source)) {
-			// per-cell ordinals are not stable across time on a moving mesh; needs a
+		if (vtuMode(source) != null) {
+			// per-cell ordinals are per-mesh, not solver raster indices; needs a
 			// spatial-point formulation (#1879 follow-up)
 			throw new IllegalArgumentException(
-					"not yet supported for MovingBoundary runs");
+					"not yet supported for MovingBoundary/Chombo runs");
 		}
 		String domain = domainOf(q, source);
 		String varName = q.get("var");
@@ -736,11 +800,11 @@ public final class FieldViewerServer {
 	private static String handleStats(HttpExchange ex) throws Exception {
 		Map<String, String> q = query(ex);
 		DataSource source = sourceFor(q);
-		if (isMovingBoundary(source)) {
-			// per-cell ordinals are not stable across time on a moving mesh; needs a
+		if (vtuMode(source) != null) {
+			// per-cell ordinals are per-mesh, not solver raster indices; needs a
 			// spatial-point formulation (#1879 follow-up)
 			throw new IllegalArgumentException(
-					"not yet supported for MovingBoundary runs");
+					"not yet supported for MovingBoundary/Chombo runs");
 		}
 		DataIdentifier[] ids = source.dataManager.getDataIdentifiers(emptyOutputContext(), source.vcdID);
 		Set<String> requested = null;

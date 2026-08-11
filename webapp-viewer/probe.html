@@ -32,6 +32,19 @@ try {
   for (const name of ['vtkContourTriangulator', 'vtkDelaunay2D']) {
     try { vtk[name](); log(`${name}: constructible`); } catch (e) { log(`${name}: FAILED — ${e?.message ?? e}`); }
   }
+  // mixed-cell insertion (Chombo: voxels + tets in one grid)
+  try {
+    const ug = vtk.vtkUnstructuredGrid();
+    const pts = vtk.vtkPoints();
+    await pts.setNumberOfPoints(9);
+    const coords = [[0,0,0],[1,0,0],[0,1,0],[1,1,0],[0,0,1],[1,0,1],[0,1,1],[1,1,1],[2,0,0]];
+    for (let i = 0; i < 9; i++) await pts.setPoint(i, ...coords[i]);
+    await ug.setPoints(pts);
+    await ug.insertNextCell(11, 8, [0,1,2,3,4,5,6,7]); // VTK_VOXEL
+    await ug.insertNextCell(10, 4, [1,8,3,5]);          // VTK_TETRA
+    const n = await ug.getNumberOfCells();
+    log(`mixed insertNextCell: ${n === 2 ? 'OK (2 cells)' : 'WRONG count ' + n}`);
+  } catch (e) { log('mixed insertNextCell: FAILED — ' + (e?.message ?? e)); }
   // --- deformed-grid feasibility probes ---
   try {
     log('session keys: ' + Object.keys(session).join(','));
