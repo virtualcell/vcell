@@ -555,6 +555,9 @@ public final class FieldViewerServer {
 		for (VtuFileContainer.VtuMesh mesh : container.vtuMeshes) {
 			if (mesh.domainName.equals(domain)) {
 				VtuGridParser.VtuGrid grid = VtuGridParser.parse(mesh.vtuMeshContents);
+				if (vtuMode(source) == VtuMode.STATIC) {
+					grid = chomboToPhysical(grid, source);
+				}
 				mbGridCache.put(key, grid);
 				return grid;
 			}
@@ -562,6 +565,30 @@ public final class FieldViewerServer {
 		throw new IllegalArgumentException("no VTU mesh for domain '" + domain + "' at time index "
 				+ timeIndex + "; this run has "
 				+ container.vtuMeshes.stream().map(m -> m.domainName).toList());
+	}
+
+	/**
+	 * A Chombo .vtu carries {@code ChomboMeshMapping}'s doubled-index coordinates — vertex
+	 * {@code v = (p-origin)*N/extent*2 - 1}, chosen there so mesh vertices land on exact integers —
+	 * not physical coordinates (a legacy of the VisIt-era consumers). Everything the viewer does
+	 * with the mesh (axes, lab-frame points, cell measures) needs microns, so invert that map as
+	 * the mesh comes over the seam: {@code p = origin + (v+1)*extent/(2N)}.
+	 */
+	private static VtuGridParser.VtuGrid chomboToPhysical(VtuGridParser.VtuGrid grid,
+			DataSource source) throws Exception {
+		cbit.vcell.solvers.CartesianMesh mesh =
+				(cbit.vcell.solvers.CartesianMesh) source.dataManager.getMesh(source.vcdID);
+		double[] origin = { mesh.getOrigin().getX(), mesh.getOrigin().getY(), mesh.getOrigin().getZ() };
+		double[] extent = { mesh.getExtent().getX(), mesh.getExtent().getY(), mesh.getExtent().getZ() };
+		int[] n = { mesh.getSizeX(), mesh.getSizeY(), mesh.getSizeZ() };
+		double[] physical = new double[grid.points.length];
+		for (int i = 0; i < grid.points.length; i++) {
+			int axis = i % 3;
+			physical[i] = n[axis] > 1
+					? origin[axis] + (grid.points[i] + 1) * extent[axis] / (2.0 * n[axis])
+					: grid.points[i];
+		}
+		return new VtuGridParser.VtuGrid(physical, grid.cells, grid.cellTypes);
 	}
 
 	private static String handleGridVtu(DataSource source, Map<String, String> q, VtuMode mode) throws Exception {
