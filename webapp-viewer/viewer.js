@@ -809,6 +809,20 @@ async function zoom2d(factor) {
 // picking (#1859 items 6 and 8)
 // ---------------------------------------------------------------------------
 
+/**
+ * Mouse → lab-frame world coordinates under the 2D orthographic camera. The inverse of what
+ * pan2d/zoom2d maintain: the view maps world x/y linearly onto the canvas, scaled so the
+ * camera's parallel scale spans half the canvas height.
+ */
+async function labPointFromMouse(clientX, clientY) {
+  const rect = el.canvas.getBoundingClientRect();
+  const worldPerPixel = (2 * (await camera.getParallelScale())) / rect.height;
+  const F = await camera.getFocalPoint();
+  const x = F[0] + (clientX - rect.left - rect.width / 2) * worldPerPixel;
+  const y = F[1] - (clientY - rect.top - rect.height / 2) * worldPerPixel;
+  return [x, y];
+}
+
 /** Center coordinates of a picked cell, for the readouts. */
 function cellCenter(cell) {
   const pk = state.pick;
@@ -822,7 +836,22 @@ function cellCenter(cell) {
 
 let hoverBusy = false;
 async function hoverPick(clientX, clientY) {
-  if (!state.ready || !state.pick || hoverBusy || state.bodyFitted) return;
+  if (!state.ready || hoverBusy) return;
+  if (state.bodyFitted) {
+    // no occupancy index on a body-fitted mesh; the readout shows where a click would sample
+    if (state.dimension !== 2) return;
+    hoverBusy = true;
+    try {
+      const [x, y] = await labPointFromMouse(clientX, clientY);
+      el.pickReadout.textContent = `lab (${x.toFixed(2)}, ${y.toFixed(2)}) — click to plot time course`;
+    } catch (e) {
+      console.warn('hover failed', e);
+    } finally {
+      hoverBusy = false;
+    }
+    return;
+  }
+  if (!state.pick) return;
   hoverBusy = true;
   try {
     const { origin, dir } = await rayFromMouse(clientX, clientY);
@@ -849,7 +878,9 @@ async function hoverPick(clientX, clientY) {
  * explicitly ruled out in #1859.
  */
 async function plotPick(clientX, clientY) {
-  if (!state.ready || !state.pick || !state.dataset || state.bodyFitted) return;
+  if (!state.ready || !state.dataset) return;
+  if (state.bodyFitted) return void plotLabPick(clientX, clientY);
+  if (!state.pick) return;
   try {
     const { origin, dir } = await rayFromMouse(clientX, clientY);
     const cell = castRay(origin, dir);
@@ -860,6 +891,26 @@ async function plotPick(clientX, clientY) {
       url('/timeseries', { domain: state.selectedDomain, var: state.selectedVar, cell: String(cell) }),
       '/timeseries');
     renderPlot(series, c);
+    setStatus(`${describe()} ✓`);
+  } catch (e) {
+    setStatus('time-series pick failed: ' + (e?.message ?? e), true);
+  }
+}
+
+/**
+ * Click on a moving-boundary view → time course at that fixed LAB-FRAME point. The point does not
+ * follow the material: /timeseries locates it in each saved time's own mesh, and frames where the
+ * boundary has moved past it come back as nulls, drawn as gaps in the curve.
+ */
+async function plotLabPick(clientX, clientY) {
+  if (state.dimension !== 2) return;
+  try {
+    const [x, y] = await labPointFromMouse(clientX, clientY);
+    setStatus(`fetching time series for ${state.selectedVar} at lab (${x.toFixed(2)}, ${y.toFixed(2)})…`);
+    const series = await fetchJson(
+      url('/timeseries', { domain: state.selectedDomain, var: state.selectedVar, x: String(x), y: String(y) }),
+      '/timeseries');
+    renderPlot(series, [x, y, 0]);
     setStatus(`${describe()} ✓`);
   } catch (e) {
     setStatus('time-series pick failed: ' + (e?.message ?? e), true);
@@ -893,18 +944,40 @@ function plotFrame(times, lo, hi) {
   return { mk, sx, sy, lo };
 }
 
-/** Framework-free line plot: one polyline in an SVG, min/max labels, nothing else to maintain. */
+/**
+ * Framework-free line plot: polylines in an SVG, min/max labels, nothing else to maintain. Null
+ * values break the curve into segments — on a moving-boundary run a null means the domain had
+ * moved past the sampled lab point at that time, a physically meaningful gap that must not be
+ * drawn through. A segment of one frame renders as a dot so it does not vanish.
+ */
 function renderPlot(series, center) {
   const { times, values, name } = series;
   const finite = values.filter((v) => v != null && Number.isFinite(v));
   if (!times?.length || !finite.length) return;
   const f = plotFrame(times, Math.min(...finite), Math.max(...finite));
-  f.mk('polyline', {
-    class: 'curve',
-    points: times.map((t, i) => `${f.sx(t).toFixed(1)},${f.sy(values[i] ?? f.lo).toFixed(1)}`).join(' '),
+  let seg = [];
+  const flush = () => {
+    if (seg.length > 1) {
+      f.mk('polyline', { class: 'curve', points: seg.join(' ') });
+    } else if (seg.length === 1) {
+      const [cx, cy] = seg[0].split(',');
+      f.mk('circle', { class: 'curve-dot', cx, cy, r: 3 });
+    }
+    seg = [];
+  };
+  times.forEach((t, i) => {
+    const v = values[i];
+    if (v == null || !Number.isFinite(v)) {
+      flush();
+      return;
+    }
+    seg.push(`${f.sx(t).toFixed(1)},${f.sy(v).toFixed(1)}`);
   });
+  flush();
+  const gaps = values.length - finite.length;
   const at = center ? ` @ (${center.slice(0, state.dimension === 2 ? 2 : 3).map((x) => x.toFixed(1)).join(', ')})` : '';
-  el.plotTitle.textContent = `${name}${at} · ${times.length} timepoints`;
+  el.plotTitle.textContent = `${name}${at} · ${times.length} timepoints`
+    + (gaps > 0 ? ` · ${gaps} outside the moving domain` : '');
   el.plotLegend.innerHTML = '';
   el.plotPanel.hidden = false;
 }
@@ -932,7 +1005,8 @@ function renderStatsPlot(stats) {
       points: times.map((t, i) => `${f.sx(t).toFixed(1)},${f.sy(s.mean[i] ?? f.lo).toFixed(1)}`).join(' '),
     });
   });
-  el.plotTitle.textContent = `min / mean / max over space · ${times.length} timepoints`;
+  el.plotTitle.textContent = `min / mean / max over space · ${times.length} timepoints`
+    + (stats.weighting === 'measure' ? ' · area-weighted over the moving domain' : '');
   el.plotLegend.innerHTML = '';
   series.forEach((s, k) => {
     const item = document.createElement('span');
@@ -1159,7 +1233,7 @@ el.smoothingReset.addEventListener('click', () => {
     el.colorbar.disabled = false;
     el.axes.disabled = false;
     el.sliceAxis.disabled = state.bodyFitted;
-    el.statsBtn.disabled = state.bodyFitted;
+    el.statsBtn.disabled = false;
     if (state.bodyFitted) {
       el.smoothingReadout.textContent = 'body-fitted solver mesh — shown as computed';
       el.smoothingReset.disabled = true;
