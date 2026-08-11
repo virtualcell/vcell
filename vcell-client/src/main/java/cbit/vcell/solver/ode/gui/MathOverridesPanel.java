@@ -33,7 +33,7 @@ import org.vcell.util.gui.ScrollTable;
 import cbit.gui.ScopedExpression;
 import cbit.gui.TableCellEditorAutoCompletion;
 import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.desktop.VCellCopyPasteHelper;
+import cbit.vcell.desktop.copypaste.VCellCopyPasteHelper;
 import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.mapping.DiffEquMathMapping;
 import cbit.vcell.math.Constant;

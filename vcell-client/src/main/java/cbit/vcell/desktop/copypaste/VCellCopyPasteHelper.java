@@ -8,12 +8,13 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.desktop;
+package cbit.vcell.desktop.copypaste;
 
 import java.awt.*;
-import java.util.Arrays;
-import java.util.Objects;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.swing.*;
 
@@ -24,9 +25,6 @@ import org.vcell.util.Compare;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.math.Constant;
-import cbit.vcell.model.Kinetics;
-import cbit.vcell.model.Parameter;
-import cbit.vcell.model.ReactionStep;
 import cbit.vcell.modelopt.ParameterMappingSpec;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.solver.ConstantArraySpec;
@@ -39,6 +37,43 @@ public class VCellCopyPasteHelper {
 	public VCellCopyPasteHelper() {
 		super();
 	}
+
+
+	public static <T> void chooseApplyPaste(Component requester, java.util.List<PasteOperationDataSource<T>> rawChangeData){
+		if (rawChangeData.isEmpty()) {
+			PopupGenerator.showErrorDialog(requester, "Aborting paste: no data was provided for paste calculation.");
+			return;
+		}
+
+		Stream<PasteOperationDataSource<T>> prunedStream = rawChangeData.stream().filter(PasteOperationDataSource::isProposedChangeRedundant);
+		Map<PasteOperationTableModelRow<T>, PasteOperationDataSource<T>> displayToSourceMapping = prunedStream.collect(
+				Collectors.toMap(
+					PasteOperationDataSource::createTableModelRow,
+					Function.identity(),
+					(v1, v2) -> v1, // we don't expect duplicates
+					LinkedHashMap::new
+				)
+		);
+
+		if (displayToSourceMapping.isEmpty()) {
+			PopupGenerator.showInfoDialog(requester, "All valid paste values are equal to the destination values.\nNo paste needed.");
+			return;
+		}
+
+		java.util.List<PasteOperationTableModelRow<T>> selectedRows = VCellCopyPasteHelper.showChoices(requester, displayToSourceMapping.keySet());
+		if (selectedRows.isEmpty()) return;
+
+		boolean allHaveSucceeded = true;
+		StringBuilder statusMessages = new StringBuilder();
+
+		for (PasteOperationTableModelRow<T> row : selectedRows) {
+			allHaveSucceeded &= VCellCopyPasteHelper.performPasteOperation(row, displayToSourceMapping, statusMessages);
+		}
+		if (allHaveSucceeded) return;
+		PopupGenerator.showErrorDialog(requester, "Paste Errors Detected:\n" + statusMessages);
+	}
+
+
 
 	public static void chooseApplyPaste(Component requester,
 	                                    String[] pasteDetails,
@@ -72,56 +107,6 @@ public class VCellCopyPasteHelper {
 			try {
 				if (choices.get(i)) {
 					changingParameters[i].setExpression(newParameterExpression[i]);
-				}
-				statusMessages.append("(OK) ").append(Arrays.toString(pasteDetails)).append("\n");
-			} catch (Exception e) {
-				bFailure = true;
-				statusMessages.append("(Failed) ").append(Arrays.toString(pasteDetails)).append(" ").append(e.getMessage()).append(" ").append(e.getClass().getName()).append("\n");
-			}
-		}
-		if (bFailure) {
-			PopupGenerator.showErrorDialog(requester, "Paste Results:\n" + statusMessages);
-		}
-
-	}
-
-
-	public static void chooseApplyPaste(Component requester,
-	                                    String[] pasteDetails,
-	                                    Parameter[] changingParamters,
-	                                    Expression[] newParameterExpression) {
-
-
-		if (pasteDetails.length != changingParamters.length || changingParamters.length != newParameterExpression.length) {
-			throw new IllegalArgumentException(VCellCopyPasteHelper.class.getName() + ".chooseApplyPaste(...) arguments must have unequal lengths");
-		}
-		//Only present things that will actually change
-		boolean bAtLeatOneDifferent = false;
-		boolean[] bEnableDisplay = new boolean[changingParamters.length];
-		for (int i = 0; i < changingParamters.length; i += 1) {
-			//bEnableDisplay[i] = !changingParamters[i].getExpression().equals(newParameterExpression[i]);
-			bEnableDisplay[i] = !Compare.isEqualOrNull(changingParamters[i].getExpression(), newParameterExpression[i]);
-			bAtLeatOneDifferent = bAtLeatOneDifferent || bEnableDisplay[i];
-		}
-
-		if (!bAtLeatOneDifferent) {
-			PopupGenerator.showInfoDialog(requester, "All valid paste values are equal to the destination values.\nNo paste needed.");
-			return;
-		}
-
-		java.util.List<Boolean> choices = showChoices(requester, pasteDetails, bEnableDisplay);
-		if (choices.isEmpty()) return;
-		StringBuilder statusMessages = new StringBuilder();
-		boolean bFailure = false;
-		for (int i = 0; i < changingParamters.length; i += 1) {
-			try {
-				if (choices.get(i)) {
-					if (changingParamters[i] instanceof Kinetics.KineticsParameter) {
-						Kinetics kinetics = ((ReactionStep) changingParamters[i].getNameScope().getScopedSymbolTable()).getKinetics();
-						kinetics.setParameterValue((Kinetics.KineticsParameter) changingParamters[i], newParameterExpression[i]);
-					} else {
-						throw new Exception("Changing " + changingParamters[i].getNameScope().getName() + " " + changingParamters[i].getName() + " not yet implemented");
-					}
 				}
 				statusMessages.append("(OK) ").append(Arrays.toString(pasteDetails)).append("\n");
 			} catch (Exception e) {
@@ -244,53 +229,6 @@ public class VCellCopyPasteHelper {
 
 	}
 
-
-	public static void chooseApplyPaste_NOT_USED(Component requester,
-	                                             String[] pasteDetails,
-	                                             MathOverrides mathOverrides,
-	                                             String[] changingMathOverridesNames,
-	                                             Constant[] newMathOverridesValues) {
-
-
-		if (pasteDetails.length != changingMathOverridesNames.length || changingMathOverridesNames.length != newMathOverridesValues.length) {
-			throw new IllegalArgumentException(VCellCopyPasteHelper.class.getName() + ".chooseApplyPaste(...) arguments have unequal lengths");
-		}
-		//Only present things that will actually change
-		boolean bAtLeatOneDifferent = false;
-		boolean[] bEnableDisplay = new boolean[changingMathOverridesNames.length];
-		for (int i = 0; i < changingMathOverridesNames.length; i += 1) {
-			//bEnableDisplay[i] = !changingParamters[i].getExpression().equals(newParameterExpression[i]);
-			bEnableDisplay[i] = !Compare.isEqualOrNull(mathOverrides.getActualExpression(changingMathOverridesNames[i], MathOverrides.ScanIndex.ZERO), newMathOverridesValues[i].getExpression());
-			bAtLeatOneDifferent = bAtLeatOneDifferent || bEnableDisplay[i];
-		}
-
-		if (!bAtLeatOneDifferent) {
-			PopupGenerator.showInfoDialog(requester, "All valid paste values are equal to the destination values.\nNo paste needed.");
-			return;
-		}
-
-		java.util.List<Boolean> choices = showChoices(requester, pasteDetails, bEnableDisplay);
-		if (choices.isEmpty()) return;
-		StringBuilder statusMessages = new StringBuilder();
-		boolean bFailure = false;
-
-		for (int i = 0; i < choices.size(); i += 1) {
-			try {
-				if (choices.get(i)) {
-					mathOverrides.putConstant(newMathOverridesValues[i]);
-				}
-				statusMessages.append("(OK) ").append(Arrays.toString(pasteDetails)).append("\n");
-			} catch (Exception e) {
-				bFailure = true;
-				statusMessages.append("(Failed) ").append(Arrays.toString(pasteDetails)).append(" ").append(e.getMessage()).append(" ").append(e.getClass().getName()).append("\n");
-			}
-		}
-		if (bFailure) {
-			PopupGenerator.showErrorDialog(requester, "Paste Results:\n" + statusMessages);
-		}
-
-	}
-
 	public static String formatPasteList(String s1, String s2, String s3, String s4) {
 		return
 				BeanUtils.forceStringLength(s1, 25, " ", false) + " " +
@@ -317,18 +255,51 @@ public class VCellCopyPasteHelper {
 		return (scsRole == SpeciesContextSpec.ROLE_BoundaryValueZm || scsRole == SpeciesContextSpec.ROLE_BoundaryValueZp) && dimension > 2;
 	}
 
+	private static <T> java.util.List<PasteOperationTableModelRow<T>> showChoices(Component requester, java.util.Collection<PasteOperationTableModelRow<T>> data){
+		javax.swing.JPanel jp = new javax.swing.JPanel();
+		jp.setLayout(new javax.swing.BoxLayout(jp, javax.swing.BoxLayout.Y_AXIS));
+
+		PasteOperationTableModel<T> tableModel = new PasteOperationTableModel<>(data);
+		JScrollPane scrollPane = new JScrollPane(new JTable(tableModel));
+		scrollPane.setName(tableModel.isMultipleChoice() ? "Choose Parameters to Paste" : "Confirm Paste to Parameter");
+
+		Object result = VCellCopyPasteHelper.displaySelectionPane(requester, scrollPane);
+		if (!Objects.equals(JOptionPane.OK_OPTION, result)) return java.util.List.of();
+		return tableModel.getSelectedRows();
+	}
+
 	private static java.util.List<Boolean> showChoices(Component requester, String[] choiceDescriptions, boolean[] bEnableDisplay) {
 		JCheckBox[] checkboxes = VCellCopyPasteHelper.createCheckboxes(choiceDescriptions, bEnableDisplay);
-		JComponent jsp = VCellCopyPasteHelper.createChoicesPane(checkboxes, choiceDescriptions);
-		JOptionPane selectionPane = new JOptionPane(jsp, JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION, null);
+		JComponent choicesPane = VCellCopyPasteHelper.createChoicesPane(checkboxes, choiceDescriptions);
+		Object result = VCellCopyPasteHelper.displaySelectionPane(requester, choicesPane);
+		if (!Objects.equals(JOptionPane.OK_OPTION, result)) return java.util.List.of();
+		return Arrays.stream(checkboxes).map(JCheckBox::isSelected).toList();
+	}
 
-		LWDialog selectionDialog = DialogUtils.createDialog(requester, selectionPane, jsp.getName());
+	private static <T> boolean performPasteOperation(PasteOperationTableModelRow<T> selectedRow,
+	                                     Map<PasteOperationTableModelRow<T>, PasteOperationDataSource<T>> displayToSourceMapping,
+	                                     StringBuilder statusMessages) {
+		PasteOperationDataSource<T> source = displayToSourceMapping.get(selectedRow);
+		try {
+			source.performChange();
+		} catch (Exception e) {
+			String exceptionMessage = e.getMessage() == null ? "" : "(" + e.getMessage() + ")";
+			String error = String.format("(Failed) %s [cause: %s %s]", selectedRow.getDisplayString(), e.getClass().getName(), exceptionMessage);
+			statusMessages.append(error).append("\n");
+			return false;
+		}
+		statusMessages.append("(OK) ").append(selectedRow.getDisplayString()).append("\n");
+		return true;
+	}
+
+	private static Object displaySelectionPane(Component requester, Object panelContents){
+		JOptionPane selectionPane = new JOptionPane(panelContents, JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION, null);
+
+		LWDialog selectionDialog = DialogUtils.createDialog(requester, selectionPane, selectionPane.getName());
 		selectionDialog.setResizable(true);
 		selectionDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		selectionDialog.setVisible(true);
-		Object result = selectionPane.getValue();
-		if (!Objects.equals(JOptionPane.OK_OPTION, result)) return java.util.List.of();
-		return Arrays.stream(checkboxes).map(JCheckBox::isSelected).toList();
+		return selectionPane.getValue();
 	}
 
 	private static JScrollPane createChoicesPane(JCheckBox[] checkboxBacker, String[] choiceDescriptions){
