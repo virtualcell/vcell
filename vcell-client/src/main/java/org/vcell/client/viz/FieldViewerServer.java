@@ -634,16 +634,7 @@ public final class FieldViewerServer {
 		double[] times = source.dataManager.getDataSetTimes(source.vcdID);
 		double time = times[timeIndex];
 
-		VtuVarInfo varInfo = null;
-		for (VtuVarInfo v : vtuVarInfos(source)) {
-			if (v.name.equals(varName)) {
-				varInfo = v;
-				break;
-			}
-		}
-		if (varInfo == null) {
-			throw new IllegalArgumentException("unknown variable '" + varName + "'");
-		}
+		VtuVarInfo varInfo = vtuVarInfoFor(source, varName);
 		// the VTU seam's contract: values are ordered by the same sequential inside-cell ordinal
 		// the mesh's cells were written in, so values[i] belongs to cells[i] of the SAME timeIndex
 		double[] values = source.dataManager.getVtuMeshData(emptyOutputContext(), source.vcdID, varInfo, time);
@@ -667,6 +658,181 @@ public final class FieldViewerServer {
 		sb.append(",\"location\":\"cell\",\"values\":");
 		appendDoubles(sb, values, values.length);
 		sb.append(",\"range\":[").append(min).append(',').append(max).append("]}");
+		return sb.toString();
+	}
+
+	private static VtuVarInfo vtuVarInfoFor(DataSource source, String varName) throws Exception {
+		for (VtuVarInfo v : vtuVarInfos(source)) {
+			if (v.name.equals(varName)) {
+				return v;
+			}
+		}
+		throw new IllegalArgumentException("unknown variable '" + varName + "'");
+	}
+
+	/**
+	 * {@code /timeseries?sim=&job=&domain=&var=&x=&y=[&z=]} for VTU-mode runs — the variable's
+	 * time course at a fixed LAB-FRAME point. Cell ordinals are per-mesh, not solver raster
+	 * indices, so the browser addresses a spatial point instead. TIME_VARYING locates the point in
+	 * each saved time's own body-fitted mesh; STATIC locates it once in the one embedded-boundary
+	 * mesh. Times where the point lies outside the domain (for a moving boundary: the boundary has
+	 * moved past it) serialize as {@code null} — a physically meaningful gap, not missing data.
+	 */
+	private static String handleTimeSeriesVtu(DataSource source, Map<String, String> q,
+			VtuMode mode) throws Exception {
+		String varName = q.get("var");
+		if (varName == null || varName.isEmpty()) {
+			throw new IllegalArgumentException("missing required query parameter 'var'");
+		}
+		String domain = q.getOrDefault("domain", "");
+		if (domain.isEmpty()) {
+			domain = vtuDomains(source).get(0);
+		}
+		if (q.get("x") == null || q.get("y") == null) {
+			throw new IllegalArgumentException(
+					"a body-fitted time series is addressed by lab-frame point: 'x' and 'y' are required"
+							+ " ('cell' ordinals are per-mesh, not solver raster indices)");
+		}
+		double x = Double.parseDouble(q.get("x"));
+		double y = Double.parseDouble(q.get("y"));
+		double z = q.get("z") != null ? Double.parseDouble(q.get("z")) : 0;
+		VtuVarInfo varInfo = vtuVarInfoFor(source, varName);
+
+		double[] times = source.dataManager.getDataSetTimes(source.vcdID);
+		if (times == null || times.length == 0) {
+			throw new IllegalArgumentException("run " + source.vcdID.getID() + " has no saved times");
+		}
+		double[] values = new double[times.length];
+		int inside = 0;
+		int staticCell = mode == VtuMode.STATIC
+				? VtuGridParser.locateCell(mbGrid(source, domain, 0), x, y, z)
+				: -1;
+		for (int i = 0; i < times.length; i++) {
+			int cell = staticCell;
+			if (mode == VtuMode.TIME_VARYING) {
+				VtuGridParser.VtuGrid grid = mbGrid(source, domain, i);
+				cell = VtuGridParser.locateCell(grid, x, y, z);
+			}
+			if (cell < 0) {
+				values[i] = Double.NaN; // serializes as null: the point is outside the domain
+				continue;
+			}
+			inside++;
+			values[i] = source.dataManager.getVtuMeshData(emptyOutputContext(), source.vcdID,
+					varInfo, times[i])[cell];
+		}
+
+		StringBuilder sb = new StringBuilder(32 * times.length + 256);
+		sb.append("{\"name\":\"").append(jsonEscape(varName)).append('"');
+		sb.append(",\"domain\":\"").append(jsonEscape(domain)).append('"');
+		sb.append(",\"x\":").append(x).append(",\"y\":").append(y);
+		sb.append(",\"insideCount\":").append(inside);
+		sb.append(",\"times\":");
+		appendDoubles(sb, times, times.length);
+		sb.append(",\"values\":");
+		appendDoubles(sb, values, values.length);
+		sb.append('}');
+		return sb.toString();
+	}
+
+	/**
+	 * {@code /stats?sim=&job=[&var=a,b,c]} for VTU-mode runs — per saved time, min, max and
+	 * measure-weighted mean over the body-fitted mesh (each saved time's own mesh for
+	 * TIME_VARYING; the one embedded-boundary mesh for STATIC). The statistics follow the domain:
+	 * each frame integrates over the cells the domain actually occupies then, weighting each cell
+	 * by its area or volume (the display-mesh statistics family — self-consistent with what is
+	 * drawn). Each series also carries the domain's total measure per time — for a moving boundary,
+	 * the size of the moving region itself.
+	 */
+	private static String handleStatsVtu(DataSource source, Map<String, String> q, VtuMode mode)
+			throws Exception {
+		String domain = q.getOrDefault("domain", "");
+		if (domain.isEmpty()) {
+			domain = vtuDomains(source).get(0);
+		}
+		Set<String> requested = null;
+		String varParam = q.get("var");
+		if (varParam != null && !varParam.isEmpty()) {
+			requested = new LinkedHashSet<>(Arrays.asList(varParam.split(",")));
+		}
+		List<VtuVarInfo> chosen = new ArrayList<>();
+		for (VtuVarInfo var : vtuVarInfos(source)) {
+			if (var.bMeshVariable || var.dataType != VtuVarInfo.DataType.CellData) {
+				continue;
+			}
+			if (requested == null || requested.contains(var.name)) {
+				chosen.add(var);
+			}
+		}
+		if (chosen.isEmpty()) {
+			throw new IllegalArgumentException("no cell-data variables match " + varParam);
+		}
+		double[] times = source.dataManager.getDataSetTimes(source.vcdID);
+		if (times == null || times.length == 0) {
+			throw new IllegalArgumentException("run " + source.vcdID.getID() + " has no saved times");
+		}
+
+		int nv = chosen.size();
+		double[][] mins = new double[nv][times.length];
+		double[][] maxs = new double[nv][times.length];
+		double[][] means = new double[nv][times.length];
+		double[] domainMeasure = new double[times.length];
+		double[] staticMeasures = mode == VtuMode.STATIC
+				? VtuGridParser.cellMeasures(mbGrid(source, domain, 0))
+				: null;
+		for (int i = 0; i < times.length; i++) {
+			double[] measures = staticMeasures != null ? staticMeasures
+					: VtuGridParser.cellMeasures(mbGrid(source, domain, i));
+			double total = 0;
+			for (double m : measures) {
+				total += m;
+			}
+			domainMeasure[i] = total;
+			for (int v = 0; v < nv; v++) {
+				double[] values = source.dataManager.getVtuMeshData(emptyOutputContext(),
+						source.vcdID, chosen.get(v), times[i]);
+				double min = Double.POSITIVE_INFINITY;
+				double max = Double.NEGATIVE_INFINITY;
+				double weighted = 0;
+				double weight = 0;
+				int n = Math.min(values.length, measures.length);
+				for (int c = 0; c < n; c++) {
+					if (Double.isNaN(values[c])) {
+						continue;
+					}
+					min = Math.min(min, values[c]);
+					max = Math.max(max, values[c]);
+					weighted += values[c] * measures[c];
+					weight += measures[c];
+				}
+				mins[v][i] = min <= max ? min : Double.NaN;
+				maxs[v][i] = min <= max ? max : Double.NaN;
+				means[v][i] = weight > 0 ? weighted / weight : Double.NaN;
+			}
+		}
+
+		StringBuilder sb = new StringBuilder(64 * times.length * nv + 512);
+		sb.append("{\"times\":");
+		appendDoubles(sb, times, times.length);
+		sb.append(",\"weighting\":\"measure\"");
+		sb.append(",\"series\":[");
+		for (int v = 0; v < nv; v++) {
+			if (v > 0) {
+				sb.append(',');
+			}
+			sb.append("{\"name\":\"").append(jsonEscape(chosen.get(v).name)).append('"');
+			sb.append(",\"domain\":\"").append(jsonEscape(domain)).append('"');
+			sb.append(",\"min\":");
+			appendDoubles(sb, mins[v], times.length);
+			sb.append(",\"max\":");
+			appendDoubles(sb, maxs[v], times.length);
+			sb.append(",\"mean\":");
+			appendDoubles(sb, means[v], times.length);
+			sb.append(",\"measure\":");
+			appendDoubles(sb, domainMeasure, times.length);
+			sb.append('}');
+		}
+		sb.append("]}");
 		return sb.toString();
 	}
 
@@ -740,11 +906,9 @@ public final class FieldViewerServer {
 	private static String handleTimeSeries(HttpExchange ex) throws Exception {
 		Map<String, String> q = query(ex);
 		DataSource source = sourceFor(q);
-		if (vtuMode(source) != null) {
-			// per-cell ordinals are per-mesh, not solver raster indices; needs a
-			// spatial-point formulation (#1879 follow-up)
-			throw new IllegalArgumentException(
-					"not yet supported for MovingBoundary/Chombo runs");
+		VtuMode tsMode = vtuMode(source);
+		if (tsMode != null) {
+			return handleTimeSeriesVtu(source, q, tsMode);
 		}
 		String domain = domainOf(q, source);
 		String varName = q.get("var");
@@ -800,11 +964,9 @@ public final class FieldViewerServer {
 	private static String handleStats(HttpExchange ex) throws Exception {
 		Map<String, String> q = query(ex);
 		DataSource source = sourceFor(q);
-		if (vtuMode(source) != null) {
-			// per-cell ordinals are per-mesh, not solver raster indices; needs a
-			// spatial-point formulation (#1879 follow-up)
-			throw new IllegalArgumentException(
-					"not yet supported for MovingBoundary/Chombo runs");
+		VtuMode statsMode = vtuMode(source);
+		if (statsMode != null) {
+			return handleStatsVtu(source, q, statsMode);
 		}
 		DataIdentifier[] ids = source.dataManager.getDataIdentifiers(emptyOutputContext(), source.vcdID);
 		Set<String> requested = null;

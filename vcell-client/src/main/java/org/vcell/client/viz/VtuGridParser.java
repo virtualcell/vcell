@@ -42,6 +42,114 @@ final class VtuGridParser {
 		}
 	}
 
+	private static final int VTK_TRIANGLE = 5;
+	private static final int VTK_POLYGON = 7;
+	private static final int VTK_QUAD = 9;
+	private static final int VTK_TETRA = 10;
+	private static final int VTK_VOXEL = 11;
+
+	/**
+	 * Per-cell measure — area for in-plane 2D cells, volume for 3D cells — for volume-weighted
+	 * statistics over body-fitted meshes.
+	 */
+	static double[] cellMeasures(VtuGrid grid) {
+		double[] measures = new double[grid.cells.length];
+		for (int c = 0; c < grid.cells.length; c++) {
+			int[] cell = grid.cells[c];
+			double[] p = grid.points;
+			switch (grid.cellTypes[c]) {
+				case VTK_TRIANGLE, VTK_POLYGON, VTK_QUAD -> {
+					// shoelace over the in-plane polygon (z ignored)
+					double twiceArea = 0;
+					for (int v = 0; v < cell.length; v++) {
+						int a = cell[v];
+						int b = cell[(v + 1) % cell.length];
+						twiceArea += p[3 * a] * p[3 * b + 1] - p[3 * b] * p[3 * a + 1];
+					}
+					measures[c] = Math.abs(twiceArea) / 2;
+				}
+				case VTK_TETRA -> measures[c] = Math.abs(tripleProduct(p, cell[0], cell[1], cell[2], cell[3])) / 6;
+				case VTK_VOXEL -> {
+					// axis-aligned by definition; corners 0 and 7 span the box
+					double dx = Math.abs(p[3 * cell[7]] - p[3 * cell[0]]);
+					double dy = Math.abs(p[3 * cell[7] + 1] - p[3 * cell[0] + 1]);
+					double dz = Math.abs(p[3 * cell[7] + 2] - p[3 * cell[0] + 2]);
+					measures[c] = dx * dy * dz;
+				}
+				default -> throw new IllegalArgumentException(
+						"no measure for VTK cell type " + grid.cellTypes[c]);
+			}
+		}
+		return measures;
+	}
+
+	private static double tripleProduct(double[] p, int i0, int i1, int i2, int i3) {
+		double ax = p[3 * i1] - p[3 * i0], ay = p[3 * i1 + 1] - p[3 * i0 + 1], az = p[3 * i1 + 2] - p[3 * i0 + 2];
+		double bx = p[3 * i2] - p[3 * i0], by = p[3 * i2 + 1] - p[3 * i0 + 1], bz = p[3 * i2 + 2] - p[3 * i0 + 2];
+		double cx = p[3 * i3] - p[3 * i0], cy = p[3 * i3 + 1] - p[3 * i0 + 1], cz = p[3 * i3 + 2] - p[3 * i0 + 2];
+		return ax * (by * cz - bz * cy) - ay * (bx * cz - bz * cx) + az * (bx * cy - by * cx);
+	}
+
+	/**
+	 * The cell containing a lab-frame point, or -1 when the point lies outside the mesh — which
+	 * for a moving-boundary run is the physically meaningful "the domain has moved past this
+	 * point". In-plane cells test by point-in-polygon (z ignored); voxels by bounds; tets by
+	 * barycentric signs.
+	 */
+	static int locateCell(VtuGrid grid, double x, double y, double z) {
+		double[] p = grid.points;
+		for (int c = 0; c < grid.cells.length; c++) {
+			int[] cell = grid.cells[c];
+			boolean hit = switch (grid.cellTypes[c]) {
+				case VTK_TRIANGLE, VTK_POLYGON, VTK_QUAD -> pointInPolygon(p, cell, x, y);
+				case VTK_VOXEL -> x >= Math.min(p[3 * cell[0]], p[3 * cell[7]])
+						&& x <= Math.max(p[3 * cell[0]], p[3 * cell[7]])
+						&& y >= Math.min(p[3 * cell[0] + 1], p[3 * cell[7] + 1])
+						&& y <= Math.max(p[3 * cell[0] + 1], p[3 * cell[7] + 1])
+						&& z >= Math.min(p[3 * cell[0] + 2], p[3 * cell[7] + 2])
+						&& z <= Math.max(p[3 * cell[0] + 2], p[3 * cell[7] + 2]);
+				case VTK_TETRA -> pointInTetra(p, cell, x, y, z);
+				default -> false;
+			};
+			if (hit) {
+				return c;
+			}
+		}
+		return -1;
+	}
+
+	private static boolean pointInPolygon(double[] p, int[] cell, double x, double y) {
+		boolean inside = false;
+		for (int v = 0, w = cell.length - 1; v < cell.length; w = v++) {
+			double xv = p[3 * cell[v]], yv = p[3 * cell[v] + 1];
+			double xw = p[3 * cell[w]], yw = p[3 * cell[w] + 1];
+			if ((yv > y) != (yw > y) && x < (xw - xv) * (y - yv) / (yw - yv) + xv) {
+				inside = !inside;
+			}
+		}
+		return inside;
+	}
+
+	private static boolean pointInTetra(double[] p, int[] cell, double x, double y, double z) {
+		// same-side test against each face, tolerant of degenerate (near-flat) tets
+		double total = tripleProduct(p, cell[0], cell[1], cell[2], cell[3]);
+		if (Math.abs(total) < 1e-300) {
+			return false;
+		}
+		for (int f = 0; f < 4; f++) {
+			double[] q = p.clone();
+			int replaced = cell[f];
+			q[3 * replaced] = x;
+			q[3 * replaced + 1] = y;
+			q[3 * replaced + 2] = z;
+			double sub = tripleProduct(q, cell[0], cell[1], cell[2], cell[3]);
+			if (sub * total < -1e-12 * Math.abs(total)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 	private VtuGridParser() {
 	}
 
