@@ -51,7 +51,7 @@ public class VtkServicePython extends VtkService {
 		String baseFilename = vtkFile.getName().replace(".vtu",".visMesh");
 		File visMeshFile = new File(vtkFile.getParentFile(), baseFilename);
 		VisMeshUtils.writeVisMesh(visMeshFile, visMesh);
-		callVtkPython(meshType, domainName, visMeshFile.toPath(), vtkFile.getParentFile().toPath(), indexFile.toPath());
+		callVtkPython(meshType, domainName, visMeshFile.toPath(), vtkFile.toPath(), indexFile.toPath());
 	}
 
 	private void callVtkPython(MeshType meshtype, String domainName, Path visMeshFile, Path vtkFile, Path indexFile) throws IOException, InterruptedException {
