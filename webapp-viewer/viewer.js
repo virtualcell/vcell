@@ -89,7 +89,8 @@ let vtk = null;
 let surfSource = null; // raw-boundary extractor feeding the smoother (passThroughPointIds on)
 let sinc = null;
 let deform = null; // vtkVCellDeformGridToSurface: writes the sinc'd points back into the grid
-let tableClip = null; // the cut plane, when active: clips the DEFORMED grid
+let tableClip = null; // the cut plane, when active: clips the DEFORMED grid (or the raw body-fitted mesh)
+let currentUg = null; // the body-fitted solver mesh, for rewiring geomFilter when the crop toggles
 let geomFilter = null; // display boundary extractor (deformed or clipped-deformed grid)
 let integ = null; // vtkIntegrateAttributes for display-mesh statistics (null if unavailable)
 let mapper = null;
@@ -219,13 +220,14 @@ async function loadGeometry() {
   return geometry;
 }
 
-async function loadField() {
+async function loadField(allowMismatch = false) {
   const time = state.times[state.timeIndex];
   const field = await fetchJson(
     url('/field', { domain: state.selectedDomain, var: state.selectedVar, time: String(time) }), '/field');
   // values are only meaningful against the geometry they were computed for; pairing them with a
-  // different one would draw something silently wrong rather than obviously broken
-  if (state.geometryId && field.geometryId !== state.geometryId) {
+  // different one would draw something silently wrong rather than obviously broken. The
+  // body-fitted scrub path passes allowMismatch and treats a mismatch as "rebuild the geometry".
+  if (!allowMismatch && state.geometryId && field.geometryId !== state.geometryId) {
     throw new Error(`field is for geometry ${field.geometryId} but the view holds ${state.geometryId}`);
   }
   el.dataReadout.textContent =
@@ -404,11 +406,18 @@ async function buildGrid(geometry, field) {
   await points.setNumberOfPoints(geometry.numPoints);
   const P = geometry.points;
   for (let i = 0; i < geometry.numPoints; i++) await points.setPoint(i, P[3 * i], P[3 * i + 1], P[3 * i + 2]);
-  const cellArray = vtk.vtkCellArray();
-  for (const cell of geometry.cells) await cellArray.insertNextCell(cell.length, cell);
   const ug = vtk.vtkUnstructuredGrid();
   await ug.setPoints(points);
-  await ug.setCells(geometry.cellType, cellArray); // single cell type (VTK_VOXEL)
+  if (geometry.cellTypes) {
+    // mixed cell types (Chombo: regular voxels + tetrahedra from cut polyhedra)
+    for (let c = 0; c < geometry.cells.length; c++) {
+      await ug.insertNextCell(geometry.cellTypes[c], geometry.cells[c].length, geometry.cells[c]);
+    }
+  } else {
+    const cellArray = vtk.vtkCellArray();
+    for (const cell of geometry.cells) await cellArray.insertNextCell(cell.length, cell);
+    await ug.setCells(geometry.cellType, cellArray); // single cell type
+  }
 
   fieldArray = null;
   if (field) {
@@ -423,8 +432,10 @@ async function buildGrid(geometry, field) {
     fieldArray = arr;
   }
   if (state.bodyFitted) {
-    // MovingBoundary: the mesh IS the solver's body-fitted geometry — no smoothing, no deform,
-    // no crop; the display shows it exactly as computed
+    // body-fitted: the mesh IS the solver's geometry — no smoothing, no deform; the crop clips
+    // this mesh directly, so a cut exposes the solver's own interior cells (voxels and cut tets)
+    currentUg = ug;
+    await tableClip.setInputData(ug);
     await geomFilter.setInputData(ug);
   } else {
     // the raw grid feeds the smoothing chain and the deform filter; everything the user sees
@@ -459,10 +470,13 @@ async function buildGrid(geometry, field) {
  */
 async function applyCrop() {
   if (!tableClip) return;
-  if (state.bodyFitted) return; // geomFilter is fed the solver mesh directly in buildGrid
   const axis = state.sliceAxis;
   if (axis < 0) {
-    await geomFilter.setInputConnection(await deform.getOutputPort());
+    if (state.bodyFitted) {
+      if (currentUg) await geomFilter.setInputData(currentUg);
+    } else {
+      await geomFilter.setInputConnection(await deform.getOutputPort());
+    }
     el.sliceReadout.textContent = '';
     el.cropStats.textContent = '';
     return;
@@ -528,7 +542,8 @@ async function updateCropStats() {
       + (mean != null && Number.isFinite(mean) ? `mean ${mean.toExponential(3)} · ` : '')
       + `max ${range[1].toExponential(3)}`
       + (volume != null && Number.isFinite(volume) ? ` · volume ${volume.toExponential(3)}` : '')
-      + ` (smoothing ${p.iterations} iters · pass-band ${formatPassBand(p.passBand)})`;
+      + (state.bodyFitted ? ' (body-fitted solver mesh)'
+        : ` (smoothing ${p.iterations} iters · pass-band ${formatPassBand(p.passBand)})`);
   } catch (e) {
     console.warn('display-mesh stats failed', e);
     el.cropStats.textContent = '';
@@ -1144,9 +1159,34 @@ el.time.addEventListener('input', () => {
 });
 el.time.addEventListener('change', () => {
   state.timeIndex = Number(el.time.value);
-  // a body-fitted mesh is a different geometry at each time; keep the camera where the user put it
-  void (state.bodyFitted ? rebuildGeometry(false) : refreshField());
+  void (state.bodyFitted ? refreshTimeStep() : refreshField());
 });
+
+/**
+ * Body-fitted time step: fetch the field first and let its geometryId decide. A static mesh
+ * (Chombo) matches and only the colors change; a per-time mesh (MovingBoundary) differs and the
+ * geometry is rebuilt — with the camera kept where the user put it.
+ */
+async function refreshTimeStep() {
+  if (!state.ready || state.busy || !state.dataset) return;
+  state.busy = true;
+  const t0 = performance.now();
+  try {
+    const field = await loadField(true);
+    if (field.geometryId !== state.geometryId) {
+      const geometry = await loadGeometry();
+      await buildGrid(geometry, field);
+    } else {
+      await applyField(field);
+    }
+    await renderWindow.render();
+    setStatus(`${describe()} ✓ (${Math.round(performance.now() - t0)} ms)`);
+  } catch (e) {
+    setStatus('time step failed: ' + (e?.message ?? e), true);
+  } finally {
+    state.busy = false;
+  }
+}
 el.variable.addEventListener('change', () => {
   const chosen = state.variables.find((v) => v.name === el.variable.value);
   if (!chosen || state.busy) return;
@@ -1232,7 +1272,7 @@ el.smoothingReset.addEventListener('click', () => {
     el.smoothing.disabled = state.bodyFitted;
     el.colorbar.disabled = false;
     el.axes.disabled = false;
-    el.sliceAxis.disabled = state.bodyFitted;
+    el.sliceAxis.disabled = false; // body-fitted 3D included: the crop clips the solver mesh
     el.statsBtn.disabled = false;
     if (state.bodyFitted) {
       el.smoothingReadout.textContent = 'body-fitted solver mesh — shown as computed';
