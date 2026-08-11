@@ -16,6 +16,63 @@ followed by flat Keep-a-Changelog categories. API consumers should scan
 
 _(Release-manager scratchpad. Populated at release-cut time.)_
 
+## [8.0.11.01] - 2026-08-10
+
+**Highlights.** SpringSaLaD simulation results open again. Since 8.0.6.01, viewing
+the results of any SpringSaLaD run whose solver output lacked a `SiteIDs.csv` failed
+outright with `DataAccessException-f != cbit.vcell.parser.Expression`, taking the
+whole results viewer down rather than just the legend. Separately, a long-running
+simulation stopped by its configured time limit now says so: the message used to
+read "solver stopped unexpectedly, solver exited (code=124)", which describes a
+crash, when in fact the run was healthy and had simply exhausted the time it was
+allotted — a distinction that cost a user four days of waiting to discover. On the
+server side, the data service no longer opens a JMS connection per data event, and
+the messaging framework gained an Artemis implementation.
+
+### Added
+- `VCMessagingServiceArtemis`, an Artemis implementation of the `VCMessagingService`
+  framework, alongside the existing ActiveMQ Classic one. The optimization bridge in
+  `OptimizationBatchServer` — the one caller that had been using hand-rolled JMS —
+  now goes through it, and so gains the bounded failover and `JmsFailoverWatchdog`
+  supervision every other messaging path already had. The wire contract is
+  unchanged: JSON text on `opt-request` and `opt-status`. (#1872)
+- Field viewer (flag-off, #1883): MovingBoundary runs render as body-fitted,
+  time-varying 2D geometry, with the solver's own mesh shown as computed. Picking,
+  time series and statistics are gated off for this mode, because per-cell ordinals
+  are not stable across time on a moving mesh.
+
+### Changed
+- A solver stopped by its per-task time limit now reports the limit and says the
+  simulation did not fail, instead of "solver stopped unexpectedly". Exit code 124
+  is what `timeout` returns when it kills the process it wraps, and every Langevin
+  task runs inside one. The limit itself is unchanged and remains a deployment
+  setting. (#1881)
+- The VTK.wasm bundle is built and released by
+  [virtualcell/vcell-vtk-wasm](https://github.com/virtualcell/vcell-vtk-wasm); this
+  repository consumes the published release, and its golden test now validates the
+  artifact VCell actually ships rather than a locally built one. (#1824)
+
+### Fixed
+- SpringSaLaD simulation results open again. The site radius is an `Expression` in
+  the math description and a `double` on the trajectory side, and the legend passed
+  the `Expression` straight to a `%.5f` format — an `IllegalFormatConversionException`
+  that propagated out of the results viewer's constructor. Affected any run without a
+  `SiteIDs.csv`, which is where the model-side naming path runs. A radius that cannot
+  be evaluated now leaves the site unnamed rather than aborting the legend. (#1882)
+- The data service no longer opens a JMS connection for every data event. Each
+  event built its own producer session, which connects eagerly — measured at 209
+  connections in a single minute for one user browsing simulation data. Sends now
+  take a JMS session of their own from the shared connection, which also removes the
+  concurrent `createProducer`/`send`/`commit` race on a session shared across the
+  pooled consumers' worker threads. (#1880)
+
+### Notes for API consumers
+- No `/api/v1/` schema changes; `tools/openapi.yaml` is unchanged and the generated
+  Java, Python and TypeScript clients are unaffected.
+- `SimulationMessage.WorkerExited(int)` returns different text for exit code 124.
+  Anything matching on the literal string "solver exited (code=124)" should instead
+  use `SimulationMessage.describesTimeLimit(String)`.
+
 ## [8.0.10.01] - 2026-08-10
 
 **Highlights.** Editing a SpringSaLaD model now behaves correctly when the model
