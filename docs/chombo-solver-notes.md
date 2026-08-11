@@ -5,6 +5,27 @@ Working notes gathered while adding Chombo support to the VTK-based field viewer
 no deployed image or solver bundle can *run* it (details below). This document
 records what is needed to read its output today and to resurrect the solver later.
 
+> **2026-08-11 update — it builds and runs from source.** `VCellChombo3D_x64` built from
+> vcell-solvers master (macOS arm64, homebrew gcc + HDF5 2.1.0) ran the "chombo 3d" sim of
+> BioModel 276459600 to completion locally, producing modern-format output end-to-end through
+> the VTK seam. Recipe: symlink the binary into `localsolvers/mac64/`, generate
+> `.fvinput`/`.functions`/`..._0__0.simtask.xml` via `FVSolverStandalone` from the VCML, then run
+> `VCellChombo3D_x64 <fvinput>` (serial mode writes everything; no `-ccd` pass needed). A
+> self-contained input+expected-output package for a Java-free vcell-solvers unit test lives at
+> `/tmp/chombo-local/` (see its README). Four defects found on the way:
+>
+> 1. **`ChomboScheduler::writeData` buffer overflow** (vcell-solvers): the per-time output path is
+>    sprintf'd into `char hdf5FileName[128]`; a long base directory silently creates the file at a
+>    truncated path and the follow-up `H5Fopen` aborts. Run in a short directory until fixed.
+> 2. **`VtkServicePython` passed the output directory where the .vtu path belongs** (since July
+>    2023) — server-side Chombo/FV/comsol VTU generation was silently broken. Fixed in PR #1893.
+> 3. **`Hdf5PostProcessor` rejects statistic name `mean`** — written by *today's* solver, not just
+>    legacy archives — and aborts all data access for the run (issue #1894).
+> 4. **Chombo .vtu files are in doubled-index coordinates**, not microns: `ChomboMeshMapping`
+>    maps vertices to `(p-origin)*N/extent*2 - 1` (exact integers, a VisIt-era convention).
+>    Consumers must invert this (`p = origin + (v+1)*extent/(2N)`); the field viewer does so in
+>    `FieldViewerServer.chomboToPhysical`.
+
 ## 1. Current availability (as of 2026-08)
 
 - **Source still exists**: `virtualcell/vcell-solvers` repo, directories
