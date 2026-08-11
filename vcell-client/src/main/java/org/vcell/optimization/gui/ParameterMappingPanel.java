@@ -39,7 +39,7 @@ import org.vcell.util.gui.sorttable.JSortTable;
 
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
-import cbit.vcell.desktop.VCellCopyPasteHelper;
+import cbit.vcell.desktop.copypaste.VCellCopyPasteHelper;
 import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.MathSymbolMapping;

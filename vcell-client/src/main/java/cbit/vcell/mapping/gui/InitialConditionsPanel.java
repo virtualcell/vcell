@@ -29,6 +29,8 @@ import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
 
+import cbit.vcell.desktop.copypaste.PasteOperationDataSource;
+import cbit.vcell.desktop.copypaste.PasteOperationScspDataSource;
 import cbit.vcell.mapping.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -52,7 +54,7 @@ import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.desktop.VCellCopyPasteHelper;
+import cbit.vcell.desktop.copypaste.VCellCopyPasteHelper;
 import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.graph.SmallShapeManager;
 import cbit.vcell.graph.SpeciesPatternSmallShape;
@@ -338,13 +340,20 @@ public class InitialConditionsPanel extends DocumentEditorSubPanel implements Ap
 	}
 
 	private void menuPasteActionPerformed(final java.awt.event.ActionEvent actionEvent) {
-		final List<String> pasteDescriptions = new ArrayList<>();
-		final List<Expression> newExpressions = new ArrayList<>();
-		final List<SpeciesContextSpec.SpeciesContextSpecParameter> changedParameters = new ArrayList<>();
+		final List<PasteOperationDataSource<Expression>> rawDataSource = new ArrayList<>();
 		final boolean shouldPasteAll = actionEvent.getSource() == InitialConditionsPanel.this.getPasteAllMenuItem();
-		AsynchClientTask task1 = new ValidateAndComputePasteAsynchClientTask(pasteDescriptions, newExpressions, changedParameters, shouldPasteAll);
-		AsynchClientTask task2 = new SmartPasteAsynchClientTask(pasteDescriptions, newExpressions, changedParameters);
+		AsynchClientTask task1 = new ValidateAndComputePasteAsynchClientTask(rawDataSource, shouldPasteAll);
+		AsynchClientTask task2 = new SmartPasteAsynchClientTask(rawDataSource);
 		ClientTaskDispatcher.dispatch(this, new Hashtable<>(), new AsynchClientTask[]{task1, task2});
+
+
+//		final List<String> pasteDescriptions = new ArrayList<>();
+//		final List<Expression> newExpressions = new ArrayList<>();
+//		final List<SpeciesContextSpec.SpeciesContextSpecParameter> changedParameters = new ArrayList<>();
+//		final boolean shouldPasteAll = actionEvent.getSource() == InitialConditionsPanel.this.getPasteAllMenuItem();
+//		AsynchClientTask task1 = new ValidateAndComputePasteAsynchClientTask(pasteDescriptions, newExpressions, changedParameters, shouldPasteAll);
+//		AsynchClientTask task2 = new SmartPasteAsynchClientTask(pasteDescriptions, newExpressions, changedParameters);
+//		ClientTaskDispatcher.dispatch(this, new Hashtable<>(), new AsynchClientTask[]{task1, task2});
 	}
 
 	@Override
@@ -680,18 +689,13 @@ public class InitialConditionsPanel extends DocumentEditorSubPanel implements Ap
 	}
 
 	protected class ValidateAndComputePasteAsynchClientTask extends AsynchClientTask {
-		final List<String> pasteDescriptions;
-		final List<Expression> newExpressions;
-		final List<SpeciesContextSpecParameter> changedParameters;
+		final List<PasteOperationDataSource<Expression>> rawDataSource;
 		final boolean shouldPasteAll;
 
 
-		public ValidateAndComputePasteAsynchClientTask(final List<String> pasteDescriptions, final List<Expression> newExpressions,
-		                                               final List<SpeciesContextSpecParameter> changedParameters, final boolean shouldPasteAll) {
+		public ValidateAndComputePasteAsynchClientTask(final List<PasteOperationDataSource<Expression>> rawDataSource, final boolean shouldPasteAll) {
 			super("validating paste request", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING);
-			this.pasteDescriptions = pasteDescriptions;
-			this.newExpressions = newExpressions;
-			this.changedParameters = changedParameters;
+			this.rawDataSource = rawDataSource;
 			this.shouldPasteAll = shouldPasteAll;
 		}
 
@@ -740,15 +744,7 @@ public class InitialConditionsPanel extends DocumentEditorSubPanel implements Ap
 
 					if (pasteDestination == null) continue;
 					if (correlatedExpression == null) throw new NullPointerException("The expression that should be correlated with destination `" + pasteDestination.getName()  + "` is null!");
-					this.changedParameters.add(pasteDestination);
-					this.newExpressions.add(correlatedExpression);
-					String formatedPasteDescription = VCellCopyPasteHelper.formatPasteList(
-							scs.getSpeciesContext().getName(),
-							pasteDestination.getName(),
-							pasteDestination.getExpression().infix(),
-							correlatedExpression.infix()
-					);
-					this.pasteDescriptions.add(formatedPasteDescription);
+					this.rawDataSource.add(new PasteOperationScspDataSource(scs.getSpeciesContext(), pasteDestination, correlatedExpression));
 				}
 			} catch (Throwable e) {
 				errors.append(scs.getSpeciesContext().getName()).append(" (").append(e.getClass().getName()).append(") ").append(e.getMessage()).append("\n\n");
@@ -812,27 +808,46 @@ public class InitialConditionsPanel extends DocumentEditorSubPanel implements Ap
 		final List<String> pasteDescriptions;
 		final List<Expression> newExpressions;
 		final List<SpeciesContextSpecParameter> changedParameters;
+		final List<PasteOperationDataSource<Expression>> rawChangeData;
 
 		public SmartPasteAsynchClientTask(final List<String> pasteDescriptions, final List<Expression> newExpressions, final List<SpeciesContextSpecParameter> changedParameters){
 			super("pasting", AsynchClientTask.TASKTYPE_SWING_BLOCKING);
 			this.pasteDescriptions = pasteDescriptions;
 			this.newExpressions = newExpressions;
 			this.changedParameters = changedParameters;
+			this.rawChangeData = null;
+		}
+
+		public SmartPasteAsynchClientTask(List<PasteOperationDataSource<Expression>> rawChangeData){
+			super("pasting", AsynchClientTask.TASKTYPE_SWING_BLOCKING);
+			this.pasteDescriptions = null;
+			this.newExpressions = null;
+			this.changedParameters = null;
+			this.rawChangeData = rawChangeData;
 		}
 
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
-            if (this.pasteDescriptions.isEmpty()){
-	            PopupGenerator.showInfoDialog(InitialConditionsPanel.this, "No paste items match the destination (no changes made).");
-				return;
-            }
-			//Do paste
-			VCellCopyPasteHelper.chooseApplyPaste(
-					InitialConditionsPanel.this,
-					this.pasteDescriptions.toArray(String[]::new),
-					this.changedParameters.toArray(SpeciesContextSpecParameter[]::new),
-                    this.newExpressions.toArray(Expression[]::new)
-            );
+			if (this.rawChangeData != null) {
+				if (this.rawChangeData.isEmpty()){
+					PopupGenerator.showInfoDialog(InitialConditionsPanel.this, "No paste items match the destination (no changes made).");
+					return;
+				}
+				VCellCopyPasteHelper.chooseApplyPaste(InitialConditionsPanel.this, this.rawChangeData);
+
+			} else if (this.pasteDescriptions != null && this.changedParameters != null && this.newExpressions != null) {
+				if (this.pasteDescriptions.isEmpty()){
+					PopupGenerator.showInfoDialog(InitialConditionsPanel.this, "No paste items match the destination (no changes made).");
+					return;
+				}
+				//Do paste
+				VCellCopyPasteHelper.chooseApplyPaste(
+						InitialConditionsPanel.this,
+						this.pasteDescriptions.toArray(String[]::new),
+						this.changedParameters.toArray(SpeciesContextSpecParameter[]::new),
+						this.newExpressions.toArray(Expression[]::new)
+				);
+			}
 		}
 	}
 
