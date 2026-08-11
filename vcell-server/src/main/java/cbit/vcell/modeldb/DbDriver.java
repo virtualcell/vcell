@@ -85,22 +85,22 @@ public abstract class DbDriver {
             String sql = "UPDATE " + BioModelTable.table.getTableName() +
                     " SET " + BioModelTable.table.privacy.getUnqualifiedColName() + "=" + GroupAccess.GROUPACCESS_ALL.toString() +
                     " WHERE " + BioModelTable.table.id.getUnqualifiedColName() + " IN (" + StringUtils.join(publishTheseBiomodels, ',') + ")";
-            if(lg.isDebugEnabled()) lg.debug(sql);
+            if(lg.isTraceEnabled()) lg.trace(sql);
             updateCleanSQL(con, sql);
             sql = "UPDATE " + BioModelTable.table.getTableName() + " SET " + BioModelTable.table.versionFlag.getUnqualifiedColName() + "=" + VersionFlag.Published.getIntValue() +
                     " WHERE " + BioModelTable.table.id.getUnqualifiedColName() + " IN (" + StringUtils.join(publishTheseBiomodels, ',') + ")";
-            if(lg.isDebugEnabled()) lg.debug(sql);
+            if(lg.isTraceEnabled()) lg.trace(sql);
             updateCleanSQL(con, sql);
         }
         if(publishTheseMathmodels != null && publishTheseMathmodels.length > 0){
             String sql = "UPDATE " + MathModelTable.table.getTableName() +
                     " SET " + MathModelTable.table.privacy.getUnqualifiedColName() + "=" + GroupAccess.GROUPACCESS_ALL.toString() +
                     " WHERE " + MathModelTable.table.id.getUnqualifiedColName() + " IN (" + StringUtils.join(publishTheseMathmodels, ',') + ")";
-            if(lg.isDebugEnabled()) lg.debug(sql);
+            if(lg.isTraceEnabled()) lg.trace(sql);
             updateCleanSQL(con, sql);
             sql = "UPDATE " + MathModelTable.table.getTableName() + " SET " + MathModelTable.table.versionFlag.getUnqualifiedColName() + "=" + VersionFlag.Published.getIntValue() +
                     " WHERE " + MathModelTable.table.id.getUnqualifiedColName() + " IN (" + StringUtils.join(publishTheseMathmodels, ',') + ")";
-            if(lg.isDebugEnabled()) lg.debug(sql);
+            if(lg.isTraceEnabled()) lg.trace(sql);
             updateCleanSQL(con, sql);
         }
     }
@@ -158,7 +158,7 @@ public abstract class DbDriver {
                         PublicationTable.table.pubdate.getUnqualifiedColName() + "=" + (publicationRep.getDate() == null ? "NULL" : " TO_DATE('" + simpleDateFormat.format(publicationRep.getDate()) + "','" + YMD_FORMAT_STRING + "') ") +
                         " WHERE " + PublicationTable.table.id.getUnqualifiedColName() + "=" + pubID.toString();
             }
-            if(lg.isDebugEnabled()) lg.debug(sql);
+            if(lg.isTraceEnabled()) lg.trace(sql);
             updateCleanSQL(con, sql);
             //Remove all current links to this publication
             sql = "DELETE FROM " + PublicationModelLinkTable.table.getTableName() + " WHERE " + PublicationModelLinkTable.table.pubRef.getUnqualifiedColName() + "=" + pubID.toString();
@@ -202,7 +202,7 @@ public abstract class DbDriver {
 	    checkRolePermission(con, user, SpecialUser.SPECIAL_CLAIM.publicationEditors, "edit publications", databaseSyntax);
 
 	    String sql = "DELETE FROM "+PublicationTable.table.getTableName()+" WHERE ID='"+pubID+"'";
-	    if (lg.isDebugEnabled()) lg.debug(sql);
+	    if (lg.isTraceEnabled()) lg.trace(sql);
         return updateCleanSQL(con, sql);
     }
 
@@ -279,9 +279,9 @@ public abstract class DbDriver {
 //				")"+
 //		")";
             if(bPrintOnly){
-                lg.info(sql + ";");
+                lg.info(redactSqlForLog(sql) + ";");
             } else {
-                if(lg.isDebugEnabled()) lg.debug(sql);
+                if(lg.isTraceEnabled()) lg.trace(sql);
                 int changed = updateCleanSQL(con, sql);
             }
 
@@ -335,9 +335,9 @@ public abstract class DbDriver {
 //				")"+
 //		")";
             if(bPrintOnly){
-                lg.info(sql + ";");
+                lg.info(redactSqlForLog(sql) + ";");
             } else {
-                if(lg.isDebugEnabled()) lg.debug(sql);
+                if(lg.isTraceEnabled()) lg.trace(sql);
                 int changed = updateCleanSQL(con, sql);
             }
 
@@ -355,9 +355,9 @@ public abstract class DbDriver {
                             MathDescExternalDataLinkTable.table.extDataRef + " = " + extDataIDKey.toString() +
                             ")";
             if(bPrintOnly){
-                lg.info(sql + ";");
+                lg.info(redactSqlForLog(sql) + ";");
             } else {
-                if(lg.isDebugEnabled()) lg.debug(sql);
+                if(lg.isTraceEnabled()) lg.trace(sql);
                 int changed = updateCleanSQL(con, sql);
             }
 
@@ -529,7 +529,7 @@ public abstract class DbDriver {
         String set = vTable.versionFlag.getUnqualifiedColName() + " = " + updatedVersionFlag.getIntValue();
         String cond = vTable.id.getQualifiedColName() + " = " + vKey;
         String sql = DatabasePolicySQL.enforceOwnershipUpdate(user, vTable, set, cond);
-        if(lg.isDebugEnabled()) lg.debug(sql);
+        if(lg.isTraceEnabled()) lg.trace(sql);
         int changed = updateCleanSQL(con, sql);
 
         //Clear XML
@@ -729,7 +729,7 @@ public abstract class DbDriver {
                         " AND " + vr.getLinkField().getQualifiedColName() + " = " + vtv.getVersion().getVersionKey() +
                         " AND " + table.ownerRef.getQualifiedColName() + " = " + userTable.id.getQualifiedColName();
             }
-            if(lg.isDebugEnabled()) lg.debug(sql);
+            if(lg.isTraceEnabled()) lg.trace(sql);
             java.sql.Statement stmt = con.createStatement();
             Vector<VersionableTypeVersion> allChildrenVTV = new Vector<VersionableTypeVersion>();
             try { //Get KeyValues from statement and put into Vector, so we can close statement(good idea because we are recursive)
@@ -817,7 +817,7 @@ public abstract class DbDriver {
                         " AND " + vr.getLinkField().getQualifiedColName() + " = " + table.id.getQualifiedColName() +
                         " AND " + table.ownerRef.getQualifiedColName() + " = " + userTable.id.getQualifiedColName();
             }
-            if(lg.isDebugEnabled()) lg.debug(sql);
+            if(lg.isTraceEnabled()) lg.trace(sql);
             java.sql.Statement stmt = con.createStatement();
             Vector<VersionableTypeVersion> allReferencingVTV = new Vector<VersionableTypeVersion>();
             try { //Get KeyValues from statement and put into Vector, so we can close statement(good idea because we are recursive)
@@ -873,7 +873,7 @@ public abstract class DbDriver {
         sql = "SELECT " + linkTable.getTableName() + "." + childField +
                 " FROM " + linkTable.getTableName() +
                 " WHERE " + linkTable.getTableName() + "." + parentField + " = " + parentKey;
-        if(lg.isDebugEnabled()) lg.debug(sql);
+        if(lg.isTraceEnabled()) lg.trace(sql);
 
         java.sql.Statement stmt = con.createStatement();
         Vector<KeyValue> keyList = new Vector<KeyValue>();
@@ -900,7 +900,7 @@ public abstract class DbDriver {
         sql = "SELECT " + table.getTableName() + "." + table.id +
                 " FROM " + table.getTableName() +
                 " WHERE " + table.getTableName() + "." + field + " = " + versionKey;
-        if(lg.isDebugEnabled()) lg.debug(sql);
+        if(lg.isTraceEnabled()) lg.trace(sql);
 
         java.sql.Statement stmt = null;
         Vector<KeyValue> externalRefsV = new Vector<KeyValue>();
@@ -931,7 +931,7 @@ public abstract class DbDriver {
                 " WHERE " + table.getTableName() + "." + table.id + " = " + idKey +
                 " AND " + refTable.getTableName() + "." + refTable.id + " = " + table.getTableName() + "." + field +
                 " AND " + refTable.getTableName() + "." + refTable.ownerRef + " = " + owner.getID();
-        if(lg.isDebugEnabled()) lg.debug(sql);
+        if(lg.isTraceEnabled()) lg.trace(sql);
 
         java.sql.Statement stmt = con.createStatement();
         try {
@@ -1659,7 +1659,7 @@ public abstract class DbDriver {
                         " vc_mathmodel.id=vc_publicationmodellink.mathmodelref and vc_userinfo.id=vc_mathmodel.ownerref" +
                         " and vc_publication.id=vc_publicationmodellink.pubref and vc_publicationmodellink.pubref is not null" +
                         " and vc_publicationmodellink.mathmodelref is not null");
-        lg.info(sql);
+        lg.info(redactSqlForLog(sql));
         ResultSet rset = null;
         try {
             rset = stmt.executeQuery(sql);
@@ -2484,7 +2484,7 @@ public abstract class DbDriver {
                 pstmt.setString(2, TokenMangler.getSQLEscapedString(value));
                 changed = pstmt.executeUpdate();
                 if(changed != 1){
-                    lg.error(changed + " records changed: " + sql, new StackTraceGenerationException());
+                    lg.error(changed + " records changed: " + redactSqlForLog(sql), new StackTraceGenerationException());
                 }
             }
         } finally {
@@ -3059,7 +3059,7 @@ public abstract class DbDriver {
             }
 
         } catch(SQLException e){
-            lg.error("failed: (" + sql + "): " + e.getMessage(), e);
+            lg.error("failed: (" + redactSqlForLog(sql) + "): " + e.getMessage(), e);
             throw e;
         } finally {
             if(stmt != null){
@@ -3577,12 +3577,12 @@ public abstract class DbDriver {
                                 changedTSKey + ",'" + addts_tsop.getTestSuiteVersionID() + "'," +
                                 "'" + addts_tsop.getVCellBuildVersionID() + "'" + "," + "'" + addts_tsop.getNumericsBuildVersionID() + "'" + "," +
                                 "current_timestamp,current_timestamp," + (annotation == null ? "NULL" : "'" + annotation + "'") + "," + NOT_LOCKED + ")";
-                if(lg.isDebugEnabled()){
-                    lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
+                if(lg.isTraceEnabled()){
+                    lg.trace("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
                 }
                 int changed = stmt.executeUpdate(sql); // jcs: added logging
                 if(changed != 1){
-                    lg.error(changed + " records changed: " + sql, new StackTraceGenerationException());
+                    lg.error(changed + " records changed: " + redactSqlForLog(sql), new StackTraceGenerationException());
                 }
 
                 if(addts_tsop.getAddTestCasesOPs() != null){
@@ -3644,12 +3644,12 @@ public abstract class DbDriver {
                 sql = "INSERT INTO " + TFTestCaseTable.table.getTableName() + " VALUES(" +
                         tcKey.toString() + "," + addtc_tsop.getTestSuiteKey().toString() + ",NULL," +
                         "'" + addtc_tsop.getTestCaseType() + "'" + "," + "'" + annotation + "'" + "," + "current_timestamp" + "," + bmSimContextLinkRef.toString() + ")";
-                if(lg.isDebugEnabled()){
-                    lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
+                if(lg.isTraceEnabled()){
+                    lg.trace("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
                 }
                 int changed = stmt.executeUpdate(sql); // jcs: added logging
                 if(changed != 1){
-                    lg.error(changed + " records changed: " + sql, new StackTraceGenerationException());
+                    lg.error(changed + " records changed: " + redactSqlForLog(sql), new StackTraceGenerationException());
                 }
 
                 if(addtc_tsop.getAddTestCriteriaOPsBioModel() != null){
@@ -3678,12 +3678,12 @@ public abstract class DbDriver {
                 sql = "INSERT INTO " + TFTestCaseTable.table.getTableName() + " VALUES(" +
                         tcKey.toString() + "," + addtc_tsop.getTestSuiteKey().toString() + "," + mmKey.toString() + "," +
                         "'" + addtc_tsop.getTestCaseType() + "'" + "," + "'" + annotation + "'" + "," + "current_timestamp" + ",NULL)";
-                if(lg.isDebugEnabled()){
-                    lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
+                if(lg.isTraceEnabled()){
+                    lg.trace("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
                 }
                 int changed = stmt.executeUpdate(sql); // jcs: added logging
                 if(changed != 1){
-                    lg.error(changed + " records changed: " + sql, new StackTraceGenerationException());
+                    lg.error(changed + " records changed: " + redactSqlForLog(sql), new StackTraceGenerationException());
                 }
                 if(addtc_tsop.getAddTestCriteriaOPsMathModel() != null){
                     for(int i = 0; i < addtc_tsop.getAddTestCriteriaOPsMathModel().length; i += 1){
@@ -3721,12 +3721,12 @@ public abstract class DbDriver {
                 sql = "DELETE FROM " + TFTestCaseTable.table.getTableName() +
                         " WHERE " +
                         TFTestCaseTable.table.id.getUnqualifiedColName() + " IN (" + sb.toString() + ")";
-                if(lg.isDebugEnabled()){
-                    lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
+                if(lg.isTraceEnabled()){
+                    lg.trace("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
                 }
                 int numRowsUpdated = stmt.executeUpdate(sql); // jcs: added logging
                 if(numRowsUpdated != 1){
-                    lg.error(numRowsUpdated + " records changed: " + sql, new StackTraceGenerationException());
+                    lg.error(numRowsUpdated + " records changed: " + redactSqlForLog(sql), new StackTraceGenerationException());
                 }
                 if(numRowsUpdated != removetc_tsop.getTestCasesKeys().length){
                     throw new DataAccessException("Remove TestCase keys=" + sb.toString() +
@@ -3804,12 +3804,12 @@ public abstract class DbDriver {
                                 "NULL,NULL," +
                                 "'" + TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT + "'" + ",null" +
                                 ")";
-                if(lg.isDebugEnabled()){
-                    lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
+                if(lg.isTraceEnabled()){
+                    lg.trace("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
                 }
                 int changed = stmt.executeUpdate(sql); // jcs: added logging
                 if(changed != 1){
-                    lg.error(changed + " records changed: " + sql, new StackTraceGenerationException());
+                    lg.error(changed + " records changed: " + redactSqlForLog(sql), new StackTraceGenerationException());
                 }
                 if(addtcrit_tsop.getRegressionMathModelSimKey() != null){
                     testSuiteOP(
@@ -3908,12 +3908,12 @@ public abstract class DbDriver {
                                 (addtcrit_tsop.getMaxAbsoluteError() != null ? "CAST('" + addtcrit_tsop.getMaxAbsoluteError().toString() + "' as NUMERIC)" : "null") + "," +
                                 "NULL,NULL," + "'" + TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT + "'" + ",null" +
                                 ")";
-                if(lg.isDebugEnabled()){
-                    lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
+                if(lg.isTraceEnabled()){
+                    lg.trace("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
                 }
                 int changed = stmt.executeUpdate(sql); // jcs: added logging
                 if(changed != 1){
-                    lg.error(changed + " records changed: " + sql, new StackTraceGenerationException());
+                    lg.error(changed + " records changed: " + redactSqlForLog(sql), new StackTraceGenerationException());
                 }
                 if(addtcrit_tsop.getRegressionBioModelSimKey() != null){
                     testSuiteOP(
@@ -3965,8 +3965,8 @@ public abstract class DbDriver {
 
                 sql = "DELETE FROM " + TFTestCriteriaTable.table.getTableName() +
                         " WHERE " + TFTestCriteriaTable.table.id.getUnqualifiedColName() + " IN (" + sb.toString() + ")";
-                if(lg.isDebugEnabled()){
-                    lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
+                if(lg.isTraceEnabled()){
+                    lg.trace("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
                 }
                 int numRowsUpdated = stmt.executeUpdate(sql); // jcs: added logging
                 if(numRowsUpdated != removetcrit_tsop.getTestCriterias().length){
@@ -3978,8 +3978,8 @@ public abstract class DbDriver {
                 sql = "DELETE FROM " + TFTestSuiteTable.table.getTableName() +
                         " WHERE " +
                         TFTestSuiteTable.table.id.getUnqualifiedColName() + "=" + removets_tsop.getTestSuiteKey().toString();
-                if(lg.isDebugEnabled()){
-                    lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
+                if(lg.isTraceEnabled()){
+                    lg.trace("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
                 }
                 int numRowsUpdated = stmt.executeUpdate(sql); // jcs: added logging
                 if(numRowsUpdated != 1){
@@ -4018,12 +4018,12 @@ public abstract class DbDriver {
                             "CAST('" + vcs[i].getTimeAbsoluteError() + "' as NUMERIC)" + "," + "CAST('" + vcs[i].getIndexAbsoluteError() + "' as INTEGER)" + "," +
                             "CAST('" + vcs[i].getTimeRelativeError() + "' as NUMERIC)" + "," + "CAST('" + vcs[i].getIndexRelativeError() + "' as INTEGER)" +
                             ")";
-                    if(lg.isDebugEnabled()){
-                        lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
+                    if(lg.isTraceEnabled()){
+                        lg.trace("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
                     }
                     int changed = stmt.executeUpdate(sql); // jcs: added logging
                     if(changed != 1){
-                        lg.error(changed + " records changed: " + sql, new StackTraceGenerationException());
+                        lg.error(changed + " records changed: " + redactSqlForLog(sql), new StackTraceGenerationException());
                     }
                 }
 
@@ -4048,12 +4048,12 @@ public abstract class DbDriver {
                     sql = "DELETE FROM " + TFTestResultTable.table.getTableName() +
                             " WHERE " +
                             TFTestResultTable.table.testCriteriaRef.getUnqualifiedColName() + "=" + removetr_tsop.getTestCriteriaKeys()[i].toString();
-                    if(lg.isDebugEnabled()){
-                        lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
+                    if(lg.isTraceEnabled()){
+                        lg.trace("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
                     }
                     int changed = stmt.executeUpdate(sql);
                     if(changed != 1){
-                        lg.error(changed + " records changed: " + sql, new StackTraceGenerationException());
+                        lg.error(changed + " records changed: " + redactSqlForLog(sql), new StackTraceGenerationException());
                     }
                 }
 
@@ -4097,12 +4097,12 @@ public abstract class DbDriver {
                         TFTestCriteriaTable.table.reportStatus.getUnqualifiedColName() + "=" + (newRS != null ? "'" + newRS + "'" : "null") + "," +
                         TFTestCriteriaTable.table.reportMessage.getUnqualifiedColName() + "=" + (reportStatusMessage != null ? "'" + reportStatusMessage + "'" : "null") +
                         " WHERE " + TFTestCriteriaTable.table.id.getQualifiedColName() + "=" + tcritKey.toString();
-                if(lg.isDebugEnabled()){
-                    lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
+                if(lg.isTraceEnabled()){
+                    lg.trace("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
                 }
                 int changed = stmt.executeUpdate(sql); // jcs: added logging
                 if(changed != 1){
-                    lg.error(changed + " records changed: " + sql, new StackTraceGenerationException());
+                    lg.error(changed + " records changed: " + redactSqlForLog(sql), new StackTraceGenerationException());
                 }
                 if(newRS.equals(TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT)){
                     testSuiteOP(new RemoveTestResultsOP(new BigDecimal[]{tcritKey}), con, user, keyFactory);
@@ -4157,12 +4157,12 @@ public abstract class DbDriver {
                         TFTestCriteriaTable.table.maxRelError.getUnqualifiedColName() + "=" + (maxRelError != null ? "CAST('" + maxRelError.toString() + "' as NUMERIC)" : "null") + "," +
                         TFTestCriteriaTable.table.regressionMMSimRef.getUnqualifiedColName() + "=" + (regrMathModelSimLink != null ? regrMathModelSimLink.toString() : "null") +
                         " WHERE " + TFTestCriteriaTable.table.id.getUnqualifiedColName() + "=" + tcritKey.toString();
-                if(lg.isDebugEnabled()){
-                    lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
+                if(lg.isTraceEnabled()){
+                    lg.trace("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
                 }
                 int changed = stmt.executeUpdate(sql); // jcs: added logging
                 if(changed != 1){
-                    lg.error(changed + " records changed: " + sql, new StackTraceGenerationException());
+                    lg.error(changed + " records changed: " + redactSqlForLog(sql), new StackTraceGenerationException());
                 }
                 testSuiteOP(new EditTestCriteriaOPReportStatus(tcritKey, TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT, null), con, user, keyFactory);
 
@@ -4231,12 +4231,12 @@ public abstract class DbDriver {
                         TFTestCriteriaTable.table.regressionBMAPPRef.getUnqualifiedColName() + "=" + (bmscAppKey != null ? bmscAppKey.toString() : "NULL") + "," +
                         TFTestCriteriaTable.table.regressionBMSimRef.getUnqualifiedColName() + "=" + (bmsltSimKey != null ? bmsltSimKey.toString() : "NULL") +
                         " WHERE " + TFTestCriteriaTable.table.id.getQualifiedColName() + "=" + tcritKey.toString();
-                if(lg.isDebugEnabled()){
-                    lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
+                if(lg.isTraceEnabled()){
+                    lg.trace("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
                 }
                 int changed = stmt.executeUpdate(sql); // jcs: added logging
                 if(changed != 1){
-                    lg.error(changed + " records changed: " + sql, new StackTraceGenerationException());
+                    lg.error(changed + " records changed: " + redactSqlForLog(sql), new StackTraceGenerationException());
                 }
                 testSuiteOP(new EditTestCriteriaOPReportStatus(tcritKey, TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT, null), con, user, keyFactory);
 
@@ -4270,12 +4270,12 @@ public abstract class DbDriver {
                             (maxAbsErrorArr != null && maxRelErrorArr != null ? "," : "") +
                             (maxRelErrorArr != null ? TFTestCriteriaTable.table.maxRelError.getUnqualifiedColName() + "=" + maxRelErrorArr[i] : "") +
                             " WHERE " + TFTestCriteriaTable.table.id.getQualifiedColName() + "=" + tcritKeyArr[i].toString();
-                    if(lg.isDebugEnabled()){
-                        lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
+                    if(lg.isTraceEnabled()){
+                        lg.trace("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
                     }
                     int changed = stmt.executeUpdate(sql); // jcs: added logging
                     if(changed != 1){
-                        lg.error(changed + " records changed: " + sql, new StackTraceGenerationException());
+                        lg.error(changed + " records changed: " + redactSqlForLog(sql), new StackTraceGenerationException());
                     }
                     testSuiteOP(new EditTestCriteriaOPReportStatus(tcritKeyArr[i], TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT, null), con, user, keyFactory);
                 }
@@ -4317,12 +4317,12 @@ public abstract class DbDriver {
                                 " SET " +
                                 TFTestCaseTable.table.tcAnnotation.getUnqualifiedColName() + "=" + (annotation == null ? "NULL" : "'" + annotation + "'") +
                                 " WHERE " + TFTestCaseTable.table.id.getQualifiedColName() + "=" + tcaseKeys[i].toString();
-                        if(lg.isDebugEnabled()){
-                            lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
+                        if(lg.isTraceEnabled()){
+                            lg.trace("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
                         }
                         int changed = stmt.executeUpdate(sql); // jcs: added logging
                         if(changed != 1){
-                            lg.error(changed + " records changed: " + sql, new StackTraceGenerationException());
+                            lg.error(changed + " records changed: " + redactSqlForLog(sql), new StackTraceGenerationException());
                         }
                     }
                     if(newSteadyStates != null){
@@ -4359,12 +4359,12 @@ public abstract class DbDriver {
                                 TFTestCaseTable.table.tcSolutionType.getUnqualifiedColName() + "=" +
                                 (newSteadyState ? "'" + TestCaseNew.EXACT_STEADY + "'" : "'" + TestCaseNew.EXACT + "'") +
                                 " WHERE " + TFTestCaseTable.table.id.getQualifiedColName() + "=" + tcaseKeys[i].toString();
-                        if(lg.isDebugEnabled()){
-                            lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
+                        if(lg.isTraceEnabled()){
+                            lg.trace("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
                         }
                         int changed = stmt.executeUpdate(sql); // jcs: added logging
                         if(changed != 1){
-                            lg.error(changed + " records changed: " + sql, new StackTraceGenerationException());
+                            lg.error(changed + " records changed: " + redactSqlForLog(sql), new StackTraceGenerationException());
                         }
                         //Change Report status
                         for(int j = 0; j < tcritKeyV.size(); j++){
@@ -4404,12 +4404,12 @@ public abstract class DbDriver {
                                 " SET " +
                                 TFTestSuiteTable.table.isLocked.getUnqualifiedColName() + "= 1" +
                                 " WHERE " + TFTestSuiteTable.table.id.getQualifiedColName() + "=" + tsKeys[i].toString();
-                        if(lg.isDebugEnabled()){
-                            lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
+                        if(lg.isTraceEnabled()){
+                            lg.trace("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
                         }
                         int changed = stmt.executeUpdate(sql); // jcs: added logging
                         if(changed != 1){
-                            lg.error(changed + " records changed: " + sql, new StackTraceGenerationException());
+                            lg.error(changed + " records changed: " + redactSqlForLog(sql), new StackTraceGenerationException());
                         }
 
                     } else {
@@ -4426,12 +4426,12 @@ public abstract class DbDriver {
                                     " SET " +
                                     TFTestSuiteTable.table.tsAnnotation.getUnqualifiedColName() + "=" + (annotation == null ? "NULL" : "'" + annotation + "'") +
                                     " WHERE " + TFTestSuiteTable.table.id.getQualifiedColName() + "=" + tsKeys[i].toString();
-                            if(lg.isDebugEnabled()){
-                                lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
+                            if(lg.isTraceEnabled()){
+                                lg.trace("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
                             }
                             int changed = stmt.executeUpdate(sql); // jcs: added logging
                             if(changed != 1){
-                                lg.error(changed + " records changed: " + sql, new StackTraceGenerationException());
+                                lg.error(changed + " records changed: " + redactSqlForLog(sql), new StackTraceGenerationException());
                             }
                         }
                     }
@@ -4786,6 +4786,24 @@ public abstract class DbDriver {
         return updateCleanSQL(con, sql, updateExpectation);
     }
 
+
+    /**
+     * Masks the values in a SQL statement so it can be logged safely.
+     *
+     * SQL here is built by string concatenation, so every value is a literal in the text --
+     * including secrets. UserDbDriver.insertApiAccessToken concatenates a JWT straight into an
+     * INSERT. Applied only where a statement is logged at a level that is ON in a deployed
+     * system; the per-statement firehose is at TRACE instead (see below), where an operator has
+     * to opt in deliberately.
+     */
+    static String redactSqlForLog(String sql){
+        if(sql == null){
+            return null;
+        }
+        // a quoted literal, allowing the SQL '' escape for an embedded quote
+        return sql.replaceAll("'(?:[^']|'')*'", "'<redacted>'");
+    }
+
     public static int updateCleanSQL(Connection con, String sql, UpdateExpectation updateExpectation) throws SQLException{
         if(sql == null || con == null){
             throw new IllegalArgumentException("Improper parameters for updateClean");
@@ -4795,13 +4813,13 @@ public abstract class DbDriver {
         }
         Statement s = con.createStatement();
         try {
-            if(lg.isDebugEnabled()){
-                lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
+            if(lg.isTraceEnabled()){
+                lg.trace("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
             }
             int numRowsChanged = s.executeUpdate(sql); // jcs: added logging
             if(numRowsChanged != 1){
                 Level logLevel = (updateExpectation == UpdateExpectation.ROW_UPDATE_IS_POSSIBLE) ? Level.TRACE : Level.ERROR;
-                lg.log(logLevel, numRowsChanged + " records changed: " + sql, new StackTraceGenerationException());
+                lg.log(logLevel, numRowsChanged + " records changed: " + redactSqlForLog(sql), new StackTraceGenerationException());
             }
             return numRowsChanged;
         } finally {
@@ -4827,7 +4845,7 @@ public abstract class DbDriver {
             ps.setString(1, data);
             int numRowsChanged = ps.executeUpdate();
             if(numRowsChanged != 1){
-                lg.error(numRowsChanged + " records changed: " + sql, new StackTraceGenerationException());
+                lg.error(numRowsChanged + " records changed: " + redactSqlForLog(sql), new StackTraceGenerationException());
             }
             return numRowsChanged;
         }
@@ -4851,7 +4869,7 @@ public abstract class DbDriver {
             ps.setBytes(1, data);
             int numRowsChanged = ps.executeUpdate();
             if(numRowsChanged != 1){
-                lg.error(numRowsChanged + " records changed: " + sql, new StackTraceGenerationException());
+                lg.error(numRowsChanged + " records changed: " + redactSqlForLog(sql), new StackTraceGenerationException());
             }
             return numRowsChanged;
         }
