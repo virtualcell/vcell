@@ -43,11 +43,35 @@ public class VCellLookAndFeel {
 	private static final float MIN_FONT_SCALE = 0.5f;
 	private static final float MAX_FONT_SCALE = 4.0f;
 
+	/** Resolved once: the property cannot change while the client is running. */
+	private static volatile Float cachedFontScale = null;
+
 	/**
 	 * @return the requested font scale, or 1.0 if unset, unparseable or out of range - a bad value
 	 *         here must never stop the client from starting.
 	 */
-	static float getFontScale() {
+	public static float getFontScale() {
+		Float scale = cachedFontScale;
+		if (scale == null) {
+			scale = computeFontScale();
+			cachedFontScale = scale;
+		}
+		return scale;
+	}
+
+	/**
+	 * Scales a hard-coded pixel dimension that exists to fit text - a split-pane divider, a
+	 * minimum size, a column width. Such a constant was chosen against the default font, so it
+	 * has to move with the font or the text it was sized for no longer fits.
+	 * <p>
+	 * This is for dimensions that <em>bound text</em>. Do not use it for icon sizes, insets or
+	 * borders, which should stay where they are.
+	 */
+	public static int scaleTextPixels(int pixels) {
+		return Math.round(pixels * getFontScale());
+	}
+
+	private static float computeFontScale() {
 		final String raw = System.getProperty(PROPERTY_FONT_SCALE);
 		if (raw == null || raw.trim().isEmpty()) {
 			return 1.0f;
