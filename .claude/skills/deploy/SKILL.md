@@ -33,6 +33,18 @@ image tags and lets Flux reconcile the namespace.
 | `rel` | `prod` | vcell.cam.uchc.edu | webstart/Rel |
 | `test` | `stage` | vcell-stage.cam.uchc.edu | webstart/Test |
 
+## Scripts
+
+The gates below are implemented in `tools/release/` (see its README for why each is strict).
+Prefer them over ad-hoc commands, and never keep a copy in a scratch directory -- during the
+8.0.12.01 cut a scratch copy was deleted by the OS mid-release.
+
+```bash
+tools/release/merge-when-green.sh <branch>                       # step 1
+tools/release/release-and-deploy.sh <version> <site> <notes.md>  # steps 2-4
+tools/release/verify-deploy.sh <version> <site>                  # step 5
+```
+
 ## Procedure
 
 0. **Preconditions.** `master` is green: CI passed on the merge, and
