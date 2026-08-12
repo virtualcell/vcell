@@ -2,7 +2,6 @@ package cbit.vcell.simdata;
 
 import cbit.vcell.solver.ode.ODESimData;
 import com.google.common.io.Files;
-import hdf.hdf5lib.exceptions.HDF5Exception;
 import io.jhdf.HdfFile;
 import io.jhdf.api.Dataset;
 import org.vcell.util.ObjectNotFoundException;
@@ -26,7 +25,7 @@ import java.util.Arrays;
 
 public class MultiTrialNonspatialStochSimDataReader {
 
-    public static double[] extractColumn(ODESimData odeSimData, String columnName, SummaryStatisticType summaryStatisticType) throws HDF5Exception, ObjectNotFoundException {
+    public static double[] extractColumn(ODESimData odeSimData, String columnName, SummaryStatisticType summaryStatisticType) throws ObjectNotFoundException {
         File localHdf5File = null;
         try {
             byte[] hdf5FileBytes = odeSimData.getHdf5FileBytes();
