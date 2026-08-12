@@ -40,8 +40,14 @@ gh api repos/virtualcell/vcell-fluxcd/commits --jq '.[0:5][] | "   \(.commit.com
 	| grep -F "to $VERSION" || { echo "   no commit found for $VERSION"; FAILED=1; }
 
 echo "== 2. deployment image tags in $NS"
-OFF=$($K get deploy -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.spec.template.spec.containers[0].image}{"\n"}{end}' 2>/dev/null \
-	| grep 'ghcr.io/virtualcell/' | grep -v ":$VERSION\$" || true)
+# Flux may still be applying the new tags, so give it a bounded chance to catch up.
+OFF=""
+for _ in $(seq 1 15); do
+	OFF=$($K get deploy -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.spec.template.spec.containers[0].image}{"\n"}{end}' 2>/dev/null \
+		| grep 'ghcr.io/virtualcell/' | grep -v ":$VERSION\$" || true)
+	[ -z "$OFF" ] && break
+	sleep 20
+done
 if [ -n "$OFF" ]; then
 	echo "   NOT on $VERSION:"; echo "$OFF" | sed 's/^/     /'; FAILED=1
 else
@@ -49,8 +55,31 @@ else
 fi
 
 echo "== 3. pod readiness"
+# Wait rather than judge immediately: site_deploy finishing only means vcell-fluxcd was
+# told, and Flux then rolls pods for a minute or two. Checking once reports whatever the
+# cluster happened to look like at that instant -- the first run of this script called a
+# deploy VERIFIED while one pod was still Pending and the previous one was still
+# terminating, which is exactly the mistake it exists to prevent.
+SETTLED=0
+for _ in $(seq 1 30); do
+	NOT_READY=$($K get pods --field-selector=status.phase=Running -o json 2>/dev/null | python3 -c "
+import sys, json
+try: d = json.load(sys.stdin)
+except Exception: print('unknown'); raise SystemExit
+print(','.join(p['metadata']['name'] for p in d.get('items', [])
+      if not all(c.get('ready') for c in p['status'].get('containerStatuses', []))))")
+	PENDING=$($K get pods --field-selector=status.phase=Pending -o name 2>/dev/null | tr '\n' ' ')
+	if [ -z "$NOT_READY" ] && [ -z "$PENDING" ]; then SETTLED=1; break; fi
+	echo "   waiting for rollout: notReady=[$NOT_READY] pending=[$PENDING]"
+	sleep 20
+done
 $K get pods -o custom-columns='POD:.metadata.name,READY:.status.containerStatuses[0].ready,STATUS:.status.phase,RESTARTS:.status.containerStatuses[0].restartCount,NODE:.spec.nodeName' 2>/dev/null \
 	| sed 's/^/   /'
+if [ "$SETTLED" = "1" ]; then
+	echo "   all Running pods Ready, none Pending"
+else
+	echo "   pods did not settle"; FAILED=1
+fi
 
 echo "== 4. NFS-mounting services must avoid k8s-in-01"
 for APP in rest data api submit sched; do
