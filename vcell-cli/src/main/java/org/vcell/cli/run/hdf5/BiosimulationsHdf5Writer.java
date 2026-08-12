@@ -72,7 +72,7 @@ public class BiosimulationsHdf5Writer {
                             // multiDimDataArray is a double[], double[][], double[][][], ... depending on the data dimensions
                             final String datasetName = preparedData.sedmlId;
                             final Object multiDimDataArray = JhdfUtils.createMultidimensionalArray(preparedData.dataDimensions, preparedData.flattenedDataBuffer);
-                            WritiableDataset dataset = parentGroup.putDataset(datasetName, multiDimDataArray);
+                            WritableDataset dataset = parentGroup.putDataset(datasetName, multiDimDataArray);
 
                             if (data.dataSource instanceof Hdf5SedmlResultsSpatial && preparedData.times != null){
                                 JhdfUtils.putAttribute(dataset,"times", preparedData.times);
