@@ -354,9 +354,34 @@ jobs:
       - name: Combine .summary artifacts into one file
         run: jq -s 'add' $(find $GITHUB_WORKSPACE/bmdb-results -name 'full_tracer.json') > $GITHUB_WORKSPACE/tracer.json
 
-      # run exec-report CLI command via docker to generate report using the exec_summary.ndjson file and the embedded test_cases.ndjson file
-      - name: Run Docker test-report command
-        run: docker run -v ${{ github.workspace }}:/root $(docker image ls | grep "<none>" | awk '{print $3;}') test-report -c SYSBIO_BIOMD --exec-summaries /root/exec_summary.ndjson --report-md /root/report.md
+      # Compare this run against the documented baseline (vcell-cli/src/main/resources/test_cases.ndjson).
+      # Any deviation - a case that changed outcome, a documented case that stopped running, or an
+      # execution with no baseline entry - is a failure. The exit code is captured rather than
+      # allowed to end the step, so the Slack notification still goes out; the job is failed at the end.
+      - name: Compare results against documented baseline
+        id: baseline
+        run: |
+          set +e
+          docker run -v ${{ github.workspace }}:/root $(docker image ls | grep "<none>" | awk '{print $3;}') \
+            test-report -c SYSBIO_BIOMD \
+            --exec-summaries /root/exec_summary.ndjson \
+            --report-md /root/report.md \
+            --update-test-cases /root/test_cases.updated.ndjson \
+            --summary-file /root/summary.txt \
+            --fail-on-change
+          echo "exit_code=$?" >> $GITHUB_OUTPUT
+          summary=$(cat ${{ github.workspace }}/summary.txt 2>/dev/null || echo "FAIL: report could not be generated")
+          echo "summary=${summary}" >> $GITHUB_OUTPUT
+
+      # The baseline this run implies. When a change is legitimate, commit this over
+      # vcell-cli/src/main/resources/test_cases.ndjson - it differs only in the cases that changed.
+      - name: Upload updated test cases baseline
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test_cases.updated.ndjson
+          path: ${{ github.workspace }}/test_cases.updated.ndjson
+          if-no-files-found: ignore
 
       - name: Upload generated report.md
         uses: actions/upload-artifact@v4
@@ -376,15 +401,26 @@ jobs:
           name: complete_tracer.json
           path: ${{ github.workspace }}/tracer.json
 
-      - name: Post results to slack part 1 (report.md from exec-report CLI command)
-        run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="$(cat ${GITHUB_WORKSPACE}/report.md)" https://slack.com/api/chat.postMessage
-
-      # Not currently working
-      - name: Post results to slack part 2 (sound alarm if changed results)
+      # One short message: green or red, the counts, and a link. The full report and the updated
+      # baseline are artifacts of this run - nobody reads a thousand-line table pasted into a channel.
+      - name: Post result to slack
+        if: always()
         run: |
-          if grep -q "Unmatched Results Statistics" "$(cat ${GITHUB_WORKSPACE}/report.md)"; then
-            curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="@here BMDB Nightly Testing has reported a change in execution results!! Please Investigate" https://slack.com/api/chat.postMessage
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          # summary.txt is "FAIL: 3 changed, 11 stopped running"; the message says FAIL itself
+          DETAIL="${{ steps.baseline.outputs.summary }}"
+          DETAIL="${DETAIL#*: }"
+          if [ "${{ steps.baseline.outputs.exit_code }}" = "0" ]; then
+            TEXT=$(printf ':large_green_circle: *BMDB nightly: PASS* - matches the documented baseline.\n<%s|run details>' "$RUN_URL")
+          else
+            TEXT=$(printf ':red_circle: *BMDB nightly: FAIL* - %s\nAccept these results by committing the `test_cases.updated.ndjson` artifact over `vcell-cli/src/main/resources/test_cases.ndjson`.\n<%s|run details, full report and updated baseline>' "$DETAIL" "$RUN_URL")
           fi
+          curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" \
+            -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} \
+            -F text="${TEXT}" https://slack.com/api/chat.postMessage
 
-      - name: Post results to slack part 3
-        run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="To see detailed logs of the BMDB results, see - ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}. Go see what happened!" https://slack.com/api/chat.postMessage
+      - name: Fail if results differ from the documented baseline
+        if: steps.baseline.outputs.exit_code != '0'
+        run: |
+          echo "::error::BMDB nightly: ${{ steps.baseline.outputs.summary }}"
+          exit 1
