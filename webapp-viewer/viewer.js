@@ -409,9 +409,19 @@ async function buildGrid(geometry, field) {
   const ug = vtk.vtkUnstructuredGrid();
   await ug.setPoints(points);
   if (geometry.cellTypes) {
-    // mixed cell types (Chombo: regular voxels + tetrahedra from cut polyhedra)
+    // mixed cell types (Chombo: whole voxels + the polyhedra it cuts at the boundary)
+    const faces = geometry.cellFaces;
+    if (faces?.some(Boolean)) await ug.initializeFacesRepresentation(0);
     for (let c = 0; c < geometry.cells.length; c++) {
-      await ug.insertNextCell(geometry.cellTypes[c], geometry.cells[c].length, geometry.cells[c]);
+      const cell = geometry.cells[c];
+      const face = faces?.[c];
+      if (face) {
+        // a polyhedron is inserted with its faces: [numFaces, numPoints, ids…] — the count is
+        // passed separately, so the stream itself starts at the first face
+        await ug.insertNextCell(geometry.cellTypes[c], cell.length, cell, face[0], face.slice(1));
+      } else {
+        await ug.insertNextCell(geometry.cellTypes[c], cell.length, cell);
+      }
     }
   } else {
     const cellArray = vtk.vtkCellArray();

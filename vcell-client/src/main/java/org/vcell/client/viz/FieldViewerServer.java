@@ -588,7 +588,7 @@ public final class FieldViewerServer {
 					? origin[axis] + (grid.points[i] + 1) * extent[axis] / (2.0 * n[axis])
 					: grid.points[i];
 		}
-		return new VtuGridParser.VtuGrid(physical, grid.cells, grid.cellTypes);
+		return new VtuGridParser.VtuGrid(physical, grid.cells, grid.cellTypes, grid.cellFaces);
 	}
 
 	private static String handleGridVtu(DataSource source, Map<String, String> q, VtuMode mode) throws Exception {
@@ -604,8 +604,10 @@ public final class FieldViewerServer {
 		boolean threeD = false;
 		boolean uniform = true;
 		for (int c = 0; c < grid.cellTypes.length; c++) {
-			// tets (10), voxels (11), hexes (12), wedges (13), pyramids (14) are volume cells
-			threeD |= grid.cellTypes[c] >= 10 && grid.cellTypes[c] <= 14;
+			// tets (10), voxels (11), hexes (12), wedges (13), pyramids (14) and polyhedra (42)
+			// are volume cells
+			threeD |= grid.cellTypes[c] >= 10 && grid.cellTypes[c] <= 14
+					|| grid.cellTypes[c] == VtuGridParser.VTK_POLYHEDRON;
 			uniform &= grid.cellTypes[c] == grid.cellTypes[0];
 		}
 		StringBuilder sb = new StringBuilder(32 * grid.numPoints() + 32 * grid.cells.length + 512);
@@ -617,8 +619,8 @@ public final class FieldViewerServer {
 		appendDoubles(sb, grid.points, grid.points.length);
 		sb.append(",\"cellType\":").append(grid.cellTypes.length > 0 ? grid.cellTypes[0] : 7);
 		if (!uniform) {
-			// Chombo 3D mixes voxels with tetrahedra (converted cut polyhedra); the viewer inserts
-			// per-cell types when this array is present
+			// Chombo 3D mixes whole voxels with the polyhedra it cuts at the boundary; the viewer
+			// inserts per-cell types when this array is present
 			sb.append(",\"cellTypes\":[");
 			for (int c = 0; c < grid.cellTypes.length; c++) {
 				if (c > 0) {
@@ -643,6 +645,30 @@ public final class FieldViewerServer {
 			sb.append(']');
 		}
 		sb.append(']');
+		if (grid.cellFaces != null) {
+			// a polyhedron carries its own faces: [numFaces, numPoints, ids…, numPoints, ids…],
+			// null at every cell that is not one
+			sb.append(",\"cellFaces\":[");
+			for (int c = 0; c < grid.cells.length; c++) {
+				if (c > 0) {
+					sb.append(',');
+				}
+				int[][] faces = grid.facesOf(c);
+				if (faces == null) {
+					sb.append("null");
+					continue;
+				}
+				sb.append('[').append(faces.length);
+				for (int[] face : faces) {
+					sb.append(',').append(face.length);
+					for (int v : face) {
+						sb.append(',').append(v);
+					}
+				}
+				sb.append(']');
+			}
+			sb.append(']');
+		}
 		sb.append(",\"domain\":\"").append(jsonEscape(domain)).append('"');
 		sb.append('}');
 		return sb.toString();

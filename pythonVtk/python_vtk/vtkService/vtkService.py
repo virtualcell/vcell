@@ -1,5 +1,4 @@
 import argparse
-import copy
 import os
 import sys
 import traceback
@@ -16,46 +15,36 @@ from python_vtk.vcellvismesh.ttypes import PolyhedronFace
 from python_vtk.vcellvismesh.ttypes import VisIrregularPolyhedron
 from python_vtk.vcellvismesh.ttypes import VisLine
 from python_vtk.vcellvismesh.ttypes import VisMesh
-from python_vtk.vcellvismesh.ttypes import VisPoint
 from python_vtk.vcellvismesh.ttypes import VisPolygon
 from python_vtk.vcellvismesh.ttypes import VisTetrahedron
 
 
 def writeChomboVolumeVtkGridAndIndexData(visMesh: VisMesh, domainname: str, vtkfile, indexfile) -> None:
-    originalVisMesh = visMesh
-    correctedVisMesh = originalVisMesh  # same mesh if no irregularPolyhedra
-    if originalVisMesh.irregularPolyhedra is not None:
-        correctedVisMesh = copy.deepcopy(visMesh)
-        if correctedVisMesh.tetrahedra is None:
-            correctedVisMesh.tetrahedra = []
-        for irregularPolyhedron in correctedVisMesh.irregularPolyhedra:
-            tets = createTetrahedra(irregularPolyhedron, correctedVisMesh)
-            for tet in tets:
-                correctedVisMesh.tetrahedra.append(tet)
-        correctedVisMesh.irregularPolyhedra = None
-
-    vtkgrid: vtk.vtkUnstructuredGrid = getVolumeVtkGrid(correctedVisMesh)
+    vtkgrid: vtk.vtkUnstructuredGrid = getVolumeVtkGrid(visMesh)
     writevtk(vtkgrid, vtkfile)
     chomboIndexData = ChomboIndexData()
     chomboIndexData.chomboVolumeIndices = []
     chomboIndexData.domainName = domainname
-    if correctedVisMesh.dimension == 2:
-        if correctedVisMesh.polygons is not None:
-            for polygon in correctedVisMesh.polygons:
+    if visMesh.dimension == 2:
+        if visMesh.polygons is not None:
+            for polygon in visMesh.polygons:
                 assert isinstance(polygon, VisPolygon)
                 chomboIndexData.chomboVolumeIndices.append(polygon.chomboVolumeIndex)
         if chomboIndexData.chomboVolumeIndices is None:
             print("didn't find any indices ... bad")
-    elif correctedVisMesh.dimension == 3:
-        if correctedVisMesh.visVoxels is not None:
-            for voxel in correctedVisMesh.visVoxels:
+    elif visMesh.dimension == 3:
+        # same order as getVolumeVtkGrid inserts them: voxels, then tetrahedra, then polyhedra
+        if visMesh.visVoxels is not None:
+            for voxel in visMesh.visVoxels:
                 chomboIndexData.chomboVolumeIndices.append(voxel.chomboVolumeIndex)
-        if correctedVisMesh.irregularPolyhedra is not None:
-            raise Exception("unexpected irregular polyhedra in mesh, should have been replaced with tetrahedra")
-        if correctedVisMesh.tetrahedra is not None:
-            for tetrahedron in correctedVisMesh.tetrahedra:
+        if visMesh.tetrahedra is not None:
+            for tetrahedron in visMesh.tetrahedra:
                 assert isinstance(tetrahedron, VisTetrahedron)
                 chomboIndexData.chomboVolumeIndices.append(tetrahedron.chomboVolumeIndex)
+        if visMesh.irregularPolyhedra is not None:
+            for polyhedron in visMesh.irregularPolyhedra:
+                assert isinstance(polyhedron, VisIrregularPolyhedron)
+                chomboIndexData.chomboVolumeIndices.append(polyhedron.chomboVolumeIndex)
         if len(chomboIndexData.chomboVolumeIndices) == 0:
             print("didn't find any indices ... bad")
     writeChomboIndexData(indexfile, chomboIndexData)
@@ -377,8 +366,6 @@ def getMembraneVtkGrid(visMesh: VisMesh) -> vtk.vtkUnstructuredGrid:
 
 
 def getVolumeVtkGrid(visMesh: VisMesh) -> vtk.vtkUnstructuredGrid:
-    bClipPolyhedra = True
-
     vtkpoints = vtk.vtkPoints()
     for visPoint in visMesh.points:
         vtkpoints.InsertNextPoint(visPoint.x, visPoint.y, visPoint.z)
@@ -429,26 +416,22 @@ def getVolumeVtkGrid(visMesh: VisMesh) -> vtk.vtkUnstructuredGrid:
                 pts.InsertNextId(p)
             vtkgrid.InsertNextCell(tetraType, pts)
 
+    #
+    # A cut cell is written as it was built — a VTK_POLYHEDRON carrying its own faces. Cutting it
+    # into tetrahedra instead would re-triangulate the faces it shares with its neighbours, and a
+    # full voxel next door has no way to match that: the shared face would stop being shared and
+    # surface extraction would report both copies as if they were the domain surface (#1895).
+    #
     bInitializedFaces = False
     if visMesh.irregularPolyhedra != None:
         for clippedPolyhedron in visMesh.irregularPolyhedra:
-            if bClipPolyhedra == True:
-                tets = createTetrahedra(clippedPolyhedron, visMesh)
-                for visTet in tets:
-                    pts = vtk.vtkIdList()
-                    tetPoints = visTet.getPointIndices()
-                    for p in tetPoints:
-                        pts.InsertNextId(p)
-                    vtkgrid.InsertNextCell(tetraType, pts)
-            else:
-                faceStreamList = vtk.vtkIdList()
-                faceStream = getVtkFaceStream(clippedPolyhedron)
-                for p in faceStream:
-                    faceStreamList.InsertNextId(p)
-                if bInitializedFaces == False and vtkgrid.GetNumberOfCells() > 0:
-                    vtkgrid.InitializeFacesRepresentation(vtkgrid.GetNumberOfCells())
-                bInitializedFaces = True
-                vtkgrid.InsertNextCell(polyhedronType, faceStreamList)
+            faceStreamList = vtk.vtkIdList()
+            for p in getVtkFaceStream(clippedPolyhedron):
+                faceStreamList.InsertNextId(p)
+            if bInitializedFaces == False and vtkgrid.GetNumberOfCells() > 0:
+                vtkgrid.InitializeFacesRepresentation(vtkgrid.GetNumberOfCells())
+            bInitializedFaces = True
+            vtkgrid.InsertNextCell(polyhedronType, faceStreamList)
 
     vtkgrid.BuildLinks()
     # vtkgrid.Squeeze()
@@ -458,7 +441,7 @@ def getVolumeVtkGrid(visMesh: VisMesh) -> vtk.vtkUnstructuredGrid:
 def getVtkFaceStream(irregularPolyhedron: VisIrregularPolyhedron) -> list[int]:
     faceStream = [len(irregularPolyhedron.polyhedronFaces), ]
     for polyhedronFace in irregularPolyhedron.polyhedronFaces:
-        faceStream.append(len(polyhedronFace.getVertices()))
+        faceStream.append(len(polyhedronFace.vertices))
         for v in polyhedronFace.vertices:
             faceStream.append(v)
     intFaceStream = [int(v) for v in faceStream]
@@ -535,66 +518,6 @@ def getPointIndices(irregularPolyhedron: VisIrregularPolyhedron) -> list[int]:
             pointIndicesSet.add(pointIndex)
     pointArray = [int(x) for x in pointIndicesSet]
     return pointArray
-
-
-def createTetrahedra(clippedPolyhedron: VisIrregularPolyhedron, visMesh: VisMesh):
-    """
-    Decompose a clipped (cut) cell into tetrahedra by fanning every face against a new apex point
-    at the cell's centroid.
-
-    This has to agree with the neighbouring cell across every shared face, or the two cells stop
-    sharing that face and it gets extracted as if it were surface (issue #1895). Two properties
-    give that agreement:
-
-      - a face is always fanned from its LOWEST GLOBAL POINT INDEX, so a face listed by two cells
-        (in either winding) is cut into exactly the same triangles by both, and
-      - the faces themselves are used as given, so no geometry is invented.
-
-    The previous implementation ran vtkDelaunay3D over the cell's points, which tessellates their
-    convex hull and ignores the faces: it chose face diagonals arbitrarily (so shared faces did
-    not match), and on the near-degenerate cells at a tangent boundary it returned too few tets or
-    none at all, leaving holes in the surface and losing volume.
-    """
-    faces = [face.vertices for face in clippedPolyhedron.polyhedronFaces]
-    uniquePointIndices = getPointIndices(clippedPolyhedron)
-    if len(uniquePointIndices) < 4 or len(faces) < 4:
-        print("skipping degenerate polyhedron with " + str(len(uniquePointIndices))
-              + " points and " + str(len(faces)) + " faces")
-        return []
-
-    apexIndex = len(visMesh.points)
-    visMesh.points.append(VisPoint(
-        sum(visMesh.points[p].x for p in uniquePointIndices) / len(uniquePointIndices),
-        sum(visMesh.points[p].y for p in uniquePointIndices) / len(uniquePointIndices),
-        sum(visMesh.points[p].z for p in uniquePointIndices) / len(uniquePointIndices)))
-
-    visTets = []
-    for face in faces:
-        start = face.index(min(face))
-        numVertices = len(face)
-        for i in range(1, numVertices - 1):
-            corners = [apexIndex, face[start], face[(start + i) % numVertices],
-                       face[(start + i + 1) % numVertices]]
-            if signedVolume(visMesh, corners) < 0:
-                corners[2], corners[3] = corners[3], corners[2]
-            visTet = VisTetrahedron(corners)
-            if clippedPolyhedron.chomboVolumeIndex is not None:
-                visTet.chomboVolumeIndex = clippedPolyhedron.chomboVolumeIndex
-            if clippedPolyhedron.finiteVolumeIndex is not None:
-                visTet.finiteVolumeIndex = clippedPolyhedron.finiteVolumeIndex
-            visTets.append(visTet)
-
-    return visTets
-
-
-def signedVolume(visMesh: VisMesh, corners: list[int]) -> float:
-    o, a, b, c = [visMesh.points[i] for i in corners]
-    u = (a.x - o.x, a.y - o.y, a.z - o.z)
-    v = (b.x - o.x, b.y - o.y, b.z - o.z)
-    w = (c.x - o.x, c.y - o.y, c.z - o.z)
-    return (u[0] * (v[1] * w[2] - v[2] * w[1])
-            - u[1] * (v[0] * w[2] - v[2] * w[0])
-            + u[2] * (v[0] * w[1] - v[1] * w[0])) / 6.0
 
 
 def main():

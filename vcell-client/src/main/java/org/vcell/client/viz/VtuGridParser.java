@@ -30,11 +30,26 @@ final class VtuGridParser {
 		final double[] points; // 3 per point
 		final int[][] cells;
 		final int[] cellTypes; // VTK cell type per cell
+		/**
+		 * Faces of each {@link #VTK_POLYHEDRON} cell — Chombo writes its cut cells that way, since a
+		 * polyhedron keeps the faces it shares with its neighbours instead of re-triangulating them.
+		 * {@code null} when the grid has no polyhedra, and {@code null} at every non-polyhedral cell.
+		 */
+		final int[][][] cellFaces;
 
 		VtuGrid(double[] points, int[][] cells, int[] cellTypes) {
+			this(points, cells, cellTypes, null);
+		}
+
+		VtuGrid(double[] points, int[][] cells, int[] cellTypes, int[][][] cellFaces) {
 			this.points = points;
 			this.cells = cells;
 			this.cellTypes = cellTypes;
+			this.cellFaces = cellFaces;
+		}
+
+		int[][] facesOf(int cell) {
+			return cellFaces == null ? null : cellFaces[cell];
 		}
 
 		int numPoints() {
@@ -47,6 +62,7 @@ final class VtuGridParser {
 	private static final int VTK_QUAD = 9;
 	private static final int VTK_TETRA = 10;
 	private static final int VTK_VOXEL = 11;
+	static final int VTK_POLYHEDRON = 42;
 
 	/**
 	 * Per-cell measure — area for in-plane 2D cells, volume for 3D cells — for volume-weighted
@@ -69,6 +85,7 @@ final class VtuGridParser {
 					measures[c] = Math.abs(twiceArea) / 2;
 				}
 				case VTK_TETRA -> measures[c] = Math.abs(tripleProduct(p, cell[0], cell[1], cell[2], cell[3])) / 6;
+				case VTK_POLYHEDRON -> measures[c] = polyhedronVolume(p, grid.facesOf(c), cell);
 				case VTK_VOXEL -> {
 					// axis-aligned by definition; corners 0 and 7 span the box
 					double dx = Math.abs(p[3 * cell[7]] - p[3 * cell[0]]);
@@ -81,6 +98,46 @@ final class VtuGridParser {
 			}
 		}
 		return measures;
+	}
+
+	/**
+	 * Volume of a closed polyhedron, as the sum of the tetrahedra spanned by its faces and its own
+	 * vertex centroid. Absolute values are summed so the faces' winding does not have to be
+	 * consistent, which holds for the convex cells Chombo cuts.
+	 */
+	private static double polyhedronVolume(double[] p, int[][] faces, int[] cell) {
+		if (faces == null) {
+			throw new IllegalArgumentException("polyhedron cell without faces");
+		}
+		double[] apex = centroid(p, cell);
+		double volume = 0;
+		for (int[] face : faces) {
+			for (int v = 1; v + 1 < face.length; v++) {
+				volume += Math.abs(tetVolume(p, apex, face[0], face[v], face[v + 1]));
+			}
+		}
+		return volume;
+	}
+
+	private static double[] centroid(double[] p, int[] cell) {
+		double[] c = new double[3];
+		for (int i : cell) {
+			c[0] += p[3 * i];
+			c[1] += p[3 * i + 1];
+			c[2] += p[3 * i + 2];
+		}
+		c[0] /= cell.length;
+		c[1] /= cell.length;
+		c[2] /= cell.length;
+		return c;
+	}
+
+	/** signed volume of the tetrahedron (apex, i0, i1, i2) */
+	private static double tetVolume(double[] p, double[] apex, int i0, int i1, int i2) {
+		double ax = p[3 * i0] - apex[0], ay = p[3 * i0 + 1] - apex[1], az = p[3 * i0 + 2] - apex[2];
+		double bx = p[3 * i1] - apex[0], by = p[3 * i1 + 1] - apex[1], bz = p[3 * i1 + 2] - apex[2];
+		double cx = p[3 * i2] - apex[0], cy = p[3 * i2 + 1] - apex[1], cz = p[3 * i2 + 2] - apex[2];
+		return (ax * (by * cz - bz * cy) - ay * (bx * cz - bz * cx) + az * (bx * cy - by * cx)) / 6;
 	}
 
 	private static double tripleProduct(double[] p, int i0, int i1, int i2, int i3) {
@@ -109,6 +166,7 @@ final class VtuGridParser {
 						&& z >= Math.min(p[3 * cell[0] + 2], p[3 * cell[7] + 2])
 						&& z <= Math.max(p[3 * cell[0] + 2], p[3 * cell[7] + 2]);
 				case VTK_TETRA -> pointInTetra(p, cell, x, y, z);
+				case VTK_POLYHEDRON -> pointInPolyhedron(p, grid.facesOf(c), cell, x, y, z);
 				default -> false;
 			};
 			if (hit) {
@@ -128,6 +186,56 @@ final class VtuGridParser {
 			}
 		}
 		return inside;
+	}
+
+	/** inside the polyhedron == inside one of the tetrahedra it is fanned into from its centroid */
+	private static boolean pointInPolyhedron(double[] p, int[][] faces, int[] cell,
+			double x, double y, double z) {
+		if (faces == null) {
+			return false;
+		}
+		double[] apex = centroid(p, cell);
+		for (int[] face : faces) {
+			for (int v = 1; v + 1 < face.length; v++) {
+				if (pointInFanTet(p, apex, face[0], face[v], face[v + 1], x, y, z)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	private static boolean pointInFanTet(double[] p, double[] apex, int i0, int i1, int i2,
+			double x, double y, double z) {
+		double total = tetVolume(p, apex, i0, i1, i2);
+		if (Math.abs(total) < 1e-300) {
+			return false;
+		}
+		double[] q = { x, y, z };
+		// the four sub-tetrahedra formed by replacing each corner with the query point must all
+		// keep the sign of the whole
+		double[] corners = { p[3 * i0], p[3 * i0 + 1], p[3 * i0 + 2],
+				p[3 * i1], p[3 * i1 + 1], p[3 * i1 + 2],
+				p[3 * i2], p[3 * i2 + 1], p[3 * i2 + 2] };
+		double[][] tet = { apex, { corners[0], corners[1], corners[2] },
+				{ corners[3], corners[4], corners[5] }, { corners[6], corners[7], corners[8] } };
+		for (int r = 0; r < 4; r++) {
+			double[] saved = tet[r];
+			tet[r] = q;
+			double sub = orient(tet[0], tet[1], tet[2], tet[3]);
+			tet[r] = saved;
+			if (sub * total < -1e-12 * Math.abs(total)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	private static double orient(double[] o, double[] a, double[] b, double[] c) {
+		double ax = a[0] - o[0], ay = a[1] - o[1], az = a[2] - o[2];
+		double bx = b[0] - o[0], by = b[1] - o[1], bz = b[2] - o[2];
+		double cx = c[0] - o[0], cy = c[1] - o[1], cz = c[2] - o[2];
+		return (ax * (by * cz - bz * cy) - ay * (bx * cz - bz * cx) + az * (bx * cy - by * cx)) / 6;
 	}
 
 	private static boolean pointInTetra(double[] p, int[] cell, double x, double y, double z) {
@@ -184,6 +292,12 @@ final class VtuGridParser {
 		double[] connectivity = null;
 		double[] offsets = null;
 		double[] types = null;
+		double[] faceStream = null;
+		double[] faceOffsets = null;
+		double[] polyhedronOffsets = null;
+		double[] polyhedronToFaces = null;
+		double[] newFaceOffsets = null;
+		double[] faceConnectivity = null;
 		NodeList arrays = cellsEl.getElementsByTagName("DataArray");
 		for (int i = 0; i < arrays.getLength(); i++) {
 			Element da = (Element) arrays.item(i);
@@ -192,6 +306,12 @@ final class VtuGridParser {
 				case "connectivity": connectivity = values; break;
 				case "offsets": offsets = values; break;
 				case "types": types = values; break;
+				case "faces": faceStream = values; break;
+				case "faceoffsets": faceOffsets = values; break;
+				case "polyhedron_offsets": polyhedronOffsets = values; break;
+				case "polyhedron_to_faces": polyhedronToFaces = values; break;
+				case "face_offsets": newFaceOffsets = values; break;
+				case "face_connectivity": faceConnectivity = values; break;
 				default: // ignore
 			}
 		}
@@ -212,7 +332,88 @@ final class VtuGridParser {
 			cellTypes[c] = (int) types[c];
 			start = end;
 		}
-		return new VtuGrid(points, cells, cellTypes);
+		int[][][] cellFaces = polyhedronToFaces != null
+				? readFacesCellArray(polyhedronOffsets, polyhedronToFaces, newFaceOffsets, faceConnectivity, cellTypes)
+				: readFacesStream(faceStream, faceOffsets, cellTypes);
+		return new VtuGrid(points, cells, cellTypes, cellFaces);
+	}
+
+	/**
+	 * VTK 9.4 and later store polyhedron faces as two chained cell arrays: cell {@code c} owns the
+	 * face ids {@code polyhedron_to_faces[polyhedron_offsets[c-1] … polyhedron_offsets[c])} — an
+	 * empty range where the cell is not a polyhedron — and face {@code f} owns the point ids
+	 * {@code face_connectivity[face_offsets[f-1] … face_offsets[f])}. As elsewhere in the VTU, an
+	 * offsets array holds one END offset per entry, with the first range starting at zero.
+	 */
+	private static int[][][] readFacesCellArray(double[] polyhedronOffsets, double[] polyhedronToFaces,
+			double[] faceOffsets, double[] faceConnectivity, int[] cellTypes) {
+		if (polyhedronOffsets == null || faceOffsets == null || faceConnectivity == null) {
+			throw new IllegalArgumentException(
+					"polyhedron_to_faces without polyhedron_offsets, face_offsets or face_connectivity");
+		}
+		int[][][] cellFaces = new int[cellTypes.length][][];
+		int faceStart = 0;
+		for (int c = 0; c < cellTypes.length && c < polyhedronOffsets.length; c++) {
+			int faceEnd = (int) polyhedronOffsets[c];
+			if (faceEnd > faceStart) {
+				int[][] faces = new int[faceEnd - faceStart][];
+				for (int f = faceStart; f < faceEnd; f++) {
+					int faceId = (int) polyhedronToFaces[f];
+					int pointStart = faceId == 0 ? 0 : (int) faceOffsets[faceId - 1];
+					int pointEnd = (int) faceOffsets[faceId];
+					int[] face = new int[pointEnd - pointStart];
+					for (int v = 0; v < face.length; v++) {
+						face[v] = (int) faceConnectivity[pointStart + v];
+					}
+					faces[f - faceStart] = face;
+				}
+				cellFaces[c] = faces;
+			}
+			faceStart = faceEnd;
+		}
+		return cellFaces;
+	}
+
+	/**
+	 * The pre-9.4 layout: {@code faceoffsets[c]} is the end of cell {@code c}'s slice of
+	 * {@code faces} (and -1 where the cell is not a polyhedron), and each slice reads
+	 * {@code [numFaces, numPoints, ids…, numPoints, ids…]}.
+	 */
+	private static int[][][] readFacesStream(double[] faceStream, double[] faceOffsets, int[] cellTypes) {
+		if (faceStream == null || faceOffsets == null) {
+			for (int type : cellTypes) {
+				if (type == VTK_POLYHEDRON) {
+					throw new IllegalArgumentException("polyhedral cells without faces/faceoffsets");
+				}
+			}
+			return null;
+		}
+		int[][][] cellFaces = new int[cellTypes.length][][];
+		int start = 0;
+		for (int c = 0; c < cellTypes.length && c < faceOffsets.length; c++) {
+			int end = (int) faceOffsets[c];
+			if (end < 0) { // not a polyhedron; the offset array marks it with -1
+				continue;
+			}
+			int cursor = start;
+			int numFaces = (int) faceStream[cursor++];
+			int[][] faces = new int[numFaces][];
+			for (int f = 0; f < numFaces; f++) {
+				int numPoints = (int) faceStream[cursor++];
+				int[] face = new int[numPoints];
+				for (int v = 0; v < numPoints; v++) {
+					face[v] = (int) faceStream[cursor++];
+				}
+				faces[f] = face;
+			}
+			if (cursor != end) {
+				throw new IllegalArgumentException(
+						"face stream for cell " + c + " ended at " + cursor + ", expected " + end);
+			}
+			cellFaces[c] = faces;
+			start = end;
+		}
+		return cellFaces;
 	}
 
 	private static String attrOr(Element el, String name, String fallback) {

@@ -88,4 +88,37 @@ public class VtuGridParserTest {
 		Assertions.assertEquals(-1, VtuGridParser.locateCell(grid, 2.9, 0.9, 0.9));
 		Assertions.assertEquals(-1, VtuGridParser.locateCell(grid, 0.5, 0.5, 1.5));
 	}
+
+	/**
+	 * Chombo writes its cut cells as VTK_POLYHEDRON so that a face shared with a neighbour stays
+	 * shared (#1895). The fixture is a voxel with a polyhedral cell stacked on it, written by the
+	 * Python service itself — VTK 9.4 and later put the faces in the
+	 * {@code polyhedron_offsets}/{@code polyhedron_to_faces}/{@code face_offsets}/
+	 * {@code face_connectivity} arrays rather than the older {@code faces}/{@code faceoffsets}.
+	 */
+	@Test
+	public void parsesPolyhedralCells() throws Exception {
+		byte[] bytes;
+		try (InputStream in = VtuGridParserTest.class.getResourceAsStream("polyhedron-cells.vtu")) {
+			Assertions.assertNotNull(in, "test resource polyhedron-cells.vtu missing");
+			bytes = in.readAllBytes();
+		}
+		VtuGrid grid = VtuGridParser.parse(bytes);
+
+		Assertions.assertEquals(12, grid.numPoints());
+		Assertions.assertArrayEquals(new int[] { 11, VtuGridParser.VTK_POLYHEDRON }, grid.cellTypes);
+		Assertions.assertNull(grid.facesOf(0), "a voxel carries no faces");
+
+		int[][] faces = grid.facesOf(1);
+		Assertions.assertEquals(6, faces.length);
+		Assertions.assertArrayEquals(new int[] { 7, 5, 4, 6 }, faces[4], "the face shared with the voxel");
+
+		double[] measures = VtuGridParser.cellMeasures(grid);
+		Assertions.assertEquals(1.0, measures[0], 1e-12);
+		Assertions.assertEquals(1.0, measures[1], 1e-12, "the polyhedron is the unit cube above it");
+
+		Assertions.assertEquals(0, VtuGridParser.locateCell(grid, 0.5, 0.5, 0.5));
+		Assertions.assertEquals(1, VtuGridParser.locateCell(grid, 0.5, 0.5, 1.5));
+		Assertions.assertEquals(-1, VtuGridParser.locateCell(grid, 0.5, 0.5, 2.5));
+	}
 }

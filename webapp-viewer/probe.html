@@ -145,6 +145,33 @@ try {
       log(`${name}: FAILED — ${e?.message ?? e}`);
     }
   }
+  // VTK_POLYHEDRON cells — how Chombo cut cells reach the viewer (#1895). The 5-argument overload
+  // is the one that works; passing a face stream as the point list throws std::bad_alloc.
+  try {
+    const ug = vtk.vtkUnstructuredGrid();
+    const pts = vtk.vtkPoints();
+    await pts.setNumberOfPoints(8);
+    const coords = [[0,0,0],[1,0,0],[0,1,0],[1,1,0],[0,0,1],[1,0,1],[0,1,1],[1,1,1]];
+    for (let i = 0; i < 8; i++) await pts.setPoint(i, ...coords[i]);
+    await ug.setPoints(pts);
+    await ug.initializeFacesRepresentation(0);
+    const faces = [4,0,1,3,2, 4,4,6,7,5, 4,0,4,5,1, 4,2,3,7,6, 4,0,2,6,4, 4,1,5,7,3];
+    await ug.insertNextCell(42, 8, [0,1,2,3,4,5,6,7], 6, faces);
+    const gf = vtk.vtkGeometryFilter();
+    await gf.setInputData(ug);
+    await gf.update();
+    const surface = await (await gf.getOutput()).getNumberOfCells();
+    const clip = vtk.vtkTableBasedClipDataSet();
+    const plane = vtk.vtkPlane();
+    await plane.setOrigin(0.5, 0.5, 0.5);
+    await plane.setNormal(0, 0, 1);
+    await clip.setClipFunction(plane);
+    await clip.setInputData(ug);
+    await clip.update();
+    const clipped = await (await clip.getOutput()).getNumberOfCells();
+    log(`VTK_POLYHEDRON: cells=${await ug.getNumberOfCells()}, surface polys=${surface}, clipped cells=${clipped}`);
+  } catch (e) { log('VTK_POLYHEDRON: FAILED — ' + (e?.message ?? e)); }
+
   log('done');
 } catch (e) {
   log('bootstrap failed: ' + (e?.message ?? e));
