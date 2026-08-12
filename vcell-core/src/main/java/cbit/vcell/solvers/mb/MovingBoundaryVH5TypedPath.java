@@ -5,8 +5,8 @@ import java.util.Objects;
 import org.vcell.util.CastingUtils;
 import org.vcell.util.VCAssert;
 
-import ncsa.hdf.object.Group;
-import ncsa.hdf.object.h5.H5ScalarDS;
+import io.jhdf.api.Dataset;
+import io.jhdf.api.Group;
 
 /**
  * extends MovingBoundardyVH5Path to include type checking and data conversion. Throws exception if data not found, or
@@ -32,7 +32,7 @@ public class MovingBoundaryVH5TypedPath<T> extends MovingBoundaryVH5Path {
             Objects.requireNonNull(target);
             Class<? extends Object> tclass = target.getClass();
             if(!clzz.isAssignableFrom(tclass)){
-                H5ScalarDS sds = CastingUtils.downcast(H5ScalarDS.class, target);
+                Dataset sds = CastingUtils.downcast(Dataset.class, target);
                 if(sds != null){
                     convert(sds, clzz, names);
                     return;
@@ -79,30 +79,27 @@ public class MovingBoundaryVH5TypedPath<T> extends MovingBoundaryVH5Path {
     }
 
     /**
-     * convert single element H5ScalarDS -- which reads as one element array
+     * convert a single-element dataset -- which reads as a one element array
      *
      * @param sds   non null
      * @param clzz  target type
      * @param names current path, used for error / exception message
      */
-    private void convert(H5ScalarDS sds, Class<T> clzz, String[] names){
+    private void convert(Dataset sds, Class<T> clzz, String[] names){
         Object read = null;
         try {
-            read = sds.read();
+            read = sds.getData();
         } catch(Exception e){
             throw new UnsupportedOperationException(concat(names) + " read exception ", e);
         }
-        int rank = sds.getRank();
-        if(rank != 1){
+        int[] dims = sds.getDimensions();
+        if(dims.length != 1){
             throw new UnsupportedOperationException(concat(names) +
-                    " rank " + rank + " !=1 ");
+                    " rank " + dims.length + " !=1 ");
         }
-        long d[] = sds.getDims();
-        VCAssert.assertTrue(d.length == 1);
         Class<?> readClass = read.getClass();
         VCAssert.assertTrue(readClass.isArray(), "isArray");
         Class<?> returnedType = readClass.getComponentType();
-
 
         if(clzz.isArray()){
             Class<?> desiredType = clzz.getComponentType();
@@ -112,21 +109,13 @@ public class MovingBoundaryVH5TypedPath<T> extends MovingBoundaryVH5Path {
             target = read;
             return;
         }
-        if(d[0] > 1){
-            throw new UnsupportedOperationException(concat(names) + " is array of length " + d[0] + ", not single value");
+        if(dims[0] > 1){
+            throw new UnsupportedOperationException(concat(names) + " is array of length " + dims[0] + ", not single value");
         }
         if(!clzz.isAssignableFrom(returnedType)){
             throw new UnsupportedOperationException(concat(names) + " is array of " + className(returnedType) + " not " + className(clzz));
         }
-        Object[] oarray = (Object[]) read;
-
-        target = oarray[0];
-        //		int length = oarray.length;
-        //		Object dest[] = (Object[]) Array.newInstance(desiredType, length);
-        //		for (int i = 0; i < length; i++) {
-        //			dest[i] = db[i];
-        //		}
+        target = java.lang.reflect.Array.get(read, 0);
     }
-
 
 }

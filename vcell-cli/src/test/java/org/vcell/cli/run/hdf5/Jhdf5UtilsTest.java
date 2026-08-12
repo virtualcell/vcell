@@ -6,7 +6,7 @@ import io.jhdf.WritableDatasetImpl;
 import io.jhdf.WritableHdfFile;
 import io.jhdf.api.Dataset;
 import io.jhdf.api.WritableGroup;
-import io.jhdf.api.WritiableDataset;
+import io.jhdf.api.WritableDataset;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -92,9 +92,9 @@ public class Jhdf5UtilsTest {
         WritableHdfFile writableHdfFile = HdfFile.write(tempFile);
 
         // Write a dataset with string attributes
-        WritiableDataset writiableDataset = writableHdfFile.putDataset("dataset", new double[] {0.1, 0.2, 0.3});
-        JhdfUtils.putAttribute(writiableDataset, "labels", Arrays.asList("vv", "xx", "abcdef"));
-        JhdfUtils.putAttribute(writiableDataset, "units", Arrays.asList("", "1", "mm2"));
+        WritableDataset writableDataset = writableHdfFile.putDataset("dataset", new double[] {0.1, 0.2, 0.3});
+        JhdfUtils.putAttribute(writableDataset, "labels", Arrays.asList("vv", "xx", "abcdef"));
+        JhdfUtils.putAttribute(writableDataset, "units", Arrays.asList("", "1", "mm2"));
         writableHdfFile.close();
 
         // Now read it back

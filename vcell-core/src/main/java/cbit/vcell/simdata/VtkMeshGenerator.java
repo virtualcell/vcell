@@ -38,9 +38,9 @@ public class VtkMeshGenerator implements PortableCommand {
 	@Override
 	public int execute() {
 		try {
-			// skip loading legacy native HDF5 library if the system is a macos arm64 (no arm64
-			// build of it exists). Chombo reads through the pure-java io.jhdf and no longer needs
-			// it; MovingBoundary still does, and will fail there until it is moved across too.
+			// The legacy native HDF5 library has no arm64 build, so it is skipped there. Chombo
+			// and MovingBoundary now read through the pure-java io.jhdf and do not need it; this
+			// load remains only for the other native HDF5 users in the process.
 			boolean MacosArm64 = System.getProperty("os.arch").equals("aarch64") && System.getProperty("os.name").equals("Mac OS X");
 			if (!MacosArm64) {
 				NativeLib.HDF5.load();

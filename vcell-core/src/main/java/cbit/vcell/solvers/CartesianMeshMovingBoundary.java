@@ -5,16 +5,17 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.tree.DefaultMutableTreeNode;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.util.*;
 
-import ncsa.hdf.hdf5lib.H5;
-import ncsa.hdf.object.Dataset;
-import ncsa.hdf.object.FileFormat;
-import ncsa.hdf.object.Group;
+import java.lang.reflect.Array;
+
+import io.jhdf.HdfFile;
+import io.jhdf.api.Dataset;
+import io.jhdf.api.Group;
+import io.jhdf.api.Node;
 
 
 public class CartesianMeshMovingBoundary extends CartesianMesh {
@@ -49,38 +50,16 @@ public class CartesianMeshMovingBoundary extends CartesianMesh {
 
     public static CartesianMeshMovingBoundary readMeshFile(File meshFile) throws Exception{
         CartesianMeshMovingBoundary mesh = new CartesianMeshMovingBoundary();
-        if(H5.H5open() < 0){
-            throw new Exception("H5.H5open() failed");
-        }
-        FileFormat fileFormat = FileFormat.getFileFormat(FileFormat.FILE_TYPE_HDF5);
-        if(fileFormat == null){
-            throw new Exception("FileFormat.getFileFormat(FileFormat.FILE_TYPE_HDF5) failed, returned null.");
-        }
-        FileFormat meshH5File = null;
-        try {
-            meshH5File = fileFormat.createInstance(meshFile.getAbsolutePath(), FileFormat.READ);
-            meshH5File.open();
-            DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode) meshH5File.getRootNode();
-            Group rootGroup = (Group) rootNode.getUserObject();
-            Group meshGroup = null;
-            for(Object member : rootGroup.getMemberList()){
-                if(member instanceof Group){
-                    Group g = (Group) member;
-                    if(g.getName().equals(Group_Mesh)) ;
-                    {
-                        meshGroup = g;
-                        break;
-                    }
-                }
-            }
-
-            if(meshGroup == null){
+        try (HdfFile meshH5File = new HdfFile(meshFile.toPath())) {
+            Node meshNode = meshH5File.getChildren().get(Group_Mesh);
+            if(!(meshNode instanceof Group)){
                 throw new Exception(Group_Mesh + " group not found in mesh");
             }
-            for(Object member : meshGroup.getMemberList()){
+            for(Node member : ((Group) meshNode).getChildren().values()){
                 if(member instanceof Dataset){
                     Dataset ds = (Dataset) member;
-                    Object data = ds.getData();
+                    // extent, origin and size are written as 1x2, so unwrap the outer dimension
+                    Object data = ds.getDimensions().length > 1 ? Array.get(ds.getData(), 0) : ds.getData();
                     MeshDataset mds = MeshDataset.valueOf(ds.getName());
                     switch(mds){
                         case dimension:
@@ -103,10 +82,6 @@ public class CartesianMeshMovingBoundary extends CartesianMesh {
                         }
                     }
                 }
-            }
-        } finally {
-            if(meshH5File != null){
-                meshH5File.close();
             }
         }
         return mesh;

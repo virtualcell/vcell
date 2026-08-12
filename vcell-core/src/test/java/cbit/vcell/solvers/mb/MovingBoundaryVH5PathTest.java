@@ -1,159 +1,106 @@
-/*****************************************************************************
- * Copyright by The HDF Group.                                               *
- * Copyright by the Board of Trustees of the University of Illinois.         *
- * All rights reserved.                                                      *
- *                                                                           *
- * This file is part of the HDF Java Products distribution.                  *
- * The full copyright notice, including terms governing use, modification,   *
- * and redistribution, is contained in the files COPYING and Copyright.html. *
- * COPYING can be found at the root of the source code distribution tree.    *
- * Or, see http://hdfgroup.org/products/hdf-java/doc/Copyright.html.         *
- * If you do not have access to either file, you may request a copy from     *
- * help@hdfgroup.org.                                                        *
- ****************************************************************************/
-
 package cbit.vcell.solvers.mb;
 
-import cbit.vcell.resource.NativeLib;
-import cbit.vcell.resource.PropertyLoader;
-import cern.colt.Arrays;
-import ncsa.hdf.object.FileFormat;
-import ncsa.hdf.object.Group;
-import org.apache.commons.lang3.StringUtils;
-import org.junit.jupiter.api.*;
-
-import java.io.File;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@Disabled
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.util.Map;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+
+import io.jhdf.HdfFile;
+import io.jhdf.api.Dataset;
+
+/**
+ * Walks a real MovingBoundary result with {@link MovingBoundaryVH5Path} — groups, compound members
+ * and attributes — through the pure-java {@code io.jhdf}, with no native library loaded. The
+ * fixture is the same 11x11 run of "2D kinematics analytic" used by
+ * {@link MovingBoundaryReaderTest}.
+ */
 @Tag("Fast")
 public class MovingBoundaryVH5PathTest {
-    private static String fname  = "nformat2.h5";
-	private FileFormat testFile = null;
-	private Group root = null;
 
-    @BeforeEach
-    public void setup( ) throws Exception {
-		PropertyLoader.setProperty(PropertyLoader.installationRoot, new File("..").getAbsolutePath());
-		// skip loading legacy native HDF5 library if the system is a macos arm64
-		// will get runtime errors for Chombo and MovingBoundary until HDF5 is updated
-		boolean MacosArm64 = System.getProperty("os.arch").equals("aarch64") && System.getProperty("os.name").equals("Mac OS X");
-		if (!MacosArm64) {
-			NativeLib.HDF5.load();
+	private HdfFile testFile;
+
+	@BeforeEach
+	public void setup() throws Exception {
+		try (InputStream in = MovingBoundaryVH5PathTest.class.getResourceAsStream("moving-boundary-2d.h5")) {
+			assertNotNull(in, "test resource moving-boundary-2d.h5 missing");
+			Path temp = Files.createTempFile("moving-boundary-2d", ".h5");
+			Files.copy(in, temp, StandardCopyOption.REPLACE_EXISTING);
+			temp.toFile().deleteOnExit();
+			testFile = new HdfFile(temp);
 		}
-
-
-		// retrieve an instance of H5File
-    		FileFormat fileFormat = FileFormat.getFileFormat(FileFormat.FILE_TYPE_HDF5);
-
-    		if (fileFormat == null) {
-    			System.err.println("Cannot find HDF5 FileFormat.");
-    			return;
-    		}
-
-    		// open the file with read-only access
-    		testFile = fileFormat.createInstance(fname, FileFormat.READ);
-
-    		if (testFile == null) {
-    			System.err.println("Failed to open file: " + fname);
-    			return;
-    		}
-
-    		// open the file and retrieve the file structure
-    		testFile.open();
-    		root = (Group) ((javax.swing.tree.DefaultMutableTreeNode) testFile.getRootNode()).getUserObject();
-    }
-
-    @AfterEach
-    public void close( ) throws Exception {
-    	if (testFile != null) {
-    		testFile.close();
-    	}
-
-    }
-    @Test
-    public void run()  {
-    	// create the file and add groups ans dataset into the file
-    	try {
-    		Group root = (Group) ((javax.swing.tree.DefaultMutableTreeNode) testFile.getRootNode()).getUserObject();
-    		MovingBoundaryVH5Path vpath = new MovingBoundaryVH5Path(root, "elements" ,"volume");
-    		System.out.println(vpath.foundType());
-    		MovingBoundaryVH5TypedPath<double[]> tpath = new MovingBoundaryVH5TypedPath<double[]>(root, double[].class,"elements" ,"volume");
-    		double[] e = tpath.get();
-    		System.out.println(e[0]);
-    		MovingBoundaryVH5Path bpPath = new MovingBoundaryVH5Path(root, "elements" ,"boundaryPosition");
-    		Object data = bpPath.getData();
-    		System.out.println(data.getClass().getSimpleName());
-    		MovingBoundaryVH5Path vpPath = new MovingBoundaryVH5Path(root, "elements" ,"volumePoints");
-    		data = vpPath.getData();
-    		System.out.println(data.getClass().getSimpleName());
-
-//    		MovingBoundardyVH5TypedPath<String[]> spath = new MovingBoundardyVH5TypedPath<String[]>(root, String[].class,"elements" ,"front description");
-    		MovingBoundaryVH5TypedPath<String> spath = new MovingBoundaryVH5TypedPath<String>(root, String.class,"elements" ,"front description");
-//    		String[] sdata = spath.get();
-//    		System.out.println(sdata[0]);
-    		System.out.println(spath.get( ));
-
-    		MovingBoundaryVH5Path xpath = new MovingBoundaryVH5Path(root, "elements" ,"front description");
-    		Object o = xpath.getData();
-    		System.out.println(o);
-    		dtype("elements","endX");
-    		dtype("endTime");
-    		dtype("generationTimes");
-    		dtype("moveTimes");
-    		dtype("runTime");
-    		dtype("solverTimeStep");
-    		dtype("timeStep");
-    		dtype("timeStepTimes");
-			MovingBoundaryVH5TypedPath<int[]> ipath = new MovingBoundaryVH5TypedPath<int[]>(root, int[].class,"lastTimeIndex");
-    		System.out.println(Arrays.toString(ipath.get()));
-			MovingBoundaryVH5TypedPath<long[]> lpath = new MovingBoundaryVH5TypedPath<long[]>(root, long[].class,"elements","numX");
-    		System.out.println(Arrays.toString(lpath.get()));
-//			System.out.println("-------");
-//    		MovingBoundardyVH5TypedPath<H5ScalarDS> spath = new MovingBoundardyVH5TypedPath<H5ScalarDS>(root, H5ScalarDS.class,"endTime");
-//			H5ScalarDS ds = spath.get( );
-//			Object o = ds.read();
-//			MovingBoundaryVH5Dataset vds = new MovingBoundaryVH5Dataset(ds);
-//			vds.info();
-
-    		/*
-    		Next to do; use lastTimeIndex as maximum index into elements and species data sets. Select one X-Y plane at a time and read.
-    		*/
-
-    		// close file resource
-    	} catch (Exception e) {
-    		// TODO Auto-generated catch block
-    		e.printStackTrace();
-    	}
-    }
-
-    private void dtype(String ...name) {
-		MovingBoundaryVH5TypedPath<double[]> dpath = new MovingBoundaryVH5TypedPath<double[]>(root, double[].class,name);
-		System.out.println(StringUtils.join(name,'/') + ' ' + Arrays.toString(dpath.get()));
-    }
-
-
-    @Test
-    public void badType () {
-		assertThrows(UnsupportedOperationException.class, () -> {
-			MovingBoundaryVH5TypedPath<int[]> ipath = new MovingBoundaryVH5TypedPath<int[]>(root, int[].class,"elements" ,"volume");
-			System.out.println(ipath);
-		});
 	}
 
-    @Test
-    public void primType () {
-		assertThrows(UnsupportedOperationException.class, () -> {
-			MovingBoundaryVH5TypedPath<Integer> ipath = new MovingBoundaryVH5TypedPath<Integer>(root, int.class,"elements" ,"volume");
-			System.out.println(ipath);
-		});
+	@AfterEach
+	public void close() {
+		if (testFile != null) {
+			testFile.close();
+		}
 	}
 
-    @Test
-    public void badPath( ) {
-		assertThrows(RuntimeException.class, () -> {
-			dtype("junk", "yard");
-		});
-    }
+	@Test
+	public void findsDatasetsGroupsAndCompoundMembers() {
+		// a top-level dataset comes back as the dataset itself, to be read or sliced by the caller
+		Object endTime = new MovingBoundaryVH5Path(testFile, "endTime").getData();
+		assertInstanceOf(Dataset.class, endTime);
+
+		// a member of a compound dataset is addressed like a child, and comes back as its column
+		Object volume = new MovingBoundaryVH5Path(testFile, "elements", "volume").getData();
+		assertInstanceOf(double[][][].class, volume, "one column of the [time][x][y] compound");
+
+		// including the nested compound of boundary points
+		Object volumePoints = new MovingBoundaryVH5Path(testFile, "elements", "volumePoints").getData();
+		Object cell = ((Object[][][]) volumePoints)[0][0][0];
+		assertInstanceOf(Map.class, cell);
+		assertTrue(((Map<?, ?>) cell).containsKey("x"), "a boundary point carries x and y");
+
+		// and a group is walked through to its children
+		Object mesh = new MovingBoundaryVH5Path(testFile, "Mesh", "size").getData();
+		assertInstanceOf(Dataset.class, mesh);
+	}
+
+	@Test
+	public void findsAttributes() {
+		// the last step of a path may name an attribute rather than a child
+		Object startX = new MovingBoundaryVH5Path(testFile, "elements", "startX").getData();
+		assertNotNull(startX, "elements carries its extents as attributes");
+	}
+
+	@Test
+	public void typedPathReturnsTheDeclaredType() {
+		double[] values = new MovingBoundaryVH5TypedPath<double[]>(testFile, double[].class, "endTime").get();
+		assertEquals(1, values.length);
+		assertEquals(0.1, values[0], 1e-9, "the run ends where it was asked to");
+	}
+
+	@Test
+	public void missingPathIsNotFound() {
+		assertNull(new MovingBoundaryVH5Path(testFile, "junk", "yard").getData());
+		assertThrows(RuntimeException.class,
+				() -> new MovingBoundaryVH5TypedPath<double[]>(testFile, double[].class, "junk", "yard"));
+	}
+
+	@Test
+	public void wrongTypeIsRejected() {
+		assertThrows(UnsupportedOperationException.class,
+				() -> new MovingBoundaryVH5TypedPath<int[]>(testFile, int[].class, "endTime"));
+	}
+
+	@Test
+	public void primitiveTypeIsRejected() {
+		assertThrows(UnsupportedOperationException.class,
+				() -> new MovingBoundaryVH5TypedPath<Integer>(testFile, int.class, "endTime"));
+	}
 }
