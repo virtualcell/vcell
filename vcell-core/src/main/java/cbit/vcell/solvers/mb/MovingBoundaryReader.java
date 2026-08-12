@@ -1,6 +1,9 @@
 package cbit.vcell.solvers.mb;
 
+import java.io.File;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.Arrays;
 import java.util.Vector;
 
@@ -12,10 +15,9 @@ import org.vcell.util.CastingUtils;
 import org.vcell.util.ProgrammingException;
 import org.vcell.util.VCAssert;
 
-import ncsa.hdf.object.FileFormat;
-import ncsa.hdf.object.Group;
-import ncsa.hdf.object.h5.H5CompoundDS;
-import ncsa.hdf.object.h5.H5ScalarDS;
+import io.jhdf.HdfFile;
+import io.jhdf.api.Dataset;
+import io.jhdf.api.Group;
 
 /**
  * read results from MovingBoundary hdf5 file.
@@ -38,6 +40,7 @@ public class MovingBoundaryReader implements MovingBoundaryTypes {
     private TimeInfo timeInfo;
     private PlaneNodes pnodes;
     private final PointIndexTreeAndList pointIndex;
+    private HdfFile hdfFile;
 
     //	private static final Logger lg = LogManager.getLogger(MovingBoundaryReader.class);
     private static final String HDF_SPLIT_CHARS = "{}, ";
@@ -49,25 +52,9 @@ public class MovingBoundaryReader implements MovingBoundaryTypes {
         timeInfo = null;
         pointIndex = new PointIndexTreeAndList();
         try {
-            // retrieve an instance of H5File
-            FileFormat fileFormat = FileFormat.getFileFormat(FileFormat.FILE_TYPE_HDF5);
-
-            if(fileFormat == null){
-                System.err.println("Cannot find HDF5 FileFormat.");
-                return;
-            }
-
-            // open the file with read-only access
-            FileFormat testFile = fileFormat.createInstance(filename, FileFormat.READ);
-
-            if(testFile == null){
-                System.err.println("Failed to open file: " + filename);
-                return;
-            }
-
-            // open the file and retrieve the file structure
-            testFile.open();
-            root = (Group) ((javax.swing.tree.DefaultMutableTreeNode) testFile.getRootNode()).getUserObject();
+            // held open for the lifetime of this reader: every accessor below reads from it
+            hdfFile = new HdfFile(new File(filename).toPath());
+            root = hdfFile;
             lastTimeIndex_ = singleInt("lastTimeIndex");
         } catch(Exception e){
             throw new MovingBoundaryResultException("exception reading moving boundary result file " + filename, e);
@@ -140,51 +127,73 @@ public class MovingBoundaryReader implements MovingBoundaryTypes {
 
     }
 
+    /**
+     * A single number at a path, whatever integer or floating width the file used — the writer's
+     * choice of int32 vs int64 is not something the callers care about, and it differs between
+     * files. Attributes and datasets both arrive as a one-element array.
+     */
+    private Number singleNumber(String... names){
+        MovingBoundaryVH5Path path = new MovingBoundaryVH5Path(root, names);
+        Object found = path.getData();
+        if(found instanceof Dataset){
+            found = ((Dataset) found).getData();
+        }
+        if(found == null){
+            throw new MovingBoundaryResultException(MovingBoundaryVH5Path.concat(names) + " not found");
+        }
+        if(found.getClass().isArray()){
+            if(Array.getLength(found) != 1){
+                throw new MovingBoundaryResultException(
+                        MovingBoundaryVH5Path.concat(names) + " is not single element array");
+            }
+            found = Array.get(found, 0);
+        }
+        if(!(found instanceof Number)){
+            throw new MovingBoundaryResultException(
+                    MovingBoundaryVH5Path.concat(names) + " is " + found.getClass().getSimpleName() + ", not a number");
+        }
+        return (Number) found;
+    }
+
+    /**
+     * An array of numbers at a path. The solver writes these as one variable-length row — a
+     * dataset of one element whose element is itself the array — so a single row is unwrapped.
+     */
     private double[] getDoubleArray(String... names){
-        MovingBoundaryVH5TypedPath<double[]> dpath = new MovingBoundaryVH5TypedPath<double[]>(root, double[].class, names);
-        return dpath.get();
+        MovingBoundaryVH5Path path = new MovingBoundaryVH5Path(root, names);
+        Object found = path.getData();
+        if(found instanceof Dataset){
+            found = ((Dataset) found).getData();
+        }
+        if(found == null){
+            throw new MovingBoundaryResultException(MovingBoundaryVH5Path.concat(names) + " not found");
+        }
+        if(found instanceof double[][]){
+            double[][] rows = (double[][]) found;
+            if(rows.length != 1){
+                throw new MovingBoundaryResultException(
+                        MovingBoundaryVH5Path.concat(names) + " has " + rows.length + " rows, expected one");
+            }
+            return rows[0];
+        }
+        if(found instanceof double[]){
+            return (double[]) found;
+        }
+        throw new MovingBoundaryResultException(MovingBoundaryVH5Path.concat(names)
+                + " is " + found.getClass().getSimpleName() + ", not an array of double");
     }
 
     private double singleDouble(String... names){
-        double[] a = getDoubleArray(names);
-        if(a.length != 1){
-            throw new MovingBoundaryResultException(MovingBoundaryVH5Path.concat(names) + " is not single element array");
-        }
-        return a[0];
-    }
-
-    private long[] getLongArray(String... names){
-        MovingBoundaryVH5TypedPath<long[]> dpath = new MovingBoundaryVH5TypedPath<long[]>(root, long[].class, names);
-        return dpath.get();
+        return singleNumber(names).doubleValue();
     }
 
     private long singleLong(String... names){
-        long[] a = getLongArray(names);
-        if(a.length != 1){
-            throw new MovingBoundaryResultException(MovingBoundaryVH5Path.concat(names) + " is not single element array");
-        }
-        return a[0];
-    }
-
-    private int[] getIntArray(String... names){
-        MovingBoundaryVH5TypedPath<int[]> dpath = new MovingBoundaryVH5TypedPath<int[]>(root, int[].class, names);
-        return dpath.get();
+        return singleNumber(names).longValue();
     }
 
     private int singleInt(String... names){
-        int[] a = getIntArray(names);
-        if(a.length != 1){
-            throw new MovingBoundaryResultException(MovingBoundaryVH5Path.concat(names) + " is not single element array");
-        }
-        return a[0];
+        return singleNumber(names).intValue();
     }
-
-//	private int checkedConvert(long a) {
-//		if (Math.abs(a) < Integer.MAX_VALUE) {
-//			return (int) a;
-//		}
-//		throw new MovingBoundaryResultException("Long " + a + " invalid integer, too big");
-//	}
 
     private DimensionInfo getDimInfo(char dim){
         char upper = Character.toUpperCase(dim);
@@ -242,31 +251,6 @@ public class MovingBoundaryReader implements MovingBoundaryTypes {
     }
 
     /**
-     * select plane based on first dimension
-     *
-     * @param ds
-     * @param first
-     */
-    private void selectPlane(H5CompoundDS ds, int d1, int d2, int first){
-        ds.clearData();
-        long[] selected = ds.getSelectedDims();
-        long[] start = ds.getStartDims();
-        long[] stride = ds.getStride();
-        //long[] d = en.getDims( );
-        //long[] m = en.getMaxDims( );
-        int[] selectedIndex = ds.getSelectedIndex();
-        Arrays.fill(start, 0);
-        Arrays.fill(stride, 1);
-        selected[0] = 1;
-        selected[1] = d1;
-        selected[2] = d2;
-        start[0] = first;
-        selectedIndex[0] = 1;
-        selectedIndex[1] = 2;
-        selectedIndex[2] = 0;
-    }
-
-    /**
      * @param timeIndex >= 0 and <= {@link #lastTimeIndex()}
      * @return
      */
@@ -281,18 +265,16 @@ public class MovingBoundaryReader implements MovingBoundaryTypes {
             double[] vols;
 //			String[] xpoints;
 //			String[] ypoints;
-            String[] combined;
+            Object[] combined;
             byte[] poz;
             {
-                H5CompoundDS en = planeNode().elements;
-                selectPlane(en, numX, numY, timeIndex);
-                Vector<?> data = safeCast(Vector.class, en.getData(), "elements");
-                String[] dn = en.getMemberNames();
-                vols = select(double[].class, data, dn, "elements", "volume");
-//				xpoints = select(String[].class,data,dn,"elements","volumePointsX");
-//				ypoints = select(String[].class,data,dn,"elements","volumePointsY");
-                combined = select(String[].class, data, dn, "elements", "volumePoints");
-                poz = select(byte[].class, data, dn, "elements", "boundaryPosition");
+                // one time slice of the [time][x][y] compound: jhdf hands back each member shaped
+                // [1][numX][numY], which is flattened here in the x-then-y order used below
+                Map<String, Object> data = slice(planeNode().elements, "elements",
+                        new long[] { timeIndex, 0, 0 }, new int[] { 1, numX, numY });
+                vols = (double[]) flatten(member(data, "elements", "volume"), numX * numY, double.class);
+                combined = (Object[]) flatten(member(data, "elements", "volumePoints"), numX * numY, Object.class);
+                poz = (byte[]) flatten(member(data, "elements", "boundaryPosition"), numX * numY, byte.class);
             }
             double mass[][];
             double conc[][];
@@ -300,12 +282,12 @@ public class MovingBoundaryReader implements MovingBoundaryTypes {
                 //will need to be a loop later
                 mass = new double[1][];
                 conc = new double[1][];
-                H5CompoundDS sp = planeNode().species;
-                selectPlane(sp, numX, numY, timeIndex);
-                Vector<?> data = safeCast(Vector.class, sp.getData(), "species");
-                String[] dn = sp.getMemberNames();
-                mass[0] = select(double[].class, data, dn, "species", "mass");
-                conc[0] = select(double[].class, data, dn, "species", "uNumeric");
+                // [time][x][y][species]; only the first species is used today
+                int numSpecies = planeNode().species.getDimensions()[3];
+                Map<String, Object> data = slice(planeNode().species, "species",
+                        new long[] { timeIndex, 0, 0, 0 }, new int[] { 1, numX, numY, numSpecies });
+                mass[0] = speciesColumn(member(data, "species", "mass"), numX, numY, 0);
+                conc[0] = speciesColumn(member(data, "species", "uNumeric"), numX, numY, 0);
             }
 
             int i = 0;
@@ -361,9 +343,29 @@ public class MovingBoundaryReader implements MovingBoundaryTypes {
         return rval;
     }
 
-    private int[] buildBoundary(String combined) throws Exception{
-        //data starts with {{, so skip ahead to miss first {
-        return getPointIndexes(combined, 2);
+    /**
+     * The boundary of one cell. The solver writes it as a compound of parallel x and y arrays;
+     * the previous binding could only surface that as a formatted string, which then had to be
+     * parsed back into numbers — these are the numbers themselves.
+     */
+    private int[] buildBoundary(Object volumePoints) throws Exception{
+        if(volumePoints instanceof String){ // an older file, or a binding that stringified it
+            return getPointIndexes((String) volumePoints, 2);
+        }
+        Map<?, ?> point = CastingUtils.downcast(Map.class, volumePoints);
+        if(point == null){
+            throw new MovingBoundaryResultException("volumePoints is "
+                    + (volumePoints == null ? "null" : volumePoints.getClass().getSimpleName())
+                    + ", expected a compound of x and y");
+        }
+        double[] xs = (double[]) point.get("x");
+        double[] ys = (double[]) point.get("y");
+        VCAssert.assertTrue(xs.length == ys.length, "x and y arrays same length");
+        int[] indexes = new int[xs.length];
+        for(int i = 0; i < xs.length; i++){
+            indexes[i] = pointIndex.index(xs[i], ys[i], 0).getIndex();
+        }
+        return indexes;
     }
 
     /**
@@ -375,13 +377,58 @@ public class MovingBoundaryReader implements MovingBoundaryTypes {
      * @return requested data
      * @throws ProgrammingException if wrong type or childName name not in names
      */
-    private static <T> T select(Class<T> clzz, Vector<?> v, String[] names, String path, String childName){
-        for(int i = 0; i < names.length; i++){
-            if(childName.equals(names[i])){
-                return safeCast(clzz, v.get(i), path + "/" + childName);
+    /** one hyperslab of a compound dataset, as its members keyed by name */
+    @SuppressWarnings("unchecked")
+    private static Map<String, Object> slice(Dataset ds, String path, long[] offset, int[] dimensions){
+        Object data = ds.getData(offset, dimensions);
+        Map<String, Object> members = CastingUtils.downcast(Map.class, data);
+        if(members == null){
+            throw new ProgrammingException(path + " is not a compound dataset, found " + data.getClass().getSimpleName());
+        }
+        return members;
+    }
+
+    private static Object member(Map<String, Object> members, String path, String childName){
+        Object column = members.get(childName);
+        if(column == null){
+            throw new ProgrammingException("No " + childName + " in " + StringUtils.join(members.keySet(), ",")
+                    + " children of " + path);
+        }
+        return column;
+    }
+
+    /**
+     * A member of a [1][numX][numY] slice, flattened to a single array in x-then-y order — the
+     * order the plane assembly below walks.
+     */
+    private static Object flatten(Object column, int length, Class<?> componentType){
+        Object flat = Array.newInstance(componentType, length);
+        Object plane = Array.get(column, 0); // drop the leading time dimension
+        int i = 0;
+        for(int x = 0; x < Array.getLength(plane); x++){
+            Object row = Array.get(plane, x);
+            for(int y = 0; y < Array.getLength(row); y++){
+                Array.set(flat, i++, Array.get(row, y));
             }
         }
-        throw new ProgrammingException("No " + childName + " in " + StringUtils.join(names, ",") + " children of " + path);
+        if(i != length){
+            throw new ProgrammingException("expected " + length + " values, found " + i);
+        }
+        return flat;
+    }
+
+    /** one species of a [1][numX][numY][numSpecies] slice, flattened in x-then-y order */
+    private static double[] speciesColumn(Object column, int numX, int numY, int species){
+        double[] flat = new double[numX * numY];
+        Object plane = Array.get(column, 0);
+        int i = 0;
+        for(int x = 0; x < numX; x++){
+            Object row = Array.get(plane, x);
+            for(int y = 0; y < numY; y++){
+                flat[i++] = ((double[]) Array.get(row, y))[species];
+            }
+        }
+        return flat;
     }
 
     private static <T> T safeCast(Class<T> clzz, Object obj, String path){
@@ -396,16 +443,12 @@ public class MovingBoundaryReader implements MovingBoundaryTypes {
      * HDF data nodes which support planes
      */
     private class PlaneNodes {
-        final H5CompoundDS elements;
-        final H5CompoundDS species;
+        final Dataset elements;
+        final Dataset species;
 
         PlaneNodes() throws Exception{
-            MovingBoundaryVH5TypedPath<H5CompoundDS> dpath = new MovingBoundaryVH5TypedPath<H5CompoundDS>(root, H5CompoundDS.class, "elements");
-            elements = dpath.get();
-            elements.read();
-            dpath = new MovingBoundaryVH5TypedPath<H5CompoundDS>(root, H5CompoundDS.class, "species");
-            species = dpath.get();
-            species.read();
+            elements = new MovingBoundaryVH5TypedPath<Dataset>(root, Dataset.class, "elements").get();
+            species = new MovingBoundaryVH5TypedPath<Dataset>(root, Dataset.class, "species").get();
         }
 
     }
@@ -441,16 +484,9 @@ public class MovingBoundaryReader implements MovingBoundaryTypes {
 
             VCAssert.assertTrue(timeIndex >= 0, "negative time index");
             validateTimeIndex(timeIndex);
-            MovingBoundaryVH5TypedPath<H5ScalarDS> path = new MovingBoundaryVH5TypedPath<>(root, H5ScalarDS.class, "boundaries");
-            H5ScalarDS hsd = path.get();
-            hsd.init();
-            long[] start = hsd.getStartDims();
-            long[] stride = hsd.getStride();
-            long[] sdims = hsd.getSelectedDims();
-            stride[0] = 1;
-            start[0] = timeIndex;
-            sdims[0] = 1;
-            String[] data = (String[]) hsd.read();
+            MovingBoundaryVH5TypedPath<Dataset> path = new MovingBoundaryVH5TypedPath<>(root, Dataset.class, "boundaries");
+            Dataset hsd = path.get();
+            String[] data = (String[]) hsd.getData(new long[] { timeIndex }, new int[] { 1 });
             String blob = data[0];
             return getPointIndexes(blob, 0);
         } catch(Exception e){

@@ -568,8 +568,8 @@ public class ASCIIExporter {
                                              GeometrySpecs geometrySpecs, ASCIISpecs asciiSpecs, String contextName, FileDataContainerManager fileDataContainerManager)
             throws DataAccessException, IOException{
 
-        // skip loading legacy native HDF5 library if the system is a macos arm64
-        // will get runtime errors for Chombo and MovingBoundary until HDF5 is updated
+        // no arm64 build of the native HDF5 library exists, so it is skipped there; writing an
+        // HDF5 export below needs it, and will fail on that platform
         boolean MacosArm64 = System.getProperty("os.arch").equals("aarch64") && System.getProperty("os.name").equals("Mac OS X");
         if (!MacosArm64) {
             NativeLib.HDF5.load();

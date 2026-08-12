@@ -1,6 +1,6 @@
 package cbit.vcell.solvers.mb;
 
-import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Vector;
 
@@ -10,12 +10,10 @@ import org.apache.logging.log4j.Logger;
 import org.vcell.util.CastingUtils;
 import org.vcell.util.VCAssert;
 
-import ncsa.hdf.hdf5lib.exceptions.HDF5Exception;
-import ncsa.hdf.object.Attribute;
-import ncsa.hdf.object.DataFormat;
-import ncsa.hdf.object.Group;
-import ncsa.hdf.object.HObject;
-import ncsa.hdf.object.h5.H5CompoundDS;
+import io.jhdf.api.Attribute;
+import io.jhdf.api.Dataset;
+import io.jhdf.api.Group;
+import io.jhdf.api.Node;
 
 /**
  * Class to recursively parse HDF5 file seeking requested data
@@ -131,67 +129,38 @@ public class MovingBoundaryVH5Path {
      * @param steps name of each step
      * @param index current step
      * @return next object path, if present
-     * @throws HDF5Exception
      */
     private static Object walk(Object hobj, String[] steps, int index) throws Exception{
         final boolean isLastIndex = lastIndex(index, steps);
         final String finding = steps[index];
         Group g = CastingUtils.downcast(Group.class, hobj);
         if(g != null){
-            List<HObject> ml = g.getMemberList();
-            for(HObject sub : ml){
-//				String p = sub.getPath();
-//				String name = sub.getName();
-//				String full = sub.getFullName();
-                if(finding.equals(sub.getName())){
-                    if(isLastIndex){
-                        return sub;
-                    }
-                    return walk(sub, steps, index + 1);
+            Node sub = g.getChildren().get(finding);
+            if(sub != null){
+                if(isLastIndex){
+                    return sub;
                 }
+                return walk(sub, steps, index + 1);
             }
         }
-        H5CompoundDS cds = CastingUtils.downcast(H5CompoundDS.class, hobj);
-        if(cds != null){
-            cds.read();
-            String[] mn = cds.getMemberNames();
-
-            for(int i = 0; i < mn.length; i++){
-                if(finding.equals(mn[i])){
-                    Object c = cds.read();
-                    Vector<?> vec = CastingUtils.downcast(Vector.class, c);
-                    if(vec != null){
-                        VCAssert.assertTrue(i < vec.size(), "Disconnect between H5CompoundDS.getMemberNames( )  and returned Vector");
-                        Object child = vec.get(i);
-                        if(isLastIndex){
-                            return child;
-                        }
-                    } else {
-                        throw new UnsupportedOperationException("Unsupported H5CompoundDS subtype " + className(c));
-                    }
-                }
+        Dataset ds = CastingUtils.downcast(Dataset.class, hobj);
+        if(ds != null && ds.isCompound() && isLastIndex){
+            // a compound dataset's members are addressed by name, like a group's children
+            Object data = ds.getData();
+            Map<?, ?> members = CastingUtils.downcast(Map.class, data);
+            if(members == null){
+                throw new UnsupportedOperationException("Unsupported compound dataset subtype " + className(data));
             }
-
+            if(members.containsKey(finding)){
+                return members.get(finding);
+            }
         }
         if(isLastIndex){
-            DataFormat df = CastingUtils.downcast(DataFormat.class, hobj);
-            if(df != null && df.hasAttribute()){
-                try {
-                    @SuppressWarnings("unchecked")
-                    List<Object> meta = df.getMetadata();
-                    for(Object o : meta){
-                        Attribute a = CastingUtils.downcast(Attribute.class, o);
-                        if(a != null){
-                            if(finding.equals(a.getName())){
-                                return a.getValue();
-                            }
-                        } else {
-                            lg.warn(concat(steps, finding) + " fetching metadata unexpected type " + className(o));
-                        }
-
-                    }
-                } catch(Exception e){
-                    throw new RuntimeException(concat(steps, finding) + " fetching metadata", e);
+            Node node = CastingUtils.downcast(Node.class, hobj);
+            if(node != null){
+                Attribute a = node.getAttribute(finding);
+                if(a != null){
+                    return a.getData();
                 }
             }
         }

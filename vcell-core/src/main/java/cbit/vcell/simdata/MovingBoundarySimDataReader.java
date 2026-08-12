@@ -2,224 +2,162 @@ package cbit.vcell.simdata;
 
 import cbit.vcell.math.VariableType;
 import cbit.vcell.solvers.CartesianMeshMovingBoundary;
-import ncsa.hdf.object.*;
+import io.jhdf.HdfFile;
+import io.jhdf.api.Attribute;
+import io.jhdf.api.Dataset;
+import io.jhdf.api.Group;
+import io.jhdf.api.Node;
 
-import javax.swing.tree.DefaultMutableTreeNode;
-import java.util.List;
+import java.io.File;
 import java.util.Vector;
 
 public class MovingBoundarySimDataReader {
+    /** the Solution group, which holds one group per saved time */
+    private static Group solutionGroup(HdfFile solFile) throws Exception {
+        for (Node member : solFile.getChildren().values())
+        {
+            if (member instanceof Group
+                    && CartesianMeshMovingBoundary.MBSDataGroup.valueOf(member.getName())
+                    == CartesianMeshMovingBoundary.MBSDataGroup.Solution)
+            {
+                return (Group) member;
+            }
+        }
+        throw new Exception("Group " + CartesianMeshMovingBoundary.MBSDataGroup.Solution + " not found");
+    }
+
+    private static String stringAttribute(Node node, CartesianMeshMovingBoundary.MSBDataAttribute which)
+    {
+        Attribute attribute = node.getAttribute(which.name());
+        if (attribute == null)
+        {
+            return null;
+        }
+        Object value = attribute.getData();
+        return value instanceof String[] ? ((String[]) value)[0] : String.valueOf(value);
+    }
+
     public static void readMBSDataMetadata(String fileName, Vector<DataBlock> dataBlockList) throws Exception
     {
-        FileFormat fileFormat = FileFormat.getFileFormat(FileFormat.FILE_TYPE_HDF5);
-        FileFormat solFile = null;
-        try {
-            solFile = fileFormat.createInstance(fileName, FileFormat.READ);
-            solFile.open();
-            DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode)solFile.getRootNode();
-            Group rootGroup = (Group)rootNode.getUserObject();
-            Group solutionGroup = null;
-            for (Object member : rootGroup.getMemberList())
-            {
-                String memberName = ((HObject)member).getName();
-                if (member instanceof Group)
-                {
-                    CartesianMeshMovingBoundary.MBSDataGroup group = CartesianMeshMovingBoundary.MBSDataGroup.valueOf(memberName);
-                    if (group == CartesianMeshMovingBoundary.MBSDataGroup.Solution)
-                    {
-                        solutionGroup = (Group) member;
-                        break;
-                    }
-                }
-            }
-            if (solutionGroup == null)
-            {
-                throw new Exception("Group " + CartesianMeshMovingBoundary.MBSDataGroup.Solution + " not found");
-            }
-
-            // find any timeGroup
+        try (HdfFile solFile = new HdfFile(new File(fileName).toPath()))
+        {
+            // any time group will do: they all carry the same variables
             Group timeGroup = null;
-            for (Object member : solutionGroup.getMemberList())
+            for (Node member : solutionGroup(solFile).getChildren().values())
             {
-                String memberName = ((HObject)member).getName();
-                if (member instanceof Group && memberName.startsWith("time"))
+                if (member instanceof Group && member.getName().startsWith("time"))
                 {
                     timeGroup = (Group) member;
                     break;
                 }
             }
-
             if (timeGroup == null)
             {
                 throw new Exception("No time group found");
             }
 
-            // find all the datasets in that time group
-            for (Object member : timeGroup.getMemberList())
+            for (Node member : timeGroup.getChildren().values())
             {
-                if (member instanceof Dataset)
+                if (!(member instanceof Dataset))
                 {
-                    List<Attribute> solAttrList = ((Dataset)member).getMetadata();
-                    int size = 0;
-                    String varName = null;
-                    VariableType varType = null;
-                    for (Attribute attr : solAttrList)
-                    {
-                        String attrName = attr.getName();
-                        Object attrValue = attr.getValue();
-                        if(attrName.equals(CartesianMeshMovingBoundary.MSBDataAttribute.name.name()))
-                        {
-                            varName = ((String[]) attrValue)[0];
-                        }
-                        else if (attrName.equals(CartesianMeshMovingBoundary.MSBDataAttribute.size.name()))
-                        {
-                            size = ((int[]) attrValue)[0];
-                        }
-                        else if (attrName.equals(CartesianMeshMovingBoundary.MSBDataAttribute.type.name()))
-                        {
-                            String vt = ((String[]) attrValue)[0];
-                            if (vt.equals(CartesianMeshMovingBoundary.MSBDataAttributeValue.Point.name()))
-                            {
-                                varType = VariableType.POINT_VARIABLE;
-                            }
-                            else if (vt.equals(CartesianMeshMovingBoundary.MSBDataAttributeValue.Volume.name()))
-                            {
-                                varType = VariableType.VOLUME;
-                            }
-                            else if (vt.equals(CartesianMeshMovingBoundary.MSBDataAttributeValue.PointSubDomain.name()))
-                            {
-                                // Position for PointSubdomain
-                            }
-                        }
-                    }
-                    if (varType == VariableType.VOLUME)
-                    {
-                        // only display volume
-                        dataBlockList.addElement(DataBlock.createDataBlock(varName, varType.getType(), size, 0));
-                    }
-                    if (varType == VariableType.POINT_VARIABLE)
-                    {
-                        // only display volume
-                        dataBlockList.addElement(DataBlock.createDataBlock(varName, varType.getType(), size, 0));
-                    }
-
+                    continue;
                 }
-            }
-        }
-        finally
-        {
-            if (solFile != null)
-            {
-                try {
-                    solFile.close();
-                } catch (Exception e) {
-                    // ignore
+                String varName = stringAttribute(member, CartesianMeshMovingBoundary.MSBDataAttribute.name);
+                Attribute sizeAttribute = member.getAttribute(CartesianMeshMovingBoundary.MSBDataAttribute.size.name());
+                int size = sizeAttribute == null ? 0 : intValue(sizeAttribute.getData());
+                String vt = stringAttribute(member, CartesianMeshMovingBoundary.MSBDataAttribute.type);
+
+                VariableType varType = null;
+                if (CartesianMeshMovingBoundary.MSBDataAttributeValue.Point.name().equals(vt))
+                {
+                    varType = VariableType.POINT_VARIABLE;
+                }
+                else if (CartesianMeshMovingBoundary.MSBDataAttributeValue.Volume.name().equals(vt))
+                {
+                    varType = VariableType.VOLUME;
+                }
+                // PointSubDomain is a position, not a displayed variable
+
+                if (varType == VariableType.VOLUME || varType == VariableType.POINT_VARIABLE)
+                {
+                    dataBlockList.addElement(DataBlock.createDataBlock(varName, varType.getType(), size, 0));
                 }
             }
         }
     }
 
-    public static double[] readMBSData(String fileName, Vector<DataBlock> dataBlockList, String varName, Double time) throws Exception {
-        FileFormat fileFormat = FileFormat.getFileFormat(FileFormat.FILE_TYPE_HDF5);
-        FileFormat solFile = null;
-        double[] data = null;
-        try {
-            solFile = fileFormat.createInstance(fileName, FileFormat.READ);
-            solFile.open();
-            DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode)solFile.getRootNode();
-            Group rootGroup = (Group)rootNode.getUserObject();
-            Group solutionGroup = null;
-            for (Object member : rootGroup.getMemberList())
-            {
-                String memberName = ((HObject)member).getName();
-                if (member instanceof Group)
-                {
-                    CartesianMeshMovingBoundary.MBSDataGroup group = CartesianMeshMovingBoundary.MBSDataGroup.valueOf(memberName);
-                    if (group == CartesianMeshMovingBoundary.MBSDataGroup.Solution)
-                    {
-                        solutionGroup = (Group) member;
-                        break;
-                    }
-                }
-            }
-            if (solutionGroup == null)
-            {
-                throw new Exception("Group " + CartesianMeshMovingBoundary.MBSDataGroup.Solution + " not found");
-            }
+    private static int intValue(Object value)
+    {
+        if (value instanceof int[])
+        {
+            return ((int[]) value)[0];
+        }
+        if (value instanceof long[])
+        {
+            return (int) ((long[]) value)[0];
+        }
+        return ((Number) value).intValue();
+    }
 
-            int varIndex = -1;
+    private static double doubleValue(Object value)
+    {
+        if (value instanceof double[])
+        {
+            return ((double[]) value)[0];
+        }
+        if (value instanceof float[])
+        {
+            return ((float[]) value)[0];
+        }
+        return ((Number) value).doubleValue();
+    }
+
+    public static double[] readMBSData(String fileName, Vector<DataBlock> dataBlockList, String varName, Double time) throws Exception {
+        try (HdfFile solFile = new HdfFile(new File(fileName).toPath()))
+        {
             int size = 0;
-            for (int i = 0; i < dataBlockList.size(); ++ i)
+            boolean found = false;
+            for (DataBlock dataBlock : dataBlockList)
             {
-                DataBlock dataBlock = dataBlockList.get(i);
                 if (dataBlock.getVarName().equals(varName))
                 {
-                    varIndex = i;
                     size = dataBlock.getSize();
+                    found = true;
                     break;
                 }
             }
-
-            if (varIndex == -1)
+            if (!found)
             {
                 throw new Exception("Variable " + varName + " not found");
             }
 
-            // find time group for that time
             Group timeGroup = null;
-            for (Object member : solutionGroup.getMemberList())
+            for (Node member : solutionGroup(solFile).getChildren().values())
             {
-                if (member instanceof Group)
+                if (!(member instanceof Group))
                 {
-                    Group group = (Group)member;
-                    List<Attribute> dsAttrList = group.getMetadata();
-                    Attribute timeAttribute = null;
-                    for (Attribute attr : dsAttrList)
-                    {
-                        if (attr.getName().equals(CartesianMeshMovingBoundary.MSBDataAttribute.time.name()))
-                        {
-                            timeAttribute = attr;
-                            break;
-                        }
-                    }
-                    if (timeAttribute != null)
-                    {
-                        double t = ((double[]) timeAttribute.getValue())[0];
-                        if (Math.abs(t - time) < 1e-8)
-                        {
-                            timeGroup = group;
-                            break;
-                        }
-                    }
+                    continue;
+                }
+                Attribute timeAttribute = member.getAttribute(CartesianMeshMovingBoundary.MSBDataAttribute.time.name());
+                if (timeAttribute != null && Math.abs(doubleValue(timeAttribute.getData()) - time) < 1e-8)
+                {
+                    timeGroup = (Group) member;
+                    break;
                 }
             }
-
             if (timeGroup == null)
             {
                 throw new Exception("No time group found for time=" + time);
             }
 
-            // find variable dataset
             Dataset varDataset = null;
-            for (Object member : timeGroup.getMemberList())
+            for (Node member : timeGroup.getChildren().values())
             {
-                if (member instanceof Dataset)
+                if (member instanceof Dataset
+                        && varName.equals(stringAttribute(member, CartesianMeshMovingBoundary.MSBDataAttribute.name)))
                 {
-                    List<Attribute> dsAttrList = ((Dataset)member).getMetadata();
-                    String var = null;
-                    for (Attribute attr : dsAttrList)
-                    {
-                        if (attr.getName().equals(CartesianMeshMovingBoundary.MSBDataAttribute.name.name()))
-                        {
-                            var = ((String[]) attr.getValue())[0];
-                            break;
-                        }
-                    }
-                    if (var != null && var.equals(varName))
-                    {
-                        varDataset = (Dataset) member;
-                        break;
-                    }
+                    varDataset = (Dataset) member;
+                    break;
                 }
             }
             if (varDataset == null)
@@ -227,20 +165,9 @@ public class MovingBoundarySimDataReader {
                 throw new Exception("Data for Variable " + varName + " at time " + time + " not found");
             }
 
-            data = new double[size];
-            System.arraycopy((double[])varDataset.getData(), 0, data, 0, size);
+            double[] data = new double[size];
+            System.arraycopy((double[]) varDataset.getData(), 0, data, 0, size);
             return data;
-        }
-        finally
-        {
-            if (solFile != null)
-            {
-                try {
-                    solFile.close();
-                } catch (Exception e) {
-                    // ignore
-                }
-            }
         }
     }
 
