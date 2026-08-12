@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
-import javax.swing.tree.DefaultMutableTreeNode;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -18,12 +17,11 @@ import org.vcell.util.*;
 
 import cbit.vcell.math.MathFormatException;
 import cbit.vcell.simdata.DataIdentifier;
-import ncsa.hdf.hdf5lib.H5;
-import ncsa.hdf.object.Attribute;
-import ncsa.hdf.object.Dataset;
-import ncsa.hdf.object.FileFormat;
-import ncsa.hdf.object.Group;
-import ncsa.hdf.object.HObject;
+import io.jhdf.HdfFile;
+import io.jhdf.api.Attribute;
+import io.jhdf.api.Dataset;
+import io.jhdf.api.Group;
+import io.jhdf.api.Node;
 
 
 public class CartesianMeshChombo extends CartesianMesh {
@@ -226,23 +224,10 @@ public class CartesianMeshChombo extends CartesianMesh {
 
     public static CartesianMeshChombo readMeshFile(File chomboMeshFile) throws Exception{
         CartesianMeshChombo chomboMesh = new CartesianMeshChombo();
-        if(H5.H5open() < 0){
-            throw new Exception("H5.H5open() failed");
-        }
-        FileFormat fileFormat = FileFormat.getFileFormat(FileFormat.FILE_TYPE_HDF5);
-        if(fileFormat == null){
-            throw new Exception("FileFormat.getFileFormat(FileFormat.FILE_TYPE_HDF5) failed, returned null.");
-        }
-        FileFormat meshFile = null;
-        try {
-            meshFile = fileFormat.createInstance(chomboMeshFile.getAbsolutePath(), FileFormat.READ);
-            meshFile.open();
-            DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode) meshFile.getRootNode();
-            Group rootGroup = (Group) rootNode.getUserObject();
-            Group meshGroup = (Group) rootGroup.getMemberList().get(0);
-            List<Attribute> meshAttrList = meshGroup.getMetadata();
+        try (HdfFile meshFile = new HdfFile(chomboMeshFile.toPath())) {
+            Group meshGroup = (Group) meshFile.getChildren().values().iterator().next();
 
-            for(Attribute attr : meshAttrList){
+            for(Attribute attr : meshGroup.getAttributes().values()){
                 String attrName = attr.getName();
                 MeshAttribute mattr = null;
                 try {
@@ -254,16 +239,16 @@ public class CartesianMeshChombo extends CartesianMesh {
                     logger.debug("mesh attribute " + attrName + " is not defined in Java");
                     continue;
                 }
-                Object value = attr.getValue();
+                Object value = attr.getData();
                 switch(mattr){
                     case dimension:
-                        chomboMesh.dimension = ((int[]) value)[0];
+                        chomboMesh.dimension = intValue(value);
                         break;
                     case numLevels:
-                        chomboMesh.numLevels = ((int[]) value)[0];
+                        chomboMesh.numLevels = intValue(value);
                         break;
                     case viewLevel:
-                        chomboMesh.viewLevel = ((int[]) value)[0];
+                        chomboMesh.viewLevel = intValue(value);
                         break;
                     case refineRatios:
                         chomboMesh.refineRatios = (int[]) value;
@@ -272,16 +257,8 @@ public class CartesianMeshChombo extends CartesianMesh {
                     case extent:
                     case Nx:
                     case origin:
-                        // these 4 has format of {};
-                        String[] valueStrArray = (String[]) value;
-                        String value0 = valueStrArray[0];
-                        StringTokenizer st = new StringTokenizer(value0, "{,} ");
-                        int numTokens = st.countTokens();
-                        double[] values = new double[Math.max(3, numTokens)]; // we need 3 for 3d
-                        for(int i = 0; i < Math.min(3, numTokens); ++i){
-                            String token = st.nextToken();
-                            values[i] = Double.parseDouble(token);
-                        }
+                        // a compound of x, y and (in 3D) z
+                        double[] values = xyzValue(value);
                         switch(mattr){
                             case Dx:
                                 chomboMesh.dx = new double[3];
@@ -301,13 +278,12 @@ public class CartesianMeshChombo extends CartesianMesh {
                 }
             }
 
-            List<HObject> memberList = meshGroup.getMemberList();
-            for(HObject member : memberList){
+            for(Node member : meshGroup.getChildren().values()){
                 if(!(member instanceof Dataset)){
                     continue;
                 }
                 Dataset dataset = (Dataset) member;
-                Vector vectValues = (Vector) dataset.read();
+                Vector vectValues = columnsOf(dataset);
                 String name = dataset.getName();
                 MeshDataSet mdataset = null;
 
@@ -348,10 +324,6 @@ public class CartesianMeshChombo extends CartesianMesh {
                         break;
                 }
             }
-        } finally {
-            if(meshFile != null){
-                meshFile.close();
-            }
         }
         // set neighbors to membrane elements
         if(chomboMesh.dimension == 2 && chomboMesh.membraneElements != null){
@@ -361,6 +333,72 @@ public class CartesianMeshChombo extends CartesianMesh {
             }
         }
         return chomboMesh;
+    }
+
+    /**
+     * The columns of a compound dataset, in the order the file declares its members — the
+     * {@code collect*} methods below read them positionally. jhdf keys them by member name.
+     */
+    private static Vector<Object> columnsOf(Dataset dataset){
+        Object data = dataset.getData();
+        if(data instanceof Map){
+            @SuppressWarnings("unchecked")
+            Map<String, Object> columns = (Map<String, Object>) data;
+            return new Vector<Object>(columns.values());
+        }
+        Vector<Object> single = new Vector<Object>();
+        single.add(data);
+        return single;
+    }
+
+    private static int intValue(Object value){
+        if(value instanceof int[]){
+            return ((int[]) value)[0];
+        }
+        if(value instanceof long[]){
+            return (int) ((long[]) value)[0];
+        }
+        return ((Number) value).intValue();
+    }
+
+    private static double doubleValue(Object value){
+        if(value instanceof double[]){
+            return ((double[]) value)[0];
+        }
+        if(value instanceof float[]){
+            return ((float[]) value)[0];
+        }
+        if(value instanceof int[]){
+            return ((int[]) value)[0];
+        }
+        if(value instanceof long[]){
+            return ((long[]) value)[0];
+        }
+        return ((Number) value).doubleValue();
+    }
+
+    /**
+     * Dx, extent, Nx and origin are compounds of three members — named x, y, z except for Nx,
+     * which counts cells and names them i, j, k. The legacy native reader saw these stringified as
+     * {@code "{x,y,z}"}, so that form is still accepted.
+     */
+    private static double[] xyzValue(Object value){
+        double[] values = new double[3];
+        if(value instanceof Map){
+            @SuppressWarnings("unchecked")
+            Map<String, Object> members = (Map<String, Object>) value;
+            String[] names = members.containsKey("x") ? new String[]{"x", "y", "z"} : new String[]{"i", "j", "k"};
+            for(int i = 0; i < 3; ++i){
+                values[i] = members.containsKey(names[i]) ? doubleValue(members.get(names[i])) : 0;
+            }
+            return values;
+        }
+        String text = value instanceof String[] ? ((String[]) value)[0] : String.valueOf(value);
+        StringTokenizer st = new StringTokenizer(text, "{,} ");
+        for(int i = 0; i < 3 && st.hasMoreTokens(); ++i){
+            values[i] = Double.parseDouble(st.nextToken());
+        }
+        return values;
     }
 
     private static void collectMembraneIds(CartesianMeshChombo chomboMesh, Vector vectValues){

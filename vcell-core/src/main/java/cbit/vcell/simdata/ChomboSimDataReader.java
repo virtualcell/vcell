@@ -3,12 +3,14 @@ package cbit.vcell.simdata;
 import cbit.vcell.math.InsideVariable;
 import cbit.vcell.math.OutsideVariable;
 import cbit.vcell.math.Variable;
-import ncsa.hdf.object.*;
+import io.jhdf.HdfFile;
+import io.jhdf.api.Dataset;
+import io.jhdf.api.Group;
+import io.jhdf.api.Node;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.vcell.util.DataAccessException;
 
-import javax.swing.tree.DefaultMutableTreeNode;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,13 +45,9 @@ public class ChomboSimDataReader {
 
     public static void getNextDataAtCurrentTimeChombo(double[][] returnValues, ZipFile currentZipFile, String[] varNames, int[][] varIndexes, String[] simDataFileNames, int masterTimeIndex)  throws Exception {
         File tempFile = null;
-        FileFormat solFile = null;
         try {
             tempFile = createTempHdf5File(currentZipFile, simDataFileNames[masterTimeIndex]);
-
-            FileFormat fileFormat = FileFormat.getFileFormat(FileFormat.FILE_TYPE_HDF5);
-            solFile = fileFormat.createInstance(tempFile.getAbsolutePath(), FileFormat.READ);
-            solFile.open();
+            try (HdfFile solFile = new HdfFile(tempFile.toPath())) {
 
             for(int k = 0; k < varNames.length; ++ k) {
                 try {
@@ -72,11 +70,9 @@ public class ChomboSimDataReader {
                     }
                     else
                     {
-                        String varPath = getVarSolutionPath(varNames[k]);
-                        HObject solObj = FileFormat.findObject(solFile, varPath);
+                        Node solObj = findByPath(solFile, getVarSolutionPath(varNames[k]));
                         if (solObj instanceof Dataset) {
-                            Dataset dataset = (Dataset)solObj;
-                            sol = (double[]) dataset.read();
+                            sol = (double[]) ((Dataset) solObj).getData();
                         }
                     }
                     if (sol != null)
@@ -91,18 +87,10 @@ public class ChomboSimDataReader {
                     throw new DataAccessException(e.getMessage(), e);
                 }
             }
+            }
         } finally {
-            try {
-                if (solFile != null) {
-                    solFile.close();
-                }
-                if (tempFile != null) {
-                    if (!tempFile.delete()) {
-                        System.err.println("couldn't delete temp file " + tempFile.getAbsolutePath());
-                    }
-                }
-            } catch(Exception e) {
-                // ignore
+            if (tempFile != null && !tempFile.delete()) {
+                System.err.println("couldn't delete temp file " + tempFile.getAbsolutePath());
             }
         }
     }
@@ -110,63 +98,32 @@ public class ChomboSimDataReader {
     public static void readHdf5SolutionMetaData(InputStream is, Vector<DataBlock> dataBlockList) throws Exception
     {
         File tempFile = null;
-        FileFormat solFile = null;
         try{
             tempFile = createTempHdf5File(is);
-
-            FileFormat fileFormat = FileFormat.getFileFormat(FileFormat.FILE_TYPE_HDF5);
-            solFile = fileFormat.createInstance(tempFile.getAbsolutePath(), FileFormat.READ);
-            solFile.open();
-            DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode)solFile.getRootNode();
-            Group rootGroup = (Group)rootNode.getUserObject();
-            List<HObject> solGroups = rootGroup.getMemberList();
-
-            for (HObject memberGroup : solGroups)
-            {
-                if (memberGroup instanceof Group && memberGroup.getName().equals("solution"))
+            try (HdfFile solFile = new HdfFile(tempFile.toPath())) {
+                Node solutionNode = solFile.getChildren().get("solution");
+                if (!(solutionNode instanceof Group)) {
+                    return;
+                }
+                for (Node member : ((Group) solutionNode).getChildren().values())
                 {
-                    Group solGroup = (Group) memberGroup;
-                    List<HObject> memberList = solGroup.getMemberList();
-                    for (HObject member : memberList)
-                    {
-                        if (!(member instanceof Dataset)){
-                            continue;
-                        }
-                        Dataset dataset = (Dataset)member;
-                        String dsname = dataset.getName();
-                        int vt = -1;
-                        String domain = null;
-                        List<Attribute> solAttrList = dataset.getMetadata();
-                        for (Attribute attr : solAttrList)
-                        {
-                            String attrName = attr.getName();
-                            if(attrName.equals("variable type")){
-                                Object obj = attr.getValue();
-                                vt = ((int[])obj)[0];
-                            } else if (attrName.equals("domain")) {
-                                Object obj = attr.getValue();
-                                domain = ((String[])obj)[0];
-                            }
-                        }
-                        long[] dims = dataset.getDims();
-                        String varName = domain == null ? dsname : domain + Variable.COMBINED_IDENTIFIER_SEPARATOR + dsname;
-                        dataBlockList.addElement(cbit.vcell.simdata.DataBlock.createDataBlock(varName, vt, (int) dims[0], 0));
+                    if (!(member instanceof Dataset)){
+                        continue;
                     }
-                    break;
+                    Dataset dataset = (Dataset)member;
+                    int vt = dataset.getAttribute("variable type") == null ? -1
+                            : intValue(dataset.getAttribute("variable type").getData());
+                    String domain = dataset.getAttribute("domain") == null ? null
+                            : stringValue(dataset.getAttribute("domain").getData());
+                    String varName = domain == null ? dataset.getName()
+                            : domain + Variable.COMBINED_IDENTIFIER_SEPARATOR + dataset.getName();
+                    dataBlockList.addElement(cbit.vcell.simdata.DataBlock.createDataBlock(
+                            varName, vt, dataset.getDimensions()[0], 0));
                 }
             }
         } finally {
-            try {
-                if (solFile != null) {
-                    solFile.close();
-                }
-                if (tempFile != null) {
-                    if (!tempFile.delete()) {
-                        System.err.println("couldn't delete temp file " + tempFile);
-                    }
-                }
-            } catch(Exception e) {
-                // ignore
+            if (tempFile != null && !tempFile.delete()) {
+                System.err.println("couldn't delete temp file " + tempFile);
             }
         }
     }
@@ -174,35 +131,21 @@ public class ChomboSimDataReader {
     public static double[] readHdf5VariableSolution(File zipfile, String fileName, String varName) throws Exception{
 
         File tempFile = null;
-        FileFormat solFile = null;
         try{
             tempFile = createTempHdf5File(zipfile, fileName);
-
-            FileFormat fileFormat = FileFormat.getFileFormat(FileFormat.FILE_TYPE_HDF5);
-            solFile = fileFormat.createInstance(tempFile.getAbsolutePath(), FileFormat.READ);
-            solFile.open();
-            if (varName != null)
-            {
-                String varPath = getVarSolutionPath(varName);
-                HObject solObj = FileFormat.findObject(solFile, varPath);
-                if (solObj instanceof Dataset)
+            try (HdfFile solFile = new HdfFile(tempFile.toPath())) {
+                if (varName != null)
                 {
-                    Dataset dataset = (Dataset)solObj;
-                    return (double[]) dataset.read();
+                    Node solObj = findByPath(solFile, getVarSolutionPath(varName));
+                    if (solObj instanceof Dataset)
+                    {
+                        return (double[]) ((Dataset) solObj).getData();
+                    }
                 }
             }
         } finally {
-            try {
-                if (solFile != null) {
-                    solFile.close();
-                }
-                if (tempFile != null) {
-                    if (!tempFile.delete()) {
-                        System.err.println("couldn't delete temp file " + tempFile.getAbsolutePath());
-                    }
-                }
-            } catch(Exception e) {
-                // ignore
+            if (tempFile != null && !tempFile.delete()) {
+                System.err.println("couldn't delete temp file " + tempFile.getAbsolutePath());
             }
         }
         return null;
@@ -212,51 +155,72 @@ public class ChomboSimDataReader {
         double[] data = null;
         if (zipFile != null && DataSet.isChombo(zipFile)) {
             File tempFile = null;
-            FileFormat solFile = null;
             try{
                 tempFile = createTempHdf5File(zipFile, pdeFile.getName());
-
-                FileFormat fileFormat = FileFormat.getFileFormat(FileFormat.FILE_TYPE_HDF5);
-                solFile = fileFormat.createInstance(tempFile.getAbsolutePath(), FileFormat.READ);
-                solFile.open();
-                data = readChomboExtrapolatedValues(varName, solFile);
+                try (HdfFile solFile = new HdfFile(tempFile.toPath())) {
+                    data = readChomboExtrapolatedValues(varName, solFile);
+                }
             } catch(Exception e) {
                 throw new IOException(e.getMessage(), e);
             } finally {
-                try {
-                    if (solFile != null) {
-                        solFile.close();
-                    }
-                    if (tempFile != null) {
-                        if (!tempFile.delete()) {
-                            System.err.println("couldn't delete temp file " + tempFile.getAbsolutePath());
-                        }
-                    }
-                } catch(Exception e) {
-                    // ignore
+                if (tempFile != null && !tempFile.delete()) {
+                    System.err.println("couldn't delete temp file " + tempFile.getAbsolutePath());
                 }
             }
         }
         return data;
     }
 
-    private static double[] readChomboExtrapolatedValues(String varName, FileFormat solFile) throws Exception {
+    private static double[] readChomboExtrapolatedValues(String varName, HdfFile solFile) throws Exception {
         double data[] = null;
         if (varName != null)
         {
-            String varPath = getVolVarExtrapolatedValuesPath(varName);
-            HObject solObj = FileFormat.findObject(solFile, varPath);
+            Node solObj = findByPath(solFile, getVolVarExtrapolatedValuesPath(varName));
             if (solObj == null)
             {
                 throw new IOException("Extrapolated values for variable '" + varName + "' does not exist in the results.");
             }
             if (solObj instanceof Dataset)
             {
-                Dataset dataset = (Dataset)solObj;
-                return (double[]) dataset.read();
+                return (double[]) ((Dataset) solObj).getData();
             }
         }
         return data;
+    }
+
+    /** walks a {@code /group/dataset} path, returning null rather than throwing when it is absent */
+    private static Node findByPath(HdfFile file, String path) {
+        Node node = file;
+        for (String segment : path.split(HDF5_GROUP_DIRECTORY_SEPARATOR)) {
+            if (segment.isEmpty()) {
+                continue;
+            }
+            if (!(node instanceof Group)) {
+                return null;
+            }
+            node = ((Group) node).getChildren().get(segment);
+            if (node == null) {
+                return null;
+            }
+        }
+        return node;
+    }
+
+    private static int intValue(Object value) {
+        if (value instanceof int[]) {
+            return ((int[]) value)[0];
+        }
+        if (value instanceof long[]) {
+            return (int) ((long[]) value)[0];
+        }
+        return ((Number) value).intValue();
+    }
+
+    private static String stringValue(Object value) {
+        if (value instanceof String[]) {
+            return ((String[]) value)[0];
+        }
+        return String.valueOf(value);
     }
 
     private static File createTempHdf5File(File zipFile, String fileName) throws IOException
