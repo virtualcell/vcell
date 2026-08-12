@@ -41,6 +41,13 @@ public enum FailureType {
     UNSUPPORTED_NON_INT_STOCH,
     UNSUPPORTED_NON_NUMERIC_STOCH,
     SBML_XML_NODE_FAILURE,
+    /**
+     * The model imported and simulated, and then results export failed to map an SBML symbol back
+     * to the VCell entity it came from. Distinct from {@link #SBML_IMPORT_FAILURE}: the failure is
+     * at the far end of the pipeline, so a case landing here has got further than one that failed
+     * to import, not less far.
+     */
+    SBML_RESULTS_MAPPING_FAILURE,
     SOLVER_FAILURE,
     UNSUPPORTED_DELAY_SBML,
     UNSUPPORTED_NON_CONSTANT_COMPARTMENTS,

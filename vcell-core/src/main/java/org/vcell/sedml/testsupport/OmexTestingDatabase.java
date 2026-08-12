@@ -87,6 +87,24 @@ public class OmexTestingDatabase {
         return testCases;
     }
 
+    /**
+     * Renders test cases back to newline-delimited json, the inverse of
+     * {@link #parseOmexTestCases(String)}.
+     * <p>
+     * Written so that accepting a legitimate change to the documented baseline is a reviewable
+     * diff against {@code test_cases.ndjson} rather than a hand-edit of a thousand-line file.
+     * Field order follows the declaration order of {@link OmexTestCase}, which is the order the
+     * committed file already uses, so an unchanged case produces an unchanged line.
+     */
+    public static String writeOmexTestCases(List<OmexTestCase> testCases) throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        StringBuilder sb = new StringBuilder();
+        for (OmexTestCase testCase : testCases) {
+            sb.append(objectMapper.writeValueAsString(testCase)).append("\n");
+        }
+        return sb.toString();
+    }
+
     public static OmexExecSummary summarize(File inputFilePath, Exception exception, List<TraceEvent> errorEvents, long elapsedTime_ms) {
         OmexExecSummary execSummary = new OmexExecSummary();
         execSummary.file_path = inputFilePath.toString();
@@ -181,6 +199,12 @@ public class OmexTestingDatabase {
             return FailureType.UNSUPPORTED_DELAY_SBML;
         } else if (errorMessage.contains("are in unnamed module of loader")){
             return FailureType.SBML_IMPORT_FAILURE;
+        } else if (errorMessage.contains("CSV generation failed")
+                || errorMessage.contains("failed to find VCell structure size parameter for sbml compartment size")
+                || errorMessage.contains("failed to find VCell symbol for sbml id")) {
+            // thrown from NonSpatialSBMLSimResults / SpatialSBMLSimResults, i.e. after the model
+            // imported and ran - a plain RuntimeException, so nothing above matches it
+            return FailureType.SBML_RESULTS_MAPPING_FAILURE;
         } else if (errorMessage.contains("Process timed out")) {
             return FailureType.TOO_SLOW;
         }

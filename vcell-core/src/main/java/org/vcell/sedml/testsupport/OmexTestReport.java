@@ -123,6 +123,84 @@ public class OmexTestReport {
         statistics.unmatchedExecutionsCount = unmatchedExecSummaries.size();
     }
 
+    /**
+     * The documented baseline is {@code test_cases.ndjson}: every case records the status it is
+     * known to have. Three things count as a deviation from it, and each is a reason to fail a
+     * nightly run rather than merely mention it in a report.
+     *
+     * <ul>
+     * <li><b>changed</b> - a case whose outcome no longer matches its documented one. This covers
+     *     an undocumented failure (documented PASS, now failing), a documented failure that has
+     *     started passing, and a documented failure that now fails a different way. A newly
+     *     passing case is as much a reason to stop as a newly failing one: the baseline is now
+     *     wrong, and left alone it will mask the next genuine regression.</li>
+     * <li><b>disappeared</b> - a documented case that did not run at all. This is the most
+     *     dangerous class, because it looks like good news: the run simply reports fewer failures.
+     *     A case documented as {@link OmexTestCase.Status#SKIP} is exempt: that status is how the
+     *     baseline records a case which is deliberately not run, so not running it is the
+     *     expectation rather than a deviation.</li>
+     * <li><b>undocumented</b> - an execution with no entry in the baseline, so its result is not
+     *     something anyone has agreed to.</li>
+     * </ul>
+     */
+    public static class Regressions {
+        public final List<OmexTestCaseChange> changed;
+        public final List<OmexTestCase> disappeared;
+        public final List<OmexExecSummary> undocumented;
+
+        Regressions(List<OmexTestCaseChange> changed, List<OmexTestCase> disappeared,
+                    List<OmexExecSummary> undocumented) {
+            this.changed = changed;
+            this.disappeared = disappeared;
+            this.undocumented = undocumented;
+        }
+
+        public boolean isEmpty() {
+            return changed.isEmpty() && disappeared.isEmpty() && undocumented.isEmpty();
+        }
+
+        /** One line, safe to put in a chat message. */
+        public String summary() {
+            if (isEmpty()) {
+                return "no changes against the documented baseline";
+            }
+            List<String> parts = new ArrayList<>();
+            if (!changed.isEmpty()) {
+                parts.add(changed.size() + " changed");
+            }
+            if (!disappeared.isEmpty()) {
+                parts.add(disappeared.size() + " stopped running");
+            }
+            if (!undocumented.isEmpty()) {
+                parts.add(undocumented.size() + " undocumented");
+            }
+            return String.join(", ", parts);
+        }
+    }
+
+    public Regressions findRegressions() {
+        List<OmexTestCase> disappeared = unmatchedTestCases.stream()
+                .filter(tc -> tc.known_status != OmexTestCase.Status.SKIP)
+                .toList();
+        return new Regressions(testCaseChanges, disappeared, unmatchedExecSummaries);
+    }
+
+    /**
+     * @return the documented baseline with every observed deviation folded in - what
+     *         {@code test_cases.ndjson} should say if the current run is accepted as correct.
+     */
+    public List<OmexTestCase> applyChangesTo(List<OmexTestCase> testCases) {
+        Map<OmexTestCase, OmexTestCase> replacements = new HashMap<>();
+        for (OmexTestCaseChange change : testCaseChanges) {
+            replacements.put(change.original, change.updated);
+        }
+        List<OmexTestCase> updated = new ArrayList<>(testCases.size());
+        for (OmexTestCase testCase : testCases) {
+            updated.add(replacements.getOrDefault(testCase, testCase));
+        }
+        return updated;
+    }
+
     // find test cases which were not run, they don't have execSummaries
     public List<OmexTestCase> findUnexecutedTestCases() {
         return unmatchedTestCases;
