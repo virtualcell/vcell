@@ -86,7 +86,18 @@ VOLUME /htclogs
 
 ENTRYPOINT java \
     -Xdebug -agentlib:jdwp=transport=dt_socket,address=*:8000,server=y,suspend=n \
-	-XX:MaxRAMPercentage=80 \
+# Heap must leave room for the rest of the JVM. Measured on the api container (2000Mi
+# limit): metaspace 83Mi + code cache 65Mi + ~56Mi of thread stacks + ~500Mi of other
+# native allocation, so roughly 700Mi is not heap. At MaxRAMPercentage=80 the heap alone
+# may reach 1600Mi, and 1600 + 700 does not fit in 2000 -- the container gets OOM-killed
+# (exit 137) by the kernel while the Java heap is still ~95% free. Because the JVM never
+# throws OutOfMemoryError in that situation, the two flags below can never fire.
+#
+# Revisit if the container memory limit changes -- a percentage cannot express "leave
+# 700Mi of headroom" on its own.
+	-XX:MaxRAMPercentage=50 \
+	-XX:G1PeriodicGCInterval=300000 \
+	-XX:NativeMemoryTracking=summary \
 	-XX:+ExitOnOutOfMemoryError \
 	-XX:+HeapDumpOnOutOfMemoryError \
 	-XX:HeapDumpPath=/dump \
