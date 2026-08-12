@@ -16,6 +16,62 @@ followed by flat Keep-a-Changelog categories. API consumers should scan
 
 _(Release-manager scratchpad. Populated at release-cut time.)_
 
+## [8.0.13.01] - 2026-08-12
+
+**Highlights.** Simulation results stored in HDF5 — Chombo and MovingBoundary — can now be
+read on an Apple-silicon Mac. Both readers used a JNI binding with no arm64 build, so every
+such read threw `UnsatisfiedLinkError` and the only way through was a `linux/amd64`
+container; the read paths are now pure Java. Chombo meshes are also correct and far smaller:
+a whole voxel meeting a cut cell no longer leaves an unshared face, so surface extraction
+stops reporting interior walls as though they were the domain surface. On the server side,
+a JVM sizing mistake that had been masked for six months by an hourly restart is fixed, and
+the Java debug agent is no longer switched on by default in every service.
+
+### Fixed
+- Chombo and MovingBoundary results read through the pure-java `io.jhdf` library rather than
+  the native `ncsa.hdf` binding, which has no arm64 build. Reading a stored result no longer
+  requires a machine with that library built, and the explicit "skip on macos arm64" guards
+  are gone. (#1903, #1906)
+- Chombo cut cells are written as polyhedra, so a face shared with a neighbouring whole voxel
+  is genuinely shared rather than appearing once as a quad and once as two triangles. Interior
+  walls are no longer extracted as domain surface, the non-manifold edges along them are gone,
+  and the mesh is roughly an order of magnitude smaller. Completes #1896. (#1900)
+- Server JVMs no longer size their heap larger than their container can hold. With
+  `MaxRAMPercentage=80` on a 2000Mi limit the heap alone could reach 1600Mi against ~700Mi of
+  non-heap, so the kernel killed the container while the Java heap was ~95% free — which also
+  meant `HeapDumpOnOutOfMemoryError` could never fire, and the cause stayed invisible. Heap is
+  now 50%, an idle JVM returns memory rather than accumulating garbage, and native memory
+  tracking is on so the remaining footprint can be accounted for. (#1899)
+- The BMDB nightly reports its result. It ended in an unconditional `return 0`, and its only
+  alarm compared against `"$(cat report.md)"` — the file's contents used as a filename — so it
+  passed whatever it found. (#1901)
+
+### Changed
+- The Java debug agent (JDWP) is opt-in rather than always-on. A JDWP listener authenticates
+  nobody: whoever reaches the port can invoke methods, read and write fields and load classes.
+  Set `VCELL_DEBUG_OPTS` and restart the service to enable it for a session. Note it cannot be
+  attached to a running JVM — `libjdwp` provides only `Agent_OnLoad` — so a heap dump, JFR
+  recording or thread dump via `jcmd` remains the way to inspect a process without restarting
+  it. (#1904)
+- HDF5 table exports are written with the pure-java writer. `ASCIIExporter` keeps the native
+  writer deliberately: it streams a dataset one time slice at a time, and `io.jhdf` can only
+  write a dataset whole. (#1907)
+- `io.jhdf` 0.8.4 to 0.13.0, required for slice reads of chunked datasets, which MovingBoundary
+  needs and 0.8.4 refuses. Adds one transitive dependency, `com.ning:compress-lzf`. (#1906)
+
+### Added
+- `tools/release/` — the scripts the release procedure depends on, checked in next to the
+  deploy skill rather than living in a scratch directory. They gate on every required check
+  being present and green, on regression passing for the exact commit being tagged, and on
+  CI-full's `tag-and-push` having produced the image tags a deploy pulls. (#1898)
+
+### Notes for API consumers
+- No `/api/v1/` schema changes; `tools/openapi.yaml` is unchanged and the generated Java,
+  Python and TypeScript clients are unaffected.
+- The HDF5 files VCell writes are unchanged in structure. What changed is the library used to
+  read and write them, so anything reading VCell's HDF5 output needs no adjustment.
+- Anything that relied on a debug port being open on a VCell service will no longer find one.
+
 ## [8.0.12.01] - 2026-08-11
 
 **Highlights.** API access tokens are no longer written to the server logs. VCell builds
