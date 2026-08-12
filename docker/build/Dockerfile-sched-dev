@@ -79,13 +79,33 @@ ENV dbpswdfile=/run/secrets/dbpswd \
     jmspswdfile=/run/secrets/jmspswd \
     batchuserkeyfile=/run/secrets/batchuserkeyfile
 
+ENV VCELL_DEBUG_OPTS=""
+
 EXPOSE 8000
 
 VOLUME /simdata
 VOLUME /htclogs
 
 ENTRYPOINT java \
-    -Xdebug -agentlib:jdwp=transport=dt_socket,address=*:8000,server=y,suspend=n \
+# Debugging is opt-in, not always-on. A JDWP listener accepts any connection with no
+# authentication whatsoever: whoever reaches the port can invoke arbitrary methods, read
+# and write any field, and load classes -- code execution as the JVM user. It used to be
+# baked in here, and Services published it inside the cluster, so every workload in the
+# cluster had that reach into production.
+#
+# It cannot be attached later: libjdwp implements only Agent_OnLoad, so
+# `jcmd <pid> JVMTI.agent_load .../libjdwp.so` fails with "Agent_OnAttach is not
+# available" (verified on a dev pod). Enabling it therefore costs a restart:
+#
+#   kubectl -n <ns> set env deployment/<svc> \
+#     VCELL_DEBUG_OPTS='-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8000'
+#   kubectl -n <ns> set env deployment/<svc> VCELL_DEBUG_OPTS-      # to turn it back off
+#
+# That restart clears whatever state you wanted to look at, which is the real cost of this
+# change. What does NOT need a restart, and captures the misbehaving process as it is:
+# `jcmd <pid> GC.heap_dump`, `jcmd <pid> JFR.start settings=profile`, `Thread.print`, and
+# `VM.native_memory` -- all confirmed working on demand against a running JVM.
+    ${VCELL_DEBUG_OPTS} \
 # Heap must leave room for the rest of the JVM. Measured on the api container (2000Mi
 # limit): metaspace 83Mi + code cache 65Mi + ~56Mi of thread stacks + ~500Mi of other
 # native allocation, so roughly 700Mi is not heap. At MaxRAMPercentage=80 the heap alone
