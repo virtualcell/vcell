@@ -199,6 +199,12 @@ public class OmexTestingDatabase {
             return FailureType.UNSUPPORTED_DELAY_SBML;
         } else if (errorMessage.contains("are in unnamed module of loader")){
             return FailureType.SBML_IMPORT_FAILURE;
+        } else if (errorMessage.contains("CSV generation failed")
+                || errorMessage.contains("failed to find VCell structure size parameter for sbml compartment size")
+                || errorMessage.contains("failed to find VCell symbol for sbml id")) {
+            // thrown from NonSpatialSBMLSimResults / SpatialSBMLSimResults, i.e. after the model
+            // imported and ran - a plain RuntimeException, so nothing above matches it
+            return FailureType.SBML_RESULTS_MAPPING_FAILURE;
         } else if (errorMessage.contains("Process timed out")) {
             return FailureType.TOO_SLOW;
         }
