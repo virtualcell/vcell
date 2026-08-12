@@ -72,6 +72,15 @@ scrub time — a time step costs about 5.7× less than shipping both.
   actively misleading unless they read the console.
 - **`renderer.addActor2D` is refused; `renderer.addViewProp` is not.** That is the route for 2D
   props such as `vtkScalarBarActor`.
+- **`VTK_POLYHEDRON` (type 42) cells work, through the five-argument overload**
+  `insertNextCell(42, numPoints, points, numFaces, faces)` — where `faces` is
+  `[numPoints, ids…, numPoints, ids…]` with no leading face count. Call
+  `initializeFacesRepresentation(0)` once before the first one. Both `vtkGeometryFilter` and
+  `vtkTableBasedClipDataSet` handle the result, so a polyhedral grid renders and crops. Passing a
+  face stream as the point list instead throws `std::bad_alloc`. Chombo sends its cut cells this
+  way so that a face shared with a neighbouring voxel stays shared (#1895); note that VTK's clip of
+  a polyhedral cell integrates ~0.4% low against the exact half-volume, where a tetrahedral mesh of
+  the same cells is exact.
 - **The mesh IS the convention: one deformed grid, everything derives from it.** VCell's FV
   display convention smooths the boundary VERTICES OF THE VOLUME MESH (raw boundary →
   `vtkGeometryFilter` with `passThroughPointIds` → windowed sinc → `vtkVCellDeformGridToSurface`,

@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<VTKFile type="UnstructuredGrid" version="2.3" byte_order="LittleEndian" header_type="UInt32">
+  <UnstructuredGrid>
+    <Piece NumberOfPoints="12" NumberOfCells="2">
+      <PointData>
+      </PointData>
+      <CellData>
+      </CellData>
+      <Points>
+        <DataArray type="Float32" Name="Points" NumberOfComponents="3" format="binary" RangeMin="0" RangeMax="2.449489742783178">
+          kAAAAAAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAgD8AAIA/AAAAAAAAAAAAAAAAAACAPwAAgD8AAAAAAACAPwAAAAAAAIA/AACAPwAAgD8AAIA/AACAPwAAAAAAAAAAAAAAQAAAgD8AAAAAAAAAQAAAAAAAAIA/AAAAQAAAgD8AAIA/AAAAQA==
+          <InformationKey name="L2_NORM_RANGE" location="vtkDataArray" length="2">
+            <Value index="0">
+              0
+            </Value>
+            <Value index="1">
+              2.4494897428
+            </Value>
+          </InformationKey>
+        </DataArray>
+      </Points>
+      <Cells>
+        <DataArray type="Int64" Name="connectivity" format="binary" RangeMin="0" RangeMax="11">
+          gAAAAAAAAAAAAAAAAQAAAAAAAAACAAAAAAAAAAMAAAAAAAAABAAAAAAAAAAFAAAAAAAAAAYAAAAAAAAABwAAAAAAAAAEAAAAAAAAAAUAAAAAAAAABgAAAAAAAAAHAAAAAAAAAAgAAAAAAAAACQAAAAAAAAAKAAAAAAAAAAsAAAAAAAAA
+        </DataArray>
+        <DataArray type="Int64" Name="offsets" format="binary" RangeMin="8" RangeMax="16">
+          EAAAAAgAAAAAAAAAEAAAAAAAAAA=
+        </DataArray>
+        <DataArray type="UInt8" Name="types" format="binary" RangeMin="11" RangeMax="42">
+          AgAAAAsq
+        </DataArray>
+        <DataArray type="Int64" Name="face_connectivity" format="binary" RangeMin="4" RangeMax="11">
+          wAAAAAQAAAAAAAAACAAAAAAAAAAKAAAAAAAAAAYAAAAAAAAABQAAAAAAAAAHAAAAAAAAAAsAAAAAAAAACQAAAAAAAAAEAAAAAAAAAAUAAAAAAAAACQAAAAAAAAAIAAAAAAAAAAYAAAAAAAAACgAAAAAAAAALAAAAAAAAAAcAAAAAAAAABwAAAAAAAAAFAAAAAAAAAAQAAAAAAAAABgAAAAAAAAAIAAAAAAAAAAkAAAAAAAAACwAAAAAAAAAKAAAAAAAAAA==
+        </DataArray>
+        <DataArray type="Int64" Name="face_offsets" format="binary" RangeMin="4" RangeMax="24">
+          MAAAAAQAAAAAAAAACAAAAAAAAAAMAAAAAAAAABAAAAAAAAAAFAAAAAAAAAAYAAAAAAAAAA==
+        </DataArray>
+        <DataArray type="Int64" Name="polyhedron_to_faces" format="binary" RangeMin="0" RangeMax="5">
+          MAAAAAAAAAAAAAAAAQAAAAAAAAACAAAAAAAAAAMAAAAAAAAABAAAAAAAAAAFAAAAAAAAAA==
+        </DataArray>
+        <DataArray type="Int64" Name="polyhedron_offsets" format="binary" RangeMin="0" RangeMax="6">
+          EAAAAAAAAAAAAAAABgAAAAAAAAA=
+        </DataArray>
+      </Cells>
+    </Piece>
+  </UnstructuredGrid>
+</VTKFile>
