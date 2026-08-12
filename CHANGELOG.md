@@ -16,6 +16,47 @@ followed by flat Keep-a-Changelog categories. API consumers should scan
 
 _(Release-manager scratchpad. Populated at release-cut time.)_
 
+## [8.0.12.01] - 2026-08-11
+
+**Highlights.** API access tokens are no longer written to the server logs. VCell builds
+its SQL by string concatenation, so a token passed as a value ended up in the statement
+text, and the database layer logged whole statements — 40 live tokens reached the alpha
+site's logs over seven days before this was found. Separately, server-side VTU generation
+through the Python VTK service has been silently broken since July 2023: every mesh was
+"written" to a directory path instead of a file, so Chombo, smoothed finite-volume and
+comsol meshes never appeared. Both are fixed.
+
+### Fixed
+- API access tokens are no longer logged. Per-statement SQL logging moved from DEBUG to
+  TRACE, so it is off unless an operator opts in; the statements that remain at ERROR or
+  INFO — where an unexpected row count is a genuine anomaly worth reporting — keep their
+  level and have their values masked. This was not limited to debug builds: the ERROR
+  path fires regardless of log level. (#1892)
+- The Python VTK service writes each mesh to the requested file rather than to its parent
+  directory. Broken since the thrift-to-CLI refactor in July 2023, which made the write a
+  silent no-op and left the caller failing with "No such file or directory". Affects
+  Chombo volume and membrane, smoothed finite-volume, and comsol meshes; MovingBoundary
+  was unaffected because its VTU writer is pure Java. (#1893)
+- Chombo cut cells are tetrahedralized from their own faces, so a cut cell's tetrahedra
+  cover exactly the cell's own volume and the mesh stays watertight. (#1896)
+
+### Added
+- Field viewer (flag-off): Chombo solutions render through the VTU seam, including static
+  embedded-boundary meshes with mixed cell types. (#1890)
+- Field viewer (flag-off): lab-frame point plots and moving-domain statistics for
+  MovingBoundary runs. (#1891)
+
+### Changed
+- Field viewer (flag-off): a MovingBoundary run no longer boots with its geometry and
+  field data drawn from different time points. (#1889)
+
+### Notes for API consumers
+- No `/api/v1/` schema changes; `tools/openapi.yaml` is unchanged and the generated Java,
+  Python and TypeScript clients are unaffected.
+- Operational note, not an API change: tokens already captured in existing log storage
+  remain valid until they expire. This release stops new ones being written; it does not
+  invalidate what was already recorded.
+
 ## [8.0.11.01] - 2026-08-10
 
 **Highlights.** SpringSaLaD simulation results open again. Since 8.0.6.01, viewing
