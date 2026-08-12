@@ -16,6 +16,7 @@ from python_vtk.vcellvismesh.ttypes import PolyhedronFace
 from python_vtk.vcellvismesh.ttypes import VisIrregularPolyhedron
 from python_vtk.vcellvismesh.ttypes import VisLine
 from python_vtk.vcellvismesh.ttypes import VisMesh
+from python_vtk.vcellvismesh.ttypes import VisPoint
 from python_vtk.vcellvismesh.ttypes import VisPolygon
 from python_vtk.vcellvismesh.ttypes import VisTetrahedron
 
@@ -537,74 +538,63 @@ def getPointIndices(irregularPolyhedron: VisIrregularPolyhedron) -> list[int]:
 
 
 def createTetrahedra(clippedPolyhedron: VisIrregularPolyhedron, visMesh: VisMesh):
+    """
+    Decompose a clipped (cut) cell into tetrahedra by fanning every face against a new apex point
+    at the cell's centroid.
 
-    vtkpolydata = vtk.vtkPolyData()
-    vtkpoints = vtk.vtkPoints()
-    polygonType = vtk.vtkPolygon().GetCellType()
+    This has to agree with the neighbouring cell across every shared face, or the two cells stop
+    sharing that face and it gets extracted as if it were surface (issue #1895). Two properties
+    give that agreement:
+
+      - a face is always fanned from its LOWEST GLOBAL POINT INDEX, so a face listed by two cells
+        (in either winding) is cut into exactly the same triangles by both, and
+      - the faces themselves are used as given, so no geometry is invented.
+
+    The previous implementation ran vtkDelaunay3D over the cell's points, which tessellates their
+    convex hull and ignores the faces: it chose face diagonals arbitrarily (so shared faces did
+    not match), and on the near-degenerate cells at a tangent boundary it returned too few tets or
+    none at all, leaving holes in the surface and losing volume.
+    """
+    faces = [face.vertices for face in clippedPolyhedron.polyhedronFaces]
     uniquePointIndices = getPointIndices(clippedPolyhedron)
-    for point in uniquePointIndices:
-        visPoint = visMesh.points[point]
-        vtkpoints.InsertNextPoint(visPoint.x, visPoint.y, visPoint.z)
-    vtkpolydata.Allocate(100, 100)
-    vtkpolydata.SetPoints(vtkpoints)
+    if len(uniquePointIndices) < 4 or len(faces) < 4:
+        print("skipping degenerate polyhedron with " + str(len(uniquePointIndices))
+              + " points and " + str(len(faces)) + " faces")
+        return []
 
-    for face in clippedPolyhedron.polyhedronFaces:
-        faceIdList = vtk.vtkIdList()
-        for visPointIndex in face.vertices:
-            vtkpointid = -1
-            for i in range(0, len(uniquePointIndices)):
-                if uniquePointIndices[i] == visPointIndex:
-                    vtkpointid = i
-            faceIdList.InsertNextId(vtkpointid)
-        vtkpolydata.InsertNextCell(polygonType, faceIdList)
-
-    delaunayFilter = vtk.vtkDelaunay3D()
-    try:
-        delaunayFilter.SetInputData(vtkpolydata)
-    except AttributeError:
-        delaunayFilter.SetInput(vtkpolydata)
-    delaunayFilter.Update()
-    delaunayFilter.SetAlpha(0.1)
-    vtkgrid2: vtk.vtkUnstructuredGrid = delaunayFilter.GetOutput()
-    assert isinstance(vtkgrid2, vtk.vtkUnstructuredGrid) # runtime check, remove later
+    apexIndex = len(visMesh.points)
+    visMesh.points.append(VisPoint(
+        sum(visMesh.points[p].x for p in uniquePointIndices) / len(uniquePointIndices),
+        sum(visMesh.points[p].y for p in uniquePointIndices) / len(uniquePointIndices),
+        sum(visMesh.points[p].z for p in uniquePointIndices) / len(uniquePointIndices)))
 
     visTets = []
-    numTets = vtkgrid2.GetNumberOfCells()
-    if numTets < 1:
-        if len(uniquePointIndices)==4:
-            visTet = VisTetrahedron(uniquePointIndices)
-            visTet.chomboVolumeIndex = clippedPolyhedron.chomboVolumeIndex
-            visTet.finiteVolumeIndex = clippedPolyhedron.finiteVolumeIndex
-            visTets.append(visTet)
-            print("made trivial tet ... maybe inside out")
-        else:
-            print("found no tets, there are "+str(len(uniquePointIndices))+" unique point indices")
-
-
-    #	print("numFaces = "+str(vtkpolydata.GetNumberOfCells())+", numTets = "+str(numTets));
-    for cellIndex in range(0, numTets):
-        cell = vtkgrid2.GetCell(cellIndex)
-        if isinstance(cell, vtk.vtkTetra):
-            vtkTet: vtk.vtkTetra = cell
-            tetPointIds: vtk.vtkIdList = vtkTet.GetPointIds()
-            assert isinstance(tetPointIds, vtk.vtkIdList)
-            #
-            # translate from vtkgrid pointids to visMesh point ids
-            #
-            numPoints = tetPointIds.GetNumberOfIds()
-            visPointIds = []
-            for p in range(0, numPoints):
-                visPointIds.append(uniquePointIndices[tetPointIds.GetId(p)])
-            visTet = VisTetrahedron(visPointIds)
-            if clippedPolyhedron.chomboVolumeIndex != None:
+    for face in faces:
+        start = face.index(min(face))
+        numVertices = len(face)
+        for i in range(1, numVertices - 1):
+            corners = [apexIndex, face[start], face[(start + i) % numVertices],
+                       face[(start + i + 1) % numVertices]]
+            if signedVolume(visMesh, corners) < 0:
+                corners[2], corners[3] = corners[3], corners[2]
+            visTet = VisTetrahedron(corners)
+            if clippedPolyhedron.chomboVolumeIndex is not None:
                 visTet.chomboVolumeIndex = clippedPolyhedron.chomboVolumeIndex
-            if clippedPolyhedron.finiteVolumeIndex != None:
+            if clippedPolyhedron.finiteVolumeIndex is not None:
                 visTet.finiteVolumeIndex = clippedPolyhedron.finiteVolumeIndex
             visTets.append(visTet)
-        else:
-            print("ChomboMeshMapping.createTetrahedra(): expecting a tet, found a " + cell.__type__)
 
     return visTets
+
+
+def signedVolume(visMesh: VisMesh, corners: list[int]) -> float:
+    o, a, b, c = [visMesh.points[i] for i in corners]
+    u = (a.x - o.x, a.y - o.y, a.z - o.z)
+    v = (b.x - o.x, b.y - o.y, b.z - o.z)
+    w = (c.x - o.x, c.y - o.y, c.z - o.z)
+    return (u[0] * (v[1] * w[2] - v[2] * w[1])
+            - u[1] * (v[0] * w[2] - v[2] * w[0])
+            + u[2] * (v[0] * w[1] - v[1] * w[0])) / 6.0
 
 
 def main():
