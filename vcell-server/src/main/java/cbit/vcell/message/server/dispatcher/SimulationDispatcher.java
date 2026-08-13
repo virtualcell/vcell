@@ -21,6 +21,8 @@ import cbit.vcell.message.server.dispatcher.BatchScheduler.ActiveJob;
 import cbit.vcell.message.server.dispatcher.BatchScheduler.SchedulerDecisions;
 import cbit.vcell.message.server.htc.HtcException;
 import cbit.vcell.message.server.htc.HtcJobStatus;
+import cbit.vcell.solver.server.SimulationMessage;
+import cbit.vcell.message.server.ManageUtils;
 import cbit.vcell.message.server.htc.HtcProxy;
 import cbit.vcell.message.server.htc.HtcProxy.HtcJobInfo;
 import cbit.vcell.message.server.htc.HtcProxy.PartitionStatistics;
@@ -418,7 +420,91 @@ public class SimulationDispatcher {
 			executor =  new ScheduledThreadPoolExecutor(2,this,this);
 			executor.scheduleAtFixedRate(initialZombieKiller, INITIAL_ZOMBIE_DELAY, ZOMBIE_MINUTES, TimeUnit.MINUTES);
 			executor.scheduleAtFixedRate(initialQueueFlusher, 1,FLUSH_QUEUE_MINUTES,TimeUnit.MINUTES);
+			executor.scheduleAtFixedRate(initialTerminalStateReporter, INITIAL_ZOMBIE_DELAY, ZOMBIE_MINUTES, TimeUnit.MINUTES);
 		}
+
+
+		/**
+		 * Reports jobs that ended on the cluster without saying so.
+		 *
+		 * A job the scheduler kills -- out of time, out of memory, node lost, preempted -- never
+		 * gets to send a worker event, so without this the simulation sits "running" until the
+		 * queue flusher fails it for ten minutes of silence and reports "failed: timed out". Asking
+		 * slurm directly gives the actual reason within a minute, which for a SpringSaLaD run that
+		 * hit its per-task time limit is the difference between a user knowing what happened and
+		 * going looking for a fault in their model.
+		 *
+		 * The set of jobs to ask about comes from the database, not from a file: whatever is active
+		 * for this server and already has a cluster job id. Recovery after a restart is then
+		 * automatic, because the database is the thing that survives.
+		 *
+		 * <b>Two sources, and absence is never failure.</b> squeue answers "alive right now" and
+		 * carries a job before accounting does; sacct answers "how did it end" and keeps that for
+		 * weeks. A job missing from both is ambiguous -- too new, or purged -- so nothing is
+		 * concluded from it and the queue flusher's timeout remains the backstop. Only an explicit
+		 * terminal state from sacct is acted on.
+		 */
+		class TerminalStateReporter implements Runnable {
+			@Override
+			public void run() {
+				try {
+					traceThread(this);
+
+					List<HtcJobInfo> requested = new ArrayList<HtcJobInfo>();
+					Map<HtcJobInfo, SimulationJobStatus> jobsByHtcInfo = new HashMap<HtcJobInfo, SimulationJobStatus>();
+					for (SimulationJobStatus activeJobStatus : simulationDatabase.getActiveJobs(VCellServerID.getSystemServerID())) {
+						SimulationExecutionStatus exeStatus = activeJobStatus.getSimulationExecutionStatus();
+						if (exeStatus == null || exeStatus.getHtcJobID() == null) {
+							// dispatched but not yet in slurm: there is nothing to ask about, and
+							// the queue flusher already covers a job that never gets there
+							continue;
+						}
+						KeyValue simKey = activeJobStatus.getVCSimulationIdentifier().getSimulationKey();
+						String jobName = HtcProxy.createHtcSimJobName(
+								new HtcProxy.SimTaskInfo(simKey, activeJobStatus.getJobIndex(), activeJobStatus.getTaskID()));
+						HtcJobInfo htcJobInfo = new HtcJobInfo(exeStatus.getHtcJobID(), jobName);
+						requested.add(htcJobInfo);
+						jobsByHtcInfo.put(htcJobInfo, activeJobStatus);
+					}
+					if (requested.isEmpty()) {
+						return;
+					}
+
+					Map<HtcJobInfo, HtcJobStatus> aliveNow = htcProxy.getRunningJobs();
+					Map<HtcJobInfo, HtcJobStatus> accounted = htcProxy.getJobStatus(requested);
+
+					for (HtcJobInfo htcJobInfo : requested) {
+						if (aliveNow.containsKey(htcJobInfo)) {
+							continue;   // still in the queue
+						}
+						HtcJobStatus htcJobStatus = accounted.get(htcJobInfo);
+						if (htcJobStatus == null) {
+							continue;   // not yet in accounting, or purged -- never a failure
+						}
+						SimulationJobStatus jobStatus = jobsByHtcInfo.get(htcJobInfo);
+						VCSimulationIdentifier vcSimID = jobStatus.getVCSimulationIdentifier();
+						if (htcJobStatus.isFailed()) {
+							WorkerEventMessage.sendWorkerExitError(simMonitorThreadSession_sim, SimulationDispatcher.class.getName(),
+									ManageUtils.getHostName(), vcSimID, jobStatus.getJobIndex(), jobStatus.getTaskID(),
+									SimulationMessage.jobFailed("ended on the cluster: " + htcJobStatus
+											+ " (slurm job " + htcJobInfo.getHtcJobID().getJobNumber() + ")"));
+						} else if (htcJobStatus.isStopped()) {
+							WorkerEventMessage.sendWorkerExitError(simMonitorThreadSession_sim, SimulationDispatcher.class.getName(),
+									ManageUtils.getHostName(), vcSimID, jobStatus.getJobIndex(), jobStatus.getTaskID(),
+									SimulationMessage.solverStopped("simulation was cancelled on the cluster (slurm job "
+											+ htcJobInfo.getHtcJobID().getJobNumber() + ")"));
+						} else if (htcJobStatus.isComplete()) {
+							WorkerEventMessage.sendAlternateCompleted(simMonitorThreadSession_sim, SimulationDispatcher.class.getName(),
+									vcSimID, ManageUtils.getHostName(), jobStatus.getJobIndex(), jobStatus.getTaskID());
+						}
+					}
+				} catch (Exception e) {
+					lg.error("terminal state reporter failed: " + e.getMessage(), e);
+				}
+			}
+		}
+
+		private final TerminalStateReporter initialTerminalStateReporter = new TerminalStateReporter();
 
 		/**
 		 * find and kill zombie processes
