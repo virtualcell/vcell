@@ -16,6 +16,42 @@ followed by flat Keep-a-Changelog categories. API consumers should scan
 
 _(Release-manager scratchpad. Populated at release-cut time.)_
 
+## [8.0.16.01] - 2026-08-13
+
+**Highlights.** Nothing changes for anyone using VCell. This release finishes what 8.0.15.01
+started: the five server services no longer receive their configuration as a wall of `-D` flags,
+because they read it from their environment directly. 157 flags and 59 placeholder defaults are
+gone, and a service that is missing a required setting now says so at startup instead of booting
+on a value like `db-url-not-set` and failing later. CI also stops re-running the test suite on
+merges that changed nothing it had not already tested.
+
+### Changed
+- The five service Dockerfiles no longer pass 157 `-D` flags whose only purpose was renaming
+  container environment variables into system properties. What remains is the handful that are
+  not renames — values fixed by the image layout rather than the deployment. Both the individual
+  images and the consolidated `vcell-service` image now pass identical flags per service. (#1927)
+- `sched` now honours `vcell.slurm.cmd.*`. Its Dockerfile never passed those flags, so it
+  silently used built-in defaults while the deployment's `slurm_cmd_sacct` and friends were
+  ignored — which mattered once job-status reconciliation moved into `sched`. Reading the
+  environment directly closes it. (#1927)
+
+### Fixed
+- A missing required setting now fails at startup naming the property, rather than starting the
+  service on a placeholder. `ENV dburl="db-url-not-set"` satisfied the startup check, so a
+  service with no database URL configured would boot and then fail trying to connect to a URL
+  literally called `db-url-not-set`. 59 such placeholders are removed, for exactly the settings
+  each service declares as required. (#1927)
+
+### CI
+- The fast lane is skipped when it has nothing to test: a merge whose tree is identical to the
+  branch that already passed it, or a change touching only documentation. It fails open, and
+  still runs whenever master has moved — the case where post-merge testing can actually catch
+  something. (#1925)
+
+### Notes for API consumers
+No API changes. Deployment configuration is unchanged: services still read the same environment
+variable names they always have.
+
 ## [8.0.15.01] - 2026-08-13
 
 **Highlights.** Nothing changes for anyone using VCell; this release is entirely about how the
