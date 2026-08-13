@@ -57,6 +57,32 @@ public class EnvironmentConfigProviderTest {
 				"exact, sanitised, then upper-cased -- the order MicroProfile resolves in");
 	}
 
+	/**
+	 * UPPER_SNAKE is the only form that works for every property, and the deployment should use
+	 * it exclusively.
+	 *
+	 * The middle candidate preserves the property's case rather than lowering it, so for a
+	 * property with a camelCase segment the snake form is itself mixed-case:
+	 * {@code vcell_server_dbConnectURL}, not {@code vcell_server_dbconnecturl}. 25 of the 84
+	 * env-backed properties contain an uppercase letter, so an all-lowercase variable silently
+	 * resolves to nothing for roughly a third of them.
+	 *
+	 * <b>Do not "fix" this by lower-casing as a fourth candidate.</b> MicroProfile searches
+	 * exactly these three, so vcell-rest would not accept a lowercased name, and the two stacks
+	 * would disagree about the very thing matching MicroProfile's rules exists to guarantee.
+	 */
+	@Test
+	public void anAllLowercaseNameDoesNotResolveACamelCaseProperty() {
+		Set<String> names = EnvironmentConfigProvider.environmentNamesFor("vcell.server.dbConnectURL");
+
+		assertTrue(names.contains("VCELL_SERVER_DBCONNECTURL"), names.toString());
+		assertTrue(names.contains("vcell_server_dbConnectURL"),
+				"the sanitised form preserves case; " + names);
+		assertTrue(!names.contains("vcell_server_dbconnecturl"),
+				"an all-lowercase name must NOT resolve -- MicroProfile does not search it, and"
+						+ " vcell-rest would disagree with us if we did: " + names);
+	}
+
 	/** Every character outside [A-Za-z0-9] becomes an underscore, not just the dots. */
 	@Test
 	public void nonAlphanumericCharactersAllBecomeUnderscores() {
