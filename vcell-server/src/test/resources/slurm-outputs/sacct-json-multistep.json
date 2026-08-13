@@ -1,0 +1,3284 @@
+{
+  "jobs": [
+    {
+      "account": "pi-loew",
+      "comment": {
+        "administrator": "",
+        "job": "",
+        "system": ""
+      },
+      "allocation_nodes": 1,
+      "array": {
+        "job_id": 0,
+        "limits": {
+          "max": {
+            "running": {
+              "tasks": 0
+            }
+          }
+        },
+        "task_id": {
+          "set": false,
+          "infinite": false,
+          "number": 0
+        },
+        "task": ""
+      },
+      "association": {
+        "account": "pi-loew",
+        "cluster": "mantis",
+        "partition": "",
+        "user": "vcell",
+        "id": 176
+      },
+      "block": "",
+      "cluster": "mantis",
+      "constraints": "",
+      "container": "",
+      "derived_exit_code": {
+        "status": [
+          "SUCCESS"
+        ],
+        "return_code": {
+          "set": true,
+          "infinite": false,
+          "number": 0
+        },
+        "signal": {
+          "id": {
+            "set": false,
+            "infinite": false,
+            "number": 0
+          },
+          "name": ""
+        }
+      },
+      "time": {
+        "elapsed": 46770,
+        "eligible": 1786540675,
+        "end": 0,
+        "start": 1786540675,
+        "submission": 1786540675,
+        "suspended": 0,
+        "system": {
+          "seconds": 0,
+          "microseconds": 0
+        },
+        "limit": {
+          "set": true,
+          "infinite": false,
+          "number": 6912
+        },
+        "total": {
+          "seconds": 0,
+          "microseconds": 0
+        },
+        "user": {
+          "seconds": 0,
+          "microseconds": 0
+        }
+      },
+      "exit_code": {
+        "status": [
+          "SUCCESS"
+        ],
+        "return_code": {
+          "set": true,
+          "infinite": false,
+          "number": 0
+        },
+        "signal": {
+          "id": {
+            "set": false,
+            "infinite": false,
+            "number": 0
+          },
+          "name": ""
+        }
+      },
+      "extra": "",
+      "failed_node": "",
+      "flags": [
+        "STARTED_ON_SCHEDULE",
+        "START_RECEIVED"
+      ],
+      "group": "domain users",
+      "het": {
+        "job_id": 0,
+        "job_offset": {
+          "set": false,
+          "infinite": false,
+          "number": 0
+        }
+      },
+      "job_id": 2710593,
+      "name": "V_ALPHA_321860411_0_0",
+      "licenses": "",
+      "mcs": {
+        "label": ""
+      },
+      "nodes": "mantis-041",
+      "partition": "vcell",
+      "hold": false,
+      "priority": {
+        "set": true,
+        "infinite": false,
+        "number": 1405
+      },
+      "qos": "vcell",
+      "required": {
+        "CPUs": 20,
+        "memory_per_cpu": {
+          "set": true,
+          "infinite": false,
+          "number": 8192
+        },
+        "memory_per_node": {
+          "set": false,
+          "infinite": false,
+          "number": 0
+        }
+      },
+      "kill_request_user": "",
+      "reservation": {
+        "id": 0,
+        "name": ""
+      },
+      "script": "",
+      "state": {
+        "current": [
+          "RUNNING"
+        ],
+        "reason": "None"
+      },
+      "steps": [
+        {
+          "time": {
+            "elapsed": 46770,
+            "end": {
+              "set": true,
+              "infinite": false,
+              "number": 0
+            },
+            "start": {
+              "set": true,
+              "infinite": false,
+              "number": 1786540675
+            },
+            "suspended": 0,
+            "system": {
+              "seconds": 0,
+              "microseconds": 0
+            },
+            "total": {
+              "seconds": 0,
+              "microseconds": 0
+            },
+            "user": {
+              "seconds": 0,
+              "microseconds": 0
+            }
+          },
+          "exit_code": {
+            "status": [
+              "SUCCESS"
+            ],
+            "return_code": {
+              "set": true,
+              "infinite": false,
+              "number": 0
+            },
+            "signal": {
+              "id": {
+                "set": false,
+                "infinite": false,
+                "number": 0
+              },
+              "name": ""
+            }
+          },
+          "nodes": {
+            "count": 1,
+            "range": "mantis-041",
+            "list": [
+              "mantis-041"
+            ]
+          },
+          "tasks": {
+            "count": 1
+          },
+          "pid": "",
+          "CPU": {
+            "requested_frequency": {
+              "min": {
+                "set": true,
+                "infinite": false,
+                "number": 0
+              },
+              "max": {
+                "set": true,
+                "infinite": false,
+                "number": 0
+              }
+            },
+            "governor": "0"
+          },
+          "kill_request_user": "",
+          "state": [
+            "RUNNING"
+          ],
+          "statistics": {
+            "CPU": {
+              "actual_frequency": 0
+            },
+            "energy": {
+              "consumed": {
+                "set": true,
+                "infinite": false,
+                "number": 0
+              }
+            }
+          },
+          "step": {
+            "id": "2710593.batch",
+            "name": "batch"
+          },
+          "task": {
+            "distribution": "Unknown"
+          },
+          "tres": {
+            "requested": {
+              "max": [
+              ],
+              "min": [
+              ],
+              "average": [
+              ],
+              "total": [
+              ]
+            },
+            "consumed": {
+              "max": [
+              ],
+              "min": [
+              ],
+              "average": [
+              ],
+              "total": [
+              ]
+            },
+            "allocated": [
+              {
+                "type": "cpu",
+                "name": "",
+                "id": 1,
+                "count": 20
+              },
+              {
+                "type": "mem",
+                "name": "",
+                "id": 2,
+                "count": 163840
+              },
+              {
+                "type": "node",
+                "name": "",
+                "id": 4,
+                "count": 1
+              }
+            ]
+          }
+        },
+        {
+          "time": {
+            "elapsed": 46770,
+            "end": {
+              "set": true,
+              "infinite": false,
+              "number": 0
+            },
+            "start": {
+              "set": true,
+              "infinite": false,
+              "number": 1786540675
+            },
+            "suspended": 0,
+            "system": {
+              "seconds": 0,
+              "microseconds": 0
+            },
+            "total": {
+              "seconds": 0,
+              "microseconds": 0
+            },
+            "user": {
+              "seconds": 0,
+              "microseconds": 0
+            }
+          },
+          "exit_code": {
+            "status": [
+              "SUCCESS"
+            ],
+            "return_code": {
+              "set": true,
+              "infinite": false,
+              "number": 0
+            },
+            "signal": {
+              "id": {
+                "set": false,
+                "infinite": false,
+                "number": 0
+              },
+              "name": ""
+            }
+          },
+          "nodes": {
+            "count": 1,
+            "range": "mantis-041",
+            "list": [
+              "mantis-041"
+            ]
+          },
+          "tasks": {
+            "count": 1
+          },
+          "pid": "",
+          "CPU": {
+            "requested_frequency": {
+              "min": {
+                "set": true,
+                "infinite": false,
+                "number": 0
+              },
+              "max": {
+                "set": true,
+                "infinite": false,
+                "number": 0
+              }
+            },
+            "governor": "0"
+          },
+          "kill_request_user": "",
+          "state": [
+            "RUNNING"
+          ],
+          "statistics": {
+            "CPU": {
+              "actual_frequency": 0
+            },
+            "energy": {
+              "consumed": {
+                "set": true,
+                "infinite": false,
+                "number": 0
+              }
+            }
+          },
+          "step": {
+            "id": "2710593.extern",
+            "name": "extern"
+          },
+          "task": {
+            "distribution": "Unknown"
+          },
+          "tres": {
+            "requested": {
+              "max": [
+              ],
+              "min": [
+              ],
+              "average": [
+              ],
+              "total": [
+              ]
+            },
+            "consumed": {
+              "max": [
+              ],
+              "min": [
+              ],
+              "average": [
+              ],
+              "total": [
+              ]
+            },
+            "allocated": [
+              {
+                "type": "cpu",
+                "name": "",
+                "id": 1,
+                "count": 20
+              },
+              {
+                "type": "mem",
+                "name": "",
+                "id": 2,
+                "count": 163840
+              },
+              {
+                "type": "energy",
+                "name": "",
+                "id": 3,
+                "count": -2
+              },
+              {
+                "type": "node",
+                "name": "",
+                "id": 4,
+                "count": 1
+              },
+              {
+                "type": "billing",
+                "name": "",
+                "id": 5,
+                "count": 20
+              }
+            ]
+          }
+        },
+        {
+          "time": {
+            "elapsed": 46763,
+            "end": {
+              "set": true,
+              "infinite": false,
+              "number": 0
+            },
+            "start": {
+              "set": true,
+              "infinite": false,
+              "number": 1786540682
+            },
+            "suspended": 0,
+            "system": {
+              "seconds": 0,
+              "microseconds": 0
+            },
+            "total": {
+              "seconds": 0,
+              "microseconds": 0
+            },
+            "user": {
+              "seconds": 0,
+              "microseconds": 0
+            }
+          },
+          "exit_code": {
+            "status": [
+              "SUCCESS"
+            ],
+            "return_code": {
+              "set": true,
+              "infinite": false,
+              "number": 0
+            },
+            "signal": {
+              "id": {
+                "set": false,
+                "infinite": false,
+                "number": 0
+              },
+              "name": ""
+            }
+          },
+          "nodes": {
+            "count": 1,
+            "range": "mantis-041",
+            "list": [
+              "mantis-041"
+            ]
+          },
+          "tasks": {
+            "count": 1
+          },
+          "pid": "",
+          "CPU": {
+            "requested_frequency": {
+              "min": {
+                "set": false,
+                "infinite": false,
+                "number": 0
+              },
+              "max": {
+                "set": false,
+                "infinite": false,
+                "number": 0
+              }
+            },
+            "governor": "Unknown"
+          },
+          "kill_request_user": "",
+          "state": [
+            "RUNNING"
+          ],
+          "statistics": {
+            "CPU": {
+              "actual_frequency": 0
+            },
+            "energy": {
+              "consumed": {
+                "set": true,
+                "infinite": false,
+                "number": 0
+              }
+            }
+          },
+          "step": {
+            "id": "2710593.0",
+            "name": "singularity"
+          },
+          "task": {
+            "distribution": "Cyclic"
+          },
+          "tres": {
+            "requested": {
+              "max": [
+              ],
+              "min": [
+              ],
+              "average": [
+              ],
+              "total": [
+              ]
+            },
+            "consumed": {
+              "max": [
+              ],
+              "min": [
+              ],
+              "average": [
+              ],
+              "total": [
+              ]
+            },
+            "allocated": [
+              {
+                "type": "cpu",
+                "name": "",
+                "id": 1,
+                "count": 1
+              },
+              {
+                "type": "mem",
+                "name": "",
+                "id": 2,
+                "count": 8192
+              },
+              {
+                "type": "node",
+                "name": "",
+                "id": 4,
+                "count": 1
+              }
+            ]
+          }
+        },
+        {
+          "time": {
+            "elapsed": 46763,
+            "end": {
+              "set": true,
+              "infinite": false,
+              "number": 0
+            },
+            "start": {
+              "set": true,
+              "infinite": false,
+              "number": 1786540682
+            },
+            "suspended": 0,
+            "system": {
+              "seconds": 0,
+              "microseconds": 0
+            },
+            "total": {
+              "seconds": 0,
+              "microseconds": 0
+            },
+            "user": {
+              "seconds": 0,
+              "microseconds": 0
+            }
+          },
+          "exit_code": {
+            "status": [
+              "SUCCESS"
+            ],
+            "return_code": {
+              "set": true,
+              "infinite": false,
+              "number": 0
+            },
+            "signal": {
+              "id": {
+                "set": false,
+                "infinite": false,
+                "number": 0
+              },
+              "name": ""
+            }
+          },
+          "nodes": {
+            "count": 1,
+            "range": "mantis-041",
+            "list": [
+              "mantis-041"
+            ]
+          },
+          "tasks": {
+            "count": 1
+          },
+          "pid": "",
+          "CPU": {
+            "requested_frequency": {
+              "min": {
+                "set": false,
+                "infinite": false,
+                "number": 0
+              },
+              "max": {
+                "set": false,
+                "infinite": false,
+                "number": 0
+              }
+            },
+            "governor": "Unknown"
+          },
+          "kill_request_user": "",
+          "state": [
+            "RUNNING"
+          ],
+          "statistics": {
+            "CPU": {
+              "actual_frequency": 0
+            },
+            "energy": {
+              "consumed": {
+                "set": true,
+                "infinite": false,
+                "number": 0
+              }
+            }
+          },
+          "step": {
+            "id": "2710593.1",
+            "name": "singularity"
+          },
+          "task": {
+            "distribution": "Cyclic"
+          },
+          "tres": {
+            "requested": {
+              "max": [
+              ],
+              "min": [
+              ],
+              "average": [
+              ],
+              "total": [
+              ]
+            },
+            "consumed": {
+              "max": [
+              ],
+              "min": [
+              ],
+              "average": [
+              ],
+              "total": [
+              ]
+            },
+            "allocated": [
+              {
+                "type": "cpu",
+                "name": "",
+                "id": 1,
+                "count": 1
+              },
+              {
+                "type": "mem",
+                "name": "",
+                "id": 2,
+                "count": 8192
+              },
+              {
+                "type": "node",
+                "name": "",
+                "id": 4,
+                "count": 1
+              }
+            ]
+          }
+        },
+        {
+          "time": {
+            "elapsed": 46763,
+            "end": {
+              "set": true,
+              "infinite": false,
+              "number": 0
+            },
+            "start": {
+              "set": true,
+              "infinite": false,
+              "number": 1786540682
+            },
+            "suspended": 0,
+            "system": {
+              "seconds": 0,
+              "microseconds": 0
+            },
+            "total": {
+              "seconds": 0,
+              "microseconds": 0
+            },
+            "user": {
+              "seconds": 0,
+              "microseconds": 0
+            }
+          },
+          "exit_code": {
+            "status": [
+              "SUCCESS"
+            ],
+            "return_code": {
+              "set": true,
+              "infinite": false,
+              "number": 0
+            },
+            "signal": {
+              "id": {
+                "set": false,
+                "infinite": false,
+                "number": 0
+              },
+              "name": ""
+            }
+          },
+          "nodes": {
+            "count": 1,
+            "range": "mantis-041",
+            "list": [
+              "mantis-041"
+            ]
+          },
+          "tasks": {
+            "count": 1
+          },
+          "pid": "",
+          "CPU": {
+            "requested_frequency": {
+              "min": {
+                "set": false,
+                "infinite": false,
+                "number": 0
+              },
+              "max": {
+                "set": false,
+                "infinite": false,
+                "number": 0
+              }
+            },
+            "governor": "Unknown"
+          },
+          "kill_request_user": "",
+          "state": [
+            "RUNNING"
+          ],
+          "statistics": {
+            "CPU": {
+              "actual_frequency": 0
+            },
+            "energy": {
+              "consumed": {
+                "set": true,
+                "infinite": false,
+                "number": 0
+              }
+            }
+          },
+          "step": {
+            "id": "2710593.2",
+            "name": "singularity"
+          },
+          "task": {
+            "distribution": "Cyclic"
+          },
+          "tres": {
+            "requested": {
+              "max": [
+              ],
+              "min": [
+              ],
+              "average": [
+              ],
+              "total": [
+              ]
+            },
+            "consumed": {
+              "max": [
+              ],
+              "min": [
+              ],
+              "average": [
+              ],
+              "total": [
+              ]
+            },
+            "allocated": [
+              {
+                "type": "cpu",
+                "name": "",
+                "id": 1,
+                "count": 1
+              },
+              {
+                "type": "mem",
+                "name": "",
+                "id": 2,
+                "count": 8192
+              },
+              {
+                "type": "node",
+                "name": "",
+                "id": 4,
+                "count": 1
+              }
+            ]
+          }
+        },
+        {
+          "time": {
+            "elapsed": 46763,
+            "end": {
+              "set": true,
+              "infinite": false,
+              "number": 0
+            },
+            "start": {
+              "set": true,
+              "infinite": false,
+              "number": 1786540682
+            },
+            "suspended": 0,
+            "system": {
+              "seconds": 0,
+              "microseconds": 0
+            },
+            "total": {
+              "seconds": 0,
+              "microseconds": 0
+            },
+            "user": {
+              "seconds": 0,
+              "microseconds": 0
+            }
+          },
+          "exit_code": {
+            "status": [
+              "SUCCESS"
+            ],
+            "return_code": {
+              "set": true,
+              "infinite": false,
+              "number": 0
+            },
+            "signal": {
+              "id": {
+                "set": false,
+                "infinite": false,
+                "number": 0
+              },
+              "name": ""
+            }
+          },
+          "nodes": {
+            "count": 1,
+            "range": "mantis-041",
+            "list": [
+              "mantis-041"
+            ]
+          },
+          "tasks": {
+            "count": 1
+          },
+          "pid": "",
+          "CPU": {
+            "requested_frequency": {
+              "min": {
+                "set": false,
+                "infinite": false,
+                "number": 0
+              },
+              "max": {
+                "set": false,
+                "infinite": false,
+                "number": 0
+              }
+            },
+            "governor": "Unknown"
+          },
+          "kill_request_user": "",
+          "state": [
+            "RUNNING"
+          ],
+          "statistics": {
+            "CPU": {
+              "actual_frequency": 0
+            },
+            "energy": {
+              "consumed": {
+                "set": true,
+                "infinite": false,
+                "number": 0
+              }
+            }
+          },
+          "step": {
+            "id": "2710593.3",
+            "name": "singularity"
+          },
+          "task": {
+            "distribution": "Cyclic"
+          },
+          "tres": {
+            "requested": {
+              "max": [
+              ],
+              "min": [
+              ],
+              "average": [
+              ],
+              "total": [
+              ]
+            },
+            "consumed": {
+              "max": [
+              ],
+              "min": [
+              ],
+              "average": [
+              ],
+              "total": [
+              ]
+            },
+            "allocated": [
+              {
+                "type": "cpu",
+                "name": "",
+                "id": 1,
+                "count": 1
+              },
+              {
+                "type": "mem",
+                "name": "",
+                "id": 2,
+                "count": 8192
+              },
+              {
+                "type": "node",
+                "name": "",
+                "id": 4,
+                "count": 1
+              }
+            ]
+          }
+        },
+        {
+          "time": {
+            "elapsed": 46763,
+            "end": {
+              "set": true,
+              "infinite": false,
+              "number": 0
+            },
+            "start": {
+              "set": true,
+              "infinite": false,
+              "number": 1786540682
+            },
+            "suspended": 0,
+            "system": {
+              "seconds": 0,
+              "microseconds": 0
+            },
+            "total": {
+              "seconds": 0,
+              "microseconds": 0
+            },
+            "user": {
+              "seconds": 0,
+              "microseconds": 0
+            }
+          },
+          "exit_code": {
+            "status": [
+              "SUCCESS"
+            ],
+            "return_code": {
+              "set": true,
+              "infinite": false,
+              "number": 0
+            },
+            "signal": {
+              "id": {
+                "set": false,
+                "infinite": false,
+                "number": 0
+              },
+              "name": ""
+            }
+          },
+          "nodes": {
+            "count": 1,
+            "range": "mantis-041",
+            "list": [
+              "mantis-041"
+            ]
+          },
+          "tasks": {
+            "count": 1
+          },
+          "pid": "",
+          "CPU": {
+            "requested_frequency": {
+              "min": {
+                "set": false,
+                "infinite": false,
+                "number": 0
+              },
+              "max": {
+                "set": false,
+                "infinite": false,
+                "number": 0
+              }
+            },
+            "governor": "Unknown"
+          },
+          "kill_request_user": "",
+          "state": [
+            "RUNNING"
+          ],
+          "statistics": {
+            "CPU": {
+              "actual_frequency": 0
+            },
+            "energy": {
+              "consumed": {
+                "set": true,
+                "infinite": false,
+                "number": 0
+              }
+            }
+          },
+          "step": {
+            "id": "2710593.4",
+            "name": "singularity"
+          },
+          "task": {
+            "distribution": "Cyclic"
+          },
+          "tres": {
+            "requested": {
+              "max": [
+              ],
+              "min": [
+              ],
+              "average": [
+              ],
+              "total": [
+              ]
+            },
+            "consumed": {
+              "max": [
+              ],
+              "min": [
+              ],
+              "average": [
+              ],
+              "total": [
+              ]
+            },
+            "allocated": [
+              {
+                "type": "cpu",
+                "name": "",
+                "id": 1,
+                "count": 1
+              },
+              {
+                "type": "mem",
+                "name": "",
+                "id": 2,
+                "count": 8192
+              },
+              {
+                "type": "node",
+                "name": "",
+                "id": 4,
+                "count": 1
+              }
+            ]
+          }
+        },
+        {
+          "time": {
+            "elapsed": 46763,
+            "end": {
+              "set": true,
+              "infinite": false,
+              "number": 0
+            },
+            "start": {
+              "set": true,
+              "infinite": false,
+              "number": 1786540682
+            },
+            "suspended": 0,
+            "system": {
+              "seconds": 0,
+              "microseconds": 0
+            },
+            "total": {
+              "seconds": 0,
+              "microseconds": 0
+            },
+            "user": {
+              "seconds": 0,
+              "microseconds": 0
+            }
+          },
+          "exit_code": {
+            "status": [
+              "SUCCESS"
+            ],
+            "return_code": {
+              "set": true,
+              "infinite": false,
+              "number": 0
+            },
+            "signal": {
+              "id": {
+                "set": false,
+                "infinite": false,
+                "number": 0
+              },
+              "name": ""
+            }
+          },
+          "nodes": {
+            "count": 1,
+            "range": "mantis-041",
+            "list": [
+              "mantis-041"
+            ]
+          },
+          "tasks": {
+            "count": 1
+          },
+          "pid": "",
+          "CPU": {
+            "requested_frequency": {
+              "min": {
+                "set": false,
+                "infinite": false,
+                "number": 0
+              },
+              "max": {
+                "set": false,
+                "infinite": false,
+                "number": 0
+              }
+            },
+            "governor": "Unknown"
+          },
+          "kill_request_user": "",
+          "state": [
+            "RUNNING"
+          ],
+          "statistics": {
+            "CPU": {
+              "actual_frequency": 0
+            },
+            "energy": {
+              "consumed": {
+                "set": true,
+                "infinite": false,
+                "number": 0
+              }
+            }
+          },
+          "step": {
+            "id": "2710593.5",
+            "name": "singularity"
+          },
+          "task": {
+            "distribution": "Cyclic"
+          },
+          "tres": {
+            "requested": {
+              "max": [
+              ],
+              "min": [
+              ],
+              "average": [
+              ],
+              "total": [
+              ]
+            },
+            "consumed": {
+              "max": [
+              ],
+              "min": [
+              ],
+              "average": [
+              ],
+              "total": [
+              ]
+            },
+            "allocated": [
+              {
+                "type": "cpu",
+                "name": "",
+                "id": 1,
+                "count": 1
+              },
+              {
+                "type": "mem",
+                "name": "",
+                "id": 2,
+                "count": 8192
+              },
+              {
+                "type": "node",
+                "name": "",
+                "id": 4,
+                "count": 1
+              }
+            ]
+          }
+        },
+        {
+          "time": {
+            "elapsed": 46763,
+            "end": {
+              "set": true,
+              "infinite": false,
+              "number": 0
+            },
+            "start": {
+              "set": true,
+              "infinite": false,
+              "number": 1786540682
+            },
+            "suspended": 0,
+            "system": {
+              "seconds": 0,
+              "microseconds": 0
+            },
+            "total": {
+              "seconds": 0,
+              "microseconds": 0
+            },
+            "user": {
+              "seconds": 0,
+              "microseconds": 0
+            }
+          },
+          "exit_code": {
+            "status": [
+              "SUCCESS"
+            ],
+            "return_code": {
+              "set": true,
+              "infinite": false,
+              "number": 0
+            },
+            "signal": {
+              "id": {
+                "set": false,
+                "infinite": false,
+                "number": 0
+              },
+              "name": ""
+            }
+          },
+          "nodes": {
+            "count": 1,
+            "range": "mantis-041",
+            "list": [
+              "mantis-041"
+            ]
+          },
+          "tasks": {
+            "count": 1
+          },
+          "pid": "",
+          "CPU": {
+            "requested_frequency": {
+              "min": {
+                "set": false,
+                "infinite": false,
+                "number": 0
+              },
+              "max": {
+                "set": false,
+                "infinite": false,
+                "number": 0
+              }
+            },
+            "governor": "Unknown"
+          },
+          "kill_request_user": "",
+          "state": [
+            "RUNNING"
+          ],
+          "statistics": {
+            "CPU": {
+              "actual_frequency": 0
+            },
+            "energy": {
+              "consumed": {
+                "set": true,
+                "infinite": false,
+                "number": 0
+              }
+            }
+          },
+          "step": {
+            "id": "2710593.6",
+            "name": "singularity"
+          },
+          "task": {
+            "distribution": "Cyclic"
+          },
+          "tres": {
+            "requested": {
+              "max": [
+              ],
+              "min": [
+              ],
+              "average": [
+              ],
+              "total": [
+              ]
+            },
+            "consumed": {
+              "max": [
+              ],
+              "min": [
+              ],
+              "average": [
+              ],
+              "total": [
+              ]
+            },
+            "allocated": [
+              {
+                "type": "cpu",
+                "name": "",
+                "id": 1,
+                "count": 1
+              },
+              {
+                "type": "mem",
+                "name": "",
+                "id": 2,
+                "count": 8192
+              },
+              {
+                "type": "node",
+                "name": "",
+                "id": 4,
+                "count": 1
+              }
+            ]
+          }
+        },
+        {
+          "time": {
+            "elapsed": 46763,
+            "end": {
+              "set": true,
+              "infinite": false,
+              "number": 0
+            },
+            "start": {
+              "set": true,
+              "infinite": false,
+              "number": 1786540682
+            },
+            "suspended": 0,
+            "system": {
+              "seconds": 0,
+              "microseconds": 0
+            },
+            "total": {
+              "seconds": 0,
+              "microseconds": 0
+            },
+            "user": {
+              "seconds": 0,
+              "microseconds": 0
+            }
+          },
+          "exit_code": {
+            "status": [
+              "SUCCESS"
+            ],
+            "return_code": {
+              "set": true,
+              "infinite": false,
+              "number": 0
+            },
+            "signal": {
+              "id": {
+                "set": false,
+                "infinite": false,
+                "number": 0
+              },
+              "name": ""
+            }
+          },
+          "nodes": {
+            "count": 1,
+            "range": "mantis-041",
+            "list": [
+              "mantis-041"
+            ]
+          },
+          "tasks": {
+            "count": 1
+          },
+          "pid": "",
+          "CPU": {
+            "requested_frequency": {
+              "min": {
+                "set": false,
+                "infinite": false,
+                "number": 0
+              },
+              "max": {
+                "set": false,
+                "infinite": false,
+                "number": 0
+              }
+            },
+            "governor": "Unknown"
+          },
+          "kill_request_user": "",
+          "state": [
+            "RUNNING"
+          ],
+          "statistics": {
+            "CPU": {
+              "actual_frequency": 0
+            },
+            "energy": {
+              "consumed": {
+                "set": true,
+                "infinite": false,
+                "number": 0
+              }
+            }
+          },
+          "step": {
+            "id": "2710593.7",
+            "name": "singularity"
+          },
+          "task": {
+            "distribution": "Cyclic"
+          },
+          "tres": {
+            "requested": {
+              "max": [
+              ],
+              "min": [
+              ],
+              "average": [
+              ],
+              "total": [
+              ]
+            },
+            "consumed": {
+              "max": [
+              ],
+              "min": [
+              ],
+              "average": [
+              ],
+              "total": [
+              ]
+            },
+            "allocated": [
+              {
+                "type": "cpu",
+                "name": "",
+                "id": 1,
+                "count": 1
+              },
+              {
+                "type": "mem",
+                "name": "",
+                "id": 2,
+                "count": 8192
+              },
+              {
+                "type": "node",
+                "name": "",
+                "id": 4,
+                "count": 1
+              }
+            ]
+          }
+        },
+        {
+          "time": {
+            "elapsed": 46763,
+            "end": {
+              "set": true,
+              "infinite": false,
+              "number": 0
+            },
+            "start": {
+              "set": true,
+              "infinite": false,
+              "number": 1786540682
+            },
+            "suspended": 0,
+            "system": {
+              "seconds": 0,
+              "microseconds": 0
+            },
+            "total": {
+              "seconds": 0,
+              "microseconds": 0
+            },
+            "user": {
+              "seconds": 0,
+              "microseconds": 0
+            }
+          },
+          "exit_code": {
+            "status": [
+              "SUCCESS"
+            ],
+            "return_code": {
+              "set": true,
+              "infinite": false,
+              "number": 0
+            },
+            "signal": {
+              "id": {
+                "set": false,
+                "infinite": false,
+                "number": 0
+              },
+              "name": ""
+            }
+          },
+          "nodes": {
+            "count": 1,
+            "range": "mantis-041",
+            "list": [
+              "mantis-041"
+            ]
+          },
+          "tasks": {
+            "count": 1
+          },
+          "pid": "",
+          "CPU": {
+            "requested_frequency": {
+              "min": {
+                "set": false,
+                "infinite": false,
+                "number": 0
+              },
+              "max": {
+                "set": false,
+                "infinite": false,
+                "number": 0
+              }
+            },
+            "governor": "Unknown"
+          },
+          "kill_request_user": "",
+          "state": [
+            "RUNNING"
+          ],
+          "statistics": {
+            "CPU": {
+              "actual_frequency": 0
+            },
+            "energy": {
+              "consumed": {
+                "set": true,
+                "infinite": false,
+                "number": 0
+              }
+            }
+          },
+          "step": {
+            "id": "2710593.8",
+            "name": "singularity"
+          },
+          "task": {
+            "distribution": "Cyclic"
+          },
+          "tres": {
+            "requested": {
+              "max": [
+              ],
+              "min": [
+              ],
+              "average": [
+              ],
+              "total": [
+              ]
+            },
+            "consumed": {
+              "max": [
+              ],
+              "min": [
+              ],
+              "average": [
+              ],
+              "total": [
+              ]
+            },
+            "allocated": [
+              {
+                "type": "cpu",
+                "name": "",
+                "id": 1,
+                "count": 1
+              },
+              {
+                "type": "mem",
+                "name": "",
+                "id": 2,
+                "count": 8192
+              },
+              {
+                "type": "node",
+                "name": "",
+                "id": 4,
+                "count": 1
+              }
+            ]
+          }
+        },
+        {
+          "time": {
+            "elapsed": 46763,
+            "end": {
+              "set": true,
+              "infinite": false,
+              "number": 0
+            },
+            "start": {
+              "set": true,
+              "infinite": false,
+              "number": 1786540682
+            },
+            "suspended": 0,
+            "system": {
+              "seconds": 0,
+              "microseconds": 0
+            },
+            "total": {
+              "seconds": 0,
+              "microseconds": 0
+            },
+            "user": {
+              "seconds": 0,
+              "microseconds": 0
+            }
+          },
+          "exit_code": {
+            "status": [
+              "SUCCESS"
+            ],
+            "return_code": {
+              "set": true,
+              "infinite": false,
+              "number": 0
+            },
+            "signal": {
+              "id": {
+                "set": false,
+                "infinite": false,
+                "number": 0
+              },
+              "name": ""
+            }
+          },
+          "nodes": {
+            "count": 1,
+            "range": "mantis-041",
+            "list": [
+              "mantis-041"
+            ]
+          },
+          "tasks": {
+            "count": 1
+          },
+          "pid": "",
+          "CPU": {
+            "requested_frequency": {
+              "min": {
+                "set": false,
+                "infinite": false,
+                "number": 0
+              },
+              "max": {
+                "set": false,
+                "infinite": false,
+                "number": 0
+              }
+            },
+            "governor": "Unknown"
+          },
+          "kill_request_user": "",
+          "state": [
+            "RUNNING"
+          ],
+          "statistics": {
+            "CPU": {
+              "actual_frequency": 0
+            },
+            "energy": {
+              "consumed": {
+                "set": true,
+                "infinite": false,
+                "number": 0
+              }
+            }
+          },
+          "step": {
+            "id": "2710593.9",
+            "name": "singularity"
+          },
+          "task": {
+            "distribution": "Cyclic"
+          },
+          "tres": {
+            "requested": {
+              "max": [
+              ],
+              "min": [
+              ],
+              "average": [
+              ],
+              "total": [
+              ]
+            },
+            "consumed": {
+              "max": [
+              ],
+              "min": [
+              ],
+              "average": [
+              ],
+              "total": [
+              ]
+            },
+            "allocated": [
+              {
+                "type": "cpu",
+                "name": "",
+                "id": 1,
+                "count": 1
+              },
+              {
+                "type": "mem",
+                "name": "",
+                "id": 2,
+                "count": 8192
+              },
+              {
+                "type": "node",
+                "name": "",
+                "id": 4,
+                "count": 1
+              }
+            ]
+          }
+        },
+        {
+          "time": {
+            "elapsed": 46763,
+            "end": {
+              "set": true,
+              "infinite": false,
+              "number": 0
+            },
+            "start": {
+              "set": true,
+              "infinite": false,
+              "number": 1786540682
+            },
+            "suspended": 0,
+            "system": {
+              "seconds": 0,
+              "microseconds": 0
+            },
+            "total": {
+              "seconds": 0,
+              "microseconds": 0
+            },
+            "user": {
+              "seconds": 0,
+              "microseconds": 0
+            }
+          },
+          "exit_code": {
+            "status": [
+              "SUCCESS"
+            ],
+            "return_code": {
+              "set": true,
+              "infinite": false,
+              "number": 0
+            },
+            "signal": {
+              "id": {
+                "set": false,
+                "infinite": false,
+                "number": 0
+              },
+              "name": ""
+            }
+          },
+          "nodes": {
+            "count": 1,
+            "range": "mantis-041",
+            "list": [
+              "mantis-041"
+            ]
+          },
+          "tasks": {
+            "count": 1
+          },
+          "pid": "",
+          "CPU": {
+            "requested_frequency": {
+              "min": {
+                "set": false,
+                "infinite": false,
+                "number": 0
+              },
+              "max": {
+                "set": false,
+                "infinite": false,
+                "number": 0
+              }
+            },
+            "governor": "Unknown"
+          },
+          "kill_request_user": "",
+          "state": [
+            "RUNNING"
+          ],
+          "statistics": {
+            "CPU": {
+              "actual_frequency": 0
+            },
+            "energy": {
+              "consumed": {
+                "set": true,
+                "infinite": false,
+                "number": 0
+              }
+            }
+          },
+          "step": {
+            "id": "2710593.10",
+            "name": "singularity"
+          },
+          "task": {
+            "distribution": "Cyclic"
+          },
+          "tres": {
+            "requested": {
+              "max": [
+              ],
+              "min": [
+              ],
+              "average": [
+              ],
+              "total": [
+              ]
+            },
+            "consumed": {
+              "max": [
+              ],
+              "min": [
+              ],
+              "average": [
+              ],
+              "total": [
+              ]
+            },
+            "allocated": [
+              {
+                "type": "cpu",
+                "name": "",
+                "id": 1,
+                "count": 1
+              },
+              {
+                "type": "mem",
+                "name": "",
+                "id": 2,
+                "count": 8192
+              },
+              {
+                "type": "node",
+                "name": "",
+                "id": 4,
+                "count": 1
+              }
+            ]
+          }
+        },
+        {
+          "time": {
+            "elapsed": 46763,
+            "end": {
+              "set": true,
+              "infinite": false,
+              "number": 0
+            },
+            "start": {
+              "set": true,
+              "infinite": false,
+              "number": 1786540682
+            },
+            "suspended": 0,
+            "system": {
+              "seconds": 0,
+              "microseconds": 0
+            },
+            "total": {
+              "seconds": 0,
+              "microseconds": 0
+            },
+            "user": {
+              "seconds": 0,
+              "microseconds": 0
+            }
+          },
+          "exit_code": {
+            "status": [
+              "SUCCESS"
+            ],
+            "return_code": {
+              "set": true,
+              "infinite": false,
+              "number": 0
+            },
+            "signal": {
+              "id": {
+                "set": false,
+                "infinite": false,
+                "number": 0
+              },
+              "name": ""
+            }
+          },
+          "nodes": {
+            "count": 1,
+            "range": "mantis-041",
+            "list": [
+              "mantis-041"
+            ]
+          },
+          "tasks": {
+            "count": 1
+          },
+          "pid": "",
+          "CPU": {
+            "requested_frequency": {
+              "min": {
+                "set": false,
+                "infinite": false,
+                "number": 0
+              },
+              "max": {
+                "set": false,
+                "infinite": false,
+                "number": 0
+              }
+            },
+            "governor": "Unknown"
+          },
+          "kill_request_user": "",
+          "state": [
+            "RUNNING"
+          ],
+          "statistics": {
+            "CPU": {
+              "actual_frequency": 0
+            },
+            "energy": {
+              "consumed": {
+                "set": true,
+                "infinite": false,
+                "number": 0
+              }
+            }
+          },
+          "step": {
+            "id": "2710593.11",
+            "name": "singularity"
+          },
+          "task": {
+            "distribution": "Cyclic"
+          },
+          "tres": {
+            "requested": {
+              "max": [
+              ],
+              "min": [
+              ],
+              "average": [
+              ],
+              "total": [
+              ]
+            },
+            "consumed": {
+              "max": [
+              ],
+              "min": [
+              ],
+              "average": [
+              ],
+              "total": [
+              ]
+            },
+            "allocated": [
+              {
+                "type": "cpu",
+                "name": "",
+                "id": 1,
+                "count": 1
+              },
+              {
+                "type": "mem",
+                "name": "",
+                "id": 2,
+                "count": 8192
+              },
+              {
+                "type": "node",
+                "name": "",
+                "id": 4,
+                "count": 1
+              }
+            ]
+          }
+        },
+        {
+          "time": {
+            "elapsed": 46763,
+            "end": {
+              "set": true,
+              "infinite": false,
+              "number": 0
+            },
+            "start": {
+              "set": true,
+              "infinite": false,
+              "number": 1786540682
+            },
+            "suspended": 0,
+            "system": {
+              "seconds": 0,
+              "microseconds": 0
+            },
+            "total": {
+              "seconds": 0,
+              "microseconds": 0
+            },
+            "user": {
+              "seconds": 0,
+              "microseconds": 0
+            }
+          },
+          "exit_code": {
+            "status": [
+              "SUCCESS"
+            ],
+            "return_code": {
+              "set": true,
+              "infinite": false,
+              "number": 0
+            },
+            "signal": {
+              "id": {
+                "set": false,
+                "infinite": false,
+                "number": 0
+              },
+              "name": ""
+            }
+          },
+          "nodes": {
+            "count": 1,
+            "range": "mantis-041",
+            "list": [
+              "mantis-041"
+            ]
+          },
+          "tasks": {
+            "count": 1
+          },
+          "pid": "",
+          "CPU": {
+            "requested_frequency": {
+              "min": {
+                "set": false,
+                "infinite": false,
+                "number": 0
+              },
+              "max": {
+                "set": false,
+                "infinite": false,
+                "number": 0
+              }
+            },
+            "governor": "Unknown"
+          },
+          "kill_request_user": "",
+          "state": [
+            "RUNNING"
+          ],
+          "statistics": {
+            "CPU": {
+              "actual_frequency": 0
+            },
+            "energy": {
+              "consumed": {
+                "set": true,
+                "infinite": false,
+                "number": 0
+              }
+            }
+          },
+          "step": {
+            "id": "2710593.12",
+            "name": "singularity"
+          },
+          "task": {
+            "distribution": "Cyclic"
+          },
+          "tres": {
+            "requested": {
+              "max": [
+              ],
+              "min": [
+              ],
+              "average": [
+              ],
+              "total": [
+              ]
+            },
+            "consumed": {
+              "max": [
+              ],
+              "min": [
+              ],
+              "average": [
+              ],
+              "total": [
+              ]
+            },
+            "allocated": [
+              {
+                "type": "cpu",
+                "name": "",
+                "id": 1,
+                "count": 1
+              },
+              {
+                "type": "mem",
+                "name": "",
+                "id": 2,
+                "count": 8192
+              },
+              {
+                "type": "node",
+                "name": "",
+                "id": 4,
+                "count": 1
+              }
+            ]
+          }
+        },
+        {
+          "time": {
+            "elapsed": 46763,
+            "end": {
+              "set": true,
+              "infinite": false,
+              "number": 0
+            },
+            "start": {
+              "set": true,
+              "infinite": false,
+              "number": 1786540682
+            },
+            "suspended": 0,
+            "system": {
+              "seconds": 0,
+              "microseconds": 0
+            },
+            "total": {
+              "seconds": 0,
+              "microseconds": 0
+            },
+            "user": {
+              "seconds": 0,
+              "microseconds": 0
+            }
+          },
+          "exit_code": {
+            "status": [
+              "SUCCESS"
+            ],
+            "return_code": {
+              "set": true,
+              "infinite": false,
+              "number": 0
+            },
+            "signal": {
+              "id": {
+                "set": false,
+                "infinite": false,
+                "number": 0
+              },
+              "name": ""
+            }
+          },
+          "nodes": {
+            "count": 1,
+            "range": "mantis-041",
+            "list": [
+              "mantis-041"
+            ]
+          },
+          "tasks": {
+            "count": 1
+          },
+          "pid": "",
+          "CPU": {
+            "requested_frequency": {
+              "min": {
+                "set": false,
+                "infinite": false,
+                "number": 0
+              },
+              "max": {
+                "set": false,
+                "infinite": false,
+                "number": 0
+              }
+            },
+            "governor": "Unknown"
+          },
+          "kill_request_user": "",
+          "state": [
+            "RUNNING"
+          ],
+          "statistics": {
+            "CPU": {
+              "actual_frequency": 0
+            },
+            "energy": {
+              "consumed": {
+                "set": true,
+                "infinite": false,
+                "number": 0
+              }
+            }
+          },
+          "step": {
+            "id": "2710593.13",
+            "name": "singularity"
+          },
+          "task": {
+            "distribution": "Cyclic"
+          },
+          "tres": {
+            "requested": {
+              "max": [
+              ],
+              "min": [
+              ],
+              "average": [
+              ],
+              "total": [
+              ]
+            },
+            "consumed": {
+              "max": [
+              ],
+              "min": [
+              ],
+              "average": [
+              ],
+              "total": [
+              ]
+            },
+            "allocated": [
+              {
+                "type": "cpu",
+                "name": "",
+                "id": 1,
+                "count": 1
+              },
+              {
+                "type": "mem",
+                "name": "",
+                "id": 2,
+                "count": 8192
+              },
+              {
+                "type": "node",
+                "name": "",
+                "id": 4,
+                "count": 1
+              }
+            ]
+          }
+        },
+        {
+          "time": {
+            "elapsed": 46763,
+            "end": {
+              "set": true,
+              "infinite": false,
+              "number": 0
+            },
+            "start": {
+              "set": true,
+              "infinite": false,
+              "number": 1786540682
+            },
+            "suspended": 0,
+            "system": {
+              "seconds": 0,
+              "microseconds": 0
+            },
+            "total": {
+              "seconds": 0,
+              "microseconds": 0
+            },
+            "user": {
+              "seconds": 0,
+              "microseconds": 0
+            }
+          },
+          "exit_code": {
+            "status": [
+              "SUCCESS"
+            ],
+            "return_code": {
+              "set": true,
+              "infinite": false,
+              "number": 0
+            },
+            "signal": {
+              "id": {
+                "set": false,
+                "infinite": false,
+                "number": 0
+              },
+              "name": ""
+            }
+          },
+          "nodes": {
+            "count": 1,
+            "range": "mantis-041",
+            "list": [
+              "mantis-041"
+            ]
+          },
+          "tasks": {
+            "count": 1
+          },
+          "pid": "",
+          "CPU": {
+            "requested_frequency": {
+              "min": {
+                "set": false,
+                "infinite": false,
+                "number": 0
+              },
+              "max": {
+                "set": false,
+                "infinite": false,
+                "number": 0
+              }
+            },
+            "governor": "Unknown"
+          },
+          "kill_request_user": "",
+          "state": [
+            "RUNNING"
+          ],
+          "statistics": {
+            "CPU": {
+              "actual_frequency": 0
+            },
+            "energy": {
+              "consumed": {
+                "set": true,
+                "infinite": false,
+                "number": 0
+              }
+            }
+          },
+          "step": {
+            "id": "2710593.14",
+            "name": "singularity"
+          },
+          "task": {
+            "distribution": "Cyclic"
+          },
+          "tres": {
+            "requested": {
+              "max": [
+              ],
+              "min": [
+              ],
+              "average": [
+              ],
+              "total": [
+              ]
+            },
+            "consumed": {
+              "max": [
+              ],
+              "min": [
+              ],
+              "average": [
+              ],
+              "total": [
+              ]
+            },
+            "allocated": [
+              {
+                "type": "cpu",
+                "name": "",
+                "id": 1,
+                "count": 1
+              },
+              {
+                "type": "mem",
+                "name": "",
+                "id": 2,
+                "count": 8192
+              },
+              {
+                "type": "node",
+                "name": "",
+                "id": 4,
+                "count": 1
+              }
+            ]
+          }
+        },
+        {
+          "time": {
+            "elapsed": 46763,
+            "end": {
+              "set": true,
+              "infinite": false,
+              "number": 0
+            },
+            "start": {
+              "set": true,
+              "infinite": false,
+              "number": 1786540682
+            },
+            "suspended": 0,
+            "system": {
+              "seconds": 0,
+              "microseconds": 0
+            },
+            "total": {
+              "seconds": 0,
+              "microseconds": 0
+            },
+            "user": {
+              "seconds": 0,
+              "microseconds": 0
+            }
+          },
+          "exit_code": {
+            "status": [
+              "SUCCESS"
+            ],
+            "return_code": {
+              "set": true,
+              "infinite": false,
+              "number": 0
+            },
+            "signal": {
+              "id": {
+                "set": false,
+                "infinite": false,
+                "number": 0
+              },
+              "name": ""
+            }
+          },
+          "nodes": {
+            "count": 1,
+            "range": "mantis-041",
+            "list": [
+              "mantis-041"
+            ]
+          },
+          "tasks": {
+            "count": 1
+          },
+          "pid": "",
+          "CPU": {
+            "requested_frequency": {
+              "min": {
+                "set": false,
+                "infinite": false,
+                "number": 0
+              },
+              "max": {
+                "set": false,
+                "infinite": false,
+                "number": 0
+              }
+            },
+            "governor": "Unknown"
+          },
+          "kill_request_user": "",
+          "state": [
+            "RUNNING"
+          ],
+          "statistics": {
+            "CPU": {
+              "actual_frequency": 0
+            },
+            "energy": {
+              "consumed": {
+                "set": true,
+                "infinite": false,
+                "number": 0
+              }
+            }
+          },
+          "step": {
+            "id": "2710593.15",
+            "name": "singularity"
+          },
+          "task": {
+            "distribution": "Cyclic"
+          },
+          "tres": {
+            "requested": {
+              "max": [
+              ],
+              "min": [
+              ],
+              "average": [
+              ],
+              "total": [
+              ]
+            },
+            "consumed": {
+              "max": [
+              ],
+              "min": [
+              ],
+              "average": [
+              ],
+              "total": [
+              ]
+            },
+            "allocated": [
+              {
+                "type": "cpu",
+                "name": "",
+                "id": 1,
+                "count": 1
+              },
+              {
+                "type": "mem",
+                "name": "",
+                "id": 2,
+                "count": 8192
+              },
+              {
+                "type": "node",
+                "name": "",
+                "id": 4,
+                "count": 1
+              }
+            ]
+          }
+        },
+        {
+          "time": {
+            "elapsed": 46763,
+            "end": {
+              "set": true,
+              "infinite": false,
+              "number": 0
+            },
+            "start": {
+              "set": true,
+              "infinite": false,
+              "number": 1786540682
+            },
+            "suspended": 0,
+            "system": {
+              "seconds": 0,
+              "microseconds": 0
+            },
+            "total": {
+              "seconds": 0,
+              "microseconds": 0
+            },
+            "user": {
+              "seconds": 0,
+              "microseconds": 0
+            }
+          },
+          "exit_code": {
+            "status": [
+              "SUCCESS"
+            ],
+            "return_code": {
+              "set": true,
+              "infinite": false,
+              "number": 0
+            },
+            "signal": {
+              "id": {
+                "set": false,
+                "infinite": false,
+                "number": 0
+              },
+              "name": ""
+            }
+          },
+          "nodes": {
+            "count": 1,
+            "range": "mantis-041",
+            "list": [
+              "mantis-041"
+            ]
+          },
+          "tasks": {
+            "count": 1
+          },
+          "pid": "",
+          "CPU": {
+            "requested_frequency": {
+              "min": {
+                "set": false,
+                "infinite": false,
+                "number": 0
+              },
+              "max": {
+                "set": false,
+                "infinite": false,
+                "number": 0
+              }
+            },
+            "governor": "Unknown"
+          },
+          "kill_request_user": "",
+          "state": [
+            "RUNNING"
+          ],
+          "statistics": {
+            "CPU": {
+              "actual_frequency": 0
+            },
+            "energy": {
+              "consumed": {
+                "set": true,
+                "infinite": false,
+                "number": 0
+              }
+            }
+          },
+          "step": {
+            "id": "2710593.16",
+            "name": "singularity"
+          },
+          "task": {
+            "distribution": "Cyclic"
+          },
+          "tres": {
+            "requested": {
+              "max": [
+              ],
+              "min": [
+              ],
+              "average": [
+              ],
+              "total": [
+              ]
+            },
+            "consumed": {
+              "max": [
+              ],
+              "min": [
+              ],
+              "average": [
+              ],
+              "total": [
+              ]
+            },
+            "allocated": [
+              {
+                "type": "cpu",
+                "name": "",
+                "id": 1,
+                "count": 1
+              },
+              {
+                "type": "mem",
+                "name": "",
+                "id": 2,
+                "count": 8192
+              },
+              {
+                "type": "node",
+                "name": "",
+                "id": 4,
+                "count": 1
+              }
+            ]
+          }
+        },
+        {
+          "time": {
+            "elapsed": 46763,
+            "end": {
+              "set": true,
+              "infinite": false,
+              "number": 0
+            },
+            "start": {
+              "set": true,
+              "infinite": false,
+              "number": 1786540682
+            },
+            "suspended": 0,
+            "system": {
+              "seconds": 0,
+              "microseconds": 0
+            },
+            "total": {
+              "seconds": 0,
+              "microseconds": 0
+            },
+            "user": {
+              "seconds": 0,
+              "microseconds": 0
+            }
+          },
+          "exit_code": {
+            "status": [
+              "SUCCESS"
+            ],
+            "return_code": {
+              "set": true,
+              "infinite": false,
+              "number": 0
+            },
+            "signal": {
+              "id": {
+                "set": false,
+                "infinite": false,
+                "number": 0
+              },
+              "name": ""
+            }
+          },
+          "nodes": {
+            "count": 1,
+            "range": "mantis-041",
+            "list": [
+              "mantis-041"
+            ]
+          },
+          "tasks": {
+            "count": 1
+          },
+          "pid": "",
+          "CPU": {
+            "requested_frequency": {
+              "min": {
+                "set": false,
+                "infinite": false,
+                "number": 0
+              },
+              "max": {
+                "set": false,
+                "infinite": false,
+                "number": 0
+              }
+            },
+            "governor": "Unknown"
+          },
+          "kill_request_user": "",
+          "state": [
+            "RUNNING"
+          ],
+          "statistics": {
+            "CPU": {
+              "actual_frequency": 0
+            },
+            "energy": {
+              "consumed": {
+                "set": true,
+                "infinite": false,
+                "number": 0
+              }
+            }
+          },
+          "step": {
+            "id": "2710593.17",
+            "name": "singularity"
+          },
+          "task": {
+            "distribution": "Cyclic"
+          },
+          "tres": {
+            "requested": {
+              "max": [
+              ],
+              "min": [
+              ],
+              "average": [
+              ],
+              "total": [
+              ]
+            },
+            "consumed": {
+              "max": [
+              ],
+              "min": [
+              ],
+              "average": [
+              ],
+              "total": [
+              ]
+            },
+            "allocated": [
+              {
+                "type": "cpu",
+                "name": "",
+                "id": 1,
+                "count": 1
+              },
+              {
+                "type": "mem",
+                "name": "",
+                "id": 2,
+                "count": 8192
+              },
+              {
+                "type": "node",
+                "name": "",
+                "id": 4,
+                "count": 1
+              }
+            ]
+          }
+        },
+        {
+          "time": {
+            "elapsed": 46763,
+            "end": {
+              "set": true,
+              "infinite": false,
+              "number": 0
+            },
+            "start": {
+              "set": true,
+              "infinite": false,
+              "number": 1786540682
+            },
+            "suspended": 0,
+            "system": {
+              "seconds": 0,
+              "microseconds": 0
+            },
+            "total": {
+              "seconds": 0,
+              "microseconds": 0
+            },
+            "user": {
+              "seconds": 0,
+              "microseconds": 0
+            }
+          },
+          "exit_code": {
+            "status": [
+              "SUCCESS"
+            ],
+            "return_code": {
+              "set": true,
+              "infinite": false,
+              "number": 0
+            },
+            "signal": {
+              "id": {
+                "set": false,
+                "infinite": false,
+                "number": 0
+              },
+              "name": ""
+            }
+          },
+          "nodes": {
+            "count": 1,
+            "range": "mantis-041",
+            "list": [
+              "mantis-041"
+            ]
+          },
+          "tasks": {
+            "count": 1
+          },
+          "pid": "",
+          "CPU": {
+            "requested_frequency": {
+              "min": {
+                "set": false,
+                "infinite": false,
+                "number": 0
+              },
+              "max": {
+                "set": false,
+                "infinite": false,
+                "number": 0
+              }
+            },
+            "governor": "Unknown"
+          },
+          "kill_request_user": "",
+          "state": [
+            "RUNNING"
+          ],
+          "statistics": {
+            "CPU": {
+              "actual_frequency": 0
+            },
+            "energy": {
+              "consumed": {
+                "set": true,
+                "infinite": false,
+                "number": 0
+              }
+            }
+          },
+          "step": {
+            "id": "2710593.18",
+            "name": "singularity"
+          },
+          "task": {
+            "distribution": "Cyclic"
+          },
+          "tres": {
+            "requested": {
+              "max": [
+              ],
+              "min": [
+              ],
+              "average": [
+              ],
+              "total": [
+              ]
+            },
+            "consumed": {
+              "max": [
+              ],
+              "min": [
+              ],
+              "average": [
+              ],
+              "total": [
+              ]
+            },
+            "allocated": [
+              {
+                "type": "cpu",
+                "name": "",
+                "id": 1,
+                "count": 1
+              },
+              {
+                "type": "mem",
+                "name": "",
+                "id": 2,
+                "count": 8192
+              },
+              {
+                "type": "node",
+                "name": "",
+                "id": 4,
+                "count": 1
+              }
+            ]
+          }
+        },
+        {
+          "time": {
+            "elapsed": 46763,
+            "end": {
+              "set": true,
+              "infinite": false,
+              "number": 0
+            },
+            "start": {
+              "set": true,
+              "infinite": false,
+              "number": 1786540682
+            },
+            "suspended": 0,
+            "system": {
+              "seconds": 0,
+              "microseconds": 0
+            },
+            "total": {
+              "seconds": 0,
+              "microseconds": 0
+            },
+            "user": {
+              "seconds": 0,
+              "microseconds": 0
+            }
+          },
+          "exit_code": {
+            "status": [
+              "SUCCESS"
+            ],
+            "return_code": {
+              "set": true,
+              "infinite": false,
+              "number": 0
+            },
+            "signal": {
+              "id": {
+                "set": false,
+                "infinite": false,
+                "number": 0
+              },
+              "name": ""
+            }
+          },
+          "nodes": {
+            "count": 1,
+            "range": "mantis-041",
+            "list": [
+              "mantis-041"
+            ]
+          },
+          "tasks": {
+            "count": 1
+          },
+          "pid": "",
+          "CPU": {
+            "requested_frequency": {
+              "min": {
+                "set": false,
+                "infinite": false,
+                "number": 0
+              },
+              "max": {
+                "set": false,
+                "infinite": false,
+                "number": 0
+              }
+            },
+            "governor": "Unknown"
+          },
+          "kill_request_user": "",
+          "state": [
+            "RUNNING"
+          ],
+          "statistics": {
+            "CPU": {
+              "actual_frequency": 0
+            },
+            "energy": {
+              "consumed": {
+                "set": true,
+                "infinite": false,
+                "number": 0
+              }
+            }
+          },
+          "step": {
+            "id": "2710593.19",
+            "name": "singularity"
+          },
+          "task": {
+            "distribution": "Cyclic"
+          },
+          "tres": {
+            "requested": {
+              "max": [
+              ],
+              "min": [
+              ],
+              "average": [
+              ],
+              "total": [
+              ]
+            },
+            "consumed": {
+              "max": [
+              ],
+              "min": [
+              ],
+              "average": [
+              ],
+              "total": [
+              ]
+            },
+            "allocated": [
+              {
+                "type": "cpu",
+                "name": "",
+                "id": 1,
+                "count": 1
+              },
+              {
+                "type": "mem",
+                "name": "",
+                "id": 2,
+                "count": 8192
+              },
+              {
+                "type": "node",
+                "name": "",
+                "id": 4,
+                "count": 1
+              }
+            ]
+          }
+        }
+      ],
+      "submit_line": "sbatch \/share\/apps\/vcell3\/htclogs\/V_ALPHA_321860411_0_0.slurm.sub",
+      "tres": {
+        "allocated": [
+          {
+            "type": "cpu",
+            "name": "",
+            "id": 1,
+            "count": 20
+          },
+          {
+            "type": "mem",
+            "name": "",
+            "id": 2,
+            "count": 163840
+          },
+          {
+            "type": "energy",
+            "name": "",
+            "id": 3,
+            "count": -2
+          },
+          {
+            "type": "node",
+            "name": "",
+            "id": 4,
+            "count": 1
+          },
+          {
+            "type": "billing",
+            "name": "",
+            "id": 5,
+            "count": 20
+          }
+        ],
+        "requested": [
+          {
+            "type": "cpu",
+            "name": "",
+            "id": 1,
+            "count": 20
+          },
+          {
+            "type": "mem",
+            "name": "",
+            "id": 2,
+            "count": 163840
+          },
+          {
+            "type": "node",
+            "name": "",
+            "id": 4,
+            "count": 1
+          },
+          {
+            "type": "billing",
+            "name": "",
+            "id": 5,
+            "count": 20
+          }
+        ]
+      },
+      "used_gres": "",
+      "user": "vcell",
+      "wckey": {
+        "wckey": "",
+        "flags": [
+        ]
+      },
+      "working_directory": "\/home\/FCAM\/vcell"
+    }
+  ],
+  "meta": {
+    "plugin": {
+      "type": "",
+      "name": "",
+      "data_parser": "data_parser\/v0.0.40",
+      "accounting_storage": "accounting_storage\/slurmdbd"
+    },
+    "client": {
+      "source": "",
+      "user": "vcell",
+      "group": "domain users"
+    },
+    "command": [
+      "sacct",
+      "--json",
+      "-j"
+    ],
+    "slurm": {
+      "version": {
+        "major": "23",
+        "micro": "10",
+        "minor": "11"
+      },
+      "release": "23.11.10",
+      "cluster": "mantis"
+    }
+  },
+  "errors": [
+  ],
+  "warnings": [
+  ]
+}

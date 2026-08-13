@@ -31,6 +31,9 @@ import java.nio.file.Files;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class SlurmProxy extends HtcProxy {
 	
 	private final static int SCANCEL_JOB_NOT_FOUND_RETURN_CODE = 1;
@@ -328,11 +331,24 @@ public class SlurmProxy extends HtcProxy {
 			jobNumbers.add(Long.toString(jobInfo.getHtcJobID().getJobNumber()));
 		}
 		String jobList = String.join(",", jobNumbers);
-		String[] cmds = {JOB_CMD_SACCT,"-P","-u",getHtcUser(),"-j",jobList,"-o","jobid%25,jobname%25,state%13"};
-		CommandOutput commandOutput = commandService.command(cmds);
-		
-		String output = commandOutput.getStandardOutput();
-		Map<HtcJobInfo, HtcJobStatus> statusMap = extractJobIds(output);
+		// --json rather than -P: steps arrive nested inside their job instead of as sibling rows,
+		// so the .batch/.extern/.N rows the text form must filter are simply not present, and the
+		// payload carries a parser version so a schema change is detectable rather than silent.
+		String[] cmds = {JOB_CMD_SACCT,"--json","-u",getHtcUser(),"-j",jobList};
+
+		Map<HtcJobInfo, HtcJobStatus> statusMap;
+		try {
+			CommandOutput commandOutput = commandService.command(cmds);
+			statusMap = extractJobIdsFromSacctJson(commandOutput.getStandardOutput());
+		} catch (Exception e) {
+			// sacct reads the accounting database, so if slurmdbd is unavailable it answers
+			// nothing -- and a caller that reads that as "no failures" is blind without knowing
+			// it. slurmctld still holds completed jobs for MinJobAge, so ask it instead. Say so
+			// loudly: degraded knowledge is not the same as good news.
+			LG.error("sacct failed for " + requestedHtcJobInfos.size() + " jobs, falling back to scontrol"
+					+ " (only jobs still within MinJobAge will be known): " + e.getMessage(), e);
+			return getJobStatusFromScontrol(requestedHtcJobInfos);
+		}
 		//
 		// HtcJobIDs can be reused by Slurm, so make sure it has the correct JobName also.
 		//
@@ -346,6 +362,115 @@ public class SlurmProxy extends HtcProxy {
 		return statusMap;
 	}
 	
+
+	/**
+	 * Asks slurmctld directly, one job at a time, for when accounting cannot answer.
+	 *
+	 * `sacct` reads the accounting database, so if slurmdbd is unavailable it answers nothing at
+	 * all -- and a caller that reads that as "no failures" is blind without knowing it. slurmctld
+	 * keeps finished jobs in memory for MinJobAge (10800s on mantis), so scontrol still knows
+	 * what happened inside that window.
+	 *
+	 * One command per id on purpose: scontrol does not accept a comma-separated list (verified --
+	 * passing one returns no jobs at all). That cost is why this is a fallback, not the primary.
+	 *
+	 * A job scontrol has never heard of, or has already forgotten, is skipped: not knowing is not
+	 * the same as knowing it failed.
+	 */
+	public Map<HtcJobInfo,HtcJobStatus> getJobStatusFromScontrol(List<HtcJobInfo> requestedHtcJobInfos) {
+		final String JOB_CMD_SCONTROL = PropertyLoader.getProperty(PropertyLoader.slurm_cmd_scontrol,"scontrol");
+		Map<HtcJobInfo,HtcJobStatus> statusMap = new HashMap<HtcJobInfo, HtcJobStatus>();
+		for (HtcJobInfo requested : requestedHtcJobInfos) {
+			String[] cmds = {JOB_CMD_SCONTROL, "show", "job",
+					Long.toString(requested.getHtcJobID().getJobNumber()), "--json"};
+			try {
+				CommandOutput commandOutput = commandService.command(cmds);
+				for (Map.Entry<HtcJobInfo, HtcJobStatus> entry : extractJobIdsFromScontrolJson(commandOutput.getStandardOutput()).entrySet()) {
+					// same guard as getJobStatus: slurm reuses job ids, so only accept a result
+					// whose id AND name are what we asked about
+					if (requestedHtcJobInfos.contains(entry.getKey())) {
+						statusMap.put(entry.getKey(), entry.getValue());
+					}
+				}
+			} catch (Exception e) {
+				LG.debug("scontrol could not report job " + requested + " (it may have aged out of slurmctld): " + e.getMessage());
+			}
+		}
+		return statusMap;
+	}
+
+	/** `scontrol show job --json`: state lives at job_state, an array. */
+	static Map<HtcJobInfo, HtcJobStatus> extractJobIdsFromScontrolJson(String output) throws IOException {
+		return extractJobsFromJson(output, "job_state", null);
+	}
+
+	/** `sacct --json`: state lives at state.current, an array, and steps are nested per job. */
+	static Map<HtcJobInfo, HtcJobStatus> extractJobIdsFromSacctJson(String output) throws IOException {
+		return extractJobsFromJson(output, "state", "current");
+	}
+
+	/**
+	 * Reads the `jobs` array slurm emits for --json.
+	 *
+	 * Steps do not appear as siblings here -- they are nested inside their job -- so the step rows
+	 * that have to be filtered out of `sacct -P` text simply are not a problem in this shape.
+	 *
+	 * The state field differs between the two commands, hence the path arguments: `sacct` reports
+	 * state.current, `scontrol` reports job_state. Both are arrays.
+	 */
+	private static Map<HtcJobInfo, HtcJobStatus> extractJobsFromJson(String output, String stateField, String stateSubField) throws IOException {
+		Map<HtcJobInfo, HtcJobStatus> statusMap = new HashMap<HtcJobInfo, HtcJobStatus>();
+		if (output == null || output.trim().isEmpty()) {
+			return statusMap;
+		}
+		JsonNode root = new ObjectMapper().readTree(output);
+		assertKnownDataParser(root);
+		JsonNode jobs = root.path("jobs");
+		for (JsonNode job : jobs) {
+			JsonNode idNode = job.path("job_id");
+			JsonNode nameNode = job.path("name");
+			if (idNode.isMissingNode() || nameNode.isMissingNode()) {
+				continue;
+			}
+			JsonNode stateNode = job.path(stateField);
+			if (stateSubField != null) {
+				stateNode = stateNode.path(stateSubField);
+			}
+			// an array of state strings; the first is the state proper, any others qualify it
+			String state = stateNode.isArray() && stateNode.size() > 0 ? stateNode.get(0).asText() : stateNode.asText();
+			if (state == null || state.isEmpty()) {
+				continue;
+			}
+			HtcJobInfo htcJobInfo = new HtcJobInfo(new HtcJobID(idNode.asText(), BatchSystemType.SLURM), nameNode.asText());
+			statusMap.put(htcJobInfo, new HtcJobStatus(SlurmJobStatus.parseStatus(state)));
+		}
+		return statusMap;
+	}
+
+	/**
+	 * Slurm versions its JSON, so a shape change is detectable rather than something that quietly
+	 * misparses. Logged rather than thrown: an unexpected parser version is a reason to look, not
+	 * a reason to stop monitoring jobs.
+	 */
+	static final String EXPECTED_DATA_PARSER = "data_parser/v0.0.40";
+
+	private static void assertKnownDataParser(JsonNode root) {
+		String dataParser = root.path("meta").path("plugin").path("data_parser").asText("");
+		if (!dataParser.isEmpty() && !EXPECTED_DATA_PARSER.equals(dataParser)) {
+			LG.warn("slurm JSON reports " + dataParser + ", expected " + EXPECTED_DATA_PARSER
+					+ "; field names may have moved and job status may be misread");
+		}
+	}
+
+	/**
+	 * Parses `sacct -P` text into one entry per job allocation.
+	 *
+	 * NO LONGER ON THE PRODUCTION PATH: getJobStatus() asks for --json instead, where steps are
+	 * nested inside their job rather than arriving as sibling rows. Retained because --json needs
+	 * a slurm carrying the data_parser plugin (mantis runs 23.11); a deployment on an older slurm
+	 * would still need this. If every deployment is known to be new enough this and its fixtures
+	 * can go -- until someone confirms that, deleting it removes the only way back.
+	 */
 	static Map<HtcJobInfo, HtcJobStatus> extractJobIds(String output) throws IOException {
 		BufferedReader reader = new BufferedReader(new StringReader(output));
 		String line = reader.readLine();

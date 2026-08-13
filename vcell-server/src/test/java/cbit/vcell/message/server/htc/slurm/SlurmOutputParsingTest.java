@@ -18,6 +18,8 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.ResourceLock;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import cbit.vcell.resource.PropertyLoader;
 
 import cbit.vcell.message.server.htc.HtcJobStatus;
@@ -190,5 +192,64 @@ public class SlurmOutputParsingTest {
 	@Test
 	public void anEmptyQueueYieldsAnEmptyMap() throws IOException {
 		assertTrue(SlurmProxy.extractJobIdsFromSqueue(fixture("squeue-empty.txt")).isEmpty());
+	}
+
+	// ----------------------------------------------------------------- json
+
+	/**
+	 * The reason for using --json on this path: a 20-task SpringSaLaD multirun is ONE job with its
+	 * steps nested inside it, not 23 sibling rows. The step filtering the text form needs is not a
+	 * problem that exists in this shape.
+	 */
+	@Test
+	public void sacctJsonReportsOneJobForAMultistepAllocation() throws IOException {
+		Map<HtcJobInfo, HtcJobStatus> statusMap =
+				SlurmProxy.extractJobIdsFromSacctJson(fixture("sacct-json-multistep.json"));
+
+		assertEquals(Set.of("2710593"), jobIds(statusMap), "steps are nested, not siblings");
+		HtcJobInfo only = statusMap.keySet().iterator().next();
+		assertEquals("V_ALPHA_321860411_0_0", only.getJobName());
+		assertTrue(statusMap.get(only).isRunning());
+	}
+
+    /** No matching job is an answer, not an error. */
+	@Test
+	public void sacctJsonWithNoMatchingJobsYieldsAnEmptyMap() throws IOException {
+		assertTrue(SlurmProxy.extractJobIdsFromSacctJson(fixture("sacct-json-no-matching-jobs.json")).isEmpty());
+		assertTrue(SlurmProxy.extractJobIdsFromSacctJson("").isEmpty());
+		assertTrue(SlurmProxy.extractJobIdsFromSacctJson(null).isEmpty());
+	}
+
+	/**
+	 * scontrol puts the state somewhere else than sacct does -- job_state rather than
+	 * state.current -- which is exactly the kind of difference that makes hand-written parsing
+	 * per command a liability.
+	 */
+	@Test
+	public void scontrolJsonReportsTheJobAndItsState() throws IOException {
+		Map<HtcJobInfo, HtcJobStatus> statusMap =
+				SlurmProxy.extractJobIdsFromScontrolJson(fixture("scontrol-json-running.json"));
+
+		assertEquals(Set.of("2710594"), jobIds(statusMap));
+		HtcJobInfo only = statusMap.keySet().iterator().next();
+		assertEquals("V_ALPHA_321860413_0_0", only.getJobName(),
+				"the name matters -- it is what guards against a reused slurm job id");
+		assertTrue(statusMap.get(only).isRunning());
+	}
+
+	/**
+	 * The captures come from one slurm, and the field paths depend on its schema. Compare the
+	 * PARSED value, not the raw text: slurm escapes the slash, so the bytes read
+	 * "data_parser\\/v0.0.40" while the value is "data_parser/v0.0.40".
+	 */
+	@Test
+	public void theFixturesMatchTheDataParserVersionTheCodeExpects() throws IOException {
+		for (String name : new String[] {"sacct-json-multistep.json", "scontrol-json-running.json"}) {
+			String reported = new ObjectMapper().readTree(fixture(name))
+					.path("meta").path("plugin").path("data_parser").asText();
+			assertEquals(SlurmProxy.EXPECTED_DATA_PARSER, reported,
+					name + " reports a different schema version; re-capture the fixtures and check"
+							+ " that job_id / name / state paths still hold");
+		}
 	}
 }
