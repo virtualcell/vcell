@@ -16,6 +16,42 @@ followed by flat Keep-a-Changelog categories. API consumers should scan
 
 _(Release-manager scratchpad. Populated at release-cut time.)_
 
+## [8.0.17.01] - 2026-08-13
+
+**Highlights.** Nothing changes for anyone using VCell. Configuration is now supplied under one
+set of names end to end, a missing or wrong secret path is reported at startup instead of
+surfacing later as an unreadable password, and the HTTPS support in the legacy API — dead since
+the ingress began terminating TLS — is removed along with the keys it needed. CI stops
+re-analysing code it has already analysed.
+
+### Added
+- Every legacy environment variable the images define now has an `UPPER_SNAKE` twin carrying the
+  same value, matching the names the deployment supplies. This is the last of three layers, and
+  it means no service setting is reachable only by a legacy name. (#1931)
+- A `FILE` property type. `PropertyLoader` already checked directories and executables at
+  startup but had no way to say "this file must exist and be readable", so every secret path was
+  unchecked. Five now use it: the database and JMS password files, the HPC ssh key, and the two
+  JWT signing keys. (#1932)
+
+### Removed
+- HTTPS support in the legacy API, and the keystore configuration it required. It ran only when
+  the service was asked for `https`; every deployment asks for `http` because the ingress
+  terminates TLS, and the keystore file is not mounted in any container. A JKS keystore whose
+  password was itself encrypted with the database password goes with it. (#1932)
+- `vcell.jms.rest.pswdfile`, which appeared in one service's required-property list and was read
+  by nothing. (#1932)
+
+### CI
+- CodeQL analyses a language only when the change touches a file of that language, and skips a
+  merge whose tree was already analysed on the branch. The Java analysis compiles the whole
+  project and takes 8–10 minutes; three of the five preceding merges touched no Java. The weekly
+  full scan is unaffected — it re-analyses everything against current queries, which no
+  per-change filter should be able to suppress. (#1933)
+
+### Notes for API consumers
+No API changes. The legacy API has never served HTTPS in any deployment; TLS is terminated by
+the ingress, as before.
+
 ## [8.0.16.01] - 2026-08-13
 
 **Highlights.** Nothing changes for anyone using VCell. This release finishes what 8.0.15.01
