@@ -145,12 +145,10 @@ public class SlurmOutputParsingTest {
 		// stop into a spurious error for the user who asked for it.
 		assertFalse(status.isFailed(), "a user-cancelled job is stopped, not failed");
 
-		// What is wrong is that it is not considered finished either: isDone() is
-		// isComplete() || isFailed(), so a cancelled job reads as still in progress. Terminal is
-		// terminal; only the reason differs. Changing that is a behaviour change, not a parsing
-		// fix -- see issue #1912.
-		assertFalse(status.isDone(),
-				"current behaviour: a cancelled job reads as not finished, which is the real gap");
+		// It is finished, though. Terminal is terminal; only the reason differs, and a caller
+		// asking "is this still going" must be told no.
+		assertTrue(status.isStopped(), "cancelled is a deliberate stop");
+		assertTrue(status.isDone(), "and a stop is an ending");
 	}
 
 	/** The scheduler-side endings the job monitor exists to report. */
@@ -158,6 +156,16 @@ public class SlurmOutputParsingTest {
 	public void everyTerminalStateParses() throws IOException {
 		Map<HtcJobInfo, HtcJobStatus> statusMap =
 				SlurmProxy.extractJobIds(fixture("sacct-terminal-states.txt"));
+
+		// Every one of these is a way the scheduler ended a job that did not finish, so each must
+		// read as failed -- not merely as "parsed". Before this, isFailed() was true only for the
+		// state literally named FAILED, so a job killed by TIMEOUT or OUT_OF_MEMORY was neither
+		// failed nor complete and read as though it were still running.
+		for (Map.Entry<HtcJobInfo, HtcJobStatus> entry : statusMap.entrySet()) {
+			assertTrue(entry.getValue().isFailed(),
+					entry.getKey().getJobName() + " should be failed: " + entry.getValue());
+			assertTrue(entry.getValue().isDone(), entry.getKey().getJobName() + " should be done");
+		}
 
 		// The point of this case is that every one of these states PARSES. OUT_OF_MEMORY was
 		// missing from SlurmJobStatus entirely, so parseStatus() threw IllegalArgumentException
