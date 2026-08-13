@@ -21,9 +21,100 @@ on:
     - cron: '38 0 * * 0'
 
 jobs:
+  # ---------------------------------------------------------------------------
+  # Decides which languages this change can possibly affect.
+  #
+  # The Java analysis is the expensive one -- it compiles the whole project, and runs 8-10
+  # minutes -- and it is run on every push to master and every pull request regardless of what
+  # changed. Two cases where that buys nothing:
+  #
+  #   * A merge commit on master whose tree equals the merged branch's tree: the pull request
+  #     analysed this exact tree already.
+  #   * A change that touches no file of that language. A CHANGELOG edit or a Dockerfile tweak
+  #     cannot alter Java findings.
+  #
+  # The weekly schedule always runs everything. That is the safety net: it re-analyses the whole
+  # repository against current queries, which is what catches a newly-published rule matching old
+  # code, and no per-change filter should be able to suppress it.
+  #
+  # Fails open: anything it cannot determine runs every language.
+  should-run:
+    name: should-run
+    runs-on: ubuntu-24.04
+    outputs:
+      # A JSON array of the languages worth analysing, consumed as the analyze matrix.
+      # It has to be the matrix rather than a per-job `if`, because `matrix` is not one of the
+      # contexts available to a job-level `if` -- only github, needs, vars and inputs are.
+      languages: ${{ steps.decide.outputs.languages }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - id: decide
+        shell: bash
+        run: |
+          set -uo pipefail
+          all() {
+            if [ "$1" = true ]; then
+              echo 'languages=["java","javascript","python"]' >> "$GITHUB_OUTPUT"
+              echo "::notice::CodeQL: all languages run -- $2"
+            else
+              echo 'languages=[]' >> "$GITHUB_OUTPUT"
+              echo "::notice::CodeQL: skipped -- $2"
+            fi
+            exit 0
+          }
+
+          # The weekly sweep is never filtered.
+          if [ "${GITHUB_EVENT_NAME}" = "schedule" ]; then
+            all true "scheduled full analysis"
+          fi
+
+          # A merge commit whose tree matches the branch it merged was already analysed there.
+          if [ "${GITHUB_REF}" = "refs/heads/master" ] && git rev-parse -q --verify "HEAD^2" >/dev/null 2>&1; then
+            if [ "$(git rev-parse "HEAD^{tree}")" = "$(git rev-parse "HEAD^2^{tree}")" ]; then
+              all false "merge commit tree is identical to the branch already analysed"
+            fi
+          fi
+
+          base=""
+          if [ -n "${GITHUB_EVENT_BEFORE:-}" ] && git rev-parse -q --verify "${GITHUB_EVENT_BEFORE}^{commit}" >/dev/null 2>&1; then
+            base="${GITHUB_EVENT_BEFORE}"
+          elif git rev-parse -q --verify "HEAD^1" >/dev/null 2>&1; then
+            base="HEAD^1"
+          fi
+          if [ -z "${base}" ]; then
+            all true "could not determine what changed"
+          fi
+
+          changed="$(git diff --name-only "${base}" HEAD)"
+          if [ -z "${changed}" ]; then
+            all true "no diff available"
+          fi
+
+          selected=""
+          consider() {
+            if printf '%s\n' "${changed}" | grep -qE "$2"; then
+              selected="${selected:+${selected},}\"$1\""
+              echo "::notice::CodeQL $1: runs"
+            else
+              echo "::notice::CodeQL $1: skipped, no $1 files changed"
+            fi
+          }
+          consider java       '(\.java$|(^|/)pom\.xml$)'
+          consider javascript '(\.(js|jsx|ts|tsx|mjs|cjs)$|(^|/)package(-lock)?\.json$)'
+          consider python     '(\.py$|(^|/)(pyproject\.toml|poetry\.lock|requirements[^/]*\.txt)$)'
+          echo "languages=[${selected}]" >> "$GITHUB_OUTPUT" 
+        env:
+          GITHUB_EVENT_BEFORE: ${{ github.event.before }}
+
   analyze:
     name: Analyze
     runs-on: ubuntu-24.04
+    needs: should-run
+    # An empty matrix vector is an error, so the job is skipped outright when nothing applies.
+    if: ${{ needs.should-run.outputs.languages != '[]' }}
     permissions:
       actions: read
       contents: read
@@ -32,7 +123,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [ 'java', 'javascript', 'python' ]
+        # Chosen by should-run: only the languages this change can affect.
+        language: ${{ fromJson(needs.should-run.outputs.languages) }}
         # CodeQL supports [ 'cpp', 'csharp', 'go', 'java', 'javascript', 'python', 'ruby' ]
         # Learn more about CodeQL language support at https://git.io/codeql-language-support
 
