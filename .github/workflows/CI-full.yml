@@ -285,10 +285,6 @@ jobs:
           docker push --all-tags ${REPO}/${CONTAINER}
         done
 
-    - name: Setup tmate session
-      uses: mxschmitt/action-tmate@v3
-      if: ${{ failure() }}
-
   build-and-publish-sif:
     name: Build and publish Apptainer SIF images
     runs-on: ubuntu-22.04
@@ -313,7 +309,3 @@ jobs:
           echo "Publishing ${SIF_NAME} to oras://${REPO}/${IMG}_singularity:${TAG}"
           apptainer push "${SIF_NAME}" "oras://${REPO}/${IMG}_singularity:${TAG}"
         done
-
-    - name: Setup tmate session
-      uses: mxschmitt/action-tmate@v3
-      if: ${{ failure() }}
