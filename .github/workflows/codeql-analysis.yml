@@ -21,9 +21,90 @@ on:
     - cron: '38 0 * * 0'
 
 jobs:
+  # ---------------------------------------------------------------------------
+  # Decides which languages this change can possibly affect.
+  #
+  # The Java analysis is the expensive one -- it compiles the whole project, and runs 8-10
+  # minutes -- and it is run on every push to master and every pull request regardless of what
+  # changed. Two cases where that buys nothing:
+  #
+  #   * A merge commit on master whose tree equals the merged branch's tree: the pull request
+  #     analysed this exact tree already.
+  #   * A change that touches no file of that language. A CHANGELOG edit or a Dockerfile tweak
+  #     cannot alter Java findings.
+  #
+  # The weekly schedule always runs everything. That is the safety net: it re-analyses the whole
+  # repository against current queries, which is what catches a newly-published rule matching old
+  # code, and no per-change filter should be able to suppress it.
+  #
+  # Fails open: anything it cannot determine runs every language.
+  should-run:
+    name: should-run
+    runs-on: ubuntu-24.04
+    outputs:
+      java: ${{ steps.decide.outputs.java }}
+      javascript: ${{ steps.decide.outputs.javascript }}
+      python: ${{ steps.decide.outputs.python }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - id: decide
+        shell: bash
+        run: |
+          set -uo pipefail
+          all() {
+            for l in java javascript python; do echo "$l=$1" >> "$GITHUB_OUTPUT"; done
+            echo "::notice::CodeQL languages $( [ "$1" = true ] && echo "all run" || echo skipped ): $2"
+            exit 0
+          }
+
+          # The weekly sweep is never filtered.
+          if [ "${GITHUB_EVENT_NAME}" = "schedule" ]; then
+            all true "scheduled full analysis"
+          fi
+
+          # A merge commit whose tree matches the branch it merged was already analysed there.
+          if [ "${GITHUB_REF}" = "refs/heads/master" ] && git rev-parse -q --verify "HEAD^2" >/dev/null 2>&1; then
+            if [ "$(git rev-parse "HEAD^{tree}")" = "$(git rev-parse "HEAD^2^{tree}")" ]; then
+              all false "merge commit tree is identical to the branch already analysed"
+            fi
+          fi
+
+          base=""
+          if [ -n "${GITHUB_EVENT_BEFORE:-}" ] && git rev-parse -q --verify "${GITHUB_EVENT_BEFORE}^{commit}" >/dev/null 2>&1; then
+            base="${GITHUB_EVENT_BEFORE}"
+          elif git rev-parse -q --verify "HEAD^1" >/dev/null 2>&1; then
+            base="HEAD^1"
+          fi
+          if [ -z "${base}" ]; then
+            all true "could not determine what changed"
+          fi
+
+          changed="$(git diff --name-only "${base}" HEAD)"
+          if [ -z "${changed}" ]; then
+            all true "no diff available"
+          fi
+
+          decide_one() {
+            if printf '%s\n' "${changed}" | grep -qE "$2"; then
+              echo "$1=true" >> "$GITHUB_OUTPUT"; echo "::notice::CodeQL $1: runs"
+            else
+              echo "$1=false" >> "$GITHUB_OUTPUT"; echo "::notice::CodeQL $1: skipped, no $1 files changed"
+            fi
+          }
+          decide_one java       '(\.java$|(^|/)pom\.xml$)'
+          decide_one javascript '(\.(js|jsx|ts|tsx|mjs|cjs)$|(^|/)package(-lock)?\.json$)'
+          decide_one python     '(\.py$|(^|/)(pyproject\.toml|poetry\.lock|requirements[^/]*\.txt)$)'
+        env:
+          GITHUB_EVENT_BEFORE: ${{ github.event.before }}
+
   analyze:
     name: Analyze
     runs-on: ubuntu-24.04
+    needs: should-run
+    if: ${{ needs.should-run.outputs[matrix.language] == 'true' }}
     permissions:
       actions: read
       contents: read
