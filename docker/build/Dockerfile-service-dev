@@ -96,9 +96,28 @@ RUN chmod 755 /vcellscripts/entrypoint.sh
 # Defaults for the container environment. Every one is overridden by the deployment's
 # ConfigMap; the placeholders make a missing value obvious in a log rather than empty.
 #
+# VCell runs two ActiveMQ brokers on purpose: activemqint for internal daemon traffic and
+# activemqsim for simulation events arriving from HPC. They were split years ago so internal
+# messaging stays fast when external traffic overwhelms the sim broker, which is why there are
+# two host/port pairs rather than one.
+#
+# The isolation is by BROKER, not by port. activemqint and activemqsim are separate
+# Deployments, each listening on containerPort 61616 and reached by hostname -- ports may
+# overlap only because each pod has its own address, which is not true in docker compose or on
+# a developer's machine, where the brokers are reached through published host ports instead.
+#
+# Site-specific ports live elsewhere, in two places that are not this variable:
+#   * jmsport_sim_external / jmsrestport_sim_external, which is what submit hands to HPC jobs
+#     so they connect back to the right site;
+#   * a per-overlay NodePort Service, kustomize/overlays/<site>/activemqsim-svc.yaml, mapping
+#     61616 and 8161 to a port unique to that namespace -- dev 31617/30162, stage 31616/30161,
+#     prod 31618/30163.
+#
 # Merged from the five Dockerfiles, which agreed on 87 of 88 names. The one disagreement was
-# jmsport_sim_internal -- 61626 in sched, 61616 in submit. Every overlay sets it to 61616 in
-# shared.env, so sched's default was both unreachable and wrong; 61616 is used here.
+# jmsport_sim_internal -- 61626 in sched, 61616 in submit. 61626 appears exactly once in either
+# repository, in that sched line: no compose file, local config script or README uses it, and
+# being the INTERNAL port it is overridden to 61616 by every overlay's shared.env. It reads as
+# a leftover from an earlier single-host topology; 61616 is used here.
 ENV     softwareVersion=SOFTWARE-VERSION-NOT-SET \
     serverid=SITE \
     dburl="db-url-not-set" \
