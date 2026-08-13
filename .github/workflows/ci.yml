@@ -28,12 +28,78 @@ env:
 
 jobs:
   # ---------------------------------------------------------------------------
+  # Decides whether the rest of the lane has anything to test.
+  #
+  # Two cases where it does not, both measured rather than assumed:
+  #
+  #   * A merge commit on master whose tree equals the merged branch's tree. The branch
+  #     already passed this exact tree; re-running tests the same bits again. 12 of the last
+  #     15 merges were identical this way, and master pushes were 37% of all CI runs. When
+  #     master HAS advanced the trees differ and the lane runs -- that is the case where
+  #     post-merge CI earns its keep, by catching semantic conflicts.
+  #
+  #   * A change that touches only documentation. A release-notes PR ran the full lane twice,
+  #     once on its branch and once on master, to validate a CHANGELOG edit.
+  #
+  # Fails open: anything it cannot determine runs the lane.
+  should-run:
+    name: should-run
+    runs-on: ubuntu-22.04
+    outputs:
+      run: ${{ steps.decide.outputs.run }}
+      reason: ${{ steps.decide.outputs.reason }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Needed to resolve HEAD^2 and github.event.before.
+          fetch-depth: 0
+
+      - id: decide
+        shell: bash
+        run: |
+          set -uo pipefail
+          decide() {
+            echo "run=$1" >> "$GITHUB_OUTPUT"
+            echo "reason=$2" >> "$GITHUB_OUTPUT"
+            echo "::notice::CI $( [ "$1" = true ] && echo runs || echo skipped ): $2"
+            exit 0
+          }
+
+          # A merge commit whose tree matches the branch it merged.
+          if [ "${GITHUB_REF}" = "refs/heads/master" ] && git rev-parse -q --verify "HEAD^2" >/dev/null 2>&1; then
+            if [ "$(git rev-parse "HEAD^{tree}")" = "$(git rev-parse "HEAD^2^{tree}")" ]; then
+              decide false "merge commit tree is identical to the branch that already passed CI"
+            fi
+          fi
+
+          # Documentation-only. Compare against what was there before this push; fall back to
+          # the first parent, which for a merge commit is exactly the PR's contents.
+          base=""
+          if [ -n "${GITHUB_EVENT_BEFORE:-}" ] && git rev-parse -q --verify "${GITHUB_EVENT_BEFORE}^{commit}" >/dev/null 2>&1; then
+            base="${GITHUB_EVENT_BEFORE}"
+          elif git rev-parse -q --verify "HEAD^1" >/dev/null 2>&1; then
+            base="HEAD^1"
+          fi
+          if [ -n "${base}" ]; then
+            changed="$(git diff --name-only "${base}" HEAD)"
+            if [ -n "${changed}" ] && ! printf '%s\n' "${changed}" | grep -qvE '(^docs/|^release-notes/|\.md$)'; then
+              decide false "only documentation changed ($(printf '%s\n' "${changed}" | tr '\n' ' '))"
+            fi
+          fi
+
+          decide true "changes may affect the build or the tests"
+        env:
+          GITHUB_EVENT_BEFORE: ${{ github.event.before }}
+
+  # ---------------------------------------------------------------------------
   # BUILD: compile the monorepo (no tests), run the Python package tests, and
   # verify the Docker image builds.
   # ---------------------------------------------------------------------------
   build:
     name: build
     runs-on: ubuntu-22.04
+    needs: should-run
+    if: ${{ needs.should-run.outputs.run == 'true' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -131,6 +197,8 @@ jobs:
   fast-tests:
     name: CI-Test-group-Fast-${{ matrix.name }}
     runs-on: ubuntu-22.04
+    needs: should-run
+    if: ${{ needs.should-run.outputs.run == 'true' }}
     strategy:
       fail-fast: false
       matrix:
@@ -217,7 +285,7 @@ jobs:
   fast-gate:
     name: CI-Test-group-Fast
     runs-on: ubuntu-22.04
-    needs: fast-tests
+    needs: [should-run, fast-tests]
     if: ${{ always() }}
     steps:
       - name: Verify all Fast shards passed
@@ -225,6 +293,13 @@ jobs:
         run: |
           result="${{ needs.fast-tests.result }}"
           echo "fast-tests result: $result"
+          # This job is a required status check, so it must report even when the shards were
+          # deliberately not run -- otherwise skipping the lane would leave the check missing
+          # rather than satisfied.
+          if [ "${{ needs.should-run.outputs.run }}" != "true" ] && [ "$result" = "skipped" ]; then
+            echo "Fast shards skipped: ${{ needs.should-run.outputs.reason }}"
+            exit 0
+          fi
           if [ "$result" != "success" ]; then
             echo "One or more Fast shards did not succeed."
             exit 1
@@ -237,6 +312,8 @@ jobs:
   quarkus-tests:
     name: CI-Test-group-Quarkus
     runs-on: ubuntu-22.04
+    needs: should-run
+    if: ${{ needs.should-run.outputs.run == 'true' }}
     steps:
       - uses: actions/checkout@v4
 
