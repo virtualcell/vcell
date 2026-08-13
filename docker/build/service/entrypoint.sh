@@ -94,6 +94,23 @@ case "${service}" in
 		# memory tracking -- it was not part of the sizing fix. Preserved; worth revisiting
 		# with the same measurement that produced the numbers above.
 		memory_flags=(-XX:MaxRAMPercentage=80)
+
+		# `data` selects a service TWICE, and the two are unrelated -- worth being explicit,
+		# because this script made "which service" mean something new.
+		#
+		#   $1 = data          which of the five VCell services this container runs (new here)
+		#   $servertype        which role SimDataServer plays inside that service:
+		#                      ExportDataOnly | SimDataOnly | CombinedData
+		#
+		# servertype is SimDataServerMain's sole argument and it is required -- args.length
+		# must be 1, and the value goes through SimDataServiceType.valueOf, so anything else
+		# throws. Every overlay sets it in config/<overlay>/data.env, and every one currently
+		# says CombinedData: one pod serving both simulation data and export data. The image
+		# default is deliberately the invalid "servertype-not-set", so a deployment that
+		# forgets it fails loudly instead of silently picking a role.
+		#
+		# Note this is NOT the `export` deployment, which is the separate Quarkus
+		# vcell-exporter image.
 		app_args=("${servertype:-}")
 		;;
 	db)

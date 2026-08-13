@@ -137,18 +137,6 @@ jobs:
             needs_maven: false
             needs_secrets: false
             build_args: "BUILD_COMMAND=build_prod"
-          - name: webapp-island
-            dockerfile: webapp-ng/Dockerfile-webapp
-            context: webapp-ng
-            needs_maven: false
-            needs_secrets: false
-            build_args: "BUILD_COMMAND=build_island"
-          - name: webapp-remote
-            dockerfile: webapp-ng/Dockerfile-webapp
-            context: webapp-ng
-            needs_maven: false
-            needs_secrets: false
-            build_args: "BUILD_COMMAND=build_remote"
           - name: db
             dockerfile: docker/build/Dockerfile-db-dev
             context: .
@@ -168,11 +156,6 @@ jobs:
             dockerfile: docker/build/Dockerfile-data-dev
             context: .
             needs_maven: true
-            needs_secrets: false
-          - name: mongo
-            dockerfile: docker/build/mongo/Dockerfile
-            context: docker/build/mongo
-            needs_maven: false
             needs_secrets: false
           - name: batch
             dockerfile: docker/build/Dockerfile-batch-dev
@@ -286,12 +269,39 @@ jobs:
         REPO="${{ needs.setup.outputs.vcell_repo_namespace }}"
         TAG="${{ needs.setup.outputs.vcell_tag }}"
         FRIENDLY="${{ needs.setup.outputs.friendly_tag }}"
-        CONTAINERS="vcell-service vcell-exporter vcell-api vcell-rest vcell-webapp-prod vcell-webapp-dev vcell-webapp-stage vcell-webapp-island vcell-webapp-remote vcell-batch vcell-opt vcell-clientgen vcell-data vcell-db vcell-mongo vcell-sched vcell-submit vcell-admin"
+        CONTAINERS="vcell-service vcell-exporter vcell-api vcell-rest vcell-webapp-prod vcell-webapp-dev vcell-webapp-stage vcell-batch vcell-opt vcell-clientgen vcell-data vcell-db vcell-sched vcell-submit vcell-admin"
+        # GHCR applies a secondary rate limit, and this job pushes three tags for every
+        # image in one burst. Exceeding it returns 403 permission_denied, whose body says
+        # "You have exceeded a secondary rate limit" -- indistinguishable at a glance from a
+        # genuine permissions failure, which is how it read the first time. It is transient,
+        # so back off and retry rather than failing the release.
+        #
+        # This job is worth protecting: it creates the friendly version.build tags that every
+        # deploy pulls, and without them a deploy fails with "manifest unknown".
+        push_with_retry() {
+          local image="$1" attempt=1 delay=30
+          until docker push "${image}"; do
+            if [ "${attempt}" -ge 5 ]; then
+              echo "::error::${image}: still failing after ${attempt} attempts"
+              return 1
+            fi
+            echo "${image}: push failed (attempt ${attempt}); waiting ${delay}s for the rate limit to clear"
+            sleep "${delay}"
+            delay=$(( delay * 2 ))
+            attempt=$(( attempt + 1 ))
+          done
+        }
+
+        # Push the two new tags by name rather than `--all-tags`. --all-tags also re-pushes
+        # :${TAG}, which docker-build already published and which this job just pulled -- a
+        # third of the registry writes re-uploading a manifest that is already there, for
+        # nothing, against a rate limit that is the reason this job failed.
         for CONTAINER in ${CONTAINERS}; do
           docker pull ${REPO}/${CONTAINER}:${TAG}
           docker tag ${REPO}/${CONTAINER}:${TAG} ${REPO}/${CONTAINER}:latest
           docker tag ${REPO}/${CONTAINER}:${TAG} ${REPO}/${CONTAINER}:${FRIENDLY}
-          docker push --all-tags ${REPO}/${CONTAINER}
+          push_with_retry ${REPO}/${CONTAINER}:latest
+          push_with_retry ${REPO}/${CONTAINER}:${FRIENDLY}
         done
 
   build-and-publish-sif:
