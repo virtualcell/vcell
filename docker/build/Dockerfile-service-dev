@@ -113,11 +113,7 @@ RUN chmod 755 /vcellscripts/entrypoint.sh
 #     61616 and 8161 to a port unique to that namespace -- dev 31617/30162, stage 31616/30161,
 #     prod 31618/30163.
 #
-# Merged from the five Dockerfiles, which agreed on 87 of 88 names. The one disagreement was
-# jmsport_sim_internal -- 61626 in sched, 61616 in submit. 61626 appears exactly once in either
-# repository, in that sched line: no compose file, local config script or README uses it, and
-# being the INTERNAL port it is overridden to 61616 by every overlay's shared.env. It reads as
-# a leftover from an earlier single-host topology; 61616 is used here.
+# Merged from the five Dockerfiles, which agree on all 88 names.
 ENV     softwareVersion=SOFTWARE-VERSION-NOT-SET \
     serverid=SITE \
     dburl="db-url-not-set" \
