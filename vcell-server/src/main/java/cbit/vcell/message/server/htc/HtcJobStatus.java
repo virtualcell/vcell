@@ -48,7 +48,12 @@ public class HtcJobStatus implements Serializable {
 	}
 	
 	public boolean isDone() {
-		return isComplete() || isFailed();
+		return isComplete() || isFailed() || isStopped();
+	}
+
+	/** Terminated on purpose rather than by going wrong. Only slurm distinguishes this. */
+	public boolean isStopped() {
+		return slurmJobStatus != null && slurmJobStatus.isStopped();
 	}
 
 	public boolean isFailed() {
