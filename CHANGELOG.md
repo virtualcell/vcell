@@ -16,6 +16,55 @@ followed by flat Keep-a-Changelog categories. API consumers should scan
 
 _(Release-manager scratchpad. Populated at release-cut time.)_
 
+## [8.0.14.01] - 2026-08-13
+
+**Highlights.** When a simulation is killed on the cluster, VCell now says why. A job the
+scheduler ends — out of time, out of memory, node lost, preempted — never gets to report
+back, so previously it sat "running" until a ten-minute silence timer failed it with
+"solver stopped unexpectedly". VCell now asks slurm directly and reports the actual reason
+within a minute, and a job cancelled on purpose is recorded as stopped rather than as a
+failure, so a deliberate stop no longer looks like something went wrong with the model.
+
+### Fixed
+- A simulation ended by the cluster is reported with its real cause — `TIMEOUT`,
+  `OUT_OF_MEMORY`, `NODE_FAIL`, `PREEMPTED` — instead of `failed: timed out` ten minutes
+  later. For a SpringSaLaD run that reached its per-task time limit, this is the difference
+  between knowing what happened and looking for a fault in the model. (#1917)
+- A job cancelled on the cluster is recorded as **stopped**, not failed. Cancelling is
+  deliberate, and reporting it as an error told the person who asked for it that something
+  had gone wrong. A user's own stop was never affected. (#1914)
+- Job states the scheduler reports were being misclassified: only the state literally named
+  `FAILED` counted as a failure, so a job ended by `TIMEOUT` or `OUT_OF_MEMORY` read as
+  though it were still running, and `OUT_OF_MEMORY` was not recognised at all. (#1915)
+- Tracking of running cluster jobs no longer survives on a text file that could be
+  corrupted or truncated. It is rebuilt from the database, so a restart recovers correctly
+  on its own. The file had a defect that silently dropped every job listed after a damaged
+  line, which is fixed and then removed entirely. (#1909, #1917)
+- Job status is read once through a single shared query rather than a second hand-written
+  one, so a multi-task SpringSaLaD run no longer trips a parsing fault, and a recycled
+  cluster job id cannot be mistaken for the job that previously held it. (#1915)
+- Hundreds of spurious `PROPERTY: … not marked required` errors per hour. The message was
+  accurate — those services were fetching properties they had never declared — so the
+  declarations were completed rather than the message silenced. A missing value now fails
+  at startup, naming itself, instead of at first use. (#1918)
+
+### Changed
+- Cluster job status is read as structured output (`--json`) rather than parsed from
+  columns, so the steps of a multi-task job arrive nested inside it rather than as rows to
+  be filtered, and a slurm upgrade that moves a field is detected instead of misread. Job
+  liveness is still read from the compact text form, which is far smaller for the one
+  question it answers. (#1916)
+- If slurm's accounting service is unavailable, VCell falls back to asking the scheduler
+  directly for what it still holds in memory, and says so. Previously that outage silently
+  produced no failures at all — indistinguishable from every job being healthy. (#1916)
+
+### Notes for API consumers
+- No `/api/v1/` schema changes; `tools/openapi.yaml` is unchanged and the generated Java,
+  Python and TypeScript clients are unaffected.
+- A simulation cancelled on the cluster now reports `SchedulerStatus.STOPPED` where it
+  previously reported `FAILED`. Anything treating "not completed" as "failed" should treat
+  stopped as a third outcome.
+
 ## [8.0.13.01] - 2026-08-12
 
 **Highlights.** Simulation results stored in HDF5 — Chombo and MovingBoundary — can now be
