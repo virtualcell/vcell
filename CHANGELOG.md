@@ -16,6 +16,47 @@ followed by flat Keep-a-Changelog categories. API consumers should scan
 
 _(Release-manager scratchpad. Populated at release-cut time.)_
 
+## [8.0.15.01] - 2026-08-13
+
+**Highlights.** Nothing changes for anyone using VCell; this release is entirely about how the
+server services are configured and packaged. Each service used to receive its configuration as
+a wall of `-D` flags whose only job was renaming environment variables the container already
+had — 98 of them across five services, and the reason five nearly identical Dockerfiles had
+drifted into 804 lines. Services can now read that configuration directly from their
+environment, and the five images are consolidated into one that selects a service by argument.
+A misspelled setting, which used to be silently ignored, is now reported.
+
+### Added
+- `EnvironmentConfigProvider`: standalone services resolve configuration from their environment
+  using the same naming rules MicroProfile applies, so the legacy services and vcell-rest answer
+  to the same variable names instead of each needing its own. Existing `-D` flags still take
+  precedence, so services can migrate one at a time. (#1920)
+- A single `vcell-service` image serving api, data, db, sched and submit, choosing one by its
+  first argument. Published alongside the five images it will replace; no deployment refers to
+  it yet. (#1920)
+- Unrecognised `VCELL_*` environment variables are reported at startup with the nearest matching
+  property — `VCELL_SERVER_DBCONNECTUR` now says "did you mean vcell.server.dbConnectURL". A
+  misspelling previously resolved to nothing and the property quietly took its default, so a
+  service ran on configuration nobody intended while the deployment file read as though it were
+  set. Advisory by default; `-Dvcell.config.strictEnvironmentNames=true` makes it fatal. (#1920)
+
+### Fixed
+- Startup validation resolves each declared property rather than enumerating configuration
+  names. An environment variable cannot be reversed into a property name, so the old check would
+  have reported environment-supplied configuration as missing and failed startup on settings that
+  were in fact present. (#1920)
+- `sched` and `submit` no longer disagree about the sim broker's internal port; both use 61616,
+  which is what `activemqsim` listens on and what every deployment sets. (#1920)
+
+### Changed
+- `CI-full` no longer opens an interactive tmate session when a job fails. Both were left over
+  from earlier debugging and held a runner until it timed out — including in `tag-and-push`, the
+  job that creates the image tags every deploy pulls. (#1920)
+
+### Notes for API consumers
+No API changes. The `vcell-service` image is additive and unreferenced; the five existing service
+images are unchanged and still published.
+
 ## [8.0.14.01] - 2026-08-13
 
 **Highlights.** When a simulation is killed on the cluster, VCell now says why. A job the
