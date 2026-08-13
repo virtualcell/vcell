@@ -106,4 +106,51 @@ public class ServiceEntrypointTest {
 					"Dockerfile-service-dev does not copy vcell-" + service + ".log4j.xml");
 		}
 	}
+
+	/**
+	 * The consolidated image must carry the same modern environment names as the per-service
+	 * images it replaces.
+	 *
+	 * It did not, and nothing noticed. The migration added twins to the ConfigMaps, the base
+	 * manifests and the five per-service Dockerfiles -- but Dockerfile-service-dev was missed,
+	 * and that is the image stage actually runs. Every check that said "no property is reachable
+	 * only by a legacy name" had iterated the five per-service files. It surfaced only when the
+	 * running containers were asked directly, one property short of removing the fallback those
+	 * services were still relying on.
+	 */
+	@Test
+	public void theConsolidatedImageCarriesTheModernNamesToo() throws IOException {
+		Path consolidated = Path.of("..", "docker", "build", "Dockerfile-service-dev");
+		Assumptions.assumeTrue(Files.isRegularFile(consolidated), consolidated + " not found");
+		String text = Files.readString(consolidated);
+
+		Map<String, String> declared = new LinkedHashMap<>();
+		Matcher m = Pattern.compile("^\\s*(?:ENV\\s+)?([A-Za-z_][A-Za-z0-9_]*)=(.*?)\\s*\\\\?$",
+				Pattern.MULTILINE).matcher(text);
+		while (m.find()) {
+			declared.putIfAbsent(m.group(1), m.group(2));
+		}
+
+		List<String> missing = new ArrayList<>();
+		for (Map.Entry<String, String> entry : declared.entrySet()) {
+			String legacy = entry.getKey();
+			if (legacy.matches("[A-Z0-9_]+")) {
+				continue;
+			}
+			for (Map.Entry<String, String> alias : EnvironmentConfigProvider.legacyNames().entrySet()) {
+				if (!alias.getValue().equals(legacy)) {
+					continue;
+				}
+				String modern = EnvironmentConfigProvider.upperCaseNameFor(alias.getKey());
+				if (!declared.containsKey(modern)) {
+					missing.add(legacy + " -> " + modern);
+				} else if (!declared.get(modern).equals(entry.getValue())) {
+					missing.add(modern + " has a different value from " + legacy);
+				}
+			}
+		}
+		assertEquals(List.of(), missing,
+				"the consolidated image defines these only under their legacy names, so those"
+						+ " properties would stop resolving the moment the fallback is removed");
+	}
 }
