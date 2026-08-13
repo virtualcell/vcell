@@ -9,6 +9,7 @@ public enum SlurmJobStatus {
 	 DEADLINE("DL","DEADLINE","Job missed its deadline."),
 	 FAILED("F","FAILED","Job terminated with non-zero exit code or other failure condition."),
 	 NODE_FAIL("NF","NODE_FAIL","Job terminated due to failure of one or more allocated nodes."),
+	 OUT_OF_MEMORY("OOM","OUT_OF_MEMORY","Job experienced out of memory error."),
 	 PENDING("PD","PENDING","Job is awaiting resource allocation. Note for a job to be selected in this state it must have 'EligibleTime' in the requested time interval or different from 'Unknown'. The 'EligibleTime' is displayed by the 'scontrol show job' command. For example jobs submitted with the '--hold' option will have 'EligibleTime=Unknown' as they are pending indefinitely."),
 	 PREEMPTED("PR","PREEMPTED","Job terminated due to preemption."),
 	 RUNNING("R","RUNNING","Job currently has an allocation."),

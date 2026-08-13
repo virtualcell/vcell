@@ -349,17 +349,27 @@ public class SlurmProxy extends HtcProxy {
 	static Map<HtcJobInfo, HtcJobStatus> extractJobIds(String output) throws IOException {
 		BufferedReader reader = new BufferedReader(new StringReader(output));
 		String line = reader.readLine();
-		while(!line.equals("JobID|JobName|State")){
+		// sacct prints its header even when nothing matches, so no header at all means no output
+		// -- which is what an accounting outage looks like. Returning empty lets the caller decide
+		// what to make of knowing nothing; throwing here told it the wrong thing.
+		while(line != null && !line.equals("JobID|JobName|State")){
 			line = reader.readLine();
-//			throw new RuntimeException("unexpected first line from sacct: '"+line+"'");
+		}
+		if(line == null){
+			return new HashMap<HtcJobInfo, HtcJobStatus>();
 		}
 		Map<HtcJobInfo, HtcJobStatus> statusMap = new HashMap<HtcJobInfo, HtcJobStatus>();
 		while ((line = reader.readLine()) != null){
 			String[] tokens = line.split("\\|");
+			if (tokens.length < 3){
+				continue;
+			}
 			String jobID = tokens[0];
 			String jobName = tokens[1];
 			String state = tokens[2];
-			if (jobName.equals("batch")){
+			// a dot in the id marks a step (.batch, .extern, .0..), not an allocation. Filtering on
+			// the id covers all three; filtering on the name caught only .batch.
+			if (jobID.contains(".")){
 				continue;
 			}
 			HtcJobID htcJobID = new HtcJobID(jobID,BatchSystemType.SLURM);
