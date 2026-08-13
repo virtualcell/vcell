@@ -42,9 +42,10 @@ jobs:
     name: should-run
     runs-on: ubuntu-24.04
     outputs:
-      java: ${{ steps.decide.outputs.java }}
-      javascript: ${{ steps.decide.outputs.javascript }}
-      python: ${{ steps.decide.outputs.python }}
+      # A JSON array of the languages worth analysing, consumed as the analyze matrix.
+      # It has to be the matrix rather than a per-job `if`, because `matrix` is not one of the
+      # contexts available to a job-level `if` -- only github, needs, vars and inputs are.
+      languages: ${{ steps.decide.outputs.languages }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -55,8 +56,13 @@ jobs:
         run: |
           set -uo pipefail
           all() {
-            for l in java javascript python; do echo "$l=$1" >> "$GITHUB_OUTPUT"; done
-            echo "::notice::CodeQL languages $( [ "$1" = true ] && echo "all run" || echo skipped ): $2"
+            if [ "$1" = true ]; then
+              echo 'languages=["java","javascript","python"]' >> "$GITHUB_OUTPUT"
+              echo "::notice::CodeQL: all languages run -- $2"
+            else
+              echo 'languages=[]' >> "$GITHUB_OUTPUT"
+              echo "::notice::CodeQL: skipped -- $2"
+            fi
             exit 0
           }
 
@@ -87,16 +93,19 @@ jobs:
             all true "no diff available"
           fi
 
-          decide_one() {
+          selected=""
+          consider() {
             if printf '%s\n' "${changed}" | grep -qE "$2"; then
-              echo "$1=true" >> "$GITHUB_OUTPUT"; echo "::notice::CodeQL $1: runs"
+              selected="${selected:+${selected},}\"$1\""
+              echo "::notice::CodeQL $1: runs"
             else
-              echo "$1=false" >> "$GITHUB_OUTPUT"; echo "::notice::CodeQL $1: skipped, no $1 files changed"
+              echo "::notice::CodeQL $1: skipped, no $1 files changed"
             fi
           }
-          decide_one java       '(\.java$|(^|/)pom\.xml$)'
-          decide_one javascript '(\.(js|jsx|ts|tsx|mjs|cjs)$|(^|/)package(-lock)?\.json$)'
-          decide_one python     '(\.py$|(^|/)(pyproject\.toml|poetry\.lock|requirements[^/]*\.txt)$)'
+          consider java       '(\.java$|(^|/)pom\.xml$)'
+          consider javascript '(\.(js|jsx|ts|tsx|mjs|cjs)$|(^|/)package(-lock)?\.json$)'
+          consider python     '(\.py$|(^|/)(pyproject\.toml|poetry\.lock|requirements[^/]*\.txt)$)'
+          echo "languages=[${selected}]" >> "$GITHUB_OUTPUT" 
         env:
           GITHUB_EVENT_BEFORE: ${{ github.event.before }}
 
@@ -104,7 +113,8 @@ jobs:
     name: Analyze
     runs-on: ubuntu-24.04
     needs: should-run
-    if: ${{ needs.should-run.outputs[matrix.language] == 'true' }}
+    # An empty matrix vector is an error, so the job is skipped outright when nothing applies.
+    if: ${{ needs.should-run.outputs.languages != '[]' }}
     permissions:
       actions: read
       contents: read
@@ -113,7 +123,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [ 'java', 'javascript', 'python' ]
+        # Chosen by should-run: only the languages this change can affect.
+        language: ${{ fromJson(needs.should-run.outputs.languages) }}
         # CodeQL supports [ 'cpp', 'csharp', 'go', 'java', 'javascript', 'python', 'ruby' ]
         # Learn more about CodeQL language support at https://git.io/codeql-language-support
 
