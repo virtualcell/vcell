@@ -214,7 +214,7 @@ private PostProcessingChores choresFor(SimulationTask simTask) {
 
 
 //------------------------------Job Monitor Section BEGIN
-private static class MonitorJobInfo {
+static class MonitorJobInfo {
 	private long slurmJobID;
 	private boolean bDelete;
 	private VCSimulationIdentifier vcsimID;
@@ -231,16 +231,29 @@ private static class MonitorJobInfo {
 		this.slurmJobID = slurmJobID;
 		this.bDelete = true;;
 	}
+	private static String next(StringTokenizer st, String line, String what) {
+		if (!st.hasMoreTokens()) {
+			throw new IllegalArgumentException("monitorJobs entry is missing " + what + ": '" + line + "'");
+		}
+		return st.nextToken();
+	}
+
+	/** toString() writes the username quoted; strip it, or each rewrite adds another pair. */
+	private static String unquote(String s) {
+		return (s.length() >= 2 && s.startsWith("'") && s.endsWith("'")) ? s.substring(1, s.length()-1) : s;
+	}
+
+	/** Inverse of {@link #toString()}; throws IllegalArgumentException naming the bad line. */
 	public static MonitorJobInfo fromString(String str) {
 		StringTokenizer st = new StringTokenizer(str," \n\r");
-		boolean bDelete = (st.nextToken().equals("+")?false:true);// + or -
-		long slurmJobID = Long.parseLong(st.nextToken());// slurmJobID
+		boolean bDelete = (next(st, str, "+/- marker").equals("+")?false:true);// + or -
+		long slurmJobID = Long.parseLong(next(st, str, "slurmJobID"));// slurmJobID
 		if(!bDelete) {
-			KeyValue simKey = new KeyValue(st.nextToken());// simkey
-			String username = st.nextToken();// username
-			KeyValue userkey = new KeyValue(st.nextToken());// userkey
-			int simJobIndex = Integer.parseInt(st.nextToken());// simjobidindex
-			int simTaskID = Integer.parseInt(st.nextToken());// simtaskid
+			KeyValue simKey = new KeyValue(next(st, str, "simKey"));// simkey
+			String username = unquote(next(st, str, "username"));// username
+			KeyValue userkey = new KeyValue(next(st, str, "userKey"));// userkey
+			int simJobIndex = Integer.parseInt(next(st, str, "simJobIndex"));// simjobidindex
+			int simTaskID = Integer.parseInt(next(st, str, "simTaskID"));// simtaskid
 			return new MonitorJobInfo(slurmJobID,new VCSimulationIdentifier(simKey, new User(username, userkey)), simJobIndex, simTaskID);
 		}else {
 			return new MonitorJobInfo(slurmJobID);
@@ -270,11 +283,17 @@ private static Hashtable<String,MonitorJobInfo> getMonitorJobs(){
 			for (Iterator<String> iterator = monitorJobsList.iterator(); iterator.hasNext();) {
 				String slurmJobInfoStr = (String) iterator.next();
 				if(slurmJobInfoStr != null && slurmJobInfoStr.trim().length() > 0) {
-					MonitorJobInfo monitorJobInfo = MonitorJobInfo.fromString(slurmJobInfoStr);
-					if(monitorJobInfo.bDelete) {
-						theseJobsAreDone.add(monitorJobInfo.slurmJobID+"");
-					}else {
-						result.put(monitorJobInfo.slurmJobID+"", monitorJobInfo);
+					// per line, so one unparseable entry costs that entry and not the rest of the file.
+					// Losing the tail means losing track of running slurm jobs.
+					try {
+						MonitorJobInfo monitorJobInfo = MonitorJobInfo.fromString(slurmJobInfoStr);
+						if(monitorJobInfo.bDelete) {
+							theseJobsAreDone.add(monitorJobInfo.slurmJobID+"");
+						}else {
+							result.put(monitorJobInfo.slurmJobID+"", monitorJobInfo);
+						}
+					} catch (Exception e) {
+						lg.error("skipping unparseable monitorJobs entry '" + slurmJobInfoStr + "': " + e, e);
 					}
 				}
 			}
@@ -314,8 +333,11 @@ public void startJobMonitor() {
 		lg.info("Resetting slurm monitorJobsFile");
 		//clean jobs file
 		StringBuffer sb = new StringBuffer();
-		for (Iterator<String> iterator = monitorTheseJobs.keySet().iterator(); iterator.hasNext();) {
-			sb.append((iterator.next())+"\n");	
+		// values(), not keySet(): the keys are bare slurm job ids, and writing those produced a
+		// file whose lines cannot be parsed back -- "12345" has no second token, so the next
+		// startup threw NoSuchElementException and dropped every remaining monitored job.
+		for (MonitorJobInfo monitorJobInfo : monitorTheseJobs.values()) {
+			sb.append(monitorJobInfo.toString()+"\n");
 		}
 		Files.write(monitorJobsFile.toPath(),sb.toString().getBytes(),StandardOpenOption.CREATE,StandardOpenOption.WRITE,StandardOpenOption.TRUNCATE_EXISTING);
 	} catch (IOException e1) {
