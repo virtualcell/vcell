@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 public class PropertyLoader {
@@ -45,10 +46,24 @@ public class PropertyLoader {
 		}
 	}
 
+	// Deliberately system properties only. Reading the environment is correct for a service in a
+	// container VCell defines, and wrong for the desktop client, the CLI and the admin tools,
+	// which run on machines whose environment VCell does not control -- a stray "keystore" or
+	// "workingDir" there would feed a VCell property. So each standalone service installs
+	// EnvironmentConfigProvider itself, and vcell-rest installs CDIVCellConfigProvider.
 	private static VCellConfigProvider configProvider = new SystemPropertyConfigProvider();
 
 	public static void setConfigProvider(VCellConfigProvider configProvider) {
 		PropertyLoader.configProvider = configProvider;
+	}
+
+	public static VCellConfigProvider getConfigProvider() {
+		return configProvider;
+	}
+
+	/** Every property name declared via {@link #record}. */
+	static Set<String> declaredPropertyNames() {
+		return java.util.Collections.unmodifiableSet(propMap.keySet());
 	}
 
 	//must come before uses of #record method
@@ -551,10 +566,32 @@ public class PropertyLoader {
 	private static void validateSystemProperties(String[] required) {
 		checkRequired = true;
 
-		for (Object propName : configProvider.getConfigNames()) {
-			if (propMap.containsKey(propName)) {
-				propMap.get(propName).set = true;
+		// Ask the provider to resolve each declared property rather than enumerating the names it
+		// knows about. An environment variable cannot be reversed into a property name --
+		// VCELL_SERVER_ID could be vcell.server.id or vcell.server_id -- so a name-based check
+		// reports a property supplied by the environment as missing, and the startup validation
+		// would fail on configuration that is in fact present.
+		for (Map.Entry<String, MetaProp> entry : propMap.entrySet()) {
+			try {
+				if (configProvider.getConfigValue(entry.getKey()) != null) {
+					entry.getValue().set = true;
+				}
+			} catch (Exception e) {
+				// A provider is allowed to signal "absent" by throwing rather than returning null.
+				// Treat that as absent, exactly as getProperty() does -- the validation report
+				// below is what tells the operator which properties are missing, and it should
+				// not be pre-empted by an exception from the lookup of an unrelated one.
+				lg.debug("could not resolve " + entry.getKey() + " while validating properties", e);
 			}
+		}
+
+		// A misspelled VCELL_* variable resolves nothing and the property silently takes its
+		// default, so the service would run on configuration nobody intended. Moving config into
+		// the environment makes the environment the interface; this stops it accepting typos in
+		// silence. Only the environment-reading provider can do this -- system properties are not
+		// namespaced the same way.
+		if (configProvider instanceof EnvironmentConfigProvider) {
+			((EnvironmentConfigProvider) configProvider).reportUnrecognisedEnvironmentNames(propMap.keySet());
 		}
 
 		StringBuffer validationReport = new StringBuffer();

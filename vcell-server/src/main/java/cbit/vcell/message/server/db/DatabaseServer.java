@@ -16,6 +16,7 @@ import cbit.vcell.message.messages.MessageConstants;
 import cbit.vcell.message.server.ServerMessagingDelegate;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.resource.OperatingSystemInfo;
+import cbit.vcell.resource.EnvironmentConfigProvider;
 import cbit.vcell.resource.PropertyLoader;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -123,6 +124,11 @@ public static void main(java.lang.String[] args) {
 	}
 	
 	try {
+		// A standalone service takes its configuration from the container environment. The desktop
+		// client, the CLI and the admin tools deliberately do not -- they run on machines whose
+		// environment VCell does not control -- so this is installed per service rather than being
+		// the default in PropertyLoader. vcell-rest installs CDIVCellConfigProvider for the same reason.
+		PropertyLoader.setConfigProvider(new EnvironmentConfigProvider());
 		PropertyLoader.loadProperties(REQUIRED_SERVICE_PROPERTIES);
 
 		Injector injector = Guice.createInjector(new VCellServerModule());

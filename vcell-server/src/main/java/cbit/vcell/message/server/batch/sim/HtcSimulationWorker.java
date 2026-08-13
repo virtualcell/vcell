@@ -27,6 +27,7 @@ import cbit.vcell.message.server.htc.HtcProxy.HtcJobInfo;
 import cbit.vcell.message.server.htc.slurm.SlurmProxy;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.resource.OperatingSystemInfo;
+import cbit.vcell.resource.EnvironmentConfigProvider;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.server.HtcJobID;
@@ -443,6 +444,11 @@ public static void main(String[] args) throws IOException {
 		}
 
 		OperatingSystemInfo.getInstance();
+		// A standalone service takes its configuration from the container environment. The desktop
+		// client, the CLI and the admin tools deliberately do not -- they run on machines whose
+		// environment VCell does not control -- so this is installed per service rather than being
+		// the default in PropertyLoader. vcell-rest installs CDIVCellConfigProvider for the same reason.
+		PropertyLoader.setConfigProvider(new EnvironmentConfigProvider());
 		PropertyLoader.loadProperties(REQUIRED_SERVICE_PROPERTIES);
 
 		Injector injector = Guice.createInjector(new VCellServerModule());

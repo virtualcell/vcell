@@ -93,6 +93,15 @@ jobs:
       fail-fast: false
       matrix:
         image:
+          # One image for all five server services; the service is chosen by the container's
+          # first argument. Published alongside the five it replaces so the deployment can move
+          # one service at a time -- vcell-fluxcd still refers to vcell-api, vcell-db and the
+          # rest, and those entries come out only once nothing points at them.
+          - name: service
+            dockerfile: docker/build/Dockerfile-service-dev
+            context: .
+            needs_maven: true
+            needs_secrets: false
           - name: api
             dockerfile: docker/build/Dockerfile-api-dev
             context: .
@@ -277,17 +286,13 @@ jobs:
         REPO="${{ needs.setup.outputs.vcell_repo_namespace }}"
         TAG="${{ needs.setup.outputs.vcell_tag }}"
         FRIENDLY="${{ needs.setup.outputs.friendly_tag }}"
-        CONTAINERS="vcell-exporter vcell-api vcell-rest vcell-webapp-prod vcell-webapp-dev vcell-webapp-stage vcell-webapp-island vcell-webapp-remote vcell-batch vcell-opt vcell-clientgen vcell-data vcell-db vcell-mongo vcell-sched vcell-submit vcell-admin"
+        CONTAINERS="vcell-service vcell-exporter vcell-api vcell-rest vcell-webapp-prod vcell-webapp-dev vcell-webapp-stage vcell-webapp-island vcell-webapp-remote vcell-batch vcell-opt vcell-clientgen vcell-data vcell-db vcell-mongo vcell-sched vcell-submit vcell-admin"
         for CONTAINER in ${CONTAINERS}; do
           docker pull ${REPO}/${CONTAINER}:${TAG}
           docker tag ${REPO}/${CONTAINER}:${TAG} ${REPO}/${CONTAINER}:latest
           docker tag ${REPO}/${CONTAINER}:${TAG} ${REPO}/${CONTAINER}:${FRIENDLY}
           docker push --all-tags ${REPO}/${CONTAINER}
         done
-
-    - name: Setup tmate session
-      uses: mxschmitt/action-tmate@v3
-      if: ${{ failure() }}
 
   build-and-publish-sif:
     name: Build and publish Apptainer SIF images
@@ -313,7 +318,3 @@ jobs:
           echo "Publishing ${SIF_NAME} to oras://${REPO}/${IMG}_singularity:${TAG}"
           apptainer push "${SIF_NAME}" "oras://${REPO}/${IMG}_singularity:${TAG}"
         done
-
-    - name: Setup tmate session
-      uses: mxschmitt/action-tmate@v3
-      if: ${{ failure() }}
