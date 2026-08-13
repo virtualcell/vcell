@@ -373,3 +373,16 @@ jobs:
           -H 'Content-Type: application/json' \
           --data "@body"
 
+  # A release becomes citable when it is the one users are running, not when it is tagged.
+  # Archiving on every published release produced a DOI for ~15 consecutive patch builds
+  # between 2026-07-01 and 2026-08-13, none of which reached production. This runs only for
+  # the release site, and only if the deploy actually succeeded.
+  archive-to-zenodo:
+    name: Archive to Zenodo
+    needs: deploy
+    if: ${{ needs.deploy.result == 'success' && github.event.inputs.vcell_site == 'rel' }}
+    uses: ./.github/workflows/zenodo-archive.yml
+    with:
+      tag: ${{ github.event.inputs.vcell_version }}.${{ github.event.inputs.vcell_build }}
+    secrets:
+      ZENODO_TOKEN: ${{ secrets.ZENODO_TOKEN }}
