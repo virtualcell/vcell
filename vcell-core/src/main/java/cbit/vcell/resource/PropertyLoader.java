@@ -90,7 +90,7 @@ public class PropertyLoader {
 	public static final String htcLogDirExternal				= record("vcell.htc.logdir.external",ValueType.GEN);
 	public static final String htcLogDirInternal				= record("vcell.htc.logdir.internal",ValueType.GEN);
 	public static final String htcUser						= record("vcell.htc.user",ValueType.GEN);
-	public static final String htcUserKeyFile				= record("vcell.htc.userkeyfile",ValueType.GEN);
+	public static final String htcUserKeyFile				= record("vcell.htc.userkeyfile",ValueType.FILE);
 	public static final String htcHosts						= record("vcell.htc.hosts",ValueType.GEN);
 	public static final String htcPbsHome		 			= record("vcell.htc.pbs.home",ValueType.GEN);
 	public static final String htcSgeHome		 			= record("vcell.htc.sge.home",ValueType.GEN);
@@ -162,11 +162,11 @@ public class PropertyLoader {
 
 	//Python properties
 	public static final String pythonExe					= record("vcell.python.executable",ValueType.EXE);
-	public static final String vcellapiKeystoreFile			= record("vcellapi.keystore.file",ValueType.GEN);
+	public static final String vcellapiKeystoreFile			= record("vcellapi.keystore.file",ValueType.FILE);
 	public static final String vcellapiKeystorePswd			= record("vcellapi.keystore.pswd",ValueType.GEN);
 	public static final String vcellapiKeystorePswdFile		= record("vcellapi.keystore.pswdfile",ValueType.GEN);
-	public static final String vcellapiPublicKey		= record("vcellapi.publicKey.file",ValueType.GEN);
-	public static final String vcellapiPrivateKey		= record("vcellapi.privateKey.file",ValueType.GEN);
+	public static final String vcellapiPublicKey		= record("vcellapi.publicKey.file",ValueType.FILE);
+	public static final String vcellapiPrivateKey		= record("vcellapi.privateKey.file",ValueType.FILE);
 
 
 
@@ -228,7 +228,7 @@ public class PropertyLoader {
 	public static final String dbConnectURL					= record("vcell.server.dbConnectURL",ValueType.GEN);
 	public static final String dbUserid						= record("vcell.server.dbUserid",ValueType.GEN);
 	public static final String dbPasswordValue				= record("vcell.server.dbPassword",ValueType.GEN);
-	public static final String dbPasswordFile				= record("vcell.db.pswdfile",ValueType.GEN);
+	public static final String dbPasswordFile				= record("vcell.db.pswdfile",ValueType.FILE);
 
 	// e.g. user.timezone="-05:00" for EST - needed for oracle
 	public static final String userTimezone					= record("user.timezone",ValueType.GEN);
@@ -244,7 +244,7 @@ public class PropertyLoader {
 	public static final String jmsArtemisPortInternal		= record("vcell.jms.artemis.port.internal",ValueType.GEN);
 	public static final String jmsUser						= record("vcell.jms.user",ValueType.GEN);
 	public static final String jmsPasswordValue				= record("vcell.jms.password",ValueType.GEN);
-	public static final String jmsPasswordFile				= record("vcell.jms.pswdfile",ValueType.GEN);
+	public static final String jmsPasswordFile				= record("vcell.jms.pswdfile",ValueType.FILE);
 	public static final String jmsRestPasswordFile			= record("vcell.jms.rest.pswdfile",ValueType.GEN);
 
 	public static final String jmsSimReqQueue			= record("vcell.jms.queue.simReq",ValueType.GEN);
@@ -355,6 +355,15 @@ public class PropertyLoader {
 		 * a executable
 		 */
 		EXE,
+		/**
+		 * a file that must exist and be readable.
+		 *
+		 * Distinct from GEN because a path is not merely a string: the whole value of naming a
+		 * file in configuration is that something will later open it. Checking at startup turns
+		 * "unreadable secret, discovered when the database is first contacted" into "this
+		 * property points at a file that is not there", which names the property and the path.
+		 */
+		FILE,
 		/**
 		 * integer number (not necessary Integer class, could be Long, e.g.)
 		 */
@@ -672,6 +681,17 @@ public class PropertyLoader {
 			File f = new File(value);
 			if (!f.canExecute()) {
 				report.append(name + " value " + value + fromFile(fileSet) + " is not executable\n");
+			}
+			return;
+		}
+		case FILE:
+		{
+			File f = new File(value);
+			if (!f.isFile()) {
+				report.append(name + " value " + value + fromFile(fileSet) + " is not an existing file\n");
+			}
+			else if (!f.canRead()) {
+				report.append(name + " value " + value + fromFile(fileSet) + " is not readable\n");
 			}
 			return;
 		}

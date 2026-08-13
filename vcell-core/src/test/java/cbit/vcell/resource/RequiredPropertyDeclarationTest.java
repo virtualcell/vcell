@@ -1,6 +1,7 @@
 package cbit.vcell.resource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
@@ -134,5 +135,37 @@ public class RequiredPropertyDeclarationTest {
 		public void append(LogEvent event) {
 			events.add(event.toImmutable());
 		}
+	}
+
+	/**
+	 * A file-valued property is checked at startup, which GEN never was.
+	 *
+	 * This exists because of a concrete near-miss: the deployment overrides the image's default
+	 * secret paths under the legacy environment names only, so while migrating to VCELL_* names
+	 * the modern form of vcell.db.pswdfile would have resolved to the image default
+	 * (/run/secrets/dbpswd) rather than the deployment's (/run/secrets/api-secrets/dbpswd). 13
+	 * such divergences existed, all of them secret paths. Declared GEN, every one resolves
+	 * "successfully" to a file that is not there, and the failure surfaces much later as an
+	 * unreadable password.
+	 */
+	@Test
+	public void aFileValuedPropertyPointingAtNothingFailsValidation() throws java.io.IOException {
+		give(PropertyLoader.dbPasswordFile, "/no/such/secret/dbpswd");
+
+		IllegalStateException e = assertThrows(IllegalStateException.class,
+				() -> PropertyLoader.loadProperties(new String[] { PropertyLoader.dbPasswordFile }));
+
+		assertTrue(e.getMessage().contains(PropertyLoader.dbPasswordFile), e.getMessage());
+		assertTrue(e.getMessage().contains("is not an existing file"), e.getMessage());
+	}
+
+	/** And one that does exist passes, so the check is about the file rather than the name. */
+	@Test
+	public void aFileValuedPropertyPointingAtARealFilePasses() throws java.io.IOException {
+		java.io.File real = java.io.File.createTempFile("vcell-pswd", ".tmp");
+		real.deleteOnExit();
+		give(PropertyLoader.dbPasswordFile, real.getAbsolutePath());
+
+		PropertyLoader.loadProperties(new String[] { PropertyLoader.dbPasswordFile });
 	}
 }
