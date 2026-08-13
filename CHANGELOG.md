@@ -16,6 +16,23 @@ followed by flat Keep-a-Changelog categories. API consumers should scan
 
 _(Release-manager scratchpad. Populated at release-cut time.)_
 
+## [8.0.18.01] - 2026-08-13
+
+**Highlights.** Nothing changes for anyone using VCell. The consolidated service image now
+supplies configuration under the same modern names as everything else, which was the last piece
+missing before the legacy name fallback can be retired.
+
+### Fixed
+- The consolidated `vcell-service` image defined its configuration only under the historical
+  short names, while the ConfigMaps, the deployment manifests and the five per-service images
+  had all gained modern equivalents. It is the image the services actually run, so a setting
+  reachable only by its old name was still relying on the compatibility fallback. 75 modern
+  names added, each with the same value as the name beside it. (#1935)
+
+### Notes for API consumers
+No API changes. Deployment configuration is unchanged; both names are set and resolve to the
+same value.
+
 ## [8.0.17.01] - 2026-08-13
 
 **Highlights.** Nothing changes for anyone using VCell. Configuration is now supplied under one
