@@ -60,13 +60,10 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
     jmsblob_minsize=100000 \
 	ssl_ignoreHostMismatch=true \
 	ssl_ignoreCertProblems=false \
-	protocol="https" \
 	workingDir="/usr/local/app"
 
 ENV dbpswdfile=/run/secrets/dbpswd \
     jmspswdfile=/run/secrets/jmspswd \
-    keystore=/run/secrets/keystorefile \
-    keystorepswdfile=/run/secrets/keystorepswd \
     vcellapi_privatekeyfile=/run/secrets/apiprivkey \
     vcellapi_publickeyfile=/run/secrets/apipubkey
 
@@ -132,4 +129,4 @@ ENTRYPOINT java \
 	-Dvcell.secondarySimdatadir.internal=/simdata_secondary \
 	-Dvcell.jms.blobMessageUseMongo=true \
 	-cp "./lib/*" org.vcell.rest.VCellApiMain \
-	/usr/local/app/docroot 8080 ${protocol}
+	/usr/local/app/docroot 8080

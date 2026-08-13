@@ -59,9 +59,7 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
     servertype="servertype-not-set"
 
 ENV dbpswdfile=/run/secrets/dbpswd \
-    jmspswdfile=/run/secrets/jmspswd \
-    keystore=/run/secrets/keystorefile \
-    keystorepswdfile=/run/secrets/keystorepswd
+    jmspswdfile=/run/secrets/jmspswd
     
 
 VOLUME /simdata

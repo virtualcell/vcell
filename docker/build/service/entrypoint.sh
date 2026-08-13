@@ -73,10 +73,9 @@ case "${service}" in
 			-Dvcell.primarySimdatadir.internal=/simdata
 			-Dvcell.secondarySimdatadir.internal=/simdata_secondary
 		)
-		# Unquoted deliberately: an unset protocol drops the argument rather than passing an
-		# empty one, matching what the shell-form ENTRYPOINT did.
-		# shellcheck disable=SC2206
-		app_args=(/usr/local/app/docroot 8080 ${protocol:-})
+		# Two arguments: the docroot and the port. There used to be a third, http|https, but
+		# VCellApiMain no longer offers the choice -- the ingress terminates TLS everywhere.
+		app_args=(/usr/local/app/docroot 8080)
 		# NOTE: api alone did not set -Djava.awt.headless=true. Preserved as-is rather than
 		# quietly normalised -- it looks accidental, but this change is a refactor.
 		;;

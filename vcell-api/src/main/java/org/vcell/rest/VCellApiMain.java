@@ -17,12 +17,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.restlet.Client;
 import org.restlet.Server;
-import org.restlet.data.Parameter;
 import org.restlet.data.Protocol;
 import org.restlet.engine.Engine;
 import org.restlet.ext.wadl.WadlApplication;
 import org.restlet.ext.wadl.WadlComponent;
-import org.restlet.util.Series;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 import org.vcell.db.KeyFactory;
@@ -36,26 +34,15 @@ import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
 import org.vcell.util.document.UserLoginInfo;
 
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.SecretKey;
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.PBEKeySpec;
-import javax.crypto.spec.PBEParameterSpec;
-import javax.xml.bind.DatatypeConverter;
 import java.io.File;
 
 public class VCellApiMain {
-	enum RequestedProtocol {
-		https, http
-	};
-	
 	private final static Logger lg = LogManager.getLogger(VCellApiMain.class);
 	private final static String TEST_USER = PropertyLoader.TESTACCOUNT_USERID;
 
 	private void init(String[] args) throws Exception {
-		if (args.length != 3) {
-			lg.info("usage: VCellApiMain javascriptDir port [https|http]");
+		if (args.length != 2) {
+			lg.info("usage: VCellApiMain javascriptDir port");
 			System.exit(1);
 		}
 		File javascriptDir = new File(args[0]);
@@ -71,8 +58,6 @@ public class VCellApiMain {
 			lg.error(e);
 			throw new RuntimeException("failed to parse port argument '"+portString+"'",e);
 		}
-
-		RequestedProtocol requestedProtocol = RequestedProtocol.valueOf(args[2]);
 
 		lg.trace("connecting to database");
 
@@ -155,68 +140,12 @@ public class VCellApiMain {
 		@SuppressWarnings("unused")
 		Client clapClient = component.getClients().add(Protocol.CLAP);
 
-		lg.trace("adding CLAP https");
-		if (requestedProtocol == RequestedProtocol.https) {
-			File keystorePath = new File(PropertyLoader.getRequiredProperty(PropertyLoader.vcellapiKeystoreFile));
-			String keystorePassword = PropertyLoader.getSecretValue(PropertyLoader.vcellapiKeystorePswd, PropertyLoader.vcellapiKeystorePswdFile);
-			try {
-				//
-				// keystorePassword may be encrypted with dbPassword, if it is decypt it.
-				//
-				String dbPassword = PropertyLoader.getSecretValue(PropertyLoader.dbPasswordValue, PropertyLoader.dbPasswordFile);
-				SecretKeyFactory kf = SecretKeyFactory.getInstance("PBEWithMD5AndDES");
-				SecretKey key = kf.generateSecret(new PBEKeySpec(dbPassword.toCharArray()));
-				Cipher pbeCipher = Cipher.getInstance("PBEWithMD5AndDES");
-				pbeCipher.init(Cipher.DECRYPT_MODE, key, new PBEParameterSpec(new byte[]{32, 11, 55, 121, 01, 42, 89, 11}, 20));
-				keystorePassword = new String(pbeCipher.doFinal(DatatypeConverter.parseBase64Binary(keystorePassword)));
-			} catch (IllegalBlockSizeException e) {
-				lg.warn("password unhashing didn't work - trying clear text password: " + e.getMessage());
-			}
-			Server httpsServer = component.getServers().add(Protocol.HTTPS, port);
-			Series<Parameter> parameters = httpsServer.getContext().getParameters();
-			parameters.add("keystorePath", keystorePath.toString());
-			parameters.add("keystorePassword", keystorePassword);
-			parameters.add("keystoreType", "JKS");
-			parameters.add("keyPassword", keystorePassword);
-			/**
-			 * last nmap scan to determine supported cipher suites:
-			 *
-			 * $ nmap -sV --script ssl-enum-ciphers -p 8082 155.37.249.214
-			 * Starting Nmap 7.93 ( https://nmap.org ) at 2023-01-11 22:44 EST
-			 * | ssl-enum-ciphers:
-			 * |   TLSv1.2:
-			 * |     ciphers:
-			 * |       TLS_DHE_RSA_WITH_AES_128_CBC_SHA (dh 2048) - A
-			 * |       TLS_DHE_RSA_WITH_AES_128_CBC_SHA256 (dh 2048) - A
-			 * |       TLS_DHE_RSA_WITH_AES_128_GCM_SHA256 (dh 2048) - A
-			 * |       TLS_DHE_RSA_WITH_AES_256_CBC_SHA (dh 2048) - A
-			 * |       TLS_DHE_RSA_WITH_AES_256_CBC_SHA256 (dh 2048) - A
-			 * |       TLS_DHE_RSA_WITH_AES_256_GCM_SHA384 (dh 2048) - A
-			 * |       TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA (secp256r1) - A
-			 * |       TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256 (secp256r1) - A
-			 * |       TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 (secp256r1) - A
-			 * |       TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA (secp256r1) - A
-			 * |       TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384 (secp256r1) - A
-			 * |       TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 (secp256r1) - A
-			 * |       TLS_RSA_WITH_AES_128_CBC_SHA (rsa 2048) - A
-			 * |       TLS_RSA_WITH_AES_128_CBC_SHA256 (rsa 2048) - A
-			 * |       TLS_RSA_WITH_AES_128_GCM_SHA256 (rsa 2048) - A
-			 * |       TLS_RSA_WITH_AES_256_CBC_SHA (rsa 2048) - A
-			 * |       TLS_RSA_WITH_AES_256_CBC_SHA256 (rsa 2048) - A
-			 * |       TLS_RSA_WITH_AES_256_GCM_SHA384 (rsa 2048) - A
-			 * |     compressors:
-			 * |       NULL
-			 * |     cipher preference: client
-			 * |_  least strength: A
-			 * |_http-server-header: Restlet-Framework/2.4.3
-			 */
-
-		}else if (requestedProtocol == RequestedProtocol.http) {
-			lg.trace("adding HTTP");
-			Server httpServer = component.getServers().add(Protocol.HTTP, port);
-		}else {
-			throw new RuntimeException("unknown protocol: "+requestedProtocol);
-		}
+		// HTTP only. TLS is terminated by the ingress in every deployment, and the https branch
+		// that used to live here -- a Restlet HTTPS server reading a JKS keystore whose password
+		// was itself PBE-encrypted with the database password -- was dead: every site passes
+		// protocol=http, and /run/secrets/keystorefile is not mounted in any container.
+		lg.trace("adding HTTP");
+		component.getServers().add(Protocol.HTTP, port);
 
 		lg.trace("create config");
 		Configuration templateConfiguration = new Configuration();
@@ -291,7 +220,6 @@ public class VCellApiMain {
 			PropertyLoader.vcellSMTPHostName,
 			PropertyLoader.vcellSMTPPort,
 			PropertyLoader.vcellSMTPEmailAddress,
-			PropertyLoader.vcellapiKeystoreFile,
 			PropertyLoader.vcellapiPublicKey,
 			PropertyLoader.vcellapiPrivateKey
 };

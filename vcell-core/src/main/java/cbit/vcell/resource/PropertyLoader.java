@@ -162,9 +162,6 @@ public class PropertyLoader {
 
 	//Python properties
 	public static final String pythonExe					= record("vcell.python.executable",ValueType.EXE);
-	public static final String vcellapiKeystoreFile			= record("vcellapi.keystore.file",ValueType.FILE);
-	public static final String vcellapiKeystorePswd			= record("vcellapi.keystore.pswd",ValueType.GEN);
-	public static final String vcellapiKeystorePswdFile		= record("vcellapi.keystore.pswdfile",ValueType.GEN);
 	public static final String vcellapiPublicKey		= record("vcellapi.publicKey.file",ValueType.FILE);
 	public static final String vcellapiPrivateKey		= record("vcellapi.privateKey.file",ValueType.FILE);
 
@@ -245,8 +242,6 @@ public class PropertyLoader {
 	public static final String jmsUser						= record("vcell.jms.user",ValueType.GEN);
 	public static final String jmsPasswordValue				= record("vcell.jms.password",ValueType.GEN);
 	public static final String jmsPasswordFile				= record("vcell.jms.pswdfile",ValueType.FILE);
-	public static final String jmsRestPasswordFile			= record("vcell.jms.rest.pswdfile",ValueType.GEN);
-
 	public static final String jmsSimReqQueue			= record("vcell.jms.queue.simReq",ValueType.GEN);
 	public static final String jmsDataRequestQueue		= record("vcell.jms.queue.dataReq",ValueType.GEN);
 	public static final String jmsDbRequestQueue		= record("vcell.jms.queue.dbReq",ValueType.GEN);
@@ -357,6 +352,11 @@ public class PropertyLoader {
 		EXE,
 		/**
 		 * a file that must exist and be readable.
+		 *
+Applying this is a judgement about the deployment, not just about the property: it
+		 * makes startup fail wherever that path is absent, so a property should only be typed
+		 * FILE once something in a REQUIRED list actually needs the file to be there.
+
 		 *
 		 * Distinct from GEN because a path is not merely a string: the whole value of naming a
 		 * file in configuration is that something will later open it. Checking at startup turns
