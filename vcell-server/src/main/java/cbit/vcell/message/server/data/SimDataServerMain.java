@@ -2,6 +2,7 @@ package cbit.vcell.message.server.data;
 
 import cbit.vcell.resource.LibraryLoaderThread;
 import cbit.vcell.resource.NativeLib;
+import cbit.vcell.resource.EnvironmentConfigProvider;
 import cbit.vcell.resource.PropertyLoader;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -34,6 +35,11 @@ public class SimDataServerMain {
             }
 
 
+            // A standalone service takes its configuration from the container environment. The desktop
+            // client, the CLI and the admin tools deliberately do not -- they run on machines whose
+            // environment VCell does not control -- so this is installed per service rather than being
+            // the default in PropertyLoader. vcell-rest installs CDIVCellConfigProvider for the same reason.
+            PropertyLoader.setConfigProvider(new EnvironmentConfigProvider());
             PropertyLoader.loadProperties(REQUIRED_SERVICE_PROPERTIES);
             lg.debug("properties loaded");
             new LibraryLoaderThread(false).start( );

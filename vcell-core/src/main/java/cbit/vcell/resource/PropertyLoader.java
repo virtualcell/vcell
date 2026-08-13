@@ -46,11 +46,12 @@ public class PropertyLoader {
 		}
 	}
 
-	// System properties still take precedence inside this provider, so a service that passes
-	// -D flags behaves exactly as before; the environment only fills gaps. That is what makes
-	// the flags removable one service at a time. vcell-rest overrides this with a provider
-	// backed by MicroProfile Config, which resolves the same environment names.
-	private static VCellConfigProvider configProvider = new EnvironmentConfigProvider();
+	// Deliberately system properties only. Reading the environment is correct for a service in a
+	// container VCell defines, and wrong for the desktop client, the CLI and the admin tools,
+	// which run on machines whose environment VCell does not control -- a stray "keystore" or
+	// "workingDir" there would feed a VCell property. So each standalone service installs
+	// EnvironmentConfigProvider itself, and vcell-rest installs CDIVCellConfigProvider.
+	private static VCellConfigProvider configProvider = new SystemPropertyConfigProvider();
 
 	public static void setConfigProvider(VCellConfigProvider configProvider) {
 		PropertyLoader.configProvider = configProvider;

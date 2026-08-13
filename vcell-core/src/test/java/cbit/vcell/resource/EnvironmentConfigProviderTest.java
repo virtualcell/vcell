@@ -122,12 +122,52 @@ public class EnvironmentConfigProviderTest {
 		}
 	}
 
-	/** And this is the provider a service gets unless something installs another one. */
+	/**
+	 * Reading the environment is <em>not</em> the default, and must not become one.
+	 *
+	 * It is right for a service running in a container VCell defines, and wrong for the desktop
+	 * client, the CLI and the admin tools: those run on machines whose environment VCell does not
+	 * control, and several legacy names are generic enough to collide there — a user with
+	 * {@code keystore} or {@code workingDir} set would silently feed a VCell property.
+	 * {@code VCellClientMain} calls {@code loadProperties} like every service does, so the only
+	 * thing separating the two cases is which provider is installed.
+	 */
 	@Test
-	public void theEnvironmentProviderIsTheDefault() {
-		assertTrue(PropertyLoader.getConfigProvider() instanceof EnvironmentConfigProvider,
-				"standalone services should read the environment without being configured to;"
-						+ " got " + PropertyLoader.getConfigProvider().getClass().getName());
+	public void readingTheEnvironmentIsOptedIntoNotDefaulted() {
+		assertTrue(!(PropertyLoader.getConfigProvider() instanceof EnvironmentConfigProvider),
+				"the desktop client and CLI must not pick up configuration from a user's"
+						+ " environment; each standalone service installs this provider itself");
+	}
+
+	/**
+	 * The other half of that trade: opting in must not be forgotten. These five are the mains the
+	 * service Dockerfiles launch, and each one's configuration arrives as container environment.
+	 * A service that stopped installing the provider would lose it silently — the properties would
+	 * simply read as unset, and the failure would surface as a missing-configuration error at
+	 * startup rather than as anything pointing here.
+	 */
+	@Test
+	public void everyServiceMainInstallsTheProvider() throws java.io.IOException {
+		String[] mains = {
+				"../vcell-api/src/main/java/org/vcell/rest/VCellApiMain.java",
+				"../vcell-server/src/main/java/cbit/vcell/message/server/data/SimDataServerMain.java",
+				"../vcell-server/src/main/java/cbit/vcell/message/server/db/DatabaseServer.java",
+				"../vcell-server/src/main/java/cbit/vcell/message/server/dispatcher/SimulationDispatcherMain.java",
+				"../vcell-server/src/main/java/cbit/vcell/message/server/batch/sim/HtcSimulationWorker.java",
+		};
+		List<String> notInstalling = new ArrayList<>();
+		for (String main : mains) {
+			java.nio.file.Path path = java.nio.file.Path.of(main);
+			Assumptions.assumeTrue(java.nio.file.Files.isRegularFile(path),
+					main + " not reachable from " + java.nio.file.Path.of("").toAbsolutePath());
+			String source = java.nio.file.Files.readString(path);
+			if (!source.contains("setConfigProvider(new EnvironmentConfigProvider())")) {
+				notInstalling.add(main);
+			}
+		}
+		assertEquals(List.of(), notInstalling,
+				"these services read their configuration from the container environment, so each"
+						+ " must install EnvironmentConfigProvider before loadProperties");
 	}
 
 	// ------------------------------------------------- legacy deployment names

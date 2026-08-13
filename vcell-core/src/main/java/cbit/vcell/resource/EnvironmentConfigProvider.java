@@ -60,6 +60,16 @@ import org.apache.logging.log4j.Logger;
  * A {@code -D} flag takes precedence over the environment, so installing this changes nothing
  * for a service that still passes them. That is the point: the flags can be removed one service
  * at a time, and a half-migrated deployment behaves the same as a fully migrated one.
+ *
+ * <h2>Services only — this is not a default</h2>
+ *
+ * Each standalone service installs this in its own {@code main}, and {@code PropertyLoader}
+ * keeps its system-properties-only provider. Reading the environment is right for a service in a
+ * container VCell defines, and wrong for the desktop client, the CLI and the admin tools: those
+ * run on machines whose environment VCell does not control, and legacy names like
+ * {@code keystore} and {@code workingDir} are generic enough to collide there. {@code
+ * VCellClientMain} calls {@code loadProperties} exactly as a service does — the installed
+ * provider is the only thing distinguishing the two.
  */
 public class EnvironmentConfigProvider implements PropertyLoader.VCellConfigProvider {
 
