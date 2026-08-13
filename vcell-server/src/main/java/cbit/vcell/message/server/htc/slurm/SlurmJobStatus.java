@@ -52,8 +52,30 @@ public enum SlurmJobStatus {
 		return this == COMPLETING;
 	}
 
+	/**
+	 * Every way slurm ends a job badly, not just the state literally named FAILED.
+	 *
+	 * A job the scheduler kills -- out of time, out of memory, node lost, preempted -- did not
+	 * finish, and callers that ask "did this fail" have to be told so. Previously only FAILED
+	 * answered true, which left TIMEOUT and friends reading as neither failed nor complete, so a
+	 * job ended by the scheduler looked like it was still going.
+	 */
 	public boolean isFailed() {
-		return this == FAILED;
+		return this == FAILED
+				|| this == BOOTFAIL
+				|| this == DEADLINE
+				|| this == NODE_FAIL
+				|| this == OUT_OF_MEMORY
+				|| this == PREEMPTED
+				|| this == TIMEOUT;
+	}
+
+	/**
+	 * Cancelled is deliberate, so it is terminal without being a failure -- somebody stopped this
+	 * job on purpose. Reporting it as a failure tells the owner their model broke.
+	 */
+	public boolean isStopped() {
+		return this == CANCELLED;
 	}
 
 	public boolean isCompleted() {

@@ -21,7 +21,9 @@ import cbit.vcell.message.server.ManageUtils;
 import cbit.vcell.message.server.ServerMessagingDelegate;
 import cbit.vcell.message.server.batch.opt.OptimizationBatchServer;
 import cbit.vcell.message.server.cmd.CommandService.CommandOutput;
+import cbit.vcell.message.server.htc.HtcJobStatus;
 import cbit.vcell.message.server.htc.HtcProxy;
+import cbit.vcell.message.server.htc.HtcProxy.HtcJobInfo;
 import cbit.vcell.message.server.htc.slurm.SlurmProxy;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.resource.OperatingSystemInfo;
@@ -350,82 +352,61 @@ public void startJobMonitor() {
 				try {
 					int sleeptime=60000;
 					Thread.sleep(sleeptime);
-					StringBuffer slurmJobidSB = new StringBuffer();
-					for(String jobid:monitorTheseJobs.keySet()) {
-						slurmJobidSB.append((slurmJobidSB.length()>0?",":"")+jobid);
-					}
-					if(slurmJobidSB.length() == 0) {
+					if(monitorTheseJobs.isEmpty()) {
 						continue;
 					}
-					StringBuffer slurmJobInfoSB = new StringBuffer();
-					try {
-						HtcSimulationWorker.this.htcProxy.getCommandService();
-						String[] tryStr = new String[] {"sacct","--format=jobid%25,jobname%40,state%30 -n -j "+slurmJobidSB.toString()+" | grep -v \".batch\""+" | grep -v \".extern\""};
-						CommandOutput commandOutput = htcProxy.getCommandService().command(tryStr);
-						slurmJobInfoSB.append(commandOutput.getStandardOutput());
-						lg.debug("sacct stdoutput:\n"+commandOutput.getStandardOutput());
-						lg.debug("sacct stderror:\n"+commandOutput.getStandardError());
-					}catch(Exception e) {
-						lg.error(e.getMessage(), e);
-					}
-//					Process p = null;
-//					try{
-//						String[] cmd = new String[] {"ssh","-i","/run/secrets/batchuserkeyfile","vcell@172.16.246.118","sacct --format=jobid,jobname%40,state -n -j "+slurmJobidSB.toString()+"| grep -v \".batch\""};
-//						ProcessBuilder pb = new ProcessBuilder(Arrays.asList(cmd));
-//						pb.redirectErrorStream(true);
-//						p = pb.start();
-//						int ioByte = -1;
-//						while((ioByte = p.getInputStream().read()) != -1) {
-//							sb.append((char)ioByte);
-//						}
-//						p.waitFor();
-//					}catch(Exception e) {
-//						lg.error(e);
-//						continue;
-//					}
 					
-//					lg.debug("-----"+sb.toString());
-
-					StringTokenizer st = new StringTokenizer(slurmJobInfoSB.toString(),"\n\r");
-					while(st.hasMoreTokens()) {
-						String line = st.nextToken();
-						StringTokenizer lineTokenizer = new StringTokenizer(line," \t");
-						String slurmJobID = lineTokenizer.nextToken();
-						String jobName = lineTokenizer.nextToken();
-						String jobState = lineTokenizer.nextToken();
-						if(jobState.equalsIgnoreCase("FAILED") ||
-							jobState.equalsIgnoreCase("BOOT_FAIL") ||
-							jobState.equalsIgnoreCase("DEADLINE") ||
-							jobState.equalsIgnoreCase("NODE_FAIL") ||
-							jobState.equalsIgnoreCase("OUT_OF_MEMORY") ||
-							jobState.equalsIgnoreCase("PREEMPTED") ||
-							jobState.equalsIgnoreCase("TIMEOUT")) {
-							MonitorJobInfo failedMonitorJobInfo = monitorTheseJobs.get(slurmJobID);
+					// Ask through HtcProxy rather than running sacct here. The private copy this replaced
+					// hardcoded the command name, parsed fixed-width columns with a whitespace tokenizer,
+					// counted `.batch`/`.extern`/`.0`..`.N` step rows as jobs, and had no guard against
+					// slurm reusing a job id. getJobStatus() does none of those things, and its parsing is
+					// pinned by fixtures of real output in src/test/resources/slurm-outputs.
+					List<HtcJobInfo> requested = new ArrayList<HtcJobInfo>();
+					Map<String,MonitorJobInfo> byJobName = new HashMap<String,MonitorJobInfo>();
+					for(MonitorJobInfo monitorJobInfo : monitorTheseJobs.values()) {
+						HtcProxy.SimTaskInfo simTaskInfo = new HtcProxy.SimTaskInfo(
+							monitorJobInfo.vcsimID.getSimulationKey(), monitorJobInfo.jobIndex, monitorJobInfo.taskID);
+						// the name matters: getJobStatus() discards anything whose id AND name were not asked
+						// for, which is what protects against a recycled slurm job id
+						String jobName = HtcProxy.createHtcSimJobName(simTaskInfo);
+						requested.add(new HtcJobInfo(new HtcJobID(Long.toString(monitorJobInfo.slurmJobID), HtcJobID.BatchSystemType.SLURM), jobName));
+						byJobName.put(jobName, monitorJobInfo);
+					}
+					
+					Map<HtcJobInfo,HtcJobStatus> statusMap;
+					try {
+						statusMap = htcProxy.getJobStatus(requested);
+					} catch(Exception e) {
+						// an accounting outage must be loud: with no status at all this loop reports nothing,
+						// and silence is indistinguishable from every job being healthy
+						lg.error("could not read slurm job status for " + requested.size()
+							+ " monitored jobs; no failures will be detected this cycle: " + e.getMessage(), e);
+						continue;
+					}
+					
+					for(Map.Entry<HtcJobInfo,HtcJobStatus> entry : statusMap.entrySet()) {
+						HtcJobInfo htcJobInfo = entry.getKey();
+						HtcJobStatus htcJobStatus = entry.getValue();
+						MonitorJobInfo monitorJobInfo = byJobName.get(htcJobInfo.getJobName());
+						if(monitorJobInfo == null) {
+							continue;
+						}
+						String slurmJobID = Long.toString(monitorJobInfo.slurmJobID);
+						if(htcJobStatus.isFailed()) {
 							WorkerEventMessage.sendWorkerExitError(messageProducer_sim, HtcSimulationWorker.class.getName(), ManageUtils.getHostName(),
-								failedMonitorJobInfo.vcsimID, failedMonitorJobInfo.jobIndex, failedMonitorJobInfo.taskID,
-								SimulationMessage.jobFailed("Fail found by monitor, slrmJobID="+slurmJobID+" jobName="+jobName+" jobState="+jobState));
-							removeMonitorJob(Long.parseLong(slurmJobID));
-						}else if(jobState.startsWith("CANCELLED")) {
-							// Cancelled is not a solver failure -- somebody stopped this job on purpose.
-							//
-							// When the user stops a simulation, VCell records STOPPED and then issues the
-							// scancel itself, and SimulationStateMachine.onWorkerEvent discards anything that
-							// arrives once the status isDone() -- so this message is ignored in that case and
-							// the stop is preserved. What reaches a user is the other case: cancelled outside
-							// VCell, where the job really has stopped without finishing and saying so beats
-							// leaving the simulation apparently running. Report it as what it is.
-							MonitorJobInfo cancelledMonitorJobInfo = monitorTheseJobs.get(slurmJobID);
-							if(cancelledMonitorJobInfo != null) {
-								WorkerEventMessage.sendWorkerExitError(messageProducer_sim, HtcSimulationWorker.class.getName(), ManageUtils.getHostName(),
-									cancelledMonitorJobInfo.vcsimID, cancelledMonitorJobInfo.jobIndex, cancelledMonitorJobInfo.taskID,
-									SimulationMessage.solverStopped("simulation was cancelled on the cluster (slurm job "+slurmJobID+", "+jobState+")"));
-							}
-							removeMonitorJob(Long.parseLong(slurmJobID));
-						}else if(jobState.equalsIgnoreCase("COMPLETED")) {
-							MonitorJobInfo completedMonitorJobInfo = monitorTheseJobs.get(slurmJobID);
-							WorkerEventMessage.sendAlternateCompleted(messageProducer_sim, HtcSimulationWorker.class.getName(), completedMonitorJobInfo.vcsimID,
-								ManageUtils.getHostName(), completedMonitorJobInfo.jobIndex, completedMonitorJobInfo.taskID);
-							removeMonitorJob(Long.parseLong(slurmJobID));
+								monitorJobInfo.vcsimID, monitorJobInfo.jobIndex, monitorJobInfo.taskID,
+								SimulationMessage.jobFailed("Fail found by monitor, slurmJobID="+slurmJobID+" jobName="+htcJobInfo.getJobName()+" jobState="+htcJobStatus));
+							removeMonitorJob(monitorJobInfo.slurmJobID);
+						} else if(htcJobStatus.isStopped()) {
+							// cancelled is deliberate -- see the state machine, which records STOPPED for this
+							WorkerEventMessage.sendWorkerExitError(messageProducer_sim, HtcSimulationWorker.class.getName(), ManageUtils.getHostName(),
+								monitorJobInfo.vcsimID, monitorJobInfo.jobIndex, monitorJobInfo.taskID,
+								SimulationMessage.solverStopped("simulation was cancelled on the cluster (slurm job "+slurmJobID+")"));
+							removeMonitorJob(monitorJobInfo.slurmJobID);
+						} else if(htcJobStatus.isComplete()) {
+							WorkerEventMessage.sendAlternateCompleted(messageProducer_sim, HtcSimulationWorker.class.getName(), monitorJobInfo.vcsimID,
+								ManageUtils.getHostName(), monitorJobInfo.jobIndex, monitorJobInfo.taskID);
+							removeMonitorJob(monitorJobInfo.slurmJobID);
 						}
 					}
 //					BF BOOT_FAIL
