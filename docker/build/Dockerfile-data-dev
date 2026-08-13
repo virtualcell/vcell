@@ -55,11 +55,8 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
 	mongodb_host_internal=mongodb \
 	mongodb_port_internal=27017 \
     mongodb_database=test \
-    export_baseurl="export-baseurl-not-set" \
     simdatadir_external=/path/to/external/simdata/ \
-    simdataCacheSize="simdataCacheSize-not-set" \
-    servertype="servertype-not-set" \
-    s3export_baseURL="s3-export-baseurl-not-set"
+    servertype="servertype-not-set"
 
 ENV dbpswdfile=/run/secrets/dbpswd \
     jmspswdfile=/run/secrets/jmspswd \

@@ -51,9 +51,6 @@ COPY ./docker/build/vcell-api.log4j.xml .
 
 ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
 	serverid=SITE \
-	dburl="db-url-not-set" \
-    dbdriver="db-driver-not-set" \
-    dbuser="db-user-not-set" \
     jmshost_int_internal=activemqint \
     jmsport_int_internal=61616 \
     jmsuser=clientUser \
@@ -61,13 +58,8 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
     mongodb_port_internal=27017 \
     mongodb_database=test \
     jmsblob_minsize=100000 \
-    smtp_hostname="smtp-host-not-set" \
-	smtp_port="smtp-port-not-set" \
-	smtp_emailaddress="smtp-emailaddress-not-set" \
-    simdataCacheSize="simdataCacheSize-not-set" \
 	ssl_ignoreHostMismatch=true \
 	ssl_ignoreCertProblems=false \
-	serverPrefixV0="server-path-prefix-v0-not-set" \
 	protocol="https" \
 	workingDir="/usr/local/app"
 
