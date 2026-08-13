@@ -50,22 +50,38 @@ COPY ./vcell-api/keystore_macbook.jks .
 COPY ./docker/build/vcell-api.log4j.xml .
 
 ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
+    VCELL_SOFTWAREVERSION=SOFTWARE-VERSION-NOT-SET \
 	serverid=SITE \
+	VCELL_SERVER_ID=SITE \
     jmshost_int_internal=activemqint \
+    VCELL_JMS_INT_HOST_INTERNAL=activemqint \
     jmsport_int_internal=61616 \
+    VCELL_JMS_INT_PORT_INTERNAL=61616 \
     jmsuser=clientUser \
+    VCELL_JMS_USER=clientUser \
     mongodb_host_internal=mongodb \
+    VCELL_MONGODB_HOST_INTERNAL=mongodb \
     mongodb_port_internal=27017 \
+    VCELL_MONGODB_PORT_INTERNAL=27017 \
     mongodb_database=test \
+    VCELL_MONGODB_DATABASE=test \
     jmsblob_minsize=100000 \
+    VCELL_JMS_BLOBMESSAGEMINSIZE=100000 \
 	ssl_ignoreHostMismatch=true \
+	VCELL_SSL_IGNOREHOSTMISMATCH=true \
 	ssl_ignoreCertProblems=false \
-	workingDir="/usr/local/app"
+	VCELL_SSL_IGNORECERTPROBLEMS=false \
+	workingDir="/usr/local/app" \
+	CLI_WORKINGDIR="/usr/local/app"
 
 ENV dbpswdfile=/run/secrets/dbpswd \
+    VCELL_DB_PSWDFILE=/run/secrets/dbpswd \
     jmspswdfile=/run/secrets/jmspswd \
+    VCELL_JMS_PSWDFILE=/run/secrets/jmspswd \
     vcellapi_privatekeyfile=/run/secrets/apiprivkey \
-    vcellapi_publickeyfile=/run/secrets/apipubkey
+    VCELLAPI_PRIVATEKEY_FILE=/run/secrets/apiprivkey \
+    vcellapi_publickeyfile=/run/secrets/apipubkey \
+    VCELLAPI_PUBLICKEY_FILE=/run/secrets/apipubkey
 
 EXPOSE 8080
 ENV VCELL_DEBUG_OPTS=""
