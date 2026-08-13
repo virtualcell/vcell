@@ -266,6 +266,87 @@ public class EnvironmentConfigProviderTest {
 		p.reportUnrecognisedEnvironmentNames(List.of("vcell.server.id"));
 	}
 
+	/**
+	 * The exemption list is a hand-written claim that certain names are deliberately not
+	 * configuration. Nothing stops a property being declared later that lands on one of them —
+	 * {@code vcell.site} would become {@code VCELL_SITE}, which the deploy tooling already sets
+	 * for something else entirely. At that point a build variable silently becomes configuration,
+	 * which is exactly the failure this whole check exists to prevent, and the exemption would be
+	 * the reason nobody noticed.
+	 *
+	 * This is the build-time half; the provider makes the same check at startup, against whatever
+	 * PropertyLoader declares at runtime.
+	 */
+	@Test
+	public void noExemptedNameIsAlsoADeclaredProperty() {
+		List<String> collisions = new ArrayList<>();
+		for (String property : PropertyLoader.declaredPropertyNames()) {
+			String upper = EnvironmentConfigProvider.upperCaseNameFor(property);
+			if (EnvironmentConfigProvider.NOT_PROPERTIES.contains(upper)) {
+				collisions.add(upper + " exempted, but is the environment name of " + property);
+			}
+		}
+		assertEquals(List.of(), collisions,
+				"drop the exemption if the property should be configurable from the environment,"
+						+ " or rename the property if the variable belongs to the deploy tooling");
+	}
+
+	/**
+	 * Each exemption is annotated with where the variable is set. Those annotations are claims
+	 * about the rest of the repository, and a claim nothing checks is a comment that quietly stops
+	 * being true — an exemption for a variable nobody sets any more is dead weight that can only
+	 * silence a future misspelling.
+	 */
+	@Test
+	public void everyExemptedVariableIsStillSetSomewhere() throws java.io.IOException {
+		java.nio.file.Path repo = java.nio.file.Path.of("..");
+		Assumptions.assumeTrue(java.nio.file.Files.isDirectory(repo.resolve("docker")),
+				"repository not reachable from " + repo.toAbsolutePath());
+
+		StringBuilder haystack = new StringBuilder();
+		for (String dir : new String[] {".github/workflows", "docker"}) {
+			java.nio.file.Path root = repo.resolve(dir);
+			if (!java.nio.file.Files.isDirectory(root)) {
+				continue;
+			}
+			try (var paths = java.nio.file.Files.walk(root)) {
+				for (java.nio.file.Path p : paths.filter(java.nio.file.Files::isRegularFile).toList()) {
+					try {
+						haystack.append(java.nio.file.Files.readString(p)).append('\n');
+					} catch (java.io.IOException | RuntimeException ignored) {
+						// binary or unreadable; nothing here sets environment variables
+					}
+				}
+			}
+		}
+		List<String> unused = new ArrayList<>();
+		for (String exempted : EnvironmentConfigProvider.NOT_PROPERTIES) {
+			if (!haystack.toString().contains(exempted)) {
+				unused.add(exempted);
+			}
+		}
+		java.util.Collections.sort(unused);
+		assertEquals(List.of(), unused,
+				"nothing under .github/workflows or docker/ sets these any more; drop them from"
+						+ " NOT_PROPERTIES so a misspelling of the same shape is reported again");
+	}
+
+	/** And the runtime half fires when the drift is real. */
+	@Test
+	public void driftBetweenTheExemptionsAndTheDeclaredPropertiesIsReported() {
+		systemProperty(EnvironmentConfigProvider.STRICT_ENVIRONMENT_NAMES, "true");
+		EnvironmentConfigProvider p = readingEnvironment(Map.of());
+
+		// "vcell.site" would be VCELL_SITE, which is exempted as a deploy variable
+		IllegalStateException e = assertThrows(IllegalStateException.class,
+				() -> p.reportUnrecognisedEnvironmentNames(List.of("vcell.site")));
+
+		assertTrue(e.getMessage().contains("VCELL_SITE"), e.getMessage());
+		assertTrue(e.getMessage().contains("vcell.site"), e.getMessage());
+		assertTrue(e.getMessage().contains("NOT_PROPERTIES"),
+				"should name the list that needs editing: " + e.getMessage());
+	}
+
 	// ------------------------------------------------- legacy deployment names
 
 	/** A provider reading a fixed environment, so precedence can be tested deterministically. */

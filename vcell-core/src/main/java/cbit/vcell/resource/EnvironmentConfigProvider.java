@@ -129,15 +129,52 @@ public class EnvironmentConfigProvider implements PropertyLoader.VCellConfigProv
 
 	/**
 	 * {@code VCELL_*} variables that are deliberately not configuration properties, so the report
-	 * does not cry wolf. Most are build, deploy or CI variables that never reach a running
-	 * service; {@code VCELL_DEBUG_OPTS} is the exception — every service Dockerfile sets it, and
-	 * treating it as a misspelling would condemn every pod.
+	 * does not cry wolf.
+	 *
+	 * Each is listed with where it is actually set, because an exemption is a claim about the rest
+	 * of the system and the only way to re-check it later is to know what it was based on. Only
+	 * {@code VCELL_DEBUG_OPTS} reaches a running service; the others belong to CI, the deploy
+	 * workflows, or the admin image, and are listed so that a variable leaking out of those into a
+	 * service pod is a decision someone makes rather than a surprise.
+	 *
+	 * Note what is <em>not</em> here: {@code VCELL_DB_URL}, {@code VCELL_BATCH_USER},
+	 * {@code VCELL_SIMDATADIR_EXTERNAL} and friends, which exist in {@code Dockerfile-admin-dev}
+	 * and {@code docker-compose.yml}. They never reach a service that runs this check, and an
+	 * unnecessary exemption is itself a drift risk — it would silence a real misspelling.
+	 * {@link #reportExemptionsThatAreNowProperties} guards the other direction.
 	 */
-	private static final Set<String> NOT_PROPERTIES = Set.of(
-			"VCELL_DEBUG_OPTS", "VCELL_CONFIG_FILE_NAME", "VCELL_MANAGER_NODE",
-			"VCELL_SITE", "VCELL_SITE_CAMEL", "VCELL_VERSION", "VCELL_BUILD", "VCELL_TAG",
-			"VCELL_SHA", "VCELL_SWVERSION", "VCELL_REPO_NAMESPACE",
-			"VCELL_DEPLOY_REMOTE_DIR", "VCELL_INSTALLER_REMOTE_DIR", "VCELL_WEBHELP_REMOTE_DIR");
+	static final Set<String> NOT_PROPERTIES = Set.of(
+			// Set by all five service Dockerfiles (Dockerfile-{api,data,db,sched,submit}-dev) to
+			// hold optional JDWP flags. The only entry here that a running service actually sees,
+			// and the reason strict mode cannot treat every unknown name as fatal.
+			"VCELL_DEBUG_OPTS",
+
+			// Deploy workflow plumbing: .github/workflows/site_deploy.yml.
+			"VCELL_CONFIG_FILE_NAME",
+			"VCELL_SWVERSION",
+			"VCELL_INSTALLER_REMOTE_DIR",
+
+			// ssh target and destination paths shared by CI-full.yml, site_deploy.yml and
+			// webhelp-deploy.yml.
+			"VCELL_MANAGER_NODE",
+			"VCELL_DEPLOY_REMOTE_DIR",
+			"VCELL_WEBHELP_REMOTE_DIR",  // webhelp-deploy.yml only
+
+			// Release coordinates. site_deploy.yml and the docker/swarm installer scripts;
+			// VCELL_SITE, VCELL_VERSION and VCELL_TAG also appear in Dockerfile-admin-dev and
+			// docker/build/admin/entrypoint.sh, which is a different image from the five services.
+			"VCELL_SITE",
+			"VCELL_SITE_CAMEL",
+			"VCELL_VERSION",
+			"VCELL_BUILD",
+			"VCELL_TAG",
+
+			// Image coordinates: site_deploy.yml, webhelp-deploy.yml,
+			// docker/build/admin/vcell-su.sh and docker/swarm/docker-compose*.yml.
+			"VCELL_REPO_NAMESPACE",
+
+			// .github/workflows/create_bs_singularity.yml.
+			"VCELL_SHA");
 
 	/**
 	 * Reports {@code VCELL_*} environment variables that do not correspond to any declared
@@ -162,6 +199,8 @@ public class EnvironmentConfigProvider implements PropertyLoader.VCellConfigProv
 			recognised.addAll(environmentNamesFor(property));
 		}
 		recognised.addAll(legacyNames.values());
+
+		reportExemptionsThatAreNowProperties(declaredProperties);
 
 		Map<String, String> suspicious = new TreeMap<>();
 		for (String name : environmentNames()) {
@@ -193,6 +232,49 @@ public class EnvironmentConfigProvider implements PropertyLoader.VCellConfigProv
 		} else {
 			lg.warn(report.toString());
 		}
+	}
+
+	/**
+	 * Catches drift between {@link #NOT_PROPERTIES} and what {@code PropertyLoader} actually
+	 * declares.
+	 *
+	 * The exemptions are a hand-written list asserting "this name is deliberately not
+	 * configuration". Nothing stops someone later declaring a property that lands on one of them
+	 * — {@code vcell.site} would become {@code VCELL_SITE}, which the deploy tooling already sets
+	 * for an entirely different purpose. At that moment a build variable silently becomes
+	 * configuration, which is precisely the class of quiet misconfiguration this whole check
+	 * exists to prevent, and the exemption would be the reason nobody noticed.
+	 *
+	 * Resolution still behaves correctly if it happens — a declared property is recognised before
+	 * the exemptions are consulted — so this reports rather than repairs. What needs deciding is
+	 * which of the two meanings the name should keep, and that is not a decision to make here.
+	 */
+	private void reportExemptionsThatAreNowProperties(Collection<String> declaredProperties) {
+		Map<String, String> collisions = new TreeMap<>();
+		for (String property : declaredProperties) {
+			String upper = upperCaseNameFor(property);
+			if (NOT_PROPERTIES.contains(upper)) {
+				collisions.put(upper, property);
+			}
+		}
+		if (collisions.isEmpty()) {
+			return;
+		}
+		StringBuilder report = new StringBuilder(
+				"EnvironmentConfigProvider.NOT_PROPERTIES exempts name(s) that are now declared"
+						+ " properties; the exemption is stale and the name now means two things:");
+		for (Map.Entry<String, String> entry : collisions.entrySet()) {
+			report.append("\n    ").append(entry.getKey())
+					.append("  is exempted, but is also the environment name of ")
+					.append(entry.getValue());
+		}
+		report.append("\n  Decide which meaning wins: drop the exemption if the property should be"
+				+ " configurable from the environment, or rename the property if the variable"
+				+ " belongs to the build and deploy tooling.");
+		if (Boolean.parseBoolean(getConfigValue(STRICT_ENVIRONMENT_NAMES))) {
+			throw new IllegalStateException(report.toString());
+		}
+		lg.error(report.toString());
 	}
 
 	/** The UPPER_SNAKE form, which is the one a deployment should be using. */

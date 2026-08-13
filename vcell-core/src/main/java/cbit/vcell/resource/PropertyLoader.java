@@ -61,6 +61,11 @@ public class PropertyLoader {
 		return configProvider;
 	}
 
+	/** Every property name declared via {@link #record}. */
+	static Set<String> declaredPropertyNames() {
+		return java.util.Collections.unmodifiableSet(propMap.keySet());
+	}
+
 	//must come before uses of #record method
 	private static final HashMap<String, MetaProp> propMap = new HashMap<>( );
 	public static final String ADMINISTRATOR_USERID = "Administrator";
