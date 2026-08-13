@@ -2,13 +2,15 @@ package cbit.vcell.resource;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.function.Function;
+import java.util.TreeMap;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -80,18 +82,23 @@ public class EnvironmentConfigProvider implements PropertyLoader.VCellConfigProv
 	/** property name -> the environment variable the current deployment sets it under. */
 	private static final Map<String, String> legacyNames = loadLegacyNames();
 
-	private final Function<String, String> environment;
+	private final Map<String, String> environment;
 
 	public EnvironmentConfigProvider() {
-		this(System::getenv);
+		this(System.getenv());
 	}
 
 	/**
-	 * A JVM cannot alter its own environment, so precedence between the four name forms could
+	 * A JVM cannot alter its own environment, so precedence between the name forms could
 	 * otherwise only be tested by launching a subprocess. Package-visible for that.
 	 */
-	EnvironmentConfigProvider(Function<String, String> environment) {
+	EnvironmentConfigProvider(Map<String, String> environment) {
 		this.environment = environment;
+	}
+
+	/** Every name the environment defines. */
+	private Set<String> environmentNames() {
+		return environment.keySet();
 	}
 
 	@Override
@@ -104,13 +111,135 @@ public class EnvironmentConfigProvider implements PropertyLoader.VCellConfigProv
 			return fromSystemProperty;
 		}
 		for (String candidate : environmentNamesFor(propertyName)) {
-			String value = environment.apply(candidate);
+			String value = environment.get(candidate);
 			if (value != null) {
 				return value;
 			}
 		}
 		String legacyName = legacyNames.get(propertyName);
-		return legacyName == null ? null : environment.apply(legacyName);
+		return legacyName == null ? null : environment.get(legacyName);
+	}
+
+	/**
+	 * Set {@code -Dvcell.config.strictEnvironmentNames=true} to turn the report below into a
+	 * startup failure. Off by default: an unrecognised name is usually harmless, and refusing to
+	 * start a production service over one would be a worse failure than the one being prevented.
+	 */
+	public static final String STRICT_ENVIRONMENT_NAMES = "vcell.config.strictEnvironmentNames";
+
+	/**
+	 * {@code VCELL_*} variables that are deliberately not configuration properties, so the report
+	 * does not cry wolf. Most are build, deploy or CI variables that never reach a running
+	 * service; {@code VCELL_DEBUG_OPTS} is the exception — every service Dockerfile sets it, and
+	 * treating it as a misspelling would condemn every pod.
+	 */
+	private static final Set<String> NOT_PROPERTIES = Set.of(
+			"VCELL_DEBUG_OPTS", "VCELL_CONFIG_FILE_NAME", "VCELL_MANAGER_NODE",
+			"VCELL_SITE", "VCELL_SITE_CAMEL", "VCELL_VERSION", "VCELL_BUILD", "VCELL_TAG",
+			"VCELL_SHA", "VCELL_SWVERSION", "VCELL_REPO_NAMESPACE",
+			"VCELL_DEPLOY_REMOTE_DIR", "VCELL_INSTALLER_REMOTE_DIR", "VCELL_WEBHELP_REMOTE_DIR");
+
+	/**
+	 * Reports {@code VCELL_*} environment variables that do not correspond to any declared
+	 * property.
+	 *
+	 * Without this a misspelling is perfectly silent: {@code VCELL_SERVER_DBCONNECTUR} resolves
+	 * nothing, the property quietly takes its default, and the service runs on configuration
+	 * nobody intended. The whole point of moving configuration into the environment is that the
+	 * environment becomes the interface, and an interface that accepts typos without complaint is
+	 * how a deployment drifts from what its operator believes it says.
+	 *
+	 * Reported at ERROR when the name is close to a real property — that is a misspelling and
+	 * somebody meant something by it — and at WARN otherwise, since an unknown variable may
+	 * simply belong to something else. {@link #STRICT_ENVIRONMENT_NAMES} escalates either to a
+	 * startup failure.
+	 *
+	 * @param declaredProperties every property name known to {@code PropertyLoader}
+	 */
+	void reportUnrecognisedEnvironmentNames(Collection<String> declaredProperties) {
+		Set<String> recognised = new HashSet<>();
+		for (String property : declaredProperties) {
+			recognised.addAll(environmentNamesFor(property));
+		}
+		recognised.addAll(legacyNames.values());
+
+		Map<String, String> suspicious = new TreeMap<>();
+		for (String name : environmentNames()) {
+			if (!name.startsWith("VCELL") || recognised.contains(name) || NOT_PROPERTIES.contains(name)) {
+				continue;
+			}
+			suspicious.put(name, closestProperty(name, declaredProperties));
+		}
+		if (suspicious.isEmpty()) {
+			return;
+		}
+
+		StringBuilder report = new StringBuilder("unrecognised VCELL_* environment variable(s);"
+				+ " these match no property known to PropertyLoader and are being ignored:");
+		boolean anyLooksLikeATypo = false;
+		for (Map.Entry<String, String> entry : suspicious.entrySet()) {
+			report.append("\n    ").append(entry.getKey());
+			if (entry.getValue() != null) {
+				anyLooksLikeATypo = true;
+				report.append("  -- did you mean ").append(entry.getValue())
+						.append(" (").append(upperCaseNameFor(entry.getValue())).append(")?");
+			}
+		}
+		if (Boolean.parseBoolean(getConfigValue(STRICT_ENVIRONMENT_NAMES))) {
+			throw new IllegalStateException(report.toString());
+		}
+		if (anyLooksLikeATypo) {
+			lg.error(report.toString());
+		} else {
+			lg.warn(report.toString());
+		}
+	}
+
+	/** The UPPER_SNAKE form, which is the one a deployment should be using. */
+	static String upperCaseNameFor(String propertyName) {
+		StringBuilder sb = new StringBuilder(propertyName.length());
+		for (char c : propertyName.toCharArray()) {
+			sb.append(Character.isLetterOrDigit(c) ? c : '_');
+		}
+		return sb.toString().toUpperCase();
+	}
+
+	/**
+	 * The declared property whose UPPER_SNAKE name is nearest to this variable, or null when
+	 * nothing is close enough to be worth suggesting. A typo is usually one or two characters,
+	 * so the threshold scales with length rather than being a flat number.
+	 */
+	private static String closestProperty(String environmentName, Collection<String> declaredProperties) {
+		String best = null;
+		int bestDistance = Integer.MAX_VALUE;
+		for (String property : declaredProperties) {
+			int distance = editDistance(environmentName, upperCaseNameFor(property));
+			if (distance < bestDistance) {
+				bestDistance = distance;
+				best = property;
+			}
+		}
+		int threshold = Math.max(1, Math.min(3, environmentName.length() / 6));
+		return bestDistance <= threshold ? best : null;
+	}
+
+	private static int editDistance(String a, String b) {
+		int[] previous = new int[b.length() + 1];
+		int[] current = new int[b.length() + 1];
+		for (int j = 0; j <= b.length(); j++) {
+			previous[j] = j;
+		}
+		for (int i = 1; i <= a.length(); i++) {
+			current[0] = i;
+			for (int j = 1; j <= b.length(); j++) {
+				int substitute = previous[j - 1] + (a.charAt(i - 1) == b.charAt(j - 1) ? 0 : 1);
+				current[j] = Math.min(substitute, Math.min(previous[j] + 1, current[j - 1] + 1));
+			}
+			int[] swap = previous;
+			previous = current;
+			current = swap;
+		}
+		return previous[b.length()];
 	}
 
 	/** The environment variable the current deployment supplies this property under, if any. */

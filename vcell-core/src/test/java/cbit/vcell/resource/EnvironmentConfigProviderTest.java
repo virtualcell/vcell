@@ -3,6 +3,7 @@ package cbit.vcell.resource;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
@@ -196,11 +197,80 @@ public class EnvironmentConfigProviderTest {
 						+ " must install EnvironmentConfigProvider before loadProperties");
 	}
 
+	// ------------------------------------- unrecognised VCELL_* variables
+
+	/**
+	 * A misspelling used to be perfectly silent — {@code VCELL_SERVER_DBCONNECTUR} resolves
+	 * nothing, the property takes its default, and the service runs on configuration nobody
+	 * intended. Once configuration comes from the environment, the environment is the interface,
+	 * and an interface that accepts typos without complaint is how a deployment drifts from what
+	 * its operator believes it says.
+	 */
+	@Test
+	public void aMisspeltVariableIsReportedAndSuggestsWhatWasMeant() {
+		systemProperty(EnvironmentConfigProvider.STRICT_ENVIRONMENT_NAMES, "true");
+		EnvironmentConfigProvider p = readingEnvironment(Map.of("VCELL_SERVER_DBCONNECTUR", "oops"));
+
+		IllegalStateException e = assertThrows(IllegalStateException.class,
+				() -> p.reportUnrecognisedEnvironmentNames(List.of("vcell.server.dbConnectURL")));
+
+		assertTrue(e.getMessage().contains("VCELL_SERVER_DBCONNECTUR"), e.getMessage());
+		assertTrue(e.getMessage().contains("vcell.server.dbConnectURL"),
+				"should name the property it was probably meant to be: " + e.getMessage());
+		assertTrue(e.getMessage().contains("VCELL_SERVER_DBCONNECTURL"),
+				"and spell out the variable to use: " + e.getMessage());
+	}
+
+	/** The correctly spelled one is silent, or the report would be worthless. */
+	@Test
+	public void acorrectlyNamedVariableIsNotReported() {
+		systemProperty(EnvironmentConfigProvider.STRICT_ENVIRONMENT_NAMES, "true");
+		EnvironmentConfigProvider p = readingEnvironment(Map.of("VCELL_SERVER_DBCONNECTURL", "fine"));
+
+		p.reportUnrecognisedEnvironmentNames(List.of("vcell.server.dbConnectURL"));
+	}
+
+	/**
+	 * {@code VCELL_DEBUG_OPTS} is set by every service Dockerfile and is not a property. Treating
+	 * it as a misspelling would, in strict mode, refuse to start every service — the check has to
+	 * be worth trusting before anyone turns strict mode on.
+	 */
+	@Test
+	public void aKnownNonPropertyVariableIsNotReported() {
+		systemProperty(EnvironmentConfigProvider.STRICT_ENVIRONMENT_NAMES, "true");
+		EnvironmentConfigProvider p = readingEnvironment(Map.of(
+				"VCELL_DEBUG_OPTS", "", "VCELL_SITE", "alpha", "VCELL_VERSION", "8.0.14"));
+
+		p.reportUnrecognisedEnvironmentNames(List.of("vcell.server.id"));
+	}
+
+	/** Not everything unknown is a typo, and a non-VCELL variable is none of our business. */
+	@Test
+	public void variablesBelongingToSomethingElseAreIgnored() {
+		systemProperty(EnvironmentConfigProvider.STRICT_ENVIRONMENT_NAMES, "true");
+		EnvironmentConfigProvider p = readingEnvironment(Map.of(
+				"PATH", "/usr/bin", "JAVA_HOME", "/opt/java", "dburl", "jdbc:x"));
+
+		p.reportUnrecognisedEnvironmentNames(List.of("vcell.server.id"));
+	}
+
+	/**
+	 * Off by default. An unrecognised variable is usually harmless, and refusing to start a
+	 * production service over one would be a worse failure than the one being prevented — so the
+	 * default is a log, and strict mode is something an operator opts into.
+	 */
+	@Test
+	public void byDefaultAnUnrecognisedVariableIsLoggedRatherThanFatal() {
+		EnvironmentConfigProvider p = readingEnvironment(Map.of("VCELL_UTTERLY_UNKNOWN_THING", "x"));
+
+		p.reportUnrecognisedEnvironmentNames(List.of("vcell.server.id"));
+	}
+
 	// ------------------------------------------------- legacy deployment names
 
 	/** A provider reading a fixed environment, so precedence can be tested deterministically. */
 	private static EnvironmentConfigProvider readingEnvironment(Map<String, String> environment) {
-		return new EnvironmentConfigProvider(environment::get);
+		return new EnvironmentConfigProvider(environment);
 	}
 
 	/**

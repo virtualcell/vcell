@@ -580,6 +580,15 @@ public class PropertyLoader {
 			}
 		}
 
+		// A misspelled VCELL_* variable resolves nothing and the property silently takes its
+		// default, so the service would run on configuration nobody intended. Moving config into
+		// the environment makes the environment the interface; this stops it accepting typos in
+		// silence. Only the environment-reading provider can do this -- system properties are not
+		// namespaced the same way.
+		if (configProvider instanceof EnvironmentConfigProvider) {
+			((EnvironmentConfigProvider) configProvider).reportUnrecognisedEnvironmentNames(propMap.keySet());
+		}
+
 		StringBuffer validationReport = new StringBuffer();
 		for (String propName: required) {
 			MetaProp meta = propMap.get(propName);
