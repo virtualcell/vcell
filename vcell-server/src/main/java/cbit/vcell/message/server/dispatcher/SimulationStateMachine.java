@@ -307,12 +307,29 @@ public class SimulationStateMachine {
                 // a timed-out solver stopped exactly as instructed, and prefixing it here would
                 // contradict the message the worker already wrote.
                 String failureDetail = workerEventSimulationMessage.getDisplayMessage();
-                SimulationMessage simulationMessage = SimulationMessage.workerFailure(
-                        SimulationMessage.describesTimeLimit(failureDetail)
-                                ? failureDetail
-                                : "solver stopped unexpectedly, " + failureDetail);
-                newJobStatus = new SimulationJobStatus(vcServerID, vcSimDataID.getVcSimID(), jobIndex, submitDate, SchedulerStatus.FAILED,
-                        taskID, simulationMessage, newQueueStatus, newExeStatus);
+
+                // A deliberate stop is not a failure. The worker reports SOLVER_STOPPED when the
+                // job was terminated on purpose rather than going wrong -- an operator running
+                // scancel on the cluster, say. Recording that as FAILED tells the owner their
+                // model or solver broke and sends them looking for a problem that is not there.
+                //
+                // A user's own stop never reaches here: onStopRequest sets STOPPED first, and
+                // STOPPED.isDone(), so onWorkerEvent discards anything arriving afterwards. What
+                // this covers is a stop VCell did not initiate, which it would otherwise never
+                // learn about at all.
+                if (workerEventSimulationMessage.getDetailedState() == SimulationMessage.DetailedState.SOLVER_STOPPED) {
+                    newJobStatus = new SimulationJobStatus(vcServerID, vcSimDataID.getVcSimID(), jobIndex, submitDate, SchedulerStatus.STOPPED,
+                            taskID, workerEventSimulationMessage, newQueueStatus, newExeStatus);
+                } else {
+                    // "stopped unexpectedly" is right for a crash and wrong for a configured
+                    // limit: a timed-out solver stopped exactly as instructed.
+                    SimulationMessage simulationMessage = SimulationMessage.workerFailure(
+                            SimulationMessage.describesTimeLimit(failureDetail)
+                                    ? failureDetail
+                                    : "solver stopped unexpectedly, " + failureDetail);
+                    newJobStatus = new SimulationJobStatus(vcServerID, vcSimDataID.getVcSimID(), jobIndex, submitDate, SchedulerStatus.FAILED,
+                            taskID, simulationMessage, newQueueStatus, newExeStatus);
+                }
 
             }
         }

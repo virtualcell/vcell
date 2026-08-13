@@ -25,7 +25,11 @@ import java.util.NoSuchElementException;
 @ResourceLock("vcellGlobalConfig")
 public class SimulationStateMachineTest {
     private static final User testUser = DispatcherTestUtils.alice;
-    private static final MockVCMessageSession testMessageSession = new MockVCMessageSession();
+    // Not static: it accumulates every message the state machine emits, and getClientTopicMessage()
+    // reads from it, so sharing one across methods makes each test's assertion depend on what the
+    // previous test happened to send. setUp() already renews simulationDB and stateMachine; this
+    // was simply left behind.
+    private MockVCMessageSession testMessageSession;
     private static final int jobIndex = DispatcherTestUtils.jobIndex;
     private static final int taskID = DispatcherTestUtils.taskID;
     private static final KeyValue simKey = DispatcherTestUtils.simKey;
@@ -48,6 +52,7 @@ public class SimulationStateMachineTest {
     public void setUp(){
         simulationDB = new MockSimulationDB();
         stateMachine = new SimulationStateMachine(simKey, jobIndex);
+        testMessageSession = new MockVCMessageSession();
     }
 
     private record ChangedStateValues(
@@ -72,6 +77,57 @@ public class SimulationStateMachineTest {
 
     private SimulationJobStatus getClientTopicMessage(){
         return (SimulationJobStatus) testMessageSession.getTopicMessage(VCellTopic.ClientStatusTopic).getObjectContent();
+    }
+
+    private WorkerEvent createWorkerEvent(int workerEventType, SimulationMessage message){
+        return new WorkerEvent(workerEventType, simKey,
+                simID, jobIndex, "",
+                taskID, null, null,
+                message);
+    }
+
+    /**
+     * An operator running scancel on the cluster is not a solver failure. VCell learns about it
+     * the same way it learns about a crash -- a worker exit-error event -- so the only thing that
+     * distinguishes them is the message the worker attached, and recording it as FAILED tells the
+     * owner their model broke and sends them looking for a problem that is not there.
+     *
+     * A user's own stop does not come through here at all: onStopRequest sets STOPPED first, and
+     * STOPPED.isDone(), so onWorkerEvent discards whatever arrives afterwards.
+     */
+    @Test
+    public void aDeliberateStopIsRecordedAsStoppedRatherThanFailed() throws Exception {
+        DispatcherTestUtils.insertOrUpdateStatus(simulationDB);
+
+        stateMachine.onWorkerEvent(createWorkerEvent(WorkerEvent.JOB_WORKER_EXIT_ERROR,
+                SimulationMessage.solverStopped("simulation was cancelled on the cluster (slurm job 2710593, CANCELLED)")),
+                simulationDB, testMessageSession);
+
+        SimulationJobStatus result = getLatestJobSubmission();
+        Assertions.assertTrue(result.getSchedulerStatus().isStopped(),
+                "a job stopped on purpose is stopped, not failed");
+        Assertions.assertFalse(result.getSchedulerStatus().isFailed());
+        Assertions.assertTrue(result.getSimulationMessage().getDisplayMessage().contains("cancelled on the cluster"),
+                "and the reason must survive: " + result.getSimulationMessage().getDisplayMessage());
+        Assertions.assertFalse(result.getSimulationMessage().getDisplayMessage().contains("stopped unexpectedly"),
+                "nothing unexpected happened: " + result.getSimulationMessage().getDisplayMessage());
+
+        Assertions.assertTrue(getClientTopicMessage().getSchedulerStatus().isStopped(),
+                "the client is told the same thing");
+    }
+
+    /** A genuine crash still fails, and still says so. */
+    @Test
+    public void anOrdinaryWorkerExitErrorStillFails() throws Exception {
+        DispatcherTestUtils.insertOrUpdateStatus(simulationDB);
+
+        stateMachine.onWorkerEvent(createWorkerEvent(WorkerEvent.JOB_WORKER_EXIT_ERROR,
+                SimulationMessage.WorkerExited(1)), simulationDB, testMessageSession);
+
+        SimulationJobStatus result = getLatestJobSubmission();
+        Assertions.assertTrue(result.getSchedulerStatus().isFailed());
+        Assertions.assertTrue(result.getSimulationMessage().getDisplayMessage().contains("stopped unexpectedly"),
+                "an unexplained exit keeps the prefix: " + result.getSimulationMessage().getDisplayMessage());
     }
 
     @Test

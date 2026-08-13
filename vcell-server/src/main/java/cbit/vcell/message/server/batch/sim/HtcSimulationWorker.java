@@ -394,7 +394,6 @@ public void startJobMonitor() {
 						String jobName = lineTokenizer.nextToken();
 						String jobState = lineTokenizer.nextToken();
 						if(jobState.equalsIgnoreCase("FAILED") ||
-							jobState.startsWith("CANCELLED") ||
 							jobState.equalsIgnoreCase("BOOT_FAIL") ||
 							jobState.equalsIgnoreCase("DEADLINE") ||
 							jobState.equalsIgnoreCase("NODE_FAIL") ||
@@ -405,6 +404,22 @@ public void startJobMonitor() {
 							WorkerEventMessage.sendWorkerExitError(messageProducer_sim, HtcSimulationWorker.class.getName(), ManageUtils.getHostName(),
 								failedMonitorJobInfo.vcsimID, failedMonitorJobInfo.jobIndex, failedMonitorJobInfo.taskID,
 								SimulationMessage.jobFailed("Fail found by monitor, slrmJobID="+slurmJobID+" jobName="+jobName+" jobState="+jobState));
+							removeMonitorJob(Long.parseLong(slurmJobID));
+						}else if(jobState.startsWith("CANCELLED")) {
+							// Cancelled is not a solver failure -- somebody stopped this job on purpose.
+							//
+							// When the user stops a simulation, VCell records STOPPED and then issues the
+							// scancel itself, and SimulationStateMachine.onWorkerEvent discards anything that
+							// arrives once the status isDone() -- so this message is ignored in that case and
+							// the stop is preserved. What reaches a user is the other case: cancelled outside
+							// VCell, where the job really has stopped without finishing and saying so beats
+							// leaving the simulation apparently running. Report it as what it is.
+							MonitorJobInfo cancelledMonitorJobInfo = monitorTheseJobs.get(slurmJobID);
+							if(cancelledMonitorJobInfo != null) {
+								WorkerEventMessage.sendWorkerExitError(messageProducer_sim, HtcSimulationWorker.class.getName(), ManageUtils.getHostName(),
+									cancelledMonitorJobInfo.vcsimID, cancelledMonitorJobInfo.jobIndex, cancelledMonitorJobInfo.taskID,
+									SimulationMessage.solverStopped("simulation was cancelled on the cluster (slurm job "+slurmJobID+", "+jobState+")"));
+							}
 							removeMonitorJob(Long.parseLong(slurmJobID));
 						}else if(jobState.equalsIgnoreCase("COMPLETED")) {
 							MonitorJobInfo completedMonitorJobInfo = monitorTheseJobs.get(slurmJobID);
