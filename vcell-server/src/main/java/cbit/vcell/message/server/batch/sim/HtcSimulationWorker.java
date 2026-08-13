@@ -455,6 +455,7 @@ public static void main(String[] args) throws IOException {
 }
 
 private static final String REQUIRED_SERVICE_PROPERTIES[] = {
+
 		PropertyLoader.vcellSoftwareVersion,
 		PropertyLoader.primarySimDataDirInternalProperty,
 		PropertyLoader.primarySimDataDirExternalProperty,
@@ -506,7 +507,20 @@ private static final String REQUIRED_SERVICE_PROPERTIES[] = {
 		PropertyLoader.htcPowerUserMemoryMaxMB,
 		PropertyLoader.slurm_langevin_timeoutPerTaskSeconds,
 		PropertyLoader.slurm_langevin_batchMemoryLimitPerTaskMB,
-		PropertyLoader.slurm_langevin_memoryBlockSizeMB
+		PropertyLoader.slurm_langevin_memoryBlockSizeMB,
+
+		// Fetched with getRequiredProperty() but previously absent from this list, so
+		// PropertyLoader logged "not marked required" on every fetch. Declaring them
+		// silences that honestly and makes a missing value fail at startup, where it
+		// can be read, rather than at first use.
+		PropertyLoader.htc_singularity_imagedir,
+		PropertyLoader.htc_vcellfvsolver_solver_list,
+		PropertyLoader.slurm_singularity_pullfolder,
+		PropertyLoader.slurm_singularity_cachedir,
+		PropertyLoader.jmsArtemisPortInternal,
+		PropertyLoader.jmsArtemisHostInternal,
+		PropertyLoader.htcUserKeyFile,
+		PropertyLoader.htcHosts
 	};
 
 
