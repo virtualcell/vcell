@@ -52,6 +52,7 @@ public class SimulationDispatcherMain {
 
 
 	private static final String REQUIRED_SERVICE_PROPERTIES[] = {
+
 			PropertyLoader.vcellServerIDProperty,
 			PropertyLoader.installationRoot,
 			PropertyLoader.dbConnectURL,
@@ -75,7 +76,15 @@ public class SimulationDispatcherMain {
 			PropertyLoader.maxPdeJobsPerUser,
 			PropertyLoader.slurm_partition,
 			PropertyLoader.htcPowerUserMemoryMaxMB,
-			PropertyLoader.htcMaxMemoryMB
+			PropertyLoader.htcMaxMemoryMB,
+
+		// Fetched with getRequiredProperty() but previously absent from this list, so
+		// PropertyLoader logged "not marked required" on every fetch. Declaring them
+		// silences that honestly and makes a missing value fail at startup, where it
+		// can be read, rather than at first use.
+		PropertyLoader.htcMinMemoryMB,
+		PropertyLoader.htcUserKeyFile,
+		PropertyLoader.htcHosts
 		};
 
 }
