@@ -74,12 +74,8 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
 ENV dbpswdfile=/run/secrets/dbpswd \
     VCELL_DB_PSWDFILE=/run/secrets/dbpswd \
     jmspswdfile=/run/secrets/jmspswd \
-    VCELL_JMS_PSWDFILE=/run/secrets/jmspswd \
-    keystore=/run/secrets/keystorefile \
-    VCELLAPI_KEYSTORE_FILE=/run/secrets/keystorefile \
-    keystorepswdfile=/run/secrets/keystorepswd \
-    VCELLAPI_KEYSTORE_PSWDFILE=/run/secrets/keystorepswd
-    
+    VCELL_JMS_PSWDFILE=/run/secrets/jmspswd
+
 
 VOLUME /simdata
 VOLUME /simdata_secondary

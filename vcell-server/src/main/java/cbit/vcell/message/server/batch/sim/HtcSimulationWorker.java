@@ -485,7 +485,6 @@ private static final String REQUIRED_SERVICE_PROPERTIES[] = {
 		PropertyLoader.jmsSimRestPortExternal,
 		PropertyLoader.jmsUser,
 		PropertyLoader.jmsPasswordFile,
-		PropertyLoader.jmsRestPasswordFile,
 		PropertyLoader.htcUser,
 		PropertyLoader.htcLogDirExternal,
 		PropertyLoader.htcLogDirInternal,

@@ -1,6 +1,7 @@
 package cbit.vcell.resource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
@@ -60,7 +61,11 @@ public class RequiredPropertyDeclarationTest {
 		captured = ListAppender.attachTo(PropertyLoader.class);
 		PropertyLoader.loadProperties(declaredAsRequired);
 		PropertyLoader.getRequiredProperty(propertyName);
-		return captured.messagesContaining("not marked required");
+		// Scoped to this property: "not marked required" alone would also match a complaint
+		// about some other property that a parallel test happened to fetch.
+		return captured.messagesContaining("not marked required").stream()
+				.filter(m -> m.contains(propertyName))
+				.collect(java.util.stream.Collectors.toList());
 	}
 
 	/** Declared: no complaint. This is what adding the missing entries achieves. */
@@ -93,10 +98,22 @@ public class RequiredPropertyDeclarationTest {
 		private final Logger logger;
 		private final Level previousLevel;
 
+		/**
+		 * Only events from the thread that attached the appender are kept.
+		 *
+		 * The Fast group runs class-parallel in one JVM, and this captures a logger shared by
+		 * every test in it. Without the filter, any other class fetching an undeclared property
+		 * at the same moment lands in this capture, and an assertion about "exactly once" fails
+		 * for a reason that has nothing to do with the code under test. Observed in CI, where the
+		 * shard mix differs from a local run: expected 1 complaint, got 2.
+		 */
+		private final String owningThread;
+
 		private ListAppender(Logger logger) {
 			super("required-property-test-capture", null, null, true, Property.EMPTY_ARRAY);
 			this.logger = logger;
 			this.previousLevel = logger.getLevel();
+			this.owningThread = Thread.currentThread().getName();
 		}
 
 		static ListAppender attachTo(Class<?> cls) {
@@ -117,6 +134,7 @@ public class RequiredPropertyDeclarationTest {
 			stop();
 		}
 
+		/** Messages mentioning this fragment; callers pass the property they just fetched. */
 		List<String> messagesContaining(String fragment) {
 			List<String> out = new ArrayList<>();
 			synchronized (events) {
@@ -132,7 +150,64 @@ public class RequiredPropertyDeclarationTest {
 
 		@Override
 		public void append(LogEvent event) {
+			if (!owningThread.equals(event.getThreadName())) {
+				return;
+			}
 			events.add(event.toImmutable());
 		}
+	}
+
+	/**
+	 * A file-valued property is checked at startup, which GEN never was.
+	 *
+	 * This exists because of a concrete near-miss: the deployment overrides the image's default
+	 * secret paths under the legacy environment names only, so while migrating to VCELL_* names
+	 * the modern form of vcell.db.pswdfile would have resolved to the image default
+	 * (/run/secrets/dbpswd) rather than the deployment's (/run/secrets/api-secrets/dbpswd). 13
+	 * such divergences existed, all of them secret paths. Declared GEN, every one resolves
+	 * "successfully" to a file that is not there, and the failure surfaces much later as an
+	 * unreadable password.
+	 */
+	@Test
+	public void aFileValuedPropertyPointingAtNothingFailsValidation() throws java.io.IOException {
+		give(PropertyLoader.dbPasswordFile, "/no/such/secret/dbpswd");
+
+		IllegalStateException e = assertThrows(IllegalStateException.class,
+				() -> PropertyLoader.loadProperties(new String[] { PropertyLoader.dbPasswordFile }));
+
+		assertTrue(e.getMessage().contains(PropertyLoader.dbPasswordFile), e.getMessage());
+		assertTrue(e.getMessage().contains("is not an existing file"), e.getMessage());
+	}
+
+	/** And one that does exist passes, so the check is about the file rather than the name. */
+	@Test
+	public void aFileValuedPropertyPointingAtARealFilePasses() throws java.io.IOException {
+		java.io.File real = java.io.File.createTempFile("vcell-pswd", ".tmp");
+		real.deleteOnExit();
+		give(PropertyLoader.dbPasswordFile, real.getAbsolutePath());
+
+		PropertyLoader.loadProperties(new String[] { PropertyLoader.dbPasswordFile });
+	}
+
+	/**
+	 * Proves the isolation the fix relies on: a complaint raised by another thread, as happens
+	 * when the Fast group runs class-parallel in one JVM, must not land in this test's capture.
+	 * That leakage is what made fetchingAnUndeclaredPropertyIsReported fail in CI with 2
+	 * complaints where it expects 1, while passing every local run.
+	 */
+	@Test
+	public void aComplaintFromAnotherThreadIsNotCaptured() throws Exception {
+		give(PropertyLoader.htcHosts, "some-cluster.example");
+		captured = ListAppender.attachTo(PropertyLoader.class);
+		PropertyLoader.loadProperties(new String[0]);
+
+		Thread other = new Thread(() -> PropertyLoader.getRequiredProperty(PropertyLoader.htcHosts),
+				"a-parallel-test-class");
+		other.start();
+		other.join();
+
+		assertTrue(captured.messagesContaining("not marked required").isEmpty(),
+				"another thread's complaint leaked into this test's capture: "
+						+ captured.messagesContaining("not marked required"));
 	}
 }
