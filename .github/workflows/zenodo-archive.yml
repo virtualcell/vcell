@@ -1,21 +1,48 @@
 name: Archive release to Zenodo
 
-# On each published GitHub Release, archive it as a new version of the VCell
-# Zenodo concept (10.5281/zenodo.7796386) via the zenodo-maint reusable workflow.
-# Replaces the old native Zenodo<->GitHub integration (now disabled). Concept and
-# deposit metadata come from CITATION.cff (doi:) and .zenodo.json at the repo root.
+# Archives a release as a new version of the VCell Zenodo concept
+# (10.5281/zenodo.7796386) via the zenodo-maint reusable workflow. Replaces the old
+# native Zenodo<->GitHub integration (now disabled). Concept and deposit metadata come
+# from CITATION.cff (doi:) and .zenodo.json at the repo root.
 #
 # Requires an org/repo secret ZENODO_TOKEN belonging to the account that OWNS the
 # concept record (creating new versions requires ownership).
+#
+# WHEN THIS RUNS -- deliberately not on every published release.
+#
+# It used to trigger on `release: published`, which meant a DOI for every tag. Between
+# 2026-07-01 and 2026-08-13 that was ~15 releases, every one of them a patch-level build
+# and none of them deployed to production: 8.0.2.x through 8.0.15.01, two on the last day
+# alone. A citable archive of a build nobody ran is noise in the record, and the version
+# history is what people cite.
+#
+# It now runs when a release is actually deployed to the production site, which is the
+# point at which a version becomes the one users have. site_deploy.yml calls this after a
+# successful deploy with vcell_site=rel.
+#
+# workflow_dispatch remains for backfilling or re-archiving a specific tag by hand.
 
 on:
-  release:
-    types: [published]
+  workflow_call:
+    inputs:
+      tag:
+        description: "Release tag to archive (e.g. 8.1.0.01)"
+        required: true
+        type: string
+    secrets:
+      ZENODO_TOKEN:
+        required: true
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to archive (e.g. 8.1.0.01)"
+        required: true
+        type: string
 
 jobs:
   archive:
     uses: virtualcell/zenodo-maint/.github/workflows/archive.reusable.yml@v1
     with:
-      tag: ${{ github.event.release.tag_name }}
+      tag: ${{ inputs.tag }}
     secrets:
       ZENODO_TOKEN: ${{ secrets.ZENODO_TOKEN }}

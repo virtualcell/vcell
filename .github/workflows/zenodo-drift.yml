@@ -9,9 +9,22 @@ name: Zenodo drift check
 # next release is archived), this may report drift; it self-resolves once the next
 # release is archived and becomes the newest version.
 
+# The weekly schedule is OFF, deliberately.
+#
+# This check asks "is the latest GitHub release also the latest Zenodo version?", which was a
+# fair proxy for "has archiving silently stopped" while every release was archived. Archiving
+# is now tied to a production deploy (site_deploy.yml, vcell_site=rel), so the newest release
+# will usually NOT be the newest Zenodo version -- that is the intended state, not drift, and
+# the check would open a tracking issue every Monday saying so.
+#
+# The comparison lives in virtualcell/zenodo-maint and takes no inputs, so it cannot be pointed
+# at the deployed version from here. Re-enable the schedule once that workflow can compare
+# against what production is running rather than against the newest tag.
+#
+# It remains available on demand, which is when it is actually useful: after a prod deploy, to
+# confirm the archive landed.
+
 on:
-  schedule:
-    - cron: '0 12 * * 1'
   workflow_dispatch: {}
 
 jobs:
