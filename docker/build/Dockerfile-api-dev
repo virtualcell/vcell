@@ -83,6 +83,13 @@ ENV VCELL_DEBUG_OPTS=""
 
 EXPOSE 8000
 
+# Configuration comes from the container environment, resolved by EnvironmentConfigProvider
+# using MicroProfile's naming rules with the legacy names as a fallback. The 26 -D flags that
+# used to sit here did nothing but rename variables this container already has; the ENV block
+# above still supplies their defaults, under the same names.
+#
+# The flags that remain are the ones that are NOT a rename: values fixed by the image layout,
+# not by the deployment.
 ENTRYPOINT java \
 # Debugging is opt-in, not always-on. A JDWP listener accepts any connection with no
 # authentication whatsoever: whoever reaches the port can invoke arbitrary methods, read
@@ -125,38 +132,12 @@ ENTRYPOINT java \
     -XX:+HeapDumpOnOutOfMemoryError \
     -XX:HeapDumpPath=/dump \
 #    -XX:+PrintFlagsFinal -XshowSettings:vm \
-	-Dvcell.softwareVersion="${softwareVersion}" \
 	-Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager \
 	-Dlog4j.configurationFile=/usr/local/app/vcell-api.log4j.xml \
-	-Dvcell.server.id="${serverid}" \
-	-Dvcell.serverPrefix.v0="${serverPrefixV0}" \
 	-Dvcell.installDir=/usr/local/app \
-	-Dcli.workingDir="${workingDir}" \
-	-Dvcell.server.dbConnectURL="${dburl}" \
-	-Dvcell.server.dbDriverName="${dbdriver}" \
-	-Dvcell.server.dbUserid="${dbuser}" \
-	-Dvcell.db.pswdfile="${dbpswdfile}" \
 	-Dvcell.n5DataDir.internal=/n5DataDir \
 	-Dvcell.primarySimdatadir.internal=/simdata \
 	-Dvcell.secondarySimdatadir.internal=/simdata_secondary \
-	-Dvcell.simdataCacheSize="${simdataCacheSize}" \
-	-Dvcell.jms.int.host.internal="${jmshost_int_internal}" \
-	-Dvcell.jms.int.port.internal="${jmsport_int_internal}" \
 	-Dvcell.jms.blobMessageUseMongo=true \
-	-Dvcell.jms.blobMessageMinSize="${jmsblob_minsize}" \
-	-Dvcell.jms.user="${jmsuser}" \
-	-Dvcell.jms.pswdfile="${jmspswdfile}" \
-	-Dvcell.mongodb.host.internal=${mongodb_host_internal} \
-	-Dvcell.mongodb.port.internal=${mongodb_port_internal} \
-	-Dvcell.mongodb.database=${mongodb_database} \
-	-Dvcellapi.keystore.file="${keystore}" \
-	-Dvcellapi.keystore.pswdfile="${keystorepswdfile}" \
-	-Dvcell.smtp.hostName="${smtp_hostname}" \
-	-Dvcell.smtp.port="${smtp_port}" \
-	-Dvcell.smtp.emailAddress="${smtp_emailaddress}" \
-	-Dvcell.ssl.ignoreHostMismatch="${ssl_ignoreHostMismatch}" \
-	-Dvcell.ssl.ignoreCertProblems="${ssl_ignoreCertProblems}" \
-	-Dvcellapi.privateKey.file="${vcellapi_privatekeyfile}" \
-	-Dvcellapi.publicKey.file="${vcellapi_publickeyfile}" \
 	-cp "./lib/*" org.vcell.rest.VCellApiMain \
 	/usr/local/app/docroot 8080 ${protocol}

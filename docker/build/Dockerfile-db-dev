@@ -55,6 +55,13 @@ ENV VCELL_DEBUG_OPTS=""
 
 EXPOSE 8000
 
+# Configuration comes from the container environment, resolved by EnvironmentConfigProvider
+# using MicroProfile's naming rules with the legacy names as a fallback. The 14 -D flags that
+# used to sit here did nothing but rename variables this container already has; the ENV block
+# above still supplies their defaults, under the same names.
+#
+# The flags that remain are the ones that are NOT a rename: values fixed by the image layout,
+# not by the deployment.
 ENTRYPOINT java \
 # Debugging is opt-in, not always-on. A JDWP listener accepts any connection with no
 # authentication whatsoever: whoever reaches the port can invoke arbitrary methods, read
@@ -92,22 +99,8 @@ ENTRYPOINT java \
 	-XX:HeapDumpPath=/dump \
 #	-XX:+PrintFlagsFinal -XshowSettings:vm \
     -Djava.awt.headless=true \
-	-Dvcell.softwareVersion="${softwareVersion}" \
 	-Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager \
 	-Dlog4j.configurationFile=/usr/local/app/vcell-db.log4j.xml \
-	-Dvcell.server.id="${serverid}" \
 	-Dvcell.installDir=/usr/local/app \
-	-Dvcell.server.dbConnectURL="${dburl}" \
-	-Dvcell.server.dbDriverName="${dbdriver}" \
-	-Dvcell.server.dbUserid="${dbuser}" \
-	-Dvcell.db.pswdfile="${dbpswdfile}" \
-	-Dvcell.jms.int.host.internal="${jmshost_int_internal}" \
-	-Dvcell.jms.int.port.internal="${jmsport_int_internal}" \
 	-Dvcell.jms.blobMessageUseMongo=true \
-	-Dvcell.jms.blobMessageMinSize="${jmsblob_minsize}" \
-	-Dvcell.jms.user="${jmsuser}" \
-	-Dvcell.jms.pswdfile="${jmspswdfile}" \
-	-Dvcell.mongodb.host.internal=${mongodb_host_internal} \
-	-Dvcell.mongodb.port.internal=${mongodb_port_internal} \
-	-Dvcell.mongodb.database=${mongodb_database} \
 	-cp "./lib/*" cbit.vcell.message.server.db.DatabaseServer

@@ -116,6 +116,13 @@ ENV VCELL_DEBUG_OPTS=""
 
 EXPOSE 8000
 
+# Configuration comes from the container environment, resolved by EnvironmentConfigProvider
+# using MicroProfile's naming rules with the legacy names as a fallback. The 63 -D flags that
+# used to sit here did nothing but rename variables this container already has; the ENV block
+# above still supplies their defaults, under the same names.
+#
+# The flags that remain are the ones that are NOT a rename: values fixed by the image layout,
+# not by the deployment.
 ENTRYPOINT java \
 # Debugging is opt-in, not always-on. A JDWP listener accepts any connection with no
 # authentication whatsoever: whoever reaches the port can invoke arbitrary methods, read
@@ -153,77 +160,14 @@ ENTRYPOINT java \
 	-XX:HeapDumpPath=/dump \
 #	-XX:+PrintFlagsFinal -XshowSettings:vm \
     -Djava.awt.headless=true \
-	-Dvcell.softwareVersion="${softwareVersion}" \
 	-Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager \
 	-Dlog4j.configurationFile=/usr/local/app/vcell-submit.log4j.xml \
-	-Dvcell.server.id="${serverid}" \
 	-Dvcell.primarySimdatadir.internal=/simdata \
-	-Dvcell.secondarySimdatadir.external="${simdatadir_secondary_external}" \
 	-Dvcell.secondarySimdatadir.internal=/simdata_secondary \
-	-Dvcell.primarySimdatadir.external="${simdatadir_external}" \
-	-Dvcell.parallelDatadir.external="${simdatadir_parallel_external}" \
-	-Dvcell.nativesolverdir.external="${nativesolverdir_external}" \
-	-Dvcell.htc.user="${batchuser}" \
-	-Dvcell.htc.hosts="${batchhost}" \
-	-Dvcell.htc.userkeyfile="${batchuserkeyfile}" \
 	-Dvcell.htc.logdir.internal=/htclogs \
-	-Dvcell.htc.logdir.external="${htclogdir_external}" \
-	-Dvcell.htc.nodelist="${htcnodelist}" \
-	-Dvcell.slurm.cmd.sbatch="${slurm_cmd_sbatch}" \
-	-Dvcell.slurm.cmd.sacct="${slurm_cmd_sacct}" \
-	-Dvcell.slurm.cmd.squeue="${slurm_cmd_squeue}" \
-	-Dvcell.slurm.cmd.scancel="${slurm_cmd_scancel}" \
-	-Dvcell.slurm.partition="${slurm_partition}" \
-	-Dvcell.slurm.reservation="${slurm_reservation}" \
-	-Dvcell.slurm.qos="${slurm_qos}" \
-	-Dvcell.slurm.partitionpu="${slurm_partition_pu}" \
-	-Dvcell.slurm.reservationpu="${slurm_reservation_pu}" \
-	-Dvcell.slurm.qospu="${slurm_qos_pu}" \
-	-Dvcell.slurm.tmpdir="${slurm_tmpdir}" \
-	-Dvcell.slurm.singularity.cachedir="${slurm_singularity_cachedir}" \
-	-Dvcell.slurm.singularity.pullfolder="${slurm_singularity_pullfolder}" \
-	-Dvcell.slurm.singularity.module.name="${slurm_singularity_module_name}" \
-	-Dvcell.slurm.langevin.timeoutPerTaskSeconds="${slurm_langevin_timeoutPerTaskSeconds}" \
-	-Dvcell.slurm.langevin.batchMemoryLimitPerTaskMB="${slurm_langevin_batchMemoryLimitPerTaskMB}" \
-	-Dvcell.slurm.langevin.memoryBlockSizeMB="${slurm_langevin_memoryBlockSizeMB}" \
-	-Dvcell.htc.vcellfvsolver.apptainer.image="${htc_vcellfvsolver_apptainer_image}" \
-	-Dvcell.htc.vcellfvsolver.solver.list="${htc_vcellfvsolver_solver_list}" \
-	-Dvcell.htc.vcellsolvers.apptainer.image="${htc_vcellsolvers_apptainer_image}" \
-	-Dvcell.htc.vcellsolvers.solver.list="${htc_vcellsolvers_solver_list}" \
-	-Dvcell.htc.vcellbatch.apptainer.image="${htc_vcellbatch_apptainer_image}" \
-	-Dvcell.htc.vcellbatch.solver.list="${htc_vcellbatch_solver_list}" \
-	-Dvcell.htc.vcellopt.apptainer.image="${htc_vcellopt_apptainer_image}" \
-	-Dvcell.htc.singularity.imagedir="${htc_singularity_imagedir}" \
 	-Dvcell.simulation.postprocessor=JavaPostprocessor64 \
 	-Dvcell.simulation.preprocessor=JavaPreprocessor64 \
 	-Dvcell.javaSimulation.executable=JavaSimExe64 \
 	-Dvcell.installDir=/usr/local/app \
-	-Dvcell.jms.int.host.internal="${jmshost_int_internal}" \
-	-Dvcell.jms.int.port.internal="${jmsport_int_internal}" \
-	-Dvcell.jms.sim.host.internal="${jmshost_sim_internal}" \
-	-Dvcell.jms.sim.port.internal="${jmsport_sim_internal}" \
-	-Dvcell.jms.sim.host.external="${jmshost_sim_external}" \
-	-Dvcell.jms.sim.port.external="${jmsport_sim_external}" \
-	-Dvcell.jms.sim.restport.external="${jmsrestport_sim_external}" \
-	-Dvcell.jms.artemis.host.internal="${jmshost_artemis_internal}" \
-	-Dvcell.jms.artemis.port.internal="${jmsport_artemis_internal}" \
 	-Dvcell.jms.blobMessageUseMongo=true \
-	-Dvcell.jms.blobMessageMinSize="${jmsblob_minsize}" \
-	-Dvcell.jms.user="${jmsuser}" \
-	-Dvcell.jms.pswdfile="${jmspswdfile}" \
-	-Dvcell.jms.rest.pswdfile="${jmsrestpswdfile}" \
-	-Dvcell.mongodb.host.internal=${mongodb_host_internal} \
-	-Dvcell.mongodb.port.internal=${mongodb_port_internal} \
-	-Dvcell.mongodb.host.external=${mongodb_host_external} \
-	-Dvcell.mongodb.port.external=${mongodb_port_external} \
-	-Dvcell.mongodb.database=${mongodb_database} \
-	-Dvcell.simdatadir.archive.internal=${simdatadir_archive_internal} \
-	-Dvcell.simdatadir.archive.external=${simdatadir_archive_external} \
-	-Dvcell.ssh.cmd.cmdtimeout=${vcell_ssh_cmd_cmdtimeout} \
-	-Dvcell.ssh.cmd.restoretimeout=${vcell_ssh_cmd_restoretimeout} \
-	-Dvcell.ssh.cmd.options.csv=${vcell_ssh_cmd_options_csv} \
-	-Dvcell.htc.memory.min.mb=${htcMinMemoryMB} \
-    -Dvcell.htc.memory.max.mb=${htcMaxMemoryMB} \
-    -Dvcell.htc.memory.pu.floor.mb=${htcPowerUserMemoryFloorMB} \
-    -Dvcell.htc.memory.pu.max.mb=${htcPowerUserMemoryMaxMB} \
 	-cp "./lib/*" cbit.vcell.message.server.batch.sim.HtcSimulationWorker
