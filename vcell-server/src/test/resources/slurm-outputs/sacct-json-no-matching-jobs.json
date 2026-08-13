@@ -1,0 +1,35 @@
+{
+  "jobs": [
+  ],
+  "meta": {
+    "plugin": {
+      "type": "",
+      "name": "",
+      "data_parser": "data_parser\/v0.0.40",
+      "accounting_storage": "accounting_storage\/slurmdbd"
+    },
+    "client": {
+      "source": "",
+      "user": "vcell",
+      "group": "domain users"
+    },
+    "command": [
+      "sacct",
+      "--json",
+      "-j"
+    ],
+    "slurm": {
+      "version": {
+        "major": "23",
+        "micro": "10",
+        "minor": "11"
+      },
+      "release": "23.11.10",
+      "cluster": "mantis"
+    }
+  },
+  "errors": [
+  ],
+  "warnings": [
+  ]
+}
