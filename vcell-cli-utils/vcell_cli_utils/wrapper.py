@@ -32,22 +32,6 @@ def validateOmex(omexFilePath: str, tempDirPath: str, reportJsonFilePath: str) -
         pass
 
 
-def genSedml2d3d(omexFilePath: str, baseOutPath: str) -> None:
-    cli.gen_sedml_2d_3d(omexFilePath, baseOutPath)
-
-
-def genPlotsPseudoSedml(sedmlPath: str, resultOutDir: str) -> None:
-    cli.gen_plots_for_sed2d_only(sedmlPath, resultOutDir)
-
-
-def transposeVcmlCsv(csvFilePath: str) -> None:
-    cli.transpose_vcml_csv(csvFilePath)
-
-
-def genPlotPdfs(sedmlPath: str, resultOutDir: str) -> None:
-    cli.gen_plot_pdfs(sedmlPath, resultOutDir)
-
-
 if __name__ == "__main__":
     args = sys.argv
     # args[0] = current file
