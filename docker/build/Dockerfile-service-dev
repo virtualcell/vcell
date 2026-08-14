@@ -113,13 +113,28 @@ RUN chmod 755 /vcellscripts/entrypoint.sh
 #     61616 and 8161 to a port unique to that namespace -- dev 31617/30162, stage 31616/30161,
 #     prod 31618/30163.
 #
-# Merged from the five Dockerfiles, which agree on all 88 names.
+# Merged from the five Dockerfiles. Only real defaults are set here -- values that are correct
+# for every deployment, so that a ConfigMap which omits them still runs correctly.
+#
+# What is deliberately NOT here: the 53 placeholder defaults the per-service images carried
+# ("db-url-not-set", "/path/to/external/simdata/", and so on). Per-service they were a reasonable
+# way to make a missing setting loud. In an image serving all five services they are actively
+# harmful, because every service inherits every other service's placeholders -- api gained 40 and
+# db 44 for properties they never read. A placeholder is worse than an absent value in two ways:
+# it beats the default the code would otherwise supply, and it satisfies the "is it set?" half of
+# validateSystemProperties, so a genuinely missing setting starts the service and fails later at
+# the point of use, with a message about a malformed value rather than a missing one. Absent, the
+# same omission is reported at startup as "required property X not set".
+#
+# Verified before removing: no required property of any of the five resolves to a placeholder --
+# every one is supplied by the ConfigMaps or as a literal -D from entrypoint.sh.
+#
+# Two placeholders are kept on purpose. servertype selects SimDataServer's role and is read by
+# entrypoint.sh as a shell variable, where an invalid value is exactly the intended loud failure
+# (SimDataServiceType.valueOf throws). softwareVersion is stamped by the deploy workflow.
 ENV     softwareVersion=SOFTWARE-VERSION-NOT-SET \
     VCELL_SOFTWAREVERSION=SOFTWARE-VERSION-NOT-SET \
     VCELL_SERVER_ID=SITE \
-    VCELL_SERVER_DBCONNECTURL="db-url-not-set" \
-    VCELL_SERVER_DBDRIVERNAME="db-driver-not-set" \
-    VCELL_SERVER_DBUSERID="db-user-not-set" \
     VCELL_JMS_INT_HOST_INTERNAL=activemqint \
     VCELL_JMS_INT_PORT_INTERNAL=61616 \
     VCELL_JMS_USER=clientUser \
@@ -127,75 +142,23 @@ ENV     softwareVersion=SOFTWARE-VERSION-NOT-SET \
     VCELL_MONGODB_PORT_INTERNAL=27017 \
     VCELL_MONGODB_DATABASE=test \
     VCELL_JMS_BLOBMESSAGEMINSIZE=100000 \
-    VCELL_SMTP_HOSTNAME="smtp-host-not-set" \
-    VCELL_SMTP_PORT="smtp-port-not-set" \
-    VCELL_SMTP_EMAILADDRESS="smtp-emailaddress-not-set" \
-    VCELL_SIMDATACACHESIZE="simdataCacheSize-not-set" \
     VCELL_SSL_IGNOREHOSTMISMATCH=true \
     VCELL_SSL_IGNORECERTPROBLEMS=false \
-    VCELL_SERVERPREFIX_V0="server-path-prefix-v0-not-set" \
     CLI_WORKINGDIR="/usr/local/app" \
     VCELL_DB_PSWDFILE=/run/secrets/dbpswd \
     VCELL_JMS_PSWDFILE=/run/secrets/jmspswd \
     VCELLAPI_PRIVATEKEY_FILE=/run/secrets/apiprivkey \
     VCELLAPI_PUBLICKEY_FILE=/run/secrets/apipubkey \
-    VCELL_EXPORT_BASEURL="export-baseurl-not-set" \
-    VCELL_PRIMARYSIMDATADIR_EXTERNAL=/path/to/external/simdata/ \
     servertype="servertype-not-set" \
-    VCELL_S3_EXPORT_BASEURL="s3-export-baseurl-not-set" \
-    VCELL_MONGODB_HOST_EXTERNAL="mongodb-host-external-not-set" \
-    VCELL_MONGODB_PORT_EXTERNAL="mongodb-port-external-not-set" \
     VCELL_JMS_SIM_HOST_INTERNAL=activemqsim \
     VCELL_JMS_SIM_PORT_INTERNAL=61616 \
-    #    htclogdir_internal=/path/to/internal/htclogs/ \
     VCELL_HTC_USERKEYFILE=/run/secrets/batchuserkeyfile \
-    VCELL_JMS_SIM_HOST_EXTERNAL="jms-host-sim-external-not-set" \
-    VCELL_JMS_SIM_PORT_EXTERNAL="jms-port-sim-external-not-set" \
-    VCELL_JMS_SIM_RESTPORT_EXTERNAL="jms-restport-sim-external-not-set" \
-    #    export_baseurl="export-baseurl-not-set" \
-    VCELL_SECONDARYSIMDATADIR_EXTERNAL=/path/to/external/secondary/simdata/ \
-    VCELL_PARALLELDATADIR_EXTERNAL=/path/to/external/parallel/simdata/ \
-    VCELL_HTC_LOGDIR_EXTERNAL=/path/to/external/htclogs/ \
-    VCELL_NATIVESOLVERDIR_EXTERNAL=/path/to/external/nativesolvers/ \
-    VCELL_HTC_NODELIST="batch-host-not-set" \
-    VCELL_HTC_VCELLFVSOLVER_APPTAINER_IMAGE="htc-vcellfvsolver-apptainer-image-not-set" \
-    VCELL_HTC_VCELLFVSOLVER_SOLVER_LIST="htc-vcellfvsolver-solver-list-not-set" \
-    VCELL_HTC_VCELLSOLVERS_APPTAINER_IMAGE="htc-vcellsolvers-apptainer-image-not-set" \
-    VCELL_HTC_VCELLSOLVERS_SOLVER_LIST="htc-vcellsolvers-solver-list-not-set" \
-    VCELL_HTC_VCELLBATCH_APPTAINER_IMAGE="htc-vcellbatch-apptainer-image-not-set" \
-    VCELL_HTC_VCELLBATCH_SOLVER_LIST="htc-vcellbatch-solver-list-not-set" \
-    VCELL_HTC_VCELLOPT_APPTAINER_IMAGE="htc-vcellopt-apptainer-image-not-set" \
-    VCELL_HTC_SINGULARITY_IMAGEDIR="htc-singularity-imagedir-not-set" \
-    VCELL_HTC_HOSTS="batch-host-not-set" \
-    VCELL_HTC_USER="batch-user-not-set" \
     VCELL_SLURM_CMD_SBATCH=sbatch \
     VCELL_SLURM_CMD_SACCT=sacct \
     VCELL_SLURM_CMD_SCANCEL=scancel \
     VCELL_SLURM_CMD_SQUEUE=squeue \
-    VCELL_SLURM_PARTITION="slurm-partition-not-set" \
-    VCELL_SLURM_RESERVATION="slurm_reservation-not-set" \
-    VCELL_SLURM_QOS="slurm_qos-not-set" \
-    VCELL_SLURM_PARTITIONPU="slurm_partition_pu-not-set" \
-    VCELL_SLURM_RESERVATIONPU="slurm_reservation_pu-not-set" \
-    VCELL_SLURM_QOSPU="slurm_qos_pu-not-set" \
-    VCELL_SLURM_TMPDIR="slurm-tmpdir-not-set" \
-    VCELL_SLURM_SINGULARITY_CACHEDIR="slurm_singularity_cachedir-not-set" \
-    VCELL_SLURM_SINGULARITY_PULLFOLDER="slurm_singularity_pullfolder-not-set" \
-    VCELL_SLURM_SINGULARITY_MODULE_NAME="slurm_singularity_module_name-not-set" \
-    VCELL_SLURM_LANGEVIN_TIMEOUTPERTASKSECONDS="slurm_langevin_timeoutPerTaskSeconds-not-set" \
-    VCELL_SLURM_LANGEVIN_BATCHMEMORYLIMITPERTASKMB="slurm_langevin_batchMemoryLimitPerTaskMB-not-set" \
-    VCELL_SLURM_LANGEVIN_MEMORYBLOCKSIZEMB="slurm_langevin_memoryBlockSizeMB-not-set" \
     VCELL_JMS_ARTEMIS_HOST_INTERNAL=artemismq \
-    VCELL_JMS_ARTEMIS_PORT_INTERNAL=61616 \
-    VCELL_SSH_CMD_CMDTIMEOUT="cmdSrvcSshCmdTimeoutMS-not-set" \
-    VCELL_SSH_CMD_RESTORETIMEOUT="cmdSrvcSshCmdRestoreTimeoutFactor-not-set" \
-    VCELL_SSH_CMD_OPTIONS_CSV="cmdSrvcSshCmdRestoreOptionsCsv-not-set" \
-    VCELL_SIMDATADIR_ARCHIVE_EXTERNAL="simdatadir_archive_external-not-set" \
-    VCELL_SIMDATADIR_ARCHIVE_INTERNAL="simdatadir_archive_internal-not-set" \
-    VCELL_HTC_MEMORY_MIN_MB="htc-min-memory-not-set" \
-    VCELL_HTC_MEMORY_MAX_MB="htc-max-memory-not-set" \
-    VCELL_HTC_MEMORY_PU_FLOOR_MB="htc-power-user-memory-floor-not-set" \
-    VCELL_HTC_MEMORY_PU_MAX_MB="htc-power-user-memory-max-not-set"
+    VCELL_JMS_ARTEMIS_PORT_INTERNAL=61616
 
 VOLUME /simdata
 VOLUME /simdata_secondary
