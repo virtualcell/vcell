@@ -11,6 +11,7 @@
 package org.vcell.standalone;
 
 import cbit.vcell.client.VCellClient;
+import cbit.vcell.client.VCellClientLogging;
 import cbit.vcell.client.VCellLookAndFeel;
 import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.resource.ErrorUtils;
@@ -51,6 +52,12 @@ public class VCellClientDevMain {
 
 	public static void main(String[] args) {
 		try {
+			// Before anything logs, as in VCellClientMain. This entry point does not redirect the
+			// console - a developer run should log to the terminal - but it still needs its own
+			// configuration rather than the one jsbml happens to ship, which would otherwise decide
+			// the levels here and drop a jsbml.log into the working directory.
+			VCellClientLogging.configure();
+
 			ErrorUtils.setDebug(true);
 			PropertyLoader.loadProperties(ArrayUtils.addAll(REQUIRED_CLIENT_PROPERTIES, REQUIRED_LOCAL_PROPERTIES));
 			Injector injector = Guice.createInjector(new VCellStandaloneModule());
