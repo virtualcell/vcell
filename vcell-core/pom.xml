@@ -760,6 +760,15 @@
 									</goals>
 									<configuration>
 										<url>https://github.com/virtualcell/vcell-solvers/releases/download/${solvers-vcell-linux.version}/linux64.tgz</url>
+										<!-- Unpacked by the plugin, as mac64 and win64 already are. It used to be extracted
+										     afterwards by shelling out to `tar xzfh`, which BSD tar (that is, every macOS
+										     machine) rejects: "tar: Option -L is not permitted in mode -x". The build printed
+										     an [ERROR] and carried on green, leaving the linux solvers unextracted locally.
+										     Ant's <untar> is not the alternative: it does not restore unix permissions, and
+										     nothing chmods these binaries - they rely on the archive's own modes, which this
+										     plugin preserves. mac64 is the proof: unpacked the same way, no chmod task, and
+										     localsolvers/mac64/FiniteVolume_x64 comes out executable. -->
+										<unpack>true</unpack>
 										<outputDirectory>${project.build.directory}/../../localsolvers/linux64</outputDirectory>
 									</configuration>
 								</execution>
@@ -851,13 +860,6 @@
 									<configuration>
 										<target>
 											<chmod file="${project.build.directory}/../../localsolvers/linux64/langevin_x64" perm="755"/>
-											<exec executable="tar">
-												<arg value="xzfh"/>
-												<arg value="${project.build.directory}/../../localsolvers/linux64/linux64.tgz"/>
-												<arg value="-C"/>
-												<arg value="${project.build.directory}/../../localsolvers/linux64"/>
-											</exec>
-											<delete file="${project.build.directory}/../../localsolvers/linux64/linux64.tgz"/>
 										</target>
 									</configuration>
 								</execution>
@@ -889,6 +891,15 @@
 									</goals>
 									<configuration>
 										<url>https://github.com/virtualcell/vcell-solvers/releases/download/${solvers-vcell-linux.version}/linux64.tgz</url>
+										<!-- Unpacked by the plugin, as mac64 and win64 already are. It used to be extracted
+										     afterwards by shelling out to `tar xzfh`, which BSD tar (that is, every macOS
+										     machine) rejects: "tar: Option -L is not permitted in mode -x". The build printed
+										     an [ERROR] and carried on green, leaving the linux solvers unextracted locally.
+										     Ant's <untar> is not the alternative: it does not restore unix permissions, and
+										     nothing chmods these binaries - they rely on the archive's own modes, which this
+										     plugin preserves. mac64 is the proof: unpacked the same way, no chmod task, and
+										     localsolvers/mac64/FiniteVolume_x64 comes out executable. -->
+										<unpack>true</unpack>
 										<outputDirectory>${project.build.directory}/../../localsolvers/linux64</outputDirectory>
 									</configuration>
 								</execution>
@@ -980,13 +991,6 @@
 									<configuration>
 										<target>
 											<chmod file="${project.build.directory}/../../localsolvers/linux64/langevin_x64" perm="755"/>
-											<exec executable="tar">
-												<arg value="xzfh"/>
-												<arg value="${project.build.directory}/../../localsolvers/linux64/linux64.tgz"/>
-												<arg value="-C"/>
-												<arg value="${project.build.directory}/../../localsolvers/linux64"/>
-											</exec>
-											<delete file="${project.build.directory}/../../localsolvers/linux64/linux64.tgz"/>
 										</target>
 									</configuration>
 								</execution>
