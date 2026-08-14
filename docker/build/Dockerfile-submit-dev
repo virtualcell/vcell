@@ -74,7 +74,6 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
 
 ENV jmspswdfile=/run/secrets/jmspswd \
     VCELL_JMS_PSWDFILE=/run/secrets/jmspswd \
-	VCELL_JMS_REST_PSWDFILE=/run/secrets/jmsrestpswd \
     VCELL_HTC_USERKEYFILE=/run/secrets/batchuserkeyfile
 
 VOLUME /simdata
