@@ -256,11 +256,24 @@
 			<snapshots><enabled>false</enabled></snapshots>
 		</repository>
 		<!-- needed for com.mxgraph.jgraphx -->
+		<!-- Commented out 2026-08-14. Two cold-cache `mvn clean install -DskipTests` runs against
+	     an empty local repository, one with this repository and one without: both BUILD SUCCESS,
+	     and every artifact resolved from the same place either way (central 2465/2471,
+	     maven-restlet 15, jitpack 13, lib-maven-repo 9, scijava 6, ej-technologies 2,
+	     terracotta 1). This repository served ZERO. It has been here since the original
+	     single-maven-project reorganisation.
+
+	     Removing it saves little on its own - 4285 lookup attempts became 4253 - because with
+	     Central ordered ahead of it, it was already rarely reached. The ordering is what removed
+	     the waste; this removes a flaky third-party server from the critical path entirely.
+		     Left commented rather than deleted so it is one line to restore if something outside
+		     the default profile set turns out to need it.
 		<repository>
 			<id>com.alfresco.repository.public</id>
 			<name>Alfresco Public Repository</name>
 			<url>https://artifacts.alfresco.com/nexus/content/repositories/public/</url>
 		</repository>
+		-->
 
 		<!-- needed for imagej dependencies -->
 		<repository>
