@@ -347,56 +347,54 @@ public class EnvironmentConfigProviderTest {
 				"should name the list that needs editing: " + e.getMessage());
 	}
 
-	// ------------------------------------------------- legacy deployment names
+	// ------------------------------------------- no legacy fallback
 
-	/** A provider reading a fixed environment, so precedence can be tested deterministically. */
+	/** A provider reading a fixed environment, so resolution can be tested deterministically. */
 	private static EnvironmentConfigProvider readingEnvironment(Map<String, String> environment) {
 		return new EnvironmentConfigProvider(environment);
 	}
 
 	/**
-	 * The whole point of the legacy table. The deployment sets {@code dburl}; nothing sets
-	 * {@code VCELL_SERVER_DBCONNECTURL}. Without this the -D flag could not be deleted from the
-	 * Dockerfile without a coordinated rename in the vcell-fluxcd repository first.
+	 * The historical short names are no longer resolved, and that is the point of having removed
+	 * them: one name per setting, the same one vcell-rest answers to.
+	 *
+	 * The deployment supplied {@code dburl} for years and this class carried a table of 80 such
+	 * names consulted after the standard forms. Every one now has an UPPER_SNAKE twin in the
+	 * ConfigMaps, the deployment manifests and the images -- verified resolving in running
+	 * containers before the table was deleted.
 	 */
 	@Test
-	public void aLegacyDeploymentNameResolves() {
+	public void aLegacyDeploymentNameNoLongerResolves() {
 		EnvironmentConfigProvider p = readingEnvironment(Map.of("dburl", "jdbc:oracle:thin:@//h:1521/db"));
 
-		assertEquals("jdbc:oracle:thin:@//h:1521/db", p.getConfigValue("vcell.server.dbConnectURL"),
-				"the deployment supplies this as dburl and always has");
+		assertNull(p.getConfigValue("vcell.server.dbConnectURL"),
+				"dburl is history; only the MicroProfile forms resolve now");
 	}
 
-	/**
-	 * The modern name wins, which is what makes the migration incremental: vcell-fluxcd can
-	 * rename one variable at a time and the new name takes effect immediately, with the legacy
-	 * one still in place as a fallback until it is removed.
-	 */
+	/** And the modern name does. */
 	@Test
-	public void theModernNameBeatsTheLegacyOne() {
-		EnvironmentConfigProvider p = readingEnvironment(Map.of(
-				"dburl", "the-old-name",
-				"VCELL_SERVER_DBCONNECTURL", "the-new-name"));
+	public void theModernNameResolves() {
+		EnvironmentConfigProvider p = readingEnvironment(
+				Map.of("VCELL_SERVER_DBCONNECTURL", "jdbc:oracle:thin:@//h:1521/db"));
 
-		assertEquals("the-new-name", p.getConfigValue("vcell.server.dbConnectURL"),
-				"otherwise a renamed variable would be ignored until the old one was deleted");
+		assertEquals("jdbc:oracle:thin:@//h:1521/db", p.getConfigValue("vcell.server.dbConnectURL"));
 	}
 
-	/** And a -D flag still beats both, so an unmigrated container is untouched. */
+	/** A -D flag still wins over the environment, which is unchanged by any of this. */
 	@Test
-	public void aSystemPropertyBeatsTheLegacyNameToo() {
-		EnvironmentConfigProvider p = readingEnvironment(Map.of("dburl", "from-the-environment"));
+	public void aSystemPropertyStillBeatsTheEnvironment() {
+		EnvironmentConfigProvider p = readingEnvironment(
+				Map.of("VCELL_SERVER_DBCONNECTURL", "from-the-environment"));
 		systemProperty("vcell.server.dbConnectURL", "from-the-command-line");
 
 		assertEquals("from-the-command-line", p.getConfigValue("vcell.server.dbConnectURL"));
 	}
 
-	/** A property with no legacy alias and nothing in the environment is simply absent. */
+	/** A property nothing supplies is absent. */
 	@Test
-	public void aPropertyWithNoAliasAndNoValueStaysNull() {
-		EnvironmentConfigProvider p = readingEnvironment(Map.of("dburl", "irrelevant"));
+	public void anUnsuppliedPropertyStaysNull() {
+		EnvironmentConfigProvider p = readingEnvironment(Map.of("VCELL_SERVER_ID", "TEST"));
 
-		assertNull(p.getConfigValue("vcell.server.dbUserid"),
-				"dbuser is not set in this environment, so the property is absent");
+		assertNull(p.getConfigValue("vcell.server.dbUserid"));
 	}
 }

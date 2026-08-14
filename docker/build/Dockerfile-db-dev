@@ -34,32 +34,20 @@ COPY ./docker/build/vcell-db.log4j.xml .
 
 ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
     VCELL_SOFTWAREVERSION=SOFTWARE-VERSION-NOT-SET \
-	serverid=SITE \
 	VCELL_SERVER_ID=SITE \
-    jmshost_int_internal=activemqint \
     VCELL_JMS_INT_HOST_INTERNAL=activemqint \
-    jmsport_int_internal=61616 \
     VCELL_JMS_INT_PORT_INTERNAL=61616 \
-    jmsuser=clientUser \
     VCELL_JMS_USER=clientUser \
-	mongodb_host_internal=mongodb \
 	VCELL_MONGODB_HOST_INTERNAL=mongodb \
-	mongodb_port_internal=27017 \
 	VCELL_MONGODB_PORT_INTERNAL=27017 \
-    mongodb_database=test \
     VCELL_MONGODB_DATABASE=test \
-    mongodb_host_external="mongodb-host-external-not-set" \
     VCELL_MONGODB_HOST_EXTERNAL="mongodb-host-external-not-set" \
-    mongodb_port_external="mongodb-port-external-not-set" \
     VCELL_MONGODB_PORT_EXTERNAL="mongodb-port-external-not-set" \
-    export_baseurl="export-baseurl-not-set" \
     VCELL_EXPORT_BASEURL="export-baseurl-not-set" \
-    jmsblob_minsize=100000 \
     VCELL_JMS_BLOBMESSAGEMINSIZE=100000
 
 ENV dbpswdfile=/run/secrets/dbpswd \
     VCELL_DB_PSWDFILE=/run/secrets/dbpswd \
-    jmspswdfile=/run/secrets/jmspswd \
     VCELL_JMS_PSWDFILE=/run/secrets/jmspswd
 
 ENV VCELL_DEBUG_OPTS=""

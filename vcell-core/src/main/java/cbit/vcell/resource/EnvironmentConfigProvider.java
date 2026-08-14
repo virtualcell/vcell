@@ -48,14 +48,13 @@ import org.apache.logging.log4j.Logger;
  * <li>{@code VCELL_SERVER_ID} — the same, upper-cased</li>
  * </ol>
  *
- * <h2>Legacy names</h2>
+ * <h2>The legacy names are gone</h2>
  *
- * The deployment does not use those names today — it sets {@code dburl}, {@code serverid},
- * {@code jmshost_int_internal}, and the Dockerfile renames each one. Requiring the deployment to
- * be renamed first would make this a flag day across a separate repository, so the 81 legacy
- * names are listed in {@code vcell-legacy-env-names.properties} and consulted <em>last</em>.
- * A variable can then be migrated singly by adding its modern name, which wins; when nothing
- * sets the legacy names any more, that file goes away.
+ * The deployment used to supply configuration under short historical names -- {@code dburl},
+ * {@code serverid}, {@code jmshost_int_internal} -- and this class carried a table of 80 of them
+ * consulted after the standard forms. Every one of those names now has an UPPER_SNAKE twin in
+ * the ConfigMaps, the deployment manifests and the images, verified resolving in running
+ * containers, so the table has been removed and the naming rules above are the whole story.
  *
  * <h2>System properties still win</h2>
  *
@@ -76,11 +75,6 @@ import org.apache.logging.log4j.Logger;
 public class EnvironmentConfigProvider implements PropertyLoader.VCellConfigProvider {
 
 	private static final Logger lg = LogManager.getLogger(EnvironmentConfigProvider.class);
-
-	static final String LEGACY_NAMES_RESOURCE = "/vcell-legacy-env-names.properties";
-
-	/** property name -> the environment variable the current deployment sets it under. */
-	private static final Map<String, String> legacyNames = loadLegacyNames();
 
 	private final Map<String, String> environment;
 
@@ -116,8 +110,7 @@ public class EnvironmentConfigProvider implements PropertyLoader.VCellConfigProv
 				return value;
 			}
 		}
-		String legacyName = legacyNames.get(propertyName);
-		return legacyName == null ? null : environment.get(legacyName);
+		return null;
 	}
 
 	/**
@@ -198,7 +191,6 @@ public class EnvironmentConfigProvider implements PropertyLoader.VCellConfigProv
 		for (String property : declaredProperties) {
 			recognised.addAll(environmentNamesFor(property));
 		}
-		recognised.addAll(legacyNames.values());
 
 		reportExemptionsThatAreNowProperties(declaredProperties);
 
@@ -322,38 +314,6 @@ public class EnvironmentConfigProvider implements PropertyLoader.VCellConfigProv
 			current = swap;
 		}
 		return previous[b.length()];
-	}
-
-	/** The environment variable the current deployment supplies this property under, if any. */
-	static String legacyNameFor(String propertyName) {
-		return legacyNames.get(propertyName);
-	}
-
-	static Map<String, String> legacyNames() {
-		return legacyNames;
-	}
-
-	private static Map<String, String> loadLegacyNames() {
-		Properties properties = new Properties();
-		try (InputStream in = EnvironmentConfigProvider.class.getResourceAsStream(LEGACY_NAMES_RESOURCE)) {
-			if (in == null) {
-				// Not fatal: without the table only the modern names resolve, which is exactly the
-				// state this is migrating towards. Failing startup here would be worse than the
-				// missing-property report the caller is about to produce anyway.
-				lg.warn("no " + LEGACY_NAMES_RESOURCE + " on the classpath;"
-						+ " configuration supplied under legacy environment names will not be found");
-				return Map.of();
-			}
-			properties.load(in);
-		} catch (IOException e) {
-			lg.warn("could not read " + LEGACY_NAMES_RESOURCE, e);
-			return Map.of();
-		}
-		Map<String, String> map = new HashMap<>();
-		for (String name : properties.stringPropertyNames()) {
-			map.put(name, properties.getProperty(name).trim());
-		}
-		return Collections.unmodifiableMap(map);
 	}
 
 	/**

@@ -108,49 +108,37 @@ public class ServiceEntrypointTest {
 	}
 
 	/**
-	 * The consolidated image must carry the same modern environment names as the per-service
-	 * images it replaces.
+	 * The consolidated image must configure itself only under the modern names.
 	 *
-	 * It did not, and nothing noticed. The migration added twins to the ConfigMaps, the base
-	 * manifests and the five per-service Dockerfiles -- but Dockerfile-service-dev was missed,
-	 * and that is the image stage actually runs. Every check that said "no property is reachable
-	 * only by a legacy name" had iterated the five per-service files. It surfaced only when the
-	 * running containers were asked directly, one property short of removing the fallback those
-	 * services were still relying on.
+	 * This began as a check that the image carried a modern twin for every legacy name, because
+	 * it carried none -- the migration had twinned the ConfigMaps, the deployment manifests and
+	 * the five per-service images and missed the one the services actually run. Every check that
+	 * said otherwise had iterated the per-service files. Now that the legacy names and the
+	 * fallback that resolved them are gone, the invariant is the stronger one: a lower-case
+	 * configuration name in this image would resolve to nothing at all.
+	 *
+	 * Deliberately allowed: names the entrypoint reads as shell variables rather than resolving
+	 * as properties.
 	 */
 	@Test
-	public void theConsolidatedImageCarriesTheModernNamesToo() throws IOException {
+	public void theConsolidatedImageConfiguresItselfWithModernNamesOnly() throws IOException {
 		Path consolidated = Path.of("..", "docker", "build", "Dockerfile-service-dev");
 		Assumptions.assumeTrue(Files.isRegularFile(consolidated), consolidated + " not found");
-		String text = Files.readString(consolidated);
 
-		Map<String, String> declared = new LinkedHashMap<>();
-		Matcher m = Pattern.compile("^\\s*(?:ENV\\s+)?([A-Za-z_][A-Za-z0-9_]*)=(.*?)\\s*\\\\?$",
-				Pattern.MULTILINE).matcher(text);
+		// read by entrypoint.sh as shell variables, not resolved through PropertyLoader
+		List<String> shellRead = List.of("servertype", "softwareVersion", "VCELL_DEBUG_OPTS");
+
+		List<String> legacy = new ArrayList<>();
+		Matcher m = Pattern.compile("^\\s+([A-Za-z_][A-Za-z0-9_]*)=", Pattern.MULTILINE)
+				.matcher(Files.readString(consolidated));
 		while (m.find()) {
-			declared.putIfAbsent(m.group(1), m.group(2));
-		}
-
-		List<String> missing = new ArrayList<>();
-		for (Map.Entry<String, String> entry : declared.entrySet()) {
-			String legacy = entry.getKey();
-			if (legacy.matches("[A-Z0-9_]+")) {
-				continue;
-			}
-			for (Map.Entry<String, String> alias : EnvironmentConfigProvider.legacyNames().entrySet()) {
-				if (!alias.getValue().equals(legacy)) {
-					continue;
-				}
-				String modern = EnvironmentConfigProvider.upperCaseNameFor(alias.getKey());
-				if (!declared.containsKey(modern)) {
-					missing.add(legacy + " -> " + modern);
-				} else if (!declared.get(modern).equals(entry.getValue())) {
-					missing.add(modern + " has a different value from " + legacy);
-				}
+			String name = m.group(1);
+			if (!name.matches("[A-Z0-9_]+") && !shellRead.contains(name)) {
+				legacy.add(name);
 			}
 		}
-		assertEquals(List.of(), missing,
-				"the consolidated image defines these only under their legacy names, so those"
-						+ " properties would stop resolving the moment the fallback is removed");
+		assertEquals(List.of(), legacy,
+				"these are configured under names PropertyLoader no longer resolves; the legacy"
+						+ " fallback that used to map them has been removed");
 	}
 }
