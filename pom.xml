@@ -227,7 +227,18 @@
 
 		     So: vendored first, then Central, then the rest. Add new repositories after Central
 		     unless they are vendored artifacts. -->
-		<!-- Vendored artifacts not available on Maven Central: jai_core, jai-codec, netcdf, udunits, thredds-parent -->
+		<!-- Vendored artifacts: jai_core, jai-codec, netcdf, udunits, thredds-parent.
+
+		     Vendored for RELIABILITY, not availability. The upstream servers that carried these
+		     were flaky enough that builds failed on them, so a copy lives in the tree and the
+		     build never depends on a third party being up to compile.
+
+		     The distinction matters when deciding whether one can be dropped. This comment used to
+		     say "not available on Maven Central", which is not true of all of them:
+		     edu.ucar:netcdf:4.3.22 is on Central and byte-identical to the vendored copy. It stays
+		     vendored anyway, because availability today was never the reason. jai_core, jai-codec
+		     and udunits do 404 from Central. -->
+		<!-- Keep this repository FIRST; see the ordering note above. -->
 		<repository>
 			<id>lib-maven-repo</id>
 			<url>file://${maven.multiModuleProjectDirectory}/lib/maven-repo</url>
