@@ -162,12 +162,27 @@ jobs:
           poetry install
           poetry run python -m pytest
 
-      - name: setup java 17 with maven cache
+      - name: setup java 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
-          cache: 'maven'
+
+      # Not setup-java's `cache: maven`. That saves only on a cache MISS, so the first cache
+      # ever written -- which was incomplete -- was restored unchanged by every later run and
+      # never updated, because the key only changes when a pom does. One build measured 1200
+      # artifacts (811 poms, 409 jars) re-downloaded on a cache HIT, in every job of every run.
+      #
+      # A key that always differs means the cache is always saved, and restore-keys falls back
+      # to the newest previous one, so it converges on complete instead of freezing incomplete.
+      - name: maven repository cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: maven-${{ hashFiles('**/pom.xml') }}-${{ github.run_id }}
+          restore-keys: |
+            maven-${{ hashFiles('**/pom.xml') }}-
+            maven-
 
       - name: Maven build (compile, no tests)
         shell: bash
@@ -244,12 +259,21 @@ jobs:
           (cd pythonData && poetry install)
           (cd docker/swarm/vcell-admin && poetry install)
 
-      - name: setup java 17 with maven cache
+      - name: setup java 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
-          cache: 'maven'
+
+      # Restore only: the build job saves the shared cache for the run. See the note there.
+      - name: maven repository cache (restore only)
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/.m2/repository
+          key: maven-${{ hashFiles('**/pom.xml') }}-${{ github.run_id }}
+          restore-keys: |
+            maven-${{ hashFiles('**/pom.xml') }}-
+            maven-
 
       # Step 1: compile the whole reactor once (no tests). Step 2: run ONLY this
       # shard's modules' Fast tests, with JUnit class-level parallelism (enabled
@@ -320,12 +344,21 @@ jobs:
       - name: Set Docker API version workaround
         run: echo "api.version=1.44" >> ~/.docker-java.properties
 
-      - name: setup java 17 with maven cache
+      - name: setup java 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
-          cache: 'maven'
+
+      # Restore only: the build job saves the shared cache for the run. See the note there.
+      - name: maven repository cache (restore only)
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/.m2/repository
+          key: maven-${{ hashFiles('**/pom.xml') }}-${{ github.run_id }}
+          restore-keys: |
+            maven-${{ hashFiles('**/pom.xml') }}-
+            maven-
 
       - name: Maven build, validate OpenAPI spec, run Quarkus tests
         shell: bash

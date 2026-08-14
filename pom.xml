@@ -199,7 +199,46 @@
 
 
 	<repositories>
-		<!-- Vendored artifacts not available on Maven Central: jai_core, jai-codec, netcdf, udunits, thredds-parent -->
+		<!-- Order matters: Maven asks repositories in the order below and stops at the first that
+		     has the artifact.
+
+		     Maven asks repositories in declaration order and stops at the first that has the
+		     artifact. Central is not declared here at all by default: it comes from the super-POM
+		     and is therefore consulted LAST, after every repository below. Nearly everything we
+		     depend on lives in Central, so each of those artifacts was looked up - and 404'd - in
+		     five other repositories first.
+
+		     Measured on one CI build with a warm dependency cache: 7028 "Downloading from" attempts
+		     produced 1222 artifacts. Central served 1205 of them, while alfresco, scijava, jitpack,
+		     terracotta and lib-maven-repo served zero between them and absorbed roughly 5800 failed
+		     round trips. The repositories below still matter for the handful of artifacts that are
+		     genuinely only there; they simply should not be asked first.
+
+		     The vendored file:// repository stays FIRST, ahead of Central. A miss there is a
+		     filesystem stat rather than a network round trip, so it costs the ~1200 Central
+		     artifacts almost nothing, while the artifacts that are only vendored resolve with no
+		     network at all. It also keeps vendoring meaning what it says: whatever is in
+		     lib/maven-repo wins. That is not hypothetical - edu.ucar:netcdf:4.3.22 is vendored
+		     AND present on Central. The two are byte-identical today (sha1
+		     a9b0be3ddf020c3aebf6498fcfc3ef007805cec0), so nothing turns on it right now, but with
+		     Central first the vendored copy would quietly stop being the one that is used, and
+		     that should not depend on a coincidence. jai_core, jai-codec and udunits are not on
+		     Central at all.
+
+		     So: vendored first, then Central, then the rest. Add new repositories after Central
+		     unless they are vendored artifacts. -->
+		<!-- Vendored artifacts: jai_core, jai-codec, netcdf, udunits, thredds-parent.
+
+		     Vendored for RELIABILITY, not availability. The upstream servers that carried these
+		     were flaky enough that builds failed on them, so a copy lives in the tree and the
+		     build never depends on a third party being up to compile.
+
+		     The distinction matters when deciding whether one can be dropped. This comment used to
+		     say "not available on Maven Central", which is not true of all of them:
+		     edu.ucar:netcdf:4.3.22 is on Central and byte-identical to the vendored copy. It stays
+		     vendored anyway, because availability today was never the reason. jai_core, jai-codec
+		     and udunits do 404 from Central. -->
+		<!-- Keep this repository FIRST; see the ordering note above. -->
 		<repository>
 			<id>lib-maven-repo</id>
 			<url>file://${maven.multiModuleProjectDirectory}/lib/maven-repo</url>
@@ -210,12 +249,31 @@
 				<enabled>false</enabled>
 			</snapshots>
 		</repository>
+		<repository>
+			<id>central</id>
+			<url>https://repo.maven.apache.org/maven2</url>
+			<releases><enabled>true</enabled></releases>
+			<snapshots><enabled>false</enabled></snapshots>
+		</repository>
 		<!-- needed for com.mxgraph.jgraphx -->
+		<!-- Commented out 2026-08-14. Two cold-cache `mvn clean install -DskipTests` runs against
+	     an empty local repository, one with this repository and one without: both BUILD SUCCESS,
+	     and every artifact resolved from the same place either way (central 2465/2471,
+	     maven-restlet 15, jitpack 13, lib-maven-repo 9, scijava 6, ej-technologies 2,
+	     terracotta 1). This repository served ZERO. It has been here since the original
+	     single-maven-project reorganisation.
+
+	     Removing it saves little on its own - 4285 lookup attempts became 4253 - because with
+	     Central ordered ahead of it, it was already rarely reached. The ordering is what removed
+	     the waste; this removes a flaky third-party server from the critical path entirely.
+		     Left commented rather than deleted so it is one line to restore if something outside
+		     the default profile set turns out to need it.
 		<repository>
 			<id>com.alfresco.repository.public</id>
 			<name>Alfresco Public Repository</name>
 			<url>https://artifacts.alfresco.com/nexus/content/repositories/public/</url>
 		</repository>
+		-->
 
 		<!-- needed for imagej dependencies -->
 		<repository>

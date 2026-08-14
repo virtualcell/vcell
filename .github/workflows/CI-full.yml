@@ -66,12 +66,25 @@ jobs:
           popd;\
         done
 
-    - name: setup java 17 with maven cache
+    - name: setup java 17
       uses: actions/setup-java@v4
       with:
         distribution: 'temurin'
         java-version: '17'
-        cache: 'maven'
+
+    # Not setup-java's `cache: maven`, which saves only on a cache MISS -- so the first cache
+    # ever written, incomplete, was restored unchanged by every later run and never updated.
+    # A key that always differs means it is always saved, and restore-keys falls back to the
+    # newest previous one, so the cache converges on complete. This job saves for the run;
+    # docker-build restores only.
+    - name: maven repository cache
+      uses: actions/cache@v4
+      with:
+        path: ~/.m2/repository
+        key: maven-${{ hashFiles('**/pom.xml') }}-${{ github.run_id }}
+        restore-keys: |
+          maven-${{ hashFiles('**/pom.xml') }}-
+          maven-
 
     - name: Maven build
       run: mvn --batch-mode clean install dependency:copy-dependencies -DskipTests=true
@@ -190,13 +203,23 @@ jobs:
 
     - uses: actions/checkout@v4
 
-    - name: setup java 17 with maven cache
+    - name: setup java 17
       if: ${{ matrix.image.pre_build }}
       uses: actions/setup-java@v4
       with:
         distribution: 'temurin'
         java-version: '17'
-        cache: 'maven'
+
+    # Restore only. This is a matrix job, so saving here would write one cache entry per image.
+    - name: maven repository cache (restore only)
+      if: ${{ matrix.image.pre_build }}
+      uses: actions/cache/restore@v4
+      with:
+        path: ~/.m2/repository
+        key: maven-${{ hashFiles('**/pom.xml') }}-${{ github.run_id }}
+        restore-keys: |
+          maven-${{ hashFiles('**/pom.xml') }}-
+          maven-
 
     - name: Download Maven artifacts
       if: ${{ matrix.image.needs_maven }}
