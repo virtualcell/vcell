@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  Logging configuration for the DESKTOP CLIENT. Loaded explicitly by VCellClientLogging, NOT by
+  log4j's classpath scan - which is why the file is not called log4j2.xml.
+
+  Two dependencies on this classpath ship a log4j2.xml of their own (jsbml-core and
+  biojava-ontology), and log4j takes the first one the classloader hands it. vcell.sh puts
+  maven-jars/* ahead of target/*, so a file named log4j2.xml here would lose to jsbml's - which
+  configures a non-following console appender and a File appender writing jsbml.log into whatever
+  directory the client happened to be launched from. That is the configuration the client has
+  actually been running under. Giving this file a name nothing scans for, and loading it by URL,
+  makes the outcome independent of classpath order.
+
+  follow="true" is the other half. The client redirects System.out and System.err
+  into <vcellHome>/logs/vcellrun_<site>.log (ConsoleCapture, from VCellClientMain), and it does
+  so AFTER log4j has already configured itself - ConsoleCapture holds a static logger, so simply
+  calling ConsoleCapture.getInstance() forces log4j to initialize on the line before the streams
+  are swapped. A console appender resolves System.out once at configuration time unless it is
+  told to follow, so every logged message went to the pre-redirect console - which, for an
+  installed macOS .app, is nowhere a user can reach - while bare println calls, which resolve the
+  field per call, landed in the file. See issue #1954.
+
+  Level: WARN rather than log4j's ERROR default, so a warning that explains a subsequent failure
+  is present too. Raise the Root level to info if a diagnosis needs more; it is deliberately not
+  info by default because the third-party libraries on this classpath are chatty and this file is
+  read by users, not only by us.
+
+  There is no file appender on purpose. Everything the client emits - logged or printed - belongs
+  in one file in timestamp order, because reading a client log means correlating the two; splitting
+  them would make that harder, not easier. ConsoleCapture opens that file fresh on each launch, so
+  its size is bounded by one session.
+-->
+
+<Configuration status="WARN">
+
+    <Appenders>
+        <Console name="console" target="SYSTEM_OUT" follow="true">
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} %-5p %c{1.} [%t] %m%n"/>
+        </Console>
+    </Appenders>
+
+    <Loggers>
+        <Root level="warn">
+            <AppenderRef ref="console"/>
+        </Root>
+    </Loggers>
+
+</Configuration>

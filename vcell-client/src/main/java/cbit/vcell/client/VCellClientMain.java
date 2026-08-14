@@ -80,6 +80,10 @@ public class VCellClientMain implements Callable<Integer> {
      * @param args an array of command-line arguments
      */
     public static void main(java.lang.String[] args) {
+        // Before anything logs. Without this the client inherits whichever log4j2.xml a dependency
+        // happens to ship, and its errors go to a console that an installed .app does not have.
+        VCellClientLogging.configure();
+
         // Recover gracefully when DNS lookups fail transiently (e.g. laptop wake from sleep).
         // Java's default 10s negative-result cache combined with our continuous polling loop
         // wedges the client at "connecting…" until restart, because the polling interval is
