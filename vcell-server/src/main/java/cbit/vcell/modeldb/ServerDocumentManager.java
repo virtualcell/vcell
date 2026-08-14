@@ -1357,12 +1357,18 @@ public class ServerDocumentManager {
                         MathCompareResults mathCompareResults = mathEquivalencyHash.get(memorySimulation.getMathDescription());
                         bMathematicallyEquivalent = !bForceIndependent && Simulation.testEquivalency(memorySimulation, databaseSimulation, mathCompareResults);
                         //
-                        // don't set equivalent if no data exists.
+                        // don't set equivalent if no data exists - there would be nothing for the parent
+                        // reference to point at.
+                        //
+                        // a simulation that is still in flight is the exception. It has no data yet, but its
+                        // job is running against the authoritative (parent) simulation key, so dropping the
+                        // parent reference here strands that job: the new edition reports "never ran" and the
+                        // results, when they arrive, are attached to a key the document no longer references.
                         //
                         if(bMathematicallyEquivalent){
                             VCSimulationIdentifier vcSimulationIdentifier = databaseSimulation.getSimulationInfo().getAuthoritativeVCSimulationIdentifier();
                             SimulationStatusPersistent simStatus = dbServer.getSimulationStatus(vcSimulationIdentifier.getSimulationKey());
-                            if(simStatus == null || !simStatus.getHasData()){
+                            if(simStatus == null || (!simStatus.getHasData() && !isInFlight(simStatus))){
                                 bMathematicallyEquivalent = false;
                             }
                         }
@@ -1517,6 +1523,20 @@ public class ServerDocumentManager {
 
             return bioModelXML;
         }
+    }
+
+
+    /**
+     * Whether a simulation has been submitted and has not yet reached a terminal state.
+     * <p>
+     * Enumerated positively rather than as "not completed, failed or never ran": UNKNOWN,
+     * NOT_SAVED and STOPPED are none of those three, but nothing is running for them either,
+     * and treating them as in flight would hand out a parent reference to a simulation with
+     * neither data nor a job.
+     */
+    private static boolean isInFlight(SimulationStatusPersistent simStatus){
+        // isStoppable() covers DISPATCHED, RUNNING, WAITING and QUEUED
+        return simStatus.isStartRequested() || simStatus.isStoppable() || simStatus.isStopRequested();
     }
 
 
