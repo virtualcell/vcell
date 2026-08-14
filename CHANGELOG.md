@@ -16,6 +16,43 @@ followed by flat Keep-a-Changelog categories. API consumers should scan
 
 _(Release-manager scratchpad. Populated at release-cut time.)_
 
+## [8.0.23.01] - 2026-08-14
+
+**Highlights.** Starting a SpringSaLaD simulation no longer sets every other simulation already
+running in the same application to "never ran". Because SpringSaLaD runs take days, this was a
+reliable way to lose track of work in progress. Rule-based applications were affected the same way.
+Separately, the desktop client's log file now contains the errors the client logs — until now they
+went somewhere no user could reach, which is why a log sent with a problem report so often showed
+nothing.
+
+### Fixed
+- Starting a SpringSaLaD simulation set every other running simulation in the same application to
+  "never ran", and stranded the job already on the cluster. Running a simulation saves the document;
+  saving re-saves the math if it differs from the stored copy; and a new math re-keys every
+  simulation in the application, each of which keeps its results only if it can be tied back to the
+  edition that produced them. Generated particle math never compared equal to its own saved form, so
+  that happened on every save, with no edit of any kind. Three values were being generated but never
+  written — the operand of a create or destroy action, a bond length on reactions that do not have
+  one, and initial-condition coordinates beyond the dimensions the geometry has — so the difference
+  was invisible in the saved file and visible only to the comparison. Rule-based applications shared
+  the same code and the same fault. (#1952)
+- A simulation that was still running lost its results when the math was edited, because the check
+  that decides whether an edition can be tied to its predecessor required results to already exist,
+  which a run in progress does not have. A simulation still on the cluster now keeps that link.
+  (#1952)
+- Two maths differing only in which particles a reaction acts on compared as identical, so such an
+  edit was silently not saved. (#1952)
+- The desktop client's log file contained no errors. The client redirects its console into
+  `<vcellHome>/logs/vcellrun_<site>.log`, but the logging framework wrote to the console as it was
+  before the redirect — for an installed application, nowhere — so only directly printed lines
+  reached the file and every stack trace was lost. Compounding it, the client had been running under
+  a logging configuration shipped inside a third-party library rather than one of its own. Both are
+  fixed, and the file is now written as it is produced rather than only at exit, so a log sent
+  mid-session or after a crash is complete. (#1955)
+
+### Notes for API consumers
+No API changes.
+
 ## [8.0.22.01] - 2026-08-14
 
 **Highlights.** Nothing changes for anyone using VCell. The sim-data service can run its Python
