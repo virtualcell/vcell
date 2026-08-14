@@ -113,6 +113,23 @@ public class ParticleProperties implements Serializable, Matchable {
 			super();
 			readVCML(tokens);
 		}
+		/**
+		 * All particles at the origin, for the particle applications whose solvers place particles
+		 * themselves and need only a placeholder here.
+		 * <p>
+		 * Coordinates past the geometry's dimension are left unset so that they take the same
+		 * default ("uniform") the reader applies. {@link #getVCML(int)} writes only as many
+		 * coordinates as the geometry has, so setting one it will not write leaves the generated
+		 * math permanently unequal to the same math read back - and that is not cosmetic:
+		 * ServerDocumentManager compares those two to decide whether to re-save the math, and a
+		 * re-saved math re-keys every Simulation in the application.
+		 */
+		public static ParticleInitialConditionCount atOrigin(Expression count, int spatialDimension) {
+			return new ParticleInitialConditionCount(count,
+					new Expression(0.0),
+					spatialDimension > 1 ? new Expression(0.0) : null,
+					spatialDimension > 2 ? new Expression(0.0) : null);
+		}
 		private void readVCML(CommentStringTokenizer tokens) throws MathFormatException, ExpressionException {			
 			String token = tokens.nextToken();
 			if (!token.equals(VCML.BeginBlock)){

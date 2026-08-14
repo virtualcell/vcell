@@ -391,7 +391,7 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
 			SpeciesContextSpec scs = simContext.getReactionContext().getSpeciesContextSpec(sc);	// initial conditions from scs
 			Parameter initialCountParameter = scs.getInitialCountParameter();
 			Expression e = getIdentifierSubstitutions(new Expression(initialCountParameter,getNameScope()),initialCountParameter.getUnitDefinition(),geometryClass);
-			particleInitialConditions.add(new ParticleInitialConditionCount(e,new Expression(0.0),new Expression(0.0),new Expression(0.0)));
+			particleInitialConditions.add(ParticleInitialConditionCount.atOrigin(e, simContext.getGeometry().getDimension()));
 			
 			ParticleProperties particleProperies = new ParticleProperties(volumeParticleSpeciesPattern,new Expression(0.0),new Expression(0.0),new Expression(0.0),new Expression(0.0),particleInitialConditions);
 			subDomain.addParticleProperties(particleProperies);
@@ -454,13 +454,16 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
 			}
 			ArrayList<Action> forwardActions = new ArrayList<Action>();
 			ArrayList<Action> reverseActions = new ArrayList<Action>();
+			// see LangevinMathMapping for why the factories (null operand) rather than an
+			// explicit Expression(1.0): the operand is not persisted for create/destroy, so
+			// generating one leaves the math unequal to its own saved form.
 			for (ParticleVariable reactant : reactantParticles) {
-				forwardActions.add(new Action(reactant,Action.ACTION_DESTROY,new Expression(1.0)));
-				reverseActions.add(new Action(reactant,Action.ACTION_CREATE,new Expression(1.0)));
+				forwardActions.add(Action.createDestroyAction(reactant));
+				reverseActions.add(Action.createCreateAction(reactant));
 			}
 			for (ParticleVariable product : productParticles) {
-				forwardActions.add(new Action(product,Action.ACTION_CREATE,new Expression(1.0)));
-				reverseActions.add(new Action(product,Action.ACTION_DESTROY,new Expression(1.0)));
+				forwardActions.add(Action.createCreateAction(product));
+				reverseActions.add(Action.createDestroyAction(product));
 			}
 			
 			RbmKineticLaw kinetics = reactionRule.getKineticLaw();
