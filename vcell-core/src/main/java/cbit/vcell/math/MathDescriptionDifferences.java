@@ -159,6 +159,8 @@ public class MathDescriptionDifferences {
 				continue;
 			}
 			final int before = differences.size();
+			compare(differences, path, "selectedParticles",
+					particleNames(process1), particleNames(process2));
 			if (process1 instanceof LangevinParticleJumpProcess
 					&& process2 instanceof LangevinParticleJumpProcess) {
 				final LangevinParticleJumpProcess langevin1 = (LangevinParticleJumpProcess) process1;
@@ -173,6 +175,15 @@ public class MathDescriptionDifferences {
 				differences.add(new Difference(path, UNIDENTIFIED, null, null));
 			}
 		}
+	}
+
+	/** In order: a jump process's reactants are positional. */
+	private static String particleNames(ParticleJumpProcess process) {
+		final List<String> names = new ArrayList<>();
+		for (ParticleVariable particle : process.getParticleVariables()) {
+			names.add(particle == null ? "null" : particle.getName());
+		}
+		return names.toString();
 	}
 
 	private static Difference present(String path, Object in1, Object in2) {

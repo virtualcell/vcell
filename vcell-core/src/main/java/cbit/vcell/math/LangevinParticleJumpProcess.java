@@ -98,8 +98,12 @@ public class LangevinParticleJumpProcess extends ParticleJumpProcess {
 	 * is an expression, even where math generation only ever produces a literal today - it may later
 	 * be linked to a {@link Constant} symbol, and comparison then follows the same functional
 	 * equivalence rules as the rest of the math layer rather than exact bit equality.
+	 * <p>
+	 * Null unless the subtype is BINDING, matching what the readers reconstruct: neither
+	 * {@link #getVCML()} nor the XML producer writes a bond length for any other subtype, so a
+	 * non-null default here would make a generated process unequal to the same process read back.
 	 */
-	private Expression bondLength = new Expression(0.0);
+	private Expression bondLength = null;
 	
 
 

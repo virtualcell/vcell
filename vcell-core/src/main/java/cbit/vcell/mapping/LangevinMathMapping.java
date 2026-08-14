@@ -496,7 +496,7 @@ protected LangevinMathMapping(SimulationContext simContext, MathMappingCallback 
 			SpeciesContextSpec scs = simContext.getReactionContext().getSpeciesContextSpec(sc);	// initial conditions from scs
 			Parameter initialCountParameter = scs.getInitialCountParameter();
 			Expression e = getIdentifierSubstitutions(new Expression(initialCountParameter,getNameScope()),initialCountParameter.getUnitDefinition(),geometryClass);
-			particleInitialConditions.add(new ParticleInitialConditionCount(e,new Expression(0.0),new Expression(0.0),new Expression(0.0)));
+			particleInitialConditions.add(ParticleInitialConditionCount.atOrigin(e, simContext.getGeometry().getDimension()));
 			
 			ParticleProperties particleProperies = new ParticleProperties(volumeParticleSpeciesPattern,new Expression(0.0),new Expression(0.0),new Expression(0.0),new Expression(0.0),particleInitialConditions);
 			StructureMapping sm = getSimulationContext().getGeometryContext().getStructureMapping(sc.getStructure());
@@ -571,13 +571,17 @@ protected LangevinMathMapping(SimulationContext simContext, MathMappingCallback 
 			}
 			ArrayList<Action> forwardActions = new ArrayList<Action>();
 			ArrayList<Action> reverseActions = new ArrayList<Action>();
+			// the factories, not new Action(..., new Expression(1.0)): create and destroy carry no
+			// operand, Action.getVCML() does not write one for them, and every reader rebuilds them
+			// through these same factories with a null operand. Generating an operand here made the
+			// math permanently unequal to its own saved form - see Action.createCreateAction.
 			for (ParticleVariable reactant : reactantParticles) {
-				forwardActions.add(new Action(reactant,Action.ACTION_DESTROY,new Expression(1.0)));
-				reverseActions.add(new Action(reactant,Action.ACTION_CREATE,new Expression(1.0)));
+				forwardActions.add(Action.createDestroyAction(reactant));
+				reverseActions.add(Action.createCreateAction(reactant));
 			}
 			for (ParticleVariable product : productParticles) {
-				forwardActions.add(new Action(product,Action.ACTION_CREATE,new Expression(1.0)));
-				reverseActions.add(new Action(product,Action.ACTION_DESTROY,new Expression(1.0)));
+				forwardActions.add(Action.createCreateAction(product));
+				reverseActions.add(Action.createDestroyAction(product));
 			}
 			RbmKineticLaw kinetics = reactionRule.getKineticLaw();
 			
@@ -939,7 +943,7 @@ protected LangevinMathMapping(SimulationContext simContext, MathMappingCallback 
 		LangevinParticleJumpProcess forward_particleJumpProcess = new LangevinParticleJumpProcess(forward_name,reactantParticles,forward_rateDefinition,forwardActions,forwardSymmetryFactor);
 		forward_particleJumpProcess.setSubtype(toMath(subtype));
 		forward_particleJumpProcess.setTransitionCondition(toMath(transitionCondition));
-		forward_particleJumpProcess.setBondLength(new Expression(bondLength));
+		forward_particleJumpProcess.setBondLength(toMathBondLength(subtype, bondLength));
 		subDomain.addParticleJumpProcess(forward_particleJumpProcess);
 		
 		//
@@ -1030,7 +1034,7 @@ protected LangevinMathMapping(SimulationContext simContext, MathMappingCallback 
 			LangevinParticleJumpProcess reverse_particleJumpProcess = new LangevinParticleJumpProcess(reverse_name,productParticles,reverse_rateDefinition,reverseActions,reverseSymmetryFactor);
 			reverse_particleJumpProcess.setSubtype(toMath(subtype));
 			reverse_particleJumpProcess.setTransitionCondition(toMath(transitionCondition));
-			reverse_particleJumpProcess.setBondLength(new Expression(bondLength));
+			reverse_particleJumpProcess.setBondLength(toMathBondLength(subtype, bondLength));
 			subDomain.addParticleJumpProcess(reverse_particleJumpProcess);
 			
 			//
@@ -1479,6 +1483,18 @@ protected void refreshVariables() throws MappingException {
 			throw new IllegalStateException("no math equivalent for reaction subtype '" + subtype.columnName + "'");
 		}
 		return translated;
+	}
+
+	/**
+	 * Only a BINDING reaction has a bond length. Every other subtype must leave it null, because
+	 * that is what a reader reconstructs - neither the VCML nor the XML writer emits a bond length
+	 * for them, so a generated value would survive only in memory and make the math compare unequal
+	 * to its own saved form on the next save.
+	 *
+	 * @see #toMath(ReactionRuleSpec.Subtype)
+	 */
+	private static Expression toMathBondLength(ReactionRuleSpec.Subtype subtype, double bondLength) {
+		return ReactionRuleSpec.Subtype.BINDING == subtype ? new Expression(bondLength) : null;
 	}
 
 	/** @see #toMath(ReactionRuleSpec.Subtype) */

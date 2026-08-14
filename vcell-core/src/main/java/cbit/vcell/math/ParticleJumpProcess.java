@@ -190,6 +190,19 @@ public boolean compareEqual(org.vcell.util.Matchable object)
 	if(!Compare.isEqual(processName,jumpProc.processName)) {
 		return false;//processName
 	}
+	//
+	// the selected particles ("SelectedParticle" in VCML) - which particles this process acts on.
+	//
+	// Not redundant with comparing the variables themselves, which MathDescription.compareEqual
+	// already does peer-to-peer over variableList: what is compared here is the association, not
+	// the variable. MathRuleFactory builds a rule's reactants from this list alone - the actions
+	// only say what is created and destroyed - so a particle that is selected but never destroyed
+	// is a reactant that survives the reaction, and that is recorded nowhere else. Order matters:
+	// reactants are positional (MathParticipantEntry carries a participantIndex).
+	//
+	if(!Compare.isEqualOrNull(particles,jumpProc.particles)) {
+		return false;//selected particles
+	}
 	if(!Compare.isEqual(rateDefinition,jumpProc.rateDefinition)) {
 		return false; //probabilityRate
 	}
