@@ -16,6 +16,37 @@ followed by flat Keep-a-Changelog categories. API consumers should scan
 
 _(Release-manager scratchpad. Populated at release-cut time.)_
 
+## [8.0.20.01] - 2026-08-13
+
+**Highlights.** Nothing changes for anyone using VCell. The consolidated service image no longer
+ships placeholder values for settings the deployment is expected to supply, so a setting that is
+missing is reported as missing when the service starts, instead of starting normally and failing
+later at the point of use.
+
+### Removed
+- 53 placeholder environment defaults from the consolidated `vcell-service` image —
+  `db-url-not-set`, `/path/to/external/simdata/` and the like. The five per-service images could
+  carry these safely, because each declared only the settings its own service used. One image
+  serving all five means every service inherits every other service's placeholders: measured
+  against the running deployments, `api` picked up 40 and `db` 44, almost all for properties
+  those services never read. A placeholder is also worse than an absent value in two ways — it
+  beats the default the code would otherwise supply, and it satisfies the "is it set?" half of
+  startup validation, so a genuinely missing setting fails later complaining about a malformed
+  value rather than a missing one. Every service's required properties were resolved against the
+  running containers first, confirming that none of them depended on a placeholder. (#1939)
+- `VCELL_JMS_REST_PSWDFILE` from the submit image, left behind in 8.0.17.01 when the property
+  itself was removed. (#1939)
+
+### Fixed
+- `vcell.primarySimdatadir.external` is required by the sim-data service but was set in no
+  deployment overlay, satisfied only by the image placeholder — a path that would have been
+  wrong had anything used it. Its readers are all in the submit service, which supplies the real
+  value. The sim-data service is now given the same one. (#1939)
+
+### Notes for API consumers
+No API changes. A deployment that supplies every setting sees identical behaviour; one that has
+been relying on a placeholder now fails at startup with the name of the setting it is missing.
+
 ## [8.0.19.01] - 2026-08-13
 
 **Highlights.** Nothing changes for anyone using VCell. Server configuration now has one name
