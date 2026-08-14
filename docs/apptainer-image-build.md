@@ -174,7 +174,7 @@ htc_vcellsolvers_apptainer_image=oras://ghcr.io/virtualcell/vcell-solvers_singul
 htc_vcellfvsolver_apptainer_image=oras://ghcr.io/virtualcell/vcell-fvsolver_singularity:0.9.7
 ```
 
-These flow through `docker-compose.yml` → `Dockerfile-submit-dev`
+These flow through `docker-compose.yml` → `Dockerfile-service-dev` (run as `submit`)
 → Java system properties → `PropertyLoader` → `SlurmProxy.java`.
 
 The solver-to-container mapping in `SlurmProxy.java` (lines 728-737)
@@ -295,7 +295,7 @@ If a SIF is corrupted or bad:
 | `vcell-core/.../PropertyLoader.java` | `htc_*_apptainer_image` property definitions |
 | `vcell-server/.../SlurmProxy.java` | Derives SIF filename, emits SLURM script |
 | `vcell-server/.../HtcSimulationWorker.java` | Validates required properties at startup |
-| `docker/build/Dockerfile-submit-dev` | Env var defaults + `-D` system properties |
+| `docker/build/Dockerfile-service-dev` | Env var defaults + `-D` system properties |
 | `docker/swarm/dev_singularity_build.sh` | Developer manual fallback |
 | `vcell-fluxcd/kustomize/config/*/submit.env` | Per-site ORAS URLs (separate repo) |
 | `vcell-fluxcd/kustomize/*/vcell-sif-prepull.yaml` | Kubernetes Job manifest (separate repo) |

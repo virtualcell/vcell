@@ -16,7 +16,7 @@
 ## Background
 The TLS keystore and keystore password are treated as docker swarm secrets, so they are each mapped to a file within the containers.
 ### Installation in Dockerfiles and Docker Compose files
-* The `keystore` and `keystorepswdfile` are mapped to the secrets in [Dockerfile-api-dev](../build/Dockerfile-api-dev) file.
+* The `keystore` and `keystorepswdfile` are mapped to the secrets in [Dockerfile-service-dev](../build/Dockerfile-service-dev) file.
   ```
   ENV keystore=/run/secrets/keystorefile \  
       keystorepswdfile=/run/secrets/keystorepswd  

@@ -873,7 +873,7 @@ public class SlurmProxy extends HtcProxy {
 
 	SbatchSolverComponents generateScript(String jobName, ExecutableCommand.Container commandSet, double memSizeMB, Collection<PortableCommand> postProcessingCommands, SimulationTask simTask) {
 
-		//SlurmProxy ultimately instantiated from {vcellroot}/docker/build/Dockerfile-submit-dev by way of cbit.vcell.message.server.batch.sim.HtcSimulationWorker
+		//SlurmProxy ultimately instantiated from {vcellroot}/docker/build/Dockerfile-service-dev, run with the argument "submit", by way of cbit.vcell.message.server.batch.sim.HtcSimulationWorker
 		String vcellUserid = simTask.getUser().getName();
 		KeyValue simID = simTask.getSimulationInfo().getSimulationVersion().getVersionKey();
 		SolverDescription solverDescription = simTask.getSimulation().getSolverTaskDescription().getSolverDescription();
