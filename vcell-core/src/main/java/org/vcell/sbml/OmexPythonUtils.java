@@ -88,7 +88,7 @@ public class OmexPythonUtils {
                 String.valueOf(omexFile.toAbsolutePath()),
                 String.valueOf(tempDir.toAbsolutePath()),
                 String.valueOf(reportJsonFile.toAbsolutePath()) };
-        PythonUtils.callPoetryModule(cliPythonDir, "vcell_cli_utils.wrapper", commands);
+        PythonUtils.callPythonModule(cliPythonDir, "vcell_cli_utils.wrapper", commands);
     }
 
 }

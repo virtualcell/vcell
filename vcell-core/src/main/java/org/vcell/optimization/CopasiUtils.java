@@ -339,11 +339,13 @@ public class CopasiUtils {
         File installDir = PropertyLoader.getRequiredDirectory(PropertyLoader.installationRoot);
         File optDir = Paths.get(installDir.getAbsolutePath(),"pythonCopasiOpt", "vcell-opt").toAbsolutePath().toFile();
 //        final String pythonExe = "/Users/schaff/Library/Caches/pypoetry/virtualenvs/vcell-opt-XIpjcTyI-py3.9/bin/python";
-        ProcessBuilder pb = new ProcessBuilder(new String[]{
-                "poetry","run","python", "-m", "vcell_opt.optService",
+        List<String> optCommand = PythonUtils.pythonCommandPrefix();
+        optCommand.addAll(List.of(
+                "-m", "vcell_opt.optService",
                 String.valueOf(optProblemFile.toAbsolutePath()),
                 String.valueOf(resultsFile.toAbsolutePath()),
-                String.valueOf(reportFile.toAbsolutePath())});
+                String.valueOf(reportFile.toAbsolutePath())));
+        ProcessBuilder pb = new ProcessBuilder(optCommand);
         pb.directory(optDir);
         System.out.println(pb.command());
         PythonUtils.runAndPrintProcessStreams(pb);

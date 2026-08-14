@@ -2,6 +2,7 @@ package org.vcell.cli;
 
 import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.resource.PropertyLoader;
+import org.vcell.util.PythonUtils;
 import com.google.common.io.Files;
 
 import java.io.*;
@@ -95,7 +96,9 @@ public class CLIPythonManager {
             throws InterruptedException, IOException, PythonStreamException {
         Path cliWorkingDir = Paths.get(PropertyLoader.getRequiredProperty(PropertyLoader.cliWorkingDir));
         String commandString = "from vcell_cli_utils import wrapper; " + cliCommand;
-        ProcessBuilder pb = new ProcessBuilder("poetry", "run", "python", "-c", commandString);
+        List<String> command = PythonUtils.pythonCommandPrefix();
+        command.addAll(List.of("-c", commandString));
+        ProcessBuilder pb = new ProcessBuilder(command);
         pb.directory(cliWorkingDir.toFile());
         return CLIPythonManager.runAndPrintProcessStreams(pb, "","");
     }
@@ -148,7 +151,9 @@ public class CLIPythonManager {
         // e.g. source ~/Library/Caches/pypoetry/virtualenvs/vcell-cli-utils-g4hrdDfL-py3.9/bin/activate
 
         // Start poetry based Python
-        ProcessBuilder pb = new ProcessBuilder("poetry", "run", "python", "-i", "-W ignore");
+        List<String> command = PythonUtils.pythonCommandPrefix();
+        command.addAll(List.of("-i", "-W ignore"));
+        ProcessBuilder pb = new ProcessBuilder(command);
         pb.redirectErrorStream(true);
         File cliWorkingDir = PropertyLoader.getRequiredDirectory(PropertyLoader.cliWorkingDir).getCanonicalFile();
         pb.directory(cliWorkingDir);
