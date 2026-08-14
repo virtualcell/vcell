@@ -1,5 +1,6 @@
 package org.vcell.util;
 
+import cbit.vcell.resource.PropertyLoader;
 import com.google.common.io.Files;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -14,8 +15,34 @@ import java.util.List;
 public class PythonUtils {
     private final static Logger lg = LogManager.getLogger(PythonUtils.class);
 
-    public static void callPoetryModule(File workingDir, String pythonModule, String[] commands) throws InterruptedException, IOException {
-        List<String> commandList = new ArrayList<>(Arrays.asList("poetry", "run", "python", "-m", pythonModule));
+    /**
+     * How to run Python: a command prefix that callers append their own arguments to.
+     *
+     * Every call site used to hard-code {@code poetry run python}, which decided in Java how a
+     * deployment must install its Python packages. {@code vcell.python.executable} already existed
+     * for exactly this and was already being passed to the sim-data service, but nothing read it.
+     *
+     * It is not only a tidiness question. In the deployed container {@code poetry run} fails
+     * outright: the image runs as uid 10001 while {@code poetry.toml} is {@code -rw------- root},
+     * so Poetry cannot read its own configuration and exits with
+     * "[Errno 13] Permission denied: .../poetry.toml". The interpreter the property points at
+     * imports the same packages perfectly well, because the image installs them into it.
+     *
+     * When the property is absent -- a developer's machine, the CLI run from a checkout -- the
+     * behaviour is exactly what it was, so nothing changes outside a deployment that opts in by
+     * setting it.
+     */
+    public static List<String> pythonCommandPrefix() {
+        String configured = PropertyLoader.getProperty(PropertyLoader.pythonExe, null);
+        if (configured != null && !configured.trim().isEmpty()) {
+            return new ArrayList<>(List.of(configured.trim()));
+        }
+        return new ArrayList<>(Arrays.asList("poetry", "run", "python"));
+    }
+
+    public static void callPythonModule(File workingDir, String pythonModule, String[] commands) throws InterruptedException, IOException {
+        List<String> commandList = pythonCommandPrefix();
+        commandList.addAll(Arrays.asList("-m", pythonModule));
         commandList.addAll(Arrays.asList(commands));
         ProcessBuilder pb = new ProcessBuilder(commandList);
         pb.directory(workingDir);
