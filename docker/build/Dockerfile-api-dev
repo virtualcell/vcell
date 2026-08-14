@@ -38,10 +38,18 @@ COPY ./vcell-api/target/vcell-api-0.0.1-SNAPSHOT.jar \
 
 # Copy and install vcell-cli-utils
 COPY ./vcell-cli-utils/ /usr/local/app/python/vcell_cli_utils/
+# --only main: pytest and mypy are dev dependencies and have no business in a runtime image.
+# They were being installed, and at different versions in each virtualenv (mypy 0.991
+# alongside 1.13.0), which is a fair sign nothing was reading them.
+#
+# The artifact cache is pruned in the SAME layer as the install: doing it in a later RUN
+# would leave the 256MB sitting in this layer and shrink nothing. virtualenvs/ is a sibling
+# directory and is untouched.
 RUN cd /usr/local/app/python/vcell_cli_utils/ && \
     poetry config cache-dir "/poetry/.cache" --local && \
     chmod 755 poetry.toml && \
-    poetry install
+    poetry install --only main && \
+    rm -rf /poetry/.cache/artifacts /poetry/.cache/cache
 
 # copy API resources
 COPY ./vcell-api/docroot ./docroot
