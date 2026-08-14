@@ -19,15 +19,19 @@ classifiers = [
     "Programming Language :: Python :: 3 :: Only",
 ]
 
+# Only biosimulators_utils is imported by this package now; the plotting code that used fire,
+# seaborn, matplotlib and pandas has been deleted. fire and seaborn are removed here because
+# nothing else pulls them in. The rest are deliberately left alone: matplotlib, pandas, PyYAML,
+# python-libcombine, python-libsbml-experimental and Deprecated all arrive transitively through
+# biosimulators_utils anyway, and several carry deliberate pins (python-libcombine is fixed at
+# 0.2.19 against biosimulators_utils' looser >=0.2.11) that removing would silently re-resolve.
 [tool.poetry.dependencies]
 python = "^3.10"
 biosimulators_utils = "^0.2.3"
 python-libcombine = "0.2.19"
-fire = "^0.5.0"
 PyYAML = "^6.0"
 pandas = "^2.2"
 matplotlib = "^3.5.2"
-seaborn = "^0.12.2"
 python-libsbml-experimental = "^5.20.1"
 Deprecated = "^1.2.13"
 
