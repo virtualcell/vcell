@@ -16,6 +16,27 @@ followed by flat Keep-a-Changelog categories. API consumers should scan
 
 _(Release-manager scratchpad. Populated at release-cut time.)_
 
+## [8.0.19.01] - 2026-08-13
+
+**Highlights.** Nothing changes for anyone using VCell. Server configuration now has one name
+per setting instead of two. The compatibility layer that let the services keep reading the
+historical short names — `dburl`, `serverid`, `jmshost_int_internal` — is removed, along with
+the 154 such names the images still declared.
+
+### Removed
+- The legacy environment-name fallback. `EnvironmentConfigProvider` carried a table of 80
+  historical names consulted after the standard forms, so that services could keep reading the
+  configuration the deployment had always supplied while the deployment migrated at its own
+  pace. Every one of those names now has a modern equivalent in the ConfigMaps, the deployment
+  manifests and the images, verified resolving in running containers before the table was
+  deleted. (#1937)
+- 154 legacy environment names across the six service images. A name nothing resolves is worse
+  than no name at all. (#1937)
+
+### Notes for API consumers
+No API changes. Configuration is supplied under the same names the services have been reading
+since 8.0.15.01; only the older aliases are gone.
+
 ## [8.0.18.01] - 2026-08-13
 
 **Highlights.** Nothing changes for anyone using VCell. The consolidated service image now
