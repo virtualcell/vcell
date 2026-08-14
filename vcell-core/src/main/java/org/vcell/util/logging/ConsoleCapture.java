@@ -78,13 +78,20 @@ public class ConsoleCapture {
 	
 	/**
 	 * redirect standard err and out to filename; if autoflush property not set add shutdown hook
-	 * @param logFile 
+	 * <p>
+	 * Autoflush defaults to ON. A log that only becomes correct after a clean exit is not a
+	 * diagnostic log: while the process is running the tail sits in the buffer, so a user asked to
+	 * send their log mid-session sends a truncated one, and a force-quit or a crash - the cases the
+	 * log exists for - loses the end outright, which is the part that says what happened. Set
+	 * {@value PropertyLoader#autoflushStandardOutAndErr} to false to get the buffered behaviour back.
+	 *
+	 * @param logFile
 	 * @throws IllegalArgumentException if logFile null
 	 */
 	public void captureStandardOutAndError(File logFile) throws IllegalArgumentException {
 		if (logFile != null) {
 			redirectedStandardOutErr = logFile;
-			boolean autoflush =  Boolean.parseBoolean(PropertyLoader.getProperty(PropertyLoader.autoflushStandardOutAndErr, Boolean.FALSE.toString()));
+			boolean autoflush =  Boolean.parseBoolean(PropertyLoader.getProperty(PropertyLoader.autoflushStandardOutAndErr, Boolean.TRUE.toString()));
 			try {
 				FileOutputStream fos = new FileOutputStream(logFile);
 				BufferedOutputStream bos = new BufferedOutputStream(fos);
