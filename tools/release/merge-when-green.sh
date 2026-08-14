@@ -18,6 +18,8 @@
 #     wait, the checks we approved no longer describe what we would merge.
 #   * Running out of wait iterations exits non-zero. A timeout is not a pass.
 #
+# The one exception is a fast lane that ci.yml deliberately skipped -- see lane_skipped below.
+#
 # CodeQL is intentionally not required: it is not a required check on this repo, and a red
 # CodeQL on a vcell PR is usually a pre-existing alert re-attributed to whoever last moved
 # the lines (check `created_at` and whether it is open on master before treating it as new).
@@ -50,6 +52,41 @@ fi
 HEAD_EXPECTED=$(gh pr view "$PR" --repo "$REPO" --json headRefOid -q .headRefOid)
 echo "PR #$PR head=${HEAD_EXPECTED:0:10}"
 
+# Is this change documentation-only? Evaluated here rather than taken on faith from the
+# workflow, because it is half of the evidence for accepting a skipped lane (see lane_skipped).
+# The pattern mirrors ci.yml's; if the two ever drift, this one is the conservative side.
+CHANGED=$(gh pr view "$PR" --repo "$REPO" --json files -q '.files[].path')
+DOCS_ONLY=false
+if [ -n "$CHANGED" ] && ! printf '%s\n' "$CHANGED" | grep -qvE '(^docs/|^release-notes/|\.md$)'; then
+	DOCS_ONLY=true
+	echo "documentation-only change"
+fi
+
+rollup_value() { echo "$ROLL" | grep "^${1}=" | cut -d= -f2; }
+
+# ci.yml gained a should-run gate (#1925) that skips the whole fast lane when a push cannot
+# affect the build or the tests. A release-notes PR is the normal case, and it is why this
+# script hung on the 8.0.23.01 cut: the lane's jobs report SKIPPED, and a skipped matrix leg
+# appears under its UNEXPANDED name ("CI-Test-group-Fast-${{ matrix.name }}"), so
+# CI-Test-group-Fast-core and -other are not present under those names at all.
+#
+# Neither absence nor SKIPPED means the same thing here as it does in the rule above: the lane
+# ran and decided there was nothing to do. Accepted only when both signals agree, since
+# "absent" is precisely what that rule exists to catch:
+#
+#   * the gate itself decided -- should-run succeeded, and the two fixed-name jobs conditioned
+#     on its output are SKIPPED. If only some were skipped, a job was skipped because something
+#     it needed failed, which must still block; and
+#   * the change really is documentation-only.
+lane_skipped() {
+	[ "$DOCS_ONLY" = true ] || return 1
+	[ "$(rollup_value should-run)" = "SUCCESS" ] || return 1
+	[ "$(rollup_value build)" = "SKIPPED" ] || return 1
+	[ "$(rollup_value CI-Test-group-Quarkus)" = "SKIPPED" ] || return 1
+	return 0
+}
+
+LANE_SKIPPED=false
 MISSING="not-yet-checked"
 for _ in $(seq 1 640); do
 	HEAD=$(gh pr view "$PR" --repo "$REPO" --json headRefOid -q .headRefOid)
@@ -67,10 +104,19 @@ for _ in $(seq 1 640); do
 		exit 1
 	fi
 
+	LANE_SKIPPED=false
+	if lane_skipped; then
+		LANE_SKIPPED=true
+	fi
+
 	MISSING=""
 	for CHECK in "${REQUIRED_CHECKS[@]}"; do
-		VALUE=$(echo "$ROLL" | grep "^${CHECK}=" | cut -d= -f2)
-		[ "$VALUE" = "SUCCESS" ] || MISSING="$MISSING ${CHECK}=${VALUE:-absent}"
+		VALUE=$(rollup_value "$CHECK")
+		[ "$VALUE" = "SUCCESS" ] && continue
+		if [ "$LANE_SKIPPED" = true ] && { [ "$VALUE" = "SKIPPED" ] || [ -z "$VALUE" ]; }; then
+			continue
+		fi
+		MISSING="$MISSING ${CHECK}=${VALUE:-absent}"
 	done
 	[ -z "$MISSING" ] && break
 	sleep 45
@@ -81,7 +127,11 @@ if [ -n "$MISSING" ]; then
 	exit 1
 fi
 
-echo "all required checks green"
+if [ "$LANE_SKIPPED" = true ]; then
+	echo "fast lane skipped by ci.yml: documentation-only, nothing to build or test"
+else
+	echo "all required checks green"
+fi
 gh pr merge "$PR" --repo "$REPO" --merge --admin || { echo "merge command failed" >&2; exit 1; }
 MERGE_SHA=$(gh pr view "$PR" --repo "$REPO" --json mergeCommit -q .mergeCommit.oid)
 echo "#$PR MERGED merge=$MERGE_SHA"
