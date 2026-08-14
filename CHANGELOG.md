@@ -16,6 +16,46 @@ followed by flat Keep-a-Changelog categories. API consumers should scan
 
 _(Release-manager scratchpad. Populated at release-cut time.)_
 
+## [8.0.22.01] - 2026-08-14
+
+**Highlights.** Nothing changes for anyone using VCell. The sim-data service can run its Python
+again — it had been calling Poetry in a container where Poetry cannot read its own configuration —
+and a good deal of Python that no service reaches has been removed. Builds are faster and the
+images are smaller.
+
+### Fixed
+- The sim-data service could not run its Python helpers. Every call site invoked `poetry run
+  python`, but the deployed container runs as an unprivileged user while Poetry's configuration
+  file is readable only by root, so Poetry exited with a permission error before reaching Python.
+  Which interpreter to use now comes from `vcell.python.executable`, a setting that already existed
+  and was already being supplied to that service but which nothing read. Where it is not set the
+  behaviour is unchanged. (#1946)
+- The Linux solver bundle was extracted with a `tar` option that BSD `tar` rejects, so on macOS the
+  build printed an error, carried on green, and left the bundle unextracted. It is now unpacked the
+  same way the macOS and Windows bundles already were. (#1948)
+
+### Removed
+- An unreachable Python bridge and the plotting code it fed. `CLIPythonManager` maintained an
+  interactive Python session that nothing called, and the four plotting entry points behind it were
+  reachable only through it or through a command-line dispatcher that nothing invokes. The one live
+  path — validating an OMEX archive during SED-ML export — is unaffected and still covered by its
+  tests. (#1947)
+- Dependencies declared twice. The Python package now leaves `biosimulators_utils` to declare the
+  libraries it owns, rather than pinning them again; one of those pins had been holding a library a
+  release behind for no recorded reason. (#1949)
+- Development-only Python packages from the runtime images, along with a download cache that the
+  running services never read. Test and type-checking tools were being installed into production
+  containers, in one case at two different versions. (#1950)
+
+### Changed
+- Dependency resolution during the build no longer asks five repositories that do not have an
+  artifact before asking the one that does, and the dependency cache now updates instead of being
+  written once and never refreshed. Measured across the build and test jobs, roughly half the time.
+  (#1945)
+
+### Notes for API consumers
+No API changes.
+
 ## [8.0.21.01] - 2026-08-14
 
 **Highlights.** MovingBoundary simulation results can be read at every saved time again, rather
