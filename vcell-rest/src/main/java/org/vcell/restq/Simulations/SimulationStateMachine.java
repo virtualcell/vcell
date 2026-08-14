@@ -456,7 +456,7 @@ public class SimulationStateMachine {
         SimulationTask simulationTask = new SimulationTask(new SimulationJob(simulation, jobIndex, fieldDataIdentifierSpecs), taskID,null,isPowerUser);
 
         double requiredMemMB = simulationTask.getEstimatedMemorySizeMB();
-        //SimulationStateMachine ultimately instantiated from {vcellroot}/docker/build/Dockerfile-sched-dev by way of cbit.vcell.message.server.dispatcher.SimulationDispatcher
+        //SimulationStateMachine ultimately instantiated from {vcellroot}/docker/build/Dockerfile-service-dev, run with the argument "sched", by way of cbit.vcell.message.server.dispatcher.SimulationDispatcher
         String vcellUserid = simulationTask.getUser().getName();
         KeyValue simID = simulationTask.getSimulationInfo().getSimulationVersion().getVersionKey();
         SolverDescription solverDescription = simulationTask.getSimulation().getSolverTaskDescription().getSolverDescription();

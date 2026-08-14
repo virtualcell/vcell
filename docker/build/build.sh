@@ -11,8 +11,9 @@ SUDO_CMD=sudo
 show_help() {
 	echo "usage: build.sh [OPTIONS] target repo tag"
 	echo "  ARGUMENTS"
-	echo "    target                ( batch | api | rest | webapp | db | sched | submit | data | mongo | clientgen | opt | appservices | admin | all)"
-	echo "                              where appservices = (api, rest, webapp, db, sched, submit, data)"
+	echo "    target                ( batch | service | rest | webapp | mongo | clientgen | opt | appservices | admin | all)"
+	echo "                              where service = api, data, db, sched and submit in one image"
+	echo "                              and appservices = (service, rest, webapp, mongo)"
 	echo ""
 	echo "    repo                  ( schaff | localhost:5000 | vcell-docker.cam.uchc.edu:5000 )"
 	echo ""
@@ -87,13 +88,15 @@ target=$1
 repo=$2
 tag=$3
 
-build_api() {
-	echo "building $repo/vcell-api:$tag"
-	echo "$SUDO_CMD docker buildx build --platform=linux/amd64 -f Dockerfile-api-dev --tag $repo/vcell-api:$tag ../.."
-	$SUDO_CMD docker buildx build --platform=linux/amd64 -f Dockerfile-api-dev --tag $repo/vcell-api:$tag ../..
+# One image serves api, data, db, sched and submit; the container's first argument picks
+# which. It replaced five near-identical Dockerfiles -- see Dockerfile-service-dev.
+build_service() {
+	echo "building $repo/vcell-service:$tag"
+	echo "$SUDO_CMD docker buildx build --platform=linux/amd64 -f Dockerfile-service-dev --tag $repo/vcell-service:$tag ../.."
+	$SUDO_CMD docker buildx build --platform=linux/amd64 -f Dockerfile-service-dev --tag $repo/vcell-service:$tag ../..
 	if [[ $? -ne 0 ]]; then echo "docker buildx build --platform=linux/amd64 failed"; exit 1; fi
 	if [ "$skip_push" == "false" ]; then
-		$SUDO_CMD docker push $repo/vcell-api:$tag
+		$SUDO_CMD docker push $repo/vcell-service:$tag
 	fi
 }
 
@@ -166,45 +169,9 @@ build_clientgen() {
 	fi
 }
 
-build_db() {
-	echo "building $repo/vcell-db:$tag"
-	echo "$SUDO_CMD docker buildx build --platform=linux/amd64 -f Dockerfile-db-dev --tag $repo/vcell-db:$tag ../.."
-	$SUDO_CMD docker buildx build --platform=linux/amd64 -f Dockerfile-db-dev --tag $repo/vcell-db:$tag ../..
-	if [[ $? -ne 0 ]]; then echo "docker buildx build --platform=linux/amd64 failed"; exit 1; fi
-	if [ "$skip_push" == "false" ]; then
-		$SUDO_CMD docker push $repo/vcell-db:$tag
-	fi
-}
 
-build_sched() {
-	echo "building $repo/vcell-sched:$tag"
-	echo "$SUDO_CMD docker buildx build --platform=linux/amd64 -f Dockerfile-sched-dev --tag $repo/vcell-sched:$tag ../.."
-	$SUDO_CMD docker buildx build --platform=linux/amd64 -f Dockerfile-sched-dev --tag $repo/vcell-sched:$tag ../..
-	if [[ $? -ne 0 ]]; then echo "docker buildx build --platform=linux/amd64 failed"; exit 1; fi
-	if [ "$skip_push" == "false" ]; then
-		$SUDO_CMD docker push $repo/vcell-sched:$tag
-	fi
-}
 
-build_submit() {
-	echo "building $repo/vcell-submit:$tag"
-	echo "$SUDO_CMD docker buildx build --platform=linux/amd64 -f Dockerfile-submit-dev --tag $repo/vcell-submit:$tag ../.."
-	$SUDO_CMD docker buildx build --platform=linux/amd64 -f Dockerfile-submit-dev --tag $repo/vcell-submit:$tag ../..
-	if [[ $? -ne 0 ]]; then echo "docker buildx build --platform=linux/amd64 failed"; exit 1; fi
-	if [ "$skip_push" == "false" ]; then
-		$SUDO_CMD docker push $repo/vcell-submit:$tag
-	fi
-}
 
-build_data() {
-	echo "building $repo/vcell-data:$tag"
-	echo "$SUDO_CMD docker buildx build --platform=linux/amd64 -f Dockerfile-data-dev --tag $repo/vcell-data:$tag ../.."
-	$SUDO_CMD docker buildx build --platform=linux/amd64 -f Dockerfile-data-dev --tag $repo/vcell-data:$tag ../..
-	if [[ $? -ne 0 ]]; then echo "docker buildx build --platform=linux/amd64 failed"; exit 1; fi
-	if [ "$skip_push" == "false" ]; then
-		$SUDO_CMD docker push $repo/vcell-data:$tag
-	fi
-}
 
 build_admin() {
 	echo "building $repo/vcell-admin:$tag"
@@ -256,8 +223,8 @@ case $target in
 		build_opt
 		exit $?
 		;;
-	api)
-		build_api
+	service)
+		build_service
 		exit $?
 		;;
 	rest)
@@ -273,22 +240,6 @@ case $target in
 	# 	build_master
 	# 	exit $?
 	# 	;;
-	db)
-		build_db
-		exit $?
-		;;
-	sched)
-		build_sched
-		exit $?
-		;;
-	submit)
-		build_submit
-		exit $?
-		;;
-	data)
-		build_data
-		exit $?
-		;;
 	mongo)
 		build_mongo
 		exit $?
@@ -302,12 +253,11 @@ case $target in
 		exit $?
 		;;
 	all)
-#		build_api && build_rest && build_db && build_sched && build_submit && build_data && build_mongo && build_batch && build_opt && build_clientgen && build_admin
-		build_api && build_rest && build_exporter && build_webapp && build_db && build_sched && build_submit && build_data && build_mongo && build_batch && build_opt && build_clientgen && build_admin
+		build_service && build_rest && build_exporter && build_webapp && build_mongo && build_batch && build_opt && build_clientgen && build_admin
 		exit $?
 		;;
 	appservices)
-		build_api && build_rest && build_exporter && build_webapp && build_db && build_sched && build_submit && build_data && build_mongo
+		build_service && build_rest && build_exporter && build_webapp && build_mongo
 		exit $?
 		;;
 	*)

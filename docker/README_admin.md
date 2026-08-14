@@ -48,7 +48,7 @@ there are two other "docker stacks" for monitoring and debugging.
 
 log4j xml file for each container specifying the logging levels on a java package granularity
 for vcell-api
-look in <vcell-root>/docker/build/Dockerfile-api-dev
+look in <vcell-root>/docker/build/Dockerfile-service-dev (api runs from it with the argument "api")
      WORKDIR /usr/local/app
      COPY ./docker/build/vcell-api.log4j.xml .
      (vcell api java code can find the log4j configuration at /usr/local/app ... a path inside the container)

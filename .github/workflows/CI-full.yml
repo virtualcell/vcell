@@ -107,16 +107,13 @@ jobs:
       matrix:
         image:
           # One image for all five server services; the service is chosen by the container's
-          # first argument. Published alongside the five it replaces so the deployment can move
-          # one service at a time -- vcell-fluxcd still refers to vcell-api, vcell-db and the
-          # rest, and those entries come out only once nothing points at them.
+          # first argument. It was published alongside the five it replaced so the deployment
+          # could move one service at a time; dev, stage and prod have all moved, so those five
+          # are no longer built. Their Dockerfiles are kept: the island and remote overlays
+          # still name the per-service images and have to be migrated before they are used
+          # again, and nothing here would tell you that.
           - name: service
             dockerfile: docker/build/Dockerfile-service-dev
-            context: .
-            needs_maven: true
-            needs_secrets: false
-          - name: api
-            dockerfile: docker/build/Dockerfile-api-dev
             context: .
             needs_maven: true
             needs_secrets: false
@@ -150,26 +147,6 @@ jobs:
             needs_maven: false
             needs_secrets: false
             build_args: "BUILD_COMMAND=build_prod"
-          - name: db
-            dockerfile: docker/build/Dockerfile-db-dev
-            context: .
-            needs_maven: true
-            needs_secrets: false
-          - name: sched
-            dockerfile: docker/build/Dockerfile-sched-dev
-            context: .
-            needs_maven: true
-            needs_secrets: false
-          - name: submit
-            dockerfile: docker/build/Dockerfile-submit-dev
-            context: .
-            needs_maven: true
-            needs_secrets: false
-          - name: data
-            dockerfile: docker/build/Dockerfile-data-dev
-            context: .
-            needs_maven: true
-            needs_secrets: false
           - name: batch
             dockerfile: docker/build/Dockerfile-batch-dev
             context: .
@@ -292,7 +269,7 @@ jobs:
         REPO="${{ needs.setup.outputs.vcell_repo_namespace }}"
         TAG="${{ needs.setup.outputs.vcell_tag }}"
         FRIENDLY="${{ needs.setup.outputs.friendly_tag }}"
-        CONTAINERS="vcell-service vcell-exporter vcell-api vcell-rest vcell-webapp-prod vcell-webapp-dev vcell-webapp-stage vcell-batch vcell-opt vcell-clientgen vcell-data vcell-db vcell-sched vcell-submit vcell-admin"
+        CONTAINERS="vcell-service vcell-exporter vcell-rest vcell-webapp-prod vcell-webapp-dev vcell-webapp-stage vcell-batch vcell-opt vcell-clientgen vcell-admin"
         # GHCR applies a secondary rate limit, and this job pushes three tags for every
         # image in one burst. Exceeding it returns 403 permission_denied, whose body says
         # "You have exceeded a secondary rate limit" -- indistinguishable at a glance from a
