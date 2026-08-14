@@ -19,21 +19,21 @@ classifiers = [
     "Programming Language :: Python :: 3 :: Only",
 ]
 
-# Only biosimulators_utils is imported by this package now; the plotting code that used fire,
-# seaborn, matplotlib and pandas has been deleted. fire and seaborn are removed here because
-# nothing else pulls them in. The rest are deliberately left alone: matplotlib, pandas, PyYAML,
-# python-libcombine, python-libsbml-experimental and Deprecated all arrive transitively through
-# biosimulators_utils anyway, and several carry deliberate pins (python-libcombine is fixed at
-# 0.2.19 against biosimulators_utils' looser >=0.2.11) that removing would silently re-resolve.
+# This package imports biosimulators_utils and the standard library, nothing else. Everything
+# biosimulators_utils declares for itself is left to it rather than pinned again here: matplotlib,
+# pandas, pyyaml and python-libcombine were all listed twice, and our python-libcombine pin held it
+# a release behind (0.2.19 against a published 0.2.20) for no reason anyone recorded.
+#
+# python-libsbml-experimental stays, and is NOT redundant. biosimulators_utils imports libsbml in
+# model_lang/sbml/validation.py without declaring it, and validate_omex runs with
+# VALIDATE_SEDML_MODELS=True, so removing this would break SBML validation at run time with nothing
+# in the dependency graph to explain why.
+#
+# biosimulators_utils 0.2.3 is the newest release (2024-10-10); there is no upgrade to take.
 [tool.poetry.dependencies]
 python = "^3.10"
 biosimulators_utils = "^0.2.3"
-python-libcombine = "0.2.19"
-PyYAML = "^6.0"
-pandas = "^2.2"
-matplotlib = "^3.5.2"
 python-libsbml-experimental = "^5.20.1"
-Deprecated = "^1.2.13"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.4.0"
