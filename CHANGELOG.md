@@ -16,6 +16,31 @@ followed by flat Keep-a-Changelog categories. API consumers should scan
 
 _(Release-manager scratchpad. Populated at release-cut time.)_
 
+## [8.0.21.01] - 2026-08-14
+
+**Highlights.** MovingBoundary simulation results can be read at every saved time again, rather
+than only the earliest few. Separately, the REST service finds the message broker again, which
+restores parameter estimation and export status on any site that has completed the configuration
+rename.
+
+### Fixed
+- MovingBoundary results were unreadable at almost every time point. The requested time comes from
+  the `.log` file, which the solver writes with six significant digits, while the times stored in
+  the `.h5` file are full doubles — so a request for `0.122269` had to find `0.1222685102809653`.
+  The reader required them to agree within `1e-8`, which almost none of them do: on a 386-timepoint
+  simulation, 20 times were readable and 366 failed with "No time group found", a message that reads
+  like missing data rather than a rounding difference. The nearest saved time is now used, with a
+  bound that scales with the magnitude of the time. Verified by reading every time in a real
+  simulation's `.log` from its `.h5`: 20 of 386 before, 386 of 386 after. (#1941)
+- The REST service could not reach the message broker on sites that had completed the configuration
+  rename, and retried `localhost:5672` indefinitely while the broker sat elsewhere. It derived the
+  address from two names the deployment no longer supplies, and the defaults made the failure quiet.
+  This affected parameter estimation and the export request and status flow, not only the log.
+  (#1942, #1943)
+
+### Notes for API consumers
+No API changes.
+
 ## [8.0.20.01] - 2026-08-13
 
 **Highlights.** Nothing changes for anyone using VCell. The consolidated service image no longer
