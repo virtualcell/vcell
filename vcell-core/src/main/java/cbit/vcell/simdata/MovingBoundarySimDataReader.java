@@ -112,6 +112,31 @@ public class MovingBoundarySimDataReader {
         return ((Number) value).doubleValue();
     }
 
+    /**
+     * How far the nearest saved time may be from the requested one before it is treated as a
+     * different time altogether.
+     *
+     * The requested time has been through the .log file, which carries six significant digits, so
+     * the error scales with the magnitude of the time rather than being a fixed quantity -- an
+     * absolute bound is either too tight for late times or needlessly loose for early ones. The
+     * relative part covers the rounding; the absolute floor keeps t=0 and very small times from
+     * demanding exactness they cannot have.
+     *
+     * 1e-4 is chosen with margin at both ends. Six significant digits is a relative error of at
+     * most 5e-6 -- worst when the leading digit is 1, which is why the error is not the 5e-7 that
+     * "six digits" suggests: 0.0104058 stands for 0.010405830662209813, a relative error of 3e-6.
+     * So this is roughly 20x the largest rounding error possible, while still well inside the
+     * spacing of saved times (1e-3 apart in the file this was diagnosed on, i.e. a relative gap of
+     * about 1e-3 at t=1, ten times this bound). Nearest-match does the real work; this only decides
+     * when to declare that no saved time corresponds to the request at all.
+     *
+     * Package-visible so the rule can be tested against real values without an HDF5 fixture.
+     */
+    static double timeMatchTolerance(double time)
+    {
+        return Math.max(1e-9, 1e-4 * Math.abs(time));
+    }
+
     public static double[] readMBSData(String fileName, Vector<DataBlock> dataBlockList, String varName, Double time) throws Exception {
         try (HdfFile solFile = new HdfFile(new File(fileName).toPath()))
         {
@@ -131,7 +156,22 @@ public class MovingBoundarySimDataReader {
                 throw new Exception("Variable " + varName + " not found");
             }
 
+            // Match the nearest saved time rather than requiring near-equality.
+            //
+            // The caller's time comes from the .log file, which the solver writes with C's "%g" --
+            // six significant digits. The time attributes in the HDF5 file are full doubles, so the
+            // two disagree by up to a part in 1e6: for this file the logged 0.122269 stands for
+            // 0.1222685102809653, a difference of 4.9e-7. An exact-ish match therefore fails for
+            // almost every time point; on a 386-point simulation only the 20 earliest times, where
+            // six digits happen to be enough, could be read at all. The rest failed with
+            // "No time group found", which reads like missing data rather than a rounding problem.
+            //
+            // Nearest-match is the right shape regardless of how the log is formatted. The bound
+            // below only rejects a time that belongs to no saved point at all: saved times are far
+            // apart compared with the rounding error (here 1.0e-3 apart versus a 4.0e-6 worst-case
+            // error), so nearest is unambiguous by three orders of magnitude.
             Group timeGroup = null;
+            double closestDelta = Double.MAX_VALUE;
             for (Node member : solutionGroup(solFile).getChildren().values())
             {
                 if (!(member instanceof Group))
@@ -139,13 +179,18 @@ public class MovingBoundarySimDataReader {
                     continue;
                 }
                 Attribute timeAttribute = member.getAttribute(CartesianMeshMovingBoundary.MSBDataAttribute.time.name());
-                if (timeAttribute != null && Math.abs(doubleValue(timeAttribute.getData()) - time) < 1e-8)
+                if (timeAttribute == null)
                 {
+                    continue;
+                }
+                double delta = Math.abs(doubleValue(timeAttribute.getData()) - time);
+                if (delta < closestDelta)
+                {
+                    closestDelta = delta;
                     timeGroup = (Group) member;
-                    break;
                 }
             }
-            if (timeGroup == null)
+            if (timeGroup == null || closestDelta > timeMatchTolerance(time))
             {
                 throw new Exception("No time group found for time=" + time);
             }
