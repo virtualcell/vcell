@@ -199,7 +199,8 @@
 
 
 	<repositories>
-		<!-- Central first, deliberately.
+		<!-- Order matters: Maven asks repositories in the order below and stops at the first that
+		     has the artifact.
 
 		     Maven asks repositories in declaration order and stops at the first that has the
 		     artifact. Central is not declared here at all by default: it comes from the super-POM
@@ -213,13 +214,19 @@
 		     round trips. The repositories below still matter for the handful of artifacts that are
 		     genuinely only there; they simply should not be asked first.
 
-		     Keep Central first when adding a repository. -->
-		<repository>
-			<id>central</id>
-			<url>https://repo.maven.apache.org/maven2</url>
-			<releases><enabled>true</enabled></releases>
-			<snapshots><enabled>false</enabled></snapshots>
-		</repository>
+		     The vendored file:// repository stays FIRST, ahead of Central. A miss there is a
+		     filesystem stat rather than a network round trip, so it costs the ~1200 Central
+		     artifacts almost nothing, while the artifacts that are only vendored resolve with no
+		     network at all. It also keeps vendoring meaning what it says: whatever is in
+		     lib/maven-repo wins. That is not hypothetical - edu.ucar:netcdf:4.3.22 is vendored
+		     AND present on Central. The two are byte-identical today (sha1
+		     a9b0be3ddf020c3aebf6498fcfc3ef007805cec0), so nothing turns on it right now, but with
+		     Central first the vendored copy would quietly stop being the one that is used, and
+		     that should not depend on a coincidence. jai_core, jai-codec and udunits are not on
+		     Central at all.
+
+		     So: vendored first, then Central, then the rest. Add new repositories after Central
+		     unless they are vendored artifacts. -->
 		<!-- Vendored artifacts not available on Maven Central: jai_core, jai-codec, netcdf, udunits, thredds-parent -->
 		<repository>
 			<id>lib-maven-repo</id>
@@ -230,6 +237,12 @@
 			<snapshots>
 				<enabled>false</enabled>
 			</snapshots>
+		</repository>
+		<repository>
+			<id>central</id>
+			<url>https://repo.maven.apache.org/maven2</url>
+			<releases><enabled>true</enabled></releases>
+			<snapshots><enabled>false</enabled></snapshots>
 		</repository>
 		<!-- needed for com.mxgraph.jgraphx -->
 		<repository>
