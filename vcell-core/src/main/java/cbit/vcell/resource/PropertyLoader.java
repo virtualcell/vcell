@@ -227,6 +227,22 @@ public class PropertyLoader {
 	public static final String dbPasswordValue				= record("vcell.server.dbPassword",ValueType.GEN);
 	public static final String dbPasswordFile				= record("vcell.db.pswdfile",ValueType.FILE);
 
+	/**
+	 * Whether this deployment runs the periodic database cleanup.
+	 * <p>
+	 * <b>Exactly one site per database should set this to true, and it should be prod.</b> The
+	 * cleanup removes globally unreferenced simulations, math descriptions, geometries, simulation
+	 * contexts and models — none of that work is site-scoped, so a second site running it cleans
+	 * nothing extra and only adds contention. dev, stage and prod all point at
+	 * {@code vcell-oracle...ORCLPDB1}, so before this flag existed all three ran it every 15
+	 * minutes against the same tables.
+	 * <p>
+	 * Opt-in rather than opt-out: the safe default for a housekeeping task on a shared database is
+	 * not to run it. {@code DatabaseServer} logs which choice it made at startup, so a site that
+	 * silently cleans nothing is visible rather than merely quiet.
+	 */
+	public static final String dbCleanupEnabled				= record("vcell.db.cleanup.enabled",ValueType.GEN);
+
 	// e.g. user.timezone="-05:00" for EST - needed for oracle
 	public static final String userTimezone					= record("user.timezone",ValueType.GEN);
 

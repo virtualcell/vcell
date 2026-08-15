@@ -106,8 +106,29 @@ public void init() throws Exception {
 
 	vcMessagingService_int.addMessageConsumer(rpcConsumer);
 	
-	this.databaseCleanupThread = new DatabaseCleanupThread(databaseServerImpl);
-	this.databaseCleanupThread.start();
+	//
+	// Only one site per database should run the cleanup, and it should be prod.
+	//
+	// The work is not site-scoped: it removes simulations, math descriptions, geometries,
+	// simulation contexts and models that no document anywhere references. dev, stage and prod
+	// all point at the same Oracle instance, so before this flag every one of them ran this every
+	// 15 minutes over the same rows -- a second site cleans nothing extra and only adds snapshot
+	// windows and lock contention to a delete that is already sensitive to concurrent saves.
+	//
+	// Opt-in: a housekeeping task on a shared database should not run just because a service
+	// started. Both outcomes are logged, so a site that cleans nothing says so.
+	//
+	boolean bCleanupEnabled = Boolean.parseBoolean(
+			PropertyLoader.getProperty(PropertyLoader.dbCleanupEnabled, "false"));
+	if (bCleanupEnabled) {
+		lg.info("database cleanup ENABLED on this site (" + PropertyLoader.dbCleanupEnabled + "=true); "
+				+ "exactly one site per database should be doing this");
+		this.databaseCleanupThread = new DatabaseCleanupThread(databaseServerImpl);
+		this.databaseCleanupThread.start();
+	} else {
+		lg.info("database cleanup DISABLED on this site (" + PropertyLoader.dbCleanupEnabled + "!=true); "
+				+ "another site sharing this database is expected to run it");
+	}
 }
 
 
