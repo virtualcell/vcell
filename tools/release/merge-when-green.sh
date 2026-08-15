@@ -62,7 +62,12 @@ if [ -n "$CHANGED" ] && ! printf '%s\n' "$CHANGED" | grep -qvE '(^docs/|^release
 	echo "documentation-only change"
 fi
 
-rollup_value() { echo "$ROLL" | grep "^${1}=" | cut -d= -f2; }
+# A check name can appear more than once -- `should-run` is reported by both ci.yml and
+# codeql-analysis.yml -- so this must collapse duplicates or every comparison against a single
+# expected value fails. sort -u rather than head -1 on purpose: if two entries of the same name
+# disagree, the result is two lines, nothing matches, and the gate waits. That is the safe way
+# round.
+rollup_value() { echo "$ROLL" | grep "^${1}=" | cut -d= -f2 | sort -u; }
 
 # ci.yml gained a should-run gate (#1925) that skips the whole fast lane when a push cannot
 # affect the build or the tests. A release-notes PR is the normal case, and it is why this
