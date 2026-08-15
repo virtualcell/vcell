@@ -16,6 +16,42 @@ followed by flat Keep-a-Changelog categories. API consumers should scan
 
 _(Release-manager scratchpad. Populated at release-cut time.)_
 
+## [8.0.24.01] - 2026-08-15
+
+**Highlights.** Nothing changes for anyone using VCell. One deployment per database now owns the
+periodic database cleanup instead of all of them running it at once, and the five server images
+that no site deploys any more are no longer built.
+
+### Changed
+- The periodic database cleanup is now opt-in, via `vcell.db.cleanup.enabled`, and exactly one site
+  per database should enable it. dev, stage and prod all connect to the same Oracle instance, and
+  each `db` service started a cleanup thread unconditionally — so all three ran the same cleanup
+  every 15 minutes over the same rows. None of that work is site-scoped: it removes simulations,
+  math descriptions, geometries, simulation contexts and models that no document anywhere
+  references, so the second and third site clean nothing extra and only add contention to a delete
+  that already fails a few times a day with `ORA-02292`. Both outcomes are logged at startup, so a
+  site that is not cleaning says so rather than saying nothing. (#1962, issue #1961)
+
+### Removed
+- The five per-service server images — `vcell-api`, `vcell-data`, `vcell-db`, `vcell-sched` and
+  `vcell-submit` — are no longer built, and their Dockerfiles are deleted. The consolidated
+  `vcell-service` image was published alongside them so the deployment could move one service at a
+  time; stage moved at 8.0.15.01, dev and prod since, so every release had been building five
+  images for nobody. The per-service log4j configurations stay, because the consolidated image
+  reads all five and selects by name. (#1959)
+
+### Added
+- The announcement text for the 8.0.23 production deployment, under
+  `release-notes/announcements/`. A changelog records what changed; this records what users were
+  told. (#1960)
+- Internal: the release merge gate accepts a fast lane that ci.yml deliberately skipped. A
+  documentation-only release PR reports its build and test jobs as skipped, which the gate had
+  treated as missing and waited out. It now requires two independent signals — the gate itself
+  decided, and the change really is documentation-only — before accepting them. (#1957)
+
+### Notes for API consumers
+No API changes.
+
 ## [8.0.23.01] - 2026-08-14
 
 **Highlights.** Starting a SpringSaLaD simulation no longer sets every other simulation already
