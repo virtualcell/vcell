@@ -20,6 +20,31 @@
             <!--      !!! Never set JSBML to debug log level will break JSBML. Runtime errors in JSBML.-->
             <!--      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!-->
             <Logger name="org.sbml.jsbml" level="info" />
+
+    <!--
+      Restlet logs this once per request carrying a Bearer token, from
+      org.restlet.engine.security.AuthenticatorUtils:402 - 563 lines in a 30 minute window on
+      production, which is most of what is in this log.
+
+      It is not actionable and it is not a fault. VCellApiApplication configures a
+      ChallengeAuthenticator for ChallengeScheme.HTTP_OAUTH_BEARER, but the AuthenticatorHelper for
+      that scheme lives in org.restlet.ext.oauth, which is not a dependency. BearerTokenVerifier
+      does not need it - it reads cr.getRawValue() directly - so authentication works and Restlet
+      complains anyway. See issue #1969.
+
+      Filtered by message rather than by level, because Restlet logs through the CONTEXT logger and
+      VCell's own application messages share this logger name (they differ only in the class field).
+      Raising the level here would silence those too.
+
+      This changes no behaviour. Do NOT "fix" the warning by adding org.restlet.ext.oauth or
+      registering a Bearer helper: BearerTokenVerifier depends on getRawValue() being populated the
+      way it is today, and the authenticator is built with bAuthOptional=true, so a verifier that
+      stopped recognising tokens would not 401 - requests would silently proceed unauthenticated.
+    -->
+    <Logger name="org.restlet.WadlComponent.InternalRouter.VCellApiApplication" level="info">
+      <RegexFilter regex="Couldn't find any helper support the .* challenge scheme\."
+                   onMatch="DENY" onMismatch="NEUTRAL"/>
+    </Logger>
     <!--    <Logger name="org.vcell" level="warn" />-->
     <!--    <Logger name="cbit.vcell" level="warn" />-->
             <Logger name="cbit.vcell.modeldb" level="debug" />
