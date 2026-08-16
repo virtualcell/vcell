@@ -91,6 +91,17 @@ public class SimDataServerResource extends AbstractServerResource implements Sim
 		SimDataRepresentation simData = null;
 		try {
 			simData = getSimDataRepresentation(vcellUser);
+		}catch (ResourceException e){
+			// A simulation with no results is the ordinary case here, not a fault: this endpoint is
+			// public and crawlers walk it for every simulation of every published BioModel, most of
+			// which never ran. The page renders without its data section - simdata.ftl guards on
+			// <#if simdata??> - so the request is answered correctly and there is nothing to report.
+			// Logging it at ERROR produced roughly 3000 entries a month and buried the real faults.
+			if (e.getStatus()!=null && e.getStatus().isClientError()){
+				if (lg.isDebugEnabled()) lg.debug("no simulation data to show: "+e.getMessage());
+			}else{
+				lg.error(e.getMessage(), e);
+			}
 		}catch (Exception e){
 			lg.error(e.getMessage(), e);
 		}
@@ -147,9 +158,12 @@ public class SimDataServerResource extends AbstractServerResource implements Sim
 				lg.error(e);
 				throw new ResourceException(Status.CLIENT_ERROR_UNAUTHORIZED, "not authorized");
 			} catch (ObjectNotFoundException e) {
-				lg.error(e);
-				throw new ResourceException(Status.CLIENT_ERROR_NOT_FOUND, "simulation metadata not found");
+				// expected whenever a simulation has no results; carries the reason from
+				// getDataSetMetadata, which is more useful to a caller than a fixed string
+				if (lg.isDebugEnabled()) lg.debug("no simulation data: "+e.getMessage());
+				throw new ResourceException(Status.CLIENT_ERROR_NOT_FOUND, e.getMessage());
 			} catch (Exception e){
+				lg.error(e.getMessage(), e);
 				throw new ResourceException(Status.SERVER_ERROR_INTERNAL, e.getMessage());
 			}
 //		}

@@ -246,6 +246,27 @@ public class RestDatabaseService {
 		if (simRep == null){
 			throw new ObjectNotFoundException("Simulation with key "+simKey+" not found");
 		}
+		//
+		// Ask the database whether this simulation ever produced results, before asking the data
+		// service for them. Most simulations that reach here never ran: /api/v0/simdata/<simKey> is
+		// public and crawlers walk it for every simulation of every published BioModel. Measured over
+		// 30 days on production, 907 distinct simulations were requested this way and 904 of them had
+		// no data to return - 878 with no vc_simulationjob row at all, 26 with rows where hasData was
+		// not set. Each one cost a JMS session, a temporary queue and an RPC to the data service, and
+		// came back as a DataAccessException reported as a 500 (see issue #1967).
+		//
+		// This is "not found", not a server error, and it is answerable from a row the database
+		// already has.
+		//
+		SimulationStatus simStatus = null;
+		try {
+			simStatus = getSimulationStatus(simKey, vcellUser);
+		} catch (ObjectNotFoundException e) {
+			throw new ObjectNotFoundException("Simulation with key "+simKey+" has no simulation status (never submitted)");
+		}
+		if (simStatus != null && !simStatus.getHasData()){
+			throw new ObjectNotFoundException("Simulation with key "+simKey+" has no results");
+		}
 		User owner = simRep.getOwner();
 		int jobIndex = 0;
 		VCMessageSession rpcSession = vcMessagingService.createProducerSession();
