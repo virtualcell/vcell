@@ -1,0 +1,1702 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<sbml xmlns="http://www.sbml.org/sbml/level2/version4" level="2" version="4">
+    <model id="NoName" metaid="COPASI0"
+           name="Ota2015 - Positive regulation of Rho GTPase activity by RhoGDIs as a result of their direct interaction with GAPs (GDI integrated)">
+        <notes>
+            <body xmlns="http://www.w3.org/1999/xhtml">
+                <pre>This is a ordinary differential equation mathematical model describing the Rho GTPase cycle in
+                    which Rho GDP-dissociation inhibitors (RhoGDIs) inhibit the regulatory activities of guanine
+                    nucleotide exchange factors (GEFs) and GTPase-activating proteins (GAPs) by interacting with them
+                    directly as well as by sequestering the Rho GTPases. The model was constructed with the intent of
+                    analyzing the role of RhoGDIs in Rho GTPase signaling.
+                </pre>
+            </body>
+        </notes>
+        <annotation>
+             <layout:listOfLayouts xmlns:layout="http://www.sbml.org/sbml/level3/version1/layout/version1"
+                                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                <annotation>
+
+                </annotation>
+                <layout:layout layout:id="layout_0" layout:name="Layout">
+                    <annotation>
+
+                    </annotation>
+                    <layout:dimensions layout:height="800" layout:width="1200"/>
+                </layout:layout>
+            </layout:listOfLayouts>
+        </annotation>
+        <listOfFunctionDefinitions>
+            <functionDefinition id="Function_for_re7" name="Function for re7">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <lambda>
+                        <bvar>
+                            <ci>default</ci>
+                        </bvar>
+                        <bvar>
+                            <ci>k6</ci>
+                        </bvar>
+                        <bvar>
+                            <ci>k7</ci>
+                        </bvar>
+                        <bvar>
+                            <ci>s13</ci>
+                        </bvar>
+                        <bvar>
+                            <ci>s6</ci>
+                        </bvar>
+                        <bvar>
+                            <ci>s7</ci>
+                        </bvar>
+                        <apply>
+                            <divide/>
+                            <apply>
+                                <minus/>
+                                <apply>
+                                    <times/>
+                                    <ci>k6</ci>
+                                    <ci>s6</ci>
+                                    <ci>s7</ci>
+                                    <ci>default</ci>
+                                </apply>
+                                <apply>
+                                    <times/>
+                                    <ci>k7</ci>
+                                    <ci>s13</ci>
+                                </apply>
+                            </apply>
+                            <ci>default</ci>
+                        </apply>
+                    </lambda>
+                </math>
+            </functionDefinition>
+            <functionDefinition id="Function_for_re2" name="Function for re2">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <lambda>
+                        <bvar>
+                            <ci>default</ci>
+                        </bvar>
+                        <bvar>
+                            <ci>k2</ci>
+                        </bvar>
+                        <bvar>
+                            <ci>s4</ci>
+                        </bvar>
+                        <apply>
+                            <divide/>
+                            <apply>
+                                <times/>
+                                <ci>s4</ci>
+                                <ci>k2</ci>
+                            </apply>
+                            <ci>default</ci>
+                        </apply>
+                    </lambda>
+                </math>
+            </functionDefinition>
+            <functionDefinition id="Function_for_re1" name="Function for re1">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <lambda>
+                        <bvar>
+                            <ci>default</ci>
+                        </bvar>
+                        <bvar>
+                            <ci>k1</ci>
+                        </bvar>
+                        <bvar>
+                            <ci>s1</ci>
+                        </bvar>
+                        <bvar>
+                            <ci>s3</ci>
+                        </bvar>
+                        <apply>
+                            <divide/>
+                            <apply>
+                                <times/>
+                                <ci>s1</ci>
+                                <ci>default</ci>
+                                <ci>s3</ci>
+                                <ci>default</ci>
+                                <ci>k1</ci>
+                            </apply>
+                            <ci>default</ci>
+                        </apply>
+                    </lambda>
+                </math>
+            </functionDefinition>
+            <functionDefinition id="Function_for_re8" name="Function for re8">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <lambda>
+                        <bvar>
+                            <ci>default</ci>
+                        </bvar>
+                        <bvar>
+                            <ci>k8</ci>
+                        </bvar>
+                        <bvar>
+                            <ci>k9</ci>
+                        </bvar>
+                        <bvar>
+                            <ci>s16</ci>
+                        </bvar>
+                        <bvar>
+                            <ci>s6</ci>
+                        </bvar>
+                        <bvar>
+                            <ci>s9</ci>
+                        </bvar>
+                        <apply>
+                            <divide/>
+                            <apply>
+                                <minus/>
+                                <apply>
+                                    <times/>
+                                    <ci>k8</ci>
+                                    <ci>s6</ci>
+                                    <ci>s9</ci>
+                                    <ci>default</ci>
+                                </apply>
+                                <apply>
+                                    <times/>
+                                    <ci>k9</ci>
+                                    <ci>s16</ci>
+                                </apply>
+                            </apply>
+                            <ci>default</ci>
+                        </apply>
+                    </lambda>
+                </math>
+            </functionDefinition>
+            <functionDefinition id="Function_for_re5" name="Function for re5">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <lambda>
+                        <bvar>
+                            <ci>KmGAPGDI</ci>
+                        </bvar>
+                        <bvar>
+                            <ci>KmGAPRho</ci>
+                        </bvar>
+                        <bvar>
+                            <ci>default</ci>
+                        </bvar>
+                        <bvar>
+                            <ci>kcatGAP</ci>
+                        </bvar>
+                        <bvar>
+                            <ci>s6</ci>
+                        </bvar>
+                        <bvar>
+                            <ci>s7</ci>
+                        </bvar>
+                        <bvar>
+                            <ci>s8</ci>
+                        </bvar>
+                        <apply>
+                            <divide/>
+                            <apply>
+                                <divide/>
+                                <apply>
+                                    <times/>
+                                    <ci>kcatGAP</ci>
+                                    <ci>s6</ci>
+                                    <ci>s8</ci>
+                                    <ci>default</ci>
+                                </apply>
+                                <apply>
+                                    <plus/>
+                                    <apply>
+                                        <times/>
+                                        <ci>KmGAPRho</ci>
+                                        <apply>
+                                            <plus/>
+                                            <cn>1</cn>
+                                            <apply>
+                                                <divide/>
+                                                <apply>
+                                                    <times/>
+                                                    <ci>s7</ci>
+                                                    <ci>default</ci>
+                                                </apply>
+                                                <ci>KmGAPGDI</ci>
+                                            </apply>
+                                        </apply>
+                                    </apply>
+                                    <apply>
+                                        <times/>
+                                        <ci>s6</ci>
+                                        <apply>
+                                            <plus/>
+                                            <cn>1</cn>
+                                            <apply>
+                                                <divide/>
+                                                <apply>
+                                                    <times/>
+                                                    <ci>s7</ci>
+                                                    <ci>default</ci>
+                                                </apply>
+                                                <ci>KmGAPGDI</ci>
+                                            </apply>
+                                        </apply>
+                                    </apply>
+                                </apply>
+                            </apply>
+                            <ci>default</ci>
+                        </apply>
+                    </lambda>
+                </math>
+            </functionDefinition>
+            <functionDefinition id="Function_for_re3" name="Function for re3">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <lambda>
+                        <bvar>
+                            <ci>default</ci>
+                        </bvar>
+                        <bvar>
+                            <ci>k3</ci>
+                        </bvar>
+                        <bvar>
+                            <ci>s1</ci>
+                        </bvar>
+                        <apply>
+                            <divide/>
+                            <apply>
+                                <times/>
+                                <ci>s1</ci>
+                                <ci>default</ci>
+                                <ci>k3</ci>
+                            </apply>
+                            <ci>default</ci>
+                        </apply>
+                    </lambda>
+                </math>
+            </functionDefinition>
+            <functionDefinition id="Function_for_re4" name="Function for re4">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <lambda>
+                        <bvar>
+                            <ci>KmGEFGDI</ci>
+                        </bvar>
+                        <bvar>
+                            <ci>KmGEFRho</ci>
+                        </bvar>
+                        <bvar>
+                            <ci>default</ci>
+                        </bvar>
+                        <bvar>
+                            <ci>kcatGEF</ci>
+                        </bvar>
+                        <bvar>
+                            <ci>s4</ci>
+                        </bvar>
+                        <bvar>
+                            <ci>s5</ci>
+                        </bvar>
+                        <bvar>
+                            <ci>s7</ci>
+                        </bvar>
+                        <apply>
+                            <divide/>
+                            <apply>
+                                <divide/>
+                                <apply>
+                                    <times/>
+                                    <ci>kcatGEF</ci>
+                                    <ci>s5</ci>
+                                    <ci>s4</ci>
+                                </apply>
+                                <apply>
+                                    <plus/>
+                                    <apply>
+                                        <times/>
+                                        <ci>KmGEFRho</ci>
+                                        <apply>
+                                            <plus/>
+                                            <cn>1</cn>
+                                            <apply>
+                                                <divide/>
+                                                <apply>
+                                                    <times/>
+                                                    <ci>s7</ci>
+                                                    <ci>default</ci>
+                                                </apply>
+                                                <ci>KmGEFGDI</ci>
+                                            </apply>
+                                        </apply>
+                                    </apply>
+                                    <apply>
+                                        <times/>
+                                        <ci>s5</ci>
+                                        <apply>
+                                            <plus/>
+                                            <cn>1</cn>
+                                            <apply>
+                                                <divide/>
+                                                <apply>
+                                                    <times/>
+                                                    <ci>s7</ci>
+                                                    <ci>default</ci>
+                                                </apply>
+                                                <ci>KmGEFGDI</ci>
+                                            </apply>
+                                        </apply>
+                                    </apply>
+                                </apply>
+                            </apply>
+                            <ci>default</ci>
+                        </apply>
+                    </lambda>
+                </math>
+            </functionDefinition>
+            <functionDefinition id="Function_for_re6" name="Function for re6">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <lambda>
+                        <bvar>
+                            <ci>default</ci>
+                        </bvar>
+                        <bvar>
+                            <ci>k4</ci>
+                        </bvar>
+                        <bvar>
+                            <ci>k5</ci>
+                        </bvar>
+                        <bvar>
+                            <ci>s10</ci>
+                        </bvar>
+                        <bvar>
+                            <ci>s5</ci>
+                        </bvar>
+                        <bvar>
+                            <ci>s7</ci>
+                        </bvar>
+                        <apply>
+                            <divide/>
+                            <apply>
+                                <minus/>
+                                <apply>
+                                    <times/>
+                                    <ci>k4</ci>
+                                    <ci>s5</ci>
+                                    <ci>s7</ci>
+                                    <ci>default</ci>
+                                </apply>
+                                <apply>
+                                    <times/>
+                                    <ci>k5</ci>
+                                    <ci>s10</ci>
+                                    <ci>default</ci>
+                                </apply>
+                            </apply>
+                            <ci>default</ci>
+                        </apply>
+                    </lambda>
+                </math>
+            </functionDefinition>
+        </listOfFunctionDefinitions>
+        <listOfUnitDefinitions>
+            <unitDefinition id="time" name="time">
+                <listOfUnits>
+                    <unit exponent="1" kind="second" multiplier="60" scale="0"/>
+                </listOfUnits>
+            </unitDefinition>
+            <unitDefinition id="substance" name="substance">
+                <listOfUnits>
+                    <unit exponent="1" kind="mole" multiplier="1" scale="-6"/>
+                </listOfUnits>
+            </unitDefinition>
+        </listOfUnitDefinitions>
+        <listOfCompartments>
+            <compartment constant="true" id="default" metaid="COPASI1" name="default" size="1" spatialDimensions="3">
+                <annotation>
+                    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+                             xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/"
+                             xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#"
+                             xmlns:bqbiol="http://biomodels.net/biology-qualifiers/"
+                             xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                        <rdf:Description rdf:about="#COPASI1">
+                            <bqbiol:isVersionOf>
+                                <rdf:Bag>
+                                    <rdf:li rdf:resource="http://identifiers.org/ncit/C12508"/>
+                                </rdf:Bag>
+                            </bqbiol:isVersionOf>
+                        </rdf:Description>
+
+
+                    </rdf:RDF>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:CopasiMT="http://www.copasi.org/RDF/MiriamTerms#"
+                                 xmlns:dcterms="http://purl.org/dc/terms/"
+                                 xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI1">
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2019-12-17T11:02:53Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                                <CopasiMT:isVersionOf rdf:resource="urn:miriam:ncit:C12508"/>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+            </compartment>
+        </listOfCompartments>
+        <listOfSpecies>
+            <species boundaryCondition="false" compartment="default" constant="false" id="s1" initialConcentration="1"
+                     metaid="COPASI2" name="Activator">
+                <annotation>
+                    <celldesigner:extension xmlns:celldesigner="http://www.sbml.org/2001/ns/celldesigner">
+                        <celldesigner:positionToCompartment>inside</celldesigner:positionToCompartment>
+                        <celldesigner:speciesIdentity>
+                            <celldesigner:class>UNKNOWN</celldesigner:class>
+                            <celldesigner:name>Activator</celldesigner:name>
+                        </celldesigner:speciesIdentity>
+                        <celldesigner:listOfCatalyzedReactions>
+                            <celldesigner:catalyzed reaction="re1"/>
+                        </celldesigner:listOfCatalyzedReactions>
+                    </celldesigner:extension>
+                    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+                             xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/"
+                             xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#"
+                             xmlns:bqbiol="http://biomodels.net/biology-qualifiers/"
+                             xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                        <rdf:Description rdf:about="#COPASI2">
+                            <bqbiol:isVersionOf>
+                                <rdf:Bag>
+                                    <rdf:li rdf:resource="http://identifiers.org/ncit/C154897"/>
+                                </rdf:Bag>
+                            </bqbiol:isVersionOf>
+                        </rdf:Description>
+
+
+                    </rdf:RDF>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:CopasiMT="http://www.copasi.org/RDF/MiriamTerms#"
+                                 xmlns:dcterms="http://purl.org/dc/terms/"
+                                 xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI2">
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2019-12-17T11:03:26Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                                <CopasiMT:isVersionOf rdf:resource="urn:miriam:ncit:C154897"/>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+            </species>
+            <species boundaryCondition="false" compartment="default" constant="false" id="s2" initialConcentration="0"
+                     metaid="COPASI3" name="Degrade">
+                <annotation>
+                    <celldesigner:extension xmlns:celldesigner="http://www.sbml.org/2001/ns/celldesigner">
+                        <celldesigner:positionToCompartment>inside</celldesigner:positionToCompartment>
+                        <celldesigner:speciesIdentity>
+                            <celldesigner:class>DEGRADED</celldesigner:class>
+                            <celldesigner:name>Degrade</celldesigner:name>
+                        </celldesigner:speciesIdentity>
+                    </celldesigner:extension>
+                    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+                             xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/"
+                             xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#"
+                             xmlns:bqbiol="http://biomodels.net/biology-qualifiers/"
+                             xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                        <rdf:Description rdf:about="#COPASI3">
+                            <bqbiol:isVersionOf>
+                                <rdf:Bag>
+                                    <rdf:li rdf:resource="http://identifiers.org/ncit/C154897"/>
+                                </rdf:Bag>
+                            </bqbiol:isVersionOf>
+
+                            <bqbiol:hasProperty>
+                                <rdf:Bag>
+                                    <rdf:li rdf:resource="http://identifiers.org/ncit/C154407"/>
+                                </rdf:Bag>
+                            </bqbiol:hasProperty>
+                        </rdf:Description>
+
+
+                    </rdf:RDF>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:CopasiMT="http://www.copasi.org/RDF/MiriamTerms#"
+                                 xmlns:bqbiol="http://biomodels.net/biology-qualifiers/"
+                                 xmlns:dcterms="http://purl.org/dc/terms/"
+                                 xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI3">
+                                <bqbiol:hasProperty rdf:resource="urn:miriam:ncit:C154407"/>
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2019-12-17T11:04:17Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                                <CopasiMT:isVersionOf rdf:resource="urn:miriam:ncit:C154897"/>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+            </species>
+            <species boundaryCondition="false" compartment="default" constant="false" id="s3"
+                     initialConcentration="0.31" metaid="COPASI4" name="GEF">
+                <annotation>
+                    <celldesigner:extension xmlns:celldesigner="http://www.sbml.org/2001/ns/celldesigner">
+                        <celldesigner:positionToCompartment>inside</celldesigner:positionToCompartment>
+                        <celldesigner:speciesIdentity>
+                            <celldesigner:class>PROTEIN</celldesigner:class>
+                            <celldesigner:proteinReference>pr1</celldesigner:proteinReference>
+                        </celldesigner:speciesIdentity>
+                    </celldesigner:extension>
+                    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+                             xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/"
+                             xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#"
+                             xmlns:bqbiol="http://biomodels.net/biology-qualifiers/"
+                             xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                        <rdf:Description rdf:about="#COPASI4">
+                            <bqbiol:is>
+                                <rdf:Bag>
+                                    <rdf:li rdf:resource="http://identifiers.org/ncit/C17494"/>
+                                </rdf:Bag>
+                            </bqbiol:is>
+                        </rdf:Description>
+
+
+                    </rdf:RDF>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:CopasiMT="http://www.copasi.org/RDF/MiriamTerms#"
+                                 xmlns:dcterms="http://purl.org/dc/terms/"
+                                 xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI4">
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2019-12-17T11:13:57Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                                <CopasiMT:is rdf:resource="urn:miriam:ncit:C17494"/>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+            </species>
+            <species boundaryCondition="false" compartment="default" constant="false" id="s4" initialConcentration="0"
+                     metaid="COPASI5" name="Active GEF">
+                <annotation>
+                    <celldesigner:extension xmlns:celldesigner="http://www.sbml.org/2001/ns/celldesigner">
+                        <celldesigner:positionToCompartment>inside</celldesigner:positionToCompartment>
+                        <celldesigner:speciesIdentity>
+                            <celldesigner:class>PROTEIN</celldesigner:class>
+                            <celldesigner:proteinReference>pr2</celldesigner:proteinReference>
+                        </celldesigner:speciesIdentity>
+                        <celldesigner:listOfCatalyzedReactions>
+                            <celldesigner:catalyzed reaction="re4"/>
+                        </celldesigner:listOfCatalyzedReactions>
+                    </celldesigner:extension>
+                    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+                             xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/"
+                             xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#"
+                             xmlns:bqbiol="http://biomodels.net/biology-qualifiers/"
+                             xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                        <rdf:Description rdf:about="#COPASI5">
+                            <bqbiol:hasProperty>
+                                <rdf:Bag>
+                                    <rdf:li rdf:resource="http://identifiers.org/ncit/C45329"/>
+                                </rdf:Bag>
+                            </bqbiol:hasProperty>
+                        </rdf:Description>
+
+
+                    </rdf:RDF>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:bqbiol="http://biomodels.net/biology-qualifiers/"
+                                 xmlns:dcterms="http://purl.org/dc/terms/"
+                                 xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI5">
+                                <bqbiol:hasProperty rdf:resource="urn:miriam:ncit:C45329"/>
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2019-12-17T11:06:17Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+            </species>
+            <species boundaryCondition="false" compartment="default" constant="false" id="s5" initialConcentration="0"
+                     metaid="COPASI6" name="GDP-Rho">
+                <annotation>
+                    <celldesigner:extension xmlns:celldesigner="http://www.sbml.org/2001/ns/celldesigner">
+                        <celldesigner:positionToCompartment>inside</celldesigner:positionToCompartment>
+                        <celldesigner:speciesIdentity>
+                            <celldesigner:class>PROTEIN</celldesigner:class>
+                            <celldesigner:proteinReference>pr3</celldesigner:proteinReference>
+                        </celldesigner:speciesIdentity>
+                    </celldesigner:extension>
+                    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+                             xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/"
+                             xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#"
+                             xmlns:bqbiol="http://biomodels.net/biology-qualifiers/"
+                             xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                        <rdf:Description rdf:about="#COPASI6">
+                            <bqbiol:hasVersion>
+                                <rdf:Bag>
+                                    <rdf:li rdf:resource="http://identifiers.org/pr/PR:000000122"/>
+                                </rdf:Bag>
+                            </bqbiol:hasVersion>
+                        </rdf:Description>
+
+
+                    </rdf:RDF>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:CopasiMT="http://www.copasi.org/RDF/MiriamTerms#"
+                                 xmlns:dcterms="http://purl.org/dc/terms/"
+                                 xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI6">
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2019-12-04T15:20:38Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                                <CopasiMT:hasVersion rdf:resource="urn:miriam:pr:PR:000000122"/>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+            </species>
+            <species boundaryCondition="false" compartment="default" constant="false" id="s6" initialConcentration="0"
+                     metaid="COPASI7" name="GTP-Rho">
+                <annotation>
+                    <celldesigner:extension xmlns:celldesigner="http://www.sbml.org/2001/ns/celldesigner">
+                        <celldesigner:positionToCompartment>inside</celldesigner:positionToCompartment>
+                        <celldesigner:speciesIdentity>
+                            <celldesigner:class>PROTEIN</celldesigner:class>
+                            <celldesigner:proteinReference>pr4</celldesigner:proteinReference>
+                        </celldesigner:speciesIdentity>
+                    </celldesigner:extension>
+                    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+                             xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/"
+                             xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#"
+                             xmlns:bqbiol="http://biomodels.net/biology-qualifiers/"
+                             xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                        <rdf:Description rdf:about="#COPASI7">
+                            <bqbiol:isVersionOf>
+                                <rdf:Bag>
+                                    <rdf:li rdf:resource="http://identifiers.org/pr/PR:000000122"/>
+                                </rdf:Bag>
+                            </bqbiol:isVersionOf>
+                        </rdf:Description>
+
+
+                    </rdf:RDF>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:CopasiMT="http://www.copasi.org/RDF/MiriamTerms#"
+                                 xmlns:dcterms="http://purl.org/dc/terms/"
+                                 xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI7">
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2019-12-17T11:10:35Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                                <CopasiMT:isVersionOf rdf:resource="urn:miriam:pr:PR:000000122"/>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+            </species>
+            <species boundaryCondition="false" compartment="default" constant="false" id="s7" initialConcentration="0"
+                     metaid="COPASI8" name="GDI">
+                <annotation>
+                    <celldesigner:extension xmlns:celldesigner="http://www.sbml.org/2001/ns/celldesigner">
+                        <celldesigner:positionToCompartment>inside</celldesigner:positionToCompartment>
+                        <celldesigner:speciesIdentity>
+                            <celldesigner:class>PROTEIN</celldesigner:class>
+                            <celldesigner:proteinReference>pr5</celldesigner:proteinReference>
+                        </celldesigner:speciesIdentity>
+                        <celldesigner:listOfCatalyzedReactions>
+                            <celldesigner:catalyzed reaction="re4"/>
+                            <celldesigner:catalyzed reaction="re5"/>
+                        </celldesigner:listOfCatalyzedReactions>
+                    </celldesigner:extension>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/"
+                                 xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI8">
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2019-12-04T15:23:11Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+            </species>
+            <species boundaryCondition="false" compartment="default" constant="false" id="s8" initialConcentration="0.1"
+                     metaid="COPASI9" name="GAP">
+                <annotation>
+                    <celldesigner:extension xmlns:celldesigner="http://www.sbml.org/2001/ns/celldesigner">
+                        <celldesigner:positionToCompartment>inside</celldesigner:positionToCompartment>
+                        <celldesigner:speciesIdentity>
+                            <celldesigner:class>PROTEIN</celldesigner:class>
+                            <celldesigner:proteinReference>pr6</celldesigner:proteinReference>
+                        </celldesigner:speciesIdentity>
+                        <celldesigner:listOfCatalyzedReactions>
+                            <celldesigner:catalyzed reaction="re5"/>
+                        </celldesigner:listOfCatalyzedReactions>
+                    </celldesigner:extension>
+                    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+                             xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/"
+                             xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#"
+                             xmlns:bqbiol="http://biomodels.net/biology-qualifiers/"
+                             xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                        <rdf:Description rdf:about="#COPASI9">
+                            <bqbiol:is>
+                                <rdf:Bag>
+                                    <rdf:li rdf:resource="http://identifiers.org/ncit/C17298"/>
+                                </rdf:Bag>
+                            </bqbiol:is>
+                        </rdf:Description>
+
+
+                    </rdf:RDF>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:CopasiMT="http://www.copasi.org/RDF/MiriamTerms#"
+                                 xmlns:dcterms="http://purl.org/dc/terms/"
+                                 xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI9">
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2019-12-17T11:29:12Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                                <CopasiMT:is rdf:resource="urn:miriam:ncit:C17298"/>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+            </species>
+            <species boundaryCondition="false" compartment="default" constant="false" id="s9" initialConcentration="1"
+                     metaid="COPASI10" name="Effector">
+                <annotation>
+                    <celldesigner:extension xmlns:celldesigner="http://www.sbml.org/2001/ns/celldesigner">
+                        <celldesigner:positionToCompartment>inside</celldesigner:positionToCompartment>
+                        <celldesigner:speciesIdentity>
+                            <celldesigner:class>PROTEIN</celldesigner:class>
+                            <celldesigner:proteinReference>pr7</celldesigner:proteinReference>
+                        </celldesigner:speciesIdentity>
+                    </celldesigner:extension>
+                    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+                             xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/"
+                             xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#"
+                             xmlns:bqbiol="http://biomodels.net/biology-qualifiers/"
+                             xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                        <rdf:Description rdf:about="#COPASI10">
+                            <bqbiol:isVersionOf>
+                                <rdf:Bag>
+                                    <rdf:li rdf:resource="http://identifiers.org/chebi/CHEBI:35224"/>
+                                </rdf:Bag>
+                            </bqbiol:isVersionOf>
+                        </rdf:Description>
+
+
+                    </rdf:RDF>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:CopasiMT="http://www.copasi.org/RDF/MiriamTerms#"
+                                 xmlns:dcterms="http://purl.org/dc/terms/"
+                                 xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI10">
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2019-12-17T11:05:48Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                                <CopasiMT:isVersionOf rdf:resource="urn:miriam:chebi:CHEBI:35224"/>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+            </species>
+            <species boundaryCondition="false" compartment="default" constant="false" id="s10"
+                     initialConcentration="1.3" metaid="COPASI11" name="GDI·GDP-Rho">
+                <annotation>
+                    <celldesigner:extension xmlns:celldesigner="http://www.sbml.org/2001/ns/celldesigner">
+                        <celldesigner:positionToCompartment>inside</celldesigner:positionToCompartment>
+                        <celldesigner:speciesIdentity>
+                            <celldesigner:class>COMPLEX</celldesigner:class>
+                            <celldesigner:name>GDI·GDP-Rho</celldesigner:name>
+                        </celldesigner:speciesIdentity>
+                    </celldesigner:extension>
+                    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+                             xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/"
+                             xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#"
+                             xmlns:bqbiol="http://biomodels.net/biology-qualifiers/"
+                             xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                        <rdf:Description rdf:about="#COPASI11">
+                            <bqbiol:hasPart>
+                                <rdf:Bag>
+                                    <rdf:li rdf:resource="http://identifiers.org/pr/PR:000000122"/>
+                                </rdf:Bag>
+                            </bqbiol:hasPart>
+
+                            <bqbiol:hasPart>
+                                <rdf:Bag>
+                                    <rdf:li rdf:resource="http://identifiers.org/pr/PR:000004242"/>
+                                </rdf:Bag>
+                            </bqbiol:hasPart>
+                        </rdf:Description>
+
+
+                    </rdf:RDF>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:CopasiMT="http://www.copasi.org/RDF/MiriamTerms#"
+                                 xmlns:dcterms="http://purl.org/dc/terms/"
+                                 xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI11">
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2019-12-17T11:00:29Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                                <CopasiMT:hasPart rdf:resource="urn:miriam:pr:PR:000000122"/>
+                                <CopasiMT:hasPart rdf:resource="urn:miriam:pr:PR:000004242"/>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+            </species>
+            <species boundaryCondition="false" compartment="default" constant="false" id="s13" initialConcentration="0"
+                     metaid="COPASI12" name="GDI·GTP-Rho">
+                <annotation>
+                    <celldesigner:extension xmlns:celldesigner="http://www.sbml.org/2001/ns/celldesigner">
+                        <celldesigner:positionToCompartment>inside</celldesigner:positionToCompartment>
+                        <celldesigner:speciesIdentity>
+                            <celldesigner:class>COMPLEX</celldesigner:class>
+                            <celldesigner:name>GDI·GTP-Rho</celldesigner:name>
+                        </celldesigner:speciesIdentity>
+                    </celldesigner:extension>
+                    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+                             xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/"
+                             xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#"
+                             xmlns:bqbiol="http://biomodels.net/biology-qualifiers/"
+                             xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                        <rdf:Description rdf:about="#COPASI12">
+                            <bqbiol:hasPart>
+                                <rdf:Bag>
+                                    <rdf:li rdf:resource="http://identifiers.org/pr/PR:000004242"/>
+                                </rdf:Bag>
+                            </bqbiol:hasPart>
+
+                            <bqbiol:hasProperty>
+                                <rdf:Bag>
+                                    <rdf:li rdf:resource="http://identifiers.org/pr/PR:000000122"/>
+                                </rdf:Bag>
+                            </bqbiol:hasProperty>
+                        </rdf:Description>
+
+
+                    </rdf:RDF>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:CopasiMT="http://www.copasi.org/RDF/MiriamTerms#"
+                                 xmlns:bqbiol="http://biomodels.net/biology-qualifiers/"
+                                 xmlns:dcterms="http://purl.org/dc/terms/"
+                                 xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI12">
+                                <bqbiol:hasProperty rdf:resource="urn:miriam:pr:PR:000000122"/>
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2019-12-17T10:56:17Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                                <CopasiMT:hasPart rdf:resource="urn:miriam:pr:PR:000004242"/>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+            </species>
+            <species boundaryCondition="false" compartment="default" constant="false" id="s16" initialConcentration="0"
+                     metaid="COPASI13" name="Effector·GTP-Rho">
+                <annotation>
+                    <celldesigner:extension xmlns:celldesigner="http://www.sbml.org/2001/ns/celldesigner">
+                        <celldesigner:positionToCompartment>inside</celldesigner:positionToCompartment>
+                        <celldesigner:speciesIdentity>
+                            <celldesigner:class>COMPLEX</celldesigner:class>
+                            <celldesigner:name>Effector·GTP-Rho</celldesigner:name>
+                        </celldesigner:speciesIdentity>
+                    </celldesigner:extension>
+                    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+                             xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/"
+                             xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#"
+                             xmlns:bqbiol="http://biomodels.net/biology-qualifiers/"
+                             xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                        <rdf:Description rdf:about="#COPASI13">
+                            <bqbiol:hasPart>
+                                <rdf:Bag>
+                                    <rdf:li rdf:resource="http://identifiers.org/chebi/CHEBI:35224"/>
+                                </rdf:Bag>
+                            </bqbiol:hasPart>
+
+                            <bqbiol:hasPart>
+                                <rdf:Bag>
+                                    <rdf:li rdf:resource="http://identifiers.org/pr/PR:000000122"/>
+                                </rdf:Bag>
+                            </bqbiol:hasPart>
+                        </rdf:Description>
+
+
+                    </rdf:RDF>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:CopasiMT="http://www.copasi.org/RDF/MiriamTerms#"
+                                 xmlns:dcterms="http://purl.org/dc/terms/"
+                                 xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI13">
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2019-12-17T11:06:07Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                                <CopasiMT:hasPart rdf:resource="urn:miriam:chebi:CHEBI:35224"/>
+                                <CopasiMT:hasPart rdf:resource="urn:miriam:pr:PR:000000122"/>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+            </species>
+        </listOfSpecies>
+        <listOfReactions>
+            <reaction id="re1" metaid="COPASI14" name="re1" reversible="false">
+                <annotation>
+                    <celldesigner:extension xmlns:celldesigner="http://www.sbml.org/2001/ns/celldesigner">
+                        <celldesigner:reactionType>STATE_TRANSITION</celldesigner:reactionType>
+                        <celldesigner:baseReactants>
+                            <celldesigner:baseReactant species="s3" alias="sa3">
+                                <celldesigner:linkAnchor position="SSW"/>
+                            </celldesigner:baseReactant>
+                        </celldesigner:baseReactants>
+                        <celldesigner:baseProducts>
+                            <celldesigner:baseProduct species="s4" alias="sa4">
+                                <celldesigner:linkAnchor position="NNW"/>
+                            </celldesigner:baseProduct>
+                        </celldesigner:baseProducts>
+                        <celldesigner:connectScheme connectPolicy="direct" rectangleIndex="0">
+                            <celldesigner:listOfLineDirection>
+                                <celldesigner:lineDirection index="0" value="unknown"/>
+                            </celldesigner:listOfLineDirection>
+                        </celldesigner:connectScheme>
+                        <celldesigner:line width="1.0" color="ff000000"/>
+                        <celldesigner:listOfModification>
+                            <celldesigner:modification type="UNKNOWN_CATALYSIS" modifiers="s1" aliases="sa1"
+                                                       targetLineIndex="-1,3">
+                                <celldesigner:connectScheme connectPolicy="direct">
+                                    <celldesigner:listOfLineDirection>
+                                        <celldesigner:lineDirection index="0" value="unknown"/>
+                                    </celldesigner:listOfLineDirection>
+                                </celldesigner:connectScheme>
+                                <celldesigner:linkTarget species="s1" alias="sa1">
+                                    <celldesigner:linkAnchor position="E"/>
+                                </celldesigner:linkTarget>
+                                <celldesigner:line width="1.0" color="ff000000"/>
+                            </celldesigner:modification>
+                        </celldesigner:listOfModification>
+                    </celldesigner:extension>
+                    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+                             xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/"
+                             xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#"
+                             xmlns:bqbiol="http://biomodels.net/biology-qualifiers/"
+                             xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                        <rdf:Description rdf:about="#COPASI14">
+                            <bqbiol:is>
+                                <rdf:Bag>
+                                    <rdf:li rdf:resource="http://identifiers.org/ncit/C64382"/>
+                                </rdf:Bag>
+                            </bqbiol:is>
+                        </rdf:Description>
+
+
+                    </rdf:RDF>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:CopasiMT="http://www.copasi.org/RDF/MiriamTerms#"
+                                 xmlns:dcterms="http://purl.org/dc/terms/"
+                                 xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI14">
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2019-12-04T15:19:39Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                                <CopasiMT:is rdf:resource="urn:miriam:ncit:C64382"/>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+                <listOfReactants>
+                    <speciesReference species="s3" stoichiometry="1"/>
+                </listOfReactants>
+                <listOfProducts>
+                    <speciesReference species="s4" stoichiometry="1"/>
+                </listOfProducts>
+                <listOfModifiers>
+                    <modifierSpeciesReference species="s1"/>
+                </listOfModifiers>
+                <kineticLaw>
+                    <math xmlns="http://www.w3.org/1998/Math/MathML">
+                        <apply>
+                            <times/>
+                            <ci>default</ci>
+                            <apply>
+                                <ci>Function_for_re1</ci>
+                                <ci>default</ci>
+                                <ci>k1</ci>
+                                <ci>s1</ci>
+                                <ci>s3</ci>
+                            </apply>
+                        </apply>
+                    </math>
+                    <listOfParameters>
+                        <parameter id="k1" name="k1" value="1"/>
+                    </listOfParameters>
+                </kineticLaw>
+            </reaction>
+            <reaction id="re2" metaid="COPASI15" name="re2" reversible="false">
+                <annotation>
+                    <celldesigner:extension xmlns:celldesigner="http://www.sbml.org/2001/ns/celldesigner">
+                        <celldesigner:reactionType>STATE_TRANSITION</celldesigner:reactionType>
+                        <celldesigner:baseReactants>
+                            <celldesigner:baseReactant species="s4" alias="sa4">
+                                <celldesigner:linkAnchor position="NNE"/>
+                            </celldesigner:baseReactant>
+                        </celldesigner:baseReactants>
+                        <celldesigner:baseProducts>
+                            <celldesigner:baseProduct species="s3" alias="sa3">
+                                <celldesigner:linkAnchor position="SSE"/>
+                            </celldesigner:baseProduct>
+                        </celldesigner:baseProducts>
+                        <celldesigner:connectScheme connectPolicy="direct" rectangleIndex="0">
+                            <celldesigner:listOfLineDirection>
+                                <celldesigner:lineDirection index="0" value="unknown"/>
+                            </celldesigner:listOfLineDirection>
+                        </celldesigner:connectScheme>
+                        <celldesigner:line width="1.0" color="ff000000"/>
+                    </celldesigner:extension>
+                    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+                             xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/"
+                             xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#"
+                             xmlns:bqbiol="http://biomodels.net/biology-qualifiers/"
+                             xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                        <rdf:Description rdf:about="#COPASI15">
+                            <bqbiol:isVersionOf>
+                                <rdf:Bag>
+                                    <rdf:li rdf:resource="http://identifiers.org/sbo/SBO:0000180"/>
+                                </rdf:Bag>
+                            </bqbiol:isVersionOf>
+                        </rdf:Description>
+
+
+                    </rdf:RDF>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:CopasiMT="http://www.copasi.org/RDF/MiriamTerms#"
+                                 xmlns:dcterms="http://purl.org/dc/terms/"
+                                 xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI15">
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2019-12-04T15:22:29Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                                <CopasiMT:isVersionOf rdf:resource="urn:miriam:sbo:SBO:0000180"/>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+                <listOfReactants>
+                    <speciesReference species="s4" stoichiometry="1"/>
+                </listOfReactants>
+                <listOfProducts>
+                    <speciesReference species="s3" stoichiometry="1"/>
+                </listOfProducts>
+                <kineticLaw>
+                    <math xmlns="http://www.w3.org/1998/Math/MathML">
+                        <apply>
+                            <times/>
+                            <ci>default</ci>
+                            <apply>
+                                <ci>Function_for_re2</ci>
+                                <ci>default</ci>
+                                <ci>k2</ci>
+                                <ci>s4</ci>
+                            </apply>
+                        </apply>
+                    </math>
+                    <listOfParameters>
+                        <parameter id="k2" name="k2" value="0.1"/>
+                    </listOfParameters>
+                </kineticLaw>
+            </reaction>
+            <reaction id="re3" metaid="COPASI16" name="re3" reversible="false" sboTerm="SBO:0000179">
+                <annotation>
+                    <celldesigner:extension xmlns:celldesigner="http://www.sbml.org/2001/ns/celldesigner">
+                        <celldesigner:reactionType>STATE_TRANSITION</celldesigner:reactionType>
+                        <celldesigner:baseReactants>
+                            <celldesigner:baseReactant species="s1" alias="sa1">
+                                <celldesigner:linkAnchor position="W"/>
+                            </celldesigner:baseReactant>
+                        </celldesigner:baseReactants>
+                        <celldesigner:baseProducts>
+                            <celldesigner:baseProduct species="s2" alias="sa2">
+                                <celldesigner:linkAnchor position="E"/>
+                            </celldesigner:baseProduct>
+                        </celldesigner:baseProducts>
+                        <celldesigner:connectScheme connectPolicy="direct" rectangleIndex="0">
+                            <celldesigner:listOfLineDirection>
+                                <celldesigner:lineDirection index="0" value="unknown"/>
+                            </celldesigner:listOfLineDirection>
+                        </celldesigner:connectScheme>
+                        <celldesigner:line width="1.0" color="ff000000"/>
+                    </celldesigner:extension>
+                    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+                             xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/"
+                             xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#"
+                             xmlns:bqbiol="http://biomodels.net/biology-qualifiers/"
+                             xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                        <rdf:Description rdf:about="#COPASI16">
+                            <bqbiol:is>
+                                <rdf:Bag>
+                                    <rdf:li rdf:resource="http://identifiers.org/sbo/SBO:0000179"/>
+                                </rdf:Bag>
+                            </bqbiol:is>
+                        </rdf:Description>
+
+
+                    </rdf:RDF>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:CopasiMT="http://www.copasi.org/RDF/MiriamTerms#"
+                                 xmlns:dcterms="http://purl.org/dc/terms/"
+                                 xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI16">
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2019-12-04T15:22:30Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                                <CopasiMT:is rdf:resource="urn:miriam:sbo:SBO:0000179"/>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+                <listOfReactants>
+                    <speciesReference species="s1" stoichiometry="1"/>
+                </listOfReactants>
+                <listOfProducts>
+                    <speciesReference species="s2" stoichiometry="1"/>
+                </listOfProducts>
+                <kineticLaw>
+                    <math xmlns="http://www.w3.org/1998/Math/MathML">
+                        <apply>
+                            <times/>
+                            <ci>default</ci>
+                            <apply>
+                                <ci>Function_for_re3</ci>
+                                <ci>default</ci>
+                                <ci>k3</ci>
+                                <ci>s1</ci>
+                            </apply>
+                        </apply>
+                    </math>
+                    <listOfParameters>
+                        <parameter id="k3" name="k3" value="0.5"/>
+                    </listOfParameters>
+                </kineticLaw>
+            </reaction>
+            <reaction id="re4" metaid="COPASI17" name="re4" reversible="false">
+                <annotation>
+                    <celldesigner:extension xmlns:celldesigner="http://www.sbml.org/2001/ns/celldesigner">
+                        <celldesigner:reactionType>STATE_TRANSITION</celldesigner:reactionType>
+                        <celldesigner:baseReactants>
+                            <celldesigner:baseReactant species="s5" alias="sa5">
+                                <celldesigner:linkAnchor position="N"/>
+                            </celldesigner:baseReactant>
+                        </celldesigner:baseReactants>
+                        <celldesigner:baseProducts>
+                            <celldesigner:baseProduct species="s6" alias="sa6">
+                                <celldesigner:linkAnchor position="N"/>
+                            </celldesigner:baseProduct>
+                        </celldesigner:baseProducts>
+                        <celldesigner:connectScheme connectPolicy="direct" rectangleIndex="1">
+                            <celldesigner:listOfLineDirection>
+                                <celldesigner:lineDirection index="0" value="unknown"/>
+                                <celldesigner:lineDirection index="1" value="unknown"/>
+                                <celldesigner:lineDirection index="2" value="unknown"/>
+                            </celldesigner:listOfLineDirection>
+                        </celldesigner:connectScheme>
+                        <celldesigner:editPoints>-0.0025695931477516254,-0.34689507494646654
+                            0.9995717344753748,-0.3468950749464661
+                        </celldesigner:editPoints>
+                        <celldesigner:line width="1.0" color="ff000000"/>
+                        <celldesigner:listOfModification>
+                            <celldesigner:modification type="CATALYSIS" modifiers="s4" aliases="sa4"
+                                                       targetLineIndex="-1,2">
+                                <celldesigner:connectScheme connectPolicy="direct">
+                                    <celldesigner:listOfLineDirection>
+                                        <celldesigner:lineDirection index="0" value="unknown"/>
+                                    </celldesigner:listOfLineDirection>
+                                </celldesigner:connectScheme>
+                                <celldesigner:linkTarget species="s4" alias="sa4">
+                                    <celldesigner:linkAnchor position="S"/>
+                                </celldesigner:linkTarget>
+                                <celldesigner:line width="1.0" color="ff000000"/>
+                            </celldesigner:modification>
+                            <celldesigner:modification type="INHIBITION" modifiers="s7" aliases="sa7"
+                                                       targetLineIndex="-1,3">
+                                <celldesigner:connectScheme connectPolicy="direct">
+                                    <celldesigner:listOfLineDirection>
+                                        <celldesigner:lineDirection index="0" value="unknown"/>
+                                    </celldesigner:listOfLineDirection>
+                                </celldesigner:connectScheme>
+                                <celldesigner:linkTarget species="s7" alias="sa7">
+                                    <celldesigner:linkAnchor position="N"/>
+                                </celldesigner:linkTarget>
+                                <celldesigner:line width="3.0" color="ffff3333"/>
+                            </celldesigner:modification>
+                        </celldesigner:listOfModification>
+                    </celldesigner:extension>
+                    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+                             xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/"
+                             xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#"
+                             xmlns:bqbiol="http://biomodels.net/biology-qualifiers/"
+                             xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                        <rdf:Description rdf:about="#COPASI17">
+                            <bqbiol:isVersionOf>
+                                <rdf:Bag>
+                                    <rdf:li rdf:resource="http://identifiers.org/sbo/SBO:0000177"/>
+                                </rdf:Bag>
+                            </bqbiol:isVersionOf>
+                        </rdf:Description>
+
+
+                    </rdf:RDF>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:CopasiMT="http://www.copasi.org/RDF/MiriamTerms#"
+                                 xmlns:dcterms="http://purl.org/dc/terms/"
+                                 xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI17">
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2019-12-04T15:22:30Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                                <CopasiMT:isVersionOf rdf:resource="urn:miriam:sbo:SBO:0000177"/>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+                <listOfReactants>
+                    <speciesReference species="s5" stoichiometry="1"/>
+                </listOfReactants>
+                <listOfProducts>
+                    <speciesReference species="s6" stoichiometry="1"/>
+                </listOfProducts>
+                <listOfModifiers>
+                    <modifierSpeciesReference species="s4"/>
+                    <modifierSpeciesReference species="s7"/>
+                </listOfModifiers>
+                <kineticLaw>
+                    <math xmlns="http://www.w3.org/1998/Math/MathML">
+                        <apply>
+                            <times/>
+                            <ci>default</ci>
+                            <apply>
+                                <ci>Function_for_re4</ci>
+                                <ci>KmGEFGDI</ci>
+                                <ci>KmGEFRho</ci>
+                                <ci>default</ci>
+                                <ci>kcatGEF</ci>
+                                <ci>s4</ci>
+                                <ci>s5</ci>
+                                <ci>s7</ci>
+                            </apply>
+                        </apply>
+                    </math>
+                    <listOfParameters>
+                        <parameter id="KmGEFGDI" name="KmGEFGDI" value="1"/>
+                        <parameter id="KmGEFRho" name="KmGEFRho" value="24.5"/>
+                        <parameter id="kcatGEF" name="kcatGEF" value="5.64"/>
+                    </listOfParameters>
+                </kineticLaw>
+            </reaction>
+            <reaction id="re5" metaid="COPASI18" name="re5" reversible="false">
+                <annotation>
+                    <celldesigner:extension xmlns:celldesigner="http://www.sbml.org/2001/ns/celldesigner">
+                        <celldesigner:reactionType>STATE_TRANSITION</celldesigner:reactionType>
+                        <celldesigner:baseReactants>
+                            <celldesigner:baseReactant species="s6" alias="sa6">
+                                <celldesigner:linkAnchor position="S"/>
+                            </celldesigner:baseReactant>
+                        </celldesigner:baseReactants>
+                        <celldesigner:baseProducts>
+                            <celldesigner:baseProduct species="s5" alias="sa5">
+                                <celldesigner:linkAnchor position="S"/>
+                            </celldesigner:baseProduct>
+                        </celldesigner:baseProducts>
+                        <celldesigner:connectScheme connectPolicy="direct" rectangleIndex="1">
+                            <celldesigner:listOfLineDirection>
+                                <celldesigner:lineDirection index="0" value="unknown"/>
+                                <celldesigner:lineDirection index="1" value="unknown"/>
+                                <celldesigner:lineDirection index="2" value="unknown"/>
+                            </celldesigner:listOfLineDirection>
+                        </celldesigner:connectScheme>
+                        <celldesigner:editPoints>4.2826552462504885E-4,-0.3494646680942186
+                            0.9999999999999999,-0.3494646680942186
+                        </celldesigner:editPoints>
+                        <celldesigner:line width="1.0" color="ff000000"/>
+                        <celldesigner:listOfModification>
+                            <celldesigner:modification type="CATALYSIS" modifiers="s8" aliases="sa8"
+                                                       targetLineIndex="-1,2">
+                                <celldesigner:connectScheme connectPolicy="direct">
+                                    <celldesigner:listOfLineDirection>
+                                        <celldesigner:lineDirection index="0" value="unknown"/>
+                                    </celldesigner:listOfLineDirection>
+                                </celldesigner:connectScheme>
+                                <celldesigner:linkTarget species="s8" alias="sa8">
+                                    <celldesigner:linkAnchor position="N"/>
+                                </celldesigner:linkTarget>
+                                <celldesigner:line width="1.0" color="ff000000"/>
+                            </celldesigner:modification>
+                            <celldesigner:modification type="INHIBITION" modifiers="s7" aliases="sa7"
+                                                       targetLineIndex="-1,3">
+                                <celldesigner:connectScheme connectPolicy="direct">
+                                    <celldesigner:listOfLineDirection>
+                                        <celldesigner:lineDirection index="0" value="unknown"/>
+                                    </celldesigner:listOfLineDirection>
+                                </celldesigner:connectScheme>
+                                <celldesigner:linkTarget species="s7" alias="sa7">
+                                    <celldesigner:linkAnchor position="S"/>
+                                </celldesigner:linkTarget>
+                                <celldesigner:line width="3.0" color="ffff3333"/>
+                            </celldesigner:modification>
+                        </celldesigner:listOfModification>
+                    </celldesigner:extension>
+                    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+                             xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/"
+                             xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#"
+                             xmlns:bqbiol="http://biomodels.net/biology-qualifiers/"
+                             xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                        <rdf:Description rdf:about="#COPASI18">
+                            <bqbiol:is>
+                                <rdf:Bag>
+                                    <rdf:li rdf:resource="http://identifiers.org/ncit/C16702"/>
+                                </rdf:Bag>
+                            </bqbiol:is>
+                        </rdf:Description>
+
+
+                    </rdf:RDF>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:CopasiMT="http://www.copasi.org/RDF/MiriamTerms#"
+                                 xmlns:dcterms="http://purl.org/dc/terms/"
+                                 xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI18">
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2019-12-04T15:20:16Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                                <CopasiMT:is rdf:resource="urn:miriam:ncit:C16702"/>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+                <listOfReactants>
+                    <speciesReference species="s6" stoichiometry="1"/>
+                </listOfReactants>
+                <listOfProducts>
+                    <speciesReference species="s5" stoichiometry="1"/>
+                </listOfProducts>
+                <listOfModifiers>
+                    <modifierSpeciesReference species="s8"/>
+                    <modifierSpeciesReference species="s7"/>
+                </listOfModifiers>
+                <kineticLaw>
+                    <math xmlns="http://www.w3.org/1998/Math/MathML">
+                        <apply>
+                            <times/>
+                            <ci>default</ci>
+                            <apply>
+                                <ci>Function_for_re5</ci>
+                                <ci>KmGAPGDI</ci>
+                                <ci>KmGAPRho</ci>
+                                <ci>default</ci>
+                                <ci>kcatGAP</ci>
+                                <ci>s6</ci>
+                                <ci>s7</ci>
+                                <ci>s8</ci>
+                            </apply>
+                        </apply>
+                    </math>
+                    <listOfParameters>
+                        <parameter id="KmGAPGDI" name="KmGAPGDI" value="0.1"/>
+                        <parameter id="KmGAPRho" name="KmGAPRho" value="4.48"/>
+                        <parameter id="kcatGAP" name="kcatGAP" value="95.9"/>
+                    </listOfParameters>
+                </kineticLaw>
+            </reaction>
+            <reaction id="re6" metaid="COPASI19" name="re6" reversible="true" sboTerm="SBO:0000177">
+                <annotation>
+                    <celldesigner:extension xmlns:celldesigner="http://www.sbml.org/2001/ns/celldesigner">
+                        <celldesigner:reactionType>HETERODIMER_ASSOCIATION</celldesigner:reactionType>
+                        <celldesigner:baseReactants>
+                            <celldesigner:baseReactant species="s5" alias="sa5">
+                                <celldesigner:linkAnchor position="E"/>
+                            </celldesigner:baseReactant>
+                            <celldesigner:baseReactant species="s7" alias="sa7">
+                                <celldesigner:linkAnchor position="W"/>
+                            </celldesigner:baseReactant>
+                        </celldesigner:baseReactants>
+                        <celldesigner:baseProducts>
+                            <celldesigner:baseProduct species="s10" alias="csa1">
+                                <celldesigner:linkAnchor position="N"/>
+                            </celldesigner:baseProduct>
+                        </celldesigner:baseProducts>
+                        <celldesigner:connectScheme connectPolicy="direct">
+                            <celldesigner:listOfLineDirection>
+                                <celldesigner:lineDirection arm="0" index="0" value="unknown"/>
+                                <celldesigner:lineDirection arm="1" index="0" value="unknown"/>
+                                <celldesigner:lineDirection arm="2" index="0" value="unknown"/>
+                            </celldesigner:listOfLineDirection>
+                        </celldesigner:connectScheme>
+                        <celldesigner:editPoints num0="0" num1="0" num2="0" tShapeIndex="0">
+                            0.48669527896995757,0.01036269430051684
+                        </celldesigner:editPoints>
+                        <celldesigner:line width="1.0" color="ff000000"/>
+                    </celldesigner:extension>
+                    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+                             xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/"
+                             xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#"
+                             xmlns:bqbiol="http://biomodels.net/biology-qualifiers/"
+                             xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                        <rdf:Description rdf:about="#COPASI19">
+                            <bqbiol:is>
+                                <rdf:Bag>
+                                    <rdf:li rdf:resource="http://identifiers.org/sbo/SBO:0000177"/>
+                                </rdf:Bag>
+                            </bqbiol:is>
+                        </rdf:Description>
+
+
+                    </rdf:RDF>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:CopasiMT="http://www.copasi.org/RDF/MiriamTerms#"
+                                 xmlns:dcterms="http://purl.org/dc/terms/"
+                                 xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI19">
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2019-12-04T15:22:32Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                                <CopasiMT:is rdf:resource="urn:miriam:sbo:SBO:0000177"/>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+                <listOfReactants>
+                    <speciesReference species="s5" stoichiometry="1"/>
+                    <speciesReference species="s7" stoichiometry="1"/>
+                </listOfReactants>
+                <listOfProducts>
+                    <speciesReference species="s10" stoichiometry="1"/>
+                </listOfProducts>
+                <kineticLaw>
+                    <math xmlns="http://www.w3.org/1998/Math/MathML">
+                        <apply>
+                            <times/>
+                            <ci>default</ci>
+                            <apply>
+                                <ci>Function_for_re6</ci>
+                                <ci>default</ci>
+                                <ci>k4</ci>
+                                <ci>k5</ci>
+                                <ci>s10</ci>
+                                <ci>s5</ci>
+                                <ci>s7</ci>
+                            </apply>
+                        </apply>
+                    </math>
+                    <listOfParameters>
+                        <parameter id="k4" name="k4" value="0.5"/>
+                        <parameter id="k5" name="k5" value="0.05"/>
+                    </listOfParameters>
+                </kineticLaw>
+            </reaction>
+            <reaction id="re7" metaid="COPASI20" name="re7" reversible="true" sboTerm="SBO:0000177">
+                <annotation>
+                    <celldesigner:extension xmlns:celldesigner="http://www.sbml.org/2001/ns/celldesigner">
+                        <celldesigner:reactionType>HETERODIMER_ASSOCIATION</celldesigner:reactionType>
+                        <celldesigner:baseReactants>
+                            <celldesigner:baseReactant species="s7" alias="sa7">
+                                <celldesigner:linkAnchor position="E"/>
+                            </celldesigner:baseReactant>
+                            <celldesigner:baseReactant species="s6" alias="sa6">
+                                <celldesigner:linkAnchor position="W"/>
+                            </celldesigner:baseReactant>
+                        </celldesigner:baseReactants>
+                        <celldesigner:baseProducts>
+                            <celldesigner:baseProduct species="s13" alias="csa2">
+                                <celldesigner:linkAnchor position="S"/>
+                            </celldesigner:baseProduct>
+                        </celldesigner:baseProducts>
+                        <celldesigner:connectScheme connectPolicy="direct">
+                            <celldesigner:listOfLineDirection>
+                                <celldesigner:lineDirection arm="0" index="0" value="unknown"/>
+                                <celldesigner:lineDirection arm="1" index="0" value="unknown"/>
+                                <celldesigner:lineDirection arm="2" index="0" value="unknown"/>
+                            </celldesigner:listOfLineDirection>
+                        </celldesigner:connectScheme>
+                        <celldesigner:editPoints num0="0" num1="0" num2="0" tShapeIndex="0">0.517094017094017,0.0
+                        </celldesigner:editPoints>
+                        <celldesigner:line width="1.0" color="ff000000"/>
+                    </celldesigner:extension>
+                    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+                             xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/"
+                             xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#"
+                             xmlns:bqbiol="http://biomodels.net/biology-qualifiers/"
+                             xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                        <rdf:Description rdf:about="#COPASI20">
+                            <bqbiol:is>
+                                <rdf:Bag>
+                                    <rdf:li rdf:resource="http://identifiers.org/sbo/SBO:0000177"/>
+                                </rdf:Bag>
+                            </bqbiol:is>
+                        </rdf:Description>
+
+
+                    </rdf:RDF>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:CopasiMT="http://www.copasi.org/RDF/MiriamTerms#"
+                                 xmlns:dcterms="http://purl.org/dc/terms/"
+                                 xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI20">
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2019-12-04T15:22:33Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                                <CopasiMT:is rdf:resource="urn:miriam:sbo:SBO:0000177"/>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+                <listOfReactants>
+                    <speciesReference species="s7" stoichiometry="1"/>
+                    <speciesReference species="s6" stoichiometry="1"/>
+                </listOfReactants>
+                <listOfProducts>
+                    <speciesReference species="s13" stoichiometry="1"/>
+                </listOfProducts>
+                <kineticLaw>
+                    <math xmlns="http://www.w3.org/1998/Math/MathML">
+                        <apply>
+                            <times/>
+                            <ci>default</ci>
+                            <apply>
+                                <ci>Function_for_re7</ci>
+                                <ci>default</ci>
+                                <ci>k6</ci>
+                                <ci>k7</ci>
+                                <ci>s13</ci>
+                                <ci>s6</ci>
+                                <ci>s7</ci>
+                            </apply>
+                        </apply>
+                    </math>
+                    <listOfParameters>
+                        <parameter id="k6" name="k6" value="0.5"/>
+                        <parameter id="k7" name="k7" value="0.05"/>
+                    </listOfParameters>
+                </kineticLaw>
+            </reaction>
+            <reaction id="re8" metaid="COPASI21" name="re8" reversible="true" sboTerm="SBO:0000177">
+                <annotation>
+                    <celldesigner:extension xmlns:celldesigner="http://www.sbml.org/2001/ns/celldesigner">
+                        <celldesigner:reactionType>HETERODIMER_ASSOCIATION</celldesigner:reactionType>
+                        <celldesigner:baseReactants>
+                            <celldesigner:baseReactant species="s6" alias="sa6">
+                                <celldesigner:linkAnchor position="E"/>
+                            </celldesigner:baseReactant>
+                            <celldesigner:baseReactant species="s9" alias="sa9">
+                                <celldesigner:linkAnchor position="W"/>
+                            </celldesigner:baseReactant>
+                        </celldesigner:baseReactants>
+                        <celldesigner:baseProducts>
+                            <celldesigner:baseProduct species="s16" alias="csa3">
+                                <celldesigner:linkAnchor position="N"/>
+                            </celldesigner:baseProduct>
+                        </celldesigner:baseProducts>
+                        <celldesigner:connectScheme connectPolicy="direct">
+                            <celldesigner:listOfLineDirection>
+                                <celldesigner:lineDirection arm="0" index="0" value="unknown"/>
+                                <celldesigner:lineDirection arm="1" index="0" value="unknown"/>
+                                <celldesigner:lineDirection arm="2" index="0" value="unknown"/>
+                            </celldesigner:listOfLineDirection>
+                        </celldesigner:connectScheme>
+                        <celldesigner:editPoints num0="0" num1="0" num2="0" tShapeIndex="0">0.5201026518391789,0.0
+                        </celldesigner:editPoints>
+                        <celldesigner:line width="1.0" color="ff000000"/>
+                    </celldesigner:extension>
+                    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+                             xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/"
+                             xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#"
+                             xmlns:bqbiol="http://biomodels.net/biology-qualifiers/"
+                             xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                        <rdf:Description rdf:about="#COPASI21">
+                            <bqbiol:is>
+                                <rdf:Bag>
+                                    <rdf:li rdf:resource="http://identifiers.org/sbo/SBO:0000177"/>
+                                </rdf:Bag>
+                            </bqbiol:is>
+                        </rdf:Description>
+
+
+                    </rdf:RDF>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:CopasiMT="http://www.copasi.org/RDF/MiriamTerms#"
+                                 xmlns:dcterms="http://purl.org/dc/terms/"
+                                 xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI21">
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2019-12-04T15:22:33Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                                <CopasiMT:is rdf:resource="urn:miriam:sbo:SBO:0000177"/>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+                <listOfReactants>
+                    <speciesReference species="s6" stoichiometry="1"/>
+                    <speciesReference species="s9" stoichiometry="1"/>
+                </listOfReactants>
+                <listOfProducts>
+                    <speciesReference species="s16" stoichiometry="1"/>
+                </listOfProducts>
+                <kineticLaw>
+                    <math xmlns="http://www.w3.org/1998/Math/MathML">
+                        <apply>
+                            <times/>
+                            <ci>default</ci>
+                            <apply>
+                                <ci>Function_for_re8</ci>
+                                <ci>default</ci>
+                                <ci>k8</ci>
+                                <ci>k9</ci>
+                                <ci>s16</ci>
+                                <ci>s6</ci>
+                                <ci>s9</ci>
+                            </apply>
+                        </apply>
+                    </math>
+                    <listOfParameters>
+                        <parameter id="k8" name="k8" value="28.2"/>
+                        <parameter id="k9" name="k9" value="0.18"/>
+                    </listOfParameters>
+                </kineticLaw>
+            </reaction>
+        </listOfReactions>
+    </model>
+</sbml>
