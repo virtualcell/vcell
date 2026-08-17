@@ -16,6 +16,47 @@ followed by flat Keep-a-Changelog categories. API consumers should scan
 
 _(Release-manager scratchpad. Populated at release-cut time.)_
 
+## [8.0.25.01] - 2026-08-17
+
+**Highlights.** SBML models exported by COPASI import again. A number of published BioModels
+carry an annotation block that VCell's SBML reader assumed could only hold one kind of element,
+and the import died outright on the ones that do not. Also in this build: asking the legacy API
+for the results of a simulation that never produced any now answers "not found" instead of
+reporting a server error.
+
+### Fixed
+- SBML documents produced by COPASI no longer fail to import with
+  `ClassCastException: class org.sbml.jsbml.xml.XMLNode cannot be cast to class
+  org.sbml.jsbml.Annotation`. JSBML's reader assumed the element left on its stack at the end of
+  an annotation was always an `Annotation` and cast it without checking; some COPASI exports put
+  an `XMLNode` there. The SBML validator considers these documents well formed, so the assumption
+  was the bug, not the file. Twelve archives in the nightly BioModels suite fail on exactly this.
+  A guard for it was written in March 2025 and merged to our JSBML fork, but to a branch the
+  published artifacts were never built from, so no VCell release ever contained it — this is the
+  first one that does. (#1974, issue #1461)
+- Asking the legacy API (`/api/v0/`) for the dataset metadata of a simulation that has no results
+  returns 404 rather than 500. Nothing was broken, but a routine question — does this simulation
+  have data? — was answered as a server fault, which put a stack trace in the api log every time
+  anyone asked about a simulation that had never run. (#1968, issue #1967)
+- Internal: JSBML's parser registry could not be initialized from two threads at once. Its
+  `ServiceLoader` iterators are static and single-use, and `getManager()` was not synchronized, so
+  two callers could drain the same iterator and one would fail. It broke CI twice on one commit, in
+  two unrelated-looking tests; a server importing two documents at once could have hit the same
+  thing. Fixed in our JSBML fork. (#1972, #1973, issue #1971)
+
+### Changed
+- The `api` service no longer logs `Couldn't find any helper support the HTTP_Bearer challenge
+  scheme.` once per authenticated request — 563 of the 592 warnings in a half-hour sample of the
+  production log. Restlet emits it because the helper for that scheme ships in an extension we do
+  not depend on and do not need; authentication reads the token directly and works. Filtered by
+  message rather than level, because Restlet logs it through the same logger name VCell's own
+  application messages use. (#1970, issue #1969)
+
+### Notes for API consumers
+`GET /api/v0/simdata/{user}/{simId}` now returns **404** where it previously returned **500** for a
+simulation with no results. Clients that treated 500 as "no data" should treat 404 that way
+instead; a 500 from this endpoint now means a genuine fault.
+
 ## [8.0.24.01] - 2026-08-15
 
 **Highlights.** Nothing changes for anyone using VCell. One deployment per database now owns the
