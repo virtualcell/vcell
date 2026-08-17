@@ -104,7 +104,7 @@ TAG_AND_PUSH=$(gh run view "$RUN" --repo "$REPO" --json jobs \
 echo "tag-and-push=${TAG_AND_PUSH:-ABSENT}"
 if [ "$TAG_AND_PUSH" != "success" ]; then
 	gh run view "$RUN" --repo "$REPO" --json jobs \
-		-q '.jobs[] | select(.conclusion!="success" and .conclusion!=null) | "  FAILED: \(.name)"'
+		-q '.jobs[] | select(.conclusion!="success" and .conclusion!="skipped" and .conclusion!=null) | "  FAILED: \(.name)"'
 	echo "NOT deploying: without tag-and-push the $VERSION image tags may not exist." >&2
 	echo "Recover with: gh run rerun $RUN --failed" >&2
 	exit 1
@@ -128,7 +128,7 @@ for _ in $(seq 1 200); do
 done
 echo "site_deploy: $STATUS"
 gh run view "$DEPLOY" --repo "$REPO" --json jobs \
-	-q '.jobs[] | select(.conclusion!="success" and .conclusion!=null) | "  FAILED: \(.name)"'
+	-q '.jobs[] | select(.conclusion!="success" and .conclusion!="skipped" and .conclusion!=null) | "  FAILED: \(.name)"'
 
 case "$STATUS" in
 	completed/success)
