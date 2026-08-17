@@ -2478,12 +2478,68 @@ public class SBMLImporter {
         }
         ExpressionMathMLParser exprMathMLParser = new ExpressionMathMLParser(lambdaFunctions);
         try {
-            return exprMathMLParser.fromMathML(mathMLStr, TIME_SYMBOL_OVERRIDE);
+            Expression expression = exprMathMLParser.fromMathML(mathMLStr, TIME_SYMBOL_OVERRIDE);
+            checkForReactionRateReferences(expression, math, vcLogger);
+            return expression;
         } catch(ExpressionException e){
             String msg = "error parsing expression '" + mathMLStr + "': " + e.getMessage();
             logger.error(msg, e);
             vcLogger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.UnsupportedConstruct, msg);
             return new Expression(0.0);
+        }
+    }
+
+    /**
+     * Reports a reference to a reaction's rate, which SBML allows and VCell has no symbol for.
+     *
+     * <p>In SBML a {@code <ci>} may name a reaction, and doing so denotes that reaction's rate
+     * (SBML L3V2 §3.4.3). VCell has no symbol for a reaction rate, so such a reference survives
+     * translation as an ordinary name and nothing notices until the finished BioModel binds its
+     * expressions -- surfacing as
+     * {@code Error binding global parameter 'rateOf_re15' to model: 're15' is either not found in
+     * your model or is not allowed to be used in the current context}. That message names the
+     * reaction as if it were a typo, says nothing about rates, and points at the parameter rather
+     * than at the construct that is unsupported. It is a poor report of a real limitation.
+     *
+     * <p>Reported here instead, where the SBML is still in hand and the reaction can be named.
+     * The import fails at HighPriority rather than continuing, because the alternative is a model
+     * that silently omits the dependency.
+     *
+     * <p>Note this is the plain-{@code <ci>} form, not the {@code rateOf} csymbol. BIOMD0000000961
+     * -- the model that prompted this -- is a COPASI export whose parameters are *named*
+     * {@code rateOf_re15}, while the actual construct is {@code <ci>re15</ci>}; it contains no
+     * {@code rateOf} csymbol at all. Matching on the csymbol would not have caught it.
+     */
+    private static void checkForReactionRateReferences(Expression expression, ASTNode math, VCLogger vcLogger) throws Exception{
+        if(expression == null || math == null || math.getParentSBMLObject() == null){
+            return;
+        }
+        org.sbml.jsbml.Model sbmlModel = math.getParentSBMLObject().getModel();
+        if(sbmlModel == null){
+            return;
+        }
+        String[] symbols = expression.getSymbols();
+        if(symbols == null){
+            return;
+        }
+        // A kinetic law's local parameters are a separate namespace and may shadow a reaction sid,
+        // in which case the name is the local parameter and no rate is being referenced.
+        final KineticLaw containingKineticLaw = (math.getParentSBMLObject() instanceof KineticLaw)
+                ? (KineticLaw) math.getParentSBMLObject() : null;
+        for(String symbol : symbols){
+            if(containingKineticLaw != null && containingKineticLaw.getLocalParameter(symbol) != null){
+                continue;
+            }
+            if(sbmlModel.getReaction(symbol) != null){
+                // The verdict leads, because the expression can be hundreds of characters and
+                // consumers of this message truncate it (BMDB_SBMLImportTest keeps 180 chars).
+                String msg = "Reaction rate reference: reaction '" + symbol + "' is named in an" +
+                        " expression, which in SBML denotes that reaction's rate. Reaction rates cannot" +
+                        " be referenced in expressions in VCell at this time. Expression: '" +
+                        expression.infix() + "'";
+                logger.error(msg);
+                vcLogger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.UnsupportedConstruct, msg);
+            }
         }
     }
 

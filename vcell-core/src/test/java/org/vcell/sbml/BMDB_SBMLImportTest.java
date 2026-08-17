@@ -166,7 +166,9 @@ public class BMDB_SBMLImportTest {
 		faults.put(589, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Metabolite_17' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that yo
 		faults.put(592, SBMLTestSuiteTest.FAULT.QUAL_PACKAGE);  // cause: Unable to import the SBML file. The model includes elements of SBML extension 'qual', which is required for simulating the model but is not supported.
 		faults.put(593, SBMLTestSuiteTest.FAULT.QUAL_PACKAGE);  // cause: Unable to import the SBML file. The model includes elements of SBML extension 'qual', which is required for simulating the model but is not supported.
-		faults.put(596, SBMLTestSuiteTest.FAULT.UNCATEGORIZED);  // cause:  JSBML Error class org.sbml.jsbml.xml.XMLNode cannot be cast to class org.sbml.jsbml.Annotation
+		// 596 imported cleanly once the nested-annotation ClassCastException was fixed in jsbml
+		// 1.6.1-VCELL-4 (issue #1461); its entry read "JSBML Error class org.sbml.jsbml.xml.XMLNode
+		// cannot be cast to class org.sbml.jsbml.Annotation".
 		faults.put(599, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Metabolite_1' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that you
 		faults.put(608, SBMLTestSuiteTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('0.5' for reactant 'x_18' in reaction 'R_18') or stoichiometryMath not handled in VCell at this time.
 		faults.put(613, SBMLTestSuiteTest.FAULT.COMP_PACKAGE);  // cause: Unable to import the SBML file. The model includes elements of SBML extension 'comp', which is required for simulating the model but is not supported.
@@ -177,7 +179,8 @@ public class BMDB_SBMLImportTest {
 		faults.put(705, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Metabolite_21' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that yo
 		faults.put(706, SBMLTestSuiteTest.FAULT.UNCATEGORIZED);  // cause:  found more than one SBase match for sid=v, matched [org.vcell.sbml.vcell.SBMLSymbolMapping$SBaseWrapper@67cc48df, org.vcell.sbml.vcell.SBMLSymbolMapping$SBaseWrapper@483ac21f]
 		faults.put(710, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Metabolite_0_0' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that y
-		faults.put(731, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Treg_origin_fraction_CD4' to model: 'func_TRegs_Production_from_CD4'		faults.put(739, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Metabolite_19' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that yo
+		faults.put(731, SBMLTestSuiteTest.FAULT.REACTION_RATE_IN_EXPRESSION);  // cause:  UnsupportedConstruct: Reaction rate reference: reaction 'func_TRegs_Production_from_CD4' is named in an expression, which in SBML denotes that reaction's rate.
+		faults.put(739, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Metabolite_19' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that yo
 		faults.put(764, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Metabolite_3' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that you
 		faults.put(775, SBMLTestSuiteTest.FAULT.MATHML_PARSING);  // cause:  Error adding Lambda function UnsupportedConstruct: error parsing expression ' <math><notanumber/></math>': node type 'notanumber' not supported yet
 		faults.put(804, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Metabolite_1' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that you
@@ -213,7 +216,7 @@ public class BMDB_SBMLImportTest {
 
 	public static Collection<Integer> testCases() {
 		return Arrays.stream(BMDB_SBML_Files.getBiomodelDB_curatedModelNumbers()).boxed()
-				.filter(n -> !slowModelSet().contains(n) && n==264).collect(Collectors.toList());
+				.filter(n -> !slowModelSet().contains(n)).collect(Collectors.toList());
 	}
 
 	@ParameterizedTest
@@ -265,6 +268,8 @@ public class BMDB_SBMLImportTest {
 				fault = SBMLTestSuiteTest.FAULT.NONINTEGER_STOICH;
 			}else if (cause.contains("must be compatible with mole or molecules")){
 				fault = SBMLTestSuiteTest.FAULT.INCONSISTENT_UNIT_SYSTEM;
+			}else if (cause.contains("Reaction rate reference:")){
+				fault = SBMLTestSuiteTest.FAULT.REACTION_RATE_IN_EXPRESSION;
 			}else if (cause.contains("is either not found in your model")){
 				fault = SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION;
 			}else if (cause.contains("SBML extension 'qual'")){
