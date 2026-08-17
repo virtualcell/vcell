@@ -18,19 +18,22 @@ _(Release-manager scratchpad. Populated at release-cut time.)_
 
 ## [8.0.25.01] - 2026-08-17
 
-**Highlights.** SBML models exported by COPASI import again. A number of published BioModels
-carry an annotation block that VCell's SBML reader assumed could only hold one kind of element,
-and the import died outright on the ones that do not. Also in this build: asking the legacy API
-for the results of a simulation that never produced any now answers "not found" instead of
-reporting a server error.
+**Highlights.** SBML models exported by COPASI import again. Where one annotation element is
+nested inside another — which COPASI produces, and which a number of published BioModels contain
+— the import used to fail outright. Also in this build: asking the legacy API for the results of
+a simulation that never produced any now answers "not found" instead of reporting a server error.
 
 ### Fixed
 - SBML documents produced by COPASI no longer fail to import with
   `ClassCastException: class org.sbml.jsbml.xml.XMLNode cannot be cast to class
-  org.sbml.jsbml.Annotation`. JSBML's reader assumed the element left on its stack at the end of
-  an annotation was always an `Annotation` and cast it without checking; some COPASI exports put
-  an `XMLNode` there. The SBML validator considers these documents well formed, so the assumption
-  was the bug, not the file. Twelve archives in the nightly BioModels suite fail on exactly this.
+  org.sbml.jsbml.Annotation`. Closing an annotation, JSBML's reader assumed the element on its
+  stack was always an `Annotation` and cast it without checking. For an annotation nested inside
+  another annotation it is an `XMLNode`, and the import died. The SBML validator considers these
+  documents well formed, so the assumption was the bug, not the file. Nothing is dropped from the
+  model: the cast fed the RDF annotation post-processing for the nested element — work that could
+  not have run anyway, since the object it needed is what was missing — and enclosing annotations
+  are processed exactly as before. In the test model the nested elements are empty, sitting inside
+  a layout annotation. Twelve archives in the nightly BioModels suite fail on exactly this.
   A guard for it was written in March 2025 and merged to our JSBML fork, but to a branch the
   published artifacts were never built from, so no VCell release ever contained it — this is the
   first one that does. (#1974, issue #1461)
