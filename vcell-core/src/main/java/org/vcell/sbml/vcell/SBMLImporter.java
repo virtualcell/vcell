@@ -980,7 +980,33 @@ public class SBMLImporter {
                     if(namescope instanceof SpeciesContextSpecNameScope && vcellSymbolTableEntry instanceof StructureMappingParameter){
                         vcellSymbolTableEntry = ((StructureMappingParameter) vcellSymbolTableEntry).getStructure().getStructureSize();
                     }
-                    adjustedExpr.substituteInPlace(new Expression(sbmlSymbol), new Expression(vcellSymbolTableEntry, namescope));
+                    if(vcellSymbolTableEntry instanceof StructureMappingParameter){
+                        // A compartment's size has two representations: StructureMapping's Size
+                        // parameter, which belongs to the application, and Structure.StructureSize,
+                        // a ModelQuantity that belongs to the physiology and that ModelNameScope
+                        // names directly. Anything outside the application must use the latter --
+                        // the swap above already does this for species initial conditions, and
+                        // without it a global parameter referencing a compartment size resolved to
+                        // UNRESOLVED.Size and failed at binding (issue #803).
+                        vcellSymbolTableEntry = ((StructureMappingParameter) vcellSymbolTableEntry).getStructure().getStructureSize();
+                    }
+                    Expression vcellSymbolExpr = new Expression(vcellSymbolTableEntry, namescope);
+                    if(vcellSymbolExpr.infix().contains(AbstractNameScope.UNRESOLVED_PREFIX)){
+                        Expression hoisted = hoistInitialConditionToGlobalParameter(vcellSymbolTableEntry);
+                        if(hoisted != null){
+                            vcellSymbolExpr = hoisted;
+                        } else {
+                            // Both known cases are handled above -- initial conditions by hoisting,
+                            // compartment sizes by using Structure.StructureSize -- so reaching here
+                            // means a scope mismatch we have not seen. Left to fail at expression
+                            // binding, which is correct, but recorded here because the eventual
+                            // message names only the UNRESOLVED marker and not what produced it.
+                            logger.error("no model-scope symbol for '" + sbmlSymbol + "' ("
+                                    + vcellSymbolTableEntry.getClass().getSimpleName() + " '"
+                                    + vcellSymbolTableEntry.getName() + "'); expression will fail to bind");
+                        }
+                    }
+                    adjustedExpr.substituteInPlace(new Expression(sbmlSymbol), vcellSymbolExpr);
                 }
             }
         }
@@ -995,6 +1021,98 @@ public class SBMLImporter {
         // adjustedExpr = adjustTimeConvFactor(model, adjustedExpr);
 
         return adjustedExpr;
+    }
+
+    /**
+     * Moves a species' initial condition into a global parameter, so that a Model-scoped expression
+     * can name it, and returns the reference to use. Returns null if that is not possible.
+     *
+     * <p>SBML has one flat namespace; VCell separates physiology from application. An SBML global
+     * parameter becomes a Model parameter, while a species' initial concentration is a
+     * {@code SpeciesContextSpec} parameter under the SimulationContext. The two name scopes are
+     * unrelated roots -- {@code ModelNameScope.getParent()} and
+     * {@code SimulationContextNameScope.getParent()} both return null and neither is the other's
+     * peer -- so a Model parameter cannot name an initial concentration and
+     * {@code getRelativeScopePrefix} yields {@link AbstractNameScope#UNRESOLVED_PREFIX}. That is why
+     * 31 curated BioModels failed to import with 'UNRESOLVED.initConc' (issue #803).
+     *
+     * <p>Rather than dropping the dependency, this inverts it. Given SBML {@code beta = c1/(N1*s4)}
+     * where {@code s4} is a species:
+     *
+     * <pre>
+     *   before:  s4.initConc = 250000            beta = c1/(N1 * UNRESOLVED.initConc)   [broken]
+     *   after:   s4_initConc = 250000  (global)  s4.initConc = s4_initConc
+     *                                            beta = c1/(N1 * s4_initConc)           [exact]
+     * </pre>
+     *
+     * <p>Nothing is lost. The relationship stays symbolic, so scanning {@code s4_initConc} moves the
+     * initial condition and {@code beta} together -- which is what the SBML meant. Everything stays a
+     * global parameter, which matters because global parameters already round-trip through
+     * SBMLExporter, whereas {@code SimulationContextParameter} does not (#1984).
+     *
+     * <p>The reference is written as a <b>plain name</b>, deliberately. The species' initial
+     * condition resolves it through {@code SimulationContext.getLocalEntry()}, which falls through to
+     * {@code getModel().getLocalEntry()}; writing it as {@code new Expression(ste, namescope)} would
+     * ask the scope machinery for a prefix and get {@code UNRESOLVED.} straight back.
+     *
+     * <p>Compartment sizes are deliberately NOT handled the same way. A {@code StructureMapping} size
+     * must remain a constant -- {@code StructureSizeSolver}, {@code GeometryContext} and
+     * {@code SBMLExporter} all call {@code evaluateConstant()} on it -- so hoisting a size into a
+     * symbol would break the size solver and export. Those models keep failing, with an explanation.
+     */
+    private static Expression hoistInitialConditionToGlobalParameter(SymbolTableEntry ste){
+        if(!(ste instanceof SpeciesContextSpecParameter)){
+            return null;    // compartment sizes and anything else: see the note above
+        }
+        SpeciesContextSpecParameter initialConditionParam = (SpeciesContextSpecParameter) ste;
+        SpeciesContext speciesContext = initialConditionParam.getSpeciesContext();
+        SpeciesContextSpec speciesContextSpec = initialConditionParam.getSpeciesContextSpec();
+        if(speciesContext == null || speciesContextSpec == null || speciesContextSpec.getSimulationContext() == null){
+            return null;
+        }
+        Model vcModel = speciesContextSpec.getSimulationContext().getModel();
+        if(vcModel == null){
+            return null;
+        }
+        Expression initialConditionExpr = initialConditionParam.getExpression();
+        if(initialConditionExpr == null){
+            return null;
+        }
+        try {
+            // Already hoisted for an earlier reference: reuse it, so N parameters depending on the
+            // same species produce one global parameter rather than N.
+            if(initialConditionExpr.getSymbols() != null && initialConditionExpr.getSymbols().length == 1){
+                ModelParameter existing = vcModel.getModelParameter(initialConditionExpr.getSymbols()[0]);
+                if(existing != null && existing.getName().startsWith(speciesContext.getName() + HOISTED_INITIAL_SUFFIX)){
+                    return new Expression(existing.getName());
+                }
+            }
+            String name = uniqueGlobalParameterName(vcModel, speciesContext.getName() + HOISTED_INITIAL_SUFFIX);
+            ModelParameter hoisted = vcModel.new ModelParameter(name, new Expression(initialConditionExpr),
+                    Model.ROLE_UserDefined, initialConditionParam.getUnitDefinition());
+            hoisted.setDescription("initial condition of species '" + speciesContext.getName()
+                    + "', made a global parameter so it can be referenced from the physiology (issue #803)");
+            vcModel.addModelParameter(hoisted);
+            // plain name on purpose -- see the note above
+            initialConditionParam.setExpression(new Expression(name));
+            logger.info("hoisted initial condition of '" + speciesContext.getName() + "' to global parameter '"
+                    + name + "' so it can be named from the physiology");
+            return new Expression(name);
+        } catch(Exception e){
+            logger.error("could not hoist initial condition of '" + speciesContext.getName() + "': " + e.getMessage(), e);
+            return null;
+        }
+    }
+
+    private static final String HOISTED_INITIAL_SUFFIX = "_initConc";
+
+    private static String uniqueGlobalParameterName(Model vcModel, String preferred){
+        String candidate = TokenMangler.fixTokenStrict(preferred);
+        int suffix = 0;
+        while(vcModel.getModelParameter(candidate) != null || vcModel.getLocalEntry(candidate) != null){
+            candidate = TokenMangler.fixTokenStrict(preferred) + "_" + suffix++;
+        }
+        return candidate;
     }
 
     private static SBase findSBase(org.sbml.jsbml.Model sbmlModel, String sbmlSid){

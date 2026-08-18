@@ -26,6 +26,14 @@ import java.util.Map;
 public abstract class AbstractNameScope implements NameScope, java.io.Serializable {
 
 	private final static Logger logger = LogManager.getLogger(AbstractNameScope.class);
+
+	/**
+	 * Prefix returned by {@link #getRelativeScopePrefix} when two scopes are unrelated, so a symbol
+	 * in one cannot be named from the other. It is a marker, not a resolvable name: an expression
+	 * carrying it fails later at binding with "'UNRESOLVED.x' is either not found in your model".
+	 * Callers that can do something better on that path test for it.
+	 */
+	public static final String UNRESOLVED_PREFIX = "UNRESOLVED.";
 /**
  * AbstractNameScope constructor comment.
  */
@@ -274,7 +282,7 @@ public String getRelativeScopePrefix(NameScope referenceNameScope) {
 		return "";
 	}else{
 		logger.warn("AbstractNameScope.getRelativeScopePrefix() scopes '"+name+"' and '"+referenceNameScope.getName()+"' are unrelated");
-		return "UNRESOLVED.";
+		return UNRESOLVED_PREFIX;
 		//throw new RuntimeException("scopes are unrelated");
 	}
 }
