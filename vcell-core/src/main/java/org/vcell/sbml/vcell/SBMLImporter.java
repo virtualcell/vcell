@@ -980,11 +980,30 @@ public class SBMLImporter {
                     if(namescope instanceof SpeciesContextSpecNameScope && vcellSymbolTableEntry instanceof StructureMappingParameter){
                         vcellSymbolTableEntry = ((StructureMappingParameter) vcellSymbolTableEntry).getStructure().getStructureSize();
                     }
+                    if(vcellSymbolTableEntry instanceof StructureMappingParameter){
+                        // A compartment's size has two representations: StructureMapping's Size
+                        // parameter, which belongs to the application, and Structure.StructureSize,
+                        // a ModelQuantity that belongs to the physiology and that ModelNameScope
+                        // names directly. Anything outside the application must use the latter --
+                        // the swap above already does this for species initial conditions, and
+                        // without it a global parameter referencing a compartment size resolved to
+                        // UNRESOLVED.Size and failed at binding (issue #803).
+                        vcellSymbolTableEntry = ((StructureMappingParameter) vcellSymbolTableEntry).getStructure().getStructureSize();
+                    }
                     Expression vcellSymbolExpr = new Expression(vcellSymbolTableEntry, namescope);
                     if(vcellSymbolExpr.infix().contains(AbstractNameScope.UNRESOLVED_PREFIX)){
                         Expression hoisted = hoistInitialConditionToGlobalParameter(vcellSymbolTableEntry);
                         if(hoisted != null){
                             vcellSymbolExpr = hoisted;
+                        } else {
+                            // Both known cases are handled above -- initial conditions by hoisting,
+                            // compartment sizes by using Structure.StructureSize -- so reaching here
+                            // means a scope mismatch we have not seen. Left to fail at expression
+                            // binding, which is correct, but recorded here because the eventual
+                            // message names only the UNRESOLVED marker and not what produced it.
+                            logger.error("no model-scope symbol for '" + sbmlSymbol + "' ("
+                                    + vcellSymbolTableEntry.getClass().getSimpleName() + " '"
+                                    + vcellSymbolTableEntry.getName() + "'); expression will fail to bind");
                         }
                     }
                     adjustedExpr.substituteInPlace(new Expression(sbmlSymbol), vcellSymbolExpr);
@@ -1096,30 +1115,6 @@ public class SBMLImporter {
         return candidate;
     }
 
-    /**
-     * Reports a reference that is in an unreachable scope and could not be inlined either, rather
-     * than letting {@code UNRESOLVED.} escape into the model and fail much later as
-     * "'UNRESOLVED.initConc' is either not found in your model" -- a message that names an internal
-     * marker and tells the user nothing. This is the residue of #803 that inlining cannot fix,
-     * typically because the referenced initial concentration is itself computed rather than literal.
-     */
-    private static void reportUnresolvedReferences(SymbolTableEntry target, Expression adjustedExpr, VCLogger vcLogger) throws Exception{
-        if(adjustedExpr == null || !adjustedExpr.infix().contains(AbstractNameScope.UNRESOLVED_PREFIX)){
-            return;
-        }
-        String msg = "'" + target.getName() + "' depends on a species' initial concentration or a" +
-                " compartment size, which in VCell belongs to the application rather than the" +
-                " physiology and cannot be referenced from here. Its value is not a constant, so it" +
-                " could not be substituted either. Unresolved expression: '" + adjustedExpr.infix() + "'";
-        logger.error(msg);
-        // Deliberately LowPriority. The caller wraps this in a broad catch(Exception) that only
-        // logs, so a HighPriority message -- which VCLogger implementations throw on -- would skip
-        // the setExpression() below and leave the parameter holding its default. The import would
-        // then appear to succeed with a quietly wrong value instead of failing. Reporting must not
-        // change control flow here; the import still fails afterwards at expression binding, which
-        // is the correct outcome, and this message explains why.
-        vcLogger.sendMessage(VCLogger.Priority.LowPriority, VCLogger.ErrorType.UnsupportedConstruct, msg);
-    }
     private static SBase findSBase(org.sbml.jsbml.Model sbmlModel, String sbmlSid){
         if(sbmlSid == null){
             throw new RuntimeException("sbmlSid cannot be null");
@@ -3213,7 +3208,6 @@ public class SBMLImporter {
             try {
                 if(initialAssignmentTargetSte.isExpressionEditable()){
                     Expression vcellExpr = adjustExpression(sbmlModel, sbmlExpr, initialAssignmentTargetSte.getNameScope(), sbmlSymbolMapping, SymbolContext.INITIAL);
-                    reportUnresolvedReferences(initialAssignmentTargetSte, vcellExpr, vcLogger);
                     initialAssignmentTargetSte.setExpression(vcellExpr);
                 }
             } catch(Exception e){
@@ -3233,7 +3227,6 @@ public class SBMLImporter {
             try {
                 if(assignmentRuleTargetSte.isExpressionEditable()){
                     Expression vcellExpr = adjustExpression(sbmlModel, sbmlExpr, assignmentRuleTargetSte.getNameScope(), sbmlSymbolMapping, SymbolContext.RUNTIME);
-                    reportUnresolvedReferences(assignmentRuleTargetSte, vcellExpr, vcLogger);
                     assignmentRuleTargetSte.setExpression(vcellExpr);
                 }
             } catch(Exception e){
