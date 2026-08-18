@@ -16,6 +16,49 @@ followed by flat Keep-a-Changelog categories. API consumers should scan
 
 _(Release-manager scratchpad. Populated at release-cut time.)_
 
+## [8.0.26.01] - 2026-08-18
+
+**Highlights.** More published models import. A parameter in an SBML model may depend on a
+species' starting amount or a compartment's size; VCell keeps those with the application rather
+than with the biology, so it had no way to express the dependency and abandoned the import.
+Thirty-one models in the curated BioModels collection failed for that reason, some since 2023.
+The relationship is now preserved rather than discarded, and eighteen of those models both
+import and run. Where a model uses something VCell genuinely cannot represent, the message now
+says which construct and where, instead of naming an internal placeholder.
+
+### Fixed
+- A parameter whose value depends on a species' initial concentration no longer fails to import
+  with `'UNRESOLVED.initConc' is either not found in your model`. The starting amount becomes a
+  model-wide parameter that both the species and the dependent parameter refer to, so the
+  relationship survives and changing it still moves both together. Nothing is frozen or
+  discarded. (#1985, issue #803)
+- The same failure for compartment sizes (`'UNRESOLVED.Size'`) is fixed a different way: a
+  compartment size already had a model-level representation, and expressions outside the
+  application now use it. (#1985, issue #803)
+- An SBML expression that refers to a reaction — which SBML defines as that reaction's rate, and
+  VCell has no equivalent for — now reports exactly that, naming the reaction. It previously
+  surfaced as `'re15' is either not found in your model`, which reads like a typo and mentions
+  neither rates nor the construct that is unsupported. Eight models in the nightly collection
+  were failing this way. (#1983)
+
+### Changed
+- The database service no longer writes a stack trace beside every cleanup SQL statement. The
+  stack was identical every time and identified nothing the message did not, while accounting
+  for about a quarter of that service's log. (#1988, issue #1987)
+
+### Added
+- Internal: the SBML import regression suite runs its full set of models again. A debug filter
+  committed in April 2025 had pinned it to a single model, so the other twenty-six had not been
+  exercised in sixteen months. Two stale entries in its fault table were corrected and one that
+  had been silently commented out was restored. (#1983)
+- Internal: the recorded results for the nightly BioModels collection were updated for the import
+  fixes above — eighteen archives moved from failing to passing. (#1982, #1986)
+- Internal: the release script no longer reports a deliberately skipped deploy job as a failure.
+  (#1977)
+
+### Notes for API consumers
+No API changes.
+
 ## [8.0.25.01] - 2026-08-17
 
 **Highlights.** SBML models exported by COPASI import again. Where one annotation element is
