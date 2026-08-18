@@ -1,6 +1,7 @@
 name: Regression
 
-# Heavy integration suites (MathGen/SBML/SEDML_*/BSTS). Deliberately NOT run on
+# Heavy integration suites (MathGen/SBML/SEDML_*/BSTS) plus the Oracle-dialect
+# check (Oracle_IT). Deliberately NOT run on
 # ordinary pushes - that is what keeps the fast lane (ci.yml) fast.
 #
 # Runs when:
@@ -51,6 +52,7 @@ on:
           - SEDML_SBML_IT
           - SEDML_VCML_IT
           - BSTS_IT
+          - Oracle_IT
       include-slow:
         description: 'Also run the slow cases excluded from the merge gate'
         type: boolean
@@ -98,6 +100,12 @@ jobs:
               "SEDML_VCML_IT": {"count": 2, "module": CORE},
               "SBML_IT":       {"count": 1, "module": CORE},
               "BSTS_IT":       {"count": 1, "module": "vcell-cli"},
+              # Not a model-suite sweep: one Oracle container proving the database
+              # cleanup sweep's SQL is accepted by the database it actually runs
+              # against in production. Its PostgreSQL twin is in the fast lane
+              # (vcell-rest), but Oracle needs its own ~2 GB image, so it is gated
+              # here rather than pulled on every push. See issue #1992.
+              "Oracle_IT":     {"count": 1, "module": "vcell-server"},
           }
           include = []
           for group, cfg in groups.items():
