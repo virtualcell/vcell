@@ -1061,9 +1061,11 @@ public class DBBackupAndClean {
 		try{
 			logStringBuffer.append(sql+";\n");
 			stmt = con.createStatement();
-			if (lg.isDebugEnabled()) {
-				lg.debug("executeUpdate() SQL: '" + sql + "'", new DbDriver.StackTraceGenerationException());
-			}
+			// No StackTraceGenerationException here: the call stack is invariant -- this is only ever
+			// reached from the cleanup thread through this method -- so it identified nothing the
+			// message and logger name do not, while accounting for about a quarter of the db
+			// container's log on production. See issue #1987.
+			lg.debug("executeUpdate() SQL: '{}'", sql);
 			int updateCount = stmt.executeUpdate(sql); // jcs: added logging
 			logStringBuffer.append("Update count=" + updateCount + "\n");
 			con.commit();
