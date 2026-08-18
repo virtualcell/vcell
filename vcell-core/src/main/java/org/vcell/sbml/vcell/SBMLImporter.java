@@ -956,18 +956,6 @@ public class SBMLImporter {
      */
     private static Expression adjustExpression(AbstractNamedSBase sbmlContainer, Expression sbmlExpr, NameScope namescope,
                                                SBMLSymbolMapping sbmlSymbolMapping, SymbolContext symbolContext) throws ExpressionException{
-        return adjustExpression(sbmlContainer, sbmlExpr, namescope, sbmlSymbolMapping, symbolContext, null);
-    }
-
-    /**
-     * @param hoistedInitialConditions if non-null, collects a note for each species initial condition
-     *                                 that had to be hoisted into a global parameter so this
-     *                                 expression could name it; see
-     *                                 {@link #hoistInitialConditionToGlobalParameter}.
-     */
-    private static Expression adjustExpression(AbstractNamedSBase sbmlContainer, Expression sbmlExpr, NameScope namescope,
-                                               SBMLSymbolMapping sbmlSymbolMapping, SymbolContext symbolContext,
-                                               List<String> hoistedInitialConditions) throws ExpressionException{
         String[] symbols = sbmlExpr.getSymbols();
         if(symbols == null || symbols.length == 0){
             return new Expression(sbmlExpr);
@@ -994,7 +982,7 @@ public class SBMLImporter {
                     }
                     Expression vcellSymbolExpr = new Expression(vcellSymbolTableEntry, namescope);
                     if(vcellSymbolExpr.infix().contains(AbstractNameScope.UNRESOLVED_PREFIX)){
-                        Expression hoisted = hoistInitialConditionToGlobalParameter(vcellSymbolTableEntry, hoistedInitialConditions);
+                        Expression hoisted = hoistInitialConditionToGlobalParameter(vcellSymbolTableEntry);
                         if(hoisted != null){
                             vcellSymbolExpr = hoisted;
                         }
@@ -1014,26 +1002,6 @@ public class SBMLImporter {
         // adjustedExpr = adjustTimeConvFactor(model, adjustedExpr);
 
         return adjustedExpr;
-    }
-
-    /**
-     * Tells the user which initial conditions became global parameters, and why.
-     *
-     * <p>Reported at LowPriority: nothing is lost and the model is unchanged in meaning, but a
-     * parameter the user did not write now exists in their model, so they should not have to
-     * discover it by accident.
-     */
-    private static void reportHoistedInitialConditions(SymbolTableEntry target, List<String> hoisted, VCLogger vcLogger) throws Exception{
-        if(hoisted == null || hoisted.isEmpty()){
-            return;
-        }
-        String msg = "'" + target.getName() + "' depends on the initial condition of " +
-                String.join(", ", hoisted) + ". SBML allows that directly; in VCell an initial" +
-                " condition belongs to the application and cannot be named from the physiology, so" +
-                " each one was made a global parameter and the initial condition now refers to it." +
-                " The relationship is preserved -- changing the global parameter still moves both.";
-        logger.info(msg);
-        vcLogger.sendMessage(VCLogger.Priority.LowPriority, VCLogger.ErrorType.OverallWarning, msg);
     }
 
     /**
@@ -1073,7 +1041,7 @@ public class SBMLImporter {
      * {@code SBMLExporter} all call {@code evaluateConstant()} on it -- so hoisting a size into a
      * symbol would break the size solver and export. Those models keep failing, with an explanation.
      */
-    private static Expression hoistInitialConditionToGlobalParameter(SymbolTableEntry ste, List<String> hoistedOut){
+    private static Expression hoistInitialConditionToGlobalParameter(SymbolTableEntry ste){
         if(!(ste instanceof SpeciesContextSpecParameter)){
             return null;    // compartment sizes and anything else: see the note above
         }
@@ -1108,9 +1076,6 @@ public class SBMLImporter {
             vcModel.addModelParameter(hoisted);
             // plain name on purpose -- see the note above
             initialConditionParam.setExpression(new Expression(name));
-            if(hoistedOut != null){
-                hoistedOut.add(speciesContext.getName() + " -> " + name);
-            }
             logger.info("hoisted initial condition of '" + speciesContext.getName() + "' to global parameter '"
                     + name + "' so it can be named from the physiology");
             return new Expression(name);
@@ -3247,9 +3212,7 @@ public class SBMLImporter {
             EditableSymbolTableEntry initialAssignmentTargetSte = sbmlSymbolMapping.getSte(initialAssignmentTargetSbase, SymbolContext.INITIAL);
             try {
                 if(initialAssignmentTargetSte.isExpressionEditable()){
-                    List<String> hoisted = new ArrayList<>();
-                    Expression vcellExpr = adjustExpression(sbmlModel, sbmlExpr, initialAssignmentTargetSte.getNameScope(), sbmlSymbolMapping, SymbolContext.INITIAL, hoisted);
-                    reportHoistedInitialConditions(initialAssignmentTargetSte, hoisted, vcLogger);
+                    Expression vcellExpr = adjustExpression(sbmlModel, sbmlExpr, initialAssignmentTargetSte.getNameScope(), sbmlSymbolMapping, SymbolContext.INITIAL);
                     reportUnresolvedReferences(initialAssignmentTargetSte, vcellExpr, vcLogger);
                     initialAssignmentTargetSte.setExpression(vcellExpr);
                 }
@@ -3269,9 +3232,7 @@ public class SBMLImporter {
             }
             try {
                 if(assignmentRuleTargetSte.isExpressionEditable()){
-                    List<String> hoisted = new ArrayList<>();
-                    Expression vcellExpr = adjustExpression(sbmlModel, sbmlExpr, assignmentRuleTargetSte.getNameScope(), sbmlSymbolMapping, SymbolContext.RUNTIME, hoisted);
-                    reportHoistedInitialConditions(assignmentRuleTargetSte, hoisted, vcLogger);
+                    Expression vcellExpr = adjustExpression(sbmlModel, sbmlExpr, assignmentRuleTargetSte.getNameScope(), sbmlSymbolMapping, SymbolContext.RUNTIME);
                     reportUnresolvedReferences(assignmentRuleTargetSte, vcellExpr, vcLogger);
                     assignmentRuleTargetSte.setExpression(vcellExpr);
                 }
