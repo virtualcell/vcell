@@ -16,6 +16,42 @@ followed by flat Keep-a-Changelog categories. API consumers should scan
 
 _(Release-manager scratchpad. Populated at release-cut time.)_
 
+## [8.0.27.01] - 2026-08-18
+
+**Highlights.** The desktop's BioModels Database tab stops steering people away from models
+VCell can actually open: 55 of the 1057 entries were marked "not compatible with vCell" when
+they import perfectly well, a list last curated by hand in May 2025 and further out of date
+after the import fixes in 8.0.26.01. It is now derived from the nightly run over the real
+collection, and a test fails if the two ever disagree. Separately, saving a model can no
+longer be broken by the server's own housekeeping: a cleanup sweep that runs every fifteen
+minutes could delete a row a save was still in the middle of writing, failing the save with a
+database integrity error.
+
+### Fixed
+- The BioModels Database tab marks 55 more models supported — they always imported, the list
+  said otherwise. Three that it claimed were supported and that VCell cannot open are now
+  marked accordingly. Supported goes from 928 to 983 of 1057. (#1990)
+- Saving a model no longer fails with `ORA-02291: integrity constraint violated - parent key
+  not found`. Saving a BioModel writes its parts in several transactions and links them in a
+  later one, so for a fraction of a second a freshly written part belongs to nothing yet — and
+  the housekeeping sweep that removes parts belonging to nothing would collect it, breaking the
+  save. Rows are now left alone for an hour before they can be collected. Production hit this
+  twice in the two weeks before the fix. (#1993, issue #1992)
+- The same race aborted the housekeeping sweep itself from the other side, with `ORA-02292:
+  child record found`, a few times a day. (#1993, issue #1961)
+
+### Added
+- Internal: the BioModels Database supported-model list is regenerated from the nightly results
+  rather than hand-maintained, and `BioModelsNetInfoTest` fails when the checked-in list and the
+  nightly disagree, so it cannot silently rot as the importer improves. (#1990)
+- Internal: the cleanup sweep is now covered in both SQL dialects — against PostgreSQL on every
+  push, and against a real Oracle in a new `Oracle_IT` regression group gated by the merge queue
+  and the nightly. Its SQL is assembled by string concatenation and had no test at all, in
+  either dialect. (#1993)
+
+### Notes for API consumers
+No API changes.
+
 ## [8.0.26.01] - 2026-08-18
 
 **Highlights.** More published models import. A parameter in an SBML model may depend on a
