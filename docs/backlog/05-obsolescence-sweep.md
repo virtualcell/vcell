@@ -3,7 +3,13 @@
 Does the code an issue names still exist? Run 2026-08-19 over all 272 open issues, against the
 working tree at `d083a0ee41`.
 
-Reproduce with `python3 tools/obsolescence-sweep.py`.
+Reproduce from the repo root:
+
+```bash
+gh issue list --repo virtualcell/vcell --state open --limit 500 \
+    --json number,title,body,createdAt > issues.json
+python3 tools/obsolescence-sweep.py issues.json
+```
 
 **A missing reference is a signal, not a verdict.** Code gets renamed, moved, or lives in a sibling
 repo. Everything asserted below was confirmed by hand after the tool flagged it; the tool's raw
@@ -106,17 +112,36 @@ not a script.
 The raw tool output flagged roughly a third more issues than survived checking. The failure modes,
 all confirmed:
 
-| Mode | Example | What happened |
-|---|---|---|
-| **Case sensitivity** | `#912` | Issue names `SedmlJob.java`; the file is `SedMLJob.java`. Renamed case, not deleted. |
-| **Forward-looking references** | `#1921` | Names `vcell-legacy-env-names.properties` and `LegacyEnvironmentNamesTest` as things *to create*. Absence is the point, not a finding. |
-| **Prose that looks like code** | `#986` | `ExportedImage`, `SpatialResultsViewer` are a user describing UI navigation, not class names. |
-| **Sibling repos** | `#1578` | `vcellroot/MBSolver/Solver/src/Voronoi32.cpp` lives in `vcell-solvers`. Not checkable from here. |
-| **Attachments and docs** | `#648` | `.pptx` filenames are not code. |
-| **Upstream library APIs** | `#1964`, `#1859` | `DatasetCreationOptions` is jhdf's; `MediaRecorder` is a browser API. |
+| Mode | Example | What happened | Status |
+|---|---|---|---|
+| **Case sensitivity** | `#912` | Issue names `SedmlJob.java`; the file is `SedMLJob.java`. | **Fixed** — now reported as `renamed`, not `missing` |
+| **Stem match across extensions** | `#912` | `experiment/outputs/temp/model.xml` matched `Model.java`. | **Fixed** — extension must match |
+| **Forward-looking references** | `#1921` | Names files *to create*. Absence is the point. | Not fixable mechanically |
+| **Prose that looks like code** | `#986` | `ExportedImage`, `SpatialResultsViewer` are a user describing UI navigation. | Not fixable mechanically |
+| **Sibling repos** | `#1578` | `Voronoi32.cpp` lives in `vcell-solvers`. | Flagged `[names another repo]` |
+| **Attachments and docs** | `#648` | `.pptx` filenames are not code. | Filtered |
+| **Upstream library APIs** | `#1964`, `#1859` | `DatasetCreationOptions` is jhdf's; `MediaRecorder` is a browser API. | Not fixable mechanically |
 
-The tool filters most of these, but not all — `#912`'s case-rename in particular is a bug worth
-fixing before any re-run (make basename matching case-insensitive).
+### A third outcome: `renamed`
+
+The case-sensitivity fix does not just suppress the false positive — it turns it into a
+different, useful finding. A reference that resolves only case-insensitively means **the code
+exists and the issue text is stale**, which calls for correcting the issue, not closing it.
+That is a distinct action from "the code is gone", so the tool now reports three outcomes —
+`present`, `renamed`, `missing` — rather than two.
+
+After the fix, `#912` is the only `renamed` case and `#1578` the only `missing` one.
+
+### A guard worth having
+
+An early run indexed **zero** source files (wrong working directory) and cheerfully reported
+**42 issues with every reference missing** — output that reads as "a sixth of the backlog is
+obsolete" and is entirely an artifact. The tool now refuses to run when the index looks empty
+rather than producing that. A sweep like this fails silently and confidently by default; the
+guard is not optional.
+
+The three modes marked "not fixable mechanically" are why every finding in this document was
+confirmed by hand before being written down.
 
 ---
 
@@ -130,5 +155,5 @@ fixing before any re-run (make basename matching case-insensitive).
 | `#1470` | Re-scope: no version to bump, this is a fork-reconciliation job like `#1978` | High |
 | `#1636` | Rewrite with the real numbers: 2.3.0 (2017) → 2.9.3 (2025) | High |
 | `#1637` | Move to `vcell-solvers`, or state that the version lives there | Medium — NFSim's in-tree version not established from here |
-| `#912` | No action; the file was renamed, not removed | High |
+| `#912` | No action on the code; optionally correct `SedmlJob.java` → `SedMLJob.java` in the issue text | High |
 | `#1384`, `#842`, `#1674`, `#1552` | Still need human verification | — |
