@@ -100,11 +100,13 @@ exists as its own document.
 Three separate, partly redundant prioritization mechanisms are in play. Reconciling them is
 recommendation #1 in [00-method.md](00-method.md).
 
-1. **Board `Priority` / `Importance` numeric fields** — set on 57 and 61 issues respectively, all
-   in status `Queued`. This is the most deliberate signal in the system: someone sat down and
-   ranked a slate. **Its polarity is undocumented and I could not determine it from the data**
-   (see [03-board-hygiene.md](03-board-hygiene.md)) — resolving that is a five-second answer from
-   whoever set it, and it changes the reading of every table in these docs.
+1. **Board `Importance` + `Simplicity` → `Priority`** — the most deliberate signal in the system,
+   and a genuine value/cost model. `Priority` is **derived**: it is the sum of `Importance`
+   (1–10, higher = more valuable) and `Simplicity` (1–5, higher = easier), exact on 56 of 57
+   ranked issues. **Higher Priority = do sooner.** The formula is undocumented on the board and
+   was reconstructed from the data; see [03-board-hygiene.md](03-board-hygiene.md), which also
+   catches one row whose arithmetic has drifted (`#1495`) and four scored-but-never-ranked issues
+   — two of which tie the highest score on the board and are sitting in `Pool`.
 2. **`High Priority` label** — 28 issues. Only 8 of them also carry a numeric Priority, and those
    8 spread across the whole 2–12 range, so the label and the field are *not* saying the same thing.
 3. **`Next Release` label** — 19 issues, and the `VCell-7.5.0` / `7.5.1` / `7.6.0` labels on 33

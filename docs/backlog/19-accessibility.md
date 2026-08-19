@@ -89,11 +89,28 @@ programme with staged delivery**, ordered:
 2. **Theming/palette** (`#1605` remediation + `#1604`'s dark-mode work) — shared foundation.
 3. **Scaling** (`#1606`) — the largest, and the one that most needs the audit first.
 
-**The Priority values disagree with the Simplicity values.** `#1605` is Priority 3 and
-`Intricate (2)`; `#1606` is Priority 4 and `Byzantine (1)`; `#1604` is Priority 5 and
-`Byzantine (1)`. Under either polarity reading, the ranking does not obviously reflect that two of
-these are the hardest work available. That may be deliberate sequencing (easiest first) — worth
-confirming.
+**The scoring model actively suppresses this group, and that is worth understanding before
+reading the ranks.** Board `Priority` is `Importance + Simplicity` (see
+[03-board-hygiene.md](03-board-hygiene.md)), so difficulty subtracts from rank. These three score:
+
+| # | Importance | Simplicity | Priority |
+|---|---:|---:|---:|
+| `#1605` colorblindness | 1 | 2 | 3 |
+| `#1606` font sizes | 3 | 1 | 4 |
+| `#1604` cross-OS appearance | 4 | 1 | 5 |
+
+All three land in the bottom half of a 1–12 scale, and they cannot climb: a `Byzantine (1)` item
+caps at Priority 11 even at Importance 10. So the ranking is not a judgment that accessibility
+does not matter — it is arithmetic, and the arithmetic is hostile to any large, hard programme.
+
+That is fine for ordinary work and wrong for a compliance mandate, because a mandate is not
+optional at any cost. **If the answer to Decision 4 is "yes, this is dated and we will be
+audited," this group should be resourced as a project and taken out of the Priority queue
+entirely** rather than competing on a value/cost score it is structurally guaranteed to lose.
+
+Note also that `#1605`'s Importance is scored **1** — the lowest value on the board — while
+carrying the `High Priority` label. Those two cannot both be right, and it is the clearest single
+example of the two prioritization mechanisms contradicting each other.
 
 ---
 

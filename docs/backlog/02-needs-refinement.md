@@ -57,8 +57,8 @@ Nothing can be inferred. These need their author or they need to be closed.
 
 Two of these deserve individual attention rather than batch treatment:
 
-- **`#194`** is `Queued` at **Priority 8 / Importance 8** — the joint-highest Importance in the
-  ranked slate — with an empty body and 5 comments. Whatever justifies that rank is in the
+- **`#194`** is `Queued` at **Priority 8 / Importance 8** — well up the ranked slate — with an
+  empty body and 5 comments. Whatever justifies that rank is in the
   comments or in someone's head, not in the issue. It also has the most specific title in the set,
   so it is probably a genuine, reproducible geometry-editor bug worth writing up properly.
 - **`#207`** asks to update RBM help "from version 6 to version 7.5". We ship 8.0. The version

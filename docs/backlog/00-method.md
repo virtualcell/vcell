@@ -99,10 +99,11 @@ Each step is independently useful; stopping after any of them leaves the backlog
 was. Estimates are for the grooming, not the engineering work.
 
 **Step 1 — Reconcile the prioritization mechanisms.** *(~30 min, one person)*
-Answer the polarity question on `Priority`/`Importance` ([03](03-board-hygiene.md)), then pick
-*one* mechanism. Recommend: keep the numeric board fields, delete the `High Priority` label, and
-strip the four stale release labels. Right now three mechanisms disagree and the disagreement is
-silent.
+The board's scoring model is sound — `Priority = Importance + Simplicity`, a real value/cost
+tradeoff ([03](03-board-hygiene.md)) — but it is undocumented, one row's arithmetic has drifted,
+and four scored issues were never ranked. Write the formula down, fix those five, then pick *one*
+mechanism: recommend keeping the numeric fields, deleting the `High Priority` label, and stripping
+the four stale release labels. Right now three mechanisms disagree and the disagreement is silent.
 
 **Step 2 — Close the close-list.** *(~30 min)*
 14 issues in [01](01-close-and-verify.md), each with its evidence. Six are already verified against
@@ -132,7 +133,7 @@ A proposed definition of done for this exercise, so it is possible to tell when 
 
 - [ ] Every open issue has a board status, and `Active` means someone is actually working on it this month
 - [ ] No open issue carries a label naming a shipped release
-- [ ] One prioritization mechanism, with documented polarity
+- [ ] One prioritization mechanism, with its scoring formula documented on the board
 - [ ] Every `Queued` issue has a body an outside engineer could start from
 - [ ] Every epic either has an owner and a live child list, or is closed
 - [ ] Issues with 3+ assignees are reduced to one owner (33 issues today)

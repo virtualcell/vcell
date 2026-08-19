@@ -13,8 +13,10 @@ issues here are off-board.**
 ### Test harness and regression coverage (7)
 
 `#1082` (the testing framework hits an RPC `DataAccessException` — **Priority 1 / Importance 1**,
-the extreme of the ranked slate, though which extreme depends on the polarity question in
-[03](03-board-hygiene.md)), `#1472` (nightly testing fixes — a checklist with two items already
+the *bottom* of the ranked slate: Importance 1 and `Unknown (0)` simplicity, so it scores lowest
+under the board's `Importance + Simplicity` formula, see [03](03-board-hygiene.md). Note that the
+`Unknown (0)` rating is doing half the work here — rating its difficulty at all would raise it),
+`#1472` (nightly testing fixes — a checklist with two items already
 COMPLETE), `#185` (update the math testing framework, `High Priority`, `Shelved`), `#189`
 (automatic sim testing for all solvers on each build, Priority 9/5), `#201` (apply the test-suite
 data comparator across simulators, `Shelved`), `#728` (collect stochastic validation tests into

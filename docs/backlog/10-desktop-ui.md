@@ -80,14 +80,14 @@ selectable).
 
 ### Geometry and mapping UI (5)
 
-`#194` (padding creates a spurious "background" compartment — Priority 8 / **Importance 8**, the
-joint-highest, but an **empty body**), `#289` (subdomain-name error dialog ignored), `#290`
+`#194` (padding creates a spurious "background" compartment — Priority 8 / **Importance 8**, well
+up the ranked slate, but an **empty body**), `#289` (subdomain-name error dialog ignored), `#290`
 (kinematics spatial process always binds the first volume object — good 736-char body), `#1712`
 (Geometry Mapping window clipped beyond 7 compartments), `#147` (some .stl imports fail, with
 specific test files named).
 
-`#194` is the clearest example of the backlog's central problem: the highest-Importance UI issue
-on the board cannot be worked because nobody wrote down what it does.
+`#194` is the clearest example of the backlog's central problem: one of the highest-Importance UI
+issues on the board cannot be worked because nobody wrote down what it does.
 
 ### The 2022 enhancement cohort (13)
 

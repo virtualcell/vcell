@@ -8,40 +8,72 @@ bad metadata just relocates the mess.
 
 ---
 
-## 1. The Priority / Importance polarity is undocumented — resolve this first
+## 1. `Priority` is a derived field: **Priority = Importance + Simplicity**
 
-Board #1 carries two numeric fields:
+Board #1 carries three scoring fields:
 
-- **`Priority`** — set on **57 issues**, all in status `Queued`, values 1–12
-- **`Importance`** — set on **61 issues**, values 1–10
+- **`Importance`** — set on **61 issues**, values 1–10. Higher = more valuable.
+- **`Simplicity`** — set on **114 issues**, `Simple (5)` … `Byzantine (1)`, `Unknown (0)`.
+  Higher = easier. (Documented in the option labels themselves.)
+- **`Priority`** — set on **57 issues**, all in status `Queued`, values 1–12.
 
-They are **strongly correlated (r = 0.84, n = 57)**, so they move together and largely encode one
-judgment expressed twice.
+`Priority` is not an independent judgment. It is the sum of the other two, and the fit is
+essentially exact: **56 of 57 rows satisfy `Priority = Importance + Simplicity`**, mean absolute
+error 0.09. No other combination comes close:
 
-**I could not determine which end is "more important," and the data does not settle it.**
+| Formula | Exact matches | Mean abs. error |
+|---|---:|---:|
+| **`I + S`** | **56 / 57** | **0.09** |
+| `I + (6 − S)` | 15 / 57 | 2.40 |
+| `max(I, S)` | 9 / 57 | 1.98 |
+| `I − S` | 9 / 57 | 5.28 |
+| `I × S` | 3 / 57 | 5.28 |
+| `(I + S) / 2` | 1 / 57 | 3.26 |
 
-The obvious tiebreaker fails. Of the 28 issues carrying the `High Priority` label, only 8 also
-carry a numeric `Priority`, and those 8 are spread across the range — `2, 3, 4, 4, 4, 5, 12, 12`.
-Mean Priority for `High Priority`-labelled issues is 5.75 against 6.51 for the rest: a tilt toward
-"lower = more urgent," but on n=8 that is noise, not evidence.
+This resolves the ranking direction, which an earlier draft of this document could not settle:
 
-Reading it the two ways gives opposite slates:
+> **Higher Priority = do sooner.** Priority 12 is the top of the queue; Priority 1 is the bottom.
 
-| If **1 = most urgent** | If **12 = most urgent** |
-|---|---|
-| `#1082` Testing Framework RPC DataAccessException | `#1384` Give VCell a dedicated submit node |
-| `#563` `#522` `#523` `#912` `#158` (roundtrip/validation cluster) | `#792` Smart copy/paste redesign |
-| `#498` `#1605` (repeated tasks, colorblindness) | `#1292` Webapp uses Auth0 dev keys |
-| | `#1564` `#1555` `#167` `#1607` |
+It also explains the `Priority`/`Importance` correlation (r = 0.84) — they are not two opinions
+that happen to agree, they are an input and a total. And it makes the scheme a **value/cost
+model**: important work scores high, easy work scores high, and important *and* easy scores
+highest. `#1384` (Importance 10, `Intricate (2)`) and `#1299` (Importance 1, `Simple (5)`) both
+land at Priority 12 by different routes.
 
-Both readings are coherent, which is exactly why it needs an answer rather than a guess. The
-`Simplicity` field on the same board *is* documented in its option labels (`Simple (5)` …
-`Byzantine (1)`, so **higher = easier**), which mildly suggests higher = more on the other two,
-but `Simplicity` and `Priority` are different kinds of quantity and I would not lean on it.
+One consequence worth stating plainly: because ease is added rather than multiplied, a
+`Byzantine (1)` item can never score above 11 no matter how important it is. `#1606` (font sizes,
+accessibility) is Importance 3 + Simplicity 1 = 4, which is why the hardest accessibility work
+sits low in the queue. That is the model working as designed, not a mis-ranking — but it is worth
+knowing when reading [19-accessibility.md](19-accessibility.md).
 
-> **Action:** whoever set these fields — one sentence in the board README, and add the scale to
-> the field description so it survives. Everything downstream in these docs is written
-> polarity-neutral (`Pri/Imp` shown as raw values) until this is answered.
+### Three rows where the arithmetic has drifted
+
+**`#1495` — the one mismatch.** Stored Priority **5**, but Importance 6 + `Moderate (4)` = **10**.
+Either the Importance was raised after Priority was computed, or it is a data-entry slip.
+Recomputing moves *"VCell Support Automated Email messages are too opaque to be very useful"* from
+mid-pack to near the top of the queue.
+
+**Four issues have `Importance` scored but `Priority` never computed** — all sitting in `Pool`
+rather than `Queued`, so they are invisible to anyone reading the ranked slate:
+
+| # | Importance | Simplicity | Implied Priority | Title |
+|---|---:|---|---:|---|
+| [#1473](https://github.com/virtualcell/vcell/issues/1473) | 7 | `Simple (5)` | **12** | ImageJ N5 export metadata needs time array, origin, extent |
+| [#1451](https://github.com/virtualcell/vcell/issues/1451) | 7 | `Simple (5)` | **12** | Add "Save as Local" to the error message |
+| [#1199](https://github.com/virtualcell/vcell/issues/1199) | 9 | `Intricate (2)` | **11** | Epic: Refactor Data Export Services |
+| [#191](https://github.com/virtualcell/vcell/issues/191) | 6 | `Intricate (2)` | **8** | New GUI design for spatial sim results viewer |
+
+**`#1473` and `#1451` tie the highest score on the board** — they are important *and* rated
+`Simple (5)` — and neither is in the queue. By the team's own formula these are among the best
+available work, and they have been sitting in `Pool` since 2025.
+
+**53 issues have `Simplicity` but no `Importance`**, so they are half-scored and cannot receive a
+Priority until someone rates their value.
+
+> **Action:** record the formula in the board README so it survives (it is currently reconstructable
+> only from the data). Recompute `#1495`. Move `#1473`, `#1451`, `#1199`, `#191` into `Queued` with
+> their computed Priority, or say why not. Consider whether `Priority` should be a computed column
+> rather than a hand-entered one, since hand-entry is what let `#1495` drift.
 
 ---
 
@@ -49,7 +81,7 @@ but `Simplicity` and `Priority` are different kinds of quantity and I would not 
 
 | Mechanism | Count | Problem |
 |---|---:|---|
-| Board `Priority`/`Importance` | 57 / 61 | Polarity undocumented (above) |
+| Board `Importance` + `Simplicity` → `Priority` | 61 / 114 / 57 | Formula undocumented; 4 issues scored but never ranked; 53 half-scored (above) |
 | `High Priority` label | 28 | Only 8 overlap the numeric fields; **5 are not on the board at all** |
 | Release labels `Next Release`, `VCell-7.5.0/7.5.1/7.6.0` | 45 issues | Name shipped versions; we are on **8.0.27.01** |
 
@@ -184,7 +216,8 @@ GitHub now has **native sub-issues** (the board already exposes `Parent issue` a
 
 | Action | Effort | Effect |
 |---|---|---|
-| Document Priority/Importance polarity | 5 min | Makes the ranked slate readable |
+| Document the `Priority = Importance + Simplicity` formula | 5 min | Makes the ranked slate readable and reproducible |
+| Recompute `#1495`; queue `#1473`/`#1451`/`#1199`/`#191` | 10 min | Two top-scoring issues stop hiding in `Pool` |
 | Delete 4 stale release labels (45 issues) | 10 min | Removes actively misleading signal |
 | Bulk-add 55 off-board issues | 30 min | Board covers 2026 work |
 | Close the 4 `Done`-but-open issues | 15 min | Tracker and board agree |

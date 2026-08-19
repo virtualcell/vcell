@@ -4,7 +4,7 @@ Covers everything between "the simulation finished" and "the user can see or reu
 the export subsystem, the N5/ImageJ path, HDF5 writing, the desktop results viewers, and the new
 browser-based field viewer.
 
-**Epics:** `#1199` (Refactor Data Export Services — **Importance 9, the highest on the board**, but
+**Epics:** `#1199` (Refactor Data Export Services — **Importance 9, second-highest on the board**, but
 zero linked children), `#1034` (local use of field data), `#1652` (VFRAP/geometry rework), `#1803`
 (web-based field & geometry visualization, off-board).
 
@@ -26,9 +26,15 @@ server-side).
 
 `#1199` and `#1008` are **the same proposal written twice** — see
 [04-epic-map.md](04-epic-map.md#b-1199-refactor-data-export-services-vs-1008-vcell-export-needs-a-face-lift).
-The epic has the highest Importance on the entire board and no children, while the work that
+The epic has Importance 9 — the second-highest on the board — and no children, while the work that
 belongs to it sits unlinked around it. Populating `#1199` would be a cheap and unusually
 high-leverage bit of grooming.
+
+Note that `#1199` was scored but **never given a Priority**, so it does not appear in the ranked
+queue at all. Under the board's own formula (`Importance + Simplicity`) it computes to **11** —
+second from the top. Two other issues in this group are in the same position: `#1473` computes to
+**12**, tying the highest score on the board, and both it and `#1451` have been sitting in `Pool`
+since 2025. See [03-board-hygiene.md](03-board-hygiene.md).
 
 `#1668` is worth calling out as a small enabler rather than a feature: being unable to read back
 what an export job actually requested makes every other bug in this list harder to diagnose.
@@ -110,7 +116,7 @@ Verify against the current CLI before ranking.
 ## Recommendations
 
 1. **Merge `#1008` into `#1199`** and populate `#1199` with children (`#1115`, `#1330`, `#1668`,
-   `#1542`, `#986`, `#772`). It has the board's highest Importance and no content.
+   `#1542`, `#986`, `#772`). It scores Importance 9 and has no content.
 2. **Merge `#1338` into `#1473`** (same N5 metadata gap).
 3. **Board the 8 off-board issues**, especially `#1894`.
 4. **Verify-before-ranking:** `#877` (jHDF/JRE — dependency has changed) and `#366` (Python

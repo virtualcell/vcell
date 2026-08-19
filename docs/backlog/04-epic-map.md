@@ -87,7 +87,7 @@ re-write with modern best practices… inefficiencies… CLI has a 50% slowdown 
 exporter is slow."*
 
 Same subsystem, same complaint, same proposed remedy. `#1199` is the epic and carries Importance 9
-— the highest Importance on the board — but has **zero open children**, while roughly a dozen
+— second only to `#1384` — but has **zero open children**, while roughly a dozen
 export issues sit unlinked in [13-export-visualization.md](13-export-visualization.md).
 **Merge `#1008` into `#1199` and populate `#1199`'s children.**
 
