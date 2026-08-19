@@ -1,0 +1,63 @@
+name: Backlog lint
+
+# Mechanical consistency checks over the issue backlog and project board #1.
+# Facts only -- no judgment about what matters. See tools/backlog-lint/README.md.
+#
+# Gates rather than reports: findings are compared against the committed baseline
+# (tools/backlog-lint/baseline.json) and the job fails only on findings NOT in it.
+# A scheduled job that merely posts a report gets ignored -- this repo learned that
+# with the BMDB nightly.
+#
+# REQUIRES the repository secret GH_PROJECT_TOKEN: a PAT with `read:project`
+# (add `project` too if you ever run with fix_board). GITHUB_TOKEN cannot read
+# organization ProjectV2 boards, so without this secret the job cannot run.
+
+on:
+  schedule:
+    - cron: "0 8 * * 1"     # Mondays 08:00 UTC
+  workflow_dispatch:
+    inputs:
+      strict:
+        description: "Fail on ANY finding, ignoring the baseline"
+        type: boolean
+        default: false
+      fix_board:
+        description: "Also ADD unboarded issues to the board (needs `project` scope)"
+        type: boolean
+        default: false
+  pull_request:
+    paths:
+      - "tools/backlog-lint/**"
+      - ".github/workflows/backlog-lint.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Check the token secret is present
+        env:
+          TOKEN: ${{ secrets.GH_PROJECT_TOKEN }}
+        run: |
+          if [ -z "$TOKEN" ]; then
+            echo "::error::GH_PROJECT_TOKEN is not set. Add a PAT with read:project scope."
+            echo "GITHUB_TOKEN cannot read organization ProjectV2 boards." >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+
+      - name: Run backlog lint
+        env:
+          GH_PROJECT_TOKEN: ${{ secrets.GH_PROJECT_TOKEN }}
+        run: |
+          args=""
+          if [ "${{ inputs.strict }}" = "true" ]; then args="$args --strict"; fi
+          if [ "${{ inputs.fix_board }}" = "true" ]; then args="$args --fix-board"; fi
+          python3 tools/backlog-lint/backlog_lint.py $args
