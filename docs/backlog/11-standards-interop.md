@@ -53,8 +53,15 @@ precisely described, and about output correctness that other people can see.
 rejects plain relative paths, accepting only URI syntax), `#1571` (stochastic test suite OMEX).
 
 These are a ladder: `#1470` (parse newer SED-ML at all) plausibly precedes `#498`/`#1469`
-(support the features). `#1341` is a small, well-diagnosed upstream-shaped fix and is **off-board**.
-Sequencing these four as a chain would make more sense than ranking them independently.
+(support the features). Sequencing them as a chain beats ranking them independently.
+
+**jlibsedml is vendored, not a dependency** — 148 source files under
+`vcell-core/src/main/java/org/jlibsedml/` at version 3.0.0
+([05-obsolescence-sweep.md](05-obsolescence-sweep.md)). That cuts both ways: `#1341` is a **local
+patch we can just make**, not an upstream request to file and wait on, which makes it much cheaper
+than its framing suggests; while `#1470` is **not a version bump** — there is no version to bump,
+so it is a fork-reconciliation job of the kind `#1978` proposes for JSBML. Both issues should say
+so.
 
 ### SBML import/export correctness (9)
 

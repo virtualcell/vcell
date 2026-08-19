@@ -143,8 +143,11 @@ Notes:
   `#1069`. An epic whose content is a blocked, bodyless issue is not tracking anything. See
   [04-epic-map.md](04-epic-map.md).
 - **`#1636` / `#1637`** ("Self explanatory, we need to update") are the two children of `#1635`.
-  What is missing is not the intent but the *target version and the blast radius* — a BioNetGen or
-  NFSim bump changes simulation results, so this needs a validation plan, not just a version bump.
+  The missing target versions have since been established
+  ([05-obsolescence-sweep.md](05-obsolescence-sweep.md)): BioNetGen is **vendored Perl at 2.3.0,
+  untouched since 2017-06-05**, against upstream **2.9.3** (2025-04-21); NFSim is not in this repo
+  at all — it is a `vcell-solvers` binary, upstream **v1.14.3**. What is still missing is the blast
+  radius: a solver version change moves simulation results, so both need a validation plan.
 - **`#1534`** is `Active` and asks for help updates for 7.7, which has shipped. Same stale-version
   problem as `#207`; restate for 8.0 or close.
 - **`#1657` / `#1658`** are both `Active` with empty bodies, both about getting SpringSaLaD results

@@ -60,9 +60,10 @@ statistic name `mean` written by the Chombo solver — and the rejection **abort
 the run**), `#1964` (`ASCIIExporter` is the last thing needing native HDF5 for writing, blocked on
 upstream jhdf#654), `#138` (results not correctly exported to CSV or HDF5 for VCML models).
 
-`#877` needs a status check: the root pom now carries `io.jhdf 0.13.0` and the `ncsa.hdf` binding
-is gone, so the dependency picture has changed substantially since 2023. The issue may be obsolete
-or may have narrowed — **verify before ranking**.
+`#877` was checked (see [05-obsolescence-sweep.md](05-obsolescence-sweep.md)) and the answer is the
+opposite of what I first guessed: `io.jhdf 0.13.0` is in the root pom and `ncsa.hdf` is **gone**, so
+jHDF is now the *only* HDF5 reader. A JRE bug affecting it on Windows is therefore **more**
+consequential than when the issue was filed. **Re-rank upward, do not close.**
 
 `#1894` is the highest-severity item in this section: one unrecognized statistic name makes an
 entire run's data unreadable. Small fix, large blast radius, off-board.
@@ -107,10 +108,11 @@ parent of the other three rather than a sibling.
 
 ### Plotting (1)
 
-`#366` — the CLI Python plotting code needs restructuring to control the seaborn colour palette,
-because correlated data currently renders indistinguishably. Note that `#1472` records *"Python
-reliance removed, and plotting / logging done java side [COMPLETE]"* — so **this may be obsolete.**
-Verify against the current CLI before ranking.
+`#366` — the CLI Python plotting code needs restructuring to control the seaborn colour palette.
+**Verified obsolete:** `seaborn` is gone from the tree (its only trace is a transitive extras line
+in another package's lock file), and `#1472` independently records *"Python reliance removed, and
+plotting / logging done java side [COMPLETE]"*. → close candidate, see
+[05-obsolescence-sweep.md](05-obsolescence-sweep.md).
 
 ---
 
@@ -120,8 +122,8 @@ Verify against the current CLI before ranking.
    `#1542`, `#986`, `#772`). It scores Importance 9 and has no content.
 2. **Merge `#1338` into `#1473`** (same N5 metadata gap).
 3. **Board the 8 off-board issues**, especially `#1894`.
-4. **Verify-before-ranking:** `#877` (jHDF/JRE — dependency has changed) and `#366` (Python
-   plotting — may be superseded).
+4. **Resolved by the obsolescence sweep:** close `#366` (seaborn gone); re-rank `#877` **upward**
+   (jHDF is now the sole HDF5 reader, not a fading dependency).
 5. **Group the multi-run statistics trio** (`#832`, `#174`, SpringSaLaD `#1508`) as one capability.
 6. **Take Decision 2** before ranking `#191`, `#1494`, `#898`, `#950`.
 7. `#1894` and `#1352` are the two items here with concrete ongoing costs (unreadable runs;

@@ -26,6 +26,7 @@ model, not new judgments; details and the verification in
 | [02-needs-refinement.md](02-needs-refinement.md) | 50 issues too thin to act on; what each one needs before it can be estimated |
 | [03-board-hygiene.md](03-board-hygiene.md) | The scoring model (`Priority = Importance + Simplicity`), 55 issues off the board, 4 marked Done but open, stale `Active`, label/field duplication |
 | [04-epic-map.md](04-epic-map.md) | Epic → child coverage, the 4 overlapping epic pairs, and the 5 strategic decisions that gate large chunks of the backlog |
+| [05-obsolescence-sweep.md](05-obsolescence-sweep.md) | Does the code an issue names still exist? Settles 6 issues; documents why it can only reach a fifth of the backlog |
 
 ## Thematic groups
 
