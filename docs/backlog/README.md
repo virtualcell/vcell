@@ -8,12 +8,22 @@ against [project board #1](https://github.com/orgs/virtualcell/projects/1).
 **These documents are proposals.** Every disposition — every close, merge, refine, and re-rank — is
 a recommendation for a human to accept, reject, or amend. No issue, label, or epic has been changed.
 
-**One exception, applied at Jim's instruction on 2026-08-19:** five project-board *scores* were
-corrected, after the board's `Priority = Importance + Simplicity` formula was confirmed. `#1495`'s
-Priority was recomputed (5 → 10), and `#1473`, `#1451`, `#1199`, `#191` were given their computed
-Priority and moved from `Pool` to `Queued`. These were arithmetic corrections to the team's own
-model, not new judgments; details and the verification in
-[03-board-hygiene.md](03-board-hygiene.md). Status counts below reflect the board *after* that edit.
+**Two sets of changes were applied at Jim's instruction on 2026-08-19**, both recorded here so
+nothing in this pass is invisible:
+
+1. **Five project-board scores corrected**, after the board's `Priority = Importance + Simplicity`
+   formula was confirmed. `#1495`'s Priority was recomputed (5 → 10), and `#1473`, `#1451`,
+   `#1199`, `#191` were given their computed Priority and moved from `Pool` to `Queued`. These
+   were arithmetic corrections to the team's own model, not new judgments — see
+   [03-board-hygiene.md](03-board-hygiene.md). Status counts below reflect the board *after* that edit.
+2. **Four issues updated from the obsolescence sweep** — `#366` closed as obsolete with its
+   evidence and an invitation to reopen; `#1341`, `#1470` and `#1636` given findings as comments
+   rather than body edits, so their authors' words are intact. See
+   [05-obsolescence-sweep.md](05-obsolescence-sweep.md).
+
+**The backlog is therefore 271 open, not 272, as of this writing.** The tables below are the
+2026-08-19 snapshot and deliberately have not been regenerated — `#366` still appears in
+[13-export-visualization.md](13-export-visualization.md), annotated as closed.
 
 ---
 

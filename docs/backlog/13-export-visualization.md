@@ -109,10 +109,12 @@ parent of the other three rather than a sibling.
 ### Plotting (1)
 
 `#366` — the CLI Python plotting code needs restructuring to control the seaborn colour palette.
-**Verified obsolete:** `seaborn` is gone from the tree (its only trace is a transitive extras line
-in another package's lock file), and `#1472` independently records *"Python reliance removed, and
-plotting / logging done java side [COMPLETE]"*. → close candidate, see
-[05-obsolescence-sweep.md](05-obsolescence-sweep.md).
+**Verified obsolete and CLOSED 2026-08-19.** `seaborn` is gone (its only trace is an optional
+extras line belonging to networkx), nothing imports it, and the replacement is the Java
+`org.vcell.cli.run.plotting` package. See
+[05-obsolescence-sweep.md](05-obsolescence-sweep.md). The residual need — palettes that keep
+correlated series distinguishable — may still be unmet in the Java plots, but that would be a new
+issue against a different package.
 
 ---
 

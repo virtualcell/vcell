@@ -32,8 +32,11 @@ cohort, because the 2022 cohort does not say anything specific enough to check.
 
 ### `#366` — very likely obsolete → close candidate
 
-`seaborn` is **gone** from the tree. Its only remaining appearance is a transitive extras line in
-`vcell-cli-utils/poetry.lock` belonging to another package — not a VCell dependency.
+`seaborn` is **gone** from the tree. Its only remaining appearance is `poetry.lock:1126`, inside
+the optional `example` extras list belonging to **networkx** — not a VCell dependency. Nothing
+imports it either: no `import seaborn`, no `sns.` in any `.py` file. And the replacement exists —
+`vcell-cli/src/main/java/org/vcell/cli/run/plotting/` holds `Results2DLinePlot`, `ResultsLinePlot`,
+`PlottingDataExtractor` and friends.
 
 The issue asks to restructure "CLI-python code for creating plots" to control the seaborn palette.
 `#1472` independently records *"Python reliance removed, and plotting / logging done java side
@@ -147,13 +150,16 @@ confirmed by hand before being written down.
 
 ## Recommended actions
 
-| # | Action | Confidence |
-|---|---|---|
-| `#366` | Close as obsolete (seaborn gone; `#1472` corroborates) | High — two independent signals |
-| `#877` | Re-rank **upward**; jHDF is now the sole HDF5 reader | High — verified in the pom |
-| `#1341` | Note that jlibsedml is vendored; this is a local patch, not an upstream ask | High — 148 files in-tree |
-| `#1470` | Re-scope: no version to bump, this is a fork-reconciliation job like `#1978` | High |
-| `#1636` | Rewrite with the real numbers: 2.3.0 (2017) → 2.9.3 (2025) | High |
+**Applied 2026-08-19.** The four highest-confidence actions were carried out on the issues
+themselves; the rest still need a person.
+
+| # | Action | Confidence | Status |
+|---|---|---|---|
+| `#366` | Close as obsolete (seaborn gone; `#1472` corroborates) | High — three independent signals | **Closed** (`not planned`), evidence in a closing comment inviting reopen |
+| `#1341` | Note that jlibsedml is vendored; this is a local patch, not an upstream ask | High — 148 files in-tree | **Commented** |
+| `#1470` | Re-scope: no version to bump, this is a fork-reconciliation job like `#1978` | High | **Commented** |
+| `#1636` | Rewrite with the real numbers: 2.3.0 (2017) → 2.9.3 (2025) | High | **Commented** — added as a comment rather than editing @CodeByDrescher's body |
+| `#877` | Re-rank **upward**; jHDF is now the sole HDF5 reader | High — verified in the pom | Not applied — needs a scoring decision |
 | `#1637` | Move to `vcell-solvers`, or state that the version lives there | Medium — NFSim's in-tree version not established from here |
 | `#912` | No action on the code; optionally correct `SedmlJob.java` → `SedMLJob.java` in the issue text | High |
 | `#1384`, `#842`, `#1674`, `#1552` | Still need human verification | — |
