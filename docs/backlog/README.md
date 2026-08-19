@@ -4,8 +4,16 @@ A snapshot-and-triage pass over **all 272 open issues** in `virtualcell/vcell`, 
 against [project board #1](https://github.com/orgs/virtualcell/projects/1).
 
 **Snapshot taken:** 2026-08-19
-**Nothing in this pass edits GitHub.** These are proposals. Every disposition is a recommendation
-for a human to accept, reject, or amend.
+
+**These documents are proposals.** Every disposition — every close, merge, refine, and re-rank — is
+a recommendation for a human to accept, reject, or amend. No issue, label, or epic has been changed.
+
+**One exception, applied at Jim's instruction on 2026-08-19:** five project-board *scores* were
+corrected, after the board's `Priority = Importance + Simplicity` formula was confirmed. `#1495`'s
+Priority was recomputed (5 → 10), and `#1473`, `#1451`, `#1199`, `#191` were given their computed
+Priority and moved from `Pool` to `Queued`. These were arithmetic corrections to the team's own
+model, not new judgments; details and the verification in
+[03-board-hygiene.md](03-board-hygiene.md). Status counts below reflect the board *after* that edit.
 
 ---
 
@@ -16,7 +24,7 @@ for a human to accept, reject, or amend.
 | [00-method.md](00-method.md) | The triage plan: dispositions, decision rules, who decides what, suggested sequencing |
 | [01-close-and-verify.md](01-close-and-verify.md) | 14 issues that look done, obsolete, or not-a-backlog-item — with the evidence |
 | [02-needs-refinement.md](02-needs-refinement.md) | 50 issues too thin to act on; what each one needs before it can be estimated |
-| [03-board-hygiene.md](03-board-hygiene.md) | 55 issues off the board, 4 marked Done but open, the Priority-field ambiguity, label/field duplication |
+| [03-board-hygiene.md](03-board-hygiene.md) | The scoring model (`Priority = Importance + Simplicity`), 55 issues off the board, 4 marked Done but open, stale `Active`, label/field duplication |
 | [04-epic-map.md](04-epic-map.md) | Epic → child coverage, the 4 overlapping epic pairs, and the 5 strategic decisions that gate large chunks of the backlog |
 
 ## Thematic groups
@@ -66,8 +74,8 @@ field-viewer train, the infra issues). The board is drifting out of date at the 
 
 | Board status | Count | Reading |
 |---|---:|---|
-| Pool | 99 | Accepted but unscheduled — the actual backlog |
-| Queued | 63 | Ranked and ready; 57 of these carry a numeric Priority |
+| Pool | 95 | Accepted but unscheduled — the actual backlog |
+| Queued | 67 | Ranked and ready; 61 of these carry a numeric Priority |
 | Shelved | 27 | Deliberately parked |
 | Active | 16 | Claimed as in-progress (**several are stale — see [03](03-board-hygiene.md)**) |
 | Blocked | 6 | External dependency |
@@ -104,9 +112,10 @@ recommendation #1 in [00-method.md](00-method.md).
    and a genuine value/cost model. `Priority` is **derived**: it is the sum of `Importance`
    (1–10, higher = more valuable) and `Simplicity` (1–5, higher = easier), exact on 56 of 57
    ranked issues. **Higher Priority = do sooner.** The formula is undocumented on the board and
-   was reconstructed from the data; see [03-board-hygiene.md](03-board-hygiene.md), which also
-   catches one row whose arithmetic has drifted (`#1495`) and four scored-but-never-ranked issues
-   — two of which tie the highest score on the board and are sitting in `Pool`.
+   was reconstructed from the data; see [03-board-hygiene.md](03-board-hygiene.md). That pass caught
+   one row whose arithmetic had drifted (`#1495`) and four scored-but-never-ranked issues — two of
+   which tie the highest score on the board. **All five were corrected on 2026-08-19**; the board
+   is now formula-consistent, with 53 issues still half-scored (`Simplicity` but no `Importance`).
 2. **`High Priority` label** — 28 issues. Only 8 of them also carry a numeric Priority, and those
    8 spread across the whole 2–12 range, so the label and the field are *not* saying the same thing.
 3. **`Next Release` label** — 19 issues, and the `VCell-7.5.0` / `7.5.1` / `7.6.0` labels on 33

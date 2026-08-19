@@ -116,7 +116,6 @@ stack traces. They need completely different handling, and the flat backlog trea
 |---|---|---|---|---|---|---|
 | [#1449](https://github.com/virtualcell/vcell/issues/1449) | Maintain ordering when toggling global flag on variable | 2025-03 | Queued | 5/2 | Complex&nbsp;(3) | thin |
 | [#1460](https://github.com/virtualcell/vcell/issues/1460) | VCell names must be unique, but only sbml Ids are required and unqiue; users meanwhile… | 2025-03 | Queued | 5/3 | Intricate&nbsp;(2) | — |
-| [#1495](https://github.com/virtualcell/vcell/issues/1495) | VCell Support Automated Email message are too opaque to be very useful | 2025-05 | Queued | 5/6 | Moderate&nbsp;(4) | — |
 | [#1572](https://github.com/virtualcell/vcell/issues/1572) | Built-in brower does not work on mac when accessing PubMed annotations | 2025-08 | Queued | 5/4 | Byzantine&nbsp;(1) | — |
 | [#1299](https://github.com/virtualcell/vcell/issues/1299) | VCell Guest should not have file browser items of "My BioModels" nor "Shared With Me: | 2024-07 | Queued | 6/1 | Simple&nbsp;(5) | thin |
 | [#1440](https://github.com/virtualcell/vcell/issues/1440) | Organism is unavailable in Add Annotations pop-up | 2025-02 | Queued | 6/2 | Moderate&nbsp;(4) | — |
@@ -124,8 +123,10 @@ stack traces. They need completely different handling, and the flat backlog trea
 | [#194](https://github.com/virtualcell/vcell/issues/194) | Geometry editor bug: padding to add background pixels at edges of domain adds new "bac… | 2022-07 | Queued | 8/8 | Unknown&nbsp;(0) | REF thin |
 | [#835](https://github.com/virtualcell/vcell/issues/835) | Error Reports from Contact-Us improvements | 2023-03 | Queued | 8/4 | Moderate&nbsp;(4) | — |
 | [#1441](https://github.com/virtualcell/vcell/issues/1441) | Add Annotations pop-up window is below the main VCell window | 2025-02 | Queued | 9/6 | Complex&nbsp;(3) | — |
+| [#1495](https://github.com/virtualcell/vcell/issues/1495) | VCell Support Automated Email message are too opaque to be very useful | 2025-05 | Queued | 10/6 | Moderate&nbsp;(4) | — |
 | [#1565](https://github.com/virtualcell/vcell/issues/1565) | Give users a choice when changing unit systems to either dimensionally transform value… | 2025-07 | Queued | 10/6 | Moderate&nbsp;(4) | — |
 | [#792](https://github.com/virtualcell/vcell/issues/792) | Smart Copy/Paste behavior with multiple reactions redesign and implement | 2023-02 | Queued | 12/9 | Complex&nbsp;(3) | HP |
+| [#1451](https://github.com/virtualcell/vcell/issues/1451) | Add "Save as Local" to the error message | 2025-03 | Queued | 12/7 | Simple&nbsp;(5) | — |
 | [#1607](https://github.com/virtualcell/vcell/issues/1607) | Rule based models cannot delete reactions in graphical editor using right mouse menu. | 2025-12 | Queued | 12/8 | Moderate&nbsp;(4) | — |
 | [#147](https://github.com/virtualcell/vcell/issues/147) | Some .stl files import fails | 2022-05 | Shelved | — | — | — |
 | [#153](https://github.com/virtualcell/vcell/issues/153) | Make molecular composition layout default in rule-based models | 2022-06 | Pool | — | Unknown&nbsp;(0) | — |
@@ -150,7 +151,6 @@ stack traces. They need completely different handling, and the flat backlog trea
 | [#1024](https://github.com/virtualcell/vcell/issues/1024) | Parameter Estimation Window retains old values when switching to a new application in … | 2023-11 | Pool | — | Moderate&nbsp;(4) | — |
 | [#1038](https://github.com/virtualcell/vcell/issues/1038) | Epic: VCell UI fixes | 2023-11 | Pool | — | — | EPIC |
 | [#1078](https://github.com/virtualcell/vcell/issues/1078) | Uninstall window in alpha does not appear on top of Windows Uninstall menu | 2023-12 | Pool | — | Unknown&nbsp;(0) | — |
-| [#1451](https://github.com/virtualcell/vcell/issues/1451) | Add "Save as Local" to the error message | 2025-03 | Pool | —/7 | Simple&nbsp;(5) | — |
 | [#1486](https://github.com/virtualcell/vcell/issues/1486) | Broken existing links in Annotations (both Rel and Alpha) | 2025-04 | Pool | — | Simple&nbsp;(5) | — |
 | [#1591](https://github.com/virtualcell/vcell/issues/1591) | Option to show reaction names in reaction diagram | 2025-09 | Pool | — | — | — |
 | [#1593](https://github.com/virtualcell/vcell/issues/1593) | Black screen over VCell, moving to the right | 2025-10 | Shelved | — | — | — |

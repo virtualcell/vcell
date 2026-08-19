@@ -100,8 +100,9 @@ was. Estimates are for the grooming, not the engineering work.
 
 **Step 1 — Reconcile the prioritization mechanisms.** *(~30 min, one person)*
 The board's scoring model is sound — `Priority = Importance + Simplicity`, a real value/cost
-tradeoff ([03](03-board-hygiene.md)) — but it is undocumented, one row's arithmetic has drifted,
-and four scored issues were never ranked. Write the formula down, fix those five, then pick *one*
+tradeoff ([03](03-board-hygiene.md)). The five rows whose arithmetic had drifted or was never
+computed **have been fixed** and the board is now formula-consistent; what remains is to write the
+formula down where it will survive, then pick *one*
 mechanism: recommend keeping the numeric fields, deleting the `High Priority` label, and stripping
 the four stale release labels. Right now three mechanisms disagree and the disagreement is silent.
 

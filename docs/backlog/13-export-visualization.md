@@ -30,11 +30,12 @@ The epic has Importance 9 — the second-highest on the board — and no childre
 belongs to it sits unlinked around it. Populating `#1199` would be a cheap and unusually
 high-leverage bit of grooming.
 
-Note that `#1199` was scored but **never given a Priority**, so it does not appear in the ranked
-queue at all. Under the board's own formula (`Importance + Simplicity`) it computes to **11** —
-second from the top. Two other issues in this group are in the same position: `#1473` computes to
-**12**, tying the highest score on the board, and both it and `#1451` have been sitting in `Pool`
-since 2025. See [03-board-hygiene.md](03-board-hygiene.md).
+`#1199` had been scored but **never given a Priority**, so it did not appear in the ranked queue at
+all. Under the board's formula (`Importance + Simplicity`) it computes to **11**, second from the
+top; it has since been set and moved to `Queued` — though note it is an epic with zero children, so
+it is currently queued as an empty container. `#1473` was in the same position and computes to
+**12**, tying the highest score on the board. Both fixed 2026-08-19; see
+[03-board-hygiene.md](03-board-hygiene.md).
 
 `#1668` is worth calling out as a small enabler rather than a feature: being unable to read back
 what an export job actually requested makes every other bug in this list harder to diagnose.
@@ -133,12 +134,14 @@ Verify against the current CLI before ranking.
 | # | Title | Opened | Board status | Pri/Imp | Simplicity | Flags |
 |---|---|---|---|---|---|---|
 | [#950](https://github.com/virtualcell/vcell/issues/950) | Local run Par Scan doesn't show full results | 2023-08 | Queued | 7/5 | Intricate&nbsp;(2) | — |
+| [#191](https://github.com/virtualcell/vcell/issues/191) | Implement new GUI design for spatial sim results viewer | 2022-07 | Queued | 8/6 | Intricate&nbsp;(2) | REF thin |
 | [#898](https://github.com/virtualcell/vcell/issues/898) | Display of simulation results for spatial does not redraw properly when using auto sca… | 2023-05 | Queued | 8/6 | Intricate&nbsp;(2) | — |
+| [#1199](https://github.com/virtualcell/vcell/issues/1199) | Epic: Refactor Data Export Services in VCell | 2024-03 | Queued | 11/9 | Intricate&nbsp;(2) | HP EPIC |
 | [#167](https://github.com/virtualcell/vcell/issues/167) | API endpoint for field data retrieval for local runs | 2022-07 | Queued | 12/8 | Moderate&nbsp;(4) | HP thin |
+| [#1473](https://github.com/virtualcell/vcell/issues/1473) | ImageJ N5 data export metadata needs to include time array as well origin and extent | 2025-04 | Queued | 12/7 | Simple&nbsp;(5) | — |
 | [#1555](https://github.com/virtualcell/vcell/issues/1555) | Export Control Through The New API | 2025-06 | Queued | 12/8 | Moderate&nbsp;(4) | — |
 | [#138](https://github.com/virtualcell/vcell/issues/138) | Results are not correctly exported to CSV or HDF5 for VCML models | 2022-03 | Pool | — | Complex&nbsp;(3) | — |
 | [#174](https://github.com/virtualcell/vcell/issues/174) | Create results view with envelope and SD for multiple stochastic runs | 2022-07 | Pool | — | Intricate&nbsp;(2) | HP thin |
-| [#191](https://github.com/virtualcell/vcell/issues/191) | Implement new GUI design for spatial sim results viewer | 2022-07 | Pool | —/6 | Intricate&nbsp;(2) | REF thin |
 | [#366](https://github.com/virtualcell/vcell/issues/366) | CLI-python code for creating plots needs refactor to control color palette | 2022-09 | Pool | — | — | — |
 | [#648](https://github.com/virtualcell/vcell/issues/648) | Field data needs update and better integration with geometry | 2022-12 | Pool | — | Unknown&nbsp;(0) | — |
 | [#772](https://github.com/virtualcell/vcell/issues/772) | Movie files from surface view not opened by windows player | 2023-01 | Pool | — | — | — |
@@ -148,12 +151,10 @@ Verify against the current CLI before ranking.
 | [#1008](https://github.com/virtualcell/vcell/issues/1008) | VCell Export needs a face-lift | 2023-10 | Pool | — | — | — |
 | [#1034](https://github.com/virtualcell/vcell/issues/1034) | Epic: local use of field data | 2023-11 | Pool | — | — | EPIC |
 | [#1115](https://github.com/virtualcell/vcell/issues/1115) | Post-Processed Variables Don't Display Export Progress | 2024-01 | Pool | — | Complex&nbsp;(3) | — |
-| [#1199](https://github.com/virtualcell/vcell/issues/1199) | Epic: Refactor Data Export Services in VCell | 2024-03 | Pool | —/9 | Intricate&nbsp;(2) | HP EPIC |
 | [#1330](https://github.com/virtualcell/vcell/issues/1330) | Enhance Export Process in VCell Application | 2024-07 | **off-board** | — | — | — |
 | [#1338](https://github.com/virtualcell/vcell/issues/1338) | N5 Calibration | 2024-08 | **off-board** | — | — | — |
 | [#1352](https://github.com/virtualcell/vcell/issues/1352) | N5 Export Storage appears to produce Overconsumption | 2024-09 | Pool | — | Moderate&nbsp;(4) | — |
 | [#1385](https://github.com/virtualcell/vcell/issues/1385) | Add option for automatic export of simulation n5 data with job dispatch | 2024-11 | Pool | — | Complex&nbsp;(3) | — |
-| [#1473](https://github.com/virtualcell/vcell/issues/1473) | ImageJ N5 data export metadata needs to include time array as well origin and extent | 2025-04 | Pool | —/7 | Simple&nbsp;(5) | — |
 | [#1494](https://github.com/virtualcell/vcell/issues/1494) | Lazy load microscopy data in PDE data viewer | 2025-04 | **off-board** | — | — | thin |
 | [#1542](https://github.com/virtualcell/vcell/issues/1542) | Export History Should Be Saved on the Server instead of Locally | 2025-06 | Active | — | — | — |
 | [#1652](https://github.com/virtualcell/vcell/issues/1652) | Rework VFRAP workflows to merge Geometry and Image (formerly Field) Data | 2026-03 | Pool | — | — | EPIC |

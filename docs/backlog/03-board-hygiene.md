@@ -46,34 +46,46 @@ accessibility) is Importance 3 + Simplicity 1 = 4, which is why the hardest acce
 sits low in the queue. That is the model working as designed, not a mis-ranking — but it is worth
 knowing when reading [19-accessibility.md](19-accessibility.md).
 
-### Three rows where the arithmetic has drifted
+### Applied 2026-08-19: five rows corrected
 
-**`#1495` — the one mismatch.** Stored Priority **5**, but Importance 6 + `Moderate (4)` = **10**.
-Either the Importance was raised after Priority was computed, or it is a data-entry slip.
-Recomputing moves *"VCell Support Automated Email messages are too opaque to be very useful"* from
-mid-pack to near the top of the queue.
+Three defects in the scoring data were found and **have since been fixed on the board**. Recorded
+here because the reasoning matters more than the edit.
 
-**Four issues have `Importance` scored but `Priority` never computed** — all sitting in `Pool`
-rather than `Queued`, so they are invisible to anyone reading the ranked slate:
+**`#1495` — arithmetic had drifted.** Stored Priority **5**, but Importance 6 + `Moderate (4)` =
+**10**. Either the Importance was raised after Priority was computed, or it was a data-entry slip.
+Recomputed to 10, which moves *"VCell Support Automated Email messages are too opaque to be very
+useful"* from mid-pack to near the top of the queue.
 
-| # | Importance | Simplicity | Implied Priority | Title |
-|---|---:|---|---:|---|
-| [#1473](https://github.com/virtualcell/vcell/issues/1473) | 7 | `Simple (5)` | **12** | ImageJ N5 export metadata needs time array, origin, extent |
-| [#1451](https://github.com/virtualcell/vcell/issues/1451) | 7 | `Simple (5)` | **12** | Add "Save as Local" to the error message |
-| [#1199](https://github.com/virtualcell/vcell/issues/1199) | 9 | `Intricate (2)` | **11** | Epic: Refactor Data Export Services |
-| [#191](https://github.com/virtualcell/vcell/issues/191) | 6 | `Intricate (2)` | **8** | New GUI design for spatial sim results viewer |
+**Four issues had `Importance` scored but `Priority` never computed** — so they sat in `Pool` and
+never appeared in the ranked slate at all. All four have been given their computed Priority and
+moved to `Queued`:
 
-**`#1473` and `#1451` tie the highest score on the board** — they are important *and* rated
-`Simple (5)` — and neither is in the queue. By the team's own formula these are among the best
-available work, and they have been sitting in `Pool` since 2025.
+| # | Importance | Simplicity | Priority | Was | Title |
+|---|---:|---|---:|---|---|
+| [#1473](https://github.com/virtualcell/vcell/issues/1473) | 7 | `Simple (5)` | **12** | Pool, unranked | ImageJ N5 export metadata needs time array, origin, extent |
+| [#1451](https://github.com/virtualcell/vcell/issues/1451) | 7 | `Simple (5)` | **12** | Pool, unranked | Add "Save as Local" to the error message |
+| [#1199](https://github.com/virtualcell/vcell/issues/1199) | 9 | `Intricate (2)` | **11** | Pool, unranked | Epic: Refactor Data Export Services |
+| [#191](https://github.com/virtualcell/vcell/issues/191) | 6 | `Intricate (2)` | **8** | Pool, unranked | New GUI design for spatial sim results viewer |
 
-**53 issues have `Simplicity` but no `Importance`**, so they are half-scored and cannot receive a
-Priority until someone rates their value.
+**`#1473` and `#1451` tie the highest score on the board** — important *and* rated `Simple (5)` —
+and had been sitting in `Pool` since 2025. By the team's own formula they are among the best
+available work.
 
-> **Action:** record the formula in the board README so it survives (it is currently reconstructable
-> only from the data). Recompute `#1495`. Move `#1473`, `#1451`, `#1199`, `#191` into `Queued` with
-> their computed Priority, or say why not. Consider whether `Priority` should be a computed column
-> rather than a hand-entered one, since hand-entry is what let `#1495` drift.
+Verified after the edit against a fresh read of the board: **61 issues now carry a Priority, zero
+violate `Priority = Importance + Simplicity`, and nothing remains scored-but-unranked.**
+
+> **Caveat on `#1199`:** it is an *epic* with zero linked children, so it is now queued as an empty
+> container. Populating it (see
+> [04-epic-map.md](04-epic-map.md#b-1199-refactor-data-export-services-vs-1008-vcell-export-needs-a-face-lift))
+> or returning it to `Pool` are both reasonable; queuing it was done as instructed and is trivially
+> reversible.
+
+**53 issues have `Simplicity` but no `Importance`**, so they remain half-scored and cannot receive
+a Priority until someone rates their value. That is the remaining gap in the scoring data.
+
+> **Still to do:** record the formula in the board README so it survives — it is currently
+> reconstructable only from the data. Consider making `Priority` a computed column rather than
+> hand-entered, since hand-entry is what let `#1495` drift in the first place.
 
 ---
 
@@ -217,7 +229,7 @@ GitHub now has **native sub-issues** (the board already exposes `Parent issue` a
 | Action | Effort | Effect |
 |---|---|---|
 | Document the `Priority = Importance + Simplicity` formula | 5 min | Makes the ranked slate readable and reproducible |
-| Recompute `#1495`; queue `#1473`/`#1451`/`#1199`/`#191` | 10 min | Two top-scoring issues stop hiding in `Pool` |
+| ~~Recompute `#1495`; queue `#1473`/`#1451`/`#1199`/`#191`~~ | — | **Done 2026-08-19** — board is now formula-consistent |
 | Delete 4 stale release labels (45 issues) | 10 min | Removes actively misleading signal |
 | Bulk-add 55 off-board issues | 30 min | Board covers 2026 work |
 | Close the 4 `Done`-but-open issues | 15 min | Tracker and board agree |

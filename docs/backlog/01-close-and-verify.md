@@ -131,6 +131,8 @@ add the PR link and a scope sentence.
 | [#1718](https://github.com/virtualcell/vcell/issues/1718) | 🗂 VCell — Zenodo release archiving | 2026-07 | **off-board** | — | — | — |
 | [#1777](https://github.com/virtualcell/vcell/issues/1777) | Zenodo release archiving has drifted | 2026-07 | **off-board** | — | — | — |
 
+**Flags:** `HP` = High Priority label · `BLK` = Blocked · `EPIC` = Type: Epic · `REF` = To Refine · `thin` = body under 80 chars
+
 ---
 
 ## `#748` — the one I could not resolve

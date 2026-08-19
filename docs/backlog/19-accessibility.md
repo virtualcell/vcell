@@ -136,4 +136,4 @@ example of the two prioritization mechanisms contradicting each other.
 | [#1604](https://github.com/virtualcell/vcell/issues/1604) | Need to Update and Unify Appearance of GUI across operating systems (Windows, Mac, Lin… | 2025-12 | Queued | 5/4 | Byzantine&nbsp;(1) | HP |
 | [#1603](https://github.com/virtualcell/vcell/issues/1603) | [EPIC] VCell GUI must adhere to new UConn Health Accessibility Guidelines | 2025-12 | Queued | — | — | HP EPIC |
 
-**Flags:** `HP` = High Priority label · `EPIC` = Type: Epic
+**Flags:** `HP` = High Priority label · `BLK` = Blocked · `EPIC` = Type: Epic · `REF` = To Refine · `thin` = body under 80 chars
