@@ -10,6 +10,7 @@
 
 package cbit.vcell.modeldb;
 
+import cbit.sql.Field;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.util.AmplistorUtils;
 import org.apache.logging.log4j.LogManager;
@@ -793,6 +794,41 @@ public class DBBackupAndClean {
 	}
 
 	
+	//
+	// A row that no document points at yet is not necessarily garbage.
+	//
+	// ServerDocumentManager.saveBioModel is not one transaction: it commits each child (geometry, math
+	// description, model, simulation context, simulation) through its own DBTopLevel.insertVersionable
+	// call, and only writes the vc_biomodelsimcontext / vc_biomodelsim link rows in a later transaction.
+	// Between those commits the child is committed and unreferenced -- indistinguishable, to the queries
+	// below, from an orphan left behind by a delete.
+	//
+	// Collecting it there breaks the save in progress (ORA-02291, parent key not found, seen in prod on
+	// 2026-08-07 and 2026-08-14) and, when the race goes the other way, aborts this sweep instead
+	// (ORA-02292, child record found -- issue #1961).
+	//
+	// So require the row to have been sitting there longer than any save can plausibly take. Garbage an
+	// hour old is still garbage; a row a few hundred milliseconds old is a save in flight.
+	//
+	private static final int CLEANUP_MIN_AGE_HOURS = 1;
+
+	private static String olderThanMinAgeClause(Field versionDateField, DatabaseSyntax databaseSyntax){
+		final String NOW;
+		switch (databaseSyntax){
+			case ORACLE:{
+				NOW = "SYSDATE";
+				break;
+			}
+			case POSTGRES:{
+				NOW = "CURRENT_TIMESTAMP";
+				break;
+			}
+			default:
+				throw new RuntimeException("unexpected database syntax "+databaseSyntax);
+		}
+		return versionDateField.getQualifiedColName()+" < "+NOW+" - INTERVAL '"+CLEANUP_MIN_AGE_HOURS+"' HOUR";
+	}
+
 	private static void cleanRemoveUnreferencedSimulations(Connection con, StringBuffer logStringBuffer, DatabaseSyntax databaseSyntax) throws Exception{
 		//
 		//Remove Simulations not pointed to by MathModels or BioModels
@@ -801,7 +837,8 @@ public class DBBackupAndClean {
 		final String SIMID = "SIMID";
 		final String SIMDATE = "SIMDATE";
 		String UNREFERENCED_SIMS_CLAUSE = 
-			SimulationTable.table.id.getQualifiedColName() + " IN (" + getSelectUnreferencedSimKeySQL(databaseSyntax) + ")";
+			SimulationTable.table.id.getQualifiedColName() + " IN (" + getSelectUnreferencedSimKeySQL(databaseSyntax) + ")"+
+			" AND "+olderThanMinAgeClause(SimulationTable.table.versionDate, databaseSyntax);
 
 		String sql =
 			"SELECT "+
@@ -885,7 +922,8 @@ public class DBBackupAndClean {
 			" SELECT "+SimulationTable.table.mathRef.getQualifiedColName()+
 				" FROM "+SimulationTable.table.getTableName()+
 				" WHERE "+SimulationTable.table.mathRef.getQualifiedColName()+" IS NOT NULL"+
-			")";
+			")"+
+			" AND "+olderThanMinAgeClause(MathDescTable.table.versionDate, databaseSyntax);
 
 		String sql =
 			"SELECT "+
@@ -910,7 +948,7 @@ public class DBBackupAndClean {
 			executeUpdate(con, sql,logStringBuffer);
 	}
 
-	private static void cleanRemoveUnReferencedNonSpatialGeometries(Connection con, StringBuffer logStringBuffer) throws Exception{
+	private static void cleanRemoveUnReferencedNonSpatialGeometries(Connection con, StringBuffer logStringBuffer, DatabaseSyntax databaseSyntax) throws Exception{
 		//
 		//Remove non-spatial geometries (dimension==0) that are not pointed to by mathModels or simContexts
 		//
@@ -925,7 +963,8 @@ public class DBBackupAndClean {
 			" SELECT "+SimContextTable.table.geometryRef.getQualifiedColName()+" FROM "+SimContextTable.table.getTableName()+
 			" UNION "+
 			" SELECT "+MathDescTable.table.geometryRef.getQualifiedColName()+" FROM "+MathDescTable.table.getTableName() +
-			")";
+			")"+
+			" AND "+olderThanMinAgeClause(GeometryTable.table.versionDate, databaseSyntax);
 
 		String sql =
 		"SELECT "+
@@ -950,7 +989,7 @@ public class DBBackupAndClean {
 		executeUpdate(con, sql,logStringBuffer);
 	}
 
-	private static void cleanRemoveUnReferencedSimulationContexts(Connection con, StringBuffer logStringBuffer) throws Exception{
+	private static void cleanRemoveUnReferencedSimulationContexts(Connection con, StringBuffer logStringBuffer, DatabaseSyntax databaseSyntax) throws Exception{
 		//
 		//Remove SimulationContexts that don't have a biomodel
 		//
@@ -960,7 +999,8 @@ public class DBBackupAndClean {
 			" NOT IN ("+
 				"SELECT "+BioModelSimContextLinkTable.table.simContextRef.getQualifiedColName()+
 				" FROM "+BioModelSimContextLinkTable.table.getTableName()+
-			")";
+			")"+
+			" AND "+olderThanMinAgeClause(SimContextTable.table.versionDate, databaseSyntax);
 
 		final String SIMCONTID = "SIMCONTID";
 		final String SIMCONTDATE = "SIMCONTDATE";
@@ -988,7 +1028,7 @@ public class DBBackupAndClean {
 
 	}
 
-	private static void cleanRemoveUnReferencedModels(Connection con, StringBuffer logStringBuffer) throws Exception{
+	private static void cleanRemoveUnReferencedModels(Connection con, StringBuffer logStringBuffer, DatabaseSyntax databaseSyntax) throws Exception{
 		//
 		//Remove Models that are not pointed to by a biomodel
 		//and not referenced (erroneously) by a SimulationContext
@@ -1000,7 +1040,8 @@ public class DBBackupAndClean {
 			" SELECT "+BioModelTable.table.modelRef.getQualifiedColName()+" FROM "+BioModelTable.table.getTableName()+
 			" UNION "+
 			" SELECT "+SimContextTable.table.modelRef.getQualifiedColName()+" FROM "+SimContextTable.table.getTableName()+
-			")";
+			")"+
+			" AND "+olderThanMinAgeClause(ModelTable.table.versionDate, databaseSyntax);
 
 		final String MODELID = "MODELID";
 		final String MODELDATE = "MODELDATE";
@@ -1580,12 +1621,12 @@ lg.info("Del sim simcount="+deleteTheseSims.size());
 		cleanClearVersionBranchPointRef(con,MathDescTable.table, logStringBuffer);
 		cleanRemoveUnreferencedMathDescriptions(con, logStringBuffer, databaseSyntax);
 
-		cleanRemoveUnReferencedNonSpatialGeometries(con, logStringBuffer);
+		cleanRemoveUnReferencedNonSpatialGeometries(con, logStringBuffer, databaseSyntax);
 
 		cleanClearVersionBranchPointRef(con,SimContextTable.table, logStringBuffer);
-		cleanRemoveUnReferencedSimulationContexts(con, logStringBuffer);
+		cleanRemoveUnReferencedSimulationContexts(con, logStringBuffer, databaseSyntax);
 
-		cleanRemoveUnReferencedModels(con, logStringBuffer);
+		cleanRemoveUnReferencedModels(con, logStringBuffer, databaseSyntax);
 		
 		cleanRemoveUnReferencedSotwareVersions(con, logStringBuffer);
 	}
