@@ -93,7 +93,7 @@ a Priority until someone rates their value. That is the remaining gap in the sco
 
 | Mechanism | Count | Problem |
 |---|---:|---|
-| Board `Importance` + `Simplicity` → `Priority` | 61 / 114 / 57 | Formula undocumented; 4 issues scored but never ranked; 53 half-scored (above) |
+| Board `Importance` + `Simplicity` → `Priority` | 61 / 114 / 57 | Formula undocumented (the 4 scored-but-unranked issues were fixed — see §1); 53 still half-scored |
 | `High Priority` label | 28 | Only 8 overlap the numeric fields; **5 are not on the board at all** |
 | Release labels `Next Release`, `VCell-7.5.0/7.5.1/7.6.0` | 45 issues | Name shipped versions; we are on **8.0.27.01** |
 

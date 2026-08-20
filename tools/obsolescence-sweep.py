@@ -13,15 +13,26 @@ Usage:
         --json number,title,body,createdAt > issues.json
     python3 tools/obsolescence-sweep.py [issues.json] [--repo PATH]
 """
-import json, re, subprocess, collections, os, sys
+import json, re, subprocess, collections, os, sys, argparse
 
-args = [a for a in sys.argv[1:] if not a.startswith('-')]
-ISSUES_JSON = args[0] if args else 'issues.json'
-REPO = os.environ.get('VCELL_REPO') or subprocess.run(
+_p = argparse.ArgumentParser(description='Obsolescence sweep over the open issue backlog.')
+_p.add_argument('issues_json', nargs='?', default='issues.json',
+                help='gh issue list --json number,title,body,createdAt output')
+_p.add_argument('--repo', default=None,
+                help='path to the VCell checkout (default: $VCELL_REPO, else git rev-parse)')
+_a = _p.parse_args()
+ISSUES_JSON = _a.issues_json
+REPO = _a.repo or os.environ.get('VCELL_REPO') or subprocess.run(
     ['git', 'rev-parse', '--show-toplevel'], capture_output=True, text=True).stdout.strip() or '.'
 OUT = 'obsolescence-sweep.json'
+# Deliberately NO '.md': indexing documentation into `corpus` makes the sweep report its own
+# findings as 'present' -- and keeps any deleted class alive forever if a CHANGELOG or design
+# doc still names it. Markdown paths still resolve; those come from `files`, not `src`.
 SRC_EXT = ('.java', '.py', '.xml', '.sh', '.ts', '.properties', '.yml', '.yaml',
-           '.json', '.js', '.html', '.md', '.c', '.cpp', '.h', '.sql', '.cff', '.toml')
+           '.json', '.js', '.html', '.c', '.cpp', '.h', '.sql', '.cff', '.toml')
+# Dependency manifests are matched by name, so they must come from `files` -- `requirements.txt`
+# and `Dockerfile` do not match SRC_EXT and would otherwise never be read at all.
+MANIFESTS = ('pom.xml', 'requirements.txt', 'pyproject.toml', 'package.json', 'Dockerfile')
 FILE_EXT = re.compile(r'\.(java|py|xml|sh|ts|properties|yml|yaml|cpp|h|md|json|js|sql|txt|pptx|docx|csv|zip|omex|vcml|jar)$', re.I)
 
 files = [f for f in subprocess.run(['git', 'ls-files'], cwd=REPO, capture_output=True, text=True)
@@ -54,9 +65,15 @@ for f in src:
         continue
     for m in IDENT.finditer(raw):
         corpus.add(m.group().decode('ascii', 'ignore'))
-    if os.path.basename(f) in ('pom.xml', 'requirements.txt', 'pyproject.toml',
-                               'package.json', 'Dockerfile'):
-        DEPFILES.append(raw.decode('utf8', 'replace').lower())
+
+for f in files:
+    if os.path.basename(f) not in MANIFESTS:
+        continue
+    try:
+        DEPFILES.append(open(os.path.join(REPO, f), 'rb').read().decode('utf8', 'replace').lower())
+    except OSError:
+        pass
+
 corpus_ci = collections.defaultdict(set)
 for ident in corpus:
     corpus_ci[ident.lower()].add(ident)
@@ -91,6 +108,9 @@ NOISE = {
 }
 # documentation / attachment files are not code -- their absence proves nothing
 DOC_EXT = re.compile(r'\.(md|pptx|docx|csv|zip|omex|vcml|txt|png|jpg|pdf)$', re.I)
+# 'Node.js', 'Vue.js', 'Three.js', 'Config.json' are library and prose names, not filenames.
+# For these extensions a token only counts as a path if it actually looks like one (has a '/').
+AMBIGUOUS_EXT = {'js', 'ts', 'json'}
 
 DOTTED = re.compile(r'\b([A-Z][A-Za-z0-9]*(?:\.[A-Za-z][A-Za-z0-9_]*)+)\b')
 CAMEL  = re.compile(r'\b([A-Z][a-z0-9]+(?:[A-Z][a-z0-9]+){1,})\b')
@@ -114,7 +134,11 @@ def classify(body):
         tok = m.group(1)
         if tok.split('.')[0] in NOISE or DOC_EXT.search(tok):
             continue
-        out['path' if FILE_EXT.search(tok) else 'symbol'].add(tok)
+        m_ext = FILE_EXT.search(tok)
+        if m_ext and (('/' in tok) or m_ext.group(1).lower() not in AMBIGUOUS_EXT):
+            out['path'].add(tok)
+        else:
+            out['symbol'].add(tok)
     for m in CAMEL.finditer(body):
         tok = m.group(1)
         if tok in NOISE or len(tok) < 6:
@@ -144,8 +168,12 @@ def resolve(kind, tok):
                     return 'renamed', cand_path
         return 'missing', None
 
-    parts = [p for p in tok.split('.') if p] if kind == 'symbol' else [tok]
+    # IDENT only indexes identifiers of 3+ chars, so shorter segments are unknowable rather
+    # than absent -- judging on them turned 'Expression.io' into a missing symbol.
+    parts = [p for p in tok.split('.') if len(p) >= 3] if kind == 'symbol' else [tok]
     if kind == 'symbol':
+        if not parts:
+            return 'present', None
         if all(p in corpus for p in parts):
             return 'present', None
         gone = [p for p in parts if p not in corpus]

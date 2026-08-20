@@ -139,9 +139,10 @@ recommendation #1 in [00-method.md](00-method.md).
    is now formula-consistent, with 53 issues still half-scored (`Simplicity` but no `Importance`).
 2. **`High Priority` label** — 28 issues. Only 8 of them also carry a numeric Priority, and those
    8 spread across the whole 2–12 range, so the label and the field are *not* saying the same thing.
-3. **`Next Release` label** — 19 issues, and the `VCell-7.5.0` / `7.5.1` / `7.6.0` labels on 33
-   more. The current release line is **8.0.27.01**. These labels are release-planning residue from
-   three major versions ago and are now actively misleading.
+3. **Release labels** — `Next Release` (19), `VCell-7.6.0` (26), `VCell-7.5.0` (5),
+   `VCell-7.5.1` (2). That is 52 label applications across **45 distinct issues**, since seven
+   carry two. The current release line is **8.0.27.01**, so these are release-planning residue
+   from three major versions ago and are now actively misleading.
 
 ---
 

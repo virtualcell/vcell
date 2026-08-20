@@ -38,10 +38,10 @@ this.
 in `ScrollTable` can crash the JVM), `#858` (`ArrayIndexOutOfBounds` in
 `FunctionRangeGenerator.getFunctionStatistics()`, from a user error report), `#1593` (black screen).
 
-`#1747` and `#1848` have precise diagnoses naming the class and the mechanism. **All three of
-`#1747`, `#1848` are off-board** and unranked, while vaguer enhancement requests sit `Queued`.
-That inversion is the strongest argument in this document for doing the off-board sweep in
-[03-board-hygiene.md](03-board-hygiene.md) first.
+`#1747` and `#1848` have precise diagnoses naming the class and the mechanism. **Both were
+off-board** and unranked on 2026-08-19, while vaguer enhancement requests sat `Queued`. That
+inversion was the strongest argument in this document for doing the off-board sweep in
+[03-board-hygiene.md](03-board-hygiene.md) first — which has since been done.
 
 ### Copy / paste (2)
 

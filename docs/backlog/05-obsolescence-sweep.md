@@ -120,7 +120,7 @@ all confirmed:
 | **Case sensitivity** | `#912` | Issue names `SedmlJob.java`; the file is `SedMLJob.java`. | **Fixed** — now reported as `renamed`, not `missing` |
 | **Stem match across extensions** | `#912` | `experiment/outputs/temp/model.xml` matched `Model.java`. | **Fixed** — extension must match |
 | **Forward-looking references** | `#1921` | Names files *to create*. Absence is the point. | Not fixable mechanically |
-| **Prose that looks like code** | `#986` | `ExportedImage`, `SpatialResultsViewer` are a user describing UI navigation. | Not fixable mechanically |
+| **Prose that looks like code** | `#986` | `ExportedImage`, `SpatialResultsViewer` are a user describing UI navigation. | Partly fixed — library names like `Node.js` no longer read as file paths |
 | **Sibling repos** | `#1578` | `Voronoi32.cpp` lives in `vcell-solvers`. | Flagged `[names another repo]` |
 | **Attachments and docs** | `#648` | `.pptx` filenames are not code. | Filtered |
 | **Upstream library APIs** | `#1964`, `#1859` | `DatasetCreationOptions` is jhdf's; `MediaRecorder` is a browser API. | Not fixable mechanically |
@@ -134,6 +134,23 @@ That is a distinct action from "the code is gone", so the tool now reports three
 `present`, `renamed`, `missing` — rather than two.
 
 After the fix, `#912` is the only `renamed` case and `#1578` the only `missing` one.
+
+### Two defects found by reviewing this tool
+
+A code review of the PR carrying this document found five bugs in the sweep, two of which had
+produced findings recorded *here*:
+
+- **Dependency manifests were read from the source list**, which excludes `requirements.txt`
+  (no matching extension) and `Dockerfile` (no extension at all). So every Dockerfile-declared
+  dependency read as **gone**. That is exactly why `#1635` showed `bionetgen=GONE` above — a false
+  signal, corrected by hand at the time, and now fixed at the source.
+- **The sweep indexed its own report.** `.md` was in the source-extension list, so once this
+  document named `SpatialResultsViewer` and `DatasetCreationOptions`, a re-run reported them
+  *present* — the tool erasing its own evidence. Worse in general: any class deleted from the code
+  stays "present" forever if a CHANGELOG or design doc still mentions it.
+
+Both are fixed. The second is the more instructive: a checker that reads documentation as if it
+were code will confirm whatever its own output claims.
 
 ### A guard worth having
 
