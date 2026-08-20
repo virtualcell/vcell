@@ -1140,7 +1140,6 @@ public class ASCIIExporter {
         final double[][] variableValues = timeSeriesJobResults.getTimesAndValuesForVariable(variableName);
 
         pcs.data.put(PCS.POINTINFO, new ArrayList<String>());
-        pcs.data.put(PCS.POINTVALS, new ArrayList<Double>());
         pcs.data.put(PCS.TIMES, new ArrayList<Double>());
         pcs.data.put(PCS.TIMEBOUNDS, new int[]{beginIndex, endIndex});
 
@@ -1167,17 +1166,14 @@ public class ASCIIExporter {
                 ((ArrayList<String>) pcs.data.get(PCS.POINTINFO)).add(spatialSelectionDescription);
                 for(int i = beginIndex; i <= endIndex; i++){
                     fileDataContainerManager.append(fileDataContainerID, "," + variableValues[k + 1][i - beginIndex]);
-                    ((ArrayList<Double>) pcs.data.get(PCS.POINTVALS)).add(variableValues[k + 1][i - beginIndex]);
                 }
                 fileDataContainerManager.append(fileDataContainerID, "\n");
             }
+            // Note: this branch writes no POINTVALS dataset, and never has. Only the layout below does.
         } else {
-            double[] hdfTimes = null;
-            double[] hdfValues = null;
-            if(hdf5Group != null){
-                hdfTimes = new double[endIndex - beginIndex + 1];
-                hdfValues = new double[hdfTimes.length * pointSpatialSelections.length];
-            }
+            // One row per timepoint, written as it is produced, matching the curve values above
+            RowStreamer pointValues = new RowStreamer(hdf5Group, PCS.POINTVALS.name(),
+                    endIndex - beginIndex + 1, pointSpatialSelections.length);
             fileDataContainerManager.append(fileDataContainerID, ",Time\n");
             fileDataContainerManager.append(fileDataContainerID, "Coordinates,");
             for(int k = 0; k < pointSpatialSelections.length; k++){
@@ -1186,24 +1182,19 @@ public class ASCIIExporter {
                 ((ArrayList<String>) pcs.data.get(PCS.POINTINFO)).add(spatialSelectionDescription);
             }
             fileDataContainerManager.append(fileDataContainerID, "\n");
-            int c = 0;
             for(int i = beginIndex; i <= endIndex; i++){
                 fileDataContainerManager.append(fileDataContainerID, "," + allTimes[i]);
                 ((ArrayList<Double>) pcs.data.get(PCS.TIMES)).add(allTimes[i]);
-                hdfTimes[i - beginIndex] = allTimes[i];
                 for(int k = 0; k < pointSpatialSelections.length; k++){
                     fileDataContainerManager.append(fileDataContainerID, "," + variableValues[k + 1][i - beginIndex]);
-                    ((ArrayList<Double>) pcs.data.get(PCS.POINTVALS)).add(variableValues[k + 1][i - beginIndex]);
-                    hdfValues[c] = variableValues[k + 1][i - beginIndex];
-                    c++;
+                    pointValues.add(variableValues[k + 1][i - beginIndex]);
                 }
                 fileDataContainerManager.append(fileDataContainerID, "\n");
             }
+            pointValues.close();
             if(hdf5Group != null){
                 long[] dimsCoord = new long[]{1, pointSpatialSelections.length};
                 insertStrings(hdf5Group, PCS.POINTINFO.name(), dimsCoord, (ArrayList<String>) pcs.data.get(PCS.POINTINFO));//UiTableExporterToHDF5.writeHDF5Dataset(hdf5GroupID, PCS.POINTINFO.name(), dimsCoord, pcs.data.get(PCS.POINTINFO),false);
-                long[] dimsValues = new long[]{hdfTimes.length, pointSpatialSelections.length};
-                insertDoubles(hdf5Group, PCS.POINTVALS.name(), dimsValues, hdfValues);//UiTableExporterToHDF5.writeHDF5Dataset(hdf5GroupID, PCS.POINTVALS.name(), dimsValues, hdfValues,false);
             }
         }
 
