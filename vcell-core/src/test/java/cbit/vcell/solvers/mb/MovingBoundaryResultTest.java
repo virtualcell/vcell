@@ -3,8 +3,6 @@ package cbit.vcell.solvers.mb;
 
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.solvers.mb.MovingBoundaryTypes.*;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Tag;
@@ -24,7 +22,6 @@ public class MovingBoundaryResultTest {
 		PropertyLoader.setProperty(PropertyLoader.installationRoot, new File("..").getAbsolutePath());
 	}
     public MovingBoundaryResultTest() {
-		Logger lg = LogManager.getLogger("ncsa");
 		mbr = new MovingBoundaryReader(fname);
 		mbr.testquery();
 	}
