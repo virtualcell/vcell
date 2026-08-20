@@ -111,7 +111,7 @@ for up to four years across dozens of actual releases.
 
 ---
 
-## 3. Fifty-five issues are not on the board
+## 3. Fifty-five issues were not on the board — **fixed 2026-08-19**
 
 **These are disproportionately the best-written issues in the repo**, and they are invisible to
 anyone planning from board #1. The board is stale at the *new* end, not the old end.
@@ -134,9 +134,11 @@ Five of the 55 carry the `High Priority` label — so the board omits work the l
 
 </details>
 
-> **Action:** bulk-add all 55 to the board with status `Pool`, then triage. This is one of the
-> cheapest meaningful improvements available — perhaps 30 minutes — and it roughly doubles the
-> board's coverage of 2026 work.
+> **Done.** All 56 (the 55 below plus `#2005`, filed the same day) were added via
+> `backlog_lint.py --fix-board`. They landed in the board's default column and **still need
+> triaging into `Pool` and scoring** — being on the board is not the same as being groomed.
+> The `not-on-board` check now reports zero, and the lint's committed baseline shrank from 233
+> accepted findings to 178.
 
 **Root cause worth fixing separately:** issues are evidently being added to the board by hand.
 A GitHub Actions workflow or the project's built-in auto-add rule would stop this recurring.
@@ -231,7 +233,7 @@ GitHub now has **native sub-issues** (the board already exposes `Parent issue` a
 | Document the `Priority = Importance + Simplicity` formula | 5 min | Makes the ranked slate readable and reproducible |
 | ~~Recompute `#1495`; queue `#1473`/`#1451`/`#1199`/`#191`~~ | — | **Done 2026-08-19** — board is now formula-consistent |
 | Delete 4 stale release labels (45 issues) | 10 min | Removes actively misleading signal |
-| Bulk-add 55 off-board issues | 30 min | Board covers 2026 work |
+| ~~Bulk-add 55 off-board issues~~ | — | **Done 2026-08-19** — board covers 2026 work |
 | Close the 4 `Done`-but-open issues | 15 min | Tracker and board agree |
 | Demote stale `Active` → `Queued`/`Pool` | 15 min | `Active` becomes trustworthy |
 | Reduce 3+ assignees to one owner | 45 min | Creates accountability on 33 issues |

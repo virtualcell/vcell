@@ -19,7 +19,12 @@ nothing in this pass is invisible:
 2. **Four issues updated from the obsolescence sweep** — `#366` closed as obsolete with its
    evidence and an invitation to reopen; `#1341`, `#1470` and `#1636` given findings as comments
    rather than body edits, so their authors' words are intact. See
-   [05-obsolescence-sweep.md](05-obsolescence-sweep.md).
+   [05-obsolescence-sweep.md](05-obsolescence-sweep.md). `#1730` was also annotated: the pure-Java
+   trajectory viewer it asks for shipped in 8.0.4.01, three weeks after it was filed.
+3. **All 56 off-board issues were added to project board #1**, which is Step 3 of the plan in
+   [00-method.md](00-method.md). The board-coverage figures below therefore describe **what was
+   found on 2026-08-19, not what is true now** — that gap is the recommendation having been taken,
+   and `tools/backlog-lint` now guards against it recurring.
 
 **The backlog is therefore 271 open, not 272, as of this writing.** The tables below are the
 2026-08-19 snapshot and deliberately have not been regenerated — `#366` still appears in
@@ -34,7 +39,7 @@ nothing in this pass is invisible:
 | [00-method.md](00-method.md) | The triage plan: dispositions, decision rules, who decides what, suggested sequencing |
 | [01-close-and-verify.md](01-close-and-verify.md) | 14 issues that look done, obsolete, or not-a-backlog-item — with the evidence |
 | [02-needs-refinement.md](02-needs-refinement.md) | 50 issues too thin to act on; what each one needs before it can be estimated |
-| [03-board-hygiene.md](03-board-hygiene.md) | The scoring model (`Priority = Importance + Simplicity`), 55 issues off the board, 4 marked Done but open, stale `Active`, label/field duplication |
+| [03-board-hygiene.md](03-board-hygiene.md) | The scoring model (`Priority = Importance + Simplicity`), the 55 issues that were off the board, 4 marked Done but open, stale `Active`, label/field duplication |
 | [04-epic-map.md](04-epic-map.md) | Epic → child coverage, the 4 overlapping epic pairs, and the 5 strategic decisions that gate large chunks of the backlog |
 | [05-obsolescence-sweep.md](05-obsolescence-sweep.md) | Does the code an issue names still exist? Settles 6 issues; documents why it can only reach a fifth of the backlog |
 
@@ -79,9 +84,14 @@ and it shows: many have an empty body and a title that was a line item in a spre
 
 ### Board coverage
 
-217 of 272 issues are on project board #1; **55 are not on it at all** — and those 55 are
+217 of 272 issues were on project board #1; **55 were not on it at all** — and those 55 were
 disproportionately the *recent, well-written* ones (all the 2026 SpringSaLaD grooming issues, the
-field-viewer train, the infra issues). The board is drifting out of date at the new end, not the old end.
+field-viewer train, the infra issues). The board was drifting out of date at the new end, not the
+old end.
+
+**All 56 have since been added** (see the preamble). The table below is the 2026-08-19 finding,
+kept because the *pattern* is the point: left alone, this recurs. `tools/backlog-lint` now fails
+daily on any issue that is not on the board, which is the durable fix.
 
 | Board status | Count | Reading |
 |---|---:|---|

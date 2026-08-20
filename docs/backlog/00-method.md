@@ -110,9 +110,10 @@ the four stale release labels. Right now three mechanisms disagree and the disag
 14 issues in [01](01-close-and-verify.md), each with its evidence. Six are already verified against
 the repo; eight need a yes/no from a named person.
 
-**Step 3 — Put the 55 off-board issues on the board.** *(~30 min)*
-[03](03-board-hygiene.md). These are the best-described issues in the repo and they are invisible
-to anyone planning from the board. This is the cheapest high-value step in the list.
+**Step 3 — Put the 55 off-board issues on the board.** ~~*(~30 min)*~~ **— done 2026-08-19.**
+[03](03-board-hygiene.md). These were the best-described issues in the repo and were invisible to
+anyone planning from the board. All 56 were added with `backlog_lint.py --fix-board`; they still
+need triaging into `Pool` and scoring.
 
 **Step 4 — Take the 5 strategic decisions.** *(one meeting)*
 [04](04-epic-map.md). Postgres, the two competing UI epics, the desktop-vs-web viewer direction,
