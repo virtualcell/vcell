@@ -262,3 +262,6 @@ users_*.txt
 users_*.csv
 active_users*.csv
 /users.txt
+
+# backlog tooling output
+obsolescence-sweep.json

@@ -1,0 +1,154 @@
+# VCell Backlog Grooming — Index
+
+A snapshot-and-triage pass over **all 272 open issues** in `virtualcell/vcell`, cross-referenced
+against [project board #1](https://github.com/orgs/virtualcell/projects/1).
+
+**Snapshot taken:** 2026-08-19
+
+**These documents are proposals.** Every disposition — every close, merge, refine, and re-rank — is
+a recommendation for a human to accept, reject, or amend. No issue, label, or epic has been changed.
+
+**Two sets of changes were applied at Jim's instruction on 2026-08-19**, both recorded here so
+nothing in this pass is invisible:
+
+1. **Five project-board scores corrected**, after the board's `Priority = Importance + Simplicity`
+   formula was confirmed. `#1495`'s Priority was recomputed (5 → 10), and `#1473`, `#1451`,
+   `#1199`, `#191` were given their computed Priority and moved from `Pool` to `Queued`. These
+   were arithmetic corrections to the team's own model, not new judgments — see
+   [03-board-hygiene.md](03-board-hygiene.md). Status counts below reflect the board *after* that edit.
+2. **Four issues updated from the obsolescence sweep** — `#366` closed as obsolete with its
+   evidence and an invitation to reopen; `#1341`, `#1470` and `#1636` given findings as comments
+   rather than body edits, so their authors' words are intact. See
+   [05-obsolescence-sweep.md](05-obsolescence-sweep.md). `#1730` was also annotated: the pure-Java
+   trajectory viewer it asks for shipped in 8.0.4.01, three weeks after it was filed.
+3. **All 56 off-board issues were added to project board #1**, which is Step 3 of the plan in
+   [00-method.md](00-method.md). The board-coverage figures below therefore describe **what was
+   found on 2026-08-19, not what is true now** — that gap is the recommendation having been taken,
+   and `tools/backlog-lint` now guards against it recurring.
+
+**The backlog is therefore 271 open, not 272, as of this writing.** The tables below are the
+2026-08-19 snapshot and deliberately have not been regenerated — `#366` still appears in
+[13-export-visualization.md](13-export-visualization.md), annotated as closed.
+
+---
+
+## Read in this order
+
+| Doc | What it is |
+|---|---|
+| [00-method.md](00-method.md) | The triage plan: dispositions, decision rules, who decides what, suggested sequencing |
+| [01-close-and-verify.md](01-close-and-verify.md) | 14 issues that look done, obsolete, or not-a-backlog-item — with the evidence |
+| [02-needs-refinement.md](02-needs-refinement.md) | 50 issues too thin to act on; what each one needs before it can be estimated |
+| [03-board-hygiene.md](03-board-hygiene.md) | The scoring model (`Priority = Importance + Simplicity`), the 55 issues that were off the board, 4 marked Done but open, stale `Active`, label/field duplication |
+| [04-epic-map.md](04-epic-map.md) | Epic → child coverage, the 4 overlapping epic pairs, and the 5 strategic decisions that gate large chunks of the backlog |
+| [05-obsolescence-sweep.md](05-obsolescence-sweep.md) | Does the code an issue names still exist? Settles 6 issues; documents why it can only reach a fifth of the backlog |
+
+## Thematic groups
+
+Every open issue lands in exactly one group. Counts sum to 272.
+
+| Group | Count | Doc |
+|---|---:|---|
+| Desktop client UI (Swing) | 51 | [10-desktop-ui.md](10-desktop-ui.md) |
+| Standards & interop (SBML / SED-ML / OMEX / BioSimulators) | 42 | [11-standards-interop.md](11-standards-interop.md) |
+| SpringSaLaD / Langevin | 32 | [12-springsalad.md](12-springsalad.md) |
+| Data export & visualization | 32 | [13-export-visualization.md](13-export-visualization.md) |
+| API, platform & database | 30 | [14-api-platform.md](14-api-platform.md) |
+| Math generation & solvers | 26 | [15-math-solvers.md](15-math-solvers.md) |
+| Infrastructure, CI/CD & release ops | 19 | [16-infrastructure-ci.md](16-infrastructure-ci.md) |
+| Close / verify-then-close | 14 | [01-close-and-verify.md](01-close-and-verify.md) |
+| Simulation execution & HPC | 12 | [17-execution-hpc.md](17-execution-hpc.md) |
+| User documentation & materials | 9 | [18-user-docs.md](18-user-docs.md) |
+| Accessibility (UConn Health mandate) | 4 | [19-accessibility.md](19-accessibility.md) |
+| Strategic decision (Postgres migration) | 1 | [04-epic-map.md](04-epic-map.md) |
+
+---
+
+## The shape of the backlog
+
+**272 open issues. Half of them predate 2025.**
+
+| Opened | Count |
+|---|---:|
+| 2021 | 1 |
+| 2022 | 73 |
+| 2023 | 41 |
+| 2024 | 26 |
+| 2025 | 57 |
+| 2026 | 74 |
+
+The 2022 cohort is the largest historical block and the weakest described — it came in as a bulk
+import of a pre-existing to-do list (73 issues, mostly authored by `ACowan0105` on 2022-07-19/20),
+and it shows: many have an empty body and a title that was a line item in a spreadsheet.
+**71 issues have not been touched since 2024.**
+
+### Board coverage
+
+217 of 272 issues were on project board #1; **55 were not on it at all** — and those 55 were
+disproportionately the *recent, well-written* ones (all the 2026 SpringSaLaD grooming issues, the
+field-viewer train, the infra issues). The board was drifting out of date at the new end, not the
+old end.
+
+**All 56 have since been added** (see the preamble). The table below is the 2026-08-19 finding,
+kept because the *pattern* is the point: left alone, this recurs. `tools/backlog-lint` now fails
+daily on any issue that is not on the board, which is the durable fix.
+
+| Board status | Count | Reading |
+|---|---:|---|
+| Pool | 95 | Accepted but unscheduled — the actual backlog |
+| Queued | 67 | Ranked and ready; 61 of these carry a numeric Priority |
+| Shelved | 27 | Deliberately parked |
+| Active | 16 | Claimed as in-progress (**several are stale — see [03](03-board-hygiene.md)**) |
+| Blocked | 6 | External dependency |
+| Done | 4 | **Open but marked done — close candidates** |
+| (unset) | 2 | |
+| off-board | 55 | Never triaged onto the board |
+
+### Description quality
+
+| Body length | Count |
+|---|---:|
+| < 80 chars (title-only, effectively) | 54 |
+| < 200 chars | 107 |
+| median | 295 chars |
+
+**107 of 272 issues — 39% — cannot be estimated or assigned from what is written in them.**
+This is the single biggest obstacle to grooming, and it is why [02-needs-refinement.md](02-needs-refinement.md)
+exists as its own document.
+
+### Ownership
+
+- **71 issues have no assignee.**
+- **33 issues have 3 or more assignees** — which in practice means nobody owns them. `#611` and
+  `#1591` each carry five.
+
+---
+
+## Where the team's prioritization already lives
+
+Three separate, partly redundant prioritization mechanisms are in play. Reconciling them is
+recommendation #1 in [00-method.md](00-method.md).
+
+1. **Board `Importance` + `Simplicity` → `Priority`** — the most deliberate signal in the system,
+   and a genuine value/cost model. `Priority` is **derived**: it is the sum of `Importance`
+   (1–10, higher = more valuable) and `Simplicity` (1–5, higher = easier), exact on 56 of 57
+   ranked issues. **Higher Priority = do sooner.** The formula is undocumented on the board and
+   was reconstructed from the data; see [03-board-hygiene.md](03-board-hygiene.md). That pass caught
+   one row whose arithmetic had drifted (`#1495`) and four scored-but-never-ranked issues — two of
+   which tie the highest score on the board. **All five were corrected on 2026-08-19**; the board
+   is now formula-consistent, with 53 issues still half-scored (`Simplicity` but no `Importance`).
+2. **`High Priority` label** — 28 issues. Only 8 of them also carry a numeric Priority, and those
+   8 spread across the whole 2–12 range, so the label and the field are *not* saying the same thing.
+3. **Release labels** — `Next Release` (19), `VCell-7.6.0` (26), `VCell-7.5.0` (5),
+   `VCell-7.5.1` (2). That is 52 label applications across **45 distinct issues**, since seven
+   carry two. The current release line is **8.0.27.01**, so these are release-planning residue
+   from three major versions ago and are now actively misleading.
+
+---
+
+## Method note
+
+This pass read every issue title, label set, board field, and body (truncated to 450 chars), plus
+the full checklists of all 23 epics. Where a disposition rests on a claim about the code — "this
+was fixed", "this dependency is gone" — the claim was checked against the working tree or git log,
+and the check is cited inline. Claims that were *not* verified are marked as such.
