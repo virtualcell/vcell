@@ -5,9 +5,8 @@ import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.solvers.CartesianMeshTestSupport;
-import hdf.hdf5lib.H5;
-import hdf.hdf5lib.HDF5Constants;
 import io.jhdf.HdfFile;
+import io.jhdf.WritableHdfFile;
 import io.jhdf.api.Dataset;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -65,21 +64,16 @@ public class ASCIIExporterHdf5SliceTest {
 		Files.deleteIfExists(file);
 
 		FileDataContainerManager containers = new FileDataContainerManager();
-		long fileId = H5.H5Fcreate(file.toString(), HDF5Constants.H5F_ACC_TRUNC,
-			HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
-		long groupId = H5.H5Gcreate(fileId, "SimID_1", HDF5Constants.H5P_DEFAULT,
-			HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
-
-		ASCIIExporter exporter = new ASCIIExporter(null);
-		ASCIIExporter.SliceHelper sliceHelper =
-			exporter.new SliceHelper(TIME_COUNT, true, "XY", sliceNumber, false, mesh);
-		sliceHelper.setHDF5GroupVarID(groupId, "Ran_cyt");
-		for (int timeIndex = 0; timeIndex < TIME_COUNT; timeIndex++) {
-			sliceHelper.populate(containers, containers.getNewFileDataContainerID(), dataForTime.at(timeIndex));
+		try (WritableHdfFile writableHdfFile = HdfFile.write(file)) {
+			ASCIIExporter exporter = new ASCIIExporter(null);
+			ASCIIExporter.SliceHelper sliceHelper =
+				exporter.new SliceHelper(TIME_COUNT, true, "XY", sliceNumber, false, mesh);
+			sliceHelper.setHDF5GroupVar(writableHdfFile.putGroup("SimID_1"), "Ran_cyt");
+			for (int timeIndex = 0; timeIndex < TIME_COUNT; timeIndex++) {
+				sliceHelper.populate(containers, containers.getNewFileDataContainerID(), dataForTime.at(timeIndex));
+			}
+			sliceHelper.closeHDF5GroupAndValues();
 		}
-		sliceHelper.closeHDF5GroupAndValues();
-		H5.H5Gclose(groupId);
-		H5.H5Fclose(fileId);
 		return file;
 	}
 

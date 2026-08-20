@@ -14,15 +14,15 @@ import cbit.rmi.event.ExportEventController;
 import cbit.vcell.export.server.FileDataContainerManager.FileDataContainerID;
 import cbit.vcell.geometry.SinglePoint;
 import cbit.vcell.math.VariableType;
-import cbit.vcell.resource.NativeLib;
 import cbit.vcell.simdata.*;
 import cbit.vcell.solver.ode.ODESimData;
 import cbit.vcell.solvers.CartesianMesh;
 import edu.uchc.connjur.wb.ExecutionTrace;
-import hdf.hdf5lib.H5;
-import hdf.hdf5lib.HDF5Constants;
-import hdf.hdf5lib.exceptions.HDF5Exception;
-import hdf.hdf5lib.exceptions.HDF5LibraryException;
+import io.jhdf.HdfFile;
+import io.jhdf.api.DatasetCreationOptions;
+import io.jhdf.api.StreamingDataset;
+import io.jhdf.api.WritableGroup;
+import io.jhdf.WritableHdfFile;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -33,6 +33,7 @@ import org.vcell.util.document.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.*;
 
 /**
@@ -77,116 +78,159 @@ public class ASCIIExporter {
     /**
      * Insert a dataset at the specififed group where the data are doubles (as a java List)
      *
-     * @param hdf5GroupID the id of the group to apply the dataset to
+     * @param hdf5Group the group to apply the dataset to
      * @param dataspaceName name of the dataset
      * @param dims dimentional meansurements
      * @param data the data to fill the dataset
-     * @throws NullPointerException (unsure how this occurs)
-     * @throws HDF5Exception if the hdf5 library encounters something unusual
      */
-    public static void insertDoubles(long hdf5GroupID,String dataspaceName,long[] dims,List<Double> data) throws NullPointerException, HDF5Exception, HDF5LibraryException {
+    public static void insertDoubles(WritableGroup hdf5Group,String dataspaceName,long[] dims,List<Double> data) {
         double[] hdfData = org.apache.commons.lang.ArrayUtils.toPrimitive(((ArrayList<Double>)data).toArray(new Double[0]));
-        long hdf5DataspaceID = H5.H5Screate_simple(dims.length, dims, null);
-        long hdf5DatasetID = H5.H5Dcreate(hdf5GroupID, dataspaceName,HDF5Constants.H5T_NATIVE_DOUBLE, hdf5DataspaceID,HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
-        H5.H5Dwrite_double(hdf5DatasetID, HDF5Constants.H5T_NATIVE_DOUBLE, HDF5Constants.H5S_ALL, HDF5Constants.H5S_ALL, HDF5Constants.H5P_DEFAULT, hdfData);
-        H5.H5Dclose(hdf5DatasetID);
-        H5.H5Sclose(hdf5DataspaceID);
+        hdf5Group.putDataset(dataspaceName, JhdfUtils.createMultidimensionalArray(dims, hdfData));
     }
 
     /**
      * Insert a dataset at the specififed group where the data are doubles (as an array)
      *
-     * @param hdf5GroupID the id of the group to apply the dataset to
+     * @param hdf5Group the group to apply the dataset to
      * @param dataspaceName name of the dataset
      * @param dims dimentional meansurements
      * @param data the data to fill the dataset
-     * @throws NullPointerException (unsure how this occurs)
-     * @throws HDF5Exception if the hdf5 library encounters something unusual
      */
-    public static void insertDoubles(long hdf5GroupID,String dataspaceName,long[] dims,double[] data) throws NullPointerException, HDF5Exception {
-        long hdf5DataspaceID = H5.H5Screate_simple(dims.length, dims, null);
-        long hdf5DatasetID = H5.H5Dcreate(hdf5GroupID, dataspaceName,HDF5Constants.H5T_NATIVE_DOUBLE, hdf5DataspaceID,HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
-        H5.H5Dwrite_double(hdf5DatasetID, HDF5Constants.H5T_NATIVE_DOUBLE, HDF5Constants.H5S_ALL, HDF5Constants.H5S_ALL, HDF5Constants.H5P_DEFAULT, (double[])data);
-        H5.H5Dclose(hdf5DatasetID);
-        H5.H5Sclose(hdf5DataspaceID);
+    public static void insertDoubles(WritableGroup hdf5Group,String dataspaceName,long[] dims,double[] data) {
+        hdf5Group.putDataset(dataspaceName, JhdfUtils.createMultidimensionalArray(dims, data));
     }
 
     /**
      * Insert a dataset at the specififed group where the data are integers
      *
-     * @param hdf5GroupID the id of the group to apply the dataset to
+     * @param hdf5Group the group to apply the dataset to
      * @param dataspaceName name of the dataset
      * @param dims dimentional meansurements
      * @param data the data to fill the dataset
-     * @throws NullPointerException (unsure how this occurs)
-     * @throws HDF5Exception if the hdf5 library encounters something unusual
      */
-    public static void insertInts(long hdf5GroupID,String dataspaceName,long[] dims,int[] data) throws NullPointerException, HDF5Exception {
-        long hdf5DataspaceID = H5.H5Screate_simple(dims.length, dims, null);
-        long hdf5DatasetID = H5.H5Dcreate(hdf5GroupID, dataspaceName,HDF5Constants.H5T_NATIVE_INT, hdf5DataspaceID,HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
-        H5.H5Dwrite_int(hdf5DatasetID, HDF5Constants.H5T_NATIVE_INT, HDF5Constants.H5S_ALL, HDF5Constants.H5S_ALL, HDF5Constants.H5P_DEFAULT, (int[])data);
-        H5.H5Dclose(hdf5DatasetID);
-        H5.H5Sclose(hdf5DataspaceID);
+    public static void insertInts(WritableGroup hdf5Group,String dataspaceName,long[] dims,int[] data) {
+        hdf5Group.putDataset(dataspaceName, shaped(data, dims));
     }
 
     /**
      * Insert a dataset at the specififed group where the data are strings
      *
-     * @param hdf5GroupID the id of the group to apply the dataset to
+     * @param hdf5Group the group to apply the dataset to
      * @param datasetName name of the dataset
      * @param dims dimentional meansurements
      * @param data the data to fill the dataset
-     * @throws NullPointerException (unsure how this occurs)
-     * @throws HDF5Exception if the hdf5 library encounters something unusual
      */
-    public static void insertStrings(long hdf5GroupID,String datasetName,long[] dims,List<String> data) throws NullPointerException, HDF5Exception {
-        int largestStrLen = 0;
-        for(int i=0;i<data.size();i++) {
-            largestStrLen = Math.max(largestStrLen, data.get(i).length());
-        }
-        byte[] bytes = new byte[largestStrLen*data.size()];
-        int index = 0;
-        for(int i=0;i<data.size();i++) {
-            System.arraycopy(data.get(i).getBytes(), 0, bytes, index, data.get(i).length());
-            index+= largestStrLen;
-        }
-        long h5tcs1 = H5.H5Tcopy(HDF5Constants.H5T_C_S1);
-        H5.H5Tset_size(h5tcs1, largestStrLen);
-        long hdf5DataspaceID = H5.H5Screate_simple(dims.length, dims, null);
-        long hdf5DatasetID = H5.H5Dcreate(hdf5GroupID, datasetName,h5tcs1, hdf5DataspaceID,HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
-        //final byte[] bytes = allStringSB.toString().getBytes();
-        H5.H5Dwrite(hdf5DatasetID, h5tcs1, HDF5Constants.H5S_ALL, HDF5Constants.H5S_ALL, HDF5Constants.H5P_DEFAULT, bytes);
-        H5.H5Tclose(h5tcs1);
-        H5.H5Dclose(hdf5DatasetID);
-        H5.H5Sclose(hdf5DataspaceID);
+    public static void insertStrings(WritableGroup hdf5Group,String datasetName,long[] dims,List<String> data) {
+        // The native binding wrote fixed width strings padded to the longest; jhdf writes them variable length,
+        // so a reader gets the same strings without trailing padding.
+        hdf5Group.putDataset(datasetName, shaped(data.toArray(new String[0]), dims));
     }
 
     /**
      * Insert an attribute at the specified group where the data are a single value
      *
-     * @param hdf5GroupID the id of the group to apply the attribute to
+     * @param hdf5Group the group to apply the attribute to
      * @param attributeName name of the attribute
      * @param data the data to place
-     * @throws NullPointerException (unsure how this occurs)
-     * @throws HDF5Exception if the hdf5 library encounters something unusual
      */
-    public static void insertAttribute(long hdf5GroupID,String attributeName,String data) throws NullPointerException, HDF5Exception {
-        //insertAttributes(hdf5GroupID, dataspaceName, new ArrayList<String>(Arrays.asList(new String[] {data})));
-        //String[] attr = data.toArray(new String[0]);
+    public static void insertAttribute(WritableGroup hdf5Group,String attributeName,String data) {
+        // The native binding appended a NUL to terminate a fixed width C string; jhdf writes the string itself.
+        hdf5Group.putAttribute(attributeName, data);
+    }
 
-        String attr = data + '\u0000';
+    /**
+     * The export builds its data flat and states the shape separately, which the native binding took directly.
+     * jhdf reads the shape from the array it is given, so a flat array with multi dimensional dims has to be
+     * nested first. {@link JhdfUtils#createMultidimensionalArray} does this for doubles and is used where the
+     * data is doubles; this covers the other types the export writes.
+     *
+     * @param flat the data, flat, in row major order
+     * @param dims the shape it should have
+     * @return the data shaped as dims, or the original array when dims is one dimensional
+     */
+    private static Object shaped(Object flat, long[] dims) {
+        if(dims.length <= 1) {
+            return flat;
+        }
+        int[] shape = new int[dims.length];
+        for(int i = 0; i < dims.length; i++) {
+            shape[i] = Math.toIntExact(dims[i]);
+        }
+        Object nested = Array.newInstance(flat.getClass().getComponentType(), shape);
+        fillRowMajor(nested, flat, new int[]{0});
+        return nested;
+    }
 
-        //https://support.hdfgroup.org/ftp/HDF5/examples/misc-examples/vlstra.c
-        long h5attrcs1 = H5.H5Tcopy(HDF5Constants.H5T_C_S1);
-        H5.H5Tset_size (h5attrcs1, attr.length() /*HDF5Constants.H5T_VARIABLE*/);
-        long dataspace_id = -1;
-        //dataspace_id = H5.H5Screate_simple(dims.length, dims,null);
-        dataspace_id = H5.H5Screate(HDF5Constants.H5S_SCALAR);
-        long attribute_id = H5.H5Acreate(hdf5GroupID, attributeName, h5attrcs1, dataspace_id, HDF5Constants.H5P_DEFAULT,HDF5Constants.H5P_DEFAULT);
-        H5.H5Awrite(attribute_id, h5attrcs1, attr.getBytes());
-        H5.H5Sclose(dataspace_id);
-        H5.H5Aclose(attribute_id);
-        H5.H5Tclose(h5attrcs1);
+    /**
+     * Feeds a two dimensional dataset a row at a time, so values reach the file as they are produced rather than
+     * being collected first. Values are taken in the order they are added, which is the order the flat list they
+     * replace was built in, so the dataset is the same either way.
+     * <p>
+     * Values beyond the dataset's extent are dropped, matching what writing a longer buffer into a bounded
+     * dataspace did: a membrane curve appends a second block of values after the first.
+     */
+    static final class RowStreamer implements AutoCloseable {
+        private final StreamingDataset dataset;
+        private final double[] row;
+        private final int rowCount;
+        private int nextInRow = 0;
+        private int nextRow = 0;
+
+        /**
+         * @param hdf5Group the group to create the dataset in, or null to discard everything added
+         * @param datasetName the dataset name
+         * @param rowCount the dataset's first dimension, normally one per timepoint
+         * @param columnCount the dataset's second dimension
+         */
+        RowStreamer(WritableGroup hdf5Group, String datasetName, int rowCount, int columnCount) {
+            this.rowCount = rowCount;
+            this.row = new double[columnCount];
+            this.dataset = hdf5Group == null ? null : hdf5Group.newStreamingDataset(datasetName, double.class,
+                    new int[]{rowCount, columnCount},
+                    DatasetCreationOptions.builder().chunkDimensions(1, columnCount).build());
+        }
+
+        void add(double value) {
+            if(dataset == null || nextRow >= rowCount){
+                return;
+            }
+            row[nextInRow++] = value;
+            if(nextInRow == row.length){
+                dataset.writeChunk(new long[]{nextRow, 0}, row);
+                nextInRow = 0;
+                nextRow++;
+            }
+        }
+
+        @Override
+        public void close() {
+            if(dataset == null){
+                return;
+            }
+            // A dataset must be complete before the file closes, so pad a partial trailing row with the fill
+            // value the bounded write would have left there
+            while(nextRow < rowCount){
+                Arrays.fill(row, nextInRow, row.length, 0.0);
+                dataset.writeChunk(new long[]{nextRow, 0}, row);
+                Arrays.fill(row, 0.0);
+                nextInRow = 0;
+                nextRow++;
+            }
+            dataset.close();
+        }
+    }
+
+    private static void fillRowMajor(Object destination, Object flat, int[] nextFlatIndex) {
+        int length = Array.getLength(destination);
+        if(destination.getClass().getComponentType().isArray()) {
+            for(int i = 0; i < length; i++) {
+                fillRowMajor(Array.get(destination, i), flat, nextFlatIndex);
+            }
+        } else {
+            for(int i = 0; i < length; i++) {
+                Array.set(destination, i, Array.get(flat, nextFlatIndex[0]++));
+            }
+        }
     }
 
 
@@ -568,12 +612,6 @@ public class ASCIIExporter {
                                              GeometrySpecs geometrySpecs, ASCIISpecs asciiSpecs, String contextName, FileDataContainerManager fileDataContainerManager)
             throws DataAccessException, IOException{
 
-        // no arm64 build of the native HDF5 library exists, so it is skipped there; writing an
-        // HDF5 export below needs it, and will fail on that platform
-        boolean MacosArm64 = System.getProperty("os.arch").equals("aarch64") && System.getProperty("os.name").equals("Mac OS X");
-        if (!MacosArm64) {
-            NativeLib.HDF5.load();
-        }
         SimNameSimDataID[] simNameSimDataIDs = asciiSpecs.getSimNameSimDataIDs();
         Vector<ExportOutput[]> exportOutputV = new Vector<ExportOutput[]>();
         double progressCounter = 0;
@@ -604,11 +642,11 @@ public class ASCIIExporter {
             exportOutputV.add(new ExportOutput[]{sofyaFormat(outputContext, jobID, user, dataServerImpl, orig_vcdID, variableSpecs, timeSpecs, geometrySpecs, asciiSpecs, contextName, fileDataContainerManager)});
         } else {
             try {
-                long hdf5FileID = -1;//Used if HDF5 format
+                WritableHdfFile hdf5File = null;//Used if HDF5 format
                 if(asciiSpecs.isHDF5()){
                     hdf5TempFile = File.createTempFile("pde", ".hdf5");
                     lg.debug("========> VCell-style hdf5 file location: " + hdf5TempFile.getAbsolutePath());
-                    hdf5FileID = H5.H5Fcreate(hdf5TempFile.getAbsolutePath(), HDF5Constants.H5F_ACC_TRUNC, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
+                    hdf5File = HdfFile.write(hdf5TempFile.toPath());
                 }
 //		TreeMap<VCDataIdentifier,TreeMap<String,PointsCurvesSlices>> simsVarnamesDataMap = new TreeMap<VCDataIdentifier,TreeMap<String,PointsCurvesSlices>>();
                 PointsCurvesSlices[][] pointsCurvesSlices = new PointsCurvesSlices[SIM_COUNT][variableSpecs.getVariableNames().length];
@@ -642,9 +680,9 @@ public class ASCIIExporter {
                                         " '" + psName + "'=" + simNameSimDataIDs[v].getExportParamScanInfo().getParamScanConstantValues()[simJobIndex][i];
                             }
                         }
-                        long hdf5GroupID = -1;//Used if HDF5 format
+                        WritableGroup hdf5Group = null;//Used if HDF5 format
                         if(asciiSpecs.isHDF5()){
-                            hdf5GroupID = H5.H5Gcreate(hdf5FileID, vcdID.toString(), HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
+                            hdf5Group = hdf5File.putGroup(vcdID.toString());
                         }
                         String simID = vcdID.getID();
                         String dataType = ".csv";
@@ -653,13 +691,13 @@ public class ASCIIExporter {
                         fileDataContainerManager.append(fileDataContainerID_header, "\"" + "Model: '" + contextName + "'\"\n\"Simulation: '" + simNameSimDataIDs[v].getSimulationName() + "' (" + paramScanInfo + ")\"\n" + simulationDescription.getHeader(dataType));
                         CartesianMesh mesh = dataServerImpl.getMesh(user, vcdID);
 
-                        if(hdf5GroupID != -1){
+                        if(hdf5Group != null){
                             double[] subTimes = new double[endTimeIndex - beginTimeIndex + 1];
                             for(int st = beginTimeIndex; st <= endTimeIndex; st++){
                                 subTimes[st - beginTimeIndex] = allTimes[st];
                             }
-                            insertDoubles(hdf5GroupID, PCS.TIMES.name(), new long[]{subTimes.length}, subTimes);//UiTableExporterToHDF5.writeHDF5Dataset(hdf5GroupID, PCS.TIMES.name(), new long[] {subTimes.length}, subTimes,false);
-                            insertInts(hdf5GroupID, PCS.TIMEBOUNDS.name(), new long[]{2}, new int[]{beginTimeIndex, endTimeIndex});//UiTableExporterToHDF5.writeHDF5Dataset(hdf5GroupID, PCS.TIMEBOUNDS.name(), new long[] {2}, new int[] {beginTimeIndex,endTimeIndex},false);
+                            insertDoubles(hdf5Group, PCS.TIMES.name(), new long[]{subTimes.length}, subTimes);//UiTableExporterToHDF5.writeHDF5Dataset(hdf5GroupID, PCS.TIMES.name(), new long[] {subTimes.length}, subTimes,false);
+                            insertInts(hdf5Group, PCS.TIMEBOUNDS.name(), new long[]{2}, new int[]{beginTimeIndex, endTimeIndex});//UiTableExporterToHDF5.writeHDF5Dataset(hdf5GroupID, PCS.TIMEBOUNDS.name(), new long[] {2}, new int[] {beginTimeIndex,endTimeIndex},false);
                         }
 
                         switch(geometrySpecs.getMode()){
@@ -697,63 +735,48 @@ public class ASCIIExporter {
                                     //StringBuilder data1 = new StringBuilder(data.toString());
                                     ExportOutput exportOutput1 = new ExportOutput(true, dataType, simID, dataID/* + variableSpecs.getVariableNames()[i]*/, fileDataContainerManager);
                                     fileDataContainerManager.append(exportOutput1.getFileDataContainerID(), fileDataContainerID_header);
-                                    long hdf5GroupPointID = -1;//Used if HDF5 format
+                                    WritableGroup hdf5GroupPoint = null;//Used if HDF5 format
                                     if(asciiSpecs.isHDF5()){
-                                        hdf5GroupPointID = H5.H5Gcreate(hdf5GroupID, "Points", HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
+                                        hdf5GroupPoint = hdf5Group.putGroup("Points");
                                     }
                                     for(int varNameIndx = 0; varNameIndx < variableSpecs.getVariableNames().length; varNameIndx++){
-                                        long hdf5GroupVarID = -1;//Used if HDF5 format
+                                        WritableGroup hdf5GroupVar = null;//Used if HDF5 format
                                         if(asciiSpecs.isHDF5()){
-                                            hdf5GroupVarID = H5.H5Gcreate(hdf5GroupPointID, variableSpecs.getVariableNames()[varNameIndx], HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
+                                            hdf5GroupVar = hdf5GroupPoint.putGroup(variableSpecs.getVariableNames()[varNameIndx]);
                                         }
                                         fileDataContainerManager.append(exportOutput1.getFileDataContainerID(),
-                                                getPointsTimeSeries(pointsCurvesSlices[v][varNameIndx], hdf5GroupVarID, outputContext, user, dataServerImpl, vcdID, variableSpecs.getVariableNames()[varNameIndx], geometrySpecs, allTimes, beginTimeIndex, endTimeIndex, asciiSpecs.getSwitchRowsColumns(), fileDataContainerManager));
+                                                getPointsTimeSeries(pointsCurvesSlices[v][varNameIndx], hdf5GroupVar, outputContext, user, dataServerImpl, vcdID, variableSpecs.getVariableNames()[varNameIndx], geometrySpecs, allTimes, beginTimeIndex, endTimeIndex, asciiSpecs.getSwitchRowsColumns(), fileDataContainerManager));
                                         fileDataContainerManager.append(exportOutput1.getFileDataContainerID(), "\n");
                                         progressCounter++;
                                         exportServiceImpl.fireExportProgress(jobID, orig_vcdID, "CSV", fraction(progressCounter, TOTAL_EXPORTS_OPS));
-                                        if(hdf5GroupVarID != -1){
-                                            H5.H5Gclose(hdf5GroupVarID);
-                                        }
                                     }
                                     outputV.add(exportOutput1);
-                                    if(hdf5GroupPointID != -1){
-                                        H5.H5Gclose(hdf5GroupPointID);
-                                    }
-
                                 }
                                 if(geometrySpecs.getCurves().length != 0){//assemble curve (non-single point) data together
                                     String dataID = "_Curves_vars(" + (geometrySpecs.getCurves().length) + ")_times(" + (endTimeIndex - beginTimeIndex + 1) + ")";
                                     //StringBuilder data1 = new StringBuilder(data.toString());
                                     ExportOutput exportOutput1 = new ExportOutput(true, dataType, simID, dataID/* + variableSpecs.getVariableNames()[i]*/, fileDataContainerManager);
                                     fileDataContainerManager.append(exportOutput1.getFileDataContainerID(), fileDataContainerID_header);
-                                    long hdf5GroupPointID = -1;//Used if HDF5 format
+                                    WritableGroup hdf5GroupCurves = null;//Used if HDF5 format
                                     if(asciiSpecs.isHDF5()){
-                                        hdf5GroupPointID = H5.H5Gcreate(hdf5GroupID, "Curves", HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
-
+                                        hdf5GroupCurves = hdf5Group.putGroup("Curves");
                                     }
                                     for(int varNameIndx = 0; varNameIndx < variableSpecs.getVariableNames().length; varNameIndx++){
-                                        long hdf5GroupVarID = -1;//Used if HDF5 format
+                                        WritableGroup hdf5GroupVar = null;//Used if HDF5 format
                                         if(asciiSpecs.isHDF5()){
-                                            hdf5GroupVarID = H5.H5Gcreate(hdf5GroupPointID, variableSpecs.getVariableNames()[varNameIndx], HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
+                                            hdf5GroupVar = hdf5GroupCurves.putGroup(variableSpecs.getVariableNames()[varNameIndx]);
                                         }
                                         pointsCurvesSlices[v][varNameIndx].data.put(PCS.CURVES, new TreeMap<String, TreeMap<PCS, Object>>());
                                         for(int s = 0; s < geometrySpecs.getCurves().length; s++){
                                             if(!GeometrySpecs.isSinglePoint(geometrySpecs.getCurves()[s])){
-                                                fileDataContainerManager.append(exportOutput1.getFileDataContainerID(), getCurveTimeSeries(hdf5GroupVarID, pointsCurvesSlices[v][varNameIndx], outputContext, user, dataServerImpl, vcdID, variableSpecs.getVariableNames()[varNameIndx], geometrySpecs.getCurves()[s], allTimes, beginTimeIndex, endTimeIndex, asciiSpecs.getSwitchRowsColumns(), fileDataContainerManager));
+                                                fileDataContainerManager.append(exportOutput1.getFileDataContainerID(), getCurveTimeSeries(hdf5GroupVar, pointsCurvesSlices[v][varNameIndx], outputContext, user, dataServerImpl, vcdID, variableSpecs.getVariableNames()[varNameIndx], geometrySpecs.getCurves()[s], allTimes, beginTimeIndex, endTimeIndex, asciiSpecs.getSwitchRowsColumns(), fileDataContainerManager));
                                                 fileDataContainerManager.append(exportOutput1.getFileDataContainerID(), "\n");
                                                 progressCounter++;
                                                 exportServiceImpl.fireExportProgress(jobID, orig_vcdID, "CSV", fraction(progressCounter, TOTAL_EXPORTS_OPS));
                                             }
                                         }
-                                        if(hdf5GroupVarID != -1){
-                                            H5.H5Gclose(hdf5GroupVarID);
-                                        }
                                     }
                                     outputV.add(exportOutput1);
-                                    if(hdf5GroupPointID != -1){
-                                        H5.H5Gclose(hdf5GroupPointID);
-                                    }
-
                                 }
                                 exportOutputV.add(outputV.toArray(new ExportOutput[0]));
                                 break;
@@ -766,9 +789,9 @@ public class ASCIIExporter {
                                 }
                                 String dataID = "_Slice_" + Coordinate.getNormalAxisPlaneName(geometrySpecs.getAxis()) + "_" + sliceNumber + "_";
                                 ExportOutput[] output = new ExportOutput[variableSpecs.getVariableNames().length * TIME_COUNT];
-                                SliceHelper sliceHelper = new SliceHelper(TIME_COUNT, (hdf5GroupID != -1), Coordinate.getNormalAxisPlaneName(geometrySpecs.getAxis()), sliceNumber, asciiSpecs.getSwitchRowsColumns(), mesh);
+                                SliceHelper sliceHelper = new SliceHelper(TIME_COUNT, (hdf5Group != null), Coordinate.getNormalAxisPlaneName(geometrySpecs.getAxis()), sliceNumber, asciiSpecs.getSwitchRowsColumns(), mesh);
                                 for(int j = 0; j < variableSpecs.getVariableNames().length; j++){
-                                    sliceHelper.setHDF5GroupVarID(hdf5GroupID, variableSpecs.getVariableNames()[j]);
+                                    sliceHelper.setHDF5GroupVar(hdf5Group, variableSpecs.getVariableNames()[j]);
                                     for(int i = 0; i < TIME_COUNT; i++){
                                         StringBuilder inset = new StringBuilder(Integer.toString(i + beginTimeIndex));
                                         inset.reverse();
@@ -798,9 +821,6 @@ public class ASCIIExporter {
                                     }
                                     sliceHelper.closeHDF5GroupAndValues();
                                 }
-                                if(hdf5GroupID != -1){
-                                    H5.H5Sclose(sliceHelper.hdf5DataspaceIDSlice);
-                                }
                                 exportOutputV.add(output);
                                 break;
                             }
@@ -808,15 +828,13 @@ public class ASCIIExporter {
                                 throw new DataAccessException("Unexpected geometry modeID");
                             }
                         }
-                        if(hdf5GroupID != -1){
-                            H5.H5Gclose(hdf5GroupID);
-                        }
                     }
                 }
-                if(hdf5FileID != -1){
-                    H5.H5Fclose(hdf5FileID);
+                if(hdf5File != null){
+                    // jhdf serialises the whole file here; streamed slice data has already gone to disk
+                    hdf5File.close();
                 }
-            } catch(HDF5Exception e){
+            } catch(RuntimeException e){
                 throw new DataAccessException("HDF5 error:" + e.getMessage(), e);
             }
         }
@@ -855,7 +873,7 @@ public class ASCIIExporter {
      * @return java.lang.String
      * @throws IOException
      */
-    private FileDataContainerID getCurveTimeSeries(long hdf5GroupVarID, PointsCurvesSlices pointsCurvesSlices, OutputContext outputContext, User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, String variableName, SpatialSelection curve, double[] allTimes, int beginIndex, int endIndex, boolean switchRowsColumns, FileDataContainerManager fileDataContainerManager) throws DataAccessException, IOException{
+    private FileDataContainerID getCurveTimeSeries(WritableGroup hdf5GroupVar, PointsCurvesSlices pointsCurvesSlices, OutputContext outputContext, User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, String variableName, SpatialSelection curve, double[] allTimes, int beginIndex, int endIndex, boolean switchRowsColumns, FileDataContainerManager fileDataContainerManager) throws DataAccessException, IOException{
         int[] pointIndexes = null;
         double[] distances = null;
         int[] crossingMembraneIndexes = null;
@@ -885,7 +903,12 @@ public class ASCIIExporter {
         if(crossingMembraneIndexes != null){
             treePCS.put(PCS.CURVECROSSMEMBRINDEX, crossingMembraneIndexes);
         }
-        treePCS.put(PCS.CURVEVALS, new ArrayList<Double>());
+        // The curve's group and values dataset are created here rather than at the end, so values can be written
+        // as they are produced instead of being collected into a list first
+        WritableGroup hdf5GroupCurve = hdf5GroupVar == null ? null
+                : hdf5GroupVar.putGroup(getSpatialSelectionDescription(curve));
+        RowStreamer curveValues = new RowStreamer(hdf5GroupCurve, PCS.CURVEVALS.name(),
+                endIndex - beginIndex + 1, pointIndexes.length);
 
         org.vcell.util.document.TimeSeriesJobSpec timeSeriesJobSpec =
                 new org.vcell.util.document.TimeSeriesJobSpec(
@@ -919,7 +942,7 @@ public class ASCIIExporter {
                 fileDataContainerManager.append(fileDataContainerID, "," + distances[j]);
                 for(int i = beginIndex; i <= endIndex; i++){
                     fileDataContainerManager.append(fileDataContainerID, "," + variableValues[j + 1][i - beginIndex]);
-                    ((ArrayList<Double>) treePCS.get(PCS.CURVEVALS)).add(variableValues[j + 1][i - beginIndex]);
+                    curveValues.add(variableValues[j + 1][i - beginIndex]);
                 }
                 fileDataContainerManager.append(fileDataContainerID, "\n");
             }
@@ -935,7 +958,7 @@ public class ASCIIExporter {
                 ((ArrayList<Double>) pointsCurvesSlices.data.get(PCS.TIMES)).add(allTimes[i]);
                 for(int j = 0; j < distances.length; j++){
                     fileDataContainerManager.append(fileDataContainerID, "," + variableValues[j + 1][i - beginIndex]);
-                    ((ArrayList<Double>) treePCS.get(PCS.CURVEVALS)).add(variableValues[j + 1][i - beginIndex]);
+                    curveValues.add(variableValues[j + 1][i - beginIndex]);
                 }
                 fileDataContainerManager.append(fileDataContainerID, "\n");
             }
@@ -963,20 +986,20 @@ public class ASCIIExporter {
                 fileDataContainerManager.append(fileDataContainerID, "," + distance);
                 for(int t = 0; t < variableValues[t].length; t++){
                     fileDataContainerManager.append(fileDataContainerID, "," + variableValues[i + 1][t]);
-                    ((ArrayList<Double>) treePCS.get(PCS.CURVEVALS)).add(variableValues[i + 1][t]);
+                    curveValues.add(variableValues[i + 1][t]);
                 }
 
                 fileDataContainerManager.append(fileDataContainerID, "\n");
             }
         }
 
-        if(hdf5GroupVarID != -1){
+        curveValues.close();
+        if(hdf5GroupCurve != null){
             try {
-                long hdf5GroupCurveID = H5.H5Gcreate(hdf5GroupVarID, getSpatialSelectionDescription(curve), HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
-                insertInts(hdf5GroupCurveID, PCS.CURVEINDEXES.name(), new long[]{((int[]) treePCS.get(PCS.CURVEINDEXES)).length}, (int[]) treePCS.get(PCS.CURVEINDEXES));//UiTableExporterToHDF5.writeHDF5Dataset(hdf5GroupCurveID, PCS.CURVEINDEXES.name(), new long[] {((int[])treePCS.get(PCS.CURVEINDEXES)).length}, (int[])treePCS.get(PCS.CURVEINDEXES),false);
-                insertDoubles(hdf5GroupCurveID, PCS.CURVEDISTANCES.name(), new long[]{((double[]) treePCS.get(PCS.CURVEDISTANCES)).length}, (double[]) treePCS.get(PCS.CURVEDISTANCES));//UiTableExporterToHDF5.writeHDF5Dataset(hdf5GroupCurveID, PCS.CURVEDISTANCES.name(), new long[] {((double[])treePCS.get(PCS.CURVEDISTANCES)).length}, (double[])treePCS.get(PCS.CURVEDISTANCES),false);
+                insertInts(hdf5GroupCurve, PCS.CURVEINDEXES.name(), new long[]{((int[]) treePCS.get(PCS.CURVEINDEXES)).length}, (int[]) treePCS.get(PCS.CURVEINDEXES));//UiTableExporterToHDF5.writeHDF5Dataset(hdf5GroupCurveID, PCS.CURVEINDEXES.name(), new long[] {((int[])treePCS.get(PCS.CURVEINDEXES)).length}, (int[])treePCS.get(PCS.CURVEINDEXES),false);
+                insertDoubles(hdf5GroupCurve, PCS.CURVEDISTANCES.name(), new long[]{((double[]) treePCS.get(PCS.CURVEDISTANCES)).length}, (double[]) treePCS.get(PCS.CURVEDISTANCES));//UiTableExporterToHDF5.writeHDF5Dataset(hdf5GroupCurveID, PCS.CURVEDISTANCES.name(), new long[] {((double[])treePCS.get(PCS.CURVEDISTANCES)).length}, (double[])treePCS.get(PCS.CURVEDISTANCES),false);
                 if(treePCS.get(PCS.CURVECROSSMEMBRINDEX) != null){
-                    insertInts(hdf5GroupCurveID, PCS.CURVECROSSMEMBRINDEX.name(), new long[]{((int[]) treePCS.get(PCS.CURVECROSSMEMBRINDEX)).length}, (int[]) treePCS.get(PCS.CURVECROSSMEMBRINDEX));//UiTableExporterToHDF5.writeHDF5Dataset(hdf5GroupCurveID, PCS.CURVECROSSMEMBRINDEX.name(), new long[] {((int[])treePCS.get(PCS.CURVECROSSMEMBRINDEX)).length}, (int[])treePCS.get(PCS.CURVECROSSMEMBRINDEX),false);
+                    insertInts(hdf5GroupCurve, PCS.CURVECROSSMEMBRINDEX.name(), new long[]{((int[]) treePCS.get(PCS.CURVECROSSMEMBRINDEX)).length}, (int[]) treePCS.get(PCS.CURVECROSSMEMBRINDEX));//UiTableExporterToHDF5.writeHDF5Dataset(hdf5GroupCurveID, PCS.CURVECROSSMEMBRINDEX.name(), new long[] {((int[])treePCS.get(PCS.CURVECROSSMEMBRINDEX)).length}, (int[])treePCS.get(PCS.CURVECROSSMEMBRINDEX),false);
                     ArrayList<Integer> crossPoints = new ArrayList<Integer>();
                     for(int i = 0; i < crossingMembraneIndexes.length; i++){
                         if(crossingMembraneIndexes[i] != -1){
@@ -984,10 +1007,8 @@ public class ASCIIExporter {
                         }
                     }
                     String attrText = PCS.CURVEVALS.name() + " columns " + crossPoints.get(0) + " and " + crossPoints.get(1) + " are added points of interpolation near membrane";
-                    insertAttribute(hdf5GroupCurveID, PCS.CURVECROSSMEMBRINDEX.name() + " Info", attrText); //UiTableExporterToHDF5.writeHDF5Dataset(hdf5GroupCurveID, PCS.CURVECROSSMEMBRINDEX.name()+" Info", null, attrText,true);
+                    insertAttribute(hdf5GroupCurve, PCS.CURVECROSSMEMBRINDEX.name() + " Info", attrText); //UiTableExporterToHDF5.writeHDF5Dataset(hdf5GroupCurveID, PCS.CURVECROSSMEMBRINDEX.name()+" Info", null, attrText,true);
                 }
-                insertDoubles(hdf5GroupCurveID, PCS.CURVEVALS.name(), new long[]{endIndex - beginIndex + 1, ((int[]) treePCS.get(PCS.CURVEINDEXES)).length}, (ArrayList<Double>) treePCS.get(PCS.CURVEVALS));//UiTableExporterToHDF5.writeHDF5Dataset(hdf5GroupCurveID, PCS.CURVEVALS.name(), new long[] {endIndex-beginIndex+1,((int[])treePCS.get(PCS.CURVEINDEXES)).length}, (ArrayList<Double>)treePCS.get(PCS.CURVEVALS),false);
-                H5.H5Gclose(hdf5GroupCurveID);
             } catch(Exception e){
                 throw new DataAccessException(e.getMessage(), e);
             }
@@ -1101,9 +1122,9 @@ public class ASCIIExporter {
      * @return java.lang.String
      * @throws IOException
      */
-    private FileDataContainerID getPointsTimeSeries(PointsCurvesSlices pcs, long hdf5GroupID, OutputContext outputContext, User user,
+    private FileDataContainerID getPointsTimeSeries(PointsCurvesSlices pcs, WritableGroup hdf5Group, OutputContext outputContext, User user,
                                                     DataServerImpl dataServerImpl, VCDataIdentifier vcdID, String variableName, GeometrySpecs geometrySpecs,
-                                                    double[] allTimes, int beginIndex, int endIndex, boolean switchRowsColumns, FileDataContainerManager fileDataContainerManager) throws DataAccessException, IOException, HDF5Exception{
+                                                    double[] allTimes, int beginIndex, int endIndex, boolean switchRowsColumns, FileDataContainerManager fileDataContainerManager) throws DataAccessException, IOException{
 
         org.vcell.util.document.TimeSeriesJobSpec timeSeriesJobSpec =
                 new org.vcell.util.document.TimeSeriesJobSpec(
@@ -1120,7 +1141,6 @@ public class ASCIIExporter {
         final double[][] variableValues = timeSeriesJobResults.getTimesAndValuesForVariable(variableName);
 
         pcs.data.put(PCS.POINTINFO, new ArrayList<String>());
-        pcs.data.put(PCS.POINTVALS, new ArrayList<Double>());
         pcs.data.put(PCS.TIMES, new ArrayList<Double>());
         pcs.data.put(PCS.TIMEBOUNDS, new int[]{beginIndex, endIndex});
 
@@ -1147,17 +1167,14 @@ public class ASCIIExporter {
                 ((ArrayList<String>) pcs.data.get(PCS.POINTINFO)).add(spatialSelectionDescription);
                 for(int i = beginIndex; i <= endIndex; i++){
                     fileDataContainerManager.append(fileDataContainerID, "," + variableValues[k + 1][i - beginIndex]);
-                    ((ArrayList<Double>) pcs.data.get(PCS.POINTVALS)).add(variableValues[k + 1][i - beginIndex]);
                 }
                 fileDataContainerManager.append(fileDataContainerID, "\n");
             }
+            // Note: this branch writes no POINTVALS dataset, and never has. Only the layout below does.
         } else {
-            double[] hdfTimes = null;
-            double[] hdfValues = null;
-            if(hdf5GroupID != -1){
-                hdfTimes = new double[endIndex - beginIndex + 1];
-                hdfValues = new double[hdfTimes.length * pointSpatialSelections.length];
-            }
+            // One row per timepoint, written as it is produced, matching the curve values above
+            RowStreamer pointValues = new RowStreamer(hdf5Group, PCS.POINTVALS.name(),
+                    endIndex - beginIndex + 1, pointSpatialSelections.length);
             fileDataContainerManager.append(fileDataContainerID, ",Time\n");
             fileDataContainerManager.append(fileDataContainerID, "Coordinates,");
             for(int k = 0; k < pointSpatialSelections.length; k++){
@@ -1166,24 +1183,19 @@ public class ASCIIExporter {
                 ((ArrayList<String>) pcs.data.get(PCS.POINTINFO)).add(spatialSelectionDescription);
             }
             fileDataContainerManager.append(fileDataContainerID, "\n");
-            int c = 0;
             for(int i = beginIndex; i <= endIndex; i++){
                 fileDataContainerManager.append(fileDataContainerID, "," + allTimes[i]);
                 ((ArrayList<Double>) pcs.data.get(PCS.TIMES)).add(allTimes[i]);
-                hdfTimes[i - beginIndex] = allTimes[i];
                 for(int k = 0; k < pointSpatialSelections.length; k++){
                     fileDataContainerManager.append(fileDataContainerID, "," + variableValues[k + 1][i - beginIndex]);
-                    ((ArrayList<Double>) pcs.data.get(PCS.POINTVALS)).add(variableValues[k + 1][i - beginIndex]);
-                    hdfValues[c] = variableValues[k + 1][i - beginIndex];
-                    c++;
+                    pointValues.add(variableValues[k + 1][i - beginIndex]);
                 }
                 fileDataContainerManager.append(fileDataContainerID, "\n");
             }
-            if(hdf5GroupID != -1){
+            pointValues.close();
+            if(hdf5Group != null){
                 long[] dimsCoord = new long[]{1, pointSpatialSelections.length};
-                insertStrings(hdf5GroupID, PCS.POINTINFO.name(), dimsCoord, (ArrayList<String>) pcs.data.get(PCS.POINTINFO));//UiTableExporterToHDF5.writeHDF5Dataset(hdf5GroupID, PCS.POINTINFO.name(), dimsCoord, pcs.data.get(PCS.POINTINFO),false);
-                long[] dimsValues = new long[]{hdfTimes.length, pointSpatialSelections.length};
-                insertDoubles(hdf5GroupID, PCS.POINTVALS.name(), dimsValues, hdfValues);//UiTableExporterToHDF5.writeHDF5Dataset(hdf5GroupID, PCS.POINTVALS.name(), dimsValues, hdfValues,false);
+                insertStrings(hdf5Group, PCS.POINTINFO.name(), dimsCoord, (ArrayList<String>) pcs.data.get(PCS.POINTINFO));//UiTableExporterToHDF5.writeHDF5Dataset(hdf5GroupID, PCS.POINTINFO.name(), dimsCoord, pcs.data.get(PCS.POINTINFO),false);
             }
         }
 
@@ -1194,10 +1206,8 @@ public class ASCIIExporter {
     // Package private rather than private so the export's HDF5 slice writing can be characterised by a
     // test; it had none.
     class SliceHelper {
-        public long hdf5DataspaceIDSlice = -1;
-        public long hdf5GroupVarID = -1;
-        long hdf5DataspaceIDValues = -1;
-        long hdf5DatasetIDValues = -1;
+        public WritableGroup hdf5GroupVar = null;
+        StreamingDataset hdf5DatasetValues = null;
 
         public final String[] SLICE_PLANE_AXIS = {"X", "Y", "Z"};
         private final int[][][] loopIndexes = new int[][][]{{{1, 2}, {2, 1}}, {{0, 2}, {2, 0}}, {{0, 1}, {1, 0}}};
@@ -1233,27 +1243,24 @@ public class ASCIIExporter {
             innerSizeIndex = loopIndexes[slicePlaneIndex][(switchRowsColumns ? 0 : 1)][1];
         }
 
-        public void setHDF5GroupVarID(long hdf5GroupID, String varName) throws HDF5LibraryException{
+        public void setHDF5GroupVar(WritableGroup hdf5Group, String varName){
             if(isHDF5){
-                hdf5GroupVarID = H5.H5Gcreate(hdf5GroupID, varName, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
+                hdf5GroupVar = hdf5Group.putGroup(varName);
                 currentTimeIndex = 0;
                 isMembrane = null;
-                hdf5DataspaceIDSlice = -1;
             }
         }
 
-        public void closeHDF5GroupAndValues() throws HDF5LibraryException{
-            if(hdf5GroupVarID != -1){
-                H5.H5Dclose(hdf5DatasetIDValues);
-                H5.H5Sclose(hdf5DataspaceIDValues);
-                H5.H5Gclose(hdf5GroupVarID);
-                hdf5DatasetIDValues = -1;
-                hdf5DataspaceIDValues = -1;
-                hdf5GroupVarID = -1;
+        public void closeHDF5GroupAndValues(){
+            if(hdf5DatasetValues != null){
+                // Writes the chunk index; the chunks themselves went to disk as they were produced
+                hdf5DatasetValues.close();
+                hdf5DatasetValues = null;
             }
+            hdf5GroupVar = null;
         }
 
-        public void populate(FileDataContainerManager fileDataContainerManager, FileDataContainerID fileDataContainerID, double[] origData) throws IOException, HDF5Exception{
+        public void populate(FileDataContainerManager fileDataContainerManager, FileDataContainerID fileDataContainerID, double[] origData) throws IOException{
             if(isMembrane != null && SimulationData.getVariableTypeFromLength(mesh, origData.length).equals(VariableType.MEMBRANE) != isMembrane.booleanValue()){
                 throw new IllegalArgumentException("'isMembrane' conflict");
             }
@@ -1264,23 +1271,14 @@ public class ASCIIExporter {
                     fileDataContainerManager.append(fileDataContainerID, origData[i] + "\n");
                 }
                 if(isHDF5){
-                    if(hdf5DataspaceIDSlice == -1){
-                        long[] dimsValues2 = new long[]{origData.length};
-                        hdf5DataspaceIDSlice = H5.H5Screate_simple(dimsValues2.length, dimsValues2, null);
-                        //Select the generated sliceData to copy-from
-                        H5.H5Sselect_hyperslab(hdf5DataspaceIDSlice, HDF5Constants.H5S_SELECT_SET, new long[]{0}, null, dimsValues2, null);
+                    if(hdf5DatasetValues == null){
+                        // One chunk per timepoint, so a timepoint is written and released rather than the whole
+                        // dataset being assembled in memory first
+                        hdf5DatasetValues = hdf5GroupVar.newStreamingDataset("DataValues (M" + "T)", double.class,
+                                new int[]{origData.length, timeCount},
+                                DatasetCreationOptions.builder().chunkDimensions(origData.length, 1).build());
                     }
-                    if(hdf5DataspaceIDValues == -1){
-                        //Create dataset
-                        long[] dimsValues = new long[]{origData.length, timeCount};
-                        hdf5DataspaceIDValues = H5.H5Screate_simple(dimsValues.length, dimsValues, null);
-                        hdf5DatasetIDValues = H5.H5Dcreate(hdf5GroupVarID, "DataValues (M" + "T)", HDF5Constants.H5T_NATIVE_DOUBLE, hdf5DataspaceIDValues, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
-                    }
-                    //Select next section of destination to copy-to
-                    H5.H5Sselect_hyperslab(hdf5DataspaceIDValues, HDF5Constants.H5S_SELECT_SET, new long[]{0, currentTimeIndex}, null, new long[]{origData.length, 1}, null);
-                    //Copy from extracted sliceData to hdf5 file dataset
-                    H5.H5Dwrite_double(hdf5DatasetIDValues, HDF5Constants.H5T_NATIVE_DOUBLE, hdf5DataspaceIDSlice, hdf5DataspaceIDValues, HDF5Constants.H5P_DEFAULT, origData);
-                    H5.H5Sselect_none(hdf5DataspaceIDValues);
+                    hdf5DatasetValues.writeChunk(new long[]{0, currentTimeIndex}, origData);
                     currentTimeIndex++;
                 }
             } else {
@@ -1333,25 +1331,16 @@ public class ASCIIExporter {
                     }
 
                     if(isHDF5){
-                        if(hdf5DataspaceIDSlice == -1){
-                            long[] dimsValues2 = new long[]{sizeXYZ[outerSizeIndex], sizeXYZ[innerSizeIndex]};
-                            hdf5DataspaceIDSlice = H5.H5Screate_simple(dimsValues2.length, dimsValues2, null);
-                            //Select the generated sliceData to copy-from
-                            H5.H5Sselect_hyperslab(hdf5DataspaceIDSlice, HDF5Constants.H5S_SELECT_SET, new long[]{0, 0}, null, dimsValues2, null);
+                        if(hdf5DatasetValues == null){
+                            // One chunk per slice per timepoint, matching what is produced in a single pass, so
+                            // the export's peak memory is one slice however long the simulation ran
+                            int[] dimsValues = (numSlices == 1 ? new int[]{sizeXYZ[outerSizeIndex], sizeXYZ[innerSizeIndex], timeCount} : new int[]{sizeXYZ[outerSizeIndex], sizeXYZ[innerSizeIndex], numSlices, timeCount});
+                            int[] chunkDims = (numSlices == 1 ? new int[]{sizeXYZ[outerSizeIndex], sizeXYZ[innerSizeIndex], 1} : new int[]{sizeXYZ[outerSizeIndex], sizeXYZ[innerSizeIndex], 1, 1});
+                            hdf5DatasetValues = hdf5GroupVar.newStreamingDataset("DataValues (" + SLICE_PLANE_AXIS[innerSizeIndex] + SLICE_PLANE_AXIS[outerSizeIndex] + (numSlices == 1 ? "" : "Z") + "T)", double.class,
+                                    dimsValues, DatasetCreationOptions.builder().chunkDimensions(chunkDims).build());
                         }
-                        if(hdf5DataspaceIDValues == -1){
-                            //Create dataset
-                            long[] dimsValues = (numSlices == 1 ? new long[]{sizeXYZ[outerSizeIndex], sizeXYZ[innerSizeIndex], timeCount} : new long[]{sizeXYZ[outerSizeIndex], sizeXYZ[innerSizeIndex], numSlices, timeCount});
-                            hdf5DataspaceIDValues = H5.H5Screate_simple(dimsValues.length, dimsValues, null);
-                            hdf5DatasetIDValues = H5.H5Dcreate(hdf5GroupVarID, "DataValues (" + SLICE_PLANE_AXIS[innerSizeIndex] + SLICE_PLANE_AXIS[outerSizeIndex] + (numSlices == 1 ? "" : "Z") + "T)", HDF5Constants.H5T_NATIVE_DOUBLE, hdf5DataspaceIDValues, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
-                        }
-                        //Select next section of destination to copy-to
-                        long[] copyToOrig = (numSlices == 1 ? new long[]{0, 0, currentTimeIndex} : new long[]{0, 0, nSlices, currentTimeIndex});
-                        long[] copyToLen = (numSlices == 1 ? new long[]{sizeXYZ[outerSizeIndex], sizeXYZ[innerSizeIndex], 1} : new long[]{sizeXYZ[outerSizeIndex], sizeXYZ[innerSizeIndex], 1, 1});
-                        H5.H5Sselect_hyperslab(hdf5DataspaceIDValues, HDF5Constants.H5S_SELECT_SET, copyToOrig, null, copyToLen, null);
-                        //Copy from extracted sliceData to hdf5 file dataset
-                        H5.H5Dwrite_double(hdf5DatasetIDValues, HDF5Constants.H5T_NATIVE_DOUBLE, hdf5DataspaceIDSlice, hdf5DataspaceIDValues, HDF5Constants.H5P_DEFAULT, sliceData);
-                        H5.H5Sselect_none(hdf5DataspaceIDValues);
+                        long[] chunkOffset = (numSlices == 1 ? new long[]{0, 0, currentTimeIndex} : new long[]{0, 0, nSlices, currentTimeIndex});
+                        hdf5DatasetValues.writeChunk(chunkOffset, sliceData);
                     }
                 }
                 if(isHDF5){
@@ -1361,7 +1350,7 @@ public class ASCIIExporter {
         }
     }
 
-    private FileDataContainerID getSlice(SliceHelper sliceHelper, CartesianMesh mesh, double[] allTimes, OutputContext outputContext, User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, String variable, int timeIndex, String slicePlane, int sliceNumber, boolean switchRowsColumns, FileDataContainerManager fileDataContainerManager) throws HDF5Exception, DataAccessException, IOException{
+    private FileDataContainerID getSlice(SliceHelper sliceHelper, CartesianMesh mesh, double[] allTimes, OutputContext outputContext, User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, String variable, int timeIndex, String slicePlane, int sliceNumber, boolean switchRowsColumns, FileDataContainerManager fileDataContainerManager) throws DataAccessException, IOException{
 
         double timepoint = allTimes[timeIndex];
         SimDataBlock simDataBlock = dataServerImpl.getSimDataBlock(outputContext, user, vcdID, variable, timepoint);
