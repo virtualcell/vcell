@@ -244,6 +244,15 @@ for ((i = 0; i < TOTAL_JOBS; i++)); do
 
     # wait for a finished task before launching a new one if we hit the concurrency limit
     while (( running_jobs >= max_concurrent_jobs )); do
+        # Check watchdog health
+        if ! kill -0 $watchdog_pid 2>/dev/null; then
+            echo "Watchdog died unexpectedly at $(date)" >> "${LOG_FILE}"
+            wait $watchdog_pid
+            watchdog_exit=$?
+            callExitProcessor $watchdog_exit
+            echo "Watchdog failed; exiting $watchdog_exit" | tee -a "${LOG_FILE}"
+            exit $watchdog_exit
+        fi
         for idx in "${!job_pids[@]}"; do
             pid="${job_pids[$idx]}"
             if [[ -z "${pid}" ]]; then continue; fi
