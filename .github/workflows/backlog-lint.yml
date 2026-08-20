@@ -14,7 +14,8 @@ name: Backlog lint
 
 on:
   schedule:
-    - cron: "0 8 * * 1"     # Mondays 08:00 UTC
+    - cron: "0 8 * * *"     # daily 08:00 UTC -- issue intake is fast enough that a
+                            # weekly cadence would batch a week of drift into one report
   workflow_dispatch:
     inputs:
       strict:

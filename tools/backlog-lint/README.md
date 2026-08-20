@@ -96,7 +96,7 @@ Everything else the lint finds is left for a human, on purpose.
 
 ## In CI
 
-`.github/workflows/backlog-lint.yml` runs it Mondays at 08:00 UTC, on `workflow_dispatch`
+`.github/workflows/backlog-lint.yml` runs it daily at 08:00 UTC, on `workflow_dispatch`
 (with `strict` and `fix_board` toggles), and on pull requests that touch this directory so the
 tool is exercised by its own changes.
 
