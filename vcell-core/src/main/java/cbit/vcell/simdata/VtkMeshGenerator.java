@@ -10,7 +10,6 @@ import org.vcell.vis.io.VtuFileContainer;
 
 import cbit.vcell.export.server.ExportServiceImpl;
 import cbit.vcell.message.messages.MessageConstants;
-import cbit.vcell.resource.NativeLib;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
@@ -38,13 +37,6 @@ public class VtkMeshGenerator implements PortableCommand {
 	@Override
 	public int execute() {
 		try {
-			// The legacy native HDF5 library has no arm64 build, so it is skipped there. Chombo
-			// and MovingBoundary now read through the pure-java io.jhdf and do not need it; this
-			// load remains only for the other native HDF5 users in the process.
-			boolean MacosArm64 = System.getProperty("os.arch").equals("aarch64") && System.getProperty("os.name").equals("Mac OS X");
-			if (!MacosArm64) {
-				NativeLib.HDF5.load();
-			}
 			KeyValue u = new KeyValue(userkey);
 			User owner = new User(username,u);
 			KeyValue simKey = new KeyValue(simkey);

@@ -22,7 +22,6 @@ public class NativeLoader {
 	
 	public static void load(String libName){
 		String path = NativeLoader.generatePath(libName);
-		System.setProperty("hdf.hdf5lib.H5.hdf5lib", path);
 		System.load(path);
 		Runtime.getRuntime().load(path);
 	}

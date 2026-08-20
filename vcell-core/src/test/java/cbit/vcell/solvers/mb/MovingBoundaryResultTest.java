@@ -1,7 +1,6 @@
 
 package cbit.vcell.solvers.mb;
 
-import cbit.vcell.resource.NativeLib;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.solvers.mb.MovingBoundaryTypes.*;
 import org.apache.logging.log4j.LogManager;
@@ -23,12 +22,6 @@ public class MovingBoundaryResultTest {
 	@BeforeAll
 	public static void setup() {
 		PropertyLoader.setProperty(PropertyLoader.installationRoot, new File("..").getAbsolutePath());
-		// skip loading legacy native HDF5 library if the system is a macos arm64
-		// will get runtime errors for Chombo and MovingBoundary until HDF5 is updated
-		boolean MacosArm64 = System.getProperty("os.arch").equals("aarch64") && System.getProperty("os.name").equals("Mac OS X");
-		if (!MacosArm64) {
-			NativeLib.HDF5.load();
-		}
 	}
     public MovingBoundaryResultTest() {
 		Logger lg = LogManager.getLogger("ncsa");

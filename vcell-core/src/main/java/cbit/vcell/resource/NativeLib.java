@@ -9,9 +9,12 @@ import cbit.vcell.util.NativeLoader;
  * Known / named collections of libraries VCell needs to dynamically load
  */
 public enum NativeLib {
-	// enum values
-	HDF5("jhdf5", false,
-			(OperatingSystemInfo.getInstance().isWindows()) ? "msvcr100" : null );
+	// No native libraries at present. HDF5 was the last one: writing HDF5 exports moved to the
+	// pure-java io.jhdf in #2001, and reading moved earlier in #1903 and #1906.
+	//
+	// The loading machinery is kept rather than deleted, because whether VCell needs a native
+	// library again is not something this file should decide. Add an entry here and it works.
+	;
 
 	private static final Logger logger = LogManager.getLogger(NativeLib.class);
 

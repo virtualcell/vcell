@@ -14,11 +14,9 @@ public class NativeLibTest {
 	
 	@Test
 	public void loadEm( ) {
+		// Vacuous while no native libraries are declared, which is the point: it starts working
+		// again the moment one is added.
 		for (NativeLib nl : NativeLib.values()) {
-			// skip if nl is HDF5 and system is a macos arm64
-			if (nl == NativeLib.HDF5 && System.getProperty("os.arch").equals("aarch64") && System.getProperty("os.name").equals("Mac OS X")) {
-				continue;
-			}
 			nl.load();
 		}
 	}
