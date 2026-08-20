@@ -1191,7 +1191,9 @@ public class ASCIIExporter {
     }
 
 
-    private class SliceHelper {
+    // Package private rather than private so the export's HDF5 slice writing can be characterised by a
+    // test; it had none.
+    class SliceHelper {
         public long hdf5DataspaceIDSlice = -1;
         public long hdf5GroupVarID = -1;
         long hdf5DataspaceIDValues = -1;
