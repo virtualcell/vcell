@@ -136,11 +136,25 @@ jobs:
       - name: Load Downloaded Docker Image
         run: docker load --input /tmp/docker/$(ls /tmp/docker)
 
-        # Get files from BMDB
+        # Get files from BMDB.
+        #
+        # PINNED DELIBERATELY. Without `ref:` this took whatever sys-bio/temp-biomodels
+        # had on main that night, so an upstream commit could change the corpus, flip a
+        # result against test_cases.ndjson, and leave nothing in this repo explaining why
+        # -- the one kind of baseline diff that is near-impossible to diagnose after the
+        # fact. The gate compares against a documented baseline, so its input has to be
+        # as versioned as the baseline is.
+        #
+        # To take a newer corpus: bump the sha here in its own PR, run the nightly via
+        # workflow_dispatch, and accept the resulting baseline diff as a separate,
+        # reviewable commit. That keeps "the models changed" and "VCell changed" apart.
       - name: Checkout Input Files
         uses: actions/checkout@v4
         with:
           repository: sys-bio/temp-biomodels
+          # main @ 2025-06-04 "Species units can't be undefined." -- the commit the
+          # nightly was already resolving to, so pinning it changes no results.
+          ref: 6a09daf46af1bb89e4857436b623a7b8720863ad
 
       - name: Prepare sub directory
         run: |
