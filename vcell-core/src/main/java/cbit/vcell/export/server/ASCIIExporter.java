@@ -85,7 +85,7 @@ public class ASCIIExporter {
      */
     public static void insertDoubles(WritableGroup hdf5Group,String dataspaceName,long[] dims,List<Double> data) {
         double[] hdfData = org.apache.commons.lang.ArrayUtils.toPrimitive(((ArrayList<Double>)data).toArray(new Double[0]));
-        hdf5Group.putDataset(dataspaceName, shaped(hdfData, dims));
+        hdf5Group.putDataset(dataspaceName, JhdfUtils.createMultidimensionalArray(dims, hdfData));
     }
 
     /**
@@ -97,7 +97,7 @@ public class ASCIIExporter {
      * @param data the data to fill the dataset
      */
     public static void insertDoubles(WritableGroup hdf5Group,String dataspaceName,long[] dims,double[] data) {
-        hdf5Group.putDataset(dataspaceName, shaped(data, dims));
+        hdf5Group.putDataset(dataspaceName, JhdfUtils.createMultidimensionalArray(dims, data));
     }
 
     /**
@@ -141,7 +141,8 @@ public class ASCIIExporter {
     /**
      * The export builds its data flat and states the shape separately, which the native binding took directly.
      * jhdf reads the shape from the array it is given, so a flat array with multi dimensional dims has to be
-     * nested first.
+     * nested first. {@link JhdfUtils#createMultidimensionalArray} does this for doubles and is used where the
+     * data is doubles; this covers the other types the export writes.
      *
      * @param flat the data, flat, in row major order
      * @param dims the shape it should have
