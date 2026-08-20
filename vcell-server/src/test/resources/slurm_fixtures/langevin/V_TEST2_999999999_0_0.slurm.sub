@@ -26,6 +26,8 @@ VC_JOB_ID=0
 VC_TASK_ID=0
 TOTAL_JOBS=8            # to be set by generator to lso.getTotalNumberOfJobs()
 JOB_TIMEOUT_SECONDS=345600  # per-job timeout (seconds), adjust per generator
+WATCHDOG_TICK_SECONDS=60  # watchdog tick interval (seconds)
+WATCHDOG_TIMEOUT_SECONDS=600  # watchdog timeout (seconds)
 LOG_FILE="/share/apps/vcell3/htclogs/V_TEST2_999999999_0_.submit.log"
 MESSAGING_CONFIG_FILE="/share/apps/vcell3/users/danv/SimID_999999999_0_.langevinMessagingConfig"
 
@@ -192,6 +194,30 @@ running_jobs=0
 max_concurrent_jobs=${SLURM_NTASKS:-4}    # actually these are tasks
 echo "max_concurrent_jobs: ${max_concurrent_jobs}" >> "${LOG_FILE}"
 echo "TOTAL_JOBS to launch: ${TOTAL_JOBS}" >> "${LOG_FILE}"
+echo "WATCHDOG_TICK_SECONDS: ${WATCHDOG_TICK_SECONDS}" >> "${LOG_FILE}"
+echo "WATCHDOG_TIMEOUT_SECONDS: ${WATCHDOG_TIMEOUT_SECONDS}" >> "${LOG_FILE}"
+
+# ----------------------------------------------------------------------------------------------
+# watchdog solver invocation (monitors the other jobs and sends progress messages)
+# timeouts early if no jobs is being launched, does not timeout once in main loop
+echo "Starting watchdog job at $(date)" >> "${LOG_FILE}"
+${slurm_prefix} ${solver_container_prefix} \
+        langevin_x64 watchdog \
+        "${INPUT_DIR}/SimID_${SIM_KEY}_0_.langevinInput" \
+        ${TOTAL_JOBS} \
+        --watchdog-tick="${WATCHDOG_TICK_SECONDS}" \
+        --watchdog-timeout="${WATCHDOG_TIMEOUT_SECONDS}" \
+#        --output-log="${LOG_DIR}/SimID_${SIM_KEY}_0_W.log" \
+        --vc-print-status &
+watchdog_pid=$!
+sleep 1
+if ! kill -0 $watchdog_pid 2>/dev/null; then
+    echo "Watchdog failed to start" >> "${LOG_FILE}"
+    wait $watchdog_pid
+    watchdog_exit_code=$?
+    callExitProcessor $watchdog_exit_code
+    exit $watchdog_exit_code
+fi
 
 finished_jobs=0           # messaging counters
 last_notify_time=0

@@ -642,9 +642,10 @@ public class SlurmProxy extends HtcProxy {
 			return String.format("%d-%02d:%02d:00", days, hours, minutes);
 		}
 	}
-	private void writeScriptControlledVariables(LineStringBuilder lsb, String jobName,
-												SimulationTask simTask, int jobTimeoutSeconds) {
-
+	private void writeBatchScriptControlledVariables(LineStringBuilder lsb, String jobName,
+													 SimulationTask simTask, int jobTimeoutSeconds,
+													 int watchdogTickSeconds, int watchdogTimeoutSeconds)	// watchdog stuff
+	{
 		String simKey = simTask.getSimulation().getVersion().getVersionKey().toString();
 		String simOwnerName = simTask.getSimulation().getVersion().getOwner().getName();	// this is the user name
 		String simOwnerId = simTask.getSimulation().getVersion().getOwner().getID().toString();
@@ -659,9 +660,6 @@ public class SlurmProxy extends HtcProxy {
 		String logFilePath = htcLogDir + "/" + trimmedJobName + ".submit.log";
 		String messagingConfigFilePath = simDataDir + "/" + simOwnerName + "/SimID_" + simKey + "_0_.langevinMessagingConfig";
 
-		// ---- Alternate / New variables ----
-
-
 		lsb.write("# Script-controlled variables (populated by generator in real use)");
 //		lsb.write("USERID=" + simOwnerName);
 //		lsb.write("SIM_KEY=" + simId);
@@ -673,6 +671,8 @@ public class SlurmProxy extends HtcProxy {
 
 		lsb.write("TOTAL_JOBS=" + totalJobs + "            # to be set by generator to lso.getTotalNumberOfJobs()");
 		lsb.write("JOB_TIMEOUT_SECONDS=" + jobTimeoutSeconds + "  # per-job timeout (seconds), adjust per generator");
+		lsb.write("WATCHDOG_TICK_SECONDS=" + watchdogTickSeconds + "  # watchdog tick interval (seconds)");
+		lsb.write("WATCHDOG_TIMEOUT_SECONDS=" + watchdogTimeoutSeconds + "  # watchdog timeout (seconds)");
 		lsb.write("LOG_FILE=\"" + logFilePath + "\"");
 		lsb.write("MESSAGING_CONFIG_FILE=\"" + messagingConfigFilePath + "\"");
 		lsb.write("");
@@ -687,7 +687,7 @@ public class SlurmProxy extends HtcProxy {
 		lsb.write("rm -f " + simDataDir + "/${SIM_OWNER_NAME}/SimID_${SIM_KEY}_0_.langevinMessagingConfig");
 		lsb.write("");
 	}
-	private void writeSingularitySetup(LineStringBuilder lsb) {
+	private void writeBatchSingularitySetup(LineStringBuilder lsb) {
 		String slurmTmpDir = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_tmpdir);
 		String singularityCachedir = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_singularity_cachedir);
 		String singularityPullfolder = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_singularity_pullfolder);
@@ -712,7 +712,7 @@ public class SlurmProxy extends HtcProxy {
 		lsb.write("export SINGULARITY_PULLFOLDER=" + singularityPullfolder);
 		lsb.write("");
 	}
-	private void writeSlurmJobMetadata(LineStringBuilder lsb) {
+	private void writeBatchSlurmJobMetadata(LineStringBuilder lsb) {
 		lsb.write("# Compute memory per task and per job");
 		lsb.write("MEM_TASK=$(( SLURM_MEM_PER_CPU * SLURM_CPUS_PER_TASK ))");
 		lsb.write("MEM_JOB=$(( MEM_TASK * SLURM_NTASKS ))");
@@ -739,7 +739,7 @@ public class SlurmProxy extends HtcProxy {
 		lsb.write("echo \"=================================\"");
 		lsb.write("");
 	}
-	private void writeContainerBindingsAndEnv(LineStringBuilder lsb, int javaMemXmx) {
+	private void writeBatchContainerBindingsAndEnv(LineStringBuilder lsb, int javaMemXmx) {
 		String primaryDataDir = PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirExternalProperty);
 		String secondaryDataDir = PropertyLoader.getRequiredProperty(PropertyLoader.secondarySimDataDirExternalProperty);
 		String archiveDataDirHost = PropertyLoader.getRequiredProperty(PropertyLoader.simDataDirArchiveExternal);
@@ -783,7 +783,7 @@ public class SlurmProxy extends HtcProxy {
 		lsb.write("container_env+=\"--env serverid=" + serverId + " \"");
 		lsb.write("");
 	}
-	private void writeContainerImageAndPrefixes(LineStringBuilder lsb) {
+	private void writeBatchContainerImageAndPrefixes(LineStringBuilder lsb) {
 		final String batchApptainerImage = PropertyLoader.getRequiredProperty(PropertyLoader.htc_vcellbatch_apptainer_image);
 		final String sifImageDir = PropertyLoader.getRequiredProperty(PropertyLoader.htc_singularity_imagedir);
 		final String sifPath = sifPathFromOrasUrl(batchApptainerImage, sifImageDir);
@@ -811,9 +811,6 @@ public class SlurmProxy extends HtcProxy {
 	String  generateLangevinBatchScript(String jobName, ExecutableCommand.Container commandSet, double memSizeMB,
 										Collection<PortableCommand> postProcessingCommands, SimulationTask simTask) {
 
-		// TODO: extractUser is very unrobust, must be fixed
-		// it may be the userName can be obtained like so: String vcellUserid = simTask.getUser().getName();
-		//String userName = extractUser(commandSet);
 		String vcellUserid = simTask.getUser().getName();
 		KeyValue simID = simTask.getSimulationInfo().getSimulationVersion().getVersionKey();
 		SolverTaskDescription std = simTask.getSimulation().getSolverTaskDescription();
@@ -833,6 +830,12 @@ public class SlurmProxy extends HtcProxy {
 		String sTimeoutPerTaskSeconds = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_langevin_timeoutPerTaskSeconds);
 		String sHardbBtchMemoryLimitPerTask = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_langevin_batchMemoryLimitPerTaskMB);
 		String sBlockSizeMB =  PropertyLoader.getRequiredProperty(PropertyLoader.slurm_langevin_memoryBlockSizeMB);
+		String sWatchdogTickSeconds = PropertyLoader.getProperty(PropertyLoader.slurm_langevin_watchdogTickSeconds, "60");
+		String sWatchdogTimeoutSeconds = PropertyLoader.getProperty(PropertyLoader.slurm_langevin_watchdogTimeoutSeconds, "600");
+
+		// we don't need to convert many of these strings to numeric only to convert them again to strings for the script,
+		// but it's prudent to validate that they are numeric (and within reasonable bounds?), so we do it here and fail
+		// early rather than launch the batch job and have it fail server-side
 		int timeoutPerTaskSeconds = Integer.parseInt(sTimeoutPerTaskSeconds);
 		long hardbBtchMemoryLimitPerTask = Long.parseLong(sHardbBtchMemoryLimitPerTask);	// MB. we hard limit mem to 2G for langevin batch jobs
 		int blockSizeMB = Integer.parseInt(sBlockSizeMB); 						// MB. SLURM memory allocation granularity
@@ -840,16 +843,18 @@ public class SlurmProxy extends HtcProxy {
 		long batchMemoryLimitPerTask = memoryMBAllowed.getMemLimit();
 		batchMemoryLimitPerTask = Math.min(batchMemoryLimitPerTask, hardbBtchMemoryLimitPerTask);
 		int javaMemXmx = roundUpToBlock(batchMemoryLimitPerTask, blockSizeMB) + blockSizeMB;	// add extra block for overhead
+		int watchdogTickSeconds = Integer.parseInt(sWatchdogTickSeconds);
+		int watchdogTimeoutSeconds = Integer.parseInt(sWatchdogTimeoutSeconds);
 
 		// -------------------------------------------------------------
 
 		LineStringBuilder lsb = new LineStringBuilder();
 		slurmBatchScriptInit(jobName, simTask.isPowerUser(), memoryMBAllowed, numberOfConcurrentTasks, slurmJobTimeout, lsb);
-		writeScriptControlledVariables(lsb, jobName, simTask, timeoutPerTaskSeconds);
-		writeSingularitySetup(lsb);
-		writeSlurmJobMetadata(lsb);
-		writeContainerBindingsAndEnv(lsb, javaMemXmx);
-		writeContainerImageAndPrefixes(lsb);
+		writeBatchScriptControlledVariables(lsb, jobName, simTask, timeoutPerTaskSeconds, watchdogTickSeconds, watchdogTimeoutSeconds);
+		writeBatchSingularitySetup(lsb);
+		writeBatchSlurmJobMetadata(lsb);
+		writeBatchContainerBindingsAndEnv(lsb, javaMemXmx);
+		writeBatchContainerImageAndPrefixes(lsb);
 
 		String langevinFixture;
 		try {
