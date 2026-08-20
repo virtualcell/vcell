@@ -404,8 +404,9 @@
 		    <version>${commons-pool2.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>io.jhdf</groupId>
-			<artifactId>jhdf</artifactId>
+			<!-- Tagged fork under the virtualcell org, see jhdf.version in the parent pom -->
+			<groupId>com.github.virtualcell</groupId>
+			<artifactId>vcell-jhdf</artifactId>
 			<version>${jhdf.version}</version>
 			<exclusions>
 				<exclusion>
