@@ -144,7 +144,21 @@ def fetch_board(token: str) -> tuple[str, dict[int, dict]]:
     out, cursor, project_id = {}, None, None
     while True:
         d = gql(PROJECT_Q, {"owner": OWNER, "number": PROJECT_NUMBER, "cursor": cursor}, token)
-        proj = d["organization"]["projectV2"]
+        proj = (d.get("organization") or {}).get("projectV2")
+        if proj is None:
+            # GraphQL returns null -- not an error -- when the viewer cannot see a ProjectV2.
+            # A token can therefore authenticate fine (no 401) and still land here, which is
+            # the single most likely misconfiguration. Say so instead of a TypeError.
+            raise SystemExit(
+                f"error: cannot read project #{PROJECT_NUMBER} of '{OWNER}'.\n"
+                "The token authenticated, but the API returned no project, which means it "
+                "cannot see it:\n"
+                "  - classic PAT: needs the `read:project` scope "
+                "(`gh auth refresh -s read:project` for a gh token)\n"
+                "  - fine-grained PAT: needs organization permission 'Projects: Read-only', "
+                "AND approval by a virtualcell org owner -- tokens work for everything else "
+                "while that approval is pending\n"
+                "  - or the project number is wrong / it was deleted")
         project_id = proj["id"]
         page = proj["items"]
         for n in page["nodes"]:
