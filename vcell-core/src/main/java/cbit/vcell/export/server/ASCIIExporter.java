@@ -160,6 +160,65 @@ public class ASCIIExporter {
         return nested;
     }
 
+    /**
+     * Feeds a two dimensional dataset a row at a time, so values reach the file as they are produced rather than
+     * being collected first. Values are taken in the order they are added, which is the order the flat list they
+     * replace was built in, so the dataset is the same either way.
+     * <p>
+     * Values beyond the dataset's extent are dropped, matching what writing a longer buffer into a bounded
+     * dataspace did: a membrane curve appends a second block of values after the first.
+     */
+    static final class RowStreamer implements AutoCloseable {
+        private final StreamingDataset dataset;
+        private final double[] row;
+        private final int rowCount;
+        private int nextInRow = 0;
+        private int nextRow = 0;
+
+        /**
+         * @param hdf5Group the group to create the dataset in, or null to discard everything added
+         * @param datasetName the dataset name
+         * @param rowCount the dataset's first dimension, normally one per timepoint
+         * @param columnCount the dataset's second dimension
+         */
+        RowStreamer(WritableGroup hdf5Group, String datasetName, int rowCount, int columnCount) {
+            this.rowCount = rowCount;
+            this.row = new double[columnCount];
+            this.dataset = hdf5Group == null ? null : hdf5Group.newStreamingDataset(datasetName, double.class,
+                    new int[]{rowCount, columnCount},
+                    DatasetCreationOptions.builder().chunkDimensions(1, columnCount).build());
+        }
+
+        void add(double value) {
+            if(dataset == null || nextRow >= rowCount){
+                return;
+            }
+            row[nextInRow++] = value;
+            if(nextInRow == row.length){
+                dataset.writeChunk(new long[]{nextRow, 0}, row);
+                nextInRow = 0;
+                nextRow++;
+            }
+        }
+
+        @Override
+        public void close() {
+            if(dataset == null){
+                return;
+            }
+            // A dataset must be complete before the file closes, so pad a partial trailing row with the fill
+            // value the bounded write would have left there
+            while(nextRow < rowCount){
+                Arrays.fill(row, nextInRow, row.length, 0.0);
+                dataset.writeChunk(new long[]{nextRow, 0}, row);
+                Arrays.fill(row, 0.0);
+                nextInRow = 0;
+                nextRow++;
+            }
+            dataset.close();
+        }
+    }
+
     private static void fillRowMajor(Object destination, Object flat, int[] nextFlatIndex) {
         int length = Array.getLength(destination);
         if(destination.getClass().getComponentType().isArray()) {
@@ -843,7 +902,12 @@ public class ASCIIExporter {
         if(crossingMembraneIndexes != null){
             treePCS.put(PCS.CURVECROSSMEMBRINDEX, crossingMembraneIndexes);
         }
-        treePCS.put(PCS.CURVEVALS, new ArrayList<Double>());
+        // The curve's group and values dataset are created here rather than at the end, so values can be written
+        // as they are produced instead of being collected into a list first
+        WritableGroup hdf5GroupCurve = hdf5GroupVar == null ? null
+                : hdf5GroupVar.putGroup(getSpatialSelectionDescription(curve));
+        RowStreamer curveValues = new RowStreamer(hdf5GroupCurve, PCS.CURVEVALS.name(),
+                endIndex - beginIndex + 1, pointIndexes.length);
 
         org.vcell.util.document.TimeSeriesJobSpec timeSeriesJobSpec =
                 new org.vcell.util.document.TimeSeriesJobSpec(
@@ -877,7 +941,7 @@ public class ASCIIExporter {
                 fileDataContainerManager.append(fileDataContainerID, "," + distances[j]);
                 for(int i = beginIndex; i <= endIndex; i++){
                     fileDataContainerManager.append(fileDataContainerID, "," + variableValues[j + 1][i - beginIndex]);
-                    ((ArrayList<Double>) treePCS.get(PCS.CURVEVALS)).add(variableValues[j + 1][i - beginIndex]);
+                    curveValues.add(variableValues[j + 1][i - beginIndex]);
                 }
                 fileDataContainerManager.append(fileDataContainerID, "\n");
             }
@@ -893,7 +957,7 @@ public class ASCIIExporter {
                 ((ArrayList<Double>) pointsCurvesSlices.data.get(PCS.TIMES)).add(allTimes[i]);
                 for(int j = 0; j < distances.length; j++){
                     fileDataContainerManager.append(fileDataContainerID, "," + variableValues[j + 1][i - beginIndex]);
-                    ((ArrayList<Double>) treePCS.get(PCS.CURVEVALS)).add(variableValues[j + 1][i - beginIndex]);
+                    curveValues.add(variableValues[j + 1][i - beginIndex]);
                 }
                 fileDataContainerManager.append(fileDataContainerID, "\n");
             }
@@ -921,16 +985,16 @@ public class ASCIIExporter {
                 fileDataContainerManager.append(fileDataContainerID, "," + distance);
                 for(int t = 0; t < variableValues[t].length; t++){
                     fileDataContainerManager.append(fileDataContainerID, "," + variableValues[i + 1][t]);
-                    ((ArrayList<Double>) treePCS.get(PCS.CURVEVALS)).add(variableValues[i + 1][t]);
+                    curveValues.add(variableValues[i + 1][t]);
                 }
 
                 fileDataContainerManager.append(fileDataContainerID, "\n");
             }
         }
 
-        if(hdf5GroupVar != null){
+        curveValues.close();
+        if(hdf5GroupCurve != null){
             try {
-                WritableGroup hdf5GroupCurve = hdf5GroupVar.putGroup(getSpatialSelectionDescription(curve));
                 insertInts(hdf5GroupCurve, PCS.CURVEINDEXES.name(), new long[]{((int[]) treePCS.get(PCS.CURVEINDEXES)).length}, (int[]) treePCS.get(PCS.CURVEINDEXES));//UiTableExporterToHDF5.writeHDF5Dataset(hdf5GroupCurveID, PCS.CURVEINDEXES.name(), new long[] {((int[])treePCS.get(PCS.CURVEINDEXES)).length}, (int[])treePCS.get(PCS.CURVEINDEXES),false);
                 insertDoubles(hdf5GroupCurve, PCS.CURVEDISTANCES.name(), new long[]{((double[]) treePCS.get(PCS.CURVEDISTANCES)).length}, (double[]) treePCS.get(PCS.CURVEDISTANCES));//UiTableExporterToHDF5.writeHDF5Dataset(hdf5GroupCurveID, PCS.CURVEDISTANCES.name(), new long[] {((double[])treePCS.get(PCS.CURVEDISTANCES)).length}, (double[])treePCS.get(PCS.CURVEDISTANCES),false);
                 if(treePCS.get(PCS.CURVECROSSMEMBRINDEX) != null){
@@ -944,7 +1008,6 @@ public class ASCIIExporter {
                     String attrText = PCS.CURVEVALS.name() + " columns " + crossPoints.get(0) + " and " + crossPoints.get(1) + " are added points of interpolation near membrane";
                     insertAttribute(hdf5GroupCurve, PCS.CURVECROSSMEMBRINDEX.name() + " Info", attrText); //UiTableExporterToHDF5.writeHDF5Dataset(hdf5GroupCurveID, PCS.CURVECROSSMEMBRINDEX.name()+" Info", null, attrText,true);
                 }
-                insertDoubles(hdf5GroupCurve, PCS.CURVEVALS.name(), new long[]{endIndex - beginIndex + 1, ((int[]) treePCS.get(PCS.CURVEINDEXES)).length}, (ArrayList<Double>) treePCS.get(PCS.CURVEVALS));//UiTableExporterToHDF5.writeHDF5Dataset(hdf5GroupCurveID, PCS.CURVEVALS.name(), new long[] {endIndex-beginIndex+1,((int[])treePCS.get(PCS.CURVEINDEXES)).length}, (ArrayList<Double>)treePCS.get(PCS.CURVEVALS),false);
             } catch(Exception e){
                 throw new DataAccessException(e.getMessage(), e);
             }
