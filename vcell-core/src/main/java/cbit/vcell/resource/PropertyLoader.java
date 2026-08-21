@@ -135,7 +135,8 @@ public class PropertyLoader {
 	public static final String slurm_langevin_timeoutPerTaskSeconds = record("vcell.slurm.langevin.timeoutPerTaskSeconds",ValueType.GEN);
 	public static final String slurm_langevin_batchMemoryLimitPerTaskMB = record("vcell.slurm.langevin.batchMemoryLimitPerTaskMB",ValueType.GEN);
 	public static final String slurm_langevin_memoryBlockSizeMB = record("vcell.slurm.langevin.memoryBlockSizeMB",ValueType.GEN);
-
+	public static final String slurm_langevin_watchdogTimeoutSeconds = record("vcell.slurm.langevin.watchdogTimeoutSeconds",ValueType.GEN);
+	public static final String slurm_langevin_watchdogTickSeconds = record("vcell.slurm.langevin.watchdogTickSeconds",ValueType.GEN);
 
 //	public static final String finiteVolumeExecutableProperty = record("vcell.finitevolume.executable",ValueType.EXE);
 //
