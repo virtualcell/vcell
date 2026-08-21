@@ -72,7 +72,9 @@ fi
 if gh release view "$VERSION" --repo "$REPO" >/dev/null 2>&1; then
 	echo "release $VERSION already exists -- not recreating it"
 else
-	gh release create "$VERSION" --repo "$REPO" --target master \
+	# Tag the commit regression actually passed on, not whatever master is now. A merge
+	# landing between gate 1 and here would otherwise be released untested.
+	gh release create "$VERSION" --repo "$REPO" --target "$MASTER_SHA" \
 		--title "$VERSION" --notes-file "$NOTES" \
 		|| { echo "release create failed" >&2; exit 1; }
 	echo "created release $VERSION"

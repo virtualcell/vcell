@@ -25,23 +25,35 @@ VCell uses a 4-part version: `MAJOR.MINOR.PATCH.BUILD`.
 
 | Part | Meaning | Triggered by |
 |---|---|---|
-| `MAJOR` | User-facing breaking change **or** public release event | Release-engineering decision. Examples: 8.0.0 = SpringSaLaD GA. |
-| `MINOR` | Significant new feature, backwards-compatible | Release-engineering decision. |
-| `PATCH` | Bugfix-only release | Release-engineering decision. |
+| `MAJOR` | A very large new capability. Rare. | Release-engineering decision. |
+| `MINOR` | A public release event — a version announced to users. | Release-engineering decision. |
+| `PATCH` | **Every ordinary release.** The default. | Release-engineering decision. |
 | `BUILD` | CI auto-incrementing build counter | Automatic. Each push that produces a release artifact increments this. |
+
+**Cutting "a release" means a PATCH release.** That is the normal case and the
+one to assume unless told otherwise: 8.1.0.01 → 8.1.1.01 → 8.1.2.01. A release
+is not held back from PATCH because it contains a new feature, and does not earn
+a MINOR by containing one. Almost every release VCell ships is a PATCH.
+
+MINOR marks a **public release event**: a version given a name, announced to
+users, and written up as its own narrative under `release-notes/major/` and its
+own vcell.org accordion entry. It is a decision about announcing, not about the
+size of the diff.
+
+MAJOR is for a very large new capability and is rare.
 
 The first three parts are intentional human decisions; the fourth is
 mechanical. `7.7.0.77` and `7.7.0.78` are the 77th and 78th builds of the
 `7.7.0` line. `8.0.0.01` is the first build of the `8.0.0` line.
 
-**What counts as a "user-facing breaking change":**
-- File format incompatibility (cannot open older `.vcml` / cannot be opened by older VCell)
-- Behavior change that silently produces different simulation results
-- Removal or rename of a UI feature users depend on
-
-**What counts as a "public release event":**
-- A new modeling modality with its own identity (e.g. SpringSaLaD GA → 8.0.0)
+**What counts as a public release event:**
+- A new modeling modality with its own identity (e.g. SpringSaLaD GA)
 - A major UI or workflow overhaul worth highlighting on vcell.org
+
+**A user-facing breaking change** — a file-format incompatibility, a silent
+change in simulation results, the removal of a feature users depend on — is
+called out prominently in the release's `Highlights.` paragraph. It does not by
+itself force a MAJOR or MINOR bump.
 
 API breaking changes are tracked under `CHANGELOG.md` `### Changed` and
 `### Removed` rather than forcing a MAJOR bump, since API consumers track
