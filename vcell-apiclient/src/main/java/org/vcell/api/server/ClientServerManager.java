@@ -276,20 +276,13 @@ public MessageEvent[] getMessageEvents() throws RemoteProxyException, IOExceptio
 }
 
 /**
- * Which version differences are worth interrupting the user for.
+ * Why the version check is running. The comparison is the same either way -- any
+ * difference in MAJOR, MINOR or PATCH -- but the two situations need different advice.
  */
 private enum VersionCheck {
-	/**
-	 * At login, or a reconnect the user asked for. A PATCH difference is normal here --
-	 * PATCH moves with nearly every release while installed clients update on the user's
-	 * own schedule -- so only MAJOR or MINOR is reported.
-	 */
+	/** At login, or a reconnect the user asked for: the client was already out of date. */
 	ON_CONNECT,
-	/**
-	 * After an automatic reconnect, which means the server was redeployed underneath a
-	 * running client. Any difference is reported, PATCH included: the user is being told
-	 * that a newer client exists, not that their session is wrong.
-	 */
+	/** After an automatic reconnect: the server was redeployed underneath a running client. */
 	AFTER_SERVER_CHANGED
 }
 
@@ -311,23 +304,21 @@ private void checkClientServerSoftwareVersion(InteractiveClientServerContext req
 					+ "We have adopted a Release Early, Release Often software development approach\n\n"
 					+ "\nPlease exit VCell and download the latest client from VCell Software page (http://vcell.org).");
 			}
-			boolean bDiffers = clientVersion.getMajorVersion()!=serverVersion.getMajorVersion() ||
-				clientVersion.getMinorVersion()!=serverVersion.getMinorVersion();
-			if (when == VersionCheck.AFTER_SERVER_CHANGED) {
-				//
-				// The server was upgraded underneath a running client, so any difference at
-				// all is worth reporting -- a new client exists and the user should restart
-				// to pick it up.
-				//
-				bDiffers = bDiffers || clientVersion.getPatchVersion()!=serverVersion.getPatchVersion();
-			}
-			if (bDiffers) {
+			//
+			// MAJOR, MINOR and PATCH all matter. A VCell PATCH release can carry a breaking
+			// API change, so a client and server differing in any of the three are not known
+			// to be compatible. Only BUILD is ignored. This is what the check has always
+			// meant to do; it could not, because getPatchVersion() returned MINOR (#2011).
+			//
+			if (clientVersion.getMajorVersion()!=serverVersion.getMajorVersion() ||
+				clientVersion.getMinorVersion()!=serverVersion.getMinorVersion() ||
+				clientVersion.getPatchVersion()!=serverVersion.getPatchVersion()) {
 				if (when == VersionCheck.AFTER_SERVER_CHANGED) {
 					requester.showWarningDialog("The VCell server was updated while you were working:\n"
 						+ "client VCell version : " + clientSoftwareVersion + "\n"
 						+ "server VCell version : " + serverSoftwareVersion + "\n"
-						+ "\nYour work is safe and you may keep using this session."
-						+ "\nPlease exit and restart VCell when convenient to install the new version.");
+						+ "\nThis client no longer matches the server."
+						+ "\nPlease save your work, then exit and restart VCell to install the matching version.");
 				} else {
 					requester.showWarningDialog("software version mismatch between client and server:\n"
 						+ "client VCell version : " + clientSoftwareVersion + "\n"
