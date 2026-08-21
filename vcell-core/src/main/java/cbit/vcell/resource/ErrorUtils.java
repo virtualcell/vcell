@@ -69,6 +69,94 @@ public class ErrorUtils {
             this.softwareVersion = softwareVersion;
             this.platform = platform;
         }
+
+        /**
+         * Render this report as the plain-text body of a support email.
+         *
+         * <p>The report reaches vcell_support as an email. Serialised as JSON it arrives as
+         * a single line thousands of characters long, with every newline written as a
+         * literal backslash-n and every apostrophe as a unicode escape -- readable by a
+         * parser, not by a person.
+         *
+         * <p>Sections run shortest first, so that what a reader sees -- or what a mail
+         * client shows in a preview, typically the first couple of thousand characters --
+         * is the identifying detail rather than the opening lines of a very long client
+         * log. The log, which can run to hundreds of kilobytes, always comes last.
+         */
+        public String toEmailText(){
+            String log = normalizeNewlines(nullToEmpty(exceptionMessage)).trim();
+            String trace = normalizeNewlines(nullToEmpty(stackTrace)).trim();
+
+            //
+            // The client log usually arrives twice: once as exceptionMessage, and again as
+            // the message of the exception that opens the stack trace, because the report is
+            // raised as new RuntimeException(log). On a real report that is 94% of the body,
+            // and the second copy buries the exception chain behind tens of thousands of
+            // characters of routine logging. Carry it once, at the end.
+            //
+            if (log.length() > MIN_DEDUPE_LENGTH && trace.contains(log)){
+                trace = trace.replace(log, LOG_MOVED_MARKER);
+            }
+
+            StringBuilder sb = new StringBuilder();
+            sb.append("VCell error report").append(NL);
+            sb.append("==================").append(NL).append(NL);
+            appendField(sb, "User", username);
+            appendField(sb, "Version", softwareVersion);
+            appendField(sb, "Platform", platform);
+            appendSection(sb, "User message", message);
+            appendSection(sb, "Exception chain and stack trace", trace);
+            appendSection(sb, "Client log", log);
+            return sb.toString();
+        }
+
+        /** Short enough that a coincidental match would not matter; long enough to be the log. */
+        private static final int MIN_DEDUPE_LENGTH = 200;
+        private static final String LOG_MOVED_MARKER = "(client log -- reproduced in full below)";
+
+        private static String nullToEmpty(String s){
+            return s == null || "null".equals(s.trim()) ? "" : s;
+        }
+
+        private static final String NL = "\n";
+        private static final int RULE_WIDTH = 62;
+
+        private static void appendField(StringBuilder sb, String label, String value){
+            String shown = isBlank(value) ? "(not reported)" : oneLine(value);
+            sb.append(pad(label + ":", 10)).append(' ').append(shown).append(NL);
+        }
+
+        private static void appendSection(StringBuilder sb, String title, String value){
+            sb.append(NL).append("--- ").append(title).append(' ');
+            for (int i = title.length() + 5; i < RULE_WIDTH; i++){
+                sb.append('-');
+            }
+            sb.append(NL).append(NL);
+            sb.append(isBlank(value) ? "(none)" : normalizeNewlines(value).trim());
+            sb.append(NL);
+        }
+
+        private static String pad(String s, int width){
+            StringBuilder sb = new StringBuilder(s);
+            while (sb.length() < width){
+                sb.append(' ');
+            }
+            return sb.toString();
+        }
+
+        private static boolean isBlank(String s){
+            return s == null || s.trim().isEmpty() || "null".equals(s.trim());
+        }
+
+        /** Newlines arrive as CRLF from some platforms; normalise so the body renders evenly. */
+        private static String normalizeNewlines(String s){
+            return s.replace("\r\n", "\n").replace('\r', '\n');
+        }
+
+        /** Keep a header field on one line however the value was assembled. */
+        private static String oneLine(String s){
+            return normalizeNewlines(s).replace('\n', ' ').replaceAll(" +", " ").trim();
+        }
     }
 
     public static void sendErrorReport(Throwable exception, String message) throws RuntimeException{
