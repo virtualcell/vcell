@@ -16,6 +16,49 @@ followed by flat Keep-a-Changelog categories. API consumers should scan
 
 _(Release-manager scratchpad. Populated at release-cut time.)_
 
+## [8.1.1.01] - 2026-08-21
+
+**Highlights.** When VCell hits an error and you agree to send a report, that
+report is now worth reading at the other end — and you can say what you were
+doing when it happened. The reports had been arriving as a single unbroken line
+of tens of thousands of characters, with the same log copied into it twice, and
+with no indication of who sent them.
+
+### Added
+- The error dialog has a "What were you doing?" field. It is optional and one
+  line; leaving it empty sends exactly what it sent before. A log records what
+  VCell did, but only you can say what you were trying to do, which is often
+  what makes a problem reproducible. (#2014, #835)
+
+### Fixed
+- Error reports identify who sent them. VCell noted the account only once, at
+  startup, from the command line — where it is normally absent, because people
+  sign in through the dialog — so every report reached support anonymous and
+  could not be followed up. (#2014, #835)
+- An error dialog can no longer open without an owning window. When it had
+  none, the window system quietly stopped treating it as a dialog belonging to
+  VCell: it neither blocked the window that raised it nor stayed in front of
+  it, which is one way an error message ends up hidden behind the main window.
+  (#2014)
+- Reports no longer carry the same client log twice. VCell attached the log to
+  the error before sending, which duplicated it and pushed the part naming the
+  fault far enough down that it fell outside what a mail reader shows. On a
+  real report the duplicate was 94% of the message. (#2014)
+
+### Changed
+- Reports are sent with the error as it occurred, rather than wrapped inside a
+  second one. The wrapping meant every report described where VCell noticed the
+  problem instead of where it happened. (#2014)
+- Internal: reports carry a version, and the parts — the log, the model, the
+  recorded actions — travel in separate fields rather than concatenated into
+  one. The server reads both the old and the new form, so nothing depends on
+  client and server being updated together. (#2014)
+
+### Notes for API consumers
+No API changes. The report posted to `/api/v0/contactus` gains optional fields
+(`reportVersion`, `modelInfo`, `clientLog`, `userEvents`); reports without them
+are read exactly as before.
+
 ## [8.1.0.01] - 2026-08-21
 
 **Highlights.** The build number now matches the release name. This work has
