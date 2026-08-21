@@ -12,7 +12,7 @@ but all artifacts derive from one canonical source in this repository.
 | Artifact | Audience | Granularity | Location | Source of truth? |
 |---|---|---|---|---|
 | `CHANGELOG.md` | Developers, API integrators | One section per **tagged build** | repo root | Yes — canonical engineer-track log |
-| `release-notes/major/<version>.md` | End users / scientists | One file per **public release** (e.g. `7.7.md`, `8.0.0.md`) | this repo | Yes — canonical user-facing narrative |
+| `release-notes/major/<version>.md` | End users / scientists | One file per **public release** (e.g. `7.7.md`, `8.0.md`) | this repo | Yes — canonical user-facing narrative |
 | GitHub release body | Developers (existing channel) | Per tag | github.com | No — copy-pasted from `CHANGELOG.md` at release-cut |
 | vcell.org accordion (`/run-vcell-software`) | End users | One entry per public release | external website | No — transcribed from `release-notes/major/<version>.md` when prod rolls |
 
@@ -108,7 +108,27 @@ not required to — the formal write-up happens at release-cut time.
 Each public release gets a file at `release-notes/major/<version>.md`.
 By default, one file per `MAJOR.MINOR` line, not per build.
 
-- `release-notes/major/8.0.0.md` — covers the entire 8.0.0 line
+- `release-notes/major/8.0.md` — VCell 8.0
+- `release-notes/major/8.1.md` — VCell 8.1
+
+### The narrative name and the build version may differ
+
+The name a release is given for users is a separate decision from the
+version its builds carry, and the two are allowed to diverge. Build
+numbers are never restated once published; the narrative decides which
+builds it covers.
+
+This has already happened once. **VCell 8.0** is the 8.0.0 builds only
+— 8.0.0.01 through 8.0.0.03, the SpringSaLaD GA that ran in production
+from 2026-05-21 to 2026-08-14. Everything released after 8.0.0.03 is
+**VCell 8.1**, even though those builds are numbered 8.0.2.01 through
+8.0.28.01 and beyond.
+
+So, at release-cut time, add the user-facing items to the narrative
+file for the release **currently being accumulated** — today
+`8.1.md` — not to the file whose name matches the build's
+`MAJOR.MINOR`. `CHANGELOG.md` is unaffected: it is organised strictly
+by build version and always records the real number.
 
 When a long-running `MAJOR.MINOR` line accumulates multiple distinct
 production rollouts that each warrant their own public release event,
