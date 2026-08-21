@@ -43,6 +43,9 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import cbit.vcell.client.VCellClient;
+import cbit.vcell.resource.ErrorUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import cbit.vcell.client.VCellClientMain;
 import org.vcell.client.logicalwindow.LWContainerHandle;
 import org.vcell.client.logicalwindow.LWDialog;
@@ -70,6 +73,8 @@ import cbit.vcell.resource.OperatingSystemInfo;
  * @author: Ion Moraru
  */
 public class DialogUtils {
+
+    private static final Logger lg = LogManager.getLogger(DialogUtils.class);
 
     /**
      * Virtual Cell variant of {@link JOptionPane#createDialog(Component, String)}
@@ -762,11 +767,23 @@ public class DialogUtils {
                     Integer reply = CastingUtils.downcast(Integer.class, ro);
                     boolean userSaidYes = reply != null ? reply == JOptionPane.YES_OPTION : false;
                     if(userSaidYes){
-                        Throwable throwableToSend = exception;
-                        String extra = dialogMessagePanel.getSupplemental();
-                        extra = BeanUtils.PLAINTEXT_EMAIL_NEWLINE + (extra == null ? "" : extra) + collectRecordedUserEvents();
-                        throwableToSend = new RuntimeException(extra, exception);
-                        VCellClient.getInstance().getClientServerManager().sendErrorReport(throwableToSend);
+                        //
+                        // Send the exception as it was thrown, with the log, the model and the
+                        // recorded events alongside it. This used to wrap all three in the message
+                        // of a new RuntimeException, which put the log into the report twice -- once
+                        // as the exception message and once at the head of the stack trace -- and
+                        // pushed the frames identifying the fault past tens of thousands of
+                        // characters of routine logging.
+                        //
+                        try {
+                            ErrorUtils.sendErrorReport(exception, null,
+                                    dialogMessagePanel.getModelInfo(),
+                                    dialogMessagePanel.getClientLog(),
+                                    collectRecordedUserEvents());
+                        } catch (Exception sendFailure) {
+                            // reporting an error must never raise one of its own
+                            lg.error("failed to send error report", sendFailure);
+                        }
                     }
                 }
             } finally {

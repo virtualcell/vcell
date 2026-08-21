@@ -44,6 +44,22 @@ public class MessagePanelFactory {
 		public abstract String getSupplemental( );
 
 		/**
+		 * @return the model the user was working on, or null if not known.
+		 * Reported separately from {@link #getClientLog()} so neither has to be
+		 * recovered from inside the other.
+		 */
+		public String getModelInfo( ) {
+			return null;
+		}
+
+		/**
+		 * @return the captured client log, or null if none was captured.
+		 */
+		public String getClientLog( ) {
+			return null;
+		}
+
+		/**
 		 * @return message type for {@link JOptionPane#JOptionPane(Object, int,int)} constructor
 		 */
 		public abstract int optionType() ;
@@ -169,6 +185,16 @@ public class MessagePanelFactory {
 		
 		private boolean isHaveContext( ) {
 			return errorContext != null && errorContext.canUse();
+		}
+
+		@Override
+		public String getModelInfo() {
+			return isHaveContext() ? errorContext.modelInfo : null;
+		}
+
+		@Override
+		public String getClientLog() {
+			return logContent;
 		}
 
 		@Override
