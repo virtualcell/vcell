@@ -17,7 +17,6 @@ python-dateutil = ">=2.8.2"
 pydantic = ">=2.10.4"
 typing-extensions = ">=4.6.0"
 pandas = ">=2"
-jupyter = "^1.1.1"
 requests_oauth2client = ">=1.6.0"
 
 [tool.poetry.dev-dependencies]
