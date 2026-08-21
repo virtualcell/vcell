@@ -12,6 +12,7 @@ import java.util.Objects;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JTextField;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -42,6 +43,30 @@ public class MessagePanelFactory {
 		 * @return supplemental information or null if none
 		 */
 		public abstract String getSupplemental( );
+
+		/**
+		 * @return the model the user was working on, or null if not known.
+		 * Reported separately from {@link #getClientLog()} so neither has to be
+		 * recovered from inside the other.
+		 */
+		public String getModelInfo( ) {
+			return null;
+		}
+
+		/**
+		 * @return the captured client log, or null if none was captured.
+		 */
+		public String getClientLog( ) {
+			return null;
+		}
+
+		/**
+		 * @return what the user typed about what they were doing, or null if they typed
+		 * nothing or the dialog offered no field.
+		 */
+		public String getUserNote( ) {
+			return null;
+		}
 
 		/**
 		 * @return message type for {@link JOptionPane#JOptionPane(Object, int,int)} constructor
@@ -131,6 +156,8 @@ public class MessagePanelFactory {
 		private final ErrorContext errorContext;
 		private String logContent;
 		private int generatedOptionType = JOptionPane.YES_NO_OPTION;
+		/** What the user was doing, in their own words. Null until the field is built. */
+		private JTextField userNoteField;
 		JPanelWithSendOption(String message, ErrorContext errorContext) {
 			commonConstructionCode(this,message);
 			this.errorContext = errorContext;
@@ -145,9 +172,25 @@ public class MessagePanelFactory {
 
 				FlowLayout fl = new FlowLayout(FlowLayout.TRAILING);
 				JPanel buttonPanel = new JPanel(fl);
-				add(buttonPanel, BorderLayout.SOUTH);
 				JLabel label = new JLabel("Send error report to VCell development team to assist debugging?"); 
 				buttonPanel.add(label);
+
+				//
+				// A line for the user to say what they were doing. A log says what VCell did;
+				// only the user can say what they were trying to do, which is often what makes
+				// a report reproducible. Optional -- an empty field sends as before.
+				//
+				JPanel notePanel = new JPanel(new BorderLayout(4, 0));
+				notePanel.setBorder(BorderFactory.createEmptyBorder(4, 4, 0, 4));
+				notePanel.add(new JLabel("What were you doing? (optional)"), BorderLayout.WEST);
+				userNoteField = new JTextField();
+				userNoteField.setToolTipText("Anything you can add about what you were doing helps us reproduce the problem.");
+				notePanel.add(userNoteField, BorderLayout.CENTER);
+
+				JPanel southPanel = new JPanel(new BorderLayout());
+				southPanel.add(notePanel, BorderLayout.NORTH);
+				southPanel.add(buttonPanel, BorderLayout.SOUTH);
+				add(southPanel, BorderLayout.SOUTH);
 
 				JButton helpBtn = new JButton(DialogUtils.swingIcon(JOptionPane.QUESTION_MESSAGE));
 				helpBtn.addActionListener(new ActionListener() {
@@ -169,6 +212,25 @@ public class MessagePanelFactory {
 		
 		private boolean isHaveContext( ) {
 			return errorContext != null && errorContext.canUse();
+		}
+
+		@Override
+		public String getModelInfo() {
+			return isHaveContext() ? errorContext.modelInfo : null;
+		}
+
+		@Override
+		public String getClientLog() {
+			return logContent;
+		}
+
+		@Override
+		public String getUserNote() {
+			if (userNoteField == null) {
+				return null;
+			}
+			String note = userNoteField.getText();
+			return note == null || note.trim().isEmpty() ? null : note.trim();
 		}
 
 		@Override

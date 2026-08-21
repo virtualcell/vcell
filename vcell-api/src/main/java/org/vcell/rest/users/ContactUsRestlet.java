@@ -40,13 +40,13 @@ public final class ContactUsRestlet extends Restlet {
 		String smtpPort = PropertyLoader.getRequiredProperty(PropertyLoader.vcellSMTPPort);
 		String from = "vcellserver";
 		String vcellSupportEmail = PropertyLoader.getRequiredProperty(PropertyLoader.vcellSMTPEmailAddress);
-		Gson gson = new Gson();
-		String contentJson = gson.toJson(errorReport);
+		// The body is plain text, not the JSON the report arrived as: a person reads this.
+		String contentText = errorReport.toEmailText();
 
 		try {
-			BeanUtils.sendSMTP(smtpHost, Integer.parseInt(smtpPort), from, vcellSupportEmail, "VCell Support sent through Contact-Us", contentJson);
+			BeanUtils.sendSMTP(smtpHost, Integer.parseInt(smtpPort), from, vcellSupportEmail, "VCell Support sent through Contact-Us", contentText);
 		} catch (MessagingException e) {
-			getLogger().log(Level.SEVERE,"failed to send user error message "+contentJson);
+			getLogger().log(Level.SEVERE,"failed to send user error message "+contentText);
 			throw new RuntimeException(e.getMessage());
 		}
 	}
