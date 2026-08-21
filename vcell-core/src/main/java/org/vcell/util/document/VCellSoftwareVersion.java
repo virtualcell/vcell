@@ -77,7 +77,7 @@ public class VCellSoftwareVersion implements Serializable {
 					minorVersion = safeParse(minor);
 				}
 				if (parts.length > 2) {
-					String patch = parts[1];
+					String patch = parts[2];
 					patchVersion = safeParse(patch);
 				}
 			} catch (Exception exc) {
