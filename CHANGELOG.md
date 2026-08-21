@@ -16,6 +16,48 @@ followed by flat Keep-a-Changelog categories. API consumers should scan
 
 _(Release-manager scratchpad. Populated at release-cut time.)_
 
+## [8.0.28.01] - 2026-08-20
+
+**Highlights.** Dragging in the SpringSaLaD trajectory viewer turned the scene the wrong way —
+it rotated as though you had taken hold of the far side of the ball rather than the near one.
+That is fixed. Separately, writing HDF5 exports no longer needs a native library: that work
+moved to pure Java, which removes 24 MB of platform binaries from every installer and every
+service image, and means **spatial exports now work on Apple Silicon**, where they previously
+could not run at all for want of an arm64 build of the native library.
+
+### Fixed
+- The SpringSaLaD trajectory viewer rotated backwards on both axes. The viewer draws with +z
+  toward the camera while the trackball assumed the opposite, so each drag grabbed the far face
+  of the virtual ball. The geometry and PDE surface viewers are unaffected — they use the
+  opposite convention on purpose, to agree with how the slice viewer displays data. (#2007)
+- Spatial (PDE) exports in HDF5 format could not be produced on macOS on Apple Silicon. The
+  export needed a native HDF5 library that has no arm64 build, so it was skipped there and the
+  export failed. It is now written in pure Java and runs everywhere. (#2001)
+
+### Changed
+- HDF5 exports are written through the pure-Java `jhdf` rather than a native binding. The
+  datasets, their names, shapes and values are unchanged. Two differences exist and are
+  invisible to anything reading the file properly: text is stored as variable-length rather than
+  padded to a fixed width, and one annotation no longer carries a trailing NUL that terminated a
+  C string. (#2001)
+- Installers and service images are 24 MB smaller: the native HDF5 and HDF4 libraries they
+  carried for five platforms are gone, along with the Windows runtime DLLs those needed. VCell
+  keeps the machinery to ship a native library if it ever needs one again. (#2004)
+
+### Added
+- Internal: the HDF5 export's behaviour is pinned by tests for the first time — the dataset
+  names, shapes and value placement for all three spatial layouts and the five smaller datasets
+  written alongside them. The export had no tests at all. (#1998)
+- Internal: incremental and streaming chunk writing were contributed upstream to jhdf
+  ([jhdf#865](https://github.com/jamesmudd/jhdf/pull/865), against
+  [jhdf#654](https://github.com/jamesmudd/jhdf/issues/654)). Until that is released, VCell builds
+  against a tagged fork under the org, as it already does for JSBML. (#2001)
+- Internal: a backlog triage of all 272 open issues, and a weekly lint that checks the backlog
+  and project board for mechanical inconsistencies. (#1996, #1997)
+
+### Notes for API consumers
+No API changes.
+
 ## [8.0.27.01] - 2026-08-18
 
 **Highlights.** The desktop's BioModels Database tab stops steering people away from models
