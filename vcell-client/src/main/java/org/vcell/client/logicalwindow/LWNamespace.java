@@ -148,6 +148,32 @@ public interface LWNamespace {
     }
 
     /**
+     * As {@link #findLWOwner(Component)}, but falls back to the most recently focused
+     * visible top-level window when the component has no logical owner.
+     *
+     * <p>A dialog built with a null owner is not merely unparented: AWT downgrades
+     * {@link java.awt.Dialog.ModalityType#DOCUMENT_MODAL} to modeless when there is no
+     * owner, so such a dialog neither blocks its parent nor is kept in front of it. For
+     * an error dialog that means the message can be lost behind the window that raised
+     * it. Prefer any real window to none.
+     *
+     * @param swingParent could be null
+     * @return logical owner, a fallback window, or null if the application has no
+     * visible top-level window at all
+     */
+    public static LWContainerHandle findLWOwnerOrMostRecent(Component swingParent) {
+        LWContainerHandle owner = findLWOwner(swingParent);
+        if (owner != null) {
+            return owner;
+        }
+        return LWTopFrame.liveWindows()
+                .map(java.lang.ref.WeakReference::get)
+                .filter(java.util.Objects::nonNull)
+                .findFirst()
+                .orElse(null);
+    }
+
+    /**
      * @param awtModality not null
      * @return {@link LWModality} that best matches awt modality
      */

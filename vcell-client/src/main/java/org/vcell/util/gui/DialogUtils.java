@@ -724,7 +724,10 @@ public class DialogUtils {
 
     public static void showErrorDialog(final Component requester, final String message, final Throwable exception, final ErrorContext errorContext){
         checkForNull(requester);
-        LWContainerHandle lwParent = LWNamespace.findLWOwner(requester);
+        // An error dialog must not be the one window the user cannot find. Without an
+        // owner AWT downgrades DOCUMENT_MODAL to modeless, so the dialog would neither
+        // block nor stay in front of the window that raised it.
+        LWContainerHandle lwParent = LWNamespace.findLWOwnerOrMostRecent(requester);
 
         Doer doer = () -> {
             String errMsg = message;
