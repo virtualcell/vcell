@@ -275,7 +275,25 @@ public MessageEvent[] getMessageEvents() throws RemoteProxyException, IOExceptio
 	}
 }
 
-private void checkClientServerSoftwareVersion(InteractiveClientServerContext requester, ClientServerInfo clientServerInfo) {
+/**
+ * Which version differences are worth interrupting the user for.
+ */
+private enum VersionCheck {
+	/**
+	 * At login, or a reconnect the user asked for. A PATCH difference is normal here --
+	 * PATCH moves with nearly every release while installed clients update on the user's
+	 * own schedule -- so only MAJOR or MINOR is reported.
+	 */
+	ON_CONNECT,
+	/**
+	 * After an automatic reconnect, which means the server was redeployed underneath a
+	 * running client. Any difference is reported, PATCH included: the user is being told
+	 * that a newer client exists, not that their session is wrong.
+	 */
+	AFTER_SERVER_CHANGED
+}
+
+private void checkClientServerSoftwareVersion(InteractiveClientServerContext requester, ClientServerInfo clientServerInfo, VersionCheck when) {
 	String clientSoftwareVersion = System.getProperty(PropertyLoader.vcellSoftwareVersion);
 	if (clientSoftwareVersion != null &&  clientSoftwareVersion.toLowerCase().contains("devel") ) {
 		return;
@@ -293,13 +311,29 @@ private void checkClientServerSoftwareVersion(InteractiveClientServerContext req
 					+ "We have adopted a Release Early, Release Often software development approach\n\n"
 					+ "\nPlease exit VCell and download the latest client from VCell Software page (http://vcell.org).");
 			}
-			if (clientVersion.getMajorVersion()!=serverVersion.getMajorVersion() ||
-				clientVersion.getMinorVersion()!=serverVersion.getMinorVersion() ||
-				clientVersion.getPatchVersion()!=serverVersion.getPatchVersion()) {
-				requester.showWarningDialog("software version mismatch between client and server:\n"
-					+ "client VCell version : " + clientSoftwareVersion + "\n"
-					+ "server VCell version : " + serverSoftwareVersion + "\n"
-					+ "\nPlease exit VCell and download the latest client from VCell Software page (http://vcell.org).");
+			boolean bDiffers = clientVersion.getMajorVersion()!=serverVersion.getMajorVersion() ||
+				clientVersion.getMinorVersion()!=serverVersion.getMinorVersion();
+			if (when == VersionCheck.AFTER_SERVER_CHANGED) {
+				//
+				// The server was upgraded underneath a running client, so any difference at
+				// all is worth reporting -- a new client exists and the user should restart
+				// to pick it up.
+				//
+				bDiffers = bDiffers || clientVersion.getPatchVersion()!=serverVersion.getPatchVersion();
+			}
+			if (bDiffers) {
+				if (when == VersionCheck.AFTER_SERVER_CHANGED) {
+					requester.showWarningDialog("The VCell server was updated while you were working:\n"
+						+ "client VCell version : " + clientSoftwareVersion + "\n"
+						+ "server VCell version : " + serverSoftwareVersion + "\n"
+						+ "\nYour work is safe and you may keep using this session."
+						+ "\nPlease exit and restart VCell when convenient to install the new version.");
+				} else {
+					requester.showWarningDialog("software version mismatch between client and server:\n"
+						+ "client VCell version : " + clientSoftwareVersion + "\n"
+						+ "server VCell version : " + serverSoftwareVersion + "\n"
+						+ "\nPlease exit VCell and download the latest client from VCell Software page (http://vcell.org).");
+				}
 			}
 		}
 	}
@@ -318,7 +352,7 @@ public void connectNewServer(InteractiveClientServerContext requester, ClientSer
 public void connect(InteractiveClientServerContext requester) {
 	asynchMessageManager.stopPolling();
 	reconnectStat = ReconnectStatus.NOT;
-	checkClientServerSoftwareVersion(requester,clientServerInfo);
+	checkClientServerSoftwareVersion(requester,clientServerInfo,VersionCheck.ON_CONNECT);
 
 	// get new server connection
 	VCellConnection newVCellConnection = connectToServer(requester,true);
@@ -727,6 +761,12 @@ void reconnect() {
 			changeConnection(requester,connection);
 			rc.stop();
 			asynchMessageManager.startPolling();
+			//
+			// Only once the reconnect has succeeded -- a failed attempt says nothing about
+			// the server's version, and this check makes an HTTP call of its own that the
+			// retry loop should not repeat.
+			//
+			checkClientServerSoftwareVersion(requester,clientServerInfo,VersionCheck.AFTER_SERVER_CHANGED);
 			return;
 		}
 		setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), getClientServerInfo().getApihost(), getClientServerInfo().getApiport(), ConnectionStatus.DISCONNECTED));
