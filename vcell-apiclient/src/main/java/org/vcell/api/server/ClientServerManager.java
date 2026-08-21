@@ -344,6 +344,13 @@ public void connect(InteractiveClientServerContext requester) {
 	asynchMessageManager.stopPolling();
 	reconnectStat = ReconnectStatus.NOT;
 	checkClientServerSoftwareVersion(requester,clientServerInfo,VersionCheck.ON_CONNECT);
+	//
+	// Tell the error reporter who is logged in. It was told once at startup, from the
+	// command line, where the user name is normally absent because people log in through
+	// the dialog -- so every error report was arriving anonymous and support had no way
+	// to follow one up.
+	//
+	ErrorUtils.setClientServerInfo(clientServerInfo);
 
 	// get new server connection
 	VCellConnection newVCellConnection = connectToServer(requester,true);

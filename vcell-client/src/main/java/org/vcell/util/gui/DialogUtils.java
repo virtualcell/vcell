@@ -776,7 +776,7 @@ public class DialogUtils {
                         // characters of routine logging.
                         //
                         try {
-                            ErrorUtils.sendErrorReport(exception, null,
+                            ErrorUtils.sendErrorReport(exception, dialogMessagePanel.getUserNote(),
                                     dialogMessagePanel.getModelInfo(),
                                     dialogMessagePanel.getClientLog(),
                                     collectRecordedUserEvents());
