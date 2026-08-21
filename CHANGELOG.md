@@ -985,6 +985,110 @@ SpringSaLaD bond rendering so bonds stop at sphere surfaces.
   schema changes in this build. A `NOT NULL` constraint on
   `vc_publication.pubdate` accompanies this in the production database.
 
+## [8.0.4.01] - 2026-07-29
+
+**Highlights.** The 3D Trajectory tab now appears for simulations run on the
+cluster, not only for those run locally. The simulation box is also drawn with
+hidden-line removal, so the edges behind the membrane or behind molecules no
+longer show through them.
+
+### Fixed
+- The "3D Trajectory" tab never appeared for a SpringSaLaD simulation run
+  remotely. The client's remote data controller had no delegation for the
+  trajectory request, so the call fell through to a default that returned
+  nothing and no request was ever sent to the server. Locally-run simulations
+  reach the data through a different, correctly wired path, which is why they
+  were unaffected. (#1798)
+- The simulation box was drawn as a flat overlay on top of the scene rather
+  than as part of it, so edges lying behind the opaque membrane or behind
+  molecules were painted over them — misleading under parallel projection,
+  where there is no perspective to say which way is farther. Box edges now take
+  part in the same depth ordering as everything else and dim with distance.
+  (#1798)
+
+### Notes for API consumers
+No API changes.
+
+## [8.0.3.02] - 2026-07-29
+
+**Highlights.** SpringSaLaD results gain a **3D Trajectory** tab: a movie
+player that shows individual molecules moving over the course of a run, rather
+than only the aggregate counts plotted elsewhere. It has play/pause, a frame
+scrubber, adjustable speed, and rotate/zoom/pan, and it draws the simulation
+box and the membrane for context. The viewer is drawn with ordinary Java 2D
+graphics and needs no native 3D library, so it works everywhere VCell runs.
+
+### Added
+- A "3D Trajectory" tab in the SpringSaLaD results viewer: playback with
+  play/pause, a frame scrubber, speed from 2 to 30 frames per second, a links
+  toggle and a reset-view button, and a time and scene readout. Drag rotates,
+  the wheel zooms, shift-drag or right-drag pans. Molecule colour can change
+  from frame to frame, which is how a site's state is shown. (#1796)
+- The per-particle trajectory the Langevin solver writes — the position of
+  every site and the links between them, at each output frame of the first run
+  — is now retrieved from the server. Until now it was written by the solver
+  and never read; only the aggregate `.ida` and `.csv` results were served.
+  (#1795)
+- The simulation box and the membrane are drawn around the molecules, with
+  toolbar toggles for each alongside the existing one for links. The framing
+  is computed once from all frames together, so the scene does not jitter as
+  it plays. (#1797)
+
+### Fixed
+- The trajectory was offered only for batch runs on the cluster, because the
+  tab was tied to the presence of batch results. It is now offered whenever a
+  trajectory exists, including single runs. (#1797)
+- A simulation run locally could not find its own trajectory file. The desktop
+  solver runs only the solver's simulate step and never its post-processing
+  step, so the file is never renamed to the canonical name the server serves;
+  the client now also looks in the solver's own output folder. (#1797)
+
+### Notes for API consumers
+No `/api/v1/` changes. Internally the data server gained a
+`getLangevinTrajectory` call; it is declared with a default that returns
+nothing, so other implementations of that interface are unaffected.
+
+## [8.0.3.01] - 2026-07-29
+
+**Highlights.** The dialog for sharing a model with other users was reworked.
+It now shows which step to take, tells you when you have unsaved changes, and
+revoking someone's access actually clears them from the list. Separately,
+geometry sizes in the simulation summary no longer show floating-point noise
+such as `0.10000000007 microns`.
+
+### Fixed
+- Revoking a user's access in the sharing dialog did not appear to take
+  effect. Removing the last remaining name switched the dialog to "private"
+  rather than leaving an access list with nobody on it, so the change did not
+  read as a removal. (#1745)
+- Geometry sizes in the simulation summary were printed with the full
+  floating-point expansion — `0.10000000007 microns` where `0.1` was meant.
+  They are now shown to six decimal places. A size smaller than that displays
+  as `0`; no geometry in practice is that small. (#1784)
+
+### Changed
+- The sharing dialog's buttons are now "Confirm Changes" and "Cancel", and
+  Confirm stays disabled until something has actually changed, so it is
+  visible whether there is anything to save. The button that drops a user
+  reads "Revoke Access", and the name field shows placeholder text saying what
+  belongs in it. (#1745)
+
+### Added
+- Internal: the five desktop installers are built in parallel, one platform
+  per machine, with the macOS notarization overlapping the Windows and Linux
+  builds instead of following them. The installer stage of a release goes from
+  roughly 50 minutes to about 8. (#1787)
+- Internal: the regression suite is now a merge-queue gate only. It had been
+  declared on pull requests through a trigger that fires only when a draft is
+  marked ready, so a pull request opened as ready was expected to produce a
+  check that could never run, and was blocked from merging with no way to
+  satisfy it. (#1788)
+- Internal: CodeQL analysis of the Java code builds without running tests,
+  cutting about 17% from the scan. (#1789, #1790, #1791)
+
+### Notes for API consumers
+No API changes.
+
 ## [8.0.2.07] - 2026-07-27
 
 **Highlights.** Sixth hotfix on the 8.0.2 line, and a **server-only** deploy.

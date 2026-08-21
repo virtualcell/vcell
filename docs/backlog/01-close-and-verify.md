@@ -81,7 +81,7 @@ the issue is not tracking anything.)
 
 `#1599` asks for notes for **7.7.0.47**. The current line is **8.0.27.01**, and
 `release-notes/major/` already contains `7.7.md`, `7.7-initial-release.md`,
-`7.7-feature-update.md`, `7.7-stability-update.md`, and `8.0.0.md`. The 7.7 notes exist.
+`7.7-feature-update.md`, `7.7-stability-update.md`, and `8.0.md`. The 7.7 notes exist.
 
 `#1543` ("next production release") is unfalsifiable by construction — it can never be closed,
 because there is always a next release. Release notes are part of the release procedure
