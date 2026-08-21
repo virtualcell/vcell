@@ -60,6 +60,22 @@ public class SpringSaladSiteIdentityTest {
 		assertNotEquals(traj.siteTypeKey(mt0Site0), traj.siteTypeKey(mt1Site0));
 	}
 
+	/**
+	 * The key's exact shape, pinned because the separator is invisible and looks like a mistake.
+	 * <p>
+	 * It is NUL rather than a space on purpose: both halves come from {@code SiteIDs.csv} as
+	 * {@code (.+?)} and may contain spaces themselves, so molecule {@code "A B"} with type
+	 * {@code "C"} and molecule {@code "A"} with type {@code "B C"} would key alike. A test that
+	 * only checks keys are distinct passes either way, which is how a raw NUL byte once ended up
+	 * in the source file.
+	 */
+	@Test
+	public void siteTypeKeyHasAStableShape() throws IOException {
+		SpringSaladTrajectory traj = load();
+		assertEquals("site:MT0" + '\0' + "Site0", traj.siteTypeKey(siteById(traj, 100000000)));
+		assertEquals("site:MT0" + '\0' + "Site1", traj.siteTypeKey(siteById(traj, 100000001)));
+	}
+
 	@Test
 	public void namesMoleculesCreatedPartWayThroughTheRun() throws IOException {
 		SpringSaladTrajectory traj = load();
