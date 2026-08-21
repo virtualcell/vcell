@@ -16,6 +16,54 @@ followed by flat Keep-a-Changelog categories. API consumers should scan
 
 _(Release-manager scratchpad. Populated at release-cut time.)_
 
+## [8.1.0.01] - 2026-08-21
+
+**Highlights.** The build number now matches the release name. This work has
+been called VCell 8.1 in the release notes since it began, while its builds
+continued the `8.0.x` sequence; from this build the two agree. This is the
+first release candidate for VCell 8.1. VCell also tells you when the server is
+updated underneath you: if a deployment happens while you are working, the
+reconnect now says a newer version exists and invites you to restart when
+convenient, rather than reconnecting silently to a server your client no
+longer matches.
+
+### Added
+- When the server is updated during a session, VCell now says so. The client
+  reconnects automatically after a deployment, and that reconnect reports the
+  new version and suggests restarting when convenient. The message makes clear
+  the session is safe to continue. Previously the automatic reconnect was
+  silent, so a user could work for hours against a server newer than their
+  client without knowing a new one had been published. (#2012)
+
+### Fixed
+- `VCellSoftwareVersion` read the PATCH number from the MINOR position, so
+  `getPatchVersion()` returned a copy of `getMinorVersion()`. The line dates
+  from 2018 but was dead until a 2022 fix to the same statement made it live.
+  Its only consumer compared it against an equally wrong value, so nothing
+  ever surfaced. (#2011)
+
+### Changed
+- Version numbering realigned with the release narrative: builds are numbered
+  `8.1.x` from here, rather than continuing `8.0.x`. Published numbers up to
+  8.0.28.01 are unchanged. (#2010)
+- A desktop client older than this build now shows the "software version
+  mismatch" warning when connecting, asking the user to download the current
+  client. The warning is advisory and does not prevent use. At login VCell
+  reports a difference in the first two parts of the version only, so this
+  stayed silent for every build in the 8.0 line, where those parts were the
+  same throughout; moving to 8.1 gives it something to report. (#2012)
+- The two version checks now apply the policy that suits each. At login, or a
+  reconnect the user asked for, only a MAJOR or MINOR difference is reported —
+  a PATCH difference is ordinary there, since patches ship most releases and
+  installed clients update on their own schedule. After an automatic reconnect
+  any difference is reported, PATCH included, because the server changed
+  underneath a running client and a newer client exists. (#2012)
+
+### Notes for API consumers
+No API changes. Clients that parse the version string should note that
+`MAJOR.MINOR` moves from `8.0` to `8.1`; the four-part
+`MAJOR.MINOR.PATCH.BUILD` shape is unchanged.
+
 ## [8.0.28.01] - 2026-08-20
 
 **Highlights.** Dragging in the SpringSaLaD trajectory viewer turned the scene the wrong way —
