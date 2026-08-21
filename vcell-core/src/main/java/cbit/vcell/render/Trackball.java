@@ -49,8 +49,43 @@ public class Trackball {
     private int       numStates;
     private int       currState;
 
-public Trackball(Camera cam) {
+/**
+ * The handedness of the <em>caller's coordinate system</em> -- which way depth runs in the space
+ * this trackball drives, and so which face of the virtual ball a drag grabs.
+ * <p>
+ * <b>This has nothing to do with the user.</b> It is not a left-handed-mouse preference and not a
+ * choice about how anyone grips anything: it is whether the caller's +z points toward the viewer
+ * or away, which is fixed by how that viewer projects and depth-sorts, not by who is using it.
+ */
+public enum Handedness {
+	/**
+	 * +z points away from the viewer, so the grab point has negative z.
+	 * <p>
+	 * The geometry viewer and the PDE surface viewer are both this way, so that they agree with how
+	 * the slice viewer displays data, and they are internally consistent with this trackball as it
+	 * stands. Their picking rides the same convention -- SurfaceRenderer projects screen polygons
+	 * through {@link Camera#unProjectPoint}, SurfaceCanvas hit-tests clicks against those polygons
+	 * -- so a scene can keep looking right while clicks select the wrong surface if it is changed.
+	 */
+	LEFT_HANDED,
+	/**
+	 * +z points toward the viewer, so the grab point has positive z. A viewer that draws this way
+	 * and asks for {@link #LEFT_HANDED} grabs the far side of the ball, and the scene turns the
+	 * wrong way on both axes.
+	 */
+	RIGHT_HANDED
+}
+
+/**
+ * @param cam the camera to drive
+ * @param handedness which way depth runs in the caller's space. There is deliberately no default:
+ *                   a caller that has not decided this has a fifty-fifty chance of a viewer whose
+ *                   drags turn the scene backwards, and it does not show in a still image.
+ *                   See {@link Handedness}.
+ */
+public Trackball(Camera cam, Handedness handedness) {
     camera = cam;
+    this.handedness = handedness;
     bAnimate = false;
     currQuat.zero();
     incQuat.zero();
@@ -204,6 +239,8 @@ System.out.println("play() ... numStates="+numStates+", currState="+currState);
 // Project an xy pair onto a sphere of radius r OR a hyperbolic sheet
 // if we are away from the center of the sphere.
 //
+private final Handedness handedness;
+
 private Vect3d projectToSphere_xy(double x, double y)
 {
 double radius = sizeTrackball;
@@ -225,8 +262,9 @@ double distance_xy, t, z;
 //System.out.println("Trackball.projectToSphere("+x+","+y+") 'hyperbola' --> z = "+z);
    }
 //   vect.set(x,y,-z);
-   return new Vect3d(x,y,-z);
+   return new Vect3d(x,y,handedness == Handedness.RIGHT_HANDED ? z : -z);
 }
+
 
 
 //

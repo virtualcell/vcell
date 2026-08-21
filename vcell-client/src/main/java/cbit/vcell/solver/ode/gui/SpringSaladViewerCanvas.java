@@ -66,7 +66,13 @@ public class SpringSaladViewerCanvas extends JPanel {
 	private SpringSaladTrajectory trajectory;
 	private int frameIndex = 0;
 
-	private final Trackball trackball = new Trackball(new Camera());
+	/**
+	 * Right-handed, because this canvas draws with +z toward the viewer: {@link #project} keeps the
+	 * rotated z as depth and the draw list is sorted far-first on it, so larger depth is nearer.
+	 * The geometry and PDE surface viewers are left-handed, which is the default; asking for it here
+	 * grabs the far side of the ball and turns the scene the wrong way on both axes.
+	 */
+	private final Trackball trackball = new Trackball(new Camera(), Trackball.Handedness.RIGHT_HANDED);
 	private double zoom = 1.0;
 	private double panX = 0, panY = 0;
 	private boolean showLinks = true;
