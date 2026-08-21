@@ -150,4 +150,54 @@ public class ErrorUtilsTest {
         while (i >= 0) { n++; i = haystack.indexOf(needle, i + needle.length()); }
         return n;
     }
+
+    @Test
+    @Tag("Fast")
+    public void aVersion2ReportKeepsEachPartInItsOwnSection() {
+        ErrorUtils.ErrorReport r = ErrorUtils.ErrorReport.version2(
+                "bob", "it crashed while saving",
+                "java.lang.IllegalStateException: no geometry",
+                "java.lang.IllegalStateException: no geometry\n\tat cbit.vcell.Foo.bar(Foo.java:1)",
+                "8.1.0", "Java 17 on Windows",
+                "BioModel 'Calcium' / Application0",
+                "Log file content:\nUNIQUE-LOG-SENTINEL\nchatter",
+                "-----Recorded User Events-----\nclicked Save");
+        String text = r.toEmailText();
+
+        assertTrue(text.contains("--- Exception "), text);
+        assertTrue(text.contains("--- Stack trace "), text);
+        assertTrue(text.contains("--- Model "), text);
+        assertTrue(text.contains("--- Recorded user events "), text);
+        assertTrue(text.contains("--- Client log "), text);
+        assertTrue(text.contains("BioModel 'Calcium' / Application0"), text);
+        assertTrue(text.contains("clicked Save"), text);
+    }
+
+    @Test
+    @Tag("Fast")
+    public void aVersion2ReportNeedsNoDeduplication() {
+        // v2 never puts the log inside the exception, so nothing has to be pulled back out
+        ErrorUtils.ErrorReport r = ErrorUtils.ErrorReport.version2(
+                "bob", null, "java.lang.IllegalStateException: no geometry",
+                "java.lang.IllegalStateException: no geometry\n\tat cbit.vcell.Foo.bar(Foo.java:1)",
+                "8.1.0", "Java", null,
+                "Log file content:\nUNIQUE-LOG-SENTINEL\n" + "chatter\n".repeat(60), null);
+        String text = r.toEmailText();
+
+        assertEquals(1, countOccurrences(text, "UNIQUE-LOG-SENTINEL"), "log carried once");
+        assertFalse(text.contains("reproduced in full below"), "no marker needed in v2: " + text);
+        assertTrue(text.indexOf("at cbit.vcell.Foo.bar") < text.indexOf("UNIQUE-LOG-SENTINEL"),
+                "frames still precede the log");
+    }
+
+    @Test
+    @Tag("Fast")
+    public void aVersion2ReportOmitsPartsThatWereNotCaptured() {
+        ErrorUtils.ErrorReport r = ErrorUtils.ErrorReport.version2(
+                null, null, "boom", "at Foo", "8.1.0", "Java", null, null, null);
+        String text = r.toEmailText();
+        assertTrue(text.contains("--- Model "), text);
+        assertEquals(4, countOccurrences(text, "(none)"),
+                "user message, model, events and log each say (none): " + text);
+    }
 }
