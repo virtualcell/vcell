@@ -16,6 +16,48 @@ followed by flat Keep-a-Changelog categories. API consumers should scan
 
 _(Release-manager scratchpad. Populated at release-cut time.)_
 
+## [8.1.0.01] - 2026-08-21
+
+**Highlights.** The build number now matches the release name. This work has
+been called VCell 8.1 in the release notes since it began, while its builds
+continued the `8.0.x` sequence; from this build the two agree. This is the
+first release candidate for VCell 8.1. VCell also checks properly now whether
+your client matches the server it is talking to, including when the server is
+updated part-way through a session — a mismatch it has been unable to detect
+since 2022.
+
+### Added
+- When the server is updated during a session, VCell now says so. The client
+  reconnects on its own after a deployment, and that reconnect now reports the
+  change and asks the user to save, exit and restart to install the matching
+  version. Previously the automatic reconnect was silent, so a user could work
+  on against a server their client no longer matched. (#2012)
+
+### Fixed
+- VCell could not detect a client/server version mismatch that lay in the
+  PATCH number. `VCellSoftwareVersion` read PATCH from the MINOR position, so
+  the check that compares client against server was comparing MINOR twice and
+  ignoring PATCH entirely. Since a VCell patch release can carry a breaking
+  API change, this is the case that most needed catching. The line dates from
+  2018 but was dead until a 2022 fix to the same statement made it live.
+  (#2011)
+
+### Changed
+- Version numbering realigned with the release narrative: builds are numbered
+  `8.1.x` from here, rather than continuing `8.0.x`. Published numbers up to
+  8.0.28.01 are unchanged. (#2010)
+- The client/server version warning now appears whenever MAJOR, MINOR **or**
+  PATCH differ — which is what it was always meant to do, and could not.
+  Expect to see it more often than before: it was effectively dormant across
+  the whole 8.0 line, and a patch difference alone is now enough to raise it.
+  The warning is advisory and does not prevent use. Only the BUILD number is
+  ignored. (#2012)
+
+### Notes for API consumers
+No API changes. Clients that parse the version string should note that
+`MAJOR.MINOR` moves from `8.0` to `8.1`; the four-part
+`MAJOR.MINOR.PATCH.BUILD` shape is unchanged.
+
 ## [8.0.28.01] - 2026-08-20
 
 **Highlights.** Dragging in the SpringSaLaD trajectory viewer turned the scene the wrong way —

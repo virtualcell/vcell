@@ -122,12 +122,14 @@ This has already happened once. **VCell 8.0** is the 8.0.0 builds only
 — 8.0.0.01 through 8.0.0.03, the SpringSaLaD GA that ran in production
 from 2026-05-21 to 2026-08-14. Everything released after 8.0.0.03 is
 **VCell 8.1**, even though those builds are numbered 8.0.2.01 through
-8.0.28.01 and beyond.
+8.0.28.01. The numbering was realigned at **8.1.0.01**, so the two agree
+again from that build onward; the divergence covers 8.0.2.01–8.0.28.01
+only.
 
 So, at release-cut time, add the user-facing items to the narrative
 file for the release **currently being accumulated** — today
-`8.1.md` — not to the file whose name matches the build's
-`MAJOR.MINOR`. `CHANGELOG.md` is unaffected: it is organised strictly
+`8.1.md` — which is not necessarily the file whose name matches the
+build's `MAJOR.MINOR`. `CHANGELOG.md` is unaffected: it is organised strictly
 by build version and always records the real number.
 
 When a long-running `MAJOR.MINOR` line accumulates multiple distinct

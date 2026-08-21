@@ -275,7 +275,18 @@ public MessageEvent[] getMessageEvents() throws RemoteProxyException, IOExceptio
 	}
 }
 
-private void checkClientServerSoftwareVersion(InteractiveClientServerContext requester, ClientServerInfo clientServerInfo) {
+/**
+ * Why the version check is running. The comparison is the same either way -- any
+ * difference in MAJOR, MINOR or PATCH -- but the two situations need different advice.
+ */
+private enum VersionCheck {
+	/** At login, or a reconnect the user asked for: the client was already out of date. */
+	ON_CONNECT,
+	/** After an automatic reconnect: the server was redeployed underneath a running client. */
+	AFTER_SERVER_CHANGED
+}
+
+private void checkClientServerSoftwareVersion(InteractiveClientServerContext requester, ClientServerInfo clientServerInfo, VersionCheck when) {
 	String clientSoftwareVersion = System.getProperty(PropertyLoader.vcellSoftwareVersion);
 	if (clientSoftwareVersion != null &&  clientSoftwareVersion.toLowerCase().contains("devel") ) {
 		return;
@@ -293,13 +304,27 @@ private void checkClientServerSoftwareVersion(InteractiveClientServerContext req
 					+ "We have adopted a Release Early, Release Often software development approach\n\n"
 					+ "\nPlease exit VCell and download the latest client from VCell Software page (http://vcell.org).");
 			}
+			//
+			// MAJOR, MINOR and PATCH all matter. A VCell PATCH release can carry a breaking
+			// API change, so a client and server differing in any of the three are not known
+			// to be compatible. Only BUILD is ignored. This is what the check has always
+			// meant to do; it could not, because getPatchVersion() returned MINOR (#2011).
+			//
 			if (clientVersion.getMajorVersion()!=serverVersion.getMajorVersion() ||
 				clientVersion.getMinorVersion()!=serverVersion.getMinorVersion() ||
 				clientVersion.getPatchVersion()!=serverVersion.getPatchVersion()) {
-				requester.showWarningDialog("software version mismatch between client and server:\n"
-					+ "client VCell version : " + clientSoftwareVersion + "\n"
-					+ "server VCell version : " + serverSoftwareVersion + "\n"
-					+ "\nPlease exit VCell and download the latest client from VCell Software page (http://vcell.org).");
+				if (when == VersionCheck.AFTER_SERVER_CHANGED) {
+					requester.showWarningDialog("The VCell server was updated while you were working:\n"
+						+ "client VCell version : " + clientSoftwareVersion + "\n"
+						+ "server VCell version : " + serverSoftwareVersion + "\n"
+						+ "\nThis client no longer matches the server."
+						+ "\nPlease save your work, then exit and restart VCell to install the matching version.");
+				} else {
+					requester.showWarningDialog("software version mismatch between client and server:\n"
+						+ "client VCell version : " + clientSoftwareVersion + "\n"
+						+ "server VCell version : " + serverSoftwareVersion + "\n"
+						+ "\nPlease exit VCell and download the latest client from VCell Software page (http://vcell.org).");
+				}
 			}
 		}
 	}
@@ -318,7 +343,7 @@ public void connectNewServer(InteractiveClientServerContext requester, ClientSer
 public void connect(InteractiveClientServerContext requester) {
 	asynchMessageManager.stopPolling();
 	reconnectStat = ReconnectStatus.NOT;
-	checkClientServerSoftwareVersion(requester,clientServerInfo);
+	checkClientServerSoftwareVersion(requester,clientServerInfo,VersionCheck.ON_CONNECT);
 
 	// get new server connection
 	VCellConnection newVCellConnection = connectToServer(requester,true);
@@ -727,6 +752,12 @@ void reconnect() {
 			changeConnection(requester,connection);
 			rc.stop();
 			asynchMessageManager.startPolling();
+			//
+			// Only once the reconnect has succeeded -- a failed attempt says nothing about
+			// the server's version, and this check makes an HTTP call of its own that the
+			// retry loop should not repeat.
+			//
+			checkClientServerSoftwareVersion(requester,clientServerInfo,VersionCheck.AFTER_SERVER_CHANGED);
 			return;
 		}
 		setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), getClientServerInfo().getApihost(), getClientServerInfo().getApiport(), ConnectionStatus.DISCONNECTED));
