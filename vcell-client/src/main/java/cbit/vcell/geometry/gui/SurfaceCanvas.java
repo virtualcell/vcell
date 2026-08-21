@@ -45,7 +45,10 @@ public class SurfaceCanvas extends javax.swing.JPanel implements java.beans.Prop
 	private double scale = 1.0;
 	private java.awt.image.BufferedImage cachedProjectedImage = null;
 	private cbit.vcell.geometry.surface.SurfaceCollection fieldSurfaceCollection = null;
-	private cbit.vcell.render.Trackball fieldTrackball = new cbit.vcell.render.Trackball(new cbit.vcell.render.Camera());
+	// Left-handed: +z away from the viewer, matching how the slice viewer displays data. The picking
+	// in this canvas rides the same convention -- see Trackball.Handedness.
+	private cbit.vcell.render.Trackball fieldTrackball = new cbit.vcell.render.Trackball(
+			new cbit.vcell.render.Camera(), cbit.vcell.render.Trackball.Handedness.LEFT_HANDED);
 	private org.vcell.util.Origin fieldOrigin = new org.vcell.util.Origin(0, 0, 0);
 	private org.vcell.util.Extent fieldExtent = new org.vcell.util.Extent(1, 1, 1);
 	private boolean fieldEnableDepthCueing = false;

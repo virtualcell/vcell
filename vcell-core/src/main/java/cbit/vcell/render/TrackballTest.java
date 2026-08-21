@@ -29,7 +29,7 @@ public TrackballTest() {
  */
 public static void main(String[] args) {
 	try {
-		Trackball trackball = new Trackball(new Camera());
+		Trackball trackball = new Trackball(new Camera(), Trackball.Handedness.LEFT_HANDED);
 		Vect3d unitX = new Vect3d(1, 2, 3);
 		Vect3d projX = new Vect3d();
 		Vect3d unprojX = new Vect3d();
