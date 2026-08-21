@@ -148,6 +148,7 @@
 		<jai-core.version>1.1.3</jai-core.version>
 		<javax-mail.version>1.4</javax-mail.version>
 		<jsbml.version>1.6.1-VCELL-4</jsbml.version>
+		<jose4j.version>0.9.6</jose4j.version>
 		<json-smart.version>2.4.11</json-smart.version>
 		<jung-api.version>2.1.1</jung-api.version>
 		<jung-algorithms.version>2.1.1</jung-algorithms.version>
@@ -319,6 +320,24 @@
 				<version>${junit-jupiter.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
+			</dependency>
+			<!--
+			  jose4j: forced to a single version across the reactor.
+
+			  vcell-server declares it directly, while vcell-rest also receives it transitively
+			  from quarkus-oidc -> smallrye-jwt, which pins 0.9.3 in Quarkus 3.5.2. Bumping only
+			  vcell-server therefore fails the enforcer's DependencyConvergence rule in vcell-rest.
+			  Managing it here is the single point that both paths resolve through.
+
+			  0.9.6 fixes two DoS advisories (compressed JWE content; crafted JWE). It is a patch
+			  bump within 0.9.x, so smallrye-jwt 4.3.1 keeps the API it was built against.
+			  Revisit when the Quarkus upgrade lands: a newer Quarkus pins a newer jose4j and
+			  this override should then be removed rather than raised.
+			-->
+			<dependency>
+				<groupId>org.bitbucket.b_c</groupId>
+				<artifactId>jose4j</artifactId>
+				<version>${jose4j.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
