@@ -56,7 +56,33 @@ public class GeometrySpec implements Matchable, PropertyChangeListener, Vetoable
 	public static final String PROPERTY_NAME_THUMBNAIL_IMAGE = "thumbnailImage";
 	public static final String PROPERTY_NAME_GEOMETRY_NAME = "geometryName";
 
+	public final static String PROPERTY_IMAGE_SIZE_LIMIT = "vcell.geometry.imageSizeLimit";
+
+	/**
+	 * Historical limit, kept for callers that reference it. It is 159^3 in 3D (2000x2000 in 2D),
+	 * which is small for modern imaging -- enforcing this value would reject geometries that load
+	 * and run today, which is very likely why the veto below was commented out in 2017.
+	 */
 	public final static int IMAGE_SIZE_LIMIT =  4000000;
+
+	/**
+	 * Enforced ceiling on image size, overridable with {@link #PROPERTY_IMAGE_SIZE_LIMIT}.
+	 *
+	 * Deliberately set just BELOW a size observed to exhaust the heap (61,920,000 px killed two
+	 * prod api pods, see #2021) rather than at some ideal value. That choice is conservative on
+	 * purpose: this veto also fires when DESERIALIZING saved geometries (XmlReader builds
+	 * `new Geometry(version, image)`, which reaches setImage), so a limit set below what real
+	 * models contain would make existing models fail to open. A ceiling near the observed failure
+	 * point rejects only images that would have crashed the JVM anyway -- refusing one model beats
+	 * killing a pod that is serving everyone.
+	 *
+	 * Lower it once someone has surveyed the image sizes actually present in the database.
+	 */
+	public final static int IMAGE_SIZE_LIMIT_DEFAULT = 50000000;
+
+	public static int getImageSizeLimit() {
+		return PropertyLoader.getIntProperty(PROPERTY_IMAGE_SIZE_LIMIT, IMAGE_SIZE_LIMIT_DEFAULT);
+	}
 	
 	public static final String ORIGIN_PROPERTY = "origin";
 	public static final String EXTENT_PROPERTY = "extent";
@@ -1333,11 +1359,23 @@ public void vetoableChange(java.beans.PropertyChangeEvent event) throws Property
 	if (event.getSource() == this && event.getPropertyName().equals("image")){
 		if (event.getNewValue() != null){
 			VCImage newVCImage = (VCImage)event.getNewValue();
-			if (newVCImage.getNumXYZ() > IMAGE_SIZE_LIMIT){
-				//throw new PropertyVetoException("image size "+newVCImage.getNumXYZ()+" pixels exceeded limit of "+IMAGE_SIZE_LIMIT,event);
-				if (lg.isWarnEnabled()) {
-					lg.warn("WARNING: image size "+newVCImage.getNumXYZ()+" pixels exceeded limit of "+IMAGE_SIZE_LIMIT);				
-				}
+			final int imageSizeLimit = getImageSizeLimit();
+			if (newVCImage.getNumXYZ() > imageSizeLimit){
+				//
+				// Enforced, not warned about. Accepting an oversized image does not degrade
+				// gracefully: a 61,920,000 pixel image exhausted a 1000MB heap and terminated
+				// two prod api pods with OutOfMemoryError (#2021). Refusing it costs one
+				// geometry; accepting it costs the whole JVM, for every user it was serving.
+				//
+				throw new PropertyVetoException("image size "+newVCImage.getNumXYZ()
+						+" pixels exceeds the limit of "+imageSizeLimit+" pixels."
+						+" Reduce the image resolution, or raise "+PROPERTY_IMAGE_SIZE_LIMIT
+						+" if this machine has the memory for it.", event);
+			}
+			if (newVCImage.getNumXYZ() > IMAGE_SIZE_LIMIT && lg.isWarnEnabled()) {
+				// between the historical limit and the enforced ceiling: allowed, but worth seeing
+				lg.warn("large image: "+newVCImage.getNumXYZ()+" pixels exceeds the historical limit of "
+						+IMAGE_SIZE_LIMIT+" (enforced ceiling is "+imageSizeLimit+")");
 			}
 		}
 	}
