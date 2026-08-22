@@ -56,34 +56,100 @@ public class GeometrySpec implements Matchable, PropertyChangeListener, Vetoable
 	public static final String PROPERTY_NAME_THUMBNAIL_IMAGE = "thumbnailImage";
 	public static final String PROPERTY_NAME_GEOMETRY_NAME = "geometryName";
 
-	public final static String PROPERTY_IMAGE_SIZE_LIMIT = "vcell.geometry.imageSizeLimit";
-
 	/**
-	 * Historical limit, kept for callers that reference it. It is 159^3 in 3D (2000x2000 in 2D),
-	 * which is small for modern imaging -- enforcing this value would reject geometries that load
-	 * and run today, which is very likely why the veto below was commented out in 2017.
+	 * Historical limit, unchanged. 159^3 in 3D, 2000x2000 in 2D. Only warned about -- see
+	 * {@link #vetoableChange}.
 	 */
 	public final static int IMAGE_SIZE_LIMIT =  4000000;
 
-	/**
-	 * Enforced ceiling on image size, overridable with {@link #PROPERTY_IMAGE_SIZE_LIMIT}.
-	 *
-	 * Deliberately set just BELOW a size observed to exhaust the heap (61,920,000 px killed two
-	 * prod api pods, see #2021) rather than at some ideal value. That choice is conservative on
-	 * purpose: this veto also fires when DESERIALIZING saved geometries (XmlReader builds
-	 * `new Geometry(version, image)`, which reaches setImage), so a limit set below what real
-	 * models contain would make existing models fail to open. A ceiling near the observed failure
-	 * point rejects only images that would have crashed the JVM anyway -- refusing one model beats
-	 * killing a pod that is serving everyone.
-	 *
-	 * Lower it once someone has surveyed the image sizes actually present in the database.
-	 */
-	public final static int IMAGE_SIZE_LIMIT_DEFAULT = 50000000;
+	public final static String PROPERTY_NEW_IMAGE_SIZE_LIMIT = "vcell.geometry.newImageSizeLimit";
+	public final static String PROPERTY_NEW_IMAGE_REGION_LIMIT = "vcell.geometry.newImageRegionLimit";
 
-	public static int getImageSizeLimit() {
-		return PropertyLoader.getIntProperty(PROPERTY_IMAGE_SIZE_LIMIT, IMAGE_SIZE_LIMIT_DEFAULT);
+	/**
+	 * Largest image accepted for a NEWLY SUBMITTED geometry, overridable with
+	 * {@link #PROPERTY_NEW_IMAGE_SIZE_LIMIT}.
+	 *
+	 * Grandfathering is the whole design here: images already in the database keep loading no
+	 * matter how large (the model in #2021 is 61,920,000 pixels), and this applies only where a
+	 * new image is submitted. That is what lets the limit sit at a value the api can actually
+	 * serve, instead of at the largest thing anyone ever stored.
+	 *
+	 * Measured cost of parsing one image geometry, peak heap (GeometryMemoryProfiler, #2023):
+	 *
+	 *   pixels     4,096,000    16,777,216    62,099,136
+	 *   peak          152 MB        ~450 MB       1,431 MB
+	 *
+	 * The prod api heap is 1000 MB and serves everything else too, so 16 M is about where one
+	 * geometry stops being affordable. RAISE THIS once the RegionImage memory work in #2023
+	 * lands -- it is a statement about today's implementation, not about the science.
+	 */
+	public final static int NEW_IMAGE_SIZE_LIMIT_DEFAULT = 16000000;
+
+	/**
+	 * Largest number of disconnected regions accepted for a NEWLY SUBMITTED geometry.
+	 *
+	 * This, not the number of pixel classes, is what actually predicts cost. Measured on a
+	 * 256^3 volume with one subvolume per concentric shell, regions only, no surfaces:
+	 *
+	 *   pixel classes    2      4     16     32     64      128
+	 *   regions          2      4     16     32     64   14,050
+	 *   peak          124MB  196MB  244MB  209MB  300MB  1,652MB
+	 *
+	 * Memory is flat in the number of pixel classes -- 64 subvolumes is unremarkable. The jump
+	 * at 128 is not the class count: those shells fall below one voxel thick and FRAGMENT, and
+	 * it is the 14,050 resulting regions that cost 1.65 GB. A limit on pixel classes would
+	 * reject the cheap 64-subvolume case and still admit a fragmented 2-class one, so the limit
+	 * is on regions.
+	 *
+	 * A fragmented segmentation is also the signature of an image that was never segmented, so
+	 * this doubles as the "is this actually a segmentation" check.
+	 *
+	 * RegionImage already refuses more than 65535 regions, but only after doing the work; 2000
+	 * is far above anything a real segmentation produces and far below where memory turns.
+	 */
+	public final static int NEW_IMAGE_REGION_LIMIT_DEFAULT = 2000;
+
+	public static int getNewImageSizeLimit() {
+		return PropertyLoader.getIntProperty(PROPERTY_NEW_IMAGE_SIZE_LIMIT, NEW_IMAGE_SIZE_LIMIT_DEFAULT);
 	}
-	
+
+	public static int getNewImageRegionLimit() {
+		return PropertyLoader.getIntProperty(PROPERTY_NEW_IMAGE_REGION_LIMIT, NEW_IMAGE_REGION_LIMIT_DEFAULT);
+	}
+
+	/**
+	 * Whether a geometry may be SAVED. Returns null if acceptable, otherwise the reason.
+	 *
+	 * Callers must apply this only to genuinely new content -- an image with no database key.
+	 * Applying it to a stored geometry would defeat the grandfathering that makes it safe.
+	 *
+	 * Returning a reason rather than throwing keeps this usable from the server save path, the
+	 * REST layer and the desktop client without any of them agreeing on an exception type.
+	 *
+	 * @param image      the image about to be persisted; null (a non-image geometry) is fine
+	 * @param numRegions regions found by RegionImage, or -1 if not computed -- when it has not
+	 *                   been computed the region check is skipped rather than guessed at
+	 */
+	public static String checkNewImageAcceptable(VCImage image, int numRegions) {
+		if (image == null) {
+			return null;
+		}
+		int sizeLimit = getNewImageSizeLimit();
+		if (image.getNumXYZ() > sizeLimit) {
+			return "image size " + image.getNumXYZ() + " pixels exceeds the limit of " + sizeLimit
+					+ " pixels for a new geometry. Reduce the resolution before saving."
+					+ " Geometries already stored above this size continue to work.";
+		}
+		int regionLimit = getNewImageRegionLimit();
+		if (numRegions > regionLimit) {
+			return "image segmentation contains " + numRegions + " disconnected regions, exceeding"
+					+ " the limit of " + regionLimit + " for a new geometry. This usually means the"
+					+ " image is not segmented, or is segmented at a resolution where the subvolumes"
+					+ " break into fragments.";
+		}
+		return null;
+	}
+
 	public static final String ORIGIN_PROPERTY = "origin";
 	public static final String EXTENT_PROPERTY = "extent";
 	
@@ -1359,23 +1425,17 @@ public void vetoableChange(java.beans.PropertyChangeEvent event) throws Property
 	if (event.getSource() == this && event.getPropertyName().equals("image")){
 		if (event.getNewValue() != null){
 			VCImage newVCImage = (VCImage)event.getNewValue();
-			final int imageSizeLimit = getImageSizeLimit();
-			if (newVCImage.getNumXYZ() > imageSizeLimit){
-				//
-				// Enforced, not warned about. Accepting an oversized image does not degrade
-				// gracefully: a 61,920,000 pixel image exhausted a 1000MB heap and terminated
-				// two prod api pods with OutOfMemoryError (#2021). Refusing it costs one
-				// geometry; accepting it costs the whole JVM, for every user it was serving.
-				//
-				throw new PropertyVetoException("image size "+newVCImage.getNumXYZ()
-						+" pixels exceeds the limit of "+imageSizeLimit+" pixels."
-						+" Reduce the image resolution, or raise "+PROPERTY_IMAGE_SIZE_LIMIT
-						+" if this machine has the memory for it.", event);
-			}
+			//
+			// Warned about, NOT vetoed. This listener fires when DESERIALIZING a stored
+			// geometry as well as when a user supplies a new image, and geometries larger
+			// than any limit we would pick are already in the database -- the model in #2021
+			// is 61,920,000 pixels and loads today. Vetoing here would make stored models
+			// unopenable, so size is enforced where a NEW image is submitted instead; see
+			// checkNewImageAcceptable(VCImage).
+			//
 			if (newVCImage.getNumXYZ() > IMAGE_SIZE_LIMIT && lg.isWarnEnabled()) {
-				// between the historical limit and the enforced ceiling: allowed, but worth seeing
-				lg.warn("large image: "+newVCImage.getNumXYZ()+" pixels exceeds the historical limit of "
-						+IMAGE_SIZE_LIMIT+" (enforced ceiling is "+imageSizeLimit+")");
+				lg.warn("large geometry image: "+newVCImage.getNumXYZ()+" pixels exceeds "
+						+IMAGE_SIZE_LIMIT+"; expect high memory use building regions and surfaces");
 			}
 		}
 	}
