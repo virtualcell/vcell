@@ -41,6 +41,8 @@ import org.vcell.util.Coordinate;
 import org.vcell.util.Extent;
 import org.vcell.util.GenericUtils;
 import org.vcell.util.Hex;
+import java.security.MessageDigest;
+import cbit.vcell.resource.PropertyLoader;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
 import org.vcell.util.Pair;
@@ -258,6 +260,19 @@ public class XmlReader extends XmlBase {
     private boolean readKeysFlag = false;
     private Namespace vcNamespace = Namespace.getNamespace(XMLTags.VCML_NS_BLANK);    // default - blank namespace
     private ModelUnitSystem forcedModelUnitSystem = null;
+
+    /**
+     * Set false to parse every <Geometry> element separately, as this reader did before #2021.
+     * An escape hatch, not a tuning knob -- see {@link #getGeometry(Element)}.
+     */
+    public final static String PROPERTY_SHARE_IDENTICAL_GEOMETRIES = "vcell.xml.shareIdenticalGeometries";
+
+    /**
+     * Geometries already parsed during THIS document, by digest of their <Geometry> element.
+     * One XmlReader is constructed per document (XmlHelper.XMLToBioModel), so the cache lives
+     * exactly as long as one parse and is never shared between documents or threads.
+     */
+    private final Map<String, Geometry> parsedGeometriesByDigest = new HashMap<>();
 
     /**
      * This constructor takes a parameter to specify if the KeyValue should be ignored
@@ -1982,6 +1997,63 @@ public class XmlReader extends XmlBase {
      * @throws cbit.vcell.xml.XmlParseException The exception description.
      */
     public Geometry getGeometry(Element param) throws XmlParseException{
+        //
+        // A BioModel stores a full copy of its geometry -- image included -- inside EVERY
+        // <SimulationContext> (Xmlproducer writes it there), so a model with N spatial
+        // applications on one geometry arrives here N times with byte-identical elements.
+        // Parsing each one separately cost a 62 MP model ~1.4 GB of peak heap PER COPY and
+        // killed two prod api pods (#2021); the same element is parsed once and shared.
+        //
+        // Only exactly identical elements share. Nothing here tries to decide that two
+        // *different* geometries are equivalent -- that is a much harder question and not
+        // one a parser should be answering.
+        //
+        String digest = geometryElementDigest(param);
+        if(digest != null){
+            Geometry alreadyParsed = parsedGeometriesByDigest.get(digest);
+            if(alreadyParsed != null){
+                if(lg.isDebugEnabled()){
+                    lg.debug("reusing already-parsed geometry '" + alreadyParsed.getName()
+                            + "' for an identical <Geometry> element in this document");
+                }
+                return alreadyParsed;
+            }
+        }
+        Geometry geometry = parseGeometry(param);
+        if(digest != null){
+            parsedGeometriesByDigest.put(digest, geometry);
+        }
+        return geometry;
+    }
+
+    /**
+     * A stable key for a <Geometry> element, or null to disable sharing for this element.
+     *
+     * The element is streamed through the digest rather than turned into a String first: the
+     * element holds the image as hex text, so for the model in #2021 that String would be tens
+     * of MB -- allocating it to avoid allocations would be self-defeating.
+     *
+     * Returns null (meaning "parse it, do not share it") if sharing is switched off or if the
+     * digest cannot be computed, so a failure here costs performance and never correctness.
+     */
+    private String geometryElementDigest(Element param){
+        if(param == null || !PropertyLoader.getBooleanProperty(PROPERTY_SHARE_IDENTICAL_GEOMETRIES, true)){
+            return null;
+        }
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            try (java.io.OutputStream sink = new java.security.DigestOutputStream(
+                    java.io.OutputStream.nullOutputStream(), md)) {
+                new org.jdom2.output.XMLOutputter().output(param, sink);
+            }
+            return Hex.toString(md.digest());
+        } catch(Exception e){
+            lg.warn("could not digest <Geometry> element, parsing it without sharing: " + e.getMessage());
+            return null;
+        }
+    }
+
+    private Geometry parseGeometry(Element param) throws XmlParseException{
         //Get the Extent object
         Extent newextent = getExtent(param.getChild(XMLTags.ExtentTag, vcNamespace));
         //Get VCimage information
