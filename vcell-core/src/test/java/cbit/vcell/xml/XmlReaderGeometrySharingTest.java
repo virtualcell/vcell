@@ -1,5 +1,6 @@
 package cbit.vcell.xml;
 
+import cbit.image.VCImage;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryTest;
@@ -9,8 +10,8 @@ import cbit.vcell.geometry.SurfaceClass;
 import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.model.Model;
-import cbit.vcell.model.Structure;
 import cbit.vcell.model.ModelTest;
+import cbit.vcell.model.Structure;
 import cbit.vcell.parser.Expression;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Tag;
@@ -21,18 +22,20 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * A BioModel stores a full copy of its geometry -- image included -- inside EVERY
  * {@code <SimulationContext>} (see {@code Xmlproducer.getXML(SimulationContext)}), so a model with
- * N spatial applications on one geometry hands {@code XmlReader.getGeometry} N byte-identical
- * elements. Parsing each separately cost a 62 MP model ~1.4 GB of peak heap per copy and killed
- * two prod api pods (#2021).
+ * N spatial applications on one geometry decodes the same image N times and retains N copies of the
+ * pixels. For the model in #2021 that is 62 MB of pixels eleven times over, against a 1000 MB heap.
  *
- * These tests pin the sharing, the escape hatch, and -- the one that matters most -- that
- * geometries which are NOT identical are still parsed separately.
+ * The fix shares the decoded {@link VCImage} and NOT the {@link Geometry}. That distinction is the
+ * point of this class: a VCImage is immutable payload, while a Geometry is mutable, and five
+ * applications sharing one Geometry would see each other's subvolume renames and geometry edits.
+ * Measurement says sharing images alone captures the entire win, so there is nothing to trade.
  */
 @Tag("Fast")
 public class XmlReaderGeometrySharingTest {
 
     @AfterEach
-    public void clearOverride() {
+    public void clearOverrides() {
+        System.clearProperty(XmlReader.PROPERTY_SHARE_IDENTICAL_IMAGES);
         System.clearProperty(XmlReader.PROPERTY_SHARE_IDENTICAL_GEOMETRIES);
     }
 
@@ -50,9 +53,9 @@ public class XmlReaderGeometrySharingTest {
         geometry.setName("shared_image_geometry");
         geometry.precomputeAll(new GeometryThumbnailImageFactoryAWT(), true, false);
 
-        SimulationContext appOne = newSpatialApplication(model, geometry, "application_one");
-        SimulationContext appTwo = newSpatialApplication(model, geometry, "application_two");
-        bioModel.setSimulationContexts(new SimulationContext[]{appOne, appTwo});
+        bioModel.setSimulationContexts(new SimulationContext[]{
+                newSpatialApplication(model, geometry, "application_one"),
+                newSpatialApplication(model, geometry, "application_two")});
         return bioModel;
     }
 
@@ -81,50 +84,72 @@ public class XmlReaderGeometrySharingTest {
     }
 
     private static BioModel roundTrip(BioModel bioModel) throws Exception {
-        String vcml = XmlHelper.bioModelToXML(bioModel);
-        return XmlHelper.XMLToBioModel(new XMLSource(vcml));
+        return XmlHelper.XMLToBioModel(new XMLSource(XmlHelper.bioModelToXML(bioModel)));
     }
 
-    @Test
-    public void identicalGeometryElementsAreParsedOnce() throws Exception {
-        BioModel parsed = roundTrip(twoApplicationsOnOneGeometry());
+    // ---- the default: share the image, never the geometry ---------------------------------
 
+    @Test
+    public void identicalImagesAreDecodedOnce() throws Exception {
+        BioModel parsed = roundTrip(twoApplicationsOnOneGeometry());
         assertEquals(2, parsed.getNumSimulationContexts());
-        Geometry first = parsed.getSimulationContext(0).getGeometry();
-        Geometry second = parsed.getSimulationContext(1).getGeometry();
+
+        VCImage first = parsed.getSimulationContext(0).getGeometry().getGeometrySpec().getImage();
+        VCImage second = parsed.getSimulationContext(1).getGeometry().getGeometrySpec().getImage();
 
         assertSame(first, second,
-                "two applications over one geometry must share the parsed Geometry, not each get a copy");
-    }
-
-    @Test
-    public void sharingDoesNotLoseGeometryContent() throws Exception {
-        BioModel parsed = roundTrip(twoApplicationsOnOneGeometry());
-        Geometry geometry = parsed.getSimulationContext(1).getGeometry();
-
-        // The SECOND application is the one served from the cache, so check it rather than the
-        // first: a cache that returned something half-built would show up here and nowhere else.
-        assertEquals("shared_image_geometry", geometry.getName());
-        assertEquals(2, geometry.getDimension());
-        assertNotNull(geometry.getGeometrySpec().getImage(), "the image must survive sharing");
-        assertNotNull(geometry.getGeometrySpec().getSubVolume("cytosol"));
-        assertNotNull(geometry.getGeometrySpec().getSubVolume("ec"));
-        assertNotNull(geometry.getGeometrySurfaceDescription().getGeometricRegions(),
-                "surfaces must be present on the shared geometry");
-
-        // Each application still maps its own structures through its own GeometryContext.
-        assertNotSame(parsed.getSimulationContext(0).getGeometryContext(),
-                parsed.getSimulationContext(1).getGeometryContext());
+                "two applications over one image must share the decoded VCImage, not each retain a copy");
     }
 
     /**
-     * The negative control. If this ever fails while
-     * {@link #identicalGeometryElementsAreParsedOnce} passes, the cache key has stopped
-     * discriminating and unrelated geometries are being conflated -- far worse than the
-     * memory problem being solved.
+     * The safety guarantee, and the reason this fix shares images rather than geometries: editing
+     * one application's geometry must not change another's. If Geometry objects were shared, a
+     * subvolume rename in one application would silently appear in all of them.
      */
     @Test
-    public void differentGeometriesAreNotShared() throws Exception {
+    public void eachApplicationKeepsItsOwnGeometry() throws Exception {
+        BioModel parsed = roundTrip(twoApplicationsOnOneGeometry());
+        Geometry first = parsed.getSimulationContext(0).getGeometry();
+        Geometry second = parsed.getSimulationContext(1).getGeometry();
+
+        assertNotSame(first, second, "applications must NOT share a mutable Geometry by default");
+        assertNotSame(first.getGeometrySpec(), second.getGeometrySpec());
+        assertNotSame(first.getGeometrySpec().getSubVolume("cytosol"),
+                second.getGeometrySpec().getSubVolume("cytosol"),
+                "subvolumes must be private to each application, or renames would leak between them");
+
+        // Demonstrate it rather than assert it structurally: rename in one, check the other.
+        first.getGeometrySpec().getSubVolume("cytosol").setName("renamed_in_app_one");
+        assertNotNull(second.getGeometrySpec().getSubVolume("cytosol"),
+                "renaming a subvolume in one application must not rename it in another");
+        assertNull(second.getGeometrySpec().getSubVolume("renamed_in_app_one"));
+    }
+
+    @Test
+    public void sharingAnImageDoesNotLoseItsContent() throws Exception {
+        BioModel parsed = roundTrip(twoApplicationsOnOneGeometry());
+        // The SECOND application is the one served from the cache, so check that one: a cache
+        // returning something half-built would show up here and nowhere else.
+        Geometry geometry = parsed.getSimulationContext(1).getGeometry();
+
+        assertEquals("shared_image_geometry", geometry.getName());
+        assertEquals(2, geometry.getDimension());
+        VCImage image = geometry.getGeometrySpec().getImage();
+        assertNotNull(image);
+        assertEquals(100, image.getNumX());
+        assertEquals(100, image.getNumY());
+        assertEquals(2, image.getNumPixelClasses());
+        assertNotNull(geometry.getGeometrySpec().getSubVolume("cytosol"));
+        assertNotNull(geometry.getGeometrySpec().getSubVolume("ec"));
+    }
+
+    /**
+     * The negative control. If this fails while {@link #identicalImagesAreDecodedOnce} passes, the
+     * cache key has stopped discriminating and unrelated images are being conflated -- far worse
+     * than the memory problem being solved.
+     */
+    @Test
+    public void differentImagesAreNotShared() throws Exception {
         BioModel bioModel = new BioModel(null);
         bioModel.setName("twoAppsTwoGeometries");
         bioModel.setModel(ModelTest.getExample_Wagner_simple(false));
@@ -132,10 +157,12 @@ public class XmlReaderGeometrySharingTest {
 
         Geometry geometryOne = GeometryTest.getImageExample2D();
         geometryOne.setName("geometry_one");
+        geometryOne.getGeometrySpec().getImage().setName("image_one");
         geometryOne.precomputeAll(new GeometryThumbnailImageFactoryAWT(), true, false);
 
         Geometry geometryTwo = GeometryTest.getImageExample2D();
-        geometryTwo.setName("geometry_two");   // differs -> different element -> different digest
+        geometryTwo.setName("geometry_two");
+        geometryTwo.getGeometrySpec().getImage().setName("image_two");
         geometryTwo.precomputeAll(new GeometryThumbnailImageFactoryAWT(), true, false);
 
         bioModel.setSimulationContexts(new SimulationContext[]{
@@ -143,21 +170,39 @@ public class XmlReaderGeometrySharingTest {
                 newSpatialApplication(model, geometryTwo, "application_two")});
 
         BioModel parsed = roundTrip(bioModel);
-        Geometry first = parsed.getSimulationContext(0).getGeometry();
-        Geometry second = parsed.getSimulationContext(1).getGeometry();
-
-        assertNotSame(first, second, "geometries that differ must NOT be conflated");
-        assertEquals("geometry_one", first.getName());
-        assertEquals("geometry_two", second.getName());
+        assertNotSame(parsed.getSimulationContext(0).getGeometry().getGeometrySpec().getImage(),
+                parsed.getSimulationContext(1).getGeometry().getGeometrySpec().getImage(),
+                "images that differ must NOT be conflated");
+        assertEquals("geometry_one", parsed.getSimulationContext(0).getGeometry().getName());
+        assertEquals("geometry_two", parsed.getSimulationContext(1).getGeometry().getName());
     }
 
     @Test
-    public void sharingCanBeSwitchedOff() throws Exception {
-        System.setProperty(XmlReader.PROPERTY_SHARE_IDENTICAL_GEOMETRIES, "false");
+    public void imageSharingCanBeSwitchedOff() throws Exception {
+        System.setProperty(XmlReader.PROPERTY_SHARE_IDENTICAL_IMAGES, "false");
         BioModel parsed = roundTrip(twoApplicationsOnOneGeometry());
 
-        assertNotSame(parsed.getSimulationContext(0).getGeometry(),
+        assertNotSame(parsed.getSimulationContext(0).getGeometry().getGeometrySpec().getImage(),
+                parsed.getSimulationContext(1).getGeometry().getGeometrySpec().getImage(),
+                "the escape hatch must restore the old one-VCImage-per-application behaviour");
+    }
+
+    // ---- geometry sharing: opt-in only ----------------------------------------------------
+
+    /**
+     * Geometry sharing exists for read-only consumers -- a server that parses a document to
+     * serialise it or to generate math, and never edits it. It must stay OFF unless asked for,
+     * because a shared Geometry is a shared mutable object.
+     */
+    @Test
+    public void geometrySharingIsOffUnlessAskedFor() throws Exception {
+        assertNotSame(roundTrip(twoApplicationsOnOneGeometry()).getSimulationContext(0).getGeometry(),
+                roundTrip(twoApplicationsOnOneGeometry()).getSimulationContext(1).getGeometry());
+
+        System.setProperty(XmlReader.PROPERTY_SHARE_IDENTICAL_GEOMETRIES, "true");
+        BioModel parsed = roundTrip(twoApplicationsOnOneGeometry());
+        assertSame(parsed.getSimulationContext(0).getGeometry(),
                 parsed.getSimulationContext(1).getGeometry(),
-                "the escape hatch must restore the pre-#2021 one-Geometry-per-SimulationContext behaviour");
+                "enabling the property must actually share the Geometry");
     }
 }

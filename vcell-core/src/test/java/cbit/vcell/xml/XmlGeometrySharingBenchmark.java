@@ -129,8 +129,10 @@ public class XmlGeometrySharingBenchmark {
         return XmlHelper.bioModelToXML(bioModel);
     }
 
-    private static void measure(String label, String vcml, boolean share) throws Exception {
-        System.setProperty(XmlReader.PROPERTY_SHARE_IDENTICAL_GEOMETRIES, Boolean.toString(share));
+    private static void measure(String label, String vcml, boolean shareImages, boolean shareGeometries)
+            throws Exception {
+        System.setProperty(XmlReader.PROPERTY_SHARE_IDENTICAL_IMAGES, Boolean.toString(shareImages));
+        System.setProperty(XmlReader.PROPERTY_SHARE_IDENTICAL_GEOMETRIES, Boolean.toString(shareGeometries));
         long before = liveBytes();
         resetPeaks();
         long t0 = System.currentTimeMillis();
@@ -141,13 +143,18 @@ public class XmlGeometrySharingBenchmark {
         long peak = peakHeap();
         long retained = liveBytes() - before;
 
-        int distinctGeometries = (int) java.util.Arrays.stream(parsed.getSimulationContexts())
-                .map(SimulationContext::getGeometry)
-                .distinct()
-                .count();
+        // Identity counts, not equality counts: the whole question is how many OBJECTS exist.
+        java.util.IdentityHashMap<Object, Object> geometries = new java.util.IdentityHashMap<>();
+        java.util.IdentityHashMap<Object, Object> images = new java.util.IdentityHashMap<>();
+        for (SimulationContext sc : parsed.getSimulationContexts()) {
+            geometries.put(sc.getGeometry(), null);
+            if (sc.getGeometry().getGeometrySpec().getImage() != null) {
+                images.put(sc.getGeometry().getGeometrySpec().getImage(), null);
+            }
+        }
 
-        System.out.printf("%-22s peak %12s   retained %12s   %5d ms   distinct Geometry objects: %d%n",
-                label, fmt(peak), fmt(retained), millis, distinctGeometries);
+        System.out.printf("%-26s peak %11s   retained %11s   %5d ms   Geometry objects: %-3d  VCImage objects: %d%n",
+                label, fmt(peak), fmt(retained), millis, geometries.size(), images.size());
 
         if (parsed.hashCode() == Integer.MIN_VALUE) System.out.println(parsed);   // keep reachable
     }
@@ -162,12 +169,14 @@ public class XmlGeometrySharingBenchmark {
                 fmt(vcml.length()));
 
         // Warm up class loading and JIT, or the first measured parse absorbs both.
-        measure("(warmup, ignore)", vcml, false);
+        measure("(warmup, ignore)", vcml, false, false);
         System.out.println();
 
-        measure("sharing OFF (before)", vcml, false);
-        measure("sharing ON  (after)", vcml, true);
+        measure("share nothing (before)", vcml, false, false);
+        measure("share images only", vcml, true, false);
+        measure("share whole geometries", vcml, true, true);
 
+        System.clearProperty(XmlReader.PROPERTY_SHARE_IDENTICAL_IMAGES);
         System.clearProperty(XmlReader.PROPERTY_SHARE_IDENTICAL_GEOMETRIES);
     }
 }

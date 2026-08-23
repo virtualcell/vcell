@@ -262,8 +262,18 @@ public class XmlReader extends XmlBase {
     private ModelUnitSystem forcedModelUnitSystem = null;
 
     /**
-     * Set false to parse every <Geometry> element separately, as this reader did before #2021.
-     * An escape hatch, not a tuning knob -- see {@link #getGeometry(Element)}.
+     * Share one decoded {@link VCImage} between identical <Image> elements in a document. ON by
+     * default: a VCImage is immutable payload, so sharing it leaves every editable thing --
+     * subvolumes, names, extent, surfaces -- private to each application.
+     */
+    public final static String PROPERTY_SHARE_IDENTICAL_IMAGES = "vcell.xml.shareIdenticalImages";
+
+    /**
+     * Share one whole {@link Geometry} between identical <Geometry> elements in a document.
+     * OFF by default, deliberately: a Geometry is MUTABLE, and two applications that shared one
+     * would see each other's subvolume renames and geometry edits. Enable it only where
+     * documents are read and never edited -- a server that parses to serialise or to generate
+     * math. See {@link #getGeometry(Element)}.
      */
     public final static String PROPERTY_SHARE_IDENTICAL_GEOMETRIES = "vcell.xml.shareIdenticalGeometries";
 
@@ -273,6 +283,9 @@ public class XmlReader extends XmlBase {
      * exactly as long as one parse and is never shared between documents or threads.
      */
     private final Map<String, Geometry> parsedGeometriesByDigest = new HashMap<>();
+
+    /** Decoded images already parsed during THIS document, by digest of their <Image> element. */
+    private final Map<String, VCImage> parsedImagesByDigest = new HashMap<>();
 
     /**
      * This constructor takes a parameter to specify if the KeyValue should be ignored
@@ -2037,9 +2050,20 @@ public class XmlReader extends XmlBase {
      * digest cannot be computed, so a failure here costs performance and never correctness.
      */
     private String geometryElementDigest(Element param){
-        if(param == null || !PropertyLoader.getBooleanProperty(PROPERTY_SHARE_IDENTICAL_GEOMETRIES, true)){
+        if(param == null || !PropertyLoader.getBooleanProperty(PROPERTY_SHARE_IDENTICAL_GEOMETRIES, false)){
             return null;
         }
+        return elementDigest(param);
+    }
+
+    private String imageElementDigest(Element param){
+        if(param == null || !PropertyLoader.getBooleanProperty(PROPERTY_SHARE_IDENTICAL_IMAGES, true)){
+            return null;
+        }
+        return elementDigest(param);
+    }
+
+    private String elementDigest(Element param){
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
             try (java.io.OutputStream sink = new java.security.DigestOutputStream(
@@ -2048,7 +2072,8 @@ public class XmlReader extends XmlBase {
             }
             return Hex.toString(md.digest());
         } catch(Exception e){
-            lg.warn("could not digest <Geometry> element, parsing it without sharing: " + e.getMessage());
+            lg.warn("could not digest <" + param.getName() + "> element, parsing it without sharing: "
+                    + e.getMessage());
             return null;
         }
     }
@@ -7773,6 +7798,31 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
      * @return VCImage
      */
     VCImage getVCImage(Element param, Extent extent) throws XmlParseException{
+        //
+        // A BioModel repeats its whole <Geometry>, image included, inside every
+        // <SimulationContext>, so the same image arrives here once per application. Decoding it
+        // each time costs a hex decode, an inflate, and a retained copy of the pixels -- for the
+        // model in #2021 that is 62 MB of pixels per application, eleven times over.
+        //
+        // Only the IMAGE is shared, not the Geometry: a VCImage is immutable payload (its
+        // compressed pixels are final and VCPixelClass is declared Immutable), whereas a Geometry
+        // is mutable and two applications sharing one would see each other's edits.
+        //
+        String digest = imageElementDigest(param);
+        if(digest != null){
+            VCImage alreadyParsed = parsedImagesByDigest.get(digest);
+            if(alreadyParsed != null){
+                return alreadyParsed;
+            }
+        }
+        VCImage image = parseVCImage(param, extent);
+        if(digest != null){
+            parsedImagesByDigest.put(digest, image);
+        }
+        return image;
+    }
+
+    private VCImage parseVCImage(Element param, Extent extent) throws XmlParseException{
         //try to get metadata(version)
         Version version = getVersion(param.getChild(XMLTags.VersionTag, vcNamespace));
 
