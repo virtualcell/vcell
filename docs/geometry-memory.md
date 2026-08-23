@@ -192,6 +192,52 @@ objects for one image, so a **new** image (`key == null`) falls into the insert 
 Not yet confirmed: that the referencing geometries all belong to a single BioModel. One more query
 would settle it.
 
+### 3.7 How compressible this data actually is
+
+Measured after the question was raised: if the expensive things can be *held* compressed and
+rehydrated on demand, the size of the finished artefact stops being the constraint it looked like.
+
+**Real geometry images, straight out of the VCML test corpus** (the `<ImageData>` element carries
+`CompressedSize`, so the deflate ratio VCell already achieves is readable without decompressing
+anything). 62 distinct images:
+
+| | min | median | max |
+|---|--:|--:|--:|
+| all 62 images | 23.3× | **73.6×** | 287.7× |
+| the 32 images ≥ 1 MP | 53.6× | **63.5×** | 287.7× |
+
+Aggregate: 87,874,955 px would be **83.8 MB raw, 1.1 MB compressed — 78.8×**.
+
+Synthetic images get this property badly wrong in both directions, which is why these are real ones.
+
+**Rehydration cost**, four real images, best of seven inflates with the cache cleared each time:
+
+| image | pixels | ratio | inflate | throughput |
+|---|--:|--:|--:|--:|
+| 564×160×31 | 2,797,440 | 234.3× | 3.9 ms | 676 MB/s |
+| 208×153×83 | 2,641,392 | 63.5× | 2.6 ms | 951 MB/s |
+| 600×300×22 | 3,960,000 | 114.0× | 4.9 ms | 775 MB/s |
+| 256×256×34 | 2,228,224 | 106.3× | 2.4 ms | 888 MB/s |
+
+**A 62 MP image rehydrates in roughly 65–90 ms** — against the ~2.7 s the eleven-application parse
+takes today.
+
+**The derived label array compresses too**, which is the more surprising result. Same four images,
+`mapImageIndexToLinkRegion` deflated:
+
+| image | entries | max label | regions | as `int[]` | as `short[]` |
+|---|--:|--:|--:|--:|--:|
+| 564×160×31 | 2,797,440 | 1,523 | 2 | 93.2× | 71.0× |
+| 600×300×22 | 3,960,000 | 3,557 | 3 | 86.6× | 63.6× |
+| 256×256×34 | 2,228,224 | 2,305 | 3 | 76.8× | 55.0× |
+| 208×153×83 | 2,641,392 | 3,830 | 6 | 53.1× | 36.8× |
+
+Scaled to 62 MP, **the 236.9 MB `int[]` — the single largest retained object in §3.3 — becomes
+2.5–4.5 MB.** Deflating it costs 13–23 ms per 2–4 M entries.
+
+Incidentally, the corpus corroborates §2 directly: `biomodel_27192717.vcml` embeds the same image
+element **nine times**, `biomodel_26455186.vcml` eight times.
+
 ---
 
 ## 4. What we got wrong along the way
@@ -295,6 +341,52 @@ Emit geometries once at BioModel level and reference them by key.
 **Do this before any tiling work** (§5.5): streaming the computation while still emitting a
 full-size output array saves peak but not retention.
 
+### 5.3b Hold it compressed, rehydrate on demand — **most promising unexplored direction**
+
+Raised as: `VCImageCompressed` already keeps compressed pixels strongly and the uncompressed copy
+as a `transient` cache, so take it one step further and let the uncompressed copy be reclaimable.
+
+§3.7 says the arithmetic works, and works better than expected. Real geometry images compress
+**50–100×**, rehydrate at **~700–950 MB/s**, and — the part that was not obvious — the derived
+label array compresses **53–93×** as well.
+
+**Use `SoftReference`, not `WeakReference`.** This distinction decides whether the idea works. A
+weak reference is cleared at the next GC *regardless of memory pressure*, so a hot geometry would
+re-inflate on essentially every collection: 90 ms of CPU repeatedly, for no benefit. A soft
+reference is cleared only when the heap is actually under pressure, and the JVM ages them by
+`-XX:SoftRefLRUPolicyMSPerMB`. Soft is the tool that gives "does not contribute to memory
+pressure" without giving up the cache.
+
+Three things block a naive version, all verified:
+
+1. **`GeometrySpec.uncompressedPixels` (line 67) holds a second strong reference to the very same
+   array** (`getImage().getPixels()` at line 962). Softening `VCImageCompressed.uncompressed` alone
+   changes nothing while that field pins it. They have to move together.
+2. **`VCImageUncompressed` has no compressed form** — `private final byte pixels[]`. The sampled
+   image from `createSampledImage` is one of these, so it cannot be softened as-is; it would need
+   either a compressed backing or a documented recompute path (it *is* derivable from the image
+   plus subvolume handles).
+3. **A compressed label map is not randomly accessible**, and `RegionInfo.isIndexInRegion(index)`
+   needs random access. Two ways out: compress in fixed blocks and cache a few decompressed blocks,
+   or use RLE, which supports random access by binary search over runs and is a natural fit for
+   run-coherent segmented volumes. The second doubles as option §5.3.
+
+**The audit that decides feasibility.** `getPixels()` returns the internal array and has **178 call
+sites** across core, server and client. Two failure modes to look for: a caller that *retains* the
+array in a field (harmless to correctness, but pins it and defeats the purpose) and a caller that
+*mutates* it expecting persistence (a real correctness bug once a rehydration can replace the
+array). A narrow check of the `cbit.image` and `cbit.vcell.geometry` packages found no mutation —
+the one candidate, `RayCaster:1626`, writes into a freshly allocated array — but that is a small
+fraction of the surface and the rest is unexamined.
+
+**Precedent worth knowing about:** `VCImageCompressed.nullifyUncompressedPixels()` already exists
+and has exactly one caller, `GeomDbDriver:490`. Someone hit this problem before and solved it by
+hand in a single place.
+
+**Why this is worth the deep investigation:** it attacks retained memory rather than peak, it needs
+no format change, and correctness is verifiable against a large corpus of stored models — the
+inflated bytes either match or they do not.
+
 ### 5.4 Limit new submissions, grandfather what is stored
 
 Enforce at `ServerDocumentManager.saveGeometry / saveBioModel / saveMathModel`, keyed on
@@ -348,8 +440,11 @@ per tile. Three specific obstacles, all verified:
 3. **Membrane element ordering is persisted.** Stitching changes quad ordering, and membrane element
    indices map stored simulation results.
 
-Also worth weighing: at 62 MP the peak was 1.4 GB but retained only 810 MB, so tiling bounds the
-working set, not the result.
+An earlier objection here — that tiling bounds the working set but the finished artefact still has
+to fit in memory — is **weakened by §3.7**. If the accumulated result is held compressed (2.5–4.5 MB
+for a 62 MP label map rather than 237 MB), the finished artefact is no longer the binding
+constraint, and tiling becomes considerably more attractive than it first appeared. The three
+obstacles above are about *correctness of the stitch*, not about size, and they still stand.
 
 ### 5.7 Lazy surface generation
 
@@ -381,8 +476,10 @@ Independent of all the above, and cheap:
 2. **What region count?** Same problem; 2,000 is a guess. A tissue image with hundreds of separate
    cells is ordinary science. **Needs a survey of region counts.**
 3. **Is the VCML format change (§5.2) on the table at all?** Everything else is compensation for it.
-4. **Sequencing.** Suggested: §5.1 → §5.4 (with real numbers) → §5.3 → §5.5 → §5.6. §5.9 can happen
-   immediately and independently.
+4. **Sequencing.** Suggested: §5.1 → §5.4 (with real numbers) → §5.3/§5.3b → §5.5 → §5.6. §5.9 can
+   happen immediately and independently. §5.3b is the one worth a real investigation rather than a
+   quick implementation: the numbers are strong, and the risk is entirely in the 178-call-site
+   `getPixels()` audit rather than in the arithmetic.
 5. **Who owns the duplicate-row cleanup**, and should it wait for §5.1 to stop new ones first?
 6. **Do the duplicate images in a group belong to one BioModel?** One query settles it; needs
    `vcell_dev` credentials.
