@@ -238,6 +238,79 @@ Scaled to 62 MP, **the 236.9 MB `int[]` — the single largest retained object i
 Incidentally, the corpus corroborates §2 directly: `biomodel_27192717.vcml` embeds the same image
 element **nine times**, `biomodel_26455186.vcml` eight times.
 
+### 3.8 The `getPixels()` audit
+
+**Method.** Grep cannot answer this: `getPixels()` also exists on `ByteImage`, `UShortImage`,
+`FloatImage`, `ShortImage` and `ImageDataset`, and text search cannot tell which receiver a call is
+on. The compiler already resolved every receiver, so the call sites were read out of the **bytecode**
+(`javap -c` over all 13 built modules, matching `invoke*` whose receiver is `VCImage`,
+`VCImageUncompressed` or `VCImageCompressed`), then located in source. An earlier attempt also
+mapped bytecode offsets to line numbers via `LineNumberTable` and got several lines wrong; that step
+was dropped rather than trusted, and class-level attribution — which is exact — was used instead.
+Test sources are excluded.
+
+**Scale — an earlier figure in this document was wrong.** It said 178 call sites. That was a raw
+grep count dominated by the unrelated image classes. The real surface:
+
+| | |
+|---|--:|
+| call instructions with a `VCImage` receiver | **39** |
+| source files containing them | **22** |
+| distinct source expressions | ~31 |
+
+**Classification.**
+
+| Category | Sites | Which |
+|---|--:|---|
+| Read-only, transient | ~27 | the large majority — copy out, iterate, write to a file, build a display buffer |
+| Already defensive | 2 | `RayCaster:1643` and `VCImageUncompressed:31` call `.clone()` |
+| **Retains the array** | 3 | see below |
+| **Mutates the array** | **1** | see below |
+
+**The one mutation** is `DatabaseWindowManager:1004`:
+
+```java
+currentValue.getPixels()[j] = (byte) (newPC[i].getPixel() & 0x000000FF);
+```
+
+`currentValue` is a `VCImageUncompressed` produced locally by `createSampledImage` for display
+scaling — never a stored, compressed image. So it does **not** block softening
+`VCImageCompressed.uncompressed`. It does mean **`getPixels()` returning the live array is
+load-bearing**: any variant that returns a defensive copy silently loses these writes.
+
+**The three retention sites**, only one of which matters:
+
+- `GeometrySpec:962` — `uncompressedPixels = getImage().getPixels()` stores the **stored image's**
+  array in a field. This is the blocker already identified in §5.3b, now confirmed to be the only
+  one of its kind.
+- `GeometryViewer:257` — the array is handed to `SourceDataInfo`, which keeps it in a
+  `private Serializable data` field for as long as the viewer is open.
+- `GeometrySummaryPanel:395` — handed to `MemoryImageSource`, which retains it.
+
+Both of the latter are on the *sampled* image, which has no compressed form to be softened against.
+
+**A hazard specific to soft references, not visible as either category.** Four loops call
+`getPixels()` in the loop header itself:
+
+```java
+for (int i = 0; i < dbImage.getPixels().length; i++)      // ClientRequestManager:1169
+for (int j = 0; j < currentValue.getPixels().length; j++) // DatabaseWindowManager:1002
+for (int i=0;i<vcImage.getPixels().length;i++)            // ImageFile:153
+for (int i = 0; i < initImage.getPixels().length; i++)    // ROIMultiPaintManager:2036
+```
+
+Under the memory pressure that clears a soft reference — precisely the condition this is designed
+for — such a loop can re-inflate on every iteration. Worse, and deeper than any of the call sites
+above: `ImageSubVolume.isInside(x,y,z,spec)` calls `geometrySpec.getUncompressedPixels()[index]`
+for **one pixel per call**, and is invoked from sampling loops (`GeometrySpec:583`). That is exactly
+why the `uncompressedPixels` cache exists. Softening it without giving those loops a way to hoist
+the array once would turn a pointer dereference into an inflate.
+
+**Verdict.** The correctness risk is much smaller than the raw grep suggested: one mutation, on a
+class that cannot be softened anyway. The real work is not correctness but two design problems —
+removing the second strong reference at `GeometrySpec:962`, and giving the per-pixel `isInside` path
+a bulk or hoisted accessor so it cannot thrash.
+
 ---
 
 ## 4. What we got wrong along the way
@@ -285,7 +358,13 @@ rejects ordinary models.
 
 See §3.5. Implemented, measured, abandoned.
 
-### 4.5 The first duplicate-row query over-matched
+### 4.5 "178 `getPixels()` call sites"
+
+A raw grep count, quoted in this document before the audit was done. It counted `getPixels()` on
+`ByteImage`, `UShortImage`, `FloatImage` and `ImageDataset`, which are unrelated classes. The real
+figure is **39 call instructions in 22 files**. See §3.8.
+
+### 4.6 The first duplicate-row query over-matched
 
 See §3.6. 12,629 → ~944.
 
@@ -371,13 +450,7 @@ Three things block a naive version, all verified:
    or use RLE, which supports random access by binary search over runs and is a natural fit for
    run-coherent segmented volumes. The second doubles as option §5.3.
 
-**The audit that decides feasibility.** `getPixels()` returns the internal array and has **178 call
-sites** across core, server and client. Two failure modes to look for: a caller that *retains* the
-array in a field (harmless to correctness, but pins it and defeats the purpose) and a caller that
-*mutates* it expecting persistence (a real correctness bug once a rehydration can replace the
-array). A narrow check of the `cbit.image` and `cbit.vcell.geometry` packages found no mutation —
-the one candidate, `RayCaster:1626`, writes into a freshly allocated array — but that is a small
-fraction of the surface and the rest is unexamined.
+**The `getPixels()` audit — done, and the surface is far smaller than feared.** See §3.8.
 
 **Precedent worth knowing about:** `VCImageCompressed.nullifyUncompressedPixels()` already exists
 and has exactly one caller, `GeomDbDriver:490`. Someone hit this problem before and solved it by
