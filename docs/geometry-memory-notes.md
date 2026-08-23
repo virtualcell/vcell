@@ -30,7 +30,8 @@ included — inside each `<SimulationContext>`, and `XmlReader.java:6024` parses
 independently. Eleven spatial SimulationContexts sharing one geometry means eleven full copies on
 the wire and eleven independent region computations on read.
 
-Each parse then runs surface generation unconditionally:
+Each parse reaches surface generation, though for a stored model with a `<SurfaceDescription>` the
+regions are reused rather than rebuilt — see opportunity 2 for the correction:
 
 ```
 XmlReader:2090   newgeometry.precomputeAll(factory, false, false)
@@ -132,21 +133,35 @@ all. Two sub-options:
 - **Write side too** (format change, needs care with old clients): emit geometries once at
   BioModel level and reference them by key.
 
-### 2. Do not generate surfaces on XML read
+### 2. Do not generate surfaces on XML read — mostly already true
 
-`XmlReader:2090` runs `precomputeAll` on every parse. Surfaces are needed by solvers, math
-generation and the viewer — not by an API request that serializes a model back out. Phase 5 is
-1.4 GB peak and 1.35 GB of churn; skipping it when nothing asks for surfaces removes the largest
-single cost.
+**Corrected 2026-08-22.** An earlier version of this document claimed the document's stored
+`<SurfaceDescription>` was "read and thrown away" because `XmlReader:2086` assigns it to a variable
+named `dummy`, and that surfaces were therefore recomputed on every parse. Both halves were wrong.
 
-Note that the `<SurfaceDescription>` element is already parsed at `XmlReader:2086` into a variable
-named `dummy` and **discarded** — so the document's own stored surface description is read and
-thrown away, immediately before surfaces are recomputed from scratch.
+`getGeometrySurfaceDescription(sd, newgeometry)` **mutates the geometry it is passed** — it calls
+`gsd.setVolumeSampleSize(...)`, `gsd.setFilterCutoffFrequency(...)` and `gsd.setGeometricRegions(...)`
+on the geometry's own surface description. Only the *return value* is discarded. So after it runs,
+`getGeometricRegions()` is non-null, and `precomputeAll(factory, false, false)`
+(`Geometry:457`) **skips `updateAll()` entirely**:
 
-Making `updateAll()` lazy (triggered by the first `getSurfaceCollection()` / `getGeometricRegions()`
-that actually needs it) is the shape of the fix. The risk is a lazy trigger firing on a thread
-that cannot afford it — `VCellThreadChecker.checkCpuIntensiveInvocation()` exists for exactly this
-reason and would need attention.
+```java
+if (getDimension()>0 && (bForcePrecomputeSurfaces || getGeometrySurfaceDescription().getGeometricRegions()==null))
+```
+
+For a saved BioModel — which always carries a `<SurfaceDescription>` — surfaces are reused from the
+document, not rebuilt. The phase-5 figure below (1.4 GB peak) is the real cost of
+`new RegionImage(...)`, but an XML read of a stored model does **not** pay it.
+
+This changes what the #2021 incident was: the eleven parses cost eleven **image decodes and eleven
+retained copies of the pixels**, not eleven surface rebuilds. That matches the observed ~370 ms
+spacing between the warnings, which is hex-decode-plus-inflate time, not the ~1.1 s a 62 MP
+`RegionImage` takes. It is also why sharing the decoded `VCImage` alone recovers the entire win
+(see the sharing section).
+
+What remains of this opportunity: `updateAll()` still runs for documents with no stored
+`<SurfaceDescription>` (older VCML, some geometry-only documents), and making it lazy would help
+those. Lower value than it first appeared.
 
 ### 3. Narrow the per-pixel label arrays — 237 MB → 118 MB, or 59 MB
 
