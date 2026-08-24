@@ -1,0 +1,44 @@
+geometry geom_20150608_114218 dimension=3
+extent 1.040000000 0.765000000 0.415000000
+origin 0.000000000 0.000000000 0.000000000
+image 208x153x83 pixelClasses=2 pixelsSHA=26a444a42c8219647327dbbd
+subVolumes 2
+  subVolume cytosol(handle=0)
+  subVolume rest(handle=1)
+sampleSize 208x153x83
+cutoffFrequency 0.300000000
+regionImage regions=6 dims=208x153x83
+regionImage.pixelPartition sumOfRegions=2641392 totalPixels=2641392 complete=true
+  region index=0 pixelValue=0 numPixels=2310441
+  region index=1 pixelValue=1 numPixels=39648
+  region index=2 pixelValue=1 numPixels=89971
+  region index=3 pixelValue=1 numPixels=35997
+  region index=4 pixelValue=1 numPixels=53256
+  region index=5 pixelValue=1 numPixels=112079
+regionImage.encodedRegionIndexSHA 2677caf3dbf3eeb38453cb38
+surfaceCollection surfaces=5 nodes=111100
+  nodeBounds x=[0.009444670,1.031396273] y=[0.002516447,0.762483553] z=[0.005128112,0.407408537]
+  nodeCoordsSHA ed5e244bb0fe0991cc831710
+  surface[0] interiorRegion=0 exteriorRegion=1 polygons=11178 area=0.189490647
+  surface[1] interiorRegion=0 exteriorRegion=2 polygons=56994 area=0.951515636
+  surface[2] interiorRegion=0 exteriorRegion=3 polygons=13664 area=0.233059999
+  surface[3] interiorRegion=0 exteriorRegion=4 polygons=10682 area=0.197536300
+  surface[4] interiorRegion=0 exteriorRegion=5 polygons=18622 area=0.360256108
+  polygonNodeIndicesSHA 4a372b2f8c7c57f9f3d8f7d2
+  polygonVolumeNeighborsSHA db0a0d372ef39c95252de2f1
+  totalArea 1.931858690
+  membraneEdgeNeighbors total=444560 SHA=3987bbbbc675f3c5e5a74657
+geometricRegions 11
+  surface membrane_cytosol0_rest1 size=0.189490647 adjacent=[cytosol0, rest1]
+  surface membrane_cytosol0_rest2 size=0.951515636 adjacent=[cytosol0, rest2]
+  surface membrane_cytosol0_rest3 size=0.233059999 adjacent=[cytosol0, rest3]
+  surface membrane_cytosol0_rest4 size=0.197536300 adjacent=[cytosol0, rest4]
+  surface membrane_cytosol0_rest5 size=0.360256108 adjacent=[cytosol0, rest5]
+  volume cytosol0 size=0.287821526 adjacent=[membrane_cytosol0_rest1, membrane_cytosol0_rest2, membrane_cytosol0_rest3, membrane_cytosol0_rest4, membrane_cytosol0_rest5]
+  volume rest1 size=0.005073835 adjacent=[membrane_cytosol0_rest1]
+  volume rest2 size=0.011513772 adjacent=[membrane_cytosol0_rest2]
+  volume rest3 size=0.004606609 adjacent=[membrane_cytosol0_rest3]
+  volume rest4 size=0.006815279 adjacent=[membrane_cytosol0_rest4]
+  volume rest5 size=0.014342978 adjacent=[membrane_cytosol0_rest5]
+surfaceClasses 1
+  cytosol_rest_membrane adjacent=[cytosol, rest]

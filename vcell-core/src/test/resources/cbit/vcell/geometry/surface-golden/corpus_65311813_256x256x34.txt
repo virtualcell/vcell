@@ -1,0 +1,34 @@
+geometry Membrane Frap_3d image_20110908_141413 dimension=3
+extent 74.240000000 74.240000000 26.000000000
+origin 0.000000000 0.000000000 0.000000000
+image 256x256x34 pixelClasses=3 pixelsSHA=140e740e3d0e52f757ffd0a4
+subVolumes 3
+  subVolume PixelClass1(handle=0)
+  subVolume PixelClass2(handle=1)
+  subVolume PixelClass3(handle=2)
+sampleSize 256x256x34
+cutoffFrequency 0.300000000
+regionImage regions=3 dims=256x256x34
+regionImage.pixelPartition sumOfRegions=2228224 totalPixels=2228224 complete=true
+  region index=0 pixelValue=0 numPixels=1949790
+  region index=1 pixelValue=1 numPixels=223074
+  region index=2 pixelValue=2 numPixels=55360
+regionImage.encodedRegionIndexSHA 538de21da8b8acd524c78005
+surfaceCollection surfaces=2 nodes=68307
+  nodeBounds x=[4.668735837,64.246521675] y=[0.000000000,74.240000000] z=[1.181818182,25.606060606]
+  nodeCoordsSHA 5a450db595f37b2d3e34ba8a
+  surface[0] interiorRegion=0 exteriorRegion=1 polygons=52794 area=4738.640600365
+  surface[1] interiorRegion=1 exteriorRegion=2 polygons=15496 area=1406.773369249
+  polygonNodeIndicesSHA f979ca9c950471210d9cbbf8
+  polygonVolumeNeighborsSHA c3687bd4de6cbab5380b3721
+  totalArea 6145.413969614
+  membraneEdgeNeighbors total=273160 SHA=cd0a449f0b28fbee66360016
+geometricRegions 5
+  surface membrane_PixelClass10_PixelClass21 size=4738.640600365 adjacent=[PixelClass10, PixelClass21]
+  surface membrane_PixelClass21_PixelClass32 size=1406.773369249 adjacent=[PixelClass21, PixelClass32]
+  volume PixelClass10 size=124712.104359616 adjacent=[membrane_PixelClass10_PixelClass21]
+  volume PixelClass21 size=14891.899581612 adjacent=[membrane_PixelClass10_PixelClass21, membrane_PixelClass21_PixelClass32]
+  volume PixelClass32 size=3697.013658773 adjacent=[membrane_PixelClass21_PixelClass32]
+surfaceClasses 2
+  PixelClass1_PixelClass2_membrane adjacent=[PixelClass1, PixelClass2]
+  PixelClass2_PixelClass3_membrane adjacent=[PixelClass2, PixelClass3]

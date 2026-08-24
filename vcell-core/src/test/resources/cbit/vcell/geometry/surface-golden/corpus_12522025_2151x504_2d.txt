@@ -1,0 +1,32 @@
+geometry purk-neck3 dimension=2
+extent 27.921000000 6.542000000 1.000000000
+origin 0.000000000 0.000000000 0.000000000
+image 2151x504x1 pixelClasses=2 pixelsSHA=a8d98c9564617179cf5ee751
+subVolumes 2
+  subVolume cytosol(handle=1)
+  subVolume extracellular(handle=0)
+sampleSize 208x48x1
+cutoffFrequency 0.300000000
+regionImage regions=3 dims=208x48x1
+regionImage.pixelPartition sumOfRegions=9984 totalPixels=9984 complete=true
+  region index=0 pixelValue=0 numPixels=1969
+  region index=1 pixelValue=1 numPixels=5968
+  region index=2 pixelValue=0 numPixels=2047
+regionImage.encodedRegionIndexSHA d406b42537b7931045e2d2c7
+surfaceCollection surfaces=2 nodes=4166
+  nodeBounds x=[0.000000000,27.921000000] y=[0.078249924,6.325590769] z=[0.000000000,1.000000000]
+  nodeCoordsSHA b3737fb395aae69f47bc3e90
+  surface[0] interiorRegion=0 exteriorRegion=1 polygons=1036 area=102.049107892
+  surface[1] interiorRegion=1 exteriorRegion=2 polygons=1045 area=101.359268590
+  polygonNodeIndicesSHA a537270eb94537957e13088d
+  polygonVolumeNeighborsSHA 3cc17d70634baa3d999b2750
+  totalArea 203.408376482
+  membraneEdgeNeighbors total=8324 SHA=5d322119221f508ab3c78b2f
+geometricRegions 5
+  surface membrane_cytosol1_extracellular2 size=101.359268590 adjacent=[cytosol1, extracellular2]
+  surface membrane_extracellular0_cytosol1 size=102.049107892 adjacent=[cytosol1, extracellular0]
+  volume cytosol1 size=111.681379805 adjacent=[membrane_cytosol1_extracellular2, membrane_extracellular0_cytosol1]
+  volume extracellular0 size=34.723831546 adjacent=[membrane_extracellular0_cytosol1]
+  volume extracellular2 size=36.253970649 adjacent=[membrane_cytosol1_extracellular2]
+surfaceClasses 1
+  cytosol_extracellular_membrane adjacent=[cytosol, extracellular]

@@ -1,0 +1,28 @@
+geometry geom_20190115_151208 dimension=3
+extent 0.220000000 0.210000000 0.220000000
+origin 0.000000000 0.000000000 0.000000000
+image 211x201x11 pixelClasses=2 pixelsSHA=be54e3ae7a595731d630f355
+subVolumes 2
+  subVolume MIM(handle=0)
+  subVolume Matrix(handle=1)
+sampleSize 211x201x11
+cutoffFrequency 0.300000000
+regionImage regions=2 dims=211x201x11
+regionImage.pixelPartition sumOfRegions=466521 totalPixels=466521 complete=true
+  region index=0 pixelValue=0 numPixels=258473
+  region index=1 pixelValue=1 numPixels=208048
+regionImage.encodedRegionIndexSHA 9e39b8622c6c82f5fed7aa6c
+surfaceCollection surfaces=1 nodes=160488
+  nodeBounds x=[0.018825469,0.199874502] y=[0.019426030,0.190573970] z=[0.011000000,0.209000000]
+  nodeCoordsSHA 25292c76b6267950cb3bc87a
+  surface[0] interiorRegion=0 exteriorRegion=1 polygons=160486 area=0.371065484
+  polygonNodeIndicesSHA 224d75136e1ca6645e26af80
+  polygonVolumeNeighborsSHA 147adf43e95c953596223842
+  totalArea 0.371065484
+  membraneEdgeNeighbors total=641944 SHA=49b8a287979823cb4889cb01
+geometricRegions 3
+  surface membrane_MIM0_Matrix1 size=0.371065484 adjacent=[MIM0, Matrix1]
+  volume MIM0 size=0.005129238 adjacent=[membrane_MIM0_Matrix1]
+  volume Matrix1 size=0.005034762 adjacent=[membrane_MIM0_Matrix1]
+surfaceClasses 1
+  MIM_Matrix_membrane adjacent=[MIM, Matrix]

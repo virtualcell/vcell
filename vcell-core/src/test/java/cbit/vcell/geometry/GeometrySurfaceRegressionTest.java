@@ -37,13 +37,17 @@ import static org.junit.jupiter.api.Assertions.*;
 @Tag("Fast")
 public class GeometrySurfaceRegressionTest {
 
-    private static final String RESOURCE_DIR = "/cbit/vcell/geometry/surface-golden/";
+    static final String RESOURCE_DIR = "/cbit/vcell/geometry/surface-golden/";
 
     @TestFactory
     public List<DynamicTest> surfaceDescriptionsMatchTheDeployedImplementation() {
+        return testsFor(GeometrySurfaceGolden.fixtures());
+    }
+
+    /** Shared with {@link GeometrySurfaceCorpusRegressionTest}; the comparison is identical. */
+    static List<DynamicTest> testsFor(Map<String, GeometrySurfaceGolden.GeometryFactory> fixtures) {
         List<DynamicTest> tests = new ArrayList<>();
-        for (Map.Entry<String, GeometrySurfaceGolden.GeometryFactory> entry
-                : GeometrySurfaceGolden.fixtures().entrySet()) {
+        for (Map.Entry<String, GeometrySurfaceGolden.GeometryFactory> entry : fixtures.entrySet()) {
             String fixture = entry.getKey();
             tests.add(DynamicTest.dynamicTest(fixture, () -> {
                 String expected = readGolden(fixture);
@@ -54,24 +58,28 @@ public class GeometrySurfaceRegressionTest {
         return tests;
     }
 
-    /**
-     * Guards the guard. If a fixture is added without a golden, or a golden goes missing, the
-     * factory above would simply produce fewer tests and the suite would still be green.
-     */
-    @Test
-    public void everyFixtureHasAGolden() {
+    static void assertEveryFixtureHasAGolden(Map<String, GeometrySurfaceGolden.GeometryFactory> fixtures) {
         List<String> missing = new ArrayList<>();
-        for (String fixture : GeometrySurfaceGolden.fixtures().keySet()) {
+        for (String fixture : fixtures.keySet()) {
             if (GeometrySurfaceRegressionTest.class.getResourceAsStream(RESOURCE_DIR + fixture + ".txt") == null) {
                 missing.add(fixture);
             }
         }
         assertTrue(missing.isEmpty(),
                 "fixtures with no committed golden (run GeometrySurfaceGolden.main): " + missing);
-        assertFalse(GeometrySurfaceGolden.fixtures().isEmpty(), "there must be fixtures to compare");
+        assertFalse(fixtures.isEmpty(), "there must be fixtures to compare");
     }
 
-    private static String readGolden(String fixture) throws Exception {
+    /**
+     * Guards the guard. If a fixture is added without a golden, or a golden goes missing, the
+     * factory above would simply produce fewer tests and the suite would still be green.
+     */
+    @Test
+    public void everyFixtureHasAGolden() {
+        assertEveryFixtureHasAGolden(GeometrySurfaceGolden.fixtures());
+    }
+
+    static String readGolden(String fixture) throws Exception {
         try (InputStream in = GeometrySurfaceRegressionTest.class
                 .getResourceAsStream(RESOURCE_DIR + fixture + ".txt")) {
             assertNotNull(in, "no golden for fixture '" + fixture + "'");
@@ -83,7 +91,7 @@ public class GeometrySurfaceRegressionTest {
      * A readable report. assertEquals on two multi-line blocks prints both in full and leaves the
      * reader to find the difference; surface descriptions are long enough that this matters.
      */
-    private static String describeDifference(String fixture, String expected, String actual) {
+    static String describeDifference(String fixture, String expected, String actual) {
         String[] want = expected.split("\n", -1);
         String[] got = actual.split("\n", -1);
         StringBuilder sb = new StringBuilder();

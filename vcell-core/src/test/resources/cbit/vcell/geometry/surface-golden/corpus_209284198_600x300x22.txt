@@ -1,0 +1,34 @@
+geometry AliciaSpacial dimension=3
+extent 30.000000000 15.000000000 11.000000000
+origin 0.000000000 0.000000000 0.000000000
+image 600x300x22 pixelClasses=3 pixelsSHA=dc7477deaa8eb18fc9810237
+subVolumes 3
+  subVolume region0(handle=2)
+  subVolume region1(handle=0)
+  subVolume region2(handle=1)
+sampleSize 89x44x32
+cutoffFrequency 0.310000000
+regionImage regions=3 dims=89x44x32
+regionImage.pixelPartition sumOfRegions=125312 totalPixels=125312 complete=true
+  region index=0 pixelValue=2 numPixels=92423
+  region index=1 pixelValue=0 numPixels=27384
+  region index=2 pixelValue=1 numPixels=5505
+regionImage.encodedRegionIndexSHA 80c635480536d32ad1a5246d
+surfaceCollection surfaces=2 nodes=10866
+  nodeBounds x=[1.957006540,28.328177211] y=[1.920147696,13.010861278] z=[0.177419355,10.112903226]
+  nodeCoordsSHA 7efbd2d76f99c925445e0791
+  surface[0] interiorRegion=0 exteriorRegion=1 polygons=8564 area=753.088014302
+  surface[1] interiorRegion=1 exteriorRegion=2 polygons=2298 area=182.204229947
+  polygonNodeIndicesSHA a9ac9c28488a361805f793c3
+  polygonVolumeNeighborsSHA 21d7fa5cd23dd59837b7e652
+  totalArea 935.292244249
+  membraneEdgeNeighbors total=43448 SHA=520086290c17ce55723d7fd0
+geometricRegions 5
+  surface membrane_region00_region11 size=753.088014302 adjacent=[region00, region11]
+  surface membrane_region11_region22 size=182.204229947 adjacent=[region11, region22]
+  volume region00 size=3562.148349587 adjacent=[membrane_region00_region11]
+  volume region11 size=1155.551387847 adjacent=[membrane_region00_region11, membrane_region11_region22]
+  volume region22 size=232.300262566 adjacent=[membrane_region11_region22]
+surfaceClasses 2
+  region0_region1_membrane adjacent=[region0, region1]
+  region1_region2_membrane adjacent=[region1, region2]

@@ -1,0 +1,28 @@
+geometry purkinge9_3D_crop526692774 dimension=3
+extent 27.900000000 6.500000000 6.500000000
+origin 0.000000000 0.000000000 0.000000000
+image 564x160x31 pixelClasses=2 pixelsSHA=0b18fca988bdf98b69e6c463
+subVolumes 2
+  subVolume Cytpolasm(handle=1)
+  subVolume ExtraCellular(handle=0)
+sampleSize 564x160x31
+cutoffFrequency 0.300000000
+regionImage regions=2 dims=564x160x31
+regionImage.pixelPartition sumOfRegions=2797440 totalPixels=2797440 complete=true
+  region index=0 pixelValue=0 numPixels=2461849
+  region index=1 pixelValue=1 numPixels=335591
+regionImage.encodedRegionIndexSHA 218d27b0d5da8880bbe52a42
+surfaceCollection surfaces=1 nodes=147972
+  nodeBounds x=[0.000000000,27.900000000] y=[0.616909236,5.842413664] z=[0.120480695,6.379519305]
+  nodeCoordsSHA 997676dce7f7860c4f088cdc
+  surface[0] interiorRegion=0 exteriorRegion=1 polygons=147778 area=426.276671989
+  polygonNodeIndicesSHA ae9c379c26bf826773055587
+  polygonVolumeNeighborsSHA 90ba4516e7e5d4e95eb00560
+  totalArea 426.276671989
+  membraneEdgeNeighbors total=591112 SHA=a1e5173060d1cbdc642ca292
+geometricRegions 3
+  surface membrane_ExtraCellular0_Cytpolasm1 size=426.276671989 adjacent=[Cytpolasm1, ExtraCellular0]
+  volume Cytpolasm1 size=147.031387614 adjacent=[membrane_ExtraCellular0_Cytpolasm1]
+  volume ExtraCellular0 size=1031.743612386 adjacent=[membrane_ExtraCellular0_Cytpolasm1]
+surfaceClasses 1
+  Cytpolasm_ExtraCellular_membrane adjacent=[Cytpolasm, ExtraCellular]
