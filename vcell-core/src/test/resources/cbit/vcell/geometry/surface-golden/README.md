@@ -20,13 +20,13 @@ regression already present.
 
 ## Adding fixtures later — branch from the golden base
 
-The commit that introduced this directory sits on **pre-merge master**, on purpose, so it can be
-used as a base indefinitely:
+**`test/geometry-goldens-base`** exists for this. It is anchored at `f35beaddcd` and carries this
+suite, so it is a standing checkout of the old implementation with the harness already on it. Branch
+from it, never from current master:
 
 ```bash
-# 1. branch from the commit that added these goldens, NOT from current master
-git log --oneline --all --  vcell-core/src/test/resources/cbit/vcell/geometry/surface-golden
-git checkout -b test/geometry-more-fixtures <that commit>
+# 1. branch from the golden base, which still runs the pre-change implementation
+git checkout -b test/geometry-more-fixtures test/geometry-goldens-base
 
 # 2. add fixtures to GeometrySurfaceGolden.fixtures(), then generate goldens
 #    HERE, with the old implementation
@@ -43,8 +43,17 @@ mvn -o surefire:test -pl vcell-core -Dtest=GeometrySurfaceRegressionTest
 If step 3 passes, the new fixtures confirm current master matches the older behaviour. If it fails,
 the suite has found a real difference and the diff says exactly which quantity moved.
 
-The PR then contains the fixture code and the golden files, with a history showing the goldens
-predate the code they are checking.
+Then cherry-pick the fixture-and-golden commit onto a branch off master and open the PR from
+there:
+
+```bash
+git checkout -b test/geometry-more-fixtures-pr origin/master
+git cherry-pick <the fixture commit>
+```
+
+Cherry-picking rather than merging keeps `test/geometry-goldens-base` pinned at the old
+implementation instead of dragging master into it, so it stays usable as a generation base for the
+next round.
 
 ## When a golden legitimately changes
 
