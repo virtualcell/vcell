@@ -99,6 +99,11 @@ jobs:
               "SEDML_SBML_IT": {"count": 6, "module": CORE},
               "SEDML_VCML_IT": {"count": 2, "module": CORE},
               "SBML_IT":       {"count": 1, "module": CORE},
+              # Geometry surface goldens over real corpus models. Not a model-suite
+              # sweep and not slow (~3 s); it lives here rather than in the fast lane
+              # because it depends on the VCML corpus resources and the natural way to
+              # extend it is to add more models. See the README beside the goldens.
+              "Geometry_IT":   {"count": 1, "module": CORE},
               "BSTS_IT":       {"count": 1, "module": "vcell-cli"},
               # Not a model-suite sweep: one Oracle container proving the database
               # cleanup sweep's SQL is accepted by the database it actually runs
