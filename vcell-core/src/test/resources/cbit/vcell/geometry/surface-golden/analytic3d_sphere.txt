@@ -1,0 +1,28 @@
+geometry analytic_sphere dimension=3
+extent 1.000000000 1.000000000 1.000000000
+origin 0.000000000 0.000000000 0.000000000
+image none
+subVolumes 2
+  subVolume inside(handle=0)
+  subVolume outside(handle=1)
+sampleSize 24x24x24
+cutoffFrequency 0.600000000
+regionImage regions=2 dims=24x24x24
+regionImage.pixelPartition sumOfRegions=13824 totalPixels=13824 complete=true
+  region index=0 pixelValue=1 numPixels=12448
+  region index=1 pixelValue=0 numPixels=1376
+regionImage.encodedRegionIndexSHA e36b2ed0fa1e8f347e3b7e61
+surfaceCollection surfaces=1 nodes=890
+  nodeBounds x=[0.195652174,0.804347826] y=[0.195652174,0.804347826] z=[0.195652174,0.804347826]
+  nodeCoordsSHA 80c718e6f08c532f929a1cca
+  surface[0] interiorRegion=0 exteriorRegion=1 polygons=888 area=1.678638941
+  polygonNodeIndicesSHA 60f0a5fd12528abc7e67a2c9
+  polygonVolumeNeighborsSHA c2439cb259bb025495adc0a2
+  totalArea 1.678638941
+  membraneEdgeNeighbors total=3552 SHA=572f8d13b9334e41e8133081
+geometricRegions 3
+  surface membrane_outside0_inside1 size=1.678638941 adjacent=[inside1, outside0]
+  volume inside1 size=0.113092792 adjacent=[membrane_outside0_inside1]
+  volume outside0 size=0.886907208 adjacent=[membrane_outside0_inside1]
+surfaceClasses 1
+  inside_outside_membrane adjacent=[inside, outside]
