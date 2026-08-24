@@ -11,7 +11,12 @@ import cbit.vcell.geometry.surface.Surface;
 import cbit.vcell.geometry.surface.SurfaceCollection;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
 import cbit.vcell.geometry.surface.VolumeGeometricRegion;
+import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.xml.XMLSource;
+import cbit.vcell.xml.XmlHelper;
+import org.vcell.sbml.VcmlTestSuiteFiles;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
@@ -77,6 +82,54 @@ public class GeometrySurfaceGolden {
         map.put("image2d_stripes", () -> stripes(48));
         map.put("analytic3d_sphere", () -> analyticSphere());
         return map;
+    }
+
+    /**
+     * Real stored models from the VCML test corpus, kept separate from {@link #fixtures()} because
+     * they are far slower: each parses a multi-megabyte document and then builds regions and
+     * surfaces over a 0.5-4 MP image. They run in the {@code Geometry_IT} regression group, not in
+     * {@code Fast}.
+     *
+     * They are worth the time because synthetic fixtures are made of spheres, shells and stripes.
+     * Real segmentations are irregular, have thin features and awkward aspect ratios, and are the
+     * shapes that actually broke things. The selection spans 0.47-3.96 MP, 2D and 3D, cubic through
+     * to a 2151x504 slab.
+     */
+    public static Map<String, GeometryFactory> corpusFixtures() {
+        Map<String, GeometryFactory> map = new LinkedHashMap<>();
+        map.put("corpus_209284198_600x300x22", () -> fromCorpus("biomodel_209284198.vcml"));
+        map.put("corpus_26454463_564x160x31", () -> fromCorpus("biomodel_26454463.vcml"));
+        map.put("corpus_95707047_208x153x83", () -> fromCorpus("biomodel_95707047.vcml"));
+        map.put("corpus_65311813_256x256x34", () -> fromCorpus("biomodel_65311813.vcml"));
+        map.put("corpus_12522025_2151x504_2d", () -> fromCorpus("biomodel_12522025_spatial.vcml"));
+        map.put("corpus_201022999_211x201x11", () -> fromCorpus("biomodel_201022999.vcml"));
+        return map;
+    }
+
+    /**
+     * The first spatial image geometry in a stored BioModel, with its surfaces REBUILT.
+     *
+     * Rebuilding matters. A stored document carries a {@code <SurfaceDescription>}, and XmlReader
+     * applies it, so {@code precomputeAll} skips {@code updateAll()} on parse and the geometry
+     * arrives with regions restored from the file rather than computed. Pinning that would test the
+     * XML reader, not surface generation. Calling {@code updateAll()} here forces a fresh
+     * RegionImage and SurfaceCollection, which is the thing under test.
+     */
+    private static Geometry fromCorpus(String vcmlFile) throws Exception {
+        String vcml;
+        try (java.io.InputStream in = VcmlTestSuiteFiles.getVcmlTestCase(vcmlFile)) {
+            vcml = new String(in.readAllBytes(), StandardCharsets.UTF_8);
+        }
+        BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(vcml));
+        for (SimulationContext simContext : bioModel.getSimulationContexts()) {
+            Geometry geometry = simContext.getGeometry();
+            if (geometry != null && geometry.getDimension() > 0
+                    && geometry.getGeometrySpec().getImage() != null) {
+                geometry.getGeometrySurfaceDescription().updateAll();
+                return geometry;
+            }
+        }
+        throw new IllegalStateException("no spatial image geometry in " + vcmlFile);
     }
 
     public interface GeometryFactory {
@@ -454,17 +507,36 @@ public class GeometrySurfaceGolden {
         return goldenDir().resolve(fixture + ".txt");
     }
 
-    /** Writes every fixture's description to the golden directory. */
-    public static void writeGoldens() throws Exception {
+    /**
+     * Writes every fixture's description to the golden directory.
+     *
+     * @param includeCorpus also regenerate the slow corpus goldens. Off by default when a single
+     *                      argument "fast" is given, so a quick iteration on the synthetic fixtures
+     *                      does not silently leave the corpus goldens stale or spend minutes
+     *                      rebuilding them.
+     */
+    public static void writeGoldens(boolean includeCorpus) throws Exception {
         Files.createDirectories(goldenDir());
-        for (Map.Entry<String, GeometryFactory> e : fixtures().entrySet()) {
+        writeSet(fixtures(), "fast");
+        if (includeCorpus) {
+            writeSet(corpusFixtures(), "corpus");
+        } else {
+            System.out.println("skipped corpus fixtures (pass 'all' to regenerate them)");
+        }
+    }
+
+    private static void writeSet(Map<String, GeometryFactory> set, String label) throws Exception {
+        for (Map.Entry<String, GeometryFactory> e : set.entrySet()) {
+            long t0 = System.currentTimeMillis();
             String text = describe(e.getValue().create());
             Files.writeString(goldenPath(e.getKey()), text, StandardCharsets.UTF_8);
-            System.out.printf("wrote %-38s %d bytes%n", e.getKey(), text.length());
+            System.out.printf("wrote [%s] %-34s %5d bytes  %6d ms%n",
+                    label, e.getKey(), text.length(), System.currentTimeMillis() - t0);
         }
     }
 
     public static void main(String[] args) throws Exception {
-        writeGoldens();
+        boolean includeCorpus = args.length == 0 || !"fast".equalsIgnoreCase(args[0]);
+        writeGoldens(includeCorpus);
     }
 }

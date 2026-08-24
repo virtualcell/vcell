@@ -8,6 +8,27 @@ They exist because VCell's regression suites are math-generation centric and mos
 Nothing else pins `RegionImage` or `SurfaceCollection`, so a change to region finding, surface
 tessellation, Taubin smoothing or membrane adjacency could alter every spatial model silently.
 
+## Two sets
+
+| prefix | fixtures | group | runtime |
+|---|---|---|---|
+| `image*` / `analytic*` | synthetic shapes — spheres, shells, stripes, an analytic subvolume | `Fast` | 0.42 s |
+| `corpus_*` | real stored models from the VCML test corpus, 0.47–3.96 MP | `Geometry_IT` | 2.87 s |
+
+The corpus set earns its place by being irregular in ways synthetic shapes are not: thin features,
+awkward aspect ratios, and disconnected regions sharing a pixel value.
+`corpus_95707047_208x153x83` yields **six regions from two pixel classes** — five separate cytosol
+bodies — which nothing in the synthetic set produces.
+
+They deliberately **rebuild** surfaces rather than reading the stored `<SurfaceDescription>` out of
+the document. XmlReader applies that element on parse, so `precomputeAll` skips `updateAll()` and
+the geometry arrives with regions restored from the file; pinning those would test the XML reader
+rather than surface generation.
+
+At 2.87 s the corpus set is not actually slow, and could live in `Fast` if you would rather it ran
+on every push instead of only in the regression lane. It is separate mainly for headroom — it
+depends on the corpus resources, and the natural way to extend it is to add more models.
+
 ## Where these came from, and why it matters
 
 **Generated on `f35beaddcd`** — master as it stood before the #2026 / #2027 memory work. They record
@@ -61,8 +82,14 @@ An intentional improvement will fail these tests — that is correct, not a nuis
 deliberately:
 
 ```bash
+# both sets
 mvn -q -pl vcell-core exec:java -Dexec.classpathScope=test \
     -Dexec.mainClass=cbit.vcell.geometry.GeometrySurfaceGolden
+
+# synthetic only, when iterating (leaves corpus goldens untouched)
+mvn -q -pl vcell-core exec:java -Dexec.classpathScope=test \
+    -Dexec.mainClass=cbit.vcell.geometry.GeometrySurfaceGolden -Dexec.args=fast
+
 git diff -- vcell-core/src/test/resources/cbit/vcell/geometry/surface-golden
 ```
 
