@@ -11,8 +11,11 @@
 package cbit.image;
 
 import java.io.IOException;
+import java.lang.ref.SoftReference;
 import java.security.MessageDigest;
 import java.util.zip.DataFormatException;
+
+import cbit.vcell.resource.PropertyLoader;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -24,7 +27,29 @@ import org.vcell.util.Hex;
 @SuppressWarnings("serial")
 public class VCImageCompressed extends VCImage {
 	private final byte compressedPixels[];
-	private transient byte uncompressed[] = null;
+
+	/**
+	 * Set false to hold the inflated pixels strongly, as this class did before #2021.
+	 * An escape hatch, not a tuning knob.
+	 */
+	public final static String PROPERTY_SOFT_PIXEL_CACHE = "vcell.image.softPixelCache";
+
+	/**
+	 * The inflated pixels, held SOFTLY: the collector may reclaim them when the heap is under
+	 * pressure, and {@link #getPixels()} re-inflates from {@link #compressedPixels} on demand.
+	 * Real geometry images compress 50-100x, so what is retained between uses is the compressed
+	 * form -- roughly 1 MB rather than 62 MB for the image in #2021.
+	 *
+	 * SOFT, deliberately, not weak. A weak reference is cleared at the next GC whatever the heap
+	 * looks like, so a geometry in active use would re-inflate on essentially every collection.
+	 * Soft references are cleared only under actual memory pressure, and the JVM ages them by
+	 * -XX:SoftRefLRUPolicyMSPerMB, which is the behaviour wanted here: free under duress, free of
+	 * charge otherwise.
+	 */
+	private transient SoftReference<byte[]> softPixels = null;
+
+	/** Used instead of {@link #softPixels} when soft caching is switched off. */
+	private transient byte[] strongPixels = null;
 	private static Logger lg = LogManager.getLogger(VCImageCompressed.class);
 /**
  * This method was created in VisualAge.
@@ -49,21 +74,40 @@ public VCImageCompressed(org.vcell.util.document.Version aVersion, byte pixels[]
 	}
 }
 public void nullifyUncompressedPixels(){
-	uncompressed = null;
+	softPixels = null;
+	strongPixels = null;
 }
 
 /**
  * getPixels method comment.
  */
 public byte[] getPixels() throws ImageException {
-	try {
-		if (uncompressed == null){
-			uncompressed = VCImage.inflate(compressedPixels,getNumXYZ());
+	//
+	// Take a STRONG local reference first and hold it for the whole method: reading the
+	// SoftReference twice would let the collector clear it between the null check and the
+	// return, and hand the caller a null array.
+	//
+	byte[] pixels = strongPixels;
+	if (pixels == null){
+		SoftReference<byte[]> ref = softPixels;
+		if (ref != null){
+			pixels = ref.get();
 		}
-		return uncompressed;
+	}
+	if (pixels != null){
+		return pixels;
+	}
+	try {
+		pixels = VCImage.inflate(compressedPixels,getNumXYZ());
 	} catch (IOException | DataFormatException e){
 		throw new ImageException(e.getMessage(), e);
 	}
+	if (PropertyLoader.getBooleanProperty(PROPERTY_SOFT_PIXEL_CACHE, true)){
+		softPixels = new SoftReference<byte[]>(pixels);
+	} else {
+		strongPixels = pixels;
+	}
+	return pixels;
 }
 /**
  * This method was created in VisualAge.

@@ -146,12 +146,14 @@ private void createFromVCImage(VCImage vcImage) throws ImageException {
 	sizeX = vcImage.getNumX();
 	sizeY = vcImage.getNumY();
 	sizeZ = vcImage.getNumZ();
-	if (sizeX*sizeY*sizeZ!=vcImage.getPixels().length){
+	// hoisted: vcImage may be a VCImageCompressed whose pixels are only softly reachable
+	byte[] vcImagePixels = vcImage.getPixels();
+	if (sizeX*sizeY*sizeZ!=vcImagePixels.length){
 		throw new ImageException("pixelData not properly formed");
 	}
 	originalRGB = new int[sizeX*sizeY*sizeZ];
-	for (int i=0;i<vcImage.getPixels().length;i++){
-		int pixel = ((int)vcImage.getPixels()[i])&0xff;
+	for (int i=0;i<vcImagePixels.length;i++){
+		int pixel = ((int)vcImagePixels[i])&0xff;
 		originalRGB[i] = new java.awt.Color(pixel,pixel,pixel).getRGB();
 	}
 	bValid = true;
