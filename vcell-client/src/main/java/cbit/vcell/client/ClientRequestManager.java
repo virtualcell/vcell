@@ -1166,8 +1166,10 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 	private static FieldData createFDOSFromVCImage(VCImage dbImage) throws ImageException {
 		int[] temp = new int[256];
 		short[] templateShorts = new short[dbImage.getNumXYZ()];
-		for (int i = 0; i < dbImage.getPixels().length; i++) {
-			templateShorts[i] = (short) (0x00FF & dbImage.getPixels()[i]);
+		// hoisted: dbImage may be a VCImageCompressed whose pixels are only softly reachable
+		byte[] dbPixels = dbImage.getPixels();
+		for (int i = 0; i < dbPixels.length; i++) {
+			templateShorts[i] = (short) (0x00FF & dbPixels[i]);
 			temp[templateShorts[i]]++;
 		}
 		for (int j = 0; j < dbImage.getPixelClasses().length; j++) {
