@@ -1,0 +1,28 @@
+geometry getImageExample() dimension=2
+extent 10.000000000 10.000000000 1.000000000
+origin -5.000000000 -5.000000000 -5.000000000
+image 100x100x1 pixelClasses=2 pixelsSHA=4ffef933700bbece710f0271
+subVolumes 2
+  subVolume cytosol(handle=1)
+  subVolume ec(handle=0)
+sampleSize 100x100x1
+cutoffFrequency 0.300000000
+regionImage regions=2 dims=100x100x1
+regionImage.pixelPartition sumOfRegions=10000 totalPixels=10000 complete=true
+  region index=0 pixelValue=0 numPixels=5100
+  region index=1 pixelValue=1 numPixels=4900
+regionImage.encodedRegionIndexSHA 318883260e11af650c232a68
+surfaceCollection surfaces=1 nodes=202
+  nodeBounds x=[0.101010101,0.101010101] y=[-5.000000000,5.000000000] z=[-5.000000000,-4.000000000]
+  nodeCoordsSHA 9c58406fc98754b7d60eecef
+  surface[0] interiorRegion=0 exteriorRegion=1 polygons=100 area=10.000000000
+  polygonNodeIndicesSHA 3fd21f4c2560b06bfd6edae7
+  polygonVolumeNeighborsSHA ad0be0c96bddd90b79391a15
+  totalArea 10.000000000
+  membraneEdgeNeighbors total=400 SHA=91131fc70c55ba4304546308
+geometricRegions 3
+  surface membrane_ec0_cytosol1 size=10.000000000 adjacent=[cytosol1, ec0]
+  volume cytosol1 size=48.989898990 adjacent=[membrane_ec0_cytosol1]
+  volume ec0 size=51.010101010 adjacent=[membrane_ec0_cytosol1]
+surfaceClasses 1
+  cytosol_ec_membrane adjacent=[cytosol, ec]

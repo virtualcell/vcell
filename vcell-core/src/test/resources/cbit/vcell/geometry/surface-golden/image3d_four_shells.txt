@@ -1,0 +1,40 @@
+geometry four_shells dimension=3
+extent 1.000000000 1.000000000 1.000000000
+origin 0.000000000 0.000000000 0.000000000
+image 24x24x24 pixelClasses=4 pixelsSHA=1cd858149324189245432594
+subVolumes 4
+  subVolume sv0(handle=0)
+  subVolume sv1(handle=1)
+  subVolume sv2(handle=2)
+  subVolume sv3(handle=3)
+sampleSize 24x24x24
+cutoffFrequency 0.600000000
+regionImage regions=4 dims=24x24x24
+regionImage.pixelPartition sumOfRegions=13824 totalPixels=13824 complete=true
+  region index=0 pixelValue=0 numPixels=10712
+  region index=1 pixelValue=1 numPixels=2200
+  region index=2 pixelValue=2 numPixels=776
+  region index=3 pixelValue=3 numPixels=136
+regionImage.encodedRegionIndexSHA 78227dcd08be8851eac9bd1d
+surfaceCollection surfaces=3 nodes=2406
+  nodeBounds x=[0.108695652,0.891304348] y=[0.108695652,0.891304348] z=[0.108695652,0.891304348]
+  nodeCoordsSHA 1c392601d61c1393e628cfcc
+  surface[0] interiorRegion=0 exteriorRegion=1 polygons=1536 area=2.903591682
+  surface[1] interiorRegion=1 exteriorRegion=2 polygons=672 area=1.270321361
+  surface[2] interiorRegion=2 exteriorRegion=3 polygons=192 area=0.362948960
+  polygonNodeIndicesSHA 076d7c92b816796302497b33
+  polygonVolumeNeighborsSHA e46494f5dac1c2e984cf9afd
+  totalArea 4.536862004
+  membraneEdgeNeighbors total=9600 SHA=b3c8ab3063190be41ee71349
+geometricRegions 7
+  surface membrane_sv00_sv11 size=2.903591682 adjacent=[sv00, sv11]
+  surface membrane_sv11_sv22 size=1.270321361 adjacent=[sv11, sv22]
+  surface membrane_sv22_sv33 size=0.362948960 adjacent=[sv22, sv33]
+  volume sv00 size=0.744226186 adjacent=[membrane_sv00_sv11]
+  volume sv11 size=0.180816964 adjacent=[membrane_sv00_sv11, membrane_sv11_sv22]
+  volume sv22 size=0.063779075 adjacent=[membrane_sv11_sv22, membrane_sv22_sv33]
+  volume sv33 size=0.011177776 adjacent=[membrane_sv22_sv33]
+surfaceClasses 3
+  sv0_sv1_membrane adjacent=[sv0, sv1]
+  sv1_sv2_membrane adjacent=[sv1, sv2]
+  sv2_sv3_membrane adjacent=[sv2, sv3]
