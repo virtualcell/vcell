@@ -64,7 +64,6 @@ public class GeometrySpec implements Matchable, PropertyChangeListener, Vetoable
 	private static final Logger lg = LogManager.getLogger(GeometrySpec.class);
 	
 	private VCImage vcImage = null;
-	private transient byte[] uncompressedPixels = null;
 	private transient State<VCImage> sampledImage = new State<VCImage>(null);
 	private transient State<ThumbnailImage> thumbnailImage = new State<ThumbnailImage>(null);
 	
@@ -957,12 +956,25 @@ public SubVolume getSubVolumes(int index) {
  * @return byte[]
  */
 byte[] getUncompressedPixels() throws cbit.image.ImageException {
-	if (uncompressedPixels==null){
-		if (getImage()!=null){
-			uncompressedPixels = getImage().getPixels();
-		}
+	//
+	// Deliberately NOT cached here. This used to hold the array in a transient field, which made
+	// GeometrySpec a SECOND strong reference to the very same array that VCImageCompressed already
+	// caches -- so the inflated pixels stayed reachable for as long as the geometry did, whatever
+	// the image did with its own copy. At 62 MP that is 62 MB pinned per geometry (#2021), and it
+	// would defeat any later attempt to make the image's own cache reclaimable.
+	//
+	// Nothing is lost by delegating: VCImageCompressed.getPixels() already caches the inflated
+	// array and VCImageUncompressed.getPixels() returns its field directly, so this is a virtual
+	// call and a null check rather than a re-inflate.
+	//
+	// The path this feeds is cold in any case. The only caller that reaches an ImageSubVolume is
+	// getSubVolume(x,y,z), whose sole caller is curveSatisfyGeometryConstraints -- 100 sampled
+	// points per curve.
+	//
+	if (getImage()==null){
+		return null;
 	}
-	return uncompressedPixels;
+	return getImage().getPixels();
 }
 
 
@@ -1186,7 +1198,6 @@ public void setImage(VCImage image) throws PropertyVetoException {
 	//
 	
 	if (this.vcImage != image){
-		uncompressedPixels = null;
 		if (image!=null){
 			setExtent(image.getExtent());
 			if (image.getNumY()==1 && image.getNumZ()==1){
