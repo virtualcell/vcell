@@ -1,9 +1,10 @@
 # Geometry memory: the incident, what we measured, and what to do about it
 
-**Status: planning document. Nothing here is merged.**
-Six branches exist. #2022, #2023 and #2024 are **drafts** — evidence that the measurements are real
-and the fixes feasible, not merge candidates. #2026 and #2027 implement §5.3b and are open for
-review. Decisions still belong in this document first.
+**Status: planning document.**
+§5.3b is **merged to master** (#2026 `8a6e9f78e2`, #2027 `620ccd56db`, 2026-08-24). Everything else
+is still open: #2022, #2023 and #2024 are **drafts** — evidence that the measurements are real and
+the fixes feasible, not merge candidates — and the decisions in §6 have not been made. Those
+decisions still belong in this document first.
 
 Written 2026-08-23 after the 2026-08-22 prod incident. Supersedes `docs/geometry-memory-notes.md`
 from #2023, which contains an error corrected below.
@@ -443,9 +444,9 @@ full-size output array saves peak but not retention.
 
 ### 5.3b Hold it compressed, rehydrate on demand — **IMPLEMENTED**
 
-> **Status: built, open, not merged.** #2026 (prerequisite) and #2027 (the change itself, stacked
-> on it). Both are ordinary PRs rather than drafts, but nothing here is merged and the sequencing
-> question in §6 is still open.
+> **Status: MERGED to master 2026-08-24.** #2026 (prerequisite, merge commit `8a6e9f78e2`) and
+> #2027 (the change itself, `620ccd56db`). Admin-merged, so the merge queue was bypassed and
+> `regression.yml` was triggered manually against master.
 
 Raised as: `VCImageCompressed` already keeps compressed pixels strongly and the uncompressed copy
 as a `transient` cache, so take it one step further and let the uncompressed copy be reclaimable.
@@ -602,11 +603,9 @@ Independent of all the above, and cheap:
 2. **What region count?** Same problem; 2,000 is a guess. A tissue image with hundreds of separate
    cells is ordinary science. **Needs a survey of region counts.**
 3. **Is the VCML format change (§5.2) on the table at all?** Everything else is compensation for it.
-4. **Sequencing.** §5.3b is now built (#2026, #2027) and §5.1 is prototyped (#2024); neither is
-   merged. Remaining suggested order: §5.1 → §5.4 (with real numbers) → §5.3 → §5.5 → §5.6. §5.9
-   can happen immediately and independently. **Whether §5.3b and §5.1 should land before the rest
-   is decided is itself an open question** — they are independent of each other and of the format
-   question in §5.2.
+4. **Sequencing.** §5.3b is **merged** (#2026, #2027). §5.1 is prototyped (#2024) and not merged.
+   Remaining suggested order: §5.1 → §5.4 (with real numbers) → §5.3 → §5.5 → §5.6. §5.9 can happen
+   immediately and independently of all of it.
 5. **Who owns the duplicate-row cleanup**, and should it wait for §5.1 to stop new ones first?
 6. **Do the duplicate images in a group belong to one BioModel?** One query settles it; needs
    `vcell_dev` credentials.
@@ -631,8 +630,8 @@ login, which is the exact lockout risk. Supply it explicitly and try once.
 | #2023 | `perf/geometry-memory-profiler` | `GeometryMemoryProfiler` + the notes file this supersedes | draft |
 | #2024 | `perf/parse-geometry-once` | Image sharing (§5.1) + `XmlGeometrySharingBenchmark` | draft |
 | #2025 | `docs/geometry-memory-plan` | this document | open |
-| #2026 | `fix/geometryspec-pixel-retention` | removes the second strong reference (§5.3b prerequisite) | open |
-| #2027 | `perf/soft-pixel-cache` | the SoftReference itself (§5.3b) + `SoftPixelCacheDemo`, stacked on #2026 | open |
+| #2026 | `fix/geometryspec-pixel-retention` | removes the second strong reference (§5.3b prerequisite) | **merged** `8a6e9f78e2` |
+| #2027 | `perf/soft-pixel-cache` | the SoftReference itself (§5.3b) + `SoftPixelCacheDemo` | **merged** `620ccd56db` |
 
 The instrumentation in #2023 is the piece most worth keeping regardless of which direction is
 chosen: every number in this document came from it, and the corrections in §4 were only possible
