@@ -1,10 +1,16 @@
 # Geometry memory: the incident, what we measured, and what to do about it
 
 **Status: planning document.**
-§5.3b is **merged to master** (#2026 `8a6e9f78e2`, #2027 `620ccd56db`, 2026-08-24). Everything else
-is still open: #2022, #2023 and #2024 are **drafts** — evidence that the measurements are real and
-the fixes feasible, not merge candidates — and the decisions in §6 have not been made. Those
-decisions still belong in this document first.
+
+**Merged:** §5.3b, the compressed-and-rehydrate work (#2026, #2027) — this fixes the incident.
+Plus the geometry regression suite (#2028, #2029), which is what makes further change in this area
+checkable rather than assertable.
+
+**Rejected:** §5.1, parse-time image sharing (#2024 closed) — not needed once §5.3b landed, and
+measured at 36% rather than the ~90% a synthetic benchmark suggested.
+
+**Still open:** #2022 and #2023 remain drafts, and the decisions in §6 have not been made. §5.2 is
+now the recommended direction rather than a fallback.
 
 Written 2026-08-23 after the 2026-08-22 prod incident. Supersedes `docs/geometry-memory-notes.md`
 from #2023, which contains an error corrected below.
@@ -333,6 +339,38 @@ of pixels are then re-read on demand at the end. That is the incident and its fi
 It is a `main` rather than a test: driving a JVM to the edge of its heap does not belong in a shared
 test run.
 
+### 3.10 What "the same image" means, measured on real documents
+
+The parse-sharing idea (§5.1) assumed a document's repeated geometries are byte-identical. Synthetic
+benchmarks were built that way. Real stored models are not.
+
+Across 23 corpus models carrying 103 `<Image>` elements:
+
+| identity notion | decodes | saved |
+|---|--:|--:|
+| today | 103 | — |
+| digest of the whole `<Image>` element | 66 | 36% |
+| by database key (`KeyValue`) | 66 | 36% |
+| by pixel payload alone | 52 | **50%** |
+
+`biomodel_27192717` shows why: **9 image elements, 8 distinct names, 8 distinct keys — and only 2
+distinct pixel payloads.**
+
+The names and keys differ because of the duplicate-insert bug (§3.6): each copy was inserted
+separately and renamed by `TokenMangler`, so the document carries
+`purkinje9_3D_crop1017221890`, `…1846473978` and eight separate `KeyValue`s for what is really two
+images. **The name and version sit inside the element**, so a content digest over the element is
+defeated by the very bug it was meant to help.
+
+The three notions are not interchangeable:
+
+- **Declared identity** (`KeyValue`) is what `ServerDocumentManager` effectively uses — its
+  `memoryToDatabaseHash` is keyed by object reference standing in for row identity. Sharing on this
+  is correct but, on already-duplicated data, buys little.
+- **Content identity** (payload) saves the most but *merges rows the database considers distinct*.
+  That is a data-model decision, not a parser optimisation, and on the next save it would collapse
+  two `vc_image` rows into one.
+
 ---
 
 ## 4. What we got wrong along the way
@@ -386,7 +424,13 @@ A raw grep count, quoted in this document before the audit was done. It counted 
 `ByteImage`, `UShortImage`, `FloatImage` and `ImageDataset`, which are unrelated classes. The real
 figure is **39 call instructions in 22 files**. See §3.8.
 
-### 4.6 The first duplicate-row query over-matched
+### 4.6 "Sharing the decoded image gives an 11x win"
+
+Measured on a synthetic document with eleven *identical* copies, then quoted as the expected result.
+On real corpus models the same mechanism eliminates **36%** of decodes, not ~90% (§3.10). The
+benchmark was built out of the assumption it was meant to test.
+
+### 4.7 The first duplicate-row query over-matched
 
 See §3.6. 12,629 → ~944.
 
@@ -397,33 +441,60 @@ See §3.6. 12,629 → ~944.
 Ordered by measured value, not by appeal. Each states what it buys, what it costs, and what is
 unresolved.
 
-### 5.1 Share the decoded `VCImage` within one document parse — **recommended first**
+### 5.1 Share the decoded `VCImage` within one document parse — **REJECTED**
 
-Cache decoded images by digest of their `<Image>` element, for the life of one `XmlReader` (one
-document).
+> **Closed as #2024.** Not deferred: the premise it rested on no longer holds, and the reasoning is
+> recorded here so nobody re-derives it.
 
-- **Buys:** the whole measured win — peak 787 → 162 MB, retained 661 → 60 MB, 8.7× faster (§3.1).
-- **Risk:** low. A `VCImage` is immutable payload: compressed pixels are `final`,
-  `VCPixelClass implements Immutable` with no setters, and everything editable — subvolumes, their
-  names, extent, origin, surfaces — lives on the per-application `GeometrySpec`.
-- **Also fixes** the duplicate-row insert (§3.6), because the identity-keyed hashtable then sees one
-  object.
-- **Prototype:** #2024. `MathGen_IT` 1045 tests green.
+The idea: cache decoded images by digest of their `<Image>` element, for the life of one parse.
 
-**Explicitly not** sharing the `Geometry` object. Five applications sharing one mutable `Geometry`
-would see each other's subvolume renames — unexpected, and measured to buy nothing on top of image
-sharing. The prototype keeps it behind an off-by-default property for read-only server use only.
+**Why it is not needed.** It was designed when the incident looked like 11 × 62 MB of *unavoidable*
+retention. §5.3b removed that premise — with the pixels held softly the retained floor for the same
+document drops from ~680 MB to **~11 MB** (§3.9), without deduplicating anything.
 
-### 5.2 Stop writing the geometry once per application (VCML format)
+**Why the win was smaller than advertised.** 36% of decodes on real models, not the ~90% the
+synthetic benchmark suggested (§3.10, §4.6).
 
-Emit geometries once at BioModel level and reference them by key.
+**Why the design was wrong regardless.** The digest matched neither declared identity (`KeyValue`,
+which the save controller effectively uses) nor content identity (the payload). And sharing
+instances requires a **client-side split on write**, which it had no mechanism for: even confined to
+`VCImage`, `setName` / `setPixelClasses` / `setDescription` mutate the shared instance, and
+`ServerDocumentManager` calls `setName` on images in four places during save (`saveBioModel:840`,
+`saveGeometry:1577`, `saveMathModel:1717`, `saveSimulation:2128`).
 
-- **Buys:** ~11× smaller VCML for these models, on top of the parse win. Removes the root cause
-  rather than compensating for it.
-- **Costs:** a format change. Old clients must still read new documents, and the migration story
-  needs design. Bigger than anything else on this list.
-- **Unresolved:** whether the reference should be a database key or a document-local id; what
-  happens for a model whose applications genuinely differ.
+**The one thing worth salvaging** is the duplicate-insert fix, which #2024 got only as a side
+effect. `VCImage` overrides neither `equals` nor `hashCode` while `saveBioModel` keys
+`memoryToDatabaseHash` by it, so N distinct-but-equal objects become N inserted rows (§3.6). That is
+a targeted defect with a small blast radius and belongs in its own PR — see §5.10.
+
+### 5.2 Give a BioModel an explicit list of geometries — **recommended direction**
+
+Rather than have a parser infer that two inlined geometries are one, **model the sharing**: a
+BioModel owns a list of geometries, applications reference them, and the user edits that list
+directly.
+
+This is a user-facing model change, not merely a serialization change, and that is the point. It
+resolves the objections to §5.1 at the source instead of patching each one:
+
+- **Identity is declared.** `ServerDocumentManager`'s incremental save is recursive, iterative and
+  non-atomic: it decides what needs saving and propagates keys to parents when a child changes
+  (`saveBioModel:880` — when the image was saved, the geometry is re-pointed at the database
+  instance and forced to save, which pushes a new geometry key upward). That controller needs a real
+  notion of "same geometry" to key on. A declared reference gives it one; a parse-time digest does
+  not.
+- **Copy-on-write gets a home.** Splitting a shared instance becomes a visible user action — copy
+  this geometry — rather than something a parser decides silently.
+- **It matches the database.** Geometries and images are already keyed rows with
+  `vc_geometry.imageref`. VCML is the layer that discards the relationship by inlining a full copy
+  into every `<SimulationContext>` (`Xmlproducer:1416`).
+- **It stops new duplicates at the source**, rather than deduplicating after the fact.
+
+**Costs.** A format change, with old clients still needing to read new documents, and UI work to
+expose the list. The largest item on this page.
+
+**Open:** whether the reference is a database key or a document-local id; what happens to a model
+whose applications genuinely have different geometries (they keep separate entries — the list is a
+list, not a singleton); and the migration path for the ~944 already-duplicated rows (§5.8).
 
 ### 5.3 Narrow the per-pixel label array
 
@@ -593,6 +664,27 @@ Independent of all the above, and cheap:
 - **api heap.** 1000 MB, sized in #1899. Whether that is still right is a separate question from
   whether one request should need 680 MB.
 
+### 5.10 Fix the duplicate image inserts directly
+
+Salvaged from §5.1, on its own merits rather than as a side effect.
+
+`saveBioModel` keys `memoryToDatabaseHash` by the `VCImage` object, and `VCImage` overrides neither
+`equals` nor `hashCode`. The XML round-trip inside the save produces N distinct-but-equal objects
+for one image, so a **new** image (`key == null`) falls into the insert branch N times and is written
+as N rows with mangled names — ~944 surplus rows in production, still accruing as of October 2025
+(§3.6).
+
+- **Buys:** stops the corruption that also defeats content-based identity (§3.10). A prerequisite
+  for §5.2 being effective on existing data.
+- **Costs:** small and contained, but it is the document save path, which has **no test at all**
+  today. Wants the testcontainer harness below.
+- **Testing:** `SQLCreateAllTables.writeScript(POSTGRES, bootstrapData, writer)` already emits the
+  entire VCell schema — every table, the sequence, indices and bootstrap rows. A PostgreSQL
+  testcontainer can therefore build the *real* schema rather than the stub schema
+  `DatabaseCleanupOracleSqlTest` uses, and PostgreSQL means it can run in the fast lane. Assertions
+  worth having: a new N-application model writes **one** `vc_image` row; re-saving unchanged writes
+  nothing; replacing one application's geometry leaves the others' rows alone.
+
 ---
 
 ## 6. Open questions — decisions needed before implementation
@@ -602,11 +694,17 @@ Independent of all the above, and cheap:
    scientific limit. **Needs a survey of image sizes actually in the database.**
 2. **What region count?** Same problem; 2,000 is a guess. A tissue image with hundreds of separate
    cells is ordinary science. **Needs a survey of region counts.**
-3. **Is the VCML format change (§5.2) on the table at all?** Everything else is compensation for it.
-4. **Sequencing.** §5.3b is **merged** (#2026, #2027). §5.1 is prototyped (#2024) and not merged.
-   Remaining suggested order: §5.1 → §5.4 (with real numbers) → §5.3 → §5.5 → §5.6. §5.9 can happen
-   immediately and independently of all of it.
-5. **Who owns the duplicate-row cleanup**, and should it wait for §5.1 to stop new ones first?
+3. **Is the explicit geometry list (§5.2) on the table?** It is now the recommended direction rather
+   than a fallback: every objection that sank §5.1 — declared identity for the incremental-save
+   controller, a home for copy-on-write, matching what the database already stores — is answered by
+   modelling the sharing instead of inferring it. It is also the largest item here, and it is a
+   user-facing change, not just a format one.
+4. **Sequencing.** §5.3b is **merged** (#2026, #2027) and fixes the incident. §5.1 is **rejected**
+   (#2024 closed). Suggested order from here: **§5.9** (free, removes the trigger) → **§5.10** (stop
+   creating duplicates, with the testcontainer harness) → **§5.8** (clean up the ~944 existing rows)
+   → **§5.4** with real numbers → **§5.2** as the real answer for multi-application models. §5.3,
+   §5.5 and §5.6 are memory work that nothing currently forces.
+5. **Who owns the duplicate-row cleanup** (§5.8), and it should wait for §5.10 to stop new ones first — otherwise the cleanup is undone by the next multi-application save.
 6. **Do the duplicate images in a group belong to one BioModel?** One query settles it; needs
    `vcell_dev` credentials.
 
@@ -628,10 +726,12 @@ login, which is the exact lockout risk. Supply it explicitly and try once.
 |---|---|---|---|
 | #2022 | `fix/geometryspec-image-veto` | Submission-time limits (§5.4), grandfathering | draft |
 | #2023 | `perf/geometry-memory-profiler` | `GeometryMemoryProfiler` + the notes file this supersedes | draft |
-| #2024 | `perf/parse-geometry-once` | Image sharing (§5.1) + `XmlGeometrySharingBenchmark` | draft |
+| #2024 | `perf/parse-geometry-once` | Image sharing (§5.1) | **closed — rejected, see §5.1** |
 | #2025 | `docs/geometry-memory-plan` | this document | open |
 | #2026 | `fix/geometryspec-pixel-retention` | removes the second strong reference (§5.3b prerequisite) | **merged** `8a6e9f78e2` |
 | #2027 | `perf/soft-pixel-cache` | the SoftReference itself (§5.3b) + `SoftPixelCacheDemo` | **merged** `620ccd56db` |
+| #2028 | `test/geometry-surface-goldens` | geometry golden suite, synthetic fixtures | **merged** `4246d369d9` |
+| #2029 | `test/geometry-corpus-goldens` | corpus fixtures + the `Geometry_IT` group | **merged** `f9cd0c386a` |
 
 The instrumentation in #2023 is the piece most worth keeping regardless of which direction is
 chosen: every number in this document came from it, and the corrections in §4 were only possible
