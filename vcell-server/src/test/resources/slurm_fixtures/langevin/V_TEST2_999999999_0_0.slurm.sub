@@ -26,6 +26,8 @@ VC_JOB_ID=0
 VC_TASK_ID=0
 TOTAL_JOBS=8            # to be set by generator to lso.getTotalNumberOfJobs()
 JOB_TIMEOUT_SECONDS=345600  # per-job timeout (seconds), adjust per generator
+WATCHDOG_TICK_SECONDS=60  # watchdog tick interval (seconds)
+WATCHDOG_TIMEOUT_SECONDS=600  # watchdog timeout (seconds)
 LOG_FILE="/share/apps/vcell3/htclogs/V_TEST2_999999999_0_.submit.log"
 MESSAGING_CONFIG_FILE="/share/apps/vcell3/users/danv/SimID_999999999_0_.langevinMessagingConfig"
 
@@ -192,6 +194,30 @@ running_jobs=0
 max_concurrent_jobs=${SLURM_NTASKS:-4}    # actually these are tasks
 echo "max_concurrent_jobs: ${max_concurrent_jobs}" >> "${LOG_FILE}"
 echo "TOTAL_JOBS to launch: ${TOTAL_JOBS}" >> "${LOG_FILE}"
+echo "WATCHDOG_TICK_SECONDS: ${WATCHDOG_TICK_SECONDS}" >> "${LOG_FILE}"
+echo "WATCHDOG_TIMEOUT_SECONDS: ${WATCHDOG_TIMEOUT_SECONDS}" >> "${LOG_FILE}"
+
+# ----------------------------------------------------------------------------------------------
+# watchdog solver invocation (monitors the other jobs and sends progress messages)
+# timeouts early if no jobs is being launched, does not timeout once in main loop
+echo "Starting watchdog job at $(date)" >> "${LOG_FILE}"
+${slurm_prefix} ${solver_container_prefix} \
+        langevin_x64 watchdog \
+        "${INPUT_DIR}/SimID_${SIM_KEY}_0_.langevinInput" \
+        ${TOTAL_JOBS} \
+        --watchdog-tick="${WATCHDOG_TICK_SECONDS}" \
+        --watchdog-timeout="${WATCHDOG_TIMEOUT_SECONDS}" \
+#        --output-log="${LOG_DIR}/SimID_${SIM_KEY}_0_W.log" \
+        --vc-print-status="${INPUT_DIR}/SimID_${SIM_KEY}_0_.langevinMessagingConfig" &
+watchdog_pid=$!
+sleep 1
+if ! kill -0 $watchdog_pid 2>/dev/null; then
+    echo "Watchdog failed to start" >> "${LOG_FILE}"
+    wait $watchdog_pid
+    watchdog_exit_code=$?
+    callExitProcessor $watchdog_exit_code
+    exit $watchdog_exit_code
+fi
 
 finished_jobs=0           # messaging counters
 last_notify_time=0
@@ -218,6 +244,15 @@ for ((i = 0; i < TOTAL_JOBS; i++)); do
 
     # wait for a finished task before launching a new one if we hit the concurrency limit
     while (( running_jobs >= max_concurrent_jobs )); do
+        # Check watchdog health
+        if ! kill -0 $watchdog_pid 2>/dev/null; then
+            echo "Watchdog died unexpectedly at $(date)" >> "${LOG_FILE}"
+            wait $watchdog_pid
+            watchdog_exit=$?
+            callExitProcessor $watchdog_exit
+            echo "Watchdog failed; exiting $watchdog_exit" | tee -a "${LOG_FILE}"
+            exit $watchdog_exit
+        fi
         for idx in "${!job_pids[@]}"; do
             pid="${job_pids[$idx]}"
             if [[ -z "${pid}" ]]; then continue; fi
@@ -235,23 +270,23 @@ for ((i = 0; i < TOTAL_JOBS; i++)); do
                 unset "job_pid_map[$pid]"     # remove mapping
                 ((running_jobs--))
                 ((finished_jobs++))
-                progress=$(awk "BEGIN {print ${finished_jobs}/(${TOTAL_JOBS}+1)}")  # compute progress
-                timepoint=$(date +%s)
-                if (( timepoint - last_notify_time >= MIN_NOTIFY_INTERVAL )); then
-                  last_notify_time=$timepoint
-                  statusCode=1001
-                  statusMsg="Running"
-                  RUNTIME_PROPERTIES="&WorkerEvent_Status=${statusCode}"
-                  RUNTIME_PROPERTIES+="&WorkerEvent_StatusMsg=${statusMsg}"
-                  RUNTIME_PROPERTIES+="&WorkerEvent_TimePoint=${timepoint}"
-                  RUNTIME_PROPERTIES+="&WorkerEvent_Progress=${progress}"
-                  PROPERTIES="${BASE_PROPERTIES}${RUNTIME_PROPERTIES}"
-                  msgCommand="set -o errexit; set -o pipefail; set -o nounset"
-                  msgCommand+="
-                  curl -v -XPOST \"http://${broker_username}:${broker_password}@${broker_host}:${broker_port}/api/message/workerEvent?type=queue&${PROPERTIES}\""
-                  ${solver_container_prefix} /bin/bash -c "$msgCommand"   # execute inside singularity
-                  echo "progress notification sent, ${progress} done" >> "${LOG_FILE}"
-                fi
+#                progress=$(awk "BEGIN {print ${finished_jobs}/(${TOTAL_JOBS}+1)}")  # compute progress
+#                timepoint=$(date +%s)
+#                if (( timepoint - last_notify_time >= MIN_NOTIFY_INTERVAL )); then
+#                  last_notify_time=$timepoint
+#                  statusCode=1001
+#                  statusMsg="Running"
+#                  RUNTIME_PROPERTIES="&WorkerEvent_Status=${statusCode}"
+#                  RUNTIME_PROPERTIES+="&WorkerEvent_StatusMsg=${statusMsg}"
+#                  RUNTIME_PROPERTIES+="&WorkerEvent_TimePoint=${timepoint}"
+#                  RUNTIME_PROPERTIES+="&WorkerEvent_Progress=${progress}"
+#                  PROPERTIES="${BASE_PROPERTIES}${RUNTIME_PROPERTIES}"
+#                  msgCommand="set -o errexit; set -o pipefail; set -o nounset"
+#                  msgCommand+="
+#                  curl -v -XPOST \"http://${broker_username}:${broker_password}@${broker_host}:${broker_port}/api/message/workerEvent?type=queue&${PROPERTIES}\""
+#                  ${solver_container_prefix} /bin/bash -c "$msgCommand"   # execute inside singularity
+#                  echo "progress notification sent, ${progress} done" >> "${LOG_FILE}"
+#                fi
                 break                # exit for-loop once we free up a slot
             fi
         done
@@ -272,23 +307,23 @@ for pid in "${job_pids[@]}"; do
     job_index=${job_pid_map[$pid]:-unknown}
     echo "Task $job_index finished with exit code $exit_code at $(date)" >> "${LOG_FILE}"
     ((finished_jobs++))
-    progress=$(awk "BEGIN {print ${finished_jobs}/(${TOTAL_JOBS}+1)}")  # compute progress
-    timepoint=$(date +%s)
-    if (( timepoint - last_notify_time >= MIN_NOTIFY_INTERVAL )); then
-      last_notify_time=$timepoint
-      statusCode=1001
-      statusMsg="Running"
-      RUNTIME_PROPERTIES="&WorkerEvent_Status=${statusCode}"
-      RUNTIME_PROPERTIES+="&WorkerEvent_StatusMsg=${statusMsg}"
-      RUNTIME_PROPERTIES+="&WorkerEvent_TimePoint=${timepoint}"
-      RUNTIME_PROPERTIES+="&WorkerEvent_Progress=${progress}"
-      PROPERTIES="${BASE_PROPERTIES}${RUNTIME_PROPERTIES}"
-      msgCommand="set -o errexit; set -o pipefail; set -o nounset"
-      msgCommand+="
-      curl -v -XPOST \"http://${broker_username}:${broker_password}@${broker_host}:${broker_port}/api/message/workerEvent?type=queue&${PROPERTIES}\""
-      ${solver_container_prefix} /bin/bash -c "$msgCommand"   # execute inside singularity
-      echo "progress notification sent, ${progress} done" >> "${LOG_FILE}"
-    fi
+#    progress=$(awk "BEGIN {print ${finished_jobs}/(${TOTAL_JOBS}+1)}")  # compute progress
+#    timepoint=$(date +%s)
+#    if (( timepoint - last_notify_time >= MIN_NOTIFY_INTERVAL )); then
+#      last_notify_time=$timepoint
+#      statusCode=1001
+#      statusMsg="Running"
+#      RUNTIME_PROPERTIES="&WorkerEvent_Status=${statusCode}"
+#      RUNTIME_PROPERTIES+="&WorkerEvent_StatusMsg=${statusMsg}"
+#      RUNTIME_PROPERTIES+="&WorkerEvent_TimePoint=${timepoint}"
+#      RUNTIME_PROPERTIES+="&WorkerEvent_Progress=${progress}"
+#      PROPERTIES="${BASE_PROPERTIES}${RUNTIME_PROPERTIES}"
+#      msgCommand="set -o errexit; set -o pipefail; set -o nounset"
+#      msgCommand+="
+#      curl -v -XPOST \"http://${broker_username}:${broker_password}@${broker_host}:${broker_port}/api/message/workerEvent?type=queue&${PROPERTIES}\""
+#      ${solver_container_prefix} /bin/bash -c "$msgCommand"   # execute inside singularity
+#      echo "progress notification sent, ${progress} done" >> "${LOG_FILE}"
+#    fi
 done
 echo "Batch job completed at $(date)" >> "${LOG_FILE}"
 
@@ -300,8 +335,9 @@ timeout "${JOB_TIMEOUT_SECONDS}s" \
         langevin_x64 postprocess \
         "${INPUT_DIR}/SimID_${SIM_KEY}_0_.langevinInput" \
         ${TOTAL_JOBS} \
-        --output-log="${LOG_DIR}/SimID_${SIM_KEY}_0_P.log" \
-        --vc-print-status &
+        --output-log="${LOG_DIR}/SimID_${SIM_KEY}_0_P.log"
+#        --output-log="${LOG_DIR}/SimID_${SIM_KEY}_0_P.log" \
+#        --vc-print-status &
 
 last_pid=$!
 wait $last_pid
