@@ -1,9 +1,9 @@
 # Geometry memory: the incident, what we measured, and what to do about it
 
-**Status: planning document. Nothing here is committed to.**
-Three prototype branches exist (#2022, #2023, #2024). They are evidence that the measurements are
-real and the fixes are feasible — **not** merge candidates. Decisions belong in this document
-first.
+**Status: planning document. Nothing here is merged.**
+Six branches exist. #2022, #2023 and #2024 are **drafts** — evidence that the measurements are real
+and the fixes feasible, not merge candidates. #2026 and #2027 implement §5.3b and are open for
+review. Decisions still belong in this document first.
 
 Written 2026-08-23 after the 2026-08-22 prod incident. Supersedes `docs/geometry-memory-notes.md`
 from #2023, which contains an error corrected below.
@@ -281,8 +281,8 @@ load-bearing**: any variant that returns a defensive copy silently loses these w
 **The three retention sites**, only one of which matters:
 
 - `GeometrySpec:962` — `uncompressedPixels = getImage().getPixels()` stores the **stored image's**
-  array in a field. This is the blocker already identified in §5.3b, now confirmed to be the only
-  one of its kind.
+  array in a field. This was the blocker identified in §5.3b, and the audit confirmed it is the only
+  one of its kind. **Removed in #2026.**
 - `GeometryViewer:257` — the array is handed to `SourceDataInfo`, which keeps it in a
   `private Serializable data` field for as long as the viewer is open.
 - `GeometrySummaryPanel:395` — handed to `MemoryImageSource`, which retains it.
@@ -307,9 +307,30 @@ why the `uncompressedPixels` cache exists. Softening it without giving those loo
 the array once would turn a pointer dereference into an inflate.
 
 **Verdict.** The correctness risk is much smaller than the raw grep suggested: one mutation, on a
-class that cannot be softened anyway. The real work is not correctness but two design problems —
-removing the second strong reference at `GeometrySpec:962`, and giving the per-pixel `isInside` path
-a bulk or hoisted accessor so it cannot thrash.
+class that cannot be softened anyway. The real work was not correctness but two design problems —
+removing the second strong reference at `GeometrySpec:962` (**done, #2026**), and giving the
+per-pixel `isInside` path a bulk or hoisted accessor so it cannot thrash (**still open**; the loops
+that could see a compressed image were hoisted in #2027, but `getPixel(x,y,z)` and `isInside` still
+fetch per call — cold today, and a problem only if either becomes hot).
+
+### 3.9 Does holding the pixels softly change the outcome?
+
+The arithmetic in §3.7 says it should. This is the end-to-end check, run after §5.3b was built:
+`SoftPixelCacheDemo` recreates the shape of the incident — N images all reachable at once — against
+a deliberately small heap.
+
+11 images, 300³ each, **256 MB heap**:
+
+| | result |
+|---|---|
+| soft cache **OFF** (previous behaviour) | **OUT OF MEMORY after 9 of 11 images** |
+| soft cache **ON** | **completed all 11** |
+
+With it on, the heap drops from 246 MB to 63 MB at image 10 as the collector reclaims, and 283 MB
+of pixels are then re-read on demand at the end. That is the incident and its fix in one run.
+
+It is a `main` rather than a test: driving a JVM to the edge of its heap does not belong in a shared
+test run.
 
 ---
 
@@ -420,45 +441,77 @@ Emit geometries once at BioModel level and reference them by key.
 **Do this before any tiling work** (§5.5): streaming the computation while still emitting a
 full-size output array saves peak but not retention.
 
-### 5.3b Hold it compressed, rehydrate on demand — **most promising unexplored direction**
+### 5.3b Hold it compressed, rehydrate on demand — **IMPLEMENTED**
+
+> **Status: built, open, not merged.** #2026 (prerequisite) and #2027 (the change itself, stacked
+> on it). Both are ordinary PRs rather than drafts, but nothing here is merged and the sequencing
+> question in §6 is still open.
 
 Raised as: `VCImageCompressed` already keeps compressed pixels strongly and the uncompressed copy
 as a `transient` cache, so take it one step further and let the uncompressed copy be reclaimable.
 
-§3.7 says the arithmetic works, and works better than expected. Real geometry images compress
-**50–100×**, rehydrate at **~700–950 MB/s**, and — the part that was not obvious — the derived
-label array compresses **53–93×** as well.
+§3.7 said the arithmetic works — real geometry images compress **50–100×** and rehydrate at
+**~700–950 MB/s**. §3.9 confirms it end to end: at 256 MB, eleven images **OOM at 9 of 11** with
+the old strong cache and **complete** with the soft one.
 
-**Use `SoftReference`, not `WeakReference`.** This distinction decides whether the idea works. A
+**What was built**
+
+- `VCImageCompressed.softPixels` is a `SoftReference<byte[]>`; `getPixels()` re-inflates on demand.
+- `vcell.image.softPixelCache=false` restores the old strong caching.
+- The second strong reference at `GeometrySpec:962` is gone (#2026) — see below.
+- Two loops hoisted; two deliberately left alone.
+
+**`SoftReference`, not `WeakReference`** — the distinction that decides whether the idea works. A
 weak reference is cleared at the next GC *regardless of memory pressure*, so a hot geometry would
-re-inflate on essentially every collection: 90 ms of CPU repeatedly, for no benefit. A soft
-reference is cleared only when the heap is actually under pressure, and the JVM ages them by
-`-XX:SoftRefLRUPolicyMSPerMB`. Soft is the tool that gives "does not contribute to memory
-pressure" without giving up the cache.
+re-inflate on essentially every collection: ~90 ms of CPU repeatedly, for no benefit. Soft
+references are cleared only under real pressure, aged by `-XX:SoftRefLRUPolicyMSPerMB`.
 
-Three things block a naive version, all verified:
+Because nothing about ordinary behaviour would look wrong if someone swapped the type, there is a
+test whose only job is to fail if they do (`ordinaryGcDoesNotDiscardThePixels`), verified by
+temporarily switching to `WeakReference` and watching it fail on a changed identity hash.
 
-1. **`GeometrySpec.uncompressedPixels` (line 67) holds a second strong reference to the very same
-   array** (`getImage().getPixels()` at line 962). Softening `VCImageCompressed.uncompressed` alone
-   changes nothing while that field pins it. They have to move together.
-2. **`VCImageUncompressed` has no compressed form** — `private final byte pixels[]`. The sampled
-   image from `createSampledImage` is one of these, so it cannot be softened as-is; it would need
-   either a compressed backing or a documented recompute path (it *is* derivable from the image
-   plus subvolume handles).
-3. **A compressed label map is not randomly accessible**, and `RegionInfo.isIndexInRegion(index)`
-   needs random access. Two ways out: compress in fixed blocks and cache a few decompressed blocks,
-   or use RLE, which supports random access by binary search over runs and is a natural fit for
-   run-coherent segmented volumes. The second doubles as option §5.3.
+**The three blockers, resolved**
 
-**The `getPixels()` audit — done, and the surface is far smaller than feared.** See §3.8.
+1. **`GeometrySpec.uncompressedPixels` held a second strong reference** to the same array, which
+   would have pinned it regardless. **Removed in #2026.** It turned out to be a *redundant* cache —
+   `VCImageCompressed.getPixels()` already caches and `VCImageUncompressed.getPixels()` returns its
+   field directly — feeding a cold path (the only caller reaching an `ImageSubVolume` is
+   `getSubVolume(x,y,z)`, whose sole caller samples 100 points on a curve). Its test asserts
+   *reachability*, not structure, so it still catches the problem if the reference reappears
+   elsewhere.
+2. **`VCImageUncompressed` has no compressed form** — `private final byte pixels[]`. **Still true,
+   and deliberately untouched.** The sampled image from `createSampledImage` is one of these, so it
+   is not softened. It would need either a compressed backing or a documented recompute path (it
+   *is* derivable from the image plus subvolume handles). See "what remains".
+3. **A compressed label map is not randomly accessible.** **Not addressed here** — that is
+   `mapImageIndexToLinkRegion`, which belongs to §5.3, not to the image cache.
 
-**Precedent worth knowing about:** `VCImageCompressed.nullifyUncompressedPixels()` already exists
-and has exactly one caller, `GeomDbDriver:490`. Someone hit this problem before and solved it by
-hand in a single place.
+**One hazard that had to be designed out.** `getPixels()` takes a strong local reference once and
+holds it for the whole method. Reading the `SoftReference` twice would let the collector clear it
+between the null check and the return and hand the caller a **null array** — rare,
+non-deterministic, and extremely unpleasant to diagnose.
 
-**Why this is worth the deep investigation:** it attacks retained memory rather than peak, it needs
-no format change, and correctness is verifiable against a large corpus of stored models — the
-inflated bytes either match or they do not.
+**Loop hoisting, and where it was declined.** `ClientRequestManager:1169` (reached as
+`getGeometrySpec().getImage()` — the stored image) and `ImageFile:149/153` call `getPixels()` every
+iteration and *can* receive a compressed image; under the very pressure that clears a soft
+reference they would have re-inflated per iteration, so both were hoisted.
+`ROIMultiPaintManager:2036` and `ITextWriter:544` were **not** touched: their receivers are locally
+built `VCImageUncompressed` instances that never inflate, so a rewrite there would have been risk
+for no benefit.
+
+**What remains**
+
+- **The per-pixel path.** `VCImage.getPixel(x,y,z)` is `getPixels()[index]`, and
+  `ImageSubVolume.isInside` goes through `GeometrySpec.getUncompressedPixels()` one pixel at a
+  time. Both are cold today (§3.8), but either becoming hot would want a bulk or hoisted accessor
+  rather than a per-call fetch.
+- **The sampled image is still held strongly** (blocker 2 above). It is derived rather than stored,
+  so it is a different problem from the one solved here.
+- **The label array** — §5.3, unchanged and still the largest single retained object.
+
+**Precedent worth knowing about:** `VCImageCompressed.nullifyUncompressedPixels()` already existed
+with exactly one caller, `GeomDbDriver:490`. Someone hit this problem before and solved it by hand
+in a single place.
 
 ### 5.4 Limit new submissions, grandfather what is stored
 
@@ -549,10 +602,11 @@ Independent of all the above, and cheap:
 2. **What region count?** Same problem; 2,000 is a guess. A tissue image with hundreds of separate
    cells is ordinary science. **Needs a survey of region counts.**
 3. **Is the VCML format change (§5.2) on the table at all?** Everything else is compensation for it.
-4. **Sequencing.** Suggested: §5.1 → §5.4 (with real numbers) → §5.3/§5.3b → §5.5 → §5.6. §5.9 can
-   happen immediately and independently. §5.3b is the one worth a real investigation rather than a
-   quick implementation: the numbers are strong, and the risk is entirely in the 178-call-site
-   `getPixels()` audit rather than in the arithmetic.
+4. **Sequencing.** §5.3b is now built (#2026, #2027) and §5.1 is prototyped (#2024); neither is
+   merged. Remaining suggested order: §5.1 → §5.4 (with real numbers) → §5.3 → §5.5 → §5.6. §5.9
+   can happen immediately and independently. **Whether §5.3b and §5.1 should land before the rest
+   is decided is itself an open question** — they are independent of each other and of the format
+   question in §5.2.
 5. **Who owns the duplicate-row cleanup**, and should it wait for §5.1 to stop new ones first?
 6. **Do the duplicate images in a group belong to one BioModel?** One query settles it; needs
    `vcell_dev` credentials.
@@ -571,11 +625,14 @@ login, which is the exact lockout risk. Supply it explicitly and try once.
 
 **Prototype branches — do not merge as-is:**
 
-| PR | Branch | Contains |
-|---|---|---|
-| #2022 | `fix/geometryspec-image-veto` | Submission-time limits (§5.4), grandfathering |
-| #2023 | `perf/geometry-memory-profiler` | `GeometryMemoryProfiler` + the notes file this supersedes |
-| #2024 | `perf/parse-geometry-once` | Image sharing (§5.1) + `XmlGeometrySharingBenchmark` |
+| PR | Branch | Contains | State |
+|---|---|---|---|
+| #2022 | `fix/geometryspec-image-veto` | Submission-time limits (§5.4), grandfathering | draft |
+| #2023 | `perf/geometry-memory-profiler` | `GeometryMemoryProfiler` + the notes file this supersedes | draft |
+| #2024 | `perf/parse-geometry-once` | Image sharing (§5.1) + `XmlGeometrySharingBenchmark` | draft |
+| #2025 | `docs/geometry-memory-plan` | this document | open |
+| #2026 | `fix/geometryspec-pixel-retention` | removes the second strong reference (§5.3b prerequisite) | open |
+| #2027 | `perf/soft-pixel-cache` | the SoftReference itself (§5.3b) + `SoftPixelCacheDemo`, stacked on #2026 | open |
 
 The instrumentation in #2023 is the piece most worth keeping regardless of which direction is
 chosen: every number in this document came from it, and the corrections in §4 were only possible
@@ -585,13 +642,25 @@ because it existed.
 
 ```bash
 mvn test-compile -pl vcell-core -am
+
+# §3.2/§3.3 — per-phase peak/retained/allocated for one geometry            (#2023)
 mvn -q -pl vcell-core exec:java -Dexec.classpathScope=test \
     -Dexec.mainClass=cbit.vcell.geometry.GeometryMemoryProfiler
+
+# §3.1 — parse cost by sharing mode, N applications over one image          (#2024)
 mvn -q -pl vcell-core exec:java -Dexec.classpathScope=test \
     -Dexec.mainClass=cbit.vcell.xml.XmlGeometrySharingBenchmark
+
+# §3.9 — soft cache on vs off against a small heap; needs the -Xmx, so run  (#2027)
+#        it directly rather than through exec:java
+java -Xmx256m -Dvcell.image.softPixelCache=false -cp <test+main+deps> \
+    cbit.image.SoftPixelCacheDemo 11 300
+java -Xmx256m -Dvcell.image.softPixelCache=true  -cp <test+main+deps> \
+    cbit.image.SoftPixelCacheDemo 11 300
 ```
 
-Add `-Dprofiler.hold=120` to keep structures reachable for `jcmd <pid> GC.class_histogram`.
+Add `-Dprofiler.hold=120` to the profiler to keep structures reachable for
+`jcmd <pid> GC.class_histogram`.
 
 **Related:** #2021 (the issue — note its framing of "eleven parses exhausted the heap" is corrected
 by §4.1/§4.2), #1899 (heap sizing, why this was diagnosable), #1890/#1895/#1896 (the watertightness
