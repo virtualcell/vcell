@@ -1,0 +1,13 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Fri Feb 20 16:56:58 EST 2026
+https\://repo.maven.apache.org/maven2/.lastUpdated=1771624618840
+@default-scijava.public-https\://maven.scijava.org/content/groups/public/.lastUpdated=1771624618622
+https\://maven.scijava.org/content/groups/public/.error=Could not transfer artifact net.minidev\:json-smart\:jar\:2.4.11 from/to scijava.public (https\://maven.scijava.org/content/groups/public)\: Connect to maven.scijava.org\:443 [maven.scijava.org/144.92.48.196] failed\: Read timed out
+https\://jitpack.io/.error=
+https\://jitpack.io/.lastUpdated=1771624618645
+https\://repo.terracotta.org/maven2/.lastUpdated=1771624618753
+https\://repo.osgeo.org/repository/release/.lastUpdated=1771624608528
+https\://repo.terracotta.org/maven2/.error=
+https\://artifacts.alfresco.com/nexus/content/repositories/public/.error=
+https\://artifacts.alfresco.com/nexus/content/repositories/public/.lastUpdated=1771624608576
+https\://repo.osgeo.org/repository/release/.error=
