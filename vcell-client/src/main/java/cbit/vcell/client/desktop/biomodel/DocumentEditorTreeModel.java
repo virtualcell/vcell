@@ -120,9 +120,9 @@ public abstract class DocumentEditorTreeModel extends DefaultTreeModel
 		try {
 			Object source = evt.getSource();			
 			if (source == selectionManager) {
-				if (evt.getPropertyName().equals(SelectionManager.PROPERTY_NAME_ACTIVE_VIEW)) {
+				if (evt.getPropertyName().contains(SelectionManager.PROPERTY_NAME_ACTIVE_VIEW)) {
 					onActiveViewChange(selectionManager.getActiveView());
-				} else if(evt.getPropertyName().equals(SelectionManager.PROPERTY_NAME_SELECTED_OBJECTS)) {
+				} else if(evt.getPropertyName().contains(SelectionManager.PROPERTY_NAME_SELECTED_OBJECTS)) {
 					onSelectedObjectChange(selectionManager.getActiveView(), evt);		// TODO: uncomment here to use the hack
 				}
 			} 
