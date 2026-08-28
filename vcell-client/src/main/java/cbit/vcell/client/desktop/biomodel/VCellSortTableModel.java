@@ -402,4 +402,8 @@ protected abstract Comparator<T> getComparator(final int col, final boolean asce
 			table.scrollRectToVisible(r);
 		}
 	}
+
+	protected List<T> getAllRows(){
+		return this.allRows;
+	}
 }

@@ -348,10 +348,7 @@ public class SpeciesContextSpecTableModel extends VCellSortTableModel<SpeciesCon
 		};
 	}
 
-	private List<SpeciesContextSpec> getAllRows(){
-		return this.allRows;
-	}
-
+	
 	/**
 	 * This method gets called when a bound property is changed.
 	 */
