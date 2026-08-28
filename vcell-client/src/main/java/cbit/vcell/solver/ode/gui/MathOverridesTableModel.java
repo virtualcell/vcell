@@ -40,11 +40,11 @@ public class MathOverridesTableModel extends javax.swing.table.AbstractTableMode
 	private MathOverrides fieldMathOverrides = null;
 	private boolean fieldModified = false;
 	private boolean fieldEditable = false;
-	public final static int COLUMN_PARAMETER = 0;
-	public final static int COLUMN_DEFAULT = 1;
-	public final static int COLUMN_ACTUAL = 2;
-	public final static int COLUMN_SCAN = 3;
-	private String[] columnNames = new String[] {"Parameter Name", "Default", "New Value/Expression", "Scan"};
+	public final static int PARAMETER_COLUMN_INDEX = 0;
+	public final static int DEFAULT_COLUMN_INDEX = 1;
+	public final static int OVERRIDE_VALUE_COLUMN_INDEX = 2;
+	public final static int PERFORM_SCAN_COLUMN_INDEX = 3;
+	private final String[] columnNames = new String[] {"Parameter Name", "Default", "New Value/Expression", "Scan"};
 	private JTable ownerTable = null;
 	private SimulationSymbolTable simSymbolTable = null;
 
@@ -132,18 +132,18 @@ public void firePropertyChange(java.lang.String propertyName, java.lang.Object o
  */
 public Class<?> getColumnClass(int column) {
 	switch (column){
-		case COLUMN_PARAMETER:{
+		case PARAMETER_COLUMN_INDEX:{
 			return String.class;
 		}
-		case COLUMN_DEFAULT:{
+		case DEFAULT_COLUMN_INDEX:{
 			return String.class;
 		}
-		case COLUMN_ACTUAL:{
+		case OVERRIDE_VALUE_COLUMN_INDEX:{
 			// could be ScopedExpression or ConstantArraySpec.
 			// we need auto complete cell editor when it's not scan, it's ok when it's ConstantArraySpec because cell is not editable
 			return ScopedExpression.class; 
 		}
-		case COLUMN_SCAN:{
+		case PERFORM_SCAN_COLUMN_INDEX:{
 			return Boolean.class;
 		}
 		default:{
@@ -220,14 +220,14 @@ public int getRowCount() {
 public Object getValueAt(int row, int column) {
 	try {
 		switch (column) {
-			case COLUMN_PARAMETER: {
+			case PARAMETER_COLUMN_INDEX: {
 				return fieldKeys[row];
 			} 
-			case COLUMN_DEFAULT: {
+			case DEFAULT_COLUMN_INDEX: {
 				if(getMathOverrides().getDefaultExpression(fieldKeys[row]) == null){return null;}
 				return getMathOverrides().getDefaultExpression(fieldKeys[row]).infix();
 			} 
-			case COLUMN_ACTUAL: {
+			case OVERRIDE_VALUE_COLUMN_INDEX: {
 				if (getMathOverrides().isScan(fieldKeys[row])) {
 					return getMathOverrides().getConstantArraySpec(fieldKeys[row]);
 				} else {
@@ -257,7 +257,7 @@ public Object getValueAt(int row, int column) {
 					return new ScopedExpression(actualExpression, simSymbolTable.getNameScope(), true, true, symbolTableEntryFilter); 
 				}
 			}
-			case COLUMN_SCAN: {
+			case PERFORM_SCAN_COLUMN_INDEX: {
 				return getMathOverrides().isScan(fieldKeys[row]);
 			}
 			default: {
@@ -300,13 +300,13 @@ public synchronized boolean hasListeners(java.lang.String propertyName) {
 public boolean isCellEditable(int r, int c) {
 	if (!getEditable()) {
 		return false;
-	} else if (c == COLUMN_ACTUAL) {
+	} else if (c == OVERRIDE_VALUE_COLUMN_INDEX) {
 		if (getMathOverrides().isScan(fieldKeys[r])) {
 			return false;
 		} else {
 			return true;
 		}
-	} else if (c == COLUMN_SCAN) {
+	} else if (c == PERFORM_SCAN_COLUMN_INDEX) {
 		MathOverrides mo = getMathOverrides();
 		Simulation sim = mo.getSimulation();
 		MathDescription md = sim.getMathDescription();
@@ -414,7 +414,7 @@ public void setModified(boolean modified) {
 public void setValueAt(Object object, int r, int c) {
 	try {
 		String name = (String) getValueAt(r,0);
-		if (c == COLUMN_ACTUAL) {
+		if (c == OVERRIDE_VALUE_COLUMN_INDEX) {
 			if (object instanceof ConstantArraySpec) {
 				editScanValues(name, r);
 			} else if (object instanceof ScopedExpression) {
@@ -423,7 +423,7 @@ public void setValueAt(Object object, int r, int c) {
 				String inputValue = (String)object;
 				Expression expression = null;
 				if (inputValue == null || inputValue.trim().length() == 0) {
-					expression = new Expression((String)getValueAt(r, COLUMN_DEFAULT));
+					expression = new Expression((String)getValueAt(r, DEFAULT_COLUMN_INDEX));
 				} else {
 					expression = new Expression(inputValue);
 				}
@@ -433,13 +433,13 @@ public void setValueAt(Object object, int r, int c) {
 				this.fireTableDataChanged();
 				setModified(true);
 			}
-		} else if (c == COLUMN_SCAN) {
+		} else if (c == PERFORM_SCAN_COLUMN_INDEX) {
 			if (((Boolean)object).booleanValue()) {
 				// setting scan values
 				editScanValues(name, r);
 			} else {
 				// resetting to default
-				setValueAt(getValueAt(r, COLUMN_DEFAULT), r, COLUMN_ACTUAL);
+				setValueAt(getValueAt(r, DEFAULT_COLUMN_INDEX), r, OVERRIDE_VALUE_COLUMN_INDEX);
 			}
 		}
 	} catch (Throwable exc) {
