@@ -7,6 +7,7 @@ import cbit.vcell.parser.ExpressionBindingException;
 import org.vcell.util.Compare;
 
 public class PasteOperationScspDataSource implements PasteOperationDataSource<Expression> {
+	private static final String[] columnNames = new String[] {"Species", "Parameter", "Current Expression", "Proposed Expression"};
 	private final SpeciesContext context;
 	private final SpeciesContextSpecParameter targetContainer;
 	private final Expression proposedChange;
@@ -29,12 +30,17 @@ public class PasteOperationScspDataSource implements PasteOperationDataSource<Ex
 	}
 
 	@Override
-	public boolean isProposedChangeRedundant() {
-		return Compare.isEqualOrNull(this.targetContainer.getExpression().infix(), this.proposedChange.infix());
+	public boolean isProposedDifferentThanOriginal() {
+		return !Compare.isEqualOrNull(this.targetContainer.getExpression().infix(), this.proposedChange.infix());
 	}
 
 	@Override
 	public void performChange() throws ExpressionBindingException {
 		this.targetContainer.setExpression(this.proposedChange);
+	}
+
+	@Override
+	public String[] getColumnNames() {
+		return PasteOperationScspDataSource.columnNames;
 	}
 }
