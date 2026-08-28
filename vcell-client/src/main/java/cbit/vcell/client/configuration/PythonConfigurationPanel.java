@@ -1,6 +1,6 @@
 package cbit.vcell.client.configuration;
 
-import cbit.vcell.resource.OperatingSystemInfo;
+import org.vcell.util.OperatingSystemInfo;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.resource.VCellConfiguration;

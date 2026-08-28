@@ -11,16 +11,14 @@
 package cbit.vcell.client;
 
 import java.awt.Font;
-import java.awt.Toolkit;
 
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
-import cbit.vcell.resource.ResourceUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import cbit.vcell.resource.OperatingSystemInfo;
+import org.vcell.util.OperatingSystemInfo;
 
 public class VCellLookAndFeel {
 	private final static Logger lg = LogManager.getLogger(VCellLookAndFeel.class);
