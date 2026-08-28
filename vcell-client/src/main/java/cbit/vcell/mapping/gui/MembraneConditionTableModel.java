@@ -15,7 +15,7 @@ import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.mapping.MembraneContext;
 import cbit.vcell.mapping.MembraneSpec;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.gui.SpeciesContextSpecsTableModel.TableUtil;
+import cbit.vcell.mapping.gui.SpeciesContextSpecTableModel.TableUtil;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;

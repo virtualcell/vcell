@@ -13,6 +13,7 @@ package cbit.vcell.resource;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.util.FileUtils;
+import org.vcell.util.OperatingSystemInfo;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.logging.NoLogging;
@@ -82,7 +83,7 @@ public class ResourceUtil {
 		File find(String executableName) throws UserCancelException;
 	}
 
-	public static String getExecutableName(String baseName,boolean useBitSuffix,OperatingSystemInfo osi){
+	public static String getExecutableName(String baseName, boolean useBitSuffix, OperatingSystemInfo osi){
 		if (useBitSuffix) {
 			return baseName + osi.getExeBitSuffix();
 		}else {

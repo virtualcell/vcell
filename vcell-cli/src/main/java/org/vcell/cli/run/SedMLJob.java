@@ -1,6 +1,6 @@
 package org.vcell.cli.run;
 
-import cbit.vcell.resource.OperatingSystemInfo;
+import org.vcell.util.OperatingSystemInfo;
 import cbit.vcell.xml.ExternalDocInfo;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.LogManager;

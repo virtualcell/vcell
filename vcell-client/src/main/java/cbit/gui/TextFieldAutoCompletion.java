@@ -65,7 +65,7 @@ import cbit.vcell.parser.ASTFuncNode.FunctionType;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
-import cbit.vcell.resource.OperatingSystemInfo;
+import org.vcell.util.OperatingSystemInfo;
 import org.vcell.util.gui.GeneralGuiUtils;
 
 @SuppressWarnings("serial")

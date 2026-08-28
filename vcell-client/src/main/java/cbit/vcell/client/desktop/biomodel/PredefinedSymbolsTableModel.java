@@ -18,7 +18,7 @@ import java.util.Set;
 
 import org.vcell.util.gui.EditorScrollTable;
 
-import cbit.vcell.mapping.gui.SpeciesContextSpecsTableModel.TableUtil;
+import cbit.vcell.mapping.gui.SpeciesContextSpecTableModel.TableUtil;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelFunction;
 import cbit.vcell.parser.ASTFuncNode;

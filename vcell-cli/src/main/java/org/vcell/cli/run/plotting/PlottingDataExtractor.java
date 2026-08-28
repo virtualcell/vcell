@@ -1,11 +1,10 @@
 package org.vcell.cli.run.plotting;
 
-import cbit.vcell.resource.OperatingSystemInfo;
+import org.vcell.util.OperatingSystemInfo;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jlibsedml.*;
 import org.jlibsedml.components.SId;
-import org.jlibsedml.components.SedBase;
 import org.jlibsedml.components.SedML;
 import org.jlibsedml.components.Variable;
 import org.jlibsedml.components.dataGenerator.DataGenerator;

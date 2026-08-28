@@ -36,7 +36,7 @@ import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.gui.InitialConditionsPanel;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.render.Vect3d;
-import cbit.vcell.resource.OperatingSystemInfo;
+import org.vcell.util.OperatingSystemInfo;
 import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.solvers.CartesianMesh;
 import org.apache.commons.io.FilenameUtils;

@@ -15,7 +15,7 @@ import cbit.vcell.mapping.*;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.mapping.gui.LinkSpecsTableModel;
 import cbit.vcell.mapping.gui.MolecularTypeSpecsTableModel;
-import cbit.vcell.mapping.gui.SpeciesContextSpecsTableModel;
+import cbit.vcell.mapping.gui.SpeciesContextSpecTableModel;
 import cbit.vcell.mapping.gui.StructureMappingTableRenderer.TextIcon;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.RbmModelContainer;
@@ -66,7 +66,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 	private MolecularInternalLinkSpec fieldMolecularInternalLinkSpec;
 
 	private EditorScrollTable speciesContextSpecsTable = null;
-	private SpeciesContextSpecsTableModel speciesContextSpecsTableModel = null;
+	private SpeciesContextSpecTableModel speciesContextSpecTableModel = null;
 	private SmallShapeManager shapeManager = new SmallShapeManager(false, false, false, false);
 
 	private EditorScrollTable molecularTypeSpecsTable = null;
@@ -192,7 +192,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 			if (e.getSource() == getSpeciesContextSpecsTable().getSelectionModel()) {
 				System.out.println("valueChanged: speciesContextSpecsTableModel");
 				int row = getSpeciesContextSpecsTable().getSelectedRow();
-				SpeciesContextSpec scsSelected = speciesContextSpecsTableModel.getValueAt(row);
+				SpeciesContextSpec scsSelected = speciesContextSpecTableModel.getValueAt(row);
 				setSpeciesContextSpec(scsSelected);
 
 				ArrayList<Object> selectedObjects = new ArrayList<Object>();
@@ -376,12 +376,12 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 					defaultToolTipText = getText();
 					setToolTipText(defaultToolTipText);
 				} else if (value instanceof ScopedExpression) {
-					SpeciesContextSpec scSpec = speciesContextSpecsTableModel.getValueAt(row);
+					SpeciesContextSpec scSpec = speciesContextSpecTableModel.getValueAt(row);
 					VCUnitDefinition unit = null;
-					if (table.getColumnName(column).equals(SpeciesContextSpecsTableModel.ColumnType.INITIAL_CONDITION.label)) {
+					if (table.getColumnName(column).equals(SpeciesContextSpecTableModel.ColumnType.INITIAL_CONDITION.label)) {
 						SpeciesContextSpecParameter initialConditionParameter = scSpec.getInitialConditionParameter();
 						unit = initialConditionParameter.getUnitDefinition();
-					} else if (table.getColumnName(column).equals(SpeciesContextSpecsTableModel.ColumnType.DIFFUSION_CONSTANT.label)) {
+					} else if (table.getColumnName(column).equals(SpeciesContextSpecTableModel.ColumnType.DIFFUSION_CONSTANT.label)) {
 						SpeciesContextSpecParameter diffusionParameter = scSpec.getDiffusionParameter();
 						unit = diffusionParameter.getUnitDefinition();
 					}
@@ -413,8 +413,8 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 				super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 				if (table.getModel() instanceof VCellSortTableModel<?>) {
 					Object selectedObject = null;
-					if (table.getModel() == speciesContextSpecsTableModel) {
-						selectedObject = speciesContextSpecsTableModel.getValueAt(row);
+					if (table.getModel() == speciesContextSpecTableModel) {
+						selectedObject = speciesContextSpecTableModel.getValueAt(row);
 					}
 					if (selectedObject != null) {
 						if(selectedObject instanceof SpeciesContextSpec) {
@@ -752,9 +752,9 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 			try {
 				speciesContextSpecsTable = new EditorScrollTable();
 				speciesContextSpecsTable.setName("spceciesContextSpecsTable");
-				speciesContextSpecsTableModel = new SpeciesContextSpecsTableModel(speciesContextSpecsTable, this);
-				speciesContextSpecsTableModel.setEditable(false);
-				speciesContextSpecsTable.setModel(speciesContextSpecsTableModel);
+				speciesContextSpecTableModel = new SpeciesContextSpecTableModel(speciesContextSpecsTable, this);
+				speciesContextSpecTableModel.setEditable(false);
+				speciesContextSpecsTable.setModel(speciesContextSpecTableModel);
 //				speciesContextSpecsTable.setScrollTableActionManager(new InternalScrollTableActionManager(speciesContextSpecsTable));
 				speciesContextSpecsTable.setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
 			} catch (java.lang.Throwable ivjExc) {
@@ -784,7 +784,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 			m.removePropertyChangeListener(eventHandler);
 			m.addPropertyChangeListener(eventHandler);
 		}
-		speciesContextSpecsTableModel.setSimulationContext(simulationContext);
+		speciesContextSpecTableModel.setSimulationContext(simulationContext);
 		molecularTypeSpecsTableModel.setSimulationContext(simulationContext);
 		linkSpecsTableModel.setSimulationContext(simulationContext);
 		updateInterface();
@@ -834,7 +834,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 	
 	public void setIssueManager(IssueManager issueManager) {
 		super.setIssueManager(issueManager);
-		speciesContextSpecsTableModel.setIssueManager(issueManager);
+		speciesContextSpecTableModel.setIssueManager(issueManager);
 	}
 
 	private void updateInterface() {
@@ -866,7 +866,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 
 	@Override
 	protected void onSelectedObjectsChange(Object[] selectedObjects) {
-		setTableSelections(selectedObjects, speciesContextSpecsTable, speciesContextSpecsTableModel);
+		setTableSelections(selectedObjects, speciesContextSpecsTable, speciesContextSpecTableModel);
 	}
 
 	private void changeSpeciesContextSpec() {
