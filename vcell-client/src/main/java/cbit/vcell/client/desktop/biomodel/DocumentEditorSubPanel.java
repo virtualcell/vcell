@@ -67,10 +67,10 @@ public abstract class DocumentEditorSubPanel extends JPanel implements PropertyC
 	
 	public void propertyChange(PropertyChangeEvent evt) {
 		if (evt.getSource() == selectionManager) {
-			if (evt.getPropertyName().equals(SelectionManager.PROPERTY_NAME_SELECTED_OBJECTS)) {
+			if (evt.getPropertyName().contains(SelectionManager.PROPERTY_NAME_SELECTED_OBJECTS)) {
 				Object[] objects = selectionManager.getSelectedObjects();
 				onSelectedObjectsChange(objects);
-			} else if (evt.getPropertyName().equals(SelectionManager.PROPERTY_NAME_ACTIVE_VIEW)) {
+			} else if (evt.getPropertyName().contains(SelectionManager.PROPERTY_NAME_ACTIVE_VIEW)) {
 				onActiveViewChange(selectionManager.getActiveView());
 			}
 		}

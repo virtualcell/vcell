@@ -282,11 +282,11 @@ public abstract class DocumentEditor extends JPanel {
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == selectionManager) {
-				if (evt.getPropertyName().equals(SelectionManager.PROPERTY_NAME_SELECTED_OBJECTS)) {			
+				if (evt.getPropertyName().contains(SelectionManager.PROPERTY_NAME_SELECTED_OBJECTS)) {
 					onSelectedObjectsChange();
-				} else if (evt.getPropertyName().equals(SelectionManager.PROPERTY_NAME_ACTIVE_VIEW)) {
+				} else if (evt.getPropertyName().contains(SelectionManager.PROPERTY_NAME_ACTIVE_VIEW)) {
 					onActiveViewChange();
-				} else if(evt.getPropertyName().equals(SelectionManager.PROPERTY_NAME_SELECTED_PANEL)) {
+				} else if(evt.getPropertyName().contains(SelectionManager.PROPERTY_NAME_SELECTED_PANEL)) {
 					setRightBottomPanelOnSelection(new Object[] {evt.getNewValue()});
 				}
 			}
