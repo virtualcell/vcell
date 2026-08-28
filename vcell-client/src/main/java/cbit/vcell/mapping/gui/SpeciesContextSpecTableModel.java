@@ -10,7 +10,9 @@
 
 package cbit.vcell.mapping.gui;
 
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -36,9 +38,11 @@ import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 
+import javax.swing.*;
 
-public class SpeciesContextSpecsTableModel extends VCellSortTableModel<SpeciesContextSpec> implements java.beans.PropertyChangeListener {
-	private static final Logger lg = LogManager.getLogger(SpeciesContextSpecsTableModel.class);
+
+public class SpeciesContextSpecTableModel extends VCellSortTableModel<SpeciesContextSpec> implements java.beans.PropertyChangeListener {
+	private static final Logger lg = LogManager.getLogger(SpeciesContextSpecTableModel.class);
 
 	// Rules Provenance
 	public static class RulesProvenance implements Displayable {
@@ -85,7 +89,7 @@ public class SpeciesContextSpecsTableModel extends VCellSortTableModel<SpeciesCo
 	private boolean isEditable;    // this.isCellEditable() decides
 	private String searchText;
 
-	public SpeciesContextSpecsTableModel(ScrollTable table, DocumentEditorSubPanel owner) {
+	public SpeciesContextSpecTableModel(ScrollTable table, DocumentEditorSubPanel owner) {
 		super(table);
 		this.columns = new ArrayList<>();
 		this.owner = owner;
@@ -344,6 +348,9 @@ public class SpeciesContextSpecsTableModel extends VCellSortTableModel<SpeciesCo
 		};
 	}
 
+	private List<SpeciesContextSpec> getAllRows(){
+		return this.allRows;
+	}
 
 	/**
 	 * This method gets called when a bound property is changed.
@@ -492,7 +499,7 @@ public class SpeciesContextSpecsTableModel extends VCellSortTableModel<SpeciesCo
 			public int compare(SpeciesContextSpec speciesContextSpec1, SpeciesContextSpec speciesContextSpec2) {
 				SpeciesContext speciesContext1 = speciesContextSpec1.getSpeciesContext();
 				SpeciesContext speciesContext2 = speciesContextSpec2.getSpeciesContext();
-				ColumnType columnType = SpeciesContextSpecsTableModel.this.columns.get(col);
+				ColumnType columnType = SpeciesContextSpecTableModel.this.columns.get(col);
 				int sortDirectionMultiplier = ascending ? 1 : -1;
 
 				return switch (columnType){
