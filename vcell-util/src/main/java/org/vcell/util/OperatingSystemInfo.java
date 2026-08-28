@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.resource;
+package org.vcell.util;
 
 import java.util.regex.Pattern;
 
