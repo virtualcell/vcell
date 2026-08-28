@@ -4,59 +4,46 @@ import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.parser.Expression;
 
 import javax.swing.*;
-import javax.swing.table.AbstractTableModel;
+import javax.swing.table.*;
+import java.awt.*;
 import java.util.*;
+import java.util.List;
+import java.util.stream.Stream;
 
 public class PasteOperationTableModel<T> extends AbstractTableModel {
-	List<PasteOperationTableModelRow<T>> modelDataStructure;
+	private final List<PasteOperationTableModelRow<T>> modelDataStructure;
+	private final TableColumnModel tableColumnModel;
 
 	/**
 	 * Builds a <code>PasteOperationTableModel</code> from am list of <code>PasteOperationTableModelRow</code>s. Rows are directly processed rather than directly used.
 	 * @param rowsToAdd the rows of data to add
 	 */
-	public PasteOperationTableModel(Collection<PasteOperationTableModelRow<T>> rowsToAdd) {
+	public PasteOperationTableModel(Collection<PasteOperationTableModelRow<T>> rowsToAdd, final String[] columnNames) {
 		super();
 		this.modelDataStructure = new ArrayList<>();
-		if (rowsToAdd.size() == 1){
+		this.tableColumnModel = new DefaultTableColumnModel();
+		boolean onlyOneChangeRequested = rowsToAdd.size() == 1;
+		String[] confirmedColumnNames = Stream.concat((onlyOneChangeRequested ? Stream.of() : Stream.of("Perform Change")), Arrays.stream(columnNames)).toArray(String[]::new);
+
+		DefaultTableCellRenderer cellRenderer = new DefaultTableCellRenderer();
+		cellRenderer.setHorizontalAlignment(SwingConstants.CENTER);
+
+		for (int columnIndex = 0; columnIndex < confirmedColumnNames.length; columnIndex++){
+			this.tableColumnModel.addColumn(new TableColumn(columnIndex));
+			TableColumn tableColumn = this.tableColumnModel.getColumn(columnIndex);
+			tableColumn.setHeaderValue(confirmedColumnNames[columnIndex]);
+			tableColumn.setHeaderRenderer(cellRenderer);
+			tableColumn.setCellRenderer(cellRenderer);
+			tableColumn.setResizable(true);
+		}
+		
+		if (onlyOneChangeRequested) {
 			PasteOperationTableModelRow<T> row = rowsToAdd.iterator().next();
 			this.modelDataStructure.add(new PasteOperationTableModelRow<>(row.getCategory(), row.getSpecifier(), row.getCurrentValue(), row.getProposedValue()));
-		} else {
-			for (PasteOperationTableModelRow<T> row : rowsToAdd){
-				this.modelDataStructure.add(new PasteOperationTableModelRow<>(row.getCategory(), row.getSpecifier(), row.getCurrentValue(), row.getProposedValue(), new JCheckBox("", true)));
-			}
+			return;
 		}
-	}
-
-	/**
-	 * Builds a <code>PasteOperationTableModel</code> from lists of components. Equal amounts of each list must be provided.
-	 * @param entryNames the entries that are being modified by the paste
-	 * @param entrySpecifiers the list of aspects of each entry that is being modified
-	 * @param currentValues the list of values each entry currently has
-	 * @param proposedValues the list of values proposed to replace the current value of each entry
-	 */
-	public PasteOperationTableModel(List<String> entryNames, List<String> entrySpecifiers, List<T> currentValues, List<T> proposedValues){
-		super();
-		if (entryNames == null) throw new IllegalArgumentException("entryNames cannot be null");
-		if (entrySpecifiers == null) throw new IllegalArgumentException("entrySpecifiers cannot be null");
-		if (currentValues == null) throw new IllegalArgumentException("currentValues cannot be null");
-		if (proposedValues == null) throw new IllegalArgumentException("proposedValues cannot be null");
-		if (
-				entryNames.size() != entrySpecifiers.size() ||
-				currentValues.size() != proposedValues.size() ||
-				entryNames.size() != proposedValues.size()
-		) throw new IllegalArgumentException("arguments must have the same number of entries");
-
-		this.modelDataStructure = new ArrayList<>();
-		Iterator<String> categoriesIterator = entryNames.iterator();
-		Iterator<String> specifierIterator = entrySpecifiers.iterator();
-		Iterator<T> currentValuesIterator = currentValues.iterator();
-		Iterator<T> proposedValuesIterator = proposedValues.iterator();
-		if (entryNames.size() == 1){
-			this.modelDataStructure.add(new PasteOperationTableModelRow<>(categoriesIterator.next(), specifierIterator.next(), currentValuesIterator.next(), proposedValuesIterator.next()));
-		} else {
-			while (categoriesIterator.hasNext()){
-				this.modelDataStructure.add(new PasteOperationTableModelRow<>(categoriesIterator.next(), specifierIterator.next(), currentValuesIterator.next(), proposedValuesIterator.next(), new JCheckBox("", true)));
-			}
+		for (PasteOperationTableModelRow<T> row : rowsToAdd){
+			this.modelDataStructure.add(new PasteOperationTableModelRow<>(row.getCategory(), row.getSpecifier(), row.getCurrentValue(), row.getProposedValue(), true));
 		}
 	}
 
@@ -92,6 +79,16 @@ public class PasteOperationTableModel<T> extends AbstractTableModel {
 		return this.modelDataStructure.get(0).getNumberOfColumns();
 	}
 
+	@Override
+	public boolean isCellEditable(int rowIndex, int columnIndex) {
+		return this.isMultipleChoice() && columnIndex == 0 && rowIndex >= 0 && rowIndex < this.getRowCount();
+	}
+
+	@Override
+	public Class<?> getColumnClass(int columnIndex) {
+		return this.isMultipleChoice() && columnIndex == 0 ? Boolean.class : String.class;
+	}
+
 	/**
 	 * Returns the value for the cell at <code>columnIndex</code> and
 	 * <code>rowIndex</code>.
@@ -108,7 +105,28 @@ public class PasteOperationTableModel<T> extends AbstractTableModel {
 		return value;
 	}
 
+	@Override
+	public void setValueAt(Object newValue, int rowIndex, int columnIndex) {
+		if (!this.isCellEditable(rowIndex, columnIndex)) return;
+		if (!this.getColumnClass(columnIndex).isInstance(newValue)) return;
+		this.modelDataStructure.get(rowIndex).setValueAt(columnIndex, newValue);
+	}
+
 	public List<PasteOperationTableModelRow<T>> getSelectedRows(){
 		return this.modelDataStructure.stream().filter(PasteOperationTableModelRow::isSelected).toList();
+	}
+
+	public TableColumnModel getTableColumnModel(){
+		return this.tableColumnModel;
+	}
+
+	public String getLongestColumnEntry(int columnIndex){
+		String currentLongest = "";
+		for (int rowIndex = 0; rowIndex < this.getRowCount(); rowIndex++){
+			String nextContender = this.getValueAt(rowIndex, columnIndex).toString();
+			if (nextContender.length() <= currentLongest.length()) continue;
+			currentLongest = nextContender;
+		}
+		return currentLongest;
 	}
 }
