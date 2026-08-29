@@ -231,7 +231,7 @@
 
 		     So: vendored first, then Central, then the rest. Add new repositories after Central
 		     unless they are vendored artifacts. -->
-		<!-- Vendored artifacts: jai_core, jai-codec, netcdf, udunits, thredds-parent.
+		<!-- Vendored artifacts: jai_core, jai-codec, netcdf, udunits, thredds-parent, n5.
 
 		     Vendored for RELIABILITY, not availability. The upstream servers that carried these
 		     were flaky enough that builds failed on them, so a copy lives in the tree and the
@@ -241,7 +241,13 @@
 		     say "not available on Maven Central", which is not true of all of them:
 		     edu.ucar:netcdf:4.3.22 is on Central and byte-identical to the vendored copy. It stays
 		     vendored anyway, because availability today was never the reason. jai_core, jai-codec
-		     and udunits do 404 from Central. -->
+		     and udunits do 404 from Central.
+
+		     org.janelia.saalfeldlab:n5:3.0.0 (used by cbit.vcell.export.server.N5Exporter) is a
+		     genuine 404 on Central - the whole groupId is absent there - and was the ONLY artifact
+		     in the entire reactor that maven.scijava.org served. Vendoring it is what let the
+		     scijava repository be removed below. Its parent, org.scijava:pom-scijava:34.0.0, and
+		     all of its runtime dependencies do come from Central, so only n5 itself is here. -->
 		<!-- Keep this repository FIRST; see the ordering note above. -->
 		<repository>
 			<id>lib-maven-repo</id>
@@ -279,11 +285,32 @@
 		</repository>
 		-->
 
-		<!-- needed for imagej dependencies -->
+		<!-- Removed 2026-08-27. This repository served exactly ONE artifact in the whole reactor -
+		     org.janelia.saalfeldlab:n5:3.0.0 - measured on a cold local repository: central 1366,
+		     jitpack 15, lib-maven-repo 9, scijava 2 (the n5 pom and jar), ej-technologies 2,
+		     terracotta 1. n5 is now vendored in lib/maven-repo, so nothing needs this server.
+
+		     It was removed because it is actively harmful when it misbehaves, not merely useless.
+		     On 2026-08-27 maven.scijava.org served stored files normally (n5-3.0.0.pom and .jar both
+		     200) while returning 503 for every file Nexus GENERATES: maven-metadata.xml and every
+		     .sha1. Maven treats a 404 as "not here, ask the next repository" but a 503 as a hard
+		     transfer error, so a repository in this state converts two otherwise harmless situations
+		     into build failures:
+
+		       - org.jboss.narayana.jts:idlj-idl-openjdk:pom:7.0.0.Final, reached via
+		         quarkus-agroal -> quarkus-narayana-jta, does not exist in ANY repository. Central,
+		         jitpack and terracotta all 404 and Maven shrugs; scijava's 503 made it fatal.
+		       - com.nimbusds:oauth2-oidc-sdk:10.7 declares net.minidev:json-smart as a version
+		         RANGE, and a range makes Maven fetch maven-metadata.xml from every repository.
+
+		     Both surfaced only inside the enforcer's DependencyConvergence rule, which calls
+		     collectDependencies and turns those recorded exceptions into "Could not build dependency
+		     tree", which is why every other module compiled and only vcell-rest failed.
 		<repository>
 			<id>scijava.public</id>
 			<url>https://maven.scijava.org/content/groups/public</url>
 		</repository>
+		-->
 
 		<!-- needed for biomodels.net web services -->
 <!--		<repository>-->
@@ -314,6 +341,25 @@
 
 	<dependencyManagement>
 		<dependencies>
+			<!--
+			  json-smart: pinned so nothing in the reactor resolves it through a version RANGE.
+
+			  com.nimbusds:oauth2-oidc-sdk:10.7 declares net.minidev:json-smart:[1.3.3,2.4.8]. A range
+			  is the only thing in this build that makes Maven fetch maven-metadata.xml, which it must
+			  then do from EVERY declared repository on every build; a repository answering with a
+			  transfer error rather than a 404 fails the whole collection. Managing the version
+			  replaces the range before it is resolved, so no metadata is requested at all - verified:
+			  a cold build requests maven-metadata.xml exactly once, for net.minidev:json-smart, and
+			  zero times with this block present.
+
+			  It also closes a real split: vcell-rest declared 2.4.11 directly, while every other
+			  module silently took 2.4.8, the top of that range.
+			-->
+			<dependency>
+				<groupId>net.minidev</groupId>
+				<artifactId>json-smart</artifactId>
+				<version>${json-smart.version}</version>
+			</dependency>
 			<dependency>
 				<groupId>org.junit</groupId>
 				<artifactId>junit-bom</artifactId>

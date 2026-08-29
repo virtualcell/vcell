@@ -124,6 +124,11 @@ stdOut.txt
 # need this file for testing
 !python-utils/tests/fixtures/modeldb-206365-outputs.zip
 
+# The vendored Maven repository is source, not build output. Without this the blanket
+# *.jar above silently swallows the jar of anything vendored here - which is exactly how
+# a vendored artifact ends up as a pom and a checksum with no jar behind them.
+!lib/maven-repo/**/*.jar
+
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 
