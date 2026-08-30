@@ -102,6 +102,61 @@ errors across `MathOverrideRoundTripTest`, `CopasiOptimizationSolverTest` and
 So: if Java tests fail in a new checkout and the message mentions Python, a missing
 module, or a solver binary, run step 1 before investigating anything else.
 
+## `Could not build dependency tree` hides the real error
+
+If a build fails with this, from the enforcer, on one module:
+
+```
+[ERROR] Rule 0: org.apache.maven.plugins.enforcer.DependencyConvergence failed with message:
+Could not build dependency tree Could not collect dependencies: org.vcell:vcell-rest:jar:1.0.0-SNAPSHOT
+```
+
+**re-run with `-X` and grep for `Caused by` before investigating anything else.**
+
+```bash
+mvn --batch-mode -X install -DskipTests 2>&1 | grep "Caused by"
+```
+
+That prints the exception chain, innermost last. The deepest `ArtifactResolutionException`
+is the one worth reading — it names both the artifact and the repository:
+
+```
+Caused by: DependencyCollectionException: Failed to collect dependencies at
+    io.quarkus:quarkus-agroal:jar:3.5.2 -> io.quarkus:quarkus-narayana-jta:jar:3.5.2
+ -> org.jboss.narayana.jts:narayana-jts-integration:jar:7.0.0.Final
+ -> org.jboss.narayana.jts:idlj-idl-openjdk:jar:7.0.0.Final
+Caused by: ArtifactResolutionException: The following artifacts could not be resolved:
+    org.jboss.narayana.jts:idlj-idl-openjdk:pom:7.0.0.Final (absent): Could not transfer
+    artifact ... from/to scijava.public: status code: 503, reason phrase: Service Unavailable
+```
+
+The `DependencyConvergence` rule discards that `ArtifactResolutionException` and reports
+only that the tree could not be built. The message that survives names the module the
+rule was bound to and nothing else — not the artifact that failed to resolve, not the
+repository that failed to serve it.
+
+Two things make this worse than an ordinary unhelpful error. The rule fires on
+whichever module happens to be checked first, so the log reads as "vcell-rest is
+broken" when the actual condition is repository-wide and has nothing to do with that
+module. And any *other* resolution message in the log — a `[WARNING]` about some
+unrelated artifact, say — is then the only concrete detail available, which makes it
+look like the cause when it may not be.
+
+That is not hypothetical. In [run 33104159035](https://github.com/virtualcell/vcell/actions/runs/33104159035)
+the only visible hint was a warning about `net.minidev:json-smart` metadata, and the
+first attempted fix went after json-smart. `-X` showed the actual failure was
+`org.jboss.narayana.jts:idlj-idl-openjdk:pom:7.0.0.Final`, on a dependency path
+nobody would have guessed, pulled in via `quarkus-agroal` -> `quarkus-narayana-jta`.
+
+A related trap when reading that output: Maven treats a repository's **404** as "not
+here, ask the next one" but a **503** as a hard error. So an artifact that exists in
+no repository at all resolves fine until one repository starts answering 503, at
+which point a build that never needed the artifact begins to fail. If the `-X` output
+names an artifact you have never heard of, check whether it exists anywhere before
+assuming it went missing.
+
+See issue [#2038](https://github.com/virtualcell/vcell/issues/2038).
+
 ## Each git worktree is its own build environment
 
 `git worktree` gives you an isolated checkout, and the build state is isolated with
