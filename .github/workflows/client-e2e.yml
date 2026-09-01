@@ -90,7 +90,14 @@ jobs:
           -Dproject.build.sourceEncoding=UTF-8
 
       - name: launch the client with the debug bridge
-        run: tools/debug-bridge/launch-client.sh
+        # The client validates that vcell.installDir is a real directory
+        # (PropertyLoader.validateSystemProperties) and exits if it is not. On a developer
+        # machine that is the local install4j installation; a runner has none, so give it an
+        # empty one. $HOME rather than $RUNNER_TEMP: under Git Bash the latter is a Windows
+        # path with backslashes, which this shell mangles.
+        run: |
+          mkdir -p "$HOME/vcell-install"
+          VCELL_INSTALL_DIR="$HOME/vcell-install" tools/debug-bridge/launch-client.sh
 
       - name: detach/reattach scenario
         run: tools/debug-bridge/scenarios/detach-window.sh
