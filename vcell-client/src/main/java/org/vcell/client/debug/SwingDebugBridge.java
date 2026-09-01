@@ -130,6 +130,7 @@ public final class SwingDebugBridge {
 			s.createContext("/menu", wrap(SwingDebugBridge::handleMenu));
 			s.createContext("/props", wrap(SwingDebugBridge::handleProps));
 			s.createContext("/highlight", wrap(SwingDebugBridge::handleHighlight));
+			s.createContext("/iconify", wrap(SwingDebugBridge::handleIconify));
 			s.createContext("/log", ex -> {
 				try {
 					respond(ex, 200, "text/plain; charset=utf-8", handleLog(ex).getBytes(StandardCharsets.UTF_8));
@@ -206,6 +207,21 @@ public final class SwingDebugBridge {
 		}
 		boolean clicked = SwingInspector.click(path);
 		return "{\"clicked\":" + clicked + ",\"path\":\"" + jsonEscape(path) + "\"}";
+	}
+
+	private static String handleIconify(HttpExchange ex) {
+		Map<String, String> q = query(ex);
+		String path = q.get("path");
+		if (path == null || path.isEmpty()) {
+			return "{\"error\":\"missing 'path' query parameter\"}";
+		}
+		boolean want = Boolean.parseBoolean(q.getOrDefault("iconified", "true"));
+		Boolean actual = SwingInspector.iconify(path, want);
+		if (actual == null) {
+			return "{\"error\":\"no window at path\",\"path\":\"" + jsonEscape(path) + "\"}";
+		}
+		return "{\"requested\":" + want + ",\"iconified\":" + actual
+				+ ",\"path\":\"" + jsonEscape(path) + "\"}";
 	}
 
 	private static String handleSetText(HttpExchange ex) {

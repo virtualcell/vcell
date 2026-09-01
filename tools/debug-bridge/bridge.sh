@@ -19,6 +19,7 @@
 #   trow <selector> <row> [col]   dtrow <selector> <row> [col]   rtrow <selector> <row> [col]
 #   menu "<Menu>Item[>Sub]" [window]
 #   highlight <selector> [ms]
+#   iconify <selector> [true|false]   minimize/restore a window; reports what the OS did
 # Synchronize / assert (exit 0 on success, 1 on failure):
 #   wait   [find opts] [--state showing|enabled|gone] [--timeout MS] [--interval MS]
 #   assert [find opts] [--gone]
@@ -146,6 +147,7 @@ case "$cmd" in
   props)     get props --data-urlencode "path=$1" | pretty ;;
   listeners) get listeners --data-urlencode "path=$1" | pretty ;;
   highlight) get highlight --data-urlencode "path=$1" --data-urlencode "ms=${2:-2000}" | pretty ;;
+  iconify)   get iconify --data-urlencode "path=$1" --data-urlencode "iconified=${2:-true}" | pretty ;;
 
   help|*)
     sed -n '2,30p' "$0" | sed 's/^# \{0,1\}//'
