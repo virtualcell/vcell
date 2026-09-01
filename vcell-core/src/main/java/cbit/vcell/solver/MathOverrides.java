@@ -1198,6 +1198,36 @@ public class MathOverrides implements Matchable, java.io.Serializable {
     }
 
 
+    /**
+     * Physical constants and unit conversions, which must never be offered as overridable.
+     *
+     * Matched EXACTLY. This was previously matched with String.contains(), which silently
+     * swallowed any user parameter whose NAME merely CONTAINED one of these as a substring:
+     * a reaction parameter called "kon_R_R_in" contains "_R_", the gas constant, and so
+     * vanished from the math overrides table with no error and no way to tell why.
+     *
+     * Two old entries were also misspelled - "F_nmol_" missing its leading underscore and
+     * "_K_GHK" missing its trailing one. Substring matching hid those typos; exact matching
+     * would not, so they are spelled here as Model.createReservedSymbols() actually names them.
+     *
+     * NOTE, possibly a separate bug: SBMLImporter prefixes "param_" onto an imported parameter
+     * whose id collides with a reserved symbol but whose VALUE differs - meaning it is deliberately
+     * NOT the reserved symbol but a real user parameter. Those are still hidden here and by the
+     * startsWith("param__") rule below, so such a parameter cannot be overridden. That behaviour
+     * is pre-existing and is left alone rather than changed as a side effect of this fix.
+     *
+     * Only reached when the MathDescription carries no MathSymbolMapping, which is the case
+     * for a model freshly loaded from the database - i.e. exactly what a user opening a saved
+     * BioModel hits. When the mapping is present, SimulationContext's MathOverridesResolver
+     * answers from the mapping and this list is never consulted.
+     */
+    private static final Set<String> RESERVED_CONSTANT_NAMES = Set.of(
+            "KMOLE", "_T_", "_F_", "_F_nmol_", "_N_pmol_", "_PI_", "_R_", "_K_GHK_",
+            "K_millivolts_per_volt",
+            // carried over verbatim from the old list rather than dropped, to keep this change
+            // to the substring bug alone. See the note above about "param_" names.
+            "param_K_millivolts_per_volt");
+
     public String[] getFilteredConstantNames(){
         //
         // try to ask SimulationContext for Constants which map to unit conversions and physical constants (exclude these).
@@ -1217,11 +1247,10 @@ public class MathOverrides implements Matchable, java.io.Serializable {
         //
         // Simulation owner cannot provide intelligent choices (MathModel or MathSymbolMapping is missing)
         //
-        List<String> reservedConstants = Arrays.asList("KMOLE", "_T_", "_F_", "F_nmol_", "_N_pmol_", "_PI_", "_R_", "_K_GHK", "K_millivolts_per_volt", "param_K_millivolts_per_volt");
         String[] allConstants = this.getAllConstantNames();
         ArrayList<String> filteredConstants = new ArrayList<>();
         for(String constant : allConstants){
-            if(reservedConstants.stream().anyMatch(constant::contains)) continue;
+            if(RESERVED_CONSTANT_NAMES.contains(constant)) continue;
             if(constant.startsWith("UnitFactor")) continue;
             if(constant.startsWith("param__")) continue;
             filteredConstants.add(constant);
