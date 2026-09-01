@@ -15,6 +15,7 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.GraphicsEnvironment;
 import java.awt.Point;
+import java.awt.Frame;
 import java.awt.Rectangle;
 import java.awt.Robot;
 import java.awt.Window;
@@ -241,6 +242,28 @@ public final class SwingInspector {
 	 * combo/list selection, and table cell values (capped).
 	 */
 	private static void appendTypeSpecific(StringBuilder sb, Component c) {
+		if (c instanceof Window) {
+			// Window ownership and iconified state, so a scenario script can assert on the
+			// two things that actually decide whether a user can get a window out of the way:
+			//   owner     - an OWNED window is held above its owner by the OS and gets no
+			//               taskbar/dock button of its own.
+			//   canIconify- only a Frame has an iconified state at all; a Dialog cannot be
+			//               minimized, however much the user would like to.
+			Window w = (Window) c;
+			Window owner = w.getOwner();
+			comma(sb);
+			if (owner == null) {
+				sb.append("\"owner\":null");
+			} else {
+				kv(sb, "owner", nz(textOf(owner)));
+			}
+			comma(sb);
+			raw(sb, "canIconify", c instanceof Frame);
+			if (c instanceof Frame) {
+				comma(sb);
+				raw(sb, "iconified", (((Frame) c).getExtendedState() & Frame.ICONIFIED) != 0);
+			}
+		}
 		if (c instanceof JTabbedPane) {
 			JTabbedPane tp = (JTabbedPane) c;
 			sb.append(",\"tabs\":{\"selected\":").append(tp.getSelectedIndex()).append(",\"titles\":[");
@@ -976,6 +999,78 @@ public final class SwingInspector {
 	 *
 	 * @return true if a component resolved and was clicked
 	 */
+	/**
+	 * Ask a window to iconify (minimize) or restore, and report what the OS actually did.
+	 *
+	 * Deliberately NOT "did we call setExtendedState" - the caller needs to know whether the
+	 * window really minimized, because the interesting case is the one where it CANNOT. A
+	 * Dialog has no iconified state at all, so an owned child window silently refuses to
+	 * minimize; that refusal is the thing worth asserting on, and it is invisible from the
+	 * Java call alone.
+	 *
+	 * @return the window's iconified state after the attempt, or null if there is no such window
+	 */
+	public static Boolean iconify(String path, boolean iconified) {
+		Component c = findByPath(path);
+		if (!(c instanceof Window)) {
+			return null;
+		}
+		final Window w = (Window) c;
+		onEdt(() -> {
+			if (w instanceof Frame) {
+				Frame f = (Frame) w;
+				int st = f.getExtendedState();
+				f.setExtendedState(iconified ? (st | Frame.ICONIFIED) : (st & ~Frame.ICONIFIED));
+				if (!iconified) {
+					// de-iconifying is not enough on its own for every window manager
+					f.toFront();
+				}
+			}
+			// a Dialog has no iconified state; nothing to do, and that is the point
+			return null;
+		});
+		// Poll rather than sleep a fixed amount. Minimize/restore is animated and asynchronous
+		// (the macOS dock genie, Windows' own transition), and how long it takes is not ours to
+		// predict - a fixed wait either flakes on a slow machine or wastes time on a fast one.
+		// A window that is never going to honour the request simply costs the full timeout once.
+		final long deadline = System.currentTimeMillis() + 3000;
+		Boolean state;
+		do {
+			state = onEdt(() -> (w instanceof Frame)
+					&& ((((Frame) w).getExtendedState() & Frame.ICONIFIED) != 0));
+			if (state != null && state == iconified) {
+				return state;
+			}
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+				break;
+			}
+		} while (System.currentTimeMillis() < deadline);
+		return state;
+	}
+
+	/**
+	 * Move/resize a window, so a scenario can put it somewhere the user might have dragged it
+	 * to. Worth having as a first-class action: a window that is never moved sits wherever it
+	 * was opened, which is exactly where "helpfully" re-centring it would put it back - so a
+	 * test that does not move the window cannot see that bug at all.
+	 *
+	 * @return the window's bounds afterwards, or null if there is no window at that path
+	 */
+	public static Rectangle setWindowBounds(String path, Rectangle r) {
+		Component c = findByPath(path);
+		if (!(c instanceof Window)) {
+			return null;
+		}
+		final Window w = (Window) c;
+		return onEdt(() -> {
+			w.setBounds(r);
+			return w.getBounds();
+		});
+	}
+
 	public static boolean click(String path) {
 		Component c = findByPath(path);
 		if (c == null) {

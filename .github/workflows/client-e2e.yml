@@ -1,0 +1,163 @@
+# End-to-end checks for the desktop client's WINDOW BEHAVIOUR.
+#
+# Why a separate workflow, and why not headless: whether a window can be minimized, and
+# whether the OS pins it above its owner, are decided by the window manager rather than by
+# our code. There is nothing to assert in a headless JVM - the questions only have answers
+# on a real desktop session. So this runs the actual client on real macOS and Windows
+# runners and asserts on what those systems report back.
+#
+# It is deliberately NOT part of the PR gate: it starts a GUI, it is slower and inherently
+# more fragile than a unit test, and the behaviour it covers changes rarely. Run it by hand
+# when touching window ownership, parenting, or the logical-window framework.
+name: Client E2E
+
+on:
+  # Nightly, and on demand. Deliberately NOT on pull_request: it starts a GUI on three
+  # runners, so it is far too heavy and too slow to sit in front of a merge. Nightly is
+  # enough for behaviour that changes rarely, and workflow_dispatch covers the case that
+  # matters - someone about to touch window ownership or the logical-window framework.
+  schedule:
+    - cron: "40 7 * * *"    # after the other nightlies at 07:00, to spread runner load
+  workflow_dispatch:
+    inputs:
+      os:
+        description: Which runners to use
+        required: false
+        default: all
+        type: choice
+        options: [all, linux, windows, macos]
+
+concurrency:
+  group: client-e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  detach-window:
+    name: detach/reattach (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    # A GUI app on a fresh runner is slow to start; fail fast rather than hang the queue.
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os: >-
+          ${{ fromJSON(
+            inputs.os == 'windows' && '["windows-latest"]'
+            || inputs.os == 'macos' && '["macos-latest"]'
+            || inputs.os == 'linux' && '["ubuntu-latest"]'
+            || '["ubuntu-latest","windows-latest","macos-latest"]') }}
+
+    defaults:
+      run:
+        # Git Bash on Windows, so one script serves both platforms.
+        shell: bash
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: setup java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: give Linux a desktop to draw on
+        if: runner.os == 'Linux'
+        # A Linux runner has no display at all. Xvfb alone is not enough: minimizing is a
+        # WINDOW MANAGER function, and with no WM running the iconify request would go
+        # nowhere and the test would fail for a reason that has nothing to do with VCell.
+        # openbox is small, starts instantly, and implements the parts that matter here -
+        # iconification and stacking.
+        run: |
+          sudo apt-get update -qq
+          # x11-utils provides xdpyinfo, which is how the readiness check below knows the
+          # display is actually serving rather than merely that Xvfb was spawned.
+          sudo apt-get install -y -qq xvfb openbox x11-utils >/dev/null
+          Xvfb :99 -screen 0 1600x1200x24 >/tmp/xvfb.log 2>&1 &
+          for _ in $(seq 1 30); do
+            if xdpyinfo -display :99 >/dev/null 2>&1; then break; fi
+            sleep 1
+          done
+          if ! xdpyinfo -display :99 >/dev/null 2>&1; then
+            echo "Xvfb never came up (or xdpyinfo is missing)"
+            cat /tmp/xvfb.log 2>/dev/null || true
+            exit 1
+          fi
+          DISPLAY=:99 openbox >/tmp/openbox.log 2>&1 &
+          sleep 2
+          echo "DISPLAY=:99" >> "$GITHUB_ENV"
+          echo "Xvfb + openbox ready on :99"
+
+      - name: report the desktop the client will be drawing on
+        run: |
+          echo "runner:  $RUNNER_OS"
+          echo "shell:   $(uname -s)"
+          echo "display: ${DISPLAY:-(native window server)}"
+          echo "java:    $(java -version 2>&1 | head -1)"
+          for p in python3 python py; do
+            command -v "$p" >/dev/null 2>&1 && echo "python:  $p -> $($p --version 2>&1)" && break
+          done
+
+      - name: build the client
+        # INSTALL, not compile: launch-client.sh resolves vcell-client's dependency
+        # classpath with `dependency:build-classpath -pl vcell-client` (no -am), so the
+        # sibling 0.0.1-SNAPSHOT artifacts have to be in the local repository already.
+        # dependency:copy-dependencies populates target/maven-jars, which the packaged
+        # launcher and Dockerfile both expect, so the build here matches the documented one.
+        #
+        # -Daether.connector.resumeDownloads=false: the first Windows run failed the build
+        # with a wall of ChecksumFailureException (REMOTE_EXTERNAL) - resumed/partial
+        # downloads landing corrupt in a cold local repository. Retry once from a clean
+        # repository if it happens anyway, since a corrupt artifact is sticky and would
+        # otherwise fail every subsequent run identically.
+        run: |
+          build() {
+            mvn -B --no-transfer-progress install dependency:copy-dependencies \
+              -pl vcell-client -am -DskipTests \
+              -Daether.connector.resumeDownloads=false
+          }
+          if ! build; then
+            echo "::warning::build failed; clearing the local repository and retrying once"
+            rm -rf "$HOME/.m2/repository"
+            build
+          fi
+
+      - name: launch the client with the debug bridge
+        # The client validates that vcell.installDir is a real directory
+        # (PropertyLoader.validateSystemProperties) and exits if it is not. On a developer
+        # machine that is the local install4j installation; a runner has none, so give it an
+        # empty one. $HOME rather than $RUNNER_TEMP: under Git Bash the latter is a Windows
+        # path with backslashes, which this shell mangles.
+        run: |
+          mkdir -p "$HOME/vcell-install"
+          VCELL_INSTALL_DIR="$HOME/vcell-install" tools/debug-bridge/launch-client.sh
+
+      - name: detach/reattach scenario
+        run: tools/debug-bridge/scenarios/detach-window.sh
+
+      - name: what the client actually logged
+        if: always()
+        run: |
+          # Collect into the workspace: the upload action does not run through this shell,
+          # so it never expands "~" and reads a Git Bash "/tmp/..." literally, which is not
+          # a valid Windows path - that failed the upload even though the test had passed.
+          mkdir -p client-e2e-logs
+          cp /tmp/vcell-debug-launch.out client-e2e-logs/ 2>/dev/null || true
+          find "$HOME/.vcell/logs" -name 'vcellrun*.log' -exec cp {} client-e2e-logs/ \; 2>/dev/null || true
+          echo "--- launcher (pre-redirect) ---"
+          cat client-e2e-logs/vcell-debug-launch.out 2>/dev/null || echo "(none)"
+          echo
+          echo "--- client log ---"
+          # the client redirects its own stdout/stderr there; the launcher output above only
+          # carries what happened before that redirect took effect
+          tail -n 200 client-e2e-logs/vcellrun*.log 2>/dev/null || echo "(no client log)"
+
+      - name: upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: client-e2e-${{ matrix.os }}
+          path: client-e2e-logs/
+          if-no-files-found: ignore
+          retention-days: 7
