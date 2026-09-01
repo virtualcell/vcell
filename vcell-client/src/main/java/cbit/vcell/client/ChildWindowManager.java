@@ -1,6 +1,12 @@
 package cbit.vcell.client;
 
 import java.awt.BorderLayout;
+import java.awt.RenderingHints;
+import java.awt.Graphics2D;
+import java.awt.Graphics;
+import java.awt.Color;
+import java.awt.ComponentOrientation;
+import java.awt.BasicStroke;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dialog.ModalityType;
@@ -17,6 +23,7 @@ import java.util.Objects;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JMenuBar;
+import javax.swing.Icon;
 import javax.swing.JMenuItem;
 
 import org.apache.logging.log4j.LogManager;
@@ -45,6 +52,9 @@ import edu.uchc.connjur.wb.ExecutionTrace;
 
 
 public class ChildWindowManager {
+	/** component name of the detach/reattach control; selected by name in debug-bridge scenarios */
+	public static final String ATTACHMENT_TOGGLE_NAME = "DetachWindowToggle";
+
 	private final ArrayList<ChildWindow> childWindows = new ArrayList<ChildWindow>();
 	
 	private JFrame parent = null;
@@ -136,6 +146,70 @@ public class ChildWindowManager {
 		
 	}
 	
+	/**
+	 * The detach/reattach affordance, drawn rather than shipped as a bitmap so it follows the
+	 * look and feel's foreground colour and stays crisp on a HiDPI display.
+	 *
+	 * A window outline with an arrow leaving it (detach available) or returning to it
+	 * (reattach available). Direction is the whole message, so the two states read
+	 * differently at a glance instead of relying on the tooltip alone.
+	 */
+	@SuppressWarnings("serial")
+	private static class AttachmentIcon implements Icon {
+		private static final int SIZE = 16;
+		private final boolean bOut;      // true = arrow leaving the window, i.e. "detach"
+
+		private AttachmentIcon(boolean bOut) {
+			this.bOut = bOut;
+		}
+
+		@Override
+		public int getIconWidth() {
+			return SIZE;
+		}
+
+		@Override
+		public int getIconHeight() {
+			return SIZE;
+		}
+
+		@Override
+		public void paintIcon(Component c, Graphics g, int x, int y) {
+			Graphics2D g2 = (Graphics2D) g.create();
+			try {
+				g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+				g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
+				g2.translate(x, y);
+				Color fg = (c == null || c.getForeground() == null) ? Color.DARK_GRAY : c.getForeground();
+				g2.setColor(c != null && !c.isEnabled() ? Color.GRAY : fg);
+				g2.setStroke(new BasicStroke(1.2f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+
+				// A window outline left open at the top-right, where the arrow passes. This is
+				// the familiar "open in new window" mark, so detaching reads without a legend.
+				// No title bar: at 16px the extra line only muddies it.
+				g2.drawLine(1, 6, 6, 6);
+				g2.drawLine(1, 6, 1, 14);
+				g2.drawLine(1, 14, 10, 14);
+				g2.drawLine(10, 14, 10, 9);
+
+				if (bOut) {
+					// leaving: tip at the far corner, head legs folding back down the shaft
+					g2.drawLine(7, 8, 14, 1);
+					g2.drawLine(14, 1, 9, 1);
+					g2.drawLine(14, 1, 14, 6);
+				} else {
+					// returning: the mirror, with the tip placed IN the opening rather than
+					// inside the outline - overlapping the edge turns it to mush at this size
+					g2.drawLine(15, 1, 9, 7);
+					g2.drawLine(9, 7, 14, 7);
+					g2.drawLine(9, 7, 9, 2);
+				}
+			} finally {
+				g2.dispose();
+			}
+		}
+	}
+
 	/**
 	 * @param title not null
 	 * @param modality not null
@@ -331,8 +405,16 @@ public class ChildWindowManager {
 			{ //assemble pieces
 				Container cp = impl.getContentPane();
 				cp.setLayout(new BorderLayout());
-				JMenuBar mb = LWNamespace.createRightSideIconMenuBar();
+				// The window-list control earns its place only once this window is detached.
+				// While it is attached it is pinned above its owner, so jumping to another
+				// window from here does not actually reveal that window - it stays underneath.
+				// Detached, the window is independent and can be minimized, and the list is
+				// then the way back to it.
+				JMenuBar mb = (detached || modality != LWModality.MODELESS)
+						? LWNamespace.createRightSideIconMenuBar()
+						: new JMenuBar();
 				if (modality == LWModality.MODELESS) {
+					mb.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
 					mb.add(createAttachmentMenuItem());
 				}
 				cp.add(mb,BorderLayout.NORTH);
@@ -428,15 +510,21 @@ public class ChildWindowManager {
 		}
 
 		private JMenuItem createAttachmentMenuItem() {
-			final JMenuItem item = new JMenuItem();
-			item.setText(detached ? "Reattach Window" : "Detach Window");
-			// a JMenuItem in a JMenuBar is stretched to fill the bar by the bar's BoxLayout,
-			// which would turn every bit of empty menu-bar space into a detach button.
-			item.setMaximumSize(item.getPreferredSize());
+			final JMenuItem item = new JMenuItem(new AttachmentIcon(!detached));
+			// icon only, matching the window-list control alongside it. The name is the handle
+			// the debug-bridge scenario selects it by, now that there is no text to match on.
+			item.setName(ATTACHMENT_TOGGLE_NAME);
 			item.setToolTipText(detached
-					? "Keep this window in front of its document window again"
-					: "Let this window be minimized and arranged freely, at the cost of it no "
-							+ "longer being kept in front of its document window");
+					? "Reattach this window: keep it in front of its document window again"
+					: "Detach this window: let it be minimized and arranged freely, at the cost "
+							+ "of it no longer being kept in front of its document window");
+			// A JMenuItem in a JMenuBar is stretched to fill the bar by the bar's BoxLayout,
+			// which would turn every bit of empty menu-bar space into a detach button. Clamp
+			// the WIDTH only: clamping the height too squashed the item to 9px - under the
+			// icon's 16 - and clipped the glyph, but only once this was the sole control in
+			// the bar, with nothing else to hold the row open.
+			Dimension pref = item.getPreferredSize();
+			item.setMaximumSize(new Dimension(pref.width, Integer.MAX_VALUE));
 			item.addActionListener(e -> setDetached(!detached));
 			return item;
 		}

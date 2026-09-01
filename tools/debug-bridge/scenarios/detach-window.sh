@@ -109,13 +109,50 @@ print(str(d.get('iconified')).lower() if 'iconified' in d else 'ERROR')
 "
 }
 
-# id of the attach/detach menu item, whichever way it currently reads
-toggle_id() {
-  "$BRIDGE" find --contains "$1" | python3 -c "
+# The detach/reattach control is an icon with a tooltip - no text to match on - so it is
+# selected by component name. Its tooltip is what tells the user which way it will go, so
+# the script asserts on that too: an icon whose tooltip did not flip would be a silent lie.
+TOGGLE=DetachWindowToggle
+
+# Is the control big enough to actually draw its 16px icon? The icon is clipped rather
+# than scaled if the menu bar squashes the item, which no functional assertion notices -
+# it happened for real once the window-list control was removed and nothing else was left
+# in the bar to hold the row open.
+icon_fits() {
+  "$BRIDGE" find --name "$TOGGLE" | python3 -c "
 import json,sys
 d=json.load(sys.stdin)
-print(d[0]['id'] if d else 'MENU-ITEM-NOT-FOUND')
+if not d:
+    print('CONTROL-NOT-FOUND')
+else:
+    b=d[0]['bounds']
+    print('yes' if b['h'] >= 16 and b['w'] >= 16 else 'no (%dx%d)'%(b['w'],b['h']))
 "
+}
+
+# which action the tooltip currently offers: "Detach" or "Reattach"
+toggle_offers() {
+  "$BRIDGE" find --name "$TOGGLE" | python3 -c "
+import json,sys
+d=json.load(sys.stdin)
+if not d:
+    print('CONTROL-NOT-FOUND')
+else:
+    tip = d[0].get('tooltip') or ''
+    print(tip.split()[0] if tip else 'NO-TOOLTIP')
+"
+}
+
+# does the CHILD window carry the window-list (hamburger) control? Scoped to the child's
+# own subtree - the document window has one of its own, which a global search would hit.
+has_window_menu() {
+  "$BRIDGE" find --type JMenu --limit 50 | python3 -c "
+import json,sys
+d=json.load(sys.stdin)
+prefix = sys.argv[1] + '/'
+print('yes' if any(isinstance(c,dict) and c.get('name')=='WindowIconMenu'
+                   and c.get('path','').startswith(prefix) for c in d) else 'no')
+" "$(child_path)"
 }
 
 step "bridge is answering"
@@ -165,13 +202,13 @@ if [ "$opened" != yes ]; then
   echo "  FAIL  could not open '$CHILD_TITLE' via $OPEN_MENU"
   exit 1
 fi
-"$BRIDGE" wait --type JMenuItem --contains "etach Window" --timeout 20000 >/dev/null
+"$BRIDGE" wait --name "$TOGGLE" --timeout 20000 >/dev/null
 pause
 
 step "normalize: make sure we start attached"
 if [ "$(field owner)" = "null" ]; then
-  "$BRIDGE" click "$(toggle_id 'Reattach Window')" >/dev/null
-  "$BRIDGE" wait --type JMenuItem --contains "Detach Window" --timeout 10000 >/dev/null
+  "$BRIDGE" click "name=$TOGGLE" >/dev/null
+  "$BRIDGE" idle >/dev/null
   echo "  was detached from a previous run; reattached"
 else
   echo "  ok"
@@ -187,9 +224,13 @@ echo "  bounds: $before"
 check "minimize request refused"          "false" "$(try_minimize true)"
 pause
 
-step "click 'Detach Window'"
-"$BRIDGE" click "$(toggle_id 'Detach Window')" >/dev/null
-"$BRIDGE" wait --type JMenuItem --contains "Reattach Window" --timeout 10000 >/dev/null
+step "click the detach control (icon + tooltip, no text)"
+check "tooltip offers detaching"          "Detach"   "$(toggle_offers)"
+check "icon not clipped by the menu bar"  "yes"      "$(icon_fits)"
+check "no window-list control while attached" "no" "$(has_window_menu)"
+"$BRIDGE" click "name=$TOGGLE" >/dev/null
+"$BRIDGE" wait --name "$TOGGLE" --timeout 10000 >/dev/null
+"$BRIDGE" idle >/dev/null
 pause
 
 step "DETACHED: un-owned, and the OS really does minimize it"
@@ -202,9 +243,13 @@ check "minimize request honoured"         "true"  "$(try_minimize true)"
 check "restored"                          "false" "$(try_minimize false)"
 pause
 
-step "click 'Reattach Window'"
-"$BRIDGE" click "$(toggle_id 'Reattach Window')" >/dev/null
-"$BRIDGE" wait --type JMenuItem --contains "Detach Window" --timeout 10000 >/dev/null
+step "click the reattach control"
+check "tooltip now offers reattaching"    "Reattach" "$(toggle_offers)"
+check "icon not clipped by the menu bar"  "yes"      "$(icon_fits)"
+check "window-list control appears once detached" "yes" "$(has_window_menu)"
+"$BRIDGE" click "name=$TOGGLE" >/dev/null
+"$BRIDGE" wait --name "$TOGGLE" --timeout 10000 >/dev/null
+"$BRIDGE" idle >/dev/null
 pause
 
 step "REATTACHED: owned again, nothing moved"
