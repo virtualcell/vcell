@@ -643,8 +643,11 @@ public class SlurmProxy extends HtcProxy {
 		}
 	}
 	private void writeBatchScriptControlledVariables(LineStringBuilder lsb, String jobName,
-													 SimulationTask simTask, int jobTimeoutSeconds,
-													 int watchdogTickSeconds, int watchdogTimeoutSeconds)	// watchdog stuff
+				SimulationTask simTask,
+				int totalNumberOfJobs,	// total number of simulations (excluding the watchdog), which may be larger
+										// than the max number of concurrent simulations
+				int jobTimeoutSeconds,
+				int watchdogTickSeconds, int watchdogTimeoutSeconds)	// watchdog stuff
 	{
 		String simKey = simTask.getSimulation().getVersion().getVersionKey().toString();
 		String simOwnerName = simTask.getSimulation().getVersion().getOwner().getName();	// this is the user name
@@ -652,7 +655,6 @@ public class SlurmProxy extends HtcProxy {
 		String jobId = Integer.toString(simTask.getSimulationJob().getJobIndex());		// for example 0
 		String taskId = Integer.toString(simTask.getTaskID());
 
-		int totalJobs = simTask.getSimulation().getSolverTaskDescription().getLangevinSimulationOptions().getTotalNumberOfJobs();
 		String htcLogDir = PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDirExternal);
 		String simDataDir = PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirExternalProperty);
 		int lastUnderscore = jobName.lastIndexOf('_');
@@ -678,7 +680,7 @@ public class SlurmProxy extends HtcProxy {
 		lsb.write("VC_JOB_ID=" + jobId);		// vcell job id, there is also a slurm job id which is something else
 		lsb.write("VC_TASK_ID=" + taskId);
 
-		lsb.write("TOTAL_JOBS=" + totalJobs + "            # to be set by generator to lso.getTotalNumberOfJobs()");
+		lsb.write("TOTAL_JOBS=" + totalNumberOfJobs + "  # total number of simulations (excluding the watchdog)");
 		lsb.write("JOB_TIMEOUT_SECONDS=" + jobTimeoutSeconds + "  # per-job timeout (seconds), adjust per generator");
 		lsb.write("WATCHDOG_TICK_SECONDS=" + watchdogTickSeconds + "  # watchdog tick interval (seconds)");
 		lsb.write("WATCHDOG_TIMEOUT_SECONDS=" + watchdogTimeoutSeconds + "  # watchdog timeout (seconds)");
@@ -828,7 +830,7 @@ public class SlurmProxy extends HtcProxy {
 
 		// the number of simulations running concurrently from LangevinSimulationOptions
 		// in reality we also run a watchdog, so the number of concurrent tasks is actually 1 more than this
-		int numberOfConcurrentTasks = lso.getNumberOfConcurrentJobs();
+//		int numberOfConcurrentTasks = lso.getNumberOfConcurrentJobs();
 		SolverDescription solverDescription = std.getSolverDescription();
 		MemLimitResults memoryMBAllowed = HtcProxy.getMemoryLimit(vcellUserid, simID, solverDescription, memSizeMB, simTask.isPowerUser());
 
@@ -844,14 +846,20 @@ public class SlurmProxy extends HtcProxy {
 		String sBlockSizeMB =  PropertyLoader.getRequiredProperty(PropertyLoader.slurm_langevin_memoryBlockSizeMB);
 		String sWatchdogTickSeconds = PropertyLoader.getProperty(PropertyLoader.slurm_langevin_watchdogTickSeconds, "60");
 		String sWatchdogTimeoutSeconds = PropertyLoader.getProperty(PropertyLoader.slurm_langevin_watchdogTimeoutSeconds, "600");
+		String sMaxNumberOfConcurrentTasks = PropertyLoader.getProperty(PropertyLoader.slurm_langevin_maxNumConcurrentTasks,
+					"31");		// max number of concurrent simulations + 1 watchdog
+
 
 		// we don't need to convert many of these strings to numeric only to convert them again to strings for the script,
 		// but it's prudent to validate that they are numeric (and within reasonable bounds?), so we do it here and fail
 		// early rather than launch the batch job and have it fail server-side
+		// TODO: if totalNumberOfJobs is small, adjust totalNumberOfConcurrentSimulations and totalNumberOfConcurrentTasks accordingly
+		int totalNumberOfConcurrentTasks = Integer.parseInt(sMaxNumberOfConcurrentTasks);
+		int totalNumberOfConcurrentSimulations = totalNumberOfConcurrentTasks - 1;	// one task is the watchdog
 		int timeoutPerTaskSeconds = Integer.parseInt(sTimeoutPerTaskSeconds);
 		long hardbBtchMemoryLimitPerTask = Long.parseLong(sHardbBtchMemoryLimitPerTask);	// MB. we hard limit mem to 2G for langevin batch jobs
 		int blockSizeMB = Integer.parseInt(sBlockSizeMB); 						// MB. SLURM memory allocation granularity
-		String slurmJobTimeout = computeSlurmTimeLimit(totalNumberOfJobs, numberOfConcurrentTasks, timeoutPerTaskSeconds);
+		String slurmJobTimeout = computeSlurmTimeLimit(totalNumberOfJobs, totalNumberOfConcurrentSimulations, timeoutPerTaskSeconds);
 		long batchMemoryLimitPerTask = memoryMBAllowed.getMemLimit();
 		batchMemoryLimitPerTask = Math.min(batchMemoryLimitPerTask, hardbBtchMemoryLimitPerTask);
 		int javaMemXmx = roundUpToBlock(batchMemoryLimitPerTask, blockSizeMB) + blockSizeMB;	// add extra block for overhead
@@ -862,8 +870,8 @@ public class SlurmProxy extends HtcProxy {
 
 		LineStringBuilder lsb = new LineStringBuilder();
 		// we need to tell slurm the real number of tasks here, including the watchdog
-		slurmBatchScriptInit(jobName, simTask.isPowerUser(), memoryMBAllowed, numberOfConcurrentTasks+1, slurmJobTimeout, lsb);
-		writeBatchScriptControlledVariables(lsb, jobName, simTask, timeoutPerTaskSeconds, watchdogTickSeconds, watchdogTimeoutSeconds);
+		slurmBatchScriptInit(jobName, simTask.isPowerUser(), memoryMBAllowed, totalNumberOfConcurrentTasks, slurmJobTimeout, lsb);
+		writeBatchScriptControlledVariables(lsb, jobName, simTask, totalNumberOfJobs, timeoutPerTaskSeconds, watchdogTickSeconds, watchdogTimeoutSeconds);
 		writeBatchSingularitySetup(lsb);
 		writeBatchSlurmJobMetadata(lsb);
 		writeBatchContainerBindingsAndEnv(lsb, javaMemXmx);
