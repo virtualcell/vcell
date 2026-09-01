@@ -84,10 +84,24 @@ jobs:
         # back to the platform encoding and Windows reads UTF-8 sources as windows-1252
         # ("unmappable character (0x9D)"). Worth fixing in the pom itself; set here so this
         # workflow does not depend on that landing first.
-        run: >-
-          mvn -B --no-transfer-progress install dependency:copy-dependencies
-          -pl vcell-client -am -DskipTests
-          -Dproject.build.sourceEncoding=UTF-8
+        #
+        # -Daether.connector.resumeDownloads=false: the first Windows run failed the build
+        # with a wall of ChecksumFailureException (REMOTE_EXTERNAL) - resumed/partial
+        # downloads landing corrupt in a cold local repository. Retry once from a clean
+        # repository if it happens anyway, since a corrupt artifact is sticky and would
+        # otherwise fail every subsequent run identically.
+        run: |
+          build() {
+            mvn -B --no-transfer-progress install dependency:copy-dependencies \
+              -pl vcell-client -am -DskipTests \
+              -Dproject.build.sourceEncoding=UTF-8 \
+              -Daether.connector.resumeDownloads=false
+          }
+          if ! build; then
+            echo "::warning::build failed; clearing the local repository and retrying once"
+            rm -rf "$HOME/.m2/repository"
+            build
+          fi
 
       - name: launch the client with the debug bridge
         # The client validates that vcell.installDir is a real directory
