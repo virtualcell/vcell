@@ -106,11 +106,6 @@ jobs:
         # dependency:copy-dependencies populates target/maven-jars, which the packaged
         # launcher and Dockerfile both expect, so the build here matches the documented one.
         #
-        # -Dproject.build.sourceEncoding=UTF-8: the root pom does not set it, so javac falls
-        # back to the platform encoding and Windows reads UTF-8 sources as windows-1252
-        # ("unmappable character (0x9D)"). Worth fixing in the pom itself; set here so this
-        # workflow does not depend on that landing first.
-        #
         # -Daether.connector.resumeDownloads=false: the first Windows run failed the build
         # with a wall of ChecksumFailureException (REMOTE_EXTERNAL) - resumed/partial
         # downloads landing corrupt in a cold local repository. Retry once from a clean
@@ -120,7 +115,6 @@ jobs:
           build() {
             mvn -B --no-transfer-progress install dependency:copy-dependencies \
               -pl vcell-client -am -DskipTests \
-              -Dproject.build.sourceEncoding=UTF-8 \
               -Daether.connector.resumeDownloads=false
           }
           if ! build; then
