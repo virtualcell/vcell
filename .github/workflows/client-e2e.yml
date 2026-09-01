@@ -74,13 +74,19 @@ jobs:
         # iconification and stacking.
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq xvfb openbox >/dev/null
+          # x11-utils provides xdpyinfo, which is how the readiness check below knows the
+          # display is actually serving rather than merely that Xvfb was spawned.
+          sudo apt-get install -y -qq xvfb openbox x11-utils >/dev/null
           Xvfb :99 -screen 0 1600x1200x24 >/tmp/xvfb.log 2>&1 &
           for _ in $(seq 1 30); do
             if xdpyinfo -display :99 >/dev/null 2>&1; then break; fi
             sleep 1
           done
-          xdpyinfo -display :99 >/dev/null 2>&1 || { echo "Xvfb never came up"; cat /tmp/xvfb.log; exit 1; }
+          if ! xdpyinfo -display :99 >/dev/null 2>&1; then
+            echo "Xvfb never came up (or xdpyinfo is missing)"
+            cat /tmp/xvfb.log 2>/dev/null || true
+            exit 1
+          fi
           DISPLAY=:99 openbox >/tmp/openbox.log 2>&1 &
           sleep 2
           echo "DISPLAY=:99" >> "$GITHUB_ENV"
