@@ -5,6 +5,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dialog.ModalityType;
 import java.awt.Dimension;
+import java.awt.Rectangle;
 import java.awt.HeadlessException;
 import java.awt.Window;
 import java.awt.event.WindowAdapter;
@@ -16,6 +17,7 @@ import java.util.Objects;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -81,6 +83,41 @@ public class ChildWindowManager {
 			return childWindowManager; 
 		}
 	}
+	/**
+	 * The DETACHED counterpart of {@link ModelessChild}: an un-owned {@link LWChildFrame}.
+	 *
+	 * Owning a child window buys OS-guaranteed z-order (see ModelessChild), but the price is
+	 * paid by the user: a Dialog has no taskbar/dock button and, not being a Frame, has no
+	 * iconified state at all, so it cannot be minimised; and because the OS keeps it above its
+	 * owner, on a small screen it can cover the document window with no way to raise that
+	 * window above it. Detaching trades the z-order guarantee back for an ordinary top-level
+	 * window the user can minimise, stack and arrange freely.
+	 *
+	 * Still a logical-window child, so it keeps its place in the Window menu and in
+	 * {@link ChildWindowManager#findChildWindowManager(Component)} - only the NATIVE ownership
+	 * is given up, not the logical parentage.
+	 */
+	@SuppressWarnings("serial")
+	private static class DetachedModelessChild extends LWChildFrame implements ManagedChild {
+		private final ChildWindowManager childWindowManager;
+		private DetachedModelessChild(ChildWindowManager cwm, LWContainerHandle parent, String title, LWTraits tr) throws HeadlessException {
+			super(parent, title);
+			Objects.requireNonNull(cwm);
+			childWindowManager = cwm;
+			traits = tr;
+		}
+
+		@Override
+		public String menuDescription() {
+			return getTitle();
+		}
+
+		@Override
+		public ChildWindowManager getChildWindowManager() {
+			return childWindowManager;
+		}
+	}
+
 	@SuppressWarnings("serial")
 	private static class ParentModalChild extends LWTitledDialog implements ManagedChild {
 		private final ChildWindowManager childWindowManager;
@@ -104,7 +141,7 @@ public class ChildWindowManager {
 	 * @param modality not null
 	 * @return implementing class
 	 */
-	private LWFrameOrDialog createContainerImplementation(String title,LWModality modality, boolean parentCentered) {
+	private LWFrameOrDialog createContainerImplementation(String title,LWModality modality, boolean parentCentered, boolean detached) {
 		LWTraits traits = parentCentered ? new LWTraits(InitialPosition.CENTERED_ON_PARENT) : new LWTraits(InitialPosition.STAGGERED_ON_PARENT);
 		if (owner == null) {
 			// every ChildWindowManager host is an LWTopFrame, so findLWOwner(parent) always resolves an
@@ -115,7 +152,10 @@ public class ChildWindowManager {
 		}
 		switch (modality) {
 		case MODELESS:
-			return new ModelessChild(this,owner, title,traits);
+			// detach is only meaningful for modeless windows; a parent-modal window that the
+			// user could send behind its parent would be a trap (unreachable modal blocker).
+			return detached ? new DetachedModelessChild(this,owner, title,traits)
+							: new ModelessChild(this,owner, title,traits);
 		case PARENT_ONLY:
 			return new ParentModalChild(this,owner, title,traits);
 		}
@@ -152,6 +192,10 @@ public class ChildWindowManager {
 		private Boolean pack = null;
 		private Dimension size = null;
 		private Boolean isCenteredOnParent = true;
+		private boolean detached = false;
+		/** bounds carried across a detach/reattach, which must rebuild the window */
+		private Rectangle rememberedBounds = null;
+		private LWModality shownModality = null;
 		
 		
 		private ArrayList<ChildWindowListener> listeners = new ArrayList<ChildWindowListener>();
@@ -281,12 +325,16 @@ public class ChildWindowManager {
 			if (LG.isDebugEnabled()) {
 				LG.debug(ExecutionTrace.justClassName(ChildWindowManager.this) + " making a child window.  My parent is a "+ this.getParent().getName());
 			}	
-			impl = createContainerImplementation(title,modality,isCenteredOnParent);
+			shownModality = modality;
+			impl = createContainerImplementation(title,modality,isCenteredOnParent,detached);
 			impl.addWindowListener(windowListener);
 			{ //assemble pieces
 				Container cp = impl.getContentPane();
 				cp.setLayout(new BorderLayout());
-				JMenuBar mb = LWNamespace.createRightSideIconMenuBar(); 
+				JMenuBar mb = LWNamespace.createRightSideIconMenuBar();
+				if (modality == LWModality.MODELESS) {
+					mb.add(createAttachmentMenuItem());
+				}
 				cp.add(mb,BorderLayout.NORTH);
 				cp.add(contentPane, BorderLayout.CENTER);
 			}
@@ -309,7 +357,12 @@ public class ChildWindowManager {
 				impl.setSize(size);
 			}
 
-			if (isCenteredOnParent != null) {
+			if (rememberedBounds != null) {
+				// coming back from a detach/reattach: keep the window exactly where the user
+				// had it rather than re-centring it on the parent.
+				impl.self().setBounds(rememberedBounds);
+				rememberedBounds = null;
+			} else if (isCenteredOnParent != null) {
 				impl.setLocationRelativeTo(impl.getParent());
 			}
 			impl.toFront();
@@ -334,6 +387,58 @@ public class ChildWindowManager {
 		 */
 		public void showModal() {
 			show(LWModality.PARENT_ONLY);
+		}
+
+		public boolean isDetached() {
+			return detached;
+		}
+
+		/**
+		 * Detach this window from its document window, or re-attach it.
+		 *
+		 * A window's native owner is fixed when it is created, so this cannot be flipped in
+		 * place - the window is rebuilt. That is cheap here only because ChildWindow already
+		 * keeps the caller's contentPane separate from the window it is currently sitting in,
+		 * and rebuilds that window on every show(). The content pane, and therefore all viewer
+		 * state, is carried across untouched; the user sees the window's frame change, not its
+		 * contents reload.
+		 *
+		 * Position and size are carried across too, so a detach does not move the window out
+		 * from under the mouse.
+		 */
+		public void setDetached(boolean bDetached) {
+			if (detached == bDetached) {
+				return;
+			}
+			if (shownModality != null && shownModality != LWModality.MODELESS) {
+				throw new IllegalStateException("only a MODELESS child window can be detached");
+			}
+			detached = bDetached;
+			if (impl == null) {
+				return;         // not realized yet; the flag alone is enough
+			}
+			boolean wasVisible = impl.isVisible();
+			rememberedBounds = impl.self().getBounds();
+			// take the content pane back BEFORE disposing, so it is never disposed with the window
+			impl.getContentPane().remove(contentPane);
+			dispose();
+			if (wasVisible) {
+				show(shownModality == null ? LWModality.MODELESS : shownModality);
+			}
+		}
+
+		private JMenuItem createAttachmentMenuItem() {
+			final JMenuItem item = new JMenuItem();
+			item.setText(detached ? "Reattach Window" : "Detach Window");
+			// a JMenuItem in a JMenuBar is stretched to fill the bar by the bar's BoxLayout,
+			// which would turn every bit of empty menu-bar space into a detach button.
+			item.setMaximumSize(item.getPreferredSize());
+			item.setToolTipText(detached
+					? "Keep this window in front of its document window again"
+					: "Let this window be minimized and arranged freely, at the cost of it no "
+							+ "longer being kept in front of its document window");
+			item.addActionListener(e -> setDetached(!detached));
+			return item;
 		}
 
 		public void toFront() {
