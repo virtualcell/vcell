@@ -59,9 +59,25 @@ fi
 # --- classpath: module classes first, then the dependency jars --------------
 MODULES=(vcell-client vcell-core vcell-util vcell-math vcell-api-types
          vcell-apiclient vcell-restclient vcell-server vcell-api)
+
+# Under Git Bash / MSYS the java on PATH is a WINDOWS binary: it wants ';' between
+# classpath entries and native C:\... paths, not the ':' and /c/... this shell uses.
+# cygpath does that translation; everywhere else the POSIX form is already right.
+CPSEP=":"
+case "$(uname -s)" in
+  MINGW*|MSYS*|CYGWIN*) CPSEP=";" ;;
+esac
+winpath() {
+  if [ "$CPSEP" = ";" ] && command -v cygpath >/dev/null 2>&1; then
+    cygpath -w "$1"
+  else
+    printf '%s' "$1"
+  fi
+}
+
 CP=""
 for m in "${MODULES[@]}"; do
-  CP+="$REPO/$m/target/classes:"
+  CP+="$(winpath "$REPO/$m/target/classes")$CPSEP"
 done
 
 if [ ! -d "$REPO/vcell-client/target/classes" ]; then
@@ -74,14 +90,14 @@ DEP_CP_FILE="$REPO/vcell-client/target/debug-bridge-deps-cp.txt"
 if $REFRESH_CP || [ ! -s "$DEP_CP_FILE" ]; then
   echo "resolving vcell-client dependency classpath (cached at $DEP_CP_FILE)..." >&2
   (cd "$REPO" && mvn -q dependency:build-classpath -pl vcell-client \
-      -Dmdep.outputFile="$DEP_CP_FILE")
+      -Dmdep.outputFile="$(winpath "$DEP_CP_FILE")")
 fi
 CP+="$(cat "$DEP_CP_FILE")"
 
 # --- JVM options mirrored from the install4j launcher ------------------------
 vmopts=(
   --add-exports java.desktop/sun.awt.image=ALL-UNNAMED
-  "-Dvcell.installDir=$INSTALL_DIR"
+  "-Dvcell.installDir=$(winpath "$INSTALL_DIR")"
   -Dvcell.autoflushlog=true
   "-Dvcell.softwareVersion=$VERSION"
   "-Dvcell.serverHost=$API_HOST"

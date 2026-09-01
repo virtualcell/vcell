@@ -1,0 +1,97 @@
+# End-to-end checks for the desktop client's WINDOW BEHAVIOUR.
+#
+# Why a separate workflow, and why not headless: whether a window can be minimized, and
+# whether the OS pins it above its owner, are decided by the window manager rather than by
+# our code. There is nothing to assert in a headless JVM - the questions only have answers
+# on a real desktop session. So this runs the actual client on real macOS and Windows
+# runners and asserts on what those systems report back.
+#
+# It is deliberately NOT part of the PR gate: it starts a GUI, it is slower and inherently
+# more fragile than a unit test, and the behaviour it covers changes rarely. Run it by hand
+# when touching window ownership, parenting, or the logical-window framework.
+name: Client E2E
+
+on:
+  workflow_dispatch:
+    inputs:
+      os:
+        description: Which runners to use
+        required: false
+        default: both
+        type: choice
+        options: [both, windows, macos]
+
+concurrency:
+  group: client-e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  detach-window:
+    name: detach/reattach (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    # A GUI app on a fresh runner is slow to start; fail fast rather than hang the queue.
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os: >-
+          ${{ fromJSON(
+            inputs.os == 'windows' && '["windows-latest"]'
+            || inputs.os == 'macos' && '["macos-latest"]'
+            || '["windows-latest","macos-latest"]') }}
+
+    defaults:
+      run:
+        # Git Bash on Windows, so one script serves both platforms.
+        shell: bash
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: setup java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: report the desktop the client will be drawing on
+        run: |
+          echo "runner:  $RUNNER_OS"
+          echo "shell:   $(uname -s)"
+          echo "java:    $(java -version 2>&1 | head -1)"
+          for p in python3 python py; do
+            command -v "$p" >/dev/null 2>&1 && echo "python:  $p -> $($p --version 2>&1)" && break
+          done
+
+      - name: build the client
+        run: mvn -B --no-transfer-progress compile -pl vcell-client -am -DskipTests
+
+      - name: launch the client with the debug bridge
+        run: tools/debug-bridge/launch-client.sh
+
+      - name: detach/reattach scenario
+        run: tools/debug-bridge/scenarios/detach-window.sh
+
+      - name: what the client actually logged
+        if: always()
+        run: |
+          echo "--- launcher (pre-redirect) ---"
+          cat /tmp/vcell-debug-launch.out 2>/dev/null || echo "(none)"
+          echo
+          echo "--- client log ---"
+          # the client redirects its own stdout/stderr here; the launcher output above
+          # only carries what happened before that redirect took effect
+          find "$HOME/.vcell/logs" -name 'vcellrun*.log' -exec tail -n 200 {} + 2>/dev/null \
+            || echo "(no client log)"
+
+      - name: upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: client-e2e-${{ matrix.os }}
+          path: |
+            /tmp/vcell-debug-launch.out
+            ~/.vcell/logs/
+          if-no-files-found: ignore
+          retention-days: 7
