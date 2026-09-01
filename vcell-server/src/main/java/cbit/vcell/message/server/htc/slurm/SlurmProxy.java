@@ -680,7 +680,7 @@ public class SlurmProxy extends HtcProxy {
 		lsb.write("VC_JOB_ID=" + jobId);		// vcell job id, there is also a slurm job id which is something else
 		lsb.write("VC_TASK_ID=" + taskId);
 
-		lsb.write("TOTAL_JOBS=" + totalNumberOfJobs + "  # total number of simulations (excluding the watchdog)");
+		lsb.write("TOTAL_JOBS=" + totalNumberOfJobs + "      # total number of simulations (excluding the watchdog)");
 		lsb.write("JOB_TIMEOUT_SECONDS=" + jobTimeoutSeconds + "  # per-job timeout (seconds), adjust per generator");
 		lsb.write("WATCHDOG_TICK_SECONDS=" + watchdogTickSeconds + "  # watchdog tick interval (seconds)");
 		lsb.write("WATCHDOG_TIMEOUT_SECONDS=" + watchdogTimeoutSeconds + "  # watchdog timeout (seconds)");
@@ -826,7 +826,7 @@ public class SlurmProxy extends HtcProxy {
 		KeyValue simID = simTask.getSimulationInfo().getSimulationVersion().getVersionKey();
 		SolverTaskDescription std = simTask.getSimulation().getSolverTaskDescription();
 		LangevinSimulationOptions lso = std.getLangevinSimulationOptions();
-		int totalNumberOfJobs = lso.getTotalNumberOfJobs();
+		int totalNumberOfJobs = lso.getTotalNumberOfJobs();		// total number of sims the user wants to run (excludes the watchdog)
 
 		// the number of simulations running concurrently from LangevinSimulationOptions
 		// in reality we also run a watchdog, so the number of concurrent tasks is actually 1 more than this
@@ -853,9 +853,12 @@ public class SlurmProxy extends HtcProxy {
 		// we don't need to convert many of these strings to numeric only to convert them again to strings for the script,
 		// but it's prudent to validate that they are numeric (and within reasonable bounds?), so we do it here and fail
 		// early rather than launch the batch job and have it fail server-side
-		// TODO: if totalNumberOfJobs is small, adjust totalNumberOfConcurrentSimulations and totalNumberOfConcurrentTasks accordingly
-		int totalNumberOfConcurrentTasks = Integer.parseInt(sMaxNumberOfConcurrentTasks);
-		int totalNumberOfConcurrentSimulations = totalNumberOfConcurrentTasks - 1;	// one task is the watchdog
+		int maxNumberOfConcurrentTasks = Integer.parseInt(sMaxNumberOfConcurrentTasks);		// concurrent sims + watchdog
+		// if totalNumberOfJobs is small, adjust totalNumberOfConcurrentSimulations and totalNumberOfConcurrentTasks down accordingly
+		int totalNumberOfConcurrentSimulations = Math.min(totalNumberOfJobs, maxNumberOfConcurrentTasks - 1);	// one task is the watchdog
+		int totalNumberOfConcurrentTasks = totalNumberOfConcurrentSimulations + 1;	// add one for the watchdog
+		int nodes = (int)Math.ceil(totalNumberOfConcurrentTasks / 20.0);
+
 		int timeoutPerTaskSeconds = Integer.parseInt(sTimeoutPerTaskSeconds);
 		long hardbBtchMemoryLimitPerTask = Long.parseLong(sHardbBtchMemoryLimitPerTask);	// MB. we hard limit mem to 2G for langevin batch jobs
 		int blockSizeMB = Integer.parseInt(sBlockSizeMB); 						// MB. SLURM memory allocation granularity
@@ -870,7 +873,7 @@ public class SlurmProxy extends HtcProxy {
 
 		LineStringBuilder lsb = new LineStringBuilder();
 		// we need to tell slurm the real number of tasks here, including the watchdog
-		slurmBatchScriptInit(jobName, simTask.isPowerUser(), memoryMBAllowed, totalNumberOfConcurrentTasks, slurmJobTimeout, lsb);
+		slurmBatchScriptInit(jobName, simTask.isPowerUser(), memoryMBAllowed, nodes, totalNumberOfConcurrentTasks, slurmJobTimeout, lsb);
 		writeBatchScriptControlledVariables(lsb, jobName, simTask, totalNumberOfJobs, timeoutPerTaskSeconds, watchdogTickSeconds, watchdogTimeoutSeconds);
 		writeBatchSingularitySetup(lsb);
 		writeBatchSlurmJobMetadata(lsb);
@@ -1171,6 +1174,7 @@ public class SlurmProxy extends HtcProxy {
 	}
 
 	private void slurmBatchScriptInit(String jobName, boolean isPowerUser, MemLimitResults memoryMBAllowed,
+									  int nodes,							// number of nodes to request from slurm
 									  int totalNumberOfConcurrentTasks, 	// num concurrent sims + 1 watchdog
 									  String jobTimeout, LineStringBuilder lsb) {
 		lsb.write("#!/usr/bin/bash");
@@ -1199,12 +1203,12 @@ public class SlurmProxy extends HtcProxy {
 
 		lsb.write("#SBATCH -o " + logPath);
 		lsb.write("#SBATCH -e " + logPath);
-		lsb.write("#SBATCH --ntasks=" + totalNumberOfConcurrentTasks + "\t\t\t# number of concurrent tasks");
+		lsb.write("#SBATCH --ntasks=" + totalNumberOfConcurrentTasks + "\t\t\t# number of concurrent tasks (including 1 watchdog)");
 		// TODO: hardcoded for now, adjust if needed
 		lsb.write("#SBATCH --cpus-per-task=1");
 		// TODO: mem per cpu needs to be adjusted, 2M should be enough for most Langevin tasks
 		lsb.write("#SBATCH --mem-per-cpu=" + memoryMBAllowed.getMemLimit() + "M");
-		lsb.write("#SBATCH --nodes=1");
+		lsb.write("#SBATCH --nodes=" + nodes + "\t\t\t# number of nodes to request from slurm");
 		lsb.write("#SBATCH --time=" + jobTimeout + "\t\t# timeout for the entire job");
 		String nodelist = PropertyLoader.getProperty(PropertyLoader.htcNodeList, null);
 		if (nodelist!=null && nodelist.trim().length()>0) {
