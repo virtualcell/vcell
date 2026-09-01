@@ -156,7 +156,7 @@ if not d:
     print('CONTROL-NOT-FOUND')
 else:
     tip = d[0].get('tooltip') or ''
-    print(tip.split()[0] if tip else 'NO-TOOLTIP')
+    print(tip.split()[0].rstrip(':,.-') if tip else 'NO-TOOLTIP')
 "
 }
 
@@ -238,8 +238,16 @@ step "ATTACHED: owned by the document window, and cannot be minimized"
 owner=$(field owner)
 check "owner is a window (not null)"      "yes"   "$([ "$owner" = null ] && echo no || echo yes)"
 check "canIconify"                        "false" "$(field canIconify)"
+# Move it somewhere a user might have dragged it to. This matters: a window left where
+# it opened already sits where "helpfully" re-centring it would put it back, so a test
+# that never moves the window cannot see a re-centring bug at all. One did exist - the
+# logical-window framework repositions in componentShown, after setBounds - and it went
+# unnoticed here until someone dragged the window by hand.
+"$BRIDGE" wbounds "$(child_path)" 80 90 640 300 >/dev/null
+"$BRIDGE" idle >/dev/null
 before=$(bounds)
-echo "  bounds: $before"
+echo "  bounds after moving it off-centre: $before"
+check "window went where it was put"      "80,90,640,300" "$before"
 # the user's actual complaint: asking an owned dialog to minimize does nothing
 check "minimize request refused"          "false" "$(try_minimize true)"
 pause

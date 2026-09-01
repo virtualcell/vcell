@@ -74,7 +74,20 @@ jobs:
           done
 
       - name: build the client
-        run: mvn -B --no-transfer-progress compile -pl vcell-client -am -DskipTests
+        # INSTALL, not compile: launch-client.sh resolves vcell-client's dependency
+        # classpath with `dependency:build-classpath -pl vcell-client` (no -am), so the
+        # sibling 0.0.1-SNAPSHOT artifacts have to be in the local repository already.
+        # dependency:copy-dependencies populates target/maven-jars, which the packaged
+        # launcher and Dockerfile both expect, so the build here matches the documented one.
+        #
+        # -Dproject.build.sourceEncoding=UTF-8: the root pom does not set it, so javac falls
+        # back to the platform encoding and Windows reads UTF-8 sources as windows-1252
+        # ("unmappable character (0x9D)"). Worth fixing in the pom itself; set here so this
+        # workflow does not depend on that landing first.
+        run: >-
+          mvn -B --no-transfer-progress install dependency:copy-dependencies
+          -pl vcell-client -am -DskipTests
+          -Dproject.build.sourceEncoding=UTF-8
 
       - name: launch the client with the debug bridge
         run: tools/debug-bridge/launch-client.sh

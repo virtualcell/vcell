@@ -1051,6 +1051,26 @@ public final class SwingInspector {
 		return state;
 	}
 
+	/**
+	 * Move/resize a window, so a scenario can put it somewhere the user might have dragged it
+	 * to. Worth having as a first-class action: a window that is never moved sits wherever it
+	 * was opened, which is exactly where "helpfully" re-centring it would put it back - so a
+	 * test that does not move the window cannot see that bug at all.
+	 *
+	 * @return the window's bounds afterwards, or null if there is no window at that path
+	 */
+	public static Rectangle setWindowBounds(String path, Rectangle r) {
+		Component c = findByPath(path);
+		if (!(c instanceof Window)) {
+			return null;
+		}
+		final Window w = (Window) c;
+		return onEdt(() -> {
+			w.setBounds(r);
+			return w.getBounds();
+		});
+	}
+
 	public static boolean click(String path) {
 		Component c = findByPath(path);
 		if (c == null) {

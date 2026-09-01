@@ -20,6 +20,7 @@
 #   menu "<Menu>Item[>Sub]" [window]
 #   highlight <selector> [ms]
 #   iconify <selector> [true|false]   minimize/restore a window; reports what the OS did
+#   wbounds <selector> x y w h       move/resize a window
 # Synchronize / assert (exit 0 on success, 1 on failure):
 #   wait   [find opts] [--state showing|enabled|gone] [--timeout MS] [--interval MS]
 #   assert [find opts] [--gone]
@@ -148,6 +149,7 @@ case "$cmd" in
   listeners) get listeners --data-urlencode "path=$1" | pretty ;;
   highlight) get highlight --data-urlencode "path=$1" --data-urlencode "ms=${2:-2000}" | pretty ;;
   iconify)   get iconify --data-urlencode "path=$1" --data-urlencode "iconified=${2:-true}" | pretty ;;
+  wbounds)   get windowBounds --data-urlencode "path=$1" --data-urlencode "x=$2" --data-urlencode "y=$3" --data-urlencode "w=$4" --data-urlencode "h=$5" | pretty ;;
 
   help|*)
     sed -n '2,30p' "$0" | sed 's/^# \{0,1\}//'

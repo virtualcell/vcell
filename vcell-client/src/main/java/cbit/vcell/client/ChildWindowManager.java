@@ -215,8 +215,15 @@ public class ChildWindowManager {
 	 * @param modality not null
 	 * @return implementing class
 	 */
-	private LWFrameOrDialog createContainerImplementation(String title,LWModality modality, boolean parentCentered, boolean detached) {
-		LWTraits traits = parentCentered ? new LWTraits(InitialPosition.CENTERED_ON_PARENT) : new LWTraits(InitialPosition.STAGGERED_ON_PARENT);
+	private LWFrameOrDialog createContainerImplementation(String title,LWModality modality, boolean parentCentered,
+			boolean detached, boolean keepPosition) {
+		// LWManager positions a window in componentShown, i.e. AFTER setBounds and after the
+		// caller has had its say. That is right for a window opening for the first time and
+		// wrong when we are rebuilding one the user has already placed: it would drag the
+		// window back onto its parent. NOT_LW_MANAGED opts out of that.
+		LWTraits traits = keepPosition ? new LWTraits(InitialPosition.NOT_LW_MANAGED)
+				: parentCentered ? new LWTraits(InitialPosition.CENTERED_ON_PARENT)
+						: new LWTraits(InitialPosition.STAGGERED_ON_PARENT);
 		if (owner == null) {
 			// every ChildWindowManager host is an LWTopFrame, so findLWOwner(parent) always resolves an
 			// owner. A null owner would mean a non-LW host was introduced — fail loudly rather than fall
@@ -400,7 +407,7 @@ public class ChildWindowManager {
 				LG.debug(ExecutionTrace.justClassName(ChildWindowManager.this) + " making a child window.  My parent is a "+ this.getParent().getName());
 			}	
 			shownModality = modality;
-			impl = createContainerImplementation(title,modality,isCenteredOnParent,detached);
+			impl = createContainerImplementation(title,modality,isCenteredOnParent,detached,rememberedBounds != null);
 			impl.addWindowListener(windowListener);
 			{ //assemble pieces
 				Container cp = impl.getContentPane();
@@ -515,9 +522,8 @@ public class ChildWindowManager {
 			// the debug-bridge scenario selects it by, now that there is no text to match on.
 			item.setName(ATTACHMENT_TOGGLE_NAME);
 			item.setToolTipText(detached
-					? "Reattach this window: keep it in front of its document window again"
-					: "Detach this window: let it be minimized and arranged freely, at the cost "
-							+ "of it no longer being kept in front of its document window");
+					? "Reattach: keep in front of the document window"
+					: "Detach: allow minimizing, but no longer kept in front");
 			// A JMenuItem in a JMenuBar is stretched to fill the bar by the bar's BoxLayout,
 			// which would turn every bit of empty menu-bar space into a detach button. Clamp
 			// the WIDTH only: clamping the height too squashed the item to 9px - under the
