@@ -46,6 +46,23 @@ PAUSE="${PAUSE:-0}"
 CHILD_TITLE="View VCell Properties"
 OPEN_MENU="Help>VCell Properties ..."
 
+# JSON parsing. Git Bash on Windows ships curl and sed but no Python, and where Python
+# is installed it is often "python" rather than "python3" - so resolve it once and say
+# so plainly if it is missing, rather than failing later with an empty result that looks
+# like a test failure.
+PY=""
+for candidate in python3 python py; do
+  if command -v "$candidate" >/dev/null 2>&1 && "$candidate" -c "import json,sys" >/dev/null 2>&1; then
+    PY="$candidate"
+    break
+  fi
+done
+if [ -z "$PY" ]; then
+  echo "ERROR: need python3 (or python) on PATH to read the bridge's JSON." >&2
+  echo "       On Windows, install Python or run this from WSL." >&2
+  exit 2
+fi
+
 pass=0
 fail=0
 
@@ -64,7 +81,7 @@ check() { # check <description> <expected> <actual>
 
 # field <json> <key>  -- reads one field of the child window's entry in /windows
 field() {
-  "$BRIDGE" windows | python3 -c "
+  "$BRIDGE" windows | "$PY" -c "
 import json,sys
 key=sys.argv[1]
 for w in json.load(sys.stdin):
@@ -78,7 +95,7 @@ else:
 }
 
 bounds() {
-  "$BRIDGE" windows | python3 -c "
+  "$BRIDGE" windows | "$PY" -c "
 import json,sys
 for w in json.load(sys.stdin):
     if w.get('text','') == sys.argv[1]:
@@ -90,7 +107,7 @@ else:
 
 # the child window's own path in /windows, so nothing is hard-coded to an index
 child_path() {
-  "$BRIDGE" windows | python3 -c "
+  "$BRIDGE" windows | "$PY" -c "
 import json,sys
 for w in json.load(sys.stdin):
     if w.get('text','') == sys.argv[1]:
@@ -102,7 +119,7 @@ else:
 
 # ask the real window manager to minimize, and report only what it says happened
 try_minimize() {
-  "$BRIDGE" iconify "$(child_path)" "$1" | python3 -c "
+  "$BRIDGE" iconify "$(child_path)" "$1" | "$PY" -c "
 import json,sys
 d=json.load(sys.stdin)
 print(str(d.get('iconified')).lower() if 'iconified' in d else 'ERROR')
@@ -119,7 +136,7 @@ TOGGLE=DetachWindowToggle
 # it happened for real once the window-list control was removed and nothing else was left
 # in the bar to hold the row open.
 icon_fits() {
-  "$BRIDGE" find --name "$TOGGLE" | python3 -c "
+  "$BRIDGE" find --name "$TOGGLE" | "$PY" -c "
 import json,sys
 d=json.load(sys.stdin)
 if not d:
@@ -132,7 +149,7 @@ else:
 
 # which action the tooltip currently offers: "Detach" or "Reattach"
 toggle_offers() {
-  "$BRIDGE" find --name "$TOGGLE" | python3 -c "
+  "$BRIDGE" find --name "$TOGGLE" | "$PY" -c "
 import json,sys
 d=json.load(sys.stdin)
 if not d:
@@ -146,7 +163,7 @@ else:
 # does the CHILD window carry the window-list (hamburger) control? Scoped to the child's
 # own subtree - the document window has one of its own, which a global search would hit.
 has_window_menu() {
-  "$BRIDGE" find --type JMenu --limit 50 | python3 -c "
+  "$BRIDGE" find --type JMenu --limit 50 | "$PY" -c "
 import json,sys
 d=json.load(sys.stdin)
 prefix = sys.argv[1] + '/'
@@ -168,7 +185,7 @@ echo ok
 # "version mismatch" warning over everything. Dismiss it rather than requiring the
 # person running this to get there first.
 step "dismiss the version-mismatch warning if present"
-warn_ok=$("$BRIDGE" find --type JButton --text OK --limit 20 | python3 -c "
+warn_ok=$("$BRIDGE" find --type JButton --text OK --limit 20 | "$PY" -c "
 import json,sys
 d=json.load(sys.stdin)
 # only a button inside a dialog, i.e. not in window 0, the document window
@@ -176,6 +193,9 @@ print(next((c['id'] for c in d if isinstance(c,dict) and not c.get('path','').st
 ")
 if [ -n "$warn_ok" ]; then
   "$BRIDGE" click "$warn_ok" >/dev/null
+  # Wait for it to be really gone, not just clicked. Menu activations that land while a
+  # modal dialog is still tearing down are swallowed, which cost several confusing runs.
+  "$BRIDGE" wait --type JButton --text OK --state gone --timeout 15000 >/dev/null || true
   echo "  dismissed"
 else
   echo "  none showing"
@@ -188,7 +208,7 @@ pause
 # than assuming one attempt takes.
 step "open a modeless child window ($OPEN_MENU)"
 opened=no
-for attempt in 1 2 3 4 5; do
+for attempt in 1 2 3 4 5 6 7 8 9 10; do
   if [ "$(field owner)" != "WINDOW-NOT-FOUND" ]; then
     opened=yes
     [ "$attempt" = 1 ] && echo "  already open, reusing it" || echo "  opened on attempt $attempt"
