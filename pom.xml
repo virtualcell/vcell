@@ -91,6 +91,24 @@
 		<maven.compiler.source>17</maven.compiler.source>
 		<maven.compiler.target>17</maven.compiler.target>
 
+		<!--
+		  Source encoding. Without this the compiler uses the PLATFORM default charset, which
+		  is UTF-8 on Linux and macOS but windows-1252 on Windows - so the same sources become
+		  different text depending on who builds them. See issue #2046.
+
+		  Five files then fail outright ("unmappable character (0x9D) for encoding
+		  windows-1252"), and - the part that is easy to miss - 109 more compile CLEANLY as
+		  windows-1252 and yield the wrong characters, including in user-visible strings:
+		  new JButton("\u25B6") becomes a button labelled "\u00E2\u2013\u00B6", with a green build.
+
+		  This declares what is already true rather than converting anything: every one of
+		  those 114 files decodes cleanly as UTF-8 today. Released artifacts were never
+		  affected, because release builds run on Linux; this is for anyone building on
+		  Windows, and for the Windows lane of the client E2E workflow.
+		-->
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
 		<!-- NB: Disable javadoc doclint -->
 		<doclint>none</doclint>
 
