@@ -119,22 +119,25 @@ jobs:
       - name: what the client actually logged
         if: always()
         run: |
+          # Collect into the workspace: the upload action does not run through this shell,
+          # so it never expands "~" and reads a Git Bash "/tmp/..." literally, which is not
+          # a valid Windows path - that failed the upload even though the test had passed.
+          mkdir -p client-e2e-logs
+          cp /tmp/vcell-debug-launch.out client-e2e-logs/ 2>/dev/null || true
+          find "$HOME/.vcell/logs" -name 'vcellrun*.log' -exec cp {} client-e2e-logs/ \; 2>/dev/null || true
           echo "--- launcher (pre-redirect) ---"
-          cat /tmp/vcell-debug-launch.out 2>/dev/null || echo "(none)"
+          cat client-e2e-logs/vcell-debug-launch.out 2>/dev/null || echo "(none)"
           echo
           echo "--- client log ---"
-          # the client redirects its own stdout/stderr here; the launcher output above
-          # only carries what happened before that redirect took effect
-          find "$HOME/.vcell/logs" -name 'vcellrun*.log' -exec tail -n 200 {} + 2>/dev/null \
-            || echo "(no client log)"
+          # the client redirects its own stdout/stderr there; the launcher output above only
+          # carries what happened before that redirect took effect
+          tail -n 200 client-e2e-logs/vcellrun*.log 2>/dev/null || echo "(no client log)"
 
       - name: upload logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: client-e2e-${{ matrix.os }}
-          path: |
-            /tmp/vcell-debug-launch.out
-            ~/.vcell/logs/
+          path: client-e2e-logs/
           if-no-files-found: ignore
           retention-days: 7
