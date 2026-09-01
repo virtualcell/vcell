@@ -12,6 +12,12 @@
 name: Client E2E
 
 on:
+  # A GUI run is expensive, so it is opt-in on a PR: add the "client-e2e" label and it
+  # runs; without the label the job is skipped and costs nothing. (workflow_dispatch alone
+  # would not do - GitHub only offers it for workflows already on the default branch, so a
+  # branch that ADDS this workflow could never trigger its own first run.)
+  pull_request:
+    types: [opened, synchronize, reopened, labeled]
   workflow_dispatch:
     inputs:
       os:
@@ -28,6 +34,9 @@ concurrency:
 jobs:
   detach-window:
     name: detach/reattach (${{ matrix.os }})
+    if: >-
+      github.event_name == 'workflow_dispatch'
+      || contains(github.event.pull_request.labels.*.name, 'client-e2e')
     runs-on: ${{ matrix.os }}
     # A GUI app on a fresh runner is slow to start; fail fast rather than hang the queue.
     timeout-minutes: 30
