@@ -659,6 +659,15 @@ public class SlurmProxy extends HtcProxy {
 		String trimmedJobName = (lastUnderscore >= 0) ? jobName.substring(0, lastUnderscore + 1) : jobName;
 		String logFilePath = htcLogDir + "/" + trimmedJobName + ".submit.log";
 		String messagingConfigFilePath = simDataDir + "/" + simOwnerName + "/SimID_" + simKey + "_0_.langevinMessagingConfig";
+		int firstUnderscore = jobName.indexOf('_');
+		if (firstUnderscore < 0) {
+			throw new IllegalArgumentException("Job name missing first underscore: " + jobName);
+		}
+		int secondUnderscore = jobName.indexOf('_', firstUnderscore + 1);
+		if (secondUnderscore < 0) {
+			throw new IllegalArgumentException("Job name missing second underscore: " + jobName);
+		}
+		String siteName = jobName.substring(0, secondUnderscore + 1);  // include the underscore
 
 		lsb.write("# Script-controlled variables (populated by generator in real use)");
 //		lsb.write("USERID=" + simOwnerName);
@@ -678,7 +687,7 @@ public class SlurmProxy extends HtcProxy {
 		lsb.write("");
 
 		lsb.write("# Truncate / delete various logs and the solver input file, to start clean");
-		lsb.write(": > " + htcLogDir + "/V_TEST2_${SIM_KEY}_0_.slurm.log");
+		lsb.write(": > " + htcLogDir + "/" + siteName + "${SIM_KEY}_0_.slurm.log");
 		lsb.write("rm -f " + simDataDir + "/${SIM_OWNER_NAME}/SimID_${SIM_KEY}_0_*.log");
 		lsb.write("rm -f " + simDataDir + "/${SIM_OWNER_NAME}/SimID_${SIM_KEY}_0__*.ida");
 		lsb.write("rm -f " + simDataDir + "/${SIM_OWNER_NAME}/SimID_${SIM_KEY}_0__*.json");
@@ -816,6 +825,9 @@ public class SlurmProxy extends HtcProxy {
 		SolverTaskDescription std = simTask.getSimulation().getSolverTaskDescription();
 		LangevinSimulationOptions lso = std.getLangevinSimulationOptions();
 		int totalNumberOfJobs = lso.getTotalNumberOfJobs();
+
+		// the number of simulations running concurrently from LangevinSimulationOptions
+		// in reality we also run a watchdog, so the number of concurrent tasks is actually 1 more than this
 		int numberOfConcurrentTasks = lso.getNumberOfConcurrentJobs();
 		SolverDescription solverDescription = std.getSolverDescription();
 		MemLimitResults memoryMBAllowed = HtcProxy.getMemoryLimit(vcellUserid, simID, solverDescription, memSizeMB, simTask.isPowerUser());
@@ -849,7 +861,8 @@ public class SlurmProxy extends HtcProxy {
 		// -------------------------------------------------------------
 
 		LineStringBuilder lsb = new LineStringBuilder();
-		slurmBatchScriptInit(jobName, simTask.isPowerUser(), memoryMBAllowed, numberOfConcurrentTasks, slurmJobTimeout, lsb);
+		// we need to tell slurm the real number of tasks here, including the watchdog
+		slurmBatchScriptInit(jobName, simTask.isPowerUser(), memoryMBAllowed, numberOfConcurrentTasks+1, slurmJobTimeout, lsb);
 		writeBatchScriptControlledVariables(lsb, jobName, simTask, timeoutPerTaskSeconds, watchdogTickSeconds, watchdogTimeoutSeconds);
 		writeBatchSingularitySetup(lsb);
 		writeBatchSlurmJobMetadata(lsb);
@@ -1150,7 +1163,8 @@ public class SlurmProxy extends HtcProxy {
 	}
 
 	private void slurmBatchScriptInit(String jobName, boolean isPowerUser, MemLimitResults memoryMBAllowed,
-									  int numberOfConcurrentTasks, String jobTimeout, LineStringBuilder lsb) {
+									  int totalNumberOfConcurrentTasks, 	// num concurrent sims + 1 watchdog
+									  String jobTimeout, LineStringBuilder lsb) {
 		lsb.write("#!/usr/bin/bash");
 
 		if (isPowerUser) {
@@ -1177,7 +1191,7 @@ public class SlurmProxy extends HtcProxy {
 
 		lsb.write("#SBATCH -o " + logPath);
 		lsb.write("#SBATCH -e " + logPath);
-		lsb.write("#SBATCH --ntasks=" + numberOfConcurrentTasks + "\t\t\t# number of concurrent tasks");
+		lsb.write("#SBATCH --ntasks=" + totalNumberOfConcurrentTasks + "\t\t\t# number of concurrent tasks");
 		// TODO: hardcoded for now, adjust if needed
 		lsb.write("#SBATCH --cpus-per-task=1");
 		// TODO: mem per cpu needs to be adjusted, 2M should be enough for most Langevin tasks
