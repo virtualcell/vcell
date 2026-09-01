@@ -23,9 +23,9 @@ on:
       os:
         description: Which runners to use
         required: false
-        default: both
+        default: all
         type: choice
-        options: [both, windows, macos]
+        options: [all, linux, windows, macos]
 
 concurrency:
   group: client-e2e-${{ github.ref }}
@@ -47,7 +47,8 @@ jobs:
           ${{ fromJSON(
             inputs.os == 'windows' && '["windows-latest"]'
             || inputs.os == 'macos' && '["macos-latest"]'
-            || '["windows-latest","macos-latest"]') }}
+            || inputs.os == 'linux' && '["ubuntu-latest"]'
+            || '["ubuntu-latest","windows-latest","macos-latest"]') }}
 
     defaults:
       run:
@@ -64,10 +65,32 @@ jobs:
           java-version: '17'
           cache: maven
 
+      - name: give Linux a desktop to draw on
+        if: runner.os == 'Linux'
+        # A Linux runner has no display at all. Xvfb alone is not enough: minimizing is a
+        # WINDOW MANAGER function, and with no WM running the iconify request would go
+        # nowhere and the test would fail for a reason that has nothing to do with VCell.
+        # openbox is small, starts instantly, and implements the parts that matter here -
+        # iconification and stacking.
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq xvfb openbox >/dev/null
+          Xvfb :99 -screen 0 1600x1200x24 >/tmp/xvfb.log 2>&1 &
+          for _ in $(seq 1 30); do
+            if xdpyinfo -display :99 >/dev/null 2>&1; then break; fi
+            sleep 1
+          done
+          xdpyinfo -display :99 >/dev/null 2>&1 || { echo "Xvfb never came up"; cat /tmp/xvfb.log; exit 1; }
+          DISPLAY=:99 openbox >/tmp/openbox.log 2>&1 &
+          sleep 2
+          echo "DISPLAY=:99" >> "$GITHUB_ENV"
+          echo "Xvfb + openbox ready on :99"
+
       - name: report the desktop the client will be drawing on
         run: |
           echo "runner:  $RUNNER_OS"
           echo "shell:   $(uname -s)"
+          echo "display: ${DISPLAY:-(native window server)}"
           echo "java:    $(java -version 2>&1 | head -1)"
           for p in python3 python py; do
             command -v "$p" >/dev/null 2>&1 && echo "python:  $p -> $($p --version 2>&1)" && break
