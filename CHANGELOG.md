@@ -16,6 +16,87 @@ followed by flat Keep-a-Changelog categories. API consumers should scan
 
 _(Release-manager scratchpad. Populated at release-cut time.)_
 
+## [8.1.3.01] - 2026-09-02
+
+**Highlights.** Two things that made VCell unusable for the people who hit them.
+A user with a large model could not list their models at all — not one row
+missing, the whole listing failed — and a reaction parameter could vanish from
+the math overrides table with no error and no way to tell why, purely because of
+what it was named. Alongside those, simulation results windows can now be
+detached, so they can be minimized and moved out of the way on a small screen.
+
+### Added
+- Simulation results windows can be detached from their document window. A
+  detached window gets a taskbar or dock entry, minimizes, and can be stacked
+  freely, at the cost of no longer being kept in front of the model it belongs
+  to; "Reattach" puts it back. Attached remains the default. Results windows are
+  held in front of their document window by the operating system, which is what
+  keeps them from hiding behind it — but it also means they cannot be minimized
+  at all, and on a small screen there is nowhere to move them to. (#2045)
+
+### Fixed
+- Listing biomodels no longer fails because one model has many simulations. The
+  listing gathered each model's simulation keys into a single string inside the
+  database, which Oracle caps at 4000 bytes; roughly 400 simulations on one model
+  exceeded it and returned a 500 for the entire request, so an affected user could
+  not see any of their models. The keys are now collected without that limit.
+  (#2048, #2036)
+- A reaction's local parameter no longer disappears from a simulation's math
+  overrides because of its name. Parameters were matched against the list of
+  reserved physical constants by substring, so a parameter called `kon_R_R_in`
+  was discarded as if it were `_R_`, the gas constant. Any name containing `_R_`,
+  `_T_`, `_F_` or `_PI_` was affected. (#2043)
+- A detached or reattached window stays where you put it, instead of jumping back
+  onto the document window. (#2045)
+
+### Changed
+- Internal: the build declares UTF-8 source encoding. Without it the compiler used
+  the platform default, so on Windows five files failed to compile and 109 more
+  compiled to the wrong characters — including text VCell displays — with no
+  warning. Released builds were never affected, since they are built on Linux.
+  (#2047, #2046)
+- Internal: the `scijava` Maven repository is no longer used. It served exactly one
+  artifact, now vendored in the tree. While it was returning 503s for the metadata
+  files Maven generates, builds failed on artifacts it had nothing to do with.
+  (#2037)
+
+### Notes for API consumers
+No API changes. `GET /api/v0/biomodel` and `GET /api/v1/bioModel` return the same
+shape as before; they simply no longer fail when a model has many simulations.
+
+## [8.1.2.01] - 2026-08-28
+
+**Highlights.** A large geometry image no longer costs far more memory than it
+should. A 62-megapixel image had taken two production API pods down, and the cause
+was the same inflated pixel array being held twice over and never released; it is
+now held once, and softly, so the collector can reclaim it.
+
+### Fixed
+- A geometry no longer pins a second copy of its image's pixels in memory.
+  `GeometrySpec` cached the same inflated array the image already caches, so the
+  pixels stayed reachable for as long as the geometry did — 62 MB per geometry at
+  the size that took down two production API pods. (#2026, #2021)
+
+### Changed
+- Inflated image pixels are now held softly, so the heap can reclaim them and
+  re-inflate on demand. Geometry images compress 50–100× (median 73.6× measured
+  across the VCML corpus), so keeping the inflated form resident cost far more than
+  rebuilding it. Under the shape of the incident — 11 images reachable at once in a
+  256 MB heap — this is the difference between running out of memory at the ninth
+  image and completing all eleven. (#2027, #2021)
+- SpringSaLaD simulations run on the Langevin 1.4.13 solver. (#2002)
+- Security: dependency updates closing 4 Maven advisories (jsoup, jose4j, and the
+  removal of an unused htmlunit) and 166 Python advisories, by dropping Jupyter as a
+  runtime dependency of three packages. (#2018, #2019)
+
+### Added
+- Geometry surface generation is pinned by golden tests, including fixtures taken
+  from real corpus models, so a change in generated surfaces has to be deliberate.
+  (#2028, #2029)
+
+### Notes for API consumers
+No API changes.
+
 ## [8.1.1.01] - 2026-08-21
 
 **Highlights.** When VCell hits an error and you agree to send a report, that
