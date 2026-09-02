@@ -368,7 +368,12 @@ private void displayTask() {
 			getJLabel10().setEnabled(true);
 			getJLabelSensitivity().setText(str);
 			int tot = lso.getTotalNumberOfJobs();
-			int conc = lso.getNumberOfConcurrentJobs();
+//			int conc = lso.getNumberOfConcurrentJobs();
+			String sMaxNumberOfConcurrentTasks = PropertyLoader.getProperty(PropertyLoader.slurm_langevin_maxNumConcurrentTasks,
+					"31");		// max number of concurrent simulations + 1 watchdog
+			int maxNumberOfConcurrentTasks = Integer.parseInt(sMaxNumberOfConcurrentTasks);		// concurrent sims + watchdog
+			int conc = Math.min(tot, maxNumberOfConcurrentTasks - 1);	// concurrent sims only
+			int nodes = (int)Math.ceil(conc / 20.0);	// number of nodes needed
 			if(tot == 1) {
 				getJLabel20().setText("Single run.");
 				getJLabel21().setText("");
@@ -376,7 +381,7 @@ private void displayTask() {
 				getJLabel21().setVisible(false);
 			} else {
 				getJLabel20().setText("Batch run:");
-				getJLabel21().setText(conc + " concurrent runs / " + tot + " total runs");
+				getJLabel21().setText(conc + " concurrent runs / " + tot + " total runs. Nodes used: " + nodes);
 				getJLabel21().setEnabled(true);
 				getJLabel21().setVisible(true);
 			}

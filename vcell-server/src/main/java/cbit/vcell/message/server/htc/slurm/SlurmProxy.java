@@ -819,6 +819,7 @@ public class SlurmProxy extends HtcProxy {
 		lsb.write(prefix + "_container_prefix=\"singularity run --containall " +
 				"${container_bindings} ${container_env} $" + prefix + "_sif\"");
 	}
+
 	String  generateLangevinBatchScript(String jobName, ExecutableCommand.Container commandSet, double memSizeMB,
 										Collection<PortableCommand> postProcessingCommands, SimulationTask simTask) {
 

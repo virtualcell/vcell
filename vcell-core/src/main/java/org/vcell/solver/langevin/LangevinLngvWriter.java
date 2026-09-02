@@ -6,6 +6,7 @@ import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.mapping.ReactionRuleSpec;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.math.*;
+import cbit.vcell.resource.PropertyLoader;
 import org.vcell.util.springsalad.IOHelp;
 import cbit.vcell.math.ParticleProperties.ParticleInitialCondition;
 import cbit.vcell.math.ParticleProperties.ParticleInitialConditionCount;
@@ -1071,7 +1072,13 @@ public class LangevinLngvWriter {
 
 		int numTrials = std.getNumTrials();
 		BigInteger randomSeed = lso.getRandomSeed();
-		int simultaneousRuns = lso.getNumberOfConcurrentJobs();
+		// not used but I updated the code for conformity
+//		int simultaneousRuns = lso.getNumberOfConcurrentJobs();
+		String sMaxNumberOfConcurrentTasks = PropertyLoader.getProperty(PropertyLoader.slurm_langevin_maxNumConcurrentTasks,
+				"31");		// max number of concurrent simulations + 1 watchdog
+		int maxNumberOfConcurrentTasks = Integer.parseInt(sMaxNumberOfConcurrentTasks);		// concurrent sims + watchdog
+		int simultaneousRuns = Math.min(numTrials, maxNumberOfConcurrentTasks - 1);	// concurrent sims only
+
 
 		// TODO: do not delete this, until we decide on how much info the solver needs
 		// These are not needed but may be nice to have in the future, makes the solver instance more aware

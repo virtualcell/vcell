@@ -1396,7 +1396,7 @@ private void stopSimulations() {
 		}
 		if (solverDescription.equals(SolverDescription.Langevin)) {
 			LangevinSimulationOptions lso = selectedSim.getSolverTaskDescription().getLangevinSimulationOptions();
-			if(lso == null || lso.getNumberOfConcurrentJobs() > 1 || lso.getTotalNumberOfJobs() > 1) {
+			if(lso == null || lso.getTotalNumberOfJobs() > 1) {
 				DialogUtils.showErrorDialog(SimulationListPanel.this, "Concurrent Jobs not supported for Quick Run. ");
 				return;
 			}
