@@ -70,9 +70,9 @@ LOG_DIR="/simdata/${SIM_OWNER_NAME}"    # on singularity, each solver instance w
 declare -A job_pid_map
 job_pids=()
 running_jobs=0
-max_concurrent_jobs=${SLURM_NTASKS:-4}    # actually these are tasks
+max_concurrent_jobs=$(( ${SLURM_NTASKS:-4} - 1 ))  # actually these are concurrent simulation runs
 echo "max_concurrent_jobs: ${max_concurrent_jobs}" >> "${LOG_FILE}"
-echo "TOTAL_JOBS to launch: ${TOTAL_JOBS}" >> "${LOG_FILE}"
+echo "TOTAL_JOBS to launch: ${TOTAL_JOBS}" >> "${LOG_FILE}"  # total number of simulation runs
 echo "WATCHDOG_TICK_SECONDS: ${WATCHDOG_TICK_SECONDS}" >> "${LOG_FILE}"
 echo "WATCHDOG_TIMEOUT_SECONDS: ${WATCHDOG_TIMEOUT_SECONDS}" >> "${LOG_FILE}"
 
@@ -86,8 +86,7 @@ ${slurm_prefix} ${solver_container_prefix} \
         ${TOTAL_JOBS} \
         --watchdog-tick="${WATCHDOG_TICK_SECONDS}" \
         --watchdog-timeout="${WATCHDOG_TIMEOUT_SECONDS}" \
-#        --output-log="${LOG_DIR}/SimID_${SIM_KEY}_0_W.log" \
-        --vc-print-status="${INPUT_DIR}/SimID_${SIM_KEY}_0_.langevinMessagingConfig" &
+        --vc-send-status-config="${INPUT_DIR}/SimID_${SIM_KEY}_0_.langevinMessagingConfig" &
 watchdog_pid=$!
 sleep 1
 if ! kill -0 $watchdog_pid 2>/dev/null; then
@@ -97,6 +96,8 @@ if ! kill -0 $watchdog_pid 2>/dev/null; then
     callExitProcessor $watchdog_exit_code
     exit $watchdog_exit_code
 fi
+
+echo "Watchdog running in the background, continue script execution." >> "${LOG_FILE}"
 
 finished_jobs=0           # messaging counters
 last_notify_time=0
@@ -204,7 +205,9 @@ for pid in "${job_pids[@]}"; do
 #      echo "progress notification sent, ${progress} done" >> "${LOG_FILE}"
 #    fi
 done
-echo "Batch job completed at $(date)" >> "${LOG_FILE}"
+echo "All simulations finished at $(date)" >> "${LOG_FILE}"
+echo "Waiting one watchdog tick to ensure graceful watchdog exit" >> "$LOG_FILE"
+sleep "$WATCHDOG_TICK_SECONDS"
 
 # ----------------------------------------------------------------------------------------------
 # postprocess solver invocation (runs after all simulations finish)

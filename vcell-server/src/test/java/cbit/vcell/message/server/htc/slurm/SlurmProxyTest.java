@@ -306,6 +306,7 @@ public class SlurmProxyTest {
 		setProperty(PropertyLoader.vcellServerIDProperty,"TEST2");
 		setProperty(PropertyLoader.jmsSimHostExternal, "k8s-wn-01.cam.uchc.edu");
 		setProperty(PropertyLoader.htc_vcellbatch_apptainer_image, "oras://ghcr.io/virtualcell/vcell-batch_singularity:8.0.5.01");
+		setProperty(PropertyLoader.slurm_langevin_maxNumConcurrentTasks, "4");	// max 3 sims + 1 watchdog
 
 		String simTaskResourcePath = "slurm_fixtures/langevin/SimID_999999999_0__0.simtask.xml";
 		String JOB_NAME = "V_TEST2_999999999_0_0";
