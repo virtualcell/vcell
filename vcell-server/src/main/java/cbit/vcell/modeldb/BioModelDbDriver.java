@@ -553,20 +553,20 @@ public BioModelRep[] getBioModelReps(Connection con, User user, String condition
 //	System.out.println(sql);
 	bioModelTable.setPreparedStatement_BioModelReps(stmt, user, startRow, numRows, dbSyntax);
 
-	ArrayList<BioModelRep> bioModelReps = new ArrayList<BioModelRep>();
+	// issue #2036: collect the scalar rows first, then attach every row's simulation keys,
+	// simulation-context keys and group members in a few batched queries. They used to be three
+	// correlated LISTAGG subqueries in the statement above, which Oracle caps at 4000 bytes -
+	// one model with enough simulations raised ORA-01489 and failed the whole listing.
+	ArrayList<BioModelTable.BioModelRepRow> rows = new ArrayList<BioModelTable.BioModelRepRow>();
 	try {
 		ResultSet rset = stmt.executeQuery();
-
-		//showMetaData(rset);
-
 		while (rset.next()) {
-			BioModelRep bioModelRep = bioModelTable.getBioModelRep(user,rset,dbSyntax);
-			bioModelReps.add(bioModelRep);
+			rows.add(bioModelTable.getBioModelRepRow(rset,dbSyntax));
 		}
 	} finally {
 		stmt.close(); // Release resources include resultset
 	}
-	return bioModelReps.toArray(new BioModelRep[bioModelReps.size()]);
+	return BioModelTable.attachChildKeys(con, dbSyntax, rows);
 }
 
 	/**
