@@ -16,6 +16,39 @@ followed by flat Keep-a-Changelog categories. API consumers should scan
 
 _(Release-manager scratchpad. Populated at release-cut time.)_
 
+## [8.1.5.01] - 2026-09-03
+
+**Highlights.** Saving a model no longer fails because the connection to the
+server was recycled underneath it. A user reported being unable to save a
+biomodel at all, with an error mentioning "GOAWAY received"; nothing was wrong
+on the server, and nothing was wrong with her model.
+
+### Fixed
+- Saving a biomodel no longer fails with `IOException: … GOAWAY received`. Web
+  servers routinely close a connection after it has served enough requests,
+  expecting the client to open a new one — but saving used a connection mode in
+  which the client would not retry, so a save that happened to land on one of
+  those closures failed outright. Every save and delete the desktop client
+  performs was affected, not just biomodels. If you saw this, check whether the
+  model was in fact saved before saving again: the server may have completed the
+  save and only the reply was lost. (#2052, #2051)
+
+### Changed
+- Internal: the build no longer asks for two artifacts that exist in no
+  repository. They are declared by a transaction library we depend on, have
+  never been fetchable, and worked only because every repository reported them
+  missing in the same way. On 2026-08-27 one reported them differently and no
+  module could build. (#2054, #2041)
+- Internal: `vcell-restclient`'s tests now run in CI. The fast lane lists its
+  modules explicitly and that one was in none of them, so its tests reported as
+  passing without executing. (#2052)
+
+### Notes for API consumers
+No API changes. The desktop client now speaks HTTP/1.1 to `/api/v1/` rather than
+HTTP/2, and retries a request interrupted by a connection closure. This is a
+temporary measure: Java 24 and later retry such requests correctly on their own,
+and the workaround is removed when VCell ships on that runtime.
+
 ## [8.1.4.01] - 2026-09-02
 
 **Highlights.** SpringSaLaD runs get the processors they were asked for. The
