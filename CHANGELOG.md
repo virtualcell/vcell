@@ -16,6 +16,39 @@ followed by flat Keep-a-Changelog categories. API consumers should scan
 
 _(Release-manager scratchpad. Populated at release-cut time.)_
 
+## [8.1.4.01] - 2026-09-02
+
+**Highlights.** SpringSaLaD runs get the processors they were asked for. The
+background process that watches a run was quietly taking one of the simulation
+slots, and the whole batch was pinned to a single machine, which capped it at
+about 20 simulations at once however many were requested.
+
+### Fixed
+- A SpringSaLaD batch no longer loses one simulation slot to its own watchdog.
+  The number of parallel tasks requested from the cluster counted only the
+  simulations, but the watchdog runs as a task too — so a run asking for four
+  parallel simulations got three. The request now accounts for it, and the batch
+  script derives the simulation count from what was actually allocated. (#2049)
+- A SpringSaLaD run can use more than one machine. The batch requested exactly
+  one node regardless of size, so concurrency was capped at roughly 20
+  simulations no matter what was asked for; the number of nodes is now computed
+  from the concurrency requested. (#2049)
+- Runs asking for fewer simulations than the concurrency limit no longer request
+  resources they cannot use — concurrency is clamped to the number of
+  simulations in the run. (#2049)
+- A test-site prefix (`V_TEST2_`) was hard-coded into the generated batch script
+  when clearing a run's log, so on any other site it truncated a path that did
+  not correspond to the running job. The prefix now comes from the job. (#2049)
+
+### Changed
+- New optional setting `vcell.slurm.langevin.maxNumConcurrentTasks` caps parallel
+  tasks for a SpringSaLaD batch, counting the watchdog. Defaults to 31 — 30
+  simulations plus the watchdog, which is two nodes — and is unset in every
+  deployment, so behaviour is the default unless someone tunes it. (#2049)
+
+### Notes for API consumers
+No API changes.
+
 ## [8.1.3.01] - 2026-09-02
 
 **Highlights.** Two things that made VCell unusable for the people who hit them.
