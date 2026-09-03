@@ -286,4 +286,23 @@
 
     </dependencies>
 
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <systemPropertyVariables>
+                        <!-- The Java version VCell SHIPS, which is what decides whether the issue
+                             #2051 retry workaround is still required. Deliberately NOT the JDK a
+                             developer happens to build with: HttpClientRetryWorkaroundTest asks for
+                             the workaround to be removed once the SHIPPED runtime reaches 24, and
+                             keying that off the local JDK would fail the build for anyone on a newer
+                             one while CI, on the shipped version, stayed green. -->
+                        <vcell.shipped.java.target>${maven.compiler.target}</vcell.shipped.java.target>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
 </project>

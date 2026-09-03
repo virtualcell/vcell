@@ -218,7 +218,9 @@ public class VCellApiClient implements AutoCloseable {
 	
 	public void createDefaultQuarkusClient(boolean bIgnoreCertProblems){
 		apiClient = new ApiClient(){{
-			if (bIgnoreCertProblems){setHttpClientBuilder(CustomApiClientCode.createInsecureHttpClientBuilder());};
+			// always, not only for insecure certs: the builder also carries the HTTP/1.1
+			// retry workaround for issue #2051
+			setHttpClientBuilder(CustomApiClientCode.createHttpClientBuilder(bIgnoreCertProblems));
 			setHost(quarkusURL.getHost());
 			setPort(quarkusURL.getPort());
 			setBasePath(quarkusURL.getPath());
