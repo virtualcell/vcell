@@ -281,14 +281,20 @@ public abstract class DocumentEditor extends JPanel {
 			}
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
-			if (evt.getSource() == selectionManager) {
-				if (evt.getPropertyName().contains(SelectionManager.PROPERTY_NAME_SELECTED_OBJECTS)) {
-					onSelectedObjectsChange();
-				} else if (evt.getPropertyName().contains(SelectionManager.PROPERTY_NAME_ACTIVE_VIEW)) {
-					onActiveViewChange();
-				} else if(evt.getPropertyName().contains(SelectionManager.PROPERTY_NAME_SELECTED_PANEL)) {
-					setRightBottomPanelOnSelection(new Object[] {evt.getNewValue()});
-				}
+			if (DocumentEditor.this.selectionManager != evt.getSource()) return;
+			String propertyName = evt.getPropertyName();
+			if (propertyName.startsWith(SelectionManager.PROPERTY_NAME_SELECTED_OBJECTS)) {
+				String suffix = propertyName.substring(SelectionManager.PROPERTY_NAME_SELECTED_OBJECTS.length()).strip();
+				if (!suffix.startsWith("(") || !suffix.endsWith(")")) return;
+				DocumentEditor.this.onSelectedObjectsChange();
+			} else if (propertyName.startsWith(SelectionManager.PROPERTY_NAME_ACTIVE_VIEW)) {
+				String suffix = propertyName.substring(SelectionManager.PROPERTY_NAME_ACTIVE_VIEW.length()).strip();
+				if (!suffix.startsWith("(") || !suffix.endsWith(")")) return;
+				DocumentEditor.this.onActiveViewChange();
+			} else if (propertyName.startsWith(SelectionManager.PROPERTY_NAME_SELECTED_PANEL)) {
+				String suffix = propertyName.substring(SelectionManager.PROPERTY_NAME_SELECTED_PANEL.length()).strip();
+				if (!suffix.startsWith("(") || !suffix.endsWith(")")) return;
+				DocumentEditor.this.setRightBottomPanelOnSelection(new Object[]{evt.getNewValue()});
 			}
 		};
 		

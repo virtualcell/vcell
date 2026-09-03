@@ -118,14 +118,18 @@ public abstract class DocumentEditorTreeModel extends DefaultTreeModel
 	
 	public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		try {
-			Object source = evt.getSource();			
-			if (source == selectionManager) {
-				if (evt.getPropertyName().contains(SelectionManager.PROPERTY_NAME_ACTIVE_VIEW)) {
-					onActiveViewChange(selectionManager.getActiveView());
-				} else if(evt.getPropertyName().contains(SelectionManager.PROPERTY_NAME_SELECTED_OBJECTS)) {
-					onSelectedObjectChange(selectionManager.getActiveView(), evt);		// TODO: uncomment here to use the hack
-				}
-			} 
+			Object source = evt.getSource();
+			if (source != this.selectionManager) return;
+			String propertyName = evt.getPropertyName();
+			if (propertyName.startsWith(SelectionManager.PROPERTY_NAME_ACTIVE_VIEW)) {
+				String suffix = propertyName.substring(SelectionManager.PROPERTY_NAME_ACTIVE_VIEW.length()).strip();
+				if (!suffix.startsWith("(") || !suffix.endsWith(")")) return;
+				this.onActiveViewChange(this.selectionManager.getActiveView());
+			} else if (evt.getPropertyName().startsWith(SelectionManager.PROPERTY_NAME_SELECTED_OBJECTS)) {
+				String suffix = propertyName.substring(SelectionManager.PROPERTY_NAME_SELECTED_OBJECTS.length()).strip();
+				if (!suffix.startsWith("(") || !suffix.endsWith(")")) return;
+				this.onSelectedObjectChange(this.selectionManager.getActiveView(), evt);
+			}
 		} catch (Exception e){
 			e.printStackTrace(System.out);
 		}

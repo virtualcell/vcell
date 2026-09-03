@@ -24,7 +24,7 @@ import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.SymbolTableEntry;
 
 public class AssignmentRule implements Matchable, Serializable, IssueSource, SimulationContextEntity,
-		Displayable, VetoableChangeListener, PropertyChangeListener, Nameable, VCellSbmlName, RuleVariableAccessible {
+		Displayable, VetoableChangeListener, PropertyChangeListener, VCellSbmlName, RuleVariableAccessible {
 	
 	private String fieldName = null;
 	private String sbmlId = null;
