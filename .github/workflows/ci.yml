@@ -221,7 +221,7 @@ jobs:
           - name: core
             modules: vcell-core
           - name: other
-            modules: vcell-util,vcell-math,vcell-server,vcell-cli,vcell-client,vcell-admin,vcell-apiclient
+            modules: vcell-util,vcell-math,vcell-server,vcell-cli,vcell-client,vcell-admin,vcell-apiclient,vcell-restclient
     steps:
       - uses: actions/checkout@v4
 
