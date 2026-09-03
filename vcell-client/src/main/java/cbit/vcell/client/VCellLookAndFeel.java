@@ -11,12 +11,10 @@
 package cbit.vcell.client;
 
 import java.awt.Font;
-import java.awt.Toolkit;
 
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
-import cbit.vcell.resource.ResourceUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -24,82 +22,97 @@ import cbit.vcell.resource.OperatingSystemInfo;
 
 public class VCellLookAndFeel {
 	private final static Logger lg = LogManager.getLogger(VCellLookAndFeel.class);
-	
-	public static Font defaultFont = null;
-	public static void setVCellLookAndFeel() {
-		OperatingSystemInfo osi = OperatingSystemInfo.getInstance();
-//		if (!ResourceUtil.bLinux) {
-			//changed to see if SystemLookAndFeel on Linux works better than the default CrossPlatformLookAndFeel (aka Metal)
-			try {
-				lg.info("Operating system:  " + osi.getOsType());
-				lg.info("About to set the look and feel.  Before setting, we're using: " + UIManager.getLookAndFeel().getName());
-				String lookAndFeelType = OperatingSystemInfo.getInstance().isLinux() ?
-						UIManager.getCrossPlatformLookAndFeelClassName() : UIManager.getSystemLookAndFeelClassName();
-				UIManager.setLookAndFeel(lookAndFeelType);
-			} catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
-				lg.warn("Error while setting look and feel:", e);
-			}
-//		}
-		final boolean isMac = osi.isMac();
-			
-		if (defaultFont == null) {			
-			defaultFont = UIManager.getFont("Label.font");		
-			if (isMac) {
-				defaultFont = defaultFont.deriveFont(defaultFont.getSize2D() - 2);		
-			}
+	private static final Font DEFAULT_FONT = new Font(Font.DIALOG, Font.PLAIN, UIManager.getFont("Label.font").getSize() - (OperatingSystemInfo.getInstance().isMac() ? 2 : 0));
+
+	private static String defaultLookAndFeelTypeString;
+	private static OperatingSystemInfo osi;
+
+	static {
+		VCellLookAndFeel.osi = OperatingSystemInfo.getInstance();
+		if (osi.isLinux()) System.setProperty("awt.useSystemAAFontSettings", "on");
+		VCellLookAndFeel.defaultLookAndFeelTypeString = VCellLookAndFeel.osi.isLinux() ? UIManager.getCrossPlatformLookAndFeelClassName() : UIManager.getSystemLookAndFeelClassName();
+		System.getProperties().put("swing.component.sizevariant", "regular");
+	}
+
+	public static void useCalculatedDefaultVCellLookAndFeel(){
+		VCellLookAndFeel.useCalculatedDefaultVCellLookAndFeel(VCellLookAndFeel.defaultLookAndFeelTypeString, VCellLookAndFeel.DEFAULT_FONT);
+	}
+
+	public static void useCalculatedDefaultVCellLookAndFeel(String lookAndFeelTypeString, Font font){
+		lg.info("Operating system:  {}", VCellLookAndFeel.osi.getOsType());
+		lg.info("About to set the look and feel.  Before setting, we're using: {}", UIManager.getLookAndFeel().getName());
+
+		// General Look and Feel
+		try {
+			UIManager.setLookAndFeel(lookAndFeelTypeString);
+		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
+			lg.warn("Error while setting look and feel:", e);
 		}
-		if (isMac) {
-	        UIManager.put("Button.font",defaultFont);
-	        UIManager.put("CheckBox.font",defaultFont);
-	        UIManager.put("CheckBoxMenuItem.font",defaultFont);
-	        UIManager.put("ColorChooser.font",defaultFont);
-	        UIManager.put("ComboBox.font",defaultFont);
-	        UIManager.put("DesktopIcon.font",defaultFont);
-	        UIManager.put("EditorPane.font",defaultFont);
-	        UIManager.put("FileChooser.font", defaultFont);
-	        UIManager.put("FormattedTextField.font", defaultFont);
-	        UIManager.put("Label.font",defaultFont);
-	        UIManager.put("List.font",defaultFont);
-	        UIManager.put("Menu.font", defaultFont);
-	        UIManager.put("MenuBar.font", defaultFont);
-	        UIManager.put("MenuItem.font", defaultFont);
-	        UIManager.put("OptionPane.font",defaultFont);
-	        UIManager.put("Panel.font",defaultFont);
-	        UIManager.put("PasswordField.font",defaultFont);
-	        UIManager.put("PopupMenu.font",defaultFont);
-	        UIManager.put("ProgressBar.font",defaultFont);
-	        UIManager.put("RadioButton.font",defaultFont);
-	        UIManager.put("RadioButtonMenuItem.font",defaultFont);
-	        UIManager.put("TabbedPane.font",defaultFont);
-	        UIManager.put("Table.font",defaultFont);
-	        UIManager.put("TableHeader.font", defaultFont);
-	        UIManager.put("TextArea.font",defaultFont);
-	        UIManager.put("TextField.font",defaultFont);
-	        UIManager.put("TextPane.font",defaultFont);
-	        UIManager.put("TitledBorder.font",defaultFont);
-	        UIManager.put("ToggleButton.font",defaultFont);
-	        UIManager.put("ToolBar.font", defaultFont);
-	        UIManager.put("ToolTip.font", defaultFont);
-	        UIManager.put("Tree.font", defaultFont);
-	        UIManager.put("Slider.font", defaultFont);
-	        UIManager.put("ScrollPane.font", defaultFont);
-	        UIManager.put("Viewport.font", defaultFont);
-	        
-	        UIManager.put("CheckBoxMenuItem.acceleratorFont", defaultFont);
-	        UIManager.put("InternalFrame.optionDialogTitleFont", defaultFont);
-	        UIManager.put("InternalFrame.paletteTitleFont", defaultFont);
-	        UIManager.put("InternalFrame.titleFont", defaultFont);
-	        UIManager.put("Menu.acceleratorFont", defaultFont);
-	        UIManager.put("MenuItem.acceleratorFont", defaultFont);
-	        UIManager.put("OptionPane.buttonFont", defaultFont);
-	        UIManager.put("OptionPane.messageFont", defaultFont);
-	        UIManager.put("RadioButtonMenuItem.acceleratorFont", defaultFont);
-	        UIManager.put("TabbedPane.useSmallLayout", Boolean.TRUE);
-	        
-//	        System.setProperty("apple.laf.useScreenMenuBar", "true");
-	        System.getProperties().put("swing.component.sizevariant", "regular");
-		}
-		
-		System.out.println("After setting, we're using: "+UIManager.getLookAndFeel().getName());
+
+		// Font
+		VCellLookAndFeel.setVCellFontToDefault(font);
+
+		lg.info("After setting, we're using: {}", UIManager.getLookAndFeel().getName());
+	}
+
+	public static void setVCellFontToDefault(){
+		VCellLookAndFeel.setVCellFontToDefault(VCellLookAndFeel.DEFAULT_FONT);
+	}
+
+	public static void setVCellFontToDefault(Font fontToUse) {
+		UIManager.put("Button.font", fontToUse);
+		UIManager.put("CheckBox.font", fontToUse);
+		UIManager.put("CheckBoxMenuItem.font", fontToUse);
+		UIManager.put("ColorChooser.font", fontToUse);
+		UIManager.put("ComboBox.font", fontToUse);
+		UIManager.put("DesktopIcon.font", fontToUse);
+		UIManager.put("EditorPane.font", fontToUse);
+		UIManager.put("FileChooser.font", fontToUse);
+		UIManager.put("FormattedTextField.font", fontToUse);
+		UIManager.put("Label.font", fontToUse);
+		UIManager.put("List.font", fontToUse);
+		UIManager.put("Menu.font", fontToUse);
+		UIManager.put("MenuBar.font", fontToUse);
+		UIManager.put("MenuItem.font", fontToUse);
+		UIManager.put("OptionPane.font", fontToUse);
+		UIManager.put("Panel.font", fontToUse);
+		UIManager.put("PasswordField.font", fontToUse);
+		UIManager.put("PopupMenu.font", fontToUse);
+		UIManager.put("ProgressBar.font", fontToUse);
+		UIManager.put("RadioButton.font", fontToUse);
+		UIManager.put("RadioButtonMenuItem.font", fontToUse);
+		UIManager.put("TabbedPane.font", fontToUse);
+		UIManager.put("Table.font", fontToUse);
+		UIManager.put("TableHeader.font", fontToUse);
+		UIManager.put("TextArea.font", fontToUse);
+		UIManager.put("TextField.font", fontToUse);
+		UIManager.put("TextPane.font", fontToUse);
+		UIManager.put("TitledBorder.font", fontToUse);
+		UIManager.put("ToggleButton.font", fontToUse);
+		UIManager.put("ToolBar.font", fontToUse);
+		UIManager.put("ToolTip.font", fontToUse);
+		UIManager.put("Tree.font", fontToUse);
+		UIManager.put("Slider.font", fontToUse);
+		UIManager.put("ScrollPane.font", fontToUse);
+		UIManager.put("Viewport.font", fontToUse);
+
+		UIManager.put("CheckBoxMenuItem.acceleratorFont", fontToUse);
+		UIManager.put("InternalFrame.optionDialogTitleFont", fontToUse);
+		UIManager.put("InternalFrame.paletteTitleFont", fontToUse);
+		UIManager.put("InternalFrame.titleFont", fontToUse);
+		UIManager.put("Menu.acceleratorFont", fontToUse);
+		UIManager.put("MenuItem.acceleratorFont", fontToUse);
+		UIManager.put("OptionPane.buttonFont", fontToUse);
+		UIManager.put("OptionPane.messageFont", fontToUse);
+		UIManager.put("RadioButtonMenuItem.acceleratorFont", fontToUse);
+		UIManager.put("TabbedPane.useSmallLayout", Boolean.TRUE);
+	}
+
+	public static Font getDefaultFont() {
+		return new Font(
+				VCellLookAndFeel.DEFAULT_FONT.getFontName(),
+				VCellLookAndFeel.DEFAULT_FONT.getStyle(),
+				VCellLookAndFeel.DEFAULT_FONT.getSize()
+		);
 	}
 }

@@ -741,7 +741,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
         if(solverPanel == null) {
             try {
                 solverPanel = new javax.swing.JPanel();
-                solverPanel.setBorder(new TitledBorder(GuiConstants.TAB_PANEL_BORDER, "Supported COPASI Methods", TitledBorder.CENTER, TitledBorder.DEFAULT_POSITION, VCellLookAndFeel.defaultFont.deriveFont(Font.BOLD)));
+                solverPanel.setBorder(new TitledBorder(GuiConstants.TAB_PANEL_BORDER, "Supported COPASI Methods", TitledBorder.CENTER, TitledBorder.DEFAULT_POSITION, VCellLookAndFeel.getDefaultFont().deriveFont(Font.BOLD)));
                 solverPanel.setLayout(new java.awt.GridBagLayout());
 
                 optimizationMethodParameterTable = new ScrollTable();
@@ -840,7 +840,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
         if(solutionPanel == null) {
             try {
                 solutionPanel = new javax.swing.JPanel();
-                solutionPanel.setBorder(new TitledBorder(GuiConstants.TAB_PANEL_BORDER, "Solution", TitledBorder.CENTER, TitledBorder.DEFAULT_POSITION, VCellLookAndFeel.defaultFont.deriveFont(Font.BOLD)));
+                solutionPanel.setBorder(new TitledBorder(GuiConstants.TAB_PANEL_BORDER, "Solution", TitledBorder.CENTER, TitledBorder.DEFAULT_POSITION, VCellLookAndFeel.getDefaultFont().deriveFont(Font.BOLD)));
                 solutionPanel.setLayout(new java.awt.GridBagLayout());
 
                 optimizationSolutionParameterTable = new ScrollTable();

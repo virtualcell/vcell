@@ -21,7 +21,6 @@ import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.server.VCellConnectionFactory;
 import com.google.inject.Inject;
 import com.install4j.api.launcher.ApplicationLauncher;
-import org.vcell.api.client.VCellApiClient;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.api.messaging.RemoteProxyVCellConnectionFactory;
 import org.vcell.api.server.ClientServerManager;
@@ -175,7 +174,7 @@ private void setStatusUpdater(StatusUpdater newStatusUpdater) {
 }
 
 public void startClient(final VCDocument startupDoc, final ClientServerInfo clientServerInfo) {
-	VCellLookAndFeel.setVCellLookAndFeel();
+	VCellLookAndFeel.useCalculatedDefaultVCellLookAndFeel();
 
 	Hashtable<String, Object> hash = new Hashtable<String, Object>();	
 	AsynchClientTask task1  = new AsynchClientTask("Starting Virtual Cell", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {

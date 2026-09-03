@@ -22,7 +22,6 @@ import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Singleton;
 import org.apache.commons.lang3.ArrayUtils;
-import org.vcell.dependency.server.VCellServerModule;
 import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.VCDocument;
 
@@ -45,7 +44,7 @@ public class VCellClientDevMain {
 		}
 		ClientServerInfo csInfo = ClientServerInfo.createLocalServerInfo(user);
 		//call in main thread, since it's quick and not necessarily thread safe
-		VCellLookAndFeel.setVCellLookAndFeel();
+		VCellLookAndFeel.useCalculatedDefaultVCellLookAndFeel();
 
 		vcellClient.startClient(initialDocument, csInfo);
 	}
