@@ -239,10 +239,32 @@ public class PDEDataViewer extends DataViewer implements DataJobListenerHolder {
 	public static class TimeSeriesDataRetrievalTask extends AsynchClientTask {
 		private DataJobListenerHolder dataJobListenerHolder;
 		private PDEDataContext myPDEDataContext;
+		private final boolean bRecordFailureInHashtable;
+
+		/**
+		 * Retrieve time series data. A failure aborts the task chain and is reported by
+		 * ClientTaskDispatcher: a UserCancelException quietly, anything else as an error dialog
+		 * naming the real cause.
+		 */
 		public TimeSeriesDataRetrievalTask(String title,DataJobListenerHolder dataJobListenerHolder,PDEDataContext myPDEDataContext) {
+			this(title, dataJobListenerHolder, myPDEDataContext, false);
+		}
+
+		/**
+		 * As the constructor, except that a failure is recorded under
+		 * {@link PDEDataViewer#StringKey_timeSeriesJobException} and the task chain continues, for
+		 * a caller that reports the failure in its own UI. Only KymographPanel does this; every
+		 * other caller wants the chain to stop (see issue #2063).
+		 */
+		public static TimeSeriesDataRetrievalTask recordingFailure(String title,DataJobListenerHolder dataJobListenerHolder,PDEDataContext myPDEDataContext) {
+			return new TimeSeriesDataRetrievalTask(title, dataJobListenerHolder, myPDEDataContext, true);
+		}
+
+		private TimeSeriesDataRetrievalTask(String title,DataJobListenerHolder dataJobListenerHolder,PDEDataContext myPDEDataContext,boolean bRecordFailureInHashtable) {
 			super(title, AsynchClientTask.TASKTYPE_NONSWING_BLOCKING);
 			this.dataJobListenerHolder=dataJobListenerHolder;
 			this.myPDEDataContext=myPDEDataContext;
+			this.bRecordFailureInHashtable=bRecordFailureInHashtable;
 		}
 	
 		@Override
@@ -276,6 +298,14 @@ public class PDEDataViewer extends DataViewer implements DataJobListenerHolder {
 //					}
 //				}
 			} catch (Exception exception) {
+				// Recording the failure and returning normally leaves the next task to run against a
+				// null result. Four of the six callers never read the key, so a retrieval failure -
+				// or a cancellation - surfaced as an NPE in an unrelated plotting task and the real
+				// cause was lost (issue #2063). Failing the chain is the default; a caller that
+				// reports failures itself asks for the old behaviour via recordingFailure().
+				if (!bRecordFailureInHashtable) {
+					throw exception;
+				}
 				hashTable.put(StringKey_timeSeriesJobException,exception);
 			} finally {
 				if(djl != null){dataJobListenerHolder.removeDataJobListener(djl);}
@@ -2634,10 +2664,8 @@ private void showTimePlot() {
 
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				Exception timeSeriesJobFailed = (Exception)hashTable.get(PDEDataViewer.StringKey_timeSeriesJobException);
-				if(timeSeriesJobFailed != null) {
-					throw timeSeriesJobFailed;
-				}
+				// no need to check StringKey_timeSeriesJobException: TimeSeriesDataRetrievalTask now
+				// throws, so this task does not run at all if the retrieval failed
 				TSJobResultsNoStats tsJobResultsNoStats = (TSJobResultsNoStats)hashTable.get(StringKey_timeSeriesJobResults);
 				//Make independent Plotviewer that is unaffected by changes (time,var,paramscan) in 'this' PDEDataviewer except to pass-thru OutputContext changes
 				PdeTimePlotMultipleVariablesPanel.MultiTimePlotHelper multiTimePlotHelper = (PdeTimePlotMultipleVariablesPanel.MultiTimePlotHelper)hashTable.get(MULTITPHELPER_TASK_KEY);
