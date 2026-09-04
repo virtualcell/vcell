@@ -443,7 +443,7 @@ private SpeciesContext getSpeciesContext(QueryHashtable dbc, Connection con, Res
 	//
 	Structure structure = reactStepDB.getStructure(dbc, con,structKey);
 	Species species = reactStepDB.getSpecies(dbc, con,speciesKey);
-	speciesContext = new SpeciesContext(scKey,speciesContext.getName(),species,structure);
+	speciesContext = SpeciesContext.fromPersistedContent(scKey,speciesContext.getName(),species,structure);
 	speciesContext.setSpeciesPatternString(speciesPatternString);
 	try {
 		speciesContext.setSbmlName(sbmlNameString);
