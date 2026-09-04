@@ -48,6 +48,8 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
 
+import cbit.vcell.mapping.SimulationContext;
+
 /**
  * Read-only (mostly) introspection of the live Swing UI, intended to give an
  * automated agent / developer a text and pixel view of the running application
@@ -404,11 +406,11 @@ public final class SwingInspector {
 	 * The model knows exactly, so report it rather than making a caller guess from an icon
 	 * or from which tabs happen to appear.
 	 *
-	 * <p>Read reflectively on purpose. This is a dev-only introspection class that otherwise
-	 * needs nothing but the JDK, and a typed import would tie it to the biology model just
-	 * to read one label. Anything exposing a no-argument {@code getApplicationType()} is
-	 * reported the same way, so this does not have to be revisited when another such type
-	 * appears.
+	 * <p>Read through {@link SimulationContext} directly. This class lives in
+	 * {@code vcell-client}, which already depends on the biology model, so naming the type
+	 * costs nothing a reflective lookup would have saved - and it gets compiler checking,
+	 * so renaming {@code getApplicationType} or the enum breaks the build here rather than
+	 * silently emptying a field at runtime.
 	 */
 	private static void appendUserObject(StringBuilder sb, javax.swing.tree.TreePath path) {
 		Object node = path.getLastPathComponent();
@@ -426,22 +428,18 @@ public final class SwingInspector {
 		}
 	}
 
-	/** @return the row's application type, or null if its object has none. */
+	/** @return the row's application type, or null if the row is not an application. */
 	private static String applicationTypeOf(javax.swing.tree.TreePath path) {
 		Object node = path.getLastPathComponent();
 		Object userObject = node;
 		if (node instanceof javax.swing.tree.DefaultMutableTreeNode) {
 			userObject = ((javax.swing.tree.DefaultMutableTreeNode) node).getUserObject();
 		}
-		if (userObject == null) {
-			return null;
+		if (!(userObject instanceof SimulationContext)) {
+			return null; // most rows are not applications
 		}
-		try {
-			Object value = userObject.getClass().getMethod("getApplicationType").invoke(userObject);
-			return (value == null) ? null : String.valueOf(value);
-		} catch (ReflectiveOperationException | RuntimeException e) {
-			return null; // most rows are not applications; absence is the answer
-		}
+		SimulationContext.Application type = ((SimulationContext) userObject).getApplicationType();
+		return (type == null) ? null : type.name();
 	}
 
 	/** Text carried by a renderer's component; composite renderers are flattened. */
@@ -1777,8 +1775,9 @@ public final class SwingInspector {
 	 * the author chose ("Application2", "Copy of Application0"), and on screen only the
 	 * icon distinguishes them. The type is a property of the model, so ask the model.
 	 *
-	 * @param appType {@code SPRINGSALAD}, {@code RULE_BASED_STOCHASTIC},
-	 *                {@code NETWORK_DETERMINISTIC}, {@code NETWORK_STOCHASTIC}, or null
+	 * @param appType a {@link SimulationContext.Application} name - {@code SPRINGSALAD},
+	 *                {@code RULE_BASED_STOCHASTIC}, {@code NETWORK_DETERMINISTIC},
+	 *                {@code NETWORK_STOCHASTIC} - or null to match on text instead
 	 */
 	public static String findRowJson(String path, final String query, final boolean exact,
 			final String appType) {
