@@ -83,7 +83,9 @@ A selector that doesn't resolve reports `did not resolve` (or `false`) rather th
 | `GET /listeners?path=0/3/2` | JSON: registered `ActionListener` classes, action command, mouse-listener count — "is this control actually wired up?" |
 | `GET /props?path=` | JSON: extended properties of one component — full class chain, focus state, colors/font, accessible role/name/description, button/text-component detail, listener counts. The "inspect element" panel to `/tree`'s DOM |
 | `GET /highlight?path=[&ms=2000]` | Flash a translucent red overlay over the component so a human watching the screen sees what a selector resolves to. Glass-pane based; restores the original glass pane (and visibility) afterwards |
+| `GET /findRow?path=&text=\|contains=` | Row number by what a row **displays**, searching the whole tree/table model. JSON `{"row": N, "text": "..."}`. Two reasons it exists: `/tree` caps its dump at 25 table rows / 100 tree rows (it says `truncated`), so anything below that is otherwise unreachable — a chooser in a 137-entry directory, a database tree of a thousand models; and a row *index* is not durable, since it shifts as soon as anything above it changes. A trailing path segment counts as a match, so a file chooser can be driven by file name |
 | `GET /glide?path=[&ms=2000]` | Move the **real cursor** to the component, easing in and out. JSON `{"glided": bool}`. For a replay someone is filming: `/click` fires buttons through `doClick()` and never moves the pointer, which is right for a test and wrong for a video |
+| `GET /robotClick?path=[&glideMs=0][&row=N]` | (`row` aims at one tree row, table row, or **tab** — `/selectTreeRow` and `/selectTab` act through the model, post no input event, and are therefore invisible to the recorder; tree navigation is how most of VCell is reached) |
 | `GET /robotClick?path=[&glideMs=0]` | Click by real native press/release instead of `doClick()`. JSON `{"clicked": bool}`. Needed in two places: a filmed replay wants the cursor where the click lands, and **the recorder can only see input that reaches the AWT event queue**, so this is the only way to drive a button while recording. Unlike `/click` it blocks until the press is delivered |
 | `GET /record?action=start\|stop\|status[&file=]` | The UI recorder. `start` begins capturing real input and **fixes the output file**, which exists from that moment and is rewritten after every step; `stop` finalizes it; `status` reports `{"recording", "steps", "rawEvents", "path"}` — `rawEvents` separates "captured nothing" from "saw nothing", the first thing worth knowing when a recording comes out empty. All three replies carry `path` |
 | `GET /log[?lines=N]` | text/plain tail (default 200 lines) of the client's real log — VCell redirects System.out/err to `<vcellHome>/logs/vcellrun_<site>.log`, so exceptions never appear on the launcher's stdout |
@@ -111,6 +113,15 @@ through endpoints that already exist.
   calls its listeners directly, so the bridge's own `/click` on a button is invisible here.
   Drive a recording session with `/robotClick`.
 - **Passwords are never captured.** A `JPasswordField` is skipped outright.
+- **A row or tab is recorded by its text as well as its index** (`rowText`, `tabTitle`).
+  An index documents nothing — "select row 10" is not a help page, and it is not durable
+  either: a biomodel holds zero or more applications of any type in any order, so the
+  index is only true for the tree as it stood when recorded. Replay looks the text up
+  first and falls back to the index.
+- **Each step says how durable its selector is** (`durability: "path"` / `"id"`, omitted
+  for the durable `name=` form). That turns naming debt into a to-do list you can read off
+  a fresh recording, instead of discovering it when a script breaks a year later. The fix
+  is a `setName(...)` at the component's construction site.
 - **Timing** is the real gap before each step, meant to be edited afterwards.
 - **The script is flushed after every step**, so killing the client mid-session costs at
   most the step in progress rather than the whole take. Each write goes to a `.part` file

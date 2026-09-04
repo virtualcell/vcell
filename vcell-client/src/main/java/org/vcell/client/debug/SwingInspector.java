@@ -359,6 +359,12 @@ public final class SwingInspector {
 	 * propagates a renderer's exception — a renderer that assumes a paint context must
 	 * not break the whole tree dump.
 	 */
+	/** The text a JTree row displays, for a caller that has only the row number. */
+	static String rowText(JTree tree, int row) {
+		javax.swing.tree.TreePath path = tree.getPathForRow(row);
+		return (path == null) ? null : treeRowText(tree, row, path);
+	}
+
 	private static String treeRowText(JTree tree, int row, javax.swing.tree.TreePath path) {
 		Object value = path.getLastPathComponent();
 		boolean selected = tree.isRowSelected(row);
@@ -1604,6 +1610,21 @@ public final class SwingInspector {
 	 * @return the written file
 	 */
 	public static File screenshot(int windowIndex, File outDir) throws Exception {
+		return screenshot(windowIndex, outDir, 1.0, null);
+	}
+
+	/**
+	 * As above, but scaled and named.
+	 *
+	 * <p>Scaling belongs here rather than in a caller because the help system caps images at
+	 * {@code DocumentCompiler.MAX_IMG_FILE_SIZE} (500KB), and a full-size capture of a
+	 * maximised window blows past that. Doing it in Java keeps documentation capture free of
+	 * platform image tools.
+	 *
+	 * @param scale multiplier, 1.0 for full size
+	 * @param name  base file name without extension, or null for the default
+	 */
+	public static File screenshot(int windowIndex, File outDir, double scale, String name) throws Exception {
 		if (GraphicsEnvironment.isHeadless()) {
 			throw new IllegalStateException("cannot screenshot in a headless environment");
 		}
@@ -1643,9 +1664,26 @@ public final class SwingInspector {
 		if (img == null) {
 			throw new IllegalStateException("no showing window to capture (index=" + windowIndex + ")");
 		}
+		BufferedImage written = img;
+		if (scale > 0 && scale != 1.0) {
+			int w = Math.max(1, (int) Math.round(img.getWidth() * scale));
+			int h = Math.max(1, (int) Math.round(img.getHeight() * scale));
+			BufferedImage scaled = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+			java.awt.Graphics2D g2 = scaled.createGraphics();
+			try {
+				g2.setRenderingHint(java.awt.RenderingHints.KEY_INTERPOLATION,
+						java.awt.RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+				g2.drawImage(img, 0, 0, w, h, null);
+			} finally {
+				g2.dispose();
+			}
+			written = scaled;
+		}
 		outDir.mkdirs();
-		File out = new File(outDir, "vcell-window-" + (windowIndex < 0 ? "active" : windowIndex) + ".png");
-		ImageIO.write(img, "png", out);
+		String base = (name != null && !name.isEmpty()) ? name
+				: "vcell-window-" + (windowIndex < 0 ? "active" : windowIndex);
+		File out = new File(outDir, base + ".png");
+		ImageIO.write(written, "png", out);
 		return out;
 	}
 
@@ -1661,6 +1699,103 @@ public final class SwingInspector {
 	// "what selector names THIS component?" and "drive it the way a hand would,
 	// with the cursor actually moving there".
 	// ---------------------------------------------------------------------
+
+	/**
+	 * Find a row of a {@link JTree} or {@link JTable} by what it displays, searching the
+	 * whole model rather than the capped serialization in {@code /tree}.
+	 *
+	 * <p>Two reasons this is not optional. The dump stops at {@link #MAX_TABLE_ROWS} /
+	 * {@link #MAX_TREE_ROWS} rows and says so, so anything further down is unreachable from
+	 * it - a file chooser in a 137-entry directory, a database tree of a thousand models.
+	 * And a row INDEX is not a durable way to name a thing: the same model sits at a
+	 * different row as soon as anything above it changes, so a script that has to survive
+	 * needs to ask for a row by its text.
+	 *
+	 * @param exact  match the displayed text exactly, else case-insensitive substring
+	 * @return JSON {@code {"row": N, "text": "..."}}, or {@code {"row": -1}} if not found
+	 */
+	public static String findRowJson(String path, final String query, final boolean exact) {
+		Component c = findByPath(path);
+		if (c == null) {
+			return "{\"error\":\"selector did not resolve\",\"row\":-1}";
+		}
+		String[] found = onEdt(() -> {
+			int count;
+			if (c instanceof JTree) {
+				count = ((JTree) c).getRowCount();
+			} else if (c instanceof JTable) {
+				count = ((JTable) c).getRowCount();
+			} else {
+				return null;
+			}
+			for (int row = 0; row < count; row++) {
+				String text;
+				if (c instanceof JTree) {
+					text = rowText((JTree) c, row);
+				} else {
+					JTable t = (JTable) c;
+					Object cell = (t.getColumnCount() > 0) ? t.getValueAt(row, 0) : null;
+					text = (cell == null) ? null : String.valueOf(cell);
+				}
+				if (text == null) {
+					continue;
+				}
+				// A file chooser reports absolute paths; callers think in file names, so a
+				// trailing path segment counts as a match too.
+				String tail = text;
+				int slash = Math.max(tail.lastIndexOf('/'), tail.lastIndexOf('\\'));
+				if (slash >= 0 && slash < tail.length() - 1) {
+					tail = tail.substring(slash + 1);
+				}
+				boolean hit = exact
+						? (text.equals(query) || tail.equals(query))
+						: (text.toLowerCase().contains(query.toLowerCase())
+								|| tail.toLowerCase().contains(query.toLowerCase()));
+				if (hit) {
+					return new String[] { String.valueOf(row), text };
+				}
+			}
+			return new String[] { "-1", null };
+		});
+		if (found == null) {
+			return "{\"error\":\"not a JTree or JTable\",\"row\":-1}";
+		}
+		String text = found[1];
+		return "{\"row\":" + found[0]
+				+ (text == null ? "" : ",\"text\":\"" + escape(text) + "\"") + '}';
+	}
+
+	/** @return the screen centre of one tree row, table row or tab, or null if unresolvable. */
+	private static Point rowCenterOnScreen(final Component c, final int row) {
+		return onEdt(() -> {
+			if (!c.isShowing()) {
+				return null;
+			}
+			Rectangle r;
+			if (c instanceof JTabbedPane) {
+				JTabbedPane tp = (JTabbedPane) c;
+				if (row < 0 || row >= tp.getTabCount()) {
+					return null;
+				}
+				r = tp.getBoundsAt(row); // a tab is a "row" for aiming purposes
+			} else if (c instanceof JTree) {
+				r = ((JTree) c).getRowBounds(row);
+			} else if (c instanceof JTable) {
+				JTable t = (JTable) c;
+				if (row < 0 || row >= t.getRowCount()) {
+					return null;
+				}
+				r = t.getCellRect(row, 0, true);
+			} else {
+				return null;
+			}
+			if (r == null) {
+				return null;
+			}
+			Point loc = c.getLocationOnScreen();
+			return new Point(loc.x + r.x + Math.min(r.width / 2, 60), loc.y + r.y + r.height / 2);
+		});
+	}
 
 	/** @return the centre of the component in screen coordinates, or null if it is not showing. */
 	private static Point centerOnScreen(final Component c) {
@@ -1834,14 +1969,33 @@ public final class SwingInspector {
 	 * @return true if the component resolved and is on screen
 	 */
 	public static boolean robotClick(String path, int glideMs) {
+		return robotClick(path, glideMs, -1);
+	}
+
+	/**
+	 * As above, but aimed at one row of a {@link JTree} or {@link JTable}, or one tab of a
+	 * {@link JTabbedPane}.
+	 *
+	 * <p>Needed because {@code /selectTreeRow} and {@code /selectTableRow} act through the
+	 * selection model, which posts no input event and so is invisible to
+	 * {@link UiRecorder}. Tree navigation is how most of VCell is reached, so without this
+	 * a scripted recording session could not capture the app's commonest interaction.
+	 *
+	 * @param row row to aim at, or -1 for the component's centre
+	 */
+	public static boolean robotClick(String path, int glideMs, final int row) {
 		Component c = findByPath(path);
 		if (c == null) {
 			return false;
 		}
-		if (glideMs > 0 && !glide(path, glideMs)) {
+		Point rowPoint = (row < 0) ? null : rowCenterOnScreen(c, row);
+		if (row >= 0 && rowPoint == null) {
 			return false;
 		}
-		Point target = centerOnScreen(c);
+		if (rowPoint == null && glideMs > 0 && !glide(path, glideMs)) {
+			return false;
+		}
+		Point target = (rowPoint != null) ? rowPoint : centerOnScreen(c);
 		if (target == null) {
 			return false;
 		}

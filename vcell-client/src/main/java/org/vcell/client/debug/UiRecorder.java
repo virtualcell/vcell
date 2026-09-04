@@ -133,9 +133,12 @@ public final class UiRecorder {
 		String text;       // setText
 		boolean enter;     // setText committed with Enter
 		int row = -1;      // tree/table
+		String rowText;    // what that row DISPLAYS - a row number alone documents nothing
 		int index = -1;    // tab
+		String tabTitle;   // what that tab READS - an index documents nothing, same as a row
 		long delayMs;
 		String opensWindow; // a window that appeared after this step, for a replay wait
+		String durability;  // "name" | "path" | "id" - how the target had to be addressed
 		String note;        // human-readable, for whoever edits the script
 	}
 
@@ -350,6 +353,7 @@ public final class UiRecorder {
 			}
 			s = newStep(right ? "rightClickTreeRow" : (doubleClick ? "doubleClickTreeRow" : "selectTreeRow"), now, target);
 			s.row = row;
+			s.rowText = SwingInspector.rowText(tree, row);
 		} else if (target instanceof JTable) {
 			JTable table = (JTable) target;
 			Point p = SwingUtilities.convertPoint(pointSource, point, table);
@@ -359,6 +363,10 @@ public final class UiRecorder {
 			}
 			s = newStep(right ? "rightClickTableRow" : (doubleClick ? "doubleClickTableRow" : "selectTableRow"), now, target);
 			s.row = row;
+			if (table.getColumnCount() > 0) {
+				Object cell = table.getValueAt(row, 0);
+				s.rowText = (cell == null) ? null : String.valueOf(cell);
+			}
 		} else if (target instanceof JTabbedPane) {
 			JTabbedPane tabs = (JTabbedPane) target;
 			Point p = SwingUtilities.convertPoint(pointSource, point, tabs);
@@ -368,6 +376,7 @@ public final class UiRecorder {
 			}
 			s = newStep("selectTab", now, target);
 			s.index = index;
+			s.tabTitle = tabs.getTitleAt(index);
 		} else if (target instanceof JTextComponent) {
 			// Clicking into a field is only ever a prelude to typing; the setText step
 			// that follows carries the whole result, so the click itself is dropped.
@@ -424,6 +433,7 @@ public final class UiRecorder {
 		Step s = new Step();
 		s.verb = "setText";
 		s.selector = SwingInspector.bestSelector(tc);
+		s.durability = durabilityOf(s.selector);
 		s.text = text;
 		s.enter = enter;
 		s.delayMs = Math.max(0, pendingTextStartedAt - lastStepAt);
@@ -435,8 +445,25 @@ public final class UiRecorder {
 		Step s = new Step();
 		s.verb = verb;
 		s.selector = SwingInspector.bestSelector(target);
+		s.durability = durabilityOf(s.selector);
 		s.delayMs = Math.max(0, now - lastStepAt);
 		return s;
+	}
+
+	/**
+	 * Which tier {@link SwingInspector#bestSelector} had to fall back to. Recorded so the
+	 * naming debt is visible in the artifact: a step marked "path" will break the next time
+	 * that panel is rearranged, and the fix is a setName() at the component's construction
+	 * site. Better to read that off a fresh recording than to discover it a year later.
+	 */
+	private static String durabilityOf(String selector) {
+		if (selector == null) {
+			return null;
+		}
+		if (selector.startsWith("name=")) {
+			return "name";
+		}
+		return selector.matches("c\\d+") ? "id" : "path";
 	}
 
 	private static void emit(Step s, long now, Component source) {
@@ -565,7 +592,13 @@ public final class UiRecorder {
 
 	/** A short human-readable note so a person editing the script can tell what a step is. */
 	private static String describe(Component c) {
-		StringBuilder sb = new StringBuilder(c.getClass().getSimpleName());
+		// An anonymous subclass - and VCell builds plenty of them - has an EMPTY simple
+		// name, which would leave the note blank. Walk up to the first class that has one.
+		Class<?> type = c.getClass();
+		while (type != null && type.getSimpleName().isEmpty()) {
+			type = type.getSuperclass();
+		}
+		StringBuilder sb = new StringBuilder(type == null ? "Component" : type.getSimpleName());
 		String label = null;
 		if (c instanceof AbstractButton) {
 			label = ((AbstractButton) c).getText();
@@ -675,11 +708,21 @@ public final class UiRecorder {
 			}
 			if (s.row >= 0) {
 				sb.append(", \"row\": ").append(s.row);
+				if (s.rowText != null) {
+					sb.append(", \"rowText\": \"").append(SwingInspector.escape(s.rowText)).append('"');
+				}
 			}
 			if (s.index >= 0) {
 				sb.append(", \"index\": ").append(s.index);
+				if (s.tabTitle != null) {
+					sb.append(", \"tabTitle\": \"").append(SwingInspector.escape(s.tabTitle)).append('"');
+				}
 			}
 			sb.append(", \"delayMs\": ").append(s.delayMs);
+			if (s.durability != null && !"name".equals(s.durability)) {
+				// only worth saying when it is NOT the durable form
+				sb.append(", \"durability\": \"").append(s.durability).append('"');
+			}
 			if (s.opensWindow != null) {
 				sb.append(", \"opensWindow\": \"").append(SwingInspector.escape(s.opensWindow)).append('"');
 			}
