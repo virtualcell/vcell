@@ -83,11 +83,39 @@ A selector that doesn't resolve reports `did not resolve` (or `false`) rather th
 | `GET /listeners?path=0/3/2` | JSON: registered `ActionListener` classes, action command, mouse-listener count — "is this control actually wired up?" |
 | `GET /props?path=` | JSON: extended properties of one component — full class chain, focus state, colors/font, accessible role/name/description, button/text-component detail, listener counts. The "inspect element" panel to `/tree`'s DOM |
 | `GET /highlight?path=[&ms=2000]` | Flash a translucent red overlay over the component so a human watching the screen sees what a selector resolves to. Glass-pane based; restores the original glass pane (and visibility) afterwards |
+| `GET /glide?path=[&ms=2000]` | Move the **real cursor** to the component, easing in and out. JSON `{"glided": bool}`. For a replay someone is filming: `/click` fires buttons through `doClick()` and never moves the pointer, which is right for a test and wrong for a video |
+| `GET /robotClick?path=[&glideMs=0]` | Click by real native press/release instead of `doClick()`. JSON `{"clicked": bool}`. Needed in two places: a filmed replay wants the cursor where the click lands, and **the recorder can only see input that reaches the AWT event queue**, so this is the only way to drive a button while recording. Unlike `/click` it blocks until the press is delivered |
+| `GET /record?action=start\|stop\|status[&file=]` | The UI recorder. `start` begins capturing real input; `stop` writes the script and returns `{"steps": N, "path": "...json"}`; `status` reports `{"recording", "steps", "rawEvents"}` — `rawEvents` separates "captured nothing" from "saw nothing", which is the first thing worth knowing when a recording comes out empty |
 | `GET /log[?lines=N]` | text/plain tail (default 200 lines) of the client's real log — VCell redirects System.out/err to `<vcellHome>/logs/vcellrun_<site>.log`, so exceptions never appear on the launcher's stdout |
 
 Buttons/checkboxes are clicked via `doClick()` posted with `invokeLater` (no
 cursor movement, and the request returns immediately even if the action opens a
 modal dialog); other components get a synthetic `Robot` click at their center.
+
+## Recording
+
+`UiRecorder` is the inverse of the endpoints above: they act on a component you name, it
+watches real input and writes out the steps in that same vocabulary, so a recording replays
+through endpoints that already exist.
+
+- **Semantic, never coordinates.** Each step names its target with `bestSelector()` —
+  `name=` first because it survives layout changes, then a node path, and a registry id
+  only as a last resort (ids are stable *within* a session, so a recording that leans on
+  one replays today and resolves to nothing tomorrow).
+- **Menus are special-cased**, and then special-cased again. A menu pick is recorded as
+  `menu "Help>VCell Properties ..."`, because the popup it happened in will not exist at
+  replay time. But a menu item with **no text** cannot be addressed that way at all — VCell
+  puts icon-only controls straight into the menu bar, and the detach toggle is a
+  `JMenuItem` whose entire label is a tooltip — so those fall back to a click on their name.
+- **What it cannot see:** anything that does not reach the AWT event queue. `doClick()`
+  calls its listeners directly, so the bridge's own `/click` on a button is invisible here.
+  Drive a recording session with `/robotClick`.
+- **Passwords are never captured.** A `JPasswordField` is skipped outright.
+- **Timing** is the real gap before each step, meant to be edited afterwards.
+- A step that opened a window records `opensWindow`, so replay waits for it instead of
+  sleeping. Detection compares window **titles**, not identities: detaching a child window
+  swaps an owned dialog for an un-owned frame, so a brand-new `Window` object appears
+  carrying a title that never left the screen.
 
 ## Tooling
 
