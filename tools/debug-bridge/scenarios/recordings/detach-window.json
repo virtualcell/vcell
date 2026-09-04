@@ -1,0 +1,9 @@
+{
+  "recordedAt": "2026-09-04T01:40:51.531951Z",
+  "durationMs": 12432,
+  "steps": [
+    {"verb": "menu", "path": "Help>VCell Properties ...", "delayMs": 2838, "opensWindow": "View VCell Properties", "note": "JMenuItem 'VCell Properties ...'"},
+    {"verb": "click", "selector": "name=DetachWindowToggle", "delayMs": 3785, "note": "JMenuItem 'Detach: allow minimizing, but no longer kept in front'"},
+    {"verb": "click", "selector": "name=DetachWindowToggle", "delayMs": 3756, "note": "JMenuItem 'Reattach: keep in front of the document window'"}
+  ]
+}

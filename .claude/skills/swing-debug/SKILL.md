@@ -79,6 +79,37 @@ pre-redirect lines. `bridge.sh log 200` serves the tail.
   fire menu items from the models, opening no popup at all.
 - `JTree` rows report the text the **renderer** draws, so VCell's database trees
   read as "Lee 2026 Systems-level…" rather than `PublicationInfo@415f5f4f`.
+- **Not everything in a menu bar is a menu.** VCell puts icon-only controls straight into
+  it — the detach toggle is a `JMenuItem` whose entire label is a tooltip — so `/menu`,
+  which matches items by visible text, cannot address them. Click those by `name=`.
+
+## Recording a flow instead of writing one
+
+`bridge.sh record start` … drive the UI … `bridge.sh record stop <file.json>` captures what
+you did as an editable script, replayed with `bridge.sh replay <file.json>`. Good for
+tutorials and demos, and for turning a manual repro into a scenario.
+
+Three things decide whether it works, and all three have bitten:
+
+- **Both routes are recorded**: real input via the AWT listener, and the bridge's own
+  model-based endpoints (which post no event) by reporting themselves. Robot helpers do not
+  double-report. The flip side is that **scripted setup done while recording lands in the
+  script** — do it before `record start`, or pass `--no-bridge-actions`.
+- **A modal dialog blocks input to everything behind it**, so clicks aimed at the main
+  window produce no events at all. The version-mismatch warning on a source build appears a
+  moment *after* the menus do — `wait` for it, don't look once. `record status` distinguishes
+  the two failures: `rawEvents: 0` means nothing was seen, not that nothing was captured.
+- **Replay is patient where a scenario has to be.** It retries a step until it takes, so the
+  menu item that sits disabled for a moment after a modal dialog closes needs no retry loop
+  of your own.
+
+Keep assertions in the scenario, not the recording — replay `--from N --to N` a step at a
+time so state is checked *between* clicks. `scenarios/detach-window-recorded.sh` is the
+worked example, and passes the same 15 checks as the hand-written original.
+
+For a filmed replay use `--driver robot`: the cursor glides to each target and clicks for
+real. The default `semantic` driver moves no cursor, which is right for CI and wrong for a
+video. Same recording either way.
 
 ## Reusable recipes
 

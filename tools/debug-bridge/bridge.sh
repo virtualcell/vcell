@@ -10,7 +10,11 @@
 #   health | windows | tree [maxDepth] | menus
 #   find    [--type T] [--name N] [--text T] [--contains S] [--limit N]
 #   props   <selector>          listeners <selector>
-#   shot [window]               log [lines]
+#   findrow <selector> <text> [--exact]   row number by displayed text (searches the WHOLE
+#                                         model, unlike tree's 25-row/100-row dump cap)
+#   findrow <selector> --apptype SPRINGSALAD   find an application by its type, not its
+#                                         name or position - both of which vary per model
+#   shot [window]               log [lines]      (shot takes ?scale/name/dir via replay)
 # Act:
 #   click <selector>            rclick <selector>
 #   settext <selector> <text> [--enter]
@@ -19,8 +23,16 @@
 #   trow <selector> <row> [col]   dtrow <selector> <row> [col]   rtrow <selector> <row> [col]
 #   menu "<Menu>Item[>Sub]" [window]
 #   highlight <selector> [ms]
+#   glide <selector> [ms]       move the real cursor there (for a watched replay)
+#   rbclick <selector> [glideMs] [row]  native press/release; unlike click it IS recordable
 #   iconify <selector> [true|false]   minimize/restore a window; reports what the OS did
 #   wbounds <selector> x y w h       move/resize a window
+# Record / replay:
+#   record start [file] [--no-bridge-actions] | stop [file] | status
+#            (flushed to disk each step; bridge-driven actions are recorded too unless
+#             --no-bridge-actions, so do scripted SETUP before starting the recording)
+#   replay <script.json> [--driver semantic|robot] [--speed N] [--max-delay MS]
+#                        [--from N] [--to N] [--shots DIR] [--shot-scale F]
 # Synchronize / assert (exit 0 on success, 1 on failure):
 #   wait   [find opts] [--state showing|enabled|gone] [--timeout MS] [--interval MS]
 #   assert [find opts] [--gone]
@@ -145,14 +157,51 @@ case "$cmd" in
                ${3:+--data-urlencode "column=$3"} | pretty ;;
   rrow)      get rightClickTreeRow --data-urlencode "path=$1" --data-urlencode "row=$2" | pretty ;;
   menu)      get menu --data-urlencode "path=$1" ${2:+--data-urlencode "window=$2"} | pretty ;;
+  findrow)
+    case "${2:-}" in
+      --apptype) get findRow --data-urlencode "path=$1" --data-urlencode "appType=$3" | pretty ;;
+      *) get findRow --data-urlencode "path=$1" \
+           $([ "${3:-}" = "--exact" ] && echo "--data-urlencode text=$2" || echo "--data-urlencode contains=$2") | pretty ;;
+    esac
+    ;;
   props)     get props --data-urlencode "path=$1" | pretty ;;
   listeners) get listeners --data-urlencode "path=$1" | pretty ;;
   highlight) get highlight --data-urlencode "path=$1" --data-urlencode "ms=${2:-2000}" | pretty ;;
+  glide)     get glide --data-urlencode "path=$1" --data-urlencode "ms=${2:-600}" | pretty ;;
+  rbclick)   get robotClick --data-urlencode "path=$1" --data-urlencode "glideMs=${2:-0}" \
+               ${3:+--data-urlencode "row=$3"} | pretty ;;
+
+  record)
+    action="${1:-status}"
+    case "$action" in
+      status) get record --data-urlencode "action=status" | pretty ;;
+      start)
+        # record start [file] [--no-bridge-actions]
+        cb=true
+        for a in "$@"; do [ "$a" = "--no-bridge-actions" ] && cb=false; done
+        f="$2"; [ "$f" = "--no-bridge-actions" ] && f=""
+        get record --data-urlencode "action=start" --data-urlencode "captureBridgeActions=$cb" \
+          ${f:+--data-urlencode "file=$f"} | pretty ;;
+      stop)  get record --data-urlencode "action=stop" ${2:+--data-urlencode "file=$2"} | pretty ;;
+      *) echo "record: expected start, stop or status" >&2; exit 2 ;;
+    esac
+    ;;
+
+  replay)
+    script="$1"
+    shift || true
+    PY=""
+    for candidate in python3 python py; do
+      if command -v "$candidate" >/dev/null 2>&1; then PY="$candidate"; break; fi
+    done
+    [ -n "$PY" ] || { echo "replay: need python3 on PATH" >&2; exit 2; }
+    "$PY" "$(dirname "$0")/replay.py" "$script" --port "$PORT" "$@"
+    ;;
   iconify)   get iconify --data-urlencode "path=$1" --data-urlencode "iconified=${2:-true}" | pretty ;;
   wbounds)   get windowBounds --data-urlencode "path=$1" --data-urlencode "x=$2" --data-urlencode "y=$3" --data-urlencode "w=$4" --data-urlencode "h=$5" | pretty ;;
 
   help|*)
-    sed -n '2,30p' "$0" | sed 's/^# \{0,1\}//'
+    sed -n '2,36p' "$0" | sed 's/^# \{0,1\}//'
     [ "$cmd" = help ] || exit 2
     ;;
 esac

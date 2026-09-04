@@ -43,7 +43,7 @@ import com.sun.net.httpserver.HttpServer;
  *   GET /health                 -&gt; "ok"
  *   GET /windows                -&gt; JSON, showing top-level windows (depth 0)
  *   GET /tree[?maxDepth=N]      -&gt; JSON, full component tree of every window
- *   GET /screenshot[?window=N]  -&gt; JSON {"path": "...png"}; N omitted = active window
+ *   GET /screenshot[?window=N&amp;scale=&amp;name=&amp;dir=]  -&gt; JSON {"path": "...png", "bytes": N}
  *   GET /click?path=0/3/2       -&gt; JSON {"clicked": true|false}
  *   GET /setText?path=..&amp;text=..[&amp;enter=true]  -&gt; JSON {"set": true|false}
  *   GET /selectTab?path=..&amp;index=N            -&gt; JSON {"selected": true|false}
@@ -56,6 +56,9 @@ import com.sun.net.httpserver.HttpServer;
  *   GET /menu?path=Account&gt;Login[&amp;window=N]  -&gt; activate a menu item by its visible text
  *   GET /props?path=            -&gt; JSON, extended properties of one component
  *   GET /highlight?path=[&amp;ms=]  -&gt; flash an overlay over the component on screen
+ *   GET /glide?path=[&amp;ms=]      -&gt; move the real cursor to the component (watched replay)
+ *   GET /robotClick?path=[&amp;glideMs=]  -&gt; native press/release; visible to the recorder
+ *   GET /record?action=start|stop|status[&amp;file=]  -&gt; capture real input as a replayable script
  * </pre>
  *
  * Example: {@code curl -s localhost:9123/tree?maxDepth=6 | jq}
@@ -130,6 +133,10 @@ public final class SwingDebugBridge {
 			s.createContext("/menu", wrap(SwingDebugBridge::handleMenu));
 			s.createContext("/props", wrap(SwingDebugBridge::handleProps));
 			s.createContext("/highlight", wrap(SwingDebugBridge::handleHighlight));
+			s.createContext("/glide", wrap(SwingDebugBridge::handleGlide));
+			s.createContext("/robotClick", wrap(SwingDebugBridge::handleRobotClick));
+			s.createContext("/record", wrap(SwingDebugBridge::handleRecord));
+			s.createContext("/findRow", wrap(SwingDebugBridge::handleFindRow));
 			s.createContext("/iconify", wrap(SwingDebugBridge::handleIconify));
 			s.createContext("/windowBounds", wrap(SwingDebugBridge::handleWindowBounds));
 			s.createContext("/log", ex -> {
@@ -196,8 +203,11 @@ public final class SwingDebugBridge {
 	private static String handleScreenshot(HttpExchange ex) throws Exception {
 		Map<String, String> q = query(ex);
 		int windowIndex = q.containsKey("window") ? Integer.parseInt(q.get("window")) : -1;
-		File png = SwingInspector.screenshot(windowIndex, outputDir());
-		return "{\"path\":\"" + jsonEscape(png.getAbsolutePath()) + "\"}";
+		double scale = Double.parseDouble(q.getOrDefault("scale", "1.0"));
+		String name = emptyToNull(q.get("name"));
+		String dir = emptyToNull(q.get("dir"));
+		File png = SwingInspector.screenshot(windowIndex, dir == null ? outputDir() : new File(dir), scale, name);
+		return "{\"path\":\"" + jsonEscape(png.getAbsolutePath()) + "\",\"bytes\":" + png.length() + '}';
 	}
 
 	private static String handleClick(HttpExchange ex) {
@@ -340,6 +350,63 @@ public final class SwingDebugBridge {
 		int ms = Integer.parseInt(q.getOrDefault("ms", "2000"));
 		boolean ok = SwingInspector.highlight(path, ms);
 		return "{\"highlighted\":" + ok + ",\"ms\":" + ms + '}';
+	}
+
+	private static String handleFindRow(HttpExchange ex) {
+		Map<String, String> q = query(ex);
+		String path = q.get("path");
+		String text = emptyToNull(q.get("text"));
+		String contains = emptyToNull(q.get("contains"));
+		String appType = emptyToNull(q.get("appType"));
+		if (path == null || path.isEmpty() || (text == null && contains == null && appType == null)) {
+			return "{\"error\":\"require 'path' and one of 'text', 'contains' or 'appType'\",\"row\":-1}";
+		}
+		return SwingInspector.findRowJson(path, text != null ? text : contains, text != null, appType);
+	}
+
+	private static String handleGlide(HttpExchange ex) {
+		Map<String, String> q = query(ex);
+		String path = q.get("path");
+		if (path == null || path.isEmpty()) {
+			return "{\"error\":\"missing 'path' query parameter\"}";
+		}
+		int ms = Integer.parseInt(q.getOrDefault("ms", "600"));
+		boolean ok = SwingInspector.glide(path, ms);
+		return "{\"glided\":" + ok + ",\"ms\":" + ms + '}';
+	}
+
+	private static String handleRobotClick(HttpExchange ex) {
+		Map<String, String> q = query(ex);
+		String path = q.get("path");
+		if (path == null || path.isEmpty()) {
+			return "{\"error\":\"missing 'path' query parameter\"}";
+		}
+		int glideMs = Integer.parseInt(q.getOrDefault("glideMs", "0"));
+		int row = Integer.parseInt(q.getOrDefault("row", "-1"));
+		boolean ok = SwingInspector.robotClick(path, glideMs, row);
+		return "{\"clicked\":" + ok + ",\"path\":\"" + jsonEscape(path) + "\"}";
+	}
+
+	/**
+	 * Start/stop the UI recorder. The script is flushed to disk after every step, so
+	 * {@code file} on {@code start} fixes where that happens; on {@code stop} it names the
+	 * final destination. Either way the reply carries the path.
+	 */
+	private static String handleRecord(HttpExchange ex) throws Exception {
+		Map<String, String> q = query(ex);
+		String action = q.getOrDefault("action", "status");
+		String file = emptyToNull(q.get("file"));
+		switch (action) {
+			case "start":
+				boolean captureBridge = Boolean.parseBoolean(q.getOrDefault("captureBridgeActions", "true"));
+				return UiRecorder.start(file == null ? null : new File(file), captureBridge);
+			case "stop":
+				return UiRecorder.stop(file == null ? null : new File(file));
+			case "status":
+				return UiRecorder.status();
+			default:
+				return "{\"error\":\"'action' must be one of start, stop, status\"}";
+		}
 	}
 
 	private static String handleMenus(HttpExchange ex) {

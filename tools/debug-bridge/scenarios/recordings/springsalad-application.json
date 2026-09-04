@@ -1,0 +1,10 @@
+{
+  "recordedAt": "2026-09-04T02:34:37.494685Z",
+  "durationMs": 15660,
+  "steps": [
+    {"verb": "selectTreeRow", "selector": "name=bioModelEditorTree[1]", "row": 10, "rowText": "Application2", "delayMs": 1191, "note": "JTree"},
+    {"verb": "selectTab", "selector": "name=ApplicationTabbedPane", "index": 1, "tabTitle": "Specifications", "delayMs": 4104, "note": "JTabbedPaneEnhanced"},
+    {"verb": "selectTab", "selector": "name=ApplicationSpecificationsPanelTabbedPane", "index": 0, "tabTitle": "Species", "delayMs": 4143, "note": "JTabbedPaneEnhanced"},
+    {"verb": "selectTab", "selector": "name=ApplicationSpecificationsPanelTabbedPane", "index": 2, "tabTitle": "Molecular Structures", "delayMs": 3648, "note": "JTabbedPaneEnhanced"}
+  ]
+}
