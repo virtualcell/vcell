@@ -72,7 +72,7 @@ public SpeciesContext getSpeciesContext(java.sql.ResultSet rset, KeyValue keyVal
 		}
 		SpeciesContext speciesContext = null;
 		try {
-			speciesContext = new SpeciesContext(keyValue,nameStr,null,null);
+			speciesContext = SpeciesContext.fromPersistedContent(keyValue,nameStr,null,null);
 			
 			String sbmlNameStr = rset.getString(sbmlName.toString());
 			if(!rset.wasNull()) {
