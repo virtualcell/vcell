@@ -19,8 +19,13 @@
 #   trow <selector> <row> [col]   dtrow <selector> <row> [col]   rtrow <selector> <row> [col]
 #   menu "<Menu>Item[>Sub]" [window]
 #   highlight <selector> [ms]
+#   glide <selector> [ms]       move the real cursor there (for a watched replay)
+#   rbclick <selector> [glideMs]  native press/release; unlike click it IS recordable
 #   iconify <selector> [true|false]   minimize/restore a window; reports what the OS did
 #   wbounds <selector> x y w h       move/resize a window
+# Record / replay:
+#   record start | stop [file] | status
+#   replay <script.json> [--driver semantic|robot] [--speed N] [--max-delay MS]
 # Synchronize / assert (exit 0 on success, 1 on failure):
 #   wait   [find opts] [--state showing|enabled|gone] [--timeout MS] [--interval MS]
 #   assert [find opts] [--gone]
@@ -148,11 +153,33 @@ case "$cmd" in
   props)     get props --data-urlencode "path=$1" | pretty ;;
   listeners) get listeners --data-urlencode "path=$1" | pretty ;;
   highlight) get highlight --data-urlencode "path=$1" --data-urlencode "ms=${2:-2000}" | pretty ;;
+  glide)     get glide --data-urlencode "path=$1" --data-urlencode "ms=${2:-600}" | pretty ;;
+  rbclick)   get robotClick --data-urlencode "path=$1" --data-urlencode "glideMs=${2:-0}" | pretty ;;
+
+  record)
+    action="${1:-status}"
+    case "$action" in
+      start|status) get record --data-urlencode "action=$action" | pretty ;;
+      stop)  get record --data-urlencode "action=stop" ${2:+--data-urlencode "file=$2"} | pretty ;;
+      *) echo "record: expected start, stop or status" >&2; exit 2 ;;
+    esac
+    ;;
+
+  replay)
+    script="$1"
+    shift || true
+    PY=""
+    for candidate in python3 python py; do
+      if command -v "$candidate" >/dev/null 2>&1; then PY="$candidate"; break; fi
+    done
+    [ -n "$PY" ] || { echo "replay: need python3 on PATH" >&2; exit 2; }
+    "$PY" "$(dirname "$0")/replay.py" "$script" --port "$PORT" "$@"
+    ;;
   iconify)   get iconify --data-urlencode "path=$1" --data-urlencode "iconified=${2:-true}" | pretty ;;
   wbounds)   get windowBounds --data-urlencode "path=$1" --data-urlencode "x=$2" --data-urlencode "y=$3" --data-urlencode "w=$4" --data-urlencode "h=$5" | pretty ;;
 
   help|*)
-    sed -n '2,30p' "$0" | sed 's/^# \{0,1\}//'
+    sed -n '2,36p' "$0" | sed 's/^# \{0,1\}//'
     [ "$cmd" = help ] || exit 2
     ;;
 esac
