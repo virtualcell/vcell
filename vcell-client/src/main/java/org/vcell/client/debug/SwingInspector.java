@@ -14,6 +14,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.GraphicsEnvironment;
+import java.awt.MouseInfo;
 import java.awt.Point;
 import java.awt.Frame;
 import java.awt.Rectangle;
@@ -24,6 +25,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
@@ -1083,14 +1085,7 @@ public final class SwingInspector {
 			return true;
 		}
 		// non-button: synthesize a real mouse click at the component center
-		Point screenPt = onEdt(() -> {
-			if (!c.isShowing()) {
-				return null;
-			}
-			Point loc = c.getLocationOnScreen();
-			Dimension d = c.getSize();
-			return new Point(loc.x + d.width / 2, loc.y + d.height / 2);
-		});
+		Point screenPt = centerOnScreen(c);
 		if (screenPt == null) {
 			return false;
 		}
@@ -1658,6 +1653,211 @@ public final class SwingInspector {
 	// EDT + JSON helpers
 	// ---------------------------------------------------------------------
 
+	// ---------------------------------------------------------------------
+	// Selector emission and the real-input (Robot) driver.
+	//
+	// The endpoints above answer "act on the component I name". These two
+	// sections answer the inverse questions a recorder and a demo replay ask:
+	// "what selector names THIS component?" and "drive it the way a hand would,
+	// with the cursor actually moving there".
+	// ---------------------------------------------------------------------
+
+	/** @return the centre of the component in screen coordinates, or null if it is not showing. */
+	private static Point centerOnScreen(final Component c) {
+		return onEdt(() -> {
+			if (!c.isShowing()) {
+				return null;
+			}
+			Point loc = c.getLocationOnScreen();
+			Dimension d = c.getSize();
+			return new Point(loc.x + d.width / 2, loc.y + d.height / 2);
+		});
+	}
+
+	/**
+	 * The node path of a live component — the inverse of {@link #findByPath(String)}'s
+	 * third selector form, computed by walking up to the owning window.
+	 *
+	 * @return e.g. {@code "0/3/2"}, or null if the component is not inside a showing window
+	 */
+	static String pathOf(final Component c) {
+		if (c == null) {
+			return null;
+		}
+		return onEdt(() -> {
+			LinkedList<Integer> indices = new LinkedList<>();
+			Component cur = c;
+			while (!(cur instanceof Window)) {
+				Container parent = cur.getParent();
+				if (parent == null) {
+					return null; // detached from any window
+				}
+				Component[] kids = parent.getComponents();
+				int found = -1;
+				for (int i = 0; i < kids.length; i++) {
+					if (kids[i] == cur) {
+						found = i;
+						break;
+					}
+				}
+				if (found < 0) {
+					return null;
+				}
+				indices.addFirst(found);
+				cur = parent;
+			}
+			List<Window> windows = showingWindows();
+			int windowIndex = -1;
+			for (int i = 0; i < windows.size(); i++) {
+				if (windows.get(i) == cur) {
+					windowIndex = i;
+					break;
+				}
+			}
+			if (windowIndex < 0) {
+				return null;
+			}
+			StringBuilder sb = new StringBuilder().append(windowIndex);
+			for (int i : indices) {
+				sb.append('/').append(i);
+			}
+			return sb.toString();
+		});
+	}
+
+	/**
+	 * The most durable selector that resolves to this component, for a recorder writing a
+	 * script meant to survive into later sessions.
+	 *
+	 * <p>Preference order is deliberate and is NOT the same as "most specific":
+	 * <ol>
+	 * <li>{@code name=Foo} — survives layout changes, so it still works after the UI is
+	 *     rearranged. An {@code [index]} is added only when a bare name would resolve to a
+	 *     different component than this one.</li>
+	 * <li>{@code 0/3/2} — structural, so it at least survives a restart.</li>
+	 * <li>{@code c42} — last resort. Registry ids are stable only <i>within</i> a session, so
+	 *     a recording that leans on one replays correctly today and resolves to nothing
+	 *     tomorrow.</li>
+	 * </ol>
+	 *
+	 * @return a selector accepted by {@link #findByPath(String)}, never null
+	 */
+	static String bestSelector(final Component c) {
+		if (c == null) {
+			return null;
+		}
+		String name = onEdt(c::getName);
+		if (name != null && !name.isEmpty()) {
+			final String targetName = name;
+			String selector = onEdt(() -> {
+				List<PathMatch> matches = collectAll(null, targetName, null, null);
+				if (matches.size() <= 1) {
+					return "name=" + targetName;
+				}
+				// does the unqualified form land on THIS component? (a showing match wins,
+				// mirroring findByNameSelector, so the common case needs no index at all)
+				Component unqualified = null;
+				for (PathMatch pm : matches) {
+					if (pm.component.isShowing()) {
+						unqualified = pm.component;
+						break;
+					}
+				}
+				if (unqualified == null) {
+					unqualified = matches.get(0).component;
+				}
+				if (unqualified == c) {
+					return "name=" + targetName;
+				}
+				for (int i = 0; i < matches.size(); i++) {
+					if (matches.get(i).component == c) {
+						return "name=" + targetName + "[" + i + "]";
+					}
+				}
+				return null; // named, but not reachable by that name — fall through
+			});
+			if (selector != null) {
+				return selector;
+			}
+		}
+		String path = pathOf(c);
+		return path != null ? path : idFor(c);
+	}
+
+	/**
+	 * Move the real cursor to the component, easing in and out the way a hand does.
+	 *
+	 * <p>Only useful for a watched replay: {@link #click(String)} fires buttons through
+	 * {@code doClick()} and never moves the pointer, which is right for a test and wrong for
+	 * a recording someone is going to film — the UI changes with no cursor anywhere near it.
+	 *
+	 * @return true if the component resolved and is on screen
+	 */
+	public static boolean glide(String path, int ms) {
+		Component c = findByPath(path);
+		if (c == null) {
+			return false;
+		}
+		Point target = centerOnScreen(c);
+		if (target == null) {
+			return false;
+		}
+		try {
+			Robot robot = new Robot();
+			java.awt.PointerInfo pi = MouseInfo.getPointerInfo();
+			Point from = (pi == null) ? target : pi.getLocation();
+			int hops = Math.max(1, ms / 15);
+			for (int i = 1; i <= hops; i++) {
+				double t = (double) i / hops;
+				double eased = t * t * (3 - 2 * t); // smoothstep: accelerate, then settle
+				robot.mouseMove((int) Math.round(from.x + (target.x - from.x) * eased),
+						(int) Math.round(from.y + (target.y - from.y) * eased));
+				robot.delay(15);
+			}
+			return true;
+		} catch (Exception e) {
+			throw new RuntimeException("robot glide failed towards " + target, e);
+		}
+	}
+
+	/**
+	 * Click via real native press/release rather than {@code doClick()}.
+	 *
+	 * <p>Two things need this. A filmed replay needs the cursor to be where the click lands.
+	 * And {@link UiRecorder} can only see input that reaches the AWT event queue — a
+	 * {@code doClick()} calls its listeners directly and is invisible to it — so this is the
+	 * only way to drive a button while recording.
+	 *
+	 * <p>Unlike {@link #click(String)} this blocks until the press is delivered, so a button
+	 * that opens a modal dialog will hold the calling request until the dialog is up.
+	 *
+	 * @return true if the component resolved and is on screen
+	 */
+	public static boolean robotClick(String path, int glideMs) {
+		Component c = findByPath(path);
+		if (c == null) {
+			return false;
+		}
+		if (glideMs > 0 && !glide(path, glideMs)) {
+			return false;
+		}
+		Point target = centerOnScreen(c);
+		if (target == null) {
+			return false;
+		}
+		try {
+			Robot robot = new Robot();
+			robot.mouseMove(target.x, target.y);
+			robot.delay(40);
+			robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
+			robot.delay(40);
+			robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
+			return true;
+		} catch (Exception e) {
+			throw new RuntimeException("robot click failed at " + target, e);
+		}
+	}
+
 	private static <T> T onEdt(Supplier<T> supplier) {
 		if (SwingUtilities.isEventDispatchThread()) {
 			return supplier.get();
@@ -1704,7 +1904,8 @@ public final class SwingInspector {
 		return s == null ? "" : s;
 	}
 
-	private static String escape(String s) {
+	/** Package-private so {@link UiRecorder} reuses it rather than carrying a third copy. */
+	static String escape(String s) {
 		StringBuilder sb = new StringBuilder(s.length() + 8);
 		for (int i = 0; i < s.length(); i++) {
 			char ch = s.charAt(i);
