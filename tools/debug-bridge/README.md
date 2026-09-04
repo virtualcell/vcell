@@ -30,7 +30,7 @@ local install at `~/Applications/VCell_Alpha` for the JRE/native libs; override 
 ## Recording and replaying
 
 ```bash
-tools/debug-bridge/bridge.sh record start
+tools/debug-bridge/bridge.sh record start                  # or: record start <file>
 # ... drive the UI by hand: click, type, pick menu items ...
 tools/debug-bridge/bridge.sh record stop scenarios/recordings/my-flow.json
 
@@ -45,6 +45,12 @@ does **not** — it fires buttons through `doClick()`, which calls its listeners
 a session driven by `click` records nothing at all. If a recording comes out empty, check
 `bridge.sh record status`: `rawEvents` tells you whether the recorder saw events and
 rejected them, or never saw any (a modal dialog blocking input will do the latter).
+
+**The file is written as you go.** `record start` creates it immediately and rewrites it
+after every step, so a client that crashes — or that you kill — costs at most the step in
+progress, not the take. `record start <file>` chooses where that happens; `record stop
+<file>` names the final destination and moves the auto-named working file there. Every
+reply, `status` included, tells you the current path.
 
 **One recording, two replay drivers.** `semantic` (the default) is fast and moves no
 cursor — right for CI. `robot` glides the pointer to each target and clicks for real —

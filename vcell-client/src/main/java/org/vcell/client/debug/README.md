@@ -85,7 +85,7 @@ A selector that doesn't resolve reports `did not resolve` (or `false`) rather th
 | `GET /highlight?path=[&ms=2000]` | Flash a translucent red overlay over the component so a human watching the screen sees what a selector resolves to. Glass-pane based; restores the original glass pane (and visibility) afterwards |
 | `GET /glide?path=[&ms=2000]` | Move the **real cursor** to the component, easing in and out. JSON `{"glided": bool}`. For a replay someone is filming: `/click` fires buttons through `doClick()` and never moves the pointer, which is right for a test and wrong for a video |
 | `GET /robotClick?path=[&glideMs=0]` | Click by real native press/release instead of `doClick()`. JSON `{"clicked": bool}`. Needed in two places: a filmed replay wants the cursor where the click lands, and **the recorder can only see input that reaches the AWT event queue**, so this is the only way to drive a button while recording. Unlike `/click` it blocks until the press is delivered |
-| `GET /record?action=start\|stop\|status[&file=]` | The UI recorder. `start` begins capturing real input; `stop` writes the script and returns `{"steps": N, "path": "...json"}`; `status` reports `{"recording", "steps", "rawEvents"}` — `rawEvents` separates "captured nothing" from "saw nothing", which is the first thing worth knowing when a recording comes out empty |
+| `GET /record?action=start\|stop\|status[&file=]` | The UI recorder. `start` begins capturing real input and **fixes the output file**, which exists from that moment and is rewritten after every step; `stop` finalizes it; `status` reports `{"recording", "steps", "rawEvents", "path"}` — `rawEvents` separates "captured nothing" from "saw nothing", the first thing worth knowing when a recording comes out empty. All three replies carry `path` |
 | `GET /log[?lines=N]` | text/plain tail (default 200 lines) of the client's real log — VCell redirects System.out/err to `<vcellHome>/logs/vcellrun_<site>.log`, so exceptions never appear on the launcher's stdout |
 
 Buttons/checkboxes are clicked via `doClick()` posted with `invokeLater` (no
@@ -112,6 +112,12 @@ through endpoints that already exist.
   Drive a recording session with `/robotClick`.
 - **Passwords are never captured.** A `JPasswordField` is skipped outright.
 - **Timing** is the real gap before each step, meant to be edited afterwards.
+- **The script is flushed after every step**, so killing the client mid-session costs at
+  most the step in progress rather than the whole take. Each write goes to a `.part` file
+  and is renamed into place: a crash during a plain write would leave a half-written file,
+  which is worse than none — the recording would look present and fail to parse.
+  Serializing happens on the EDT where the step list is consistent, the file I/O on one
+  background thread so a slow filesystem cannot stutter the UI being recorded.
 - A step that opened a window records `opensWindow`, so replay waits for it instead of
   sleeping. Detection compares window **titles**, not identities: detaching a child window
   swaps an owned dialog for an un-owned frame, so a brand-new `Window` object appears

@@ -24,7 +24,7 @@
 #   iconify <selector> [true|false]   minimize/restore a window; reports what the OS did
 #   wbounds <selector> x y w h       move/resize a window
 # Record / replay:
-#   record start | stop [file] | status
+#   record start [file] | stop [file] | status    (script is flushed to disk each step)
 #   replay <script.json> [--driver semantic|robot] [--speed N] [--max-delay MS]
 # Synchronize / assert (exit 0 on success, 1 on failure):
 #   wait   [find opts] [--state showing|enabled|gone] [--timeout MS] [--interval MS]
@@ -159,7 +159,8 @@ case "$cmd" in
   record)
     action="${1:-status}"
     case "$action" in
-      start|status) get record --data-urlencode "action=$action" | pretty ;;
+      status) get record --data-urlencode "action=status" | pretty ;;
+      start) get record --data-urlencode "action=start" ${2:+--data-urlencode "file=$2"} | pretty ;;
       stop)  get record --data-urlencode "action=stop" ${2:+--data-urlencode "file=$2"} | pretty ;;
       *) echo "record: expected start, stop or status" >&2; exit 2 ;;
     esac

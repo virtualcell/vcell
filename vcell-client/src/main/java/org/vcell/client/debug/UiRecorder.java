@@ -24,10 +24,15 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.AbstractButton;
 import javax.swing.JMenu;
@@ -108,6 +113,15 @@ public final class UiRecorder {
 	/** Windows showing when the last step was emitted, to attribute a new window to it. */
 	private static List<Window> windowsAtLastStep = new ArrayList<>();
 
+	/** Where the script is being written, fixed when recording starts. */
+	private static File destination;
+
+	/** True when the caller named the destination, so stop() must not move it. */
+	private static boolean destinationNamed;
+
+	/** Ordered off-EDT writes: serialize on the EDT, do the file I/O elsewhere. */
+	private static ExecutorService writer;
+
 	private UiRecorder() {
 	}
 
@@ -129,13 +143,33 @@ public final class UiRecorder {
 	// Lifecycle
 	// ---------------------------------------------------------------------
 
-	public static synchronized String start() {
+	/**
+	 * Begin recording.
+	 *
+	 * @param out where to write, or null for {@code <outputDir>/recording-<ts>.json}. The
+	 *            destination is fixed now rather than at stop, because the script is
+	 *            flushed to it after every step.
+	 */
+	public static synchronized String start(File out) {
 		if (listener != null) {
-			return "{\"recording\":true,\"note\":\"already recording\",\"steps\":" + stepCount() + "}";
+			return "{\"recording\":true,\"note\":\"already recording\",\"steps\":" + stepCount()
+					+ ",\"path\":\"" + SwingInspector.escape(String.valueOf(destination)) + "\"}";
 		}
 		synchronized (LOCK) {
 			steps.clear();
 		}
+		destinationNamed = (out != null);
+		destination = destinationNamed ? out
+				: new File(SwingDebugBridge.outputDir(), "recording-" + System.currentTimeMillis() + ".json");
+		File parent = destination.getParentFile();
+		if (parent != null) {
+			parent.mkdirs();
+		}
+		writer = Executors.newSingleThreadExecutor(r -> {
+			Thread t = new Thread(r, "ui-recorder-writer");
+			t.setDaemon(true);
+			return t;
+		});
 		startedAt = System.currentTimeMillis();
 		lastStepAt = startedAt;
 		lastSource = null;
@@ -146,8 +180,12 @@ public final class UiRecorder {
 		listener = UiRecorder::onEvent;
 		Toolkit.getDefaultToolkit().addAWTEventListener(listener,
 				AWTEvent.MOUSE_EVENT_MASK | AWTEvent.KEY_EVENT_MASK);
-		LG.warn("UI recorder started");
-		return "{\"recording\":true,\"startedAt\":" + startedAt + ",\"steps\":0}";
+		// Write immediately, so the file exists and is valid even if nothing is ever
+		// captured - an empty script is a clearer answer than a missing one.
+		flush();
+		LG.warn("UI recorder started -> {}", destination.getAbsolutePath());
+		return "{\"recording\":true,\"startedAt\":" + startedAt + ",\"steps\":0"
+				+ ",\"path\":\"" + SwingInspector.escape(destination.getAbsolutePath()) + "\"}";
 	}
 
 	/**
@@ -166,14 +204,35 @@ public final class UiRecorder {
 			attributeNewWindows(); // a window opened by the final step still belongs to it
 		});
 
-		File file = (out != null) ? out
-				: new File(SwingDebugBridge.outputDir(), "recording-" + System.currentTimeMillis() + ".json");
-		File parent = file.getParentFile();
-		if (parent != null) {
-			parent.mkdirs();
+		// Drain the incremental writes before deciding anything about the file.
+		ExecutorService w = writer;
+		writer = null;
+		if (w != null) {
+			w.shutdown();
+			try {
+				w.awaitTermination(5, TimeUnit.SECONDS);
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+			}
 		}
-		String json = toJson();
-		Files.write(file.toPath(), json.getBytes(StandardCharsets.UTF_8));
+
+		File file = destination;
+		if (out != null && !out.equals(destination)) {
+			File parent = out.getParentFile();
+			if (parent != null) {
+				parent.mkdirs();
+			}
+			// stop(file) names the final destination. An auto-named working file in the
+			// scratch directory is moved there rather than left behind; one the caller
+			// named at start is left alone, since they asked for it to be where it is.
+			File previous = destination;
+			file = out;
+			if (!destinationNamed && previous != null && previous.exists() && !previous.delete()) {
+				LG.warn("could not remove the working recording at {}", previous.getAbsolutePath());
+			}
+		}
+		writeAtomically(file, toJson());
+		destination = null;
 		LG.warn("UI recorder stopped: {} step(s) -> {}", stepCount(), file.getAbsolutePath());
 		return "{\"recording\":false,\"steps\":" + stepCount()
 				+ ",\"path\":\"" + SwingInspector.escape(file.getAbsolutePath()) + "\"}";
@@ -182,7 +241,10 @@ public final class UiRecorder {
 	public static synchronized String status() {
 		return "{\"recording\":" + (listener != null) + ",\"steps\":" + stepCount()
 				+ ",\"rawEvents\":" + rawEvents
-				+ (listener != null ? ",\"startedAt\":" + startedAt : "") + '}';
+				+ (listener != null ? ",\"startedAt\":" + startedAt : "")
+				+ (destination != null
+						? ",\"path\":\"" + SwingInspector.escape(destination.getAbsolutePath()) + "\"" : "")
+				+ '}';
 	}
 
 	private static int stepCount() {
@@ -385,6 +447,7 @@ public final class UiRecorder {
 		lastStepAt = now;
 		lastSource = source;
 		windowsAtLastStep = SwingInspector.showingWindows();
+		flush();
 	}
 
 	private static boolean upgradeLastToDouble(Component target, long now) {
@@ -543,6 +606,49 @@ public final class UiRecorder {
 	// ---------------------------------------------------------------------
 	// Output
 	// ---------------------------------------------------------------------
+
+	/**
+	 * Write the script so far. Called after every step, so killing the client mid-session
+	 * costs at most the step in progress rather than the whole take - which matters most
+	 * for exactly the long recording someone least wants to redo.
+	 *
+	 * <p>Serializing happens here, on the EDT, where the step list is consistent; the file
+	 * I/O is handed to a single background thread so a slow or networked filesystem cannot
+	 * stutter the UI being recorded. One thread, so writes stay in order.
+	 */
+	private static void flush() {
+		final File file = destination;
+		final ExecutorService w = writer;
+		if (file == null || w == null) {
+			return;
+		}
+		final String json = toJson();
+		try {
+			w.submit(() -> writeAtomically(file, json));
+		} catch (RejectedExecutionException e) {
+			// stop() is draining; its own synchronous write carries the final content
+		}
+	}
+
+	/**
+	 * Write via a temporary file and rename. A crash during a plain write would leave a
+	 * half-written file, which is worse than no file at all: the recording would look
+	 * present and fail to parse. A rename means what is on disk is always a whole script.
+	 */
+	private static void writeAtomically(File file, String json) {
+		File part = new File(file.getParentFile(), file.getName() + ".part");
+		try {
+			Files.write(part.toPath(), json.getBytes(StandardCharsets.UTF_8));
+			try {
+				Files.move(part.toPath(), file.toPath(),
+						StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+			} catch (IOException atomicUnsupported) {
+				Files.move(part.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+			}
+		} catch (IOException e) {
+			LG.error("failed to write the recording to " + file.getAbsolutePath(), e);
+		}
+	}
 
 	private static String toJson() {
 		StringBuilder sb = new StringBuilder();

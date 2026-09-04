@@ -371,17 +371,18 @@ public final class SwingDebugBridge {
 	}
 
 	/**
-	 * Start/stop the UI recorder. {@code stop} writes the script and returns its path;
-	 * {@code file} overrides the default location under {@link #outputDir()}.
+	 * Start/stop the UI recorder. The script is flushed to disk after every step, so
+	 * {@code file} on {@code start} fixes where that happens; on {@code stop} it names the
+	 * final destination. Either way the reply carries the path.
 	 */
 	private static String handleRecord(HttpExchange ex) throws Exception {
 		Map<String, String> q = query(ex);
 		String action = q.getOrDefault("action", "status");
+		String file = emptyToNull(q.get("file"));
 		switch (action) {
 			case "start":
-				return UiRecorder.start();
+				return UiRecorder.start(file == null ? null : new File(file));
 			case "stop":
-				String file = emptyToNull(q.get("file"));
 				return UiRecorder.stop(file == null ? null : new File(file));
 			case "status":
 				return UiRecorder.status();
