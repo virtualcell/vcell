@@ -45,6 +45,7 @@ VERBS = {
     "setText":              ("setText",              ["text", "enter"]),
     "selectTab":            ("selectTab",            ["index"]),
     "selectTreeRow":        ("selectTreeRow",        ["row"]),
+    "expandTreeRow":        ("expandTreeRow",        ["row", "expand"]),
     "doubleClickTreeRow":   ("doubleClickTreeRow",   ["row"]),
     "rightClickTreeRow":    ("rightClickTreeRow",    ["row"]),
     "selectTableRow":       ("selectTableRow",       ["row"]),

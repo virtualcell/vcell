@@ -1001,6 +1001,7 @@ public final class SwingInspector {
 							+ "' is disabled\"}";
 				}
 				final JMenuItem target = cur;
+				UiRecorder.noteMenu(resolved.toString(), target);
 				// fire-and-forget: the action may open a modal dialog
 				SwingUtilities.invokeLater(target::doClick);
 				return "{\"clicked\":true,\"item\":\"" + escape(resolved.toString()) + "\",\"id\":\""
@@ -1134,6 +1135,9 @@ public final class SwingInspector {
 			return false;
 		}
 		if (c instanceof AbstractButton) {
+			// Report before acting: the action may open a modal dialog, and the step
+			// belongs in the script whether or not anything blocks afterwards.
+			UiRecorder.noteClick(c);
 			// fire-and-forget: the action may open a modal dialog, which would
 			// block invokeAndWait (and with it the whole bridge) until dismissed
 			SwingUtilities.invokeLater(((AbstractButton) c)::doClick);
@@ -1176,6 +1180,8 @@ public final class SwingInspector {
 				return false;
 			}
 			int col = column < 0 ? 0 : column;
+			Object cell = (table.getColumnCount() > 0) ? table.getValueAt(row, 0) : null;
+			UiRecorder.noteRow("selectTableRow", table, row, cell == null ? null : String.valueOf(cell));
 			table.setRowSelectionInterval(row, row);
 			if (column >= 0 && table.getColumnSelectionAllowed()) {
 				table.setColumnSelectionInterval(col, col);
@@ -1272,6 +1278,7 @@ public final class SwingInspector {
 			if (row < 0 || row >= tree.getRowCount()) {
 				return false;
 			}
+			UiRecorder.noteRow("selectTreeRow", tree, row, rowText(tree, row));
 			tree.setSelectionRow(row);
 			tree.scrollRowToVisible(row);
 			return true;
@@ -1295,6 +1302,7 @@ public final class SwingInspector {
 			if (row < 0 || row >= tree.getRowCount()) {
 				return false;
 			}
+			UiRecorder.noteExpand(tree, row, rowText(tree, row), expand);
 			if (expand) {
 				tree.expandRow(row);
 			} else {
@@ -1430,6 +1438,7 @@ public final class SwingInspector {
 		if (!(c instanceof JTextComponent)) {
 			return false;
 		}
+		UiRecorder.noteSetText((JTextComponent) c, text, commit);
 		onEdt(() -> {
 			JTextComponent tc = (JTextComponent) c;
 			tc.setText(text);
@@ -1456,6 +1465,7 @@ public final class SwingInspector {
 			if (index < 0 || index >= tp.getTabCount()) {
 				return false;
 			}
+			UiRecorder.noteTab(tp, index);
 			tp.setSelectedIndex(index);
 			return true;
 		}));

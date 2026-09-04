@@ -41,6 +41,7 @@ PHRASING = {
     "setText":              'Type <bold>%s</bold> into %s.',
     "selectTab":            'Select the %s tab.',
     "selectTreeRow":        'Select %s.',
+    "expandTreeRow":        'Expand %s.',
     "doubleClickTreeRow":   'Double-click %s to open it.',
     "rightClickTreeRow":    'Right-click %s.',
     "selectTableRow":       'Select %s.',

@@ -398,7 +398,8 @@ public final class SwingDebugBridge {
 		String file = emptyToNull(q.get("file"));
 		switch (action) {
 			case "start":
-				return UiRecorder.start(file == null ? null : new File(file));
+				boolean captureBridge = Boolean.parseBoolean(q.getOrDefault("captureBridgeActions", "true"));
+				return UiRecorder.start(file == null ? null : new File(file), captureBridge);
 			case "stop":
 				return UiRecorder.stop(file == null ? null : new File(file));
 			case "status":

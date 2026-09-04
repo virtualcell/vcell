@@ -110,6 +110,9 @@ public final class UiRecorder {
 	private static JTextComponent pendingText;
 	private static long pendingTextStartedAt;
 
+	/** Whether actions performed BY the bridge are recorded as well as real input. */
+	private static boolean captureBridgeActions = true;
+
 	/** Windows showing when the last step was emitted, to attribute a new window to it. */
 	private static List<Window> windowsAtLastStep = new ArrayList<>();
 
@@ -136,6 +139,7 @@ public final class UiRecorder {
 		String rowText;    // what that row DISPLAYS - a row number alone documents nothing
 		int index = -1;    // tab
 		String tabTitle;   // what that tab READS - an index documents nothing, same as a row
+		Boolean expand;    // expandTreeRow: expanding or collapsing
 		long delayMs;
 		String opensWindow; // a window that appeared after this step, for a replay wait
 		String durability;  // "name" | "path" | "id" - how the target had to be addressed
@@ -154,6 +158,18 @@ public final class UiRecorder {
 	 *            flushed to it after every step.
 	 */
 	public static synchronized String start(File out) {
+		return start(out, true);
+	}
+
+	/**
+	 * @param captureBridge also record actions performed through the bridge's own endpoints.
+	 *                      Default true: a session driven by {@code bridge.sh click} would
+	 *                      otherwise record nothing at all, since {@code doClick()} calls its
+	 *                      listeners directly and never reaches the AWT event queue. Turn it
+	 *                      off when scripted calls are only setting the stage for a
+	 *                      hand-performed recording.
+	 */
+	public static synchronized String start(File out, boolean captureBridge) {
 		if (listener != null) {
 			return "{\"recording\":true,\"note\":\"already recording\",\"steps\":" + stepCount()
 					+ ",\"path\":\"" + SwingInspector.escape(String.valueOf(destination)) + "\"}";
@@ -161,6 +177,7 @@ public final class UiRecorder {
 		synchronized (LOCK) {
 			steps.clear();
 		}
+		captureBridgeActions = captureBridge;
 		destinationNamed = (out != null);
 		destination = destinationNamed ? out
 				: new File(SwingDebugBridge.outputDir(), "recording-" + System.currentTimeMillis() + ".json");
@@ -188,6 +205,7 @@ public final class UiRecorder {
 		flush();
 		LG.warn("UI recorder started -> {}", destination.getAbsolutePath());
 		return "{\"recording\":true,\"startedAt\":" + startedAt + ",\"steps\":0"
+				+ ",\"captureBridgeActions\":" + captureBridgeActions
 				+ ",\"path\":\"" + SwingInspector.escape(destination.getAbsolutePath()) + "\"}";
 	}
 
@@ -539,6 +557,114 @@ public final class UiRecorder {
 	}
 
 	// ---------------------------------------------------------------------
+	// Actions performed BY the bridge
+	//
+	// The AWT listener above can only see input that reaches the event queue, and the
+	// model-based endpoints post none: doClick() calls its listeners directly, and
+	// setSelectedIndex/setSelectionRow change a model. A session driven by bridge.sh
+	// click therefore recorded nothing whatsoever - a footgun that looked like a broken
+	// recorder every time.
+	//
+	// So those endpoints report themselves. This is not a workaround for the missing
+	// event: it is strictly better information. The listener has to INFER a step from a
+	// coordinate - which component was under the pointer, which row that pixel falls in -
+	// whereas an endpoint already knows the verb, the target and the argument exactly.
+	//
+	// Only the model-based paths call in here. Anything Robot-driven (robotClick, the
+	// double- and right-click helpers) generates real events and is captured by the
+	// listener, so it must NOT report itself as well or every step would be recorded twice.
+	// ---------------------------------------------------------------------
+
+	static void noteClick(Component target) {
+		if (!capturing()) {
+			return;
+		}
+		long now = System.currentTimeMillis();
+		flushPendingText(now, false);
+		Step s = newStep("click", now, target);
+		s.note = describe(target);
+		emit(s, now, target);
+	}
+
+	static void noteMenu(String menuPath, Component item) {
+		if (!capturing() || menuPath == null || menuPath.isEmpty()) {
+			return;
+		}
+		long now = System.currentTimeMillis();
+		flushPendingText(now, false);
+		Step s = newStep("menu", now, item);
+		s.selector = null; // addressed by its text path, like a recorded menu pick
+		s.durability = null; // ... so the selector's tier says nothing about this step
+		// /menu renders a resolved path as "Help > Item"; the input-recorded form has no
+		// spaces. Normalize so both routes write the same artifact.
+		s.menuPath = menuPath.replace(" > ", ">");
+		s.note = (item == null) ? null : describe(item);
+		emit(s, now, item);
+	}
+
+	static void noteSetText(JTextComponent target, String text, boolean enter) {
+		if (!capturing()) {
+			return;
+		}
+		if (target instanceof JPasswordField) {
+			return; // same rule as typing: a password is never written to the script
+		}
+		long now = System.currentTimeMillis();
+		pendingText = null; // this action supersedes any edit in progress
+		Step s = newStep("setText", now, target);
+		s.text = text;
+		s.enter = enter;
+		s.note = describe(target);
+		emit(s, now, target);
+	}
+
+	static void noteTab(JTabbedPane target, int index) {
+		if (!capturing()) {
+			return;
+		}
+		long now = System.currentTimeMillis();
+		flushPendingText(now, false);
+		Step s = newStep("selectTab", now, target);
+		s.index = index;
+		if (index >= 0 && index < target.getTabCount()) {
+			s.tabTitle = target.getTitleAt(index);
+		}
+		s.note = describe(target);
+		emit(s, now, target);
+	}
+
+	static void noteRow(String verb, Component target, int row, String rowText) {
+		if (!capturing()) {
+			return;
+		}
+		long now = System.currentTimeMillis();
+		flushPendingText(now, false);
+		Step s = newStep(verb, now, target);
+		s.row = row;
+		s.rowText = rowText;
+		s.note = describe(target);
+		emit(s, now, target);
+	}
+
+	static void noteExpand(Component target, int row, String rowText, boolean expand) {
+		if (!capturing()) {
+			return;
+		}
+		long now = System.currentTimeMillis();
+		flushPendingText(now, false);
+		Step s = newStep("expandTreeRow", now, target);
+		s.row = row;
+		s.rowText = rowText;
+		s.expand = expand;
+		s.note = describe(target);
+		emit(s, now, target);
+	}
+
+	private static synchronized boolean capturing() {
+		return listener != null && captureBridgeActions;
+	}
+
+	// ---------------------------------------------------------------------
 	// Target resolution
 	// ---------------------------------------------------------------------
 
@@ -717,6 +843,9 @@ public final class UiRecorder {
 				if (s.tabTitle != null) {
 					sb.append(", \"tabTitle\": \"").append(SwingInspector.escape(s.tabTitle)).append('"');
 				}
+			}
+			if (s.expand != null) {
+				sb.append(", \"expand\": ").append(s.expand);
 			}
 			sb.append(", \"delayMs\": ").append(s.delayMs);
 			if (s.durability != null && !"name".equals(s.durability)) {

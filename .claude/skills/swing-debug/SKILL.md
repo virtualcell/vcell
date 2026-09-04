@@ -91,10 +91,10 @@ tutorials and demos, and for turning a manual repro into a scenario.
 
 Three things decide whether it works, and all three have bitten:
 
-- **The recorder only sees input that reaches the AWT event queue.** Real input qualifies,
-  and so does `bridge.sh rbclick` (native press/release). `bridge.sh click` does **not** —
-  it fires buttons through `doClick()`, which calls listeners directly. A session driven
-  with `click` records nothing.
+- **Both routes are recorded**: real input via the AWT listener, and the bridge's own
+  model-based endpoints (which post no event) by reporting themselves. Robot helpers do not
+  double-report. The flip side is that **scripted setup done while recording lands in the
+  script** — do it before `record start`, or pass `--no-bridge-actions`.
 - **A modal dialog blocks input to everything behind it**, so clicks aimed at the main
   window produce no events at all. The version-mismatch warning on a source build appears a
   moment *after* the menus do — `wait` for it, don't look once. `record status` distinguishes

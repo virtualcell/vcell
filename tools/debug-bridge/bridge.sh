@@ -28,7 +28,9 @@
 #   iconify <selector> [true|false]   minimize/restore a window; reports what the OS did
 #   wbounds <selector> x y w h       move/resize a window
 # Record / replay:
-#   record start [file] | stop [file] | status    (script is flushed to disk each step)
+#   record start [file] [--no-bridge-actions] | stop [file] | status
+#            (flushed to disk each step; bridge-driven actions are recorded too unless
+#             --no-bridge-actions, so do scripted SETUP before starting the recording)
 #   replay <script.json> [--driver semantic|robot] [--speed N] [--max-delay MS]
 #                        [--from N] [--to N] [--shots DIR] [--shot-scale F]
 # Synchronize / assert (exit 0 on success, 1 on failure):
@@ -173,7 +175,13 @@ case "$cmd" in
     action="${1:-status}"
     case "$action" in
       status) get record --data-urlencode "action=status" | pretty ;;
-      start) get record --data-urlencode "action=start" ${2:+--data-urlencode "file=$2"} | pretty ;;
+      start)
+        # record start [file] [--no-bridge-actions]
+        cb=true
+        for a in "$@"; do [ "$a" = "--no-bridge-actions" ] && cb=false; done
+        f="$2"; [ "$f" = "--no-bridge-actions" ] && f=""
+        get record --data-urlencode "action=start" --data-urlencode "captureBridgeActions=$cb" \
+          ${f:+--data-urlencode "file=$f"} | pretty ;;
       stop)  get record --data-urlencode "action=stop" ${2:+--data-urlencode "file=$2"} | pretty ;;
       *) echo "record: expected start, stop or status" >&2; exit 2 ;;
     esac

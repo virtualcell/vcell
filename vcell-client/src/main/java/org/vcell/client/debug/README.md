@@ -110,9 +110,19 @@ through endpoints that already exist.
   replay time. But a menu item with **no text** cannot be addressed that way at all — VCell
   puts icon-only controls straight into the menu bar, and the detach toggle is a
   `JMenuItem` whose entire label is a tooltip — so those fall back to a click on their name.
-- **What it cannot see:** anything that does not reach the AWT event queue. `doClick()`
-  calls its listeners directly, so the bridge's own `/click` on a button is invisible here.
-  Drive a recording session with `/robotClick`.
+- **The bridge's own endpoints report themselves.** The AWT listener only sees input that
+  reaches the event queue, and the model-based endpoints post none — `doClick()` calls its
+  listeners directly, `setSelectedIndex` changes a model — so a session driven by
+  `bridge.sh click` used to record *nothing*. Those endpoints now record the step directly,
+  which is strictly better information than the listener has: an endpoint knows the verb,
+  the target and the argument exactly, where the listener must infer them from a coordinate.
+  Robot-driven helpers deliberately do **not** report themselves, since the listener already
+  sees their real events — otherwise every such step would be recorded twice.
+  Only a `doClick()` from *application* code remains invisible, which is correct: that is
+  the program acting, not the user.
+- **Scripted setup while recording is captured too.** Start with
+  `captureBridgeActions=false` (`bridge.sh record start <file> --no-bridge-actions`) if
+  bridge calls are only setting the stage for a hand-performed recording.
 - **Passwords are never captured.** A `JPasswordField` is skipped outright.
 - **A row or tab is recorded by its text as well as its index** (`rowText`, `tabTitle`).
   An index documents nothing — "select row 10" is not a help page, and it is not durable

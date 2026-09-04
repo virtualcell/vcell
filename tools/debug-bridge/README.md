@@ -40,12 +40,17 @@ tools/debug-bridge/bridge.sh replay scenarios/recordings/my-flow.json
 DRIVER=robot ...                       # or --driver robot: the cursor visibly moves
 ```
 
-**The recorder only sees input that reaches the AWT event queue.** Real mouse and keyboard
-input qualifies; so does `bridge.sh rbclick`, which posts native events. `bridge.sh click`
-does **not** — it fires buttons through `doClick()`, which calls its listeners directly. So
-a session driven by `click` records nothing at all. If a recording comes out empty, check
-`bridge.sh record status`: `rawEvents` tells you whether the recorder saw events and
-rejected them, or never saw any (a modal dialog blocking input will do the latter).
+**Both routes are recorded.** Real mouse and keyboard input reaches the AWT event queue and
+is captured by the listener. The bridge's own model-based endpoints (`click` on a button,
+`menu`, `settext`, `tab`, `row`, `trow`, `expand`) post no event at all, so they report the
+step themselves — a session scripted entirely with `bridge.sh` records correctly. Robot-driven
+helpers (`rbclick`, `drow`, `dtrow`, …) do not report themselves, because the listener already
+sees their real events.
+
+Two consequences worth knowing: **scripted setup performed while recording ends up in the
+script** — start with `--no-bridge-actions`, or do setup before `record start`. And if a
+recording still comes out empty, `bridge.sh record status` reports `rawEvents`, which
+separates "saw nothing" (a modal dialog blocking input will do that) from "captured nothing".
 
 **The file is written as you go.** `record start` creates it immediately and rewrites it
 after every step, so a client that crashes — or that you kill — costs at most the step in
