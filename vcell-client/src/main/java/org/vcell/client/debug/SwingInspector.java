@@ -395,6 +395,55 @@ public final class SwingInspector {
 		return String.valueOf(value);
 	}
 
+	/**
+	 * What the row IS, as opposed to what it says.
+	 *
+	 * <p>VCell's trees carry domain objects, and the rendered label often does not identify
+	 * them: four applications called Application0/2 and two copies say nothing about being
+	 * NFSim, SpringSaLaD, ODE or PDE, and only the row's icon distinguishes them on screen.
+	 * The model knows exactly, so report it rather than making a caller guess from an icon
+	 * or from which tabs happen to appear.
+	 *
+	 * <p>Read reflectively on purpose. This is a dev-only introspection class that otherwise
+	 * needs nothing but the JDK, and a typed import would tie it to the biology model just
+	 * to read one label. Anything exposing a no-argument {@code getApplicationType()} is
+	 * reported the same way, so this does not have to be revisited when another such type
+	 * appears.
+	 */
+	private static void appendUserObject(StringBuilder sb, javax.swing.tree.TreePath path) {
+		Object node = path.getLastPathComponent();
+		Object userObject = node;
+		if (node instanceof javax.swing.tree.DefaultMutableTreeNode) {
+			userObject = ((javax.swing.tree.DefaultMutableTreeNode) node).getUserObject();
+		}
+		if (userObject == null) {
+			return;
+		}
+		sb.append(",\"userType\":\"").append(escape(userObject.getClass().getSimpleName())).append('"');
+		String appType = applicationTypeOf(path);
+		if (appType != null) {
+			sb.append(",\"applicationType\":\"").append(escape(appType)).append('"');
+		}
+	}
+
+	/** @return the row's application type, or null if its object has none. */
+	private static String applicationTypeOf(javax.swing.tree.TreePath path) {
+		Object node = path.getLastPathComponent();
+		Object userObject = node;
+		if (node instanceof javax.swing.tree.DefaultMutableTreeNode) {
+			userObject = ((javax.swing.tree.DefaultMutableTreeNode) node).getUserObject();
+		}
+		if (userObject == null) {
+			return null;
+		}
+		try {
+			Object value = userObject.getClass().getMethod("getApplicationType").invoke(userObject);
+			return (value == null) ? null : String.valueOf(value);
+		} catch (ReflectiveOperationException | RuntimeException e) {
+			return null; // most rows are not applications; absence is the answer
+		}
+	}
+
 	/** Text carried by a renderer's component; composite renderers are flattened. */
 	private static String renderedText(Component c) {
 		if (c instanceof JLabel) {
@@ -458,7 +507,9 @@ public final class SwingInspector {
 			sb.append("{\"row\":").append(r);
 			sb.append(",\"depth\":").append(path.getPathCount() - 1);
 			sb.append(",\"expanded\":").append(t.isExpanded(r));
-			sb.append(",\"text\":\"").append(escape(truncate(text))).append("\"}");
+			sb.append(",\"text\":\"").append(escape(truncate(text))).append('"');
+			appendUserObject(sb, path);
+			sb.append('}');
 		}
 		sb.append("],\"truncated\":").append(rows > maxR).append('}');
 	}
@@ -1715,6 +1766,22 @@ public final class SwingInspector {
 	 * @return JSON {@code {"row": N, "text": "..."}}, or {@code {"row": -1}} if not found
 	 */
 	public static String findRowJson(String path, final String query, final boolean exact) {
+		return findRowJson(path, query, exact, null);
+	}
+
+	/**
+	 * As above, but able to match on the row's application type rather than its label.
+	 *
+	 * <p>This is the only reliable way to find, say, the SpringSaLaD application: a model
+	 * carries zero or more applications of any type in any order, the names are whatever
+	 * the author chose ("Application2", "Copy of Application0"), and on screen only the
+	 * icon distinguishes them. The type is a property of the model, so ask the model.
+	 *
+	 * @param appType {@code SPRINGSALAD}, {@code RULE_BASED_STOCHASTIC},
+	 *                {@code NETWORK_DETERMINISTIC}, {@code NETWORK_STOCHASTIC}, or null
+	 */
+	public static String findRowJson(String path, final String query, final boolean exact,
+			final String appType) {
 		Component c = findByPath(path);
 		if (c == null) {
 			return "{\"error\":\"selector did not resolve\",\"row\":-1}";
@@ -1729,6 +1796,16 @@ public final class SwingInspector {
 				return null;
 			}
 			for (int row = 0; row < count; row++) {
+				if (appType != null) {
+					if (!(c instanceof JTree)) {
+						return null;
+					}
+					javax.swing.tree.TreePath tp = ((JTree) c).getPathForRow(row);
+					if (tp != null && appType.equalsIgnoreCase(applicationTypeOf(tp))) {
+						return new String[] { String.valueOf(row), rowText((JTree) c, row) };
+					}
+					continue;
+				}
 				String text;
 				if (c instanceof JTree) {
 					text = rowText((JTree) c, row);

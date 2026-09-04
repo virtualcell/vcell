@@ -357,10 +357,11 @@ public final class SwingDebugBridge {
 		String path = q.get("path");
 		String text = emptyToNull(q.get("text"));
 		String contains = emptyToNull(q.get("contains"));
-		if (path == null || path.isEmpty() || (text == null && contains == null)) {
-			return "{\"error\":\"require 'path' and one of 'text' or 'contains'\",\"row\":-1}";
+		String appType = emptyToNull(q.get("appType"));
+		if (path == null || path.isEmpty() || (text == null && contains == null && appType == null)) {
+			return "{\"error\":\"require 'path' and one of 'text', 'contains' or 'appType'\",\"row\":-1}";
 		}
-		return SwingInspector.findRowJson(path, text != null ? text : contains, text != null);
+		return SwingInspector.findRowJson(path, text != null ? text : contains, text != null, appType);
 	}
 
 	private static String handleGlide(HttpExchange ex) {

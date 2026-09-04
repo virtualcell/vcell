@@ -12,6 +12,8 @@
 #   props   <selector>          listeners <selector>
 #   findrow <selector> <text> [--exact]   row number by displayed text (searches the WHOLE
 #                                         model, unlike tree's 25-row/100-row dump cap)
+#   findrow <selector> --apptype SPRINGSALAD   find an application by its type, not its
+#                                         name or position - both of which vary per model
 #   shot [window]               log [lines]      (shot takes ?scale/name/dir via replay)
 # Act:
 #   click <selector>            rclick <selector>
@@ -153,8 +155,13 @@ case "$cmd" in
                ${3:+--data-urlencode "column=$3"} | pretty ;;
   rrow)      get rightClickTreeRow --data-urlencode "path=$1" --data-urlencode "row=$2" | pretty ;;
   menu)      get menu --data-urlencode "path=$1" ${2:+--data-urlencode "window=$2"} | pretty ;;
-  findrow)   get findRow --data-urlencode "path=$1" \
-               $([ "${3:-}" = "--exact" ] && echo "--data-urlencode text=$2" || echo "--data-urlencode contains=$2") | pretty ;;
+  findrow)
+    case "${2:-}" in
+      --apptype) get findRow --data-urlencode "path=$1" --data-urlencode "appType=$3" | pretty ;;
+      *) get findRow --data-urlencode "path=$1" \
+           $([ "${3:-}" = "--exact" ] && echo "--data-urlencode text=$2" || echo "--data-urlencode contains=$2") | pretty ;;
+    esac
+    ;;
   props)     get props --data-urlencode "path=$1" | pretty ;;
   listeners) get listeners --data-urlencode "path=$1" | pretty ;;
   highlight) get highlight --data-urlencode "path=$1" --data-urlencode "ms=${2:-2000}" | pretty ;;
