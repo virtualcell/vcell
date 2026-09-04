@@ -75,10 +75,26 @@ public class ConsumerContextJms implements Runnable {
 //						lg.info(toString()+"no message received within "+CONSUMER_POLLING_INTERVAL_MS+" ms");
 				}
 			} catch (JMSException e) {
-				if (!bProcessing || e instanceof javax.jms.IllegalStateException){
-					// close() unblocks a thread parked in receive(); that is shutdown, not a
-					// failure. Logging it as one and looping would spin on the closed consumer.
+				if (!bProcessing){
+					// stop() has already been requested, and close() unblocks a thread parked
+					// in receive(); that is shutdown, not a failure. Logging it as one and
+					// looping would spin on the closed consumer. Every deliberate shutdown
+					// path (closeAll(), stopAndClose()) clears bProcessing before close(),
+					// so this test alone identifies them.
 					lg.debug(toString()+" consumer closed while polling", e);
+					break;
+				}
+				if (e instanceof javax.jms.IllegalStateException){
+					// The session died underneath a consumer we are still meant to be polling:
+					// a broker restart, or the failover transport exhausting its reconnect
+					// budget. receive() throws immediately from here on, so looping would spin
+					// -- but leaving quietly is worse. It leaves a process that consumes
+					// nothing, logs nothing and still reports healthy, which is how dev's
+					// submit service sat dead for 6h50m before anyone noticed (issue #2031).
+					// Escalate instead, and let the wiring decide what a lost broker means
+					// for this process.
+					vcMessagingServiceJms.getFailoverWatchdog()
+							.onTerminalFailure("consumer session for "+vcConsumer.getVCDestination(), e);
 					break;
 				}
 				onException(e);
