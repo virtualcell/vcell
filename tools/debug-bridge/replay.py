@@ -19,13 +19,20 @@ pause where somebody went for coffee.
 --from/--to replay a slice of the script, which is what lets a scenario assert between
 steps (and lets a tutorial re-shoot one segment without re-recording the whole thing).
 
+--shots captures the UI after every step, which is how a replay becomes documentation.
+Captures go through /screenshot, which renders each window with printAll: occlusion-free,
+so no other application can bleed into a help image. Use --shot-scale to stay under the
+help system's 500KB per-image cap.
+
 Usage:
   replay.py <script.json> [--driver semantic|robot] [--speed N] [--max-delay MS]
-            [--from N] [--to N] [--port N] [--dry-run] [--quiet]
+            [--from N] [--to N] [--shots DIR] [--shot-scale F] [--port N]
+            [--dry-run] [--quiet]
 """
 
 import argparse
 import json
+import os
 import sys
 import time
 import urllib.parse
@@ -45,6 +52,9 @@ VERBS = {
     "rightClickTableRow":   ("rightClickTableRow",   ["row"]),
     "menu":                 ("menu",                 []),
 }
+
+# DocumentCompiler.MAX_IMG_FILE_SIZE - a help image above this fails the doc build.
+MAX_HELP_IMAGE_BYTES = 500000
 
 # Verbs the robot driver replaces outright. Everything else already acts through a model
 # (selecting a tab, a tree row) and only needs the cursor brought over for the camera.
@@ -70,7 +80,7 @@ class Bridge:
 
 
 def replay(path, driver, speed, max_delay, port, dry_run, quiet, first=1, last=None,
-           step_timeout=15000):
+           step_timeout=15000, shots=None, shot_scale=1.0, shot_delay=500):
     with open(path, encoding="utf-8") as fh:
         script = json.load(fh)
     all_steps = script.get("steps", [])
@@ -83,6 +93,31 @@ def replay(path, driver, speed, max_delay, port, dry_run, quiet, first=1, last=N
 
     if not dry_run:
         bridge.get("health")
+
+    shot_files = []
+
+    def capture(tag):
+        # Let the screen settle first. /idle drains the EDT, but VCell fills many panels
+        # from background tasks (ClientTaskDispatcher), so an idle EDT does not mean the
+        # pixels are final - captured too early, two different steps silently produce
+        # byte-identical images, and the page documents the wrong screen.
+        if shot_delay > 0:
+            time.sleep(shot_delay / 1000.0)
+        bridge.get("idle")
+        result = bridge.get("screenshot", dir=shots, name=tag, scale=shot_scale)
+        path_ = result.get("path")
+        size = result.get("bytes", 0)
+        if path_:
+            shot_files.append((tag, path_, size))
+            if size > MAX_HELP_IMAGE_BYTES:
+                print("      NOTE: %s is %d bytes, over the help system's %d cap - "
+                      "lower --shot-scale" % (tag, size, MAX_HELP_IMAGE_BYTES), file=sys.stderr)
+        return path_
+
+    if shots and not dry_run:
+        os.makedirs(shots, exist_ok=True)
+        # The state BEFORE anything happens is a documentation image in its own right.
+        capture("step-00-start")
 
     failures = 0
     for n, step in enumerate(steps, first):
@@ -104,6 +139,19 @@ def replay(path, driver, speed, max_delay, port, dry_run, quiet, first=1, last=N
             if field in step:
                 value = step[field]
                 params[field] = str(value).lower() if isinstance(value, bool) else value
+
+        # Prefer WHAT the row said over WHERE it was. A row index is only valid for the
+        # tree as it stood when recorded: expanding a node above it shifts every index
+        # below, and in VCell the content itself varies per model - a biomodel holds zero
+        # or more applications of any type in any order, so "row 10" names nothing durable.
+        # The index stays as the fallback for rows whose text was not captured.
+        if "row" in step and step.get("rowText") and not dry_run:
+            located = bridge.get("findRow", path=selector, text=step["rowText"])
+            if located.get("row", -1) >= 0:
+                params["row"] = located["row"]
+            elif not quiet:
+                print("      (no row reads %r; falling back to index %s)"
+                      % (step["rowText"], step.get("row")), file=sys.stderr)
 
         label = "%-20s %s" % (verb, selector)
         note = step.get("note")
@@ -161,6 +209,18 @@ def replay(path, driver, speed, max_delay, port, dry_run, quiet, first=1, last=N
             elif not quiet:
                 print("      (waited %sms for %r)" % (waited.get("elapsedMs"), opens))
 
+        if shots:
+            shot = capture("step-%02d-%s" % (n, verb))
+            if shot and not quiet:
+                print("      shot: %s" % shot)
+
+    if shots and shot_files:
+        manifest = os.path.join(shots, "shots.json")
+        with open(manifest, "w", encoding="utf-8") as fh:
+            json.dump([{"tag": t, "path": p, "bytes": b} for t, p, b in shot_files], fh, indent=2)
+        if not quiet:
+            print("  %d shot(s) -> %s" % (len(shot_files), manifest))
+
     return failures
 
 
@@ -178,6 +238,12 @@ def main():
                     help="last step to replay, inclusive (default: the end)")
     ap.add_argument("--step-timeout", type=int, default=15000,
                     help="how long to keep retrying one step, in ms (default 15000)")
+    ap.add_argument("--shots", metavar="DIR",
+                    help="capture the UI after every step into DIR (plus a start frame)")
+    ap.add_argument("--shot-scale", type=float, default=1.0,
+                    help="scale factor for captures; lower it to fit the help 500KB cap")
+    ap.add_argument("--shot-delay", type=int, default=500,
+                    help="ms to let the UI settle before each capture (default 500)")
     ap.add_argument("--port", type=int, default=9123)
     ap.add_argument("--dry-run", action="store_true", help="list the steps without acting")
     ap.add_argument("--quiet", action="store_true")
@@ -188,7 +254,7 @@ def main():
 
     failures = replay(args.script, args.driver, args.speed, args.max_delay,
                       args.port, args.dry_run, args.quiet, args.first, args.last,
-                      args.step_timeout)
+                      args.step_timeout, args.shots, args.shot_scale, args.shot_delay)
     if failures:
         print("REPLAY FAILED: %d step(s) did not take" % failures, file=sys.stderr)
         return 1

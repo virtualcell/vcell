@@ -10,7 +10,9 @@
 #   health | windows | tree [maxDepth] | menus
 #   find    [--type T] [--name N] [--text T] [--contains S] [--limit N]
 #   props   <selector>          listeners <selector>
-#   shot [window]               log [lines]
+#   findrow <selector> <text> [--exact]   row number by displayed text (searches the WHOLE
+#                                         model, unlike tree's 25-row/100-row dump cap)
+#   shot [window]               log [lines]      (shot takes ?scale/name/dir via replay)
 # Act:
 #   click <selector>            rclick <selector>
 #   settext <selector> <text> [--enter]
@@ -20,12 +22,13 @@
 #   menu "<Menu>Item[>Sub]" [window]
 #   highlight <selector> [ms]
 #   glide <selector> [ms]       move the real cursor there (for a watched replay)
-#   rbclick <selector> [glideMs]  native press/release; unlike click it IS recordable
+#   rbclick <selector> [glideMs] [row]  native press/release; unlike click it IS recordable
 #   iconify <selector> [true|false]   minimize/restore a window; reports what the OS did
 #   wbounds <selector> x y w h       move/resize a window
 # Record / replay:
 #   record start [file] | stop [file] | status    (script is flushed to disk each step)
 #   replay <script.json> [--driver semantic|robot] [--speed N] [--max-delay MS]
+#                        [--from N] [--to N] [--shots DIR] [--shot-scale F]
 # Synchronize / assert (exit 0 on success, 1 on failure):
 #   wait   [find opts] [--state showing|enabled|gone] [--timeout MS] [--interval MS]
 #   assert [find opts] [--gone]
@@ -150,11 +153,14 @@ case "$cmd" in
                ${3:+--data-urlencode "column=$3"} | pretty ;;
   rrow)      get rightClickTreeRow --data-urlencode "path=$1" --data-urlencode "row=$2" | pretty ;;
   menu)      get menu --data-urlencode "path=$1" ${2:+--data-urlencode "window=$2"} | pretty ;;
+  findrow)   get findRow --data-urlencode "path=$1" \
+               $([ "${3:-}" = "--exact" ] && echo "--data-urlencode text=$2" || echo "--data-urlencode contains=$2") | pretty ;;
   props)     get props --data-urlencode "path=$1" | pretty ;;
   listeners) get listeners --data-urlencode "path=$1" | pretty ;;
   highlight) get highlight --data-urlencode "path=$1" --data-urlencode "ms=${2:-2000}" | pretty ;;
   glide)     get glide --data-urlencode "path=$1" --data-urlencode "ms=${2:-600}" | pretty ;;
-  rbclick)   get robotClick --data-urlencode "path=$1" --data-urlencode "glideMs=${2:-0}" | pretty ;;
+  rbclick)   get robotClick --data-urlencode "path=$1" --data-urlencode "glideMs=${2:-0}" \
+               ${3:+--data-urlencode "row=$3"} | pretty ;;
 
   record)
     action="${1:-status}"
