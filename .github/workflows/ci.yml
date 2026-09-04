@@ -62,6 +62,19 @@ jobs:
             echo "run=$1" >> "$GITHUB_OUTPUT"
             echo "reason=$2" >> "$GITHUB_OUTPUT"
             echo "::notice::CI $( [ "$1" = true ] && echo runs || echo skipped ): $2"
+            # A skip is otherwise indistinguishable from a pass on the PR, so say it plainly
+            # somewhere a reader will look (issue #2034).
+            {
+              if [ "$1" = true ]; then
+                echo "### CI lane: **running**"
+              else
+                echo "### CI lane: **SKIPPED** - nothing was compiled or tested"
+              fi
+              echo ""
+              echo "Reason: $2"
+              echo ""
+              echo "Base for the comparison: \`${base:-<none>}\`"
+            } >> "$GITHUB_STEP_SUMMARY"
             exit 0
           }
 
@@ -72,13 +85,26 @@ jobs:
             fi
           fi
 
-          # Documentation-only. Compare against what was there before this push; fall back to
-          # the first parent, which for a merge commit is exactly the PR's contents.
+          # Documentation-only. What matters is picking a base that spans everything this ref
+          # has that the default branch does not - judging a whole branch by its final commit
+          # silently skipped the lane for branches whose last commit happened to be docs
+          # (issue #2034).
           base=""
-          if [ -n "${GITHUB_EVENT_BEFORE:-}" ] && git rev-parse -q --verify "${GITHUB_EVENT_BEFORE}^{commit}" >/dev/null 2>&1; then
-            base="${GITHUB_EVENT_BEFORE}"
-          elif git rev-parse -q --verify "HEAD^1" >/dev/null 2>&1; then
+          before="${GITHUB_EVENT_BEFORE:-}"
+          if [ -n "${before}" ] && [ -n "${before//0/}" ] \
+             && git rev-parse -q --verify "${before}^{commit}" >/dev/null 2>&1; then
+            # Push to an existing ref: the previous tip is the most precise base there is.
+            # An all-zeros "before" means the ref did NOT exist before, so it is not one.
+            base="${before}"
+          elif git rev-parse -q --verify "HEAD^2" >/dev/null 2>&1; then
+            # A merge commit (pull_request, merge_group): the first parent IS the base, and
+            # the diff against it is exactly the PR's contents.
             base="HEAD^1"
+          elif git rev-parse -q --verify "origin/${DEFAULT_BRANCH}^{commit}" >/dev/null 2>&1; then
+            # A new branch: "before" is all-zeros and HEAD^1 is only the previous COMMIT, which
+            # is what made this skip whole branches. The merge base spans the branch however
+            # many commits it has, and reduces to HEAD^1 for a single-commit branch.
+            base="$(git merge-base "origin/${DEFAULT_BRANCH}" HEAD || true)"
           fi
           if [ -n "${base}" ]; then
             changed="$(git diff --name-only "${base}" HEAD)"
@@ -90,6 +116,7 @@ jobs:
           decide true "changes may affect the build or the tests"
         env:
           GITHUB_EVENT_BEFORE: ${{ github.event.before }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch || 'master' }}
 
   # ---------------------------------------------------------------------------
   # BUILD: compile the monorepo (no tests), run the Python package tests, and
