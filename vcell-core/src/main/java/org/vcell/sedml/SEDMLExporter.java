@@ -17,7 +17,7 @@ import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.model.Structure.StructureSize;
 import cbit.vcell.parser.*;
-import cbit.vcell.resource.OperatingSystemInfo;
+import org.vcell.util.OperatingSystemInfo;
 import cbit.vcell.solver.*;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.MathOverridesResolver.SymbolReplacement;

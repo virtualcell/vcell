@@ -12,6 +12,8 @@ package cbit.vcell.client.task;
 
 import java.awt.Container;
 import java.awt.Window;
+import java.awt.Component;
+import java.awt.HeadlessException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Hashtable;
@@ -21,7 +23,6 @@ import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.ProgrammingException;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.VCAssert;
-import org.vcell.util.gui.GuiUtils;
 
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
 /**
@@ -177,7 +178,7 @@ public abstract class AsynchClientTask {
 	 */
 	protected void setFinalWindow(Hashtable<String, Object> hashTable,Container cntr) {
 		Objects.requireNonNull(cntr);
-		Window w= GuiUtils.getWindowForComponent(cntr);
+		Window w= AsynchClientTask.getWindowForComponent(cntr);
 		if (w != null) {
 			ClientTaskDispatcher.setFinalWindow(hashTable,() -> w.toFront( ) );
 			return;
@@ -210,6 +211,10 @@ public abstract class AsynchClientTask {
 			Objects.requireNonNull(clzz);
 		}
 	}
-	
+
+	private static Window getWindowForComponent(Component parentComponent) throws HeadlessException{
+		if (parentComponent instanceof Window window) return window;
+		return null == parentComponent ? null : AsynchClientTask.getWindowForComponent(parentComponent.getParent());
+	}
 	
 }

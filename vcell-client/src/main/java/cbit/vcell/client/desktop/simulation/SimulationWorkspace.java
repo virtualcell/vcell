@@ -30,6 +30,7 @@ import cbit.vcell.solver.*;
 import edu.uchc.connjur.spectrumtranslator.CodeUtil;
 import org.vcell.chombo.ChomboMeshValidator;
 import org.vcell.chombo.ChomboMeshValidator.ChomboMeshRecommendation;
+import org.vcell.client.logicalwindow.LWDialog;
 import org.vcell.util.PropertyChangeListenerProxyVCell;
 import org.vcell.util.document.PropertyConstants;
 import org.vcell.util.document.SpecialUser;
@@ -525,16 +526,18 @@ public static void editSimulation(Component parent, SimulationOwner simOwner, Si
 		Dimension panesize = simEditor.getPreferredSize();
 		scrollPane.setPreferredSize(new Dimension(panesize.width + 20, panesize.height + 20));
 		
-		boolean acceptable = false;
-		String errors = null;
+		boolean acceptable;
+		String errors;
 		do {
-			int ok = PopupGenerator.showComponentOKCancelDialog(parent, scrollPane,"Edit: " + simulation.getName());
-			if (ok != javax.swing.JOptionPane.OK_OPTION) {
-				return; // user cancels, we discard
-			} else {
-				acceptable = checkSimulationParameters(simEditor.getClonedSimulation(), parent,false);
-			}
-		} while (! acceptable);
+			JOptionPane optionPane = new JOptionPane(scrollPane, JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION, null);
+			LWDialog dialog = DialogUtils.createDialog(parent, optionPane, "Edit: " + simulation.getName());
+			dialog.setResizable(true);
+			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+			dialog.setVisible(true);
+			Object ok = optionPane.getValue();
+			if (!Objects.equals(ok, JOptionPane.OK_OPTION)) return; // user cancels, we discard
+			acceptable = checkSimulationParameters(simEditor.getClonedSimulation(), parent,false);
+		} while (!acceptable);
 		Simulation clonedSimulation = simEditor.getClonedSimulation();
 		if (clonedSimulation.compareEqual(simulation)) {
 			return;

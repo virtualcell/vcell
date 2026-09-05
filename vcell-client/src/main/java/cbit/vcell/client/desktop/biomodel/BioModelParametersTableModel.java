@@ -32,7 +32,7 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.SimulationContextParameter;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.StructureMapping;
-import cbit.vcell.mapping.gui.SpeciesContextSpecsTableModel.TableUtil;
+import cbit.vcell.mapping.gui.SpeciesContextSpecTableModel.TableUtil;
 import cbit.vcell.mapping.spatial.SpatialObject;
 import cbit.vcell.mapping.spatial.processes.SpatialProcess;
 import cbit.vcell.model.EditableSymbolTableEntry;

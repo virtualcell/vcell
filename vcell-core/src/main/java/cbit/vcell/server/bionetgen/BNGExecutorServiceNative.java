@@ -23,7 +23,7 @@ import org.vcell.util.FileUtils;
 import org.vcell.util.exe.ExecutableException;
 
 import cbit.vcell.mapping.BioNetGenUpdaterCallback;
-import cbit.vcell.resource.OperatingSystemInfo;
+import org.vcell.util.OperatingSystemInfo;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.solvers.BioNetGenExecutable;
 

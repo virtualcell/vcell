@@ -64,7 +64,7 @@ import com.centerkey.utils.BareBonesBrowserLaunch;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.client.server.UserPreferences;
-import cbit.vcell.resource.OperatingSystemInfo;
+import org.vcell.util.OperatingSystemInfo;
 
 /**
  * Insert the type's description here.
