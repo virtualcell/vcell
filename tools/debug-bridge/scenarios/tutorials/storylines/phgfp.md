@@ -50,5 +50,18 @@ model that does not already have those species would create **all three in the r
 own structure** — silently, with no error. Every species must be created first, through
 New Species → choose compartment, before any equation is typed.
 
+Each reaction also has to be created in the right compartment, which for this model means
+two different ones:
+
+| Reaction | Participants | Lives in |
+|---|---|---|
+| `PIP2_PH` | `PIP2_PM` + `PH_GFP_Cyt` → `PIP2_PHGFP_PM` | **`PM`** — spans membrane and cytosol |
+| `IP3PH` | `IP3_Cyt` + `PH_GFP_Cyt` → `IP3_PHGFP_Cyt` | `Cyt` — all one compartment |
+| `r2` | → `IP3_Cyt`, catalysed by `Stim` | `Cyt` |
+
+A localized reaction spanning more than one compartment must sit on the interface where
+they meet — the N−1 dimensional compartment, the membrane. Nothing in the UI enforces that,
+so the script has to choose it deliberately.
+
 Events, output functions and the 3D geometry are ordinary dialogs and tables and should
 script the same way the 2D geometry already does. Step 8 needs a completed run.

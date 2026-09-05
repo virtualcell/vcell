@@ -86,6 +86,14 @@ What has no table equivalent, and so is genuinely out of reach:
   `PIP2_PM + PH_GFP_Cyt → PIP2_PHGFP_PM` — leaning on auto-creation puts every participant
   in one compartment, silently and with no error.
 
+  **And put the reaction where the compartments meet.** A localized reaction spanning more
+  than one compartment belongs on the interface between them — the N−1 dimensional
+  compartment, i.e. the membrane. `PIP2_PM + PH_GFP_Cyt → PIP2_PHGFP_PM` joins a membrane
+  species to a volume species, so the reaction goes on `PM`, not in `Cyt`. A reaction whose
+  participants all share one compartment simply goes there. This is a modelling rule, not
+  something the UI enforces, so a script has to choose correctly rather than pick whatever
+  validates.
+
 ## What building these scripts changed in the tooling
 
 `simple-frap.sh` did not work against the bridge as it stood. Each of these was a silent

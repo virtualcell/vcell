@@ -47,3 +47,8 @@ caveat that the species must be created before the reactions. `RanC_nuc` is in t
 and `RanC_cyt`, `C_cyt` and `Ran_cyt` in the cytoplasm, with a flux across `NM` between
 them, so an equation typed against a model missing those species would put every one of
 them in the reaction's own compartment. See [phgfp](phgfp.md).
+
+The flux itself belongs on `NM`, by the same rule: it joins `RanC_cyt` to `RanC_nuc` across
+the nuclear membrane, and a localized reaction spanning two compartments sits on the N−1
+interface between them. The cytoplasmic reaction, whose participants are all in `Cyt`,
+simply goes there.
