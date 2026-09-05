@@ -134,7 +134,8 @@ must tab name=JTabbedPane1 "Solver" >/dev/null; sleep 2
 must settext name=EndingTimeTextField      "3.0"  --enter >/dev/null; sleep 1
 must settext name=MaximumTimeStepTextField "0.01" --enter >/dev/null; sleep 1
 must settext name=OutputTimeStepTextField  "0.05" --enter >/dev/null; sleep 1
-must click "text=OK" >/dev/null; sleep 3
+# The dialog must CLOSE for these to take effect - see dialog_button in _common.sh.
+dialog_button "Edit:" OK; sleep 2
 
 step "Done -- model built. The PDF now saves and runs it on the VCell servers."
 # Deliberately NOT scripted: File > Save needs a logged-in account, and the green Run

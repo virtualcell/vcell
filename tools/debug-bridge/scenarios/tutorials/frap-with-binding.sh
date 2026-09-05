@@ -124,7 +124,8 @@ must click name=EditButton >/dev/null; sleep 3
 # indexing it is what makes the same idiom work for both.
 must tab name=JTabbedPane1 "Solver" >/dev/null; sleep 2
 must settext name=EndingTimeTextField "30.0" --enter >/dev/null; sleep 2
-must click "text=OK" >/dev/null; sleep 3
+# The dialog must CLOSE for the ending time to take effect.
+dialog_button "Edit:" OK; sleep 2
 
 step "Done -- physiology and the compartmental application are built."
 # The PDF now runs this, reads the steady-state concentrations off the results

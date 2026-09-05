@@ -75,6 +75,49 @@ navrow() { row "name=bioModelEditorTree" "$1"; }
 # selectTableRow and does nothing here.
 navselect() { must row name=bioModelEditorTree "$(navrow "$1")" >/dev/null; }
 
+# Click a button INSIDE the dialog whose title contains $1, and wait for that dialog to
+# go away.
+#
+# The Edit Simulation dialog is unusual: it CLONES the simulation, edits the clone, and
+# replaces the original in the document only on OK. So committing a field is not enough -
+# a focusLost writes the value into the clone, and closing the dialog is what writes the
+# clone back. Leave it open and every edit is discarded silently, with the table still
+# showing the old numbers.
+#
+# A bare `click text=OK` is not safe for this either: it resolves against every showing
+# window and can land on a different OK. Resolving the button within the dialog, and then
+# confirming the dialog has actually closed, is what makes the edit stick.
+dialog_button() {   # $1 = title fragment, $2 = button label
+  local path
+  path=$(curl -s "http://127.0.0.1:9123/tree" | python3 -c '
+import json, sys
+frag, label = sys.argv[1], sys.argv[2]
+for root in json.load(sys.stdin):
+    if frag not in str(root.get("text")):
+        continue
+    def walk(n):
+        if n.get("class", "").endswith("JButton") and n.get("text") == label:
+            print(n.get("path")); raise SystemExit
+        for c in n.get("children") or []:
+            walk(c)
+    walk(root)
+' "$1" "$2")
+  if [ -z "$path" ]; then
+    echo "FATAL: no '$2' button in a dialog titled like '$1'" >&2
+    exit 1
+  fi
+  must click "$path" >/dev/null
+  local i
+  for i in $(seq 1 20); do
+    sleep 0.5
+    if ! curl -s "http://127.0.0.1:9123/windows" | grep -q "$1"; then
+      return 0
+    fi
+  done
+  echo "FATAL: dialog '$1' did not close after clicking '$2'" >&2
+  exit 1
+}
+
 # Dismiss a dialog that may or may not be there - the version-mismatch warning at
 # startup, or the eager "structure not mapped" error raised while a geometry is still
 # half-built. Deliberately NOT `must`: absence is the normal case.

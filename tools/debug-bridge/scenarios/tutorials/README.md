@@ -114,6 +114,12 @@ failure — the script reported success and the model was wrong:
   `focusLost` handler, not on Enter — `TimeBoundsPanel` is the clearest case. `setText`
   moves no focus, so mesh size, ending time and maximum time step were displayed and then
   discarded; the dialog reopened showing the old numbers.
+- **…and committing the field is still not enough for Edit Simulation.** That dialog
+  clones the simulation, edits the clone, and replaces the original in the document only
+  on OK — so a `focusLost` writes into the clone and closing the dialog is what writes the
+  clone back. Leaving it open discards the lot, silently. `_common.sh`'s `dialog_button`
+  clicks the dialog's own OK and then waits for the dialog to actually go away, rather
+  than a bare `click text=OK` that resolves against every showing window.
 - **`text=` selectors resolved in `/find` but nowhere else.** Popup items are the
   components that need them — VCell builds them on the fly with no `setName`, so
   "In Compartment Cyt" was addressable only as `1/0/1/0/0/2`.
