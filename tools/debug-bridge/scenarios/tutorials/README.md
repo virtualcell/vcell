@@ -12,7 +12,7 @@ reproduces it against a current client through the [debug bridge](../../README.m
 |---|---|---|---|
 | `SimpleFRAP_7.2.pdf` | [simple-frap](storylines/simple-frap.md) | [`simple-frap.sh`](simple-frap.sh) | **reproduced**, 0 errors |
 | `MovingBoundaries.pdf` | [moving-boundary](storylines/moving-boundary.md) | [`moving-boundary.sh`](moving-boundary.sh) | **reproduced**, 0 errors |
-| `FRAPBinding_7.2.pdf` | [frap-with-binding](storylines/frap-with-binding.md) | — | route identified, not built |
+| `FRAPBinding_7.2.pdf` | [frap-with-binding](storylines/frap-with-binding.md) | [`frap-with-binding.sh`](frap-with-binding.sh) | **reproduced** to the compartmental app, 0 errors |
 | `PHGFP_7.2.pdf` | [phgfp](storylines/phgfp.md) | — | route identified, not built |
 | `MultiAppTransport_7.2.pdf` | [multi-app-transport](storylines/multi-app-transport.md) | — | image segmentation blocks it |
 | `Tutorial06_PathwayCommons_6.0.pdf` | [pathway-commons](storylines/pathway-commons.md) | — | depends on a third-party service |
@@ -85,6 +85,13 @@ What has no table equivalent, and so is genuinely out of reach:
   unknown one in the *reaction's* own structure. For a reaction spanning compartments —
   `PIP2_PM + PH_GFP_Cyt → PIP2_PHGFP_PM` — leaning on auto-creation puts every participant
   in one compartment, silently and with no error.
+
+  **A catalyst is never written in the equation.** The grammar is only
+  `reactants -> products`; catalysts neither parse nor render, and setting the Equation
+  column calls `setReactionParticipants` with reactants and products alone. A catalyst is
+  *implied by the kinetic law* — a rate expression naming a species that is neither
+  reactant nor product makes it one. In FRAPBinding `Laser` becomes a catalyst purely by
+  appearing in the bleaching rates.
 
   **And put the reaction where the compartments meet.** A localized reaction spanning more
   than one compartment belongs on the interface between them — the N−1 dimensional

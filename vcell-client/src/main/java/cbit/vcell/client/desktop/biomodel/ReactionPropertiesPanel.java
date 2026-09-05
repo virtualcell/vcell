@@ -190,6 +190,9 @@ public class ReactionPropertiesPanel extends DocumentEditorSubPanel {
 		if (ivjScrollPaneTable == null) {
 			try {
 				ivjScrollPaneTable = new ScrollTable();
+				// The reaction's rate law and its constants; named so a script can set them
+				// by parameter name rather than by row position.
+				ivjScrollPaneTable.setName("ReactionKineticsParametersTable");
 				ivjScrollPaneTable.setModel(getParameterTableModel());
 				ivjScrollPaneTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 			} catch (java.lang.Throwable ivjExc) {
@@ -234,7 +237,7 @@ public class ReactionPropertiesPanel extends DocumentEditorSubPanel {
 
 	private void initialize() {
 		try {
-			setName("KineticsTypeTemplatePanel");
+			setName("ReactionPropertiesPanel");
 			setLayout(new java.awt.GridBagLayout());
 
 			nameTextField = new JTextField();
@@ -494,7 +497,7 @@ public class ReactionPropertiesPanel extends DocumentEditorSubPanel {
 		if (kineticsTypeComboBox == null) {
 			try {
 				kineticsTypeComboBox = new javax.swing.JComboBox();
-				kineticsTypeComboBox.setName("JComboBox1");
+				kineticsTypeComboBox.setName("ReactionKineticsTypeComboBox");
 				kineticsTypeComboBox.setRenderer(new DefaultListCellRenderer() {
 					private final static String MU = "\u03BC";
 					private final static String MICROMOLAR = MU+"M";

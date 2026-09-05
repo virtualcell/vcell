@@ -2,7 +2,8 @@
 
 - **Source:** `FRAPBinding_7.2.pdf` (84 pp, 2020-07-24)
 - **Superseded by a 7.7 rewrite?** No.
-- **Status:** storyline extracted; not yet scripted.
+- **Reproduced by:** `../frap-with-binding.sh`
+- **Status:** physiology and the compartmental application reproduced, 0 errors. The spatial half needs a completed server run — see below.
 
 ## Objective
 
@@ -39,7 +40,32 @@ timed laser bleaches a square region.
 8. **Simulation.** Mesh `51` in X, ending time `50.0`, output interval `0.5`. Run, then
    use the line tool for spatial plots and the time-point tool for time plots.
 
-## Blockers for scripting
+## How the reaction network is built without the canvas
+
+Three rules make it expressible in the table views, and all three are load-bearing:
+
+1. **Species first.** An equation cannot place a species.
+   `ModelProcessEquation.parseReaction` resolves each name with
+   `model.getSpeciesContext(var)` across the whole model and reuses it wherever it already
+   lives; an unrecognised name becomes `new SpeciesContext(species, rxnStructure)` — always
+   the *reaction's* structure. This model happens to survive auto-creation (everything is
+   in `Nuc`), which is exactly what makes it a bad model to generalise from.
+2. **Each reaction in the compartment where its participants meet.** All six species are in
+   `Nuc`, so all four reactions are too. A reaction spanning compartments belongs on the
+   membrane between them — see [phgfp](phgfp.md).
+3. **A catalyst is never written in the equation.** The equation grammar is only
+   `reactants -> products`; catalysts neither parse nor render, and setting the Equation
+   column calls `setReactionParticipants` with reactants and products alone. A catalyst is
+   *implied by the kinetic law*: a rate expression naming a species that is neither
+   reactant nor product makes it one. `Laser` becomes a catalyst purely by appearing in the
+   two bleaching rates — verified, it shows up in the reaction's parameter table as a
+   `Variable` with the model reporting no errors.
+
+The New Reaction dialog asks for all three of a reaction's defining properties at once —
+where it occurs, its name, its equation — so there is no half-built intermediate state to
+step through.
+
+## What is still not scripted
 
 The reaction network (step 3) is built entirely by dragging on the Reaction Diagram canvas.
 The Reactions **table** is the way round it, but with one wrinkle worth knowing before
@@ -60,5 +86,9 @@ Note also that the reaction table's "(add new here, e.g. a+b→c)" placeholder l
 that route is closed anyway; the sequence is New Reaction → choose compartment → set the
 equation, mirroring the species route in `simple-frap.sh`.
 
-Not yet verified end to end. Step 6 additionally depends on a completed server-side run,
-so the spatial half cannot be reproduced without spending real compute.
+Step 6 is the wall. The spatial application takes its initial conditions from the
+*steady-state concentrations the compartmental simulation produces* — copied off the
+results spreadsheet and pasted in. Those numbers only exist once a simulation has actually
+run on the VCell servers, so the spatial half cannot be built without spending real
+compute. The script stops at the end of the compartmental application, which is complete
+and valid on its own.

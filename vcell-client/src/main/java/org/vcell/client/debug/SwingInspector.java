@@ -50,6 +50,7 @@ import javax.swing.JTable;
 import javax.swing.JTree;
 import javax.swing.JTextField;
 import javax.swing.MenuSelectionManager;
+import javax.swing.ListCellRenderer;
 import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
 
@@ -286,7 +287,10 @@ public final class SwingInspector {
 		} else if (c instanceof JComboBox) {
 			JComboBox<?> cb = (JComboBox<?>) c;
 			sb.append(",\"combo\":{\"selectedIndex\":").append(cb.getSelectedIndex());
-			sb.append(",\"selectedItem\":\"").append(escape(truncate(String.valueOf(cb.getSelectedItem())))).append('"');
+			String sel = comboItemText(cb, cb.getSelectedIndex());
+			sb.append(",\"selectedItem\":\"")
+					.append(escape(truncate(sel != null ? sel : String.valueOf(cb.getSelectedItem()))))
+					.append('"');
 			sb.append(",\"itemCount\":").append(cb.getItemCount());
 			// The items themselves, so a caller can see what is selectable rather than
 			// guessing an index: these are the drop-downs the tutorials name by label
@@ -296,7 +300,10 @@ public final class SwingInspector {
 				if (i > 0) {
 					sb.append(',');
 				}
-				sb.append('"').append(escape(truncate(String.valueOf(cb.getItemAt(i))))).append('"');
+				String label = comboItemText(cb, i);
+				sb.append('"')
+						.append(escape(truncate(label != null ? label : String.valueOf(cb.getItemAt(i)))))
+						.append('"');
 			}
 			sb.append("]}");
 		} else if (c instanceof JList) {
@@ -413,6 +420,46 @@ public final class SwingInspector {
 		return String.valueOf(value);
 	}
 
+
+
+	/** Renderer host for {@link #comboItemText}; a renderer needs a JList to draw into. */
+	private static final JList<Object> COMBO_RENDER_HOST = new JList<>();
+
+	/**
+	 * What a combo-box item DISPLAYS, as opposed to what its value is.
+	 *
+	 * <p>Third time this distinction has mattered, after tree rows and table cells, and for
+	 * the same reason: these combos hold live model objects. The New Reaction dialog's
+	 * structure chooser installs a renderer that shows {@code Structure.getName()} - "Cyt",
+	 * "NM", "Nuc" - while the raw values stringify as {@code Feature@45e36fb5(name=Cyt)}.
+	 * Matching on the raw form means a caller cannot say "Nuc", which is the only name for
+	 * it a person or a tutorial would use.
+	 */
+	static String comboItemText(JComboBox<?> cb, int index) {
+		if (index < 0 || index >= cb.getItemCount()) {
+			return null;
+		}
+		Object value = cb.getItemAt(index);
+		ListCellRenderer<? super Object> renderer = castRenderer(cb);
+		if (renderer != null) {
+			try {
+				Component rendered = renderer.getListCellRendererComponent(
+						COMBO_RENDER_HOST, value, index, false, false);
+				String text = renderedText(rendered);
+				if (text != null && !text.isEmpty()) {
+					return stripHtml(text);
+				}
+			} catch (RuntimeException e) {
+				// a renderer that cannot draw out of context; fall through to the raw value
+			}
+		}
+		return (value == null) ? null : String.valueOf(value);
+	}
+
+	@SuppressWarnings("unchecked")
+	private static ListCellRenderer<? super Object> castRenderer(JComboBox<?> cb) {
+		return (ListCellRenderer<? super Object>) cb.getRenderer();
+	}
 
 	/**
 	 * What a table cell DISPLAYS, as opposed to what its model value is.
@@ -1628,7 +1675,10 @@ public final class SwingInspector {
 			JComboBox<?> cb = (JComboBox<?>) c;
 			int fallback = -1;
 			for (int i = 0; i < cb.getItemCount(); i++) {
-				String label = String.valueOf(cb.getItemAt(i));
+				String label = comboItemText(cb, i);
+				if (label == null) {
+					continue;
+				}
 				if (label.equalsIgnoreCase(item)) {
 					cb.setSelectedIndex(i);
 					return i;
