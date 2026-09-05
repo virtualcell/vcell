@@ -18,6 +18,11 @@
 #   --refresh-cp    regenerate the cached dependency classpath
 #   --foreground    run in the foreground instead of detaching
 #
+# Environment:
+#   VCELL_UI_BACKGROUND=true   macOS: run as an accessory app so the client never
+#                              activates itself and never pulls you to its Space.
+#                              Does not hide the window, and makes /iconify unreliable.
+#
 # Environment overrides:
 #   VCELL_INSTALL_DIR       local install4j install (default ~/Applications/VCell_Alpha)
 #   VCELL_API_HOST          server host[:port]      (default vcell-dev.cam.uchc.edu:443)
@@ -109,6 +114,27 @@ vmopts=(
   -Dvcell.debugBridge=true
   "-Dvcell.debugBridge.port=$PORT"
 )
+
+# --- optional: stop the client stealing focus while a script drives it -------
+# On macOS an ordinary app ACTIVATES itself on launch and whenever a modal dialog opens,
+# and activating pulls the whole desktop to whichever Space that window is on. As an
+# "accessory" app it has no Dock icon, no menu bar, and never becomes the active
+# application, so it cannot drag you to its Space. Verified: with this set, the frontmost
+# application stayed whatever it was through a full scripted tutorial run, dialogs and
+# all, and every step still worked - the verbs here go through the model, not real input.
+#
+# What it does NOT do: it does not hide the window. The window still renders wherever it
+# is. Worth knowing, because /iconify then LIES - Frame.setExtendedState reports ICONIFIED
+# and the bridge repeats it, but with no Dock icon there is nowhere for the window to
+# minimise to and it stays on screen. To get it out of sight, drag it to another Space
+# once (it will stay there, since it never activates) or move it with `bridge.sh wbounds`.
+#
+# Off by default: it also removes the menu bar, so use it for scripted runs, not for
+# driving the client by hand.
+if [ "${VCELL_UI_BACKGROUND:-false}" = "true" ]; then
+  vmopts+=( -Dapple.awt.UIElement=true )
+  echo "background mode: accessory app (no Dock icon, will not steal your Space)" >&2
+fi
 
 echo "VCell client (target/classes): host=$API_HOST version=$VERSION bridge=:$PORT" >&2
 

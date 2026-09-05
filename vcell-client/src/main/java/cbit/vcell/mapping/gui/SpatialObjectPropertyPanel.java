@@ -205,7 +205,7 @@ private SpatialQuantityTableModel getSpatialQuantityTableModel() {
 private JSortTable getScrollTable() {
 	if (scrollPaneTable == null){
 		scrollPaneTable = new JSortTable();
-		scrollPaneTable.setName("SortTable");
+		scrollPaneTable.setName("SpatialObjectQuantitiesTable");
 	}
 	return scrollPaneTable;
 }
