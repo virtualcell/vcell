@@ -272,10 +272,14 @@ public class PDEDataViewer extends DataViewer implements DataJobListenerHolder {
 			DataJobListener djl = null;
 			try {
 				TimeSeriesJobSpec timeSeriesJobSpec = (TimeSeriesJobSpec)hashTable.get(StringKey_timeSeriesJobSpec);
-				TimeSeriesJobResults timeSeriesJobResults = myPDEDataContext.getTimeSeriesValues(timeSeriesJobSpec);
-				hashTable.put(StringKey_timeSeriesJobResults, timeSeriesJobResults);
+				// Register before the call, not after: getTimeSeriesValues() blocks, and the server
+				// fires the DATA_PROGRESS events for this job while it runs. Registering afterwards
+				// (as this did once getTimeSeriesValues became a blocking rpc) meant the progress
+				// was computed, sent and then dropped, and the dialog never advanced.
 				djl = new TimeSeriesDataJobListener(timeSeriesJobSpec.getVcDataJobID(), hashTable, getClientTaskStatusSupport());
 				dataJobListenerHolder.addDataJobListener(djl);
+				TimeSeriesJobResults timeSeriesJobResults = myPDEDataContext.getTimeSeriesValues(timeSeriesJobSpec);
+				hashTable.put(StringKey_timeSeriesJobResults, timeSeriesJobResults);
 //				while (true) {
 //					Throwable timeSeriesJobFailed = (Throwable)hashTable.get(StringKey_timeSeriesJobException);
 //					if (timeSeriesJobFailed != null) {
