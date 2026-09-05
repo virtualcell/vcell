@@ -35,9 +35,21 @@ dispatches a real job to shared VCell compute, so whether to spend that is a dec
 whoever is at the keyboard.
 
 Nothing in these scripts touches the real mouse or keyboard — every step goes through the
-model (`doClick`, `setSelectedIndex`, `setValueAt`) on the EDT. The client can be
-minimised or parked on another desktop while a script runs. `glide` and `rbclick` are the
-only verbs that move the real pointer, and they are used for filming a replay, not here.
+model or is dispatched as an AWT event on the EDT. `glide` and `rbclick` are the only
+verbs that move the real pointer, and they exist for filming a replay.
+
+That was not true when this started: `rrow`, `rclick`, `drow` and the non-button branch of
+`click` all drove `java.awt.Robot` at absolute screen coordinates, so a scripted run
+fought whoever was at the keyboard and broke if the window moved. They now dispatch the
+events instead, which also makes them work when the client cannot be activated at all.
+
+On macOS, launch with `VCELL_UI_BACKGROUND=true` to run the client as an accessory app:
+no Dock icon, and it never becomes the active application, so it cannot pull you to its
+Space when a modal dialog opens. Verified by sampling the frontmost process through a
+full run — it stayed on the user's own applications throughout. It does **not** hide the
+window; drag it to another Space once, or move it with `bridge.sh wbounds`. Note that
+`/iconify` lies in this mode: with no Dock icon there is nowhere to minimise to, so the
+frame reports `ICONIFIED` while the window stays on screen.
 
 ## The canvas problem, and the way round it
 
@@ -90,6 +102,15 @@ failure — the script reported success and the model was wrong:
   non-spatial applications, so an index names a different tab in each.
 - **`bridge.sh findrow` word-split its query**, so `findrow "Analytic Equations (2D)"`
   searched for `Analytic` and quietly selected the 1D row.
+- **`doClick()` on a menu item never closed the menu.** A real click dismisses the pop-up
+  on its way to firing the action; `doClick` only fires the action. The stale
+  "New Application" submenu then shadowed the next `text=` lookup, and the failure
+  surfaced several steps later, nowhere near its cause.
+- **`trow` is `selectTableRow`.** Calling it on a JTree returns `{"selected": false}` and
+  changes nothing — the tree verb is `row`. Two steps in the first version of this script
+  were silent no-ops that only worked because the Geometry tab happened to already be
+  selected. `_common.sh`'s `must` now stops the run when the bridge reports a step did
+  not take, which is how this was found.
 
 Naming debt fixed at the source, rather than worked around in the scripts:
 `StructuresTable`, `ReactionsTable`, `SpeciesTable`, `MolecularTypeTable`,
