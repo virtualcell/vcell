@@ -37,28 +37,36 @@ for k in ("clicked", "selected", "set", "doubleClicked", "rightClicked"):
   printf '%s' "$out"
 }
 
-# Resolve a row by its DISPLAYED text, and stop if it is not there. A silent -1 is how a
+# Resolve a row by its DISPLAYED text, and stop if it never appears. A silent -1 is how a
 # mapping step turns into a no-op that is only noticed pages later, when the simulation
 # quietly uses defaults.
+#
+# It RETRIES rather than trusting a fixed sleep, because a panel's columns exist before its
+# rows do: selecting a spatial process gives you a parameter table with its four headers
+# immediately and its velocityX/velocityY rows a moment later, so `col` succeeds while
+# `row` still sees nothing. Extra arguments are passed through to findrow (--exact, --in).
 row() {
-  local r
-  r=$("$B" findrow "$1" "$2" | python3 -c 'import json,sys;print(json.load(sys.stdin)["row"])')
-  if [ "$r" -lt 0 ]; then
-    echo "FATAL: no row reading '$2' in $1" >&2
-    exit 1
-  fi
-  printf '%s' "$r"
+  local sel="$1" text="$2"; shift 2
+  local r i
+  for i in $(seq 1 20); do
+    r=$("$B" findrow "$sel" "$text" "$@" | python3 -c 'import json,sys;print(json.load(sys.stdin)["row"])')
+    [ "$r" -ge 0 ] && { printf '%s' "$r"; return 0; }
+    sleep 0.5
+  done
+  echo "FATAL: no row reading '$text' in $sel after 10s" >&2
+  exit 1
 }
 
-# Column index by header text, for the same reason.
+# Column index by header text, same retry for the same reason.
 col() {
-  local c
-  c=$("$B" findcol "$1" "$2" | python3 -c 'import json,sys;print(json.load(sys.stdin)["column"])')
-  if [ "$c" -lt 0 ]; then
-    echo "FATAL: no column headed '$2' in $1" >&2
-    exit 1
-  fi
-  printf '%s' "$c"
+  local c i
+  for i in $(seq 1 20); do
+    c=$("$B" findcol "$1" "$2" | python3 -c 'import json,sys;print(json.load(sys.stdin)["column"])')
+    [ "$c" -ge 0 ] && { printf '%s' "$c"; return 0; }
+    sleep 0.5
+  done
+  echo "FATAL: no column headed '$2' in $1 after 10s" >&2
+  exit 1
 }
 
 navrow() { row "name=bioModelEditorTree" "$1"; }

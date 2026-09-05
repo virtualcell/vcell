@@ -11,7 +11,7 @@ reproduces it against a current client through the [debug bridge](../../README.m
 | Document | Storyline | Script | State |
 |---|---|---|---|
 | `SimpleFRAP_7.2.pdf` | [simple-frap](storylines/simple-frap.md) | [`simple-frap.sh`](simple-frap.sh) | **reproduced**, 0 errors |
-| `MovingBoundaries.pdf` | [moving-boundary](storylines/moving-boundary.md) | — | next best candidate |
+| `MovingBoundaries.pdf` | [moving-boundary](storylines/moving-boundary.md) | [`moving-boundary.sh`](moving-boundary.sh) | **reproduced**, 0 errors |
 | `FRAPBinding_7.2.pdf` | [frap-with-binding](storylines/frap-with-binding.md) | — | needs reaction creation |
 | `PHGFP_7.2.pdf` | [phgfp](storylines/phgfp.md) | — | needs reaction creation |
 | `MultiAppTransport_7.2.pdf` | [multi-app-transport](storylines/multi-app-transport.md) | — | image segmentation blocks it |
@@ -26,10 +26,10 @@ reproduces it against a current client through the [debug bridge](../../README.m
 ```bash
 mvn compile -pl vcell-client -am -DskipTests
 tools/debug-bridge/launch-client.sh
-tools/debug-bridge/scenarios/tutorials/simple-frap.sh
+tools/debug-bridge/scenarios/tutorials/simple-frap.sh      # or moving-boundary.sh
 ```
 
-Takes about 100 seconds and leaves a complete, valid model on screen. It stops before
+Each takes a couple of minutes and leaves a complete, valid model on screen. It stops before
 `File > Save` and before the green Run button: saving needs a logged-in account and Run
 dispatches a real job to shared VCell compute, so whether to spend that is a decision for
 whoever is at the keyboard.
@@ -77,7 +77,7 @@ What has no table equivalent, and so is genuinely out of reach:
   The Reactions table can create a reaction from an equation string, so this is probably
   reachable, but it was not verified.
 
-## What building the first script changed in the tooling
+## What building these scripts changed in the tooling
 
 `simple-frap.sh` did not work against the bridge as it stood. Each of these was a silent
 failure — the script reported success and the model was wrong:
@@ -111,11 +111,26 @@ failure — the script reported success and the model was wrong:
   were silent no-ops that only worked because the Geometry tab happened to already be
   selected. `_common.sh`'s `must` now stops the run when the bridge reports a step did
   not take, which is how this was found.
+- **`click` used `doClick()`**, which invokes only the *action* listeners. The Kinematics
+  "New" button builds and shows its pop-up from `MouseAdapter.mousePressed` and so opened
+  nothing, while reporting success. Buttons now get a real press/release.
+- **`findRow` only ever matched column 0.** A spatial process's parameter table leads with
+  a prose description ("surface velocity (x coord)") and carries the name the tutorial says
+  — `velocityX` — in the next column. `findrow … --in Parameter` searches a named column.
+- **A panel's columns exist before its rows do.** Selecting a spatial process yields a
+  parameter table with its four headers immediately and its velocity rows a moment later,
+  so `col` succeeded while `row` still saw nothing and returned -1. `row`/`col` now retry
+  for 10s instead of trusting a fixed `sleep`.
+- **`SpatialProcessPropertyPanel` called itself `"SpatialObjectPropertyPanel"`** — a
+  copy-paste slip that gave two different panels the same name.
 
 Naming debt fixed at the source, rather than worked around in the scripts:
 `StructuresTable`, `ReactionsTable`, `SpeciesTable`, `MolecularTypeTable`,
-`ObservablesTable`, `SubVolumesTable`, `StructureMappingTable`, `SimulationsTable`, and
-the ten shape fields in `AddShapeJPanel`.
+`ObservablesTable`, `SubVolumesTable`, `StructureMappingTable`, `SimulationsTable`,
+`SpatialObjectsTable`, `SpatialProcessesTable` and their New/Delete buttons,
+`SpatialProcessParametersTable`, `SpatialObjectQuantitiesTable`, `subdomainShapeComboBox`,
+and the ten shape fields in `AddShapeJPanel`. `ScrollPaneTable` and `SortTable` were each
+used by eight or more panels.
 
 ## A finding worth passing to whoever owns the tutorials
 

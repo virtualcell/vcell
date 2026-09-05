@@ -64,7 +64,7 @@ private void handleException(Throwable exception) {
  */
 private void initialize() {
 	try {
-		setName("SpatialObjectPropertyPanel");
+		setName("SpatialProcessPropertyPanel");
 		setLayout(new java.awt.BorderLayout());
 		setSize(572, 196);
 		setBackground(Color.white);
@@ -147,7 +147,7 @@ private SpatialProcessParameterTableModel getSpatialProcessParameterTableModel()
 private JSortTable getScrollTable() {
 	if (scrollPaneTable == null){
 		scrollPaneTable = new JSortTable();
-		scrollPaneTable.setName("SortTable");
+		scrollPaneTable.setName("SpatialProcessParametersTable");
 	}
 	return scrollPaneTable;
 }

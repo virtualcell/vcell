@@ -2,7 +2,8 @@
 
 - **Source:** `MovingBoundaries.pdf` (67 pp, 2022-09-13)
 - **Superseded by a 7.7 rewrite?** No.
-- **Status:** storyline extracted; not yet scripted. Closest sibling of `simple-frap`.
+- **Reproduced by:** `../moving-boundary.sh`
+- **Status:** reproduced through the Kinematics tab, model builds with 0 errors.
 
 ## Objective
 
@@ -33,7 +34,25 @@ deforms during the simulation. Teaches Kinematics and the Moving Boundary solver
 9. **Results.** VCell's own spatial analysis tools do **not** work on moving-boundary
    results — export to NRRD/HDF5 or a QuickTime movie and analyse elsewhere.
 
-## Why this one is worth scripting next
+## What the script covers
 
-It is Simple FRAP plus one new panel (Kinematics). The whole of steps 1–4 and 6–8 is
-already covered by `simple-frap.sh`; only the Kinematics tab is new ground.
+Steps 1–7 are scripted and verified: both spatial processes end up carrying `velocityX = 4`
+and `velocityY = 5*sin(10*t)`, the unwanted EC volume process is deleted, and the model
+reports 0 errors. Step 8 (creating and running the simulation) is left out for the same
+reason as in Simple FRAP — it needs an account and dispatches a real job.
+
+## Things the Kinematics tab teaches you the hard way
+
+- **Volume kinematics lands on the wrong object first.** VCell creates a process for the
+  next volume in the spatial-object table each time, so the first attempt targets `EC` and
+  a second is needed to reach `Cyt`; the tutorial's instruction to "delete the one you did
+  not want" is not a nicety.
+- **The Interior Velocity checkbox is on the OBJECT, not the process.** A volume process
+  reports an error until `vobj_Cyt1` is allowed to have one, and the checkbox lives in the
+  spatial object's properties.
+- **The parameter table's identity column is not column 0.** It leads with a prose
+  description — "surface velocity (x coord)" — and carries `velocityX` in the next column,
+  which is why `findrow` had to learn to search a named column.
+- **A panel's columns arrive before its rows.** Selecting a process yields the four
+  headers immediately and the velocity rows a moment later, so a lookup has to retry
+  rather than sleep.
