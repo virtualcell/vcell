@@ -45,13 +45,20 @@ The reaction network (step 3) is built entirely by dragging on the Reaction Diag
 The Reactions **table** is the way round it, but with one wrinkle worth knowing before
 starting:
 
-`BioModelEditorReactionTableModel.setValueAt` only accepts an equation typed into the
-"(add new here, e.g. a+b->c)" row when the model has **exactly one structure** — the same
-restriction the species table has. This model has three (`Cyt`, `NM`, `Nuc`), so that route
-is closed. Editing the **Equation column of an existing reaction** carries no such
-restriction and does the useful part: it parses the equation and *creates any species it
-names that do not exist yet*. So the sequence is New Reaction → choose compartment → set
-the equation, exactly as the species route works in `simple-frap.sh`.
+**Create every species first, then the reactions.** An equation cannot place a species:
+`ModelProcessEquation.parseReaction` looks a name up with `model.getSpeciesContext(var)`
+across the whole model and reuses it wherever it already lives, but a name it does not
+recognise becomes `new SpeciesContext(species, rxnStructure)` — always in the *reaction's*
+own structure. So auto-creation is only ever correct when every participant belongs in the
+compartment the reaction sits in. Here that happens to hold (all six species and all four
+reactions are in `Nuc`), but relying on it is a trap the moment a model spans compartments,
+as [phgfp](phgfp.md) does.
+
+Note also that the reaction table's "(add new here, e.g. a+b→c)" placeholder lives in the
+**Equation** column, not the Name column as it does for structures and species — and
+`setValueAt` only accepts it when the model has **exactly one structure**. With three here
+that route is closed anyway; the sequence is New Reaction → choose compartment → set the
+equation, mirroring the species route in `simple-frap.sh`.
 
 Not yet verified end to end. Step 6 additionally depends on a completed server-side run,
 so the spatial half cannot be reproduced without spending real compute.

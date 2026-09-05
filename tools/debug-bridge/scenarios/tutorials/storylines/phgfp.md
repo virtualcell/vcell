@@ -42,8 +42,13 @@ species, events, and output functions.
 
 ## Blockers for scripting
 
-Reaction creation as in [frap-with-binding](frap-with-binding.md): five structures here, so
-the equation must go into an existing reaction's Equation column rather than the
-"(add new here)" row. Events, output functions and the 3D geometry are ordinary dialogs and
-tables and should script the same way the 2D geometry already does. Step 8 needs a
-completed run.
+Reaction creation as in [frap-with-binding](frap-with-binding.md), but here the compartment
+point is load-bearing rather than incidental. `PIP2_PM` and `PIP2_PHGFP_PM` are on the
+membrane while `PH_GFP_Cyt` and `IP3_Cyt` are in the cytosol, so the reaction
+`PIP2_PM + PH_GFP_Cyt → PIP2_PHGFP_PM` spans two compartments. Typing that equation into a
+model that does not already have those species would create **all three in the reaction's
+own structure** — silently, with no error. Every species must be created first, through
+New Species → choose compartment, before any equation is typed.
+
+Events, output functions and the 3D geometry are ordinary dialogs and tables and should
+script the same way the 2D geometry already does. Step 8 needs a completed run.

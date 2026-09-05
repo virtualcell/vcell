@@ -74,12 +74,17 @@ What has no table equivalent, and so is genuinely out of reach:
 - **Image segmentation** (`MultiAppTransport`) — painting and erasing pixels on an image,
   and dragging a histogram threshold. There is no model-level way to express it.
 - **Reaction-diagram drawing** where a reaction's *topology* is the thing being taught.
-  The Reactions table is the way round it, with one wrinkle: an equation typed into the
-  "(add new here, e.g. a+b->c)" row is only accepted when the model has **exactly one
-  structure**, the same restriction the species table has. Editing the Equation column of
-  an *existing* reaction has no such restriction and creates any species it names, so the
-  sequence is New Reaction → choose compartment → set the equation. Identified from the
-  table model, not yet verified against the running client.
+  The Reactions table is the way round it: New Reaction → choose compartment → type the
+  equation into the **Equation** column, which is also where that table's
+  "(add new here, e.g. a+b→c)" placeholder lives — not the Name column, as it does for
+  structures and species. (That placeholder row is only accepted when the model has exactly
+  one structure, so it is unavailable in every model here anyway.)
+
+  **Create the species before the reactions.** An equation cannot place a species:
+  `parseReaction` reuses a name that already exists anywhere in the model, but creates an
+  unknown one in the *reaction's* own structure. For a reaction spanning compartments —
+  `PIP2_PM + PH_GFP_Cyt → PIP2_PHGFP_PM` — leaning on auto-creation puts every participant
+  in one compartment, silently and with no error.
 
 ## What building these scripts changed in the tooling
 

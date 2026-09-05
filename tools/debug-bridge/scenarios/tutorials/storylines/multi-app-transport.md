@@ -42,4 +42,8 @@ dragging a histogram threshold. That is irreducibly a pixel gesture; there is no
 level equivalent to address. Steps 5–7 depend on completed server-side runs.
 
 Steps 1–2 (physiology), the `Copy As` application copies, the Specifications edits and
-the simulation setup are all ordinary tables and menus and should script cleanly.
+the simulation setup are all ordinary tables and menus and should script cleanly — with the
+caveat that the species must be created before the reactions. `RanC_nuc` is in the nucleus
+and `RanC_cyt`, `C_cyt` and `Ran_cyt` in the cytoplasm, with a flux across `NM` between
+them, so an equation typed against a model missing those species would put every one of
+them in the reaction's own compartment. See [phgfp](phgfp.md).
