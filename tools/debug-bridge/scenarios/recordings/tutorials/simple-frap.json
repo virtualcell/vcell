@@ -1,0 +1,21 @@
+{
+  "recordedAt": "2026-09-05T12:42:50.421299Z",
+  "durationMs": 14833,
+  "steps": [
+    {"verb": "click", "selector": "name=OptionPane.button", "delayMs": 35, "note": "JButton 'OK'"},
+    {"verb": "selectTab", "selector": "name=ModelTabbedPane", "index": 2, "tabTitle": "Structures", "delayMs": 1042, "note": "JTabbedPaneEnhanced"},
+    {"verb": "setCell", "selector": "name=StructuresTable", "text": "EC", "enter": false, "row": 0, "rowText": "EC", "column": 0, "columnName": "Name", "delayMs": 1050, "note": "EditorScrollTable"},
+    {"verb": "click", "selector": "name=ModelNewMembraneButton", "delayMs": 1031, "note": "JButton 'New Membrane'"},
+    {"verb": "setCell", "selector": "name=StructuresTable", "text": "PM", "enter": false, "row": 1, "rowText": "PM", "column": 0, "columnName": "Name", "delayMs": 1058, "note": "EditorScrollTable"},
+    {"verb": "click", "selector": "name=ModelNewButton", "delayMs": 1034, "note": "JButton 'New Compartment'"},
+    {"verb": "setCell", "selector": "name=StructuresTable", "text": "Cyt", "enter": false, "row": 2, "rowText": "Cyt", "column": 0, "columnName": "Name", "delayMs": 1051, "note": "EditorScrollTable"},
+    {"verb": "selectTab", "selector": "name=ModelTabbedPane", "index": 3, "tabTitle": "Species", "delayMs": 1217, "note": "JTabbedPaneEnhanced"},
+    {"verb": "click", "selector": "name=ModelNewButton", "delayMs": 1038, "note": "JButton 'New Species'"},
+    {"verb": "click", "selector": "text=In Compartment Cyt", "delayMs": 1029, "durability": "text", "note": "JMenuItem 'In Compartment Cyt'"},
+    {"verb": "setCell", "selector": "name=SpeciesTable", "text": "Dex", "enter": false, "row": 0, "rowText": "Dex", "column": 0, "columnName": "Name", "delayMs": 2068, "note": "EditorScrollTable"},
+    {"verb": "rightClickTreeRow", "selector": "name=bioModelEditorTree", "row": 8, "rowText": "Applications (0)", "delayMs": 1130, "note": "JTree"},
+    {"verb": "selectTreeRow", "selector": "name=bioModelEditorTree", "row": 8, "rowText": "Applications (0)", "delayMs": 376, "note": "JTree"},
+    {"verb": "click", "selector": "name=New Application", "delayMs": 643, "note": "JButton 'New Application'"},
+    {"verb": "click", "selector": "text=Deterministic", "delayMs": 1031, "durability": "text", "note": "JMenuItem 'Deterministic'"}
+  ]
+}

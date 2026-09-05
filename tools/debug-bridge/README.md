@@ -11,6 +11,7 @@ so getting a live, drivable client takes one command instead of a rediscovered r
 | `scenarios/` | Reusable end-to-end scripts built on `bridge.sh` — `smoke.sh` checks bridge, main frame, menus, EDT and screenshots using only semantic selectors; `detach-window.sh` and its recorded twin `detach-window-recorded.sh` drive the modeless-child-window round trip. |
 | `doc-scaffold.py` | Turn a recording plus its captures into a VCell help-page skeleton (`<vcelldoc>` XML for `UserDocumentation/originalXML`). Writes the mechanical parts — ordered steps, image references — and leaves the prose to a person. |
 | `scenarios/recordings/` | Captured UI scripts. JSON, hand-editable, replayed by `replay.py`. |
+| `scenarios/tutorials/` | The vcell.org tutorial PDFs, as storylines and as scripts that rebuild them. See its [README](scenarios/tutorials/README.md). |
 
 ## Quick start
 
@@ -27,6 +28,50 @@ tools/debug-bridge/scenarios/smoke.sh          # end-to-end sanity
 local install at `~/Applications/VCell_Alpha` for the JRE/native libs; override with
 `VCELL_API_HOST` / `VCELL_INSTALL_DIR`. The client's real log is
 `~/.vcell/logs/vcellrun_<site>.log` — or just `bridge.sh log 100`.
+
+## Addressing things
+
+A selector is one of `name=Foo`, `text=Foo`, `type=JSortTable`, a `c<id>`, or a node path
+like `0/0/1/0`. Each accepts an optional `[n]` suffix to pick among duplicates, and an
+unqualified selector resolves against the **active window** first — which is what makes
+`text=OK` mean the button in the dialog in front of you rather than one behind it.
+
+Prefer them in that order. `name=` survives a relayout; `text=` survives a relayout but
+not a relabelling, and is the only handle a pop-up menu item has, since VCell builds those
+on the fly without naming them; `type=` is for the components a dialog builds generically
+(the geometry chooser is a bare `JSortTable` in a `JOptionPane`); a node path breaks the
+next time that panel is rearranged. A recording marks which tier each step needed, so the
+naming debt is readable off a fresh capture.
+
+Rows, columns and tabs follow the same rule — say what a thing **reads**, not where it
+sat:
+
+| Instead of | Say |
+|---|---|
+| `trow <table> 3` | `findrow <table> "Dex"` then act on that row |
+| column index `5` | `findcol <table> "Initial Condition"` |
+| `tab <pane> 3` | `tab <pane> "Simulations"` |
+
+The application tab strip is the concrete reason for the last one: a spatial application
+shows four tabs and a non-spatial one five, so index 3 is a different tab in each.
+
+## Editing values
+
+```bash
+bridge.sh setcell <table> <row> <col> <value>   # through the table's own model
+bridge.sh combo   <selector> "IDA (Variable Order, Variable Time Step, ODE/DAE)"
+bridge.sh settext <selector> <text> [--enter]
+```
+
+`setcell` goes through `setValueAt`, which is what the cell editor itself calls on Enter —
+so validation and side effects are the real ones, including creating a row from an
+"(add new here)" placeholder. It is the only way to drive these cells, because the editor
+is a transient component created on edit and destroyed on commit, with no name to hold.
+
+`settext --enter` also delivers a `focusLost` to the field. Much of VCell's older GUI
+commits on focus loss rather than on Enter (`TimeBoundsPanel`, the mesh and output
+panels), and `setText` moves no focus — so without it a value is displayed and then
+silently discarded, and the dialog reopens showing the old number.
 
 ## Recording and replaying
 
