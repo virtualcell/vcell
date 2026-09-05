@@ -23,6 +23,7 @@ import org.vcell.util.UserCancelException;
 
 import java.util.Hashtable;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -103,6 +104,32 @@ public class TimeSeriesDataRetrievalTaskTest {
 				.run(newHash()));
 		assertTrue(holder.added <= holder.removed + 1,
 			"a listener added before the failure must be removed again");
+	}
+
+	/**
+	 * The server fires DATA_PROGRESS for this job while getTimeSeriesValues() blocks, so the
+	 * listener has to be registered before the call. It was registered after it for years - ever
+	 * since getTimeSeriesValues became a blocking rpc in 1c16cce - so the progress was computed,
+	 * serialised, sent and then dropped, and the task dialog never advanced.
+	 */
+	@Test
+	public void theProgressListenerIsRegisteredBeforeTheBlockingCall() throws Exception {
+		RecordingHolder holder = new RecordingHolder();
+		boolean[] wasRegisteredWhenTheCallRan = new boolean[1];
+		PDEDataContext context = new StubPDEDataContext() {
+			@Override
+			public TimeSeriesJobResults getTimeSeriesValues(TimeSeriesJobSpec spec) {
+				wasRegisteredWhenTheCallRan[0] = holder.added > 0;
+				return new TSJobResultsNoStats(
+					new String[]{"s0"}, new int[][]{{0}}, new double[]{0.0}, new double[][][]{{{0.0}}});
+			}
+		};
+
+		new PDEDataViewer.TimeSeriesDataRetrievalTask("t", holder, context).run(newHash());
+
+		assertTrue(wasRegisteredWhenTheCallRan[0],
+			"progress events fired during the call are dropped unless the listener is already registered");
+		assertEquals(holder.added, holder.removed, "the listener must be removed again");
 	}
 
 	private static Hashtable<String, Object> newHash() {
