@@ -364,7 +364,20 @@ public final class SwingDebugBridge {
 		if (path == null || path.isEmpty() || (text == null && contains == null && appType == null)) {
 			return "{\"error\":\"require 'path' and one of 'text', 'contains' or 'appType'\",\"row\":-1}";
 		}
-		return SwingInspector.findRowJson(path, text != null ? text : contains, text != null, appType);
+		// Optional: which column carries the identity being matched. Named, not indexed,
+		// for the usual reason - and resolved here so the caller says "Parameter", not 1.
+		String inColumn = emptyToNull(q.get("inColumn"));
+		int searchColumn = 0;
+		if (inColumn != null) {
+			String resolved = SwingInspector.findColumnJson(path, inColumn);
+			java.util.regex.Matcher m =
+					java.util.regex.Pattern.compile("\"column\":(-?\\d+)").matcher(resolved);
+			if (m.find()) {
+				searchColumn = Math.max(0, Integer.parseInt(m.group(1)));
+			}
+		}
+		return SwingInspector.findRowJson(path, text != null ? text : contains, text != null,
+				appType, searchColumn);
 	}
 
 	private static String handleSelectCombo(HttpExchange ex) {

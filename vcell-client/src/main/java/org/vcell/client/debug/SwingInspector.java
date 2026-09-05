@@ -1247,11 +1247,32 @@ public final class SwingInspector {
 			// Report before acting: the action may open a modal dialog, and the step
 			// belongs in the script whether or not anything blocks afterwards.
 			UiRecorder.noteClick(c);
+			// A plain button gets a real press/release rather than doClick(). doClick
+			// invokes only the ACTION listeners, and not every button here keeps its
+			// behaviour there: the Kinematics "New" button builds and shows its pop-up
+			// from a MouseAdapter.mousePressed, so doClick fired the (empty) action and
+			// reported success while nothing opened. Press/release drives the button's
+			// own UI listener, which fires the action exactly once, AND reaches the
+			// mouse listeners - so both wirings work. Menu items keep doClick, because
+			// a menu item's behaviour always lives in its action.
+			final boolean isMenuItem = c instanceof JMenuItem;
+			final Point centre = onEdt(() -> {
+				Dimension d = c.getSize();
+				return (d.width == 0 || d.height == 0) ? null : new Point(d.width / 2, d.height / 2);
+			});
 			// fire-and-forget: the action may open a modal dialog, which would
 			// block invokeAndWait (and with it the whole bridge) until dismissed
-			final boolean isMenuItem = c instanceof JMenuItem;
 			SwingUtilities.invokeLater(() -> {
-				if (isMenuItem) {
+				if (!isMenuItem && centre != null) {
+					long when = System.currentTimeMillis();
+					for (int id : new int[] { MouseEvent.MOUSE_PRESSED, MouseEvent.MOUSE_RELEASED,
+							MouseEvent.MOUSE_CLICKED }) {
+						c.dispatchEvent(new MouseEvent(c, id, when, InputEvent.BUTTON1_DOWN_MASK,
+								centre.x, centre.y, 1, false, MouseEvent.BUTTON1));
+					}
+					return;
+				}
+				{
 					// A real click on a menu item closes the menu on the way to firing
 					// the action; doClick only fires the action, so without this the
 					// pop-up stays open. It then SHADOWS later lookups - a stale
@@ -2082,6 +2103,22 @@ public final class SwingInspector {
 	 */
 	public static String findRowJson(String path, final String query, final boolean exact,
 			final String appType) {
+		return findRowJson(path, query, exact, appType, 0);
+	}
+
+	/**
+	 * As above, but searching a nominated column rather than the first.
+	 *
+	 * <p>Column 0 is the row's identity in most of these tables, but not all: a spatial
+	 * process's parameter table leads with a prose description ("surface velocity (x
+	 * coord)") and carries the name the tutorial actually says - {@code velocityX} - in
+	 * the next column. Searching only column 0 there finds nothing and returns -1, which
+	 * the caller then feeds to setCell as a row index.
+	 *
+	 * @param searchColumn view column index to match against
+	 */
+	public static String findRowJson(String path, final String query, final boolean exact,
+			final String appType, final int searchColumn) {
 		Component c = findByPath(path);
 		if (c == null) {
 			return "{\"error\":\"selector did not resolve\",\"row\":-1}";
@@ -2111,7 +2148,8 @@ public final class SwingInspector {
 					text = rowText((JTree) c, row);
 				} else {
 					JTable t = (JTable) c;
-					text = (t.getColumnCount() > 0) ? cellText(t, row, 0) : null;
+					int sc = (searchColumn > 0 && searchColumn < t.getColumnCount()) ? searchColumn : 0;
+					text = (t.getColumnCount() > 0) ? cellText(t, row, sc) : null;
 				}
 				if (text == null) {
 					continue;

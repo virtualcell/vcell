@@ -167,11 +167,22 @@ case "$cmd" in
   rrow)      get rightClickTreeRow --data-urlencode "path=$1" --data-urlencode "row=$2" | pretty ;;
   menu)      get menu --data-urlencode "path=$1" ${2:+--data-urlencode "window=$2"} | pretty ;;
   findrow)
+    SEL="$1"; TXT="${2:-}"
     case "${2:-}" in
       --apptype) get findRow --data-urlencode "path=$1" --data-urlencode "appType=$3" | pretty ;;
       *)
-        if [ "${3:-}" = "--exact" ]; then key=text; else key=contains; fi
-        get findRow --data-urlencode "path=$1" --data-urlencode "$key=$2" | pretty ;;
+        # findrow <selector> <text> [--exact] [--in <column header>]
+        key=contains; incol=""
+        shift 2
+        while [ $# -gt 0 ]; do
+          case "$1" in
+            --exact) key=text ;;
+            --in)    shift; incol="$1" ;;
+          esac
+          shift
+        done
+        get findRow --data-urlencode "path=$SEL" --data-urlencode "$key=$TXT" \
+            ${incol:+--data-urlencode "inColumn=$incol"} | pretty ;;
     esac
     ;;
   findcol)   get findColumn --data-urlencode "path=$1" --data-urlencode "header=$2" | pretty ;;
