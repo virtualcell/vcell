@@ -43,14 +43,16 @@ VERBS = {
     "click":                ("click",                []),
     "rightClick":           ("rightClick",           []),
     "setText":              ("setText",              ["text", "enter"]),
-    "selectTab":            ("selectTab",            ["index"]),
+    "selectTab":            ("selectTab",            ["index"]),   # title added below
     "selectTreeRow":        ("selectTreeRow",        ["row"]),
     "expandTreeRow":        ("expandTreeRow",        ["row", "expand"]),
     "doubleClickTreeRow":   ("doubleClickTreeRow",   ["row"]),
     "rightClickTreeRow":    ("rightClickTreeRow",    ["row"]),
-    "selectTableRow":       ("selectTableRow",       ["row"]),
-    "doubleClickTableRow":  ("doubleClickTableRow",  ["row"]),
-    "rightClickTableRow":   ("rightClickTableRow",   ["row"]),
+    "selectTableRow":       ("selectTableRow",       ["row", "column"]),
+    "doubleClickTableRow":  ("doubleClickTableRow",  ["row", "column"]),
+    "rightClickTableRow":   ("rightClickTableRow",   ["row", "column"]),
+    "setCell":              ("setCell",              ["row", "column", "value"]),
+    "selectCombo":          ("selectCombo",          ["item"]),
     "menu":                 ("menu",                 []),
 }
 
@@ -136,6 +138,14 @@ def replay(path, driver, speed, max_delay, port, dry_run, quiet, first=1, last=N
         # /menu takes the menu text path; every other verb takes a component selector
         selector = step.get("path") if verb == "menu" else step.get("selector")
         params = {"path": selector}
+        if verb == "setCell" and "value" not in step:
+            params["value"] = step.get("text", "")
+        if verb == "selectCombo" and "item" not in step:
+            params["item"] = step.get("tabTitle", "")
+        # Prefer WHAT the tab reads over WHERE it sat: the application tab strip differs
+        # between spatial and non-spatial applications, so an index alone names nothing.
+        if verb == "selectTab" and step.get("tabTitle"):
+            params["title"] = step["tabTitle"]
         for field in extras:
             if field in step:
                 value = step[field]
@@ -153,6 +163,19 @@ def replay(path, driver, speed, max_delay, port, dry_run, quiet, first=1, last=N
             elif not quiet:
                 print("      (no row reads %r; falling back to index %s)"
                       % (step["rowText"], step.get("row")), file=sys.stderr)
+
+        # Same argument one axis over: these editor tables carry one model value per
+        # column, so "column 3" names nothing durable once a release inserts a column.
+        # The header is what the tutorial names, so resolve by it and keep the recorded
+        # index only as the fallback.
+        if step.get("columnName") and not dry_run:
+            located = bridge.get("findColumn", path=selector,
+                                 header=step["columnName"])
+            if located.get("column", -1) >= 0:
+                params["column"] = located["column"]
+            elif not quiet:
+                print("      (no column headed %r; falling back to index %s)"
+                      % (step["columnName"], step.get("column")), file=sys.stderr)
 
         label = "%-20s %s" % (verb, selector)
         note = step.get("note")
