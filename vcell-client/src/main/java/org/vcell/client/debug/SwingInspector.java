@@ -22,6 +22,7 @@ import java.awt.Robot;
 import java.awt.KeyboardFocusManager;
 import java.awt.Window;
 import java.awt.event.FocusEvent;
+import java.awt.event.MouseEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.InputEvent;
 import java.awt.image.BufferedImage;
@@ -48,6 +49,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTree;
 import javax.swing.JTextField;
+import javax.swing.MenuSelectionManager;
 import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
 
@@ -1247,23 +1249,31 @@ public final class SwingInspector {
 			UiRecorder.noteClick(c);
 			// fire-and-forget: the action may open a modal dialog, which would
 			// block invokeAndWait (and with it the whole bridge) until dismissed
-			SwingUtilities.invokeLater(((AbstractButton) c)::doClick);
+			final boolean isMenuItem = c instanceof JMenuItem;
+			SwingUtilities.invokeLater(() -> {
+				if (isMenuItem) {
+					// A real click on a menu item closes the menu on the way to firing
+					// the action; doClick only fires the action, so without this the
+					// pop-up stays open. It then SHADOWS later lookups - a stale
+					// "New Application" submenu still showing means the next
+					// text=Rename resolves into the wrong menu, or into nothing - and
+					// the failure surfaces several steps later, nowhere near its cause.
+					// Cleared first: dismissing after doClick would race a dialog the
+					// action opens.
+					MenuSelectionManager.defaultManager().clearSelectedPath();
+				}
+				((AbstractButton) c).doClick();
+			});
 			return true;
 		}
-		// non-button: synthesize a real mouse click at the component center
-		Point screenPt = centerOnScreen(c);
-		if (screenPt == null) {
+		// non-button: dispatch a click at the component centre. Not a Robot click - see
+		// popupTriggerAt for why driving the physical mouse is the wrong default.
+		Dimension size = onEdt(c::getSize);
+		if (size == null || size.width == 0 || size.height == 0) {
 			return false;
 		}
-		try {
-			Robot robot = new Robot();
-			robot.mouseMove(screenPt.x, screenPt.y);
-			robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
-			robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
-			return true;
-		} catch (Exception e) {
-			throw new RuntimeException("robot click failed at " + screenPt, e);
-		}
+		return dispatchClicks(path, new Point(size.width / 2, size.height / 2),
+				InputEvent.BUTTON1_DOWN_MASK, 1);
 	}
 
 	// ---------------------------------------------------------------------
@@ -1322,7 +1332,7 @@ public final class SwingInspector {
 
 	private static boolean clickTableRow(final String path, final int row, final int column,
 			final int buttonMask, final int clickCount) {
-		Point screenPt = onEdt(() -> {
+		Point localPt = onEdt(() -> {
 			JTable table = tableAt(path, row, column);
 			if (table == null || !table.isShowing()) {
 				return null;
@@ -1333,24 +1343,31 @@ public final class SwingInspector {
 			table.scrollRectToVisible(cell);
 			// re-read: scrolling moves the cell under the viewport
 			cell = table.getCellRect(row, col, true);
-			Point loc = table.getLocationOnScreen();
-			return new Point(loc.x + cell.x + Math.min(cell.width / 2, 60),
-					loc.y + cell.y + cell.height / 2);
+			return new Point(cell.x + Math.min(cell.width / 2, 60), cell.y + cell.height / 2);
 		});
-		if (screenPt == null) {
+		if (localPt == null) {
 			return false;
 		}
-		try {
-			Robot robot = new Robot();
-			robot.mouseMove(screenPt.x, screenPt.y);
-			for (int i = 0; i < clickCount; i++) {
-				robot.mousePress(buttonMask);
-				robot.mouseRelease(buttonMask);
+		// Dispatched rather than driven with a Robot, for the reasons in popupTriggerAt:
+		// a real click moves the user's cursor, depends on where the window sits, and
+		// needs the application to be active.
+		final Component target = findByPath(path);
+		if (target == null) {
+			return false;
+		}
+		final boolean popup = (buttonMask & InputEvent.BUTTON3_DOWN_MASK) != 0;
+		final int button = popup ? MouseEvent.BUTTON3 : MouseEvent.BUTTON1;
+		return Boolean.TRUE.equals(onEdt(() -> {
+			long when = System.currentTimeMillis();
+			for (int i = 1; i <= clickCount; i++) {
+				for (int id : new int[] { MouseEvent.MOUSE_PRESSED, MouseEvent.MOUSE_RELEASED,
+						MouseEvent.MOUSE_CLICKED }) {
+					target.dispatchEvent(new MouseEvent(target, id, when, buttonMask,
+							localPt.x, localPt.y, i, popup, button));
+				}
 			}
 			return true;
-		} catch (Exception e) {
-			throw new RuntimeException("robot table click failed at " + screenPt, e);
-		}
+		}));
 	}
 
 	/** Resolve a selector to a JTable and bounds-check row/column. Must run on the EDT. */
@@ -1430,7 +1447,7 @@ public final class SwingInspector {
 	 * @return true if the tree/row resolved and the double-click was issued
 	 */
 	public static boolean doubleClickTreeRow(final String path, final int row) {
-		Point screenPt = onEdt(() -> {
+		Point localPt = onEdt(() -> {
 			Component c = findByPath(path);
 			if (!(c instanceof JTree)) {
 				return null;
@@ -1445,23 +1462,9 @@ public final class SwingInspector {
 			if (rb == null) {
 				return null;
 			}
-			Point loc = tree.getLocationOnScreen();
-			return new Point(loc.x + rb.x + Math.min(rb.width / 2, 40), loc.y + rb.y + rb.height / 2);
+			return new Point(rb.x + Math.min(rb.width / 2, 40), rb.y + rb.height / 2);
 		});
-		if (screenPt == null) {
-			return false;
-		}
-		try {
-			Robot robot = new Robot();
-			robot.mouseMove(screenPt.x, screenPt.y);
-			for (int i = 0; i < 2; i++) {
-				robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
-				robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
-			}
-			return true;
-		} catch (Exception e) {
-			throw new RuntimeException("robot double-click failed at " + screenPt, e);
-		}
+		return dispatchClicks(path, localPt, InputEvent.BUTTON1_DOWN_MASK, 2);
 	}
 
 	/**
@@ -1475,7 +1478,7 @@ public final class SwingInspector {
 	 * @return true if the tree/row resolved and the right-click was issued
 	 */
 	public static boolean rightClickTreeRow(final String path, final int row) {
-		Point screenPt = onEdt(() -> {
+		Point localPt = onEdt(() -> {
 			Component c = findByPath(path);
 			if (!(c instanceof JTree)) {
 				return null;
@@ -1490,10 +1493,9 @@ public final class SwingInspector {
 			if (rb == null) {
 				return null;
 			}
-			Point loc = tree.getLocationOnScreen();
-			return new Point(loc.x + rb.x + Math.min(rb.width / 2, 24), loc.y + rb.y + rb.height / 2);
+			return new Point(rb.x + Math.min(rb.width / 2, 24), rb.y + rb.height / 2);
 		});
-		return rightClickAt(screenPt);
+		return popupTriggerAt(path, localPt);
 	}
 
 	/**
@@ -1503,31 +1505,81 @@ public final class SwingInspector {
 	 * @return true if a showing component resolved and the right-click was issued
 	 */
 	public static boolean rightClick(final String path) {
-		Point screenPt = onEdt(() -> {
+		Point localPt = onEdt(() -> {
 			Component c = findByPath(path);
 			if (c == null || !c.isShowing()) {
 				return null;
 			}
-			Point loc = c.getLocationOnScreen();
 			Dimension d = c.getSize();
-			return new Point(loc.x + d.width / 2, loc.y + d.height / 2);
+			return new Point(d.width / 2, d.height / 2);
 		});
-		return rightClickAt(screenPt);
+		return popupTriggerAt(path, localPt);
 	}
 
-	private static boolean rightClickAt(Point screenPt) {
-		if (screenPt == null) {
+	/**
+	 * Deliver a click to a component as AWT events, in the component's own coordinates.
+	 *
+	 * <p>The counterpart to {@link #popupTriggerAt} for ordinary clicks, and the same
+	 * reasoning: the physical mouse belongs to whoever is at the keyboard. Only
+	 * {@link #glide} and {@link #robotClick} move it, and they say so in their names.
+	 */
+	private static boolean dispatchClicks(String path, Point localPt, int buttonMask,
+			int clickCount) {
+		if (localPt == null) {
 			return false;
 		}
-		try {
-			Robot robot = new Robot();
-			robot.mouseMove(screenPt.x, screenPt.y);
-			robot.mousePress(InputEvent.BUTTON3_DOWN_MASK);
-			robot.mouseRelease(InputEvent.BUTTON3_DOWN_MASK);
-			return true;
-		} catch (Exception e) {
-			throw new RuntimeException("robot right-click failed at " + screenPt, e);
+		Component c = findByPath(path);
+		if (c == null) {
+			return false;
 		}
+		return Boolean.TRUE.equals(onEdt(() -> {
+			long when = System.currentTimeMillis();
+			for (int i = 1; i <= clickCount; i++) {
+				for (int id : new int[] { MouseEvent.MOUSE_PRESSED, MouseEvent.MOUSE_RELEASED,
+						MouseEvent.MOUSE_CLICKED }) {
+					c.dispatchEvent(new MouseEvent(c, id, when, buttonMask,
+							localPt.x, localPt.y, i, false, MouseEvent.BUTTON1));
+				}
+			}
+			return true;
+		}));
+	}
+
+	/**
+	 * Open a component's context menu by DISPATCHING the popup trigger to it, rather
+	 * than driving the physical mouse.
+	 *
+	 * <p>This used to be a {@link Robot} right-click at screen coordinates, which has two
+	 * problems. It moves the user's real cursor and issues a real click, so a scripted run
+	 * fights whoever is at the keyboard - and it lands wherever the window happens to be,
+	 * so moving the window out of the way breaks it. It also needs the application to be
+	 * active: run the client as a macOS accessory app (VCELL_UI_BACKGROUND=true) and a
+	 * real right-click never raises the pop-up at all, while the endpoint still reports
+	 * success.
+	 *
+	 * <p>Swing decides to show a context menu from {@code MouseEvent.isPopupTrigger()},
+	 * so a press/release pair carrying that flag reaches the same listeners the real
+	 * gesture would. Which button sets the flag is platform-specific - it is the PRESS on
+	 * X11 and macOS and the RELEASE on Windows - so both carry it here.
+	 *
+	 * @param localPt where to click, in the component's own coordinates
+	 */
+	private static boolean popupTriggerAt(String path, Point localPt) {
+		if (localPt == null) {
+			return false;
+		}
+		Component c = findByPath(path);
+		if (c == null) {
+			return false;
+		}
+		return Boolean.TRUE.equals(onEdt(() -> {
+			long when = System.currentTimeMillis();
+			for (int id : new int[] { MouseEvent.MOUSE_PRESSED, MouseEvent.MOUSE_RELEASED }) {
+				c.dispatchEvent(new MouseEvent(c, id, when, InputEvent.BUTTON3_DOWN_MASK,
+						localPt.x, localPt.y, 1, true, MouseEvent.BUTTON3));
+			}
+			return true;
+		}));
 	}
 
 	/**

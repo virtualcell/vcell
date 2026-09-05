@@ -436,6 +436,7 @@ public class AddShapeJPanel extends JPanel {
 		// Without these the circle radius is addressable only as "the third text field
 		// currently reading 1.0", which is neither durable nor readable. Done here, after
 		// every field above has been constructed.
+		comboBox.setName("subdomainShapeComboBox");
 		manualTextField.setName("manualTextField");
 		circleCenterTextField.setName("circleCenterTextField");
 		circleRadiusTextField.setName("circleRadiusTextField");
