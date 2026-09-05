@@ -770,7 +770,7 @@ private JSortTable getScrollPaneTable() {
 //				}
 //			};
 			ivjScrollPaneTable = new JSortTable();
-			ivjScrollPaneTable.setName("ScrollPaneTable");
+			ivjScrollPaneTable.setName("SimulationsTable");
 			ivjScrollPaneTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_NEXT_COLUMN);
 			ivjScrollPaneTable.setModel(getSimulationListTableModel1());
 			ivjScrollPaneTable.setScrollTableActionManager(new DefaultScrollTableActionManager(ivjScrollPaneTable) {

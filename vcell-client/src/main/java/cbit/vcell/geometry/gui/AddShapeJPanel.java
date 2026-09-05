@@ -432,6 +432,21 @@ public class AddShapeJPanel extends JPanel {
 		gridBagConstraints_14.gridx = 0;
 		exprPanel.add(copyExpressionTextButton, gridBagConstraints_14);
 		
+		// Name the shape fields, so a UI script can say WHICH value it is setting.
+		// Without these the circle radius is addressable only as "the third text field
+		// currently reading 1.0", which is neither durable nor readable. Done here, after
+		// every field above has been constructed.
+		manualTextField.setName("manualTextField");
+		circleCenterTextField.setName("circleCenterTextField");
+		circleRadiusTextField.setName("circleRadiusTextField");
+		boxLCTextField.setName("boxLCTextField");
+		boxUCTextField.setName("boxUCTextField");
+		ellipseCenterTextField.setName("ellipseCenterTextField");
+		axisRadiiTextField.setName("axisRadiiTextField");
+		cylStartPointTextField.setName("cylStartPointTextField");
+		cylRadiusTextField.setName("cylRadiusTextField");
+		cylLengthTextField.setName("cylLengthTextField");
+
 		init();
 		setDimension(nDimensions);
 	}
