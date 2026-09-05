@@ -42,5 +42,8 @@ species, events, and output functions.
 
 ## Blockers for scripting
 
-Reaction-diagram drawing as above. Events and output functions are ordinary dialogs and
-should be scriptable. Step 8 needs a completed run.
+Reaction creation as in [frap-with-binding](frap-with-binding.md): five structures here, so
+the equation must go into an existing reaction's Equation column rather than the
+"(add new here)" row. Events, output functions and the 3D geometry are ordinary dialogs and
+tables and should script the same way the 2D geometry already does. Step 8 needs a
+completed run.

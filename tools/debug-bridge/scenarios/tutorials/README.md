@@ -12,8 +12,8 @@ reproduces it against a current client through the [debug bridge](../../README.m
 |---|---|---|---|
 | `SimpleFRAP_7.2.pdf` | [simple-frap](storylines/simple-frap.md) | [`simple-frap.sh`](simple-frap.sh) | **reproduced**, 0 errors |
 | `MovingBoundaries.pdf` | [moving-boundary](storylines/moving-boundary.md) | [`moving-boundary.sh`](moving-boundary.sh) | **reproduced**, 0 errors |
-| `FRAPBinding_7.2.pdf` | [frap-with-binding](storylines/frap-with-binding.md) | — | needs reaction creation |
-| `PHGFP_7.2.pdf` | [phgfp](storylines/phgfp.md) | — | needs reaction creation |
+| `FRAPBinding_7.2.pdf` | [frap-with-binding](storylines/frap-with-binding.md) | — | route identified, not built |
+| `PHGFP_7.2.pdf` | [phgfp](storylines/phgfp.md) | — | route identified, not built |
 | `MultiAppTransport_7.2.pdf` | [multi-app-transport](storylines/multi-app-transport.md) | — | image segmentation blocks it |
 | `Tutorial06_PathwayCommons_6.0.pdf` | [pathway-commons](storylines/pathway-commons.md) | — | depends on a third-party service |
 | `VCell_Quickstart_7_Biomodel.pdf` | [quickstart](storylines/quickstart.md) | — | reference guide, nothing to script |
@@ -74,8 +74,12 @@ What has no table equivalent, and so is genuinely out of reach:
 - **Image segmentation** (`MultiAppTransport`) — painting and erasing pixels on an image,
   and dragging a histogram threshold. There is no model-level way to express it.
 - **Reaction-diagram drawing** where a reaction's *topology* is the thing being taught.
-  The Reactions table can create a reaction from an equation string, so this is probably
-  reachable, but it was not verified.
+  The Reactions table is the way round it, with one wrinkle: an equation typed into the
+  "(add new here, e.g. a+b->c)" row is only accepted when the model has **exactly one
+  structure**, the same restriction the species table has. Editing the Equation column of
+  an *existing* reaction has no such restriction and creates any species it names, so the
+  sequence is New Reaction → choose compartment → set the equation. Identified from the
+  table model, not yet verified against the running client.
 
 ## What building these scripts changed in the tooling
 

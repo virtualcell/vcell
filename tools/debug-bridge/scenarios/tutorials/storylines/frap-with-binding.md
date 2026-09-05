@@ -41,7 +41,17 @@ timed laser bleaches a square region.
 
 ## Blockers for scripting
 
-The reaction network (step 3) is built entirely by dragging on the Reaction Diagram
-canvas. The Reactions **table** can create reactions from an equation string
-("(add new here, e.g. a+b->c)"), so this is probably scriptable, but it was not verified.
-Step 6 depends on a completed server-side simulation run.
+The reaction network (step 3) is built entirely by dragging on the Reaction Diagram canvas.
+The Reactions **table** is the way round it, but with one wrinkle worth knowing before
+starting:
+
+`BioModelEditorReactionTableModel.setValueAt` only accepts an equation typed into the
+"(add new here, e.g. a+b->c)" row when the model has **exactly one structure** — the same
+restriction the species table has. This model has three (`Cyt`, `NM`, `Nuc`), so that route
+is closed. Editing the **Equation column of an existing reaction** carries no such
+restriction and does the useful part: it parses the equation and *creates any species it
+names that do not exist yet*. So the sequence is New Reaction → choose compartment → set
+the equation, exactly as the species route works in `simple-frap.sh`.
+
+Not yet verified end to end. Step 6 additionally depends on a completed server-side run,
+so the spatial half cannot be reproduced without spending real compute.
