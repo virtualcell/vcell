@@ -512,7 +512,9 @@ public class EventPanel extends DocumentEditorSubPanel {
 			if (eventTargetsScrollPaneTable == null) {
 				try {
 					eventTargetsScrollPaneTable = new JSortTable();
-					eventTargetsScrollPaneTable.setName("ScrollPaneTable");
+					// An event's actions - what it sets, and to what. Named because
+					// "ScrollPaneTable" is shared by several other panels.
+					eventTargetsScrollPaneTable.setName("EventActionsTable");
 				} catch (java.lang.Throwable e) {
 					e.printStackTrace(System.out);
 				}
