@@ -436,6 +436,8 @@ public class ParameterEstimationPanel extends ApplicationSubPanel {
 		if (dataModelMappingTable == null) {
 			try {
 				dataModelMappingTable = new ScrollTable();
+				// Imported data column on the left, the model variable it stands for on the right.
+				dataModelMappingTable.setName("ExperimentalDataMappingTable");
 			} catch (java.lang.Throwable ivjExc) {
 				handleException(ivjExc);
 			}

@@ -329,6 +329,7 @@ public class InitialConditionsPanel extends DocumentEditorSubPanel implements Ap
     private JRadioButton getConcentrationRadioButton() {
         if (conRadioButton == null) {
             conRadioButton = new JRadioButton("Concentration", true);
+            conRadioButton.setName("ConcentrationRadioButton");
         }
         return conRadioButton;
     }
@@ -367,6 +368,9 @@ public class InitialConditionsPanel extends DocumentEditorSubPanel implements Ap
     private JRadioButton getAmountRadioButton() {
         if (amtRadioButton == null) {
             amtRadioButton = new JRadioButton("Number of Particles");
+            // A stochastic application states its initial conditions either way; which one
+            // is chosen changes what the Initial Condition column means.
+            amtRadioButton.setName("NumberOfParticlesRadioButton");
         }
         return amtRadioButton;
     }
