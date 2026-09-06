@@ -2,7 +2,7 @@
 
 - **Source:** `PHGFP_7.2.pdf` (101 pp, 2020-07-24)
 - **Superseded by a 7.7 rewrite?** No.
-- **Status:** storyline extracted; not yet scripted.
+- **Status:** reproduced in full by [`phgfp.sh`](../phgfp.sh), 0 errors.
 
 ## Objective
 
@@ -20,7 +20,8 @@ species, events, and output functions.
    - `IP3PH`: `IP3_Cyt + PH_GFP_Cyt → IP3_PHGFP_Cyt`, Kf `10`, Kr `(Kf*KdIP3PH)`,
      `KdIP3PH = 0.1`
    - `r2`: synthesis of `IP3_Cyt`, kinetic type *General*, rate `Ksynth*Stim`,
-     `Ksynth = 1.0`; `Stim` is a catalyst.
+     `Ksynth = 1.0`; `Stim` is a catalyst. (The PDF leaves this one on its default name;
+     the script calls it `IP3synth`.)
 4. **Steady-state (ODE) application** named `Steady State`. Initial conditions
    `IP3_Cyt` 0.1, `PH_GFP_Cyt` 1.0, `PIP2_PM` 120000. Structure sizes `Nuc` 33.389,
    `Cyt` 489.794, `NM` 49.8, `EC` 476.817, `PM` 501.804.
@@ -40,7 +41,7 @@ species, events, and output functions.
 11. **Output function.** Add a function `Fluorescence` = `IP3_PHGFP_Cyt+PH_GFP_Cyt`
     on domain `Cyt`, so the total fluorescent signal can be plotted directly.
 
-## Blockers for scripting
+## Notes from scripting it
 
 Reaction creation as in [frap-with-binding](frap-with-binding.md), but here the compartment
 point is load-bearing rather than incidental. `PIP2_PM` and `PIP2_PHGFP_PM` are on the
@@ -63,5 +64,22 @@ A localized reaction spanning more than one compartment must sit on the interfac
 they meet — the N−1 dimensional compartment, the membrane. Nothing in the UI enforces that,
 so the script has to choose it deliberately.
 
-Events, output functions and the 3D geometry are ordinary dialogs and tables and should
-script the same way the 2D geometry already does. Step 8 needs a completed run.
+Events, output functions and the 3D geometry turned out to be ordinary dialogs and tables,
+and script the same way the 2D geometry does. Three things were not obvious:
+
+- **"Add Action" opens a dialog, not a menu.** It asks which variable the action assigns
+  to, through a `VariableNameComboBox`, and then adds a row that sets it to `0.0`. Saying
+  what the value should actually become is a separate edit to the actions table.
+- **`Kr` is written in terms of a parameter that does not exist yet.** Naming
+  `KdPIP2PH` in the reverse rate is what brings it into existence, so it can only be given
+  a value afterwards — the order of the two edits is load-bearing.
+- **Step 8 reads t = 5, not the end of the run.** The event at 5 s means the last row is a
+  stimulated state; the resting state the spatial application wants is the row just before
+  it. With a variable-time-step integrator that row has no fixed index, so the script
+  searches the time column for it.
+
+Step 9's order matters too: `Stim` has to be **Clamped** before its initial condition may
+mention `t`. Clamping turns the row from something VCell solves for into a prescribed
+function of time, which is what makes the window expression legal — and what replaces the
+compartmental application's two events, so the spatial application is built fresh rather
+than copied from it.

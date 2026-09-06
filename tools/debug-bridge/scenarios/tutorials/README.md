@@ -13,7 +13,7 @@ reproduces it against a current client through the [debug bridge](../../README.m
 | `SimpleFRAP_7.2.pdf` | [simple-frap](storylines/simple-frap.md) | [`simple-frap.sh`](simple-frap.sh) | **reproduced**, 0 errors |
 | `MovingBoundaries.pdf` | [moving-boundary](storylines/moving-boundary.md) | [`moving-boundary.sh`](moving-boundary.sh) | **reproduced**, 0 errors |
 | `FRAPBinding_7.2.pdf` | [frap-with-binding](storylines/frap-with-binding.md) | [`frap-with-binding.sh`](frap-with-binding.sh) | **reproduced** in full, 0 errors |
-| `PHGFP_7.2.pdf` | [phgfp](storylines/phgfp.md) | — | route identified, not built |
+| `PHGFP_7.2.pdf` | [phgfp](storylines/phgfp.md) | [`phgfp.sh`](phgfp.sh) | **reproduced** in full, 0 errors |
 | `MultiAppTransport_7.2.pdf` | [multi-app-transport](storylines/multi-app-transport.md) | — | image segmentation blocks it |
 | `Tutorial06_PathwayCommons_6.0.pdf` | [pathway-commons](storylines/pathway-commons.md) | — | depends on a third-party service |
 | `VCell_Quickstart_7_Biomodel.pdf` | [quickstart](storylines/quickstart.md) | — | reference guide, nothing to script |
@@ -46,6 +46,18 @@ results table, at the end of the time course:
 Worth checking rather than trusting: `rB` equals `rfB` because RAN and RAN-FITC start at
 5.0 each and compete symmetrically for the same sites; `rf + rfB` is exactly 5.0 and
 `BS + rB + rfB` exactly 20.0. Both conservation laws hold.
+
+PH-GFP does the same thing with a subtlety: the value it needs is **not** the end of its
+run. Its compartmental application fires an event at t = 5 s, so the last row is a
+stimulated state, not a resting one. The tutorial reads the row at t = 5 instead — the
+instant before the stimulus — and so does the script:
+
+    IP3_Cyt 0.0910694   IP3_PHGFP_Cyt 0.00893061   PH_GFP_Cyt 0.00966635
+    PIP2_PHGFP_PM 576.87   PIP2_PM 119423.13
+
+A variable-time-step integrator picks its own output times, so there is no row number to
+hard-code. `result_row_at_time` binary-searches the monotonic time column instead, which
+takes about nine reads rather than hundreds and cannot land on the wrong instant.
 
 Nothing in these scripts touches the real mouse or keyboard — every step goes through the
 model or is dispatched as an AWT event on the EDT. `glide` and `rbclick` are the only
@@ -183,14 +195,21 @@ failure — the script reported success and the model was wrong:
   for 10s instead of trusting a fixed `sleep`.
 - **`SpatialProcessPropertyPanel` called itself `"SpatialObjectPropertyPanel"`** — a
   copy-paste slip that gave two different panels the same name.
+- **`setCell` could not tick a checkbox.** The value arrives over HTTP as text, but a
+  checkbox column's model casts what it is handed straight to `Boolean` — so a String
+  threw on the EDT and the caller saw nothing but a cell that had not changed. PH-GFP
+  needs it: `Stim` has to be **Clamped** before its initial condition may depend on `t`.
+  `setCell` now converts for columns whose declared class is Boolean.
 
 Naming debt fixed at the source, rather than worked around in the scripts:
 `StructuresTable`, `ReactionsTable`, `SpeciesTable`, `MolecularTypeTable`,
 `ObservablesTable`, `SubVolumesTable`, `StructureMappingTable`, `SimulationsTable`,
 `SpatialObjectsTable`, `SpatialProcessesTable` and their New/Delete buttons,
 `SpatialProcessParametersTable`, `SpatialObjectQuantitiesTable`, `subdomainShapeComboBox`,
-and the ten shape fields in `AddShapeJPanel`. `ScrollPaneTable` and `SortTable` were each
-used by eight or more panels.
+the ten shape fields in `AddShapeJPanel`, `EventsTable`, `EventActionsTable`,
+`EventSingleTimeTextField`, `OutputFunctionsTable`, `FunctionDomainComboBox`,
+`PreviousButton` and `FinishButton`. `ScrollPaneTable` and `SortTable` were each used by
+eight or more panels.
 
 ## A finding worth passing to whoever owns the tutorials
 
@@ -198,6 +217,11 @@ used by eight or more panels.
 `PM` reading *Unmapped* while the model still reports **0 errors** — but VCell then picks
 a different solver (SundialsPDE rather than Fully-Implicit). Followed literally, the
 tutorial can produce a different simulation than the one it is teaching.
+
+**PH-GFP's spatial half is built with every diffusion constant left at its default**, and
+the PDF never mentions them. That is not an omission the script should fix by inventing
+numbers, but it is worth an author's attention: the whole point of the spatial application
+is that the fluorescent signal spreads.
 
 ## Scenario or recording?
 

@@ -187,9 +187,8 @@ quick_run() {   # $1 = simulation row (default 0)
 # reports isShowing: the results window opens on the plot, with the spreadsheet as a
 # hidden card that still holds the data. So the usual "prefer what is showing" tie-break
 # has nothing to work with, and a bare name lands on whichever came first.
-result_cell() {   # $1 = row, $2 = column header
-  local path
-  path=$(curl -s "http://127.0.0.1:9123/tree" | python3 -c '
+result_table_path() {
+  curl -s "http://127.0.0.1:9123/tree" | python3 -c '
 import json, sys
 for root in json.load(sys.stdin):
     if "Results for Simulation" not in str(root.get("text")):
@@ -200,13 +199,45 @@ for root in json.load(sys.stdin):
         for c in n.get("children") or []:
             walk(c)
     walk(root)
-')
+'
+}
+
+result_cell() {   # $1 = row, $2 = column header
+  local path
+  path=$(result_table_path)
   if [ -z "$path" ]; then
     echo "FATAL: no results data table found" >&2
     exit 1
   fi
   "$B" readcell "$path" "$1" "$2" \
     | python3 -c 'import json,sys; print(json.load(sys.stdin).get("value"))'
+}
+
+# Row index of the last output point at or before time $1.
+#
+# A variable-time-step integrator (IDA, CVODE) picks its own output times, so there is no
+# row sitting exactly on the moment a tutorial asks about, and reading "the value at 5 s"
+# by guessing a row number quietly reports a different instant. The time column is
+# monotonic, so a binary search lands on the right row in ~9 reads rather than hundreds.
+result_row_at_time() {   # $1 = time
+  local path rows
+  path=$(result_table_path)
+  rows=$(curl -s "http://127.0.0.1:9123/tree" | python3 -c '
+import json, sys
+def walk(n):
+    if n.get("name") == "PlotDataTable" and n.get("table"):
+        print(n["table"]["rowCount"]); raise SystemExit
+    for c in n.get("children") or []:
+        walk(c)
+for root in json.load(sys.stdin):
+    if "Results for Simulation" in str(root.get("text")):
+        walk(root)
+')
+  if [ -z "$path" ] || [ -z "$rows" ]; then
+    echo "FATAL: no results data table found" >&2
+    exit 1
+  fi
+  python3 "$(dirname "${BASH_SOURCE[0]}")/row_at_time.py" "$path" "$rows" "$1"
 }
 
 # Select a tab on the tabbed pane INSIDE the dialog whose title contains $1.
