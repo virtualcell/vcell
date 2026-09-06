@@ -14,7 +14,7 @@ reproduces it against a current client through the [debug bridge](../../README.m
 | `MovingBoundaries.pdf` | [moving-boundary](storylines/moving-boundary.md) | [`moving-boundary.sh`](moving-boundary.sh) | **reproduced**, 0 errors |
 | `FRAPBinding_7.2.pdf` | [frap-with-binding](storylines/frap-with-binding.md) | [`frap-with-binding.sh`](frap-with-binding.sh) | **reproduced** in full, 0 errors |
 | `PHGFP_7.2.pdf` | [phgfp](storylines/phgfp.md) | [`phgfp.sh`](phgfp.sh) | **reproduced** in full, 0 errors |
-| `MultiAppTransport_7.2.pdf` | [multi-app-transport](storylines/multi-app-transport.md) | — | image segmentation blocks it |
+| `MultiAppTransport_7.2.pdf` | [multi-app-transport](storylines/multi-app-transport.md) | [`multi-app-transport.sh`](multi-app-transport.sh) | **reproduced**, 0 errors, two documented substitutions |
 | `Tutorial06_PathwayCommons_6.0.pdf` | [pathway-commons](storylines/pathway-commons.md) | — | depends on a third-party service |
 | `VCell_Quickstart_7_Biomodel.pdf` | [quickstart](storylines/quickstart.md) | — | reference guide, nothing to script |
 | `VCell6.1_Rule-Based_Tutorial.pdf` + `SingleCompartmentRuleBased.pdf` | [rule-based-egfr](storylines/rule-based-egfr.md) | — | **superseded by the 7.7 rewrite** |
@@ -27,6 +27,10 @@ reproduces it against a current client through the [debug bridge](../../README.m
 mvn compile -pl vcell-client -am -DskipTests
 tools/debug-bridge/launch-client.sh
 tools/debug-bridge/scenarios/tutorials/simple-frap.sh      # or moving-boundary.sh
+
+# Multi-app needs the image stack the PDF tells you to download:
+curl -O https://vcell.org/webstart/VCell_Tutorials/7.7/NeuroblastomaStack.tif
+tools/debug-bridge/scenarios/tutorials/multi-app-transport.sh ./NeuroblastomaStack.tif
 ```
 
 Each takes a couple of minutes, leaves a complete valid model on screen — and then **runs
@@ -46,6 +50,13 @@ results table, at the end of the time course:
 Worth checking rather than trusting: `rB` equals `rfB` because RAN and RAN-FITC start at
 5.0 each and compete symmetrically for the same sites; `rf + rfB` is exactly 5.0 and
 `BS + rB + rfB` exactly 20.0. Both conservation laws hold.
+
+Multi-app goes further and closes the loop: it exports its stochastic run as CSV and fits
+a rate constant back against it with Copasi, locally. `Kf` has a model value of 1.0 and
+came back as 1.48, 0.95 and 0.72 on three runs — noisy on purpose rather than by accident,
+because the target is a stochastic trace of a species that never exceeds four molecules in
+the whole cytoplasm. There is very little in such a series to fit; that Copasi lands in
+the right neighbourhood from data this thin is the point.
 
 PH-GFP does the same thing with a subtlety: the value it needs is **not** the end of its
 run. Its compartmental application fires an event at t = 5 s, so the last row is a
@@ -96,8 +107,26 @@ So the scripts drive the **table views**, which state the same model as addressa
 
 What has no table equivalent, and so is genuinely out of reach:
 
-- **Image segmentation** (`MultiAppTransport`) — painting and erasing pixels on an image,
-  and dragging a histogram threshold. There is no model-level way to express it.
+- **Painting and erasing individual pixels** on an image (`MultiAppTransport`). The rest of
+  segmentation turned out NOT to be like that, and the distinction is the useful part:
+
+  | Gesture | Reachable? |
+  |---|---|
+  | drag across the histogram | **yes** — the panel's axis IS pixel intensity, so the drag means "these values". `pixelrange 180 255` says it exactly. |
+  | select all but the top regions, Auto-Merge | **yes** — the regions list is ordered by size, and "all but the top three" is a position range. |
+  | paint / erase individual pixels | **no** — genuinely per-pixel, and no equivalent is invented for it. |
+
+  Skipping the paint step has a consequence worth knowing, and a fix that is a parameter
+  rather than a gesture: at the tutorial's implied cytoplasm threshold the nucleus touches
+  the outside somewhere rather than being wrapped in cytoplasm, and VCell says so, as an
+  unmapped `Nuc_background_membrane`. Lowering the threshold takes in enough dim cytoplasm
+  to enclose the nucleus, and the model then has no warnings at all - which is what the
+  eraser is for in the PDF.
+- **Drawing a flux reaction.** `Model.createFluxReaction` has exactly one interactive
+  caller, `ReactionCartoonTool`; the Reactions table can only make SimpleReactions. A
+  membrane reaction with the same participants is the way round it, and it resolves
+  through the same `MembraneStructureAnalyzer` machinery - which the multi-app script
+  checks in the generated math rather than asserting.
 - **Reaction-diagram drawing** where a reaction's *topology* is the thing being taught.
   The Reactions table is the way round it: New Reaction → choose compartment → type the
   equation into the **Equation** column, which is also where that table's
@@ -195,6 +224,26 @@ failure — the script reported success and the model was wrong:
   for 10s instead of trusting a fixed `sleep`.
 - **`SpatialProcessPropertyPanel` called itself `"SpatialObjectPropertyPanel"`** — a
   copy-paste slip that gave two different panels the same name.
+- **A pop-up could only be driven one level at a time, and that was not reliable.** A
+  heavyweight pop-up window left from an earlier pick can stop the next submenu opening at
+  all, so `Copy As > Spatial > Stochastic` failed at the first level with the pop-up
+  already gone - reported as "menu item 'Spatial' never took", two levels from the cause.
+  It was also unnecessary: a `JMenu`'s items exist in its model whether or not anything is
+  on screen, so `popupitem "A>B>C"` walks the model and clicks only the leaf. (`JMenu` also
+  needed its own branch in `click`: it is a JMenuItem, but it is a door, not an action -
+  clearing the selected path and calling `doClick` closes the pop-up and opens nothing.)
+- **A substring match on the model tree picked the wrong application.** The tree sorts
+  applications, so once one is called `Non-Spatial Deterministic`, `findrow` for
+  `Spatial Deterministic` returns it - and every later step acts on the wrong application,
+  surfacing much later as a `Copy As` menu that has lost its `Spatial` branch. `navrow` and
+  `tree_pick` now pass `--exact` through.
+- **Child nodes are ambiguous with two applications expanded.** Every application has a
+  `Geometry`, a `Specifications` and a `Simulations` node, so `navselect Simulations` is a
+  coin toss between them. Collapse the others.
+- **A file dialog cannot be answered the way other dialogs are.** What looks like a place
+  to type a path is, on Aqua, the hidden "go to folder" field: `setText` on it reports
+  success and changes nothing. `choosefile` goes through the chooser's own model -
+  `setSelectedFile` plus `approveSelection`, which is what the approve button does.
 - **`setCell` could not tick a checkbox.** The value arrives over HTTP as text, but a
   checkbox column's model casts what it is handed straight to `Boolean` — so a String
   threw on the EDT and the caller saw nothing but a cell that had not changed. PH-GFP
@@ -208,8 +257,11 @@ Naming debt fixed at the source, rather than worked around in the scripts:
 `SpatialProcessParametersTable`, `SpatialObjectQuantitiesTable`, `subdomainShapeComboBox`,
 the ten shape fields in `AddShapeJPanel`, `EventsTable`, `EventActionsTable`,
 `EventSingleTimeTextField`, `OutputFunctionsTable`, `FunctionDomainComboBox`,
-`PreviousButton` and `FinishButton`. `ScrollPaneTable` and `SortTable` were each used by
-eight or more panels.
+`PreviousButton`, `FinishButton`, `DomainRegionsList`, `AutoMergeButton`,
+`HistogramPanel`, `HistogramApplyButton`, `ParameterEstimationParametersTable`,
+`AddEstimationParameterButton`, `ParameterEstimationResultsTable`, `SolveByCopasiButton`,
+`ExperimentalDataMappingTable` and `NumberOfParticlesRadioButton`. `ScrollPaneTable` and
+`SortTable` were each used by eight or more panels.
 
 ## A finding worth passing to whoever owns the tutorials
 
