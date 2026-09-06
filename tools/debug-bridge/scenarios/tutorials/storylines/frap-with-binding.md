@@ -3,7 +3,7 @@
 - **Source:** `FRAPBinding_7.2.pdf` (84 pp, 2020-07-24)
 - **Superseded by a 7.7 rewrite?** No.
 - **Reproduced by:** `../frap-with-binding.sh`
-- **Status:** physiology and the compartmental application reproduced, 0 errors. The spatial half needs a completed server run — see below.
+- **Status:** physiology, the compartmental application, and its run reproduced — locally, with nothing saved. The steady state it produces is read back automatically.
 
 ## Objective
 
@@ -86,9 +86,22 @@ Note also that the reaction table's "(add new here, e.g. a+b→c)" placeholder l
 that route is closed anyway; the sequence is New Reaction → choose compartment → set the
 equation, mirroring the species route in `simple-frap.sh`.
 
-Step 6 is the wall. The spatial application takes its initial conditions from the
-*steady-state concentrations the compartmental simulation produces* — copied off the
-results spreadsheet and pasted in. Those numbers only exist once a simulation has actually
-run on the VCell servers, so the spatial half cannot be built without spending real
-compute. The script stops at the end of the compartmental application, which is complete
-and valid on its own.
+Step 6 turned out not to be a wall. The spatial application takes its initial conditions
+from the *steady-state concentrations the compartmental simulation produces*, and those can
+be had from a **local** run: "Native Quick Run" executes with the bundled
+`SundialsSolverStandalone` and saves nothing to the database, so no account and no server
+time is involved. The script runs it and reads the final row of the results table:
+
+| species | steady state |
+|---|---|
+| `BS`  | 12.807787 |
+| `rB`  | 3.5961066 |
+| `rf`  | 1.4038934 |
+| `rfB` | 3.5961066 |
+
+Worth sanity-checking those rather than trusting them: `rB` equals `rfB` because RAN and
+RAN-FITC start at 5.0 each and compete symmetrically for the same sites; `rf + rfB` is
+exactly 5.0, and `BS + rB + rfB` exactly 20.0. Both conservation laws hold.
+
+What remains is building the spatial application itself and pasting these in — everything
+needed for it is now in hand.

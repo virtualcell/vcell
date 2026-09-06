@@ -141,6 +141,7 @@ public final class SwingDebugBridge {
 			s.createContext("/readCell", wrap(SwingDebugBridge::handleReadCell));
 			s.createContext("/setCell", wrap(SwingDebugBridge::handleSetCell));
 			s.createContext("/selectCombo", wrap(SwingDebugBridge::handleSelectCombo));
+			s.createContext("/selectList", wrap(SwingDebugBridge::handleSelectList));
 			s.createContext("/iconify", wrap(SwingDebugBridge::handleIconify));
 			s.createContext("/windowBounds", wrap(SwingDebugBridge::handleWindowBounds));
 			s.createContext("/log", ex -> {
@@ -379,6 +380,17 @@ public final class SwingDebugBridge {
 		}
 		return SwingInspector.findRowJson(path, text != null ? text : contains, text != null,
 				appType, searchColumn);
+	}
+
+	private static String handleSelectList(HttpExchange ex) {
+		Map<String, String> q = query(ex);
+		String path = q.get("path");
+		String items = emptyToNull(q.get("items"));
+		if (path == null || path.isEmpty() || items == null) {
+			return "{\"error\":\"require 'path' and 'items'\"}";
+		}
+		boolean ok = SwingInspector.selectList(path, items);
+		return "{\"selected\":" + ok + ",\"path\":\"" + jsonEscape(path) + "\"}";
 	}
 
 	private static String handleSelectCombo(HttpExchange ex) {

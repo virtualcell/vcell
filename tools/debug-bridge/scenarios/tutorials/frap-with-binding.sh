@@ -125,8 +125,30 @@ must settext name=EndingTimeTextField "30.0" --enter >/dev/null; sleep 2
 # The dialog must CLOSE for the ending time to take effect.
 dialog_button "Edit:" OK; sleep 2
 
-step "Done -- physiology and the compartmental application are built."
-# The PDF now runs this, reads the steady-state concentrations off the results
-# spreadsheet, and pastes them into a second, SPATIAL application as its initial
-# conditions. That hand-off is not scriptable without spending real compute: the numbers
-# only exist once a simulation has run on the VCell servers. See the storyline.
+step "Run it locally, and read the steady state off the results"
+# The PDF runs this on the VCell servers, then copies the final concentrations out of the
+# results spreadsheet by hand. Quick Run does the same arithmetic here with the bundled
+# SundialsSolverStandalone and saves nothing, and readCell fetches the last row - which
+# is what the tutorial means by "the steady state".
+quick_run
+
+# Which species are selected in the results window decides which columns the data table
+# has, so select the four the tutorial carries forward before reading any of them.
+must list name=YAxisChoice "BS,rB,rf,rfB" >/dev/null; sleep 3
+
+STEADY_BS=$(result_cell -1 BS)
+STEADY_rB=$(result_cell -1 rB)
+STEADY_rf=$(result_cell -1 rf)
+STEADY_rfB=$(result_cell -1 rfB)
+for pair in "BS:$STEADY_BS" "rB:$STEADY_rB" "rf:$STEADY_rf" "rfB:$STEADY_rfB"; do
+  name=${pair%%:*}; value=${pair#*:}
+  printf '  %-4s %s\n' "$name" "$value" >&2
+  if [ -z "$value" ] || [ "$value" = "None" ]; then
+    echo "FATAL: no steady-state value read for $name" >&2
+    exit 1
+  fi
+done
+
+step "Done -- physiology, compartmental application, and a local run with its steady state."
+# The PDF pastes those four numbers into a second, SPATIAL application. Everything needed
+# for that is now in hand; building the spatial half is the next step.

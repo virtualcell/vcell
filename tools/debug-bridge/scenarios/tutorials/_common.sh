@@ -181,8 +181,31 @@ quick_run() {   # $1 = simulation row (default 0)
 
 # Read one cell of the results table. Row -1 is the last row - the end of the time course,
 # which is where a steady state is. Not subject to the tree dump's 25-row cap.
+#
+# The table is resolved by PATH within the results window rather than by name, because
+# more than one PlotDataTable exists (the document window has its own, empty) and NEITHER
+# reports isShowing: the results window opens on the plot, with the spreadsheet as a
+# hidden card that still holds the data. So the usual "prefer what is showing" tie-break
+# has nothing to work with, and a bare name lands on whichever came first.
 result_cell() {   # $1 = row, $2 = column header
-  "$B" readcell name=ScrollPaneTable "$1" "$2" \
+  local path
+  path=$(curl -s "http://127.0.0.1:9123/tree" | python3 -c '
+import json, sys
+for root in json.load(sys.stdin):
+    if "Results for Simulation" not in str(root.get("text")):
+        continue
+    def walk(n):
+        if n.get("name") == "PlotDataTable":
+            print(n.get("path")); raise SystemExit
+        for c in n.get("children") or []:
+            walk(c)
+    walk(root)
+')
+  if [ -z "$path" ]; then
+    echo "FATAL: no results data table found" >&2
+    exit 1
+  fi
+  "$B" readcell "$path" "$1" "$2" \
     | python3 -c 'import json,sys; print(json.load(sys.stdin).get("value"))'
 }
 

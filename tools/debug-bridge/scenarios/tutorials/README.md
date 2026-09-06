@@ -29,10 +29,23 @@ tools/debug-bridge/launch-client.sh
 tools/debug-bridge/scenarios/tutorials/simple-frap.sh      # or moving-boundary.sh
 ```
 
-Each takes a couple of minutes and leaves a complete, valid model on screen. It stops before
-`File > Save` and before the green Run button: saving needs a logged-in account and Run
-dispatches a real job to shared VCell compute, so whether to spend that is a decision for
-whoever is at the keyboard.
+Each takes a couple of minutes, leaves a complete valid model on screen — and then **runs
+it**, using "Native Quick Run". That executes with the bundled local solvers and saves
+nothing to the database, so a scripted tutorial produces real results without an account
+and without putting anything on the server. The local install carries every solver these
+tutorials need: `SundialsSolverStandalone` (ODE), `FiniteVolume` (PDE), `MovingBoundary`,
+and the stochastic ones.
+
+Reading results back out is what makes the multi-stage tutorials reachable. FRAP with
+binding takes the steady state of its compartmental run as the initial conditions of its
+spatial one, and the script gets those numbers the way the PDF's reader does — off the
+results table, at the end of the time course:
+
+    BS 12.807787   rB 3.5961066   rf 1.4038934   rfB 3.5961066
+
+Worth checking rather than trusting: `rB` equals `rfB` because RAN and RAN-FITC start at
+5.0 each and compete symmetrically for the same sites; `rf + rfB` is exactly 5.0 and
+`BS + rB + rfB` exactly 20.0. Both conservation laws hold.
 
 Nothing in these scripts touches the real mouse or keyboard — every step goes through the
 model or is dispatched as an AWT event on the EDT. `glide` and `rbclick` are the only
@@ -147,6 +160,15 @@ failure — the script reported success and the model was wrong:
 - **`findRow` only ever matched column 0.** A spatial process's parameter table leads with
   a prose description ("surface velocity (x coord)") and carries the name the tutorial says
   — `velocityX` — in the next column. `findrow … --in Parameter` searches a named column.
+- **`/tree` truncates a table to 25 rows**, which is right for reading a UI and useless for
+  reading a RESULT: a steady state is the last row of a series hundreds long. Hence the
+  `readCell` verb — a row index (negative counts back, so -1 is the last) and a column by
+  header. The row count was always reported un-truncated, so the end is always findable.
+- **The results data table is not "showing".** The results window opens on the plot, with
+  the spreadsheet as a hidden card that still holds the data, so the usual "prefer what is
+  showing" tie-break has nothing to work with — and two `PlotDataTable`s exist, the
+  document window having its own, empty one. `result_cell` resolves it by path within the
+  results window instead.
 - **A panel's columns exist before its rows do.** Selecting a spatial process yields a
   parameter table with its four headers immediately and its velocity rows a moment later,
   so `col` succeeded while `row` still saw nothing and returned -1. `row`/`col` now retry

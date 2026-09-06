@@ -1650,6 +1650,79 @@ public final class SwingInspector {
 		}));
 	}
 
+
+	/** What a list item DISPLAYS, via its renderer - see {@link #comboItemText}. */
+	static String listItemText(JList<?> list, int index) {
+		if (index < 0 || index >= list.getModel().getSize()) {
+			return null;
+		}
+		Object value = list.getModel().getElementAt(index);
+		ListCellRenderer<? super Object> renderer = castListRenderer(list);
+		if (renderer != null) {
+			try {
+				Component rendered = renderer.getListCellRendererComponent(
+						castList(list), value, index, false, false);
+				String text = renderedText(rendered);
+				if (text != null && !text.isEmpty()) {
+					return stripHtml(text);
+				}
+			} catch (RuntimeException e) {
+				// fall through to the raw value
+			}
+		}
+		return (value == null) ? null : String.valueOf(value);
+	}
+
+	@SuppressWarnings("unchecked")
+	private static ListCellRenderer<? super Object> castListRenderer(JList<?> l) {
+		return (ListCellRenderer<? super Object>) l.getCellRenderer();
+	}
+
+	@SuppressWarnings("unchecked")
+	private static JList<Object> castList(JList<?> l) {
+		return (JList<Object>) l;
+	}
+
+	/**
+	 * Select one or more items in a {@link JList} by their displayed text.
+	 *
+	 * <p>The results window's variable chooser is the case this exists for: which species
+	 * are selected there decides which columns the data table has, so reading four
+	 * concentrations out of a run means selecting four names first. The tutorials say
+	 * "press Ctrl and click the other species", never "select rows 0, 3, 4 and 5".
+	 *
+	 * @param items  displayed labels, comma-separated; more than one implies a multi-select
+	 * @return false if the path is not a list, or if any named item is not in it - a
+	 *         partial selection would silently produce a table missing columns
+	 */
+	public static boolean selectList(String path, final String items) {
+		Component c = findByPath(path);
+		if (!(c instanceof JList)) {
+			return false;
+		}
+		return Boolean.TRUE.equals(onEdt(() -> {
+			JList<?> list = (JList<?>) c;
+			String[] wanted = items.split("\\s*,\\s*");
+			int[] indices = new int[wanted.length];
+			for (int w = 0; w < wanted.length; w++) {
+				indices[w] = -1;
+				for (int i = 0; i < list.getModel().getSize(); i++) {
+					String label = listItemText(list, i);
+					if (label != null && label.equalsIgnoreCase(wanted[w])) {
+						indices[w] = i;
+						break;
+					}
+				}
+				if (indices[w] < 0) {
+					return false;
+				}
+			}
+			list.setSelectedIndices(indices);
+			list.ensureIndexIsVisible(indices[indices.length - 1]);
+			return true;
+		}));
+	}
+
 	/**
 	 * Select an item in a {@link JComboBox}, by its displayed text.
 	 *
