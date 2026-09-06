@@ -1783,6 +1783,11 @@ public final class SwingInspector {
 	 * when the user presses Enter, so validation and side effects are the real ones - in
 	 * VCell that includes creating a row from the "(add new here)" placeholder.
 	 *
+	 * <p>The value arrives over HTTP as text, but a checkbox column is not a text column:
+	 * its model casts what it is handed straight to {@link Boolean}, so passing a String
+	 * throws on the EDT and the caller sees nothing but a cell that did not change. The
+	 * column's own declared class says which columns those are, so convert for them.
+	 *
 	 * @param row    view row index
 	 * @param column view column index
 	 * @return false if the path is not a table, the cell is out of range, or the model
@@ -1802,7 +1807,12 @@ public final class SwingInspector {
 			if (!t.isCellEditable(row, column)) {
 				return false;
 			}
-			t.setValueAt(value, row, column);
+			Object typed = value;
+			Class<?> columnClass = t.getColumnClass(column);
+			if (columnClass == Boolean.class || columnClass == Boolean.TYPE) {
+				typed = Boolean.valueOf("true".equalsIgnoreCase(value) || "1".equals(value));
+			}
+			t.setValueAt(typed, row, column);
 			return true;
 		});
 		if (Boolean.TRUE.equals(ok)) {
