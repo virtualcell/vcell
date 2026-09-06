@@ -103,5 +103,28 @@ Worth sanity-checking those rather than trusting them: `rB` equals `rfB` because
 RAN-FITC start at 5.0 each and compete symmetrically for the same sites; `rf + rfB` is
 exactly 5.0, and `BS + rB + rfB` exactly 20.0. Both conservation laws hold.
 
-What remains is building the spatial application itself and pasting these in — everything
-needed for it is now in hand.
+## Copying an application is not quite a copy
+
+Building the spatial half turned up three things the PDF does not mention, all of which
+present as an unrelated failure several steps later:
+
+- **`Copy` brings the simulations with it.** The copied compartmental simulation keeps its
+  ODE solver, which cannot run a spatial application — "Combined Stiff Solver (IDA/CVODE)
+  does not support ... Spatial" — and its geometry no longer matches once one is added.
+  Delete it.
+- **Adding a geometry leaves the generated math stale**, and VCell then refuses to open
+  the Edit Simulation dialog at all: *"Application geometry does not match Simulation
+  geometry — Update Math before editing"*. The fix is Refresh Math on the Generated Math
+  tab.
+- **The refresh also settles the solver.** A simulation created against stale math
+  inherits the copied application's ODE solver; created after a refresh it gets
+  Fully-Implicit, as a spatial application should. Same click, two distinct symptoms.
+
+The membrane maps to `Cyt_Nuc_membrane` here, by the same alphabetical rule as elsewhere
+(`Cyt` < `Nuc`).
+
+## What the script does not do
+
+It stops before running the spatial simulation. That one is a 51×51 PDE over 50 s — minutes
+of local compute for a result nothing downstream reads, unlike the compartmental run whose
+steady state the model genuinely depends on.

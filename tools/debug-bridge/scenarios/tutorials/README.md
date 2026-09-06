@@ -12,7 +12,7 @@ reproduces it against a current client through the [debug bridge](../../README.m
 |---|---|---|---|
 | `SimpleFRAP_7.2.pdf` | [simple-frap](storylines/simple-frap.md) | [`simple-frap.sh`](simple-frap.sh) | **reproduced**, 0 errors |
 | `MovingBoundaries.pdf` | [moving-boundary](storylines/moving-boundary.md) | [`moving-boundary.sh`](moving-boundary.sh) | **reproduced**, 0 errors |
-| `FRAPBinding_7.2.pdf` | [frap-with-binding](storylines/frap-with-binding.md) | [`frap-with-binding.sh`](frap-with-binding.sh) | **reproduced** to the compartmental app, 0 errors |
+| `FRAPBinding_7.2.pdf` | [frap-with-binding](storylines/frap-with-binding.md) | [`frap-with-binding.sh`](frap-with-binding.sh) | **reproduced** in full, 0 errors |
 | `PHGFP_7.2.pdf` | [phgfp](storylines/phgfp.md) | — | route identified, not built |
 | `MultiAppTransport_7.2.pdf` | [multi-app-transport](storylines/multi-app-transport.md) | — | image segmentation blocks it |
 | `Tutorial06_PathwayCommons_6.0.pdf` | [pathway-commons](storylines/pathway-commons.md) | — | depends on a third-party service |
@@ -169,6 +169,14 @@ failure — the script reported success and the model was wrong:
   showing" tie-break has nothing to work with — and two `PlotDataTable`s exist, the
   document window having its own, empty one. `result_cell` resolves it by path within the
   results window instead.
+- **Copying an application copies its simulations**, and they keep the source's solver.
+  A compartmental simulation copied into what becomes a spatial application still carries
+  Combined IDA/CVODE, which cannot run one.
+- **Adding a geometry leaves the generated math stale**, and VCell then refuses to open
+  the Edit Simulation dialog at all — "Application geometry does not match Simulation
+  geometry, Update Math before editing". `RefreshMathButton` on the Generated Math tab is
+  the fix, and the same click also settles the solver: a simulation created after a
+  refresh gets Fully-Implicit rather than inheriting the ODE one.
 - **A panel's columns exist before its rows do.** Selecting a spatial process yields a
   parameter table with its four headers immediately and its velocity rows a moment later,
   so `col` succeeded while `row` still saw nothing and returned -1. `row`/`col` now retry

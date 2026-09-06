@@ -126,9 +126,9 @@ must click name=NewButton >/dev/null; sleep 3
 must setcell name=SimulationsTable 0 0 "FRAP" >/dev/null; sleep 2
 must trow name=SimulationsTable 0 >/dev/null; sleep 1
 must click name=EditButton >/dev/null; sleep 3
-must tab name=JTabbedPane1 "Mesh" >/dev/null; sleep 2
+dialog_tab "Edit:" "Mesh"; sleep 2
 must settext name=XTextField "51" --enter >/dev/null; sleep 2   # Y follows: aspect locked
-must tab name=JTabbedPane1 "Solver" >/dev/null; sleep 2
+dialog_tab "Edit:" "Solver"; sleep 2
 must settext name=EndingTimeTextField      "3.0"  --enter >/dev/null; sleep 1
 must settext name=MaximumTimeStepTextField "0.01" --enter >/dev/null; sleep 1
 must settext name=OutputTimeStepTextField  "0.05" --enter >/dev/null; sleep 1

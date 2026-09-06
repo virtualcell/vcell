@@ -209,6 +209,33 @@ for root in json.load(sys.stdin):
     | python3 -c 'import json,sys; print(json.load(sys.stdin).get("value"))'
 }
 
+# Select a tab on the tabbed pane INSIDE the dialog whose title contains $1.
+#
+# The Edit Simulation dialog's pane is called JTabbedPane1, and so is the one in a results
+# window - which is likely to be open, since these tutorials run their simulations. An
+# unqualified name picks whichever is found first, so scope it to the dialog.
+dialog_tab() {   # $1 = dialog title fragment, $2 = tab title
+  local path
+  path=$(curl -s "http://127.0.0.1:9123/tree" | python3 -c '
+import json, sys
+frag = sys.argv[1]
+for root in json.load(sys.stdin):
+    if frag not in str(root.get("text")):
+        continue
+    def walk(n):
+        if "tabs" in n:
+            print(n.get("path")); raise SystemExit
+        for c in n.get("children") or []:
+            walk(c)
+    walk(root)
+' "$1")
+  if [ -z "$path" ]; then
+    echo "FATAL: no tabbed pane in a dialog titled like '$1'" >&2
+    exit 1
+  fi
+  must tab "$path" "$2" >/dev/null
+}
+
 # Dismiss a dialog that may or may not be there - the version-mismatch warning at
 # startup, or the eager "structure not mapped" error raised while a geometry is still
 # half-built. Deliberately NOT `must`: absence is the normal case.

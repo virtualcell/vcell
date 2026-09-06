@@ -134,13 +134,14 @@ quick_run
 
 # Which species are selected in the results window decides which columns the data table
 # has, so select the four the tutorial carries forward before reading any of them.
-must list name=YAxisChoice "BS,rB,rf,rfB" >/dev/null; sleep 3
+must list name=YAxisChoice "BS,r,rB,rf,rfB" >/dev/null; sleep 3
 
 STEADY_BS=$(result_cell -1 BS)
+STEADY_r=$(result_cell -1 r)
 STEADY_rB=$(result_cell -1 rB)
 STEADY_rf=$(result_cell -1 rf)
 STEADY_rfB=$(result_cell -1 rfB)
-for pair in "BS:$STEADY_BS" "rB:$STEADY_rB" "rf:$STEADY_rf" "rfB:$STEADY_rfB"; do
+for pair in "BS:$STEADY_BS" "r:$STEADY_r" "rB:$STEADY_rB" "rf:$STEADY_rf" "rfB:$STEADY_rfB"; do
   name=${pair%%:*}; value=${pair#*:}
   printf '  %-4s %s\n' "$name" "$value" >&2
   if [ -z "$value" ] || [ "$value" = "None" ]; then
@@ -149,6 +150,96 @@ for pair in "BS:$STEADY_BS" "rB:$STEADY_rB" "rf:$STEADY_rf" "rfB:$STEADY_rfB"; d
   fi
 done
 
-step "Done -- physiology, compartmental application, and a local run with its steady state."
-# The PDF pastes those four numbers into a second, SPATIAL application. Everything needed
-# for that is now in hand; building the spatial half is the next step.
+step "Spatial application: a copy of the compartmental one, given a geometry"
+navselect 'Compartmental'; sleep 1
+tree_pick 'Compartmental' 'Copy'; sleep 3
+tree_pick 'Copy of Compartmental' 'Rename'; sleep 1
+must settext "text=Copy of Compartmental" "Spatial" --enter >/dev/null; sleep 2
+must expand name=bioModelEditorTree "$(navrow 'Spatial')" true >/dev/null; sleep 2
+
+# Copy brings the compartmental application's SIMULATION along, and it keeps its ODE
+# solver - which cannot run a spatial application ("Combined Stiff Solver (IDA/CVODE)
+# does not support ... Spatial"), and whose geometry no longer matches once one is added.
+# Delete it now; a simulation created later, against the finished spatial application,
+# gets an appropriate solver by default.
+navselect 'Simulations'; sleep 2
+while "$B" findrow name=SimulationsTable "Simulation" 2>/dev/null | grep -q '"row": 0'; do
+  must trow name=SimulationsTable 0 >/dev/null; sleep 1
+  must click name=DeleteButton >/dev/null; sleep 2
+  dismiss Yes; dismiss OK; sleep 1
+done
+
+navselect 'Geometry'; sleep 2
+
+step "Geometry: a nucleus of radius 10 inside a 22 x 22 um cytosol"
+must tab name=ApplicationGeometryPanelTabbedPane "Geometry Definition" >/dev/null; sleep 2
+must click "text=Add Geometry" >/dev/null; sleep 1
+menu_pick 'New...'; sleep 2
+must trow "type=JSortTable" "$(row 'type=JSortTable' 'Analytic Equations (2D)')" >/dev/null; sleep 1
+must click "text=OK" >/dev/null; sleep 3
+must setcell name=SubVolumesTable 0 0 "Cyt" >/dev/null; sleep 2
+dismiss OK; sleep 1
+must click "text=Add Subdomain" >/dev/null; sleep 1
+menu_pick 'Analytic ...'; sleep 2
+must combo name=subdomainShapeComboBox "Circle" >/dev/null; sleep 1
+must settext name=circleCenterTextField "0,0" >/dev/null; sleep 1
+must settext name=circleRadiusTextField "10" >/dev/null; sleep 1
+must click "text=New Subdomain" >/dev/null; sleep 3
+must setcell name=SubVolumesTable "$(row name=SubVolumesTable 'subdomain0')" 0 "Nuc" >/dev/null; sleep 2
+dismiss OK; sleep 1
+must click "text=Edit Domain..." >/dev/null; sleep 2
+must settext name=SizeXTextField   "22"  >/dev/null; sleep 1
+must settext name=SizeYTextField   "22"  >/dev/null; sleep 1
+must settext name=OriginXTextField "-11" >/dev/null; sleep 1
+must settext name=OriginYTextField "-11" >/dev/null; sleep 1
+must click "text=OK" >/dev/null; sleep 3
+
+step "Structure mapping: Cyt, Nuc, and the NM membrane between them"
+must tab name=ApplicationGeometryPanelTabbedPane "Structure Mapping" >/dev/null; sleep 3
+SUB=$(col name=StructureMappingTable "Subdomain")
+must setcell name=StructureMappingTable "$(row name=StructureMappingTable 'Cyt')" "$SUB" "Cyt" >/dev/null; sleep 2
+must setcell name=StructureMappingTable "$(row name=StructureMappingTable 'Nuc')" "$SUB" "Nuc" >/dev/null; sleep 3
+# SurfaceClass.createName(): the two subvolume names sorted alphabetically. Cyt < Nuc.
+must setcell name=StructureMappingTable "$(row name=StructureMappingTable 'NM')" "$SUB" "Cyt_Nuc_membrane" >/dev/null; sleep 3
+
+step "Initial conditions: the steady state carried across, and the laser square"
+must tab name=ApplicationTabbedPane "Specifications" >/dev/null; sleep 3
+SPEC=name=spceciesContextSpecsTable
+IC=$(col "$SPEC" "Initial Condition")
+# The PDF copies four cells out of the results spreadsheet and pastes them into the
+# column by position. Setting each species from its own steady state says the same thing
+# without depending on the row order of either table.
+for pair in "BS:$STEADY_BS" "r:$STEADY_r" "rB:$STEADY_rB" "rf:$STEADY_rf" "rfB:$STEADY_rfB"; do
+  must setcell "$SPEC" "$(row "$SPEC" "${pair%%:*}")" "$IC" "${pair##*:}" >/dev/null; sleep 2
+done
+# The laser is on only inside a 4x4 um square at the origin, so bleaching is confined to
+# it - the spatial counterpart of the time gate already in the reaction rates.
+must setcell "$SPEC" "$(row "$SPEC" Laser)" "$IC" \
+    '((x>-2.0)&&(x<2.0)&&(y>-2.0)&&(y<2.0))' >/dev/null; sleep 2
+
+step "Refresh the math, so the application and its simulations agree"
+# Adding a geometry to a copied compartmental application leaves the generated math
+# stale, and VCell then refuses to open the Edit Simulation dialog at all:
+# "Application geometry does not match Simulation geometry - Update Math before editing".
+# Refreshing also settles the SOLVER: a simulation created against stale math keeps the
+# copied application's ODE solver (Combined IDA/CVODE), which cannot run a spatial
+# application; created after a refresh it gets Fully-Implicit, as it should.
+must tab name=ApplicationTabbedPane "Simulations" >/dev/null; sleep 3
+must tab name=ApplicationSimulationsPanelTabbedPane "Generated Math" >/dev/null; sleep 2
+must click name=RefreshMathButton >/dev/null; sleep 6
+must tab name=ApplicationSimulationsPanelTabbedPane "Simulations" >/dev/null; sleep 2
+
+step "Simulation: mesh 51, run to 50 s, output every 0.5 s"
+must click name=NewButton >/dev/null; sleep 3
+must trow name=SimulationsTable 0 >/dev/null; sleep 1
+must click name=EditButton >/dev/null; sleep 3
+dialog_tab "Edit:" "Mesh"; sleep 2
+must settext name=XTextField "51" --enter >/dev/null; sleep 2
+dialog_tab "Edit:" "Solver"; sleep 2
+must settext name=EndingTimeTextField     "50.0" --enter >/dev/null; sleep 1
+must settext name=OutputTimeStepTextField "0.5"  --enter >/dev/null; sleep 1
+dialog_button "Edit:" OK; sleep 2
+
+step "Done -- both applications built, the compartmental one run, its steady state carried across."
+# The PDF also runs the spatial simulation. Not done here: it is a 51x51 PDE over 50 s,
+# which is minutes of local compute for a result nothing downstream reads.
