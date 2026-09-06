@@ -142,6 +142,9 @@ public final class SwingDebugBridge {
 			s.createContext("/setCell", wrap(SwingDebugBridge::handleSetCell));
 			s.createContext("/selectCombo", wrap(SwingDebugBridge::handleSelectCombo));
 			s.createContext("/selectList", wrap(SwingDebugBridge::handleSelectList));
+			s.createContext("/chooseFile", wrap(SwingDebugBridge::handleChooseFile));
+			s.createContext("/selectPixelRange", wrap(SwingDebugBridge::handleSelectPixelRange));
+			s.createContext("/popupItem", wrap(SwingDebugBridge::handlePopupItem));
 			s.createContext("/iconify", wrap(SwingDebugBridge::handleIconify));
 			s.createContext("/windowBounds", wrap(SwingDebugBridge::handleWindowBounds));
 			s.createContext("/log", ex -> {
@@ -402,6 +405,37 @@ public final class SwingDebugBridge {
 		}
 		boolean ok = SwingInspector.selectCombo(path, item);
 		return "{\"selected\":" + ok + ",\"path\":\"" + jsonEscape(path) + "\"}";
+	}
+
+	private static String handlePopupItem(HttpExchange ex) {
+		Map<String, String> q = query(ex);
+		String item = emptyToNull(q.get("item"));
+		if (item == null) {
+			return "{\"error\":\"require 'item', e.g. Copy As>Spatial>Stochastic\"}";
+		}
+		return SwingInspector.clickPopupItem(item);
+	}
+
+	private static String handleSelectPixelRange(HttpExchange ex) {
+		Map<String, String> q = query(ex);
+		String path = q.get("path");
+		if (path == null || path.isEmpty() || !q.containsKey("low") || !q.containsKey("high")) {
+			return "{\"error\":\"require 'path', 'low' and 'high'\"}";
+		}
+		boolean ok = SwingInspector.selectPixelRange(path,
+				Integer.parseInt(q.get("low")), Integer.parseInt(q.get("high")));
+		return "{\"selected\":" + ok + ",\"path\":\"" + jsonEscape(path) + "\"}";
+	}
+
+	private static String handleChooseFile(HttpExchange ex) {
+		Map<String, String> q = query(ex);
+		String path = q.get("path");
+		String file = emptyToNull(q.get("file"));
+		if (path == null || path.isEmpty() || file == null) {
+			return "{\"error\":\"require 'path' and 'file'\"}";
+		}
+		boolean ok = SwingInspector.chooseFile(path, file);
+		return "{\"chosen\":" + ok + ",\"path\":\"" + jsonEscape(path) + "\"}";
 	}
 
 	private static String handleSetCell(HttpExchange ex) {

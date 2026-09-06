@@ -26,6 +26,12 @@
 #   settext <selector> <text> [--enter]
 #   combo   <selector> <item>     choose a drop-down item by its LABEL, not its index
 #   list    <selector> <a,b,c>   select list items by LABEL (comma-separated = multi-select)
+#   choosefile <selector> <path>  answer a file dialog through the chooser's own model
+#   popupitem "A>B>C"          click an item in an OPEN pop-up menu by path - walks
+#                                 the menu MODEL, so submenus need not be showing
+#   pixelrange <selector> <lo> <hi>  threshold by pixel INTENSITY on the geometry
+#                                 editor's histogram - what a drag across it means
+#                                 (its visible text field is the hidden 'go to folder' one)
 #   setcell <selector> <row> <col> <value>   commit a value through the table's own model
 #                                         (what the cell editor calls on Enter)
 #   tab <selector> <index>      row <selector> <row>     rrow <selector> <row>
@@ -196,6 +202,10 @@ case "$cmd" in
         --data-urlencode "$k=$3" | pretty ;;
   combo)     get selectCombo --data-urlencode "path=$1" --data-urlencode "item=$2" | pretty ;;
   list)      get selectList --data-urlencode "path=$1" --data-urlencode "items=$2" | pretty ;;
+  choosefile) get chooseFile --data-urlencode "path=$1" --data-urlencode "file=$2" | pretty ;;
+  pixelrange) get selectPixelRange --data-urlencode "path=$1" --data-urlencode "low=$2" \
+                  --data-urlencode "high=$3" | pretty ;;
+  popupitem) get popupItem --data-urlencode "item=$1" | pretty ;;
   setcell)   get setCell --data-urlencode "path=$1" --data-urlencode "row=$2" \
                --data-urlencode "column=$3" --data-urlencode "value=$4" | pretty ;;
   props)     get props --data-urlencode "path=$1" | pretty ;;

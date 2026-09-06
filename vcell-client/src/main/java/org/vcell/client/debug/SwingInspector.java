@@ -45,6 +45,7 @@ import javax.swing.JList;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTree;
@@ -54,6 +55,7 @@ import javax.swing.ListCellRenderer;
 import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
 
+import cbit.vcell.geometry.gui.HistogramPanel;
 import cbit.vcell.mapping.SimulationContext;
 
 /**
@@ -1167,6 +1169,97 @@ public final class SwingInspector {
 		});
 	}
 
+	/**
+	 * Click an item in an OPEN pop-up menu, naming it by path: {@code Copy As>Spatial>Stochastic}.
+	 *
+	 * <p>Driving a pop-up one level at a time - open the submenu, look for its items,
+	 * click one - depends on Swing actually showing each submenu, and that turned out not
+	 * to be reliable: a heavyweight pop-up window from an earlier pick can still be around
+	 * and the next submenu then never appears, so the step fails several levels from where
+	 * the trouble is. It is also unnecessary. A {@link JMenu}'s items exist in its model
+	 * whether or not anything is on screen, so the whole path can be walked there and only
+	 * the leaf clicked - which is the same code the menu-bar verb has always used.
+	 *
+	 * <p>The pop-up is identified by what it CONTAINS rather than by a selector: the one
+	 * whose top level has an item named by the first segment. That is what makes it immune
+	 * to a stale pop-up hanging around, which a {@code type=JPopupMenu} selector is not.
+	 */
+	public static String clickPopupItem(final String itemPath) {
+		final String[] segs = itemPath.split(">");
+		return onEdt(() -> {
+			JMenuItem cur = null;
+			for (Window w : Window.getWindows()) {
+				JPopupMenu popup = findPopupWithItem(w, segs[0].trim());
+				if (popup != null) {
+					cur = popupItem(popup, segs[0].trim());
+					break;
+				}
+			}
+			if (cur == null) {
+				return "{\"clicked\":false,\"error\":\"no open pop-up has an item '"
+						+ escape(segs[0].trim()) + "'\"}";
+			}
+			StringBuilder resolved = new StringBuilder(nz(cur.getText()).trim());
+			for (int i = 1; i < segs.length; i++) {
+				if (!(cur instanceof JMenu)) {
+					return "{\"clicked\":false,\"error\":\"'" + escape(resolved.toString())
+							+ "' is not a submenu\"}";
+				}
+				JMenuItem next = childItem((JMenu) cur, segs[i].trim());
+				if (next == null) {
+					return "{\"clicked\":false,\"error\":\"no item '" + escape(segs[i].trim())
+							+ "' under '" + escape(resolved.toString()) + "'\"}";
+				}
+				cur = next;
+				resolved.append(" > ").append(nz(cur.getText()).trim());
+			}
+			if (!cur.isEnabled()) {
+				return "{\"clicked\":false,\"error\":\"item '" + escape(resolved.toString())
+						+ "' is disabled\"}";
+			}
+			final JMenuItem target = cur;
+			if (target instanceof JMenu) {
+				// The path stopped on a door rather than an action - open it, and leave
+				// the caller to pick from what appears. Naming the whole path in one call
+				// is better, but this keeps the two-step idiom working.
+				openSubmenu((JMenu) target);
+				return "{\"clicked\":true,\"opened\":\"" + escape(resolved.toString()) + "\"}";
+			}
+			UiRecorder.noteMenu(resolved.toString(), target);
+			// Dismiss first, then fire: a real click closes the pop-up on its way to the
+			// action, and a pop-up left showing shadows every later text= lookup.
+			MenuSelectionManager.defaultManager().clearSelectedPath();
+			SwingUtilities.invokeLater(target::doClick);
+			return "{\"clicked\":true,\"item\":\"" + escape(resolved.toString()) + "\"}";
+		});
+	}
+
+	/** A showing pop-up under {@code w} whose top level has an item with this text. */
+	private static JPopupMenu findPopupWithItem(Component c, String text) {
+		if (c instanceof JPopupMenu && c.isShowing() && popupItem((JPopupMenu) c, text) != null) {
+			return (JPopupMenu) c;
+		}
+		if (c instanceof Container) {
+			for (Component child : ((Container) c).getComponents()) {
+				JPopupMenu found = findPopupWithItem(child, text);
+				if (found != null) {
+					return found;
+				}
+			}
+		}
+		return null;
+	}
+
+	private static JMenuItem popupItem(JPopupMenu popup, String text) {
+		for (Component child : popup.getComponents()) {
+			if (child instanceof JMenuItem
+					&& text.equalsIgnoreCase(nz(((JMenuItem) child).getText()).trim())) {
+				return (JMenuItem) child;
+			}
+		}
+		return null;
+	}
+
 	private static JMenuBar menuBarOf(Window w) {
 		if (w instanceof JFrame) {
 			return ((JFrame) w).getJMenuBar();
@@ -1285,6 +1378,36 @@ public final class SwingInspector {
 		});
 	}
 
+	/**
+	 * Open a {@link JMenu}'s submenu, the way hovering over it does.
+	 *
+	 * <p>A JMenu is a JMenuItem, but it is not an action: it is a door. Clicking it the
+	 * way this bridge clicks other menu items - clear the selected path, then doClick -
+	 * closes the pop-up it lives in and opens nothing, so a two-level pick like
+	 * "Copy As > Non-Spatial > Stochastic" failed at the first level with the pop-up
+	 * already gone, and the error surfaced as "menu item 'Non-Spatial' never took".
+	 *
+	 * <p>What actually opens a submenu is a selection path ending in the menu's own
+	 * pop-up, which is what {@code BasicMenuUI} installs on mouse-over. Saying that
+	 * directly opens the submenu without disturbing the ancestors that got us here.
+	 */
+	private static boolean openSubmenu(final JMenu menu) {
+		UiRecorder.noteClick(menu);
+		SwingUtilities.invokeLater(() -> {
+			java.util.List<javax.swing.MenuElement> path = new java.util.ArrayList<>();
+			for (Component c = menu; c != null; ) {
+				if (c instanceof javax.swing.MenuElement) {
+					path.add(0, (javax.swing.MenuElement) c);
+				}
+				c = (c instanceof JPopupMenu) ? ((JPopupMenu) c).getInvoker() : c.getParent();
+			}
+			path.add(menu.getPopupMenu());
+			MenuSelectionManager.defaultManager()
+					.setSelectedPath(path.toArray(new javax.swing.MenuElement[0]));
+		});
+		return true;
+	}
+
 	public static boolean click(String path) {
 		Component c = findByPath(path);
 		if (c == null) {
@@ -1302,6 +1425,9 @@ public final class SwingInspector {
 			// own UI listener, which fires the action exactly once, AND reaches the
 			// mouse listeners - so both wirings work. Menu items keep doClick, because
 			// a menu item's behaviour always lives in its action.
+			if (c instanceof JMenu) {
+				return openSubmenu((JMenu) c);
+			}
 			final boolean isMenuItem = c instanceof JMenuItem;
 			final Point centre = onEdt(() -> {
 				Dimension d = c.getSize();
@@ -1691,7 +1817,15 @@ public final class SwingInspector {
 	 * concentrations out of a run means selecting four names first. The tutorials say
 	 * "press Ctrl and click the other species", never "select rows 0, 3, 4 and 5".
 	 *
-	 * @param items  displayed labels, comma-separated; more than one implies a multi-select
+	 * <p>A few lists are not like that. The geometry editor's Domain Regions list is one
+	 * per connected region of the segmented image - a hundred and more of them, labelled
+	 * by a region index that differs every run - and what the tutorial says about it is
+	 * positional: "select all the regions except the two top ones, and Auto-Merge". For
+	 * those, {@code items} may instead be a range of positions, written {@code 2-148}
+	 * or open-ended as {@code 2-}. Ranges are 0-based, like the indices this returns to.
+	 *
+	 * @param items  displayed labels, comma-separated; more than one implies a
+	 *               multi-select. Or a single {@code lo-hi} / {@code lo-} position range.
 	 * @return false if the path is not a list, or if any named item is not in it - a
 	 *         partial selection would silently produce a table missing columns
 	 */
@@ -1699,6 +1833,9 @@ public final class SwingInspector {
 		Component c = findByPath(path);
 		if (!(c instanceof JList)) {
 			return false;
+		}
+		if (items.matches("\\d+-\\d*")) {
+			return selectListRange((JList<?>) c, items);
 		}
 		return Boolean.TRUE.equals(onEdt(() -> {
 			JList<?> list = (JList<?>) c;
@@ -1721,6 +1858,142 @@ public final class SwingInspector {
 			list.ensureIndexIsVisible(indices[indices.length - 1]);
 			return true;
 		}));
+	}
+
+	/** Select a 0-based position range, {@code lo-hi} or open-ended {@code lo-}. */
+	private static boolean selectListRange(JList<?> list, String range) {
+		return Boolean.TRUE.equals(onEdt(() -> {
+			int size = list.getModel().getSize();
+			String[] ends = range.split("-", -1);
+			int low = Integer.parseInt(ends[0]);
+			int high = ends[1].isEmpty() ? size - 1 : Integer.parseInt(ends[1]);
+			if (low < 0 || high >= size || low > high) {
+				return false;
+			}
+			list.setSelectionInterval(low, high);
+			list.ensureIndexIsVisible(high);
+			return true;
+		}));
+	}
+
+	/**
+	 * Select a range of pixel intensities on the geometry editor's histogram.
+	 *
+	 * <p>The image segmentation tools divide cleanly in two. The paint and eraser tools are
+	 * irreducibly per-pixel - there is no model-level way to say which pixels they touch,
+	 * and this bridge deliberately offers none. The histogram threshold is not like that:
+	 * its axis is pixel VALUE, and dragging across it means "include intensities from here
+	 * to here". That is a statement a script can make exactly, and durably.
+	 *
+	 * @param path a selector resolving to the {@link HistogramPanel}, or to its window
+	 * @return false if no histogram was found - never a silent no-op
+	 */
+	public static boolean selectPixelRange(String path, final int low, final int high) {
+		Component from = findByPath(path);
+		if (from == null) {
+			return false;
+		}
+		final HistogramPanel histogram = onEdt(() -> findHistogram(from));
+		if (histogram == null) {
+			return false;
+		}
+		return Boolean.TRUE.equals(onEdt(() -> {
+			histogram.selectPixelRange(low, high);
+			return true;
+		}));
+	}
+
+	/** The histogram at or under {@code c}, else the one under {@code c}'s window. */
+	private static HistogramPanel findHistogram(Component c) {
+		HistogramPanel found = descendantHistogram(c);
+		if (found != null) {
+			return found;
+		}
+		Window w = (c instanceof Window) ? (Window) c : SwingUtilities.getWindowAncestor(c);
+		return (w == null) ? null : descendantHistogram(w);
+	}
+
+	private static HistogramPanel descendantHistogram(Component c) {
+		if (c instanceof HistogramPanel) {
+			return (HistogramPanel) c;
+		}
+		if (c instanceof Container) {
+			for (Component child : ((Container) c).getComponents()) {
+				HistogramPanel found = descendantHistogram(child);
+				if (found != null) {
+					return found;
+				}
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Answer a file dialog with a path, through the chooser's own model.
+	 *
+	 * <p>A {@link JFileChooser} cannot be driven the way the rest of this bridge drives a
+	 * dialog. Its visible controls are a directory listing and an approve button, and the
+	 * text field that looks like somewhere to type a path is, on the Aqua look and feel,
+	 * the hidden "go to folder" field - {@code setText} on it reports success and changes
+	 * nothing. Typing into the listing is worse: it depends on the current directory, the
+	 * sort order and the file's position in it.
+	 *
+	 * <p>So say what the dialog is for instead. {@code setSelectedFile} plus
+	 * {@code approveSelection} is exactly what the approve button does, and it fires the
+	 * same {@code APPROVE_SELECTION} action, so whatever was waiting on the dialog
+	 * proceeds as it would for a real choice.
+	 *
+	 * @param path a selector resolving to the chooser, or to anything inside its window
+	 * @param file absolute path to select; may be a directory for a chooser that wants one
+	 * @return false if no chooser was found or the file does not exist - the two ways this
+	 *         silently does nothing otherwise
+	 */
+	public static boolean chooseFile(String path, final String file) {
+		java.io.File target = new java.io.File(file);
+		if (!target.exists()) {
+			return false;
+		}
+		Component from = findByPath(path);
+		if (from == null) {
+			return false;
+		}
+		final javax.swing.JFileChooser chooser = onEdt(() -> findChooser(from));
+		if (chooser == null) {
+			return false;
+		}
+		return Boolean.TRUE.equals(onEdt(() -> {
+			if (target.isDirectory()) {
+				chooser.setCurrentDirectory(target);
+			}
+			chooser.setSelectedFile(target);
+			chooser.approveSelection();
+			return true;
+		}));
+	}
+
+	/** The chooser at or under {@code c}, else the one under {@code c}'s window. */
+	private static javax.swing.JFileChooser findChooser(Component c) {
+		javax.swing.JFileChooser found = descendantChooser(c);
+		if (found != null) {
+			return found;
+		}
+		Window w = (c instanceof Window) ? (Window) c : SwingUtilities.getWindowAncestor(c);
+		return (w == null) ? null : descendantChooser(w);
+	}
+
+	private static javax.swing.JFileChooser descendantChooser(Component c) {
+		if (c instanceof javax.swing.JFileChooser) {
+			return (javax.swing.JFileChooser) c;
+		}
+		if (c instanceof Container) {
+			for (Component child : ((Container) c).getComponents()) {
+				javax.swing.JFileChooser found = descendantChooser(child);
+				if (found != null) {
+					return found;
+				}
+			}
+		}
+		return null;
 	}
 
 	/**
