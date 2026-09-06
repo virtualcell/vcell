@@ -38,11 +38,9 @@ must click "text=In Compartment Cyt" >/dev/null; sleep 2
 must setcell name=SpeciesTable 0 0 "Dex" >/dev/null; sleep 1
 
 step "Application: new Deterministic application, renamed FRAP"
-must rrow name=bioModelEditorTree "$(navrow 'Applications')" >/dev/null; sleep 1
-must click "text=New Application" >/dev/null; sleep 1
-must click "text=Deterministic" >/dev/null; sleep 3
-must rrow name=bioModelEditorTree "$(navrow 'Application0')" >/dev/null; sleep 1
-must click "text=Rename" >/dev/null; sleep 1
+tree_pick 'Applications' 'New Application'; sleep 1
+menu_pick 'Deterministic'; sleep 3
+tree_pick 'Application0' 'Rename'; sleep 1
 must settext "text=Application0" "FRAP" --enter >/dev/null; sleep 2
 
 step "Geometry: analytic 2D, a circle of radius 10 in a 22x22 um square"
@@ -137,7 +135,10 @@ must settext name=OutputTimeStepTextField  "0.05" --enter >/dev/null; sleep 1
 # The dialog must CLOSE for these to take effect - see dialog_button in _common.sh.
 dialog_button "Edit:" OK; sleep 2
 
-step "Done -- model built. The PDF now saves and runs it on the VCell servers."
-# Deliberately NOT scripted: File > Save needs a logged-in account, and the green Run
-# button dispatches a real job to shared compute. The model is complete and valid at
-# this point; running it is a decision for whoever is at the keyboard.
+step "Run it -- locally, with no save to the database"
+# The PDF saves the model and presses the green Run, which dispatches a job to shared
+# VCell compute. Quick Run does the same arithmetic with the bundled FiniteVolume solver
+# on this machine and saves nothing, which is the right trade for a scripted tutorial.
+quick_run
+
+step "Done -- model built and simulated."

@@ -90,11 +90,9 @@ set_param J     "(Vmax2*rfB*Laser*((t>1.0)&&(t<1.5)))"
 set_param Vmax2 "50"
 
 step "Application: compartmental (ODE), for the steady state"
-must rrow name=bioModelEditorTree "$(navrow 'Applications')" >/dev/null; sleep 1
-must click "text=New Application" >/dev/null; sleep 1
-must click "text=Deterministic" >/dev/null; sleep 3
-must rrow name=bioModelEditorTree "$(navrow 'Application0')" >/dev/null; sleep 1
-must click "text=Rename" >/dev/null; sleep 1
+tree_pick 'Applications' 'New Application'; sleep 1
+menu_pick 'Deterministic'; sleep 3
+tree_pick 'Application0' 'Rename'; sleep 1
 must settext "text=Application0" "Compartmental" --enter >/dev/null; sleep 2
 navselect 'Compartmental'; sleep 2
 

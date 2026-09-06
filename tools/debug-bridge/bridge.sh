@@ -14,6 +14,9 @@
 #                                         model, unlike tree's 25-row/100-row dump cap)
 #   findrow <selector> --apptype SPRINGSALAD   find an application by its type, not its
 #                                         name or position - both of which vary per model
+#   readcell <selector> <row> <col>       one cell's DISPLAYED text, with no row cap -
+#                                         row -1 is the last row, which is where a
+#                                         simulation's steady state lives
 #   findcol <selector> <header>           column number by header text; these editor tables
 #                                         carry one model value per column, so a script that
 #                                         names a column by index breaks on a reorder
@@ -186,6 +189,10 @@ case "$cmd" in
     esac
     ;;
   findcol)   get findColumn --data-urlencode "path=$1" --data-urlencode "header=$2" | pretty ;;
+  readcell)  # readcell <selector> <row> <column-header|index>   (row -1 = last row)
+    if [ "${3:-}" -eq "${3:-}" ] 2>/dev/null; then k=column; else k=columnName; fi
+    get readCell --data-urlencode "path=$1" --data-urlencode "row=$2" \
+        --data-urlencode "$k=$3" | pretty ;;
   combo)     get selectCombo --data-urlencode "path=$1" --data-urlencode "item=$2" | pretty ;;
   setcell)   get setCell --data-urlencode "path=$1" --data-urlencode "row=$2" \
                --data-urlencode "column=$3" --data-urlencode "value=$4" | pretty ;;

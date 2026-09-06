@@ -2229,6 +2229,44 @@ public final class SwingInspector {
 				+ (text == null ? "" : ",\"text\":\"" + escape(text) + "\"") + '}';
 	}
 
+
+	/**
+	 * Read one table cell's DISPLAYED text, without the row cap the tree dump applies.
+	 *
+	 * <p>{@link #dumpJson} truncates a table to the first 25 rows, which is the right
+	 * default for reading a UI but useless for reading a RESULT: a simulation's steady
+	 * state is the last row of a series hundreds long, and that is exactly the row a
+	 * tutorial copies forward into its next application. The row count itself is already
+	 * reported un-truncated, so a caller can ask for the final row by index.
+	 *
+	 * @param row    view row index; negative counts back from the end, so -1 is the last row
+	 * @param column view column index
+	 */
+	public static String readCellJson(String path, final int row, final int column) {
+		Component c = findByPath(path);
+		if (!(c instanceof JTable)) {
+			return "{\"error\":\"selector is not a JTable\"}";
+		}
+		String[] found = onEdt(() -> {
+			JTable t = (JTable) c;
+			int r = (row < 0) ? t.getRowCount() + row : row;
+			if (r < 0 || r >= t.getRowCount() || column < 0 || column >= t.getColumnCount()) {
+				return null;
+			}
+			return new String[] { String.valueOf(r), cellText(t, r, column),
+					t.getColumnName(column), String.valueOf(t.getRowCount()) };
+		});
+		if (found == null) {
+			return "{\"error\":\"row or column out of range\"}";
+		}
+		return "{\"row\":" + found[0]
+				+ ",\"column\":" + column
+				+ ",\"columnName\":\"" + escape(nz(found[2])) + '"'
+				+ ",\"rowCount\":" + found[3]
+				+ ",\"value\":" + (found[1] == null ? "null" : "\"" + escape(found[1]) + "\"")
+				+ '}';
+	}
+
 	/**
 	 * Resolve a table column by its HEADER TEXT to its current view index.
 	 *

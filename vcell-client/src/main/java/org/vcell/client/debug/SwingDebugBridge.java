@@ -138,6 +138,7 @@ public final class SwingDebugBridge {
 			s.createContext("/record", wrap(SwingDebugBridge::handleRecord));
 			s.createContext("/findRow", wrap(SwingDebugBridge::handleFindRow));
 			s.createContext("/findColumn", wrap(SwingDebugBridge::handleFindColumn));
+			s.createContext("/readCell", wrap(SwingDebugBridge::handleReadCell));
 			s.createContext("/setCell", wrap(SwingDebugBridge::handleSetCell));
 			s.createContext("/selectCombo", wrap(SwingDebugBridge::handleSelectCombo));
 			s.createContext("/iconify", wrap(SwingDebugBridge::handleIconify));
@@ -402,6 +403,25 @@ public final class SwingDebugBridge {
 		boolean ok = SwingInspector.setCell(path, Integer.parseInt(q.get("row")),
 				Integer.parseInt(q.get("column")), value);
 		return "{\"set\":" + ok + ",\"path\":\"" + jsonEscape(path) + "\"}";
+	}
+
+	private static String handleReadCell(HttpExchange ex) {
+		Map<String, String> q = query(ex);
+		String path = q.get("path");
+		if (path == null || path.isEmpty() || !q.containsKey("row")) {
+			return "{\"error\":\"require 'path' and 'row' (and 'column' or 'columnName')\"}";
+		}
+		// Column by header where given, for the usual reason - an index names nothing.
+		int column = Integer.parseInt(q.getOrDefault("column", "0"));
+		String header = emptyToNull(q.get("columnName"));
+		if (header != null) {
+			java.util.regex.Matcher m = java.util.regex.Pattern.compile("\"column\":(-?\\d+)")
+					.matcher(SwingInspector.findColumnJson(path, header));
+			if (m.find()) {
+				column = Integer.parseInt(m.group(1));
+			}
+		}
+		return SwingInspector.readCellJson(path, Integer.parseInt(q.get("row")), column);
 	}
 
 	private static String handleFindColumn(HttpExchange ex) {

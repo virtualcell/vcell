@@ -118,6 +118,74 @@ for root in json.load(sys.stdin):
   exit 1
 }
 
+# Right-click a model-tree row and pick an item from the context menu that appears.
+#
+# Retried as a UNIT, because a pop-up is transient and its appearance is not instant: the
+# menu is built and shown from a dispatched mouse event, so a fixed sleep between opening
+# it and clicking an item is a race. Opening it again after a miss is harmless - a second
+# right-click just replaces the menu.
+tree_pick() {   # $1 = row text in the model tree, $2 = menu item label
+  local attempt
+  for attempt in 1 2 3 4 5; do
+    "$B" rrow name=bioModelEditorTree "$(navrow "$1")" >/dev/null 2>&1
+    sleep 1.5
+    if "$B" find --text "$2" --limit 1 2>/dev/null | grep -q '"text"'; then
+      if "$B" click "text=$2" 2>/dev/null | grep -q '"clicked": true'; then
+        return 0
+      fi
+    fi
+    sleep 1
+  done
+  echo "FATAL: context menu item '$2' never took, right-clicking '$1'" >&2
+  exit 1
+}
+
+# Pick an item from a menu that is ALREADY open (a submenu, or a button's pop-up),
+# retrying for the same reason.
+menu_pick() {   # $1 = menu item label
+  local attempt
+  for attempt in 1 2 3 4 5; do
+    if "$B" find --text "$1" --limit 1 2>/dev/null | grep -q '"text"'; then
+      if "$B" click "text=$1" 2>/dev/null | grep -q '"clicked": true'; then
+        return 0
+      fi
+    fi
+    sleep 1
+  done
+  echo "FATAL: menu item '$1' never took" >&2
+  exit 1
+}
+
+# Run the selected simulation ON THIS MACHINE and wait for its results window.
+#
+# "Native Quick Run" executes with the bundled local solvers and does NOT save the
+# document to the database, so a scripted tutorial can produce real results without an
+# account and without putting anything on the server. The local install carries every
+# solver these tutorials use - SundialsSolverStandalone, FiniteVolume, MovingBoundary and
+# the stochastic ones - and canQuickRun only refuses parallel solvers, server-only
+# features, and executables missing for the platform.
+quick_run() {   # $1 = simulation row (default 0)
+  must trow name=SimulationsTable "${1:-0}" >/dev/null; sleep 1
+  must click name=QuickRunButton >/dev/null
+  local i
+  for i in $(seq 1 120); do
+    sleep 1
+    if "$B" windows 2>/dev/null | grep -q 'Results for Simulation'; then
+      sleep 2   # let the data table populate after the window appears
+      return 0
+    fi
+  done
+  echo "FATAL: no results window after a quick run" >&2
+  exit 1
+}
+
+# Read one cell of the results table. Row -1 is the last row - the end of the time course,
+# which is where a steady state is. Not subject to the tree dump's 25-row cap.
+result_cell() {   # $1 = row, $2 = column header
+  "$B" readcell name=ScrollPaneTable "$1" "$2" \
+    | python3 -c 'import json,sys; print(json.load(sys.stdin).get("value"))'
+}
+
 # Dismiss a dialog that may or may not be there - the version-mismatch warning at
 # startup, or the eager "structure not mapped" error raised while a geometry is still
 # half-built. Deliberately NOT `must`: absence is the normal case.

@@ -31,11 +31,9 @@ must click "text=In Compartment Cyt" >/dev/null; sleep 2
 must setcell name=SpeciesTable 0 0 "Dex" >/dev/null; sleep 1
 
 step "Application: new Deterministic application, renamed FRAP"
-must rrow name=bioModelEditorTree "$(navrow 'Applications')" >/dev/null; sleep 1
-must click "text=New Application" >/dev/null; sleep 1
-must click "text=Deterministic" >/dev/null; sleep 3
-must rrow name=bioModelEditorTree "$(navrow 'Application0')" >/dev/null; sleep 1
-must click "text=Rename" >/dev/null; sleep 1
+tree_pick 'Applications' 'New Application'; sleep 1
+menu_pick 'Deterministic'; sleep 3
+tree_pick 'Application0' 'Rename'; sleep 1
 must settext "text=Application0" "FRAP" --enter >/dev/null; sleep 2
 
 step "Geometry: a circle of radius 5 at the LEFT edge of a 20x20 um domain"
