@@ -247,6 +247,9 @@ public class ReactionPropertiesPanel extends DocumentEditorSubPanel {
 			sbmlNameTextField.setEnabled(false);
 
 			isReversibleCheckBox = new JCheckBox("");
+			// A bare checkbox with no text: its label is a separate JLabel, so there is
+			// nothing to address it by.
+			isReversibleCheckBox.setName("ReactionReversibleCheckBox");
 			isReversibleCheckBox.setBackground(Color.white);
 	//		isReversibleCheckBox.setHorizontalTextPosition(SwingConstants.LEFT);
 

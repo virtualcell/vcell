@@ -1979,12 +1979,14 @@ public final class SwingInspector {
 	 *
 	 * @param path a selector resolving to the chooser, or to anything inside its window
 	 * @param file absolute path to select; may be a directory for a chooser that wants one
-	 * @return false if no chooser was found or the file does not exist - the two ways this
-	 *         silently does nothing otherwise
+	 * @return false if no chooser was found, or if the path names nothing that could be
+	 *         chosen - the two ways this silently does nothing otherwise. A SAVE dialog's
+	 *         target does not exist yet, so a writable parent directory is enough.
 	 */
 	public static boolean chooseFile(String path, final String file) {
 		java.io.File target = new java.io.File(file);
-		if (!target.exists()) {
+		java.io.File parent = target.getParentFile();
+		if (!target.exists() && (parent == null || !parent.isDirectory())) {
 			return false;
 		}
 		Component from = findByPath(path);

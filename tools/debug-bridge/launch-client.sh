@@ -26,7 +26,11 @@
 # Environment overrides:
 #   VCELL_INSTALL_DIR       local install4j install (default ~/Applications/VCell_Alpha)
 #   VCELL_API_HOST          server host[:port]      (default vcell-dev.cam.uchc.edu:443)
-#   VCELL_SOFTWARE_VERSION  version string          (default Alpha_Version_8.0.0_build_07)
+#   VCELL_SOFTWARE_VERSION  version string          (default Alpha_Version_8.1.5_build_01)
+#                           Match the SERVER's version. A mismatch is not cosmetic: the
+#                           client pops a modal "software version mismatch" warning
+#                           mid-run and leaves the database tree reading "not
+#                           connected", so anything that reads a stored model fails.
 #
 # The client's stdout/stderr are redirected by the client itself to
 # ~/.vcell/logs/vcellrun_<site>.log — read them there (or via the bridge's
@@ -37,7 +41,7 @@ set -eo pipefail
 REPO="$(cd "$(dirname "$0")/../.." && pwd)"
 INSTALL_DIR="${VCELL_INSTALL_DIR:-$HOME/Applications/VCell_Alpha}"
 API_HOST="${VCELL_API_HOST:-vcell-dev.cam.uchc.edu:443}"
-VERSION="${VCELL_SOFTWARE_VERSION:-Alpha_Version_8.0.0_build_07}"
+VERSION="${VCELL_SOFTWARE_VERSION:-Alpha_Version_8.1.5_build_01}"
 
 PORT=9123
 REFRESH_CP=false
