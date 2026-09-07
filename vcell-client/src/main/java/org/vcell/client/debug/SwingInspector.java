@@ -325,7 +325,11 @@ public final class SwingInspector {
 				if (i > 0) {
 					sb.append(',');
 				}
-				sb.append('"').append(escape(truncate(String.valueOf(jl.getModel().getElementAt(i))))).append('"');
+				// What the item DISPLAYS, not its toString(): selectList matches on the
+				// rendered text, so a dump that showed the model object would name items
+				// that cannot then be selected. The Add Link site lists are exactly this -
+				// they render a site's name where toString() gives "name~state".
+				sb.append('"').append(escape(truncate(nz(listItemText(jl, i))))).append('"');
 			}
 			sb.append("],\"truncated\":").append(size > shown).append('}');
 		} else if (c instanceof JTable) {
