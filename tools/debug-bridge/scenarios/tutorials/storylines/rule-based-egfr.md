@@ -98,9 +98,16 @@ Two traps around that, both of which the script handles and asserts:
   property; left alone the model warns that mass action "will be interpreted as a
   degradation of the product".
 
-## A suggestion for VCell
+## A suggestion for VCell — issue #2068
 
 Making the BioNetGen definition column writable for `ReactionRule` — the change the
-commented-out block was reaching for — would make rule-based models fully reachable from
-text, with no graphics editor involved. That is the single change that would let this
-tutorial be scripted the way it is taught rather than the way around.
+commented-out block was reaching for — would let this tutorial be scripted the way it is
+taught rather than the way around.
+
+It is not sufficient on its own, though, and #2068 records why. Raw BNGL needs autocomplete
+over the molecule patterns actually available, and site states, bonds and
+bound / unbound / "bound to anything" (`!+`, `!?`) have to stay consistent across reactant
+and product patterns — which the graphics editor currently guarantees by construction, and
+by greying out the combinations that are impossible. An expert can type it correctly; a new
+user is exactly who the graphics editor serves well. So the useful shape of a textual route
+is a design question, not a one-line change.

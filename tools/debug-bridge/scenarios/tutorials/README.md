@@ -308,11 +308,13 @@ numbers; the others do not mention it. Those models are a stronger check than "0
 and the two rule-based scripts use them as one — both reproduce their reference exactly,
 warning count included.
 
-**A rule-based model cannot be built without the graphics editor.** Molecules, Species and
-Observables can be stated as BNGL in a table column; reaction rules cannot, and their
-editor exposes no components at all. Making the BioNetGen definition column writable for
-`ReactionRule` — which a commented-out block in `BioModelEditorReactionTableModel` was
-already reaching for — would close that gap.
+**A rule-based model cannot be built without the graphics editor** — issue #2068. Molecules,
+Species and Observables can be stated as BNGL in a table column; reaction rules cannot, and
+their editor exposes no components at all. Making that column writable for `ReactionRule`
+is the small version of the fix, but not a sufficient one: raw BNGL needs autocomplete over
+the available molecule patterns, and site states and bonds have to stay consistent across
+reactant and product patterns — which the graphics editor guarantees by construction. What
+a more accessible textual route should look like is a design question.
 
 **Pathway Commons works, and the caution in its storyline is now discharged.** Both
 services answer: the search goes to the current `pc2` API (v14) and the import pulls BioPAX
