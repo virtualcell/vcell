@@ -17,8 +17,8 @@ reproduces it against a current client through the [debug bridge](../../README.m
 | `MultiAppTransport_7.2.pdf` | [multi-app-transport](storylines/multi-app-transport.md) | [`multi-app-transport.sh`](multi-app-transport.sh) | **reproduced**, 0 errors, two documented substitutions |
 | `Tutorial06_PathwayCommons_6.0.pdf` | [pathway-commons](storylines/pathway-commons.md) | [`pathway-commons.sh`](pathway-commons.sh) | **reproduced**, 0 errors — both third-party services verified live |
 | `VCell_Quickstart_7_Biomodel.pdf` | [quickstart](storylines/quickstart.md) | — | reference guide, nothing to script |
-| `VCell6.1_Rule-Based_Tutorial.pdf` + `SingleCompartmentRuleBased.pdf` | [rule-based-egfr](storylines/rule-based-egfr.md) | — | **superseded by the 7.7 rewrite** |
-| `VCell6.1_Rule-Based_Ran_Transport_Tutorial.pdf` | [rule-based-ran-transport](storylines/rule-based-ran-transport.md) | — | **superseded by the 7.7 rewrite** |
+| `VCell6.1_Rule-Based_Tutorial.pdf` + `SingleCompartmentRuleBased.pdf` | [rule-based-egfr](storylines/rule-based-egfr.md) | [`rule-based-egfr.sh`](rule-based-egfr.sh) | **reproduced** against the 7.7 rewrite; matches the public reference model |
+| `VCell6.1_Rule-Based_Ran_Transport_Tutorial.pdf` | [rule-based-ran-transport](storylines/rule-based-ran-transport.md) | [`rule-based-ran-transport.sh`](rule-based-ran-transport.sh) | **reproduced** against the 7.7 rewrite; matches the public reference model |
 | `SpatialRuleBasedGuide.pdf` | [spatial-rule-based](storylines/spatial-rule-based.md) | — | reference guide; no current replacement |
 
 ## Running one
@@ -34,6 +34,10 @@ tools/debug-bridge/scenarios/tutorials/multi-app-transport.sh ./NeuroblastomaSta
 
 # Pathway Commons needs a network, and two services outside VCell:
 tools/debug-bridge/scenarios/tutorials/pathway-commons.sh
+
+# the two rule-based ones follow the 7.7 rewrites, and import BNGL:
+tools/debug-bridge/scenarios/tutorials/rule-based-egfr.sh
+tools/debug-bridge/scenarios/tutorials/rule-based-ran-transport.sh
 ```
 
 Each takes a couple of minutes, leaves a complete valid model on screen — and then **runs
@@ -125,6 +129,15 @@ What has no table equivalent, and so is genuinely out of reach:
   unmapped `Nuc_background_membrane`. Lowering the threshold takes in enough dim cytoplasm
   to enclose the nucleus, and the model then has no warnings at all - which is what the
   eraser is for in the PDF.
+- **Building a reaction RULE** (`rule-based-egfr`, `rule-based-ran-transport`). This is the
+  one place in the corpus where the canvas has no table behind it, and it fails twice over.
+  `BioModelEditorReactionTableModel.isCellEditable` allows the BNGL column only when the row
+  is a `ReactionStep`, and a `ReactionRule` is not one — so the cell is read-only. And the
+  rule editor has nothing to address: its whole pattern area is a single anonymous
+  component, `ReactionRuleEditorPropertiesPanel$1`, 777×200 px with **zero children**, onto
+  which every molecule, site, state and bond is painted. Molecules, Species and Observables
+  *do* have the BNGL-column route — the tutorial names it itself — so only rules are out of
+  reach. Both scripts take the other documented path and import the model as BNGL.
 - **Drawing on the Pathway Diagram** (`PathwayCommons`) — "click a corner of the diagram,
   drag your cursor over all entities and release". Avoidable, and the PDF itself says how,
   two pages later: *"Click Pathway Objects to organize the entities into list form"*, and
@@ -273,7 +286,9 @@ the ten shape fields in `AddShapeJPanel`, `EventsTable`, `EventActionsTable`,
 `HistogramPanel`, `HistogramApplyButton`, `ParameterEstimationParametersTable`,
 `AddEstimationParameterButton`, `ParameterEstimationResultsTable`, `SolveByCopasiButton`,
 `ExperimentalDataMappingTable`, `NumberOfParticlesRadioButton`, `PathwayPreviewTable`,
-`PathwayPreviewImportButton`, `PathwayObjectsTable` and `PhysiologyLinksButton`.
+`PathwayPreviewImportButton`, `PathwayObjectsTable`, `PhysiologyLinksButton` and
+`ReactionReversibleCheckBox` (a bare checkbox whose label is a separate JLabel, so it had
+nothing to be addressed by).
 `ScrollPaneTable` and `SortTable` were each used by eight or more panels.
 
 ## A finding worth passing to whoever owns the tutorials
@@ -282,6 +297,22 @@ the ten shape fields in `AddShapeJPanel`, `EventsTable`, `EventActionsTable`,
 `PM` reading *Unmapped* while the model still reports **0 errors** — but VCell then picks
 a different solver (SundialsPDE rather than Fully-Implicit). Followed literally, the
 tutorial can produce a different simulation than the one it is teaching.
+
+**There is a public reference model for every one of these tutorials**, in the VCell
+database under BioModels → Tutorials: `Tutorial_FRAP`, `Tutorial_FRAPbinding`,
+`Tutorial_MovingBoundary`, `Tutorial_MultiApp`, `Tutorial_PathwayCommons`,
+`Tutorial_PH-GFP`, `Rule-based_egfr_tutorial`, `Rule-based_Ran_transport`,
+`Rule-based_egfr_compart` and `Membrane Frap`. The rule-based tutorials say so outright
+("match all values to the model in the Tutorials folder") because they omit most of their
+numbers; the others do not mention it. Those models are a stronger check than "0 errors",
+and the two rule-based scripts use them as one — both reproduce their reference exactly,
+warning count included.
+
+**A rule-based model cannot be built without the graphics editor.** Molecules, Species and
+Observables can be stated as BNGL in a table column; reaction rules cannot, and their
+editor exposes no components at all. Making the BioNetGen definition column writable for
+`ReactionRule` — which a commented-out block in `BioModelEditorReactionTableModel` was
+already reaching for — would close that gap.
 
 **Pathway Commons works, and the caution in its storyline is now discharged.** Both
 services answer: the search goes to the current `pc2` API (v14) and the import pulls BioPAX
