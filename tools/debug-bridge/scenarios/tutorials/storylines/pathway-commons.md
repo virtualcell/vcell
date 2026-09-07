@@ -3,7 +3,8 @@
 - **Source:** `Tutorial06_PathwayCommons_6.0.pdf` (46 pp, 2016-11-01) — the oldest
   document in the set.
 - **Superseded by a 7.7 rewrite?** No.
-- **Status:** storyline extracted; not scripted, and needs verification before rewriting.
+- **Status:** reproduced by [`pathway-commons.sh`](../pathway-commons.sh), 0 errors.
+  Both third-party services verified live, 2026-09-07.
 
 ## Objective
 
@@ -25,11 +26,47 @@ and link VCell species to pathway entities.
    `Pathway Links > Edit Pathway Links…` and the `Link` checkbox column.
 7. `Pathway Objects` lists everything imported in table form.
 
-## Caution before reusing this
+## The third-party question, answered
 
-This is the only tutorial in the set that depends on a **third-party service** staying up
-and keeping its API shape. The client still ships the `Pathway Comm` tab and a
-`PathwayCommonsResponseTree` component, so the feature is present — but whether the
-remote endpoint still answers was **not verified**, and a 2016 document is the most
-likely of the set to be describing something that no longer works. Check the service
-before investing in a rewrite.
+This is the only tutorial in the set that depends on services outside VCell, and the
+caution that used to stand here — *check before investing* — has now been checked. It
+needs **two** services, and both answer:
+
+| Service | Endpoint | State |
+|---|---|---|
+| Pathway Commons search | `https://www.pathwaycommons.org/pc2/search` | live, API v14, 343 hits for `"insulin"` |
+| Reactome BioPAX export | `https://reactome.org/ReactomeRESTfulAPI/RESTfulWS/biopaxExporter/Level2/<numeric id>` | live |
+
+The Reactome one is worth a note: that RESTful API is the *old* one, superseded by
+ContentService, and it answers **400** to a stable `R-HSA-` identifier. It works because
+`extractReactomeId` strips the prefix and passes the bare number, which is what that API
+has always taken. It is the most likely part of this tutorial to break next, so the script
+says which URL to check when the preview comes back empty.
+
+The panel itself has already been modernised — the search targets the current `pc2` API,
+not the `webservice.do` endpoint the 2016 document was written against, and pathway links
+open Reactome detail pages. `PathwayCommonsRequest.defaultBaseURL` still names the retired
+`http://www.pathwaycommons.org/pc/webservice.do`, but nothing on this path uses it.
+
+## Scripting it: the diagram is avoidable, and the PDF says so
+
+Steps 4 and 5 work on the **Pathway Diagram** — "click a corner of the diagram, drag your
+cursor over all entities and release" — which is a pixel gesture on a custom canvas. But
+the document itself offers the other route two pages later: *"Click Pathway Objects to
+organize the entities into list form"*, and from that list the same
+`Physiology Links > Import into Physiology…` menu. The script takes the list.
+
+Everything else is tables and menus:
+
+- `ctrl+a` on a page of the preview table is a **row range** — and a range covers the whole
+  table at once, so the PDF's "if a pathway extends to multiple pages, click the right
+  arrow icon and repeat" is not needed.
+- the `Link` column in *Edit Pathway Links…* is a checkbox column, which `setCell` can now
+  tick.
+- the species the PDF adds with the species tool comes from the Species table's
+  `(add new here)` row instead — offered because this model has exactly one structure.
+
+The one choice the script has to make is the search term: the PDF is all screenshots and
+never names one. It uses `insulin` (the example in the client's own code) and the pathway
+*Acetylcholine regulates insulin secretion*, which is small and well-formed. Both are
+overridable with `QUERY=` and `PATHWAY=`.

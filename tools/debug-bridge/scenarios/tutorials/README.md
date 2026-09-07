@@ -15,7 +15,7 @@ reproduces it against a current client through the [debug bridge](../../README.m
 | `FRAPBinding_7.2.pdf` | [frap-with-binding](storylines/frap-with-binding.md) | [`frap-with-binding.sh`](frap-with-binding.sh) | **reproduced** in full, 0 errors |
 | `PHGFP_7.2.pdf` | [phgfp](storylines/phgfp.md) | [`phgfp.sh`](phgfp.sh) | **reproduced** in full, 0 errors |
 | `MultiAppTransport_7.2.pdf` | [multi-app-transport](storylines/multi-app-transport.md) | [`multi-app-transport.sh`](multi-app-transport.sh) | **reproduced**, 0 errors, two documented substitutions |
-| `Tutorial06_PathwayCommons_6.0.pdf` | [pathway-commons](storylines/pathway-commons.md) | — | depends on a third-party service |
+| `Tutorial06_PathwayCommons_6.0.pdf` | [pathway-commons](storylines/pathway-commons.md) | [`pathway-commons.sh`](pathway-commons.sh) | **reproduced**, 0 errors — both third-party services verified live |
 | `VCell_Quickstart_7_Biomodel.pdf` | [quickstart](storylines/quickstart.md) | — | reference guide, nothing to script |
 | `VCell6.1_Rule-Based_Tutorial.pdf` + `SingleCompartmentRuleBased.pdf` | [rule-based-egfr](storylines/rule-based-egfr.md) | — | **superseded by the 7.7 rewrite** |
 | `VCell6.1_Rule-Based_Ran_Transport_Tutorial.pdf` | [rule-based-ran-transport](storylines/rule-based-ran-transport.md) | — | **superseded by the 7.7 rewrite** |
@@ -31,6 +31,9 @@ tools/debug-bridge/scenarios/tutorials/simple-frap.sh      # or moving-boundary.
 # Multi-app needs the image stack the PDF tells you to download:
 curl -O https://vcell.org/webstart/VCell_Tutorials/7.7/NeuroblastomaStack.tif
 tools/debug-bridge/scenarios/tutorials/multi-app-transport.sh ./NeuroblastomaStack.tif
+
+# Pathway Commons needs a network, and two services outside VCell:
+tools/debug-bridge/scenarios/tutorials/pathway-commons.sh
 ```
 
 Each takes a couple of minutes, leaves a complete valid model on screen — and then **runs
@@ -122,6 +125,10 @@ What has no table equivalent, and so is genuinely out of reach:
   unmapped `Nuc_background_membrane`. Lowering the threshold takes in enough dim cytoplasm
   to enclose the nucleus, and the model then has no warnings at all - which is what the
   eraser is for in the PDF.
+- **Drawing on the Pathway Diagram** (`PathwayCommons`) — "click a corner of the diagram,
+  drag your cursor over all entities and release". Avoidable, and the PDF itself says how,
+  two pages later: *"Click Pathway Objects to organize the entities into list form"*, and
+  from that list the same `Physiology Links > Import into Physiology…` menu.
 - **Drawing a flux reaction.** `Model.createFluxReaction` has exactly one interactive
   caller, `ReactionCartoonTool`; the Reactions table can only make SimpleReactions. A
   membrane reaction with the same participants is the way round it, and it resolves
@@ -224,6 +231,11 @@ failure — the script reported success and the model was wrong:
   for 10s instead of trusting a fixed `sleep`.
 - **`SpatialProcessPropertyPanel` called itself `"SpatialObjectPropertyPanel"`** — a
   copy-paste slip that gave two different panels the same name.
+- **`ctrl+A` had no equivalent for a table.** Several tutorials select a whole page of one
+  and act on it — "press ctrl+a and click Import > Selected Only". The keystroke is a
+  statement about the rows the table currently shows, so `trows <selector> 0-` says the
+  same thing, over the whole table at once. That also disposes of the PDF's "if a pathway
+  extends to multiple pages, click the right arrow icon and repeat".
 - **A pop-up could only be driven one level at a time, and that was not reliable.** A
   heavyweight pop-up window left from an earlier pick can stop the next submenu opening at
   all, so `Copy As > Spatial > Stochastic` failed at the first level with the pop-up
@@ -260,8 +272,9 @@ the ten shape fields in `AddShapeJPanel`, `EventsTable`, `EventActionsTable`,
 `PreviousButton`, `FinishButton`, `DomainRegionsList`, `AutoMergeButton`,
 `HistogramPanel`, `HistogramApplyButton`, `ParameterEstimationParametersTable`,
 `AddEstimationParameterButton`, `ParameterEstimationResultsTable`, `SolveByCopasiButton`,
-`ExperimentalDataMappingTable` and `NumberOfParticlesRadioButton`. `ScrollPaneTable` and
-`SortTable` were each used by eight or more panels.
+`ExperimentalDataMappingTable`, `NumberOfParticlesRadioButton`, `PathwayPreviewTable`,
+`PathwayPreviewImportButton`, `PathwayObjectsTable` and `PhysiologyLinksButton`.
+`ScrollPaneTable` and `SortTable` were each used by eight or more panels.
 
 ## A finding worth passing to whoever owns the tutorials
 
@@ -269,6 +282,13 @@ the ten shape fields in `AddShapeJPanel`, `EventsTable`, `EventActionsTable`,
 `PM` reading *Unmapped* while the model still reports **0 errors** — but VCell then picks
 a different solver (SundialsPDE rather than Fully-Implicit). Followed literally, the
 tutorial can produce a different simulation than the one it is teaching.
+
+**Pathway Commons works, and the caution in its storyline is now discharged.** Both
+services answer: the search goes to the current `pc2` API (v14) and the import pulls BioPAX
+from Reactome. One thing is fragile enough to name: the import uses Reactome's *old*
+RESTful API, superseded by ContentService, and it answers 400 to a stable `R-HSA-`
+identifier — it works only because the client strips the prefix and passes the bare number.
+That is the most likely part of this tutorial to break next.
 
 **PH-GFP's spatial half is built with every diffusion constant left at its default**, and
 the PDF never mentions them. That is not an omission the script should fix by inventing
