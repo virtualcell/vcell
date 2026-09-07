@@ -46,6 +46,7 @@ import com.sun.net.httpserver.HttpServer;
  *   GET /screenshot[?window=N&amp;scale=&amp;name=&amp;dir=]  -&gt; JSON {"path": "...png", "bytes": N}
  *   GET /click?path=0/3/2       -&gt; JSON {"clicked": true|false}
  *   GET /setText?path=..&amp;text=..[&amp;enter=true]  -&gt; JSON {"set": true|false}
+ *   GET /setSlider?path=..&amp;value=..            -&gt; JSON {"set": true|false}
  *   GET /selectTab?path=..&amp;index=N            -&gt; JSON {"selected": true|false}
  *   GET /listeners?path=0/3/2   -&gt; JSON, registered listeners of the component
  *   GET /log[?lines=N]          -&gt; text/plain tail of the client's real log
@@ -141,6 +142,7 @@ public final class SwingDebugBridge {
 			s.createContext("/readCell", wrap(SwingDebugBridge::handleReadCell));
 			s.createContext("/setCell", wrap(SwingDebugBridge::handleSetCell));
 			s.createContext("/selectCombo", wrap(SwingDebugBridge::handleSelectCombo));
+			s.createContext("/setSlider", wrap(SwingDebugBridge::handleSetSlider));
 			s.createContext("/selectList", wrap(SwingDebugBridge::handleSelectList));
 			s.createContext("/chooseFile", wrap(SwingDebugBridge::handleChooseFile));
 			s.createContext("/selectPixelRange", wrap(SwingDebugBridge::handleSelectPixelRange));
@@ -406,6 +408,17 @@ public final class SwingDebugBridge {
 		}
 		boolean ok = SwingInspector.selectCombo(path, item);
 		return "{\"selected\":" + ok + ",\"path\":\"" + jsonEscape(path) + "\"}";
+	}
+
+	private static String handleSetSlider(HttpExchange ex) {
+		Map<String, String> q = query(ex);
+		String path = q.get("path");
+		String value = emptyToNull(q.get("value"));
+		if (path == null || path.isEmpty() || value == null) {
+			return "{\"error\":\"require 'path' and 'value' (an integer, or min/max, or -1 for the end)\"}";
+		}
+		boolean ok = SwingInspector.setSlider(path, value);
+		return "{\"set\":" + ok + ",\"path\":\"" + jsonEscape(path) + "\"}";
 	}
 
 	private static String handleSelectTableRange(HttpExchange ex) {

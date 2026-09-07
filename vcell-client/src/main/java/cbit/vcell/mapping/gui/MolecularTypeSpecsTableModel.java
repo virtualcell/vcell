@@ -247,7 +247,7 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<LinkNode> 
 					return;
 				}
 				Coordinate c = sas.getCoordinate();
-				if(c.getX() != res) {
+				if(c.getY() != res) {
 					c = new Coordinate(c.getX(), res, c.getZ());
 					sas.setCoordinate(c);
 					scs.firePropertyChange(SpeciesContextSpec.PROPERTY_NAME_SITE_ATTRIBUTE, null, sas);
@@ -278,7 +278,7 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<LinkNode> 
 //					return;
 				}
 				Coordinate c = sas.getCoordinate();
-				if(c.getX() != res) {
+				if(c.getZ() != res) {
 					c = new Coordinate(c.getX(), c.getY(), res);
 					sas.setCoordinate(c);
 					// updates the Length in the links table (LinkSpecsTableModel)

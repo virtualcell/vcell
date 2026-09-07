@@ -266,6 +266,7 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 			Model model = bioModel.getModel();
 			for(Structure struct : model.getStructures()) {
 				JCheckBox cb = new JCheckBox(struct.getName());
+				cb.setName("AnchorStructureCheckBox_" + struct.getName());
 				cb.addItemListener(eventHandler);
 				structureList.add(cb);
 			}
@@ -454,6 +455,7 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 	private JRadioButton getAnchorAllButton() {
 		if (anchorAllButton == null) {
 			anchorAllButton = new JRadioButton("No restrictions");
+			anchorAllButton.setName("AnchorAllButton");
 			anchorAllButton.setToolTipText("This Molecule can be present in any Structure (recommended)");
 			anchorAllButton.addActionListener(eventHandler);
 		}
@@ -462,6 +464,7 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 	private JRadioButton getAnchorOnlyButton() {
 		if (anchorOnlyButton == null) {
 			anchorOnlyButton = new JRadioButton("Only these:");
+			anchorOnlyButton.setName("AnchorOnlyButton");
 			anchorOnlyButton.setToolTipText("This Molecule may be present only in the Structures checked below");
 			anchorOnlyButton.addActionListener(eventHandler);
 		}

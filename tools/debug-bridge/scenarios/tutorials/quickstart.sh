@@ -117,8 +117,10 @@ esac
 
 step "\"You can specify use of an equilibrium approximation... by checking the Fast checkbox\""
 must tab name=ApplicationSpecificationsPanelTabbedPane "Reaction" >/dev/null; sleep 3
-# Found by its column signature, not by name: this table is another of the eight called
-# "ScrollPaneTable", and its columns do not contain the word "Reaction" either.
+# Found by its column signature, not by name. Its columns do not contain the word
+# "Reaction", and until this branch named it ReactionSpecsTable it was one of eight tables
+# all called "ScrollPaneTable" - so the signature is what this check was written against,
+# and it is left that way rather than re-verified against a name it did not use.
 FAST=$(curl -s "http://127.0.0.1:9123/tree" | python3 -c '
 import json, sys
 def walk(n):

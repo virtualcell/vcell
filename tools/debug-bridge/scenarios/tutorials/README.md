@@ -2,16 +2,21 @@
 
 The tutorial PDFs at `vcell.org/webstart/VCell_Tutorials/` are mostly screenshot decks
 from 2016–2022, shot against VCell 6.1–7.2. Six of them were refreshed in July 2025 (the
-`7.7/` subdirectory); the rest still describe a client that has moved on.
+`7.7/` subdirectory); the rest still describe a client that has moved on. One more,
+`SpringSaLaD/SpringSaLaDUsersGuideAndTutorial.pdf`, is a different case again: it does not
+describe VCell at all, but the standalone program whose capability VCell has since
+absorbed.
 
 This directory holds two things per tutorial: a **storyline** — what the document actually
 teaches, in prose, extracted from the PDF — and a **script** that reproduces it against a
 current client through the [debug bridge](../../README.md).
 
-"Reproduces" means two different things here, because the documents do. Eight of them are
-step sequences, and their scripts rebuild the model and run it. The other two are reference
+"Reproduces" means three different things here, because the documents do. Eight of them
+are step sequences, and their scripts rebuild the model and run it. Two are reference
 guides with no model in them; their scripts **audit** the documents instead, checking each
-claim they make against the client and reporting which ones still hold.
+claim they make against the client and reporting which ones still hold. The last is a guide
+to a **different program**, and its script is a **translation** — it builds the VCell
+equivalent, and its storyline carries the noun-by-noun mapping.
 
 | Document | Storyline | Script | State |
 |---|---|---|---|
@@ -25,6 +30,7 @@ claim they make against the client and reporting which ones still hold.
 | `VCell6.1_Rule-Based_Tutorial.pdf` + `SingleCompartmentRuleBased.pdf` | [rule-based-egfr](storylines/rule-based-egfr.md) | [`rule-based-egfr.sh`](rule-based-egfr.sh) | **reproduced** against the 7.7 rewrite; matches the public reference model |
 | `VCell6.1_Rule-Based_Ran_Transport_Tutorial.pdf` | [rule-based-ran-transport](storylines/rule-based-ran-transport.md) | [`rule-based-ran-transport.sh`](rule-based-ran-transport.sh) | **reproduced** against the 7.7 rewrite; matches the public reference model |
 | `SpatialRuleBasedGuide.pdf` | [spatial-rule-based](storylines/spatial-rule-based.md) | [`spatial-rule-based.sh`](spatial-rule-based.sh) | **audited** — 5 claims hold, 3 stale; still the gap in the current doc set |
+| `SpringSaLaD/SpringSaLaDUsersGuideAndTutorial.pdf` | [springsalad-mapk](storylines/springsalad-mapk.md) | [`springsalad-mapk.sh`](springsalad-mapk.sh) | **translated** — the standalone program's guide, rebuilt as the VCell workflow: 0 errors, all five reaction subtypes read back, the Langevin solver run locally and the 3D viewer driven |
 
 ## Running one
 
@@ -43,6 +49,10 @@ tools/debug-bridge/scenarios/tutorials/pathway-commons.sh
 # the two rule-based ones follow the 7.7 rewrites, and import BNGL:
 tools/debug-bridge/scenarios/tutorials/rule-based-egfr.sh
 tools/debug-bridge/scenarios/tutorials/rule-based-ran-transport.sh
+
+# SpringSaLaD builds a model, then opens a reference one for the reactions and runs the
+# Langevin solver locally - allow about seven minutes:
+tools/debug-bridge/scenarios/tutorials/springsalad-mapk.sh
 
 # the two reference guides have no model to build - these audit their claims instead:
 tools/debug-bridge/scenarios/tutorials/quickstart.sh
