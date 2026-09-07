@@ -2120,6 +2120,11 @@ public final class SwingInspector {
 			Class<?> columnClass = t.getColumnClass(column);
 			if (columnClass == Boolean.class || columnClass == Boolean.TYPE) {
 				typed = Boolean.valueOf("true".equalsIgnoreCase(value) || "1".equals(value));
+			} else if (columnClass != String.class && columnClass != Object.class) {
+				Object item = comboItemMatching(t, row, column, value);
+				if (item != null) {
+					typed = item;
+				}
 			}
 			t.setValueAt(typed, row, column);
 			return true;
@@ -2132,6 +2137,45 @@ public final class SwingInspector {
 			UiRecorder.noteSetCell(c, row, rowText, column, t.getColumnName(column), value);
 		}
 		return Boolean.TRUE.equals(ok);
+	}
+
+	/**
+	 * The item in this cell's combo-box editor whose displayed text is {@code text}.
+	 *
+	 * <p>Some columns are not text columns and not checkboxes either: they hold a model
+	 * OBJECT and their editor is a combo box of the objects that are legal there. The
+	 * SpringSaLaD site table is the clearest case - its Location column declares
+	 * {@code Structure.class}, and its model does {@code if (aValue instanceof Structure)}
+	 * and otherwise returns, so handing it a String changes nothing and reports nothing.
+	 *
+	 * <p>The editor already holds the legal values, so the string a caller would read off
+	 * the screen can be turned back into the object the model wants. Columns whose editor
+	 * is not a combo box (a plain text field, an Expression column) return null here and
+	 * keep the String, which is what those models expect.
+	 */
+	private static Object comboItemMatching(JTable table, int row, int column, String text) {
+		javax.swing.table.TableCellEditor editor = table.getCellEditor(row, column);
+		if (!(editor instanceof javax.swing.DefaultCellEditor)) {
+			return null;
+		}
+		Component c = ((javax.swing.DefaultCellEditor) editor).getComponent();
+		if (!(c instanceof JComboBox)) {
+			return null;
+		}
+		JComboBox<?> combo = (JComboBox<?>) c;
+		for (int i = 0; i < combo.getItemCount(); i++) {
+			Object item = combo.getItemAt(i);
+			if (item != null && text.equals(String.valueOf(item))) {
+				return item;
+			}
+		}
+		// second pass through the renderer, for items whose toString() is not what is shown
+		for (int i = 0; i < combo.getItemCount(); i++) {
+			if (text.equals(comboItemText(combo, i))) {
+				return combo.getItemAt(i);
+			}
+		}
+		return null;
 	}
 
 	/**
