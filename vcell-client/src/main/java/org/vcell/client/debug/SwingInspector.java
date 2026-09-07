@@ -19,7 +19,11 @@ import java.awt.Point;
 import java.awt.Frame;
 import java.awt.Rectangle;
 import java.awt.Robot;
+import java.awt.KeyboardFocusManager;
 import java.awt.Window;
+import java.awt.event.FocusEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.InputEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -41,13 +45,17 @@ import javax.swing.JList;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTree;
 import javax.swing.JTextField;
+import javax.swing.MenuSelectionManager;
+import javax.swing.ListCellRenderer;
 import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
 
+import cbit.vcell.geometry.gui.HistogramPanel;
 import cbit.vcell.mapping.SimulationContext;
 
 /**
@@ -281,8 +289,25 @@ public final class SwingInspector {
 		} else if (c instanceof JComboBox) {
 			JComboBox<?> cb = (JComboBox<?>) c;
 			sb.append(",\"combo\":{\"selectedIndex\":").append(cb.getSelectedIndex());
-			sb.append(",\"selectedItem\":\"").append(escape(truncate(String.valueOf(cb.getSelectedItem())))).append('"');
-			sb.append(",\"itemCount\":").append(cb.getItemCount()).append('}');
+			String sel = comboItemText(cb, cb.getSelectedIndex());
+			sb.append(",\"selectedItem\":\"")
+					.append(escape(truncate(sel != null ? sel : String.valueOf(cb.getSelectedItem()))))
+					.append('"');
+			sb.append(",\"itemCount\":").append(cb.getItemCount());
+			// The items themselves, so a caller can see what is selectable rather than
+			// guessing an index: these are the drop-downs the tutorials name by label
+			// ("select General", "select IDA"), never by position.
+			sb.append(",\"items\":[");
+			for (int i = 0; i < cb.getItemCount(); i++) {
+				if (i > 0) {
+					sb.append(',');
+				}
+				String label = comboItemText(cb, i);
+				sb.append('"')
+						.append(escape(truncate(label != null ? label : String.valueOf(cb.getItemAt(i)))))
+						.append('"');
+			}
+			sb.append("]}");
 		} else if (c instanceof JList) {
 			JList<?> jl = (JList<?>) c;
 			int size = jl.getModel().getSize();
@@ -395,6 +420,76 @@ public final class SwingInspector {
 			// fall through
 		}
 		return String.valueOf(value);
+	}
+
+
+
+	/** Renderer host for {@link #comboItemText}; a renderer needs a JList to draw into. */
+	private static final JList<Object> COMBO_RENDER_HOST = new JList<>();
+
+	/**
+	 * What a combo-box item DISPLAYS, as opposed to what its value is.
+	 *
+	 * <p>Third time this distinction has mattered, after tree rows and table cells, and for
+	 * the same reason: these combos hold live model objects. The New Reaction dialog's
+	 * structure chooser installs a renderer that shows {@code Structure.getName()} - "Cyt",
+	 * "NM", "Nuc" - while the raw values stringify as {@code Feature@45e36fb5(name=Cyt)}.
+	 * Matching on the raw form means a caller cannot say "Nuc", which is the only name for
+	 * it a person or a tutorial would use.
+	 */
+	static String comboItemText(JComboBox<?> cb, int index) {
+		if (index < 0 || index >= cb.getItemCount()) {
+			return null;
+		}
+		Object value = cb.getItemAt(index);
+		ListCellRenderer<? super Object> renderer = castRenderer(cb);
+		if (renderer != null) {
+			try {
+				Component rendered = renderer.getListCellRendererComponent(
+						COMBO_RENDER_HOST, value, index, false, false);
+				String text = renderedText(rendered);
+				if (text != null && !text.isEmpty()) {
+					return stripHtml(text);
+				}
+			} catch (RuntimeException e) {
+				// a renderer that cannot draw out of context; fall through to the raw value
+			}
+		}
+		return (value == null) ? null : String.valueOf(value);
+	}
+
+	@SuppressWarnings("unchecked")
+	private static ListCellRenderer<? super Object> castRenderer(JComboBox<?> cb) {
+		return (ListCellRenderer<? super Object>) cb.getRenderer();
+	}
+
+	/**
+	 * What a table cell DISPLAYS, as opposed to what its model value is.
+	 *
+	 * <p>The distinction matters for exactly the same reason it does for a tree row. The
+	 * VCell editor tables hold live model objects, so {@code getValueAt} on the structure
+	 * mapping table returns a {@code Structure}, whose {@code toString} is
+	 * {@code Feature@4d973a55(name=EC)} - carrying an identity hash that is different on
+	 * every launch. Storing that in a recording makes the row unfindable on replay, which
+	 * silently degrades to "use the index I saw last time". The renderer shows "EC".
+	 */
+	static String cellText(JTable table, int row, int column) {
+		if (row < 0 || row >= table.getRowCount()
+				|| column < 0 || column >= table.getColumnCount()) {
+			return null;
+		}
+		try {
+			Component rendered = table.prepareRenderer(
+					table.getCellRenderer(row, column), row, column);
+			String text = renderedText(rendered);
+			if (text != null && !text.isEmpty()) {
+				return stripHtml(text);
+			}
+		} catch (RuntimeException e) {
+			// a renderer that cannot paint out of context; fall through to the raw value
+		}
+		Object value = table.getValueAt(row, column);
+		return (value == null) ? null : String.valueOf(value);
 	}
 
 	/**
@@ -536,9 +631,16 @@ public final class SwingInspector {
 				if (col > 0) {
 					sb.append(',');
 				}
+				// The RENDERED text, for the same reason findRow matches on it: these
+				// tables hold live model objects whose toString carries an identity hash,
+				// so a raw dump reads Feature@4d973a55(name=EC) where the user sees EC -
+				// and anything written against the dump then fails to match the UI.
 				String cell;
 				try {
-					cell = String.valueOf(t.getValueAt(r, col));
+					cell = cellText(t, r, col);
+					if (cell == null) {
+						cell = String.valueOf(t.getValueAt(r, col));
+					}
 				} catch (Exception e) {
 					cell = "?";
 				}
@@ -588,6 +690,12 @@ public final class SwingInspector {
 		if (path.startsWith("name=")) {
 			return findByNameSelector(path.substring("name=".length()));
 		}
+		if (path.startsWith("text=")) {
+			return findByTextSelector(path.substring("text=".length()));
+		}
+		if (path.startsWith("type=")) {
+			return findByTypeSelector(path.substring("type=".length()));
+		}
 		return onEdt(() -> {
 			String[] segs = path.split("/");
 			List<Window> windows = new ArrayList<>();
@@ -626,24 +734,74 @@ public final class SwingInspector {
 
 	/** Resolve the {@code name=...} selector form, with optional {@code [index]} suffix. */
 	private static Component findByNameSelector(String spec) {
-		String name = spec;
+		return findBySelector(spec, Match.NAME);
+	}
+
+	/**
+	 * Resolve the {@code text=...} selector form, with optional {@code [index]} suffix.
+	 *
+	 * <p>Menu and popup items are the components that most need this: VCell builds them
+	 * on the fly with no {@code setName}, so their visible label is the only handle they
+	 * have. {@code /find} already matched on text while the acting endpoints did not,
+	 * which made {@code text=} look supported and then silently resolve to nothing.
+	 */
+	private static Component findByTextSelector(String spec) {
+		return findBySelector(spec, Match.TEXT);
+	}
+
+	/**
+	 * Resolve the {@code type=...} selector form, with optional {@code [index]} suffix.
+	 *
+	 * <p>For the components a dialog builds generically and never names: the geometry-type
+	 * chooser is a bare {@code JSortTable} inside a {@code JOptionPane}, so its only stable
+	 * description is its class. Matching is on the simple class name, and the first
+	 * SHOWING match wins, which is what makes it usable while a modal dialog is up.
+	 */
+	private static Component findByTypeSelector(String spec) {
+		return findBySelector(spec, Match.TYPE);
+	}
+
+	/** Which attribute a {@code name=} / {@code text=} / {@code type=} selector matches on. */
+	private enum Match { NAME, TEXT, TYPE }
+
+	private static Component findBySelector(String spec, final Match on) {
+		String key = spec;
 		int index = -1;
 		java.util.regex.Matcher m = NAME_WITH_INDEX.matcher(spec);
 		if (m.matches()) {
-			name = m.group(1);
+			key = m.group(1);
 			index = Integer.parseInt(m.group(2));
 		}
-		final String targetName = name;
+		final String target = key;
 		final int wanted = index;
 		return onEdt(() -> {
-			List<PathMatch> matches = collectAll(null, targetName, null, null);
+			List<PathMatch> matches;
+			switch (on) {
+				case TEXT: matches = collectAll(null, null, target, null); break;
+				case TYPE: matches = collectAll(target, null, null, null); break;
+				default:   matches = collectAll(null, target, null, null); break;
+			}
 			if (matches.isEmpty()) {
 				return null;
 			}
 			if (wanted >= 0) {
 				return wanted < matches.size() ? matches.get(wanted).component : null;
 			}
-			// an unqualified name should act on what the user can actually see
+			// An unqualified selector should act on what the user is actually looking at.
+			// When a dialog is up that means the dialog: a modal one is where input goes by
+			// definition, and the same generic type ("a JComboBox") usually also matches
+			// something in the window behind it. Prefer the active window, then anything
+			// showing, then give up gracefully.
+			Window active = KeyboardFocusManager.getCurrentKeyboardFocusManager()
+					.getActiveWindow();
+			if (active != null) {
+				for (PathMatch pm : matches) {
+					if (pm.component.isShowing()
+							&& SwingUtilities.getWindowAncestor(pm.component) == active) {
+						return pm.component;
+					}
+				}
+			}
 			for (PathMatch pm : matches) {
 				if (pm.component.isShowing()) {
 					return pm.component;
@@ -1011,6 +1169,97 @@ public final class SwingInspector {
 		});
 	}
 
+	/**
+	 * Click an item in an OPEN pop-up menu, naming it by path: {@code Copy As>Spatial>Stochastic}.
+	 *
+	 * <p>Driving a pop-up one level at a time - open the submenu, look for its items,
+	 * click one - depends on Swing actually showing each submenu, and that turned out not
+	 * to be reliable: a heavyweight pop-up window from an earlier pick can still be around
+	 * and the next submenu then never appears, so the step fails several levels from where
+	 * the trouble is. It is also unnecessary. A {@link JMenu}'s items exist in its model
+	 * whether or not anything is on screen, so the whole path can be walked there and only
+	 * the leaf clicked - which is the same code the menu-bar verb has always used.
+	 *
+	 * <p>The pop-up is identified by what it CONTAINS rather than by a selector: the one
+	 * whose top level has an item named by the first segment. That is what makes it immune
+	 * to a stale pop-up hanging around, which a {@code type=JPopupMenu} selector is not.
+	 */
+	public static String clickPopupItem(final String itemPath) {
+		final String[] segs = itemPath.split(">");
+		return onEdt(() -> {
+			JMenuItem cur = null;
+			for (Window w : Window.getWindows()) {
+				JPopupMenu popup = findPopupWithItem(w, segs[0].trim());
+				if (popup != null) {
+					cur = popupItem(popup, segs[0].trim());
+					break;
+				}
+			}
+			if (cur == null) {
+				return "{\"clicked\":false,\"error\":\"no open pop-up has an item '"
+						+ escape(segs[0].trim()) + "'\"}";
+			}
+			StringBuilder resolved = new StringBuilder(nz(cur.getText()).trim());
+			for (int i = 1; i < segs.length; i++) {
+				if (!(cur instanceof JMenu)) {
+					return "{\"clicked\":false,\"error\":\"'" + escape(resolved.toString())
+							+ "' is not a submenu\"}";
+				}
+				JMenuItem next = childItem((JMenu) cur, segs[i].trim());
+				if (next == null) {
+					return "{\"clicked\":false,\"error\":\"no item '" + escape(segs[i].trim())
+							+ "' under '" + escape(resolved.toString()) + "'\"}";
+				}
+				cur = next;
+				resolved.append(" > ").append(nz(cur.getText()).trim());
+			}
+			if (!cur.isEnabled()) {
+				return "{\"clicked\":false,\"error\":\"item '" + escape(resolved.toString())
+						+ "' is disabled\"}";
+			}
+			final JMenuItem target = cur;
+			if (target instanceof JMenu) {
+				// The path stopped on a door rather than an action - open it, and leave
+				// the caller to pick from what appears. Naming the whole path in one call
+				// is better, but this keeps the two-step idiom working.
+				openSubmenu((JMenu) target);
+				return "{\"clicked\":true,\"opened\":\"" + escape(resolved.toString()) + "\"}";
+			}
+			UiRecorder.noteMenu(resolved.toString(), target);
+			// Dismiss first, then fire: a real click closes the pop-up on its way to the
+			// action, and a pop-up left showing shadows every later text= lookup.
+			MenuSelectionManager.defaultManager().clearSelectedPath();
+			SwingUtilities.invokeLater(target::doClick);
+			return "{\"clicked\":true,\"item\":\"" + escape(resolved.toString()) + "\"}";
+		});
+	}
+
+	/** A showing pop-up under {@code w} whose top level has an item with this text. */
+	private static JPopupMenu findPopupWithItem(Component c, String text) {
+		if (c instanceof JPopupMenu && c.isShowing() && popupItem((JPopupMenu) c, text) != null) {
+			return (JPopupMenu) c;
+		}
+		if (c instanceof Container) {
+			for (Component child : ((Container) c).getComponents()) {
+				JPopupMenu found = findPopupWithItem(child, text);
+				if (found != null) {
+					return found;
+				}
+			}
+		}
+		return null;
+	}
+
+	private static JMenuItem popupItem(JPopupMenu popup, String text) {
+		for (Component child : popup.getComponents()) {
+			if (child instanceof JMenuItem
+					&& text.equalsIgnoreCase(nz(((JMenuItem) child).getText()).trim())) {
+				return (JMenuItem) child;
+			}
+		}
+		return null;
+	}
+
 	private static JMenuBar menuBarOf(Window w) {
 		if (w instanceof JFrame) {
 			return ((JFrame) w).getJMenuBar();
@@ -1129,6 +1378,36 @@ public final class SwingInspector {
 		});
 	}
 
+	/**
+	 * Open a {@link JMenu}'s submenu, the way hovering over it does.
+	 *
+	 * <p>A JMenu is a JMenuItem, but it is not an action: it is a door. Clicking it the
+	 * way this bridge clicks other menu items - clear the selected path, then doClick -
+	 * closes the pop-up it lives in and opens nothing, so a two-level pick like
+	 * "Copy As > Non-Spatial > Stochastic" failed at the first level with the pop-up
+	 * already gone, and the error surfaced as "menu item 'Non-Spatial' never took".
+	 *
+	 * <p>What actually opens a submenu is a selection path ending in the menu's own
+	 * pop-up, which is what {@code BasicMenuUI} installs on mouse-over. Saying that
+	 * directly opens the submenu without disturbing the ancestors that got us here.
+	 */
+	private static boolean openSubmenu(final JMenu menu) {
+		UiRecorder.noteClick(menu);
+		SwingUtilities.invokeLater(() -> {
+			java.util.List<javax.swing.MenuElement> path = new java.util.ArrayList<>();
+			for (Component c = menu; c != null; ) {
+				if (c instanceof javax.swing.MenuElement) {
+					path.add(0, (javax.swing.MenuElement) c);
+				}
+				c = (c instanceof JPopupMenu) ? ((JPopupMenu) c).getInvoker() : c.getParent();
+			}
+			path.add(menu.getPopupMenu());
+			MenuSelectionManager.defaultManager()
+					.setSelectedPath(path.toArray(new javax.swing.MenuElement[0]));
+		});
+		return true;
+	}
+
 	public static boolean click(String path) {
 		Component c = findByPath(path);
 		if (c == null) {
@@ -1138,25 +1417,57 @@ public final class SwingInspector {
 			// Report before acting: the action may open a modal dialog, and the step
 			// belongs in the script whether or not anything blocks afterwards.
 			UiRecorder.noteClick(c);
+			// A plain button gets a real press/release rather than doClick(). doClick
+			// invokes only the ACTION listeners, and not every button here keeps its
+			// behaviour there: the Kinematics "New" button builds and shows its pop-up
+			// from a MouseAdapter.mousePressed, so doClick fired the (empty) action and
+			// reported success while nothing opened. Press/release drives the button's
+			// own UI listener, which fires the action exactly once, AND reaches the
+			// mouse listeners - so both wirings work. Menu items keep doClick, because
+			// a menu item's behaviour always lives in its action.
+			if (c instanceof JMenu) {
+				return openSubmenu((JMenu) c);
+			}
+			final boolean isMenuItem = c instanceof JMenuItem;
+			final Point centre = onEdt(() -> {
+				Dimension d = c.getSize();
+				return (d.width == 0 || d.height == 0) ? null : new Point(d.width / 2, d.height / 2);
+			});
 			// fire-and-forget: the action may open a modal dialog, which would
 			// block invokeAndWait (and with it the whole bridge) until dismissed
-			SwingUtilities.invokeLater(((AbstractButton) c)::doClick);
+			SwingUtilities.invokeLater(() -> {
+				if (!isMenuItem && centre != null) {
+					long when = System.currentTimeMillis();
+					for (int id : new int[] { MouseEvent.MOUSE_PRESSED, MouseEvent.MOUSE_RELEASED,
+							MouseEvent.MOUSE_CLICKED }) {
+						c.dispatchEvent(new MouseEvent(c, id, when, InputEvent.BUTTON1_DOWN_MASK,
+								centre.x, centre.y, 1, false, MouseEvent.BUTTON1));
+					}
+					return;
+				}
+				{
+					// A real click on a menu item closes the menu on the way to firing
+					// the action; doClick only fires the action, so without this the
+					// pop-up stays open. It then SHADOWS later lookups - a stale
+					// "New Application" submenu still showing means the next
+					// text=Rename resolves into the wrong menu, or into nothing - and
+					// the failure surfaces several steps later, nowhere near its cause.
+					// Cleared first: dismissing after doClick would race a dialog the
+					// action opens.
+					MenuSelectionManager.defaultManager().clearSelectedPath();
+				}
+				((AbstractButton) c).doClick();
+			});
 			return true;
 		}
-		// non-button: synthesize a real mouse click at the component center
-		Point screenPt = centerOnScreen(c);
-		if (screenPt == null) {
+		// non-button: dispatch a click at the component centre. Not a Robot click - see
+		// popupTriggerAt for why driving the physical mouse is the wrong default.
+		Dimension size = onEdt(c::getSize);
+		if (size == null || size.width == 0 || size.height == 0) {
 			return false;
 		}
-		try {
-			Robot robot = new Robot();
-			robot.mouseMove(screenPt.x, screenPt.y);
-			robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
-			robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
-			return true;
-		} catch (Exception e) {
-			throw new RuntimeException("robot click failed at " + screenPt, e);
-		}
+		return dispatchClicks(path, new Point(size.width / 2, size.height / 2),
+				InputEvent.BUTTON1_DOWN_MASK, 1);
 	}
 
 	// ---------------------------------------------------------------------
@@ -1180,13 +1491,47 @@ public final class SwingInspector {
 				return false;
 			}
 			int col = column < 0 ? 0 : column;
-			Object cell = (table.getColumnCount() > 0) ? table.getValueAt(row, 0) : null;
-			UiRecorder.noteRow("selectTableRow", table, row, cell == null ? null : String.valueOf(cell));
+			UiRecorder.noteRow("selectTableRow", table, row,
+					(table.getColumnCount() > 0) ? cellText(table, row, 0) : null);
 			table.setRowSelectionInterval(row, row);
 			if (column >= 0 && table.getColumnSelectionAllowed()) {
 				table.setColumnSelectionInterval(col, col);
 			}
 			table.scrollRectToVisible(table.getCellRect(row, col, true));
+			return true;
+		}));
+	}
+
+	/**
+	 * Select a contiguous range of table rows, {@code lo-hi} or open-ended {@code lo-}.
+	 *
+	 * <p>What ctrl+A means, said as a range. Several tutorials select a whole page of a
+	 * table and act on it - "press ctrl+a and click Import > Selected Only" - and the
+	 * statement is about the rows the table currently shows, not about the keystroke. That
+	 * matters because these tables are filtered: after typing in the Search field the
+	 * range is over what survived the filter, which is exactly what the user selects too.
+	 *
+	 * @return false if the path is not a table or the range falls outside it
+	 */
+	public static boolean selectTableRange(final String path, final String range) {
+		return Boolean.TRUE.equals(onEdt(() -> {
+			Component c = findByPath(path);
+			if (!(c instanceof JTable)) {
+				return false;
+			}
+			JTable table = (JTable) c;
+			int count = table.getRowCount();
+			String[] ends = range.split("-", -1);
+			if (ends.length != 2) {
+				return false;
+			}
+			int low = Integer.parseInt(ends[0]);
+			int high = ends[1].isEmpty() ? count - 1 : Integer.parseInt(ends[1]);
+			if (count == 0 || low < 0 || high >= count || low > high) {
+				return false;
+			}
+			table.setRowSelectionInterval(low, high);
+			table.scrollRectToVisible(table.getCellRect(high, 0, true));
 			return true;
 		}));
 	}
@@ -1215,7 +1560,7 @@ public final class SwingInspector {
 
 	private static boolean clickTableRow(final String path, final int row, final int column,
 			final int buttonMask, final int clickCount) {
-		Point screenPt = onEdt(() -> {
+		Point localPt = onEdt(() -> {
 			JTable table = tableAt(path, row, column);
 			if (table == null || !table.isShowing()) {
 				return null;
@@ -1226,24 +1571,31 @@ public final class SwingInspector {
 			table.scrollRectToVisible(cell);
 			// re-read: scrolling moves the cell under the viewport
 			cell = table.getCellRect(row, col, true);
-			Point loc = table.getLocationOnScreen();
-			return new Point(loc.x + cell.x + Math.min(cell.width / 2, 60),
-					loc.y + cell.y + cell.height / 2);
+			return new Point(cell.x + Math.min(cell.width / 2, 60), cell.y + cell.height / 2);
 		});
-		if (screenPt == null) {
+		if (localPt == null) {
 			return false;
 		}
-		try {
-			Robot robot = new Robot();
-			robot.mouseMove(screenPt.x, screenPt.y);
-			for (int i = 0; i < clickCount; i++) {
-				robot.mousePress(buttonMask);
-				robot.mouseRelease(buttonMask);
+		// Dispatched rather than driven with a Robot, for the reasons in popupTriggerAt:
+		// a real click moves the user's cursor, depends on where the window sits, and
+		// needs the application to be active.
+		final Component target = findByPath(path);
+		if (target == null) {
+			return false;
+		}
+		final boolean popup = (buttonMask & InputEvent.BUTTON3_DOWN_MASK) != 0;
+		final int button = popup ? MouseEvent.BUTTON3 : MouseEvent.BUTTON1;
+		return Boolean.TRUE.equals(onEdt(() -> {
+			long when = System.currentTimeMillis();
+			for (int i = 1; i <= clickCount; i++) {
+				for (int id : new int[] { MouseEvent.MOUSE_PRESSED, MouseEvent.MOUSE_RELEASED,
+						MouseEvent.MOUSE_CLICKED }) {
+					target.dispatchEvent(new MouseEvent(target, id, when, buttonMask,
+							localPt.x, localPt.y, i, popup, button));
+				}
 			}
 			return true;
-		} catch (Exception e) {
-			throw new RuntimeException("robot table click failed at " + screenPt, e);
-		}
+		}));
 	}
 
 	/** Resolve a selector to a JTable and bounds-check row/column. Must run on the EDT. */
@@ -1323,7 +1675,7 @@ public final class SwingInspector {
 	 * @return true if the tree/row resolved and the double-click was issued
 	 */
 	public static boolean doubleClickTreeRow(final String path, final int row) {
-		Point screenPt = onEdt(() -> {
+		Point localPt = onEdt(() -> {
 			Component c = findByPath(path);
 			if (!(c instanceof JTree)) {
 				return null;
@@ -1338,23 +1690,9 @@ public final class SwingInspector {
 			if (rb == null) {
 				return null;
 			}
-			Point loc = tree.getLocationOnScreen();
-			return new Point(loc.x + rb.x + Math.min(rb.width / 2, 40), loc.y + rb.y + rb.height / 2);
+			return new Point(rb.x + Math.min(rb.width / 2, 40), rb.y + rb.height / 2);
 		});
-		if (screenPt == null) {
-			return false;
-		}
-		try {
-			Robot robot = new Robot();
-			robot.mouseMove(screenPt.x, screenPt.y);
-			for (int i = 0; i < 2; i++) {
-				robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
-				robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
-			}
-			return true;
-		} catch (Exception e) {
-			throw new RuntimeException("robot double-click failed at " + screenPt, e);
-		}
+		return dispatchClicks(path, localPt, InputEvent.BUTTON1_DOWN_MASK, 2);
 	}
 
 	/**
@@ -1368,7 +1706,7 @@ public final class SwingInspector {
 	 * @return true if the tree/row resolved and the right-click was issued
 	 */
 	public static boolean rightClickTreeRow(final String path, final int row) {
-		Point screenPt = onEdt(() -> {
+		Point localPt = onEdt(() -> {
 			Component c = findByPath(path);
 			if (!(c instanceof JTree)) {
 				return null;
@@ -1383,10 +1721,9 @@ public final class SwingInspector {
 			if (rb == null) {
 				return null;
 			}
-			Point loc = tree.getLocationOnScreen();
-			return new Point(loc.x + rb.x + Math.min(rb.width / 2, 24), loc.y + rb.y + rb.height / 2);
+			return new Point(rb.x + Math.min(rb.width / 2, 24), rb.y + rb.height / 2);
 		});
-		return rightClickAt(screenPt);
+		return popupTriggerAt(path, localPt);
 	}
 
 	/**
@@ -1396,31 +1733,405 @@ public final class SwingInspector {
 	 * @return true if a showing component resolved and the right-click was issued
 	 */
 	public static boolean rightClick(final String path) {
-		Point screenPt = onEdt(() -> {
+		Point localPt = onEdt(() -> {
 			Component c = findByPath(path);
 			if (c == null || !c.isShowing()) {
 				return null;
 			}
-			Point loc = c.getLocationOnScreen();
 			Dimension d = c.getSize();
-			return new Point(loc.x + d.width / 2, loc.y + d.height / 2);
+			return new Point(d.width / 2, d.height / 2);
 		});
-		return rightClickAt(screenPt);
+		return popupTriggerAt(path, localPt);
 	}
 
-	private static boolean rightClickAt(Point screenPt) {
-		if (screenPt == null) {
+	/**
+	 * Deliver a click to a component as AWT events, in the component's own coordinates.
+	 *
+	 * <p>The counterpart to {@link #popupTriggerAt} for ordinary clicks, and the same
+	 * reasoning: the physical mouse belongs to whoever is at the keyboard. Only
+	 * {@link #glide} and {@link #robotClick} move it, and they say so in their names.
+	 */
+	private static boolean dispatchClicks(String path, Point localPt, int buttonMask,
+			int clickCount) {
+		if (localPt == null) {
 			return false;
 		}
-		try {
-			Robot robot = new Robot();
-			robot.mouseMove(screenPt.x, screenPt.y);
-			robot.mousePress(InputEvent.BUTTON3_DOWN_MASK);
-			robot.mouseRelease(InputEvent.BUTTON3_DOWN_MASK);
-			return true;
-		} catch (Exception e) {
-			throw new RuntimeException("robot right-click failed at " + screenPt, e);
+		Component c = findByPath(path);
+		if (c == null) {
+			return false;
 		}
+		return Boolean.TRUE.equals(onEdt(() -> {
+			long when = System.currentTimeMillis();
+			for (int i = 1; i <= clickCount; i++) {
+				for (int id : new int[] { MouseEvent.MOUSE_PRESSED, MouseEvent.MOUSE_RELEASED,
+						MouseEvent.MOUSE_CLICKED }) {
+					c.dispatchEvent(new MouseEvent(c, id, when, buttonMask,
+							localPt.x, localPt.y, i, false, MouseEvent.BUTTON1));
+				}
+			}
+			return true;
+		}));
+	}
+
+	/**
+	 * Open a component's context menu by DISPATCHING the popup trigger to it, rather
+	 * than driving the physical mouse.
+	 *
+	 * <p>This used to be a {@link Robot} right-click at screen coordinates, which has two
+	 * problems. It moves the user's real cursor and issues a real click, so a scripted run
+	 * fights whoever is at the keyboard - and it lands wherever the window happens to be,
+	 * so moving the window out of the way breaks it. It also needs the application to be
+	 * active: run the client as a macOS accessory app (VCELL_UI_BACKGROUND=true) and a
+	 * real right-click never raises the pop-up at all, while the endpoint still reports
+	 * success.
+	 *
+	 * <p>Swing decides to show a context menu from {@code MouseEvent.isPopupTrigger()},
+	 * so a press/release pair carrying that flag reaches the same listeners the real
+	 * gesture would. Which button sets the flag is platform-specific - it is the PRESS on
+	 * X11 and macOS and the RELEASE on Windows - so both carry it here.
+	 *
+	 * @param localPt where to click, in the component's own coordinates
+	 */
+	private static boolean popupTriggerAt(String path, Point localPt) {
+		if (localPt == null) {
+			return false;
+		}
+		Component c = findByPath(path);
+		if (c == null) {
+			return false;
+		}
+		return Boolean.TRUE.equals(onEdt(() -> {
+			long when = System.currentTimeMillis();
+			for (int id : new int[] { MouseEvent.MOUSE_PRESSED, MouseEvent.MOUSE_RELEASED }) {
+				c.dispatchEvent(new MouseEvent(c, id, when, InputEvent.BUTTON3_DOWN_MASK,
+						localPt.x, localPt.y, 1, true, MouseEvent.BUTTON3));
+			}
+			return true;
+		}));
+	}
+
+
+	/** What a list item DISPLAYS, via its renderer - see {@link #comboItemText}. */
+	static String listItemText(JList<?> list, int index) {
+		if (index < 0 || index >= list.getModel().getSize()) {
+			return null;
+		}
+		Object value = list.getModel().getElementAt(index);
+		ListCellRenderer<? super Object> renderer = castListRenderer(list);
+		if (renderer != null) {
+			try {
+				Component rendered = renderer.getListCellRendererComponent(
+						castList(list), value, index, false, false);
+				String text = renderedText(rendered);
+				if (text != null && !text.isEmpty()) {
+					return stripHtml(text);
+				}
+			} catch (RuntimeException e) {
+				// fall through to the raw value
+			}
+		}
+		return (value == null) ? null : String.valueOf(value);
+	}
+
+	@SuppressWarnings("unchecked")
+	private static ListCellRenderer<? super Object> castListRenderer(JList<?> l) {
+		return (ListCellRenderer<? super Object>) l.getCellRenderer();
+	}
+
+	@SuppressWarnings("unchecked")
+	private static JList<Object> castList(JList<?> l) {
+		return (JList<Object>) l;
+	}
+
+	/**
+	 * Select one or more items in a {@link JList} by their displayed text.
+	 *
+	 * <p>The results window's variable chooser is the case this exists for: which species
+	 * are selected there decides which columns the data table has, so reading four
+	 * concentrations out of a run means selecting four names first. The tutorials say
+	 * "press Ctrl and click the other species", never "select rows 0, 3, 4 and 5".
+	 *
+	 * <p>A few lists are not like that. The geometry editor's Domain Regions list is one
+	 * per connected region of the segmented image - a hundred and more of them, labelled
+	 * by a region index that differs every run - and what the tutorial says about it is
+	 * positional: "select all the regions except the two top ones, and Auto-Merge". For
+	 * those, {@code items} may instead be a range of positions, written {@code 2-148}
+	 * or open-ended as {@code 2-}. Ranges are 0-based, like the indices this returns to.
+	 *
+	 * @param items  displayed labels, comma-separated; more than one implies a
+	 *               multi-select. Or a single {@code lo-hi} / {@code lo-} position range.
+	 * @return false if the path is not a list, or if any named item is not in it - a
+	 *         partial selection would silently produce a table missing columns
+	 */
+	public static boolean selectList(String path, final String items) {
+		Component c = findByPath(path);
+		if (!(c instanceof JList)) {
+			return false;
+		}
+		if (items.matches("\\d+-\\d*")) {
+			return selectListRange((JList<?>) c, items);
+		}
+		return Boolean.TRUE.equals(onEdt(() -> {
+			JList<?> list = (JList<?>) c;
+			String[] wanted = items.split("\\s*,\\s*");
+			int[] indices = new int[wanted.length];
+			for (int w = 0; w < wanted.length; w++) {
+				indices[w] = -1;
+				for (int i = 0; i < list.getModel().getSize(); i++) {
+					String label = listItemText(list, i);
+					if (label != null && label.equalsIgnoreCase(wanted[w])) {
+						indices[w] = i;
+						break;
+					}
+				}
+				if (indices[w] < 0) {
+					return false;
+				}
+			}
+			list.setSelectedIndices(indices);
+			list.ensureIndexIsVisible(indices[indices.length - 1]);
+			return true;
+		}));
+	}
+
+	/** Select a 0-based position range, {@code lo-hi} or open-ended {@code lo-}. */
+	private static boolean selectListRange(JList<?> list, String range) {
+		return Boolean.TRUE.equals(onEdt(() -> {
+			int size = list.getModel().getSize();
+			String[] ends = range.split("-", -1);
+			int low = Integer.parseInt(ends[0]);
+			int high = ends[1].isEmpty() ? size - 1 : Integer.parseInt(ends[1]);
+			if (low < 0 || high >= size || low > high) {
+				return false;
+			}
+			list.setSelectionInterval(low, high);
+			list.ensureIndexIsVisible(high);
+			return true;
+		}));
+	}
+
+	/**
+	 * Select a range of pixel intensities on the geometry editor's histogram.
+	 *
+	 * <p>The image segmentation tools divide cleanly in two. The paint and eraser tools are
+	 * irreducibly per-pixel - there is no model-level way to say which pixels they touch,
+	 * and this bridge deliberately offers none. The histogram threshold is not like that:
+	 * its axis is pixel VALUE, and dragging across it means "include intensities from here
+	 * to here". That is a statement a script can make exactly, and durably.
+	 *
+	 * @param path a selector resolving to the {@link HistogramPanel}, or to its window
+	 * @return false if no histogram was found - never a silent no-op
+	 */
+	public static boolean selectPixelRange(String path, final int low, final int high) {
+		Component from = findByPath(path);
+		if (from == null) {
+			return false;
+		}
+		final HistogramPanel histogram = onEdt(() -> findHistogram(from));
+		if (histogram == null) {
+			return false;
+		}
+		return Boolean.TRUE.equals(onEdt(() -> {
+			histogram.selectPixelRange(low, high);
+			return true;
+		}));
+	}
+
+	/** The histogram at or under {@code c}, else the one under {@code c}'s window. */
+	private static HistogramPanel findHistogram(Component c) {
+		HistogramPanel found = descendantHistogram(c);
+		if (found != null) {
+			return found;
+		}
+		Window w = (c instanceof Window) ? (Window) c : SwingUtilities.getWindowAncestor(c);
+		return (w == null) ? null : descendantHistogram(w);
+	}
+
+	private static HistogramPanel descendantHistogram(Component c) {
+		if (c instanceof HistogramPanel) {
+			return (HistogramPanel) c;
+		}
+		if (c instanceof Container) {
+			for (Component child : ((Container) c).getComponents()) {
+				HistogramPanel found = descendantHistogram(child);
+				if (found != null) {
+					return found;
+				}
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Answer a file dialog with a path, through the chooser's own model.
+	 *
+	 * <p>A {@link JFileChooser} cannot be driven the way the rest of this bridge drives a
+	 * dialog. Its visible controls are a directory listing and an approve button, and the
+	 * text field that looks like somewhere to type a path is, on the Aqua look and feel,
+	 * the hidden "go to folder" field - {@code setText} on it reports success and changes
+	 * nothing. Typing into the listing is worse: it depends on the current directory, the
+	 * sort order and the file's position in it.
+	 *
+	 * <p>So say what the dialog is for instead. {@code setSelectedFile} plus
+	 * {@code approveSelection} is exactly what the approve button does, and it fires the
+	 * same {@code APPROVE_SELECTION} action, so whatever was waiting on the dialog
+	 * proceeds as it would for a real choice.
+	 *
+	 * @param path a selector resolving to the chooser, or to anything inside its window
+	 * @param file absolute path to select; may be a directory for a chooser that wants one
+	 * @return false if no chooser was found, or if the path names nothing that could be
+	 *         chosen - the two ways this silently does nothing otherwise. A SAVE dialog's
+	 *         target does not exist yet, so a writable parent directory is enough.
+	 */
+	public static boolean chooseFile(String path, final String file) {
+		java.io.File target = new java.io.File(file);
+		java.io.File parent = target.getParentFile();
+		if (!target.exists() && (parent == null || !parent.isDirectory())) {
+			return false;
+		}
+		Component from = findByPath(path);
+		if (from == null) {
+			return false;
+		}
+		final javax.swing.JFileChooser chooser = onEdt(() -> findChooser(from));
+		if (chooser == null) {
+			return false;
+		}
+		return Boolean.TRUE.equals(onEdt(() -> {
+			if (target.isDirectory()) {
+				chooser.setCurrentDirectory(target);
+			}
+			chooser.setSelectedFile(target);
+			chooser.approveSelection();
+			return true;
+		}));
+	}
+
+	/** The chooser at or under {@code c}, else the one under {@code c}'s window. */
+	private static javax.swing.JFileChooser findChooser(Component c) {
+		javax.swing.JFileChooser found = descendantChooser(c);
+		if (found != null) {
+			return found;
+		}
+		Window w = (c instanceof Window) ? (Window) c : SwingUtilities.getWindowAncestor(c);
+		return (w == null) ? null : descendantChooser(w);
+	}
+
+	private static javax.swing.JFileChooser descendantChooser(Component c) {
+		if (c instanceof javax.swing.JFileChooser) {
+			return (javax.swing.JFileChooser) c;
+		}
+		if (c instanceof Container) {
+			for (Component child : ((Container) c).getComponents()) {
+				javax.swing.JFileChooser found = descendantChooser(child);
+				if (found != null) {
+					return found;
+				}
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Select an item in a {@link JComboBox}, by its displayed text.
+	 *
+	 * <p>The tutorials name these by label - "select General [uM/s]", "select IDA
+	 * (Variable Order, Variable Time Step)", "select Circle" - and never by position,
+	 * which is the right instinct: the list of solvers and kinetic types grows between
+	 * releases. Matching is exact first, then by prefix, so a caller may pass the part
+	 * of the label a human would say.
+	 *
+	 * <p>Selection goes through {@code setSelectedIndex}, which fires the same
+	 * {@code ActionEvent} the pop-up does, so dependent panels rebuild as they would
+	 * for a real choice.
+	 *
+	 * @return false if the path is not a combo box or nothing matched - never a silent
+	 *         no-op leaving the previous selection in place
+	 */
+	public static boolean selectCombo(String path, final String item) {
+		Component c = findByPath(path);
+		if (!(c instanceof JComboBox)) {
+			return false;
+		}
+		Integer picked = onEdt(() -> {
+			JComboBox<?> cb = (JComboBox<?>) c;
+			int fallback = -1;
+			for (int i = 0; i < cb.getItemCount(); i++) {
+				String label = comboItemText(cb, i);
+				if (label == null) {
+					continue;
+				}
+				if (label.equalsIgnoreCase(item)) {
+					cb.setSelectedIndex(i);
+					return i;
+				}
+				if (fallback < 0 && label.toLowerCase().startsWith(item.toLowerCase())) {
+					fallback = i;
+				}
+			}
+			if (fallback >= 0) {
+				cb.setSelectedIndex(fallback);
+			}
+			return fallback;
+		});
+		if (picked != null && picked >= 0) {
+			UiRecorder.noteSelectCombo(c, picked, item);
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Commit a value into one table cell through the table's own model.
+	 *
+	 * <p>Every one of these editor tables states the model one value per column, and the
+	 * tutorials read the same way: "type 20 in the Diffusion Constant column". Driving
+	 * that as a double-click plus a setText means addressing the cell editor, which is a
+	 * transient component created on edit and destroyed on commit, with no name to hold
+	 * onto. Going through {@code setValueAt} instead targets what the editor itself calls
+	 * when the user presses Enter, so validation and side effects are the real ones - in
+	 * VCell that includes creating a row from the "(add new here)" placeholder.
+	 *
+	 * <p>The value arrives over HTTP as text, but a checkbox column is not a text column:
+	 * its model casts what it is handed straight to {@link Boolean}, so passing a String
+	 * throws on the EDT and the caller sees nothing but a cell that did not change. The
+	 * column's own declared class says which columns those are, so convert for them.
+	 *
+	 * @param row    view row index
+	 * @param column view column index
+	 * @return false if the path is not a table, the cell is out of range, or the model
+	 *         declares the cell read-only - never silently a no-op
+	 */
+	public static boolean setCell(String path, final int row, final int column,
+			final String value) {
+		Component c = findByPath(path);
+		if (!(c instanceof JTable)) {
+			return false;
+		}
+		Boolean ok = onEdt(() -> {
+			JTable t = (JTable) c;
+			if (row < 0 || row >= t.getRowCount() || column < 0 || column >= t.getColumnCount()) {
+				return false;
+			}
+			if (!t.isCellEditable(row, column)) {
+				return false;
+			}
+			Object typed = value;
+			Class<?> columnClass = t.getColumnClass(column);
+			if (columnClass == Boolean.class || columnClass == Boolean.TYPE) {
+				typed = Boolean.valueOf("true".equalsIgnoreCase(value) || "1".equals(value));
+			}
+			t.setValueAt(typed, row, column);
+			return true;
+		});
+		if (Boolean.TRUE.equals(ok)) {
+			final JTable t = (JTable) c;
+			String rowText = onEdt(() ->
+					(t.getColumnCount() > 0 && row < t.getRowCount())
+							? cellText(t, row, 0) : null);
+			UiRecorder.noteSetCell(c, row, rowText, column, t.getColumnName(column), value);
+		}
+		return Boolean.TRUE.equals(ok);
 	}
 
 	/**
@@ -1442,8 +2153,26 @@ public final class SwingInspector {
 		onEdt(() -> {
 			JTextComponent tc = (JTextComponent) c;
 			tc.setText(text);
-			if (commit && tc instanceof JTextField) {
-				((JTextField) tc).postActionEvent();
+			if (commit) {
+				if (tc instanceof JTextField) {
+					((JTextField) tc).postActionEvent();
+				}
+				// Much of VCell's older GUI commits a field on focusLost, not on Enter:
+				// TimeBoundsPanel, the mesh and output panels all read getText() from a
+				// FocusListener. setText moves no focus, so without this the value is
+				// merely DISPLAYED and then silently discarded - the dialog reopens
+				// showing the old number and the script appears to have done nothing.
+				//
+				// The listeners are called directly rather than through dispatchEvent:
+				// AWT routes focus events via the KeyboardFocusManager, which drops a
+				// synthetic FOCUS_LOST aimed at a component that never held focus, so
+				// dispatching one is silently a no-op. Requesting real focus and then
+				// transferring it away would also work, but depends on the window being
+				// focused - untrue for a scripted run behind other windows.
+				FocusEvent lost = new FocusEvent(tc, FocusEvent.FOCUS_LOST, false, null);
+				for (FocusListener fl : tc.getFocusListeners()) {
+					fl.focusLost(lost);
+				}
 			}
 			return null;
 		});
@@ -1456,17 +2185,42 @@ public final class SwingInspector {
 	 * @return true if the pane resolved and the index was valid
 	 */
 	public static boolean selectTab(String path, int index) {
+		return selectTab(path, index, null);
+	}
+
+	/**
+	 * Select a tab, by its TITLE when one is given and the index only as a fallback.
+	 *
+	 * <p>An index is not a durable way to name a tab here. The application tab strip is
+	 * built from the application itself: a spatial application shows Geometry,
+	 * Specifications, Protocols and Simulations, while a non-spatial one also carries
+	 * Parameter Estimation - so "index 3" is Simulations in one and something else in
+	 * the other. Same argument as row text and column headers.
+	 */
+	public static boolean selectTab(String path, final int index, final String title) {
 		Component c = findByPath(path);
 		if (!(c instanceof JTabbedPane)) {
 			return false;
 		}
 		return Boolean.TRUE.equals(onEdt(() -> {
 			JTabbedPane tp = (JTabbedPane) c;
-			if (index < 0 || index >= tp.getTabCount()) {
+			int target = -1;
+			if (title != null && !title.isEmpty()) {
+				for (int i = 0; i < tp.getTabCount(); i++) {
+					if (title.equals(tp.getTitleAt(i))) {
+						target = i;
+						break;
+					}
+				}
+			}
+			if (target < 0) {
+				target = index;
+			}
+			if (target < 0 || target >= tp.getTabCount()) {
 				return false;
 			}
-			UiRecorder.noteTab(tp, index);
-			tp.setSelectedIndex(index);
+			UiRecorder.noteTab(tp, target);
+			tp.setSelectedIndex(target);
 			return true;
 		}));
 	}
@@ -1791,6 +2545,22 @@ public final class SwingInspector {
 	 */
 	public static String findRowJson(String path, final String query, final boolean exact,
 			final String appType) {
+		return findRowJson(path, query, exact, appType, 0);
+	}
+
+	/**
+	 * As above, but searching a nominated column rather than the first.
+	 *
+	 * <p>Column 0 is the row's identity in most of these tables, but not all: a spatial
+	 * process's parameter table leads with a prose description ("surface velocity (x
+	 * coord)") and carries the name the tutorial actually says - {@code velocityX} - in
+	 * the next column. Searching only column 0 there finds nothing and returns -1, which
+	 * the caller then feeds to setCell as a row index.
+	 *
+	 * @param searchColumn view column index to match against
+	 */
+	public static String findRowJson(String path, final String query, final boolean exact,
+			final String appType, final int searchColumn) {
 		Component c = findByPath(path);
 		if (c == null) {
 			return "{\"error\":\"selector did not resolve\",\"row\":-1}";
@@ -1820,8 +2590,8 @@ public final class SwingInspector {
 					text = rowText((JTree) c, row);
 				} else {
 					JTable t = (JTable) c;
-					Object cell = (t.getColumnCount() > 0) ? t.getValueAt(row, 0) : null;
-					text = (cell == null) ? null : String.valueOf(cell);
+					int sc = (searchColumn > 0 && searchColumn < t.getColumnCount()) ? searchColumn : 0;
+					text = (t.getColumnCount() > 0) ? cellText(t, row, sc) : null;
 				}
 				if (text == null) {
 					continue;
@@ -1849,6 +2619,84 @@ public final class SwingInspector {
 		String text = found[1];
 		return "{\"row\":" + found[0]
 				+ (text == null ? "" : ",\"text\":\"" + escape(text) + "\"") + '}';
+	}
+
+
+	/**
+	 * Read one table cell's DISPLAYED text, without the row cap the tree dump applies.
+	 *
+	 * <p>{@link #dumpJson} truncates a table to the first 25 rows, which is the right
+	 * default for reading a UI but useless for reading a RESULT: a simulation's steady
+	 * state is the last row of a series hundreds long, and that is exactly the row a
+	 * tutorial copies forward into its next application. The row count itself is already
+	 * reported un-truncated, so a caller can ask for the final row by index.
+	 *
+	 * @param row    view row index; negative counts back from the end, so -1 is the last row
+	 * @param column view column index
+	 */
+	public static String readCellJson(String path, final int row, final int column) {
+		Component c = findByPath(path);
+		if (!(c instanceof JTable)) {
+			return "{\"error\":\"selector is not a JTable\"}";
+		}
+		String[] found = onEdt(() -> {
+			JTable t = (JTable) c;
+			int r = (row < 0) ? t.getRowCount() + row : row;
+			if (r < 0 || r >= t.getRowCount() || column < 0 || column >= t.getColumnCount()) {
+				return null;
+			}
+			return new String[] { String.valueOf(r), cellText(t, r, column),
+					t.getColumnName(column), String.valueOf(t.getRowCount()) };
+		});
+		if (found == null) {
+			return "{\"error\":\"row or column out of range\"}";
+		}
+		return "{\"row\":" + found[0]
+				+ ",\"column\":" + column
+				+ ",\"columnName\":\"" + escape(nz(found[2])) + '"'
+				+ ",\"rowCount\":" + found[3]
+				+ ",\"value\":" + (found[1] == null ? "null" : "\"" + escape(found[1]) + "\"")
+				+ '}';
+	}
+
+	/**
+	 * Resolve a table column by its HEADER TEXT to its current view index.
+	 *
+	 * <p>Same argument as {@link #findRowJson}, one axis over. These editor tables carry
+	 * one model value per column - initial condition, diffusion constant, size - so a
+	 * script naming a column by index edits whatever happens to sit in that position
+	 * today. The header is what a tutorial actually names, and what survives a reorder.
+	 *
+	 * <p>Matching is case-insensitive, exact first and then by prefix, so a caller may
+	 * say "Initial Condition" for a header rendered as "Initial Condition (uM)".
+	 */
+	public static String findColumnJson(String path, final String header) {
+		Component c = findByPath(path);
+		if (!(c instanceof JTable)) {
+			return "{\"error\":\"selector is not a JTable\",\"column\":-1}";
+		}
+		String[] found = onEdt(() -> {
+			JTable t = (JTable) c;
+			int fallback = -1;
+			for (int col = 0; col < t.getColumnCount(); col++) {
+				String name = t.getColumnName(col);
+				if (name == null) {
+					continue;
+				}
+				if (name.equalsIgnoreCase(header)) {
+					return new String[] { String.valueOf(col), name };
+				}
+				if (fallback < 0 && name.toLowerCase().startsWith(header.toLowerCase())) {
+					fallback = col;
+				}
+			}
+			return (fallback < 0)
+					? new String[] { "-1", null }
+					: new String[] { String.valueOf(fallback), t.getColumnName(fallback) };
+		});
+		String name = found[1];
+		return "{\"column\":" + found[0]
+				+ (name == null ? "" : ",\"name\":\"" + escape(name) + "\"") + '}';
 	}
 
 	/** @return the screen centre of one tree row, table row or tab, or null if unresolvable. */
@@ -1999,6 +2847,22 @@ public final class SwingInspector {
 			});
 			if (selector != null) {
 				return selector;
+			}
+		}
+		// No usable name, but a label that IS the identity. Menu and popup items are the
+		// case that matters: VCell builds them on the fly, none of them is named, and a
+		// recorded node path for a pop-up encodes both the window index and the item's
+		// position in a menu whose contents depend on the model. Restricted to buttons
+		// and menu items on purpose - a JLabel's text is often a live value, which would
+		// make a selector that goes stale the moment the value changes.
+		if (c instanceof AbstractButton) {
+			String text = onEdt(() -> textOf(c));
+			if (text != null && !text.isEmpty() && text.length() <= 80) {
+				String candidate = "text=" + text;
+				// Only claim it if it actually resolves BACK to this component.
+				if (findByPath(candidate) == c) {
+					return candidate;
+				}
 			}
 		}
 		String path = pathOf(c);

@@ -137,6 +137,8 @@ public final class UiRecorder {
 		boolean enter;     // setText committed with Enter
 		int row = -1;      // tree/table
 		String rowText;    // what that row DISPLAYS - a row number alone documents nothing
+		int column = -1;   // table: WHICH cell in the row, for a per-column edit
+		String columnName; // what that column IS HEADED - an index documents nothing, as above
 		int index = -1;    // tab
 		String tabTitle;   // what that tab READS - an index documents nothing, same as a row
 		Boolean expand;    // expandTreeRow: expanding or collapsing
@@ -382,8 +384,15 @@ public final class UiRecorder {
 			s = newStep(right ? "rightClickTableRow" : (doubleClick ? "doubleClickTableRow" : "selectTableRow"), now, target);
 			s.row = row;
 			if (table.getColumnCount() > 0) {
-				Object cell = table.getValueAt(row, 0);
-				s.rowText = (cell == null) ? null : String.valueOf(cell);
+				s.rowText = SwingInspector.cellText(table, row, 0);
+			}
+			// Which cell was hit, not just which row: these tables carry the model's
+			// values one per column (initial condition, diffusion constant, size), so a
+			// step that forgets the column replays the edit into the wrong cell.
+			int column = table.columnAtPoint(p);
+			if (column >= 0) {
+				s.column = column;
+				s.columnName = table.getColumnName(column);
 			}
 		} else if (target instanceof JTabbedPane) {
 			JTabbedPane tabs = (JTabbedPane) target;
@@ -473,6 +482,9 @@ public final class UiRecorder {
 	 * naming debt is visible in the artifact: a step marked "path" will break the next time
 	 * that panel is rearranged, and the fix is a setName() at the component's construction
 	 * site. Better to read that off a fresh recording than to discover it a year later.
+	 *
+	 * <p>"text" sits in between: durable against a relayout, but not against relabelling
+	 * or translation, so it is worth a setName() eventually - just not urgently.
 	 */
 	private static String durabilityOf(String selector) {
 		if (selector == null) {
@@ -480,6 +492,9 @@ public final class UiRecorder {
 		}
 		if (selector.startsWith("name=")) {
 			return "name";
+		}
+		if (selector.startsWith("text=")) {
+			return "text";
 		}
 		return selector.matches("c\\d+") ? "id" : "path";
 	}
@@ -642,6 +657,44 @@ public final class UiRecorder {
 		Step s = newStep(verb, now, target);
 		s.row = row;
 		s.rowText = rowText;
+		s.note = describe(target);
+		emit(s, now, target);
+	}
+
+	/** Record a combo-box choice, keyed on the item's label rather than its index. */
+	static void noteSelectCombo(Component target, int index, String item) {
+		if (!capturing()) {
+			return;
+		}
+		long now = System.currentTimeMillis();
+		flushPendingText(now, false);
+		Step s = newStep("selectCombo", now, target);
+		s.index = index;
+		s.tabTitle = item;   // reuses the "what it READ" slot, same idea as a tab title
+		s.note = describe(target);
+		emit(s, now, target);
+	}
+
+	/**
+	 * Record a cell edit committed through the table model.
+	 *
+	 * <p>This is what the tutorials are actually made of - "type 20 in the Diffusion
+	 * Constant column" - and it is the one edit that cannot be captured as a click plus
+	 * a setText, because the cell editor is a transient component with no name of its own.
+	 */
+	static void noteSetCell(Component target, int row, String rowText,
+			int column, String columnName, String value) {
+		if (!capturing()) {
+			return;
+		}
+		long now = System.currentTimeMillis();
+		flushPendingText(now, false);
+		Step s = newStep("setCell", now, target);
+		s.row = row;
+		s.rowText = rowText;
+		s.column = column;
+		s.columnName = columnName;
+		s.text = value;
 		s.note = describe(target);
 		emit(s, now, target);
 	}
@@ -836,6 +889,13 @@ public final class UiRecorder {
 				sb.append(", \"row\": ").append(s.row);
 				if (s.rowText != null) {
 					sb.append(", \"rowText\": \"").append(SwingInspector.escape(s.rowText)).append('"');
+				}
+				if (s.column >= 0) {
+					sb.append(", \"column\": ").append(s.column);
+					if (s.columnName != null) {
+						sb.append(", \"columnName\": \"")
+							.append(SwingInspector.escape(s.columnName)).append('"');
+					}
 				}
 			}
 			if (s.index >= 0) {

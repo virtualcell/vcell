@@ -316,7 +316,7 @@ public class OutputFunctionsPanel extends DocumentEditorSubPanel {
 		if (outputFnsScrollPaneTable == null) {
 			try {
 				outputFnsScrollPaneTable = new JSortTable();
-				outputFnsScrollPaneTable.setName("ScrollPaneTable");
+				outputFnsScrollPaneTable.setName("OutputFunctionsTable");
 			} catch (java.lang.Throwable e) {
 				e.printStackTrace(System.out);
 			}
@@ -340,6 +340,7 @@ public class OutputFunctionsPanel extends DocumentEditorSubPanel {
 		if (subdomainComboBox == null) {
 			try {
 				subdomainComboBox = new JComboBox();
+				subdomainComboBox.setName("FunctionDomainComboBox");
 				subdomainComboBox.setRenderer(new DefaultListCellRenderer() {
 
 					@Override
@@ -504,6 +505,7 @@ public class OutputFunctionsPanel extends DocumentEditorSubPanel {
 				// 'previous' button for GeometryClassPanel
 				gridy++;
 				previousButton = new JButton("<< Previous");
+				previousButton.setName("PreviousButton");
 				previousButton.addActionListener(ivjEventHandler);
 				gbc = new java.awt.GridBagConstraints();
 				gbc.gridx = 1; gbc.gridy = gridy;
@@ -514,6 +516,7 @@ public class OutputFunctionsPanel extends DocumentEditorSubPanel {
 
 				// 'finish' button for GeometryClassPanel
 				finishButton = new JButton("Finish");
+				finishButton.setName("FinishButton");
 				gbc = new java.awt.GridBagConstraints();
 				gbc.gridx = 2; gbc.gridy = gridy;
 				gbc.insets = new java.awt.Insets(4, 4, 4, 4);

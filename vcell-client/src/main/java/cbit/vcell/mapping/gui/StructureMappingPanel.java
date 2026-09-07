@@ -154,7 +154,7 @@ private ScrollTable getScrollPaneTable1() {
 	if (ivjScrollPaneTable1 == null) {
 		try {
 			ivjScrollPaneTable1 = new ScrollTable();
-			ivjScrollPaneTable1.setName("ScrollPaneTable1");
+			ivjScrollPaneTable1.setName("StructureMappingTable");
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}

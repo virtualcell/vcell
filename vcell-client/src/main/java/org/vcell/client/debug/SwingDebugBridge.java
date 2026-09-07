@@ -137,6 +137,15 @@ public final class SwingDebugBridge {
 			s.createContext("/robotClick", wrap(SwingDebugBridge::handleRobotClick));
 			s.createContext("/record", wrap(SwingDebugBridge::handleRecord));
 			s.createContext("/findRow", wrap(SwingDebugBridge::handleFindRow));
+			s.createContext("/findColumn", wrap(SwingDebugBridge::handleFindColumn));
+			s.createContext("/readCell", wrap(SwingDebugBridge::handleReadCell));
+			s.createContext("/setCell", wrap(SwingDebugBridge::handleSetCell));
+			s.createContext("/selectCombo", wrap(SwingDebugBridge::handleSelectCombo));
+			s.createContext("/selectList", wrap(SwingDebugBridge::handleSelectList));
+			s.createContext("/chooseFile", wrap(SwingDebugBridge::handleChooseFile));
+			s.createContext("/selectPixelRange", wrap(SwingDebugBridge::handleSelectPixelRange));
+			s.createContext("/popupItem", wrap(SwingDebugBridge::handlePopupItem));
+			s.createContext("/selectTableRange", wrap(SwingDebugBridge::handleSelectTableRange));
 			s.createContext("/iconify", wrap(SwingDebugBridge::handleIconify));
 			s.createContext("/windowBounds", wrap(SwingDebugBridge::handleWindowBounds));
 			s.createContext("/log", ex -> {
@@ -361,7 +370,126 @@ public final class SwingDebugBridge {
 		if (path == null || path.isEmpty() || (text == null && contains == null && appType == null)) {
 			return "{\"error\":\"require 'path' and one of 'text', 'contains' or 'appType'\",\"row\":-1}";
 		}
-		return SwingInspector.findRowJson(path, text != null ? text : contains, text != null, appType);
+		// Optional: which column carries the identity being matched. Named, not indexed,
+		// for the usual reason - and resolved here so the caller says "Parameter", not 1.
+		String inColumn = emptyToNull(q.get("inColumn"));
+		int searchColumn = 0;
+		if (inColumn != null) {
+			String resolved = SwingInspector.findColumnJson(path, inColumn);
+			java.util.regex.Matcher m =
+					java.util.regex.Pattern.compile("\"column\":(-?\\d+)").matcher(resolved);
+			if (m.find()) {
+				searchColumn = Math.max(0, Integer.parseInt(m.group(1)));
+			}
+		}
+		return SwingInspector.findRowJson(path, text != null ? text : contains, text != null,
+				appType, searchColumn);
+	}
+
+	private static String handleSelectList(HttpExchange ex) {
+		Map<String, String> q = query(ex);
+		String path = q.get("path");
+		String items = emptyToNull(q.get("items"));
+		if (path == null || path.isEmpty() || items == null) {
+			return "{\"error\":\"require 'path' and 'items'\"}";
+		}
+		boolean ok = SwingInspector.selectList(path, items);
+		return "{\"selected\":" + ok + ",\"path\":\"" + jsonEscape(path) + "\"}";
+	}
+
+	private static String handleSelectCombo(HttpExchange ex) {
+		Map<String, String> q = query(ex);
+		String path = q.get("path");
+		String item = emptyToNull(q.get("item"));
+		if (path == null || path.isEmpty() || item == null) {
+			return "{\"error\":\"require 'path' and 'item'\"}";
+		}
+		boolean ok = SwingInspector.selectCombo(path, item);
+		return "{\"selected\":" + ok + ",\"path\":\"" + jsonEscape(path) + "\"}";
+	}
+
+	private static String handleSelectTableRange(HttpExchange ex) {
+		Map<String, String> q = query(ex);
+		String path = q.get("path");
+		String range = emptyToNull(q.get("range"));
+		if (path == null || path.isEmpty() || range == null) {
+			return "{\"error\":\"require 'path' and 'range', e.g. 0-32 or 0-\"}";
+		}
+		boolean ok = SwingInspector.selectTableRange(path, range);
+		return "{\"selected\":" + ok + ",\"path\":\"" + jsonEscape(path) + "\"}";
+	}
+
+	private static String handlePopupItem(HttpExchange ex) {
+		Map<String, String> q = query(ex);
+		String item = emptyToNull(q.get("item"));
+		if (item == null) {
+			return "{\"error\":\"require 'item', e.g. Copy As>Spatial>Stochastic\"}";
+		}
+		return SwingInspector.clickPopupItem(item);
+	}
+
+	private static String handleSelectPixelRange(HttpExchange ex) {
+		Map<String, String> q = query(ex);
+		String path = q.get("path");
+		if (path == null || path.isEmpty() || !q.containsKey("low") || !q.containsKey("high")) {
+			return "{\"error\":\"require 'path', 'low' and 'high'\"}";
+		}
+		boolean ok = SwingInspector.selectPixelRange(path,
+				Integer.parseInt(q.get("low")), Integer.parseInt(q.get("high")));
+		return "{\"selected\":" + ok + ",\"path\":\"" + jsonEscape(path) + "\"}";
+	}
+
+	private static String handleChooseFile(HttpExchange ex) {
+		Map<String, String> q = query(ex);
+		String path = q.get("path");
+		String file = emptyToNull(q.get("file"));
+		if (path == null || path.isEmpty() || file == null) {
+			return "{\"error\":\"require 'path' and 'file'\"}";
+		}
+		boolean ok = SwingInspector.chooseFile(path, file);
+		return "{\"chosen\":" + ok + ",\"path\":\"" + jsonEscape(path) + "\"}";
+	}
+
+	private static String handleSetCell(HttpExchange ex) {
+		Map<String, String> q = query(ex);
+		String path = q.get("path");
+		String value = q.get("value");
+		if (path == null || path.isEmpty() || value == null
+				|| !q.containsKey("row") || !q.containsKey("column")) {
+			return "{\"error\":\"require 'path', 'row', 'column' and 'value'\"}";
+		}
+		boolean ok = SwingInspector.setCell(path, Integer.parseInt(q.get("row")),
+				Integer.parseInt(q.get("column")), value);
+		return "{\"set\":" + ok + ",\"path\":\"" + jsonEscape(path) + "\"}";
+	}
+
+	private static String handleReadCell(HttpExchange ex) {
+		Map<String, String> q = query(ex);
+		String path = q.get("path");
+		if (path == null || path.isEmpty() || !q.containsKey("row")) {
+			return "{\"error\":\"require 'path' and 'row' (and 'column' or 'columnName')\"}";
+		}
+		// Column by header where given, for the usual reason - an index names nothing.
+		int column = Integer.parseInt(q.getOrDefault("column", "0"));
+		String header = emptyToNull(q.get("columnName"));
+		if (header != null) {
+			java.util.regex.Matcher m = java.util.regex.Pattern.compile("\"column\":(-?\\d+)")
+					.matcher(SwingInspector.findColumnJson(path, header));
+			if (m.find()) {
+				column = Integer.parseInt(m.group(1));
+			}
+		}
+		return SwingInspector.readCellJson(path, Integer.parseInt(q.get("row")), column);
+	}
+
+	private static String handleFindColumn(HttpExchange ex) {
+		Map<String, String> q = query(ex);
+		String path = q.get("path");
+		String header = emptyToNull(q.get("header"));
+		if (path == null || path.isEmpty() || header == null) {
+			return "{\"error\":\"require 'path' and 'header'\",\"column\":-1}";
+		}
+		return SwingInspector.findColumnJson(path, header);
 	}
 
 	private static String handleGlide(HttpExchange ex) {
@@ -435,10 +563,12 @@ public final class SwingDebugBridge {
 	private static String handleSelectTab(HttpExchange ex) {
 		Map<String, String> q = query(ex);
 		String path = q.get("path");
-		if (path == null || path.isEmpty() || !q.containsKey("index")) {
-			return "{\"error\":\"require 'path' and 'index' query parameters\"}";
+		String title = emptyToNull(q.get("title"));
+		if (path == null || path.isEmpty() || (!q.containsKey("index") && title == null)) {
+			return "{\"error\":\"require 'path' and one of 'index' or 'title'\"}";
 		}
-		boolean ok = SwingInspector.selectTab(path, Integer.parseInt(q.get("index")));
+		int index = q.containsKey("index") ? Integer.parseInt(q.get("index")) : -1;
+		boolean ok = SwingInspector.selectTab(path, index, title);
 		return "{\"selected\":" + ok + ",\"path\":\"" + jsonEscape(path) + "\"}";
 	}
 

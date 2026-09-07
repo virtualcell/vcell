@@ -34,6 +34,11 @@ public class SpatialObjectDisplayPanel extends BioModelEditorApplicationRightSid
 	
 	private void initialize() {
 		setName("LandmarkPanel");
+		// Named so a UI script can tell the two Kinematics tables (and their two
+		// identical "New" buttons) apart - by position they are indistinguishable.
+		table.setName("SpatialObjectsTable");
+		addNewButton.setName("SpatialObjectNewButton");
+		deleteButton.setName("SpatialObjectDeleteButton");
 		setLayout(new GridBagLayout());
 
 		int gridy = 0;

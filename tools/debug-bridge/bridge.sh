@@ -14,10 +14,28 @@
 #                                         model, unlike tree's 25-row/100-row dump cap)
 #   findrow <selector> --apptype SPRINGSALAD   find an application by its type, not its
 #                                         name or position - both of which vary per model
+#   readcell <selector> <row> <col>       one cell's DISPLAYED text, with no row cap -
+#                                         row -1 is the last row, which is where a
+#                                         simulation's steady state lives
+#   findcol <selector> <header>           column number by header text; these editor tables
+#                                         carry one model value per column, so a script that
+#                                         names a column by index breaks on a reorder
 #   shot [window]               log [lines]      (shot takes ?scale/name/dir via replay)
 # Act:
 #   click <selector>            rclick <selector>
 #   settext <selector> <text> [--enter]
+#   combo   <selector> <item>     choose a drop-down item by its LABEL, not its index
+#   list    <selector> <a,b,c>   select list items by LABEL (comma-separated = multi-select)
+#   choosefile <selector> <path>  answer a file dialog through the chooser's own model
+#   trows <selector> <lo-hi>    select a range of table rows - what ctrl+A means,
+#                                 said as a range (open-ended as <lo->)
+#   popupitem "A>B>C"          click an item in an OPEN pop-up menu by path - walks
+#                                 the menu MODEL, so submenus need not be showing
+#   pixelrange <selector> <lo> <hi>  threshold by pixel INTENSITY on the geometry
+#                                 editor's histogram - what a drag across it means
+#                                 (its visible text field is the hidden 'go to folder' one)
+#   setcell <selector> <row> <col> <value>   commit a value through the table's own model
+#                                         (what the cell editor calls on Enter)
 #   tab <selector> <index>      row <selector> <row>     rrow <selector> <row>
 #   expand <selector> <row> [true|false]                 drow <selector> <row>
 #   trow <selector> <row> [col]   dtrow <selector> <row> [col]   rtrow <selector> <row> [col]
@@ -144,7 +162,10 @@ case "$cmd" in
     get setText --data-urlencode "path=$sel" --data-urlencode "text=$text" \
       --data-urlencode "enter=$enter" | pretty
     ;;
-  tab)       get selectTab --data-urlencode "path=$1" --data-urlencode "index=$2" | pretty ;;
+  tab)
+    # a numeric arg is an index, anything else is the tab's title (preferred: durable)
+    if [ "${2:-}" -eq "${2:-}" ] 2>/dev/null; then k=index; else k=title; fi
+    get selectTab --data-urlencode "path=$1" --data-urlencode "$k=$2" | pretty ;;
   row)       get selectTreeRow --data-urlencode "path=$1" --data-urlencode "row=$2" | pretty ;;
   expand)    get expandTreeRow --data-urlencode "path=$1" --data-urlencode "row=$2" \
                --data-urlencode "expand=${3:-true}" | pretty ;;
@@ -158,12 +179,38 @@ case "$cmd" in
   rrow)      get rightClickTreeRow --data-urlencode "path=$1" --data-urlencode "row=$2" | pretty ;;
   menu)      get menu --data-urlencode "path=$1" ${2:+--data-urlencode "window=$2"} | pretty ;;
   findrow)
+    SEL="$1"; TXT="${2:-}"
     case "${2:-}" in
       --apptype) get findRow --data-urlencode "path=$1" --data-urlencode "appType=$3" | pretty ;;
-      *) get findRow --data-urlencode "path=$1" \
-           $([ "${3:-}" = "--exact" ] && echo "--data-urlencode text=$2" || echo "--data-urlencode contains=$2") | pretty ;;
+      *)
+        # findrow <selector> <text> [--exact] [--in <column header>]
+        key=contains; incol=""
+        shift 2
+        while [ $# -gt 0 ]; do
+          case "$1" in
+            --exact) key=text ;;
+            --in)    shift; incol="$1" ;;
+          esac
+          shift
+        done
+        get findRow --data-urlencode "path=$SEL" --data-urlencode "$key=$TXT" \
+            ${incol:+--data-urlencode "inColumn=$incol"} | pretty ;;
     esac
     ;;
+  findcol)   get findColumn --data-urlencode "path=$1" --data-urlencode "header=$2" | pretty ;;
+  readcell)  # readcell <selector> <row> <column-header|index>   (row -1 = last row)
+    if [ "${3:-}" -eq "${3:-}" ] 2>/dev/null; then k=column; else k=columnName; fi
+    get readCell --data-urlencode "path=$1" --data-urlencode "row=$2" \
+        --data-urlencode "$k=$3" | pretty ;;
+  combo)     get selectCombo --data-urlencode "path=$1" --data-urlencode "item=$2" | pretty ;;
+  list)      get selectList --data-urlencode "path=$1" --data-urlencode "items=$2" | pretty ;;
+  choosefile) get chooseFile --data-urlencode "path=$1" --data-urlencode "file=$2" | pretty ;;
+  pixelrange) get selectPixelRange --data-urlencode "path=$1" --data-urlencode "low=$2" \
+                  --data-urlencode "high=$3" | pretty ;;
+  popupitem) get popupItem --data-urlencode "item=$1" | pretty ;;
+  trows)     get selectTableRange --data-urlencode "path=$1" --data-urlencode "range=$2" | pretty ;;
+  setcell)   get setCell --data-urlencode "path=$1" --data-urlencode "row=$2" \
+               --data-urlencode "column=$3" --data-urlencode "value=$4" | pretty ;;
   props)     get props --data-urlencode "path=$1" | pretty ;;
   listeners) get listeners --data-urlencode "path=$1" | pretty ;;
   highlight) get highlight --data-urlencode "path=$1" --data-urlencode "ms=${2:-2000}" | pretty ;;
