@@ -3,27 +3,92 @@
 <page title="SpringSaLaD Reactions" target="SSReactionsSpecifications">
 
 	<introduction>
-	A SpringSaLaD reaction inherits the attributes of a Rule-based species, but must strictly follow the templates of the
-		SpringSaLaD specific categories.
+	A SpringSaLaD reaction is an ordinary rule-based reaction rule that VCell has recognised as one of five kinds,
+	or subtypes. The recognition is automatic and is done by matching the rule against a template; the result is
+	shown on the <bold>Specifications &gt; Reaction</bold> tab of a
+	<link target="LangevinApp">SpringSaLaD application</link>, together with anything else the subtype needs.
 	</introduction>
 
-	<appearance> 
+	<appearance>
 	When using SpringSaLaD reactions, it is important to be aware that:
 		<list>
-			<item>The reactions are automatically assigned to one of the predefined categories, based on template matching.</item>
+			<item>The reactions are automatically assigned to one of the predefined categories, based on template
+				matching. A rule that matches nothing is reported as Not Compatible.</item>
+			<item>The subtype belongs to the <bold>application</bold>, not to the rule. The same physiology can be
+				read by a SpringSaLaD application and by a deterministic one at the same time.</item>
+			<item>The <bold>Enabled</bold> column switches a rule off in this application only.</item>
 		</list>
-		 
+
 	The SpringSaLaD reactions have the following limitations:
 	<list>
 		<item>The reactions are strictly categorized and must follow the template for their category.</item>
+		<item><bold>Binding reactions must be reversible.</bold> The other four subtypes must be irreversible.</item>
+		<item>Kinetics must be mass action.</item>
 	</list>
 		<imgReference target = "SS_reactions.png"/>
 	</appearance>
 
-	<operations>  
-	
+	<operations>
+	<bold>The five subtypes.</bold>
+	<list>
+		<item><bold>Creation</bold> - a molecule appears out of nothing. Written with the reserved molecule
+			<bold>Source</bold> on the left: Source() -&gt; Molecule1(...). Zeroth order, in uM/s.</item>
+		<item><bold>Decay</bold> - a molecule disappears. Written with the reserved molecule <bold>Sink</bold> on
+			the right: Molecule1(...) -&gt; Sink(). First order, in 1/s.</item>
+		<item><bold>Transition</bold> - one site changes state, in 1/s, with an optional condition on whether
+			that site is bound. See below.</item>
+		<item><bold>Allosteric</bold> - one site changes state because a <bold>different site in the same
+			molecule</bold> is in a particular state. This is how a bound ligand switches on a kinase domain at the
+			other end of a receptor.</item>
+		<item><bold>Binding</bold> - two sites on different molecules become sprung together, in 1/uM/s. This is
+			the only subtype that carries a <bold>Bond Length</bold>: the length of the spring the reaction
+			creates. It must be reversible - the reverse rate is how the bond breaks, which is what a dissociation
+			reaction would be elsewhere.</item>
+	</list>
+
+	<para><bold>The transition condition, and a name to be careful with.</bold> A Transition rule may require the
+	transitioning site to be bound or unbound. The condition is shown in the <bold>Condition</bold> column and
+	takes one of three values:</para>
+	<list>
+		<item><bold>Any</bold> - no condition. The state changes whether or not the site is bound.</item>
+		<item><bold>Unbound</bold> - the site must have no bond.</item>
+		<item><bold>Bound</bold> - the site must be bound to a named site on another molecule. A Bound transition
+			only makes sense alongside a Binding reaction that can create that bond.</item>
+	</list>
+	<para>Readers coming from the standalone SpringSaLaD program should note that two of the three are called
+	something else there. Its <bold>None</bold>, meaning no condition at all, is VCell's <bold>Any</bold>; its
+	<bold>Free</bold>, meaning the site must have no bond, is VCell's <bold>Unbound</bold>. Only Bound is called
+	the same thing in both. The condition is set by how the rule is written - a bare site, a site with an
+	explicit bond, or a site whose bond is left unspecified - so it is read off the rule rather than chosen from
+	a list.</para>
+
+	<para><bold>"The forward rate Kf is too large."</bold> This error means the model is asking for a reaction
+	faster than diffusion can supply, and it is worth understanding rather than working around.</para>
+	<para>The rate constant Kf you write down is the <bold>macroscopically observable</bold> one, and it already
+	contains two things happening in series: the two partners have to find each other, and then they have to
+	react once they have collided. Their reciprocals add, in the same way two resistances in series do -
+	so the observable rate can never be faster than the slower of the two steps allows, and in particular it can
+	never exceed the purely diffusion-limited rate, which for two spheres is set by the sum of their radii and
+	the sum of their diffusion coefficients.</para>
+	<para>The solver does not want Kf. It wants the <bold>intrinsic</bold> rate - the part that is conditional on
+	molecules already having collided - because collisions are something it simulates rather than assumes. It
+	recovers that intrinsic rate from Kf and the diffusion-limited rate. If Kf is larger than the diffusion-limited
+	rate, no positive intrinsic rate exists that could produce it, and the model is asking for something
+	physically impossible rather than merely fast.</para>
+	<para>There are two ways out, and which one is right depends on where the number came from:</para>
+	<list>
+		<item><bold>Raise the diffusion coefficients</bold> of the participating sites, or their radii. Both raise
+			the diffusion limit, and both are worth checking anyway - a site left at the default 1 um2/s is
+			slow for a small protein domain.</item>
+		<item><bold>Lower Kf.</bold> If the diffusion rates are the ones you meant, then the measured rate you
+			started from was obtained under conditions the model does not reproduce, and the model's value has to
+			come down.</item>
+	</list>
+	<para>Site radius and diffusion rate are set on the
+	<link target="SSSpeciesSpecifications">Molecular Structures</link> tab, and apply per species, so a site can
+	be faster in one seed species than another.</para>
 	</operations>
-	
+
 </page>
 
 </vcelldoc>

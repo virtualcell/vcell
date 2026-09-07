@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vcelldoc>
+<page title="SpringSaLaD Results" target="SSResults">
+
+	<introduction>
+	A finished <link target="LangevinApp">SpringSaLaD simulation</link> produces two different kinds of result, and
+	the results window has a tab for each. <bold>View Data</bold> holds the counters - how many molecules, how many
+	bound sites, how the numbers change over time. <bold>3D Trajectory</bold> holds the positions - every particle,
+	at every stored snapshot, in the box it moved through.
+	</introduction>
+
+	<appearance>
+	Which tabs appear depends on what the run produced:
+		<list>
+			<item><bold>View Data</bold> - always. Its contents differ between a single trajectory and multiple
+				runs, described below.</item>
+			<item><bold>3D Trajectory</bold> - whenever the dataset carries stored snapshots, which is any
+				Langevin run.</item>
+			<item><bold>Langevin Clusters</bold> - only when cluster tracking produced data.</item>
+		</list>
+		<imgReference target = "SS_trajectory.png"/>
+	</appearance>
+
+	<operations>
+	<bold>View Data, after a single trajectory.</bold> The ordinary plot and spreadsheet, over the counters the
+	solver wrote rather than over observables. For each molecule there are three: <bold>TOTAL_</bold>,
+	<bold>FREE_</bold> and <bold>BOUND_</bold>, and each state of each site is counted the same way. The
+	Plot / Data buttons under the graph switch between the curve and the numbers behind it.
+
+	<para><bold>View Data, after multiple runs.</bold> The tab is replaced by a panel built for comparing runs.
+	On the left, choose what to show:</para>
+	<list>
+		<item><bold>Molecules</bold>, <bold>Bound Sites</bold>, <bold>Free Sites</bold> or
+			<bold>Total Sites</bold> - which family of counters;</item>
+		<item><bold>Average</bold>, <bold>Min / Max</bold> or <bold>Standard Deviation</bold> - what to show about
+			the spread across the independent runs.</item>
+	</list>
+	<para>This is the reason to ask for multiple runs at all. A single stochastic trajectory of a few hundred
+	particles is noisy enough that its shape is not the model's answer; the average over several runs, with the
+	spread drawn around it, is.</para>
+
+	<para><bold>Langevin Clusters.</bold> When cluster tracking is on, this tab reports how molecules aggregated:
+	<bold>Cluster Counts</bold>, <bold>Cluster Mass</bold>, <bold>Cluster Mean</bold> and
+	<bold>Cluster Overall</bold>. Cluster tracking generates a lot of data, so it is worth turning on only when
+	aggregation is the question being asked.</para>
+
+	<para><bold>The 3D Trajectory viewer.</bold> A play-back of the run: every molecule drawn as its sites, joined
+	by its links, inside the simulation box with the membrane drawn as a plane.</para>
+	<list>
+		<item><bold>Drag</bold> to rotate the scene, and use the <bold>mouse wheel</bold> to zoom.
+			<bold>Reset view</bold> puts the camera back.</item>
+		<item>The <bold>slider</bold> along the bottom steps through the stored snapshots; the readout beside it
+			names the frame and its time. How many snapshots there are is set by the Image Interval in the
+			solver options, not by the output interval.</item>
+		<item><bold>Play</bold> runs through them at the chosen frame rate.</item>
+		<item><bold>Save movie...</bold> writes the sequence out as a video.</item>
+		<item><bold>Links</bold>, <bold>Box</bold> and <bold>Membrane</bold> show and hide those parts of the
+			scene.</item>
+		<item>The <bold>Species</bold> tree gives every molecule and every one of its sites a checkbox, with
+			<bold>All</bold> and <bold>None</bold> beneath. Hiding everything except one site type is the quickest
+			way to see what that site is doing in a crowded box.</item>
+	</list>
+
+	<para><bold>A note on colour.</bold> The viewer draws on a black background, so sites given a dark colour are
+	hard to see or invisible. Colours are set per site on the
+	<link target="SSSpeciesSpecifications">Molecular Structures</link> tab, and the reserved Anchor site defaults
+	to DARK_GRAY - which reads perfectly well in the tables and the molecule diagram, and disappears here. If a
+	molecule seems to be missing from the scene, check its colours before its coordinates.</para>
+	</operations>
+
+</page>
+
+</vcelldoc>

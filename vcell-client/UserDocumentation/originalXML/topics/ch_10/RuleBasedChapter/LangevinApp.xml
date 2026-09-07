@@ -3,31 +3,91 @@
 <page title="SpringSaLaD Application" target="LangevinApp">
 
 	<introduction>
-	A SpringSaLaD application is designed to add spatial details to Sites and Links within a Molecule, and to define and run simulations using the Langevin Solver.
+	A SpringSaLaD application adds spatial detail to the Sites and Links of a Molecule, and defines and runs
+	simulations with the Langevin solver. It is created over an existing rule-based physiology - see
+	<link target="SpringSaLaDTheory">Introduction to SpringSaLaD Modeling</link> for what the framework represents.
 	</introduction>
 
-	<appearance> 
+	<appearance>
 	When using SpringSaLaD Applications, it is important to be aware that:
 		<list>
 			<item>The Langevin solver can be used with any Rule-based model that obeys the limitations described below.</item>
 			<item>The Langevin solver performs a stochastic simulation, so simulation results will vary by run.</item>
-			<item>A very strict geometry is required</item>
-			<item>The complexity of calculations makes it practical only for a small number of particles</item>
+			<item>A very strict geometry is required.</item>
+			<item>The complexity of calculations makes it practical only for a small number of particles.</item>
+			<item>Parameter overrides and parameter scans are not supported. Repeat runs are asked for as
+				Multiple Runs on the simulation instead.</item>
 		</list>
-		 
+
 	Using a SpringSaLaD application has the following limitations:
 	<list>
-		<item>The model must have exactly 3 structures, 2 compartments named "Intracellular" and "Extracellular" separated by a "Membrane"</item>
-		<item>All the sites require several attribute, like diameter and relative position to one another.</item>
+		<item>The model must have exactly 3 structures: 2 compartments named "Intracellular" and "Extracellular",
+			separated by a membrane named "Membrane". The names are not conventions - the solver input is written
+			by looking them up.</item>
+		<item>Every site needs attributes the rest of VCell has no use for: a radius, a diffusion rate, a
+			position, a colour, and links to the sites it is bound to.</item>
 		<item>The reaction rules are strictly categorized and must obey several syntax restrictions.</item>
 	</list>
 		<imgReference target = "SS_general.png"/>
 	</appearance>
 
-	<operations>  
-	
+	<operations>
+	<bold>Creating the application.</bold> Right-click <bold>Applications</bold> in the model tree and choose
+	<bold>New Application > SpringSaLaD</bold>. Unlike other spatial applications, it does not ask for a geometry:
+	it builds one, a 3D analytic geometry of two subdomains, and maps all three structures into it.
+
+	<para><bold>The geometry it builds.</bold> A 100 nm cube with the membrane 90 nm up, written as two
+	expressions on the Geometry Definition tab:</para>
+	<list>
+		<item><bold>Intracellular</bold> = <bold>(z &lt; 0.09)</bold> - everything below the membrane. The value is
+			in microns, and the form matters: the solver input writer parses this expression and needs it to be
+			exactly "z &lt; number".</item>
+		<item><bold>Extracellular</bold> = <bold>1.0</bold> - everything else.</item>
+	</list>
+
+	<para>To change the size of the box, press <bold>Edit Domain...</bold> and set the extent, then move the
+	membrane by editing the Intracellular expression to match. The two are independent: the extent says how tall
+	the box is, the expression says where inside it the membrane sits. A box 0.4 um tall with Intracellular
+	= (z &lt; 0.2) gives 200 nm of cytosol and 200 nm outside.</para>
+
+	<para><bold>Specifications.</bold> Three tabs, of which two behave differently here:</para>
+	<list>
+		<item><link target="SSSpeciesSpecifications">Molecular Structures</link> - the site geometry: where each
+			site sits, how big it is, how fast it diffuses, what colour it is drawn in, and which sites are
+			sprung together.</item>
+		<item><link target="SSReactionsSpecifications">Reaction</link> - which of the five SpringSaLaD subtypes
+			VCell has recognised each rule as, and whether it is enabled in this application.</item>
+		<item><bold>Species</bold> - initial conditions. Switch the table to <bold>Number of Particles</bold> if
+			you want to say "20 molecules" rather than a concentration; SpringSaLaD counts particles.</item>
+	</list>
+
+	<para><bold>Solver options.</bold> On a simulation, press <bold>Edit</bold> and open the <bold>Solver</bold>
+	tab. The integrator is LangevinNoVis, and the Langevin Options Panel below it carries everything the
+	simulation needs that a deterministic one does not:</para>
+	<list>
+		<item><bold>Time Step (Default)</bold> - the integration step. Values in the 1-10 ns range are usual.</item>
+		<item><bold>Spring Interval</bold> - the step used for spring relaxation, normally left alone.</item>
+		<item><bold>Image Interval</bold> - how often a full snapshot of every particle position is stored. This
+			is what the <link target="SSResults">3D Trajectory viewer</link> plays back, and it is separate from the
+			output interval that governs the counts.</item>
+		<item><bold>Output Interval</bold> - how often the counters are sampled.</item>
+		<item><bold>Partitions number</bold>, X, Y and Z - space is divided into boxes so that collision detection
+			only has to compare neighbours. There is one rule to respect: <bold>a partition must be larger than the
+			diameter of the largest site</bold>. With a 100 nm box and 10 partitions the cells are 10 nm across,
+			which is fine for sites of radius 2 nm and not fine for sites of radius 6.</item>
+		<item><bold>Single Trajectory</bold> or <bold>Multiple Runs</bold> - one run, or N independent runs whose
+			average and spread are the result. Total Num. Of Jobs is N; Num. Concurrent Jobs is how many run at
+			once.</item>
+		<item><bold>Set a seed to Langevin random number generator</bold> - fix the seed and a run is
+			reproducible, which is the only way to compare two versions of a model change by change.</item>
+	</list>
+		<imgReference target = "SS_solver.png"/>
+
+	<para><bold>Running it.</bold> A SpringSaLaD simulation runs on the server like any other, and also runs
+	locally through <bold>Native Quick Run</bold>, which uses the Langevin solver bundled with the client and
+	saves nothing to the database - useful for a short run while the model is still being built.</para>
 	</operations>
-	
+
 </page>
 
 </vcelldoc>
