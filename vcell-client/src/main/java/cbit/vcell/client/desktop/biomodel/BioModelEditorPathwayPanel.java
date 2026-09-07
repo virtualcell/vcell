@@ -188,10 +188,14 @@ public class BioModelEditorPathwayPanel extends DocumentEditorSubPanel {
 
 	private void initialize() {
 		table = new JSortTable();
+		// The imported pathway's entities, and the button that takes them into the model.
+		// Both were addressable only by position.
+		table.setName("PathwayPreviewTable");
 		tableModel = new PathwayTableModel(table);
 		table.setModel(tableModel);
 		table.disableUneditableForeground();
 		importButton = new JButton("Import", new DownArrowIcon());
+		importButton.setName("PathwayPreviewImportButton");
 		importButton.setHorizontalTextPosition(SwingConstants.LEFT);
 		importButton.setEnabled(false);
 		importButton.addActionListener(eventHandler);
@@ -230,6 +234,7 @@ public class BioModelEditorPathwayPanel extends DocumentEditorSubPanel {
 		add(new JLabel("Search "), gbc);
 
 		textFieldSearch = new JTextField(15);
+		textFieldSearch.setName("PathwayPreviewSearchTextField");
 		textFieldSearch.addActionListener(eventHandler);
 		textFieldSearch.getDocument().addDocumentListener(eventHandler);
 		textFieldSearch.putClientProperty("JTextField.variant", "search");

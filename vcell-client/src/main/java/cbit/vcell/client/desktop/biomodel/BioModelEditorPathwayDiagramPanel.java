@@ -756,11 +756,16 @@ implements PathwayEditor, ActionBuilder.Generator {
 		treeTabPanel.add(new JScrollPane(biopaxTree), BorderLayout.CENTER);
 		
 		pathwayModelTable = new JSortTable();
+		// The imported pathway in list form - the route round the diagram canvas, and the
+		// one the tutorial itself offers ("click Pathway Objects to organize the entities
+		// into list form").
+		pathwayModelTable.setName("PathwayObjectsTable");
 		pathwayModelTable.getSelectionModel().addListSelectionListener(eventHandler);
 		pathwayModelTableModel = new PathwayModelTableModel(pathwayModelTable);
 		pathwayModelTable.setModel(pathwayModelTableModel);
 		
 		searchTextField = new JTextField();
+		searchTextField.setName("PathwayObjectsSearchTextField");
 		searchTextField.putClientProperty("JTextField.variant", "search");
 		searchTextField.getDocument().addDocumentListener(eventHandler);
 		groupButton = new JButton("Group", new DownArrowIcon());
@@ -769,6 +774,7 @@ implements PathwayEditor, ActionBuilder.Generator {
 		deleteButton = new JButton("Delete");
 		deleteButton.addActionListener(eventHandler);
 		physiologyLinkButton = new JButton("Physiology Links", new DownArrowIcon());
+		physiologyLinkButton.setName("PhysiologyLinksButton");
 		physiologyLinkButton.setHorizontalTextPosition(SwingConstants.LEFT);
 		physiologyLinkButton.addActionListener(eventHandler);
 		
