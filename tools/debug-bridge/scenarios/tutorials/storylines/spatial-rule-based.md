@@ -24,6 +24,8 @@ sort of thing a reader cannot find out by reading.
 
 ## The audit
 
+Findings filed as [issue #2069](https://github.com/virtualcell/vcell/issues/2069).
+
 ### Gone stale
 
 | Claim | What the client does now |

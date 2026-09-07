@@ -31,6 +31,8 @@ whole scripting approach rests on:
 
 ## The audit
 
+Findings filed as [issue #2069](https://github.com/virtualcell/vcell/issues/2069).
+
 A reference guide cannot be reproduced by following it — there are no steps. What it has
 instead is a couple of dozen assertions about how VCell behaves, and those go stale
 silently. `quickstart.sh` checks the ones that are checkable.

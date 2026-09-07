@@ -307,7 +307,7 @@ nothing to be addressed by).
 a different solver (SundialsPDE rather than Fully-Implicit). Followed literally, the
 tutorial can produce a different simulation than the one it is teaching.
 
-**Two documents in this set are reference guides, and their claims have drifted.** They
+**Two documents in this set are reference guides, and their claims have drifted** (issue #2069). They
 have no steps to follow, so `quickstart.sh` and `spatial-rule-based.sh` check what the
 documents *assert* against the client instead. Between them, 10 claims still hold and 6
 have gone stale. The ones worth acting on:
