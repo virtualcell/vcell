@@ -54,7 +54,13 @@
 	anchor. Written the other way round, as Anchor first, both domains land inside the cell and every one of
 	those has to be corrected by hand.</para>
 	<para>The convention is that <bold>z increases from outside to inside</bold>: an extracellular site has a
-	smaller z than the anchor, an intracellular site a larger one.</para>
+	smaller z than the anchor, an intracellular site a larger one. The standalone SpringSaLaD program uses the
+	same convention, and its tutorial states it as putting the extracellular domain "5 nm less than the
+	z-coordinate of the anchor site" and the intracellular one 5 nm more.</para>
+	<para>These coordinates describe positions <bold>inside the molecule</bold>, not positions in the simulation
+	box. They are not on the same scale or in the same frame as the Intracellular expression on the geometry, and
+	there is nothing to reconcile between the two: the solver is told both a site's compartment and its offset
+	within its molecule, and places the molecule accordingly.</para>
 
 	<para><bold>Setting a site's attributes.</bold> Select the species, then edit its row in the Sites table.
 	Location, Radius, Diff. Rate and Color are chosen from lists; X, Y and Z are typed in nm.</para>
