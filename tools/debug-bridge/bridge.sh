@@ -25,6 +25,8 @@
 #   click <selector>            rclick <selector>
 #   settext <selector> <text> [--enter]
 #   combo   <selector> <item>     choose a drop-down item by its LABEL, not its index
+#   slider  <selector> <value>  move a slider - an integer, or min/max, or -1 for the
+#                                 end, the same convention readcell uses for last row
 #   list    <selector> <a,b,c>   select list items by LABEL (comma-separated = multi-select)
 #   choosefile <selector> <path>  answer a file dialog through the chooser's own model
 #   trows <selector> <lo-hi>    select a range of table rows - what ctrl+A means,
@@ -203,6 +205,7 @@ case "$cmd" in
     get readCell --data-urlencode "path=$1" --data-urlencode "row=$2" \
         --data-urlencode "$k=$3" | pretty ;;
   combo)     get selectCombo --data-urlencode "path=$1" --data-urlencode "item=$2" | pretty ;;
+  slider)    get setSlider --data-urlencode "path=$1" --data-urlencode "value=$2" | pretty ;;
   list)      get selectList --data-urlencode "path=$1" --data-urlencode "items=$2" | pretty ;;
   choosefile) get chooseFile --data-urlencode "path=$1" --data-urlencode "file=$2" | pretty ;;
   pixelrange) get selectPixelRange --data-urlencode "path=$1" --data-urlencode "low=$2" \

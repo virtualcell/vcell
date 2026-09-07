@@ -46,6 +46,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import javax.swing.JSlider;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTree;
@@ -1502,6 +1503,55 @@ public final class SwingInspector {
 				table.setColumnSelectionInterval(col, col);
 			}
 			table.scrollRectToVisible(table.getCellRect(row, col, true));
+			return true;
+		}));
+	}
+
+	/**
+	 * Move a slider to a value, the way dragging its knob would.
+	 *
+	 * <p>The SpringSaLaD trajectory viewer is driven by one: its frame slider is the time
+	 * axis of a finished run, and "look at the last frame" is the single most useful thing
+	 * a script can say about a result. A drag cannot be synthesised usefully here - the
+	 * knob's pixel position is a function of the slider's own geometry - so the value is
+	 * set on the model, which fires the same ChangeEvent the drag would.
+	 *
+	 * <p>Accepts an integer, or {@code min} / {@code max}, or {@code -1} meaning the
+	 * maximum - the same "-1 is the end" convention {@code readcell} already uses for the
+	 * last row of a results table. Values outside the slider's range are clamped rather
+	 * than refused, because a caller asking for frame 10000 of a 201-frame run means the
+	 * end.
+	 *
+	 * <p>Not recorded by {@link UiRecorder}, which does not observe sliders at all - a
+	 * human dragging this one is not captured either, so nothing is lost that was there.
+	 *
+	 * @return false if the path is not a slider
+	 */
+	public static boolean setSlider(final String path, final String value) {
+		return Boolean.TRUE.equals(onEdt(() -> {
+			Component c = findByPath(path);
+			if (!(c instanceof JSlider)) {
+				return false;
+			}
+			JSlider slider = (JSlider) c;
+			int min = slider.getMinimum();
+			int max = slider.getMaximum();
+			int want;
+			if ("max".equalsIgnoreCase(value) || "end".equalsIgnoreCase(value)) {
+				want = max;
+			} else if ("min".equalsIgnoreCase(value) || "start".equalsIgnoreCase(value)) {
+				want = min;
+			} else {
+				try {
+					want = Integer.parseInt(value.trim());
+				} catch (NumberFormatException e) {
+					return false;
+				}
+				if (want < 0) {
+					want = max;
+				}
+			}
+			slider.setValue(Math.max(min, Math.min(max, want)));
 			return true;
 		}));
 	}
