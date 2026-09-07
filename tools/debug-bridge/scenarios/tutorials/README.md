@@ -5,8 +5,13 @@ from 2016–2022, shot against VCell 6.1–7.2. Six of them were refreshed in Ju
 `7.7/` subdirectory); the rest still describe a client that has moved on.
 
 This directory holds two things per tutorial: a **storyline** — what the document actually
-teaches, in prose, extracted from the PDF — and, where it could be built, a **script** that
-reproduces it against a current client through the [debug bridge](../../README.md).
+teaches, in prose, extracted from the PDF — and a **script** that reproduces it against a
+current client through the [debug bridge](../../README.md).
+
+"Reproduces" means two different things here, because the documents do. Eight of them are
+step sequences, and their scripts rebuild the model and run it. The other two are reference
+guides with no model in them; their scripts **audit** the documents instead, checking each
+claim they make against the client and reporting which ones still hold.
 
 | Document | Storyline | Script | State |
 |---|---|---|---|
@@ -16,10 +21,10 @@ reproduces it against a current client through the [debug bridge](../../README.m
 | `PHGFP_7.2.pdf` | [phgfp](storylines/phgfp.md) | [`phgfp.sh`](phgfp.sh) | **reproduced** in full, 0 errors |
 | `MultiAppTransport_7.2.pdf` | [multi-app-transport](storylines/multi-app-transport.md) | [`multi-app-transport.sh`](multi-app-transport.sh) | **reproduced**, 0 errors, two documented substitutions |
 | `Tutorial06_PathwayCommons_6.0.pdf` | [pathway-commons](storylines/pathway-commons.md) | [`pathway-commons.sh`](pathway-commons.sh) | **reproduced**, 0 errors — both third-party services verified live |
-| `VCell_Quickstart_7_Biomodel.pdf` | [quickstart](storylines/quickstart.md) | — | reference guide, nothing to script |
+| `VCell_Quickstart_7_Biomodel.pdf` | [quickstart](storylines/quickstart.md) | [`quickstart.sh`](quickstart.sh) | **audited** — no model to build, so its claims are checked instead: 5 hold, 3 stale |
 | `VCell6.1_Rule-Based_Tutorial.pdf` + `SingleCompartmentRuleBased.pdf` | [rule-based-egfr](storylines/rule-based-egfr.md) | [`rule-based-egfr.sh`](rule-based-egfr.sh) | **reproduced** against the 7.7 rewrite; matches the public reference model |
 | `VCell6.1_Rule-Based_Ran_Transport_Tutorial.pdf` | [rule-based-ran-transport](storylines/rule-based-ran-transport.md) | [`rule-based-ran-transport.sh`](rule-based-ran-transport.sh) | **reproduced** against the 7.7 rewrite; matches the public reference model |
-| `SpatialRuleBasedGuide.pdf` | [spatial-rule-based](storylines/spatial-rule-based.md) | — | reference guide; no current replacement |
+| `SpatialRuleBasedGuide.pdf` | [spatial-rule-based](storylines/spatial-rule-based.md) | [`spatial-rule-based.sh`](spatial-rule-based.sh) | **audited** — 5 claims hold, 3 stale; still the gap in the current doc set |
 
 ## Running one
 
@@ -38,6 +43,10 @@ tools/debug-bridge/scenarios/tutorials/pathway-commons.sh
 # the two rule-based ones follow the 7.7 rewrites, and import BNGL:
 tools/debug-bridge/scenarios/tutorials/rule-based-egfr.sh
 tools/debug-bridge/scenarios/tutorials/rule-based-ran-transport.sh
+
+# the two reference guides have no model to build - these audit their claims instead:
+tools/debug-bridge/scenarios/tutorials/quickstart.sh
+tools/debug-bridge/scenarios/tutorials/spatial-rule-based.sh
 ```
 
 Each takes a couple of minutes, leaves a complete valid model on screen — and then **runs
@@ -297,6 +306,28 @@ nothing to be addressed by).
 `PM` reading *Unmapped* while the model still reports **0 errors** — but VCell then picks
 a different solver (SundialsPDE rather than Fully-Implicit). Followed literally, the
 tutorial can produce a different simulation than the one it is teaching.
+
+**Two documents in this set are reference guides, and their claims have drifted.** They
+have no steps to follow, so `quickstart.sh` and `spatial-rule-based.sh` check what the
+documents *assert* against the client instead. Between them, 10 claims still hold and 6
+have gone stale. The ones worth acting on:
+
+- Quick Start says **diffusion constants default to zero**; they default to 10.0 µm²·s⁻¹
+  for a volume species and 0.1 on a membrane. The same tip warns that zero "is always
+  illegal when a molecule is involved in a membrane flux", so a reader who trusts it goes
+  hunting for a problem that is not there.
+- Quick Start's worked figure, **"a spherical cell with a 10 micron diameter is 523.33
+  micrometers cubed"**, is low by 0.05% — (4/3)·π·5³ is 523.5988.
+- Quick Start says import supports **"VCML and SBML"**; it now takes eight formats, and
+  `.bngl` among them is the only route to a rule-based model that avoids the graphics
+  editor entirely.
+- The Spatial Rule-Based guide sends readers to two tutorial models, **`Mix_Reactions_Rules`
+  and `RB_Enzyme_Kinetics`**, that are no longer in the Tutorials folder.
+- It lists **"only mass-action kinetic laws are supported"** among limitations it calls
+  "temporary, will be lifted in future releases" — and that one *has* been lifted, at least
+  in part: a rule now offers Henri-Michaelis-Menten (Irreversible) as well. This is the only
+  current document covering spatial rule-based modelling, so it is the only place a reader
+  would find out.
 
 **There is a public reference model for every one of these tutorials**, in the VCell
 database under BioModels → Tutorials: `Tutorial_FRAP`, `Tutorial_FRAPbinding`,
