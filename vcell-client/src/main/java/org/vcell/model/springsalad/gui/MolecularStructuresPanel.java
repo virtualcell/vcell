@@ -267,9 +267,13 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 	private void initialize() {
 		try {
 			addStructuralSiteButton = new JButton("Add Structural Site");
+			addStructuralSiteButton.setName("AddStructuralSiteButton");
 			deleteStructuralSiteButton = new JButton("Delete Structural Site");
+			deleteStructuralSiteButton.setName("DeleteStructuralSiteButton");
 			addLinkButton = new JButton("Add Link");
+			addLinkButton.setName("AddLinkButton");
 			deleteLinkButton = new JButton("Delete Link");
+			deleteLinkButton.setName("DeleteLinkButton");
 
 			addStructuralSiteButton.setEnabled(false);
 			deleteStructuralSiteButton.setEnabled(false);
