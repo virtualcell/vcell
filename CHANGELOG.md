@@ -16,6 +16,26 @@ followed by flat Keep-a-Changelog categories. API consumers should scan
 
 _(Release-manager scratchpad. Populated at release-cut time.)_
 
+## [8.1.6.02] - 2026-09-07
+
+**Highlights.** The same release as 8.1.6.01, rebuilt on a supported base
+image. **Use this build rather than 8.1.6.01**, whose server images cannot be
+built at all.
+
+### Fixed
+- Internal: the `admin` and `clientgen` images build again. Both were based on
+  Debian 11 (bullseye), whose LTS ended on 2026-08-31; its final security index
+  expired at 21:13 UTC on 2026-09-07, part-way through the 8.1.6.01 release, and
+  `apt` refuses an expired index rather than quietly using a stale one. Both
+  images now build on Debian 12 (bookworm), whose security suite is current.
+  Disabling the expiry check was the alternative and was not taken: it would
+  keep building against a suite that will never receive another update.
+  `clientgen` produces the desktop installers, so without this the next release
+  would have stalled the same way with no warning. (#2075)
+
+### Notes for API consumers
+No changes from 8.1.6.01.
+
 ## [8.1.6.01] - 2026-09-07
 
 **Highlights.** SpringSaLaD has user documentation for the first time. VCell
