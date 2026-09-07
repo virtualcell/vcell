@@ -16,6 +16,74 @@ followed by flat Keep-a-Changelog categories. API consumers should scan
 
 _(Release-manager scratchpad. Populated at release-cut time.)_
 
+## [8.1.6.01] - 2026-09-07
+
+**Highlights.** SpringSaLaD has user documentation for the first time. VCell
+has been able to build and run SpringSaLaD models for over a year — a
+particle-based application, the Langevin solver, a molecular structure editor
+and a 3D trajectory viewer — with nothing in the help explaining any of it.
+Six help pages now cover it, including two errors that are hard to get past
+without knowing what they mean. Alongside that, three fixes to things that
+told you the wrong story: a progress bar that never moved, an error that named
+the wrong cause, and a species name VCell accepted and then could not read.
+
+### Added
+- SpringSaLaD user documentation — six pages in the help, reachable from
+  Rule-Based Features and from Specifications. They cover the modelling
+  framework, creating a SpringSaLaD application and the geometry it builds for
+  you, laying out a molecule's sites and the springs between them, the five
+  reaction subtypes, reading results and the 3D trajectory viewer, and `.ssld`
+  import and export. Two explanations are worth knowing about in advance,
+  because both are errors you meet before you meet the concept: what *"the
+  forward rate Kf is too large"* means and what to do about it, and the fact
+  that a transition condition changes name between SpringSaLaD and VCell —
+  SpringSaLaD's "None" is VCell's **Any**, and its "Free" is VCell's
+  **Unbound**. (#2073, #2060)
+
+### Fixed
+- The progress dialog now advances while a time course is retrieved from a
+  spatial simulation. The server was computing the progress and sending it, and
+  the client was dropping it: the listener that receives those events was
+  registered after the call that waits for them, not before. The dialog had sat
+  at zero ever since that call became a blocking one. (#2066)
+- A failure retrieving time-series data now reports what actually went wrong.
+  The failure was recorded and the task chain carried on, so the next step ran
+  against a result that was never produced and the error you saw was an
+  unrelated `NullPointerException` in a plotting step — with the real cause
+  gone. Cancelling the retrieval did the same thing. (#2065, #2063)
+- A SpringSaLaD site's Y or Z position can be set to a value equal to its X.
+  All three coordinate fields compared against X, so an edit to Y or Z was
+  silently discarded whenever the two happened to match — no error, no change,
+  the old value still in the cell. Sites are routinely laid out along an axis
+  with x = 0, which made "put this site at z = 0" impossible. (#2073)
+
+### Changed
+- A species name must be one the expression parser can read. Name checking
+  accepted any Unicode letter while the parser accepts only `a-z`, `A-Z` and
+  `_`, so a name such as `PROTEÍNA_A` was accepted and saved, and the
+  application then failed to generate math with an error naming an expression
+  and nothing pointing at the species. The check now uses one definition of a
+  legal identifier, shared with the grammar, and suggests a replacement name.
+  **Models already saved with such a name still open** — refusing them would
+  take away the only way to rename the species — and report the offending name
+  as a problem instead. (#2064, #2062)
+- Internal: all ten outdated tutorial documents on vcell.org, and the
+  standalone SpringSaLaD guide, are now reproduced as scripts that drive a real
+  client, so it is visible when a documented workflow stops working. Six
+  documentation findings were filed from them. (#2067, #2073, #2069)
+- Internal: UI interactions can be recorded as replayable scripts, for demos
+  and for scaffolding help pages. (#2059)
+- Internal: CI decides whether to run the test lanes by looking at everything a
+  branch changed, rather than only its most recent commit — which had let a
+  branch skip lanes its earlier commits needed. (#2061)
+
+### Notes for API consumers
+No API changes. One behaviour change worth noting for anything that creates
+model symbols programmatically: a name containing non-ASCII letters is now
+rejected at creation with a `ModelPropertyVetoException` naming a legal
+replacement, where it was previously accepted and failed later during math
+generation. Reading such a name back from VCML or the database still succeeds.
+
 ## [8.1.5.01] - 2026-09-03
 
 **Highlights.** Saving a model no longer fails because the connection to the
