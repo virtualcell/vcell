@@ -145,6 +145,7 @@ public final class SwingDebugBridge {
 			s.createContext("/chooseFile", wrap(SwingDebugBridge::handleChooseFile));
 			s.createContext("/selectPixelRange", wrap(SwingDebugBridge::handleSelectPixelRange));
 			s.createContext("/popupItem", wrap(SwingDebugBridge::handlePopupItem));
+			s.createContext("/selectTableRange", wrap(SwingDebugBridge::handleSelectTableRange));
 			s.createContext("/iconify", wrap(SwingDebugBridge::handleIconify));
 			s.createContext("/windowBounds", wrap(SwingDebugBridge::handleWindowBounds));
 			s.createContext("/log", ex -> {
@@ -404,6 +405,17 @@ public final class SwingDebugBridge {
 			return "{\"error\":\"require 'path' and 'item'\"}";
 		}
 		boolean ok = SwingInspector.selectCombo(path, item);
+		return "{\"selected\":" + ok + ",\"path\":\"" + jsonEscape(path) + "\"}";
+	}
+
+	private static String handleSelectTableRange(HttpExchange ex) {
+		Map<String, String> q = query(ex);
+		String path = q.get("path");
+		String range = emptyToNull(q.get("range"));
+		if (path == null || path.isEmpty() || range == null) {
+			return "{\"error\":\"require 'path' and 'range', e.g. 0-32 or 0-\"}";
+		}
+		boolean ok = SwingInspector.selectTableRange(path, range);
 		return "{\"selected\":" + ok + ",\"path\":\"" + jsonEscape(path) + "\"}";
 	}
 

@@ -1503,6 +1503,40 @@ public final class SwingInspector {
 	}
 
 	/**
+	 * Select a contiguous range of table rows, {@code lo-hi} or open-ended {@code lo-}.
+	 *
+	 * <p>What ctrl+A means, said as a range. Several tutorials select a whole page of a
+	 * table and act on it - "press ctrl+a and click Import > Selected Only" - and the
+	 * statement is about the rows the table currently shows, not about the keystroke. That
+	 * matters because these tables are filtered: after typing in the Search field the
+	 * range is over what survived the filter, which is exactly what the user selects too.
+	 *
+	 * @return false if the path is not a table or the range falls outside it
+	 */
+	public static boolean selectTableRange(final String path, final String range) {
+		return Boolean.TRUE.equals(onEdt(() -> {
+			Component c = findByPath(path);
+			if (!(c instanceof JTable)) {
+				return false;
+			}
+			JTable table = (JTable) c;
+			int count = table.getRowCount();
+			String[] ends = range.split("-", -1);
+			if (ends.length != 2) {
+				return false;
+			}
+			int low = Integer.parseInt(ends[0]);
+			int high = ends[1].isEmpty() ? count - 1 : Integer.parseInt(ends[1]);
+			if (count == 0 || low < 0 || high >= count || low > high) {
+				return false;
+			}
+			table.setRowSelectionInterval(low, high);
+			table.scrollRectToVisible(table.getCellRect(high, 0, true));
+			return true;
+		}));
+	}
+
+	/**
 	 * Double-click a row of the {@link JTable} at the given path. A synthetic
 	 * {@link Robot} click pair is required rather than a selection change because
 	 * table-backed UIs commonly act on the raw {@code MouseEvent} click count — the

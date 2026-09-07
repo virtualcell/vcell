@@ -27,6 +27,8 @@
 #   combo   <selector> <item>     choose a drop-down item by its LABEL, not its index
 #   list    <selector> <a,b,c>   select list items by LABEL (comma-separated = multi-select)
 #   choosefile <selector> <path>  answer a file dialog through the chooser's own model
+#   trows <selector> <lo-hi>    select a range of table rows - what ctrl+A means,
+#                                 said as a range (open-ended as <lo->)
 #   popupitem "A>B>C"          click an item in an OPEN pop-up menu by path - walks
 #                                 the menu MODEL, so submenus need not be showing
 #   pixelrange <selector> <lo> <hi>  threshold by pixel INTENSITY on the geometry
@@ -206,6 +208,7 @@ case "$cmd" in
   pixelrange) get selectPixelRange --data-urlencode "path=$1" --data-urlencode "low=$2" \
                   --data-urlencode "high=$3" | pretty ;;
   popupitem) get popupItem --data-urlencode "item=$1" | pretty ;;
+  trows)     get selectTableRange --data-urlencode "path=$1" --data-urlencode "range=$2" | pretty ;;
   setcell)   get setCell --data-urlencode "path=$1" --data-urlencode "row=$2" \
                --data-urlencode "column=$3" --data-urlencode "value=$4" | pretty ;;
   props)     get props --data-urlencode "path=$1" | pretty ;;
