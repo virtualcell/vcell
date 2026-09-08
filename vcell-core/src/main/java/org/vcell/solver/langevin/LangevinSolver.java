@@ -135,7 +135,7 @@ public class LangevinSolver extends SimpleCompiledSolver {
 		MathExecutable me = new MathExecutable(mathExecutableCommand, saveDirectoryFile);
 		setMathExecutable(me);
 
-		setLogFileString(getLogFilename());		// variable is set "late"  TODO: may be not needed
+//		setLogFileString(getLogFilename(simTask.getSimulationJob().getJobIndex()));		// variable is set "late"  TODO: may be not needed
 	}
 
 	private void writeLangevinMessagingConfig(PrintWriter pw, SimulationTask simTask){
@@ -170,6 +170,22 @@ public class LangevinSolver extends SimpleCompiledSolver {
 		return getBaseName() + LANGEVIN_MESSAGINGCONFIG_FILE_EXTENSION;
 	}
 
+	// solver-generated log file (log name includes the run index), contains progress:
+	//   Simulation 1% complete. Elapsed time: 14.299 sec.
+	//	Simulation 2% complete. Elapsed time: 28.730 sec.
+	// ...
+	private String getLogFilename(int runIndex) {
+		String baseName = getBaseName();
+		if(baseName.endsWith("_")){
+			return getBaseName() + runIndex + LANGEVIN_OUTPUT_LOG_EXTENSION;
+		} else {
+			return getBaseName() + LANGEVIN_OUTPUT_LOG_EXTENSION;
+		}
+	}
+	// separately generated log contains something like this:
+	// 	IDAData logfile
+	//	IDAData text format version 1
+	//	SimID_313608510_0_.ida
 	private String getLogFilename() {
 		return getBaseName() + LANGEVIN_OUTPUT_LOG_EXTENSION;
 	}
@@ -189,12 +205,12 @@ public class LangevinSolver extends SimpleCompiledSolver {
 		}catch (IOException e){
 			throw new RuntimeException("failed to get executable for solver "+SolverDescription.Langevin.getDisplayLabel()+": "+e.getMessage(),e);
 		}
+
+		int trialIndex = simTask.getSimulationJob().getTrialIndex().index;	// run index
 		String inputFilename = getInputFilename();
-		String logFileOption = "--output-log=" + getLogFilename();
+		String logFileOption = "--output-log=" + getLogFilename(trialIndex);
 		String messagingConfigOption = "--vc-send-status-config=" + getMessagingConfigFilename();
 		String localMessagingOption = "--vc-print-status";
-		
-		int trialIndex = simTask.getSimulationJob().getTrialIndex().index;	// run index
 
 		ArrayList<String> cmds = new ArrayList<>();
 		cmds.add(executableName);	// executable
