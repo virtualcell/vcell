@@ -200,7 +200,19 @@ public class BioModelsNetPanel extends DocumentEditorSubPanel {
 	public static final String BIOMODELINFO_ELEMENT_NAME = "BioModelInfo";
 	public static final String ID_ATTRIBUTE_NAME = "ID";
 	public static final String MODELNAME_ATTRIBUTE_NAME = "Name";
+	/**
+	 * Whether the client predicts this archive will OPEN. Derived from the nightly baseline
+	 * and kept in step by {@code BioModelsNetInfoTest}; see {@link BioModelsNetModelInfo}.
+	 */
 	public static final String SUPPORTED_ATTRIBUTE_NAME = "Supported";
+	/**
+	 * Optional. When true the model is treated as unsupported however {@code Supported} reads,
+	 * because it takes long enough that offering it would waste the user's time.
+	 *
+	 * <p>Present on three rows -- BIOMD0000000235, 255 and 595 -- which are the first three of
+	 * the eleven the nightly excludes for the same reason in {@code NightlyBMDB_CLI.yml}. The
+	 * two lists have never been reconciled, so this one is stale rather than wrong.
+	 */
 	public static final String SLOW_ATTRIBUTE_NAME = "Slow";
 
 

@@ -1,5 +1,38 @@
 package org.vcell.sedml.testsupport;
 
+/**
+ * Why an OMEX archive did not produce the results it should have.
+ *
+ * <p>This is the <b>shared vocabulary</b> between the nightly baseline
+ * ({@link OmexTestCase}) and the desktop client's prediction of which BioModels archives will
+ * open ({@code vcell-client/src/main/resources/bioModelsNetInfo.xml}). The two files answer
+ * different questions and only the first is a source of truth; the second is derived from it,
+ * and {@code BioModelsNetInfoTest} decides which values here mean "will not open".
+ *
+ * <p><b>Three kinds of thing are mixed in this list, and only the naming distinguishes
+ * them.</b> Nothing enforces the distinction, so consumers that care have to encode it
+ * themselves -- which is why {@code BioModelsNetInfoTest} carries its own explicit set rather
+ * than testing a property of the value:
+ *
+ * <ul>
+ *   <li><b>Capability statements</b> -- VCell does not support this modelling feature, and a
+ *       user hitting it needs to be told what is unsupported rather than shown a stack trace.
+ *       Named {@code UNSUPPORTED_*}, plus {@link #OPERATION_NOT_SUPPORTED}; and, by their
+ *       comments only, {@link #SEDML_SBML_LEVEL_CHANGE} and
+ *       {@link #NESTED_SEDML_REPEATED_TASK}. These are stable: they change when we decide to
+ *       support something, not run to run.</li>
+ *   <li><b>Defects</b> -- we tried and something broke. {@link #MATH_GENERATION_FAILURE},
+ *       {@link #NULL_POINTER_EXCEPTION}, {@link #DIVIDE_BY_ZERO}, {@link #SOLVER_FAILURE} and
+ *       most of the rest. These are ours to fix, and a case can move between them as the code
+ *       changes -- or, for a handful of numerically borderline models, between runs.</li>
+ *   <li><b>Operational</b> -- we did not really get an answer. {@link #TOO_SLOW}, and
+ *       {@link #UNCATEGORIZED_FAULT}, which means only "no classification rule matched" and
+ *       so is a gap in this list rather than a property of the model.</li>
+ * </ul>
+ *
+ * <p>When adding a value, put the kind in the name: an {@code UNSUPPORTED_} prefix is read as
+ * a promise to the user about VCell's scope, so do not use it for something we intend to fix.
+ */
 @SuppressWarnings("unused")
 public enum FailureType {
     ARRAY_INDEX_OUT_OF_BOUNDS,
