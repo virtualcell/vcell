@@ -12,6 +12,7 @@ import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.server.HtcJobID;
 import cbit.vcell.server.HtcJobID.BatchSystemType;
+import cbit.vcell.server.ServerInfo;
 import cbit.vcell.simdata.PortableCommand;
 import cbit.vcell.simdata.PortableCommandWrapper;
 import cbit.vcell.solver.LangevinSimulationOptions;
@@ -845,10 +846,13 @@ public class SlurmProxy extends HtcProxy {
 		String sTimeoutPerTaskSeconds = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_langevin_timeoutPerTaskSeconds);
 		String sHardbBtchMemoryLimitPerTask = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_langevin_batchMemoryLimitPerTaskMB);
 		String sBlockSizeMB =  PropertyLoader.getRequiredProperty(PropertyLoader.slurm_langevin_memoryBlockSizeMB);
-		String sWatchdogTickSeconds = PropertyLoader.getProperty(PropertyLoader.slurm_langevin_watchdogTickSeconds, "60");
-		String sWatchdogTimeoutSeconds = PropertyLoader.getProperty(PropertyLoader.slurm_langevin_watchdogTimeoutSeconds, "600");
+
+		String sWatchdogTickSeconds = PropertyLoader.getProperty(PropertyLoader.slurm_langevin_watchdogTickSeconds,
+				ServerInfo.VCELL_SLURM_LANGEVIN_WATCHDOGTICKSECONDS+"");
+		String sWatchdogTimeoutSeconds = PropertyLoader.getProperty(PropertyLoader.slurm_langevin_watchdogTimeoutSeconds,
+				ServerInfo.VCELL_SLURM_LANGEVIN_WATCHDOGTIMEOUTSECONDS+"");
 		String sMaxNumberOfConcurrentTasks = PropertyLoader.getProperty(PropertyLoader.slurm_langevin_maxNumConcurrentTasks,
-					"31");		// max number of concurrent simulations + 1 watchdog
+				ServerInfo.VCELL_SLURM_LANGEVIN_MAXNUMCONCURRENTTASKS+"");		// max number of concurrent simulations + 1 watchdog
 
 
 		// we don't need to convert many of these strings to numeric only to convert them again to strings for the script,

@@ -9,18 +9,15 @@
  */
 
 package cbit.vcell.solver.ode.gui;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
+import java.awt.*;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.beans.PropertyVetoException;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-import java.util.Locale;
 
+import cbit.vcell.client.RequestManager;
+import cbit.vcell.client.TopLevelWindowManager;
+import cbit.vcell.client.desktop.DocumentWindow;
+import cbit.vcell.server.ServerInfo;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 
 import javax.swing.JFrame;
@@ -56,6 +53,8 @@ public class SimulationSummaryPanel extends DocumentEditorSubPanel {
 
 	private Simulation fieldSimulation = null;
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
+	private ServerInfo serverInfo = null;
+
 //	private JLabel labelSimKey = null;
 	private JLabel ivjJLabel11 = null;
 	private JLabel ivjJLabel12 = null;
@@ -368,18 +367,16 @@ private void displayTask() {
 			getJLabel10().setEnabled(true);
 			getJLabelSensitivity().setText(str);
 			int tot = lso.getTotalNumberOfJobs();
-//			int conc = lso.getNumberOfConcurrentJobs();
-			String sMaxNumberOfConcurrentTasks = PropertyLoader.getProperty(PropertyLoader.slurm_langevin_maxNumConcurrentTasks,
-					"31");		// max number of concurrent simulations + 1 watchdog
-			int maxNumberOfConcurrentTasks = Integer.parseInt(sMaxNumberOfConcurrentTasks);		// concurrent sims + watchdog
-			int conc = Math.min(tot, maxNumberOfConcurrentTasks - 1);	// concurrent sims only
-			int nodes = (int)Math.ceil(conc / 20.0);	// number of nodes needed
 			if(tot == 1) {
 				getJLabel20().setText("Single run.");
 				getJLabel21().setText("");
 				getJLabel21().setEnabled(false);
 				getJLabel21().setVisible(false);
 			} else {
+				ServerInfo si = getServerInfo();
+				int maxNumConcurrentTasks = si != null ? si.getMaxNumConcurrentTasks() : ServerInfo.VCELL_SLURM_LANGEVIN_MAXNUMCONCURRENTTASKS;		// concurrent sims + watchdog
+				int conc = Math.min(tot, maxNumConcurrentTasks - 1);	// concurrent sims only
+				int nodes = (int)Math.ceil(conc / ServerInfo.VCELL_SLURM_MAX_JOBS_PER_NODE);	// number of nodes needed
 				getJLabel20().setText("Batch run:");
 				getJLabel21().setText(conc + " concurrent runs / " + tot + " total runs. Nodes used: " + nodes);
 				getJLabel21().setEnabled(true);
@@ -1382,6 +1379,34 @@ private javax.swing.JLabel getJLabelNumProcessors() {
 		}
 	}
 	return jlabelNumProcessors;
+}
+
+private RequestManager getRequestManager() {
+	Component c = this;
+	while (c != null && !(c instanceof Window)) {
+		c = c.getParent();
+	}
+	if (c instanceof DocumentWindow) {
+		try {
+			DocumentWindow dw = (DocumentWindow) c;
+			TopLevelWindowManager tlwm = dw.getTopLevelWindowManager();
+			RequestManager rm = tlwm.getRequestManager();
+			return rm;
+		} catch(Exception e) {
+			return null;
+		}
+	}
+	return null;
+}
+private ServerInfo getServerInfo() {
+	if (serverInfo == null) {
+		RequestManager rm = getRequestManager();
+		if (rm == null) {
+			return null;
+		}
+		serverInfo = rm.getServerInfo();
+	}
+	return serverInfo;
 }
 
 
