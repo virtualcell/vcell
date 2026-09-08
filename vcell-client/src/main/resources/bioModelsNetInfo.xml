@@ -1,4 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Which BioModels Database archives the VCell client PREDICTS it can OPEN.
+
+  Read at runtime by the desktop BMDB tab, which shows a warning icon for the rest so a
+  user is not sent into an import that cannot succeed. It predicts OPENING, not running:
+  the tab uses the ordinary document-open path and never simulates, so an archive that
+  imports cleanly and then fails in the solver is still Supported="true".
+
+  DO NOT EDIT BY HAND. Supported is derived from the nightly execution baseline,
+  vcell-cli/src/main/resources/test_cases.ndjson, and BioModelsNetInfoTest fails when the
+  two disagree. Regenerate with:
+
+    mvn test -pl vcell-client -Dtest=BioModelsNetInfoTest -Dvcell.updateBioModelsNetInfo=true
+
+  That file is the source of truth for what happened; this one is a derived prediction.
+  They share a reason vocabulary (org.vcell.sedml.testsupport.FailureType) but answer
+  different questions: see the class comments on OmexTestCase and BioModelsNetModelInfo.
+
+  Attributes:
+    Supported   read; the prediction above.
+    Slow        read; when true the model is treated as unsupported regardless, because it
+                takes too long to be worth offering. Present on three rows, which are the
+                first three of the eleven the nightly excludes for the same reason in
+                NightlyBMDB_CLI.yml; the two lists were never reconciled.
+    exception   NOT read by anything. A legacy per-model reason that predates the derivation
+                and contradicts Supported on some rows. The tab can say a model is not
+                compatible but not why; wiring this up is the obvious way to fix that.
+    vcell_ran, COPASI_ran, mSBML_ran   NOT read by anything.
+-->
 <Supported_BioModelsNet>
   <BioModelInfo ID="BIOMD0000000001" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Edelstein1996 - EPSP ACh event" />
   <BioModelInfo ID="BIOMD0000000002" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Edelstein1996 - EPSP ACh species" />
