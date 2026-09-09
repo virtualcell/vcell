@@ -13,6 +13,7 @@ import cbit.vcell.message.VCMessageSelector;
 import cbit.vcell.message.VCMessagingException;
 import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.VCellQueue;
+import cbit.vcell.message.jms.JmsFailoverWatchdog;
 import cbit.vcell.message.jms.VCMessagingServiceJms;
 import cbit.vcell.resource.PropertyLoader;
 
@@ -21,6 +22,28 @@ public class VCMessagingServiceActiveMQ extends VCMessagingServiceJms implements
 
 	public VCMessagingServiceActiveMQ() {
 		super();
+	}
+
+	/**
+	 * A messaging service for a long-lived server process whose only job is to consume
+	 * from the broker (submit, sched, data, db).
+	 *
+	 * The failover transport gives up after {@code maxReconnectAttempts} (set in
+	 * jmsUrl below), which is deliberate -- in K8s a pod restart is the right response
+	 * to a sustained broker outage. That only holds if something acts on it, so these
+	 * processes exit on a terminal failure and let K8s recycle them. Without it the
+	 * process stays up around a connection that can never be used again: dev's submit
+	 * service ran for 6h50m in that state, consuming nothing and still reporting healthy
+	 * (issue #2031).
+	 *
+	 * Short-lived batch processes (SolverPreprocessor, SolverPostprocessor,
+	 * JavaSimulationExecutable) and the API server keep the log-only default -- they
+	 * outlive neither the broker outage nor their own task.
+	 */
+	public static VCMessagingServiceActiveMQ createForLongLivedConsumerService() {
+		VCMessagingServiceActiveMQ service = new VCMessagingServiceActiveMQ();
+		service.setFailoverWatchdog(JmsFailoverWatchdog.jvmExitOnTerminal());
+		return service;
 	}
 	
 	@Override

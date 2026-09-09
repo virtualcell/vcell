@@ -48,6 +48,25 @@ public final class JmsFailoverWatchdog {
 		return new JmsFailoverWatchdog(() -> {});
 	}
 
+	/**
+	 * Escalate a failure the caller detected for itself and cannot recover from in
+	 * place -- e.g. a consumer whose session died while it was still meant to be
+	 * polling. The {@link TransportListener} installed by {@link #attach} covers the
+	 * failures the failover layer reports; this covers the ones only the caller can
+	 * see. Both end in the same terminal action, so how a process responds to a lost
+	 * broker stays a single wiring decision.
+	 *
+	 * This route matters for more than tidiness: {@link #attach} installs a listener
+	 * only for {@link ActiveMQConnection}, so for any other provider it is the only
+	 * path to the terminal action at all.
+	 *
+	 * @param what short description of what was lost, e.g. {@code "transport"}
+	 */
+	public void onTerminalFailure(String what, Throwable cause) {
+		lg.fatal("JMS " + what + " unrecoverable, invoking terminal handler", cause);
+		onTerminal.run();
+	}
+
 	public void attach(Connection connection) {
 		if (!(connection instanceof ActiveMQConnection)) {
 			lg.warn("no failover watchdog for connection type {} -- a wedged transport will not "
@@ -63,8 +82,7 @@ public final class JmsFailoverWatchdog {
 			}
 			@Override
 			public void onException(IOException error) {
-				lg.fatal("JMS transport unrecoverable, invoking terminal handler", error);
-				onTerminal.run();
+				onTerminalFailure("transport", error);
 			}
 			@Override
 			public void transportInterupted() {

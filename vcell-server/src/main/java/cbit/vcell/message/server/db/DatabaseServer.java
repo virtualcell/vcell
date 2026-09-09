@@ -90,7 +90,7 @@ public DatabaseServer() throws SQLException, DataAccessException {
 	KeyFactory keyFactory = conFactory.getKeyFactory();
 	this.databaseServerImpl = new DatabaseServerImpl(conFactory, keyFactory);
 
-	this.vcMessagingService_int = new VCMessagingServiceActiveMQ();
+	this.vcMessagingService_int = VCMessagingServiceActiveMQ.createForLongLivedConsumerService();
 	String jmshost = PropertyLoader.getRequiredProperty(PropertyLoader.jmsIntHostInternal);
 	int jmsport = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.jmsIntPortInternal));
 	this.vcMessagingService_int.setConfiguration(new ServerMessagingDelegate(), jmshost, jmsport);
