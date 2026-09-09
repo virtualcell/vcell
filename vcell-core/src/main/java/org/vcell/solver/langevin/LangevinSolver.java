@@ -31,22 +31,14 @@ import java.util.ArrayList;
  * 
  */
 public class LangevinSolver extends SimpleCompiledSolver {
-	private static final Logger lg = LogManager.getLogger(LangevinSolver.class);
-	/**
-	 * LangevinNoVis01 output file names
-	 */
 
-	private String logFileString = null;	// logfile name as it appears in argument list
-											// it is the value of getLogFilename(), but it's set late
-	
+	private static final Logger lg = LogManager.getLogger(LangevinSolver.class);
+
+
 	public LangevinSolver(SimulationTask simTask, File directory, boolean bMsging) throws SolverException {
 		super(simTask, directory, bMsging);
 	}
 
-	/**
-	 * Insert the method's description here. Creation date: (7/13/2006 9:00:41
-	 * AM)
-	 */
 	public void cleanup() {
     }
 
@@ -134,8 +126,6 @@ public class LangevinSolver extends SimpleCompiledSolver {
 
 		MathExecutable me = new MathExecutable(mathExecutableCommand, saveDirectoryFile);
 		setMathExecutable(me);
-
-//		setLogFileString(getLogFilename(simTask.getSimulationJob().getJobIndex()));		// variable is set "late"  TODO: may be not needed
 	}
 
 	private void writeLangevinMessagingConfig(PrintWriter pw, SimulationTask simTask){
@@ -170,22 +160,6 @@ public class LangevinSolver extends SimpleCompiledSolver {
 		return getBaseName() + LANGEVIN_MESSAGINGCONFIG_FILE_EXTENSION;
 	}
 
-	// solver-generated log file (log name includes the run index), contains progress:
-	//   Simulation 1% complete. Elapsed time: 14.299 sec.
-	//	Simulation 2% complete. Elapsed time: 28.730 sec.
-	// ...
-	private String getLogFilename(int runIndex) {
-		String baseName = getBaseName();
-		if(baseName.endsWith("_")){
-			return getBaseName() + runIndex + LANGEVIN_OUTPUT_LOG_EXTENSION;
-		} else {
-			return getBaseName() + LANGEVIN_OUTPUT_LOG_EXTENSION;
-		}
-	}
-	// separately generated log contains something like this:
-	// 	IDAData logfile
-	//	IDAData text format version 1
-	//	SimID_313608510_0_.ida
 	private String getLogFilename() {
 		return getBaseName() + LANGEVIN_OUTPUT_LOG_EXTENSION;
 	}
@@ -208,7 +182,7 @@ public class LangevinSolver extends SimpleCompiledSolver {
 
 		int trialIndex = simTask.getSimulationJob().getTrialIndex().index;	// run index
 		String inputFilename = getInputFilename();
-		String logFileOption = "--output-log=" + getLogFilename(trialIndex);
+		String logFileOption = "--output-log=" + getLogFilename();
 		String messagingConfigOption = "--vc-send-status-config=" + getMessagingConfigFilename();
 		String localMessagingOption = "--vc-print-status";
 
@@ -264,12 +238,5 @@ public class LangevinSolver extends SimpleCompiledSolver {
 		}
 	}
 
-	public String getLogFileString() {
-		return logFileString;
-	}
-
-	public void setLogFileString(String logFileString) {
-		this.logFileString = logFileString;
-	}
 }
 
