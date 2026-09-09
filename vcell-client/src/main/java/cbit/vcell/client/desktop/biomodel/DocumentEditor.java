@@ -59,6 +59,7 @@ import org.vcell.util.gui.JTabbedPaneEnhanced;
 import org.vcell.util.gui.VCellIcons;
 
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.client.VCellLookAndFeel;
 import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.client.desktop.DatabaseWindowPanel;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
@@ -511,16 +512,17 @@ private void initialize() {
 		
 		JScrollPane treePanel = new javax.swing.JScrollPane(documentEditorTree);	
 		leftSplitPane.setTopComponent(treePanel);
-		leftBottomTabbedPane.setMinimumSize(new java.awt.Dimension(198, 148));
+		leftBottomTabbedPane.setMinimumSize(new java.awt.Dimension(
+				VCellLookAndFeel.scaleTextPixels(198), VCellLookAndFeel.scaleTextPixels(148)));
 		leftSplitPane.setBottomComponent(leftBottomTabbedPane);
 		leftSplitPane.setResizeWeight(0.5);
-		leftSplitPane.setDividerLocation(300);
+		leftSplitPane.setDividerLocation(VCellLookAndFeel.scaleTextPixels(300));
 		leftSplitPane.setDividerSize(8);
 		leftSplitPane.setOneTouchExpandable(true);
 
 		rightSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
 		rightSplitPane.setResizeWeight(0.7);
-		rightSplitPane.setDividerLocation(400);
+		rightSplitPane.setDividerLocation(VCellLookAndFeel.scaleTextPixels(400));
 		rightSplitPane.setDividerSize(8);
 		rightSplitPane.setOneTouchExpandable(true);
 		
@@ -562,11 +564,12 @@ private void initialize() {
 		rightBottomTabbedPane.addTab(TAB_TITLE_OBJECT_PROPERTIES, rightBottomEmptyPanel);		
 		rightBottomTabbedPane.addTab(TAB_TITLE_ANNOTATIONS, rightBottomEmptyAnnotationsPanel);		
 		rightBottomTabbedPane.addTab(TAB_TITLE_PROBLEMS, issuePanel);		
-		rightBottomTabbedPane.setMinimumSize(new java.awt.Dimension(198, 148));		
+		rightBottomTabbedPane.setMinimumSize(new java.awt.Dimension(
+				VCellLookAndFeel.scaleTextPixels(198), VCellLookAndFeel.scaleTextPixels(148)));		
 		rightSplitPane.setBottomComponent(rightBottomTabbedPane);
 		
 		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-		splitPane.setDividerLocation(270);
+		splitPane.setDividerLocation(VCellLookAndFeel.scaleTextPixels(270));
 		splitPane.setOneTouchExpandable(true);
 		splitPane.setResizeWeight(0.3);
 		splitPane.setDividerSize(8);
