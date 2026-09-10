@@ -31,9 +31,6 @@ public class ServerInfo implements java.io.Serializable {
 	// TODO: no idea where this number comes from, is it a named property? is it the default?
 	public static final double VCELL_SLURM_MAX_JOBS_PER_NODE = 20.0;
 
-	private String hostName = null;
-	private CacheStatus cacheStatus = null;
-	private User[] connectedUsers = null;
 
 	// slurm settings, per-Langevin-task wall-clock timeout = 20 days (20*86400) = 1728000
 	// kept just under the 20-23:59:00 job wall SlurmProxy clamps to, so a task that runs
@@ -47,10 +44,6 @@ public class ServerInfo implements java.io.Serializable {
 
 	public ServerInfo() {
 
-	}
-	public ServerInfo(String argHostName,User[] argConnectedUsers){
-		hostName = argHostName;
-		connectedUsers = argConnectedUsers;
 	}
 
 	public int getTimeoutPerTaskSeconds() {
@@ -71,12 +64,5 @@ public class ServerInfo implements java.io.Serializable {
 	public int getWatchdogTickSeconds() {
 		return watchdogTickSeconds;
 	}
-
-	public User[] getConnectedUsers() {
-	return connectedUsers;
-}
-	public String getHostName(){
-	return hostName;
-}
 
 }
