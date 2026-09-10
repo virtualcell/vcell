@@ -253,7 +253,7 @@ public class ResourceUtil {
 		if (ResourceUtil.localSimDir != null) return ResourceUtil.localSimDir;
 
 		ResourceUtil.localSimDir = new File(ResourceUtil.getLocalRootDir(), userSubDirName);
-		if (!ResourceUtil.localSimDir.exists() && localSimDir.mkdirs()) throw new RuntimeException("Error initializing the sim directory '" + localSimDir + "'");
+		if (!ResourceUtil.localSimDir.exists() && !localSimDir.mkdirs()) throw new RuntimeException("Error initializing the sim directory '" + localSimDir + "'");
 
 		File[] localFiles = localSimDir.listFiles();
 		if (localFiles == null) throw new IOError(new IllegalStateException("OS declares `" + ResourceUtil.localSimDir + "` is a directory, but java.io cannot list said directory!"));

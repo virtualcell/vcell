@@ -693,16 +693,28 @@
 							<version>1.3.0</version>
 							<executions>
 								<execution>
-									<id>install-solvers-win64</id>
+									<id>install-general-solvers-win64</id>
 									<phase>generate-test-resources</phase>
 									<goals>
 										<goal>wget</goal>
 									</goals>
 									<!-- This will download resource to {HomeDir}\.m2\repository\.cache\download-maven-plugin then extract to <outputDirectory>-->
 									<configuration>
-										<url>https://github.com/virtualcell/vcell-solvers/releases/download/${solvers-vcell-windows.version}/win64.zip</url>
+										<url>https://github.com/virtualcell/vcell-solvers/releases/download/${solvers-other-windows.version}/win64.zip</url>
 										<unpack>true</unpack>
-										<outputDirectory>${project.build.directory}/../../localsolvers/win64</outputDirectory>
+										<outputDirectory>${project.build.directory}/../../localsolvers/win64/${solvers-other-subdirectory.name}</outputDirectory>
+									</configuration>
+								</execution>
+								<execution>
+									<id>install-fvsolver-win64</id>
+									<phase>generate-test-resources</phase>
+									<goals>
+										<goal>wget</goal>
+									</goals>
+									<configuration>
+										<url>https://github.com/virtualcell/vcell-fvsolver/releases/download/${solvers-fvsolver-windows.version}/win64.zip</url>
+										<unpack>true</unpack>
+										<outputDirectory>${project.build.directory}/../../localsolvers/win64/${solvers-fvsolver-subdirectory.name}</outputDirectory>
 									</configuration>
 								</execution>
 								<execution>
@@ -713,7 +725,7 @@
 									</goals>
 									<configuration>
 										<url>https://github.com/cam-center/LangevinNoVis01/releases/download/${solvers-langevin-windows.version}/langevin-windows-latest</url>
-										<outputDirectory>${project.build.directory}/../../localsolvers/win64</outputDirectory>
+										<outputDirectory>${project.build.directory}/../../localsolvers/win64/${solvers-langevin-subdirectory.name}</outputDirectory>
 										<outputFileName>langevin_x64.exe</outputFileName>
 									</configuration>
 								</execution>
@@ -736,50 +748,81 @@
 							<groupId>com.googlecode.maven-download-plugin</groupId>
 							<artifactId>download-maven-plugin</artifactId>
 							<version>1.3.0</version>
+							<!-->
+							Also: See top-level POM file
+							<-->
 							<executions>
 								<execution>
-									<id>install-solvers-linux64</id>
+									<id>install-general-solvers-linux64</id>
 									<phase>generate-test-resources</phase>
 									<goals>
 										<goal>wget</goal>
 									</goals>
 									<configuration>
-										<url>https://github.com/virtualcell/vcell-solvers/releases/download/${solvers-vcell-linux.version}/linux64.tgz</url>
-										<!-- Unpacked by the plugin, as mac64 and win64 already are. It used to be extracted
-										     afterwards by shelling out to `tar xzfh`, which BSD tar (that is, every macOS
-										     machine) rejects: "tar: Option -L is not permitted in mode -x". The build printed
-										     an [ERROR] and carried on green, leaving the linux solvers unextracted locally.
-										     Ant's <untar> is not the alternative: it does not restore unix permissions, and
-										     nothing chmods these binaries - they rely on the archive's own modes, which this
-										     plugin preserves. mac64 is the proof: unpacked the same way, no chmod task, and
-										     localsolvers/mac64/FiniteVolume_x64 comes out executable. -->
+										<url>https://github.com/virtualcell/vcell-solvers/releases/download/${solvers-other-linux.version}/linux64.tgz</url>
 										<unpack>true</unpack>
-										<outputDirectory>${project.build.directory}/../../localsolvers/linux64</outputDirectory>
+										<outputDirectory>${project.build.directory}/../../localsolvers/linux64/${solvers-other-subdirectory.name}</outputDirectory>
 									</configuration>
 								</execution>
 								<execution>
-									<id>install-solvers-win64</id>
+									<id>install-general-solvers-win64</id>
 									<phase>generate-test-resources</phase>
 									<goals>
 										<goal>wget</goal>
 									</goals>
 									<configuration>
-										<url>https://github.com/virtualcell/vcell-solvers/releases/download/${solvers-vcell-windows.version}/win64.zip</url>
+										<url>https://github.com/virtualcell/vcell-solvers/releases/download/${solvers-other-windows.version}/win64.zip</url>
 										<unpack>true</unpack>
-										<outputDirectory>${project.build.directory}/../../localsolvers/win64</outputDirectory>
+										<outputDirectory>${project.build.directory}/../../localsolvers/win64/${solvers-other-subdirectory.name}</outputDirectory>
 										<skipCache>true</skipCache>
 									</configuration>
 								</execution>
 								<execution>
-									<id>install-solvers-mac64</id>
+									<id>install-general-solvers-mac64</id>
 									<phase>generate-test-resources</phase>
 									<goals>
 										<goal>wget</goal>
 									</goals>
 									<configuration>
-										<url>https://github.com/virtualcell/vcell-solvers/releases/download/${solvers-vcell-mac.version}/mac64.tgz</url>
+										<url>https://github.com/virtualcell/vcell-solvers/releases/download/${solvers-other-mac.version}/mac64.tgz</url>
 										<unpack>true</unpack>
-										<outputDirectory>${project.build.directory}/../../localsolvers/mac64</outputDirectory>
+										<outputDirectory>${project.build.directory}/../../localsolvers/mac64/${solvers-other-subdirectory.name}</outputDirectory>
+									</configuration>
+								</execution>
+								<execution>
+									<id>download-fvsolver-solver-linux64</id>
+									<phase>generate-test-resources</phase>
+									<goals>
+										<goal>wget</goal>
+									</goals>
+									<configuration>
+										<url>https://github.com/virtualcell/vcell-fvsolver/releases/download/${solvers-fvsolver-linux.version}/linux64.tgz</url>
+										<outputDirectory>${project.build.directory}/../../localsolvers/linux64/${solvers-fvsolver-subdirectory.name}</outputDirectory>
+									</configuration>
+								</execution>
+								<execution>
+									<id>install-fvsolver-solver-win64</id>
+									<phase>generate-test-resources</phase>
+									<goals>
+										<goal>wget</goal>
+									</goals>
+									<configuration>
+										<url>https://github.com/virtualcell/vcell-fvsolver/releases/download/${solvers-fvsolver-windows.version}/win64.zip</url>
+										<unpack>true</unpack>
+										<outputDirectory>${project.build.directory}/../../localsolvers/win64/${solvers-fvsolver-subdirectory.name}</outputDirectory>
+										<skipCache>true</skipCache>
+									</configuration>
+								</execution>
+								<execution>
+									<id>install-fvsolver-solver-mac64</id>
+									<phase>generate-test-resources</phase>
+									<goals>
+										<goal>wget</goal>
+									</goals>
+									<configuration>
+										<url>https://github.com/virtualcell/vcell-fvsolver/releases/download/${solvers-fvsolver-mac.version}/mac64.tgz</url>
+										<unpack>true</unpack>
+										<outputDirectory>${project.build.directory}/../../localsolvers/mac64/${solvers-fvsolver-subdirectory.name}</outputDirectory>
 									</configuration>
 								</execution>
 								<execution>
@@ -790,7 +833,7 @@
 									</goals>
 									<configuration>
 										<url>https://github.com/cam-center/LangevinNoVis01/releases/download/${solvers-langevin-windows.version}/langevin-windows-latest</url>
-										<outputDirectory>${project.build.directory}/../../localsolvers/win64</outputDirectory>
+										<outputDirectory>${project.build.directory}/../../localsolvers/win64/${solvers-langevin-subdirectory.name}</outputDirectory>
 										<outputFileName>langevin_x64.exe</outputFileName>
 									</configuration>
 								</execution>
@@ -802,7 +845,7 @@
 									</goals>
 									<configuration>
 										<url>https://github.com/cam-center/LangevinNoVis01/releases/download/${solvers-langevin-mac.version}/langevin-macos-universal</url>
-										<outputDirectory>${project.build.directory}/../../localsolvers/mac64</outputDirectory>
+										<outputDirectory>${project.build.directory}/../../localsolvers/mac64/${solvers-langevin-subdirectory.name}</outputDirectory>
 										<outputFileName>langevin_x64</outputFileName>
 									</configuration>
 								</execution>
@@ -814,7 +857,7 @@
 									</goals>
 									<configuration>
 										<url>https://github.com/cam-center/LangevinNoVis01/releases/download/${solvers-langevin-linux.version}/langevin-ubuntu-latest</url>
-										<outputDirectory>${project.build.directory}/../../localsolvers/linux64</outputDirectory>
+										<outputDirectory>${project.build.directory}/../../localsolvers/linux64/${solvers-langevin-subdirectory.name}</outputDirectory>
 										<outputFileName>langevin_x64</outputFileName>
 									</configuration>
 								</execution>
@@ -832,7 +875,7 @@
 									</goals>
 									<configuration>
 										<target>
-											<chmod file="${project.build.directory}/../../localsolvers/mac64/langevin_x64" perm="755"/>
+											<chmod file="${project.build.directory}/../../localsolvers/mac64/${solvers-langevin-subdirectory.name}/langevin_x64" perm="755"/>
 										</target>
 									</configuration>
 								</execution>
@@ -844,11 +887,19 @@
 									</goals>
 									<configuration>
 										<target>
-											<chmod file="${project.build.directory}/../../localsolvers/linux64/langevin_x64" perm="755"/>
+											<chmod file="${project.build.directory}/../../localsolvers/linux64/${solvers-langevin-subdirectory.name}/langevin_x64" perm="755"/>
 										</target>
 									</configuration>
 								</execution>
 							</executions>
+							<!-- Note that in the past, there was code here to unpack the linux code "properly"
+								 It used to be extracted afterward by shelling out to `tar xzfh`, which BSD tar
+								 (that is, every macOS machine) rejects: "tar: Option -L is not permitted in mode -x".
+								 The build printed an [ERROR] and carried on green, leaving the linux solvers unextracted locally.
+								 Ant's <untar> is not the alternative: it does not restore unix permissions, and
+								 nothing chmods these binaries - they rely on the archive's own modes, which this
+								 plugin preserves. mac64 is the proof: unpacked the same way, no chmod task, and
+								 localsolvers/mac64/FiniteVolume_x64 comes out executable. -->
 						</plugin>
 					</plugins>
 				</build>
@@ -867,50 +918,81 @@
 							<groupId>com.googlecode.maven-download-plugin</groupId>
 							<artifactId>download-maven-plugin</artifactId>
 							<version>1.3.0</version>
+							<!-->
+							Also: See top-level POM file
+							<-->
 							<executions>
 								<execution>
-									<id>install-solvers-linux64</id>
+									<id>install-general-solvers-linux64</id>
 									<phase>generate-test-resources</phase>
 									<goals>
 										<goal>wget</goal>
 									</goals>
 									<configuration>
-										<url>https://github.com/virtualcell/vcell-solvers/releases/download/${solvers-vcell-linux.version}/linux64.tgz</url>
-										<!-- Unpacked by the plugin, as mac64 and win64 already are. It used to be extracted
-										     afterwards by shelling out to `tar xzfh`, which BSD tar (that is, every macOS
-										     machine) rejects: "tar: Option -L is not permitted in mode -x". The build printed
-										     an [ERROR] and carried on green, leaving the linux solvers unextracted locally.
-										     Ant's <untar> is not the alternative: it does not restore unix permissions, and
-										     nothing chmods these binaries - they rely on the archive's own modes, which this
-										     plugin preserves. mac64 is the proof: unpacked the same way, no chmod task, and
-										     localsolvers/mac64/FiniteVolume_x64 comes out executable. -->
+										<url>https://github.com/virtualcell/vcell-solvers/releases/download/${solvers-other-linux.version}/linux64.tgz</url>
 										<unpack>true</unpack>
-										<outputDirectory>${project.build.directory}/../../localsolvers/linux64</outputDirectory>
+										<outputDirectory>${project.build.directory}/../../localsolvers/linux64/${solvers-other-subdirectory.name}</outputDirectory>
 									</configuration>
 								</execution>
 								<execution>
-									<id>install-solvers-win64</id>
+									<id>install-general-solvers-win64</id>
 									<phase>generate-test-resources</phase>
 									<goals>
 										<goal>wget</goal>
 									</goals>
 									<configuration>
-										<url>https://github.com/virtualcell/vcell-solvers/releases/download/${solvers-vcell-windows.version}/win64.zip</url>
+										<url>https://github.com/virtualcell/vcell-solvers/releases/download/${solvers-other-windows.version}/win64.zip</url>
 										<unpack>true</unpack>
-										<outputDirectory>${project.build.directory}/../../localsolvers/win64</outputDirectory>
+										<outputDirectory>${project.build.directory}/../../localsolvers/win64/${solvers-other-subdirectory.name}</outputDirectory>
 										<skipCache>true</skipCache>
 									</configuration>
 								</execution>
 			 					<execution>
-									<id>install-solvers-mac64</id>
+									<id>install-general-solvers-mac64</id>
 									<phase>generate-test-resources</phase>
 									<goals>
 										<goal>wget</goal>
 									</goals>
 									<configuration>
-										<url>https://github.com/virtualcell/vcell-solvers/releases/download/${solvers-vcell-mac.version}/mac64.tgz</url>
+										<url>https://github.com/virtualcell/vcell-solvers/releases/download/${solvers-other-mac.version}/mac64.tgz</url>
 										<unpack>true</unpack>
-										<outputDirectory>${project.build.directory}/../../localsolvers/mac64</outputDirectory>
+										<outputDirectory>${project.build.directory}/../../localsolvers/mac64/${solvers-other-subdirectory.name}</outputDirectory>
+									</configuration>
+								</execution>
+								<execution>
+									<id>download-fvsolver-solver-linux64</id>
+									<phase>generate-test-resources</phase>
+									<goals>
+										<goal>wget</goal>
+									</goals>
+									<configuration>
+										<url>https://github.com/virtualcell/vcell-fvsolver/releases/download/${solvers-fvsolver-linux.version}/linux64.tgz</url>
+										<outputDirectory>${project.build.directory}/../../localsolvers/linux64/${solvers-fvsolver-subdirectory.name}</outputDirectory>
+									</configuration>
+								</execution>
+								<execution>
+									<id>install-fvsolver-solver-win64</id>
+									<phase>generate-test-resources</phase>
+									<goals>
+										<goal>wget</goal>
+									</goals>
+									<configuration>
+										<url>https://github.com/virtualcell/vcell-fvsolver/releases/download/${solvers-fvsolver-windows.version}/win64.zip</url>
+										<unpack>true</unpack>
+										<outputDirectory>${project.build.directory}/../../localsolvers/win64/${solvers-fvsolver-subdirectory.name}</outputDirectory>
+										<skipCache>true</skipCache>
+									</configuration>
+								</execution>
+								<execution>
+									<id>install-fvsolver-solver-mac64</id>
+									<phase>generate-test-resources</phase>
+									<goals>
+										<goal>wget</goal>
+									</goals>
+									<configuration>
+										<url>https://github.com/virtualcell/vcell-fvsolver/releases/download/${solvers-fvsolver-mac.version}/mac64.tgz</url>
+										<unpack>true</unpack>
+										<outputDirectory>${project.build.directory}/../../localsolvers/mac64/${solvers-fvsolver-subdirectory.name}</outputDirectory>
 									</configuration>
 								</execution>
 								<execution>
@@ -921,7 +1003,7 @@
 									</goals>
 									<configuration>
 										<url>https://github.com/cam-center/LangevinNoVis01/releases/download/${solvers-langevin-windows.version}/langevin-windows-latest</url>
-										<outputDirectory>${project.build.directory}/../../localsolvers/win64</outputDirectory>
+										<outputDirectory>${project.build.directory}/../../localsolvers/win64/${solvers-langevin-subdirectory.name}</outputDirectory>
 										<outputFileName>langevin_x64.exe</outputFileName>
 									</configuration>
 								</execution>
@@ -933,7 +1015,7 @@
 									</goals>
 									<configuration>
 										<url>https://github.com/cam-center/LangevinNoVis01/releases/download/${solvers-langevin-mac.version}/langevin-macos-universal</url>
-										<outputDirectory>${project.build.directory}/../../localsolvers/mac64</outputDirectory>
+										<outputDirectory>${project.build.directory}/../../localsolvers/mac64/${solvers-langevin-subdirectory.name}</outputDirectory>
 										<outputFileName>langevin_x64</outputFileName>
 									</configuration>
 								</execution>
@@ -945,7 +1027,7 @@
 									</goals>
 									<configuration>
 										<url>https://github.com/cam-center/LangevinNoVis01/releases/download/${solvers-langevin-linux.version}/langevin-ubuntu-latest</url>
-										<outputDirectory>${project.build.directory}/../../localsolvers/linux64</outputDirectory>
+										<outputDirectory>${project.build.directory}/../../localsolvers/linux64/${solvers-langevin-subdirectory.name}</outputDirectory>
 										<outputFileName>langevin_x64</outputFileName>
 									</configuration>
 								</execution>
@@ -963,7 +1045,7 @@
 									</goals>
 									<configuration>
 										<target>
-											<chmod file="${project.build.directory}/../../localsolvers/mac64/langevin_x64" perm="755"/>
+											<chmod file="${project.build.directory}/../../localsolvers/mac64/${solvers-langevin-subdirectory.name}/langevin_x64" perm="755"/>
 										</target>
 									</configuration>
 								</execution>
@@ -975,11 +1057,19 @@
 									</goals>
 									<configuration>
 										<target>
-											<chmod file="${project.build.directory}/../../localsolvers/linux64/langevin_x64" perm="755"/>
+											<chmod file="${project.build.directory}/../../localsolvers/linux64/${solvers-langevin-subdirectory.name}/langevin_x64" perm="755"/>
 										</target>
 									</configuration>
 								</execution>
 							</executions>
+							<!-- Note that in the past, there was code here to unpack the linux code "properly"
+								 It used to be extracted afterward by shelling out to `tar xzfh`, which BSD tar
+								 (that is, every macOS machine) rejects: "tar: Option -L is not permitted in mode -x".
+								 The build printed an [ERROR] and carried on green, leaving the linux solvers unextracted locally.
+								 Ant's <untar> is not the alternative: it does not restore unix permissions, and
+								 nothing chmods these binaries - they rely on the archive's own modes, which this
+								 plugin preserves. mac64 is the proof: unpacked the same way, no chmod task, and
+								 localsolvers/mac64/FiniteVolume_x64 comes out executable. -->
 						</plugin>
 					</plugins>
 				</build>
