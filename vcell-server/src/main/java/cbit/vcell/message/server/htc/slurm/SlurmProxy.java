@@ -829,6 +829,9 @@ public class SlurmProxy extends HtcProxy {
 		SolverTaskDescription std = simTask.getSimulation().getSolverTaskDescription();
 		LangevinSimulationOptions lso = std.getLangevinSimulationOptions();
 		int totalNumberOfJobs = lso.getTotalNumberOfJobs();		// total number of sims the user wants to run (excludes the watchdog)
+		if(totalNumberOfJobs < 2) {
+			throw new IllegalArgumentException("Langevin batch job must have at least 2 simulations, but got " + totalNumberOfJobs);
+		}
 
 		// the number of simulations running concurrently from LangevinSimulationOptions
 		// in reality we also run a watchdog, so the number of concurrent tasks is actually 1 more than this
