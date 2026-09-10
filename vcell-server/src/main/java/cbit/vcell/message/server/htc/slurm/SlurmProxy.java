@@ -865,7 +865,7 @@ public class SlurmProxy extends HtcProxy {
 		// if totalNumberOfJobs is small, adjust totalNumberOfConcurrentSimulations and totalNumberOfConcurrentTasks down accordingly
 		int totalNumberOfConcurrentSimulations = Math.min(totalNumberOfJobs, maxNumberOfConcurrentTasks - 1);	// one task is the watchdog
 		int totalNumberOfConcurrentTasks = totalNumberOfConcurrentSimulations + 1;	// add one for the watchdog
-		int nodes = (int)Math.ceil(totalNumberOfConcurrentTasks / 20.0);
+		int nodes = (int)Math.ceil(totalNumberOfConcurrentTasks / ServerInfo.VCELL_SLURM_MAX_JOBS_PER_NODE);
 
 		int timeoutPerTaskSeconds = Integer.parseInt(sTimeoutPerTaskSeconds);
 		long hardbBtchMemoryLimitPerTask = Long.parseLong(sHardbBtchMemoryLimitPerTask);	// MB. we hard limit mem to 2G for langevin batch jobs
