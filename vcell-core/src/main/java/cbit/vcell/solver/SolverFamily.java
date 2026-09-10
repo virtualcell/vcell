@@ -5,6 +5,7 @@ import java.util.Map;
 
 public enum SolverFamily {
 	FVSOLVER("fvsolver"),
+	CVODES("cvodes"),
 	LANGEVIN("langevin"),
 	OTHER("other");
 
@@ -14,7 +15,7 @@ public enum SolverFamily {
 		SolverFamily.mapping.put(SolverExecutable.VCellChombo, SolverFamily.OTHER);
 		SolverFamily.mapping.put(SolverExecutable.FiniteVolume, SolverFamily.FVSOLVER);
 		SolverFamily.mapping.put(SolverExecutable.FiniteVolume_PETSc, SolverFamily.OTHER);
-		SolverFamily.mapping.put(SolverExecutable.SundialsOde, SolverFamily.OTHER);
+		SolverFamily.mapping.put(SolverExecutable.SundialsOde, SolverFamily.CVODES);
 		SolverFamily.mapping.put(SolverExecutable.Gibson, SolverFamily.OTHER);
 		SolverFamily.mapping.put(SolverExecutable.Hybrid_EM, SolverFamily.OTHER);
 		SolverFamily.mapping.put(SolverExecutable.Hybrid_Mil, SolverFamily.OTHER);
