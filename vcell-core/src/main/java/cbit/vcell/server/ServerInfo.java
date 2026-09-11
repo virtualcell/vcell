@@ -18,7 +18,7 @@ import org.vcell.util.document.User;
  * Creation date: (12/9/2002 12:44:13 AM)
  * @author: Jim Schaff
  */
-public class ServerInfo implements java.io.Serializable {
+public class ServerInfo {
 
 	public static final int VCELL_SLURM_LANGEVIN_TIMEOUTPERTASKSECONDS = 1728000;
 	public static final int VCELL_SLURM_LANGEVIN_BATCHMEMORYLIMITPERTASKMB = 1024;

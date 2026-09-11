@@ -6,8 +6,6 @@ import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.mapping.ReactionRuleSpec;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.math.*;
-import cbit.vcell.resource.PropertyLoader;
-import cbit.vcell.server.ServerInfo;
 import org.vcell.util.springsalad.IOHelp;
 import cbit.vcell.math.ParticleProperties.ParticleInitialCondition;
 import cbit.vcell.math.ParticleProperties.ParticleInitialConditionCount;
@@ -21,7 +19,6 @@ import org.vcell.util.Pair;
 
 import java.math.BigInteger;
 import java.util.*;
-//import org.jdom2.output.Format;
 
 public class LangevinLngvWriter {
 	
