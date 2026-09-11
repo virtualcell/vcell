@@ -27,9 +27,7 @@ import cbit.vcell.math.VCML;
 
 public class LangevinSimulationOptions implements Serializable, Matchable, VetoableChangeListener {
 
-	public final static int DefaultNumberOfConcurrentJobs = 20;	// used for multiple runs on the cluster
-	public final static int DefaultTotalNumberOfJobs = 20;
-	public final static int MaxNumberOfConcurrentJobs = 20;
+	public final static int DefaultTotalNumberOfJobs = 20;		// arbitrary number of simulations (excluding the watchdog)
 	public final static int MaxTotalNumberOfJobs = 200;			// arbitrary limit to prevent excessive use of cluster resources
 
 	public final static String Partition_Nx = "Partition Nx: ";
@@ -242,9 +240,10 @@ public final void setTotalNumberOfJobs(int newValue) {
 			} else if(token.equalsIgnoreCase(VCML.LangevinSimulationOptions_totalNumberOfJobs)) {
 				token = tokens.nextToken();
 				totalNumberOfJobs = Integer.parseInt(token);
-//			} else if(token.equalsIgnoreCase(VCML.LangevinSimulationOptions_numberOfConcurrentJobs)) {
-//				token = tokens.nextToken();
-//				numberOfConcurrentJobs = Integer.parseInt(token);
+			} else if(token.equalsIgnoreCase(VCML.LangevinSimulationOptions_numberOfConcurrentJobs)) {
+				token = tokens.nextToken();
+				// numberOfConcurrentJobs may be present in some old VCML files, but is not in use anymore
+				// read and discard
 			} else if(token.equalsIgnoreCase(VCML.LangevinSimulationOptions_intervalSpring)) {
 				token = tokens.nextToken();
 				intervalSpring = Double.parseDouble(token);

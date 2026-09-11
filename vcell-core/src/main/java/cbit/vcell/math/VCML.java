@@ -253,10 +253,13 @@ public class VCML {
 	public final static String LangevinSimulationOptions_Partition_Nx = "PartitionNx";
 	public final static String LangevinSimulationOptions_Partition_Ny = "PartitionNy";
 	public final static String LangevinSimulationOptions_Partition_Nz = "PartitionNz";
-//	public final static String LangevinSimulationOptions_numberOfConcurrentJobs	= "NumberOfConcurrentJobs";
 	public final static String LangevinSimulationOptions_totalNumberOfJobs	= "TotalNumberOfJobs";
-	// deprecated, kept for backward compatibility with old .vcml files; use totalNumberOfJobs instead
+	// kept for backward compatibility with old .vcml files; use totalNumberOfJobs instead
+	@Deprecated
 	public final static String LangevinSimulationOptions_numOfParallelLocalRuns	= "NumOfParallelLocalRuns";
+	// not in use anymore but kept for backward compatibility with old vcml files since the parser is strict
+	@Deprecated
+	public final static String LangevinSimulationOptions_numberOfConcurrentJobs	= "NumberOfConcurrentJobs";
 
 	public final static String NFSimSimulationOptions	= "NFSimSimulationOptions";
 	public final static String NFSimSimulationOptions_observableComputationOff	= "ObservableComputationOff";

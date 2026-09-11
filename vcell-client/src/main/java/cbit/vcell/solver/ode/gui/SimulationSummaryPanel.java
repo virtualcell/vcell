@@ -375,10 +375,11 @@ private void displayTask() {
 			} else {
 				ServerInfo si = getServerInfo();
 				int maxNumConcurrentTasks = si != null ? si.getMaxNumConcurrentTasks() : ServerInfo.VCELL_SLURM_LANGEVIN_MAXNUMCONCURRENTTASKS;		// concurrent sims + watchdog
-				int conc = Math.min(tot, maxNumConcurrentTasks - 1);	// concurrent sims only
-				int nodes = (int)Math.ceil(conc / ServerInfo.VCELL_SLURM_MAX_JOBS_PER_NODE);	// number of nodes needed
+				int concurrentSimulations = Math.min(tot, maxNumConcurrentTasks - 1);	// concurrent sims only
+				// number of nodes needed - computed based on concurrentSimulations + 1 watchdog
+				int nodes = (int)Math.ceil((concurrentSimulations+1) / ServerInfo.VCELL_SLURM_MAX_JOBS_PER_NODE);
 				getJLabel20().setText("Batch run:");
-				getJLabel21().setText(conc + " concurrent runs / " + tot + " total runs. Nodes used: " + nodes);
+				getJLabel21().setText(concurrentSimulations + " concurrent runs / " + tot + " total runs. Nodes used: " + nodes);
 				getJLabel21().setEnabled(true);
 				getJLabel21().setVisible(true);
 			}
