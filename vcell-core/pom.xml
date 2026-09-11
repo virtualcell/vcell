@@ -133,6 +133,12 @@
 			<groupId>com.sun.media</groupId>
 			<artifactId>jai-codec</artifactId>
 			<version>${jai-core.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>javax.media</groupId>
+					<artifactId>jai-core</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.openrdf.sesame</groupId>
