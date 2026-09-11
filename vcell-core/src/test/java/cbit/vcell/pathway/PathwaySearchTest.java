@@ -176,9 +176,7 @@ public class PathwaySearchTest {
 
         String ERROR_CODE_TAG = "error_code";
         String contentString = downloadOrSkip(url, "Reactome");      // download, or skip if Reactome is down
-
-        // assert response is XML
-        assertTrue(contentString.trim().startsWith("<?xml"), "Response does not start with XML declaration");
+        assumeXmlOrSkip(contentString, "Reactome");                  // a 200 from here can still carry their error text
 
         // parse XML
         org.jdom2.Document jdomDocument = XmlUtil.stringToXML(contentString, null);
@@ -475,6 +473,28 @@ public class PathwaySearchTest {
                 new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8))) {
             return r.lines().collect(Collectors.joining("\n"));
         }
+    }
+
+    /**
+     * Skips when a service answered HTTP 200 with something that is not XML.
+     *
+     * <p>Needed because Reactome's legacy BioPAX exporter reports its own failures with
+     * HTTP 200 and a plain-text body — as of 2026-09-11 every pathway id returns
+     * {@code "Error in biopax exporter: No operations allowed after connection closed."},
+     * a fault in their backend. The status line therefore cannot tell an outage from a
+     * good response the way {@link #statusOrSkip} assumes, so the body has to: at this
+     * endpoint anything that is not XML is their failure, because a request of ours that
+     * was wrong would come back 404 and still fail the test.
+     */
+    private static void assumeXmlOrSkip(String body, String serviceName) {
+        String trimmed = body.trim();
+        if (trimmed.startsWith("<?xml")) {
+            return;
+        }
+        String excerpt = trimmed.substring(0, Math.min(200, trimmed.length()));
+        lg.warn(serviceName + " answered HTTP 200 with a non-XML body: " + excerpt);
+        Assumptions.abort(serviceName + " returned HTTP 200 with a non-XML body — remote service"
+                + " outage, skipping test. Response began: " + excerpt);
     }
 
     // isDatabaseAvailable(String) was removed deliberately. It probed a URL the test did
