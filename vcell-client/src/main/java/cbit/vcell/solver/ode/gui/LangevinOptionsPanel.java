@@ -6,6 +6,11 @@ import java.math.BigInteger;
 import javax.swing.*;
 import javax.swing.border.Border;
 
+import cbit.vcell.client.RequestManager;
+import cbit.vcell.client.TopLevelWindowManager;
+import cbit.vcell.client.desktop.DocumentWindow;
+import cbit.vcell.resource.PropertyLoader;
+import cbit.vcell.server.ServerInfo;
 import org.vcell.util.gui.CollapsiblePanel;
 
 import cbit.vcell.client.PopupGenerator;
@@ -38,14 +43,11 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 	private JCheckBox randomSeedCheckBox;
 	private JTextField randomSeedTextField;
 	private JButton randomSeedHelpButton = null;
-
-
-//	private int[] npart = {LangevinSimulationOptions.DefaultNPart[0], LangevinSimulationOptions.DefaultNPart[1], LangevinSimulationOptions.DefaultNPart[2]};	// number of partitions on each axis
-
 	private JTextField intervalImageTextField = null;
 	private JTextField intervalSpringTextField = null;
 
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
+	private ServerInfo serverInfo = null;
 
 
 	private class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.FocusListener, java.beans.PropertyChangeListener {
@@ -66,24 +68,42 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 //				setNewOptions();
 //			}
 			if (e.getSource() == getTrajectoryButton()) {
+				// TODO: adjust label
 				getTotalNumberOfJobsJTextField().setEnabled(false);
 				getNumberOfConcurrentJobsJTextField().setEnabled(false);
 				getNumberOfConcurrentJobsJTextField().setText("");
 				getTotalNumberOfJobsJTextField().setText("");
-				solverTaskDescription.getLangevinSimulationOptions().setNumberOfConcurrentJobs(1);
+//				solverTaskDescription.getLangevinSimulationOptions().setNumberOfConcurrentJobs(1);
 				solverTaskDescription.getLangevinSimulationOptions().setTotalNumberOfJobs(1);
 			} else if (e.getSource() == getMultiRunButton()) {
+				// tasks mean simulations + watchdog
+				// jobs and simulations mean the same thing - simulation jobs (excludes the watchdog)
+				// TODO: refactor for name conformity
 				getTotalNumberOfJobsJTextField().setEnabled(true);
-				getNumberOfConcurrentJobsJTextField().setEnabled(true);
+				getNumberOfConcurrentJobsJTextField().setEnabled(false);
 				int totalNumberOfJobs = solverTaskDescription.getLangevinSimulationOptions().getTotalNumberOfJobs();
+				ServerInfo si = getServerInfo();
+
+				// max num of concurrent simulations + 1 watchdog overall, the user is not allowed to run more than
+				// this number of concurrent simulations
+				// the user can choose to run more simulations but not all will be run concurrently, the rest
+				// will be queued and ran when a simulation finishes
+				int maxNumConcurrentTasks = si != null ? si.getMaxNumConcurrentTasks() : ServerInfo.VCELL_SLURM_LANGEVIN_MAXNUMCONCURRENTTASKS;
+				// effective number of concurrent simulations, excluding the watchdog
+				// may be less than max allowed per node, the user may choose to run only 3 simulations
+				int concurrentSimulations;
 				if(totalNumberOfJobs > 1) {		// a multi-trial number is already set
 					getTotalNumberOfJobsJTextField().setText(totalNumberOfJobs+"");
-					getNumberOfConcurrentJobsJTextField().setText(solverTaskDescription.getLangevinSimulationOptions().getNumberOfConcurrentJobs()+"");
+					concurrentSimulations = Math.min(totalNumberOfJobs, maxNumConcurrentTasks - 1);	// concurrent sims only
+					getNumberOfConcurrentJobsJTextField().setText(concurrentSimulations+"");
+					// we do not need it here, we just compute it once for conformity
+					int totalNumberOfConcurrentTasks = concurrentSimulations + 1;	// effective concurrent sims + watchdog
+					int nodes = (int)Math.ceil(totalNumberOfConcurrentTasks / ServerInfo.VCELL_SLURM_MAX_JOBS_PER_NODE);	// number of nodes needed
 				} else {
 					solverTaskDescription.getLangevinSimulationOptions().setTotalNumberOfJobs(LangevinSimulationOptions.DefaultTotalNumberOfJobs);
-					solverTaskDescription.getLangevinSimulationOptions().setNumberOfConcurrentJobs(LangevinSimulationOptions.DefaultNumberOfConcurrentJobs);
-					getTotalNumberOfJobsJTextField().setText(solverTaskDescription.getLangevinSimulationOptions().getTotalNumberOfJobs()+"");
-					getNumberOfConcurrentJobsJTextField().setText(solverTaskDescription.getLangevinSimulationOptions().getNumberOfConcurrentJobs()+"");
+					getTotalNumberOfJobsJTextField().setText(LangevinSimulationOptions.DefaultTotalNumberOfJobs+"");
+					concurrentSimulations = Math.min(LangevinSimulationOptions.DefaultTotalNumberOfJobs, maxNumConcurrentTasks - 1);	// concurrent sims only
+					getNumberOfConcurrentJobsJTextField().setText(concurrentSimulations+"");
 				}
 			} else if(e.getSource() == randomSeedCheckBox) {
 				randomSeedTextField.setEditable(randomSeedCheckBox.isSelected());
@@ -131,32 +151,16 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 				if(totalNumberOfJobs < 2) {
 					totalNumberOfJobs = LangevinSimulationOptions.DefaultTotalNumberOfJobs;
 				}
-				if(totalNumberOfJobs < solverTaskDescription.getLangevinSimulationOptions().getNumberOfConcurrentJobs()) {
-					totalNumberOfJobs = solverTaskDescription.getLangevinSimulationOptions().getNumberOfConcurrentJobs();
-				}
 				if(totalNumberOfJobs > LangevinSimulationOptions.MaxTotalNumberOfJobs) {
 					totalNumberOfJobs = LangevinSimulationOptions.MaxTotalNumberOfJobs;
 				}
 				solverTaskDescription.getLangevinSimulationOptions().setTotalNumberOfJobs(totalNumberOfJobs);
 				getTotalNumberOfJobsJTextField().setText(totalNumberOfJobs+"");
-			} else if(e.getSource() == getNumberOfConcurrentJobsJTextField()) {
-				int numberOfConcurrentJobs;
-				try {
-					numberOfConcurrentJobs = Integer.parseInt(getNumberOfConcurrentJobsJTextField().getText());
-				} catch(NumberFormatException ex) {
-					numberOfConcurrentJobs = solverTaskDescription.getLangevinSimulationOptions().getNumberOfConcurrentJobs();
-				}
-				if(numberOfConcurrentJobs < 2) {
-					numberOfConcurrentJobs = LangevinSimulationOptions.DefaultNumberOfConcurrentJobs;
-				}
-				if(numberOfConcurrentJobs > solverTaskDescription.getLangevinSimulationOptions().getTotalNumberOfJobs()) {
-					numberOfConcurrentJobs = solverTaskDescription.getLangevinSimulationOptions().getTotalNumberOfJobs();
-				}
-				if(numberOfConcurrentJobs > LangevinSimulationOptions.MaxNumberOfConcurrentJobs) {
-					numberOfConcurrentJobs = LangevinSimulationOptions.MaxNumberOfConcurrentJobs;
-				}
-				solverTaskDescription.getLangevinSimulationOptions().setNumberOfConcurrentJobs(numberOfConcurrentJobs);
-				getNumberOfConcurrentJobsJTextField().setText(numberOfConcurrentJobs+"");
+				// TODO: adjust test displayed
+				ServerInfo si = getServerInfo();
+				int maxNumConcurrentTasks = si != null ? si.getMaxNumConcurrentTasks() : ServerInfo.VCELL_SLURM_LANGEVIN_MAXNUMCONCURRENTTASKS;		// concurrent sims + watchdog
+				int concurrentSimulations = Math.min(totalNumberOfJobs, maxNumConcurrentTasks - 1);	// concurrent sims only
+				getNumberOfConcurrentJobsJTextField().setText(concurrentSimulations+"");
 			}
 		}
 	}
@@ -164,7 +168,7 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 	public LangevinOptionsPanel() {
 		super("Langevin Options Panel");
 		addPropertyChangeListener(ivjEventHandler);
-		initialize();		
+		initialize();
 	}
 	
 	private void initialize() {
@@ -256,6 +260,7 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 			gbc = new GridBagConstraints();
 			gbc.gridx = 1;
 			gbc.gridy = 2;
+//			gbc.gridwidth = 2;
 			gbc.anchor = GridBagConstraints.WEST;
 			gbc.fill = GridBagConstraints.HORIZONTAL;
 			gbc.insets = new Insets(0,22,1,6);
@@ -639,7 +644,7 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 			try {
 				numberOfConcurrentJobsLabel = new javax.swing.JLabel();
 				numberOfConcurrentJobsLabel.setName("NumberOfConcurrentJobsLabel");
-				numberOfConcurrentJobsLabel.setText("Num. Concurrent Jobs");
+				numberOfConcurrentJobsLabel.setText("Num. Parallel Jobs");
 			} catch (java.lang.Throwable ivjExc) {
 				handleException(ivjExc);
 			}
@@ -706,15 +711,43 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 		getRandomSeedHelpButton().addActionListener(ivjEventHandler);
 
 		getTotalNumberOfJobsJTextField().addFocusListener(ivjEventHandler);
-		getNumberOfConcurrentJobsJTextField().addFocusListener(ivjEventHandler);
+//		getNumberOfConcurrentJobsJTextField().addFocusListener(ivjEventHandler);
 		getJTextFieldIntervalImage().addFocusListener(ivjEventHandler);
 		getJTextFieldIntervalSpring().addFocusListener(ivjEventHandler);
 		getNumPartitionsXTextField().addFocusListener(ivjEventHandler);
 		getNumPartitionsYTextField().addFocusListener(ivjEventHandler);
 		getNumPartitionsZTextField().addFocusListener(ivjEventHandler);
 		getRandomSeedTextField().addFocusListener(ivjEventHandler);
+
+		// refresh getNumberOfConcurrentJobsJTextField() when press Enter here
+		getTotalNumberOfJobsJTextField().addActionListener(e -> {
+			int totalNumberOfJobs;
+			try {
+				totalNumberOfJobs = Integer.parseInt(getTotalNumberOfJobsJTextField().getText());
+			} catch (NumberFormatException ex) {
+				totalNumberOfJobs = solverTaskDescription.getLangevinSimulationOptions().getTotalNumberOfJobs();
+			}
+
+			if (totalNumberOfJobs < 2) {
+				totalNumberOfJobs = LangevinSimulationOptions.DefaultTotalNumberOfJobs;
+			}
+			if (totalNumberOfJobs > LangevinSimulationOptions.MaxTotalNumberOfJobs) {
+				totalNumberOfJobs = LangevinSimulationOptions.MaxTotalNumberOfJobs;
+			}
+
+			solverTaskDescription.getLangevinSimulationOptions().setTotalNumberOfJobs(totalNumberOfJobs);
+			getTotalNumberOfJobsJTextField().setText(Integer.toString(totalNumberOfJobs));
+
+			ServerInfo si = getServerInfo();
+			int maxNumConcurrentTasks = si != null ? si.getMaxNumConcurrentTasks()
+					: ServerInfo.VCELL_SLURM_LANGEVIN_MAXNUMCONCURRENTTASKS;
+
+			int concurrentSimulations = Math.min(totalNumberOfJobs, maxNumConcurrentTasks - 1);
+			getNumberOfConcurrentJobsJTextField().setText(Integer.toString(concurrentSimulations));
+		});
+
 	}
-	
+
 	private void refresh() {
 		if (solverTaskDescription == null) {
 			return;
@@ -729,7 +762,7 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 
 		LangevinSimulationOptions lso = solverTaskDescription.getLangevinSimulationOptions();
 		int totalNumberOfJobs = lso.getTotalNumberOfJobs();
-		int numberOfConcurrentJobs = lso.getNumberOfConcurrentJobs();
+//		int numberOfConcurrentJobs = lso.getNumberOfConcurrentJobs();
 		if(totalNumberOfJobs == 1) {
 			getTrajectoryButton().setSelected(true);
 			getTotalNumberOfJobsJTextField().setEnabled(false);
@@ -740,8 +773,11 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 			getMultiRunButton().setSelected(true);
 			getTotalNumberOfJobsJTextField().setEnabled(true);
 			getTotalNumberOfJobsJTextField().setText(totalNumberOfJobs+"");
-			getNumberOfConcurrentJobsJTextField().setEnabled(true);
-			getNumberOfConcurrentJobsJTextField().setText(numberOfConcurrentJobs + "");
+			getNumberOfConcurrentJobsJTextField().setEnabled(false);
+			ServerInfo si = getServerInfo();
+			int maxNumConcurrentTasks = si != null ? si.getMaxNumConcurrentTasks() : ServerInfo.VCELL_SLURM_LANGEVIN_MAXNUMCONCURRENTTASKS;		// concurrent sims + watchdog
+			int concurrentSimulations = Math.min(totalNumberOfJobs, maxNumConcurrentTasks - 1);	// concurrent sims only
+			getNumberOfConcurrentJobsJTextField().setText(concurrentSimulations + "");
 		}
 
 		getNumPartitionsXTextField().setText(lso.getNPart(0) + "");
@@ -781,11 +817,11 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 			} catch (NumberFormatException ex) {
 				totalNumberOfJobs = sso.getTotalNumberOfJobs();
 			}
-			try {
-				numberOfConcurrentJobs = Integer.parseInt(getNumberOfConcurrentJobsJTextField().getText());
-			} catch (NumberFormatException ex) {
-				numberOfConcurrentJobs = sso.getNumberOfConcurrentJobs();
-			}
+//			try {
+//				numberOfConcurrentJobs = Integer.parseInt(getNumberOfConcurrentJobsJTextField().getText());
+//			} catch (NumberFormatException ex) {
+//				numberOfConcurrentJobs = sso.getNumberOfConcurrentJobs();
+//			}
 		}
 
 		BigInteger randomSeed = null;
@@ -811,7 +847,7 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 		// make a copy
 		LangevinSimulationOptions lso = new LangevinSimulationOptions(sso);
 		lso.setTotalNumberOfJobs(totalNumberOfJobs);
-		lso.setNumberOfConcurrentJobs(numberOfConcurrentJobs);
+//		lso.setNumberOfConcurrentJobs(numberOfConcurrentJobs);
 		lso.setRandomSeed(randomSeed);
 		lso.setIntervalImage(intervalImage);
 		lso.setIntervalSpring(intervalSpring);
@@ -821,6 +857,30 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 		} catch(Exception e) {
 			PopupGenerator.showErrorDialog(this, e.getMessage(), e);
 		}
+	}
+
+	private RequestManager getRequestManager() {
+		Component c = this;
+		while (c != null && !(c instanceof Window)) {
+			c = c.getParent();
+		}
+		if (c instanceof DocumentWindow) {
+			DocumentWindow dw = (DocumentWindow) c;
+			TopLevelWindowManager tlwm = dw.getTopLevelWindowManager();
+			RequestManager rm = tlwm.getRequestManager();
+			return rm;
+		}
+		return null;
+	}
+	private ServerInfo getServerInfo() {
+		if (serverInfo == null) {
+			RequestManager rm = getRequestManager();
+			if (rm == null) {
+				return null;
+			}
+			serverInfo = rm.getServerInfo();
+		}
+		return serverInfo;
 	}
 	
 }

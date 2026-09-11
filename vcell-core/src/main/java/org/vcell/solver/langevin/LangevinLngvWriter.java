@@ -19,7 +19,6 @@ import org.vcell.util.Pair;
 
 import java.math.BigInteger;
 import java.util.*;
-//import org.jdom2.output.Format;
 
 public class LangevinLngvWriter {
 	
@@ -1069,9 +1068,8 @@ public class LangevinLngvWriter {
 		SolverTaskDescription std = simulationJob.getSimulation().getSolverTaskDescription();
 		LangevinSimulationOptions lso = std.getLangevinSimulationOptions();
 
-		int numTrials = std.getNumTrials();
 		BigInteger randomSeed = lso.getRandomSeed();
-		int simultaneousRuns = lso.getNumberOfConcurrentJobs();
+		// not used but I updated the code for conformity
 
 		// TODO: do not delete this, until we decide on how much info the solver needs
 		// These are not needed but may be nice to have in the future, makes the solver instance more aware
