@@ -34,6 +34,11 @@ public class EventsDisplayPanel extends BioModelEditorApplicationRightSidePanel<
 	
 	private void initialize() {
 		setName("EventsPanel");
+		// Named so a UI script can address the events and the buttons that make them;
+		// this panel shares its "New"/"Delete Selected" labels with several others.
+		table.setName("EventsTable");
+		addNewButton.setName("EventNewButton");
+		deleteButton.setName("EventDeleteButton");
 		setLayout(new GridBagLayout());
 
 		int gridy = 0;

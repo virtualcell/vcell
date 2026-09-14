@@ -157,6 +157,26 @@ assuming it went missing.
 
 See issue [#2038](https://github.com/virtualcell/vcell/issues/2038).
 
+## A green fast lane can mean "nothing ran"
+
+The `should-run` gate in `ci.yml` skips the fast lane when a change touched only
+documentation, and reports the aggregate `CI-Test-group-Fast` as **pass** when it does.
+That is intended, but it means a green check has two meanings: "the tests passed" and
+"there were no tests to run".
+
+To tell them apart, open the `should-run` job. It writes its decision to the run summary:
+
+```
+### CI lane: SKIPPED - nothing was compiled or tested
+Reason: only documentation changed (docs/MESSAGING.md)
+Base for the comparison: `a1b2c3d`
+```
+
+It used to be worth checking this by hand, because the gate judged a whole new branch by
+its final commit — a branch ending in a docs commit skipped everything and looked green
+(issue #2034, fixed). The summary line exists so that class of thing is visible rather
+than inferred.
+
 ## Each git worktree is its own build environment
 
 `git worktree` gives you an isolated checkout, and the build state is isolated with

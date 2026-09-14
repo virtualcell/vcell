@@ -636,6 +636,13 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		speciesTable = new EditorScrollTable();
 		molecularTypeTable = new EditorScrollTable();
 		observablesTable = new EditorScrollTable();
+		// Named so UI scripts and the debug bridge can address each table by name
+		// rather than by its position in the container hierarchy.
+		structuresTable.setName("StructuresTable");
+		reactionsTable.setName("ReactionsTable");
+		speciesTable.setName("SpeciesTable");
+		molecularTypeTable.setName("MolecularTypeTable");
+		observablesTable.setName("ObservablesTable");
 		structureTableModel = new BioModelEditorStructureTableModel(structuresTable);
 		reactionTableModel = new BioModelEditorReactionTableModel(reactionsTable);
 		speciesTableModel = new BioModelEditorSpeciesTableModel(speciesTable);
@@ -2124,6 +2131,11 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		
 		public ReactionEditorPanel() {
 			super();
+			// Named so a UI script can fill this dialog in: it is the one place that asks
+			// for all three of a new reaction's defining properties at once.
+			structureComboBox.setName("ReactionStructureComboBox");
+			nameTextField.setName("ReactionNameTextField");
+			equationTextField.setName("ReactionEquationTextField");
 			equationTextField.setColumns(30);
 			equationTextField.setAutoCompleteSymbolFilter(new AutoCompleteSymbolFilter() {
 				

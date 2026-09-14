@@ -51,6 +51,11 @@ public abstract class ApplicationSubPanel extends DocumentEditorSubPanel {
 
 	protected void initialize(){		
 		tabbedPane = new JTabbedPaneEnhanced();
+		// Every application sub-panel builds one of these, so name it after the concrete
+		// subclass: that gives each a stable, distinct selector for the debug bridge and
+		// for recorded UI scripts, instead of a positional path. Inert at runtime.
+		String owner = getClass().getSimpleName();
+		tabbedPane.setName((owner.isEmpty() ? "ApplicationSubPanel" : owner) + "TabbedPane");
 		tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 		setLayout(new BorderLayout());
 		add(tabbedPane, BorderLayout.CENTER);	

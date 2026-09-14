@@ -551,7 +551,7 @@ private ScrollTable getScrollPaneTable() {
 	if (ivjScrollPaneTable == null) {
 		try {
 			ivjScrollPaneTable = new ScrollTable();
-			ivjScrollPaneTable.setName("ScrollPaneTable");
+			ivjScrollPaneTable.setName("SubVolumesTable");
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}

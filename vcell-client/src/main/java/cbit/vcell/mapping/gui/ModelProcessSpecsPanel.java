@@ -128,7 +128,7 @@ private JSortTable getScrollPaneTable() {
 	if (ivjScrollPaneTable == null) {
 		try {
 			ivjScrollPaneTable = new JSortTable();
-			ivjScrollPaneTable.setName("ScrollPaneTable");
+			ivjScrollPaneTable.setName("ReactionSpecsTable");
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}

@@ -134,6 +134,9 @@ public class TriggerTemplatePanel extends JPanel {
 		add(rdbtnSingleTime, gbc_rdbtnSingleTime);
 		
 		textFieldSingleTime = new TextFieldAutoCompletion();
+		// Named so a script can say WHEN an event fires: several fields in this dialog
+		// show "1.0" by default, so their text alone does not identify them.
+		textFieldSingleTime.setName("EventSingleTimeTextField");
 		textFieldSingleTime.setText("0.0");
 		GridBagConstraints gbc_textFieldSingleTime = new GridBagConstraints();
 		gbc_textFieldSingleTime.insets = new Insets(4, 4, 5, 4);

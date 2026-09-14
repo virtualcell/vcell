@@ -118,6 +118,8 @@ public class BioModelEditorApplicationPanel extends DocumentEditorSubPanel {
 		applicationSimulationsPanel = new ApplicationSimulationsPanel();
 		parameterEstimationPanel = new ParameterEstimationPanel();
 		tabbedPane = new JTabbedPaneEnhanced();
+		// named so the debug bridge and recorded UI scripts can address it; inert at runtime
+		tabbedPane.setName("ApplicationTabbedPane");
 		tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 		appPanelTabs[ApplicationPanelTabID.geometry.ordinal()] = new ApplicationPanelTab(ApplicationPanelTabID.geometry, applicationGeometryPanel, VCellIcons.geometryIcon);
 		appPanelTabs[ApplicationPanelTabID.settings.ordinal()] = new ApplicationPanelTab(ApplicationPanelTabID.settings, applicationSpecificationsPanel, VCellIcons.settingsIcon);

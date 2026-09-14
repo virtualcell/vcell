@@ -745,6 +745,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
                 solverPanel.setLayout(new java.awt.GridBagLayout());
 
                 optimizationMethodParameterTable = new ScrollTable();
+                optimizationMethodParameterTable.setName("CopasiMethodParametersTable");
                 optimizationMethodParameterTableModel = new OptimizationMethodParameterTableModel(optimizationMethodParameterTable);
                 optimizationMethodParameterTable.setModel(optimizationMethodParameterTableModel);
 
@@ -844,12 +845,15 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
                 solutionPanel.setLayout(new java.awt.GridBagLayout());
 
                 optimizationSolutionParameterTable = new ScrollTable();
+                // The fit: each parameter, its model value, and the best estimate.
+                optimizationSolutionParameterTable.setName("ParameterEstimationResultsTable");
                 optimizationSolutionParameterTableModel = new OptimizationSolutionParameterTableModel(optimizationSolutionParameterTable);
                 optimizationSolutionParameterTable.setModel(optimizationSolutionParameterTableModel);
                 JPanel solutionParametersPanel = new JPanel(new BorderLayout());
                 solutionParametersPanel.add(optimizationSolutionParameterTable.getEnclosingScrollPane(), BorderLayout.CENTER);
 
                 optimizationTaskSummaryTable = new ScrollTable();
+                optimizationTaskSummaryTable.setName("ParameterEstimationSummaryTable");
 //				optimizationTaskSummaryTable.setTableHeader(null);
                 optimizationTaskSummaryTableModel = new OptimizationTaskSummaryTableModel(optimizationTaskSummaryTable);
                 optimizationTaskSummaryTable.setModel(optimizationTaskSummaryTableModel);
@@ -971,6 +975,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
         if(solveButton == null) {
             try {
                 solveButton = new javax.swing.JButton("Solve by Copasi");
+                solveButton.setName("SolveByCopasiButton");
             } catch(java.lang.Throwable ivjExc) {
                 lg.error(ivjExc);
             }

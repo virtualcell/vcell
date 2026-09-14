@@ -77,6 +77,30 @@
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-agroal</artifactId>
+      <!--
+        issue #2041: org.jboss.narayana.jts:narayana-jts-integration, reached through
+        quarkus-narayana-jta, declares these two as `provided` - and neither exists in ANY
+        repository. Every repository 404s them and Maven shrugs, so builds work by accident.
+
+        That accident ended on 2026-08-27: maven.scijava.org answered 503 instead of 404, and
+        because Maven treats a 503 as a hard transfer error rather than "not here, ask the next
+        one", the whole dependency collection failed and no module could build (#2036 era, fixed
+        by dropping that repository in #2037).
+
+        Excluding them removes the exposure rather than relying on five third parties all
+        answering 404 correctly. Nothing is lost: they are `provided`, so they were never going
+        to reach our classpath, and they do not exist to be fetched.
+      -->
+      <exclusions>
+        <exclusion>
+          <groupId>org.jboss.narayana.jts</groupId>
+          <artifactId>idlj-idl-openjdk</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.jboss.narayana.jts</groupId>
+          <artifactId>jtax</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>

@@ -16,6 +16,160 @@ followed by flat Keep-a-Changelog categories. API consumers should scan
 
 _(Release-manager scratchpad. Populated at release-cut time.)_
 
+## [8.1.6.02] - 2026-09-07
+
+**Highlights.** The same release as 8.1.6.01, rebuilt on a supported base
+image. **Use this build rather than 8.1.6.01**, whose server images cannot be
+built at all.
+
+### Fixed
+- Internal: the `admin` and `clientgen` images build again. Both were based on
+  Debian 11 (bullseye), whose LTS ended on 2026-08-31; its final security index
+  expired at 21:13 UTC on 2026-09-07, part-way through the 8.1.6.01 release, and
+  `apt` refuses an expired index rather than quietly using a stale one. Both
+  images now build on Debian 12 (bookworm), whose security suite is current.
+  Disabling the expiry check was the alternative and was not taken: it would
+  keep building against a suite that will never receive another update.
+  `clientgen` produces the desktop installers, so without this the next release
+  would have stalled the same way with no warning. (#2075)
+
+### Notes for API consumers
+No changes from 8.1.6.01.
+
+## [8.1.6.01] - 2026-09-07
+
+**Highlights.** SpringSaLaD has user documentation for the first time. VCell
+has been able to build and run SpringSaLaD models for over a year — a
+particle-based application, the Langevin solver, a molecular structure editor
+and a 3D trajectory viewer — with nothing in the help explaining any of it.
+Six help pages now cover it, including two errors that are hard to get past
+without knowing what they mean. Alongside that, three fixes to things that
+told you the wrong story: a progress bar that never moved, an error that named
+the wrong cause, and a species name VCell accepted and then could not read.
+
+### Added
+- SpringSaLaD user documentation — six pages in the help, reachable from
+  Rule-Based Features and from Specifications. They cover the modelling
+  framework, creating a SpringSaLaD application and the geometry it builds for
+  you, laying out a molecule's sites and the springs between them, the five
+  reaction subtypes, reading results and the 3D trajectory viewer, and `.ssld`
+  import and export. Two explanations are worth knowing about in advance,
+  because both are errors you meet before you meet the concept: what *"the
+  forward rate Kf is too large"* means and what to do about it, and the fact
+  that a transition condition changes name between SpringSaLaD and VCell —
+  SpringSaLaD's "None" is VCell's **Any**, and its "Free" is VCell's
+  **Unbound**. (#2073, #2060)
+
+### Fixed
+- The progress dialog now advances while a time course is retrieved from a
+  spatial simulation. The server was computing the progress and sending it, and
+  the client was dropping it: the listener that receives those events was
+  registered after the call that waits for them, not before. The dialog had sat
+  at zero ever since that call became a blocking one. (#2066)
+- A failure retrieving time-series data now reports what actually went wrong.
+  The failure was recorded and the task chain carried on, so the next step ran
+  against a result that was never produced and the error you saw was an
+  unrelated `NullPointerException` in a plotting step — with the real cause
+  gone. Cancelling the retrieval did the same thing. (#2065, #2063)
+- A SpringSaLaD site's Y or Z position can be set to a value equal to its X.
+  All three coordinate fields compared against X, so an edit to Y or Z was
+  silently discarded whenever the two happened to match — no error, no change,
+  the old value still in the cell. Sites are routinely laid out along an axis
+  with x = 0, which made "put this site at z = 0" impossible. (#2073)
+
+### Changed
+- A species name must be one the expression parser can read. Name checking
+  accepted any Unicode letter while the parser accepts only `a-z`, `A-Z` and
+  `_`, so a name such as `PROTEÍNA_A` was accepted and saved, and the
+  application then failed to generate math with an error naming an expression
+  and nothing pointing at the species. The check now uses one definition of a
+  legal identifier, shared with the grammar, and suggests a replacement name.
+  **Models already saved with such a name still open** — refusing them would
+  take away the only way to rename the species — and report the offending name
+  as a problem instead. (#2064, #2062)
+- Internal: all ten outdated tutorial documents on vcell.org, and the
+  standalone SpringSaLaD guide, are now reproduced as scripts that drive a real
+  client, so it is visible when a documented workflow stops working. Six
+  documentation findings were filed from them. (#2067, #2073, #2069)
+- Internal: UI interactions can be recorded as replayable scripts, for demos
+  and for scaffolding help pages. (#2059)
+- Internal: CI decides whether to run the test lanes by looking at everything a
+  branch changed, rather than only its most recent commit — which had let a
+  branch skip lanes its earlier commits needed. (#2061)
+
+### Notes for API consumers
+No API changes. One behaviour change worth noting for anything that creates
+model symbols programmatically: a name containing non-ASCII letters is now
+rejected at creation with a `ModelPropertyVetoException` naming a legal
+replacement, where it was previously accepted and failed later during math
+generation. Reading such a name back from VCML or the database still succeeds.
+
+## [8.1.5.01] - 2026-09-03
+
+**Highlights.** Saving a model no longer fails because the connection to the
+server was recycled underneath it. A user reported being unable to save a
+biomodel at all, with an error mentioning "GOAWAY received"; nothing was wrong
+on the server, and nothing was wrong with her model.
+
+### Fixed
+- Saving a biomodel no longer fails with `IOException: … GOAWAY received`. Web
+  servers routinely close a connection after it has served enough requests,
+  expecting the client to open a new one — but saving used a connection mode in
+  which the client would not retry, so a save that happened to land on one of
+  those closures failed outright. Every save and delete the desktop client
+  performs was affected, not just biomodels. If you saw this, check whether the
+  model was in fact saved before saving again: the server may have completed the
+  save and only the reply was lost. (#2052, #2051)
+
+### Changed
+- Internal: the build no longer asks for two artifacts that exist in no
+  repository. They are declared by a transaction library we depend on, have
+  never been fetchable, and worked only because every repository reported them
+  missing in the same way. On 2026-08-27 one reported them differently and no
+  module could build. (#2054, #2041)
+- Internal: `vcell-restclient`'s tests now run in CI. The fast lane lists its
+  modules explicitly and that one was in none of them, so its tests reported as
+  passing without executing. (#2052)
+
+### Notes for API consumers
+No API changes. The desktop client now speaks HTTP/1.1 to `/api/v1/` rather than
+HTTP/2, and retries a request interrupted by a connection closure. This is a
+temporary measure: Java 24 and later retry such requests correctly on their own,
+and the workaround is removed when VCell ships on that runtime.
+
+## [8.1.4.01] - 2026-09-02
+
+**Highlights.** SpringSaLaD runs get the processors they were asked for. The
+background process that watches a run was quietly taking one of the simulation
+slots, and the whole batch was pinned to a single machine, which capped it at
+about 20 simulations at once however many were requested.
+
+### Fixed
+- A SpringSaLaD batch no longer loses one simulation slot to its own watchdog.
+  The number of parallel tasks requested from the cluster counted only the
+  simulations, but the watchdog runs as a task too — so a run asking for four
+  parallel simulations got three. The request now accounts for it, and the batch
+  script derives the simulation count from what was actually allocated. (#2049)
+- A SpringSaLaD run can use more than one machine. The batch requested exactly
+  one node regardless of size, so concurrency was capped at roughly 20
+  simulations no matter what was asked for; the number of nodes is now computed
+  from the concurrency requested. (#2049)
+- Runs asking for fewer simulations than the concurrency limit no longer request
+  resources they cannot use — concurrency is clamped to the number of
+  simulations in the run. (#2049)
+- A test-site prefix (`V_TEST2_`) was hard-coded into the generated batch script
+  when clearing a run's log, so on any other site it truncated a path that did
+  not correspond to the running job. The prefix now comes from the job. (#2049)
+
+### Changed
+- New optional setting `vcell.slurm.langevin.maxNumConcurrentTasks` caps parallel
+  tasks for a SpringSaLaD batch, counting the watchdog. Defaults to 31 — 30
+  simulations plus the watchdog, which is two nodes — and is unset in every
+  deployment, so behaviour is the default unless someone tunes it. (#2049)
+
+### Notes for API consumers
+No API changes.
+
 ## [8.1.3.01] - 2026-09-02
 
 **Highlights.** Two things that made VCell unusable for the people who hit them.

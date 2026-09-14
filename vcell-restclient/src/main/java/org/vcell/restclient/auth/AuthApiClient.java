@@ -41,7 +41,9 @@ public class AuthApiClient extends ApiClient {
     }
 
     public AuthApiClient(URI apiBaseUrl, URI oidcProviderTokenEndpoint, AccessToken accessToken, RefreshToken refreshToken, boolean ignoreSSLCertProblems) {
-        if (ignoreSSLCertProblems) {setHttpClientBuilder(CustomApiClientCode.createInsecureHttpClientBuilder());}
+        // always, not only for insecure certs: the builder also carries the HTTP/1.1 retry
+        // workaround for issue #2051
+        setHttpClientBuilder(CustomApiClientCode.createHttpClientBuilder(ignoreSSLCertProblems));
         this.oidcProviderTokenEndpoint = oidcProviderTokenEndpoint;
         this.accessToken = accessToken;
         this.refreshToken = refreshToken;

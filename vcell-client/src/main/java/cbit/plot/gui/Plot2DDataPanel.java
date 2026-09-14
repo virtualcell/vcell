@@ -529,7 +529,11 @@ private ScrollTable getScrollPaneTable() {
 	if (ivjScrollPaneTable == null) {
 		try {
 			ivjScrollPaneTable = new ScrollTable();
-			ivjScrollPaneTable.setName("ScrollPaneTable");
+			// The simulation results as numbers - the spreadsheet behind the plot. Named
+			// because "ScrollPaneTable" is shared by seven other panels, and this is the
+			// one a script reads a result out of. Note it holds its data even while the
+			// plot view is showing, so it can be read without toggling the view.
+			ivjScrollPaneTable.setName("PlotDataTable");
 			ivjScrollPaneTable.setCellSelectionEnabled(true);
 			ivjScrollPaneTable.setBounds(0, 0, 200, 200);
 			/*

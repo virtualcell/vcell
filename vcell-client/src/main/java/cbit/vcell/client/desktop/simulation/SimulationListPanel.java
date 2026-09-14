@@ -497,6 +497,9 @@ private javax.swing.JToolBar getToolBar() {
 //			quickPythonRunButton.addActionListener(ivjEventHandler);
 
 			quickNativeRunButton = new JButton("", VCellIcons.odeQuickRunIcon);
+			// Runs the simulation on this machine, without saving the document to the
+			// database - which is what lets a scripted tutorial actually produce results.
+			quickNativeRunButton.setName("QuickRunButton");
 			quickNativeRunButton.setToolTipText(QUICK_RUN_NATIVE_TOOL_TIP);
 			quickNativeRunButton.addActionListener(ivjEventHandler);
 
@@ -770,7 +773,7 @@ private JSortTable getScrollPaneTable() {
 //				}
 //			};
 			ivjScrollPaneTable = new JSortTable();
-			ivjScrollPaneTable.setName("ScrollPaneTable");
+			ivjScrollPaneTable.setName("SimulationsTable");
 			ivjScrollPaneTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_NEXT_COLUMN);
 			ivjScrollPaneTable.setModel(getSimulationListTableModel1());
 			ivjScrollPaneTable.setScrollTableActionManager(new DefaultScrollTableActionManager(ivjScrollPaneTable) {

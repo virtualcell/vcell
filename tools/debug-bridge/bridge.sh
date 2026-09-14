@@ -10,17 +10,49 @@
 #   health | windows | tree [maxDepth] | menus
 #   find    [--type T] [--name N] [--text T] [--contains S] [--limit N]
 #   props   <selector>          listeners <selector>
-#   shot [window]               log [lines]
+#   findrow <selector> <text> [--exact]   row number by displayed text (searches the WHOLE
+#                                         model, unlike tree's 25-row/100-row dump cap)
+#   findrow <selector> --apptype SPRINGSALAD   find an application by its type, not its
+#                                         name or position - both of which vary per model
+#   readcell <selector> <row> <col>       one cell's DISPLAYED text, with no row cap -
+#                                         row -1 is the last row, which is where a
+#                                         simulation's steady state lives
+#   findcol <selector> <header>           column number by header text; these editor tables
+#                                         carry one model value per column, so a script that
+#                                         names a column by index breaks on a reorder
+#   shot [window]               log [lines]      (shot takes ?scale/name/dir via replay)
 # Act:
 #   click <selector>            rclick <selector>
 #   settext <selector> <text> [--enter]
+#   combo   <selector> <item>     choose a drop-down item by its LABEL, not its index
+#   slider  <selector> <value>  move a slider - an integer, or min/max, or -1 for the
+#                                 end, the same convention readcell uses for last row
+#   list    <selector> <a,b,c>   select list items by LABEL (comma-separated = multi-select)
+#   choosefile <selector> <path>  answer a file dialog through the chooser's own model
+#   trows <selector> <lo-hi>    select a range of table rows - what ctrl+A means,
+#                                 said as a range (open-ended as <lo->)
+#   popupitem "A>B>C"          click an item in an OPEN pop-up menu by path - walks
+#                                 the menu MODEL, so submenus need not be showing
+#   pixelrange <selector> <lo> <hi>  threshold by pixel INTENSITY on the geometry
+#                                 editor's histogram - what a drag across it means
+#                                 (its visible text field is the hidden 'go to folder' one)
+#   setcell <selector> <row> <col> <value>   commit a value through the table's own model
+#                                         (what the cell editor calls on Enter)
 #   tab <selector> <index>      row <selector> <row>     rrow <selector> <row>
 #   expand <selector> <row> [true|false]                 drow <selector> <row>
 #   trow <selector> <row> [col]   dtrow <selector> <row> [col]   rtrow <selector> <row> [col]
 #   menu "<Menu>Item[>Sub]" [window]
 #   highlight <selector> [ms]
+#   glide <selector> [ms]       move the real cursor there (for a watched replay)
+#   rbclick <selector> [glideMs] [row]  native press/release; unlike click it IS recordable
 #   iconify <selector> [true|false]   minimize/restore a window; reports what the OS did
 #   wbounds <selector> x y w h       move/resize a window
+# Record / replay:
+#   record start [file] [--no-bridge-actions] | stop [file] | status
+#            (flushed to disk each step; bridge-driven actions are recorded too unless
+#             --no-bridge-actions, so do scripted SETUP before starting the recording)
+#   replay <script.json> [--driver semantic|robot] [--speed N] [--max-delay MS]
+#                        [--from N] [--to N] [--shots DIR] [--shot-scale F]
 # Synchronize / assert (exit 0 on success, 1 on failure):
 #   wait   [find opts] [--state showing|enabled|gone] [--timeout MS] [--interval MS]
 #   assert [find opts] [--gone]
@@ -132,7 +164,10 @@ case "$cmd" in
     get setText --data-urlencode "path=$sel" --data-urlencode "text=$text" \
       --data-urlencode "enter=$enter" | pretty
     ;;
-  tab)       get selectTab --data-urlencode "path=$1" --data-urlencode "index=$2" | pretty ;;
+  tab)
+    # a numeric arg is an index, anything else is the tab's title (preferred: durable)
+    if [ "${2:-}" -eq "${2:-}" ] 2>/dev/null; then k=index; else k=title; fi
+    get selectTab --data-urlencode "path=$1" --data-urlencode "$k=$2" | pretty ;;
   row)       get selectTreeRow --data-urlencode "path=$1" --data-urlencode "row=$2" | pretty ;;
   expand)    get expandTreeRow --data-urlencode "path=$1" --data-urlencode "row=$2" \
                --data-urlencode "expand=${3:-true}" | pretty ;;
@@ -145,14 +180,78 @@ case "$cmd" in
                ${3:+--data-urlencode "column=$3"} | pretty ;;
   rrow)      get rightClickTreeRow --data-urlencode "path=$1" --data-urlencode "row=$2" | pretty ;;
   menu)      get menu --data-urlencode "path=$1" ${2:+--data-urlencode "window=$2"} | pretty ;;
+  findrow)
+    SEL="$1"; TXT="${2:-}"
+    case "${2:-}" in
+      --apptype) get findRow --data-urlencode "path=$1" --data-urlencode "appType=$3" | pretty ;;
+      *)
+        # findrow <selector> <text> [--exact] [--in <column header>]
+        key=contains; incol=""
+        shift 2
+        while [ $# -gt 0 ]; do
+          case "$1" in
+            --exact) key=text ;;
+            --in)    shift; incol="$1" ;;
+          esac
+          shift
+        done
+        get findRow --data-urlencode "path=$SEL" --data-urlencode "$key=$TXT" \
+            ${incol:+--data-urlencode "inColumn=$incol"} | pretty ;;
+    esac
+    ;;
+  findcol)   get findColumn --data-urlencode "path=$1" --data-urlencode "header=$2" | pretty ;;
+  readcell)  # readcell <selector> <row> <column-header|index>   (row -1 = last row)
+    if [ "${3:-}" -eq "${3:-}" ] 2>/dev/null; then k=column; else k=columnName; fi
+    get readCell --data-urlencode "path=$1" --data-urlencode "row=$2" \
+        --data-urlencode "$k=$3" | pretty ;;
+  combo)     get selectCombo --data-urlencode "path=$1" --data-urlencode "item=$2" | pretty ;;
+  slider)    get setSlider --data-urlencode "path=$1" --data-urlencode "value=$2" | pretty ;;
+  list)      get selectList --data-urlencode "path=$1" --data-urlencode "items=$2" | pretty ;;
+  choosefile) get chooseFile --data-urlencode "path=$1" --data-urlencode "file=$2" | pretty ;;
+  pixelrange) get selectPixelRange --data-urlencode "path=$1" --data-urlencode "low=$2" \
+                  --data-urlencode "high=$3" | pretty ;;
+  popupitem) get popupItem --data-urlencode "item=$1" | pretty ;;
+  trows)     get selectTableRange --data-urlencode "path=$1" --data-urlencode "range=$2" | pretty ;;
+  setcell)   get setCell --data-urlencode "path=$1" --data-urlencode "row=$2" \
+               --data-urlencode "column=$3" --data-urlencode "value=$4" | pretty ;;
   props)     get props --data-urlencode "path=$1" | pretty ;;
   listeners) get listeners --data-urlencode "path=$1" | pretty ;;
   highlight) get highlight --data-urlencode "path=$1" --data-urlencode "ms=${2:-2000}" | pretty ;;
+  glide)     get glide --data-urlencode "path=$1" --data-urlencode "ms=${2:-600}" | pretty ;;
+  rbclick)   get robotClick --data-urlencode "path=$1" --data-urlencode "glideMs=${2:-0}" \
+               ${3:+--data-urlencode "row=$3"} | pretty ;;
+
+  record)
+    action="${1:-status}"
+    case "$action" in
+      status) get record --data-urlencode "action=status" | pretty ;;
+      start)
+        # record start [file] [--no-bridge-actions]
+        cb=true
+        for a in "$@"; do [ "$a" = "--no-bridge-actions" ] && cb=false; done
+        f="$2"; [ "$f" = "--no-bridge-actions" ] && f=""
+        get record --data-urlencode "action=start" --data-urlencode "captureBridgeActions=$cb" \
+          ${f:+--data-urlencode "file=$f"} | pretty ;;
+      stop)  get record --data-urlencode "action=stop" ${2:+--data-urlencode "file=$2"} | pretty ;;
+      *) echo "record: expected start, stop or status" >&2; exit 2 ;;
+    esac
+    ;;
+
+  replay)
+    script="$1"
+    shift || true
+    PY=""
+    for candidate in python3 python py; do
+      if command -v "$candidate" >/dev/null 2>&1; then PY="$candidate"; break; fi
+    done
+    [ -n "$PY" ] || { echo "replay: need python3 on PATH" >&2; exit 2; }
+    "$PY" "$(dirname "$0")/replay.py" "$script" --port "$PORT" "$@"
+    ;;
   iconify)   get iconify --data-urlencode "path=$1" --data-urlencode "iconified=${2:-true}" | pretty ;;
   wbounds)   get windowBounds --data-urlencode "path=$1" --data-urlencode "x=$2" --data-urlencode "y=$3" --data-urlencode "w=$4" --data-urlencode "h=$5" | pretty ;;
 
   help|*)
-    sed -n '2,30p' "$0" | sed 's/^# \{0,1\}//'
+    sed -n '2,36p' "$0" | sed 's/^# \{0,1\}//'
     [ "$cmd" = help ] || exit 2
     ;;
 esac

@@ -721,6 +721,9 @@ public class OverlayEditorPanelJAI extends JPanel{
 		scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
 		
 		resolvedList = new JList();
+		// The segmented regions, largest first. Named because a script has to say
+		// "everything but the top few" here, which is what Auto-Merge is for.
+		resolvedList.setName("DomainRegionsList");
 		resolvedList.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
@@ -755,6 +758,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 		scrollPane.setViewportView(resolvedList);
 		
 		mergeButton = new JButton("Auto-Merge");
+		mergeButton.setName("AutoMergeButton");
 		mergeButton.setToolTipText("Remove regions by merging with neighbor");
 		mergeButton.setEnabled(false);
 		mergeButton.addActionListener(new ActionListener() {

@@ -74,8 +74,10 @@ public class SpringSaladSpeciesPanel extends JPanel {
 
 		JPanel buttons = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 2));
 		JButton all = new JButton("All");
+		all.setName("SpringSaladSpeciesAllButton");
 		all.addActionListener(e -> setAll(true));
 		JButton none = new JButton("None");
+		none.setName("SpringSaladSpeciesNoneButton");
 		none.addActionListener(e -> setAll(false));
 		buttons.add(all);
 		buttons.add(none);
@@ -109,6 +111,8 @@ public class SpringSaladSpeciesPanel extends JPanel {
 	/** A species header whose checkbox toggles all of that species' site types at once. */
 	private Component speciesHeader(String speciesName, List<SiteType> members) {
 		JCheckBox box = new JCheckBox(speciesName, true);
+		// Named per species, so a script can address one species rather than a row index
+		box.setName("SpringSaladSpeciesHeader_" + speciesName);
 		box.setFont(box.getFont().deriveFont(Font.BOLD));
 		box.setAlignmentX(LEFT_ALIGNMENT);
 		box.addActionListener(e -> {
@@ -134,6 +138,9 @@ public class SpringSaladSpeciesPanel extends JPanel {
 		String tip = String.format("%s, radius %.4g (%d sites)",
 				siteType.getColorName(), siteType.getRadius(), siteType.getSiteCount());
 		JCheckBox box = new JCheckBox("", true);
+		// The label beside this box is a separate JLabel, so the checkbox itself has no
+		// text at all; its site-type key is the only durable way to address it.
+		box.setName("SpringSaladSite_" + siteType.getKey());
 		box.setToolTipText(tip);
 		box.addActionListener(e -> {
 			onVisibilityChanged.accept(siteType.getKey(), box.isSelected());

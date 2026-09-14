@@ -20,6 +20,63 @@ import java.beans.PropertyVetoException;
  * This type was created in VisualAge.
  */
 public class TokenMangler {
+
+/**
+ * The characters an identifier may be built from, as defined by the expression grammar in
+ * vcell-math/src/main/java/cbit/vcell/parser/Parser.jjt:
+ * <pre>
+ *   &lt;#ID:     &lt;LETTER&gt; (&lt;LETTER&gt;|&lt;DIGIT&gt;)* &gt;
+ *   &lt;#LETTER: ["a"-"z", "_", "A"-"Z"] &gt;
+ *   &lt;#DIGIT:  ["0"-"9"] &gt;
+ * </pre>
+ * Deliberately ASCII-only, and therefore <b>narrower</b> than
+ * {@link Character#isJavaIdentifierPart(char)}, which accepts any Unicode letter. Validating
+ * names with the Java predicates let names such as PROTE&Iacute;NA_A be accepted at entry and
+ * then fail to parse during math generation, leaving the application with no generated math
+ * (issue #2062). Any name that has to survive a round trip through cbit.vcell.parser.Expression
+ * must be checked here rather than with Character.isJavaIdentifier*.
+ */
+private static boolean isIdentifierStart(char c) {
+	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_';
+}
+
+private static boolean isIdentifierPart(char c) {
+	return isIdentifierStart(c) || (c >= '0' && c <= '9');
+}
+
+/**
+ * @return true if name is a legal expression identifier: non-empty, starting with an ASCII
+ * letter or '_', and otherwise containing only ASCII letters, digits and '_'.
+ */
+public static boolean isValidExpressionIdentifier(String name) {
+	return name != null && name.length() > 0 && indexOfFirstIllegalIdentifierChar(name) < 0;
+}
+
+/**
+ * @return the index of the first character of name that may not appear at that position in an
+ * expression identifier, or -1 if name is a legal identifier. A digit is legal everywhere except
+ * at index 0, so the position matters and not just the character. Used to tell the user which
+ * character to remove.
+ */
+public static int indexOfFirstIllegalIdentifierChar(String name) {
+	if (name == null || name.length() == 0){
+		return -1;
+	}
+	if (!isIdentifierStart(name.charAt(0))){
+		return 0;
+	}
+	for (int i = 1; i < name.length(); i++){
+		if (!isIdentifierPart(name.charAt(i))){
+			return i;
+		}
+	}
+	return -1;
+}
+
+/** Human-readable statement of the identifier rule, for veto and validation messages. */
+public static final String IDENTIFIER_RULE_DESCRIPTION =
+	"it may contain only the letters a-z and A-Z, the digits 0-9 and '_', and may not start with a digit";
+
 	/**
  * This method was created in VisualAge.
  * @return java.lang.String
@@ -33,11 +90,14 @@ public static String fixToken(String name) {
 		return "";
 	}
 	StringBuilder newString = new StringBuilder(string);
-	if (Character.isJavaIdentifierStart(newString.charAt(0))==false){
+	// ASCII-only, to match the expression grammar. Character.isJavaIdentifier* would let
+	// accented and other non-ASCII letters through unmangled, yielding a token that does not
+	// parse - see isValidExpressionIdentifier.
+	if (isIdentifierStart(newString.charAt(0))==false){
 		newString.insert(0,'_');
 	}
 	for (int i=1;i<newString.length();i++){
-		if (Character.isJavaIdentifierPart(newString.charAt(i))==false){
+		if (isIdentifierPart(newString.charAt(i))==false){
 			newString.setCharAt(i,'_');
 		}
 	}
@@ -68,12 +128,13 @@ public static String fixTokenStrict(String name, int maxLength) {
 	}
 	StringBuilder newString = new StringBuilder(string);
 	char charAt0 = newString.charAt(0);
-	if (!Character.isLetter(charAt0) && charAt0 != '_'){
+	// ASCII-only - see the note in fixToken(String).
+	if (!isIdentifierStart(charAt0)){
 		newString.insert(0,'_');
 	}
 	for (int i=1;i<newString.length();i++){
 		char charAtI = newString.charAt(i);
-		if (!Character.isLetterOrDigit(charAtI) && charAtI != '_'){
+		if (!isIdentifierPart(charAtI)){
 			newString.setCharAt(i,'_');
 		}
 	}

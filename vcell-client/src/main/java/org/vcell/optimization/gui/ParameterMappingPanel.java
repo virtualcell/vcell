@@ -458,7 +458,8 @@ public class ParameterMappingPanel extends javax.swing.JPanel {
         if(parameterMappingTable == null){
             try {
                 parameterMappingTable = new JSortTable();
-                parameterMappingTable.setName("ScrollPaneTable");
+                // The parameters chosen to fit. "ScrollPaneTable" is shared by eight panels.
+                parameterMappingTable.setName("ParameterEstimationParametersTable");
                 parameterMappingTableModel = new ParameterMappingTableModel(parameterMappingTable);
                 parameterMappingTable.setScrollTableActionManager(new InternalScrollTableActionManager(parameterMappingTable));
                 parameterMappingTable.setModel(parameterMappingTableModel);
@@ -506,6 +507,9 @@ public class ParameterMappingPanel extends javax.swing.JPanel {
             setSize(655, 226);
             addButton = new JButton(VCellIcons.addIcon);
             deleteButton = new JButton(VCellIcons.deleteIcon);
+            // Icon-only buttons, so their text says nothing about what they do.
+            addButton.setName("AddEstimationParameterButton");
+            deleteButton.setName("DeleteEstimationParameterButton");
             deleteButton.setEnabled(false);
             JToolBar toolBar = new JToolBar();
             toolBar.setFloatable(false);

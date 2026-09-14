@@ -67,7 +67,7 @@ A selector that doesn't resolve reports `did not resolve` (or `false`) rather th
 | `GET /setText?path=&text=&enter=` | JSON `{"set": true\|false}` |
 | `GET /selectTab?path=&index=` | JSON `{"selected": true\|false}` |
 | `GET /selectTreeRow?path=&row=N` | select row N of the JTree; JSON `{"selected": bool}` |
-| *(JTree rows in `/tree`)* | Row text is what the tree **displays**, obtained from its `TreeCellRenderer` — VCell's database trees hold domain objects whose `toString()` is useless (`PublicationInfo@415f5f4f`), so this reports "Lee 2026 Systems-level consequences…" as a user sees it. `<html>` markup is stripped; falls back to `convertValueToText` then `toString` |
+| *(JTree rows in `/tree`)* | Each row also reports `userType` — the class of the domain object behind it — and `applicationType` where it has one, so a caller can tell an NFSim application from a SpringSaLaD one without guessing from an icon or from which tabs appear. Read from `SimulationContext` directly, so a rename breaks the build rather than silently emptying the field. Row text is what the tree **displays**, obtained from its `TreeCellRenderer` — VCell's database trees hold domain objects whose `toString()` is useless (`PublicationInfo@415f5f4f`), so this reports "Lee 2026 Systems-level consequences…" as a user sees it. `<html>` markup is stripped; falls back to `convertValueToText` then `toString` |
 | `GET /selectTableRow?path=&row=N[&column=M]` | select row N of a `JTable` and scroll it into view; JSON `{"selected": bool}`. Row/column are **view** indices, matching the `table` block in `/tree` and the user's current sort order |
 | `GET /doubleClickTableRow?path=&row=N[&column=M]` | synthetic double-click on a table row; JSON `{"doubleClicked": bool}`. Table-backed UIs commonly act on the raw `MouseEvent` click count — this is how you pick a file in the file chooser |
 | `GET /rightClickTableRow?path=&row=N[&column=M]` | select row N then right-click it (opens its context menu); JSON `{"rightClicked": bool}` |
@@ -83,11 +83,67 @@ A selector that doesn't resolve reports `did not resolve` (or `false`) rather th
 | `GET /listeners?path=0/3/2` | JSON: registered `ActionListener` classes, action command, mouse-listener count — "is this control actually wired up?" |
 | `GET /props?path=` | JSON: extended properties of one component — full class chain, focus state, colors/font, accessible role/name/description, button/text-component detail, listener counts. The "inspect element" panel to `/tree`'s DOM |
 | `GET /highlight?path=[&ms=2000]` | Flash a translucent red overlay over the component so a human watching the screen sees what a selector resolves to. Glass-pane based; restores the original glass pane (and visibility) afterwards |
+| `GET /findRow?path=&appType=SPRINGSALAD` | Find an application row by its **type**, read from the model (`getApplicationType()`). The only reliable way to locate one: a biomodel carries zero or more applications of any type in any order, their names are whatever the author chose ("Application2", "Copy of Application0"), and on screen only the row's icon tells them apart |
+| `GET /findRow?path=&text=\|contains=` | Row number by what a row **displays**, searching the whole tree/table model. JSON `{"row": N, "text": "..."}`. Two reasons it exists: `/tree` caps its dump at 25 table rows / 100 tree rows (it says `truncated`), so anything below that is otherwise unreachable — a chooser in a 137-entry directory, a database tree of a thousand models; and a row *index* is not durable, since it shifts as soon as anything above it changes. A trailing path segment counts as a match, so a file chooser can be driven by file name |
+| `GET /glide?path=[&ms=2000]` | Move the **real cursor** to the component, easing in and out. JSON `{"glided": bool}`. For a replay someone is filming: `/click` fires buttons through `doClick()` and never moves the pointer, which is right for a test and wrong for a video |
+| `GET /robotClick?path=[&glideMs=0][&row=N]` | (`row` aims at one tree row, table row, or **tab** — `/selectTreeRow` and `/selectTab` act through the model, post no input event, and are therefore invisible to the recorder; tree navigation is how most of VCell is reached) |
+| `GET /robotClick?path=[&glideMs=0]` | Click by real native press/release instead of `doClick()`. JSON `{"clicked": bool}`. Needed in two places: a filmed replay wants the cursor where the click lands, and **the recorder can only see input that reaches the AWT event queue**, so this is the only way to drive a button while recording. Unlike `/click` it blocks until the press is delivered |
+| `GET /record?action=start\|stop\|status[&file=]` | The UI recorder. `start` begins capturing real input and **fixes the output file**, which exists from that moment and is rewritten after every step; `stop` finalizes it; `status` reports `{"recording", "steps", "rawEvents", "path"}` — `rawEvents` separates "captured nothing" from "saw nothing", the first thing worth knowing when a recording comes out empty. All three replies carry `path` |
 | `GET /log[?lines=N]` | text/plain tail (default 200 lines) of the client's real log — VCell redirects System.out/err to `<vcellHome>/logs/vcellrun_<site>.log`, so exceptions never appear on the launcher's stdout |
 
 Buttons/checkboxes are clicked via `doClick()` posted with `invokeLater` (no
 cursor movement, and the request returns immediately even if the action opens a
 modal dialog); other components get a synthetic `Robot` click at their center.
+
+## Recording
+
+`UiRecorder` is the inverse of the endpoints above: they act on a component you name, it
+watches real input and writes out the steps in that same vocabulary, so a recording replays
+through endpoints that already exist.
+
+- **Semantic, never coordinates.** Each step names its target with `bestSelector()` —
+  `name=` first because it survives layout changes, then a node path, and a registry id
+  only as a last resort (ids are stable *within* a session, so a recording that leans on
+  one replays today and resolves to nothing tomorrow).
+- **Menus are special-cased**, and then special-cased again. A menu pick is recorded as
+  `menu "Help>VCell Properties ..."`, because the popup it happened in will not exist at
+  replay time. But a menu item with **no text** cannot be addressed that way at all — VCell
+  puts icon-only controls straight into the menu bar, and the detach toggle is a
+  `JMenuItem` whose entire label is a tooltip — so those fall back to a click on their name.
+- **The bridge's own endpoints report themselves.** The AWT listener only sees input that
+  reaches the event queue, and the model-based endpoints post none — `doClick()` calls its
+  listeners directly, `setSelectedIndex` changes a model — so a session driven by
+  `bridge.sh click` used to record *nothing*. Those endpoints now record the step directly,
+  which is strictly better information than the listener has: an endpoint knows the verb,
+  the target and the argument exactly, where the listener must infer them from a coordinate.
+  Robot-driven helpers deliberately do **not** report themselves, since the listener already
+  sees their real events — otherwise every such step would be recorded twice.
+  Only a `doClick()` from *application* code remains invisible, which is correct: that is
+  the program acting, not the user.
+- **Scripted setup while recording is captured too.** Start with
+  `captureBridgeActions=false` (`bridge.sh record start <file> --no-bridge-actions`) if
+  bridge calls are only setting the stage for a hand-performed recording.
+- **Passwords are never captured.** A `JPasswordField` is skipped outright.
+- **A row or tab is recorded by its text as well as its index** (`rowText`, `tabTitle`).
+  An index documents nothing — "select row 10" is not a help page, and it is not durable
+  either: a biomodel holds zero or more applications of any type in any order, so the
+  index is only true for the tree as it stood when recorded. Replay looks the text up
+  first and falls back to the index.
+- **Each step says how durable its selector is** (`durability: "path"` / `"id"`, omitted
+  for the durable `name=` form). That turns naming debt into a to-do list you can read off
+  a fresh recording, instead of discovering it when a script breaks a year later. The fix
+  is a `setName(...)` at the component's construction site.
+- **Timing** is the real gap before each step, meant to be edited afterwards.
+- **The script is flushed after every step**, so killing the client mid-session costs at
+  most the step in progress rather than the whole take. Each write goes to a `.part` file
+  and is renamed into place: a crash during a plain write would leave a half-written file,
+  which is worse than none — the recording would look present and fail to parse.
+  Serializing happens on the EDT where the step list is consistent, the file I/O on one
+  background thread so a slow filesystem cannot stutter the UI being recorded.
+- A step that opened a window records `opensWindow`, so replay waits for it instead of
+  sleeping. Detection compares window **titles**, not identities: detaching a child window
+  swaps an owned dialog for an un-owned frame, so a brand-new `Window` object appears
+  carrying a title that never left the screen.
 
 ## Tooling
 

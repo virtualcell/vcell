@@ -2032,7 +2032,8 @@ public class KymographPanel extends javax.swing.JPanel implements org.vcell.util
 				hashTable.put(PDEDataViewer.StringKey_timeSeriesJobSpec, timeSeriesJobSpec);
 			}
 		};
-		AsynchClientTask task2 = new PDEDataViewer.TimeSeriesDataRetrievalTask("Retrieving Data",multiTimePlotHelper,multiTimePlotHelper.getPdeDatacontext());//new TimeSeriesDataRetrievalTask(title, PDEDataViewer.this, PDEDataViewer.this.getPdeDataContext());//timeSeriesDataRetrievalTask;
+		// records the failure instead of throwing: task3 below reports it in the panel via failMethod()
+		AsynchClientTask task2 = PDEDataViewer.TimeSeriesDataRetrievalTask.recordingFailure("Retrieving Data",multiTimePlotHelper,multiTimePlotHelper.getPdeDatacontext());//new TimeSeriesDataRetrievalTask(title, PDEDataViewer.this, PDEDataViewer.this.getPdeDataContext());//timeSeriesDataRetrievalTask;
 
 		AsynchClientTask task3  = new AsynchClientTask("Showing kymograph", AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false) {
 			public void run(Hashtable<String, Object> hashTable) throws Exception {

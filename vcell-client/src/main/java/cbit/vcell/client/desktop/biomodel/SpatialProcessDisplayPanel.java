@@ -47,6 +47,9 @@ public class SpatialProcessDisplayPanel extends BioModelEditorApplicationRightSi
 		
 	private void initialize() {
 		setName("SpatialProcessDisplayPanel");
+		table.setName("SpatialProcessesTable");
+		addNewButton.setName("SpatialProcessNewButton");
+		deleteButton.setName("SpatialProcessDeleteButton");
 		setLayout(new GridBagLayout());
 
 		int gridy = 0;

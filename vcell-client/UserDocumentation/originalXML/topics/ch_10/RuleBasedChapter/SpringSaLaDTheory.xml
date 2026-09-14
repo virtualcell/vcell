@@ -1,26 +1,80 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <vcelldoc>
 <page title="Introduction to SpringSaLaD Modeling" target="SpringSaLaDTheory">
 
 	<introduction>
-	Some text here
-	
-	<para>Another paragraph</para>
-	<para>Yet another paragraph...</para>
-	<imgReference target = "rule1.png"/>
-	<para>...with images inserted between paragraphs...</para>
-	<imgReference target = "SS_new.png"/>
+	SpringSaLaD is a particle-based, spatially resolved, stochastic simulator. Where a
+	<link target="RuleBasedTheory">rule-based</link> model treats a molecule as a set of sites that can bind and
+	change state, a SpringSaLaD model also gives every one of those sites a place, a size and a speed: molecules are
+	built as spheres joined by stiff springs, they diffuse and collide in a box divided by a flat membrane, and
+	reactions happen when the right two sites meet.
+	<para>It is aimed at the middle ground between molecular dynamics and a continuum model - sites of roughly
+	1 to 10 nm, standing for functional protein domains; systems of tens to a few thousand particles; and time
+	scales of about a second. Excluded volume, tethering, and the reach of one domain from another are all
+	represented, which is what makes it the right tool for questions like ligand-mediated receptor clustering,
+	where the geometry of the complex is the answer.</para>
+	<para>In VCell this is an <bold>application</bold> - see <link target="LangevinApp">SpringSaLaD Application</link> -
+	built on an ordinary rule-based physiology and solved by the Langevin solver. The same molecules and reaction
+	rules can carry a deterministic or network-free application beside it.</para>
 	</introduction>
 
-	<appearance>  
-	 
+	<appearance>
+	<bold>Molecules, sites and links.</bold> A molecule is a collection of spherical sites joined by stiff,
+	unbreakable springs. Each site carries:
+		<list>
+			<item>a <bold>radius</bold>, in nm, which enforces excluded volume - two sites cannot overlap;</item>
+			<item>a <bold>diffusion rate</bold>, in um2/s;</item>
+			<item>a <bold>colour</bold>, used only by the <link target="SSResults">3D Trajectory viewer</link>;</item>
+			<item>a <bold>position</bold> within the molecule, as x, y and z in nm;</item>
+			<item>zero or more <bold>states</bold>, which is where the biochemistry lives - a kinase domain that is
+				on or off, a binding domain with and without its ligand, a residue phosphorylated or not.</item>
+		</list>
+	The <bold>links</bold> between sites are the springs. They do not break, so they describe the covalent
+	architecture of the molecule rather than any of its chemistry: a linear chain, a branched star, a ring.
+
+	<para><bold>Anchors and the membrane.</bold> A molecule that sits in the membrane must carry an inert site
+	named <bold>Anchor</bold>, whose only job is to tether it there. The name is reserved, and so is its single
+	state, also called Anchor. Everything else about the molecule follows from where its other sites sit relative
+	to that one - see <link target="SSSpeciesSpecifications">SpringSaLaD Species</link>.</para>
+
+	<para><bold>Reactions.</bold> A SpringSaLaD reaction is an ordinary reaction rule that VCell has recognised as
+	one of five kinds. The kinds, and the restrictions that come with them, are described in
+	<link target="SSReactionsSpecifications">SpringSaLaD Reactions</link>:</para>
+		<list>
+			<item><bold>Creation</bold> - a zeroth order reaction that makes a new molecule out of nothing, in uM/s.</item>
+			<item><bold>Decay</bold> - a first order reaction that destroys one, in 1/s. Creation and decay together
+				are how a species is buffered at a roughly constant concentration.</item>
+			<item><bold>Transition</bold> - a first order change of a site's state, in 1/s, optionally conditional on
+				whether that site is bound.</item>
+			<item><bold>Allosteric</bold> - a state change at one site driven by the state of another site in the
+				same molecule.</item>
+			<item><bold>Binding</bold> - a second order reaction, in 1/uM/s, that creates a spring between two sites
+				on different molecules. Binding reactions must be reversible; the other four must not be.</item>
+		</list>
+	<imgReference target = "SS_new.png"/>
 	</appearance>
 
-	<operations>  
-	
+	<operations>
+	<bold>When SpringSaLaD is the right tool.</bold> Ask for it when the answer depends on where things are:
+		<list>
+			<item>when excluded volume matters - crowding, or a site shielded by the rest of its own molecule;</item>
+			<item>when the tether matters - a kinase that can only reach a substrate it is anchored near;</item>
+			<item>when the question is about complexes rather than concentrations - cluster sizes, how many
+				molecules end up in the largest aggregate, how that changes with valency;</item>
+			<item>when the membrane is doing real work - a receptor whose two halves live on opposite sides of it.</item>
+		</list>
 
+	<para><bold>When it is not.</bold> Every particle is tracked individually and every pair is tested for
+	collision, so cost grows quickly with particle number. A model of tens of thousands of molecules, or one that
+	has to run for minutes of simulated time, belongs in a
+	<link target="NFSimApp">network-free</link> or deterministic application instead. Nothing is lost by trying
+	both: they are two applications over the same physiology.</para>
+
+	<para><bold>Where to start.</bold> Build the molecules and rules as you would for any rule-based model, then
+	create a SpringSaLaD application over them. It supplies the geometry itself, and its
+	<link target="SSSpeciesSpecifications">Molecular Structures</link> tab is where the spatial detail goes.</para>
 	</operations>
-	
+
 </page>
 
 </vcelldoc>
