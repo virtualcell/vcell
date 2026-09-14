@@ -12,6 +12,7 @@ import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.server.HtcJobID;
 import cbit.vcell.server.HtcJobID.BatchSystemType;
+import cbit.vcell.server.ServerInfo;
 import cbit.vcell.simdata.PortableCommand;
 import cbit.vcell.simdata.PortableCommandWrapper;
 import cbit.vcell.solver.LangevinSimulationOptions;
@@ -819,6 +820,7 @@ public class SlurmProxy extends HtcProxy {
 		lsb.write(prefix + "_container_prefix=\"singularity run --containall " +
 				"${container_bindings} ${container_env} $" + prefix + "_sif\"");
 	}
+
 	String  generateLangevinBatchScript(String jobName, ExecutableCommand.Container commandSet, double memSizeMB,
 										Collection<PortableCommand> postProcessingCommands, SimulationTask simTask) {
 
@@ -844,10 +846,13 @@ public class SlurmProxy extends HtcProxy {
 		String sTimeoutPerTaskSeconds = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_langevin_timeoutPerTaskSeconds);
 		String sHardbBtchMemoryLimitPerTask = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_langevin_batchMemoryLimitPerTaskMB);
 		String sBlockSizeMB =  PropertyLoader.getRequiredProperty(PropertyLoader.slurm_langevin_memoryBlockSizeMB);
-		String sWatchdogTickSeconds = PropertyLoader.getProperty(PropertyLoader.slurm_langevin_watchdogTickSeconds, "60");
-		String sWatchdogTimeoutSeconds = PropertyLoader.getProperty(PropertyLoader.slurm_langevin_watchdogTimeoutSeconds, "600");
+
+		String sWatchdogTickSeconds = PropertyLoader.getProperty(PropertyLoader.slurm_langevin_watchdogTickSeconds,
+				ServerInfo.VCELL_SLURM_LANGEVIN_WATCHDOGTICKSECONDS+"");
+		String sWatchdogTimeoutSeconds = PropertyLoader.getProperty(PropertyLoader.slurm_langevin_watchdogTimeoutSeconds,
+				ServerInfo.VCELL_SLURM_LANGEVIN_WATCHDOGTIMEOUTSECONDS+"");
 		String sMaxNumberOfConcurrentTasks = PropertyLoader.getProperty(PropertyLoader.slurm_langevin_maxNumConcurrentTasks,
-					"31");		// max number of concurrent simulations + 1 watchdog
+				ServerInfo.VCELL_SLURM_LANGEVIN_MAXNUMCONCURRENTTASKS+"");		// max number of concurrent simulations + 1 watchdog
 
 
 		// we don't need to convert many of these strings to numeric only to convert them again to strings for the script,
@@ -857,7 +862,7 @@ public class SlurmProxy extends HtcProxy {
 		// if totalNumberOfJobs is small, adjust totalNumberOfConcurrentSimulations and totalNumberOfConcurrentTasks down accordingly
 		int totalNumberOfConcurrentSimulations = Math.min(totalNumberOfJobs, maxNumberOfConcurrentTasks - 1);	// one task is the watchdog
 		int totalNumberOfConcurrentTasks = totalNumberOfConcurrentSimulations + 1;	// add one for the watchdog
-		int nodes = (int)Math.ceil(totalNumberOfConcurrentTasks / 20.0);
+		int nodes = (int)Math.ceil(totalNumberOfConcurrentTasks / ServerInfo.VCELL_SLURM_MAX_JOBS_PER_NODE);
 
 		int timeoutPerTaskSeconds = Integer.parseInt(sTimeoutPerTaskSeconds);
 		long hardbBtchMemoryLimitPerTask = Long.parseLong(sHardbBtchMemoryLimitPerTask);	// MB. we hard limit mem to 2G for langevin batch jobs
