@@ -87,12 +87,12 @@ public class HtcSimulationWorker implements HtcProxy.HtcProxyFactory  {
 public HtcSimulationWorker() {
 	this.htcProxy = SlurmProxy.createRemoteProxy();
 
-	this.vcMessagingService_int = new VCMessagingServiceActiveMQ();
+	this.vcMessagingService_int = VCMessagingServiceActiveMQ.createForLongLivedConsumerService();
 	String jmshost_int = PropertyLoader.getRequiredProperty(PropertyLoader.jmsIntHostInternal);
 	int jmsport_int = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.jmsIntPortInternal));
 	this.vcMessagingService_int.setConfiguration(new ServerMessagingDelegate(), jmshost_int, jmsport_int);
 
-	this.vcMessagingService_sim = new VCMessagingServiceActiveMQ();
+	this.vcMessagingService_sim = VCMessagingServiceActiveMQ.createForLongLivedConsumerService();
 	String jmshost_sim = PropertyLoader.getRequiredProperty(PropertyLoader.jmsSimHostInternal);
 	int jmsport_sim = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.jmsSimPortInternal));
 	this.vcMessagingService_sim.setConfiguration(new ServerMessagingDelegate(), jmshost_sim, jmsport_sim);
