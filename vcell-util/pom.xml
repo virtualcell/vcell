@@ -150,6 +150,11 @@
 			<artifactId>annotations</artifactId>
 			<version>${jetbrains-annotations.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.tensorflow</groupId>
+			<artifactId>ndarray</artifactId>
+			<version>${java-ndarray.version}</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<plugins>
