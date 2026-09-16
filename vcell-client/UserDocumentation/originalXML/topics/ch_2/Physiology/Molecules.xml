@@ -16,8 +16,8 @@
 	<para>The Molecules Table displays:
 	<list>
 	<item>Molecule <bold>name</bold> that can be edited</item>
-	<item><bold>Molecular depiction</bold> with different color ovals representing molecules.  Circular elements represent specific sites on the molecule, and small yellow circles associate with a site denote multiple possible states for the site.</item>
-	<item><bold>Notes</bold> show a link symbol if there are annotated links to database entries and a text bubble if there are text annotations related to the molecule.  Double-click to view the <link target ="PP_Annotations">Annotations Properties</link> Pane for the molecule.</item>
+	<item><bold>Molecular depiction</bold> with different color ovals representing molecules.  Circular elements represent specific sites on the molecule, and a small  circle associated with a site denotes multiple possible states for the site.</item>
+	<item><bold>Notes</bold> show a link symbol if there are annotated links to database entries and a text bubble if there are text annotations related to the molecule.  Double-click the text bubble to view the <link target ="PP_Annotations">Annotations Properties Pane</link> for the molecule.</item>
 	<item><bold>Links</bold> show links to pathway items (see <link target="PathwayOverview">Biology Pathways</link>). Double-click on that link to navigate to the Pathway Diagram.</item>
 	<item><def target = "def_BioNetGen">BioNetGen</def> Definition gives the BioNetGen Language (bngl) description of the molecule.
 	</item>
@@ -29,7 +29,7 @@
 	<operations>
 	<para><bold>New Molecule</bold> creates a new molecule with a default name <bold>MT'number'</bold>, and also creates a new <link target="Observables">observable</link> with the default name <bold>O'number'_MT'number'_tot.</bold> The Observable tracks the amounts of all instances of the molecule in all species. (Note that if the Molecule is conserved (i.e. not synthesized or degraded), then the observable <bold>Molecule_tot</bold> will be conserved, which is one possible verification of model consistency.)</para>
 
-	<para><bold>Specify Molecular Details</bold> in the <link target = "PP_Molecules">Molecule Properties</link> pane in the bottom right of the work space for a selected Molecule. The molecule name can be edited directly in the Molecules table. </para>
+	<para><bold>Specify Molecular Details</bold> in the <link target = "PP_Molecules">Molecule Properties Pane</link> in the bottom right of the work space for a selected Molecule. The molecule name can be edited directly in the Molecules table. </para>
 
 	<para><bold>Delete</bold> molecules by selecting the row and using the Delete button below the table. A molecule will not be deleted if it is used elsewhere in the model. Because a molecule_tot observable is automatically created for each molecule, you must first delete the observable before you can delete the molecule.</para>
 

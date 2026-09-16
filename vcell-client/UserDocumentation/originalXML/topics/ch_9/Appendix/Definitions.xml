@@ -150,6 +150,9 @@ A type of stochastic simulation that is defined within a BioModel application ha
 spatial geometry and at least 1 species specification that has been set to 'Force Continuous'.
 </def>  
 
+<def target = "def_SpringSaLaD" defLabel= "SpringSaLaD">
+<bold>Springs</bold> and <bold>La</bold>ngevin <bold>D</bold>ynamics (SpringSaLaD) is a modeling strategy that explicitly models binding events and site changes among multivalent molecules and can account for crowding effects within multi-molecular clusters. Proteins are represented as  reactive sites (solid spheres) connected by stiff springs.  Langevin dynamics are used to model diffusion of each reactive site, and binding reactions are determined by probability based on diffusion coefficients for sites, site radii and macroscopic on rate.
+</def>
 
 <def target = "def_structure" defLabel = "Structure"> A structure in VCell is a spatial element that can have 1,2, or 3 
 dimensions.  Structures contain species and reactions,  a three-dimensional structure is a volume and its species have 
