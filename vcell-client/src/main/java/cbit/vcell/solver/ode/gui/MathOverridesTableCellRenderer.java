@@ -50,14 +50,14 @@ public MathOverridesTableModel getMathOverridesTableModel() {
  */
 public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
 	super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-	if (!getMathOverridesTableModel().isDefaultValue(row) && column != MathOverridesTableModel.COLUMN_DEFAULT) {
+	if (!getMathOverridesTableModel().isDefaultValue(row) && column != MathOverridesTableModel.DEFAULT_COLUMN_INDEX) {
 		setForeground(Color.red);
 	} else {
-		if (column == MathOverridesTableModel.COLUMN_ACTUAL) {
+		if (column == MathOverridesTableModel.OVERRIDE_VALUE_COLUMN_INDEX) {
 			setText("");
 		}
 	}
-	if (getMathOverridesTableModel().isUnusedParameterRow(row) && column == MathOverridesTableModel.COLUMN_PARAMETER){
+	if (getMathOverridesTableModel().isUnusedParameterRow(row) && column == MathOverridesTableModel.PARAMETER_COLUMN_INDEX){
 		setText(value + " <<NOT USED>>");
 	}
 	return this;

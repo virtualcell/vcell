@@ -4,6 +4,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import cbit.vcell.util.NativeLoader;
+import org.vcell.util.OperatingSystemInfo;
 
 /**
  * Known / named collections of libraries VCell needs to dynamically load

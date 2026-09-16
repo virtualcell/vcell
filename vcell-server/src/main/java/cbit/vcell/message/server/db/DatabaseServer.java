@@ -15,7 +15,7 @@ import cbit.vcell.message.jms.activeMQ.VCMessagingServiceActiveMQ;
 import cbit.vcell.message.messages.MessageConstants;
 import cbit.vcell.message.server.ServerMessagingDelegate;
 import cbit.vcell.modeldb.DatabaseServerImpl;
-import cbit.vcell.resource.OperatingSystemInfo;
+import org.vcell.util.OperatingSystemInfo;
 import cbit.vcell.resource.EnvironmentConfigProvider;
 import cbit.vcell.resource.PropertyLoader;
 import com.google.inject.Guice;
