@@ -300,11 +300,11 @@ private static Coordinate lineMeshFaceIntersect3D(Coordinate mesh1,Coordinate me
 
 	final double EPS = 1.0E-12; //epsilon
 
-	cbit.vcell.render.Vect3d p1 = new cbit.vcell.render.Vect3d(cp1.getX(),cp1.getY(),cp1.getZ());
-	cbit.vcell.render.Vect3d p2 = new cbit.vcell.render.Vect3d(cp2.getX(),cp2.getY(),cp2.getZ());
+	cbit.vcell.render.Vect3d p1 = new cbit.vcell.render.Vect3d(cp1.x(),cp1.y(),cp1.z());
+	cbit.vcell.render.Vect3d p2 = new cbit.vcell.render.Vect3d(cp2.x(),cp2.y(),cp2.z());
 	
-	cbit.vcell.render.Vect3d n1 = new cbit.vcell.render.Vect3d(mesh1.getX(),mesh1.getY(),mesh1.getZ());
-	cbit.vcell.render.Vect3d n2 = new cbit.vcell.render.Vect3d(mesh2.getX(),mesh2.getY(),mesh2.getZ());
+	cbit.vcell.render.Vect3d n1 = new cbit.vcell.render.Vect3d(mesh1.x(),mesh1.y(),mesh1.z());
+	cbit.vcell.render.Vect3d n2 = new cbit.vcell.render.Vect3d(mesh2.x(),mesh2.y(),mesh2.z());
 
 	cbit.vcell.render.Vect3d n = cbit.vcell.render.Vect3d.sub(n2,n1);
 	cbit.vcell.render.Vect3d p3 = new cbit.vcell.render.Vect3d(n);
@@ -381,16 +381,16 @@ private Coordinate offsetCoordinate(Coordinate start, Coordinate towards) {
 	// Offset 1/10 the smallest mesh cell dimension length
 	cbit.vcell.render.Vect3d offsetV =
 		new cbit.vcell.render.Vect3d(
-				(towards.getX()-start.getX()),
-				(towards.getY()-start.getY()),
-				(towards.getZ()-start.getZ())
+				(towards.x()-start.x()),
+				(towards.y()-start.y()),
+				(towards.z()-start.z())
 			);
 		
 	double length = offsetV.length();
 	double scale = (getSmallestMeshCellDimensionLength()/10.0)/length;
 	offsetV.scale(scale);
 	
-	Coordinate offsetCoord = new Coordinate(start.getX()+offsetV.getX(),start.getY()+offsetV.getY(),start.getZ()+offsetV.getZ());
+	Coordinate offsetCoord = new Coordinate(start.x()+offsetV.getX(),start.y()+offsetV.getY(),start.z()+offsetV.getZ());
 		
 	return offsetCoord;
 }
@@ -507,9 +507,9 @@ private SSHelper resampleMeshBoundaries(int[] indexes,Coordinate[] wcV,boolean b
 			Coordinate mc4 = getMesh().getCoordinate(ci4);
 			Coordinate corner =
 				new Coordinate(
-					(mc1.getX()+mc2.getX()+mc3.getX()+mc4.getX())/4.0,
-					(mc1.getY()+mc2.getY()+mc3.getY()+mc4.getY())/4.0,
-					(mc1.getZ()+mc2.getZ()+mc3.getZ()+mc4.getZ())/4.0
+					(mc1.x()+mc2.x()+mc3.x()+mc4.x())/4.0,
+					(mc1.y()+mc2.y()+mc3.y()+mc4.y())/4.0,
+					(mc1.z()+mc2.z()+mc3.z()+mc4.z())/4.0
 				);
 			newIndexes[newCount] = (bCrossMembraneArr[0]||bCrossMembraneArr[1]||bCrossMembraneArr[2]||bCrossMembraneArr[3]?MEMBRANE_BOUNDARY:NON_MEMBRANE_BOUNDARY);
 //			newCrossingMembraneIndex[newCount] = crossMembraneIndexInOutArr;

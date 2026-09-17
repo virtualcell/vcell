@@ -11,6 +11,7 @@
 package cbit.image;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 import org.vcell.util.Coordinate;
 import org.vcell.util.CoordinateIndex;
@@ -25,11 +26,11 @@ public class ImagePlaneManager implements WorldCoordinateCalculator {
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private SourceDataInfo fieldImagePlaneData = null;
 	private int fieldSlice = 0;
-	private int fieldNormalAxis = Coordinate.Z_AXIS;
+	private Coordinate.Axis fieldNormalAxis = Coordinate.Axis.Z;
 	private SourceDataInfo fieldSourceDataInfo = null;
 	//
 	private int lastImagePlaneDataSlice = -1;
-	private int lastImagePlaneDataNormalAxis = -1;
+	private Coordinate.Axis lastImagePlaneDataNormalAxis = null;
 /**
  * ImageContainer2 constructor comment.
  */
@@ -80,7 +81,7 @@ public void firePropertyChange(java.lang.String propertyName, boolean oldValue, 
 public CoordinateIndex getDataIndexFromUnitized2D(double x, double y) {
 	if(getSourceDataInfo() != null){
 		Coordinate standardXYZ = standardXYZFromUnitized(x,y);
-		return getSourceDataInfo().getDataIndexFromUnitized(standardXYZ.getX(),standardXYZ.getY(),standardXYZ.getZ());		
+		return getSourceDataInfo().getDataIndexFromUnitized(standardXYZ.x(),standardXYZ.y(),standardXYZ.z());
 	}
 	return null;
 }
@@ -97,7 +98,7 @@ public SourceDataInfo getImagePlaneData() {
  * @return The normalAxis property value.
  * @see #setNormalAxis
  */
-public int getNormalAxis() {
+public Coordinate.Axis getNormalAxis() {
 	return fieldNormalAxis;
 }
 /**
@@ -125,7 +126,7 @@ public int getSlice() {
 public double getSliceWorldCoordinate() {
 	Coordinate wc = getWorldCoordinateFromUnitized2D(0,0);
 	if(wc != null){
-		return Coordinate.convertAxisFromStandardXYZToNormal(wc,Coordinate.Z_AXIS,getNormalAxis());
+		return Coordinate.convertAxisFromStandardXYZToNormal(wc,Coordinate.Axis.Z,getNormalAxis());
 	}else{
 		return 0;
 	}
@@ -159,7 +160,7 @@ public org.vcell.util.Coordinate getWorldCoordinateFromUnitized2D(double x, doub
 			throw new RuntimeException("numSlices = "+sliceBoundary()+", should be > 1");
 		}
 		Coordinate standardXYZ = standardXYZFromUnitized(x,y);
-		return getSourceDataInfo().getWorldCoordinateFromUnitized(standardXYZ.getX(),standardXYZ.getY(),standardXYZ.getZ());		
+		return getSourceDataInfo().getWorldCoordinateFromUnitized(standardXYZ.x(),standardXYZ.y(),standardXYZ.z());
 	}
 	return null;
 }
@@ -196,22 +197,22 @@ private void setImagePlaneData(SourceDataInfo imagePlaneData) {
  * @param normalAxis The new value for the property.
  * @see #getNormalAxis
  */
-public void setNormalAxis(int normalAxis) {
+public void setNormalAxis(Coordinate.Axis normalAxis) {
 	if (getSourceDataInfo() == null) {
 		return;
 	}
-	if (normalAxis != Coordinate.X_AXIS && normalAxis != Coordinate.Y_AXIS && normalAxis != Coordinate.Z_AXIS) {
+	if (normalAxis != Coordinate.Axis.X && normalAxis != Coordinate.Axis.Y && normalAxis != Coordinate.Axis.Z) {
 		return;
 	}
 	if (normalAxis == fieldNormalAxis) {
 		return;
 	}
-	int oldValue = fieldNormalAxis;
+	Coordinate.Axis oldValue = fieldNormalAxis;
 	fieldNormalAxis = normalAxis;
 	if (getSlice() >= sliceBoundary()) {
 		setSlice(0);
 	}
-	firePropertyChange("normalAxis", new Integer(oldValue), new Integer(normalAxis));
+	firePropertyChange("normalAxis", oldValue, normalAxis);
 	updateImagePlaneData();
 }
 /**
@@ -234,7 +235,7 @@ public void setSlice(int slice) {
     }
     int oldValue = fieldSlice;
     fieldSlice = slice;
-    firePropertyChange("slice", new Integer(oldValue), new Integer(slice));
+    firePropertyChange("slice", oldValue, slice);
     updateImagePlaneData();
 }
 /**
@@ -246,23 +247,23 @@ public void setSourceDataInfo(SourceDataInfo sourceDataInfo) {
 	if(	sourceDataInfo == null ||
 		sourceDataInfo.getZSize() <= 1){
 		setSlice(0);
-		setNormalAxis(Coordinate.Z_AXIS);
+		setNormalAxis(Coordinate.Axis.Z);
 	}else{
 		int normalZ = (int)Coordinate.convertAxisFromStandardXYZToNormal(
 			sourceDataInfo.getXSize(),
 			sourceDataInfo.getYSize(),
 			sourceDataInfo.getZSize(),
-			Coordinate.Z_AXIS,
+			Coordinate.Axis.Z,
 			getNormalAxis());
 		if((normalZ-1) < getSlice()){
 			setSlice(0);
-			setNormalAxis(Coordinate.Z_AXIS);
+			setNormalAxis(Coordinate.Axis.Z);
 		}
 	}
 	SourceDataInfo oldValue = fieldSourceDataInfo;
 	fieldSourceDataInfo = sourceDataInfo;
 	firePropertyChange("sourceDataInfo", oldValue, sourceDataInfo);
-	lastImagePlaneDataNormalAxis = -1;
+	lastImagePlaneDataNormalAxis = null;
 	lastImagePlaneDataSlice = -1;
 	updateImagePlaneData();
 }
@@ -275,11 +276,11 @@ public int sliceBoundary() {
 	//Return the Z_AXIS
 	if (getSourceDataInfo() != null) {
 		switch (getNormalAxis()) {
-			case Coordinate.X_AXIS :
+			case X :
 				return getSourceDataInfo().getXSize();
-			case Coordinate.Y_AXIS :
+			case Y :
 				return getSourceDataInfo().getYSize();
-			case Coordinate.Z_AXIS :
+			case Z :
 				return getSourceDataInfo().getZSize();
 			default :
 				throw new IllegalArgumentException("normalAxis wrong");
@@ -314,9 +315,9 @@ public Coordinate snapWorldCoordinateFace(Coordinate targetC) {
 		org.vcell.util.CoordinateIndex centerCI = getSourceDataInfo().getDataIndexFromWorldCoordinate(targetC);
 		Coordinate centerCoord = getSourceDataInfo().getWorldCoordinateFromIndex(centerCI);
 
-		double diffX = centerCoord.getX()-targetC.getX();
-		double diffY = centerCoord.getY()-targetC.getY();
-		double diffZ = centerCoord.getZ()-targetC.getZ();
+		double diffX = centerCoord.x()-targetC.x();
+		double diffY = centerCoord.y()-targetC.y();
+		double diffZ = centerCoord.z()-targetC.z();
 		
 		if(Math.abs(diffX) >= Math.abs(diffY) && Math.abs(diffX) >= Math.abs(diffZ)){diffY=0;diffZ=0;}
 		else if(Math.abs(diffY) >= Math.abs(diffX) && Math.abs(diffY) >= Math.abs(diffZ)){diffX=0;diffZ=0;}
@@ -329,9 +330,9 @@ public Coordinate snapWorldCoordinateFace(Coordinate targetC) {
 
 		Coordinate offsetCoord = getSourceDataInfo().getWorldCoordinateFromIndex(offsetCI);
 		Coordinate faceCoord = new Coordinate(
-								(centerCoord.getX()+offsetCoord.getX())/2.0,
-								(centerCoord.getY()+offsetCoord.getY())/2.0,
-								(centerCoord.getZ()+offsetCoord.getZ())/2.0);
+								(centerCoord.x()+offsetCoord.z())/2.0,
+								(centerCoord.y()+offsetCoord.y())/2.0,
+								(centerCoord.z()+offsetCoord.z())/2.0);
 		return faceCoord;
 }
 /**
@@ -359,7 +360,7 @@ private void updateImagePlaneData() {
 		setImagePlaneData(null);
 		return;
 	}
-	if (lastImagePlaneDataNormalAxis == getNormalAxis()) {
+	if (Objects.equals(lastImagePlaneDataNormalAxis, getNormalAxis())) {
 		return;
 	}
 	if (lastImagePlaneDataSlice == getSlice()) {
@@ -373,15 +374,15 @@ private void updateImagePlaneData() {
 	org.vcell.util.Origin org = sdiSource.getOrigin();
 	Extent ext = sdiSource.getExtent();
 	//
-	int startDelta = worldSlice() * (int)Coordinate.convertAxisFromStandardXYZToNormal(sdiSource.getXIncrement(),sdiSource.getYIncrement(),sdiSource.getZIncrement(),Coordinate.Z_AXIS,getNormalAxis()) ;
-	int xSize = (int)Coordinate.convertAxisFromStandardXYZToNormal(sdiSource.getXSize(),sdiSource.getYSize(),sdiSource.getZSize(),Coordinate.X_AXIS,getNormalAxis());
-	int xIncrement = (int)Coordinate.convertAxisFromStandardXYZToNormal(sdiSource.getXIncrement(),sdiSource.getYIncrement(),sdiSource.getZIncrement(),Coordinate.X_AXIS,getNormalAxis());
-	double xOrigin = Coordinate.convertAxisFromStandardXYZToNormal(org.getX(),org.getY(),org.getZ(),Coordinate.X_AXIS,getNormalAxis());
-	double xExtent = Coordinate.convertAxisFromStandardXYZToNormal(ext.getX(),ext.getY(),ext.getZ(),Coordinate.X_AXIS,getNormalAxis());
-	int ySize = (int)Coordinate.convertAxisFromStandardXYZToNormal(sdiSource.getXSize(),sdiSource.getYSize(),sdiSource.getZSize(),Coordinate.Y_AXIS,getNormalAxis());
-	int yIncrement = (int)Coordinate.convertAxisFromStandardXYZToNormal(sdiSource.getXIncrement(),sdiSource.getYIncrement(),sdiSource.getZIncrement(),Coordinate.Y_AXIS,getNormalAxis());
-	double yOrigin = Coordinate.convertAxisFromStandardXYZToNormal(org.getX(),org.getY(),org.getZ(),Coordinate.Y_AXIS,getNormalAxis());
-	double yExtent = Coordinate.convertAxisFromStandardXYZToNormal(ext.getX(),ext.getY(),ext.getZ(),Coordinate.Y_AXIS,getNormalAxis());
+	int startDelta = worldSlice() * (int)Coordinate.convertAxisFromStandardXYZToNormal(sdiSource.getXIncrement(),sdiSource.getYIncrement(),sdiSource.getZIncrement(),Coordinate.Axis.Z,getNormalAxis()) ;
+	int xSize = (int)Coordinate.convertAxisFromStandardXYZToNormal(sdiSource.getXSize(),sdiSource.getYSize(),sdiSource.getZSize(),Coordinate.Axis.X,getNormalAxis());
+	int xIncrement = (int)Coordinate.convertAxisFromStandardXYZToNormal(sdiSource.getXIncrement(),sdiSource.getYIncrement(),sdiSource.getZIncrement(),Coordinate.Axis.X,getNormalAxis());
+	double xOrigin = Coordinate.convertAxisFromStandardXYZToNormal(org.getX(),org.getY(),org.getZ(),Coordinate.Axis.X,getNormalAxis());
+	double xExtent = Coordinate.convertAxisFromStandardXYZToNormal(ext.getX(),ext.getY(),ext.getZ(),Coordinate.Axis.X,getNormalAxis());
+	int ySize = (int)Coordinate.convertAxisFromStandardXYZToNormal(sdiSource.getXSize(),sdiSource.getYSize(),sdiSource.getZSize(),Coordinate.Axis.Y,getNormalAxis());
+	int yIncrement = (int)Coordinate.convertAxisFromStandardXYZToNormal(sdiSource.getXIncrement(),sdiSource.getYIncrement(),sdiSource.getZIncrement(),Coordinate.Axis.Y,getNormalAxis());
+	double yOrigin = Coordinate.convertAxisFromStandardXYZToNormal(org.getX(),org.getY(),org.getZ(),Coordinate.Axis.Y,getNormalAxis());
+	double yExtent = Coordinate.convertAxisFromStandardXYZToNormal(ext.getX(),ext.getY(),ext.getZ(),Coordinate.Axis.Y,getNormalAxis());
 	//
 	SourceDataInfo sdi = new SourceDataInfo(type, data, null, startIndex + startDelta, xSize, xIncrement, xOrigin, xExtent, ySize, yIncrement, yOrigin, yExtent);
 	sdi.setIsChombo(sdiSource.isChombo());
@@ -395,7 +396,7 @@ private void updateImagePlaneData() {
  */
 private int worldSlice() {
 
-	//if(getNormalAxis() == Coordinate.Y_AXIS){
+	//if(getNormalAxis() == Coordinate.Axis.Y){
 		//return sliceBoundary()-1-getSlice();
 	//}else{
 		return getSlice();

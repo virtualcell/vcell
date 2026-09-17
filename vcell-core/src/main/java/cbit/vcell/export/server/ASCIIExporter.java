@@ -382,11 +382,11 @@ public class ASCIIExporter {
                     for(int j = 0; j < numberOfParticles; j++){
                         StringBuilder sb = dataLines[FDL + N_PARTICLE_PIECES * j];
                         Coordinate coordinate = particles.get(j);
-                        sb.append(coordinate.getX());
+                        sb.append(coordinate.x());
                         sb.append(COMMA);
-                        sb.append(coordinate.getY());
+                        sb.append(coordinate.y());
                         sb.append(COMMA);
-                        sb.append(coordinate.getZ());
+                        sb.append(coordinate.z());
                         sb.append(COMMA);
                     }
                 } else {
@@ -396,11 +396,11 @@ public class ASCIIExporter {
                     particleSb.append(COMMA);
                     for(int j = 0; j < numberOfParticles; j++){
                         Coordinate coordinate = particles.get(j);
-                        particleSb.append(coordinate.getX());
+                        particleSb.append(coordinate.x());
                         particleSb.append(COMMA);
-                        particleSb.append(coordinate.getY());
+                        particleSb.append(coordinate.y());
                         particleSb.append(COMMA);
-                        particleSb.append(coordinate.getZ());
+                        particleSb.append(coordinate.z());
                         particleSb.append(COMMA);
                     }
                 }
@@ -787,9 +787,9 @@ public class ASCIIExporter {
                                 if(geometrySpecs.getMode() == ExportEnums.GeometryMode.GEOMETRY_FULL){
                                     sliceNumber = -1;
                                 }
-                                String dataID = "_Slice_" + Coordinate.getNormalAxisPlaneName(geometrySpecs.getAxis()) + "_" + sliceNumber + "_";
+                                String dataID = "_Slice_" + geometrySpecs.getAxis().getNormalPlaneName() + "_" + sliceNumber + "_";
                                 ExportOutput[] output = new ExportOutput[variableSpecs.getVariableNames().length * TIME_COUNT];
-                                SliceHelper sliceHelper = new SliceHelper(TIME_COUNT, (hdf5Group != null), Coordinate.getNormalAxisPlaneName(geometrySpecs.getAxis()), sliceNumber, asciiSpecs.getSwitchRowsColumns(), mesh);
+                                SliceHelper sliceHelper = new SliceHelper(TIME_COUNT, (hdf5Group != null), geometrySpecs.getAxis().getNormalPlaneName(), sliceNumber, asciiSpecs.getSwitchRowsColumns(), mesh);
                                 for(int j = 0; j < variableSpecs.getVariableNames().length; j++){
                                     sliceHelper.setHDF5GroupVar(hdf5Group, variableSpecs.getVariableNames()[j]);
                                     for(int i = 0; i < TIME_COUNT; i++){
@@ -803,7 +803,7 @@ public class ASCIIExporter {
                                         ExportOutput exportOutput1 = new ExportOutput(true, dataType, simID, dataID1/* + variableSpecs.getVariableNames()[i]*/, fileDataContainerManager);
                                         fileDataContainerManager.append(exportOutput1.getFileDataContainerID(), fileDataContainerID_header);
                                         fileDataContainerManager.append(exportOutput1.getFileDataContainerID(),
-                                                getSlice(sliceHelper, mesh, allTimes, outputContext, user, dataServerImpl, vcdID, variableSpecs.getVariableNames()[j], i + beginTimeIndex, Coordinate.getNormalAxisPlaneName(geometrySpecs.getAxis()), sliceNumber, asciiSpecs.getSwitchRowsColumns(), fileDataContainerManager));
+                                                getSlice(sliceHelper, mesh, allTimes, outputContext, user, dataServerImpl, vcdID, variableSpecs.getVariableNames()[j], i + beginTimeIndex, geometrySpecs.getAxis().getNormalPlaneName(), sliceNumber, asciiSpecs.getSwitchRowsColumns(), fileDataContainerManager));
                                         output[j * TIME_COUNT + i] = exportOutput1;
 //								if(sliceHelper.hdf5GroupVarID != -1) {
 //									if(sliceHelper.isMembrane) {
@@ -978,7 +978,7 @@ public class ASCIIExporter {
                 }
                 Coordinate coord = curve.getMesh().getCoordinateFromMembraneIndex(pointIndexes[i]);
                 //		double value = variableValues[i+1][0];
-                fileDataContainerManager.append(fileDataContainerID, "," + coord.getX() + "," + coord.getY() + "," + coord.getZ());
+                fileDataContainerManager.append(fileDataContainerID, "," + coord.x() + "," + coord.y() + "," + coord.z());
                 if(i > 0){
                     Coordinate prevCoord = curve.getMesh().getCoordinateFromMembraneIndex(pointIndexes[i - 1]);
                     distance += coord.distanceTo(prevCoord);
@@ -1213,7 +1213,7 @@ public class ASCIIExporter {
         private final int[][][] loopIndexes = new int[][][]{{{1, 2}, {2, 1}}, {{0, 2}, {2, 0}}, {{0, 1}, {1, 0}}};
         public String slicePlaneText;
         public String strideText;
-        private int slicePlaneIndex;
+        private Coordinate.Axis slicePlaneIndex;
         private int sliceNumber;
         public int[] sizeXYZ;
         //	public double[] sliceData;
@@ -1232,15 +1232,12 @@ public class ASCIIExporter {
             this.sliceNumber = sliceNumber;
             this.switchRowsColumns = switchRowsColumns;
             this.sizeXYZ = new int[]{mesh.getSizeX(), mesh.getSizeY(), mesh.getSizeZ()};
-            this.slicePlaneIndex = Arrays.asList(Coordinate.PLANENAMES).indexOf(slicePlane);
-            if(slicePlaneIndex == -1){
-                throw new IllegalArgumentException("Unknown slicePlane '" + slicePlane + "'");
-            }
+            this.slicePlaneIndex = Coordinate.Axis.fromNormalPlaneName(slicePlane);
             this.mesh = mesh;
-            this.slicePlaneText = " in plane " + slicePlane + " at " + SLICE_PLANE_AXIS[slicePlaneIndex] + " = " + sliceNumber;
+            this.slicePlaneText = " in plane " + slicePlane + " at " + SLICE_PLANE_AXIS[slicePlaneIndex.ordinal()] + " = " + sliceNumber;
             this.strideText = slicePlane.substring(0, 1) + " in rows, " + slicePlane.substring(1, 2) + " in columns";
-            outerSizeIndex = loopIndexes[slicePlaneIndex][(switchRowsColumns ? 0 : 1)][0];
-            innerSizeIndex = loopIndexes[slicePlaneIndex][(switchRowsColumns ? 0 : 1)][1];
+            outerSizeIndex = loopIndexes[slicePlaneIndex.ordinal()][(switchRowsColumns ? 0 : 1)][0];
+            innerSizeIndex = loopIndexes[slicePlaneIndex.ordinal()][(switchRowsColumns ? 0 : 1)][1];
         }
 
         public void setHDF5GroupVar(WritableGroup hdf5Group, String varName){
@@ -1285,15 +1282,15 @@ public class ASCIIExporter {
                 int start = -1;
                 int numSlices = -1;
                 switch(slicePlaneIndex){
-                    case Coordinate.Z_AXIS:
+                    case Z:
                         start = (sliceNumber == -1 ? 0 : sliceNumber) * sizeXYZ[0] * sizeXYZ[1];
                         numSlices = (sliceNumber == -1 ? sizeXYZ[2] : 1);
                         break;
-                    case Coordinate.Y_AXIS:
+                    case Y:
                         start = (sliceNumber == -1 ? 0 : sliceNumber) * sizeXYZ[0];
                         numSlices = (sliceNumber == -1 ? sizeXYZ[1] : 1);
                         break;
-                    case Coordinate.X_AXIS:
+                    case X:
                         start = (sliceNumber == -1 ? 0 : sliceNumber);
                         numSlices = (sliceNumber == -1 ? sizeXYZ[0] : 1);
                         break;
@@ -1307,15 +1304,15 @@ public class ASCIIExporter {
                     for(int outer = 0; outer < sizeXYZ[outerSizeIndex]; outer++){
                         for(int inner = 0; inner < sizeXYZ[innerSizeIndex]; inner++){
                             switch(slicePlaneIndex){
-                                case Coordinate.Z_AXIS:
+                                case Z:
                                     int offsetSlice = sliceData.length * nSlices;
                                     sliceData[cnt] = (switchRowsColumns ? origData[start + offsetSlice + inner * sizeXYZ[0] + outer] : origData[start + offsetSlice + outer * sizeXYZ[0] + inner]);
                                     break;
-                                case Coordinate.Y_AXIS:
+                                case Y:
                                     offsetSlice = nSlices * sizeXYZ[0];
                                     sliceData[cnt] = (switchRowsColumns ? origData[start + offsetSlice + inner * sizeXYZ[0] * sizeXYZ[1] + outer] : origData[start + offsetSlice + outer * sizeXYZ[0] * sizeXYZ[1] + inner]);
                                     break;
-                                case Coordinate.X_AXIS:
+                                case X:
                                     offsetSlice = nSlices;
                                     sliceData[cnt] = (switchRowsColumns ? origData[start + offsetSlice + inner * sizeXYZ[0] * sizeXYZ[1] + outer * sizeXYZ[0]] : origData[start + offsetSlice + outer * sizeXYZ[0] * sizeXYZ[1] + inner * sizeXYZ[0]]);
                                     break;

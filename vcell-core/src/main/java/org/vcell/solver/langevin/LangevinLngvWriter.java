@@ -121,9 +121,9 @@ public class LangevinLngvWriter {
 		sb.append("\n");
 		sb.append("          ");
 		writeType(sb, component);	// ex: TYPE: Name "Type2" Radius 1.00000 D 1.000 Color LIME STATES "State0" "State1"
-		sb.append("          " + "x " + IOHelp.DF[5].format(component.getCoordinate().getX()) + " y " +
-				IOHelp.DF[5].format(component.getCoordinate().getY()) + " z " +
-				IOHelp.DF[5].format(component.getCoordinate().getZ()) + " ");		// ex: x 4.00000 y 4.00000 z 20.00000
+		sb.append("          " + "x " + IOHelp.DF[5].format(component.getCoordinate().x()) + " y " +
+				IOHelp.DF[5].format(component.getCoordinate().y()) + " z " +
+				IOHelp.DF[5].format(component.getCoordinate().z()) + " ");		// ex: x 4.00000 y 4.00000 z 20.00000
 		sb.append("\n");
 	}
 

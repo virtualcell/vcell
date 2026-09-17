@@ -32,7 +32,7 @@ public class CurveRenderer implements DrawPaneModel {
     protected Hashtable<Curve, CurveRendererCurveInfo> curveTable = new Hashtable<Curve, CurveRendererCurveInfo>();
     //
     protected transient java.beans.PropertyChangeSupport propertyChange;
-    private int fieldNormalAxis;
+    private Coordinate.Axis fieldNormalAxis;
     private boolean fieldSelectionValid = false;
     private cbit.vcell.geometry.CurveSelectionInfo fieldSelection = null;
     private cbit.vcell.geometry.CurveChecker fieldCurveChecker = null;
@@ -62,7 +62,7 @@ public class CurveRenderer implements DrawPaneModel {
     public CurveRenderer(DisplayAdapterService displayAdapterService){
         super();
         this.displayAdapterService = displayAdapterService;
-        setNormalAxis(Coordinate.Z_AXIS);
+        setNormalAxis(Coordinate.Axis.Z);
         setWorldDelta(new Coordinate(1, 1, 1));
         setWorldOrigin(new Coordinate(0, 0, 0));
         setDefaultLineWidthMultiplier(1.0);
@@ -674,13 +674,13 @@ public class CurveRenderer implements DrawPaneModel {
                 Math.max(3.0,
                         (cartesianMesh == null || getWorldDelta() == null
                                 ? getLineWidthMultiplier(curve) / 2
-                                : cartesianMesh.getExtent().getX() / cartesianMesh.getSizeX() / getWorldDelta().getX() / 2 * (cartesianMesh.isChomboMesh() ? Math.sqrt(2) : 1)
+                                : cartesianMesh.getExtent().getX() / cartesianMesh.getSizeX() / getWorldDelta().x() / 2 * (cartesianMesh.isChomboMesh() ? Math.sqrt(2) : 1)
                         )
                 );
 
     }
 
-    public int getNormalAxis(){
+    public Coordinate.Axis getNormalAxis(){
         return fieldNormalAxis;
     }
 
@@ -1251,7 +1251,7 @@ public class CurveRenderer implements DrawPaneModel {
      *
      * @param normalAxis The new value for the property.
      */
-    public void setNormalAxis(int normalAxis){
+    public void setNormalAxis(Coordinate.Axis normalAxis){
         fieldNormalAxis = normalAxis;
         updateOriginAndScaling2D();
     }
@@ -1339,9 +1339,9 @@ public class CurveRenderer implements DrawPaneModel {
         Coordinate oldValue = fieldWorldDelta;
         fieldWorldDelta = wd;
         //Calc smallest 1 Pixel distance of the 3 axes
-        //unitDistance[Coordinate.X_AXIS] = Math.sqrt((wd.getZ() * wd.getZ()) + (wd.getY() * wd.getY()));
-        //unitDistance[Coordinate.Y_AXIS] = Math.sqrt((wd.getX() * wd.getX()) + (wd.getZ() * wd.getZ()));
-        //unitDistance[Coordinate.Z_AXIS] = Math.sqrt((wd.getX() * wd.getX()) + (wd.getY() * wd.getY()));
+        //unitDistance[Coordinate.Axis.X] = Math.sqrt((wd.getZ() * wd.getZ()) + (wd.getY() * wd.getY()));
+        //unitDistance[Coordinate.Axis.Y] = Math.sqrt((wd.getX() * wd.getX()) + (wd.getZ() * wd.getZ()));
+        //unitDistance[Coordinate.Axis.Z] = Math.sqrt((wd.getX() * wd.getX()) + (wd.getY() * wd.getY()));
         //
         updateOriginAndScaling2D();
         firePropertyChange("worldDelta", oldValue, wd);
@@ -1368,8 +1368,8 @@ public class CurveRenderer implements DrawPaneModel {
             setScaling2D(null);
         } else {
             Coordinate wd = getWorldDelta();
-            double wd_x = Coordinate.convertAxisFromStandardXYZToNormal(wd.getX(), wd.getY(), wd.getZ(), Coordinate.X_AXIS, getNormalAxis());
-            double wd_y = Coordinate.convertAxisFromStandardXYZToNormal(wd.getX(), wd.getY(), wd.getZ(), Coordinate.Y_AXIS, getNormalAxis());
+            double wd_x = Coordinate.convertAxisFromStandardXYZToNormal(wd.x(), wd.y(), wd.z(), Coordinate.Axis.X, getNormalAxis());
+            double wd_y = Coordinate.convertAxisFromStandardXYZToNormal(wd.x(), wd.y(), wd.z(), Coordinate.Axis.Y, getNormalAxis());
             setScaling2D(new Point2D.Double(1 / wd_x, 1 / wd_y));
         }
         //

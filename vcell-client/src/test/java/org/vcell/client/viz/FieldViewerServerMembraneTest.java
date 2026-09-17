@@ -179,7 +179,7 @@ public class FieldViewerServerMembraneTest {
 			JsonObject s = probes.get(c).getAsJsonObject();
 			Assertions.assertEquals(c, s.get("cell").getAsInt(), "a face's centre probes that face");
 			Coordinate at = mesh2.getCoordinateFromMembraneIndex(s.get("membraneIndex").getAsInt());
-			Assertions.assertEquals(at.getX() + 2 * at.getY() + 15, v2[c], 1e-9, "face " + c);
+			Assertions.assertEquals(at.x() + 2 * at.y() + 15, v2[c], 1e-9, "face " + c);
 		}
 	}
 
@@ -248,17 +248,17 @@ public class FieldViewerServerMembraneTest {
 	 * to {@code sN} of the slice's (one) membrane curve, going down when {@code negative}; {@code through}, when
 	 * not -1, is a segment the picks pass on the way (to choose the long way round).
 	 */
-	private record Selection(String sim, String var, int axis, int slice, int s0, int sN, boolean negative, int through) {
+	private record Selection(String sim, String var, Coordinate.Axis axis, int slice, int s0, int sN, boolean negative, int through) {
 	}
 
 	private static final Selection[] SELECTIONS = {
-			new Selection(FieldViewerServerFvTest.SIM_2D, "xy_PM", Coordinate.Z_AXIS, 0, 4, 12, false, -1), // the short way
-			new Selection(FieldViewerServerFvTest.SIM_2D, "xy_PM", Coordinate.Z_AXIS, 0, 48, 4, false, -1), // through segment 0
-			new Selection(FieldViewerServerFvTest.SIM_2D, "xy_PM", Coordinate.Z_AXIS, 0, 4, 12, true, 28), // the long way
-			new Selection(FieldViewerServerFvTest.SIM_2D, "xy_PM", Coordinate.Z_AXIS, 0, 20, 20, false, -1), // one segment
-			new Selection(FieldViewerServerFvTest.SIM_MEMBRANE_3D, "r_PM", Coordinate.Z_AXIS, 10, 16, 28, false, -1),
-			new Selection(FieldViewerServerFvTest.SIM_MEMBRANE_3D, "r_PM", Coordinate.X_AXIS, 7, 40, 56, false, -1),
-			new Selection(FieldViewerServerFvTest.SIM_MEMBRANE_3D, "rf_PM", Coordinate.Y_AXIS, 12, 57, 3, false, -1),
+			new Selection(FieldViewerServerFvTest.SIM_2D, "xy_PM", Coordinate.Axis.Z, 0, 4, 12, false, -1), // the short way
+			new Selection(FieldViewerServerFvTest.SIM_2D, "xy_PM", Coordinate.Axis.Z, 0, 48, 4, false, -1), // through segment 0
+			new Selection(FieldViewerServerFvTest.SIM_2D, "xy_PM", Coordinate.Axis.Z, 0, 4, 12, true, 28), // the long way
+			new Selection(FieldViewerServerFvTest.SIM_2D, "xy_PM", Coordinate.Axis.Z, 0, 20, 20, false, -1), // one segment
+			new Selection(FieldViewerServerFvTest.SIM_MEMBRANE_3D, "r_PM", Coordinate.Axis.Z, 10, 16, 28, false, -1),
+			new Selection(FieldViewerServerFvTest.SIM_MEMBRANE_3D, "r_PM", Coordinate.Axis.X, 7, 40, 56, false, -1),
+			new Selection(FieldViewerServerFvTest.SIM_MEMBRANE_3D, "rf_PM", Coordinate.Axis.Y, 12, 57, 3, false, -1),
 	};
 
 	/** The slice's membrane curve, and its segments' membrane indices, as the desktop finds it. */
@@ -271,7 +271,7 @@ public class FieldViewerServerMembraneTest {
 	/** Segment {@code seg}'s midpoint, as the viewer draws it: where a user would pick it. */
 	private double[] drawnMidpoint(Selection s, SampledCurve curve, int seg) throws Exception {
 		Coordinate[] ab = curve.getControlPointsForSegment(seg);
-		double[] mid = { (ab[0].getX() + ab[1].getX()) / 2, (ab[0].getY() + ab[1].getY()) / 2, (ab[0].getZ() + ab[1].getZ()) / 2 };
+		double[] mid = { (ab[0].x() + ab[1].x()) / 2, (ab[0].y() + ab[1].y()) / 2, (ab[0].z() + ab[1].z()) / 2 };
 		return FvMembraneCurve.toDrawn(mesh(s.sim), mid, 0);
 	}
 
@@ -301,13 +301,13 @@ public class FieldViewerServerMembraneTest {
 					+ (s.through >= 0 ? ";" + point(drawnMidpoint(s, curve, s.through)) : "")
 					+ ";" + point(drawnMidpoint(s, curve, s.sN == s.s0 ? s.s0 : s.sN));
 			String domain = s.sim.equals(FieldViewerServerFvTest.SIM_2D) ? MEM_2D : MEM_3D;
-			String plane = s.sim.equals(FieldViewerServerFvTest.SIM_2D) ? "" : "&plane=" + "xyz".charAt(s.axis);
+			String plane = s.sim.equals(FieldViewerServerFvTest.SIM_2D) ? "" : "&plane=" + "xyz".charAt(s.axis.ordinal());
 			if (s.s0 == s.sN) { // two picks on one segment: a little apart along it
 				double[] a = drawnMidpoint(s, curve, s.s0);
 				Coordinate[] ab = curve.getControlPointsForSegment(s.s0);
 				double[] b = a.clone();
-				b[0] += 0.1 * (ab[1].getX() - ab[0].getX());
-				b[1] += 0.1 * (ab[1].getY() - ab[0].getY());
+				b[0] += 0.1 * (ab[1].x() - ab[0].x());
+				b[1] += 0.1 * (ab[1].y() - ab[0].y());
 				path = point(a) + ";" + point(b);
 			}
 			JsonObject k = get(s.sim, "/kymograph", "&domain=" + domain + "&var=" + s.var + plane + "&path=" + enc(path));
@@ -319,7 +319,7 @@ public class FieldViewerServerMembraneTest {
 			double[] points = doubles(samples.getAsJsonArray("points"));
 			Coordinate[] want = desktop.getSampleCoordinates();
 			for (int i = 0; i < want.length; i++) {
-				Assertions.assertArrayEquals(new double[] { want[i].getX(), want[i].getY(), want[i].getZ() },
+				Assertions.assertArrayEquals(new double[] { want[i].x(), want[i].y(), want[i].z() },
 						new double[] { points[3 * i], points[3 * i + 1], points[3 * i + 2] }, 0.0, label + " point " + i);
 			}
 			JsonArray rows = k.getAsJsonArray("values");
@@ -333,7 +333,7 @@ public class FieldViewerServerMembraneTest {
 			Assertions.assertEquals(desktop.getWorldCoordinateTotalLength(), k.get("pathLength").getAsDouble(), 0.0);
 			if (!plane.isEmpty()) {
 				JsonObject slice = k.getAsJsonObject("slice");
-				Assertions.assertEquals(String.valueOf("xyz".charAt(s.axis)), slice.get("axis").getAsString());
+				Assertions.assertEquals(String.valueOf("xyz".charAt(s.axis.ordinal())), slice.get("axis").getAsString());
 				Assertions.assertEquals(s.slice, slice.get("index").getAsInt(), label);
 			}
 			// every sample is on a served face of its element: its cell, and its drawn point on that face

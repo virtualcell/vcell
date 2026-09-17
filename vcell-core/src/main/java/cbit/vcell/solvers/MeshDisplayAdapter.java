@@ -9,10 +9,7 @@
  */
 
 package cbit.vcell.solvers;
-import java.util.ArrayList;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Vector;
+import java.util.*;
 
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.Coordinate;
@@ -41,7 +38,7 @@ public class MeshDisplayAdapter {
 		MembraneElement connectedMembraneElement;
 		boolean bPrepend;
 		boolean[] bMembraneElementChecked;
-		int normalAxis;
+		Coordinate.Axis normalAxis;
 		int slice;
 		Vector<Integer> resolvedMembraneIndexes;
 
@@ -52,7 +49,7 @@ public class MeshDisplayAdapter {
 			MembraneElement connectedMembraneElement, 
 			boolean bPrepend, 
 			boolean[] bMembraneElementChecked, 
-			int normalAxis, 
+			Coordinate.Axis normalAxis,
 			int slice, 
 			Vector<Integer> resolvedMembraneIndexes) {
 				this.firstInCurve = firstInCurve;
@@ -104,13 +101,6 @@ public MeshDisplayAdapter (cbit.vcell.solvers.CartesianMesh argCartesianMesh) {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (8/31/00 12:07:40 PM)
- * @return boolean
- * @param from cbit.vcell.solvers.MembraneElement
- * @param to cbit.vcell.solvers.MembraneElement
- */
 private void addPointToCurve(SampledCurve curve, boolean bPrepend, Line toProjection, int order) {
 	if (bPrepend) {
 		if ((order & ORDER_P0) != 0) {
@@ -135,7 +125,7 @@ private void addPointToCurve(SampledCurve curve, boolean bPrepend, Line toProjec
  * @param from cbit.vcell.solvers.MembraneElement
  * @param to cbit.vcell.solvers.MembraneElement
  */
-private void addSegmentToCurve(SampledCurve curve, MembraneElement from, MembraneElement to, int normalAxis, boolean bPrepend,Vector<Integer> resolvedMembraneIndexes) {
+private void addSegmentToCurve(SampledCurve curve, MembraneElement from, MembraneElement to, Coordinate.Axis normalAxis, boolean bPrepend,Vector<Integer> resolvedMembraneIndexes) {
 	Line toProjection = getProjectedSegment(to, normalAxis);
 	if (from == null) {
 		addPointToCurve(curve, bPrepend, toProjection, ORDER_P0);
@@ -148,9 +138,9 @@ private void addSegmentToCurve(SampledCurve curve, MembraneElement from, Membran
 	// add membrane index for this segment
 	//
 	if (bPrepend && resolvedMembraneIndexes.size()>0) {
-		resolvedMembraneIndexes.add(0, new Integer(to.getMembraneIndex()));
+		resolvedMembraneIndexes.add(0, to.getMembraneIndex());
 	} else {
-		resolvedMembraneIndexes.add(new Integer(to.getMembraneIndex()));
+		resolvedMembraneIndexes.add(to.getMembraneIndex());
 	}
 }
 
@@ -177,7 +167,7 @@ private ConstructCurveHelper[] constructCurve(ConstructCurveHelper cch){
 			//
 			// add last membrane index for this segment of a closed curve (note: don't add coordinates, they are already there)
 			//
-			cch.resolvedMembraneIndexes.add(new Integer(cch.currentMembraneElement.getMembraneIndex()));
+			cch.resolvedMembraneIndexes.add(cch.currentMembraneElement.getMembraneIndex());
 		} else {
 			//otherwise we must be at an edge
 			addSegmentToCurve(cch.curve, cch.connectedMembraneElement, cch.currentMembraneElement, cch.normalAxis, cch.bPrepend,cch.resolvedMembraneIndexes);
@@ -220,7 +210,7 @@ private ConstructCurveHelper[] constructCurve(ConstructCurveHelper cch){
  * Creation date: (9/2/00 4:44:31 PM)
  * @return boolean
  */
-private int determineOrder(MembraneElement from, MembraneElement to, int normalAxis) {
+private int determineOrder(MembraneElement from, MembraneElement to, Coordinate.Axis normalAxis) {
 
 	CoordinateIndex ciFrom = null;
 	CoordinateIndex ciTo = null;
@@ -234,14 +224,14 @@ private int determineOrder(MembraneElement from, MembraneElement to, int normalA
 		ciFrom = mesh.getCoordinateIndexFromVolumeIndex(from.getInsideVolumeIndex());
 		ciTo = mesh.getCoordinateIndexFromVolumeIndex(to.getInsideVolumeIndex());
 	}
-	int[] deltaXYZ = new int[3];
-	deltaXYZ[Coordinate.X_AXIS] = ciTo.x - ciFrom.x;
-	deltaXYZ[Coordinate.Y_AXIS] = ciTo.y - ciFrom.y;
-	deltaXYZ[Coordinate.Z_AXIS] = ciTo.z - ciFrom.z;
-	int toMembranePlane = getParalellAxis(to, normalAxis);
-	boolean bP0 = (deltaXYZ[toMembranePlane] < 0);
-	int fromMembranePlane = getParalellAxis(from, normalAxis);
-	boolean bPrepend = (deltaXYZ[fromMembranePlane] < 0);
+	Map<Coordinate.Axis, Integer> deltaXYZ = new EnumMap<>(Coordinate.Axis.class);
+	deltaXYZ.put(Coordinate.Axis.X, ciTo.x - ciFrom.x);
+	deltaXYZ.put(Coordinate.Axis.Y, ciTo.y - ciFrom.y);
+	deltaXYZ.put(Coordinate.Axis.Z, ciTo.z - ciFrom.z);
+	Coordinate.Axis toMembranePlane = getParalellAxis(to, normalAxis);
+	boolean bP0 = (deltaXYZ.get(toMembranePlane) < 0);
+	Coordinate.Axis fromMembranePlane = getParalellAxis(from, normalAxis);
+	boolean bPrepend = (deltaXYZ.get(fromMembranePlane) < 0);
 	return (0x00 | (bPrepend ? ORDER_PREPEND : 0) | (bP0 ? ORDER_P0 : 0));
 }
 
@@ -251,7 +241,7 @@ private int determineOrder(MembraneElement from, MembraneElement to, int normalA
  * Creation date: (8/30/00 6:16:35 PM)
  * @return cbit.vcell.geometry.SampledCurve
  */
-private ParamHolder doCheck(MembraneElement currentMembraneElement,int normalAxis,int slice,MembraneElement firstInCurve,cbit.vcell.solvers.CartesianMesh mesh,boolean[] bMembraneElementChecked) {
+private ParamHolder doCheck(MembraneElement currentMembraneElement,Coordinate.Axis normalAxis,int slice,MembraneElement firstInCurve,cbit.vcell.solvers.CartesianMesh mesh,boolean[] bMembraneElementChecked) {
 
 	ParamHolder paramHolder = new ParamHolder();
 	bMembraneElementChecked[currentMembraneElement.getMembraneIndex()] = true;
@@ -375,7 +365,7 @@ public MeshRegionSurfaces generateMeshRegionSurfaces(ClientTaskStatusSupport cli
 	return new MeshRegionSurfaces(surfaceCollection,surface_polygon_MembraneIndexes);	
 }
 
-private Hashtable<SampledCurve, int[]> constructChomboCurves(int normalAxis, int slice)
+private Hashtable<SampledCurve, int[]> constructChomboCurves(Coordinate.Axis normalAxis, int slice)
 {
 	Hashtable<SampledCurve, int[]> curvesAndValues = null;
 	if (mesh.isChomboMesh() && mesh.getMembraneElements()!=null)
@@ -472,7 +462,7 @@ private Hashtable<SampledCurve, int[]> constructChomboCurves(int normalAxis, int
  * @return cbit.vcell.geometry.SampledCurve[]
  * @param normalAxis int
  */
-public Hashtable<SampledCurve, int[]> getCurvesAndMembraneIndexes(int normalAxis, int slice) {
+public Hashtable<SampledCurve, int[]> getCurvesAndMembraneIndexes(Coordinate.Axis normalAxis, int slice) {
 	Hashtable<SampledCurve, int[]> curvesAndValues = null;
 	if (mesh.isChomboMesh())
 	{
@@ -553,8 +543,6 @@ public Hashtable<SampledCurve, int[]> getCurvesAndMembraneIndexes(int normalAxis
  * Insert the method's description here.
  * Creation date: (11/9/2000 4:36:26 PM)
  * @return java.util.Hashtable
- * @param normalAxis int
- * @param slice int
  * @param countourValues double[]
  */
 public Hashtable<SampledCurve, Vector<Double>> getCurvesFromContours(double[] countourValues) {
@@ -575,7 +563,7 @@ public Hashtable<SampledCurve, Vector<Double>> getCurvesFromContours(double[] co
 		}
 		newCurve.appendControlPoint(contourElements[c].getBeginCoordinate());
 		if(countourValues != null){
-			resolvedContourValues.addElement(new Double(countourValues[c]));
+			resolvedContourValues.addElement(countourValues[c]);
 		}
 		if (contourElements[c].isEnd()) {
 			newCurve.appendControlPoint(contourElements[c].getEndCoordinate());
@@ -637,18 +625,17 @@ public cbit.vcell.solvers.CartesianMesh getMesh() {
  * Insert the method's description here.
  * Creation date: (8/29/00 3:47:20 PM)
  * @return int
- * @param offset int
  */
-private int getNormalAxis(MembraneElement membraneElement) {
+private Coordinate.Axis getNormalAxis(MembraneElement membraneElement) {
 	int offset = Math.abs(membraneElement.getInsideVolumeIndex() - membraneElement.getOutsideVolumeIndex());
 	if (offset == 1) {
-		return Coordinate.X_AXIS;
+		return Coordinate.Axis.X;
 	}
 	if (offset == mesh.getSizeX()) {
-		return Coordinate.Y_AXIS;
+		return Coordinate.Axis.Y;
 	}
 	if (offset == mesh.getSizeX()*mesh.getSizeY()) {
-		return Coordinate.Z_AXIS;
+		return Coordinate.Axis.Z;
 	}
 	throw new RuntimeException("Unknown Plane for mesh Dimensions");
 }
@@ -658,29 +645,28 @@ private int getNormalAxis(MembraneElement membraneElement) {
  * Insert the method's description here.
  * Creation date: (8/29/00 3:47:20 PM)
  * @return int
- * @param offset int
  */
-private int getParalellAxis(MembraneElement membraneElement,int viewNormalAxis) {
-	int membraneNormalAxis = getNormalAxis(membraneElement);
-	if (membraneNormalAxis == Coordinate.X_AXIS) {
-		if(viewNormalAxis == Coordinate.Y_AXIS){
-			return Coordinate.Z_AXIS;
-		}else if(viewNormalAxis == Coordinate.Z_AXIS){
-			return Coordinate.Y_AXIS;
+private Coordinate.Axis getParalellAxis(MembraneElement membraneElement, Coordinate.Axis viewNormalAxis) {
+	Coordinate.Axis membraneNormalAxis = getNormalAxis(membraneElement);
+	if (Coordinate.Axis.X.equals(membraneNormalAxis)) {
+		if(Coordinate.Axis.Y.equals(viewNormalAxis)){
+			return Coordinate.Axis.Z;
+		}else if(Coordinate.Axis.Z.equals(viewNormalAxis)){
+			return Coordinate.Axis.Y;
 		}
 	}
-	if (membraneNormalAxis == Coordinate.Y_AXIS) {
-		if(viewNormalAxis == Coordinate.X_AXIS){
-			return Coordinate.Z_AXIS;
-		}else if(viewNormalAxis == Coordinate.Z_AXIS){
-			return Coordinate.X_AXIS;
+	if (Coordinate.Axis.Y.equals(membraneNormalAxis)) {
+		if(Coordinate.Axis.X.equals(viewNormalAxis)){
+			return Coordinate.Axis.Z;
+		}else if(Coordinate.Axis.Z.equals(viewNormalAxis)){
+			return Coordinate.Axis.X;
 		}
 	}
-	if (membraneNormalAxis == Coordinate.Z_AXIS) {
-		if(viewNormalAxis == Coordinate.Y_AXIS){
-			return Coordinate.X_AXIS;
-		}else if(viewNormalAxis == Coordinate.X_AXIS){
-			return Coordinate.Y_AXIS;
+	if (Coordinate.Axis.Z.equals(membraneNormalAxis)) {
+		if(Coordinate.Axis.Y.equals(viewNormalAxis)){
+			return Coordinate.Axis.X;
+		}else if(Coordinate.Axis.X.equals(viewNormalAxis)){
+			return Coordinate.Axis.Y;
 		}
 	}
 	throw new IllegalArgumentException("Unknown Axis for viewAxis="+viewNormalAxis+" and membraneNormalAxis="+membraneNormalAxis);
@@ -692,22 +678,22 @@ private int getParalellAxis(MembraneElement membraneElement,int viewNormalAxis) 
  * Creation date: (8/30/00 6:25:14 PM)
  * @return cbit.vcell.geometry.Line
  */
-private Line getProjectedSegment(MembraneElement membraneElement,int normalAxis) {
+private Line getProjectedSegment(MembraneElement membraneElement, Coordinate.Axis normalAxis) {
 	//Find midpoint between the 2 volume elements for this MembraneElement
 	Coordinate c0 = getMesh().getCoordinateFromMembraneIndex(membraneElement.getMembraneIndex());
-	double x0 = c0.getX(), y0 = c0.getY(), z0 = c0.getZ();
-	double x1 = c0.getX(), y1 = c0.getY(), z1 = c0.getZ();
+	double x0 = c0.x(), y0 = c0.y(), z0 = c0.z();
+	double x1 = c0.x(), y1 = c0.y(), z1 = c0.z();
 	//Stretch endpoints for the line segment based on membranePlane and size of volumeElement
-	int membranePlane = getParalellAxis(membraneElement,normalAxis);
-	if (membranePlane == Coordinate.Z_AXIS) {
+	Coordinate.Axis membranePlane = getParalellAxis(membraneElement,normalAxis);
+	if (membranePlane == Coordinate.Axis.Z) {
 		double elementZSize = (1.0 / (double) (mesh.getSizeZ()-1)) * mesh.getExtent().getZ();
 		z0 -= (elementZSize / 2.0);
 		z1 += (elementZSize / 2.0);
-	} else if (membranePlane == Coordinate.Y_AXIS) {
+	} else if (membranePlane == Coordinate.Axis.Y) {
 		double elementYSize = (1.0 / (double) (mesh.getSizeY()-1)) * mesh.getExtent().getY();
 		y0 -= (elementYSize / 2.0);
 		y1 += (elementYSize / 2.0);
-	} else if (membranePlane == Coordinate.X_AXIS) {
+	} else if (membranePlane == Coordinate.Axis.X) {
 		double elementXSize = (1.0 / (double) (mesh.getSizeX()-1)) * mesh.getExtent().getX();
 		x0 -= (elementXSize / 2.0);
 		x1 += (elementXSize / 2.0);
@@ -729,21 +715,21 @@ private Line getProjectedSegment(MembraneElement membraneElement,int normalAxis)
  * Creation date: (8/30/00 6:25:14 PM)
  * @return cbit.vcell.geometry.Line
  */
-private boolean isMembraneElementVisible(MembraneElement membraneElement, int normalAxis, int slice) {
-	int membranePlane = getNormalAxis(membraneElement);
+private boolean isMembraneElementVisible(MembraneElement membraneElement, Coordinate.Axis normalAxis, int slice) {
+	Coordinate.Axis membranePlane = getNormalAxis(membraneElement);
 	if (membranePlane == normalAxis) {
 		//MembraneElement perpendicular to our view
 		return false;
 	}
 	CoordinateIndex insideCI = mesh.getCoordinateIndexFromVolumeIndex(membraneElement.getInsideVolumeIndex());
 	//MembraneElement not visible in slice
-	if (normalAxis == Coordinate.Z_AXIS && insideCI.z != slice) {
+	if (Coordinate.Axis.Z.equals(normalAxis) && insideCI.z != slice) {
 		return false;
 	} else
-		if (normalAxis == Coordinate.Y_AXIS && insideCI.y != slice) {
+		if (Coordinate.Axis.Y.equals(normalAxis) && insideCI.y != slice) {
 			return false;
 		} else
-			if (normalAxis == Coordinate.X_AXIS && insideCI.x != slice) {
+			if (Coordinate.Axis.X.equals(normalAxis) && insideCI.x != slice) {
 				return false;
 			}
 	return true;

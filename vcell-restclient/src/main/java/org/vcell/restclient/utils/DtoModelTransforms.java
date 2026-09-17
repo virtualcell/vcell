@@ -32,8 +32,6 @@ import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionFlag;
 import org.vcell.util.document.*;
 
-import java.io.IOException;
-import java.nio.file.Files;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -403,9 +401,9 @@ public class DtoModelTransforms {
     // Helper function for coordinate conversion
     private static org.vcell.restclient.model.Coordinate toRestCoordinate(org.vcell.util.Coordinate coreCoord) {
         org.vcell.restclient.model.Coordinate dto = new org.vcell.restclient.model.Coordinate();
-        dto.setX(coreCoord.getX());
-        dto.setY(coreCoord.getY());
-        dto.setZ(coreCoord.getZ());
+        dto.setX(coreCoord.x());
+        dto.setY(coreCoord.y());
+        dto.setZ(coreCoord.z());
         return dto;
     }
 
@@ -414,9 +412,9 @@ public class DtoModelTransforms {
         if (curve.getControlPointsVector() != null){
             for (org.vcell.util.Coordinate cp : curve.getControlPointsVector()) {
                 restControlPoints.add(new org.vcell.restclient.model.Coordinate()
-                        .x(cp.getX())
-                        .y(cp.getY())
-                        .z(cp.getZ()));
+                        .x(cp.x())
+                        .y(cp.y())
+                        .z(cp.z()));
             }
         }
         if (curve instanceof cbit.vcell.geometry.Spline spline) {

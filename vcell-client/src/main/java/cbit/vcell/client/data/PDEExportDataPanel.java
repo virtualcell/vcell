@@ -31,6 +31,7 @@ import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.simdata.*;
 import cbit.vcell.solver.*;
 import cbit.vcell.solvers.CartesianMesh;
+import org.vcell.util.Coordinate;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.LocalVCDataIdentifier;
 import org.vcell.util.document.User;
@@ -80,7 +81,7 @@ public class PDEExportDataPanel extends JPanel {
 	private DefaultListModelCivilized ivjDefaultListModelCivilizedVariables = null;
 //	private cbit.vcell.simdata.gui.SpatialSelection fieldSelectedRegion = null;
 	private int fieldSlice = -1;
-	private int fieldNormalAxis = -1;
+	private Coordinate.Axis fieldNormalAxis = null;
 	private PropertyChangeButtonGroup ivjButtonGroupCivilized1 = null;
 	private JPanel ivjJPanelRegion = null;
 	private JPanel ivjJPanelTime = null;
@@ -1585,7 +1586,7 @@ private javax.swing.JTextField getJTextField2() {
  * @return The normalAxis property value.
  * @see #setNormalAxis
  */
-public int getNormalAxis() {
+public Coordinate.Axis getNormalAxis() {
 	return fieldNormalAxis;
 }
 
@@ -1856,8 +1857,8 @@ public void setDisplayAdapterService(DisplayAdapterService displayAdapterService
  * @param normalAxis The new value for the property.
  * @see #getNormalAxis
  */
-public void setNormalAxis(int normalAxis) {
-	int oldValue = fieldNormalAxis;
+public void setNormalAxis(Coordinate.Axis normalAxis) {
+	Coordinate.Axis oldValue = fieldNormalAxis;
 	fieldNormalAxis = normalAxis;
 	firePropertyChange("normalAxis", oldValue, normalAxis);
 }
@@ -2419,18 +2420,19 @@ private void updateInterface() {
 /**
  * Comment
  */
-private void updateSlice(int slice, int normalAxis) {
+private void updateSlice(int slice, Coordinate.Axis normalAxis) {
 	String axis = "";
+	// Consider: Look at Coordinate.Axis::normalAxis.getNormalPlane()
 	switch (normalAxis) {
-		case 0: {
+		case X: {
 			axis = "YZ";
 			break;
 		}
-		case 1: {
+		case Y: {
 			axis = "ZX";
 			break;
 		}
-		case 2: {
+		case Z: {
 			axis = "XY";
 			break;
 		}

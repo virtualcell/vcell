@@ -69,8 +69,8 @@ public class CartesianMeshChomboTest {
 			if (centroid == null) {
 				break;
 			}
-			double radius = Math.sqrt(Math.pow(centroid.getX() - 5, 2) + Math.pow(centroid.getY() - 5, 2)
-					+ Math.pow(centroid.getZ() - 5, 2));
+			double radius = Math.sqrt(Math.pow(centroid.x() - 5, 2) + Math.pow(centroid.y() - 5, 2)
+					+ Math.pow(centroid.z() - 5, 2));
 			Assertions.assertEquals(4.0, radius, 0.2,
 					"membrane element " + i + " should sit on the sphere at " + centroid);
 			membraneCount++;

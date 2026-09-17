@@ -4,16 +4,13 @@ import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.mapping.*;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.model.Structure;
 import cbit.vcell.parser.Expression;
 import org.vcell.model.rbm.*;
 import org.vcell.util.Coordinate;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.GuiUtils;
 import org.vcell.util.gui.ScrollTable;
-import org.vcell.util.springsalad.NamedColor;
 
-import javax.swing.*;
 import java.beans.PropertyChangeEvent;
 import java.util.*;
 
@@ -271,8 +268,8 @@ public class LinkSpecsTableModel extends VCellSortTableModel<MolecularInternalLi
                 Map<LinkNode, SiteAttributesSpec> merged = getSpeciesContextSpec().getAllSiteAttributes();
                 SiteAttributesSpec sas1 = merged.get(node1);
                 SiteAttributesSpec sas2 = merged.get(node2);
-                Double z1 = sas1.getCoordinate().getZ();
-                Double z2 = sas2.getCoordinate().getZ();
+                Double z1 = sas1.getCoordinate().z();
+                Double z2 = sas2.getCoordinate().z();
                 return z1.compareTo(z2);
             }
         });

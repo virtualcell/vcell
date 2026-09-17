@@ -75,9 +75,6 @@ protected abstract void addOffsetPrivate(Coordinate offset);
  * Insert the method's description here.
  * Creation date: (10/10/00 2:50:47 PM)
  * @return double
- * @param vertex cbit.vcell.geometry.Coordinate
- * @param v1 cbit.vcell.geometry.Coordinate
- * @param v2 cbit.vcell.geometry.Coordinate
  */
 public static final double calculateUOfV1AlongV2(double vertexX, double vertexY, double vertexZ, double v1X, double v1Y, double v1Z, double v2X, double v2Y, double v2Z) {
 	//Calulate U (v2 Length normalized) of vertex->v1 Projected Along vertex->v2
@@ -100,7 +97,7 @@ public static final double calculateUOfV1AlongV2(double vertexX, double vertexY,
  * @param v2 cbit.vcell.geometry.Coordinate
  */
 public static final double calculateUOfV1AlongV2(Coordinate vertex, Coordinate v1, Coordinate v2) {
-	return calculateUOfV1AlongV2(vertex.getX(), vertex.getY(), vertex.getZ(), v1.getX(), v1.getY(), v1.getZ(), v2.getX(), v2.getY(), v2.getZ());
+	return calculateUOfV1AlongV2(vertex.x(), vertex.y(), vertex.z(), v1.x(), v1.y(), v1.z(), v2.x(), v2.y(), v2.z());
 	/*
 	//Calulate U (v2 Length normalized) of vertex->v1 Projected Along vertex->v2
 	double v2XLength = (v2.getX() - vertex.getX());
@@ -170,15 +167,15 @@ protected abstract SampledCurve createSampledCurve(int numSamples);
  */
 public static final double getAngle(Coordinate vertex, Coordinate p1, Coordinate p2) {
 	//Vector vertex->p1
-	Coordinate v1 = new Coordinate(p1.getX()-vertex.getX(),p1.getY()-vertex.getY(),p1.getZ()-vertex.getZ());
+	Coordinate v1 = new Coordinate(p1.x()-vertex.x(),p1.y()-vertex.y(),p1.z()-vertex.z());
 	//Length v1
-	double v1Length = Math.sqrt(v1.getX()*v1.getX()+v1.getY()*v1.getY()+v1.getZ()*v1.getZ());
+	double v1Length = Math.sqrt(v1.x()*v1.x()+v1.y()*v1.y()+v1.z()*v1.z());
 	//Vector vertex->p2
-	Coordinate v2 = new Coordinate(p2.getX()-vertex.getX(),p2.getY()-vertex.getY(),p2.getZ()-vertex.getZ());
+	Coordinate v2 = new Coordinate(p2.x()-vertex.x(),p2.y()-vertex.y(),p2.z()-vertex.z());
 	//Length v2
-	double v2Length = Math.sqrt(v2.getX()*v2.getX()+v2.getY()*v2.getY()+v2.getZ()*v2.getZ());
+	double v2Length = Math.sqrt(v2.x()*v2.x()+v2.y()*v2.y()+v2.z()*v2.z());
 	//Dot Product v1 and v2
-	double dotP = 	(v1.getX()*v2.getX())+(v1.getY()*v2.getY())+(v1.getZ()*v2.getZ());
+	double dotP = 	(v1.x()*v2.x())+(v1.y()*v2.y())+(v1.z()*v2.z());
 	// positive Angle 0->PI
 	double angle = Math.acos(dotP/(v1Length*v2Length));
 	//Angle in degrees
@@ -218,9 +215,9 @@ public double getDistanceTo(Coordinate coord) {
  */
 public static final double getDistanceToLine(Coordinate b, Coordinate e, Coordinate c) {
 	//
-	double bX = b.getX(), bY = b.getY(), bZ = b.getZ();
-	double cX = c.getX(), cY = c.getY(), cZ = c.getZ();
-	double eX = e.getX(), eY = e.getY(), eZ = e.getZ();
+	double bX = b.x(), bY = b.y(), bZ = b.z();
+	double cX = c.x(), cY = c.y(), cZ = c.z();
+	double eX = e.x(), eY = e.y(), eZ = e.z();
 	//
 	double u = -1;
 	if (!b.compareEqual(c)) {
@@ -249,7 +246,6 @@ public Coordinate getEndingCoordinate() {
  * Insert the method's description here.
  * Creation date: (10/9/00 5:56:46 PM)
  * @return int
- * @param u double
  */
 public double getNonLengthNormalizedBeginU(int segmentIndex) {
     double u = (double)segmentIndex/(double)getSegmentCount();
@@ -259,7 +255,6 @@ public double getNonLengthNormalizedBeginU(int segmentIndex) {
  * Insert the method's description here.
  * Creation date: (10/9/00 5:56:46 PM)
  * @return int
- * @param u double
  */
 public double getNonLengthNormalizedEndU(int segmentIndex) {
     double u = getNonLengthNormalizedBeginU(segmentIndex+1);
@@ -358,7 +353,6 @@ public abstract double getZ(double u);
 /**
  * Insert the method's description here.
  * Creation date: (7/31/00 2:44:13 PM)
- * @param bClosed boolean
  */
 public boolean isClosed() {
     return this.bClosed;
@@ -367,8 +361,6 @@ public boolean isClosed() {
  * Insert the method's description here.
  * Creation date: (8/7/00 10:43:56 AM)
  * @return boolean
- * @param c0 cbit.vcell.geometry.Coordinate
- * @param c1 cbit.vcell.geometry.Coordinate
  * @param delta cbit.vcell.geometry.Coordinate
  */
 public boolean isInside(org.vcell.util.Origin origin, org.vcell.util.Extent extent, Coordinate delta) {
@@ -410,7 +402,6 @@ protected void sampledCurveDirty() {
 /**
  * Insert the method's description here.
  * Creation date: (7/31/00 2:44:13 PM)
- * @param bClosed boolean
  */
 public void setClosed(boolean arg_bClosed) {
     if (this.bClosed != arg_bClosed) {
@@ -421,7 +412,6 @@ public void setClosed(boolean arg_bClosed) {
 /**
  * Insert the method's description here.
  * Creation date: (10/9/00 5:31:07 PM)
- * @param numSamplePoints int
  */
 public void setDefaultSampling(){
 	setNumSamplePoints(DEFAULT_NUM_SAMPLES_FLAG);

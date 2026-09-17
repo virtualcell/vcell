@@ -202,9 +202,9 @@ public String getSQLValueList(KeyValue Key, KeyValue simContextKey, SpeciesConte
 			sb.append(sas.getLocation().getName() + ",");
 			sb.append(sas.getRadius() + ",");
 			sb.append(sas.getDiffusionRate() +",");
-			sb.append(sas.getCoordinate().getX() + ",");
-			sb.append(sas.getCoordinate().getY() + ",");
-			sb.append(sas.getCoordinate().getZ() + ",");
+			sb.append(sas.getCoordinate().x() + ",");
+			sb.append(sas.getCoordinate().y() + ",");
+			sb.append(sas.getCoordinate().z() + ",");
 			sb.append(sas.getColor().getName());
 			sb.append(";");
 		}
@@ -218,9 +218,9 @@ public String getSQLValueList(KeyValue Key, KeyValue simContextKey, SpeciesConte
 			sb.append(sas.getLocation().getName() + ",");
 			sb.append(sas.getRadius() + ",");
 			sb.append(sas.getDiffusionRate() +",");
-			sb.append(sas.getCoordinate().getX() + ",");
-			sb.append(sas.getCoordinate().getY() + ",");
-			sb.append(sas.getCoordinate().getZ() + ",");
+			sb.append(sas.getCoordinate().x() + ",");
+			sb.append(sas.getCoordinate().y() + ",");
+			sb.append(sas.getCoordinate().z() + ",");
 			sb.append(sas.getColor().getName());
 			sb.append(";");
 		}
