@@ -365,9 +365,9 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 		String result = "";
 		for(int i=0;i<dim;i+= 1){
 			double xyz = -1;
-			if(i==0){xyz = coord.getX();}
-			else if(i==1){xyz = coord.getY();}
-			else if(i==2){xyz = coord.getZ();}
+			if(i==0){xyz = coord.x();}
+			else if(i==1){xyz = coord.y();}
+			else if(i==2){xyz = coord.z();}
 			
 			result+= (i!=0?",":"")+(double)((int)(xyz * Math.pow(10,MAX_CHARS)))/Math.pow(10,MAX_CHARS);//NumberUtils.formatNumber(xyz,MAX_CHARS);
 		}

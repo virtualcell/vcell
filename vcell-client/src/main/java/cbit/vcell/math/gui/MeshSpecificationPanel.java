@@ -934,9 +934,9 @@ private void updateTotalSizeAndSpatialStep() {
 		totalSizeTextField.setText(totalSizeText + (totalSizeText.length() == 0 ? "" : " = ") + totalSizeValue);
 		
 		Coordinate h = computeDxDyDz(numX, numY, numZ);
-		ivjDxTextField.setText(h.getX() + "");
-		ivjDyTextField.setText(h.getY() + "");
-		ivjDzTextField.setText(h.getZ() + "");
+		ivjDxTextField.setText(h.x() + "");
+		ivjDyTextField.setText(h.y() + "");
+		ivjDzTextField.setText(h.z() + "");
 	} catch (NumberFormatException ex) {
 		clearTotalSizeAndSpatialStep();
 	}

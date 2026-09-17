@@ -111,9 +111,9 @@ public String getSQLValueList(InsertHashtable hash, KeyValue Key, KeyValue simCo
 	buffer.append("'"+stimulus.getName()+"',");
 	buffer.append(stimulusType+",");
 	buffer.append("'"+TokenMangler.getSQLEscapedString(exp.infix())+"',");
-	buffer.append(stimulus.getElectrode().getPosition().getX()+",");
-	buffer.append(stimulus.getElectrode().getPosition().getY()+",");
-	buffer.append(stimulus.getElectrode().getPosition().getZ()+",");
+	buffer.append(stimulus.getElectrode().getPosition().x()+",");
+	buffer.append(stimulus.getElectrode().getPosition().y()+",");
+	buffer.append(stimulus.getElectrode().getPosition().z()+",");
 	buffer.append("'"+TokenMangler.getSQLEscapedString(esParameterWriter.getBuffer().toString())+"'");
 	buffer.append(")");
 
@@ -147,9 +147,9 @@ public String getSQLValueList(InsertHashtable hash, KeyValue Key, KeyValue simCo
 	buffer.append("null,");
 	buffer.append(stimulusType+",");
 	buffer.append("null,"); // expression is null
-	buffer.append(electrode.getPosition().getX()+",");
-	buffer.append(electrode.getPosition().getY()+",");
-	buffer.append(electrode.getPosition().getZ()+",");
+	buffer.append(electrode.getPosition().x()+",");
+	buffer.append(electrode.getPosition().y()+",");
+	buffer.append(electrode.getPosition().z()+",");
 	buffer.append("NULL");//params is null
 	buffer.append(")");
 

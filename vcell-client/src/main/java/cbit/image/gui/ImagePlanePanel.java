@@ -549,9 +549,9 @@ private void handleException(java.lang.Throwable exception) {
  * Comment
  */
 private void imagePlanePanel_Initialize() {
-	getZAxisCheckbox().setText(Coordinate.getNormalAxisPlaneName(Coordinate.Z_AXIS));
-	getYAxisCheckbox().setText(Coordinate.getNormalAxisPlaneName(Coordinate.Y_AXIS));
-	getXAxisCheckbox().setText(Coordinate.getNormalAxisPlaneName(Coordinate.X_AXIS));
+	getZAxisCheckbox().setText(Coordinate.Axis.Z.getNormalPlaneName());
+	getYAxisCheckbox().setText(Coordinate.Axis.Y.getNormalPlaneName());
+	getXAxisCheckbox().setText(Coordinate.Axis.X.getNormalPlaneName());
 	getButtonGroup().add(getXAxisCheckbox());
 	getButtonGroup().add(getYAxisCheckbox());
 	getButtonGroup().add(getZAxisCheckbox());
@@ -651,9 +651,9 @@ public static void main(java.lang.String[] args) {
 /**
  * Insert the method's description here.
  * Creation date: (10/11/00 3:47:40 PM)
- * @param axis int
+ * @param axis Coordinate.Axis
  */
-private void normalAxis(int axis) {
+private void normalAxis(Coordinate.Axis axis) {
     if (getImagePlaneMananager() != null) {
         getImagePlaneMananager().setNormalAxis(axis);
     }
@@ -665,19 +665,19 @@ private void normalAxisChanged() {
     if (getImagePlaneMananager() != null) {
     	int max = 0;
         switch (getImagePlaneMananager().getNormalAxis()) {
-            case Coordinate.X_AXIS :
+            case X :
             	max = (getImagePlaneMananager().getSourceDataInfo()!=null?getImagePlaneMananager().getSourceDataInfo().getXSize()-1:0);
                 if (!getXAxisCheckbox().isSelected()) {
                     getXAxisCheckbox().setSelected(true);
                 }
                 break;
-            case Coordinate.Y_AXIS :
+            case Y :
             	max = (getImagePlaneMananager().getSourceDataInfo()!=null?getImagePlaneMananager().getSourceDataInfo().getYSize()-1:0);
                 if (!getYAxisCheckbox().isSelected()) {
                     getYAxisCheckbox().setSelected(true);
                 }
                 break;
-            case Coordinate.Z_AXIS :
+            case Z :
             	max = (getImagePlaneMananager().getSourceDataInfo()!=null?getImagePlaneMananager().getSourceDataInfo().getZSize()-1:0);
                 if (!getZAxisCheckbox().isSelected()) {
                     getZAxisCheckbox().setSelected(true);
@@ -769,11 +769,11 @@ private void updateSliceLabel() {
     if (getImagePlaneMananager() != null) {
 	    double sliceWorld = getImagePlaneMananager().getSliceWorldCoordinate();
 	    String currSliceText = null;
-	    if(getImagePlaneMananager().getNormalAxis() == Coordinate.Z_AXIS){
+	    if(getImagePlaneMananager().getNormalAxis() == Coordinate.Axis.Z){
         	currSliceText = "Z";
-	    }else if(getImagePlaneMananager().getNormalAxis() == Coordinate.Y_AXIS){
+	    }else if(getImagePlaneMananager().getNormalAxis() == Coordinate.Axis.Y){
         	currSliceText = "Y";
-	    }else if(getImagePlaneMananager().getNormalAxis() == Coordinate.X_AXIS){
+	    }else if(getImagePlaneMananager().getNormalAxis() == Coordinate.Axis.X){
         	currSliceText = "X";
 	    }
 	    
@@ -790,19 +790,19 @@ private void updateSliceLabel() {
  * Comment
  */
 private void xAxisCheckbox_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
-	normalAxis(Coordinate.X_AXIS);
+	normalAxis(Coordinate.Axis.X);
 }
 /**
  * Comment
  */
 private void yAxisCheckbox_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
-	normalAxis(Coordinate.Y_AXIS);
+	normalAxis(Coordinate.Axis.Y);
 }
 /**
  * Comment
  */
 private void zAxisCheckbox_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
-    normalAxis(Coordinate.Z_AXIS);
+    normalAxis(Coordinate.Axis.Z);
 }
 	private JSlider getSlider() {
 		if (slider == null) {

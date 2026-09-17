@@ -30,6 +30,7 @@ import java.util.List;
 import org.vcell.restclient.model.GeometryMode;
 import org.vcell.restclient.model.SpatialSelection;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import org.vcell.util.Coordinate;
 
 
 /**
@@ -47,7 +48,7 @@ public class GeometrySpecDTO {
   private List<SpatialSelection> selections;
 
   public static final String JSON_PROPERTY_AXIS = "axis";
-  private Integer axis;
+  private Coordinate.Axis axis;
 
   public static final String JSON_PROPERTY_SLICE_NUMBER = "sliceNumber";
   private Integer sliceNumber;
@@ -91,7 +92,7 @@ public class GeometrySpecDTO {
   }
 
 
-  public GeometrySpecDTO axis(Integer axis) {
+  public GeometrySpecDTO axis(Coordinate.Axis axis) {
     this.axis = axis;
     return this;
   }
@@ -104,14 +105,14 @@ public class GeometrySpecDTO {
   @JsonProperty(JSON_PROPERTY_AXIS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public Integer getAxis() {
+  public Coordinate.Axis getAxis() {
     return axis;
   }
 
 
   @JsonProperty(JSON_PROPERTY_AXIS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setAxis(Integer axis) {
+  public void setAxis(Coordinate.Axis axis) {
     this.axis = axis;
   }
 

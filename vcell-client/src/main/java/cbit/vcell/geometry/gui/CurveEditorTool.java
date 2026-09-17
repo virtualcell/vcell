@@ -204,7 +204,6 @@ public VCellDrawable getVcellDrawable() {
 /**
  * Gets the worldCoordinate property (cbit.image.WorldCoordinate) value.
  * @return The worldCoordinate property value.
- * @see #setWorldCoordinate
  */
 public cbit.image.WorldCoordinateCalculator getWorldCoordinateCalculator() {
 	return fieldWorldCoordinateCalculator;
@@ -311,11 +310,11 @@ public void mouseDragged(MouseEvent event) {
 					Coordinate currentSnappedWorldCoord = getWorldCoordinateCalculator().snapWorldCoordinate(getWorldCoordinateValue(event.getPoint()));
 					if(!lastSnappedWorldCoord.compareEqual(currentSnappedWorldCoord)){
 						double xDelta = 
-							Coordinate.convertAxisFromStandardXYZToNormal(currentSnappedWorldCoord,Coordinate.X_AXIS,getCurveRenderer().getNormalAxis())-
-							Coordinate.convertAxisFromStandardXYZToNormal(lastSnappedWorldCoord,Coordinate.X_AXIS,getCurveRenderer().getNormalAxis());
+							Coordinate.convertAxisFromStandardXYZToNormal(currentSnappedWorldCoord,Coordinate.Axis.X,getCurveRenderer().getNormalAxis())-
+							Coordinate.convertAxisFromStandardXYZToNormal(lastSnappedWorldCoord,Coordinate.Axis.X,getCurveRenderer().getNormalAxis());
 						double yDelta = 
-							Coordinate.convertAxisFromStandardXYZToNormal(currentSnappedWorldCoord,Coordinate.Y_AXIS,getCurveRenderer().getNormalAxis())-
-							Coordinate.convertAxisFromStandardXYZToNormal(lastSnappedWorldCoord,Coordinate.Y_AXIS,getCurveRenderer().getNormalAxis());
+							Coordinate.convertAxisFromStandardXYZToNormal(currentSnappedWorldCoord,Coordinate.Axis.Y,getCurveRenderer().getNormalAxis())-
+							Coordinate.convertAxisFromStandardXYZToNormal(lastSnappedWorldCoord,Coordinate.Axis.Y,getCurveRenderer().getNormalAxis());
 						if(move(xDelta,yDelta,csi,getCurveRenderer().getNormalAxis(),event.isControlDown())){
 							lastSnappedWorldCoord = currentSnappedWorldCoord;
 						}
@@ -427,7 +426,7 @@ public void mousePressed(MouseEvent event) {
 								double dist = targetCurve.getDistanceTo(getWorldCoordinateValue(event.getPoint()));
 								int segmentIndex = targetCurve.pickSegment(getWorldCoordinateValue(event.getPoint()), dist*1.1);
 								Coordinate[] coordArr = targetCurve.getSampledCurve().getControlPointsForSegment(segmentIndex);
-								Coordinate middleCoord = new Coordinate((coordArr[0].getX()+coordArr[1].getX())/2,(coordArr[0].getY()+coordArr[1].getY())/2,(coordArr[0].getZ()+coordArr[1].getZ())/2);
+								Coordinate middleCoord = new Coordinate((coordArr[0].x()+coordArr[1].x())/2,(coordArr[0].y()+coordArr[1].y())/2,(coordArr[0].z()+coordArr[1].z())/2);
 								((ControlPointCurve)(selectedCSI.getCurve())).appendControlPoint(getWorldCoordinateCalculator().snapWorldCoordinateFace(middleCoord/*getWorldCoordinateValue(event.getPoint())*/));
 							}
 						}catch(Exception e){
@@ -485,10 +484,8 @@ public void mouseReleased(MouseEvent event) {
 /**
  * Insert the method's description here.
  * Creation date: (7/17/2003 5:59:43 PM)
- * @param dx double
- * @param dy double
  */
-private boolean move(double xDelta, double yDelta,CurveSelectionInfo csi,int normalAxis,boolean bAdjustToSlice) {
+private boolean move(double xDelta, double yDelta,CurveSelectionInfo csi, Coordinate.Axis normalAxis,boolean bAdjustToSlice) {
 
 	//
 	double maxDistance = 0;
@@ -500,13 +497,13 @@ private boolean move(double xDelta, double yDelta,CurveSelectionInfo csi,int nor
 	//
 	for(int i=0;i < cpc.getControlPointCount();i+= 1){
 		//
-		double xCoord = Coordinate.convertAxisFromStandardXYZToNormal(cpc.getControlPoint(i),Coordinate.X_AXIS,normalAxis);
-		double yCoord = Coordinate.convertAxisFromStandardXYZToNormal(cpc.getControlPoint(i),Coordinate.Y_AXIS,normalAxis);
+		double xCoord = Coordinate.convertAxisFromStandardXYZToNormal(cpc.getControlPoint(i),Coordinate.Axis.X,normalAxis);
+		double yCoord = Coordinate.convertAxisFromStandardXYZToNormal(cpc.getControlPoint(i),Coordinate.Axis.Y,normalAxis);
 		double zCoord;
 		if(bAdjustToSlice){
-			zCoord = Coordinate.convertAxisFromStandardXYZToNormal(getWorldCoordinateCalculator().getWorldCoordinateFromUnitized2D(0,0),Coordinate.Z_AXIS,normalAxis);
+			zCoord = Coordinate.convertAxisFromStandardXYZToNormal(getWorldCoordinateCalculator().getWorldCoordinateFromUnitized2D(0,0),Coordinate.Axis.Z,normalAxis);
 		}else{
-			zCoord = Coordinate.convertAxisFromStandardXYZToNormal(cpc.getControlPoint(i),Coordinate.Z_AXIS,normalAxis);
+			zCoord = Coordinate.convertAxisFromStandardXYZToNormal(cpc.getControlPoint(i),Coordinate.Axis.Z,normalAxis);
 		}
 		//
 		Coordinate oldCoord =
@@ -593,7 +590,7 @@ public void setCurveValueProvider(cbit.vcell.simdata.gui.CurveValueProvider curv
 public void setEnableDrawingTools(boolean enableDrawingTools) {
 	boolean oldValue = fieldEnableDrawingTools;
 	fieldEnableDrawingTools = enableDrawingTools;
-	firePropertyChange("enableDrawingTools", new Boolean(oldValue), new Boolean(enableDrawingTools));
+	firePropertyChange("enableDrawingTools", oldValue, enableDrawingTools);
 }
 /**
  * Sets the keyboardAndMouseEvents property (java.awt.Component) value.
@@ -624,7 +621,7 @@ public void setKeyboardAndMouseEvents(java.awt.Component keyboardAndMouseEvents)
 private void setProperlyConfigured(boolean properlyConfigured) {
 	boolean oldValue = fieldProperlyConfigured;
 	fieldProperlyConfigured = properlyConfigured;
-	firePropertyChange("properlyConfigured", new Boolean(oldValue), new Boolean(properlyConfigured));
+	firePropertyChange("properlyConfigured", oldValue, properlyConfigured);
 }
 /**
  * Sets the selectionOnly property (boolean) value.
@@ -634,7 +631,7 @@ private void setProperlyConfigured(boolean properlyConfigured) {
 public void setSelectionOnly(boolean selectionOnly) {
 	boolean oldValue = fieldSelectionOnly;
 	fieldSelectionOnly = selectionOnly;
-	firePropertyChange("selectionOnly", new Boolean(oldValue), new Boolean(selectionOnly));
+	firePropertyChange("selectionOnly", oldValue, selectionOnly);
 }
 /**
  * Sets the tool property (int) value.
@@ -663,7 +660,7 @@ public void setTool(int tool) {
 	if(getCurveValueProvider() != null){
 		getCurveValueProvider().curveAdded(null);
 	}
-	firePropertyChange("tool", new Integer(oldValue), new Integer(tool));
+	firePropertyChange("tool", oldValue, tool);
 }
 /**
  * Insert the method's description here.
@@ -691,8 +688,6 @@ public void setVcellDrawable(VCellDrawable vcellDrawable) {
 }
 /**
  * Sets the worldCoordinate property (cbit.image.WorldCoordinate) value.
- * @param worldCoordinate The new value for the property.
- * @see #getWorldCoordinate
  */
 public void setWorldCoordinateCalculator(cbit.image.WorldCoordinateCalculator worldCoordinateCalculator) {
 	cbit.image.WorldCoordinateCalculator oldValue = fieldWorldCoordinateCalculator;
@@ -711,8 +706,8 @@ private void step(KeyEvent event) {
 			return;
 		}
 	Coordinate wd = getCurveRenderer().getWorldDelta();
-	double xDelta = Coordinate.convertAxisFromStandardXYZToNormal(wd,Coordinate.X_AXIS,getCurveRenderer().getNormalAxis());
-	double yDelta = Coordinate.convertAxisFromStandardXYZToNormal(wd,Coordinate.Y_AXIS,getCurveRenderer().getNormalAxis());
+	double xDelta = Coordinate.convertAxisFromStandardXYZToNormal(wd,Coordinate.Axis.X,getCurveRenderer().getNormalAxis());
+	double yDelta = Coordinate.convertAxisFromStandardXYZToNormal(wd,Coordinate.Axis.Y,getCurveRenderer().getNormalAxis());
 	
 	int multiplier = event.isShiftDown() ? 10 : 1;
 	double dx = 0;

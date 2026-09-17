@@ -35,7 +35,6 @@ public Spline(Coordinate[] argControlPoints) {
  * Insert the method's description here.
  * Creation date: (10/10/00 1:28:23 PM)
  * @return int
- * @param sampledsegment int
  */
 public int convertSampledSegmentToSplineSegment(int sampledSegment) {
     int sampledSegmentsPerSplineSegment = (getNumSamplePoints() - 1) / getSegmentCount();
@@ -101,7 +100,7 @@ public double getX(double u) {
 	//
 	// where numCP wraps a closed curve around
 	//
-	return ((v * v * v * getControlPoint(segmentIndex % numCP).getX() + (3.0 * u * u * u - 6.0 * u * u + 4.0) * getControlPoint((segmentIndex + 1) % numCP).getX() + (-3.0 * u * u * u + 3.0 * u * u + 3.0 * u + 1.0) * getControlPoint((segmentIndex + 2) % numCP).getX() + u * u * u * getControlPoint((segmentIndex + 3) % numCP).getX()) / 6.0);
+	return ((v * v * v * getControlPoint(segmentIndex % numCP).x() + (3.0 * u * u * u - 6.0 * u * u + 4.0) * getControlPoint((segmentIndex + 1) % numCP).x() + (-3.0 * u * u * u + 3.0 * u * u + 3.0 * u + 1.0) * getControlPoint((segmentIndex + 2) % numCP).x() + u * u * u * getControlPoint((segmentIndex + 3) % numCP).x()) / 6.0);
 }
 /**
  * getX method comment.
@@ -125,7 +124,7 @@ public double getY(double u) {
 	//
 	// where numCP wraps a closed curve around
 	//
-	return ((v * v * v * getControlPoint(segmentIndex % numCP).getY() + (3.0 * u * u * u - 6.0 * u * u + 4.0) * getControlPoint((segmentIndex + 1) % numCP).getY() + (-3.0 * u * u * u + 3.0 * u * u + 3.0 * u + 1.0) * getControlPoint((segmentIndex + 2) % numCP).getY() + u * u * u * getControlPoint((segmentIndex + 3) % numCP).getY()) / 6.0);
+	return ((v * v * v * getControlPoint(segmentIndex % numCP).y() + (3.0 * u * u * u - 6.0 * u * u + 4.0) * getControlPoint((segmentIndex + 1) % numCP).y() + (-3.0 * u * u * u + 3.0 * u * u + 3.0 * u + 1.0) * getControlPoint((segmentIndex + 2) % numCP).y() + u * u * u * getControlPoint((segmentIndex + 3) % numCP).y()) / 6.0);
 }
 /**
  * getX method comment.
@@ -149,7 +148,7 @@ public double getZ(double u) {
 	//
 	// where numCP wraps a closed curve around
 	//
-	return ((v * v * v * getControlPoint(segmentIndex % numCP).getZ() + (3.0 * u * u * u - 6.0 * u * u + 4.0) * getControlPoint((segmentIndex + 1) % numCP).getZ() + (-3.0 * u * u * u + 3.0 * u * u + 3.0 * u + 1.0) * getControlPoint((segmentIndex + 2) % numCP).getZ() + u * u * u * getControlPoint((segmentIndex + 3) % numCP).getZ()) / 6.0);
+	return ((v * v * v * getControlPoint(segmentIndex % numCP).z() + (3.0 * u * u * u - 6.0 * u * u + 4.0) * getControlPoint((segmentIndex + 1) % numCP).z() + (-3.0 * u * u * u + 3.0 * u * u + 3.0 * u + 1.0) * getControlPoint((segmentIndex + 2) % numCP).z() + u * u * u * getControlPoint((segmentIndex + 3) % numCP).z()) / 6.0);
 }
 /**
  * Insert the method's description here.

@@ -21,6 +21,7 @@ import java.util.concurrent.Semaphore;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.vcell.util.Coordinate;
 import org.vcell.util.document.TSJobResultsNoStats;
 import org.vcell.util.document.TSJobResultsSpaceStats;
 import org.vcell.util.document.TimeSeriesJobSpec;
@@ -631,9 +632,9 @@ public final class FieldViewerServer {
 			double[] xyz = new double[3 * e.getValue().size()];
 			int k = 0;
 			for (org.vcell.util.Coordinate c : e.getValue()) {
-				xyz[k++] = c.getX();
-				xyz[k++] = c.getY();
-				xyz[k++] = c.getZ();
+				xyz[k++] = c.x();
+				xyz[k++] = c.y();
+				xyz[k++] = c.z();
 			}
 			out.put(e.getKey(), xyz);
 		}
@@ -1765,7 +1766,7 @@ public final class FieldViewerServer {
 		boolean flat = mesh.getGeometryDimension() < 3;
 		Double planeZ = flat ? grid(source, domain).getPoints().get(0).getZ() : null;
 		double[][] path = BodyFittedKymograph.parsePath(pathParam, planeZ);
-		int axis = flat ? org.vcell.util.Coordinate.Z_AXIS : FvMembraneCurve.axisOf(planeParam);
+		Coordinate.Axis axis = flat ? Coordinate.Axis.Z : FvMembraneCurve.axisOf(planeParam);
 		DomainIndex domainIndex = domainIndex(source, domain);
 		FvMembraneCurve curve = FvMembraneCurve.select(mesh, domainIndex.inDomain, path, axis, BodyFittedKymograph.MAX_SAMPLES,
 				flat ? planeZ : 0);
@@ -1802,7 +1803,7 @@ public final class FieldViewerServer {
 		}
 		StringBuilder extra = new StringBuilder();
 		if (!flat) {
-			extra.append(",\"slice\":{\"axis\":\"").append("xyz".charAt(curve.normalAxis)).append("\",\"index\":")
+			extra.append(",\"slice\":{\"axis\":\"").append("xyz".charAt(curve.normalAxis.ordinal())).append("\",\"index\":")
 					.append(curve.slice).append('}');
 		}
 		// the curve as the viewer draws it: the desktop's points and snapped picks, mapped onto the drawn membrane faces
@@ -2083,7 +2084,7 @@ public final class FieldViewerServer {
 
 	/**
 	 * The finite-volume cells of a mesh, uniformly for 2D and 3D. A 3D domain arrives as
-	 * {@link VisVoxel}s and a 2D one as in-plane {@link VisPolygon} quads — thrift types with no
+	 * {@link VisVoxel}s and a 2D one as in-plane {@link org.vcell.vis.vismesh.thrift.VisPolygon} quads — thrift types with no
 	 * common interface, and the one NOT produced is left null, which is how a 2D run used to 500
 	 * on {@code /grid}. Everything downstream (geometry, field values, time series, statistics)
 	 * needs only the point indices and the solver's global index, so that is the whole interface.

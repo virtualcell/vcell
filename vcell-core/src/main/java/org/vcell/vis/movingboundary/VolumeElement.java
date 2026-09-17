@@ -141,12 +141,12 @@ public boolean isEnd() {
 public String toString() {
 	return	getContourIndex()+" "+
 			getVolumeIndex()+" "+
-			begin.getX()+" "+
-			begin.getY()+" "+
-			begin.getZ()+" "+
-			end.getX()+" "+
-			end.getY()+" "+
-			end.getZ()+" "+
+			begin.x()+" "+
+			begin.y()+" "+
+			begin.z()+" "+
+			end.x()+" "+
+			end.y()+" "+
+			end.z()+" "+
 			getPrevNeighborIndex()+" "+
 			getNextNeighborIndex();
 }

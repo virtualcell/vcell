@@ -22,6 +22,7 @@ import org.vcell.restq.errors.exceptions.*;
 import org.vcell.restq.services.Exports.ExportService;
 import org.vcell.restq.services.SimulationRestService;
 import org.vcell.restq.services.UserRestService;
+import org.vcell.util.Coordinate;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.document.User;
@@ -149,6 +150,6 @@ public class ExportResource {
     ){ }
 
     public record GeometrySpecDTO(
-            SpatialSelection[] selections, int axis, int sliceNumber, ExportEnums.GeometryMode geometryMode
+            SpatialSelection[] selections, Coordinate.Axis axis, int sliceNumber, ExportEnums.GeometryMode geometryMode
     ){ }
 }

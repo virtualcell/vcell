@@ -472,9 +472,9 @@ public class MathTestingUtilities {
                             tempVarHash.put(hashKey, tempVar);
                         }
                         valueArray[tIndex] = timeArray[j];                // time
-                        valueArray[xIndex] = subDomainCoord.getX();        // x
-                        valueArray[yIndex] = subDomainCoord.getY();        // y
-                        valueArray[zIndex] = subDomainCoord.getZ();        // z
+                        valueArray[xIndex] = subDomainCoord.x();        // x
+                        valueArray[yIndex] = subDomainCoord.y();        // y
+                        valueArray[zIndex] = subDomainCoord.z();        // z
                         double value = tempVar.getExactExp().evaluateVector(valueArray);  // EXACT soln at coord subDomainCoord
                         tempVar.addDataValues(value, data[k], timeArray[j], k, absErrorThreshold, relErrorThreshold);
                     }  // end for (k)
@@ -1547,18 +1547,18 @@ public class MathTestingUtilities {
             int ceil_x;
             int floor_x;
 
-            if(fractionalIndex.getX() < 0){
+            if(fractionalIndex.x() < 0){
                 floor_x = 0;
                 ceil_x = 1;
-            } else if(fractionalIndex.getX() > sourceMesh.getSizeX() - 1){
+            } else if(fractionalIndex.x() > sourceMesh.getSizeX() - 1){
                 floor_x = sourceMesh.getSizeX() - 2;
                 ceil_x = sourceMesh.getSizeX() - 1;
             } else {
-                ceil_x = (int) Math.ceil(fractionalIndex.getX());
-                floor_x = (int) Math.floor(fractionalIndex.getX());
+                ceil_x = (int) Math.ceil(fractionalIndex.x());
+                floor_x = (int) Math.floor(fractionalIndex.x());
             }
 
-            double fract_x = fractionalIndex.getX() - floor_x;
+            double fract_x = fractionalIndex.x() - floor_x;
 
             CoordinateIndex coord_1 = new CoordinateIndex(floor_x, 0, 0);  // ***** SHOULD Y,Z BE 0 OR 1 ???? *****
             CoordinateIndex coord_2 = new CoordinateIndex(ceil_x, 0, 0);
@@ -1637,18 +1637,18 @@ public class MathTestingUtilities {
             int ceil_x;
             int floor_x;
 
-            if(fractionalIndex.getX() < 0){
+            if(fractionalIndex.x() < 0){
                 floor_x = 0;
                 ceil_x = 1;
-            } else if(fractionalIndex.getX() > sourceMesh.getSizeX() - 1){
+            } else if(fractionalIndex.x() > sourceMesh.getSizeX() - 1){
                 floor_x = sourceMesh.getSizeX() - 2;
                 ceil_x = sourceMesh.getSizeX() - 1;
             } else {
-                ceil_x = (int) Math.ceil(fractionalIndex.getX());
-                floor_x = (int) Math.floor(fractionalIndex.getX());
+                ceil_x = (int) Math.ceil(fractionalIndex.x());
+                floor_x = (int) Math.floor(fractionalIndex.x());
             }
 
-            double fract_x = fractionalIndex.getX() - floor_x;
+            double fract_x = fractionalIndex.x() - floor_x;
 
             CoordinateIndex coord_1 = new CoordinateIndex(floor_x, 0, 0);  // ***** SHOULD Y,Z BE 0 OR 1 ???? *****
             CoordinateIndex coord_2 = new CoordinateIndex(ceil_x, 0, 0);
@@ -1684,29 +1684,29 @@ public class MathTestingUtilities {
             int ceil_y;
             int floor_y;
 
-            if(fractionalIndex.getX() < 0){
+            if(fractionalIndex.x() < 0){
                 floor_x = 0;
                 ceil_x = 1;
-            } else if(fractionalIndex.getX() > sourceMesh.getSizeX() - 1){
+            } else if(fractionalIndex.x() > sourceMesh.getSizeX() - 1){
                 floor_x = sourceMesh.getSizeX() - 2;
                 ceil_x = sourceMesh.getSizeX() - 1;
             } else {
-                ceil_x = (int) Math.ceil(fractionalIndex.getX());
-                floor_x = (int) Math.floor(fractionalIndex.getX());
+                ceil_x = (int) Math.ceil(fractionalIndex.x());
+                floor_x = (int) Math.floor(fractionalIndex.x());
             }
-            if(fractionalIndex.getY() < 0){
+            if(fractionalIndex.y() < 0){
                 floor_y = 0;
                 ceil_y = 1;
-            } else if(fractionalIndex.getY() > sourceMesh.getSizeY() - 1){
+            } else if(fractionalIndex.y() > sourceMesh.getSizeY() - 1){
                 floor_y = sourceMesh.getSizeY() - 2;
                 ceil_y = sourceMesh.getSizeY() - 1;
             } else {
-                ceil_y = (int) Math.ceil(fractionalIndex.getY());
-                floor_y = (int) Math.floor(fractionalIndex.getY());
+                ceil_y = (int) Math.ceil(fractionalIndex.y());
+                floor_y = (int) Math.floor(fractionalIndex.y());
             }
 
-            double fract_x = fractionalIndex.getX() - floor_x;
-            double fract_y = fractionalIndex.getY() - floor_y;
+            double fract_x = fractionalIndex.x() - floor_x;
+            double fract_y = fractionalIndex.y() - floor_y;
 
             CoordinateIndex coord_1 = new CoordinateIndex(floor_x, floor_y, 0);  // ***** SHOULD THIS BE 0 OR 1 ???? *****
             CoordinateIndex coord_2 = new CoordinateIndex(ceil_x, floor_y, 0);
@@ -1837,29 +1837,29 @@ public class MathTestingUtilities {
             int ceil_y;
             int floor_y;
 
-            if(fractionalIndex.getX() < 0){
+            if(fractionalIndex.x() < 0){
                 floor_x = 0;
                 ceil_x = 1;
-            } else if(fractionalIndex.getX() > sourceMesh.getSizeX() - 1){
+            } else if(fractionalIndex.x() > sourceMesh.getSizeX() - 1){
                 floor_x = sourceMesh.getSizeX() - 2;
                 ceil_x = sourceMesh.getSizeX() - 1;
             } else {
-                ceil_x = (int) Math.ceil(fractionalIndex.getX());
-                floor_x = (int) Math.floor(fractionalIndex.getX());
+                ceil_x = (int) Math.ceil(fractionalIndex.x());
+                floor_x = (int) Math.floor(fractionalIndex.x());
             }
-            if(fractionalIndex.getY() < 0){
+            if(fractionalIndex.y() < 0){
                 floor_y = 0;
                 ceil_y = 1;
-            } else if(fractionalIndex.getY() > sourceMesh.getSizeY() - 1){
+            } else if(fractionalIndex.y() > sourceMesh.getSizeY() - 1){
                 floor_y = sourceMesh.getSizeY() - 2;
                 ceil_y = sourceMesh.getSizeY() - 1;
             } else {
-                ceil_y = (int) Math.ceil(fractionalIndex.getY());
-                floor_y = (int) Math.floor(fractionalIndex.getY());
+                ceil_y = (int) Math.ceil(fractionalIndex.y());
+                floor_y = (int) Math.floor(fractionalIndex.y());
             }
 
-            double fract_x = fractionalIndex.getX() - floor_x;
-            double fract_y = fractionalIndex.getY() - floor_y;
+            double fract_x = fractionalIndex.x() - floor_x;
+            double fract_y = fractionalIndex.y() - floor_y;
 
             CoordinateIndex coord_1 = new CoordinateIndex(floor_x, floor_y, 0);  // ***** SHOULD THIS BE 0 OR 1 ???? *****
             CoordinateIndex coord_2 = new CoordinateIndex(ceil_x, floor_y, 0);
@@ -1906,40 +1906,40 @@ public class MathTestingUtilities {
             int ceil_z;
             int floor_z;
 
-            if(fractionalIndex.getX() < 0){
+            if(fractionalIndex.x() < 0){
                 floor_x = 0;
                 ceil_x = 1;
-            } else if(fractionalIndex.getX() > sourceMesh.getSizeX() - 1){
+            } else if(fractionalIndex.x() > sourceMesh.getSizeX() - 1){
                 floor_x = sourceMesh.getSizeX() - 2;
                 ceil_x = sourceMesh.getSizeX() - 1;
             } else {
-                ceil_x = (int) Math.ceil(fractionalIndex.getX());
-                floor_x = (int) Math.floor(fractionalIndex.getX());
+                ceil_x = (int) Math.ceil(fractionalIndex.x());
+                floor_x = (int) Math.floor(fractionalIndex.x());
             }
-            if(fractionalIndex.getY() < 0){
+            if(fractionalIndex.y() < 0){
                 floor_y = 0;
                 ceil_y = 1;
-            } else if(fractionalIndex.getY() > sourceMesh.getSizeY() - 1){
+            } else if(fractionalIndex.y() > sourceMesh.getSizeY() - 1){
                 floor_y = sourceMesh.getSizeY() - 2;
                 ceil_y = sourceMesh.getSizeY() - 1;
             } else {
-                ceil_y = (int) Math.ceil(fractionalIndex.getY());
-                floor_y = (int) Math.floor(fractionalIndex.getY());
+                ceil_y = (int) Math.ceil(fractionalIndex.y());
+                floor_y = (int) Math.floor(fractionalIndex.y());
             }
-            if(fractionalIndex.getZ() < 0){
+            if(fractionalIndex.z() < 0){
                 floor_z = 0;
                 ceil_z = 1;
-            } else if(fractionalIndex.getZ() > sourceMesh.getSizeZ() - 1){
+            } else if(fractionalIndex.z() > sourceMesh.getSizeZ() - 1){
                 floor_z = sourceMesh.getSizeZ() - 2;
                 ceil_z = sourceMesh.getSizeZ() - 1;
             } else {
-                ceil_z = (int) Math.ceil(fractionalIndex.getZ());
-                floor_z = (int) Math.floor(fractionalIndex.getZ());
+                ceil_z = (int) Math.ceil(fractionalIndex.z());
+                floor_z = (int) Math.floor(fractionalIndex.z());
             }
 
-            double fract_x = fractionalIndex.getX() - floor_x;
-            double fract_y = fractionalIndex.getY() - floor_y;
-            double fract_z = fractionalIndex.getZ() - floor_z;
+            double fract_x = fractionalIndex.x() - floor_x;
+            double fract_y = fractionalIndex.y() - floor_y;
+            double fract_z = fractionalIndex.z() - floor_z;
 
             CoordinateIndex coord_1 = new CoordinateIndex(floor_x, floor_y, floor_z);
             CoordinateIndex coord_2 = new CoordinateIndex(ceil_x, floor_y, floor_z);
@@ -2040,40 +2040,40 @@ public class MathTestingUtilities {
             int ceil_z;
             int floor_z;
 
-            if(fractionalIndex.getX() < 0){
+            if(fractionalIndex.x() < 0){
                 floor_x = 0;
                 ceil_x = 1;
-            } else if(fractionalIndex.getX() > sourceMesh.getSizeX() - 1){
+            } else if(fractionalIndex.x() > sourceMesh.getSizeX() - 1){
                 floor_x = sourceMesh.getSizeX() - 2;
                 ceil_x = sourceMesh.getSizeX() - 1;
             } else {
-                ceil_x = (int) Math.ceil(fractionalIndex.getX());
-                floor_x = (int) Math.floor(fractionalIndex.getX());
+                ceil_x = (int) Math.ceil(fractionalIndex.x());
+                floor_x = (int) Math.floor(fractionalIndex.x());
             }
-            if(fractionalIndex.getY() < 0){
+            if(fractionalIndex.y() < 0){
                 floor_y = 0;
                 ceil_y = 1;
-            } else if(fractionalIndex.getY() > sourceMesh.getSizeY() - 1){
+            } else if(fractionalIndex.y() > sourceMesh.getSizeY() - 1){
                 floor_y = sourceMesh.getSizeY() - 2;
                 ceil_y = sourceMesh.getSizeY() - 1;
             } else {
-                ceil_y = (int) Math.ceil(fractionalIndex.getY());
-                floor_y = (int) Math.floor(fractionalIndex.getY());
+                ceil_y = (int) Math.ceil(fractionalIndex.y());
+                floor_y = (int) Math.floor(fractionalIndex.y());
             }
-            if(fractionalIndex.getZ() < 0){
+            if(fractionalIndex.z() < 0){
                 floor_z = 0;
                 ceil_z = 1;
-            } else if(fractionalIndex.getZ() > sourceMesh.getSizeZ() - 1){
+            } else if(fractionalIndex.z() > sourceMesh.getSizeZ() - 1){
                 floor_z = sourceMesh.getSizeZ() - 2;
                 ceil_z = sourceMesh.getSizeZ() - 1;
             } else {
-                ceil_z = (int) Math.ceil(fractionalIndex.getZ());
-                floor_z = (int) Math.floor(fractionalIndex.getZ());
+                ceil_z = (int) Math.ceil(fractionalIndex.z());
+                floor_z = (int) Math.floor(fractionalIndex.z());
             }
 
-            double fract_x = fractionalIndex.getX() - floor_x;
-            double fract_y = fractionalIndex.getY() - floor_y;
-            double fract_z = fractionalIndex.getZ() - floor_z;
+            double fract_x = fractionalIndex.x() - floor_x;
+            double fract_y = fractionalIndex.y() - floor_y;
+            double fract_z = fractionalIndex.z() - floor_z;
 
             CoordinateIndex coord_1 = new CoordinateIndex(floor_x, floor_y, floor_z);
             CoordinateIndex coord_2 = new CoordinateIndex(ceil_x, floor_y, floor_z);

@@ -25,7 +25,6 @@ import javax.swing.table.AbstractTableModel;
 import org.vcell.util.DataAccessException;
 
 import cbit.image.DisplayAdapterService;
-import cbit.image.gui.DisplayAdapterServicePanel;
 import cbit.vcell.client.ChildWindowManager;
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.PopupGenerator;
@@ -1173,7 +1172,7 @@ public void pickByAnalytic() {
 						if(coord == null){
 							coord = ((cbit.vcell.geometry.surface.Quadrilateral)getSurfaceCollectionDataInfo().getSurfaceCollection().getSurfaces(surf).getPolygons(i)).calculateCentroid();
 						}
-						if(xyzExp.evaluateVector(new double[]{coord.getX(),coord.getY(),coord.getZ()}) == 1.0){
+						if(xyzExp.evaluateVector(new double[]{coord.x(),coord.y(),coord.z()}) == 1.0){
 							bAOI[surf][i] = pickOP;
 						}
 					}
@@ -1605,7 +1604,7 @@ private void updatePickInfoDisplay() {
 				" index="+membrIndex +
 				" val="+ valText +
 				" area="+ (area != MembraneElement.AREA_UNDEFINED?df.format(area)+"":"No Calc")+
-				" centroid=("+df.format(centroid.getX())+","+df.format(centroid.getY())+","+df.format(centroid.getZ())+")");
+				" centroid=("+df.format(centroid.x())+","+df.format(centroid.y())+","+df.format(centroid.z())+")");
 			return;
 		}else{
 			String aoiString = " ";

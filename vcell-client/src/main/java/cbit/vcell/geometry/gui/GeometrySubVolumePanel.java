@@ -406,7 +406,7 @@ public static AnalyticSubVolume createAnalyticSubVolume(Component requester,int 
 //	final int dim = g.getDimension();
 	AddShapeJPanel addShapeJPanel = new AddShapeJPanel(dimensions);
 	addShapeJPanel.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.RAISED));
-	addShapeJPanel.setDefaultCenter(center.getX(), center.getY(), center.getZ());
+	addShapeJPanel.setDefaultCenter(center.x(), center.y(), center.z());
 //	addShapeJPanel.setDefaultCenter(
 //			getGeometry().getOrigin().getX()+getGeometry().getExtent().getX()/2,
 //			(getGeometry().getDimension() > 1?getGeometry().getOrigin().getY()+getGeometry().getExtent().getY()/2:null),

@@ -29,7 +29,7 @@ public class CurveRendererCurveInfo {
 	private Point2D.Double[] projectedCurvePoints = null;
 	private int projectedFromSampleID;
 	private Point2D.Double scalingForSample = null;
-	private int normalAxisForSample;
+	private Coordinate.Axis normalAxisForSample;
 
 	public CurveRendererCurveInfo(Curve argCurve) {
 		curve = argCurve;
@@ -55,7 +55,7 @@ private void calculateProjectedPoints(SampledCurve projectedFromSample) {
 }
 
 
-public Point2D.Double[] fetchProjectedCurvePoints(Point2D.Double scaling2D, int axis) {
+public Point2D.Double[] fetchProjectedCurvePoints(Point2D.Double scaling2D, Coordinate.Axis axis) {
 	//
 	SampledCurve currentSample = curve.getSampledCurve();
 	//
@@ -117,7 +117,7 @@ public Point2D.Double[] fetchProjectedCurvePoints(Point2D.Double scaling2D, int 
  * Insert the method's description here.
  * Creation date: (10/28/00 4:18:38 PM)
  */
-public static final Point2D.Double projectAndScale3DPoint(Coordinate point3D, int normalAxis, Point2D.Double scaling2D) {
+public static final Point2D.Double projectAndScale3DPoint(Coordinate point3D, Coordinate.Axis normalAxis, Point2D.Double scaling2D) {
 	Point2D.Double point2D = Coordinate.get2DProjection(point3D, normalAxis);
 	scale2DPoint(point2D, scaling2D);
 	return point2D;

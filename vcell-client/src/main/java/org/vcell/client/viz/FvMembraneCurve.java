@@ -48,10 +48,10 @@ final class FvMembraneCurve {
 	/** {@link #points} and {@link #waypoints} as the viewer draws them ({@link #toDrawn}) */
 	final double[][] drawnPoints;
 	final double[][] drawnWaypoints;
-	final int normalAxis;
+	final Coordinate.Axis normalAxis;
 	final int slice;
 
-	private FvMembraneCurve(CartesianMesh mesh, SpatialSelection.SSHelper samples, double[][] waypoints, int normalAxis,
+	private FvMembraneCurve(CartesianMesh mesh, SpatialSelection.SSHelper samples, double[][] waypoints, Coordinate.Axis normalAxis,
 			int slice, double planeZ) {
 		this.membraneIndex = samples.getSampledIndexes();
 		this.arcLength = samples.getWorldCoordinateLengths();
@@ -59,7 +59,7 @@ final class FvMembraneCurve {
 		this.points = new double[c.length][];
 		this.drawnPoints = new double[c.length][];
 		for (int i = 0; i < c.length; i++) {
-			points[i] = new double[] { c[i].getX(), c[i].getY(), c[i].getZ() };
+			points[i] = new double[] { c[i].x(), c[i].y(), c[i].z() };
 			drawnPoints[i] = toDrawn(mesh, points[i], planeZ);
 		}
 		this.waypoints = waypoints;
@@ -122,15 +122,15 @@ final class FvMembraneCurve {
 	}
 
 	/** The axis a {@code plane} parameter names: {@code x}, {@code y} or {@code z}. */
-	static int axisOf(String plane) {
+	static Coordinate.Axis axisOf(String plane) {
 		if (plane == null || plane.isBlank()) {
 			throw new IllegalArgumentException("a curve along a 3D membrane lies in a slice: give its normal axis as"
 					+ " 'plane=x|y|z' (in the viewer, turn on the crop)");
 		}
 		return switch (plane.trim().toLowerCase()) {
-			case "x" -> Coordinate.X_AXIS;
-			case "y" -> Coordinate.Y_AXIS;
-			case "z" -> Coordinate.Z_AXIS;
+			case "x" -> Coordinate.Axis.X;
+			case "y" -> Coordinate.Axis.Y;
+			case "z" -> Coordinate.Axis.Z;
 			default -> throw new IllegalArgumentException("'plane' must be x, y or z, not '" + plane + "'");
 		};
 	}
@@ -139,13 +139,13 @@ final class FvMembraneCurve {
 	 * The curve through {@code waypoints} along the membrane domain whose elements are {@code inDomain}.
 	 *
 	 * @param drawnWaypoints the picks, in the viewer's drawn frame
-	 * @param normalAxis the slice's normal ({@link Coordinate#Z_AXIS} in 2D)
+	 * @param normalAxis the slice's normal ({@link Coordinate.Axis#Z} in 2D)
 	 * @param planeZ the drawn plane's z in 2D (the served grid's), for the drawn samples
 	 * @throws IllegalArgumentException (a 400) when the slice has no membrane of the domain, a waypoint is not
 	 *             near it, the waypoints lie on different curves or out of order, or there are more than
 	 *             {@code maxSamples} samples
 	 */
-	static FvMembraneCurve select(CartesianMesh mesh, BitSet inDomain, double[][] drawnWaypoints, int normalAxis,
+	static FvMembraneCurve select(CartesianMesh mesh, BitSet inDomain, double[][] drawnWaypoints, Coordinate.Axis normalAxis,
 			int maxSamples, double planeZ) {
 		double[][] waypoints = new double[drawnWaypoints.length][];
 		for (int k = 0; k < waypoints.length; k++) {
@@ -155,17 +155,17 @@ final class FvMembraneCurve {
 		if (mesh.getGeometryDimension() == 3) {
 			Coordinate fractional = mesh.getFractionalCoordinateIndex(new Coordinate(waypoints[0][0], waypoints[0][1], waypoints[0][2]));
 			int[] size = { mesh.getSizeX(), mesh.getSizeY(), mesh.getSizeZ() };
-			double f = normalAxis == Coordinate.X_AXIS ? fractional.getX() : normalAxis == Coordinate.Y_AXIS ? fractional.getY() : fractional.getZ();
-			slice = (int) Math.max(0, Math.min(size[normalAxis] - 1, Math.round(f)));
-		} else if (normalAxis != Coordinate.Z_AXIS) {
+			double f = normalAxis == Coordinate.Axis.X ? fractional.x() : normalAxis == Coordinate.Axis.Y ? fractional.y() : fractional.z();
+			slice = (int) Math.max(0, Math.min(size[normalAxis.ordinal()] - 1, Math.round(f)));
+		} else if (normalAxis != Coordinate.Axis.Z) {
 			throw new IllegalArgumentException("a 2D run has one slice, normal to z");
 		}
 		Map<SampledCurve, int[]> found = new MeshDisplayAdapter(mesh).getCurvesAndMembraneIndexes(normalAxis, slice);
 		// the Hashtable's order is arbitrary: order the curves by their first point, so ties snap the same way every time
 		List<Map.Entry<SampledCurve, int[]>> curves = new ArrayList<>(found == null ? List.of() : found.entrySet());
-		curves.sort(Comparator.comparingDouble((Map.Entry<SampledCurve, int[]> e) -> e.getKey().getControlPoint(0).getX())
-				.thenComparingDouble(e -> e.getKey().getControlPoint(0).getY())
-				.thenComparingDouble(e -> e.getKey().getControlPoint(0).getZ()));
+		curves.sort(Comparator.comparingDouble((Map.Entry<SampledCurve, int[]> e) -> e.getKey().getControlPoint(0).x())
+				.thenComparingDouble(e -> e.getKey().getControlPoint(0).y())
+				.thenComparingDouble(e -> e.getKey().getControlPoint(0).z()));
 		boolean any = false;
 		for (Map.Entry<SampledCurve, int[]> e : curves) {
 			for (int m : e.getValue()) {
@@ -174,7 +174,7 @@ final class FvMembraneCurve {
 		}
 		if (!any) {
 			throw new IllegalArgumentException("the membrane does not cross this slice"
-					+ (mesh.getGeometryDimension() == 3 ? " (" + "xyz".charAt(normalAxis) + " slice " + slice + ")" : ""));
+					+ (mesh.getGeometryDimension() == 3 ? " (" + "xyz".charAt(normalAxis.ordinal()) + " slice " + slice + ")" : ""));
 		}
 
 		Snap[] snaps = new Snap[waypoints.length];
@@ -277,7 +277,7 @@ final class FvMembraneCurve {
 	}
 
 	/** The nearest segment of the domain's membrane to {@code q}, measured in the slice. */
-	private static Snap snap(List<Map.Entry<SampledCurve, int[]>> curves, BitSet inDomain, double[] q, int normalAxis, int k) {
+	private static Snap snap(List<Map.Entry<SampledCurve, int[]>> curves, BitSet inDomain, double[] q, Coordinate.Axis normalAxis, int k) {
 		double best = Double.POSITIVE_INFINITY;
 		Snap nearest = null;
 		double nearestLength = 0;
@@ -289,10 +289,10 @@ final class FvMembraneCurve {
 					continue;
 				}
 				Coordinate[] ends = curve.getControlPointsForSegment(s);
-				double[] a = { ends[0].getX(), ends[0].getY(), ends[0].getZ() };
-				double[] b = { ends[1].getX(), ends[1].getY(), ends[1].getZ() };
+				double[] a = { ends[0].x(), ends[0].y(), ends[0].z() };
+				double[] b = { ends[1].x(), ends[1].y(), ends[1].z() };
 				double[] p = q.clone();
-				p[normalAxis] = a[normalAxis]; // project onto the slice
+				p[normalAxis.ordinal()] = a[normalAxis.ordinal()]; // project onto the slice
 				double len2 = 0, dot = 0;
 				for (int x = 0; x < 3; x++) {
 					len2 += (b[x] - a[x]) * (b[x] - a[x]);

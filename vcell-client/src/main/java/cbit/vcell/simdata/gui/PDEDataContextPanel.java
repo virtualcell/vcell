@@ -70,7 +70,7 @@ public class PDEDataContextPanel extends javax.swing.JPanel implements CurveValu
 	private PDEDataContext fieldPdeDataContext = null;
 	private SpatialSelection fieldSpatialSelection = null;
 	private int fieldSlice = 0;
-	private int fieldNormalAxis = 0;
+	private Coordinate.Axis fieldNormalAxis = Coordinate.Axis.X;
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private boolean ivjConnPtoP2Aligning = false;
 	private DisplayAdapterServicePanel ivjdisplayAdapterServicePanel1 = null;
@@ -872,9 +872,9 @@ public String getCurveValue(CurveSelectionInfo csi) {
 									getPdeDataContext().getDataIdentifier().getVariableType());
 						if(membraneValues != null){
 							Coordinate segmentWC = getPdeDataContext().getCartesianMesh().getCoordinateFromMembraneIndex(membraneIndexes[csi.getSegment()]);
-							String xCoordString = NumberUtils.formatNumber(segmentWC.getX());
-							String yCoordString = NumberUtils.formatNumber(segmentWC.getY());
-							String zCoordString = NumberUtils.formatNumber(segmentWC.getZ());
+							String xCoordString = NumberUtils.formatNumber(segmentWC.x());
+							String yCoordString = NumberUtils.formatNumber(segmentWC.y());
+							String zCoordString = NumberUtils.formatNumber(segmentWC.z());
 							boolean bDefined = getDataInfoProvider() == null || getDataInfoProvider().isDefined(membraneIndexes[csi.getSegment()]);
 							infoS = "("+xCoordString+","+yCoordString+","+zCoordString+")  ["+
 										membraneIndexes[csi.getSegment()]+"]  Value = " +
@@ -990,7 +990,7 @@ public CurveSelectionInfo getInitalCurveSelection(int tool, Coordinate wc) {
 							double dist = closeCSI[i].getCurve().getDistanceTo(wc);
 							int segmentIndex = closeCSI[i].getCurve().pickSegment(wc, dist*1.1);
 							Coordinate[] coordArr = closeCSI[i].getCurve().getSampledCurve().getControlPointsForSegment(segmentIndex);
-							Coordinate middleCoord = new Coordinate((coordArr[0].getX()+coordArr[1].getX())/2,(coordArr[0].getY()+coordArr[1].getY())/2,(coordArr[0].getZ()+coordArr[1].getZ())/2);
+							Coordinate middleCoord = new Coordinate((coordArr[0].x()+coordArr[1].x())/2,(coordArr[0].y()+coordArr[1].y())/2,(coordArr[0].z()+coordArr[1].z())/2);
 							newCurveSelection = new CurveSelectionInfo(new SinglePoint(middleCoord));
 						}
 						break;
@@ -1013,7 +1013,7 @@ public CurveSelectionInfo getInitalCurveSelection(int tool, Coordinate wc) {
  * @return The normalAxis property value.
  * @see #setNormalAxis
  */
-public int getNormalAxis() {
+public Coordinate.Axis getNormalAxis() {
 	return fieldNormalAxis;
 }
 public int getViewZoom(){
@@ -1182,10 +1182,10 @@ private boolean isValidDataSampler(Curve curve) {
 				isCurveVisible = true;
 				if(!(curve instanceof SinglePoint)){
 					double zeroZ = Coordinate.convertAxisFromStandardXYZToNormal(
-							curve.getSampledCurve().getControlPoint(0), Coordinate.Z_AXIS, getNormalAxis());
+							curve.getSampledCurve().getControlPoint(0), Coordinate.Axis.Z, getNormalAxis());
 					for (int i = 1; i < curve.getSampledCurve().getControlPointCount(); i++) {
 						double indexZ =Coordinate.convertAxisFromStandardXYZToNormal(
-								curve.getSampledCurve().getControlPoint(i), Coordinate.Z_AXIS, getNormalAxis());
+								curve.getSampledCurve().getControlPoint(i), Coordinate.Axis.Z, getNormalAxis());
 						if(zeroZ != indexZ){
 							isCurveVisible = false;
 						}
@@ -1242,14 +1242,14 @@ private ControlPointCurve projectCurveOntoSlice(ControlPointCurve curve) {
 	//convert the curve coordinates into view coordinates from the sliceviewer
 	ControlPointCurve cpCurve = null;
 	java.util.Vector<Coordinate> cpV = new java.util.Vector<Coordinate>();
-	int normalAxis = getimagePlaneManager1().getNormalAxis();
+	Coordinate.Axis normalAxis = getimagePlaneManager1().getNormalAxis();
 	for(int i=0;i < curve.getControlPointCount();i+= 1){
 		//convert curves that are always stored in world coordinates into coordinates that
 		//represent how user sees them in the slice viewer
-		double xCoord = Coordinate.convertAxisFromStandardXYZToNormal(curve.getControlPoint(i),Coordinate.X_AXIS,normalAxis);
-		double yCoord = Coordinate.convertAxisFromStandardXYZToNormal(curve.getControlPoint(i),Coordinate.Y_AXIS,normalAxis);
+		double xCoord = Coordinate.convertAxisFromStandardXYZToNormal(curve.getControlPoint(i),Coordinate.Axis.X,normalAxis);
+		double yCoord = Coordinate.convertAxisFromStandardXYZToNormal(curve.getControlPoint(i),Coordinate.Axis.Y,normalAxis);
 		//Get z from slice
-		double zCoord = Coordinate.convertAxisFromStandardXYZToNormal(getimagePlaneManager1().getWorldCoordinateFromUnitized2D(0,0),Coordinate.Z_AXIS,normalAxis);
+		double zCoord = Coordinate.convertAxisFromStandardXYZToNormal(getimagePlaneManager1().getWorldCoordinateFromUnitized2D(0,0),Coordinate.Axis.Z,normalAxis);
 		//These are now the real coordinates as they are viewed in the slice viewer
 		//Coordinate newCoord = new Coordinate(xCoord,yCoord,zCoord);
 		Coordinate newCoord = Coordinate.convertCoordinateFromNormalToStandardXYZ(xCoord,yCoord,zCoord,normalAxis);
@@ -1380,10 +1380,10 @@ private void setimagePlaneManager1(ImagePlaneManager newValue) {
  * @param normalAxis The new value for the property.
  * @see #getNormalAxis
  */
-public void setNormalAxis(int normalAxis) {
-	int oldValue = fieldNormalAxis;
+public void setNormalAxis(Coordinate.Axis normalAxis) {
+	Coordinate.Axis oldValue = fieldNormalAxis;
 	fieldNormalAxis = normalAxis;
-	firePropertyChange("normalAxis", new Integer(oldValue), new Integer(normalAxis));
+	firePropertyChange("normalAxis", oldValue, normalAxis);
 }
 /**
  * Sets the pdeDataContext property (cbit.vcell.simdata.PDEDataContext) value.
@@ -1486,7 +1486,7 @@ private void updateContours() {
 public Hashtable<SampledCurve, int[]>[] getMembranesAndIndexes(){
 	Hashtable<SampledCurve, int[]>[] membraneSlices = new Hashtable[getimagePlaneManager1().getSourceDataInfo().getZSize()];
 	//meshDisplayAdapter.getCurvesAndMembraneIndexes(normalAxis, slice);
-	int normalAxis = getImagePlaneManagerPanel().getImagePlaneManager().getNormalAxis();
+	Coordinate.Axis normalAxis = getImagePlaneManagerPanel().getImagePlaneManager().getNormalAxis();
 	for (int i = 0; i < membraneSlices.length; i++) {
 		membraneSlices[i] = meshDisplayAdapter.getCurvesAndMembraneIndexes(normalAxis, i);
 	}
@@ -1502,7 +1502,7 @@ private void updateMembraneCurves() {
 			getPdeDataContext().getDataIdentifier() == null) {
 		return;
 	}
-	int normalAxis = getImagePlaneManagerPanel().getImagePlaneManager().getNormalAxis();
+	Coordinate.Axis normalAxis = getImagePlaneManagerPanel().getImagePlaneManager().getNormalAxis();
 	int slice = getImagePlaneManagerPanel().getImagePlaneManager().getSlice();
 	//Remove previous curves
 	CurveRenderer curveRenderer = getImagePlaneManagerPanel().getCurveRenderer();	

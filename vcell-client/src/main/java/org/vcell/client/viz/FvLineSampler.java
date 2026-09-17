@@ -139,7 +139,7 @@ final class FvLineSampler {
 		Coordinate[] wc = helper.getSampleCoordinates();
 		double[][] points = new double[wc.length][];
 		for (int i = 0; i < wc.length; i++) {
-			points[i] = new double[] { wc[i].getX(), wc[i].getY(), wc[i].getZ() };
+			points[i] = new double[] { wc[i].x(), wc[i].y(), wc[i].z() };
 		}
 		return new Samples(Sampling.VOXEL_CROSSING, helper.getSampledIndexes(), helper.getMembraneIndexesInOut(),
 				helper.getWorldCoordinateLengths(), points);

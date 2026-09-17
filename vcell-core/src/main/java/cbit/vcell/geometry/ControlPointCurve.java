@@ -82,9 +82,9 @@ public void addOffsetControlPoint(Coordinate offset, int controlPointIndex) {
 private void addOffsetControlPointPrivate(Coordinate offset, int controlPointIndex) {
     Coordinate oldCoordinate = controlPoints.elementAt(controlPointIndex);
     Coordinate newCoordinate = new Coordinate (
-	    oldCoordinate.getX() + offset.getX(),
-		oldCoordinate.getY() + offset.getY(),
-		oldCoordinate.getZ() + offset.getZ());
+	    oldCoordinate.x() + offset.x(),
+		oldCoordinate.y() + offset.y(),
+		oldCoordinate.z() + offset.z());
     controlPoints.set(controlPointIndex, newCoordinate);
 }
 /**
@@ -132,7 +132,7 @@ public Object clone() {
 	ControlPointCurve cpc = (ControlPointCurve) super.clone();
 	cpc.controlPoints = new Vector<Coordinate>(controlPoints.size( )) ;
 	for(int c = 0;c < controlPoints.size();c++){
-		cpc.controlPoints.addElement((Coordinate) controlPoints.elementAt(c).clone( ));
+		cpc.controlPoints.addElement(new Coordinate(controlPoints.elementAt(c)));
 	}
 	return cpc;
 }
@@ -162,11 +162,10 @@ public boolean compareEqual(org.vcell.util.Matchable obj) {
 /**
  * Insert the method's description here.
  * Creation date: (7/18/00 2:23:22 PM)
- * @param newControlPoint cbit.vcell.geometry.Coordinate
  */
 public Coordinate getControlPoint(int getIndex) {
 	// cbit.util.Assertion.assert(getIndex < getControlPointCount());
-	return (Coordinate)controlPoints.elementAt(getIndex).clone();
+	return new Coordinate(controlPoints.elementAt(getIndex));
 	}
 /**
  * Insert the method's description here.

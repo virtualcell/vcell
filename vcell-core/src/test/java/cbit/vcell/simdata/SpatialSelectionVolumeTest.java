@@ -55,8 +55,8 @@ public class SpatialSelectionVolumeTest {
 		Assertions.assertArrayEquals(new int[] { 10, 11, 12, 13, 14 }, h.getSampledIndexes());
 		Coordinate[] c = h.getSampleCoordinates();
 		for (int i = 0; i < c.length; i++) {
-			Assertions.assertEquals(i, c[i].getX(), 1e-12);
-			Assertions.assertEquals(2, c[i].getY(), 1e-12);
+			Assertions.assertEquals(i, c[i].x(), 1e-12);
+			Assertions.assertEquals(2, c[i].y(), 1e-12);
 		}
 		assertLengthsFollowThePoints(h);
 	}

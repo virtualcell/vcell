@@ -127,15 +127,15 @@ public class CartesianMeshMovingBoundary extends CartesianMesh {
 
     @Override
     public Coordinate getCoordinate(CoordinateIndex coordIndex){
-        double x = Coordinate.coordComponentFromSinglePlanePolicy(origin, extent, Coordinate.X_AXIS);
+        double x = Coordinate.coordComponentFromSinglePlanePolicy(origin, extent, Coordinate.Axis.X);
         if(getSizeX() > 1){
             x = (coordIndex.x + 0.5) * extent.getX() / getSizeX() + origin.getX();
         }
-        double y = Coordinate.coordComponentFromSinglePlanePolicy(origin, extent, Coordinate.Y_AXIS);
+        double y = Coordinate.coordComponentFromSinglePlanePolicy(origin, extent, Coordinate.Axis.Y);
         if(getSizeY() > 1){
             y = (coordIndex.y + 0.5) * extent.getY() / getSizeY() + origin.getY();
         }
-        double z = Coordinate.coordComponentFromSinglePlanePolicy(origin, extent, Coordinate.Z_AXIS);
+        double z = Coordinate.coordComponentFromSinglePlanePolicy(origin, extent, Coordinate.Axis.Z);
         if(getSizeZ() > 1){
             z = (coordIndex.z + 0.5) * extent.getZ() / getSizeZ() + origin.getZ();
         }

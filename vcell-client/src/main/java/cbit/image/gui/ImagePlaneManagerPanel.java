@@ -1492,9 +1492,9 @@ private void updateInfo(MouseEvent mouseEvent) {
 						int volumeIndex = getSourceDataInfo().calculateWorldIndex(ci);
 						Coordinate quantizedWC = getSourceDataInfo().getWorldCoordinateFromIndex(ci);
 						boolean bUndefined = getSourceDataInfo().isDataNull()||(getDataInfoProvider() != null && !getDataInfoProvider().isDefined(volumeIndex));
-						String xCoordString = NumberUtils.formatNumber(quantizedWC.getX());
-						String yCoordString = NumberUtils.formatNumber(quantizedWC.getY());
-						String zCoordString = NumberUtils.formatNumber(quantizedWC.getZ());
+						String xCoordString = NumberUtils.formatNumber(quantizedWC.x());
+						String yCoordString = NumberUtils.formatNumber(quantizedWC.y());
+						String zCoordString = NumberUtils.formatNumber(quantizedWC.z());
 						infoS = 
 							"(" + xCoordString +
 							(getSourceDataInfo().getYSize() > 1?"," + yCoordString:"") +

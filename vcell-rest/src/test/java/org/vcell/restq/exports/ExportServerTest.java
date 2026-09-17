@@ -27,6 +27,7 @@ import org.vcell.restq.db.AgroalConnectionFactory;
 import org.vcell.restq.handlers.ExportResource;
 import org.vcell.restq.services.Exports.ExportService;
 import org.vcell.restq.services.Exports.ServerExportEventController;
+import org.vcell.util.Coordinate;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
 
@@ -143,7 +144,7 @@ public class ExportServerTest {
         ExportSpecs exportSpecs = getValidExportSpec(0, 1);
         long badJobID = 2;
         ExportSpecs badExportSpecs = new ExportSpecs(exportSpecs.getVCDataIdentifier(), ExportFormat.N5, null, null,
-                new GeometrySpecs(new SpatialSelection[]{}, -1, 5000, ExportEnums.GeometryMode.GEOMETRY_SLICE), null, "TestSim", null);
+                new GeometrySpecs(new SpatialSelection[]{}, null, 5000, ExportEnums.GeometryMode.GEOMETRY_SLICE), null, "TestSim", null);
         Multi<ExportEvent> status = createExportListener(badExportSpecs, badJobID);
 
         // Start job, while having it be blocking on the main thread to check status
@@ -203,7 +204,7 @@ public class ExportServerTest {
         DataIdentifier volumetricDataID = getOneDIWithSpecificType(VariableType.VOLUME, dataIdentifier);
 
         VariableSpecs variableSpecs = new VariableSpecs(new ArrayList<>(){{add(volumetricDataID.getName());}}, ExportEnums.VariableMode.VARIABLE_ONE);
-        ExportResource.GeometrySpecDTO geometrySpecs = new ExportResource.GeometrySpecDTO(new SpatialSelection[0], 0, 0, ExportEnums.GeometryMode.GEOMETRY_SELECTIONS);
+        ExportResource.GeometrySpecDTO geometrySpecs = new ExportResource.GeometrySpecDTO(new SpatialSelection[0], Coordinate.Axis.X, 0, ExportEnums.GeometryMode.GEOMETRY_SELECTIONS);
 
         double[] allTimes = dataServer.getDataSetTimes(TestEndpointUtils.administratorUser, simulationDataIdentifier);
         TimeSpecs timeSpecs = new TimeSpecs(startTimeIndex, endTimeIndex, allTimes, ExportEnums.TimeMode.TIME_RANGE);

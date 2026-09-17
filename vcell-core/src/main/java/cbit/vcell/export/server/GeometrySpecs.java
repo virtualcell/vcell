@@ -22,6 +22,7 @@ import cbit.vcell.geometry.SinglePoint;
 import cbit.vcell.simdata.SpatialSelection;
 import cbit.vcell.simdata.SpatialSelectionMembrane;
 import org.vcell.util.CompressionUtils;
+import org.vcell.util.Coordinate;
 
 /**
  * This type was created in VisualAge.
@@ -32,7 +33,7 @@ public class GeometrySpecs implements Serializable {
     @JsonIgnore
     private byte[][] serializedSelections = null;
     private transient SpatialSelection[] spatialSelections = null;
-    private final int axis;
+    private final Coordinate.Axis axis;
     private final int sliceNumber;
     private final ExportEnums.GeometryMode modeID;
 
@@ -46,7 +47,7 @@ public class GeometrySpecs implements Serializable {
      */
 
     @JsonCreator
-    public GeometrySpecs(SpatialSelection[] selections, int axis, int sliceNumber, ExportEnums.GeometryMode geometryMode){
+    public GeometrySpecs(SpatialSelection[] selections, Coordinate.Axis axis, int sliceNumber, ExportEnums.GeometryMode geometryMode){
         if(selections != null){
             try {
                 serializedSelections = new byte[selections.length][];
@@ -108,7 +109,7 @@ public class GeometrySpecs implements Serializable {
      * @return int
      */
     @JsonIgnore
-    public int getAxis(){
+    public Coordinate.Axis getAxis(){
         return axis;
     }
 

@@ -122,7 +122,7 @@ public class KymographDesktopResampleTest {
 	private SpatialSelection.SSHelper desktopMembraneSamples(int c) throws Exception {
 		String[] mc = MEMBRANE_CASES[c];
 		CartesianMesh mesh = dataManager.getMesh(FieldViewerServerFvTest.vcdID(mc[0]));
-		int axis = "xyz".indexOf(mc[3]);
+		Coordinate.Axis axis = Coordinate.Axis.fromAxisChar(mc[3]); // old: int axis = "xyz".indexOf(mc[3]);
 		Map<SampledCurve, int[]> curves = new MeshDisplayAdapter(mesh).getCurvesAndMembraneIndexes(axis, Integer.parseInt(mc[4]));
 		Assertions.assertEquals(1, curves.size());
 		Map.Entry<SampledCurve, int[]> e = curves.entrySet().iterator().next();

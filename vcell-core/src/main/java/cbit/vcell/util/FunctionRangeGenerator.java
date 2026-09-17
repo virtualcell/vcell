@@ -142,9 +142,9 @@ public class FunctionRangeGenerator {
 				}else{
 					throw new Exception("Not implemented "+variableType.getTypeName());
 				}
-				values[1] = coord.getX();
-				values[2] = coord.getY();
-				values[3] = coord.getZ();						
+				values[1] = coord.x();
+				values[2] = coord.y();
+				values[3] = coord.z();
 				for (int varIndex=0; varIndex<varStatistics.length; varIndex++){
 					double s = rand.nextDouble();
 					values[4+varIndex] = s * varStatistics[varIndex].minValuesOverTime[tIndex] +
