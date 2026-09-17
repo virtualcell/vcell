@@ -26,6 +26,7 @@ import com.google.gson.internal.LinkedTreeMap;
 import org.janelia.saalfeldlab.n5.DataBlock;
 import org.janelia.saalfeldlab.n5.*;
 import org.junit.jupiter.api.*;
+import org.vcell.util.Coordinate;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
@@ -178,7 +179,7 @@ public class N5ExporterTest {
 
 
         VariableSpecs variableSpecs = new VariableSpecs(variables.stream().map(di -> di.getName()).toList(), ExportEnums.VariableMode.VARIABLE_MULTI);
-        GeometrySpecs geometrySpecs = new GeometrySpecs(new SpatialSelection[0], 0, 0, ExportEnums.GeometryMode.GEOMETRY_SELECTIONS);
+        GeometrySpecs geometrySpecs = new GeometrySpecs(new SpatialSelection[0], Coordinate.Axis.X, 0, ExportEnums.GeometryMode.GEOMETRY_SELECTIONS);
         N5Specs n5Specs = new N5Specs(ExportEnums.ExportableDataType.PDE_VARIABLE_DATA, ExportFormat.N5, compressionLevel, modelID);
 
         double[] allTimes = dataServer.getDataSetTimes(testUser,n5Exporter.getVcDataID());
