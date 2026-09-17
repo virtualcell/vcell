@@ -15,23 +15,20 @@ import org.tensorflow.ndarray.NdArrays;
 import org.tensorflow.ndarray.Shape;
 import org.tensorflow.ndarray.ShortNdArray;
 import org.tensorflow.ndarray.buffer.DataBuffers;
+import org.vcell.util.Coordinate;
 import tech.tablesaw.api.*;
 import tech.tablesaw.columns.Column;
 
 public record TablesawMeshData(
-		Map<Coordinate, Long> sizeData,
-		Map<Coordinate, Double> extentData,
-		Map<Coordinate, Double> originData,
+		Map<Coordinate.Axis, Long> sizeData,
+		Map<Coordinate.Axis, Double> extentData,
+		Map<Coordinate.Axis, Double> originData,
 		Table volumeRegionsMapSubvolume,
 		Table membraneRegionsMapVolumeRegion,
 		ShortNdArray volumeRegionMapData,
 		Table membraneElements
 ) {
-	public enum Coordinate {
-		X,
-		Y,
-		Z,
-	}
+
 
 	private record ColumnDescription(Class<? extends Column<?>> columnClass, String columnName){}
 	private static final Pattern trailingCommentPattern = Pattern.compile("(\\w)//");
@@ -54,9 +51,9 @@ public record TablesawMeshData(
 		if (!reader.ready()) throw new IllegalStateException("Unable to prepare buffered reader for mesh file");
 		TablesawMeshData.processVersion(reader);
 		TablesawMeshData.processCartesianMeshHeader(reader);
-		Map<Coordinate, Long> sizeData = TablesawMeshData.processCartesianData(reader, Long.class);
-		Map<Coordinate, Double> extentData = TablesawMeshData.processCartesianData(reader, Double.class);
-		Map<Coordinate, Double> originData = TablesawMeshData.processCartesianData(reader, Double.class);
+		Map<Coordinate.Axis, Long> sizeData = TablesawMeshData.processCartesianData(reader, Long.class);
+		Map<Coordinate.Axis, Double> extentData = TablesawMeshData.processCartesianData(reader, Double.class);
+		Map<Coordinate.Axis, Double> originData = TablesawMeshData.processCartesianData(reader, Double.class);
 
 		TablesawMeshData.processVolumeRegionsMapSubvolumeHeader(reader);
 		Table volumeRegionsMapSubvolume = TablesawMeshData.processVolumeRegions(reader);
@@ -65,7 +62,7 @@ public record TablesawMeshData(
 		Table membraneRegionsMapVolumeRegion = TablesawMeshData.processMembraneRegionsMapVolumeRegion(reader);
 
 		TablesawMeshData.processVolumeElementsMapVolumeRegionHeader(reader);
-		Shape dataShape = Shape.of(sizeData.get(Coordinate.Z), sizeData.get(Coordinate.Y), sizeData.get(Coordinate.X));
+		Shape dataShape = Shape.of(sizeData.get(Coordinate.Axis.Z), sizeData.get(Coordinate.Axis.Y), sizeData.get(Coordinate.Axis.X));
 		ShortNdArray volumeRegionMapData = TablesawMeshData.processVolumeElementsMapVolumeRegion(reader, dataShape, volumeRegionsMapSubvolume);
 
 		TablesawMeshData.processMembraneElementsHeader(reader);
@@ -87,13 +84,13 @@ public record TablesawMeshData(
 		if (!"CartesianMesh {".equals(header)) throw new  IllegalStateException(String.format("Expected \"CartesianMesh {\", got \"%s\"", header));
 	}
 
-	private static <T> EnumMap<Coordinate, T> processCartesianData(BufferedReader reader, Class<T> type) throws IOException {
+	private static <T> EnumMap<Coordinate.Axis, T> processCartesianData(BufferedReader reader, Class<T> type) throws IOException {
 		String sizeLine = TablesawMeshData.getLine(reader);
 		List<T> sizes = TablesawMeshData.getPartsOfLine(sizeLine, 3, type);
-		EnumMap<Coordinate, T> cartesianSize = new EnumMap<>(Coordinate.class);
-		cartesianSize.put(Coordinate.X, sizes.get(0));
-		cartesianSize.put(Coordinate.Y, sizes.get(1));
-		cartesianSize.put(Coordinate.Z, sizes.get(2));
+		EnumMap<Coordinate.Axis, T> cartesianSize = new EnumMap<>(Coordinate.Axis.class);
+		cartesianSize.put(Coordinate.Axis.X, sizes.get(0));
+		cartesianSize.put(Coordinate.Axis.Y, sizes.get(1));
+		cartesianSize.put(Coordinate.Axis.Z, sizes.get(2));
 		return cartesianSize;
 	}
 
