@@ -71,7 +71,7 @@ public class SiteAttributesSpec implements Serializable, Identifiable, Displayab
 		setRadius(thatSas.getRadius());
 		setDiffusionRate(thatSas.getDiffusionRate());
 		setColor(thatSas.getColor());
-		Coordinate c = new Coordinate(thatSas.getCoordinate().getX(), thatSas.getCoordinate().getY(), thatSas.getCoordinate().getZ());
+		Coordinate c = new Coordinate(thatSas.getCoordinate().x(), thatSas.getCoordinate().y(), thatSas.getCoordinate().z());
 		setCoordinate(c);	// we make a new instance for coordinates
 	}
 
@@ -120,13 +120,13 @@ public class SiteAttributesSpec implements Serializable, Identifiable, Displayab
 		this.fieldColor = color;
 	}
 	public double getX() {
-		return getCoordinate().getX();
+		return getCoordinate().x();
 	}
 	public double getY() {
-		return getCoordinate().getY();
+		return getCoordinate().y();
 	}
 	public double getZ() {
-		return getCoordinate().getZ();
+		return getCoordinate().z();
 	}
 
 	public int getIndex() {
@@ -287,9 +287,9 @@ public class SiteAttributesSpec implements Serializable, Identifiable, Displayab
 		for (SiteAttributesSpec sas : map.values()) {
 			Coordinate c = sas.getCoordinate();
 			if (c != null) {
-				if (c.getX() < minX) minX = c.getX();
-				if (c.getY() < minY) minY = c.getY();
-				if (c.getZ() < minZ) minZ = c.getZ();
+				if (c.x() < minX) minX = c.x();
+				if (c.y() < minY) minY = c.y();
+				if (c.z() < minZ) minZ = c.z();
 			}
 		}
 		if (minX == Double.POSITIVE_INFINITY) {
@@ -304,9 +304,9 @@ public class SiteAttributesSpec implements Serializable, Identifiable, Displayab
 		for (SiteAttributesSpec sas : map.values()) {
 			Coordinate c = sas.getCoordinate();
 			if (c != null) {
-				if (c.getX() > maxX) maxX = c.getX();
-				if (c.getY() > maxY) maxY = c.getY();
-				if (c.getZ() > maxZ) maxZ = c.getZ();
+				if (c.x() > maxX) maxX = c.x();
+				if (c.y() > maxY) maxY = c.y();
+				if (c.z() > maxZ) maxZ = c.z();
 			}
 		}
 		if (maxX == Double.NEGATIVE_INFINITY) {

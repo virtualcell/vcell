@@ -500,14 +500,14 @@ public class RegionImage implements Serializable {
                 public int compare(Polygon obj1, Polygon obj2){
                     Coordinate o1 = ((Quadrilateral) obj1).calculateCentroid();
                     Coordinate o2 = ((Quadrilateral) obj2).calculateCentroid();
-                    double xdiff = o1.getX() - o2.getX();
-                    double xmin = Math.min(Math.abs(o1.getX()), Math.abs(o2.getX()));
+                    double xdiff = o1.x() - o2.x();
+                    double xmin = Math.min(Math.abs(o1.x()), Math.abs(o2.x()));
                     double xlimit = (1e-12 * (xmin >= 1.0 ? (Math.pow(10, (int) Math.log10(xmin) + 1)) : 1));
-                    double ydiff = o1.getY() - o2.getY();
-                    double ymin = Math.min(Math.abs(o1.getY()), Math.abs(o2.getY()));
+                    double ydiff = o1.y() - o2.y();
+                    double ymin = Math.min(Math.abs(o1.y()), Math.abs(o2.y()));
                     double ylimit = (1e-12 * (ymin >= 1.0 ? (Math.pow(10, (int) Math.log10(ymin) + 1)) : 1));
-                    double zdiff = o1.getZ() - o2.getZ();
-                    double zmin = Math.min(Math.abs(o1.getZ()), Math.abs(o2.getZ()));
+                    double zdiff = o1.z() - o2.z();
+                    double zmin = Math.min(Math.abs(o1.z()), Math.abs(o2.z()));
                     double zlimit = (1e-12 * (zmin >= 1.0 ? (Math.pow(10, (int) Math.log10(zmin) + 1)) : 1));
                     if(Math.abs(zdiff) < zlimit){
                         if(Math.abs(ydiff) < ylimit){

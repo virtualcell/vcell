@@ -19,8 +19,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.swing.*;
-import javax.swing.border.LineBorder;
-import javax.swing.table.TableCellRenderer;
 
 import cbit.vcell.mapping.*;
 import org.vcell.model.rbm.*;
@@ -150,17 +148,17 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<LinkNode> 
 				if(sas == null) {
 					return null;
 				}
-				return sas.getCoordinate().getX();	// nm
+				return sas.getCoordinate().x();	// nm
 			case COLUMN_Y:
 				if(sas == null) {
 					return null;
 				}
-				return sas.getCoordinate().getY();	// nm
+				return sas.getCoordinate().y();	// nm
 			case COLUMN_Z:
 				if(sas == null) {
 					return null;
 				}
-				return sas.getCoordinate().getZ();	// nm
+				return sas.getCoordinate().z();	// nm
 			case COLUMN_RADIUS:
 				if(sas == null) {
 					return null;
@@ -226,8 +224,8 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<LinkNode> 
 					return;
 				}
 				Coordinate c = sas.getCoordinate();
-				if(c.getX() != res) {
-					c = new Coordinate(res, c.getY(), c.getZ());
+				if(c.x() != res) {
+					c = new Coordinate(res, c.y(), c.z());
 					sas.setCoordinate(c);
 					scs.firePropertyChange(SpeciesContextSpec.PROPERTY_NAME_SITE_ATTRIBUTE, null, sas);
 				}
@@ -247,8 +245,8 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<LinkNode> 
 					return;
 				}
 				Coordinate c = sas.getCoordinate();
-				if(c.getY() != res) {
-					c = new Coordinate(c.getX(), res, c.getZ());
+				if(c.y() != res) {
+					c = new Coordinate(c.x(), res, c.z());
 					sas.setCoordinate(c);
 					scs.firePropertyChange(SpeciesContextSpec.PROPERTY_NAME_SITE_ATTRIBUTE, null, sas);
 				}
@@ -278,8 +276,8 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<LinkNode> 
 //					return;
 				}
 				Coordinate c = sas.getCoordinate();
-				if(c.getZ() != res) {
-					c = new Coordinate(c.getX(), c.getY(), res);
+				if(c.z() != res) {
+					c = new Coordinate(c.x(), c.y(), res);
 					sas.setCoordinate(c);
 					// updates the Length in the links table (LinkSpecsTableModel)
 					scs.firePropertyChange(SpeciesContextSpec.PROPERTY_NAME_SITE_ATTRIBUTE, null, sas);

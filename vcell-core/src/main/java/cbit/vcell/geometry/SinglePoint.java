@@ -64,7 +64,7 @@ public int getMaxControlPoints() {
  */
 public double getX(double u) {
 	//Assume u is between 0 and 1
-	return getControlPoint(0).getAxisElement(Coordinate.X_AXIS);
+	return getControlPoint(0).getAxisElement(Coordinate.Axis.X);
 }
 /**
  * This method was created in VisualAge.
@@ -73,7 +73,7 @@ public double getX(double u) {
  */
 public double getY(double u) {
 	//Assume u is between 0 and 1
-	return getControlPoint(0).getAxisElement(Coordinate.Y_AXIS);
+	return getControlPoint(0).getAxisElement(Coordinate.Axis.Y);
 }
 /**
  * This method was created in VisualAge.
@@ -82,7 +82,7 @@ public double getY(double u) {
  */
 public double getZ(double u) {
 	//Assume u is between 0 and 1
-	return getControlPoint(0).getAxisElement(Coordinate.Z_AXIS);
+	return getControlPoint(0).getAxisElement(Coordinate.Axis.Z);
 }
 /**
  * Insert the method's description here.

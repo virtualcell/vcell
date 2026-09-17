@@ -51,7 +51,7 @@ public class PDEOffscreenRenderer {
     private ServerPDEDataContext serverPDEDataContext = null;
     private DisplayAdapterService displayAdapterService = new DisplayAdapterService();
     private int slice = 0;
-    private int normalAxis = 0;
+    private Coordinate.Axis normalAxis = Coordinate.Axis.X;
     private BitSet domainValid;
 
 
@@ -91,7 +91,7 @@ public class PDEOffscreenRenderer {
      *
      * @return int
      */
-    private int getNormalAxis(){
+    private Coordinate.Axis getNormalAxis(){
         return normalAxis;
     }
 
@@ -171,7 +171,7 @@ public class PDEOffscreenRenderer {
                 org.vcell.util.Extent extent = mesh.getExtent();
                 curveRenderer.setWorldOrigin(new org.vcell.util.Coordinate(origin.getX(), origin.getY(), origin.getZ()));
                 Coordinate pixeldelta = getPixelDelta(extent, mesh, meshMode, imageScale);
-                curveRenderer.setWorldDelta(new org.vcell.util.Coordinate(pixeldelta.getX(), pixeldelta.getY(), pixeldelta.getZ()));
+                curveRenderer.setWorldDelta(new org.vcell.util.Coordinate(pixeldelta.x(), pixeldelta.y(), pixeldelta.z()));
                 Hashtable<SampledCurve, int[]> curvesAndMembraneIndexes = meshDisplayAdapter.getCurvesAndMembraneIndexes(getNormalAxis(), getSlice());
                 if(curvesAndMembraneIndexes != null){
                     for(Curve curve : Collections.list(curvesAndMembraneIndexes.keys())){
@@ -200,7 +200,7 @@ public class PDEOffscreenRenderer {
             org.vcell.util.Extent extent = mesh.getExtent();
             curveRenderer.setWorldOrigin(new org.vcell.util.Coordinate(origin.getX(), origin.getY(), origin.getZ()));
             Coordinate pixeldelta = getPixelDelta(extent, mesh, meshMode, imageScale);
-            curveRenderer.setWorldDelta(new org.vcell.util.Coordinate(pixeldelta.getX(), pixeldelta.getY(), pixeldelta.getZ()));
+            curveRenderer.setWorldDelta(new org.vcell.util.Coordinate(pixeldelta.x(), pixeldelta.y(), pixeldelta.z()));
             Hashtable<SampledCurve, int[]> curvesAndMembraneIndexes = meshDisplayAdapter.getCurvesAndMembraneIndexes(getNormalAxis(), getSlice());
             if(curvesAndMembraneIndexes != null){
                 for(Curve curve : Collections.list(curvesAndMembraneIndexes.keys())){
@@ -255,7 +255,7 @@ public class PDEOffscreenRenderer {
      *
      * @param newNormalAxis int
      */
-    public void setNormalAxis(int newNormalAxis){
+    public void setNormalAxis(Coordinate.Axis newNormalAxis){
         normalAxis = newNormalAxis;
     }
 

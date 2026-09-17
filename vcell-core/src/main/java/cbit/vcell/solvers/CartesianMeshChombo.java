@@ -710,9 +710,9 @@ public class CartesianMeshChombo extends CartesianMesh {
             dx[1] = getExtent().getY() / getSizeY();
             dx[2] = getExtent().getZ() / getSizeZ();
         }
-        int i = (int) ((wc.getX() - getOrigin().getX()) / dx[0]);
-        int j = (int) ((wc.getY() - getOrigin().getY()) / dx[1]);
-        int k = dimension < 3 ? 0 : (int) ((wc.getZ() - getOrigin().getZ()) / dx[2]);
+        int i = (int) ((wc.x() - getOrigin().getX()) / dx[0]);
+        int j = (int) ((wc.y() - getOrigin().getY()) / dx[1]);
+        int k = dimension < 3 ? 0 : (int) ((wc.z() - getOrigin().getZ()) / dx[2]);
         return findMembraneIndexFromVolumeIndex(new CoordinateIndex(i, j, k));
     }
 
@@ -729,15 +729,15 @@ public class CartesianMeshChombo extends CartesianMesh {
 
     @Override
     public Coordinate getCoordinate(CoordinateIndex coordIndex){
-        double x = Coordinate.coordComponentFromSinglePlanePolicy(origin, extent, Coordinate.X_AXIS);
+        double x = Coordinate.coordComponentFromSinglePlanePolicy(origin, extent, Coordinate.Axis.X);
         if(getSizeX() > 1){
             x = (coordIndex.x + 0.5) * extent.getX() / getSizeX() + origin.getX();
         }
-        double y = Coordinate.coordComponentFromSinglePlanePolicy(origin, extent, Coordinate.Y_AXIS);
+        double y = Coordinate.coordComponentFromSinglePlanePolicy(origin, extent, Coordinate.Axis.Y);
         if(getSizeY() > 1){
             y = (coordIndex.y + 0.5) * extent.getY() / getSizeY() + origin.getY();
         }
-        double z = Coordinate.coordComponentFromSinglePlanePolicy(origin, extent, Coordinate.Z_AXIS);
+        double z = Coordinate.coordComponentFromSinglePlanePolicy(origin, extent, Coordinate.Axis.Z);
         if(getSizeZ() > 1){
             z = (coordIndex.z + 0.5) * extent.getZ() / getSizeZ() + origin.getZ();
         }

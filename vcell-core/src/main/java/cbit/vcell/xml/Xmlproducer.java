@@ -790,11 +790,11 @@ public Element getXML(Coordinate param) {
 	Element coord = new Element(XMLTags.CoordinateTag);
 
 	//X
-	coord.setAttribute(XMLTags.XAttrTag, String.valueOf(param.getX()));
+	coord.setAttribute(XMLTags.XAttrTag, String.valueOf(param.x()));
 	//Y
-	coord.setAttribute(XMLTags.YAttrTag, String.valueOf(param.getY()));
+	coord.setAttribute(XMLTags.YAttrTag, String.valueOf(param.y()));
 	//Z
-	coord.setAttribute(XMLTags.ZAttrTag, String.valueOf(param.getZ()));
+	coord.setAttribute(XMLTags.ZAttrTag, String.valueOf(param.z()));
 	
 	return coord;
 }
@@ -1740,9 +1740,9 @@ private Element getXML(SpeciesContextSpec param, SimulationContext simContext) {
 			sasElement.setAttribute(XMLTags.SiteRefAttrTag, mcp.getMolecularComponent().getName());
 			sasElement.setAttribute(XMLTags.MoleculeRefAttrTag, mt.getName());
 			sasElement.setAttribute(XMLTags.SiteLocationRefAttrTag, sas.getLocation().getName());
-			sasElement.setAttribute(XMLTags.SiteCoordXAttrTag, Double.toString(sas.getCoordinate().getX()));
-			sasElement.setAttribute(XMLTags.SiteCoordYAttrTag, Double.toString(sas.getCoordinate().getY()));
-			sasElement.setAttribute(XMLTags.SiteCoordZAttrTag, Double.toString(sas.getCoordinate().getZ()));
+			sasElement.setAttribute(XMLTags.SiteCoordXAttrTag, Double.toString(sas.getCoordinate().x()));
+			sasElement.setAttribute(XMLTags.SiteCoordYAttrTag, Double.toString(sas.getCoordinate().y()));
+			sasElement.setAttribute(XMLTags.SiteCoordZAttrTag, Double.toString(sas.getCoordinate().z()));
 			sasElement.setAttribute(XMLTags.SiteRadiusAttrTag, Double.toString(sas.getRadius()));
 			sasElement.setAttribute(XMLTags.SiteDiffusionAttrTag, Double.toString(sas.getDiffusionRate()));
 			sasElement.setAttribute(XMLTags.SiteColorAttrTag, sas.getColor().getName());
@@ -1764,9 +1764,9 @@ private Element getXML(SpeciesContextSpec param, SimulationContext simContext) {
 			sasElement.setAttribute(XMLTags.SiteRefAttrTag, ss.getName());
 			sasElement.setAttribute(XMLTags.MoleculeRefAttrTag, mt.getName());
 			sasElement.setAttribute(XMLTags.SiteLocationRefAttrTag, sas.getLocation().getName());
-			sasElement.setAttribute(XMLTags.SiteCoordXAttrTag, Double.toString(sas.getCoordinate().getX()));
-			sasElement.setAttribute(XMLTags.SiteCoordYAttrTag, Double.toString(sas.getCoordinate().getY()));
-			sasElement.setAttribute(XMLTags.SiteCoordZAttrTag, Double.toString(sas.getCoordinate().getZ()));
+			sasElement.setAttribute(XMLTags.SiteCoordXAttrTag, Double.toString(sas.getCoordinate().x()));
+			sasElement.setAttribute(XMLTags.SiteCoordYAttrTag, Double.toString(sas.getCoordinate().y()));
+			sasElement.setAttribute(XMLTags.SiteCoordZAttrTag, Double.toString(sas.getCoordinate().z()));
 			sasElement.setAttribute(XMLTags.SiteRadiusAttrTag, Double.toString(sas.getRadius()));
 			sasElement.setAttribute(XMLTags.SiteDiffusionAttrTag, Double.toString(sas.getDiffusionRate()));
 			sasElement.setAttribute(XMLTags.SiteColorAttrTag, sas.getColor().getName());
@@ -3086,9 +3086,9 @@ private Element getXML(ParticleMolecularComponent param) {
 		if (lParam.getLocation()!=null) {
 			e.setAttribute(XMLTags.ParticleMolecularComponentLocationTag, lParam.getLocation().toString());
 		}
-		e.setAttribute(XMLTags.ParticleMolecularComponentCoordXAttrTag, Double.toString(lParam.getCoordinate().getX()));
-		e.setAttribute(XMLTags.ParticleMolecularComponentCoordYAttrTag, Double.toString(lParam.getCoordinate().getY()));
-		e.setAttribute(XMLTags.ParticleMolecularComponentCoordZAttrTag, Double.toString(lParam.getCoordinate().getZ()));
+		e.setAttribute(XMLTags.ParticleMolecularComponentCoordXAttrTag, Double.toString(lParam.getCoordinate().x()));
+		e.setAttribute(XMLTags.ParticleMolecularComponentCoordYAttrTag, Double.toString(lParam.getCoordinate().y()));
+		e.setAttribute(XMLTags.ParticleMolecularComponentCoordZAttrTag, Double.toString(lParam.getCoordinate().z()));
 		e.setAttribute(XMLTags.ParticleMolecularComponentColorTag, lParam.getColor().getName());
 	}
 	if(param.getComponentStateDefinitions() != null) {

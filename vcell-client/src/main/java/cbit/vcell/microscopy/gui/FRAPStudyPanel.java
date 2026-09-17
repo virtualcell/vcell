@@ -1369,7 +1369,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				int endTimeIndex = getFRAPSimDataViewerPanel().getOriginalDataViewer().getPdeDataContext().getTimePoints().length - 1;
 				TimeSpecs timeSpecs = new TimeSpecs(0, endTimeIndex, pdeDataContext.getTimePoints(), ExportEnums.TimeMode.TIME_RANGE);
 				ExportEnums.GeometryMode geoMode = ExportEnums.GeometryMode.GEOMETRY_SLICE;
-				GeometrySpecs geometrySpecs = new GeometrySpecs(null, Coordinate.Z_AXIS, 0, geoMode);
+				GeometrySpecs geometrySpecs = new GeometrySpecs(null, Coordinate.Axis.Z, 0, geoMode);
 				
 				double duration = 10000; //10s
 				DisplayPreferences pref1 = new DisplayPreferences("BlueRed", new Range(0.01,1.1),DisplayAdapterService.createBlueRedSpecialColors(),true,false);

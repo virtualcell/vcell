@@ -783,9 +783,9 @@ private BitSet getFillROI(SpatialSelectionVolume spatialSelectionVolume){
 		Point[] projVolCI = new Point[ssHelper.getSampledIndexes().length];
 		for (int i = 0; i < ssHelper.getSampledIndexes().length; i++) {
 			CoordinateIndex vCI = getPdeDataContext().getCartesianMesh().getCoordinateIndexFromVolumeIndex(ssHelper.getSampledIndexes()[i]);
-			int normalAxis = getPDEDataContextPanel1().getNormalAxis();
-			projVolCI[i] = new Point((int)Coordinate.convertAxisFromStandardXYZToNormal(vCI.x, vCI.y,vCI.z, Coordinate.X_AXIS, normalAxis),
-					(int)Coordinate.convertAxisFromStandardXYZToNormal(vCI.x, vCI.y,vCI.z, Coordinate.Y_AXIS, normalAxis));
+			Coordinate.Axis normalAxis = getPDEDataContextPanel1().getNormalAxis();
+			projVolCI[i] = new Point((int)Coordinate.convertAxisFromStandardXYZToNormal(vCI.x, vCI.y,vCI.z, Coordinate.Axis.X, normalAxis),
+					(int)Coordinate.convertAxisFromStandardXYZToNormal(vCI.x, vCI.y,vCI.z, Coordinate.Axis.Y, normalAxis));
 			if(i==0){
 				projMin = new Point(projVolCI[i]);
 				projMax = new Point(projMin);

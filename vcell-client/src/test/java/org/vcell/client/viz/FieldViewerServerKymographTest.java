@@ -158,7 +158,7 @@ public class FieldViewerServerKymographTest {
 		Coordinate[] wc = d.ssh().getSampleCoordinates();
 		double[] points = doubles(samples.getAsJsonArray("points"));
 		for (int i = 0; i < wc.length; i++) {
-			Assertions.assertArrayEquals(new double[] { wc[i].getX(), wc[i].getY(), wc[i].getZ() },
+			Assertions.assertArrayEquals(new double[] { wc[i].x(), wc[i].y(), wc[i].z() },
 					new double[] { points[3 * i], points[3 * i + 1], points[3 * i + 2] });
 		}
 		Assertions.assertArrayEquals(d.timesAndValues()[0], doubles(k.getAsJsonArray("times")));
