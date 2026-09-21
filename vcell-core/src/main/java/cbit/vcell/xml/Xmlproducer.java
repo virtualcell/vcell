@@ -4864,9 +4864,9 @@ private Element getXML(LangevinSimulationOptions lso) {
 	e.setText(String.valueOf(lso.getTotalNumberOfJobs()));
 	lsoe.addContent(e);
 
-	e = new Element(XMLTags.LangevinSO_numberOfConcurrentJobs);
-	e.setText(String.valueOf(lso.getNumberOfConcurrentJobs()));
-	lsoe.addContent(e);
+//	e = new Element(XMLTags.LangevinSO_numberOfConcurrentJobs);
+//	e.setText(String.valueOf(lso.getNumberOfConcurrentJobs()));
+//	lsoe.addContent(e);
 
 	if(lso.getRandomSeed() != null) {
 		e = new Element(XMLTags.LangevinSO_randomSeed);

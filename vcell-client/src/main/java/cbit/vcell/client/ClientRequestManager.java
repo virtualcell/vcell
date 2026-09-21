@@ -55,6 +55,7 @@ import cbit.vcell.numericstest.ModelGeometryOPResults;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.render.Vect3d;
 import cbit.vcell.resource.ResourceUtil;
+import cbit.vcell.server.ServerInfo;
 import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.simdata.*;
 import cbit.vcell.solver.*;
@@ -417,6 +418,11 @@ public class ClientRequestManager
 	@Override
 	public ClientServerInfo getClientServerInfo() {
 		return getVcellClient().getClientServerManager().getClientServerInfo();
+	}
+
+	@Override
+	public ServerInfo getServerInfo() {
+		return new ServerInfo();
 	}
 
 	private boolean closeAllWindows(boolean duringExit) {
