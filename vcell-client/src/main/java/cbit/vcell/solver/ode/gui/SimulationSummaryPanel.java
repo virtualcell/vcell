@@ -195,10 +195,11 @@ private void displayMesh() {
 				}getJLabel11().setText(labelName);
 				getJLabelMesh().setText(labelText);
 
-        ChomboSolverSpec chomboSolverSpec = getSimulation().getSolverTaskDescription().getChomboSolverSpec();
+        		ChomboSolverSpec chomboSolverSpec = getSimulation().getSolverTaskDescription().getChomboSolverSpec();
 				if (getSimulation().getSolverTaskDescription().getSolverDescription().isChomboSolver()) {
 					int numRefinementLevels = chomboSolverSpec.getNumRefinementLevels();				
 					labelMeshRefinementTitle.setVisible(true);
+					labelMeshRefinementTitle.setText("Mesh Refinement:");	// multi-use now, must be set explicitly
 					getJLabelMeshRefinement().setVisible(true);
 					labelFinestMeshTitle.setVisible(true);
 					labelFinestMesh.setVisible(true);
@@ -228,11 +229,42 @@ private void displayMesh() {
 						labelViewLevelMeshTitle.setVisible(false);
 						labelViewLevelMesh.setVisible(false);
 					}
-        } else {
-        	labelMeshRefinementTitle.setVisible(false);
-        	getJLabelMeshRefinement().setVisible(false);
-        	labelFinestMesh.setVisible(false);
-        	labelFinestMeshTitle.setVisible(false);
+				// hijacking the mesh refinement label to display langevin specific concurrent run info
+        		} else if(getSimulation().getSolverTaskDescription().getSolverDescription().isLangevinSolver()) {
+					LangevinSimulationOptions lso = getSimulation().getSolverTaskDescription().getLangevinSimulationOptions();
+					if(lso.getTotalNumberOfJobs() > 1) {
+						ServerInfo si = getServerInfo();
+						int timeoutPerTaskSeconds = si != null ? si.getTimeoutPerTaskSeconds() : ServerInfo.VCELL_SLURM_LANGEVIN_TIMEOUTPERTASKSECONDS;
+						int timeoutDays = timeoutPerTaskSeconds / 86400;
+						int maxNumConcurrentTasks = si != null ? si.getMaxNumConcurrentTasks() : ServerInfo.VCELL_SLURM_LANGEVIN_MAXNUMCONCURRENTTASKS;		// concurrent sims + watchdog
+						int maxNumConcurrentSimulations = maxNumConcurrentTasks - 1;	// concurrent sims only
+
+						labelMeshRefinementTitle.setVisible(true);
+						labelMeshRefinementTitle.setText("Concurrent Walls:");
+						getJLabelMeshRefinement().setVisible(true);
+						getJLabelMeshRefinement().setText("Maximum run duration: "+ timeoutDays + " days, Max number of concurrent simulations: " + maxNumConcurrentSimulations + " runs");
+						labelFinestMesh.setVisible(false);
+						labelFinestMeshTitle.setVisible(false);
+						labelRefinementRoiTitle.setVisible(false);
+						labelRefinementRoi.setVisible(false);
+						labelViewLevelMeshTitle.setVisible(false);
+						labelViewLevelMesh.setVisible(false);
+					} else {
+						labelMeshRefinementTitle.setVisible(false);
+						getJLabelMeshRefinement().setVisible(false);
+						labelFinestMesh.setVisible(false);
+						labelFinestMeshTitle.setVisible(false);
+						labelRefinementRoiTitle.setVisible(false);
+						labelRefinementRoi.setVisible(false);
+						labelViewLevelMeshTitle.setVisible(false);
+						labelViewLevelMesh.setVisible(false);
+					}
+
+				}else {		// not chombo, not langevin
+        			labelMeshRefinementTitle.setVisible(false);
+        			getJLabelMeshRefinement().setVisible(false);
+        			labelFinestMesh.setVisible(false);
+        			labelFinestMeshTitle.setVisible(false);
 					labelRefinementRoiTitle.setVisible(false);
 					labelRefinementRoi.setVisible(false);
 					labelViewLevelMeshTitle.setVisible(false);
