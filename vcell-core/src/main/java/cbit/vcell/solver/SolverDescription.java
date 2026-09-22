@@ -18,6 +18,7 @@ import java.util.*;
 import org.apache.commons.io.IOUtils;
 
 import cbit.vcell.math.ProblemRequirements;
+import cbit.vcell.resource.PropertyLoader;
 
 
 /**
@@ -153,6 +154,14 @@ public enum SolverDescription {
 	      new SolverFeature[]{SolverFeature.Feature_Spatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_Hybrid, SolverFeature.Feature_SerialParameterScans, SolverFeature.Feature_RandomVariables, SolverFeature.Feature_StopAtSpatiallyUniform, SolverFeature.Feature_VolumeRegionEquations, SolverFeature.Feature_RegionSizeFunctions, SolverFeature.Feature_PostProcessingBlock},
 	      SolverExecutable.FiniteVolume_PETSc, "KISAO", false),
 	   
+	   // FEniCSx finite-element solver (virtualcell/vcell-fenics): runs in a container, reads the
+	   // SimulationTask XML directly, writes a VTU + zarr results bundle. No native executable.
+	   // Hidden unless vcell.fenics.enabled is set - see docs/plan-fenics.md.
+	   FEniCSx(TimeStep.CONSTANT, ErrorTol.NO, TimeSpecCreated.UNIFORM, "FEniCSx", "FEniCSx Finite Element (Experimental)", "FEniCSx",
+	      SolverLongDesc.FENICSX, 1, SupportedTimeSpec.DEFAULT_EXPLICIT_UNIFORM,
+	      new SolverFeature[]{SolverFeature.Feature_Spatial, SolverFeature.Feature_Deterministic},
+	      null, "KISAO", false),
+
    ;
 
 	public interface SupportedProblemRequirements {
@@ -729,6 +738,29 @@ public enum SolverDescription {
 	public boolean isLangevinSolver()
 	{
 		return this == Langevin;
+	}
+
+	public boolean isFenicsSolver()
+	{
+		return this == FEniCSx;
+	}
+
+	/**
+	 * FEniCSx is offered only when {@code vcell.fenics.enabled} is set (off by default) while its
+	 * VCell integration is being built - see docs/plan-fenics.md.
+	 */
+	public static boolean isFenicsEnabled()
+	{
+		return PropertyLoader.getBooleanProperty(PropertyLoader.fenicsEnabled, PropertyLoader.fenicsEnabled_default_value);
+	}
+
+	/**
+	 * @return whether this solver may be offered to the user: not deprecated, and not a solver
+	 * whose integration is switched off.
+	 */
+	public boolean isOffered()
+	{
+		return !deprecated && (!isFenicsSolver() || isFenicsEnabled());
 	}
 
 	public boolean isDeprecated() {

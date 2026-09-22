@@ -328,6 +328,13 @@ public class PropertyLoader {
 	public static final boolean enableSpringSaLaD_default_value = true;
 
 	/**
+	 * FEniCSx finite-element solver (docs/plan-fenics.md). Off by default while its VCell
+	 * integration is incomplete; enable for testing with -Dvcell.fenics.enabled=true.
+	 */
+	public static final String fenicsEnabled = record("vcell.fenics.enabled", ValueType.BOOL);
+	public static final boolean fenicsEnabled_default_value = false;
+
+	/**
 	 * Browser-based 3D field viewer (the loopback field server + the "View in 3D" button on the
 	 * PDE results panel). Off by default; enable for testing with -Dvcell.fieldViewer.enabled=true,
 	 * which an installed client can carry in its vmoptions.txt.

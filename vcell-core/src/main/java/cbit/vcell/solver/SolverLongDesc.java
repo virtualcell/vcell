@@ -486,5 +486,14 @@ interface SolverLongDesc {
    	    		 "Moving Boundary is a spatial solver which handles Moving Boundaries"
 	     + "</html>";
     
+    static final String FENICSX =
+   	     "<html>"
+   	     + "<center><h3>DISPLAY_LABEL_TOKEN</h3></center>" +
+   	    		 "FEniCSx is a finite-element solver for reaction-diffusion-advection systems on body-fitted meshes," +
+   	    		 " built on DOLFINx (<a href='https://fenicsproject.org'>https://fenicsproject.org</a>)." +
+   	    		 " It runs in a container (Docker on the desktop, Apptainer on the cluster) and writes a" +
+   	    		 " VTU + zarr results bundle. Source: <a href='https://github.com/virtualcell/vcell-fenics'>https://github.com/virtualcell/vcell-fenics</a>."
+	     + "</html>";
+
     static final URL VCellPetsc = SolverLongDesc.class.getResource("help/vcell_petsc.html");
 }

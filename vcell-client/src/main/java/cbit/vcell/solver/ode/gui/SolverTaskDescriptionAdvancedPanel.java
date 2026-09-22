@@ -341,7 +341,7 @@ private javax.swing.DefaultComboBoxModel<String> createSolverComboBoxModel(Solve
 	if(getSolverTaskDescription() != null) {
 		MathDescription mathDescription = getSolverTaskDescription().getSimulation().getMathDescription();
 		for (SolverDescription sd : SolverDescription.getSupportingSolverDescriptions(mathDescription)) {
-			if (!sd.deprecated) {
+			if (sd.isOffered()) {
 				fieldSolverComboBoxModel.addElement(sd.getDisplayLabel());
 			}
 		}
