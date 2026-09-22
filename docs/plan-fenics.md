@@ -35,7 +35,7 @@ Decisions taken:
 ## PR V0 — this plan ✅ (#2084)
 - `docs/plan-fenics.md`.
 
-## PR V1 — registration (gated, no user-visible change) — in review
+## PR V1 — registration (gated, no user-visible change) ✅ (#2085)
 Templates: `MovingBoundarySolver` for shape, and `LangevinSolver` for the messaging config and
 `--vc-*` argv (both on `master`).
 
@@ -74,7 +74,16 @@ Templates: `MovingBoundarySolver` for shape, and `LangevinSolver` for the messag
   new spatial member).
 - A `FenicsSolverTest` for the argv in both messaging modes and for the config file contents.
 
-## PR V2 — desktop Docker quick-run
+## PR V2 — desktop Docker quick-run — in review
+
+**Found while building V2 (vcell-fenics side, open):**
+- The image and SIF packages are **private** on GHCR, because the vcell-fenics repo is private. A
+  desktop user can't pull them anonymously, and the cluster prepull would need credentials. They
+  need to be made public, or the repo does, before FEniCSx can be enabled for users.
+- The image is **linux/amd64 only**: arm64 builds are opt-in, needing the `ARM64_RUNNER` repo
+  variable. V2 falls back to pulling and running `linux/amd64`, which Docker Desktop emulates on
+  Apple silicon. It works (a small 3D model runs in about 6 s), but native arm64 would be faster.
+
 **Container runner**
 - New small `ContainerRunner` utility in vcell-core/`org.vcell.util.exe`.
 - It finds `docker` through `ResourceUtil.getExecutable` (VCellConfiguration → PATH), then checks the
