@@ -1066,6 +1066,11 @@ private boolean canQuickRun(SolverTaskDescription taskDesc) {
 //		quickPythonRunButton.setToolTipText("Not supported by selected solver");
 		quickNativeRunButton.setToolTipText("Not supported by selected solver");
 		return false;
+	}else if (taskDesc.getSolverDescription().isFenicsSolver()) {
+		// the Docker-based local run is PR V2 of docs/plan-fenics.md
+		System.err.println("SimulationListPanel.canQuickRun(): FEniCSx local run not yet supported");
+		quickNativeRunButton.setToolTipText("Not yet supported by selected solver");
+		return false;
 	}else if(taskDesc.getSimulation().getJobCount() > 1){
 //		System.err.println("SimulationListPanel.canQuickRun(): parameter scan, local solver not supported");
 ////		quickPythonRunButton.setToolTipText("Not supported for parameter scans");
@@ -1103,6 +1108,12 @@ private boolean canServerRun(SolverTaskDescription taskDesc) {
 	if(taskDesc.getSolverDescription().isComsolSolver()) {
 		System.err.println("SimulationListPanel.canServerRun(): quick run solver only, server run not supported");
 		getRunButton().setToolTipText("Not supported by selected solver");
+		return false;
+	}
+	if(taskDesc.getSolverDescription().isFenicsSolver()) {
+		// the cluster run is PR V4 of docs/plan-fenics.md
+		System.err.println("SimulationListPanel.canServerRun(): FEniCSx server run not yet supported");
+		getRunButton().setToolTipText("Not yet supported by selected solver");
 		return false;
 	}
 	getRunButton().setToolTipText(SERVER_RUN_TOOL_TIP);

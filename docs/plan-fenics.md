@@ -32,10 +32,10 @@ Decisions taken:
 - Mirror progress in the vcell-fenics tracker.
 - Line numbers below are approximate, taken from `master` at `925d63a83e`.
 
-## PR V0 — this plan
+## PR V0 — this plan ✅ (#2084)
 - `docs/plan-fenics.md`.
 
-## PR V1 — registration (gated, no user-visible change)
+## PR V1 — registration (gated, no user-visible change) — in review
 Templates: `MovingBoundarySolver` for shape, and `LangevinSolver` for the messaging config and
 `--vc-*` argv (both on `master`).
 

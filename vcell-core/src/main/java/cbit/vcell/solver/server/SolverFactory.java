@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.vcell.solver.comsol.ComsolSolver;
+import org.vcell.solver.fenics.FenicsSolver;
 import org.vcell.solver.langevin.LangevinSolver;
 import org.vcell.solver.nfsim.NFSimSolver;
 import org.vcell.solver.smoldyn.SmoldynSolver;
@@ -94,6 +95,7 @@ public class SolverFactory {
 		FACTORY.put(SolverDescription.Langevin, (t,d,pwd,m) -> new LangevinSolver(t, d,m) ); 
 		FACTORY.put(SolverDescription.MovingBoundary, (t,d,pwd,m) -> new MovingBoundarySolver(t, d,m) ); 
 		FACTORY.put(SolverDescription.Comsol, (t,d,pwd,m) -> new ComsolSolver(t, d) ); 
+		FACTORY.put(SolverDescription.FEniCSx, (t,d,pwd,m) -> new FenicsSolver(t, d,m) ); 
 	}
 	
 public static Solver createSolver(File userDir, SimulationTask simTask, boolean bMessaging) throws SolverException {
