@@ -18,6 +18,8 @@ import org.vcell.util.UserCancelException;
 import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.logging.NoLogging;
 
+import cbit.vcell.simdata.SimDataConstants;
+
 import java.io.*;
 import java.util.Collection;
 import java.util.HashSet;
@@ -326,6 +328,14 @@ public class ResourceUtil {
 						File[] links = file.listFiles();
 						for (int i = 0; i < links.length; i++) {
 							links[i].delete();
+						}
+					}
+					if(file.isDirectory() && file.getName().endsWith(SimDataConstants.FENICS_BUNDLE_EXTENSION)) {
+						// a FEniCSx results bundle is a directory tree (VTU meshes + zarr chunks)
+						try {
+							FileUtils.deleteDirectoryContents(file, true, null);
+						} catch (IOException e) {
+							logger.warn("could not delete FEniCSx results bundle " + file + ": " + e.getMessage());
 						}
 					}
 					file.delete();

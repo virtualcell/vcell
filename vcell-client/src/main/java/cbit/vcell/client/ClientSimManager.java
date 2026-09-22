@@ -45,6 +45,8 @@ import cbit.vcell.solver.server.*;
 import cbit.vcell.util.ColumnDescription;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.vcell.solver.fenics.FenicsDocker;
+import org.vcell.solver.fenics.FenicsSolver;
 import org.vcell.solver.smoldyn.SmoldynFileWriter;
 import org.vcell.solver.smoldyn.SmoldynSolver;
 import org.vcell.util.*;
@@ -867,6 +869,9 @@ public void runQuickSimulation(final Simulation originalSimulation, ViewerType v
 			if (solver == null) {
 				throw new RuntimeException("null solver");
 			}
+			if (solver instanceof FenicsSolver) {
+				hashTable.put(H_FENICS_BUNDLE, ((FenicsSolver) solver).getBundleDirectory());
+			}
 			// check if spatial stochastic simulation (smoldyn solver) has data processing instructions with field data - need to access server for field data, so cannot do local simulation run. 
 			if (solver instanceof SmoldynSolver) {
 				DataProcessingInstructions dpi = simulation.getDataProcessingInstructions();
@@ -966,6 +971,15 @@ public void runQuickSimulation(final Simulation originalSimulation, ViewerType v
 			}
 		}
 	};
+	if (originalSimulation.getSolverTaskDescription().getSolverDescription().isFenicsSolver()) {
+		// FEniCSx runs in Docker and writes a results bundle, not a VCell dataset: make sure the image is
+		// here, run, and say where the bundle is (the field viewer opens it in PR V3 of docs/plan-fenics.md)
+		taskList.add(prepareFenicsImageTask());
+		taskList.add(runSimTask);
+		taskList.add(reportFenicsBundleTask());
+		ClientTaskDispatcher.dispatch(documentWindowManager.getComponent(), new Hashtable<String, Object>(), taskList.toArray(new AsynchClientTask[0]), true, true, null);
+		return;
+	}
 	taskList.add(stashBioModelTask);
 	taskList.add(runSimTask);
 
@@ -1088,10 +1102,61 @@ public void runQuickSimulation(final Simulation originalSimulation, ViewerType v
 }
 
 
+private static final String H_FENICS_BUNDLE = "fenicsBundleDirectory";
+
+/**
+ * Checks that Docker is usable and the FEniCSx solver image is present, pulling it (about 1.3 GB, once)
+ * if not.
+ */
+private AsynchClientTask prepareFenicsImageTask() {
+	return new AsynchClientTask("preparing the FEniCSx solver image", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			FenicsDocker docker = FenicsDocker.find();
+			if (!docker.isDaemonRunning()) {
+				throw new RuntimeException("Docker is installed but not running. Start Docker Desktop and run the simulation again.");
+			}
+			String image = FenicsDocker.image();
+			if (docker.localImagePlatform(image).isEmpty()) {
+				getClientTaskStatusSupport().setMessage("Downloading the FEniCSx solver image (first run only)...");
+				docker.pull(image, line -> getClientTaskStatusSupport().setMessage("Downloading the FEniCSx solver image: " + line),
+						() -> getClientTaskStatusSupport().isInterrupted());
+			}
+		}
+	};
+}
+
+private AsynchClientTask reportFenicsBundleTask() {
+	return new AsynchClientTask("FEniCSx results", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			File bundle = (File) hashTable.get(H_FENICS_BUNDLE);
+			if (bundle == null || !bundle.isDirectory()) {
+				throw new RuntimeException("The FEniCSx solver finished but wrote no results" + (bundle == null ? "" : " to '" + bundle + "'"));
+			}
+			PopupGenerator.showInfoDialog(getDocumentWindowManager(),
+					"FEniCSx simulation finished.\n\nResults bundle (VTU meshes + zarr fields):\n" + bundle.getAbsolutePath()
+					+ "\n\nViewing FEniCSx results in VCell is not available yet; the bundle can be read with vcell-fenics"
+					+ " (python -m vcell_fenics.results, or vcell-fenics-export for ParaView).");
+		}
+	};
+}
+
 public static Solver createQuickRunSolver(File directory, SimulationTask simTask) throws SolverException, IOException {
 	SolverDescription solverDescription = simTask.getSimulation().getSolverTaskDescription().getSolverDescription();
 	if (solverDescription == null) {
 		throw new IllegalArgumentException("SolverDescription cannot be null");
+	}
+
+	// ----- FEniCSx runs in the local Docker image (pulled by prepareFenicsImageTask), not a native executable
+	if (solverDescription.isFenicsSolver()) {
+		FenicsSolver fenicsSolver = (FenicsSolver) SolverFactory.createSolver(directory, simTask, false);
+		FenicsDocker docker = FenicsDocker.find();
+		String image = FenicsDocker.image();
+		String platform = docker.localImagePlatform(image).orElseThrow(
+				() -> new SolverException("the FEniCSx solver image " + image + " has not been downloaded"));
+		fenicsSolver.configureDocker(docker, image, platform);
+		return fenicsSolver;
 	}
 	
 	// ----- 'FiniteVolume, Regular Grid' solver (semi-implicit) solver is not supported for quick run; throw exception.

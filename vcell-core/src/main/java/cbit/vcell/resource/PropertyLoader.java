@@ -333,6 +333,8 @@ public class PropertyLoader {
 	 */
 	public static final String fenicsEnabled = record("vcell.fenics.enabled", ValueType.BOOL);
 	public static final boolean fenicsEnabled_default_value = false;
+	/** The FEniCSx solver image a desktop quick run uses (default: FenicsDocker.DEFAULT_IMAGE). */
+	public static final String fenicsImage = record("vcell.fenics.image", ValueType.GEN);
 
 	/**
 	 * Browser-based 3D field viewer (the loopback field server + the "View in 3D" button on the

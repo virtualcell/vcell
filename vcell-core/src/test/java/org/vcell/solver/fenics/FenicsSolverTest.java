@@ -55,12 +55,21 @@ public class FenicsSolverTest {
 
 	/** the finite-volume fixture, switched to FEniCSx */
 	private static SimulationTask fenicsSimTask() throws Exception {
-		try (InputStream in = FenicsSolverTest.class.getResourceAsStream(SIMTASK_RESOURCE)) {
-			assertNotNull(in, SIMTASK_RESOURCE);
+		return fenicsSimTask(SIMTASK_RESOURCE);
+	}
+
+	/** a simtask fixture (a finite-volume sim), switched to FEniCSx */
+	static SimulationTask fenicsSimTask(String resource) throws Exception {
+		try (InputStream in = FenicsSolverTest.class.getResourceAsStream(resource)) {
+			assertNotNull(in, resource);
 			SimulationTask simTask = XmlHelper.XMLToSimTask(new String(in.readAllBytes(), StandardCharsets.UTF_8));
 			simTask.getSimulation().getSolverTaskDescription().setSolverDescription(SolverDescription.FEniCSx);
 			return simTask;
 		}
+	}
+
+	static FenicsSolver createSolver(File userDir, String resource, boolean messaging) throws Exception {
+		return (FenicsSolver) SolverFactory.createSolver(userDir, fenicsSimTask(resource), messaging);
 	}
 
 	@Test

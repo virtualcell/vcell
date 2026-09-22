@@ -21,6 +21,7 @@ import java.awt.event.MouseListener;
 import java.beans.PropertyVetoException;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -79,6 +80,7 @@ import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.solver.SimulationOwner.UnitInfo;
 import cbit.vcell.solver.SolverDescription.SolverFeature;
+import org.vcell.solver.fenics.FenicsDocker;
 
 /**
  * Insert the type's description here.
@@ -1067,10 +1069,24 @@ private boolean canQuickRun(SolverTaskDescription taskDesc) {
 		quickNativeRunButton.setToolTipText("Not supported by selected solver");
 		return false;
 	}else if (taskDesc.getSolverDescription().isFenicsSolver()) {
-		// the Docker-based local run is PR V2 of docs/plan-fenics.md
-		System.err.println("SimulationListPanel.canQuickRun(): FEniCSx local run not yet supported");
-		quickNativeRunButton.setToolTipText("Not yet supported by selected solver");
-		return false;
+		// FEniCSx runs in the local Docker image, not a native executable (docs/plan-fenics.md)
+		if (!SolverDescription.isFenicsEnabled()) {
+			quickNativeRunButton.setToolTipText("Not supported by selected solver");
+			return false;
+		}
+		if (taskDesc.getSimulation().getJobCount() > 1) {
+			quickNativeRunButton.setToolTipText("FEniCSx quick run does not support parameter scans");
+			return false;
+		}
+		try {
+			FenicsDocker.find();
+		} catch (FileNotFoundException e) {
+			System.err.println("SimulationListPanel.canQuickRun(): " + e.getMessage());
+			quickNativeRunButton.setToolTipText("FEniCSx quick run needs Docker Desktop (https://www.docker.com/products/docker-desktop/)");
+			return false;
+		}
+		quickNativeRunButton.setToolTipText(QUICK_RUN_NATIVE_TOOL_TIP);
+		return true;
 	}else if(taskDesc.getSimulation().getJobCount() > 1){
 //		System.err.println("SimulationListPanel.canQuickRun(): parameter scan, local solver not supported");
 ////		quickPythonRunButton.setToolTipText("Not supported for parameter scans");

@@ -23,11 +23,15 @@ import cbit.vcell.solvers.SimpleCompiledSolver;
 import cbit.vcell.xml.XmlHelper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.vcell.util.OperatingSystemInfo;
+import org.vcell.util.exe.ExecutableStatus;
 
 import java.io.File;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * FEniCSx finite-element solver (<a href="https://github.com/virtualcell/vcell-fenics">vcell-fenics</a>).
@@ -41,8 +45,7 @@ import java.util.List;
  * side is planned in docs/plan-fenics.md.
  * <p>
  * The executable is {@code vcell-fenics} on the container's PATH. On the cluster SlurmProxy supplies
- * the container prefix; for a local run the caller installs one with {@link #setCommandPrefix(List)}
- * (e.g. {@code docker run ... <image>}).
+ * the container prefix; for a local run {@link #configureDocker} installs a {@code docker run} prefix.
  */
 public class FenicsSolver extends SimpleCompiledSolver {
 
@@ -51,6 +54,11 @@ public class FenicsSolver extends SimpleCompiledSolver {
 	public static final String EXECUTABLE_NAME = "vcell-fenics";
 
 	private List<String> commandPrefix = List.of();
+	/** where the save directory appears to the solver process (differs inside a Windows container) */
+	private String solverSideDirectory = null;
+	private Map<String, String> environment = Map.of();
+	private FenicsDocker docker = null;
+	private String containerName = null;
 
 	public FenicsSolver(SimulationTask simTask, File directory, boolean bMsging) throws SolverException {
 		super(simTask, directory, bMsging);
@@ -64,8 +72,39 @@ public class FenicsSolver extends SimpleCompiledSolver {
 		this.commandPrefix = List.copyOf(commandPrefix);
 	}
 
+	/**
+	 * Runs the solver in the local Docker image: {@code docker run ... <image> vcell-fenics ...}, with
+	 * the save directory bind-mounted (same path on Unix, {@code /simdata} on Windows).
+	 *
+	 * @param platform the {@code os/arch} to run (that of the pulled image), or null for the default
+	 */
+	public void configureDocker(FenicsDocker docker, String image, String platform) {
+		OperatingSystemInfo osi = OperatingSystemInfo.getInstance();
+		File saveDir = getSaveDirectory().getAbsoluteFile();
+		String containerDir = FenicsDocker.containerDirectory(saveDir, osi);
+		this.docker = docker;
+		this.containerName = "vcell-fenics-" + simTask.getSimulationJobID().replaceAll("[^A-Za-z0-9_.-]", "") + "-" + UUID.randomUUID().toString().substring(0, 8);
+		this.solverSideDirectory = containerDir;
+		this.environment = docker.environment();
+		setCommandPrefix(docker.runPrefix(image, platform, containerName, saveDir, containerDir, FenicsDocker.ownerOf(saveDir)));
+	}
+
+	String getContainerName() {
+		return containerName;
+	}
+
+	/**
+	 * After the run: if it did not complete (stopped by the user, or failed) make sure its container is
+	 * gone. Stopping kills the docker CLI, which forwards the signal on Unix but not on Windows.
+	 */
 	@Override
 	public void cleanup() {
+		if (docker != null && containerName != null) {
+			MathExecutable me = getMathExecutable();
+			if (me == null || me.getStatus() != ExecutableStatus.COMPLETE) {
+				docker.removeContainer(containerName);
+			}
+		}
 	}
 
 	/**
@@ -111,7 +150,9 @@ public class FenicsSolver extends SimpleCompiledSolver {
 		}
 
 		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, SimulationMessage.MESSAGE_SOLVER_RUNNING_START));
-		setMathExecutable(new MathExecutable(getMathExecutableCommand(), getSaveDirectory()));
+		MathExecutable me = new MathExecutable(getMathExecutableCommand(), getSaveDirectory());
+		environment.forEach(me::addEnvironmentVariable);
+		setMathExecutable(me);
 	}
 
 	private void abort(String message, Exception e) throws SolverException {
@@ -154,23 +195,32 @@ public class FenicsSolver extends SimpleCompiledSolver {
 	}
 
 	/**
-	 * {@code [prefix...] vcell-fenics --simtask <file> --out <saveDir> (--vc-send-status-config=<cfg> | --vc-print-status)}.
-	 * On the cluster HtcSimulationWorker appends {@code -tid <taskID>}, which the CLI accepts.
+	 * {@code [prefix...] vcell-fenics --simtask <file> --out <saveDir> (--vc-send-status-config=<cfg> | --vc-print-status)},
+	 * with the paths as the solver process sees them. On the cluster HtcSimulationWorker appends
+	 * {@code -tid <taskID>}, which the CLI accepts.
 	 */
 	@Override
 	protected String[] getMathExecutableCommand() {
 		ArrayList<String> cmds = new ArrayList<>(commandPrefix);
 		cmds.add(EXECUTABLE_NAME);
 		cmds.add("--simtask");
-		cmds.add(getSimTaskFile().getAbsolutePath());
+		cmds.add(solverSidePath(getSimTaskFile().getName()));
 		cmds.add("--out");
-		cmds.add(getSaveDirectory().getAbsolutePath());
+		cmds.add(solverSideDirectory != null ? solverSideDirectory : getSaveDirectory().getAbsolutePath());
 		if (bMessaging) {
-			cmds.add("--vc-send-status-config=" + getMessagingConfigFilename());
+			cmds.add("--vc-send-status-config=" + solverSidePath(new File(getMessagingConfigFilename()).getName()));
 		} else {
 			cmds.add("--vc-print-status");
 		}
 		return cmds.toArray(new String[0]);
+	}
+
+	/** a file in the save directory, as the solver process sees it */
+	private String solverSidePath(String fileName) {
+		if (solverSideDirectory == null) {
+			return new File(getSaveDirectory(), fileName).getAbsolutePath();
+		}
+		return solverSideDirectory.endsWith("/") ? solverSideDirectory + fileName : solverSideDirectory + "/" + fileName;
 	}
 
 	@Override
