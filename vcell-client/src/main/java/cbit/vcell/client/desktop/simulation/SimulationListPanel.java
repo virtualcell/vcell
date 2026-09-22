@@ -915,6 +915,8 @@ private void initConnections() throws java.lang.Exception {
 				setText(value+"");
 			}
 			boolean bFinitVolumeRerun = false;
+			boolean bLangevinSimulation = false;
+			String langevinToolTipExtension = "";
 			if (value instanceof SolverDescription) {
 				SolverDescription solverDescription = (SolverDescription) value;
 				try{
@@ -940,13 +942,12 @@ private void initConnections() throws java.lang.Exception {
 
 						if (totalJobs == 1) {
 							setIcon(VCellIcons.singleRunIcon);
-							setToolTipText(getToolTipText() + " (single run)");
+							langevinToolTipExtension = " (single run)";
 						} else {
 							setIcon(VCellIcons.multiRunIcon);
-							setToolTipText(getToolTipText() + " (multi-run)");
+							langevinToolTipExtension = " (batch run)";
 						}
-					} else {
-						setIcon(null);		// we don't want to mess with the default icons for other solvers, so just leave them alone
+						bLangevinSimulation = true;
 					}
 				}catch(Exception e){
 					//ignore, let table cell render anyway
@@ -960,6 +961,8 @@ private void initConnections() throws java.lang.Exception {
 			if(bFinitVolumeRerun){
 				setText(getText()+(bFinitVolumeRerun?"(*)":""));
 				setToolTipText(getToolTipText()+(bFinitVolumeRerun?" (data regenerated using FiniteVolumeStandalone)":""));
+			} else if(bLangevinSimulation) {
+				setToolTipText(getToolTipText()+langevinToolTipExtension);
 			}
 			return this;
 		}
