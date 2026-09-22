@@ -946,7 +946,7 @@ private void initConnections() throws java.lang.Exception {
 							setToolTipText(getToolTipText() + " (multi-run)");
 						}
 					} else {
-						setIcon(VCellIcons.singleRunIcon);
+						setIcon(null);		// we don't want to mess with the default icons for other solvers, so just leave them alone
 					}
 				}catch(Exception e){
 					//ignore, let table cell render anyway
