@@ -857,6 +857,7 @@ private Object getSimulationStatusDisplay(int row) {
 							  && simStatus.getProgress() != null && simStatus.getProgress().doubleValue() >= 0;
 	if (displayProgress){
 		double progress = simStatus.getProgress().doubleValue() / simulation.getJobCount();
+		System.out.println(" ===== Progress: " + progress + ", Jobs Total: " + simulation.getJobCount() + ", Jobs Done: " + simStatus.numberOfJobsDone());
 		JProgressBar progressBar = new JProgressBar();
 		progressBar.setStringPainted(true);
 		progressBar.setValue((int)(progress * 100));
@@ -929,6 +930,23 @@ private void initConnections() throws java.lang.Exception {
 								statusIndex++;
 							}
 						}
+					}
+
+					if (solverDescription.isLangevinSolver()) {		// icon indicating Langevin single run / multi run
+						Simulation sim = (Simulation) getSimulationListTableModel1().getValueAt(row);
+						SolverTaskDescription std = sim.getSolverTaskDescription();
+						LangevinSimulationOptions lso = std.getLangevinSimulationOptions();
+						int totalJobs = lso.getTotalNumberOfJobs();
+
+						if (totalJobs == 1) {
+							setIcon(VCellIcons.singleRunIcon);
+							setToolTipText(getToolTipText() + " (single run)");
+						} else {
+							setIcon(VCellIcons.multiRunIcon);
+							setToolTipText(getToolTipText() + " (multi-run)");
+						}
+					} else {
+						setIcon(VCellIcons.singleRunIcon);
 					}
 				}catch(Exception e){
 					//ignore, let table cell render anyway
