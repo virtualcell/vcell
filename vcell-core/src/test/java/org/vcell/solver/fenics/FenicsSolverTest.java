@@ -79,7 +79,7 @@ public class FenicsSolverTest {
 		assertTrue(sd.isFenicsSolver());
 		assertTrue(sd.isSpatial());
 		assertNull(sd.getSolverExecutable(), "runs in a container, no native executable");
-		assertFalse(sd.supports(SolverDescription.SolverFeature.Feature_Moving));
+		assertTrue(sd.supports(SolverDescription.SolverFeature.Feature_Moving), "2D moving boundaries, species inside the front");
 		assertFalse(sd.supports(SolverDescription.SolverFeature.Feature_FastSystem));
 		assertFalse(sd.supports(SolverDescription.SolverFeature.Feature_PeriodicBoundaryCondition));
 	}
@@ -166,6 +166,42 @@ public class FenicsSolverTest {
 		List<org.vcell.util.Issue> issues = fenicsIssues(image);
 		assertEquals(3, issues.size());
 		assertEquals(org.vcell.util.Issue.Severity.ERROR, issues.get(0).getSeverity());
+	}
+
+	private static final String MOVING = "moving_SimID_274641196_0__0.simtask.xml";
+
+	@Test
+	public void testMovingBoundaryIsOffered() throws Exception {
+		// VCell's moving-boundary fixture: a 2D disk swept by a front at (sin t, cos t), species inside it only
+		SimulationTask moving = fenicsSimTask(MOVING);
+		assertTrue(moving.getSimulation().getMathDescription().isMovingMembrane());
+		assertEquals(List.of(), FenicsSolver.unsupportedReasons(moving.getSimulation()));
+	}
+
+	@Test
+	public void testMovingBoundarySpeciesOutsideTheFrontAreAnIssue() throws Exception {
+		// the same model with a species in the exterior compartment, which the moving path does not solve yet
+		String xml = resourceText(MOVING)
+				.replace("<VolumeVariable Name=\"C_cyt\" Domain=\"cell\" />",
+						"<VolumeVariable Name=\"C_cyt\" Domain=\"cell\" /><VolumeVariable Name=\"E_ec\" Domain=\"ec\" />")
+				.replace("    </CompartmentSubDomain>\n    <MembraneSubDomain",
+						"      <PdeEquation Name=\"E_ec\" SolutionType=\"Unknown\"><Rate>0.0</Rate><Diffusion>1.0</Diffusion><Initial>1.0</Initial></PdeEquation>\n"
+								+ "    </CompartmentSubDomain>\n    <MembraneSubDomain")
+				.replace("<JumpCondition Name=\"C_cyt\">",
+						"<JumpCondition Name=\"E_ec\"><InFlux>0.0</InFlux><OutFlux>0.0</OutFlux></JumpCondition><JumpCondition Name=\"C_cyt\">");
+		SimulationTask simTask = XmlHelper.XMLToSimTask(xml);
+		simTask.getSimulation().getSolverTaskDescription().setSolverDescription(SolverDescription.FEniCSx);
+		List<String> reasons = FenicsSolver.unsupportedReasons(simTask.getSimulation());
+		assertEquals(1, reasons.size(), reasons.toString());
+		assertTrue(reasons.get(0).contains("inside the moving front ('cell') only") && reasons.get(0).contains("'ec'"), reasons.get(0));
+		assertEquals(1, fenicsIssues(simTask).size());
+	}
+
+	private static String resourceText(String resource) throws Exception {
+		try (InputStream in = FenicsSolverTest.class.getResourceAsStream(resource)) {
+			assertNotNull(in, resource);
+			return new String(in.readAllBytes(), StandardCharsets.UTF_8).replace("\r\n", "\n");
+		}
 	}
 
 	private static List<org.vcell.util.Issue> fenicsIssues(SimulationTask simTask) {

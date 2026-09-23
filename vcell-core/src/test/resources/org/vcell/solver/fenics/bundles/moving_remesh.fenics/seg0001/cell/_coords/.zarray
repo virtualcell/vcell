@@ -1,0 +1,22 @@
+{
+  "shape": [
+    1,
+    246,
+    3
+  ],
+  "chunks": [
+    1,
+    246,
+    3
+  ],
+  "dtype": "<f8",
+  "fill_value": "NaN",
+  "order": "C",
+  "filters": null,
+  "dimension_separator": ".",
+  "compressor": {
+    "id": "zlib",
+    "level": 1
+  },
+  "zarr_format": 2
+}

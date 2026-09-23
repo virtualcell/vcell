@@ -250,6 +250,11 @@ M5 is here.
   - Bump the default image and the vcell-fluxcd pin to the M4 image.
 - **Verification:** a moving-boundary application lists FEniCSx; a desktop Quick Run → the browser
   viewer shows the moving mesh while scrubbing time.
+- **Status (2026-09-23):** M1–M4 merged in vcell-fenics (#160–#163). VCell's semantics turned out to be
+  lab-frame ("swept") species, not carried: the front moves and a species without its own velocity stays
+  put in the lab, so M3 transports it relative to the ALE mesh (the mesh velocity is bookkeeping and
+  cancels out). M5 is in review: the tests use two real moving bundles (a translation, and a remesh
+  across two segments), and the default image is `sha-bfdf853`.
 
 ## Verification
 - **Per PR:**

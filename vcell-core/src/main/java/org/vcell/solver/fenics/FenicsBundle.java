@@ -209,6 +209,25 @@ public final class FenicsBundle {
 		return readRow(sr.segment().prefix() + variable(domain, variable).path(), sr.localRow());
 	}
 
+	/**
+	 * The domain's point coordinates at output row {@code row} as x,y,z triples (the mesh's point order):
+	 * a moving ({@code motion: ale}) segment records them per row in {@code <prefix><domain>/_coords};
+	 * otherwise null, meaning the segment mesh's own points.
+	 */
+	public double[] coords(String domain, int row) throws IOException {
+		SegmentRow sr = segmentOf(row);
+		if (!"ale".equals(sr.segment().motion())) {
+			return null;
+		}
+		domain(domain); // rejects an unknown name
+		return readRow(sr.segment().prefix() + domain + "/_coords", sr.localRow());
+	}
+
+	/** whether any output row's mesh moves (an ALE segment) */
+	public boolean isMoving() {
+		return segments.stream().anyMatch(s -> "ale".equals(s.motion()));
+	}
+
 	/** the statistics at output row {@code row}, one value per {@link #getStatsColumns()} entry */
 	public double[] stats(String domain, String variable, int row) throws IOException {
 		SegmentRow sr = segmentOf(row);
@@ -232,17 +251,23 @@ public final class FenicsBundle {
 		int[] shape = ints(meta.getAsJsonArray("shape"));
 		int[] chunks = ints(meta.getAsJsonArray("chunks"));
 		String dtype = meta.get("dtype").getAsString();
-		if (shape.length != 2 || chunks[0] != 1 || chunks[1] != shape[1] || !"<f8".equals(dtype)
-				|| !"C".equals(string(meta, "order", "C"))
+		boolean wholeRows = shape.length >= 2 && chunks.length == shape.length && chunks[0] == 1;
+		for (int axis = 1; wholeRows && axis < shape.length; axis++) {
+			wholeRows = chunks[axis] == shape[axis];
+		}
+		if (!wholeRows || !"<f8".equals(dtype) || !"C".equals(string(meta, "order", "C"))
 				|| (meta.has("filters") && !meta.get("filters").isJsonNull())) {
 			throw new IOException(arrayDir + ": unsupported zarr array layout (expected <f8, one row per chunk, no filters)");
 		}
 		if (row >= shape[0]) {
 			throw new IndexOutOfBoundsException(arrayDir + ": row " + row + " beyond shape " + Arrays.toString(shape));
 		}
-		int n = shape[1];
+		int n = 1;  // the values in one row (a row of a (T, N, 3) array is N·3, C order)
+		for (int axis = 1; axis < shape.length; axis++) {
+			n *= shape[axis];
+		}
 		String separator = string(meta, "dimension_separator", ".");
-		String chunk = arrayPath + "/" + row + separator + "0";
+		String chunk = arrayPath + "/" + row + (separator + "0").repeat(shape.length - 1);
 		double[] values = new double[n];
 		byte[] raw = store.read(chunk);
 		if (raw == null) {
