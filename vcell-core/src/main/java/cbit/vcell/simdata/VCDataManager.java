@@ -312,6 +312,21 @@ public synchronized SpringSaladTrajectory getLangevinTrajectory(VCDataIdentifier
 	}
 }
 
+/** one file of a FEniCSx results bundle, or null if it does not exist (yet); see DataSetController */
+public synchronized byte[] getFenicsBundleFile(VCDataIdentifier vcdID, String relativePath) throws DataAccessException {
+	try {
+		return getDataSetController().getFenicsBundleFile(vcdID, relativePath);
+	}catch (RemoteProxyException e){
+		handleRemoteProxyException(e);
+		try {
+			return getDataSetController().getFenicsBundleFile(vcdID, relativePath);
+		}catch (RemoteProxyException e2){
+			handleRemoteProxyException(e2);
+			throw new RuntimeException(e2.getMessage());
+		}
+	}
+}
+
 public synchronized NFSimMolecularConfigurations getNFSimMolecularConfigurations(VCDataIdentifier vcdID) throws DataAccessException {
 	try {
 		return getDataSetController().getNFSimMolecularConfigurations(vcdID);

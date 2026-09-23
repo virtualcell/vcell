@@ -207,6 +207,16 @@ public cbit.vcell.solver.ode.ODESimData getODEData(User user, VCDataIdentifier v
 		}
 	}
 
+	public byte[] getFenicsBundleFile(User user, VCDataIdentifier vcdID, String relativePath) throws DataAccessException {
+		checkReadAccess(user, vcdID);
+		try {
+			return dataSetControllerImpl.getFenicsBundleFile(vcdID, relativePath);
+		}catch (Throwable e){
+			lg.error(e.getMessage(), e);
+			throw new DataAccessException(e.getMessage());
+		}
+	}
+
 
 /**
  * This method was created by a SmartGuide.

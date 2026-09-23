@@ -96,6 +96,10 @@ public class LocalDataSetControllerProvider implements DataSetControllerProvider
 			return dataServerImpl.getLangevinTrajectory(user, vcdataID);
 		}
 
+		public byte[] getFenicsBundleFile(VCDataIdentifier vcdataID, String relativePath) throws DataAccessException, RemoteProxyException {
+			return dataServerImpl.getFenicsBundleFile(user, vcdataID, relativePath);
+		}
+
 		public ParticleDataBlock getParticleDataBlock(VCDataIdentifier vcdataID, double time) throws DataAccessException {
 			return dataServerImpl.getParticleDataBlock(user, vcdataID, time);
 		}

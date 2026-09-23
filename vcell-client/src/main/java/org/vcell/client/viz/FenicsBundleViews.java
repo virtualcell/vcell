@@ -1,6 +1,5 @@
 package org.vcell.client.viz;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -10,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.vcell.solver.fenics.BundleStore;
 import org.vcell.solver.fenics.FenicsBundle;
 
 /**
@@ -28,19 +28,19 @@ final class FenicsBundleViews {
 	static final class BundleSource {
 		final String simId;
 		final int jobIndex;
-		final File dir;
+		final BundleStore store;
 		final String simName;
 		private final Map<String, VtuGridParser.VtuGrid> grids = new ConcurrentHashMap<>();
 
-		BundleSource(String simId, int jobIndex, File dir, String simName) {
+		BundleSource(String simId, int jobIndex, BundleStore store, String simName) {
 			this.simId = simId;
 			this.jobIndex = jobIndex;
-			this.dir = dir;
+			this.store = store;
 			this.simName = simName;
 		}
 
 		FenicsBundle bundle() throws IOException {
-			return FenicsBundle.open(dir);
+			return FenicsBundle.open(store);
 		}
 
 		private final Map<VtuGridParser.VtuGrid, Double> measures = new ConcurrentHashMap<>();
@@ -323,7 +323,7 @@ final class FenicsBundleViews {
 		List<String> columns = bundle.getStatsColumns();
 		int iMean = columns.indexOf("mean"), iTotal = columns.indexOf("total"), iMin = columns.indexOf("min"), iMax = columns.indexOf("max");
 		if (iMean < 0 || iTotal < 0 || iMin < 0 || iMax < 0) {
-			throw new IOException(source.dir + ": statistics columns " + columns + " lack mean/total/min/max");
+			throw new IOException(source.store.describe() + ": statistics columns " + columns + " lack mean/total/min/max");
 		}
 		double[] times = times(bundle);
 		StringBuilder sb = new StringBuilder(96 * times.length * chosen.size() + 512);

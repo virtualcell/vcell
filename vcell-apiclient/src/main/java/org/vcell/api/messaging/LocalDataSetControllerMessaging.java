@@ -245,6 +245,20 @@ public cbit.vcell.solver.ode.ODESimData getODEData(VCDataIdentifier vcdID) throw
 		}
 	}
 
+	@Override
+	public byte[] getFenicsBundleFile(VCDataIdentifier vcdataID, String relativePath) throws DataAccessException, RemoteProxyException {
+		if (lg.isTraceEnabled()) lg.trace("LocalDataSetControllerMessaging.getFenicsBundleFile(vcdID=" + vcdataID + ", path=" + relativePath + ")");
+		try {
+			return dataServerProxy.getFenicsBundleFile(vcdataID, relativePath);
+		} catch (DataAccessException e){
+			lg.error(e.getMessage(),e);
+			throw e;
+		} catch (Throwable e){
+			lg.error(e.getMessage(),e);
+			throw new RuntimeException(e.getMessage());
+		}
+	}
+
 
 	/**
  * This method was created by a SmartGuide.
