@@ -102,6 +102,12 @@ public final class FieldViewerServer {
 	 */
 	private static final Map<String, DataSource> dataSources = new ConcurrentHashMap<>();
 
+	/**
+	 * FEniCSx results bundles, keyed like {@link #dataSources}. They are read straight from their
+	 * directory, not through a {@link VCDataManager}: a bundle is not a VCell dataset.
+	 */
+	private static final Map<String, FenicsBundleViews.BundleSource> bundleSources = new ConcurrentHashMap<>();
+
 	/** Grid construction is the expensive step and depends only on the mesh, so cache per sim+domain. */
 	private static final Map<String, VisMesh> meshCache = new HashMap<>();
 
@@ -199,6 +205,20 @@ public final class FieldViewerServer {
 			LG.debug("field viewer is disabled ({}=false)", PropertyLoader.fieldViewerEnabled);
 			return -1;
 		}
+		return startServer();
+	}
+
+	/**
+	 * Start the server for viewing FEniCSx results, which have no other viewer in VCell: allowed
+	 * whenever the FEniCSx solver itself is switched on, whether or not the "View in 3D" button is.
+	 *
+	 * @return the listening port, or -1 if the server could not be started
+	 */
+	public static synchronized int startForFenics() {
+		return startServer();
+	}
+
+	private static synchronized int startServer() {
 		if (server != null) {
 			return server.getAddress().getPort();
 		}
@@ -268,6 +288,19 @@ public final class FieldViewerServer {
 		return dir.toAbsolutePath().normalize();
 	}
 
+	/**
+	 * The viewer page URL for a dataset, as a results window opens it: this server's own page when it
+	 * serves one (same origin as the data), else {@link PropertyLoader#fieldViewerUrl} (a developer's
+	 * viewer), with the dataset in the query.
+	 */
+	public static String viewerUrl(int port, String simKey, int jobIndex) {
+		String viewer = isServingViewerPage() ? "http://127.0.0.1:" + port + "/"
+				: PropertyLoader.getProperty(PropertyLoader.fieldViewerUrl, "http://localhost:4400/");
+		return viewer + (viewer.contains("?") ? "&" : "?")
+				+ "base=" + java.net.URLEncoder.encode("http://127.0.0.1:" + port, StandardCharsets.UTF_8)
+				+ "&sim=" + java.net.URLEncoder.encode(simKey, StandardCharsets.UTF_8) + "&job=" + jobIndex;
+	}
+
 	/** True when the page is served from this server, so callers can point the browser at us. */
 	public static boolean isServingViewerPage() {
 		return staticRoot() != null;
@@ -327,6 +360,7 @@ public final class FieldViewerServer {
 		}
 		meshCache.clear();
 		dataSources.clear();
+		bundleSources.clear();
 	}
 
 	// ---------------------------------------------------------------------
@@ -335,6 +369,10 @@ public final class FieldViewerServer {
 
 	/** {@code /info?sim=<simKey>&job=<n>} — the variables, times and domains available for a run. */
 	private static String handleInfo(HttpExchange ex) throws Exception {
+		FenicsBundleViews.BundleSource bundle = bundleSourceFor(query(ex));
+		if (bundle != null) {
+			return FenicsBundleViews.info(bundle);
+		}
 		DataSource source = sourceFor(query(ex));
 		VCSimulationDataIdentifier vcdID = source.vcdID;
 		VtuMode vtuMode = vtuMode(source);
@@ -389,6 +427,10 @@ public final class FieldViewerServer {
 	 * that costs a round trip, rather than assuming it never changes.
 	 */
 	private static String handleGrid(HttpExchange ex) throws Exception {
+		FenicsBundleViews.BundleSource bundle = bundleSourceFor(query(ex));
+		if (bundle != null) {
+			return FenicsBundleViews.grid(bundle, query(ex));
+		}
 		Map<String, String> q = query(ex);
 		DataSource source = sourceFor(q);
 		VtuMode gridVtuMode = vtuMode(source);
@@ -901,6 +943,10 @@ public final class FieldViewerServer {
 	 * real hazard once vertices move over time, so the pairing is explicit.
 	 */
 	private static String handleField(HttpExchange ex) throws Exception {
+		FenicsBundleViews.BundleSource bundle = bundleSourceFor(query(ex));
+		if (bundle != null) {
+			return FenicsBundleViews.field(bundle, query(ex));
+		}
 		Map<String, String> q = query(ex);
 		DataSource source = sourceFor(q);
 		VtuMode fieldVtuMode = vtuMode(source);
@@ -957,6 +1003,10 @@ public final class FieldViewerServer {
 	 * the solver's global volume index.
 	 */
 	private static String handleTimeSeries(HttpExchange ex) throws Exception {
+		FenicsBundleViews.BundleSource bundle = bundleSourceFor(query(ex));
+		if (bundle != null) {
+			return FenicsBundleViews.timeSeries(bundle, query(ex));
+		}
 		Map<String, String> q = query(ex);
 		DataSource source = sourceFor(q);
 		VtuMode tsMode = vtuMode(source);
@@ -1015,6 +1065,10 @@ public final class FieldViewerServer {
 	 * reduction runs next to the reader in a single pass.
 	 */
 	private static String handleStats(HttpExchange ex) throws Exception {
+		FenicsBundleViews.BundleSource bundle = bundleSourceFor(query(ex));
+		if (bundle != null) {
+			return FenicsBundleViews.stats(bundle, query(ex));
+		}
 		Map<String, String> q = query(ex);
 		DataSource source = sourceFor(q);
 		VtuMode statsMode = vtuMode(source);
@@ -1187,6 +1241,28 @@ public final class FieldViewerServer {
 		LG.debug("field viewer dataset registered: {}", vcdID.getID());
 	}
 
+	/**
+	 * Make a FEniCSx results bundle available to the viewer, under the simulation key and job the
+	 * viewer URL names. It is read from its directory on every request, so a bundle still being
+	 * written can be viewed.
+	 */
+	public static void registerBundle(String simKey, int jobIndex, java.io.File bundleDir, String simName) {
+		bundleSources.put(simKey + ":" + jobIndex, new FenicsBundleViews.BundleSource(simKey, jobIndex, bundleDir, simName));
+		LG.debug("field viewer FEniCSx bundle registered: {} job {} at {}", simKey, jobIndex, bundleDir);
+	}
+
+	public static void unregisterBundle(String simKey, int jobIndex) {
+		bundleSources.remove(simKey + ":" + jobIndex);
+	}
+
+	private static FenicsBundleViews.BundleSource bundleSourceFor(Map<String, String> q) {
+		String sim = q.get("sim");
+		if (sim == null || sim.isEmpty()) {
+			return null;
+		}
+		return bundleSources.get(sim + ":" + (q.containsKey("job") ? q.get("job") : "0"));
+	}
+
 	/** Drop a dataset, so later requests fail cleanly rather than serving results nobody is viewing. */
 	public static synchronized void unregister(VCSimulationDataIdentifier vcdID) {
 		if (dataSources.remove(key(vcdID)) != null) {
@@ -1298,7 +1374,7 @@ public final class FieldViewerServer {
 	}
 
 	/** JSON has no NaN or Infinity literal, so non-finite values (blanked cells) go out as null. */
-	private static void appendDoubles(StringBuilder sb, double[] values, int count) {
+	static void appendDoubles(StringBuilder sb, double[] values, int count) {
 		sb.append('[');
 		for (int i = 0; i < count; i++) {
 			if (i > 0) {
@@ -1335,7 +1411,7 @@ public final class FieldViewerServer {
 		return java.net.URLDecoder.decode(s, StandardCharsets.UTF_8);
 	}
 
-	private static String jsonEscape(String s) {
+	static String jsonEscape(String s) {
 		return String.valueOf(s).replace("\\", "\\\\").replace("\"", "\\\"");
 	}
 }

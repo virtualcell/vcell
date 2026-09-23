@@ -108,11 +108,13 @@ Templates: `MovingBoundarySolver` for shape, and `LangevinSolver` for the messag
 
 ## PR V3 — viewing FEniCSx bundles in the field viewer (local)
 Split in two:
-- **V3a** (in review): the `VtuGridParser` fixes, plus `org.vcell.solver.fenics.FenicsBundle`, the
+- **V3a** ✅ (#2087): the `VtuGridParser` fixes, plus `org.vcell.solver.fenics.FenicsBundle`, the
   bundle reader. It lives in vcell-core so the data server can reuse it in V5. Both are tested
   against real bundles.
-- **V3b**: the `FieldViewerServer` bundle source, point data in the endpoints and in `webapp-viewer`,
-  the dimension fix in `handleGridVtu`, and the entry point.
+- **V3b** (in review): a bundle data source in `FieldViewerServer` (`FenicsBundleViews`), point data in
+  the endpoints and in `webapp-viewer`, and the entry point: a finished FEniCSx quick run opens the
+  browser viewer. The dimension fix belongs in the bundle's `/grid` (from gdim), not in
+  `handleGridVtu`, whose producers never send a 3D surface.
 
 **`VtuGridParser` fixes** (`vcell-client/.../viz/`)
 - Add `VTK_LINE` (length measure, picking).

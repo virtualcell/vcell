@@ -72,6 +72,9 @@ const state = {
   geometryId: '',
   dimension: 3,
   bodyFitted: false, // MovingBoundary runs: solver's body-fitted mesh, geometry varies per time
+  // 'cell' (finite-volume data: one value per cell) or 'point' (FEniCSx P1 data: one value per mesh
+  // vertex, interpolated across each cell); set by the field the server sends
+  fieldLocation: 'cell',
   bounds: null,
   sliceAxis: -1,
   slicePos: 50,
@@ -438,7 +441,8 @@ async function buildGrid(geometry, field) {
     // NB: setValue() is NOT in the marshalled invoker whitelist ("SetValue is not permitted");
     // setTuple1(i, v) is the permitted per-element scalar setter in the standalone session.
     for (let i = 0; i < field.values.length; i++) await arr.setTuple1(i, field.values[i] ?? 0);
-    await (await ug.getCellData()).setScalars(arr);
+    state.fieldLocation = field.location === 'point' ? 'point' : 'cell';
+    await (await (state.fieldLocation === 'point' ? ug.getPointData() : ug.getCellData())).setScalars(arr);
     fieldArray = arr;
   }
   if (state.bodyFitted) {
@@ -455,7 +459,9 @@ async function buildGrid(geometry, field) {
   }
 
   if (field) {
-    await mapper.setScalarModeToUseCellData();
+    // point data is interpolated across each cell (Gouraud), which is what a P1 solution means
+    if (state.fieldLocation === 'point') await mapper.setScalarModeToUsePointData();
+    else await mapper.setScalarModeToUseCellData();
     await mapper.scalarVisibilityOn(); // no-arg form; the boolean setter marshals awkwardly
     await applyFieldRange(field);
   } else {
@@ -536,13 +542,17 @@ async function updateCropStats() {
   try {
     await tableClip.update();
     const clipped = await tableClip.getOutput();
-    const scalars = await (await clipped.getCellData()).getScalars();
+    const pointData = state.fieldLocation === 'point';
+    const scalars = await (await (pointData ? clipped.getPointData() : clipped.getCellData())).getScalars();
     const range = await scalars.getRange();
     await integ.update();
-    const integrated = await (await integ.getOutput()).getCellData();
+    const integratedOutput = await integ.getOutput();
+    // integrated point data lands in the output's point data; "Volume" is always cell data
+    const integrated = await (pointData ? integratedOutput.getPointData() : integratedOutput.getCellData());
+    const volumeData = await integratedOutput.getCellData();
     // integrated scalars are ∫f dV; "Volume" is ∫dV of the clipped smoothed mesh
     const sumArr = (await integrated.getScalars()) ?? (await integrated.getArray(state.selectedVar));
-    const volArr = await integrated.getArray('Volume');
+    const volArr = await volumeData.getArray('Volume');
     const integral = sumArr ? await sumArr.getTuple1(0) : null;
     const volume = volArr ? await volArr.getTuple1(0) : null;
     const mean = integral != null && volume ? integral / volume : null;
@@ -1031,7 +1041,8 @@ function renderStatsPlot(stats) {
     });
   });
   el.plotTitle.textContent = `min / mean / max over space · ${times.length} timepoints`
-    + (stats.weighting === 'measure' ? ' · area-weighted over the moving domain' : '');
+    + (stats.weighting === 'measure' ? ' · area-weighted over the moving domain'
+      : stats.weighting === 'integral' ? ' · mean = finite-element integral over the domain' : '');
   el.plotLegend.innerHTML = '';
   series.forEach((s, k) => {
     const item = document.createElement('span');
