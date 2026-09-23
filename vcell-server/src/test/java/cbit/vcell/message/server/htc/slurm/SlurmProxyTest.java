@@ -5,6 +5,7 @@ import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.simdata.PortableCommand;
+import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solvers.ExecutableCommand;
 import cbit.vcell.xml.XmlHelper;
@@ -12,6 +13,7 @@ import cbit.vcell.xml.XmlParseException;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.condition.DisabledOnOs;
 import org.junit.jupiter.api.condition.OS;
+import org.vcell.solver.fenics.FenicsSolver;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
@@ -292,6 +294,42 @@ public class SlurmProxyTest {
 		String slurmScript = createScriptForNativeSolvers(simTaskResourcePath, command, JOB_NAME);
 		String expectedSlurmScript = readTextFileFromResource("slurm_fixtures/langevin/V_REL_274672135_0_0.slurm.sub");
 		Assertions.assertEquals(expectedSlurmScript.trim(), slurmScript.trim());
+	}
+
+	@Test
+	public void testSimJobScriptFEniCSx() throws Exception {
+		// the FEniCSx image is chosen by its own (optional) solver list; the command is FenicsSolver's own,
+		// with the "-tid" HtcSimulationWorker appends
+		setProperty(PropertyLoader.htc_vcellfenics_solver_list, "FEniCSx");
+		setProperty(PropertyLoader.htc_vcellfenics_apptainer_image, "oras://ghcr.io/virtualcell/vcell-fenics_singularity:sha-74e7386");
+		String simTaskResourcePath = "slurm_fixtures/fenicsx/SimID_274514696_0__0.simtask.xml";
+		String JOB_NAME = "V_REL_274514696_0_0";
+
+		SimulationTask simTask = XmlHelper.XMLToSimTask(readTextFileFromResource(simTaskResourcePath));
+		Assertions.assertSame(SolverDescription.FEniCSx, simTask.getSimulation().getSolverTaskDescription().getSolverDescription());
+		// the solver creates its directory, so build it in a temporary one and name the cluster's instead
+		File tempUserDir = java.nio.file.Files.createTempDirectory("fenicsx-slurm").toFile();
+		setProperty(PropertyLoader.installationRoot, tempUserDir.getAbsolutePath()); // getCommands() names the local-solvers dir
+		FenicsSolver solver = new FenicsSolver(simTask, tempUserDir, true);
+		List<String> command = new ArrayList<>();
+		for (String token : solver.getCommands().iterator().next().getCommands()) {
+			command.add(token.replace(tempUserDir.getAbsolutePath(), "/share/apps/vcell3/users/schaff"));
+		}
+		command.add("-tid");
+		command.add("0");
+
+		String slurmScript = createScriptForNativeSolvers(simTaskResourcePath, command.toArray(new String[0]), JOB_NAME);
+		String expectedSlurmScript = readTextFileFromResource("slurm_fixtures/fenicsx/V_REL_274514696_0_0.slurm.sub");
+		Assertions.assertEquals(expectedSlurmScript.trim(), slurmScript.trim());
+	}
+
+	@Test
+	public void testFEniCSxNotConfigured() throws Exception {
+		// a site without the (optional) FEniCSx properties rejects the solver rather than running it in another image
+		String simTaskResourcePath = "slurm_fixtures/fenicsx/SimID_274514696_0__0.simtask.xml";
+		RuntimeException e = Assertions.assertThrows(RuntimeException.class, () ->
+				createScriptForNativeSolvers(simTaskResourcePath, new String[] { "vcell-fenics" }, "V_REL_274514696_0_0"));
+		Assertions.assertTrue(e.getMessage().contains("solverName=FEniCSx"), e.getMessage());
 	}
 
 	@Test

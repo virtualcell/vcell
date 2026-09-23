@@ -1,0 +1,98 @@
+#!/usr/bin/bash
+#SBATCH --partition=vcell
+#SBATCH --reservation=
+#SBATCH --qos=vcell
+#SBATCH -J V_REL_274514696_0_0
+#SBATCH -o /share/apps/vcell3/htclogs/V_REL_274514696_0_0.slurm.log
+#SBATCH -e /share/apps/vcell3/htclogs/V_REL_274514696_0_0.slurm.log
+#SBATCH --mem=4096M
+#SBATCH --no-kill
+#SBATCH --no-requeue
+# VCell SlurmProxy memory limit source='default memory limit'
+
+
+TMPDIR=/scratch/vcell
+if [ ! -e $TMPDIR ]; then mkdir -p $TMPDIR ; fi
+echo `hostname`
+export MODULEPATH=/isg/shared/modulefiles:/tgcapps/modulefiles
+source /usr/share/Modules/init/bash
+module load singularity/vcell-3.10.0
+export SINGULARITY_CACHEDIR=/share/apps/vcell3/singularity/cachdir
+export SINGULARITY_PULLFOLDER=/share/apps/vcell3/singularity/pullfolder
+echo "job running on host `hostname -f`"
+echo "id is `id`"
+echo ENVIRONMENT
+env
+
+container_bindings="--bind /share/apps/vcell3/users:/simdata "
+container_bindings+="--bind /share/apps/vcell7/users:/simdata_secondary "
+container_bindings+="--bind /share/apps/vcell12/users:/share/apps/vcell12/users "
+container_bindings+="--bind /share/apps/vcell3/htclogs:/htclogs "
+container_bindings+="--bind /scratch/vcell:/solvertmp "
+container_env="--env java_mem_Xmx=4096M "
+container_env+="--env jmshost_sim_internal=rke-wn-01.cam.uchc.edu "
+container_env+="--env jmsport_sim_internal=31618 "
+container_env+="--env jmsrestport_sim_internal=30163 "
+container_env+="--env jmsuser=clientUser "
+container_env+="--env jmspswd=dummy "
+container_env+="--env jmsblob_minsize=100000 "
+container_env+="--env mongodbhost_internal=rke-wn-01.cam.uchc.edu "
+container_env+="--env mongodbport_internal=30019 "
+container_env+="--env mongodb_database=test "
+container_env+="--env primary_datadir_external=/share/apps/vcell3/users "
+container_env+="--env secondary_datadir_external=/share/apps/vcell7/users "
+container_env+="--env htclogdir_external=/share/apps/vcell3/htclogs "
+container_env+="--env softwareVersion=Rel_Version_7.6.0_build_28 "
+container_env+="--env serverid=REL "
+solver_sif=/share/apps/vcell3/singularityImages/ghcr.io_virtualcell_vcell-fenics_singularity_sha-74e7386.img
+if [ ! -f "$solver_sif" ]; then
+    echo "ERROR: missing SIF $solver_sif" >&2
+    exit 1
+fi
+solver_container_prefix="singularity run --containall ${container_bindings} ${container_env} $solver_sif"
+batch_sif=/share/apps/vcell3/singularityImages/ghcr.io_virtualcell_vcell-batch_singularity_7.6.0.43.img
+if [ ! -f "$batch_sif" ]; then
+    echo "ERROR: missing SIF $batch_sif" >&2
+    exit 1
+fi
+batch_container_prefix="singularity run --containall ${container_bindings} ${container_env} $batch_sif"
+
+
+sendFailureMsg() {
+  ${batch_container_prefix}  --msg-userid clientUser --msg-password dummy --msg-host rke-wn-01.cam.uchc.edu --msg-port 31618 --msg-job-host `hostname` --msg-job-userid schaff --msg-job-simkey 274514696 --msg-job-jobindex 0 --msg-job-taskid 0 --msg-job-errmsg "$1" SendErrorMsg
+  stat=$?
+  if [[ $stat -ne 0 ]]; then
+    echo 'failed to send error message, retcode=$stat'
+  else
+    echo 'sent failure message'
+  fi
+}
+
+
+callExitProcessor( ) {
+	${batch_container_prefix} JavaPostprocessor64 274514696 schaff 17 0 0 $1 /htclogs/V_REL_274514696_0_0.slurm.sub
+}
+
+
+${batch_container_prefix} JavaPreprocessor64 /simdata/schaff/SimID_274514696_0__0.simtask.xml /simdata/schaff
+stat=$?
+echo returned $stat
+if [ $stat -ne 0 ]; then
+	callExitProcessor $stat
+	echo returning $stat to Slurm
+	exit $stat
+fi
+
+${solver_container_prefix} vcell-fenics --simtask /simdata/schaff/SimID_274514696_0__0.simtask.xml --out /simdata/schaff --vc-send-status-config=/simdata/schaff/SimID_274514696_0_.fenicsMessagingConfig -tid 0
+stat=$?
+echo returned $stat
+if [ $stat -ne 0 ]; then
+	callExitProcessor $stat
+	echo returning $stat to Slurm
+	exit $stat
+fi
+
+callExitProcessor 0
+
+
+#Following commands (if any) are read by JavaPostProcessor64

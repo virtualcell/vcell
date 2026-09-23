@@ -3,7 +3,7 @@
 ## Problem
 
 SLURM jobs on the mantis cluster run VCell workloads inside Apptainer
-containers. Four container images are used:
+containers. Five container images are used:
 
 | Image | Purpose | Version tracks |
 |-------|---------|---------------|
@@ -11,6 +11,7 @@ containers. Four container images are used:
 | vcell-batch | Batch solvers (Langevin, RK, etc.) | VCell release tag |
 | vcell-solvers | Native solvers (CombinedSundials, CVODE, NFSim, etc.) | Independent (e.g. v0.8.2) |
 | vcell-fvsolver | Finite volume solvers (Smoldyn, SundialsPDE, etc.) | Independent (e.g. 0.9.7) |
+| vcell-fenics | FEniCSx finite-element solver ([plan-fenics.md](plan-fenics.md)) | Independent: the vcell-fenics commit (e.g. sha-74e7386) |
 
 Previously, every SLURM job invocation ran:
 
@@ -172,12 +173,22 @@ htc_vcellopt_apptainer_image=oras://ghcr.io/virtualcell/vcell-opt_singularity:7.
 htc_vcellbatch_apptainer_image=oras://ghcr.io/virtualcell/vcell-batch_singularity:7.7.0.71
 htc_vcellsolvers_apptainer_image=oras://ghcr.io/virtualcell/vcell-solvers_singularity:v0.8.2
 htc_vcellfvsolver_apptainer_image=oras://ghcr.io/virtualcell/vcell-fvsolver_singularity:0.9.7
+htc_vcellfenics_apptainer_image=oras://ghcr.io/virtualcell/vcell-fenics_singularity:sha-74e7386
+htc_vcellfenics_solver_list=FEniCSx
 ```
+
+The FEniCSx pair is optional in `SlurmProxy`: a site that sets neither simply cannot run
+FEniCSx (the job is refused, not run in another image). Unlike vcell-solvers and vcell-fvsolver,
+its SIF needs no manual bootstrap: the vcell-fenics repository's `container` workflow publishes
+`oras://ghcr.io/virtualcell/vcell-fenics_singularity:{sha-<commit>,latest}` (amd64, the cluster's
+architecture) on every push to its `main`, alongside the multi-arch Docker image the desktop
+client pulls. Pin a `sha-` tag here rather than `latest`, so a vcell-fenics merge cannot change what
+a deployed site runs.
 
 These flow through `docker-compose.yml` → `Dockerfile-service-dev` (run as `submit`)
 → Java system properties → `PropertyLoader` → `SlurmProxy.java`.
 
-The solver-to-container mapping in `SlurmProxy.java` (lines 728-737)
+The solver-to-container mapping in `SlurmProxy.generateScript`
 maps each solver name to the appropriate `*_apptainer_image` property,
 then derives the local SIF filename from that ORAS URL.
 

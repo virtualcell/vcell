@@ -240,6 +240,10 @@ private static void scanUserDirectory(File userDir, ExternalDataIdentifier[] ext
 	        					}else{
 	        						pw.println("deleted file("+simKey+":"+count+") " + file.getPath());
 	        						if (lg.isTraceEnabled()) lg.trace("deleted file("+simKey+":"+count+") " + file.getPath());
+	        						if (file.isDirectory() && file.getName().endsWith(cbit.vcell.simdata.SimDataConstants.FENICS_BUNDLE_EXTENSION)) {
+	        							// a FEniCSx results bundle is a directory tree; File.delete() fails on it
+	        							org.vcell.util.FileUtils.deleteDirectoryContents(file, true, null);
+	        						}
 	        						file.delete();
 	        					}
 	        				}

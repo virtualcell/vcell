@@ -27,6 +27,8 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+
+import cbit.vcell.simdata.SimDataConstants;
 import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -1519,6 +1521,12 @@ lg.info("Del sim simcount="+deleteTheseSims.size());
 	
 	public static boolean deleteFileAndLink(File deleteThis,StringBuffer logStringBuffer) {
 		try {
+			if (isFenicsBundle(deleteThis)) {
+				// a FEniCSx results bundle is a directory tree (VTU meshes + zarr chunks); File.delete() fails on it
+				logStringBuffer.append("removing (FEniCSx results bundle):'"+deleteThis.getAbsolutePath()+"'\n");
+				deleteTree(deleteThis.toPath());
+				return true;
+			}
 			ProcessBuilder pb = new ProcessBuilder("readlink","-m",deleteThis.getAbsolutePath());
 			pb.redirectErrorStream(true);// out and err in one stream
 			
@@ -1566,6 +1574,20 @@ lg.info("Del sim simcount="+deleteTheseSims.size());
 			return false;
 		}
 	}
+	/** a {@code SimID_<key>_<job>_.fenics} directory (not a link to one), written by the FEniCSx solver */
+	static boolean isFenicsBundle(File file) {
+		return file.getName().endsWith(SimDataConstants.FENICS_BUNDLE_EXTENSION) && file.isDirectory()
+				&& !Files.isSymbolicLink(file.toPath());
+	}
+
+	static void deleteTree(Path root) throws IOException {
+		try (java.util.stream.Stream<Path> paths = Files.walk(root)) {
+			for (Path p : (Iterable<Path>) paths.sorted(java.util.Comparator.reverseOrder())::iterator) {
+				Files.delete(p);
+			}
+		}
+	}
+
 	private static void clean(String[] args) {
 		DBBackupHelper dbBackupHelper = new DBBackupHelper(args);
 		
