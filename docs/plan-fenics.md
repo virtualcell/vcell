@@ -186,12 +186,16 @@ As built:
 → COMPLETED. The CLI sends 1003 itself, and the bundle lands in the user dir.
 
 ## Later (each its own PR, sequenced after V4)
-- **V5, remote viewing (in review):** built as the RPC `DataSetController.getFenicsBundleFile(vcdID, path)`,
+- **V5, remote viewing ✅ (#2090):** built as the RPC `DataSetController.getFenicsBundleFile(vcdID, path)`,
   a default method implemented on the local and messaging paths. Reads go through a `BundleStore`
   (a directory, or the data server via `DataServerBundleStore`, cached). A server-run FEniCSx sim's
   results open in the field viewer. Access follows the data server's existing read policy; the
   bundle lookup confines paths to the bundle. Originally planned as: a `DataSetController` RPC (or vcell-rest route) that serves bundle files by
   relative path, plus a remote `BundleSource` so server-run results open in the field viewer.
+- **Geometry check ✅ (#2091),** found by trying a desktop Quick Run. FEniCSx refuses non-analytic
+  and non-2D/3D geometries as ERROR issues (`FenicsSolver.unsupportedReasons` →
+  `Simulation.gatherIssues`), so the run stops before a container starts. A failure shows only the
+  solver's `error:` line.
 - **V6, UI and options:**
   - `FenicsSolverOptions` wired through `SolverTaskDescription` / `XMLTags` / `Xmlproducer` /
     `XmlReader` / VCML. Copy the VCML shape from `SundialsPdeSolverOptions`, not MB, whose `getVCML`
@@ -204,6 +208,48 @@ As built:
 - **Flip the gate on** once V3 and V4 have been verified. That needs a release-notes entry.
 - **pyvcell:** a `FenicsResult` beside `Result`/`MovingBoundaryResult` (port
   `vcell_fenics/results/reader.py`, adding segment handling), and upstream the SimulationTask reader.
+
+## Moving boundaries (M1–M5)
+
+**Why.** VCell's moving-boundary applications list only the native MovingBoundary solver, although
+the FEniCSx ALE backend solves these problems and is cross-validated against mbsolver. The solver
+path refuses them today, so they aren't silently solved on the initial shape. M1–M4 are vcell-fenics
+PRs, tracked in its
+[integration tracker](https://github.com/virtualcell/vcell-fenics/blob/main/docs/integration/vcell-solver-integration.md#moving-boundaries-m1m5).
+M5 is here.
+
+**Scope of the first pass** (decided 2026-09-22):
+- 2D, with species in the **moving interior volume** only (e.g. a cell carrying its cytoplasm, with
+  an empty exterior).
+- **Remeshing included:** a new bundle segment per remesh.
+- **Species-dependent front velocities allowed** (explicit one-step lag), cross-validated against
+  mbsolver.
+- Membrane species on a moving front come in a later pass.
+
+**vcell-fenics**
+- **M1 — bridge.** Read `MembraneSubDomain/<Velocity>` from the SimulationTask. pyvcell drops it; it
+  is e.g. `sobj_cell1_ec0_velX` → `sproc_0.velocityX` → `sin(t)`. Attach it as prescribed motion on
+  the interior compartment (v = v_b), and replace the blanket refusal with specific ones. Also fixes
+  an identifier-regex bug in function inlining.
+- **M2 — results bundle.** Per-row node coordinates (`_coords`) and a new segment per remesh, as ADR
+  010 already reserves: writer, recorder (per-row domain measure), reader, and PVD export.
+- **M3 — runner.** A moving path using backward Euler with remeshing (`backend/ale.py`), advancing
+  `sim.t` (the ALE drivers didn't, so `sin(t)` froze at t = 0).
+- **M4 — cross-validation against mbsolver:** translation, a remeshing expansion, and a
+  species-dependent velocity. It publishes a new image.
+
+**vcell**
+- **M5 — offer and view:**
+  - `Feature_Moving` on `SolverDescription.FEniCSx`, so it's listed for moving-boundary
+    applications.
+  - `FenicsSolver.unsupportedReasons` mirrors M1's refusals: 2D, interior-only species.
+  - `FenicsBundle.coords(domain, row)` reads `_coords`.
+  - `FenicsBundleViews` serves each row's geometry for an ALE segment (`geometryId …@t<row>`, which
+    the viewer's body-fitted path already re-fetches), locates time-series points in each row's
+    mesh, and uses the measure per row.
+  - Bump the default image and the vcell-fluxcd pin to the M4 image.
+- **Verification:** a moving-boundary application lists FEniCSx; a desktop Quick Run → the browser
+  viewer shows the moving mesh while scrubbing time.
 
 ## Verification
 - **Per PR:**
