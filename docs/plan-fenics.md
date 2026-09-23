@@ -76,13 +76,12 @@ Templates: `MovingBoundarySolver` for shape, and `LangevinSolver` for the messag
 
 ## PR V2 — desktop Docker quick-run ✅ (#2086)
 
-**Found while building V2 (vcell-fenics side, open):**
-- The image and SIF packages are **private** on GHCR, because the vcell-fenics repo is private. A
-  desktop user can't pull them anonymously, and the cluster prepull would need credentials. They
-  need to be made public, or the repo does, before FEniCSx can be enabled for users.
-- The image is **linux/amd64 only**: arm64 builds are opt-in, needing the `ARM64_RUNNER` repo
-  variable. V2 falls back to pulling and running `linux/amd64`, which Docker Desktop emulates on
-  Apple silicon. It works (a small 3D model runs in about 6 s), but native arm64 would be faster.
+**Found while building V2 (vcell-fenics side), both resolved 2026-09-22:**
+- The image and SIF packages were **private** on GHCR, because the vcell-fenics repo is private.
+  Both packages are now public, and anonymous pulls work.
+- The image was **linux/amd64 only**. `ARM64_RUNNER=ubuntu-24.04-arm` is now set on vcell-fenics, so
+  the image is multi-arch (amd64 + arm64) and Apple-silicon desktops run it natively. V2's
+  `linux/amd64` fallback remains for any image that lacks a native build.
 
 **Container runner**
 - New small `ContainerRunner` utility in vcell-core/`org.vcell.util.exe`.
@@ -157,7 +156,7 @@ Split in two:
   `vcell-client/src/test/resources/`.
 - Unit tests for the reader, the parser fixes and the endpoint JSON.
 
-## PR V4 — HPC, single rank (vcell + vcell-fluxcd) — in review
+## PR V4 — HPC, single rank (vcell + vcell-fluxcd) — ✅ vcell #2089; vcell-fluxcd #56 (dev) awaits a dev deploy
 As built:
 - The FEniCSx image properties are **optional** in `SlurmProxy`: a site without them refuses the
   solver. So they are not added to `HtcSimulationWorker`'s required list.
@@ -187,7 +186,11 @@ As built:
 → COMPLETED. The CLI sends 1003 itself, and the bundle lands in the user dir.
 
 ## Later (each its own PR, sequenced after V4)
-- **V5, remote viewing:** a `DataSetController` RPC (or vcell-rest route) that serves bundle files by
+- **V5, remote viewing (in review):** built as the RPC `DataSetController.getFenicsBundleFile(vcdID, path)`,
+  a default method implemented on the local and messaging paths. Reads go through a `BundleStore`
+  (a directory, or the data server via `DataServerBundleStore`, cached). A server-run FEniCSx sim's
+  results open in the field viewer. Access follows the data server's existing read policy; the
+  bundle lookup confines paths to the bundle. Originally planned as: a `DataSetController` RPC (or vcell-rest route) that serves bundle files by
   relative path, plus a remote `BundleSource` so server-run results open in the field viewer.
 - **V6, UI and options:**
   - `FenicsSolverOptions` wired through `SolverTaskDescription` / `XMLTags` / `Xmlproducer` /

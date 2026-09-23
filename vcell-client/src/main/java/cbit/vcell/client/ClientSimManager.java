@@ -203,8 +203,16 @@ public void showSimulationResults(OutputContext outputContext, Simulation[] simu
 	Vector<Simulation> v = new Vector<>();
     for (Simulation simulation : simulations) {
         if (simulation.getSimulationInfo() != null && getSimulationStatus(simulation).getHasData()) {
+            if (simulation.getSolverTaskDescription().getSolverDescription().isFenicsSolver()) {
+                // FEniCSx results are a results bundle, not a VCell dataset: they open in the field viewer
+                showFenicsServerResults(simulation);
+                continue;
+            }
             v.add(simulation);
         }
+    }
+    if (v.isEmpty()) {
+        return;
     }
 	final Simulation[] simsToShow = v.toArray(Simulation[]::new);
 	Hashtable<String, Object> hashTable = new Hashtable<String, Object>();
@@ -1103,6 +1111,35 @@ public void runQuickSimulation(final Simulation originalSimulation, ViewerType v
 	ClientTaskDispatcher.dispatch(documentWindowManager.getComponent(), new Hashtable<String, Object>(), taskArray, true, true, null);
 }
 
+
+/**
+ * Opens a cluster-run FEniCSx simulation's results bundle in the browser field viewer, reading it from
+ * the data server file by file (docs/plan-fenics.md, V5). Job 0; a parameter scan's other jobs are
+ * registered too, so the viewer's job parameter can reach them.
+ */
+private void showFenicsServerResults(Simulation simulation) {
+	try {
+		VCDataManager dataManager = ((ClientRequestManager) getDocumentWindowManager().getRequestManager())
+				.getClientServerManager().getVCDataManager();
+		VCSimulationIdentifier vcSimID = simulation.getSimulationInfo().getAuthoritativeVCSimulationIdentifier();
+		String simKey = vcSimID.getSimulationKey().toString();
+		for (int job = 0; job < simulation.getJobCount(); job++) {
+			VCSimulationDataIdentifier vcdID = new VCSimulationDataIdentifier(vcSimID, job);
+			FieldViewerServer.registerBundle(simKey, job,
+					org.vcell.solver.fenics.BundleStore.cached(new org.vcell.solver.fenics.DataServerBundleStore(dataManager, vcdID)),
+					simulation.getName());
+		}
+		int port = FieldViewerServer.startForFenics();
+		if (port < 0) {
+			PopupGenerator.showErrorDialog(getDocumentWindowManager(), "Could not start the FEniCSx results viewer (see the log).");
+			return;
+		}
+		DialogUtils.browserLauncher(getDocumentWindowManager().getComponent(), FieldViewerServer.viewerUrl(port, simKey, 0),
+				"Failed to open the FEniCSx results viewer.");
+	} catch (Exception e) {
+		PopupGenerator.showErrorDialog(getDocumentWindowManager(), "Could not open the FEniCSx results: " + e.getMessage(), e);
+	}
+}
 
 private static final String H_FENICS_BUNDLE = "fenicsBundleDirectory";
 private static final String H_FENICS_SIMKEY = "fenicsSimKey";

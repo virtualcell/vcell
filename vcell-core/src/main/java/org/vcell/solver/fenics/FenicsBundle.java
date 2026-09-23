@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -49,7 +48,8 @@ public final class FenicsBundle {
 	public record Segment(int index, double t0, int count, String motion, String prefix) {
 	}
 
-	private final File root;
+	private final BundleStore store;
+	private final String root; // for messages
 	private final int schema;
 	private final String profile;
 	private final String status;
@@ -61,8 +61,9 @@ public final class FenicsBundle {
 	private final List<Segment> segments;
 	private final List<String> statsColumns;
 
-	private FenicsBundle(File root, JsonObject manifest) {
-		this.root = root;
+	private FenicsBundle(BundleStore store, JsonObject manifest) {
+		this.store = store;
+		this.root = store.describe();
 		this.schema = manifest.get("schema").getAsInt();
 		if (schema > SUPPORTED_SCHEMA) {
 			throw new IllegalArgumentException(root + ": results bundle schema " + schema
@@ -120,23 +121,27 @@ public final class FenicsBundle {
 	}
 
 	public static FenicsBundle open(File root) throws IOException {
-		File attrs = new File(root, ".zattrs");
-		if (!attrs.isFile()) {
-			throw new FileNotFoundException(root + " is not a FEniCSx results bundle (no .zattrs)");
+		return open(BundleStore.directory(root));
+	}
+
+	public static FenicsBundle open(BundleStore store) throws IOException {
+		byte[] attrs = store.read(".zattrs");
+		if (attrs == null) {
+			throw new FileNotFoundException(store.describe() + " is not a FEniCSx results bundle (no .zattrs)");
 		}
-		JsonObject json = JsonParser.parseString(Files.readString(attrs.toPath(), StandardCharsets.UTF_8)).getAsJsonObject();
+		JsonObject json = JsonParser.parseString(new String(attrs, StandardCharsets.UTF_8)).getAsJsonObject();
 		if (!json.has(MANIFEST_KEY)) {
-			throw new IOException(root + ": .zattrs has no '" + MANIFEST_KEY + "' manifest");
+			throw new IOException(store.describe() + ": .zattrs has no '" + MANIFEST_KEY + "' manifest");
 		}
-		return new FenicsBundle(root, json.getAsJsonObject(MANIFEST_KEY));
+		return new FenicsBundle(store, json.getAsJsonObject(MANIFEST_KEY));
 	}
 
 	/** re-reads the manifest: a running solver appends to {@code times} as rows land */
 	public FenicsBundle refresh() throws IOException {
-		return open(root);
+		return open(store);
 	}
 
-	public File getRoot() { return root; }
+	public BundleStore getStore() { return store; }
 	public int getSchema() { return schema; }
 	/** {@code fixed} (one mesh) or {@code segmented} (the mesh changes between segments) */
 	public String getProfile() { return profile; }
@@ -190,7 +195,12 @@ public final class FenicsBundle {
 	/** the bytes of {@code domain}'s VTU mesh for the segment holding {@code row} */
 	public byte[] meshBytes(String domain, int row) throws IOException {
 		String prefix = times.isEmpty() ? segments.get(0).prefix() : segmentOf(row).segment().prefix();
-		return Files.readAllBytes(new File(root, prefix + domain(domain).mesh()).toPath());
+		String path = prefix + domain(domain).mesh();
+		byte[] bytes = store.read(path);
+		if (bytes == null) {
+			throw new FileNotFoundException(root + ": no mesh " + path);
+		}
+		return bytes;
 	}
 
 	/** the P1 values of a variable at output row {@code row}, in the VTU's point order */
@@ -213,8 +223,12 @@ public final class FenicsBundle {
 
 	/** one row of a 2D zarr v2 array stored one row per chunk; a missing chunk is all fill value */
 	private double[] readRow(String arrayPath, int row) throws IOException {
-		File arrayDir = new File(root, arrayPath);
-		JsonObject meta = JsonParser.parseString(Files.readString(new File(arrayDir, ".zarray").toPath(), StandardCharsets.UTF_8)).getAsJsonObject();
+		String arrayDir = root + "/" + arrayPath;
+		byte[] zarray = store.read(arrayPath + "/.zarray");
+		if (zarray == null) {
+			throw new FileNotFoundException(arrayDir + ": no .zarray");
+		}
+		JsonObject meta = JsonParser.parseString(new String(zarray, StandardCharsets.UTF_8)).getAsJsonObject();
 		int[] shape = ints(meta.getAsJsonArray("shape"));
 		int[] chunks = ints(meta.getAsJsonArray("chunks"));
 		String dtype = meta.get("dtype").getAsString();
@@ -228,13 +242,13 @@ public final class FenicsBundle {
 		}
 		int n = shape[1];
 		String separator = string(meta, "dimension_separator", ".");
-		File chunk = new File(arrayDir, row + separator + "0");
+		String chunk = arrayPath + "/" + row + separator + "0";
 		double[] values = new double[n];
-		if (!chunk.isFile()) {
+		byte[] raw = store.read(chunk);
+		if (raw == null) {
 			Arrays.fill(values, fillValue(meta));
 			return values;
 		}
-		byte[] raw = Files.readAllBytes(chunk.toPath());
 		byte[] decoded = decompress(meta, raw, n * Double.BYTES, chunk);
 		ByteBuffer buf = ByteBuffer.wrap(decoded).order(ByteOrder.LITTLE_ENDIAN);
 		for (int i = 0; i < n; i++) {
@@ -243,7 +257,7 @@ public final class FenicsBundle {
 		return values;
 	}
 
-	private static byte[] decompress(JsonObject meta, byte[] raw, int expectedBytes, File chunk) throws IOException {
+	private static byte[] decompress(JsonObject meta, byte[] raw, int expectedBytes, String chunk) throws IOException {
 		JsonElement compressor = meta.get("compressor");
 		if (compressor == null || compressor.isJsonNull()) {
 			if (raw.length != expectedBytes) {

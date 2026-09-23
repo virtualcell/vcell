@@ -85,6 +85,16 @@ cbit.vcell.solver.ode.ODESimData getODEData(VCDataIdentifier vcdataID) throws Da
  	return null;
  }
 
+/**
+ * getFenicsBundleFile - one file of a FEniCSx results bundle, {@code SimID_<key>_<job>_.fenics/<relativePath>}
+ * (docs/plan-fenics.md, V5), so a cluster run's results can be viewed from the desktop. Returns null when
+ * the file does not exist (an unwritten chunk of a running simulation). Default returns null so
+ * implementors that do not serve sim data are unaffected; the real data paths (local + RPC) override it.
+ */
+ default byte[] getFenicsBundleFile(VCDataIdentifier vcdataID, String relativePath) throws DataAccessException, RemoteProxyException {
+ 	return null;
+ }
+
  /**
  * This method was created in VisualAge.
  * @return ParticleData

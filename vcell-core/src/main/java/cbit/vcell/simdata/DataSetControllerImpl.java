@@ -2460,6 +2460,51 @@ public LangevinBatchResultSet getLangevinBatchResultSet(VCDataIdentifier vcdID) 
 	}
 }
 
+/**
+ * One file of a FEniCSx results bundle, {@code SimID_<key>_<job>_.fenics/<relativePath>}, found in the
+ * owner's primary then secondary user directory. The bundle has no VCell .log, so it is located
+ * directly rather than through {@link SimulationData}. The path must be a plain relative path that
+ * stays inside the bundle and names a regular file (no links); anything else is refused.
+ *
+ * @return the file's bytes, or null if the bundle or the file does not exist (yet)
+ */
+public byte[] getFenicsBundleFile(VCDataIdentifier vcdID, String relativePath) throws DataAccessException {
+	if (!(vcdID instanceof VCSimulationDataIdentifier)) {
+		throw new DataAccessException("FEniCSx results are simulation data; got " + vcdID);
+	}
+	VCSimulationDataIdentifier simID = (VCSimulationDataIdentifier) vcdID;
+	org.vcell.solver.fenics.BundleStore.checkRelativePath(relativePath);
+	String bundleName = SimulationData.createSimIDWithJobIndex(simID.getSimulationKey(), simID.getJobIndex(), false)
+			+ SimDataConstants.FENICS_BUNDLE_EXTENSION;
+	try {
+		for (File root : new File[] { primaryRootDirectory, secondaryRootDirectory }) {
+			if (root == null) {
+				continue;
+			}
+			java.nio.file.Path bundle = new File(getUserDirectoryName(root, vcdID.getOwner()), bundleName).toPath();
+			if (!java.nio.file.Files.isDirectory(bundle, java.nio.file.LinkOption.NOFOLLOW_LINKS)) {
+				continue;
+			}
+			java.nio.file.Path realBundle = bundle.toRealPath();
+			java.nio.file.Path file = realBundle.resolve(relativePath).normalize();
+			if (!file.startsWith(realBundle)) {
+				throw new DataAccessException("bundle path '" + relativePath + "' escapes the results bundle");
+			}
+			if (!java.nio.file.Files.exists(file, java.nio.file.LinkOption.NOFOLLOW_LINKS)) {
+				return null; // e.g. a chunk not yet written by a running simulation
+			}
+			if (!java.nio.file.Files.isRegularFile(file, java.nio.file.LinkOption.NOFOLLOW_LINKS)
+					|| !file.toRealPath().startsWith(realBundle)) {
+				throw new DataAccessException("bundle path '" + relativePath + "' is not a file of the results bundle");
+			}
+			return java.nio.file.Files.readAllBytes(file);
+		}
+		return null;
+	} catch (IOException e) {
+		throw new DataAccessException("reading FEniCSx results " + bundleName + "/" + relativePath + ": " + e.getMessage(), e);
+	}
+}
+
 public SpringSaladTrajectory getLangevinTrajectory(VCDataIdentifier vcdID) throws DataAccessException {
 	if (lg.isTraceEnabled()) lg.trace("DataSetControllerImpl.getLangevinTrajectory()");
 	try {

@@ -1247,8 +1247,13 @@ public final class FieldViewerServer {
 	 * written can be viewed.
 	 */
 	public static void registerBundle(String simKey, int jobIndex, java.io.File bundleDir, String simName) {
-		bundleSources.put(simKey + ":" + jobIndex, new FenicsBundleViews.BundleSource(simKey, jobIndex, bundleDir, simName));
-		LG.debug("field viewer FEniCSx bundle registered: {} job {} at {}", simKey, jobIndex, bundleDir);
+		registerBundle(simKey, jobIndex, org.vcell.solver.fenics.BundleStore.directory(bundleDir), simName);
+	}
+
+	/** A bundle read through any store, e.g. from the data server for a cluster run (cached). */
+	public static void registerBundle(String simKey, int jobIndex, org.vcell.solver.fenics.BundleStore store, String simName) {
+		bundleSources.put(simKey + ":" + jobIndex, new FenicsBundleViews.BundleSource(simKey, jobIndex, store, simName));
+		LG.debug("field viewer FEniCSx bundle registered: {} job {} from {}", simKey, jobIndex, store.describe());
 	}
 
 	public static void unregisterBundle(String simKey, int jobIndex) {

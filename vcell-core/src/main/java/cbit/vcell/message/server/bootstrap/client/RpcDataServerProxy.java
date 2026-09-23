@@ -73,6 +73,10 @@ public cbit.vcell.simdata.SpringSaladTrajectory getLangevinTrajectory(VCDataIden
 	return (cbit.vcell.simdata.SpringSaladTrajectory)rpc("getLangevinTrajectory",new Object[]{userLoginInfo.getUser(), vcdID});
 }
 
+public byte[] getFenicsBundleFile(VCDataIdentifier vcdID, String relativePath) throws org.vcell.util.DataAccessException {
+	return (byte[])rpc("getFenicsBundleFile",new Object[]{userLoginInfo.getUser(), vcdID, relativePath});
+}
+
 public ParticleDataBlock getParticleDataBlock(VCDataIdentifier vcdID, double time) throws org.vcell.util.DataAccessException {
 	return (ParticleDataBlock)rpc("getParticleDataBlock",new Object[]{userLoginInfo.getUser(), vcdID,time});
 }
