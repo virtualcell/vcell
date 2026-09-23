@@ -157,15 +157,12 @@ public class FenicsSolverTest {
 		assertEquals(List.of(), FenicsSolver.unsupportedReasons(analytic.getSimulation()));
 		assertTrue(fenicsIssues(analytic).isEmpty());
 
-		// a 3D image geometry (ec / cytosol / Nucleus) is refused by the solver, so it is an ERROR issue,
-		// which is what stops a quick run before it starts a container
+		// a 3D image geometry (ec / cytosol / Nucleus) is realized too — body-fitted from its smoothed label
+		// field (vcell-fenics ADR 012) — so it raises no issue (the ERROR-issue path that stops a quick run
+		// is covered by the moving-boundary refusals below)
 		SimulationTask image = fenicsSimTask("image3d_SimID_274630052_0__0.simtask.xml");
-		List<String> reasons = FenicsSolver.unsupportedReasons(image.getSimulation());
-		assertEquals(3, reasons.size(), reasons.toString());
-		assertTrue(reasons.get(0).contains("analytic geometries only") && reasons.get(0).contains("image-based"), reasons.get(0));
-		List<org.vcell.util.Issue> issues = fenicsIssues(image);
-		assertEquals(3, issues.size());
-		assertEquals(org.vcell.util.Issue.Severity.ERROR, issues.get(0).getSeverity());
+		assertEquals(List.of(), FenicsSolver.unsupportedReasons(image.getSimulation()));
+		assertTrue(fenicsIssues(image).isEmpty());
 	}
 
 	private static final String MOVING = "moving_SimID_274641196_0__0.simtask.xml";
