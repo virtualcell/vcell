@@ -229,6 +229,8 @@ public abstract class VCellIcons {
 
     public final static Icon singleRunIcon = makeIcon("/svg/single-run.png");
     public final static Icon multiRunIcon = makeIcon("/svg/multi-run.png");
+    public final static Icon singleRunNegativeIcon = makeIcon("/svg/single-run-negative.png");
+    public final static Icon multiRunNegativeIcon = makeIcon("/svg/multi-run-negative.png");
 
     // rate and assignment rules
     public final static Icon ruleRateIcon = makeIcon("/icons/ruleRate.png");

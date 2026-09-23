@@ -939,18 +939,16 @@ private void initConnections() throws java.lang.Exception {
 						SolverTaskDescription std = sim.getSolverTaskDescription();
 						LangevinSimulationOptions lso = std.getLangevinSimulationOptions();
 						int totalJobs = lso.getTotalNumberOfJobs();
-
 						if (totalJobs == 1) {
-							setIcon(VCellIcons.singleRunIcon);
+							setIcon(isSelected ? VCellIcons.singleRunNegativeIcon : VCellIcons.singleRunIcon);
 							langevinToolTipExtension = " (single run)";
 						} else {
-							setIcon(VCellIcons.multiRunIcon);
+							setIcon(isSelected ? VCellIcons.multiRunNegativeIcon : VCellIcons.multiRunIcon );
 							langevinToolTipExtension = " (batch run)";
 						}
 						bLangevinSimulation = true;
 					}
-				}catch(Exception e){
-					//ignore, let table cell render anyway
+				} catch(Exception e) {		// ignore, let table cell render anyway
 					e.printStackTrace();
 				}
 				setText(solverDescription.getShortDisplayLabel());
@@ -958,7 +956,7 @@ private void initConnections() throws java.lang.Exception {
 			} else {
 				setToolTipText(getText());
 			}
-			if(bFinitVolumeRerun){
+			if(bFinitVolumeRerun) {
 				setText(getText()+(bFinitVolumeRerun?"(*)":""));
 				setToolTipText(getToolTipText()+(bFinitVolumeRerun?" (data regenerated using FiniteVolumeStandalone)":""));
 			} else if(bLangevinSimulation) {
