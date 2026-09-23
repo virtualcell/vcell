@@ -942,17 +942,22 @@ public class SlurmProxy extends HtcProxy {
 		List<String> vcellfvsolver_solverList = List.of(PropertyLoader.getRequiredProperty(PropertyLoader.htc_vcellfvsolver_solver_list).split(","));
 		List<String> vcellsolvers_solverList = List.of(PropertyLoader.getRequiredProperty(PropertyLoader.htc_vcellsolvers_solver_list).split(","));
 		List<String> vcellbatch_solverList = List.of(PropertyLoader.getRequiredProperty(PropertyLoader.htc_vcellbatch_solver_list).split(","));
+		// optional: a site that does not run FEniCSx (docs/plan-fenics.md) need not configure it
+		String vcellfenics_solverListProperty = PropertyLoader.getProperty(PropertyLoader.htc_vcellfenics_solver_list, "");
+		List<String> vcellfenics_solverList = vcellfenics_solverListProperty.isBlank() ? List.of() : List.of(vcellfenics_solverListProperty.split(","));
 
 		final String solverApptainerImage;
 		final String batchApptainerImage = PropertyLoader.getRequiredProperty(PropertyLoader.htc_vcellbatch_apptainer_image);
-		if (vcellfvsolver_solverList.contains(solverName)) {
+		if (vcellfenics_solverList.contains(solverName)) {
+			solverApptainerImage = PropertyLoader.getRequiredProperty(PropertyLoader.htc_vcellfenics_apptainer_image);
+		} else if (vcellfvsolver_solverList.contains(solverName)) {
 			solverApptainerImage = PropertyLoader.getRequiredProperty(PropertyLoader.htc_vcellfvsolver_apptainer_image);
 		} else if (vcellsolvers_solverList.contains(solverName)) {
 			solverApptainerImage = PropertyLoader.getRequiredProperty(PropertyLoader.htc_vcellsolvers_apptainer_image);
 		} else if (vcellbatch_solverList.contains(solverName)) {
 			solverApptainerImage = batchApptainerImage;
 		} else {
-			throw new RuntimeException("solverName="+solverName+" not in vcellfvsolver_solverList="+vcellfvsolver_solverList+" or vcellsolvers_solverList="+vcellsolvers_solverList+" or vcellbatch_solverList="+vcellbatch_solverList);
+			throw new RuntimeException("solverName="+solverName+" not in vcellfvsolver_solverList="+vcellfvsolver_solverList+" or vcellsolvers_solverList="+vcellsolvers_solverList+" or vcellbatch_solverList="+vcellbatch_solverList+" or vcellfenics_solverList="+vcellfenics_solverList);
 		}
 		final String sifImageDir = PropertyLoader.getRequiredProperty(PropertyLoader.htc_singularity_imagedir);
 

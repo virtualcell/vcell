@@ -107,6 +107,9 @@ public class PropertyLoader {
 	public static final String htc_vcellbatch_apptainer_image = 	record("vcell.htc.vcellbatch.apptainer.image",ValueType.GEN);
 	public static final String htc_vcellbatch_solver_list = 	record("vcell.htc.vcellbatch.solver.list",ValueType.GEN);
 	public static final String htc_vcellopt_apptainer_image = 	record("vcell.htc.vcellopt.apptainer.image",ValueType.GEN);
+	/** FEniCSx solver image (docs/plan-fenics.md): oras://ghcr.io/virtualcell/vcell-fenics_singularity:<tag>; optional, like its solver list */
+	public static final String htc_vcellfenics_apptainer_image = 	record("vcell.htc.vcellfenics.apptainer.image",ValueType.GEN);
+	public static final String htc_vcellfenics_solver_list = 	record("vcell.htc.vcellfenics.solver.list",ValueType.GEN);
 	public static final String htc_singularity_imagedir = 		record("vcell.htc.singularity.imagedir",ValueType.GEN);
 
 	public static final String slurm_cmd_sbatch				= record("vcell.slurm.cmd.sbatch",ValueType.GEN);

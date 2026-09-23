@@ -1126,10 +1126,8 @@ private boolean canServerRun(SolverTaskDescription taskDesc) {
 		getRunButton().setToolTipText("Not supported by selected solver");
 		return false;
 	}
-	if(taskDesc.getSolverDescription().isFenicsSolver()) {
-		// the cluster run is PR V4 of docs/plan-fenics.md
-		System.err.println("SimulationListPanel.canServerRun(): FEniCSx server run not yet supported");
-		getRunButton().setToolTipText("Not yet supported by selected solver");
+	if(taskDesc.getSolverDescription().isFenicsSolver() && !SolverDescription.isFenicsEnabled()) {
+		getRunButton().setToolTipText("Not supported by selected solver");
 		return false;
 	}
 	getRunButton().setToolTipText(SERVER_RUN_TOOL_TIP);

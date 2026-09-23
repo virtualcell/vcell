@@ -111,7 +111,7 @@ Split in two:
 - **V3a** ✅ (#2087): the `VtuGridParser` fixes, plus `org.vcell.solver.fenics.FenicsBundle`, the
   bundle reader. It lives in vcell-core so the data server can reuse it in V5. Both are tested
   against real bundles.
-- **V3b** (in review): a bundle data source in `FieldViewerServer` (`FenicsBundleViews`), point data in
+- **V3b** ✅ (#2088): a bundle data source in `FieldViewerServer` (`FenicsBundleViews`), point data in
   the endpoints and in `webapp-viewer`, and the entry point: a finished FEniCSx quick run opens the
   browser viewer. The dimension fix belongs in the bundle's `/grid` (from gdim), not in
   `handleGridVtu`, whose producers never send a 3D surface.
@@ -157,7 +157,15 @@ Split in two:
   `vcell-client/src/test/resources/`.
 - Unit tests for the reader, the parser fixes and the endpoint JSON.
 
-## PR V4 — HPC, single rank (vcell + vcell-fluxcd)
+## PR V4 — HPC, single rank (vcell + vcell-fluxcd) — in review
+As built:
+- The FEniCSx image properties are **optional** in `SlurmProxy`: a site without them refuses the
+  solver. So they are not added to `HtcSimulationWorker`'s required list.
+- The server-side bundle cleanup is in `DBBackupAndClean.deleteFileAndLink` and `ResultSetCrawler`.
+  `AmplistorUtils` (legacy object store) is untouched.
+- The vcell-fenics image is now **multi-arch** (linux/amd64 + linux/arm64, native arm64 runner),
+  so Apple-silicon desktops run it natively. The SIF stays amd64.
+
 **vcell**
 - `PropertyLoader`: add `htc_vcellfenics_apptainer_image` / `htc_vcellfenics_solver_list`, declared
   so the `VCELL_HTC_VCELLFENICS_*` env names are recognised.
