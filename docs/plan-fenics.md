@@ -265,8 +265,8 @@ nucleocytoplasmic-exchange model agrees with fvsolver to 1.7 % in the nuclear fi
 cytosolic field (vcell-fenics `cross_validation/README.md`).
 
 - **I6 (here):** `FenicsSolver.unsupportedReasons` accepts image subvolumes. It still refuses CSG, and
-  image geometries in moving-boundary applications. The default image is bumped to `sha-a651c4b`, the first
-  that realizes images.
+  image geometries in moving-boundary applications. The default image is `sha-cf08ec2`: the first that realizes
+  images is `sha-a651c4b`, and `sha-cf08ec2` fixes a segfault it had meshing 3D images on Linux.
 
 ## Verification
 - **Per PR:**
