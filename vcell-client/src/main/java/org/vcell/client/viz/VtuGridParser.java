@@ -201,6 +201,74 @@ final class VtuGridParser {
 		return -1;
 	}
 
+	/**
+	 * Weights, one per vertex of {@code cell}, that interpolate point (P1) data at a point inside it:
+	 * linear along a line, barycentric in a triangle (in its own plane) or a tetrahedron, and the plain
+	 * vertex average for any other cell type. The weights sum to 1.
+	 */
+	static double[] vertexWeights(VtuGrid grid, int c, double x, double y, double z) {
+		int[] cell = grid.cells[c];
+		double[] p = grid.points;
+		double[] w = new double[cell.length];
+		switch (grid.cellTypes[c]) {
+			case VTK_LINE -> {
+				int a = cell[0], b = cell[1];
+				double dx = p[3 * b] - p[3 * a], dy = p[3 * b + 1] - p[3 * a + 1], dz = p[3 * b + 2] - p[3 * a + 2];
+				double len2 = dx * dx + dy * dy + dz * dz;
+				double t = len2 == 0 ? 0.5
+						: ((x - p[3 * a]) * dx + (y - p[3 * a + 1]) * dy + (z - p[3 * a + 2]) * dz) / len2;
+				t = Math.max(0, Math.min(1, t));
+				w[0] = 1 - t;
+				w[1] = t;
+				return w;
+			}
+			case VTK_TRIANGLE -> {
+				// areas of the sub-triangles opposite each vertex, via Newell normals projected on the
+				// triangle's own normal (so the point may sit slightly off a tilted plane)
+				double[] n = newellNormal(p, cell);
+				double nn = n[0] * n[0] + n[1] * n[1] + n[2] * n[2];
+				if (nn > 0) {
+					double[] q = { x, y, z };
+					for (int v = 0; v < 3; v++) {
+						double[] a = vertex(p, cell[(v + 1) % 3]);
+						double[] b = vertex(p, cell[(v + 2) % 3]);
+						double[] s = cross(sub(a, q), sub(b, q));
+						w[v] = (s[0] * n[0] + s[1] * n[1] + s[2] * n[2]) / nn;
+					}
+					return w;
+				}
+			}
+			case VTK_TETRA -> {
+				double total = tripleProduct(p, cell[0], cell[1], cell[2], cell[3]);
+				if (Math.abs(total) > 1e-300) {
+					for (int v = 0; v < 4; v++) {
+						double[] q = p.clone();
+						q[3 * cell[v]] = x;
+						q[3 * cell[v] + 1] = y;
+						q[3 * cell[v] + 2] = z;
+						w[v] = tripleProduct(q, cell[0], cell[1], cell[2], cell[3]) / total;
+					}
+					return w;
+				}
+			}
+			default -> { }
+		}
+		java.util.Arrays.fill(w, 1.0 / cell.length);
+		return w;
+	}
+
+	private static double[] vertex(double[] p, int i) {
+		return new double[] { p[3 * i], p[3 * i + 1], p[3 * i + 2] };
+	}
+
+	private static double[] sub(double[] a, double[] b) {
+		return new double[] { a[0] - b[0], a[1] - b[1], a[2] - b[2] };
+	}
+
+	private static double[] cross(double[] a, double[] b) {
+		return new double[] { a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0] };
+	}
+
 	/** relative tolerance for "on" a line or surface cell, as a fraction of the cell's size */
 	private static final double ON_CELL_TOLERANCE = 1e-6;
 

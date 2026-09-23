@@ -124,6 +124,17 @@ scrub time — a time step costs about 5.7× less than shipping both.
   the camera where the user put it. Smoothing, crop, picking and statistics are gated off
   (per-cell ordinals are not stable across time on a moving mesh; spatial-point formulations are
   the #1879 follow-up).
+- **FEniCSx results bundles are the fourth mode: body-fitted, POINT data.** The server serves a
+  FEniCSx run from its results bundle (`FenicsBundleViews`, vcell-fenics ADR 010) in the same
+  contract with `bodyFitted: true`, and `/field` says `"location": "point"`: one value per mesh
+  vertex (a P1 finite-element solution). The viewer puts those on the grid's point data and switches
+  the mapper to `setScalarModeToUsePointData`, so each cell is interpolated (Gouraud) instead of
+  flat. `dimension` is the embedding dimension, so a membrane of a 3D model is drawn in 3D.
+  `/stats` returns the solver's own integrals (`"weighting": "integral"`, plus `total` and
+  `measure`). `/timeseries` interpolates the P1 values at a lab-frame point. The crop's display-mesh
+  statistics read the clipped point data. Verified 2026-09-22 in headless Chrome (SwiftShader) on
+  a 2D disk and a 3D two-domain bundle: render, time scrub, domain switch, crop statistics and the
+  stats plot, with no `is not permitted` refusals.
 - `probe.html` is a scratch page for exactly these capability probes: point it at a suspect class,
   read the on-page result, and keep the console open for `is not permitted`.
 - **The scalar bar labels the lookup table's range, not the mapper's.** `mapper.setScalarRange`

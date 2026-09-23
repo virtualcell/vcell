@@ -45,6 +45,7 @@ import cbit.vcell.solver.server.*;
 import cbit.vcell.util.ColumnDescription;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.vcell.client.viz.FieldViewerServer;
 import org.vcell.solver.fenics.FenicsDocker;
 import org.vcell.solver.fenics.FenicsSolver;
 import org.vcell.solver.smoldyn.SmoldynFileWriter;
@@ -871,6 +872,7 @@ public void runQuickSimulation(final Simulation originalSimulation, ViewerType v
 			}
 			if (solver instanceof FenicsSolver) {
 				hashTable.put(H_FENICS_BUNDLE, ((FenicsSolver) solver).getBundleDirectory());
+				hashTable.put(H_FENICS_SIMKEY, simTask.getSimKey().toString());
 			}
 			// check if spatial stochastic simulation (smoldyn solver) has data processing instructions with field data - need to access server for field data, so cannot do local simulation run. 
 			if (solver instanceof SmoldynSolver) {
@@ -1103,6 +1105,7 @@ public void runQuickSimulation(final Simulation originalSimulation, ViewerType v
 
 
 private static final String H_FENICS_BUNDLE = "fenicsBundleDirectory";
+private static final String H_FENICS_SIMKEY = "fenicsSimKey";
 
 /**
  * Checks that Docker is usable and the FEniCSx solver image is present, pulling it (about 1.3 GB, once)
@@ -1134,10 +1137,21 @@ private AsynchClientTask reportFenicsBundleTask() {
 			if (bundle == null || !bundle.isDirectory()) {
 				throw new RuntimeException("The FEniCSx solver finished but wrote no results" + (bundle == null ? "" : " to '" + bundle + "'"));
 			}
-			PopupGenerator.showInfoDialog(getDocumentWindowManager(),
-					"FEniCSx simulation finished.\n\nResults bundle (VTU meshes + zarr fields):\n" + bundle.getAbsolutePath()
-					+ "\n\nViewing FEniCSx results in VCell is not available yet; the bundle can be read with vcell-fenics"
-					+ " (python -m vcell_fenics.results, or vcell-fenics-export for ParaView).");
+			// FEniCSx results are point data on body-fitted meshes, which only the browser field viewer
+			// draws (the Swing results viewer is Cartesian-only)
+			String simKey = (String) hashTable.get(H_FENICS_SIMKEY);
+			Simulation[] sims = (Simulation[]) hashTable.get("simsArray");
+			String simName = sims != null && sims.length > 0 ? sims[0].getName() : null;
+			FieldViewerServer.registerBundle(simKey, 0, bundle, simName);
+			int port = FieldViewerServer.startForFenics();
+			if (port < 0) {
+				PopupGenerator.showInfoDialog(getDocumentWindowManager(),
+						"FEniCSx simulation finished, but the results viewer could not be started (see the log).\n\n"
+						+ "Results bundle (VTU meshes + zarr fields):\n" + bundle.getAbsolutePath());
+				return;
+			}
+			DialogUtils.browserLauncher(getDocumentWindowManager().getComponent(), FieldViewerServer.viewerUrl(port, simKey, 0),
+					"Failed to open the FEniCSx results viewer. Results bundle: " + bundle.getAbsolutePath());
 		}
 	};
 }

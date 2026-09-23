@@ -197,4 +197,19 @@ public class VtuGridParserTest {
 		IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class, () -> VtuGridParser.parse(compressed));
 		Assertions.assertTrue(e.getMessage().contains("compressed"), e.getMessage());
 	}
+
+	@Test
+	public void interpolatesPointDataWithVertexWeights() {
+		VtuGrid grid = new VtuGrid(
+				new double[] { 0, 0, 0,  2, 0, 0,  0, 2, 0,  0, 0, 2 },
+				new int[][] { { 0, 1, 2 }, { 0, 1, 2, 3 }, { 1, 3 } },
+				new int[] { 5, 10, VtuGridParser.VTK_LINE });
+		// triangle: barycentric; at (0.5, 0.5) the weights are 1/2, 1/4, 1/4
+		Assertions.assertArrayEquals(new double[] { 0.5, 0.25, 0.25 }, VtuGridParser.vertexWeights(grid, 0, 0.5, 0.5, 0), 1e-12);
+		// tetrahedron: barycentric, and it reproduces a vertex exactly
+		Assertions.assertArrayEquals(new double[] { 0, 0, 0, 1 }, VtuGridParser.vertexWeights(grid, 1, 0, 0, 2), 1e-12);
+		Assertions.assertArrayEquals(new double[] { 0.25, 0.25, 0.25, 0.25 }, VtuGridParser.vertexWeights(grid, 1, 0.5, 0.5, 0.5), 1e-12);
+		// line: linear along the segment
+		Assertions.assertArrayEquals(new double[] { 0.75, 0.25 }, VtuGridParser.vertexWeights(grid, 2, 1.5, 0, 0.5), 1e-12);
+	}
 }
