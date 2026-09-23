@@ -1398,4 +1398,24 @@ public class SsldUtils {
         return model;
     }
 
+    /*
+     *  Small unrelated utility functions to preserve text uniformity among springsalad-related panels
+     */
+
+    public static final String LangevinBatchRunInfoLabel = "Multiple simulations Info: ";
+    public static final String LangevinTotalSimulationsToRunToolTip = "Total number of simulations to run in this batch";
+    public static final String LangevinConcurrentSimulationsToolTip = "This is the number of simulations that will be run concurrently on the cluster. The rest of the simulations will be queued and run when a simulation finishes.";
+
+
+    public static String langevinFormatBatchRunSummary(int totalRuns, int concurrentSimulations, int nodesUsed) {
+        if(concurrentSimulations > 50) {
+            System.out.println("Unexpected number of concurrent simulations: " + concurrentSimulations);
+        }
+        String text = "Running " + concurrentSimulations + " concurrent simulations.";
+        return text;
+//        return concurrentSimulations + " concurrent runs / " + totalRuns + " total runs. Nodes used: " + nodesUsed;
+    }
+
+
+
 }

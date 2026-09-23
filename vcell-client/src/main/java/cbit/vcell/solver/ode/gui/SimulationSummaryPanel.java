@@ -30,6 +30,7 @@ import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.solver.*;
 import org.vcell.chombo.ChomboSolverSpec;
 import org.vcell.model.rbm.MolecularType;
+import org.vcell.model.ssld.SsldUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
@@ -410,7 +411,7 @@ private void displayTask() {
 				int concurrentSimulations = Math.min(tot, maxNumConcurrentTasks - 1);	// concurrent sims only
 				// number of nodes needed - computed based on concurrentSimulations + 1 watchdog
 				int nodes = (int)Math.ceil((concurrentSimulations+1) / ServerInfo.VCELL_SLURM_MAX_JOBS_PER_NODE);
-				getJLabel20().setText("Batch run:");
+				getJLabel20().setText(SsldUtils.LangevinBatchRunInfoLabel);
 				getJLabel21().setText(concurrentSimulations + " concurrent runs / " + tot + " total runs. Nodes used: " + nodes);
 				getJLabel21().setEnabled(true);
 				getJLabel21().setVisible(true);
