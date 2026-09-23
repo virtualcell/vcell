@@ -256,6 +256,18 @@ M5 is here.
   cancels out). M5 is in review: the tests use two real moving bundles (a translation, and a remesh
   across two segments), and the default image is `sha-bfdf853`.
 
+## Image geometries (I1–I6)
+
+VCell image-based geometries (segmented 2D/3D label images, 16 % of the corpus) are realized by vcell-fenics
+as smoothed, body-fitted meshes with any topology — nested regions, regions cut by the image edge, and
+junctions where three subvolumes meet (vcell-fenics ADR 012; PRs #168–#173). On VCell's tutorial image a
+nucleocytoplasmic-exchange model agrees with fvsolver to 1.7 % in the nuclear filling curve and 0.8 % in the
+cytosolic field (vcell-fenics `cross_validation/README.md`).
+
+- **I6 (here):** `FenicsSolver.unsupportedReasons` accepts image subvolumes. It still refuses CSG, and
+  image geometries in moving-boundary applications. The default image is bumped to `sha-a651c4b`, the first
+  that realizes images.
+
 ## Verification
 - **Per PR:**
   - `mvn test` on the touched modules with the new unit tests.

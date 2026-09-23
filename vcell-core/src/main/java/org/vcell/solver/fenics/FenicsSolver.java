@@ -244,11 +244,17 @@ public class FenicsSolver extends SimpleCompiledSolver {
 		if (math.isMovingMembrane()) {
 			reasons.addAll(movingBoundaryReasons(math, dim));
 		}
+		// Analytic and image subvolumes are realized (image geometries body-fitted from their smoothed label
+		// field: vcell-fenics ADR 012); CSG is not yet.
 		for (cbit.vcell.geometry.SubVolume subVolume : geometry.getGeometrySpec().getSubVolumes()) {
-			if (!(subVolume instanceof cbit.vcell.geometry.AnalyticSubVolume)) {
-				String kind = subVolume instanceof cbit.vcell.geometry.ImageSubVolume ? "image-based"
-						: subVolume instanceof cbit.vcell.geometry.CSGObject ? "CSG" : "non-analytic";
-				reasons.add("The FEniCSx solver currently supports analytic geometries only; subvolume '"
+			if (subVolume instanceof cbit.vcell.geometry.ImageSubVolume) {
+				if (math.isMovingMembrane()) {
+					reasons.add("The FEniCSx solver does not yet run moving-boundary simulations on image-based geometries; "
+							+ "subvolume '" + subVolume.getName() + "' of geometry '" + geometry.getName() + "' is image-based.");
+				}
+			} else if (!(subVolume instanceof cbit.vcell.geometry.AnalyticSubVolume)) {
+				String kind = subVolume instanceof cbit.vcell.geometry.CSGObject ? "CSG" : "non-analytic";
+				reasons.add("The FEniCSx solver supports analytic and image-based geometries; subvolume '"
 						+ subVolume.getName() + "' of geometry '" + geometry.getName() + "' is " + kind + ".");
 			}
 		}
