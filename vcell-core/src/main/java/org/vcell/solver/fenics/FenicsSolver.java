@@ -223,8 +223,54 @@ public class FenicsSolver extends SimpleCompiledSolver {
 		return solverSideDirectory.endsWith("/") ? solverSideDirectory + fileName : solverSideDirectory + "/" + fileName;
 	}
 
+	/**
+	 * What in {@code simulation} the FEniCSx solver cannot solve yet, as user-facing sentences; empty if
+	 * it can. Mirrors the solver's own refusals (vcell-fenics {@code backend/realize.py}): a 2D or 3D
+	 * geometry whose subvolumes are all analytic. Checked before a run (see
+	 * {@link cbit.vcell.solver.Simulation#gatherIssues}) so the user is told without starting a container.
+	 */
+	public static java.util.List<String> unsupportedReasons(cbit.vcell.solver.Simulation simulation) {
+		java.util.List<String> reasons = new ArrayList<>();
+		cbit.vcell.math.MathDescription math = simulation.getMathDescription();
+		cbit.vcell.geometry.Geometry geometry = math == null ? null : math.getGeometry();
+		if (geometry == null) {
+			return reasons;
+		}
+		int dim = geometry.getDimension();
+		if (dim != 2 && dim != 3) {
+			reasons.add("The FEniCSx solver supports 2D and 3D geometries; this one is " + dim + "D.");
+			return reasons;
+		}
+		for (cbit.vcell.geometry.SubVolume subVolume : geometry.getGeometrySpec().getSubVolumes()) {
+			if (!(subVolume instanceof cbit.vcell.geometry.AnalyticSubVolume)) {
+				String kind = subVolume instanceof cbit.vcell.geometry.ImageSubVolume ? "image-based"
+						: subVolume instanceof cbit.vcell.geometry.CSGObject ? "CSG" : "non-analytic";
+				reasons.add("The FEniCSx solver currently supports analytic geometries only; subvolume '"
+						+ subVolume.getName() + "' of geometry '" + geometry.getName() + "' is " + kind + ".");
+			}
+		}
+		return reasons;
+	}
+
+	/**
+	 * The solver's stderr carries its logging and, on failure, one {@code error: <Type>: <message>} line
+	 * (vcell-fenics ADR 011 §4). Show just that line; fall back to the whole text if there is none.
+	 */
 	@Override
 	public String translateSimulationMessage(String simulationMessage) {
-		return simulationMessage;
+		return errorLineOf(simulationMessage);
+	}
+
+	static String errorLineOf(String message) {
+		if (message == null) {
+			return null;
+		}
+		for (String line : message.split("\\R")) {
+			String trimmed = line.trim();
+			if (trimmed.startsWith("error:")) {
+				return "FEniCSx solver " + trimmed;
+			}
+		}
+		return message;
 	}
 }

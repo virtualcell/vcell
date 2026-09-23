@@ -948,6 +948,12 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 			String tip = "Remove the unused Math Overrides.";
 			issueList.add(new Issue(this, issueContext, IssueCategory.Simulation_Override_NotFound, msg, tip, Issue.Severity.ERROR));
 		}
+		if (getSolverTaskDescription().getSolverDescription() == SolverDescription.FEniCSx) {
+			for (String reason : org.vcell.solver.fenics.FenicsSolver.unsupportedReasons(this)) {
+				issueList.add(new Issue(this, issueContext, IssueCategory.FEniCSx_Geometry_NotSupported, reason,
+						"Choose another spatial solver, or use an analytic geometry.", Issue.Severity.ERROR));
+			}
+		}
 		if (getSolverTaskDescription().getSolverDescription() == SolverDescription.Langevin) {
 			int[] nPart = getSolverTaskDescription().getLangevinSimulationOptions().getNPart();
 			if(getMathDescription() != null && getMathDescription().getGeometry() != null && simulationOwner instanceof SimulationContext) {
