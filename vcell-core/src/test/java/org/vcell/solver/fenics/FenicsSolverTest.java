@@ -151,6 +151,42 @@ public class FenicsSolverTest {
 	}
 
 	@Test
+	public void testUnsupportedGeometryIsAnIssueBeforeTheRun() throws Exception {
+		// an analytic 2D geometry is fine
+		SimulationTask analytic = fenicsSimTask();
+		assertEquals(List.of(), FenicsSolver.unsupportedReasons(analytic.getSimulation()));
+		assertTrue(fenicsIssues(analytic).isEmpty());
+
+		// a 3D image geometry (ec / cytosol / Nucleus) is refused by the solver, so it is an ERROR issue,
+		// which is what stops a quick run before it starts a container
+		SimulationTask image = fenicsSimTask("image3d_SimID_274630052_0__0.simtask.xml");
+		List<String> reasons = FenicsSolver.unsupportedReasons(image.getSimulation());
+		assertEquals(3, reasons.size(), reasons.toString());
+		assertTrue(reasons.get(0).contains("analytic geometries only") && reasons.get(0).contains("image-based"), reasons.get(0));
+		List<org.vcell.util.Issue> issues = fenicsIssues(image);
+		assertEquals(3, issues.size());
+		assertEquals(org.vcell.util.Issue.Severity.ERROR, issues.get(0).getSeverity());
+	}
+
+	private static List<org.vcell.util.Issue> fenicsIssues(SimulationTask simTask) {
+		List<org.vcell.util.Issue> issues = new java.util.ArrayList<>();
+		simTask.getSimulation().gatherIssues(new org.vcell.util.IssueContext(), issues);
+		issues.removeIf(i -> i.getCategory() != org.vcell.util.Issue.IssueCategory.FEniCSx_Geometry_NotSupported);
+		return issues;
+	}
+
+	@Test
+	public void testFailureShowsTheSolversErrorLine() {
+		String stderr = "[vcell-fenics] loaded simtask model: {...}\n"
+				+ "[vcell-fenics] realizing interface-coupled geometry 'g' at h = 1.04\n"
+				+ "error: RealizationError: 3D geometry 'g' subvolume 'ec' must be 'analytic' with an expression to be realized (got type 'image')\n\n\n"
+				+ "(/usr/local/bin/docker run --rm ... vcell-fenics --simtask ...)";
+		assertEquals("FEniCSx solver error: RealizationError: 3D geometry 'g' subvolume 'ec' must be 'analytic' with an expression to be realized (got type 'image')",
+				FenicsSolver.errorLineOf("Could not execute code: " + stderr));
+		assertEquals("something else", FenicsSolver.errorLineOf("something else"), "no error line: unchanged");
+	}
+
+	@Test
 	public void testStatusMarkers() throws Exception {
 		FenicsSolver fenics = (FenicsSolver) SolverFactory.createSolver(userDir, fenicsSimTask(), false);
 		ApplicationMessage progress = fenics.getApplicationMessage("progress:42.5%");
