@@ -159,7 +159,9 @@ public enum SolverDescription {
 	   // Hidden unless vcell.fenics.enabled is set - see docs/plan-fenics.md.
 	   FEniCSx(TimeStep.CONSTANT, ErrorTol.NO, TimeSpecCreated.UNIFORM, "FEniCSx", "FEniCSx Finite Element (Experimental)", "FEniCSx",
 	      SolverLongDesc.FENICSX, 1, SupportedTimeSpec.DEFAULT_EXPLICIT_UNIFORM,
-	      new SolverFeature[]{SolverFeature.Feature_Spatial, SolverFeature.Feature_Deterministic},
+	      // Feature_Moving: it also runs VCell moving-boundary math (2D, species inside the moving front), as an
+	      // ALE mesh with VCell's lab-frame (Eulerian) species semantics — see docs/plan-fenics.md M1-M5.
+	      new SolverFeature[]{SolverFeature.Feature_Spatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_Moving},
 	      null, "KISAO", false),
 
    ;

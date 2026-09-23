@@ -60,12 +60,25 @@ final class FenicsBundleViews {
 			return m;
 		}
 
+		/**
+		 * The domain's mesh at output row {@code row}: the segment's mesh, and — in a moving (ALE) segment —
+		 * with that row's recorded point positions (same topology, moved points).
+		 */
 		VtuGridParser.VtuGrid grid(FenicsBundle bundle, String domain, int row) throws Exception {
 			FenicsBundle.Segment segment = bundle.segmentOf(row).segment();
-			String key = segment.index() + "/" + domain;
+			boolean moving = "ale".equals(segment.motion());
+			String key = segment.index() + "/" + domain + (moving ? "@t" + row : "");
 			VtuGridParser.VtuGrid grid = grids.get(key);
 			if (grid == null) {
-				grid = VtuGridParser.parse(bundle.meshBytes(domain, row));
+				String segmentKey = segment.index() + "/" + domain;
+				VtuGridParser.VtuGrid mesh = grids.get(segmentKey);
+				if (mesh == null) {
+					mesh = VtuGridParser.parse(bundle.meshBytes(domain, row));
+					grids.put(segmentKey, mesh);
+				}
+				grid = moving
+						? new VtuGridParser.VtuGrid(bundle.coords(domain, row), mesh.cells, mesh.cellTypes, mesh.cellFaces)
+						: mesh;
 				grids.put(key, grid);
 			}
 			return grid;
@@ -112,9 +125,17 @@ final class FenicsBundleViews {
 		return best;
 	}
 
+	/**
+	 * The geometry a row's values belong to: one per bundle for a fixed mesh, one per segment after a
+	 * remesh, and one per row where the mesh moves (the viewer re-fetches the geometry when it changes).
+	 */
 	private static String geometryId(BundleSource source, FenicsBundle bundle, String domain, int row) {
 		String base = source.simId + "/" + domain;
-		return bundle.isFixed() ? base : base + "@s" + bundle.segmentOf(row).segment().index();
+		if (bundle.isFixed()) {
+			return base;
+		}
+		FenicsBundle.Segment segment = bundle.segmentOf(row).segment();
+		return "ale".equals(segment.motion()) ? base + "@t" + row : base + "@s" + segment.index();
 	}
 
 	private static String requireVar(Map<String, String> q) {

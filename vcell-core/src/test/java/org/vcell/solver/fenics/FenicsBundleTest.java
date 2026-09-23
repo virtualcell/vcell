@@ -18,8 +18,10 @@ import java.util.stream.Stream;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Reads two bundles written by vcell-fenics (sha-74e7386) from its cross-validation models; the
- * expected values come from vcell-fenics' own reader ({@code vcell_fenics.results.reader.Bundle}).
+ * Reads bundles written by vcell-fenics: two fixed-mesh ones (sha-74e7386) from its cross-validation
+ * models, and two moving-boundary ones (sha-9b2f68d) from VCell's moving-boundary fixture
+ * {@code SimID_274641196} (a translating front, and a deforming one that remeshes). The expected values
+ * come from vcell-fenics' own reader ({@code vcell_fenics.results.reader.Bundle}).
  */
 @Tag("Fast")
 public class FenicsBundleTest {
@@ -89,6 +91,52 @@ public class FenicsBundleTest {
 		assertEquals(1.7260872286202535, sum(s), 1e-12);
 		assertArrayEquals(new double[] { 0.022234804552240577, 0.1701327273303082, -0.009595814653335914, 0.06008986014586033 },
 				b.stats("ext_dom", "s_ext", 2), 0.0);
+	}
+
+	@Test
+	public void testMovingBundle() throws Exception {
+		// the real VCell moving-boundary fixture (a disk swept by a front at (sin t, cos t)): one ALE segment
+		FenicsBundle b = FenicsBundle.open(fixture("moving_translate"));
+		assertEquals("segmented", b.getProfile());
+		assertTrue(b.isMoving());
+		assertEquals(1, b.getSegments().size());
+		assertEquals("ale", b.getSegments().get(0).motion());
+		double[] first = b.coords("cell", 0), last = b.coords("cell", 10);
+		assertEquals(442 * 3, first.length);
+		assertEquals(6.0, first[0], 0.0);
+		assertEquals(7.827586206896552, first[1], 0.0);
+		assertEquals(6.501388098098372, last[0], 0.0);
+		assertEquals(8.645370964278378, last[1], 0.0);
+		// a rigid translation: every point moved by the same vector
+		double dx = last[0] - first[0], dy = last[1] - first[1];
+		for (int i = 0; i < 442; i++) {
+			assertEquals(dx, last[3 * i] - first[3 * i], 1e-12);
+			assertEquals(dy, last[3 * i + 1] - first[3 * i + 1], 1e-12);
+		}
+		assertEquals(3.880580073389355, b.field("cell", "C_cyt", 10)[0], 0.0);
+		assertArrayEquals(new double[] { 5.000005025056392, 141.15024535730737, 3.7927028426929033, 6.483908656482865 },
+				b.stats("cell", "C_cyt", 10), 0.0);
+	}
+
+	@Test
+	public void testRemeshedBundle() throws Exception {
+		// a strongly deforming front: the mesh is replaced once, so the last row lives in segment 1
+		FenicsBundle b = FenicsBundle.open(fixture("moving_remesh"));
+		assertEquals(2, b.getSegments().size());
+		assertEquals("seg0001/", b.getSegments().get(1).prefix());
+		assertEquals(1, b.segmentOf(10).segment().index());
+		assertEquals(246 * 3, b.coords("cell", 10).length);
+		assertEquals(246, b.field("cell", "C_cyt", 10).length);
+		assertEquals(5.617327146298521, b.field("cell", "C_cyt", 10)[0], 0.0);
+		assertEquals(2.0863475745396496, b.coords("cell", 10)[0], 0.0);
+		assertTrue(new String(b.meshBytes("cell", 10), StandardCharsets.UTF_8).contains("NumberOfPoints=\"246\""));
+	}
+
+	@Test
+	public void testAFixedBundleHasNoCoordinates() throws Exception {
+		FenicsBundle b = FenicsBundle.open(fixture("membrane_efflux"));
+		assertFalse(b.isMoving());
+		assertNull(b.coords("cytosol_dom", 0), "a fixed mesh: its VTU points are every row's");
 	}
 
 	@Test

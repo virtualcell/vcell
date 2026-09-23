@@ -1,0 +1,148 @@
+<SimulationTask xmlns="http://sourceforge.net/projects/vcell/vcml" TaskId="0" JobIndex="0" isPowerUser="false">
+  <MathDescription Name="moving boundary_generated">
+    <Constant Name="_F_">96480.0</Constant>
+    <Constant Name="_F_nmol_">9.648E-5</Constant>
+    <Constant Name="_K_GHK_">1.0E-9</Constant>
+    <Constant Name="_N_pmol_">6.02E11</Constant>
+    <Constant Name="_PI_">3.141592653589793</Constant>
+    <Constant Name="_R_">8314.0</Constant>
+    <Constant Name="_T_">300.0</Constant>
+    <Constant Name="AreaPerUnitArea_pm">1.0</Constant>
+    <Constant Name="AreaPerUnitVolume_nm">1.0</Constant>
+    <Constant Name="C_cyt_diffusionRate">10.0</Constant>
+    <Constant Name="K_millivolts_per_volt">1000.0</Constant>
+    <Constant Name="KMOLE">(1.0 / 602.0)</Constant>
+    <Constant Name="Ran_cyt_diffusionRate">10.0</Constant>
+    <Constant Name="RanC_cyt_diffusionRate">10.0</Constant>
+    <Constant Name="RanC_nuc_init_uM">0.0</Constant>
+    <Constant Name="s2_init_molecules_um_2">0.0</Constant>
+    <Constant Name="Voltage_nm">0.0</Constant>
+    <Constant Name="Voltage_pm">0.0</Constant>
+    <Constant Name="VolumePerUnitVolume_cyt">0.7</Constant>
+    <Constant Name="VolumePerUnitVolume_EC">1.0</Constant>
+    <Constant Name="VolumePerUnitVolume_nuc">0.3</Constant>
+    <VolumeVariable Name="C_cyt" Domain="cell" />
+    <VolumeVariable Name="Ran_cyt" Domain="cell" />
+    <VolumeVariable Name="RanC_cyt" Domain="cell" />
+    <Function Name="C_cyt_init_uM" Domain="cell">x</Function>
+    <Function Name="Ran_cyt_init_uM" Domain="cell">y</Function>
+    <Function Name="RanC_cyt_init_uM" Domain="cell">(x + y)</Function>
+    <Function Name="RanC_nuc" Domain="cell">RanC_nuc_init_uM</Function>
+    <Function Name="s2" Domain="cell_ec_membrane">s2_init_molecules_um_2</Function>
+    <Function Name="Size_cyt" Domain="cell">(VolumePerUnitVolume_cyt * vcRegionVolume('cell'))</Function>
+    <Function Name="Size_EC" Domain="ec">(VolumePerUnitVolume_EC * vcRegionVolume('ec'))</Function>
+    <Function Name="Size_nm" Domain="cell">(AreaPerUnitVolume_nm * vcRegionVolume('cell'))</Function>
+    <Function Name="Size_nuc" Domain="cell">(VolumePerUnitVolume_nuc * vcRegionVolume('cell'))</Function>
+    <Function Name="Size_pm" Domain="cell_ec_membrane">(AreaPerUnitArea_pm * vcRegionArea('cell_ec_membrane'))</Function>
+    <Function Name="sobj_cell1_ec0_size" Domain="cell_ec_membrane">vcRegionArea('cell_ec_membrane')</Function>
+    <Function Name="sobj_cell1_ec0_velX" Domain="cell_ec_membrane">sproc_0.velocityX</Function>
+    <Function Name="sobj_cell1_ec0_velY" Domain="cell_ec_membrane">sproc_0.velocityY</Function>
+    <Function Name="sproc_0.velocityX" Domain="cell_ec_membrane">sin(t)</Function>
+    <Function Name="sproc_0.velocityY" Domain="cell_ec_membrane">cos(t)</Function>
+    <Function Name="vobj_cell1_size" Domain="cell">vcRegionVolume('cell')</Function>
+    <Function Name="vobj_ec0_size" Domain="ec">vcRegionVolume('ec')</Function>
+    <CompartmentSubDomain Name="cell">
+      <BoundaryType Boundary="Xm" Type="Flux" />
+      <BoundaryType Boundary="Xp" Type="Flux" />
+      <BoundaryType Boundary="Ym" Type="Flux" />
+      <BoundaryType Boundary="Yp" Type="Flux" />
+      <BoundaryType Boundary="Zm" Type="Value" />
+      <BoundaryType Boundary="Zp" Type="Value" />
+      <PdeEquation Name="RanC_cyt" SolutionType="Unknown">
+        <Rate>0.0</Rate>
+        <Diffusion>RanC_cyt_diffusionRate</Diffusion>
+        <Initial>RanC_cyt_init_uM</Initial>
+      </PdeEquation>
+      <PdeEquation Name="Ran_cyt" SolutionType="Unknown">
+        <Rate>0.0</Rate>
+        <Diffusion>Ran_cyt_diffusionRate</Diffusion>
+        <Initial>Ran_cyt_init_uM</Initial>
+      </PdeEquation>
+      <PdeEquation Name="C_cyt" SolutionType="Unknown">
+        <Rate>0.0</Rate>
+        <Diffusion>C_cyt_diffusionRate</Diffusion>
+        <Initial>C_cyt_init_uM</Initial>
+      </PdeEquation>
+    </CompartmentSubDomain>
+    <CompartmentSubDomain Name="ec">
+      <BoundaryType Boundary="Xm" Type="Flux" />
+      <BoundaryType Boundary="Xp" Type="Flux" />
+      <BoundaryType Boundary="Ym" Type="Flux" />
+      <BoundaryType Boundary="Yp" Type="Flux" />
+      <BoundaryType Boundary="Zm" Type="Value" />
+      <BoundaryType Boundary="Zp" Type="Value" />
+    </CompartmentSubDomain>
+    <MembraneSubDomain Name="cell_ec_membrane" InsideCompartment="cell" OutsideCompartment="ec">
+      <BoundaryType Boundary="Xm" Type="Value" />
+      <BoundaryType Boundary="Xp" Type="Value" />
+      <BoundaryType Boundary="Ym" Type="Value" />
+      <BoundaryType Boundary="Yp" Type="Value" />
+      <BoundaryType Boundary="Zm" Type="Value" />
+      <BoundaryType Boundary="Zp" Type="Value" />
+      <JumpCondition Name="RanC_cyt">
+        <InFlux>0.0</InFlux>
+        <OutFlux>0.0</OutFlux>
+      </JumpCondition>
+      <JumpCondition Name="Ran_cyt">
+        <InFlux>0.0</InFlux>
+        <OutFlux>0.0</OutFlux>
+      </JumpCondition>
+      <JumpCondition Name="C_cyt">
+        <InFlux>0.0</InFlux>
+        <OutFlux>0.0</OutFlux>
+      </JumpCondition>
+      <Velocity>
+        <X>sobj_cell1_ec0_velX</X>
+        <Y>sobj_cell1_ec0_velY</Y>
+      </Velocity>
+    </MembraneSubDomain>
+    <Version Name="moving boundary_generated" KeyValue="109369397" BranchId="109369398" Archived="0" Date="27-Feb-2017 12:28:03" FromVersionable="false">
+      <Owner Name="schaff" Identifier="17" />
+      <GroupAccess Type="1" />
+    </Version>
+  </MathDescription>
+  <Simulation Name="Copy of Simulation33 2">
+    <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="MovingB">
+      <TimeBound StartTime="0.0" EndTime="1.0" />
+      <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+      <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+      <OutputOptions KeepEvery="1" KeepAtMost="1000" />
+      <MovingBoundarySolverOptions>
+        <FrontToNodeRatio>1.0</FrontToNodeRatio>
+        <RedistributionMode>FULL_REDIST</RedistributionMode>
+        <RedistributionVersion>EQUI_BOND_REDISTRIBUTE</RedistributionVersion>
+        <RedistributionFrequency>5</RedistributionFrequency>
+        <ExtrapolationMethod>NEAREST_NEIGHBOR</ExtrapolationMethod>
+      </MovingBoundarySolverOptions>
+      <NumberProcessors>1</NumberProcessors>
+    </SolverTaskDescription>
+    <MathOverrides />
+    <MeshSpecification>
+      <Size X="31" Y="31" Z="1" />
+    </MeshSpecification>
+    <Version Name="Copy of Simulation33 2" KeyValue="274641196" BranchId="274641197" Archived="0" Date="22-Aug-2024 00:40:36" FromVersionable="false">
+      <Owner Name="schaff" Identifier="17" />
+      <GroupAccess Type="1" />
+    </Version>
+  </Simulation>
+  <Geometry Name="Geometry1819260859" Dimension="2">
+    <Extent X="10.0" Y="10.0" Z="10.0" />
+    <Origin X="0.0" Y="0.0" Z="0.0" />
+    <SubVolume Name="cell" Handle="1" Type="Analytical" KeyValue="109369390">
+      <AnalyticExpression>((((x - 5.0) ^ 2.0) + ((y - 5.0) ^ 2.0)) &lt; (3.0 ^ 2.0))</AnalyticExpression>
+    </SubVolume>
+    <SubVolume Name="ec" Handle="0" Type="Analytical" KeyValue="109369391">
+      <AnalyticExpression>1.0</AnalyticExpression>
+    </SubVolume>
+    <SurfaceClass Name="cell_ec_membrane" SubVolume1Ref="cell" SubVolume2Ref="ec" KeyValue="109369392" />
+    <SurfaceDescription NumSamplesX="101" NumSamplesY="101" NumSamplesZ="1" CutoffFrequency="0.3">
+      <VolumeRegion Name="ec0" RegionID="0" SubVolume="ec" Size="71.91" Unit="um2" />
+      <VolumeRegion Name="cell1" RegionID="1" SubVolume="cell" Size="28.09" Unit="um2" />
+      <MembraneRegion Name="membrane_ec0_cell1" VolumeRegion1="cell1" VolumeRegion2="ec0" Size="18.835817392831714" Unit="um" />
+    </SurfaceDescription>
+    <Version Name="Geometry1819260859" KeyValue="109369386" BranchId="109369387" Archived="0" Date="27-Feb-2017 12:28:03" FromVersionable="false">
+      <Owner Name="schaff" Identifier="17" />
+      <GroupAccess Type="1" />
+    </Version>
+  </Geometry>
+</SimulationTask>

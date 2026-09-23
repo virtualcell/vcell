@@ -241,12 +241,49 @@ public class FenicsSolver extends SimpleCompiledSolver {
 			reasons.add("The FEniCSx solver supports 2D and 3D geometries; this one is " + dim + "D.");
 			return reasons;
 		}
+		if (math.isMovingMembrane()) {
+			reasons.addAll(movingBoundaryReasons(math, dim));
+		}
 		for (cbit.vcell.geometry.SubVolume subVolume : geometry.getGeometrySpec().getSubVolumes()) {
 			if (!(subVolume instanceof cbit.vcell.geometry.AnalyticSubVolume)) {
 				String kind = subVolume instanceof cbit.vcell.geometry.ImageSubVolume ? "image-based"
 						: subVolume instanceof cbit.vcell.geometry.CSGObject ? "CSG" : "non-analytic";
 				reasons.add("The FEniCSx solver currently supports analytic geometries only; subvolume '"
 						+ subVolume.getName() + "' of geometry '" + geometry.getName() + "' is " + kind + ".");
+			}
+		}
+		return reasons;
+	}
+
+	/**
+	 * What the FEniCSx moving-boundary path solves (vcell-fenics' simtask checks, mirrored here so the user
+	 * is told before a run): a 2D geometry, one moving membrane, and species only in the compartment it
+	 * encloses.
+	 */
+	private static java.util.List<String> movingBoundaryReasons(cbit.vcell.math.MathDescription math, int dim) {
+		java.util.List<String> reasons = new ArrayList<>();
+		if (dim != 2) {
+			reasons.add("The FEniCSx solver runs moving-boundary simulations in 2D; this geometry is " + dim + "D.");
+		}
+		java.util.List<cbit.vcell.math.MembraneSubDomain> moving = new ArrayList<>();
+		for (cbit.vcell.math.SubDomain subDomain : java.util.Collections.list(math.getSubDomains())) {
+			if (subDomain instanceof cbit.vcell.math.MembraneSubDomain membrane && membrane.isMoving()) {
+				moving.add(membrane);
+			}
+		}
+		if (moving.size() != 1) {
+			reasons.add("The FEniCSx solver moves one membrane; this model moves " + moving.size() + ".");
+			return reasons;
+		}
+		cbit.vcell.math.MembraneSubDomain front = moving.get(0);
+		if (!front.getEquationCollection().isEmpty()) {
+			reasons.add("The FEniCSx solver does not yet solve species on a moving membrane ('" + front.getName() + "').");
+		}
+		for (cbit.vcell.math.SubDomain subDomain : java.util.Collections.list(math.getSubDomains())) {
+			if (subDomain instanceof cbit.vcell.math.CompartmentSubDomain compartment
+					&& compartment != front.getInsideCompartment() && !compartment.getEquationCollection().isEmpty()) {
+				reasons.add("The FEniCSx solver solves moving-boundary species inside the moving front ('"
+						+ front.getInsideCompartment().getName() + "') only; '" + compartment.getName() + "' has species.");
 			}
 		}
 		return reasons;

@@ -1,0 +1,123 @@
+{
+ "vcell_fenics": {
+  "domains": {
+   "cell": {
+    "cell_type": 5,
+    "dim": 2,
+    "gdim": 2,
+    "kind": "volume",
+    "mesh": "mesh/cell.vtu",
+    "n_cells": 786,
+    "n_points": 442
+   }
+  },
+  "message": null,
+  "planned_times": [
+   0.0,
+   0.1,
+   0.2,
+   0.3,
+   0.4,
+   0.5,
+   0.6,
+   0.7,
+   0.8,
+   0.9,
+   1.0
+  ],
+  "profile": "segmented",
+  "progress": 1.0,
+  "schema": 1,
+  "segments": [
+   {
+    "count": 11,
+    "index": 0,
+    "motion": "ale",
+    "prefix": "",
+    "t0": 0.0
+   }
+  ],
+  "solver": {
+   "dolfinx": "0.10.0",
+   "mpi_ranks": 1,
+   "options": {
+    "atol": 1e-09,
+    "dt": 0.1,
+    "fe_degree": 1,
+    "h": 0.3225806451612903,
+    "output_times": [
+     0.0,
+     0.1,
+     0.2,
+     0.3,
+     0.4,
+     0.5,
+     0.6,
+     0.7,
+     0.8,
+     0.9,
+     1.0
+    ],
+    "rtol": 1e-09,
+    "t_final": 1.0,
+    "time_integration": "backward_euler"
+   },
+   "overrides": {},
+   "version": "0.0.0"
+  },
+  "source": {
+   "file": "SimID_274641196_0__0.simtask.xml",
+   "job_index": 0,
+   "kind": "simtask",
+   "sim_key": "274641196",
+   "task_id": 0
+  },
+  "stats_columns": [
+   "mean",
+   "total",
+   "min",
+   "max"
+  ],
+  "status": "completed",
+  "times": [
+   0.0,
+   0.1,
+   0.2,
+   0.3,
+   0.4,
+   0.5,
+   0.6,
+   0.7,
+   0.8,
+   0.9,
+   1.0
+  ],
+  "updated": "2026-09-23T05:10:44+00:00",
+  "variables": [
+   {
+    "assoc": "point",
+    "domain": "cell",
+    "element": "P1",
+    "name": "RanC_cyt",
+    "path": "cell/RanC_cyt",
+    "stats": "stats/cell/RanC_cyt"
+   },
+   {
+    "assoc": "point",
+    "domain": "cell",
+    "element": "P1",
+    "name": "Ran_cyt",
+    "path": "cell/Ran_cyt",
+    "stats": "stats/cell/Ran_cyt"
+   },
+   {
+    "assoc": "point",
+    "domain": "cell",
+    "element": "P1",
+    "name": "C_cyt",
+    "path": "cell/C_cyt",
+    "stats": "stats/cell/C_cyt"
+   }
+  ]
+ }
+}

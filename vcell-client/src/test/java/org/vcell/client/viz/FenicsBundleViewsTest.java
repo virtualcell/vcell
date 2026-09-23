@@ -120,6 +120,42 @@ public class FenicsBundleViewsTest {
 	}
 
 	@Test
+	public void aMovingMeshServesEachRowsGeometry() throws Exception {
+		File bundle = new File(FenicsBundleViewsTest.class.getResource("moving_translate.fenics/.zattrs").toURI()).getParentFile();
+		FieldViewerServer.registerBundle("777", 0, bundle, "moving");
+		JsonObject first = get777("/grid", "&domain=cell&time=0");
+		JsonObject last = get777("/grid", "&domain=cell&time=1");
+		Assertions.assertEquals("777/cell@t0", first.get("geometryId").getAsString());
+		Assertions.assertEquals("777/cell@t10", last.get("geometryId").getAsString());
+		// the same topology, moved points: a rigid shift of the whole mesh
+		Assertions.assertEquals(first.getAsJsonArray("cells"), last.getAsJsonArray("cells"));
+		double dx = last.getAsJsonArray("points").get(0).getAsDouble() - first.getAsJsonArray("points").get(0).getAsDouble();
+		Assertions.assertEquals(6.501388098098372 - 6.0, dx, 1e-12);
+		// a field names the geometry of its own time, so the viewer re-fetches the moved mesh
+		Assertions.assertEquals("777/cell@t10", get777("/field", "&domain=cell&var=C_cyt&time=1").get("geometryId").getAsString());
+
+		// a lab point just inside the disk's trailing (left) edge at t = 0 is behind the front by t = 1
+		JsonObject series = get777("/timeseries", "&domain=cell&var=C_cyt&x=2.2&y=5.0");
+		JsonArray values = series.getAsJsonArray("values");
+		Assertions.assertFalse(values.get(0).isJsonNull(), "inside the cell at t = 0");
+		Assertions.assertTrue(values.get(values.size() - 1).isJsonNull(), "the front has moved past it");
+		Assertions.assertTrue(series.get("insideCount").getAsInt() < values.size());
+
+		// the measure is each row's own mesh's (a rigid motion keeps it), and agrees with the solver's total / mean
+		JsonObject c = get777("/stats", "&var=C_cyt").getAsJsonArray("series").get(0).getAsJsonObject();
+		double measure = c.getAsJsonArray("measure").get(10).getAsDouble();
+		Assertions.assertEquals(141.15024535730737 / 5.000005025056392, measure, 1e-9 * measure);
+	}
+
+	private JsonObject get777(String path, String query) throws Exception {
+		HttpResponse<String> r = HttpClient.newHttpClient().send(
+				HttpRequest.newBuilder(URI.create("http://127.0.0.1:" + port + path + "?sim=777&job=0" + query)).build(),
+				HttpResponse.BodyHandlers.ofString());
+		Assertions.assertEquals(200, r.statusCode(), r.body());
+		return JsonParser.parseString(r.body()).getAsJsonObject();
+	}
+
+	@Test
 	public void unknownVariableIsABadRequest() throws Exception {
 		HttpResponse<String> r = HttpClient.newHttpClient().send(
 				HttpRequest.newBuilder(URI.create("http://127.0.0.1:" + port + "/field?sim=" + SIM + "&job=0&var=nope")).build(),
