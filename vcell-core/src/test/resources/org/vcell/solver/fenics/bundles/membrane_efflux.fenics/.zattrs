@@ -1,0 +1,83 @@
+{
+  "vcell_fenics": {
+    "domains": {
+      "cytosol_dom": {
+        "cell_type": 5,
+        "dim": 2,
+        "gdim": 2,
+        "kind": "volume",
+        "mesh": "mesh/cytosol_dom.vtu",
+        "n_cells": 711,
+        "n_points": 403
+      }
+    },
+    "message": null,
+    "planned_times": [
+      0.0,
+      0.1,
+      0.2
+    ],
+    "profile": "fixed",
+    "progress": 1.0,
+    "schema": 1,
+    "segments": [
+      {
+        "count": 3,
+        "index": 0,
+        "motion": "none",
+        "prefix": "",
+        "t0": 0.0
+      }
+    ],
+    "solver": {
+      "dolfinx": "0.10.0",
+      "mpi_ranks": 1,
+      "options": {
+        "atol": 1e-08,
+        "dt": 0.1,
+        "fe_degree": 1,
+        "h": 0.0625,
+        "output_times": [
+          0.0,
+          0.1,
+          0.2
+        ],
+        "rtol": 1e-06,
+        "t_final": 0.2,
+        "time_integration": "backward_euler"
+      },
+      "overrides": {},
+      "version": "0.0.0"
+    },
+    "source": {
+      "file": "membrane_efflux_math.yaml",
+      "job_index": null,
+      "kind": "vcell-yaml",
+      "sim_key": null,
+      "task_id": null
+    },
+    "stats_columns": [
+      "mean",
+      "total",
+      "min",
+      "max"
+    ],
+    "status": "completed",
+    "times": [
+      0.0,
+      0.1,
+      0.2
+    ],
+    "updated": "2026-09-23T00:10:32+00:00",
+    "variables": [
+      {
+        "assoc": "point",
+        "domain": "cytosol_dom",
+        "element": "P1",
+        "name": "u",
+        "path": "cytosol_dom/u",
+        "stats": "stats/cytosol_dom/u"
+      }
+    ]
+  }
+}
