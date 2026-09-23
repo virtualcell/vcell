@@ -15,13 +15,14 @@ import org.w3c.dom.NodeList;
  * Parses a VTK XML unstructured-grid file ({@code .vtu}) into flat arrays, for re-serving as the
  * field viewer's JSON grid contract.
  * <p>
- * This is deliberately NOT a general VTU reader. It exists for exactly one producer: the server's
- * Python VTK service ({@code pythonVtk/.../vtkService.py, writevtk()}), which writes
- * single-piece, LittleEndian, <b>binary-uncompressed</b> ({@code SetCompressorTypeToNone()} +
- * {@code SetDataModeToBinary()}) files — inline base64 blocks, each prefixed by a byte-count
- * header whose width is the {@code VTKFile header_type} (UInt32 here, UInt64 tolerated). ASCII
- * data arrays are also accepted for robustness. Anything else (appended data, compression,
- * multiple pieces) is rejected loudly rather than half-read.
+ * This is deliberately NOT a general VTU reader. It exists for two producers that write the same
+ * restricted form: the server's Python VTK service ({@code pythonVtk/.../vtkService.py,
+ * writevtk()}) and the FEniCSx solver's results bundle ({@code mesh/<domain>.vtu}, vcell-fenics
+ * ADR 010). Both write single-piece, LittleEndian, <b>binary-uncompressed</b>
+ * ({@code SetCompressorTypeToNone()} + {@code SetDataModeToBinary()}) files — inline base64
+ * blocks, each prefixed by a byte-count header whose width is the {@code VTKFile header_type}
+ * (UInt32 here, UInt64 tolerated). ASCII data arrays are also accepted for robustness. Anything
+ * else (appended data, compression, multiple pieces) is rejected loudly rather than half-read.
  */
 final class VtuGridParser {
 
@@ -57,6 +58,8 @@ final class VtuGridParser {
 		}
 	}
 
+	/** a straight segment: FEniCSx writes a 2D membrane (a curve) as line cells */
+	static final int VTK_LINE = 3;
 	private static final int VTK_TRIANGLE = 5;
 	private static final int VTK_POLYGON = 7;
 	private static final int VTK_QUAD = 9;
@@ -65,8 +68,8 @@ final class VtuGridParser {
 	static final int VTK_POLYHEDRON = 42;
 
 	/**
-	 * Per-cell measure — area for in-plane 2D cells, volume for 3D cells — for volume-weighted
-	 * statistics over body-fitted meshes.
+	 * Per-cell measure — length for line cells, area for polygons (in the plane or on a surface in
+	 * 3D), volume for 3D cells — for measure-weighted statistics over body-fitted meshes.
 	 */
 	static double[] cellMeasures(VtuGrid grid) {
 		double[] measures = new double[grid.cells.length];
@@ -74,15 +77,10 @@ final class VtuGridParser {
 			int[] cell = grid.cells[c];
 			double[] p = grid.points;
 			switch (grid.cellTypes[c]) {
+				case VTK_LINE -> measures[c] = distance(p, cell[0], cell[1]);
 				case VTK_TRIANGLE, VTK_POLYGON, VTK_QUAD -> {
-					// shoelace over the in-plane polygon (z ignored)
-					double twiceArea = 0;
-					for (int v = 0; v < cell.length; v++) {
-						int a = cell[v];
-						int b = cell[(v + 1) % cell.length];
-						twiceArea += p[3 * a] * p[3 * b + 1] - p[3 * b] * p[3 * a + 1];
-					}
-					measures[c] = Math.abs(twiceArea) / 2;
+					double[] n = newellNormal(p, cell);
+					measures[c] = Math.sqrt(n[0] * n[0] + n[1] * n[1] + n[2] * n[2]) / 2;
 				}
 				case VTK_TETRA -> measures[c] = Math.abs(tripleProduct(p, cell[0], cell[1], cell[2], cell[3])) / 6;
 				case VTK_POLYHEDRON -> measures[c] = polyhedronVolume(p, grid.facesOf(c), cell);
@@ -98,6 +96,30 @@ final class VtuGridParser {
 			}
 		}
 		return measures;
+	}
+
+	private static double distance(double[] p, int a, int b) {
+		double dx = p[3 * b] - p[3 * a], dy = p[3 * b + 1] - p[3 * a + 1], dz = p[3 * b + 2] - p[3 * a + 2];
+		return Math.sqrt(dx * dx + dy * dy + dz * dz);
+	}
+
+	/**
+	 * Newell's normal of a planar polygon: its direction is the polygon's normal and its length
+	 * twice the polygon's area, for any orientation in 3D (for a polygon in the xy plane it reduces
+	 * to the shoelace formula, in z).
+	 */
+	private static double[] newellNormal(double[] p, int[] cell) {
+		double nx = 0, ny = 0, nz = 0;
+		for (int v = 0; v < cell.length; v++) {
+			int a = cell[v];
+			int b = cell[(v + 1) % cell.length];
+			double ax = p[3 * a], ay = p[3 * a + 1], az = p[3 * a + 2];
+			double bx = p[3 * b], by = p[3 * b + 1], bz = p[3 * b + 2];
+			nx += (ay - by) * (az + bz);
+			ny += (az - bz) * (ax + bx);
+			nz += (ax - bx) * (ay + by);
+		}
+		return new double[] { nx, ny, nz };
 	}
 
 	/**
@@ -150,15 +172,18 @@ final class VtuGridParser {
 	/**
 	 * The cell containing a lab-frame point, or -1 when the point lies outside the mesh — which
 	 * for a moving-boundary run is the physically meaningful "the domain has moved past this
-	 * point". In-plane cells test by point-in-polygon (z ignored); voxels by bounds; tets by
-	 * barycentric signs.
+	 * point". Polygons in the xy plane test by point-in-polygon (z ignored); polygons on a surface
+	 * in 3D must also contain the point in their plane; line cells must pass through the point;
+	 * voxels test by bounds; tets by barycentric signs. Surface and line cells use a relative
+	 * tolerance, since a lab-frame point is rarely exactly on a membrane.
 	 */
 	static int locateCell(VtuGrid grid, double x, double y, double z) {
 		double[] p = grid.points;
 		for (int c = 0; c < grid.cells.length; c++) {
 			int[] cell = grid.cells[c];
 			boolean hit = switch (grid.cellTypes[c]) {
-				case VTK_TRIANGLE, VTK_POLYGON, VTK_QUAD -> pointInPolygon(p, cell, x, y);
+				case VTK_LINE -> pointOnSegment(p, cell[0], cell[1], x, y, z);
+				case VTK_TRIANGLE, VTK_POLYGON, VTK_QUAD -> pointInPlanarPolygon(p, cell, x, y, z);
 				case VTK_VOXEL -> x >= Math.min(p[3 * cell[0]], p[3 * cell[7]])
 						&& x <= Math.max(p[3 * cell[0]], p[3 * cell[7]])
 						&& y >= Math.min(p[3 * cell[0] + 1], p[3 * cell[7] + 1])
@@ -176,11 +201,61 @@ final class VtuGridParser {
 		return -1;
 	}
 
-	private static boolean pointInPolygon(double[] p, int[] cell, double x, double y) {
+	/** relative tolerance for "on" a line or surface cell, as a fraction of the cell's size */
+	private static final double ON_CELL_TOLERANCE = 1e-6;
+
+	private static boolean pointOnSegment(double[] p, int a, int b, double x, double y, double z) {
+		double ax = p[3 * a], ay = p[3 * a + 1], az = p[3 * a + 2];
+		double dx = p[3 * b] - ax, dy = p[3 * b + 1] - ay, dz = p[3 * b + 2] - az;
+		double len2 = dx * dx + dy * dy + dz * dz;
+		if (len2 == 0) {
+			return false;
+		}
+		double t = ((x - ax) * dx + (y - ay) * dy + (z - az) * dz) / len2;
+		if (t < -ON_CELL_TOLERANCE || t > 1 + ON_CELL_TOLERANCE) {
+			return false;
+		}
+		double ex = ax + t * dx - x, ey = ay + t * dy - y, ez = az + t * dz - z;
+		return ex * ex + ey * ey + ez * ez <= ON_CELL_TOLERANCE * ON_CELL_TOLERANCE * len2;
+	}
+
+	/**
+	 * Point in a planar polygon. A polygon in (or parallel to) the xy plane keeps the original 2D
+	 * test with z ignored; one tilted out of it (a membrane triangle of a 3D mesh) must hold the
+	 * point in its plane and is tested in the coordinate plane it projects onto best.
+	 */
+	private static boolean pointInPlanarPolygon(double[] p, int[] cell, double x, double y, double z) {
+		double[] n = newellNormal(p, cell);
+		double norm = Math.sqrt(n[0] * n[0] + n[1] * n[1] + n[2] * n[2]);
+		if (norm == 0) {
+			return false;
+		}
+		if (Math.abs(n[0]) <= ON_CELL_TOLERANCE * norm && Math.abs(n[1]) <= ON_CELL_TOLERANCE * norm) {
+			return pointInPolygon(p, cell, x, y, 0, 1);
+		}
+		// distance from the plane, relative to the cell's size (sqrt of twice its area)
+		int o = cell[0];
+		double offPlane = ((x - p[3 * o]) * n[0] + (y - p[3 * o + 1]) * n[1] + (z - p[3 * o + 2]) * n[2]) / norm;
+		if (Math.abs(offPlane) > ON_CELL_TOLERANCE * Math.sqrt(norm)) {
+			return false;
+		}
+		double ax = Math.abs(n[0]), ay = Math.abs(n[1]), az = Math.abs(n[2]);
+		double[] q = { x, y, z };
+		if (az >= ax && az >= ay) {
+			return pointInPolygon(p, cell, q[0], q[1], 0, 1);
+		} else if (ay >= ax) {
+			return pointInPolygon(p, cell, q[2], q[0], 2, 0);
+		} else {
+			return pointInPolygon(p, cell, q[1], q[2], 1, 2);
+		}
+	}
+
+	/** even-odd point-in-polygon in the coordinate plane (i, j) */
+	private static boolean pointInPolygon(double[] p, int[] cell, double x, double y, int i, int j) {
 		boolean inside = false;
 		for (int v = 0, w = cell.length - 1; v < cell.length; w = v++) {
-			double xv = p[3 * cell[v]], yv = p[3 * cell[v] + 1];
-			double xw = p[3 * cell[w]], yw = p[3 * cell[w] + 1];
+			double xv = p[3 * cell[v] + i], yv = p[3 * cell[v] + j];
+			double xw = p[3 * cell[w] + i], yw = p[3 * cell[w] + j];
 			if ((yv > y) != (yw > y) && x < (xw - xv) * (y - yv) / (yw - yv) + xv) {
 				inside = !inside;
 			}
@@ -278,6 +353,12 @@ final class VtuGridParser {
 			throw new IllegalArgumentException("unsupported byte order " + byteOrder);
 		}
 		int headerBytes = "UInt64".equals(attrOr(vtkFile, "header_type", "UInt32")) ? 8 : 4;
+		String compressor = vtkFile.getAttribute("compressor");
+		if (compressor != null && !compressor.isEmpty()) {
+			// compressed binary blocks carry a block table, not a byte count: misreading it would
+			// silently produce garbage
+			throw new IllegalArgumentException("compressed VTU (" + compressor + ") is not supported");
+		}
 
 		NodeList pieces = doc.getElementsByTagName("Piece");
 		if (pieces.getLength() != 1) {

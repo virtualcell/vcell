@@ -74,7 +74,7 @@ Templates: `MovingBoundarySolver` for shape, and `LangevinSolver` for the messag
   new spatial member).
 - A `FenicsSolverTest` for the argv in both messaging modes and for the config file contents.
 
-## PR V2 — desktop Docker quick-run — in review
+## PR V2 — desktop Docker quick-run ✅ (#2086)
 
 **Found while building V2 (vcell-fenics side, open):**
 - The image and SIF packages are **private** on GHCR, because the vcell-fenics repo is private. A
@@ -107,6 +107,13 @@ Templates: `MovingBoundarySolver` for shape, and `LangevinSolver` for the messag
   recursively. `File.delete()` fails silently on a non-empty directory.
 
 ## PR V3 — viewing FEniCSx bundles in the field viewer (local)
+Split in two:
+- **V3a** (in review): the `VtuGridParser` fixes, plus `org.vcell.solver.fenics.FenicsBundle`, the
+  bundle reader. It lives in vcell-core so the data server can reuse it in V5. Both are tested
+  against real bundles.
+- **V3b**: the `FieldViewerServer` bundle source, point data in the endpoints and in `webapp-viewer`,
+  the dimension fix in `handleGridVtu`, and the entry point.
+
 **`VtuGridParser` fixes** (`vcell-client/.../viz/`)
 - Add `VTK_LINE` (length measure, picking).
 - Compute triangle/polygon area and pick in 3D, instead of the shoelace formula that drops z.

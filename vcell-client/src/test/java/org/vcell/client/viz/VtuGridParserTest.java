@@ -121,4 +121,80 @@ public class VtuGridParserTest {
 		Assertions.assertEquals(1, VtuGridParser.locateCell(grid, 0.5, 0.5, 1.5));
 		Assertions.assertEquals(-1, VtuGridParser.locateCell(grid, 0.5, 0.5, 2.5));
 	}
+
+	// FEniCSx results bundles (vcell-fenics ADR 010) carry their meshes in the same restricted VTU form
+
+	private static VtuGrid parseResource(String name) throws Exception {
+		try (InputStream in = VtuGridParserTest.class.getResourceAsStream(name)) {
+			Assertions.assertNotNull(in, "test resource " + name + " missing");
+			return VtuGridParser.parse(in.readAllBytes());
+		}
+	}
+
+	private static double sum(double[] a) {
+		double s = 0;
+		for (double v : a) s += v;
+		return s;
+	}
+
+	@Test
+	public void parsesFenicsMeshesAndMeasuresTheirDomains() throws Exception {
+		// a 2D disk (triangles, z = 0): the summed cell areas must equal the domain measure the solver
+		// integrated, total / mean from the bundle's statistics
+		VtuGrid disk = parseResource("fenics-2d-triangles.vtu");
+		Assertions.assertEquals(403, disk.numPoints());
+		Assertions.assertEquals(711, disk.cells.length);
+		double area = 0.7830285791419164 / 0.9993355966701419;
+		Assertions.assertEquals(area, sum(VtuGridParser.cellMeasures(disk)), 1e-12 * area);
+
+		// a 3D box minus a ball (tetrahedra)
+		VtuGrid shell = parseResource("fenics-3d-tetra.vtu");
+		Assertions.assertEquals(56, shell.numPoints());
+		Assertions.assertEquals(172, shell.cells.length);
+		double volume = 0.1701327273303082 / 0.022234804552240577;
+		Assertions.assertEquals(volume, sum(VtuGridParser.cellMeasures(shell)), 1e-12 * volume);
+	}
+
+	@Test
+	public void measuresAndLocatesLineCells() {
+		// a 2D membrane is a polyline: a 3-4-5 segment and a unit segment
+		VtuGrid curve = new VtuGrid(
+				new double[] { 0, 0, 0,  3, 4, 0,  3, 5, 0 },
+				new int[][] { { 0, 1 }, { 1, 2 } },
+				new int[] { VtuGridParser.VTK_LINE, VtuGridParser.VTK_LINE });
+		double[] measures = VtuGridParser.cellMeasures(curve);
+		Assertions.assertEquals(5.0, measures[0], 1e-12);
+		Assertions.assertEquals(1.0, measures[1], 1e-12);
+		Assertions.assertEquals(0, VtuGridParser.locateCell(curve, 1.5, 2.0, 0));
+		Assertions.assertEquals(1, VtuGridParser.locateCell(curve, 3.0, 4.5, 0));
+		Assertions.assertEquals(-1, VtuGridParser.locateCell(curve, 1.5, 2.1, 0), "off the curve");
+		Assertions.assertEquals(-1, VtuGridParser.locateCell(curve, 6.0, 8.0, 0), "beyond the segment's end");
+	}
+
+	@Test
+	public void measuresAndLocatesSurfaceTrianglesIn3D() {
+		// a 3D membrane is a triangulated surface: one triangle in the x = 1 plane (area 2) and one
+		// tilted through the unit axis points (area sqrt(3)/2)
+		VtuGrid surface = new VtuGrid(
+				new double[] { 1, 0, 0,  1, 2, 0,  1, 0, 2,   1, 0, 0,  0, 1, 0,  0, 0, 1 },
+				new int[][] { { 0, 1, 2 }, { 3, 4, 5 } },
+				new int[] { 5, 5 });
+		double[] measures = VtuGridParser.cellMeasures(surface);
+		Assertions.assertEquals(2.0, measures[0], 1e-12);
+		Assertions.assertEquals(Math.sqrt(3) / 2, measures[1], 1e-12);
+		Assertions.assertEquals(0, VtuGridParser.locateCell(surface, 1, 0.5, 0.5));
+		Assertions.assertEquals(-1, VtuGridParser.locateCell(surface, 1.1, 0.5, 0.5), "off the plane of the triangle");
+		Assertions.assertEquals(1, VtuGridParser.locateCell(surface, 1.0 / 3, 1.0 / 3, 1.0 / 3));
+		Assertions.assertEquals(-1, VtuGridParser.locateCell(surface, 0.2, 0.2, 0.2), "inside the tetrahedron, not on its face");
+	}
+
+	@Test
+	public void rejectsCompressedVtu() {
+		byte[] compressed = ("<?xml version=\"1.0\"?><VTKFile type=\"UnstructuredGrid\" version=\"0.1\" "
+				+ "byte_order=\"LittleEndian\" header_type=\"UInt32\" compressor=\"vtkZLibDataCompressor\">"
+				+ "<UnstructuredGrid><Piece NumberOfPoints=\"0\" NumberOfCells=\"0\"/></UnstructuredGrid></VTKFile>")
+				.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+		IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class, () -> VtuGridParser.parse(compressed));
+		Assertions.assertTrue(e.getMessage().contains("compressed"), e.getMessage());
+	}
 }
