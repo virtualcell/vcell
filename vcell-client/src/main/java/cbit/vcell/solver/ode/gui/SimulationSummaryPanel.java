@@ -159,14 +159,16 @@ private void displayMesh() {
     	boolean isSpatial = getSimulation().isSpatial();
     	getJLabel11().setVisible(isSpatial);
     	getJLabelMesh().setVisible(isSpatial);
+		labelMeshRefinementTitle.setToolTipText(null);	// langevin only for now, we reset it here
     	labelMeshRefinementTitle.setVisible(isSpatial);
-			getJLabelMeshRefinement().setVisible(isSpatial);
-			labelFinestMeshTitle.setVisible(isSpatial);
-			labelFinestMesh.setVisible(isSpatial);
-			labelRefinementRoiTitle.setVisible(isSpatial);
-			labelRefinementRoi.setVisible(isSpatial);
-			labelViewLevelMeshTitle.setVisible(isSpatial);
-			labelViewLevelMesh.setVisible(isSpatial);
+		getJLabelMeshRefinement().setToolTipText(null);	// langevin only for now, we reset it here
+		getJLabelMeshRefinement().setVisible(isSpatial);
+		labelFinestMeshTitle.setVisible(isSpatial);
+		labelFinestMesh.setVisible(isSpatial);
+		labelRefinementRoiTitle.setVisible(isSpatial);
+		labelRefinementRoi.setVisible(isSpatial);
+		labelViewLevelMeshTitle.setVisible(isSpatial);
+		labelViewLevelMesh.setVisible(isSpatial);
 			
       if (getSimulation()!=null && getSimulation().getMeshSpecification() != null) {
 				ISize samplingSize = getSimulation().getMeshSpecification().getSamplingSize();
@@ -241,9 +243,11 @@ private void displayMesh() {
 						int maxNumConcurrentSimulations = maxNumConcurrentTasks - 1;	// concurrent sims only
 
 						labelMeshRefinementTitle.setVisible(true);
-						labelMeshRefinementTitle.setText("Concurrent Walls:");
+						labelMeshRefinementTitle.setText(SsldUtils.ConcurrentWallsLabel);
+						labelMeshRefinementTitle.setToolTipText(SsldUtils.ConcurrentWallsLabelToolTip);
 						getJLabelMeshRefinement().setVisible(true);
-						getJLabelMeshRefinement().setText("Maximum run duration: "+ timeoutDays + " days, Max number of concurrent simulations: " + maxNumConcurrentSimulations + " runs");
+						getJLabelMeshRefinement().setText(SsldUtils.langevinFormatConcurrentWallsText(timeoutDays, maxNumConcurrentSimulations));
+						getJLabelMeshRefinement().setToolTipText(SsldUtils.ConcurrentWallsLabelToolTip);
 						labelFinestMesh.setVisible(false);
 						labelFinestMeshTitle.setVisible(false);
 						labelRefinementRoiTitle.setVisible(false);
@@ -375,9 +379,11 @@ private void displayTask() {
 		getJLabel10().setText("Sensitivity Analysis");
 		getJLabel10().setEnabled(true);
 		getJLabel20().setEnabled(false);
+		getJLabel20().setToolTipText(null);		// used only for Langevin so far, so we reset it here
 		getJLabel21().setEnabled(false);
 		getJLabel20().setVisible(false);
 		getJLabel21().setVisible(false);
+		getJLabel21().setToolTipText(null);		// used only for Langevin so far, so we reset it here
 		if (solverDescription.equals(SolverDescription.StochGibson)) {
 			getJLabel12().setEnabled(false);
 			getJLabelTimestep().setText("");
@@ -402,7 +408,9 @@ private void displayTask() {
 			int tot = lso.getTotalNumberOfJobs();
 			if(tot == 1) {
 				getJLabel20().setText(SsldUtils.LangevinSingleRunInfoLabel);
+				getJLabel20().setToolTipText(SsldUtils.LangevinSingleRunInfoLabelToolTip);
 				getJLabel21().setText("");
+				getJLabel21().setToolTipText(SsldUtils.LangevinSingleRunInfoLabelToolTip);
 				getJLabel21().setEnabled(false);
 				getJLabel21().setVisible(false);
 			} else {
@@ -412,7 +420,9 @@ private void displayTask() {
 				// number of nodes needed - computed based on concurrentSimulations + 1 watchdog
 				int nodes = (int)Math.ceil((concurrentSimulations+1) / ServerInfo.VCELL_SLURM_MAX_JOBS_PER_NODE);
 				getJLabel20().setText(SsldUtils.LangevinBatchRunInfoLabel);
-				getJLabel21().setText(concurrentSimulations + " concurrent runs / " + tot + " total runs. Nodes used: " + nodes);
+				getJLabel20().setToolTipText(SsldUtils.langevinFormatConcurrentSimulationsToolTip(tot, concurrentSimulations, nodes));
+				getJLabel21().setText(SsldUtils.langevinFormatBatchRunSummary2(tot, concurrentSimulations, nodes));
+				getJLabel21().setToolTipText(SsldUtils.langevinFormatConcurrentSimulationsToolTip(tot, concurrentSimulations, nodes));
 				getJLabel21().setEnabled(true);
 				getJLabel21().setVisible(true);
 			}

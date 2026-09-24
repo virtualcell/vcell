@@ -1398,6 +1398,8 @@ public class SsldUtils {
         return model;
     }
 
+    // ================================================================================================================
+
     /*
      * Utility functions to maintain consistency and a unified terminology among Springsalad-related panels,
      * in context of Langevin simulations.
@@ -1413,18 +1415,21 @@ public class SsldUtils {
     public static final String LangevinSingleTrajectoryRadioButtonLabel = "Single Simulation";
     public static final String LangevinMultiTrajectoryRadioButtonLabel = "Multiple Simulations";
 
+    public static final String LangevinSingleRunInfoLabelToolTip = "Run a single simulation";
     public static final String LangevinTotalSimulationsToRunToolTip = "Total number of simulations to run in this batch";
     public static final String LangevinConcurrentSimulationsToolTip = "This is the number of simulations that will be run concurrently on the cluster. ";
     public static final String LangevinExtraSimulationsToolTip = "The rest of the simulations will be queued and run when a simulation finishes.";
 
 
+    //
+    // --------------------------- LangevinOptionsPanel ----------------------
+    //
     public static String langevinFormatBatchRunSummary(int totalRuns, int concurrentSimulations, int nodesUsed) {
         if(concurrentSimulations > 50) {
             System.out.println("Unexpected number of concurrent simulations: " + concurrentSimulations);
         }
         String text = "Running " + concurrentSimulations + " concurrent simulations.";
         return text;
-//        return concurrentSimulations + " concurrent runs / " + totalRuns + " total runs. Nodes used: " + nodesUsed;
     }
     public static String langevinFormatConcurrentSimulationsToolTip(int totalRuns, int concurrentSimulations, int nodesUsed) {
         String text = LangevinConcurrentSimulationsToolTip;
@@ -1434,6 +1439,26 @@ public class SsldUtils {
         return text;
     }
 
+    //
+    // ---------------------------- SimulationSummaryPanel --------------------
+    //
+    public static final String ConcurrentWallsLabel = "Concurrent Walls: ";
+    public static final String ConcurrentWallsLabelToolTip = "Cluster-related limitations.";
+    public static final String ConcurrentWallsLabelText = "Concurrent Walls: ";
 
+    // 	getJLabelMeshRefinement().setText("Maximum run duration: "+ timeoutDays + " days, Max number of concurrent simulations: " + maxNumConcurrentSimulations + " runs");
+
+    // slightly different format for the summary panel, which is more compact and informative
+    public static String langevinFormatBatchRunSummary2(int totalRuns, int concurrentSimulations, int nodesUsed) {
+        if(concurrentSimulations > 50) {
+            System.out.println("Unexpected number of concurrent simulations: " + concurrentSimulations);
+        }
+        String text = concurrentSimulations + " concurrent runs / " + totalRuns + " total runs. Nodes used: " + nodesUsed;
+        return text;
+    }
+    public static String langevinFormatConcurrentWallsText(int timeoutDays, int maxNumConcurrentSimulations) {
+        String text = "Maximum run duration: " + timeoutDays + " days, Max number of concurrent simulations: " + maxNumConcurrentSimulations + " runs";
+        return text;
+    }
 
 }
