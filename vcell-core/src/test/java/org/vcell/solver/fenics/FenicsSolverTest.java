@@ -194,7 +194,7 @@ public class FenicsSolverTest {
 		assertEquals(1, fenicsIssues(simTask).size());
 	}
 
-	private static final String MOVING_3D = "moving3d_furrow_SimID_1486629996_0__0.simtask.xml";
+	private static final String MOVING_3D = "moving3d_furrow_SimID_516481304_0__0.simtask.xml";
 
 	@Test
 	public void testA3DMovingBoundaryIsOfferedToFenicsOnly() throws Exception {
