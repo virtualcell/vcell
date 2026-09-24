@@ -59,6 +59,10 @@ public class MembraneSubDomain extends SubDomain implements SubDomain.DomainWith
 	 * membrane, not advection
 	 */
 	private Expression velocityY = null;
+	/**
+	 * membrane, not advection (3D moving boundaries)
+	 */
+	private Expression velocityZ = null;
 	
 	
 /**
@@ -77,6 +81,7 @@ public MembraneSubDomain(CompartmentSubDomain inside, CompartmentSubDomain outsi
 		super.getAllExpressions0(expressionList, mathDescription);
 		if (this.velocityX!=null) expressionList.add(this.velocityX);
 		if (this.velocityY!=null) expressionList.add(this.velocityY);
+		if (this.velocityZ!=null) expressionList.add(this.velocityZ);
 	}
 
 
@@ -311,6 +316,10 @@ protected void parse(MathDescription mathDesc, String tokenString,
 		velocityY = parseAndBind(mathDesc, tokens);
 		return;
 	}
+	if (tokenString.equalsIgnoreCase(VCML.VelocityZ)){
+		velocityZ = parseAndBind(mathDesc, tokens);
+		return;
+	}
 	if (FUTURE_VCML_SYMBOLS.containsKey(tokenString)) {
 		final int numberAdditionalTokensToSkip = FUTURE_VCML_SYMBOLS.get(tokenString);
 		for (int i = 0; i < numberAdditionalTokensToSkip; i++) { 
@@ -445,8 +454,16 @@ public void setVelocityY(Expression velocityY) {
 	this.velocityY = velocityY;
 }
 
+public Expression getVelocityZ() {
+	return velocityZ;
+}
+
+public void setVelocityZ(Expression velocityZ) {
+	this.velocityZ = velocityZ;
+}
+
 public boolean isMoving( ) {
-	return Expression.notZero(velocityX) || Expression.notZero(velocityY);
+	return Expression.notZero(velocityX) || Expression.notZero(velocityY) || Expression.notZero(velocityZ);
 }
 
 /**
@@ -569,6 +586,7 @@ public String getVCML(int spatialDimension) {
 	if (spatialDimension==3){
 		buffer.append("\t"+VCML.BoundaryZm+"\t "+boundaryConditionTypeZm.boundaryTypeStringValue()+"\n");
 		buffer.append("\t"+VCML.BoundaryZp+"\t "+boundaryConditionTypeZp.boundaryTypeStringValue()+"\n");
+		addExpression(buffer, VCML.VelocityZ,velocityZ);
 	}
 	Enumeration<Equation> enum1 = getEquations();
 	while (enum1.hasMoreElements()){

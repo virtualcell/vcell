@@ -4364,6 +4364,7 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
         Element velElem = param.getChild(XMLTags.VelocityTag, vcNamespace);
         setMembraneSubdomainVelocity(velElem, XMLTags.XAttrTag, subDomain::setVelocityX);
         setMembraneSubdomainVelocity(velElem, XMLTags.YAttrTag, subDomain::setVelocityY);
+        setMembraneSubdomainVelocity(velElem, XMLTags.ZAttrTag, subDomain::setVelocityZ);
 
         return subDomain;
     }

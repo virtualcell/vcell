@@ -481,6 +481,10 @@ public class MathDescription implements Versionable, Matchable, SymbolTable, Ser
                                 logMathTexts(this, newMathDesc, Decision.MathDifferent_DIFFERENT_VELOCITY, "y");
                                 return new MathCompareResults(Decision.MathDifferent_DIFFERENT_VELOCITY, "y");
                             }
+                            if(!compareUpdate(msdNew.getVelocityZ(), msdOld.getVelocityZ(), msdNew::setVelocityZ)){
+                                logMathTexts(this, newMathDesc, Decision.MathDifferent_DIFFERENT_VELOCITY, "z");
+                                return new MathCompareResults(Decision.MathDifferent_DIFFERENT_VELOCITY, "z");
+                            }
                         }
                         // apply standard, implicit VCell defaults for boundary conditions ...
                         //    1) for Neumann, 'null' boundary condition expression is same as zero flux (set expression to 0.0)

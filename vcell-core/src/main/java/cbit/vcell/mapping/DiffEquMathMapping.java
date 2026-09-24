@@ -1688,8 +1688,8 @@ public class DiffEquMathMapping extends AbstractMathMapping {
             for(SurfaceRegionObject surfaceRegionObject : memSubdomainContext.surfaceRegionObjects){
                 if(surfaceRegionObject.isQuantityCategoryEnabled(QuantityCategory.SurfaceVelocity)){
                     int dim = simContext.getGeometry().getDimension();
-                    if(dim != 2){
-                        throw new MappingException("Membrane Velocity only supported for 2D geometries");
+                    if(dim != 2 && dim != 3){
+                        throw new MappingException("Membrane Velocity only supported for 2D and 3D geometries");
                     }
                     if(simContext.getGeometry().getDimension() >= 1){
                         SpatialQuantity velXQuantity = surfaceRegionObject.getSpatialQuantity(QuantityCategory.SurfaceVelocity, QuantityComponent.X);
@@ -1704,8 +1704,7 @@ public class DiffEquMathMapping extends AbstractMathMapping {
                     if(simContext.getGeometry().getDimension() == 3){
                         SpatialQuantity velZQuantity = surfaceRegionObject.getSpatialQuantity(QuantityCategory.SurfaceVelocity, QuantityComponent.Z);
                         Expression velZExp = new Expression(velZQuantity, simContext.getNameScope());
-                        //memSubDomain.setVelocityZ(getIdentifierSubstitutions(velZExp, velZQuantity.getUnitDefinition(), surfaceClass));
-                        throw new MappingException("Membrane Velocity not supported for 2D problems");
+                        memSubDomain.setVelocityZ(getIdentifierSubstitutions(velZExp, velZQuantity.getUnitDefinition(), surfaceClass));
                     }
                 }
             }

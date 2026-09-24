@@ -268,8 +268,8 @@ public class FenicsSolver extends SimpleCompiledSolver {
 	 */
 	private static java.util.List<String> movingBoundaryReasons(cbit.vcell.math.MathDescription math, int dim) {
 		java.util.List<String> reasons = new ArrayList<>();
-		if (dim != 2) {
-			reasons.add("The FEniCSx solver runs moving-boundary simulations in 2D; this geometry is " + dim + "D.");
+		if (dim != 2 && dim != 3) {
+			reasons.add("The FEniCSx solver runs moving-boundary simulations in 2D and 3D; this geometry is " + dim + "D.");
 		}
 		java.util.List<cbit.vcell.math.MembraneSubDomain> moving = new ArrayList<>();
 		for (cbit.vcell.math.SubDomain subDomain : java.util.Collections.list(math.getSubDomains())) {

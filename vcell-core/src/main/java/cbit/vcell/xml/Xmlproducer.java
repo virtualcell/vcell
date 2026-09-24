@@ -2757,6 +2757,7 @@ private Element getXML(MembraneSubDomain param) throws XmlParseException{
 	Mutable<Element> velocity = new MutableObject<>();
 	addVelocityMaybe(velocity, XMLTags.XAttrTag,param.getVelocityX()); 
 	addVelocityMaybe(velocity, XMLTags.YAttrTag,param.getVelocityY()); 
+	addVelocityMaybe(velocity, XMLTags.ZAttrTag,param.getVelocityZ());
 	if (velocity.getValue() != null ) {
 		membrane.addContent(velocity.getValue());
 	}

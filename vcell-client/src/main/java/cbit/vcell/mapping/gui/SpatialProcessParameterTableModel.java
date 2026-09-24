@@ -154,15 +154,18 @@ private void refreshData() {
 //		setData(Arrays.asList(spatialProcess.getParameters()));
 		List<ParameterContext.LocalParameter> actual = new LinkedList<>();
 		List<ParameterContext.LocalParameter> all = Arrays.asList(spatialProcess.getParameters());
+		// the Z components are only meaningful (and, for moving boundaries, only generated into math) on a 3D geometry
+		boolean threeD = spatialProcess.getSimulationContext() != null
+				&& spatialProcess.getSimulationContext().getGeometry() != null
+				&& spatialProcess.getSimulationContext().getGeometry().getDimension() == 3;
 		for(ParameterContext.LocalParameter sc : all) {
-			// TODO: disable features not supported yet
 			ParameterRoleEnum pre = sc.getRole();
 			if(pre instanceof SpatialProcessParameterType) {
 				SpatialProcessParameterType sppt = (SpatialProcessParameterType)pre;
 				if(sppt.getDefaultName() == null || sppt.getDefaultName().isEmpty()) {
 					actual.add(sc);		// user defined
 				} else {
-					if(!sppt.getDefaultName().contains("Z")) {
+					if(threeD || !sppt.getDefaultName().contains("Z")) {
 						actual.add(sc);
 					}
 

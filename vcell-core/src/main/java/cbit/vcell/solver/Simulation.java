@@ -954,6 +954,15 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 						"Choose another spatial solver, or use an analytic geometry.", Issue.Severity.ERROR));
 			}
 		}
+		if (getSolverTaskDescription().getSolverDescription() == SolverDescription.MovingBoundary
+				&& getMathDescription() != null && getMathDescription().getGeometry() != null
+				&& getMathDescription().getGeometry().getDimension() != 2) {
+			// its input writer (MovingBoundaryFileWriter) is x/y only: a 3D task would silently become a 2D one
+			issueList.add(new Issue(this, issueContext, IssueCategory.MovingBoundary_Dimension_NotSupported,
+					"The Moving Boundary solver runs 2D geometries only; this one is "
+							+ getMathDescription().getGeometry().getDimension() + "D.",
+					"Choose the FEniCSx solver for a 3D moving boundary.", Issue.Severity.ERROR));
+		}
 		if (getSolverTaskDescription().getSolverDescription() == SolverDescription.Langevin) {
 			int[] nPart = getSolverTaskDescription().getLangevinSimulationOptions().getNPart();
 			if(getMathDescription() != null && getMathDescription().getGeometry() != null && simulationOwner instanceof SimulationContext) {
