@@ -135,6 +135,14 @@ scrub time — a time step costs about 5.7× less than shipping both.
   statistics read the clipped point data. Verified 2026-09-22 in headless Chrome (SwiftShader) on
   a 2D disk and a 3D two-domain bundle: render, time scrub, domain switch, crop statistics and the
   stats plot, with no `is not permitted` refusals.
+- **Picking on a 3D body-fitted mesh** casts the mouse ray through the tetrahedra in JS
+  (`pickTetrahedron`: clip the ray against each tet's four faces, and against the cut's half-space
+  for the smooth cut, or over the kept cells only for the whole-cells cut) and takes the nearest
+  entry: the point on the surface, or on the cut face, under the mouse. Hover reads the P1 value
+  there; a click sends it to `/timeseries?x=&y=&z=`, a fixed lab-frame point (gaps where the moving
+  boundary has passed it), as the 2D pick does. Server-side, locating the point in each row's mesh
+  had copied the whole point array per tetrahedron face (5 s for 25 rows of a 40k-tet mesh); it now
+  takes ~40 ms.
 - `probe.html` is a scratch page for exactly these capability probes: point it at a suspect class,
   read the on-page result, and keep the console open for `is not permitted`.
 - **The scalar bar labels the lookup table's range, not the mapper's.** `mapper.setScalarRange`
