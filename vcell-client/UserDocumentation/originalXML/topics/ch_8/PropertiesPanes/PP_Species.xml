@@ -13,12 +13,10 @@
 	</appearance>
 	
 	<operations>
-	
-	<para>
+
 	<bold>Create a New Species</bold> using the New Species button.  For a compartment based model a drop down box will appear to select the compartment where the species is located.
-	</para>
 	<para>
-	<bold>Specify molecular components </bold> for a species by adding molecules previously created in the <link target = "Molecules">Molecules Table</link> as a component of a species in a rule-based model.When multiple molecules are components of a species, the state of the binding sites bonds must be specified.</para>
+	<bold>Specify molecular components </bold> for a species by adding molecules previously created in the <link target = "Molecules">Molecules Table</link> as a component of a species in a rule-based model. All states must be explicitly defined (no "Any" for state definition) and the state of the binding sites must be specified; all bonds must be either "None" or "Explicit." </para>
 			<imgReference target = "PP_CompositeSpecies_start.png"/>
 			<imgReference target = "PP_CompositeSpecies_new.png"/>
 

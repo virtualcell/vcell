@@ -17,7 +17,7 @@ and one or more Applications. Any operations on species and reactions that are s
 	<para><bold>Rule-based Applications</bold></para>
 	Each <link target = "ApplicationOverview">BioModel Application</link> 
 	allows the user to define the  quantitative conditions needed to define, 
-	run and visualize a numerical simulation.  A Rule-Based BioModel may have mutliple
+	run and visualize a numerical simulation.  A Rule-Based BioModel may have multiple
 	Applications, solved using <def target="def_Deterministic">deterministic</def>, or
 	<def target="def_Stochastic">stochastic</def> approaches, and also supports <def target="def_NetworkFree">network-free</def> and <def target="def_LangevinDynamics">Langevin Dynamics</def> approaches.
 	Each Application, in turn, can have multiple Simulations, in which different numerical
@@ -35,7 +35,7 @@ and one or more Applications. Any operations on species and reactions that are s
 
 	<item>Network-Free simulations use the NFsim simulator, a stochastic-based simulator that and only creates the necessary species and reactions to satisfy the rules.</item>
 
-	<item>SpringSaLaD simulations require the representation of molecules as a collection of impenetrable spheres (sites) linked by stiff springs. The diameter of each site and the distance between sites is specified.  The Langevin Dynamics solver uses a stochastic approach to identify the position of each site based on diffusion as well as the molecular state defined by the reaction rules.</item>
+	<item><def target="def_SpringSaLaD">SpringSaLaD</def> simulations require the representation of molecules as a collection of impenetrable spheres (sites) linked by stiff springs. The diameter of each site and the distance between sites is specified.  The <def target="def_LangevinDynamics">Langevin Dynamics</def> solver uses a stochastic approach to identify the position of each site based on diffusion as well as the molecular state defined by the reaction rules.</item>
 	</list>
 
 	<para><bold>Rule-Based MathModel</bold></para>
