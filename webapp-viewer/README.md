@@ -135,6 +135,9 @@ scrub time — a time step costs about 5.7× less than shipping both.
   statistics read the clipped point data. Verified 2026-09-22 in headless Chrome (SwiftShader) on
   a 2D disk and a 3D two-domain bundle: render, time scrub, domain switch, crop statistics and the
   stats plot, with no `is not permitted` refusals.
+- **Mouse, in 3D:** drag orbits, shift-drag / right-drag / middle-drag pans (camera and focal point
+  slide together across the view plane, scaled so the scene at the focal distance follows the
+  cursor), the wheel dollies, and a left click without movement picks. In 2D, any drag pans.
 - **Picking on a 3D body-fitted mesh** casts the mouse ray through the tetrahedra in JS
   (`pickTetrahedron`: clip the ray against each tet's four faces, and against the cut's half-space
   for the smooth cut, or over the kept cells only for the whole-cells cut) and takes the nearest

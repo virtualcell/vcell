@@ -777,9 +777,12 @@ function attachTrackball() {
   let lastX = 0;
   let lastY = 0;
   let dragDistance = 0;
+  let panning = false; // 3D: shift-, right- or middle-drag pans; a plain left drag orbits
+  el.canvas.addEventListener('contextmenu', (e) => e.preventDefault()); // right-drag pans, no menu
   el.canvas.addEventListener('pointerdown', (e) => {
-    if (e.button !== 0) return;
+    if (e.button !== 0 && e.button !== 1 && e.button !== 2) return;
     dragging = true; lastX = e.clientX; lastY = e.clientY; dragDistance = 0;
+    panning = e.button !== 0 || e.shiftKey;
     el.canvas.setPointerCapture(e.pointerId);
     e.preventDefault();
   });
@@ -792,15 +795,15 @@ function attachTrackball() {
     const dy = e.clientY - lastY;
     lastX = e.clientX; lastY = e.clientY;
     dragDistance += Math.abs(dx) + Math.abs(dy);
-    if (dx || dy) void (state.dimension === 2 ? pan2d(dx, dy) : orbit(dx, dy));
+    if (dx || dy) void (state.dimension === 2 ? pan2d(dx, dy) : panning ? pan3d(dx, dy) : orbit(dx, dy));
     e.preventDefault();
   });
   const release = (e) => {
     if (!dragging) return;
     dragging = false;
     try { el.canvas.releasePointerCapture(e.pointerId); } catch { /* already released */ }
-    // a press that never really moved is a pick, not an orbit
-    if (dragDistance < 4) void plotPick(e.clientX, e.clientY);
+    // a left press that never really moved is a pick, not an orbit
+    if (dragDistance < 4 && e.button === 0) void plotPick(e.clientX, e.clientY);
   };
   el.canvas.addEventListener('pointerup', release);
   el.canvas.addEventListener('pointercancel', release);
@@ -837,6 +840,41 @@ async function dolly(factor) {
     await renderWindow.render();
   } catch (e) {
     console.warn('dolly failed', e);
+  } finally {
+    state.drawing = false;
+  }
+}
+
+/**
+ * 3D pan: slide the camera and its focal point together across the view plane, scaled so the scene
+ * at the focal distance moves with the cursor (the perspective frustum's height there spans the canvas).
+ */
+async function pan3d(dx, dy) {
+  if (!camera || state.drawing) return;
+  state.drawing = true;
+  try {
+    const rect = el.canvas.getBoundingClientRect();
+    const P = await camera.getPosition();
+    const F = await camera.getFocalPoint();
+    const U = await camera.getViewUp();
+    const fwd = [F[0] - P[0], F[1] - P[1], F[2] - P[2]];
+    const distance = Math.hypot(...fwd);
+    const right = [fwd[1] * U[2] - fwd[2] * U[1], fwd[2] * U[0] - fwd[0] * U[2], fwd[0] * U[1] - fwd[1] * U[0]];
+    const rl = Math.hypot(...right) || 1;
+    const up = [
+      (right[1] * fwd[2] - right[2] * fwd[1]) / (rl * distance),
+      (right[2] * fwd[0] - right[0] * fwd[2]) / (rl * distance),
+      (right[0] * fwd[1] - right[1] * fwd[0]) / (rl * distance),
+    ];
+    const worldPerPixel = (2 * distance * Math.tan(((await camera.getViewAngle()) * Math.PI) / 360)) / rect.height;
+    // the scene follows the cursor, so the camera moves the other way (screen y grows downward)
+    const m = [0, 1, 2].map((a) => (-dx * right[a] / rl + dy * up[a]) * worldPerPixel);
+    await camera.setPosition(P[0] + m[0], P[1] + m[1], P[2] + m[2]);
+    await camera.setFocalPoint(F[0] + m[0], F[1] + m[1], F[2] + m[2]);
+    await renderer.resetCameraClippingRange();
+    await renderWindow.render();
+  } catch (e) {
+    console.warn('pan failed', e);
   } finally {
     state.drawing = false;
   }
@@ -1497,7 +1535,7 @@ el.smoothingReset.addEventListener('click', () => {
       el.smoothingReset.disabled = true;
     }
     previewSmoothing(state.smoothing);
-    setStatus(`rendered ${describe()} ✓ (${Math.round(performance.now() - t0)} ms) — drag to rotate, wheel to zoom`);
+    setStatus(`rendered ${describe()} ✓ (${Math.round(performance.now() - t0)} ms) — ${state.dimension === 2 ? 'drag to pan' : 'drag to rotate, shift- or right-drag to pan'}, wheel to zoom`);
   } catch (e) {
     setStatus('viewer failed: ' + (e?.message ?? e), true);
     console.error('vcell field viewer', e);
