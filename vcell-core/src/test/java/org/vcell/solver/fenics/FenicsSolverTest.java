@@ -79,7 +79,7 @@ public class FenicsSolverTest {
 		assertTrue(sd.isFenicsSolver());
 		assertTrue(sd.isSpatial());
 		assertNull(sd.getSolverExecutable(), "runs in a container, no native executable");
-		assertTrue(sd.supports(SolverDescription.SolverFeature.Feature_Moving), "2D moving boundaries, species inside the front");
+		assertTrue(sd.supports(SolverDescription.SolverFeature.Feature_Moving), "2D and 3D moving boundaries, species inside the front");
 		assertFalse(sd.supports(SolverDescription.SolverFeature.Feature_FastSystem));
 		assertFalse(sd.supports(SolverDescription.SolverFeature.Feature_PeriodicBoundaryCondition));
 	}
@@ -192,6 +192,36 @@ public class FenicsSolverTest {
 		assertEquals(1, reasons.size(), reasons.toString());
 		assertTrue(reasons.get(0).contains("inside the moving front ('cell') only") && reasons.get(0).contains("'ec'"), reasons.get(0));
 		assertEquals(1, fenicsIssues(simTask).size());
+	}
+
+	private static final String MOVING_3D = "moving3d_furrow_SimID_1486629996_0__0.simtask.xml";
+
+	@Test
+	public void testA3DMovingBoundaryIsOfferedToFenicsOnly() throws Exception {
+		// the cleavage furrow in 3D: a sphere pinched by an axisymmetric ring, its front velocity with a Z component
+		SimulationTask moving = fenicsSimTask(MOVING_3D);
+		cbit.vcell.math.MathDescription math = moving.getSimulation().getMathDescription();
+		assertTrue(math.isMovingMembrane());
+		cbit.vcell.math.MembraneSubDomain front = (cbit.vcell.math.MembraneSubDomain) java.util.Collections.list(math.getSubDomains())
+				.stream().filter(s -> s instanceof cbit.vcell.math.MembraneSubDomain).findFirst().orElseThrow();
+		assertNotNull(front.getVelocityZ(), "the <Velocity><Z> is read");
+		assertEquals(List.of(), FenicsSolver.unsupportedReasons(moving.getSimulation()));
+		assertTrue(fenicsIssues(moving).isEmpty());
+
+		// the Z component survives the SimulationTask XML round trip
+		String xml = XmlHelper.simTaskToXML(moving);
+		assertTrue(xml.contains("<Z>sobj_Cyt1_EC0_velZ</Z>"), "the writer emits <Velocity><Z>");
+		cbit.vcell.math.MembraneSubDomain reread = (cbit.vcell.math.MembraneSubDomain) java.util.Collections
+				.list(XmlHelper.XMLToSimTask(xml).getSimulation().getMathDescription().getSubDomains()).stream()
+				.filter(s -> s instanceof cbit.vcell.math.MembraneSubDomain).findFirst().orElseThrow();
+		assertEquals(front.getVelocityZ().infix(), reread.getVelocityZ().infix());
+
+		// the native Moving Boundary solver writes a 2D (x/y) input only: 3D is refused for it
+		moving.getSimulation().getSolverTaskDescription().setSolverDescription(SolverDescription.MovingBoundary);
+		List<org.vcell.util.Issue> issues = new java.util.ArrayList<>();
+		moving.getSimulation().gatherIssues(new org.vcell.util.IssueContext(), issues);
+		assertTrue(issues.stream().anyMatch(i -> i.getCategory() == org.vcell.util.Issue.IssueCategory.MovingBoundary_Dimension_NotSupported
+				&& i.getSeverity() == org.vcell.util.Issue.Severity.ERROR), issues.toString());
 	}
 
 	private static String resourceText(String resource) throws Exception {

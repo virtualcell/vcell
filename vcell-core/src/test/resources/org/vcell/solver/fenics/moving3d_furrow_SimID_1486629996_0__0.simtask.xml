@@ -1,0 +1,147 @@
+<SimulationTask xmlns="http://sourceforge.net/projects/vcell/vcml" TaskId="0" JobIndex="0" isPowerUser="false">
+  <MathDescription Name="Copy of Modified FRAP_generated">
+    <Annotation>cloned from 'Copy of Modified FRAP_generated' owned by user tutorial</Annotation>
+    <Constant Name="_F_">96485.3321</Constant>
+    <Constant Name="_F_nmol_">9.64853321E-5</Constant>
+    <Constant Name="_K_GHK_">1.0E-9</Constant>
+    <Constant Name="_N_pmol_">6.02214179E11</Constant>
+    <Constant Name="_PI_">3.141592653589793</Constant>
+    <Constant Name="_R_">8314.46261815</Constant>
+    <Constant Name="_T_">300.0</Constant>
+    <Constant Name="AreaPerUnitArea_PM">1.0</Constant>
+    <Constant Name="Dex_diffusionRate">1.0</Constant>
+    <Constant Name="K_millivolts_per_volt">1000.0</Constant>
+    <Constant Name="KMOLE">0.001660538783162726</Constant>
+    <Constant Name="sproc_0.velocityY">0.0</Constant>
+    <Constant Name="Voltage_PM">0.0</Constant>
+    <Constant Name="VolumePerUnitVolume_Cyt">1.0</Constant>
+    <Constant Name="VolumePerUnitVolume_EC">1.0</Constant>
+    <Constant Name="vproc_1.velocityX">0.0</Constant>
+    <Constant Name="vproc_1.velocityY">0.0</Constant>
+    <Constant Name="vproc_1.velocityZ">0.0</Constant>
+    <VolumeVariable Name="Dex" Domain="Cyt" />
+    <Function Name="Dex_init_uM" Domain="Cyt">(10.0 * ((x &lt;  - 2.5) || (x &gt; 2.5) || (y &lt;  - 2.5) || (y &gt; 2.5)))</Function>
+    <Function Name="Size_Cyt" Domain="Cyt">(VolumePerUnitVolume_Cyt * vcRegionVolume('Cyt'))</Function>
+    <Function Name="Size_EC" Domain="EC">(VolumePerUnitVolume_EC * vcRegionVolume('EC'))</Function>
+    <Function Name="Size_PM" Domain="Cyt_EC_membrane">(AreaPerUnitArea_PM * vcRegionArea('Cyt_EC_membrane'))</Function>
+    <Function Name="sobj_Cyt1_EC0_normalX" Domain="Cyt_EC_membrane">normalX()</Function>
+    <Function Name="sobj_Cyt1_EC0_normalY" Domain="Cyt_EC_membrane">normalY()</Function>
+    <Function Name="sobj_Cyt1_EC0_size" Domain="Cyt_EC_membrane">vcRegionArea('Cyt_EC_membrane')</Function>
+    <Function Name="sobj_Cyt1_EC0_velX" Domain="Cyt_EC_membrane">sproc_0.velocityX</Function>
+    <Function Name="sobj_Cyt1_EC0_velY" Domain="Cyt_EC_membrane">sproc_0.velocityY</Function>
+    <Function Name="sobj_Cyt1_EC0_velZ" Domain="Cyt_EC_membrane">sproc_0.velocityZ</Function>
+    <Function Name="sproc_0.velocityX" Domain="Cyt_EC_membrane">(( - 1.0 * exp(( - (y ^ 2.0) / 0.25)) * tanh((sqrt(((x * x) + (z * z))) / 5.0)) / (sqrt(((x * x) + (z * z))) + 1.0E-12)) * x)</Function>
+    <Function Name="sproc_0.velocityZ" Domain="Cyt_EC_membrane">(( - 1.0 * exp(( - (y ^ 2.0) / 0.25)) * tanh((sqrt(((x * x) + (z * z))) / 5.0)) / (sqrt(((x * x) + (z * z))) + 1.0E-12)) * z)</Function>
+    <Function Name="vobj_Cyt1_size" Domain="Cyt">vcRegionVolume('Cyt')</Function>
+    <Function Name="vobj_Cyt1_velX" Domain="Cyt">vproc_1.velocityX</Function>
+    <Function Name="vobj_Cyt1_velY" Domain="Cyt">vproc_1.velocityY</Function>
+    <Function Name="vobj_Cyt1_velZ" Domain="Cyt">vproc_1.velocityZ</Function>
+    <Function Name="vobj_EC0_size" Domain="EC">vcRegionVolume('EC')</Function>
+    <CompartmentSubDomain Name="Cyt">
+      <BoundaryType Boundary="Xm" Type="Flux" />
+      <BoundaryType Boundary="Xp" Type="Flux" />
+      <BoundaryType Boundary="Ym" Type="Flux" />
+      <BoundaryType Boundary="Yp" Type="Flux" />
+      <BoundaryType Boundary="Zm" Type="Flux" />
+      <BoundaryType Boundary="Zp" Type="Flux" />
+      <PdeEquation Name="Dex" SolutionType="Unknown">
+        <Rate>0.0</Rate>
+        <Diffusion>Dex_diffusionRate</Diffusion>
+        <Initial>Dex_init_uM</Initial>
+        <Velocity X="vobj_Cyt1_velX" Y="vobj_Cyt1_velY" Z="vobj_Cyt1_velZ" />
+      </PdeEquation>
+    </CompartmentSubDomain>
+    <CompartmentSubDomain Name="EC">
+      <BoundaryType Boundary="Xm" Type="Flux" />
+      <BoundaryType Boundary="Xp" Type="Flux" />
+      <BoundaryType Boundary="Ym" Type="Flux" />
+      <BoundaryType Boundary="Yp" Type="Flux" />
+      <BoundaryType Boundary="Zm" Type="Flux" />
+      <BoundaryType Boundary="Zp" Type="Flux" />
+    </CompartmentSubDomain>
+    <MembraneSubDomain Name="Cyt_EC_membrane" InsideCompartment="Cyt" OutsideCompartment="EC">
+      <BoundaryType Boundary="Xm" Type="Value" />
+      <BoundaryType Boundary="Xp" Type="Value" />
+      <BoundaryType Boundary="Ym" Type="Value" />
+      <BoundaryType Boundary="Yp" Type="Value" />
+      <BoundaryType Boundary="Zm" Type="Value" />
+      <BoundaryType Boundary="Zp" Type="Value" />
+      <JumpCondition Name="Dex">
+        <InFlux>0.0</InFlux>
+        <OutFlux>0.0</OutFlux>
+      </JumpCondition>
+      <Velocity>
+        <X>sobj_Cyt1_EC0_velX</X>
+        <Y>sobj_Cyt1_EC0_velY</Y>
+        <Z>sobj_Cyt1_EC0_velZ</Z>
+      </Velocity>
+    </MembraneSubDomain>
+    <Version Name="Copy of Modified FRAP_generated" KeyValue="257841106" BranchId="257838162" Archived="0" Date="28-Jun-2023 19:10:16" FromVersionable="false">
+      <Owner Name="schaff" Identifier="17" />
+      <GroupAccess Type="1" />
+      <Annotation>cloned from 'Copy of Modified FRAP_generated' owned by user tutorial</Annotation>
+    </Version>
+  </MathDescription>
+  <Simulation Name="FRAP_1">
+    <Annotation>cloned from 'FRAP_1' owned by user tutorial
+cloned from 'FRAP' owned by user ACowan
+cloned from 'FRAP' owned by user mblinov
+cloned from 'FRAP' owned by user ACowan
+cloned from 'FRAP' owned by user schaff
+cloned from 'FRAP' owned by user tutorial
+cloned from 'FRAP' owned by user ACowan
+cloned from 'FRAP 1' owned by user Education
+cloned from 'FRAP 1' owned by user tutorial
+FRAP Simulation for tutorial.</Annotation>
+    <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="FEniCSx">
+      <TimeBound StartTime="0.0" EndTime="30.0" />
+      <TimeStep DefaultTime="0.1" MinTime="0.0" MaxTime="0.01" />
+      <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-7" />
+      <OutputOptions OutputTimeStep="0.2" />
+      <NumberProcessors>1</NumberProcessors>
+    </SolverTaskDescription>
+    <MathOverrides />
+    <MeshSpecification>
+      <Size X="51" Y="51" Z="51" />
+    </MeshSpecification>
+    <Version Name="temp simulation" KeyValue="1486629996" BranchId="1" Archived="1" Date="23-Sep-2026 07:52:53" FromVersionable="false">
+      <Owner Name="temp" Identifier="123" />
+      <GroupAccess Type="1" />
+    </Version>
+  </Simulation>
+  <Geometry Name="Furrow3D_sphere" Dimension="3">
+    <Annotation>cloned from 'FRAP_geometry1094988791' owned by user tutorial
+cloned from 'FRAP_geometry1094988791' owned by user ACowan
+cloned from 'FRAP_geometry1134231868' owned by user mblinov
+cloned from 'FRAP_geometry1134231868' owned by user ACowan
+cloned from 'FRAP_geometry2132898539' owned by user schaff
+cloned from 'FRAP_geometry171328045' owned by user tutorial
+cloned from 'FRAP_geometry171328045' owned by user ACowan
+cloned from 'FRAP_geometry' owned by user Education
+cloned from 'FRAP_geometry' owned by user tutorial
+cloned from 'FRAP_geometry' owned by user susan</Annotation>
+    <Extent X="20.0" Y="20.0" Z="20.0" />
+    <Origin X="-10.0" Y="-10.0" Z="-10.0" />
+    <SubVolume Name="Cyt" Handle="1" Type="Analytical" KeyValue="257838140">
+      <AnalyticExpression>((((x * x) + (y * y)) + (z * z)) &lt; 30.0)</AnalyticExpression>
+    </SubVolume>
+    <SubVolume Name="EC" Handle="0" Type="Analytical" KeyValue="257838141">
+      <AnalyticExpression>1.0</AnalyticExpression>
+    </SubVolume>
+    <SurfaceClass Name="Cyt_EC_membrane" SubVolume1Ref="Cyt" SubVolume2Ref="EC" KeyValue="257838142" />
+    <Version Name="FRAP_geometry1908061027" KeyValue="257838136" BranchId="257838137" Archived="0" Date="28-Jun-2023 18:19:43" FromVersionable="false">
+      <Owner Name="schaff" Identifier="17" />
+      <GroupAccess Type="1" />
+      <Annotation>cloned from 'FRAP_geometry1094988791' owned by user tutorial
+cloned from 'FRAP_geometry1094988791' owned by user ACowan
+cloned from 'FRAP_geometry1134231868' owned by user mblinov
+cloned from 'FRAP_geometry1134231868' owned by user ACowan
+cloned from 'FRAP_geometry2132898539' owned by user schaff
+cloned from 'FRAP_geometry171328045' owned by user tutorial
+cloned from 'FRAP_geometry171328045' owned by user ACowan
+cloned from 'FRAP_geometry' owned by user Education
+cloned from 'FRAP_geometry' owned by user tutorial
+cloned from 'FRAP_geometry' owned by user susan</Annotation>
+    </Version>
+  </Geometry>
+</SimulationTask>
