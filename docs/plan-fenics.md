@@ -268,6 +268,20 @@ cytosolic field (vcell-fenics `cross_validation/README.md`).
   image geometries in moving-boundary applications. The default image is `sha-cf08ec2`: the first that realizes
   images is `sha-a651c4b`, and `sha-cf08ec2` fixes a segfault it had meshing 3D images on Linux.
 
+## 3D moving boundaries (V-3D)
+
+The cleavage furrow in 3D: a sphere pinched by an axisymmetric contractile ring, solved by vcell-fenics's 3D
+moving-boundary path (PRs #176–#178: 3D ALE, 3D remeshing, verification against the exact waist motion).
+
+- **Math:** `MembraneSubDomain` carries `velocityZ` (VCML, the XML `<Velocity><Z>`, math comparison), and
+  `DiffEquMathMapping` generates it on 3D geometries (it had refused anything but 2D).
+- **Solvers:** FEniCSx accepts 3D moving boundaries on analytic geometries. The native Moving Boundary solver
+  writes a 2D (x/y) input only, so it is refused for 3D with an ERROR issue (`MovingBoundary_Dimension_NotSupported`).
+- **GUI:** the kinematics parameter table shows the Z components on 3D geometries.
+- **Tests:** `FenicsSolverTest` reads the task the client generated for the "Furrow 3D" application, checks
+  the `<Z>` survives an XML round trip, and checks that the Moving Boundary solver is refused.
+- The default image is `sha-223b767`.
+
 ## Verification
 - **Per PR:**
   - `mvn test` on the touched modules with the new unit tests.
