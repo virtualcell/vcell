@@ -401,7 +401,7 @@ private void displayTask() {
 			getJLabelSensitivity().setText(str);
 			int tot = lso.getTotalNumberOfJobs();
 			if(tot == 1) {
-				getJLabel20().setText("Single run.");
+				getJLabel20().setText(SsldUtils.LangevinSingleRunInfoLabel);
 				getJLabel21().setText("");
 				getJLabel21().setEnabled(false);
 				getJLabel21().setVisible(false);

@@ -1399,12 +1399,23 @@ public class SsldUtils {
     }
 
     /*
-     *  Small unrelated utility functions to preserve text uniformity among springsalad-related panels
+     * Utility functions to maintain consistency and a unified terminology among Springsalad-related panels,
+     * in context of Langevin simulations.
+     * The following constants and methods are used to standardize labels and tooltips across different components of
+     * the user interface, such as LangevinOptionsPanel and SimulationSummaryPanel,
+     * which are both used in the Langevin simulation workflow.
      */
 
     public static final String LangevinBatchRunInfoLabel = "Multiple simulations Info: ";
+    public static final String LangevinSingleRunInfoLabel = "Single simulation.";
+    public static final String LangevinTotalNumberOfSimulationsLabel = "Total Num. of Jobs: ";
+
+    public static final String LangevinSingleTrajectoryRadioButtonLabel = "Single Simulation";
+    public static final String LangevinMultiTrajectoryRadioButtonLabel = "Multiple Simulations";
+
     public static final String LangevinTotalSimulationsToRunToolTip = "Total number of simulations to run in this batch";
-    public static final String LangevinConcurrentSimulationsToolTip = "This is the number of simulations that will be run concurrently on the cluster. The rest of the simulations will be queued and run when a simulation finishes.";
+    public static final String LangevinConcurrentSimulationsToolTip = "This is the number of simulations that will be run concurrently on the cluster. ";
+    public static final String LangevinExtraSimulationsToolTip = "The rest of the simulations will be queued and run when a simulation finishes.";
 
 
     public static String langevinFormatBatchRunSummary(int totalRuns, int concurrentSimulations, int nodesUsed) {
@@ -1414,6 +1425,13 @@ public class SsldUtils {
         String text = "Running " + concurrentSimulations + " concurrent simulations.";
         return text;
 //        return concurrentSimulations + " concurrent runs / " + totalRuns + " total runs. Nodes used: " + nodesUsed;
+    }
+    public static String langevinFormatConcurrentSimulationsToolTip(int totalRuns, int concurrentSimulations, int nodesUsed) {
+        String text = LangevinConcurrentSimulationsToolTip;
+        if(totalRuns > concurrentSimulations) {
+            text += " " + LangevinExtraSimulationsToolTip;
+        }
+        return text;
     }
 
 

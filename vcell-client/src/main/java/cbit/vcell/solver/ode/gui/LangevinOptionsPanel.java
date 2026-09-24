@@ -95,6 +95,8 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 					int nodes = (int)Math.ceil((concurrentSimulations+1) / ServerInfo.VCELL_SLURM_MAX_JOBS_PER_NODE);
 					String text = SsldUtils.langevinFormatBatchRunSummary(totalNumberOfJobs, concurrentSimulations, nodes);
 					getNumberOfConcurrentJobsInfoLabel().setText(text);
+					String tooltipText = SsldUtils.langevinFormatConcurrentSimulationsToolTip(totalNumberOfJobs, concurrentSimulations, nodes);
+					getNumberOfConcurrentJobsInfoLabel().setToolTipText(tooltipText);
 
 					// we do not need it here, we just compute it once for conformity
 					int totalNumberOfConcurrentTasks = concurrentSimulations + 1;	// effective concurrent sims + watchdog
@@ -106,6 +108,8 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 					int nodes = (int)Math.ceil((concurrentSimulations+1) / ServerInfo.VCELL_SLURM_MAX_JOBS_PER_NODE);
 					String text = SsldUtils.langevinFormatBatchRunSummary(totalNumberOfJobs, concurrentSimulations, nodes);
 					getNumberOfConcurrentJobsInfoLabel().setText(text);
+					String tooltipText = SsldUtils.langevinFormatConcurrentSimulationsToolTip(totalNumberOfJobs, concurrentSimulations, nodes);
+					getNumberOfConcurrentJobsInfoLabel().setToolTipText(tooltipText);
 				}
 			} else if(e.getSource() == randomSeedCheckBox) {
 				randomSeedTextField.setEditable(randomSeedCheckBox.isSelected());
@@ -165,6 +169,8 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 				int nodes = (int)Math.ceil((concurrentSimulations+1) / ServerInfo.VCELL_SLURM_MAX_JOBS_PER_NODE);
 				String text = SsldUtils.langevinFormatBatchRunSummary(totalNumberOfJobs, concurrentSimulations, nodes);
 				getNumberOfConcurrentJobsInfoLabel().setText(text);
+				String tooltipText = SsldUtils.langevinFormatConcurrentSimulationsToolTip(totalNumberOfJobs, concurrentSimulations, nodes);
+				getNumberOfConcurrentJobsInfoLabel().setToolTipText(tooltipText);
 			}
 		}
 	}
@@ -174,7 +180,8 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 		addPropertyChangeListener(ivjEventHandler);
 		initialize();
 	}
-	
+
+	private static final int left = 16;
 	private void initialize() {
 		try {
 
@@ -249,7 +256,7 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 			gbc.gridy = 1;
 			gbc.anchor = GridBagConstraints.WEST;
 			gbc.fill = GridBagConstraints.HORIZONTAL;
-			gbc.insets = new Insets(0,22,1,6);
+			gbc.insets = new Insets(0,left,1,6);
 			trialPanel.add(getTotalNumberOfJobsLabel(), gbc);
 
 			gbc = new GridBagConstraints();
@@ -267,7 +274,7 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 			gbc.gridwidth = 3;
 			gbc.anchor = GridBagConstraints.WEST;
 			gbc.fill = GridBagConstraints.HORIZONTAL;
-			gbc.insets = new Insets(3,22,1,1);
+			gbc.insets = new Insets(3,left,1,1);
 			gbc.weightx = 1.0;
 			trialPanel.add(getNumberOfConcurrentJobsInfoLabel(), gbc);
 
@@ -284,7 +291,7 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 			gbc.gridy = 3;
 			gbc.anchor = GridBagConstraints.WEST;
 			gbc.fill = GridBagConstraints.HORIZONTAL;
-			gbc.insets = new Insets(5,22,1,6);
+			gbc.insets = new Insets(5,left,1,6);
 			trialPanel.add(getNumPartitionsXLabel(), gbc);
 
 			gbc = new GridBagConstraints();
@@ -301,7 +308,7 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 			gbc.gridy = 4;
 			gbc.anchor = GridBagConstraints.WEST;
 			gbc.fill = GridBagConstraints.HORIZONTAL;
-			gbc.insets = new Insets(0,22,1,6);
+			gbc.insets = new Insets(0,left,1,6);
 			trialPanel.add(getNumPartitionsYLabel(), gbc);
 
 			gbc = new GridBagConstraints();
@@ -318,7 +325,7 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 			gbc.gridy = 5;
 			gbc.anchor = GridBagConstraints.WEST;
 			gbc.fill = GridBagConstraints.HORIZONTAL;
-			gbc.insets = new Insets(0,22,1,6);
+			gbc.insets = new Insets(0,left,1,6);
 			trialPanel.add(getNumPartitionsZLabel(), gbc);
 
 			gbc = new GridBagConstraints();
@@ -400,7 +407,7 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 			gbc.fill = GridBagConstraints.BOTH;
 			gbc.weightx = 1.0;
 			gbc.weighty = 1.0;
-			gbc.insets = new Insets(0,22,1,6);
+			gbc.insets = new Insets(0,left,1,3);
 			rightPanel.add(new JLabel(""), gbc);	// fake, just for looks
 
 			// ----- bottomPanel ------------------------------------------------------
@@ -461,7 +468,7 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 			try {
 				trajectoryRadioButton = new javax.swing.JRadioButton();
 				trajectoryRadioButton.setName("Trajectory");
-				trajectoryRadioButton.setText("Single Trajectory");
+				trajectoryRadioButton.setText(SsldUtils.LangevinSingleTrajectoryRadioButtonLabel);
 			} catch (java.lang.Throwable ivjExc) {
 				handleException(ivjExc);
 			}
@@ -473,7 +480,7 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 			try {
 				multiRunRadioButton = new javax.swing.JRadioButton();
 				multiRunRadioButton.setName("MultiRun");
-				multiRunRadioButton.setText("Multiple Runs");
+				multiRunRadioButton.setText(SsldUtils.LangevinMultiTrajectoryRadioButtonLabel);
 			} catch (java.lang.Throwable ivjExc) {
 				handleException(ivjExc);
 			}
@@ -499,7 +506,7 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 			try {
 				totalNumberOfJobsLabel = new javax.swing.JLabel();
 				totalNumberOfJobsLabel.setName("TotalNumberOfJobs");
-				totalNumberOfJobsLabel.setText("Total Num. of Simulations");
+				totalNumberOfJobsLabel.setText(SsldUtils.LangevinTotalNumberOfSimulationsLabel);
 				totalNumberOfJobsLabel.setToolTipText(SsldUtils.LangevinTotalSimulationsToRunToolTip);
 			} catch (java.lang.Throwable ivjExc) {
 				handleException(ivjExc);
@@ -733,6 +740,8 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 			int nodes = (int)Math.ceil((concurrentSimulations+1) / ServerInfo.VCELL_SLURM_MAX_JOBS_PER_NODE);
 			String text = SsldUtils.langevinFormatBatchRunSummary(totalNumberOfJobs, concurrentSimulations, nodes);
 			getNumberOfConcurrentJobsInfoLabel().setText(text);
+			String tooltipText = SsldUtils.langevinFormatConcurrentSimulationsToolTip(totalNumberOfJobs, concurrentSimulations, nodes);
+			getNumberOfConcurrentJobsInfoLabel().setToolTipText(tooltipText);
 		});
 
 	}
@@ -768,6 +777,8 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 			int nodes = (int)Math.ceil((concurrentSimulations+1) / ServerInfo.VCELL_SLURM_MAX_JOBS_PER_NODE);
 			String text = SsldUtils.langevinFormatBatchRunSummary(totalNumberOfJobs, concurrentSimulations, nodes);
 			getNumberOfConcurrentJobsInfoLabel().setText(text);
+			String tooltipText = SsldUtils.langevinFormatConcurrentSimulationsToolTip(totalNumberOfJobs, concurrentSimulations, nodes);
+			getNumberOfConcurrentJobsInfoLabel().setToolTipText(tooltipText);
 		}
 
 		getNumPartitionsXTextField().setText(lso.getNPart(0) + "");
