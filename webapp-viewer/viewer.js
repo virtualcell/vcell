@@ -83,6 +83,7 @@ const state = {
   cutMode: 'smooth', // 'smooth' (clip through the cells) or 'cells' (keep whole cells)
   cellPoints: null, // the grid's point coordinates and cells, for choosing the whole cells to keep
   cellList: null,
+  pivot: null, // 3D rotation center: the scene center; a pan does not move it (null: take the focal point)
   pick: null, // Cartesian occupancy index of the current grid, for mouse picking
   fieldValues: null, // raw per-cell values of the shown field (nulls = blanked cells)
   nominalSinc: null,
@@ -815,12 +816,52 @@ function attachTrackball() {
   }, { passive: false });
 }
 
+/** Rodrigues: v rotated by `degrees` about the unit axis k. */
+function rotateAbout(v, k, degrees) {
+  const t = (degrees * Math.PI) / 180;
+  const c = Math.cos(t);
+  const s = Math.sin(t);
+  const kv = k[0] * v[0] + k[1] * v[1] + k[2] * v[2];
+  const kx = [k[1] * v[2] - k[2] * v[1], k[2] * v[0] - k[0] * v[2], k[0] * v[1] - k[1] * v[0]];
+  return [0, 1, 2].map((a) => v[a] * c + kx[a] * s + k[a] * kv * (1 - c));
+}
+
+/**
+ * 3D drag: orbit the camera about the pivot — the scene center, which a pan leaves where it is — so a
+ * panned object still turns in place rather than about the middle of the screen. The same motion as
+ * vtkCamera azimuth (about the view up) then elevation (about the view's right axis), but centered on
+ * the pivot instead of the focal point; with no pan the two coincide.
+ */
 async function orbit(dx, dy) {
   if (!camera || state.drawing) return;
   state.drawing = true;
   try {
-    await camera.azimuth(-dx * 0.5);
-    await camera.elevation(dy * 0.5);
+    const P = await camera.getPosition();
+    const F = await camera.getFocalPoint();
+    let U = await camera.getViewUp();
+    if (!state.pivot) state.pivot = F;
+    const C = state.pivot;
+    const unit = (v) => {
+      const l = Math.hypot(v[0], v[1], v[2]) || 1;
+      return [v[0] / l, v[1] / l, v[2] / l];
+    };
+    const around = (p, axis, deg) => {
+      const r = rotateAbout([p[0] - C[0], p[1] - C[1], p[2] - C[2]], axis, deg);
+      return [C[0] + r[0], C[1] + r[1], C[2] + r[2]];
+    };
+    // azimuth: about the view up
+    const up = unit(U);
+    let p = around(P, up, -dx * 0.5);
+    let f = around(F, up, -dx * 0.5);
+    // elevation: about the right axis of the turned view
+    const fwd = [f[0] - p[0], f[1] - p[1], f[2] - p[2]];
+    const right = unit([fwd[1] * up[2] - fwd[2] * up[1], fwd[2] * up[0] - fwd[0] * up[2], fwd[0] * up[1] - fwd[1] * up[0]]);
+    p = around(p, right, -dy * 0.5);
+    f = around(f, right, -dy * 0.5);
+    U = rotateAbout(up, right, -dy * 0.5);
+    await camera.setPosition(...p);
+    await camera.setFocalPoint(...f);
+    await camera.setViewUp(...U);
     await camera.orthogonalizeViewUp();
     await renderer.resetCameraClippingRange();
     await renderWindow.render();
@@ -857,6 +898,7 @@ async function pan3d(dx, dy) {
     const P = await camera.getPosition();
     const F = await camera.getFocalPoint();
     const U = await camera.getViewUp();
+    if (!state.pivot) state.pivot = F; // the rotation center stays on the scene, not the screen
     const fwd = [F[0] - P[0], F[1] - P[1], F[2] - P[2]];
     const distance = Math.hypot(...fwd);
     const right = [fwd[1] * U[2] - fwd[2] * U[1], fwd[2] * U[0] - fwd[0] * U[2], fwd[0] * U[1] - fwd[1] * U[0]];
@@ -1362,7 +1404,10 @@ async function rebuildGeometry(resetCam = true) {
   try {
     const geometry = await loadGeometry();
     await buildGrid(geometry, await loadField());
-    if (resetCam) await renderer.resetCamera();
+    if (resetCam) {
+      await renderer.resetCamera();
+      state.pivot = null;
+    }
     await renderWindow.render();
     setStatus(`${describe()} ✓ (${Math.round(performance.now() - t0)} ms)`);
   } catch (e) {
