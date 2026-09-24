@@ -43,6 +43,7 @@ const el = {
   axes: document.getElementById('axes'),
   meshStyle: document.getElementById('meshStyle'),
   sliceAxis: document.getElementById('sliceAxis'),
+  cutMode: document.getElementById('cutMode'),
   slicePos: document.getElementById('slicePos'),
   sliceReadout: document.getElementById('sliceReadout'),
   cropStats: document.getElementById('cropStats'),
@@ -79,6 +80,9 @@ const state = {
   bounds: null,
   sliceAxis: -1,
   slicePos: 50,
+  cutMode: 'smooth', // 'smooth' (clip through the cells) or 'cells' (keep whole cells)
+  cellPoints: null, // the grid's point coordinates and cells, for choosing the whole cells to keep
+  cellList: null,
   pick: null, // Cartesian occupancy index of the current grid, for mouse picking
   fieldValues: null, // raw per-cell values of the shown field (nulls = blanked cells)
   nominalSinc: null,
@@ -107,6 +111,7 @@ let lut = null;
 let scalarBar = null;
 let cubeAxes = null;
 let clipPlane = null;
+let extractCells = null; // the whole-cells cut: vtkExtractCells on the same input as tableClip
 
 const setStatus = (text, isError = false) => {
   el.status.textContent = text;
@@ -412,6 +417,8 @@ async function buildGrid(geometry, field) {
   for (let i = 0; i < geometry.numPoints; i++) await points.setPoint(i, P[3 * i], P[3 * i + 1], P[3 * i + 2]);
   const ug = vtk.vtkUnstructuredGrid();
   await ug.setPoints(points);
+  state.cellPoints = P;
+  state.cellList = geometry.cells;
   if (geometry.cellTypes) {
     // mixed cell types (Chombo: whole voxels + the polyhedra it cuts at the boundary)
     const faces = geometry.cellFaces;
@@ -451,6 +458,7 @@ async function buildGrid(geometry, field) {
     // this mesh directly, so a cut exposes the solver's own interior cells (voxels and cut tets)
     currentUg = ug;
     await tableClip.setInputData(ug);
+    await extractCells.setInputData(ug);
     await geomFilter.setInputData(ug);
   } else {
     // the raw grid feeds the smoothing chain and the deform filter; everything the user sees
@@ -510,8 +518,34 @@ async function applyCrop() {
   normal[axis] = -1;
   await clipPlane.setOrigin(...origin);
   await clipPlane.setNormal(...normal);
-  await geomFilter.setInputConnection(await tableClip.getOutputPort());
+  if (state.cutMode === 'cells') {
+    await setWholeCells(axis, pos);
+    await geomFilter.setInputConnection(await extractCells.getOutputPort());
+  } else {
+    await geomFilter.setInputConnection(await tableClip.getOutputPort());
+  }
   el.sliceReadout.textContent = `${'xyz'[axis]} = ${pos.toFixed(2)}`;
+}
+
+/**
+ * The whole-cells cut: keep every cell with a vertex on the kept (low) side of the plane, so the cells
+ * the plane passes through stay intact and the cut face is made of the mesh's own faces — a staircase
+ * that shows the elements as they are, where the smooth clip shows the polygons a plane slices out of
+ * them (arbitrary triangles and quadrilaterals, often long and thin even in a good mesh). The selection
+ * uses the grid's own coordinates; for voxel data the deform moves only boundary vertices, and only
+ * slightly, so the choice of cells is the same.
+ */
+async function setWholeCells(axis, pos) {
+  const P = state.cellPoints;
+  const runs = [];
+  state.cellList.forEach((cell, c) => {
+    if (!cell.some((v) => P[3 * v + axis] <= pos)) return;
+    const last = runs[runs.length - 1];
+    if (last && last[1] === c - 1) last[1] = c;
+    else runs.push([c, c]);
+  });
+  await extractCells.setCellList(vtk.vtkIdList()); // clears the previous selection
+  for (const [first, last] of runs) await extractCells.addCellRange(first, last);
 }
 
 /** Re-crop and re-render as the slider drags; in-flight guard, as for orbit. */
@@ -618,6 +652,8 @@ async function buildScene(geometry, field) {
   tableClip = vtk.vtkTableBasedClipDataSet();
   await tableClip.setClipFunction(clipPlane);
   await tableClip.setInputConnection(await deform.getOutputPort());
+  extractCells = vtk.vtkExtractCells();
+  await extractCells.setInputConnection(await deform.getOutputPort());
 
   // display boundary extractor; applyCrop points it at the deformed grid or its clipped half
   geomFilter = vtk.vtkGeometryFilter();
@@ -1271,6 +1307,11 @@ document.addEventListener('keydown', (event) => {
 el.sliceAxis.addEventListener('change', () => {
   state.sliceAxis = el.sliceAxis.value === '' ? -1 : Number(el.sliceAxis.value);
   el.slicePos.disabled = state.sliceAxis < 0;
+  el.cutMode.disabled = state.sliceAxis < 0;
+  void refreshCrop();
+});
+el.cutMode.addEventListener('change', () => {
+  state.cutMode = el.cutMode.value;
   void refreshCrop();
 });
 el.slicePos.addEventListener('input', () => {

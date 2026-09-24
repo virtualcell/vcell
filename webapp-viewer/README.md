@@ -152,3 +152,11 @@ scrub time — a time step costs about 5.7× less than shipping both.
   `setEdgeVisibility` — so it holds across time, variable and slice changes. For a 3D mesh the edges
   are those of the boundary surface and of the slice's cut face (the display is the grid's surface).
   Checked headlessly on a 2D FEniCSx bundle (triangle edges over the field) and a 3D one (wireframe).
+- **The cut mode** (next to the slice slider). *Cut through cells* (the default) clips the mesh at the
+  plane (`vtkTableBasedClipDataSet`): a flat cross-section of the field, but its polygons are what the
+  plane slices out of each cell — arbitrary triangles and quadrilaterals, often long and thin even in a
+  good mesh, so with edges on the cut face looks like a poor mesh when it is not. *Whole cells* keeps
+  every cell with a vertex on the kept side (`vtkExtractCells`, cell ranges chosen in JS from the grid's
+  coordinates), so the cut face is a staircase of the mesh's own faces — the view for judging element
+  size and shape. The crop statistics are always those of the exact clip. Checked headlessly on the 3D
+  Furrow bundle at t = 0 and on a remeshed segment at t = 12.
