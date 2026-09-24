@@ -41,6 +41,7 @@ const el = {
   runId: document.getElementById('runId'),
   colorbar: document.getElementById('colorbar'),
   axes: document.getElementById('axes'),
+  meshStyle: document.getElementById('meshStyle'),
   sliceAxis: document.getElementById('sliceAxis'),
   slicePos: document.getElementById('slicePos'),
   sliceReadout: document.getElementById('sliceReadout'),
@@ -1236,6 +1237,37 @@ async function toggleProp(prop, on) {
 el.colorbar.addEventListener('change', () => void toggleProp(scalarBar, el.colorbar.checked));
 el.axes.addEventListener('change', () => void toggleProp(cubeAxes, el.axes.checked));
 
+// VTK property representations (vtkProperty.h): points 0, wireframe 1, surface 2
+const REPRESENTATION = { surface: 2, edges: 2, wireframe: 1 };
+
+/**
+ * Show the mesh: 'surface' (the colored field only), 'edges' (the field with the triangles' edges drawn
+ * over it — for a 3D mesh, the boundary's and the slice's), or 'wireframe' (edges only, colored by the
+ * field). One property on the one actor, so it holds across time, variable and slice changes.
+ */
+async function applyMeshStyle(style) {
+  if (!actor || !state.ready) return;
+  try {
+    const property = await actor.getProperty();
+    await property.setRepresentation(REPRESENTATION[style] ?? 2);
+    await property.setEdgeVisibility(style === 'edges' ? 1 : 0);
+    await property.setEdgeColor(0.08, 0.08, 0.1);
+    await property.setLineWidth(1.0);
+    await renderWindow.render();
+  } catch (e) {
+    console.warn('changing the mesh style failed', e);
+  }
+}
+
+el.meshStyle.addEventListener('change', () => void applyMeshStyle(el.meshStyle.value));
+document.addEventListener('keydown', (event) => {
+  if (event.key !== 'm' || event.target instanceof HTMLInputElement || event.target instanceof HTMLSelectElement) return;
+  if (el.meshStyle.disabled) return;
+  const options = Array.from(el.meshStyle.options).map((o) => o.value);
+  el.meshStyle.value = options[(options.indexOf(el.meshStyle.value) + 1) % options.length];
+  void applyMeshStyle(el.meshStyle.value);
+});
+
 el.sliceAxis.addEventListener('change', () => {
   state.sliceAxis = el.sliceAxis.value === '' ? -1 : Number(el.sliceAxis.value);
   el.slicePos.disabled = state.sliceAxis < 0;
@@ -1293,6 +1325,7 @@ el.smoothingReset.addEventListener('click', () => {
     el.smoothing.disabled = state.bodyFitted;
     el.colorbar.disabled = false;
     el.axes.disabled = false;
+    el.meshStyle.disabled = false;
     el.sliceAxis.disabled = false; // body-fitted 3D included: the crop clips the solver mesh
     el.statsBtn.disabled = false;
     if (state.bodyFitted) {
