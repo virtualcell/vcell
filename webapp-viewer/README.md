@@ -147,3 +147,8 @@ scrub time — a time step costs about 5.7× less than shipping both.
   (`setCutFunction`), `vtkColorTransferFunction`, `vtkLookupTable`, `vtkCellPicker` (incl. `pick`).
   **`vtkOutlineFilter` has no registered constructor** — compiled into the `.wasm`, but absent from
   the deserializer, which is the distinction that matters.
+- **The Mesh selector** (Surface / Surface + edges / Wireframe; the `m` key cycles it) sets one
+  `vtkProperty` on the display actor — `setRepresentation` (1 wireframe, 2 surface) and
+  `setEdgeVisibility` — so it holds across time, variable and slice changes. For a 3D mesh the edges
+  are those of the boundary surface and of the slice's cut face (the display is the grid's surface).
+  Checked headlessly on a 2D FEniCSx bundle (triangle edges over the field) and a 3D one (wireframe).

@@ -101,6 +101,13 @@
   <button id="smoothingReset" type="button" disabled>Reset</button>
   <label class="toggle"><input id="colorbar" type="checkbox" checked disabled> Color bar</label>
   <label class="toggle"><input id="axes" type="checkbox" checked disabled> Axes</label>
+  <label class="toggle">Mesh
+    <select id="meshStyle" disabled title="Show the mesh: its triangles' edges over the colored surface, or edges only (m cycles)">
+      <option value="surface" selected>Surface</option>
+      <option value="edges">Surface + edges</option>
+      <option value="wireframe">Wireframe</option>
+    </select>
+  </label>
 </div>
 
 <div class="status" id="status">loading…</div>
