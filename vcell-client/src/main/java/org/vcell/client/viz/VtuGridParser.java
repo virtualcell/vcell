@@ -242,11 +242,7 @@ final class VtuGridParser {
 				double total = tripleProduct(p, cell[0], cell[1], cell[2], cell[3]);
 				if (Math.abs(total) > 1e-300) {
 					for (int v = 0; v < 4; v++) {
-						double[] q = p.clone();
-						q[3 * cell[v]] = x;
-						q[3 * cell[v] + 1] = y;
-						q[3 * cell[v] + 2] = z;
-						w[v] = tripleProduct(q, cell[0], cell[1], cell[2], cell[3]) / total;
+						w[v] = subVolume(p, cell, v, x, y, z) / total;
 					}
 					return w;
 				}
@@ -388,17 +384,28 @@ final class VtuGridParser {
 			return false;
 		}
 		for (int f = 0; f < 4; f++) {
-			double[] q = p.clone();
-			int replaced = cell[f];
-			q[3 * replaced] = x;
-			q[3 * replaced + 1] = y;
-			q[3 * replaced + 2] = z;
-			double sub = tripleProduct(q, cell[0], cell[1], cell[2], cell[3]);
-			if (sub * total < -1e-12 * Math.abs(total)) {
+			if (subVolume(p, cell, f, x, y, z) * total < -1e-12 * Math.abs(total)) {
 				return false;
 			}
 		}
 		return true;
+	}
+
+	/**
+	 * The triple product of tetrahedron {@code cell} with its vertex {@code f} replaced by the point (x, y, z):
+	 * the barycentric coordinate of the point for that vertex, times the total. Computed from the four
+	 * vertices directly — copying the point array per face, as this once did, made locating a point cost
+	 * cells × points (seconds per time series on a 40k-tet mesh).
+	 */
+	private static double subVolume(double[] p, int[] cell, int f, double x, double y, double z) {
+		double[] v = new double[12];
+		for (int k = 0; k < 4; k++) {
+			boolean moved = k == f;
+			v[3 * k] = moved ? x : p[3 * cell[k]];
+			v[3 * k + 1] = moved ? y : p[3 * cell[k] + 1];
+			v[3 * k + 2] = moved ? z : p[3 * cell[k] + 2];
+		}
+		return tripleProduct(v, 0, 1, 2, 3);
 	}
 
 	private VtuGridParser() {

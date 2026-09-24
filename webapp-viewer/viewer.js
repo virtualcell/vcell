@@ -906,9 +906,113 @@ function cellCenter(cell) {
   return [pk.o[0] + (ix + 0.5) * pk.d[0], pk.o[1] + (iy + 0.5) * pk.d[1], pk.o[2] + (iz + 0.5) * pk.d[2]];
 }
 
+/**
+ * The first point of a body-fitted 3D mesh the mouse ray reaches, as the view shows it: the ray is
+ * clipped against each tetrahedron's four faces (and, for the smooth cut, the cut's half-space; for
+ * the whole-cells cut, only the kept cells take part), and the nearest entry wins. Returns the point
+ * nudged just inside that tetrahedron — a boundary point is ambiguous for a containment test — with
+ * its cell and barycentric weights, or null when the ray misses. O(cells) per call, a few ms.
+ */
+function pickTetrahedron(origin, dir) {
+  const P = state.cellPoints;
+  const cells = state.cellList;
+  if (!P || !cells) return null;
+  const axis = state.sliceAxis;
+  let cutPos = null;
+  if (axis >= 0) {
+    const b = state.bounds;
+    cutPos = b[2 * axis] + (0.005 + 0.99 * (state.slicePos / 100)) * (b[2 * axis + 1] - b[2 * axis]);
+  }
+  const wholeCells = cutPos !== null && state.cutMode === 'cells';
+  const v = (i) => [P[3 * i], P[3 * i + 1], P[3 * i + 2]];
+  const sub3 = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+  const dot3 = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+  const cross3 = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+  let best = null;
+  for (let c = 0; c < cells.length; c++) {
+    const cell = cells[c];
+    if (cell.length !== 4) continue;
+    if (wholeCells && !cell.some((i) => P[3 * i + axis] <= cutPos)) continue;
+    const q = cell.map(v);
+    let tIn = 0;
+    let tOut = Infinity;
+    if (cutPos !== null && !wholeCells) {
+      // the kept side of the smooth cut: x[axis] <= cutPos
+      if (Math.abs(dir[axis]) < 1e-15) {
+        if (origin[axis] > cutPos) continue;
+      } else {
+        const t = (cutPos - origin[axis]) / dir[axis];
+        if (dir[axis] > 0) tOut = Math.min(tOut, t);
+        else tIn = Math.max(tIn, t);
+      }
+    }
+    for (let f = 0; f < 4 && tIn <= tOut; f++) {
+      const [a, b, d] = [0, 1, 2, 3].filter((k) => k !== f).map((k) => q[k]);
+      let n = cross3(sub3(b, a), sub3(d, a));
+      if (dot3(n, sub3(q[f], a)) > 0) n = [-n[0], -n[1], -n[2]]; // point away from the opposite vertex
+      const num = -dot3(n, sub3(origin, a));
+      const den = dot3(n, dir);
+      if (Math.abs(den) < 1e-300) {
+        if (num < 0) tOut = -Infinity; // parallel and outside this face
+      } else if (den > 0) {
+        tOut = Math.min(tOut, num / den);
+      } else {
+        tIn = Math.max(tIn, num / den);
+      }
+    }
+    if (tIn > tOut || (best && tIn >= best.t)) continue;
+    best = { t: tIn, tOut, cell: c, q };
+  }
+  if (!best) return null;
+  const t = best.t + 1e-3 * (best.tOut - best.t);
+  const point = [0, 1, 2].map((a) => origin[a] + t * dir[a]);
+  // barycentric weights: the volume of the sub-tetrahedron opposite each vertex
+  const vol = (a, b, c2, d) => dot3(sub3(b, a), cross3(sub3(c2, a), sub3(d, a)));
+  const [q0, q1, q2, q3] = best.q;
+  const total = vol(q0, q1, q2, q3);
+  const weights = [vol(point, q1, q2, q3), vol(q0, point, q2, q3), vol(q0, q1, point, q3), vol(q0, q1, q2, point)]
+    .map((w) => w / total);
+  return { point, cell: best.cell, weights };
+}
+
+/** The shown field at a picked tetrahedron point: P1-interpolated, or the cell's value. */
+function valueAtTetPick(hit) {
+  const values = state.fieldValues;
+  if (!values) return null;
+  if (state.fieldLocation !== 'point') return values[hit.cell] ?? null;
+  const cell = state.cellList[hit.cell];
+  let sum = 0;
+  for (let k = 0; k < 4; k++) {
+    const x = values[cell[k]];
+    if (x == null) return null;
+    sum += hit.weights[k] * x;
+  }
+  return sum;
+}
+
 let hoverBusy = false;
 async function hoverPick(clientX, clientY) {
   if (!state.ready || hoverBusy) return;
+  if (state.bodyFitted && state.dimension === 3) {
+    hoverBusy = true;
+    try {
+      const { origin, dir } = await rayFromMouse(clientX, clientY);
+      const hit = pickTetrahedron(origin, dir);
+      if (!hit) {
+        el.pickReadout.textContent = '';
+        return;
+      }
+      const value = valueAtTetPick(hit);
+      const at = ` @ (${hit.point.map((x) => x.toFixed(2)).join(', ')})`;
+      el.pickReadout.textContent = (value == null ? `no data${at}` : `${state.selectedVar} = ${value.toExponential(3)}${at}`)
+        + ' — click to plot time course';
+    } catch (e) {
+      console.warn('hover pick failed', e);
+    } finally {
+      hoverBusy = false;
+    }
+    return;
+  }
   if (state.bodyFitted) {
     // no occupancy index on a body-fitted mesh; the readout shows where a click would sample
     if (state.dimension !== 2) return;
@@ -975,6 +1079,7 @@ async function plotPick(clientX, clientY) {
  * boundary has moved past it come back as nulls, drawn as gaps in the curve.
  */
 async function plotLabPick(clientX, clientY) {
+  if (state.dimension === 3) return void plotLabPick3d(clientX, clientY);
   if (state.dimension !== 2) return;
   try {
     const [x, y] = await labPointFromMouse(clientX, clientY);
@@ -983,6 +1088,24 @@ async function plotLabPick(clientX, clientY) {
       url('/timeseries', { domain: state.selectedDomain, var: state.selectedVar, x: String(x), y: String(y) }),
       '/timeseries');
     renderPlot(series, [x, y, 0]);
+    setStatus(`${describe()} ✓`);
+  } catch (e) {
+    setStatus('time-series pick failed: ' + (e?.message ?? e), true);
+  }
+}
+
+/** The 3D counterpart: the lab-frame point is where the mouse ray first meets the mesh on screen. */
+async function plotLabPick3d(clientX, clientY) {
+  try {
+    const { origin, dir } = await rayFromMouse(clientX, clientY);
+    const hit = pickTetrahedron(origin, dir);
+    if (!hit) return;
+    const [x, y, z] = hit.point;
+    setStatus(`fetching time series for ${state.selectedVar} at lab (${x.toFixed(2)}, ${y.toFixed(2)}, ${z.toFixed(2)})…`);
+    const series = await fetchJson(
+      url('/timeseries', { domain: state.selectedDomain, var: state.selectedVar, x: String(x), y: String(y), z: String(z) }),
+      '/timeseries');
+    renderPlot(series, hit.point);
     setStatus(`${describe()} ✓`);
   } catch (e) {
     setStatus('time-series pick failed: ' + (e?.message ?? e), true);
