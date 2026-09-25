@@ -135,6 +135,15 @@ scrub time — a time step costs about 5.7× less than shipping both.
   statistics read the clipped point data. Verified 2026-09-22 in headless Chrome (SwiftShader) on
   a 2D disk and a 3D two-domain bundle: render, time scrub, domain switch, crop statistics and the
   stats plot, with no `is not permitted` refusals.
+- **A run still in progress.** For a FEniCSx run, `/info` reports the bundle's `status` (`running`,
+  `completed`, `failed`) and `progress` (0..1). While the status is `running` the viewer re-reads
+  `/info` every 10 s (paused while the tab is hidden, never overlapping a render), and a **Refresh**
+  button does the same on demand for any run. New output times extend the slider. If the view was on
+  the last time it follows the run to the new last time; otherwise it stays where the user put it.
+  Variable, camera, slice and mesh style are kept. Polling stops once the run completes or fails. The
+  server re-reads the bundle's manifest on every request (`BundleStore.cached` never caches
+  `.zattrs`), so a newly written row shows up at once, locally or remotely. Checked headlessly
+  against a bundle grown from 3 to 13 rows while the page was open.
 - **Mouse, in 3D:** drag orbits, shift-drag / right-drag / middle-drag pans (camera and focal point
   slide together across the view plane, scaled so the scene at the focal distance follows the
   cursor), the wheel dollies, and a left click without movement picks. In 2D, any drag pans.

@@ -161,6 +161,9 @@ final class FenicsBundleViews {
 		}
 		sb.append(",\"jobIndex\":").append(source.jobIndex);
 		sb.append(",\"solver\":\"FEniCSx\",\"status\":\"").append(FieldViewerServer.jsonEscape(bundle.getStatus())).append('"');
+		if (Double.isFinite(bundle.getProgress())) {
+			sb.append(",\"progress\":").append(bundle.getProgress()); // fraction 0..1, for the viewer's live readout
+		}
 		sb.append(",\"times\":");
 		FieldViewerServer.appendDoubles(sb, times, times.length);
 		sb.append(",\"domains\":[");

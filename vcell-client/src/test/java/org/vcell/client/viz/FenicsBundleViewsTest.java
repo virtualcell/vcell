@@ -53,6 +53,7 @@ public class FenicsBundleViewsTest {
 		Assertions.assertEquals(SIM, info.get("simId").getAsString());
 		Assertions.assertEquals("disk::efflux", info.get("simName").getAsString());
 		Assertions.assertEquals("completed", info.get("status").getAsString());
+		Assertions.assertEquals(1.0, info.get("progress").getAsDouble(), 1e-12); // the viewer's live readout
 		Assertions.assertEquals(3, info.getAsJsonArray("times").size());
 		JsonObject u = info.getAsJsonArray("variables").get(0).getAsJsonObject();
 		Assertions.assertEquals("u", u.get("name").getAsString());
