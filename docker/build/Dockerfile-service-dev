@@ -31,10 +31,11 @@ ENV PATH="${JAVA_HOME}/bin:${PATH}"
 COPY --from=jre-build /javaruntime $JAVA_HOME
 
 # Union of what the five installed: curl and dnsutils (api), openssh-client (data, sched,
-# submit), screen and the font packages (all).
+# submit), screen and the font packages (all). perl runs BioNetGen (below): the base image has
+# only perl-base, which lacks core modules BNG2.pl needs (FindBin, ...).
 RUN apt -y update && \
     apt -y install --no-install-recommends \
-        curl dnsutils openssh-client screen apt-utils \
+        curl dnsutils openssh-client screen apt-utils perl \
         libfreetype6 fontconfig fonts-dejavu && \
     DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends tzdata && \
     rm -rf /var/lib/apt/lists/* && \
@@ -82,6 +83,11 @@ RUN cd /usr/local/app/python/vcell_cli_utils/ && \
 COPY ./vcell-api/docroot ./docroot
 COPY ./vcell-api/webapp ./webapp
 COPY ./vcell-api/keystore_macbook.jks .
+# BioNetGen, for rule-based models: network generation during math generation, and the
+# /biomodel/{id}/biomodel.bngl download. ResourceUtil.getBNGRoot() is <install>/bionetgen. No
+# server image had ever carried it (only clientgen, for the desktop installers), so those
+# requests failed with "Can't open perl script .../bionetgen/BNG2.pl".
+COPY ./bionetgen ./bionetgen
 
 # data
 COPY ./pythonVtk/ /usr/local/app/pythonVtk/
