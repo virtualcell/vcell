@@ -16,6 +16,150 @@ followed by flat Keep-a-Changelog categories. API consumers should scan
 
 _(Release-manager scratchpad. Populated at release-cut time.)_
 
+## [8.2.0.01] - 2026-09-25
+
+**Highlights.** The first build of the 8.2 line, which brings FEniCSx, a
+finite-element solver, into VCell. Rather than a Cartesian grid, it solves on a
+mesh that follows the cell's shape. It covers fixed geometries, moving
+boundaries in 2D and 3D, and segmented image geometries, and its results open
+in a browser field viewer. **All of it is off by default in this build:** the
+solver needs `vcell.fenics.enabled=true` and the viewer
+`vcell.fieldViewer.enabled=true`. Without them this build behaves like
+8.1.8.04, whose server fixes it includes: BioNetGen on the server, and a 404
+instead of a 500 for a BNGL download of a BioModel with no applications.
+
+### Added
+- FEniCSx solver, gated off by default (`vcell.fenics.enabled`). It is
+  registered as a VCell solver and takes the SimulationTask VCell hands its
+  solvers. It runs spatial deterministic models on body-fitted
+  finite-element meshes and writes a results bundle (VTU meshes and zarr
+  fields). (#2084, #2085)
+- Desktop quick run of FEniCSx in Docker, with progress reporting. (#2086)
+- FEniCSx on the cluster: SlurmProxy routes FEniCSx jobs to their own
+  Apptainer image, selected by an optional solver list, and a site without that
+  configuration refuses the job. Single rank for now. Sim-data cleanup removes
+  FEniCSx result bundles, which are directories. (#2089)
+- Browser field viewer for FEniCSx results, which are point data on
+  body-fitted meshes, gated by `vcell.fieldViewer.enabled`. Includes a results
+  bundle reader and remote viewing of cluster runs through the data server.
+  (#2087, #2088, #2090)
+- Moving boundaries on FEniCSx:
+  - It is offered for moving-boundary applications, and the viewer follows
+    the moving mesh. (#2093)
+  - In 3D, `MembraneSubDomain` carries a Z velocity (VCML, XML `<Velocity><Z>`,
+    math comparison), math generation produces it on 3D geometries, and the
+    kinematics table shows the Z components. (#2097)
+- Image-based (segmented) geometries on FEniCSx, realized as smoothed,
+  body-fitted meshes. (#2094)
+- Field viewer:
+  - a Mesh selector (surface, surface + edges, wireframe; the `m` key cycles
+    it) (#2096);
+  - a whole-cells slice mode that shows the mesh's own elements (#2098);
+  - point pick with a time course on 3D body-fitted meshes (#2099);
+  - pan in 3D with shift-, right- or middle-drag, with rotation staying centred
+    on the scene after a pan (#2100).
+
+### Changed
+- The native Moving Boundary solver is refused for 3D geometries with an error
+  issue. It writes a 2D input only, and previously ran anyway. (#2097)
+- FEniCSx refuses unsupported geometries before the run, and shows the
+  solver's own error line when a run fails. (#2091)
+- Rule-based help pages describe molecule, observable and species-pattern
+  depictions with the current colors, and there is a new SpringSaLaD
+  definition. (#2101)
+
+### Fixed
+- The server image includes BioNetGen and full Perl. Rule-based requests on the
+  server failed with `Can't open perl script ".../bionetgen/BNG2.pl"`: network
+  generation during math generation, and the BNGL download. (#2102)
+- `/api/v0/biomodel/{id}/biomodel.bngl` returns 404 for a BioModel with no
+  applications instead of a 500 ("Index 0 out of bounds for length 0"), and
+  unexpected export failures are logged with their stack trace. (#2104)
+- A FEniCSx segfault meshing 3D image geometries on Linux, through the default
+  image `sha-cf08ec2`. (#2095)
+
+### Notes for API consumers
+- No `/api/v1/` schema changes in this build.
+- `/api/v0/biomodel/{id}/biomodel.bngl` now answers 404, not 500, for a BioModel
+  with no applications.
+
+## [8.1.8.04] - 2026-09-25
+
+**Highlights.** Downloading BNGL for a BioModel with no applications returns a
+clear 404 instead of a server error. Built from the `vc8.1-prod` release
+branch.
+
+### Fixed
+- `/api/v0/biomodel/{id}/biomodel.bngl` returns 404 ("BioModel … has no
+  applications; BNGL is exported per application") instead of a 500 ("Index 0
+  out of bounds for length 0"), and unexpected failures are logged with their
+  stack trace. (#2104, cherry-picked in #2105)
+
+### Notes for API consumers
+- No `/api/v1/` schema changes in this build.
+
+## [8.1.8.03] - 2026-09-25
+
+**Highlights.** Rule-based models work on the server again: math generation
+and BNGL download no longer fail looking for BioNetGen. Built from the
+`vc8.1-prod` release branch.
+
+### Fixed
+- The server image includes BioNetGen and full Perl. No server image had carried
+  BioNetGen, so network generation during math generation and the BNGL download
+  failed with `Can't open perl script ".../bionetgen/BNG2.pl"`. (#2102,
+  cherry-picked in #2103)
+
+### Notes for API consumers
+- No `/api/v1/` schema changes in this build.
+
+## [8.1.8.02] - 2026-09-25
+
+**Highlights.** Updated help for rule-based modeling. Built from the
+`vc8.1-prod` release branch (8.1.8.01 plus the help updates).
+
+### Changed
+- The rule-based help pages describe molecule, observable and species-pattern
+  depictions with the current colors. The Species Properties Pane page states
+  that composite species need explicit states and bonds, and there is a new
+  SpringSaLaD definition. (#2101)
+
+### Notes for API consumers
+- No `/api/v1/` schema changes in this build.
+
+## [8.1.8.01] - 2026-09-21
+
+**Highlights.** More room for multi-run simulations: up to 50 concurrent runs.
+The Simulation Properties Panel shows the run limits and quotas that apply.
+
+### Changed
+- The maximum number of concurrent runs is raised to 50 (51 including the
+  watchdog), and it is no longer user-editable. (#2080)
+- The Simulation Properties Panel shows multi-run information: the number of
+  concurrent runs and the nodes used. (#2080)
+
+### Fixed
+- A regression in single-run log management. (#2080)
+
+### Notes for API consumers
+- No `/api/v1/` schema changes in this build.
+
+## [8.1.7.01] - 2026-09-16
+
+**Highlights.** Smart copy and paste reaches the Initial Conditions panel and
+works for parameter scans in Math Overrides, with a clearer confirmation
+dialog.
+
+### Added
+- Smart copy/paste by keybinding in the Initial Conditions panel. (#2042)
+
+### Changed
+- In Math Overrides, parameter scans copy and paste correctly, and the smart
+  copy/paste confirmation dialog is clearer. (#2042)
+
+### Notes for API consumers
+- No `/api/v1/` schema changes in this build.
+
 ## [8.1.6.02] - 2026-09-07
 
 **Highlights.** The same release as 8.1.6.01, rebuilt on a supported base
