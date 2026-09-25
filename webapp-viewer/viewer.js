@@ -52,6 +52,8 @@ const el = {
   plotTitle: document.getElementById('plotTitle'),
   plotLegend: document.getElementById('plotLegend'),
   plotSvg: document.getElementById('plotSvg'),
+  refreshBtn: document.getElementById('refreshBtn'),
+  runStatus: document.getElementById('runStatus'),
   plotClose: document.getElementById('plotClose'),
   statsBtn: document.getElementById('statsBtn'),
   dataControls: document.getElementById('dataControls'),
@@ -69,6 +71,8 @@ const state = {
   variables: [],
   times: [],
   timeIndex: 0,
+  runStatus: null, // FEniCSx bundles: 'running' | 'completed' | 'failed' (from /info); null for other runs
+  runProgress: null, // fraction 0..1 while running
   selectedVar: '',
   selectedDomain: '',
   geometryId: '',
@@ -183,6 +187,7 @@ async function loadInfo() {
   const info = await fetchJson(url('/info', {}), '/info');
   showRunTitle(info);
   state.times = info.times ?? [];
+  showRunStatus(info);
   state.variables = (info.variables ?? []).map((v) => ({ name: v.name, domain: v.domain }));
   if (!state.variables.length) throw new Error(`run ${info.simId} exposes no volume variables`);
 
@@ -204,6 +209,23 @@ async function loadInfo() {
   el.time.max = String(Math.max(0, state.times.length - 1));
   el.time.value = String(state.timeIndex);
   el.dataControls.hidden = false;
+}
+
+/** The run's status next to the time controls; while it is running the viewer refreshes itself. */
+function showRunStatus(info) {
+  const wasRunning = state.runStatus === 'running';
+  state.runStatus = info.status ?? null;
+  state.runProgress = Number.isFinite(info.progress) ? info.progress : null;
+  const times = `${state.times.length} time${state.times.length === 1 ? '' : 's'}`;
+  if (state.runStatus === 'running') {
+    const pct = state.runProgress == null ? '' : ` ${Math.round(100 * state.runProgress)}%`;
+    el.runStatus.textContent = `running${pct} · ${times} · auto-refresh`;
+  } else if (state.runStatus === 'failed') {
+    el.runStatus.textContent = `run failed · ${times}`;
+  } else {
+    // a run seen finishing says so; one that was already complete when the page opened needs no label
+    el.runStatus.textContent = wasRunning && state.runStatus === 'completed' ? `completed · ${times}` : '';
+  }
 }
 
 function nearestTimeIndex(t) {
@@ -1417,6 +1439,69 @@ async function rebuildGeometry(resetCam = true) {
   }
 }
 
+// ---------------------------------------------------------------------------
+// refresh: a run still in progress keeps writing output times
+// ---------------------------------------------------------------------------
+
+const AUTO_REFRESH_MS = 10000;
+let autoRefreshTimer = null;
+
+/**
+ * Re-read /info and take in the output times written since the last look. If the view was on the
+ * last time, it moves to the new last time -- following the run as it goes -- and otherwise stays
+ * where the user put it. The variable, domain, camera, slice and mesh style are all kept. The server
+ * re-reads the bundle's manifest on every request, so a new row is visible as soon as it is written.
+ */
+async function refreshRun({ auto = false } = {}) {
+  if (!state.ready || !state.dataset) return;
+  if (state.busy) {
+    if (auto) scheduleAutoRefresh();
+    return;
+  }
+  try {
+    const info = await fetchJson(url('/info', {}), '/info');
+    const wasAtEnd = state.timeIndex >= state.times.length - 1;
+    const before = state.times.length;
+    state.times = info.times ?? state.times;
+    showRunStatus(info);
+    el.time.max = String(Math.max(0, state.times.length - 1));
+    el.time.disabled = state.times.length < 2;
+    if (state.times.length > before && wasAtEnd) {
+      state.timeIndex = state.times.length - 1;
+      el.time.value = String(state.timeIndex);
+      await (state.bodyFitted ? refreshTimeStep() : refreshField());
+    } else {
+      state.timeIndex = Math.min(state.timeIndex, state.times.length - 1);
+      el.time.value = String(state.timeIndex);
+      if (!auto) {
+        const added = state.times.length - before;
+        setStatus(added > 0 ? `${describe()} ✓ — ${added} new time${added === 1 ? '' : 's'} (slider extended)`
+          : `${describe()} ✓ — no new output`);
+      }
+    }
+  } catch (e) {
+    if (!auto) setStatus('refresh failed: ' + (e?.message ?? e), true);
+    else console.warn('auto-refresh failed', e);
+  }
+  scheduleAutoRefresh();
+}
+
+/** Poll while the run is in progress (and the page is visible); stop once it completes or fails. */
+function scheduleAutoRefresh() {
+  clearTimeout(autoRefreshTimer);
+  autoRefreshTimer = null;
+  if (state.runStatus !== 'running') return;
+  autoRefreshTimer = setTimeout(() => {
+    if (document.hidden) scheduleAutoRefresh();
+    else void refreshRun({ auto: true });
+  }, AUTO_REFRESH_MS);
+}
+
+el.refreshBtn.addEventListener('click', () => void refreshRun());
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && state.runStatus === 'running') void refreshRun({ auto: true });
+});
+
 el.time.addEventListener('input', () => {
   state.timeIndex = Number(el.time.value);
   el.dataReadout.textContent = `t = ${state.times[state.timeIndex] ?? ''}`;
@@ -1575,6 +1660,8 @@ el.smoothingReset.addEventListener('click', () => {
     el.meshStyle.disabled = false;
     el.sliceAxis.disabled = false; // body-fitted 3D included: the crop clips the solver mesh
     el.statsBtn.disabled = false;
+    el.refreshBtn.disabled = false;
+    scheduleAutoRefresh();
     if (state.bodyFitted) {
       el.smoothingReadout.textContent = 'body-fitted solver mesh — shown as computed';
       el.smoothingReset.disabled = true;

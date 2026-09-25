@@ -67,6 +67,8 @@
   <label for="time">Time</label>
   <input id="time" type="range" min="0" max="0" step="1" value="0" disabled>
   <button id="statsBtn" type="button" disabled title="min / mean / max over space, per variable, over time">Stats</button>
+  <button id="refreshBtn" type="button" disabled title="Fetch output times written since the page loaded (automatic every 10 s while the run is in progress)">Refresh</button>
+  <span class="readout" id="runStatus"></span>
   <span class="readout" id="dataReadout"></span>
   <span class="readout pick" id="pickReadout" title="value under the mouse — click to plot over time"></span>
 </div>
