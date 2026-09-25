@@ -173,7 +173,7 @@ htc_vcellopt_apptainer_image=oras://ghcr.io/virtualcell/vcell-opt_singularity:7.
 htc_vcellbatch_apptainer_image=oras://ghcr.io/virtualcell/vcell-batch_singularity:7.7.0.71
 htc_vcellsolvers_apptainer_image=oras://ghcr.io/virtualcell/vcell-solvers_singularity:v0.8.2
 htc_vcellfvsolver_apptainer_image=oras://ghcr.io/virtualcell/vcell-fvsolver_singularity:0.9.7
-htc_vcellfenics_apptainer_image=oras://ghcr.io/virtualcell/vcell-fenics_singularity:sha-223b767
+htc_vcellfenics_apptainer_image=oras://ghcr.io/virtualcell/vcell-fenics_singularity:sha-479d653
 htc_vcellfenics_solver_list=FEniCSx
 ```
 
