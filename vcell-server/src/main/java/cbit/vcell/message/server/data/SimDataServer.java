@@ -66,7 +66,7 @@ public SimDataServer() throws Exception {
 
 	this.dataServerImpl = new DataServerImpl(dataSetControllerImpl, exportServiceImpl);
 
-	this.vcMessagingService_int = new VCMessagingServiceActiveMQ();
+	this.vcMessagingService_int = VCMessagingServiceActiveMQ.createForLongLivedConsumerService();
 	String jmshost = PropertyLoader.getRequiredProperty(PropertyLoader.jmsIntHostInternal);
 	int jmsport = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.jmsIntPortInternal));
 	this.vcMessagingService_int.setConfiguration(new ServerMessagingDelegate(), jmshost, jmsport);
