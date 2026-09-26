@@ -36,7 +36,7 @@ public final class FenicsDocker {
 	private static final Logger lg = LogManager.getLogger(FenicsDocker.class);
 
 	/** the image a client uses unless {@code vcell.fenics.image} names another */
-	public static final String DEFAULT_IMAGE = "ghcr.io/virtualcell/vcell-fenics:sha-479d653";
+	public static final String DEFAULT_IMAGE = "ghcr.io/virtualcell/vcell-fenics:sha-ca4604f";
 	/** the solver image is built for linux/amd64 first; an arm64 host can run it emulated */
 	static final String FALLBACK_PLATFORM = "linux/amd64";
 	static final String WINDOWS_CONTAINER_DIR = "/simdata";
