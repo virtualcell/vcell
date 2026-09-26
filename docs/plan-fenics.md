@@ -205,7 +205,11 @@ As built:
   - Estimates in `checkSimulationParameters`.
 - **V7, MPI:** emit `--ntasks` in `slurmScriptInit`, wrap with `srun --mpi=pmi2` / in-container
   `mpiexec` from `ncpus`, and add fixture tests.
-- **Flip the gate on** once V3 and V4 have been verified. That needs a release-notes entry.
+- **Flip the gate on** ✅ (2026-09-26, after V3 and V4 ran end to end on dev): `vcell.fenics.enabled` and
+  `vcell.fieldViewer.enabled` default to true in `PropertyLoader`. The installer's `vmoptions.txt`
+  carries both as `true` so a user can find and turn them off, and vcell-fluxcd sets
+  `VCELL_FENICS_ENABLED` / `VCELL_FIELDVIEWER_ENABLED` for the services. Release-notes entry: the
+  CHANGELOG's `[Unreleased]` section.
 - **pyvcell:** a `FenicsResult` beside `Result`/`MovingBoundaryResult` (port
   `vcell_fenics/results/reader.py`, adding segment handling), and upstream the SimulationTask reader.
 

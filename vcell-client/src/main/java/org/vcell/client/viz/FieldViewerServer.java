@@ -185,9 +185,9 @@ public final class FieldViewerServer {
 	// ---------------------------------------------------------------------
 
 	/**
-	 * Whether the browser-based 3D field viewer is switched on. Off unless
-	 * {@code -Dvcell.fieldViewer.enabled=true} is set, which an installed client can carry in its
-	 * {@code vmoptions.txt}. Gates both this server and the "View in 3D" button that opens it.
+	 * Whether the browser-based 3D field viewer is switched on. On by default;
+	 * {@code -Dvcell.fieldViewer.enabled=false}, which an installed client can carry in its
+	 * {@code vmoptions.txt}, turns it off. Gates both this server and the "View in 3D" button that opens it.
 	 */
 	public static boolean isEnabled() {
 		return PropertyLoader.getBooleanProperty(PropertyLoader.fieldViewerEnabled,

@@ -156,7 +156,7 @@ public enum SolverDescription {
 	   
 	   // FEniCSx finite-element solver (virtualcell/vcell-fenics): runs in a container, reads the
 	   // SimulationTask XML directly, writes a VTU + zarr results bundle. No native executable.
-	   // Hidden unless vcell.fenics.enabled is set - see docs/plan-fenics.md.
+	   // Offered unless vcell.fenics.enabled=false - see docs/plan-fenics.md.
 	   FEniCSx(TimeStep.CONSTANT, ErrorTol.NO, TimeSpecCreated.UNIFORM, "FEniCSx", "FEniCSx Finite Element (Experimental)", "FEniCSx",
 	      SolverLongDesc.FENICSX, 1, SupportedTimeSpec.DEFAULT_EXPLICIT_UNIFORM,
 	      // Feature_Moving: it also runs VCell moving-boundary math (2D, species inside the moving front), as an
@@ -748,8 +748,8 @@ public enum SolverDescription {
 	}
 
 	/**
-	 * FEniCSx is offered only when {@code vcell.fenics.enabled} is set (off by default) while its
-	 * VCell integration is being built - see docs/plan-fenics.md.
+	 * FEniCSx is offered unless {@code vcell.fenics.enabled} is false (it is on by default) - see
+	 * docs/plan-fenics.md.
 	 */
 	public static boolean isFenicsEnabled()
 	{
