@@ -1,8 +1,8 @@
 # VCell 3D Field Visualization — Design & Decision Record
 
 **Status: exploratory.** Nothing described here is committed to a roadmap. The code that exists is
-behind `vcell.fieldViewer.enabled`, which defaults to false, so none of it is reachable in a normal
-client. This document records what has been measured, what has been decided, and what is still open,
+behind `vcell.fieldViewer.enabled`, which has defaulted to **true** since 2026-09-26 (it was false
+before; `-Dvcell.fieldViewer.enabled=false` turns it off). This document records what has been measured, what has been decided, and what is still open,
 so the reasoning survives whether or not the approach ships.
 
 ## Scope, and why this is a separate document

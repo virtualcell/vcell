@@ -16,6 +16,11 @@ followed by flat Keep-a-Changelog categories. API consumers should scan
 
 _(Release-manager scratchpad. Populated at release-cut time.)_
 
+### Changed
+- FEniCSx and the browser field viewer are **on by default**: `vcell.fenics.enabled` and
+  `vcell.fieldViewer.enabled` now default to true, and the installer's `vmoptions.txt` lists both
+  (as `true`), so either can be turned off there with `=false`.
+
 ## [8.2.0.01] - 2026-09-25
 
 **Highlights.** The first build of the 8.2 line, which brings FEniCSx, a

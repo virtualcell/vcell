@@ -85,6 +85,18 @@ public class FenicsSolverTest {
 	}
 
 	@Test
+	public void testOnByDefault() {
+		// the gate is flipped on: with no property set, FEniCSx is offered and the field viewer enabled
+		savedProperties.putIfAbsent(PropertyLoader.fenicsEnabled, System.getProperty(PropertyLoader.fenicsEnabled));
+		savedProperties.putIfAbsent(PropertyLoader.fieldViewerEnabled, System.getProperty(PropertyLoader.fieldViewerEnabled));
+		System.clearProperty(PropertyLoader.fenicsEnabled);
+		System.clearProperty(PropertyLoader.fieldViewerEnabled);
+		assertTrue(SolverDescription.isFenicsEnabled());
+		assertTrue(SolverDescription.FEniCSx.isOffered());
+		assertTrue(PropertyLoader.getBooleanProperty(PropertyLoader.fieldViewerEnabled, PropertyLoader.fieldViewerEnabled_default_value));
+	}
+
+	@Test
 	public void testOfferedOnlyWhenEnabled() {
 		setProperty(PropertyLoader.fenicsEnabled, "false");
 		assertFalse(SolverDescription.FEniCSx.isOffered());

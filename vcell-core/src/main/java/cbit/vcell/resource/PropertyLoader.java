@@ -331,21 +331,21 @@ public class PropertyLoader {
 	public static final boolean enableSpringSaLaD_default_value = true;
 
 	/**
-	 * FEniCSx finite-element solver (docs/plan-fenics.md). Off by default while its VCell
-	 * integration is incomplete; enable for testing with -Dvcell.fenics.enabled=true.
+	 * FEniCSx finite-element solver (docs/plan-fenics.md). On by default; -Dvcell.fenics.enabled=false
+	 * (an installed client's vmoptions.txt, or VCELL_FENICS_ENABLED for a service) hides it.
 	 */
 	public static final String fenicsEnabled = record("vcell.fenics.enabled", ValueType.BOOL);
-	public static final boolean fenicsEnabled_default_value = false;
+	public static final boolean fenicsEnabled_default_value = true;
 	/** The FEniCSx solver image a desktop quick run uses (default: FenicsDocker.DEFAULT_IMAGE). */
 	public static final String fenicsImage = record("vcell.fenics.image", ValueType.GEN);
 
 	/**
 	 * Browser-based 3D field viewer (the loopback field server + the "View in 3D" button on the
-	 * PDE results panel). Off by default; enable for testing with -Dvcell.fieldViewer.enabled=true,
-	 * which an installed client can carry in its vmoptions.txt.
+	 * PDE results panel). On by default; -Dvcell.fieldViewer.enabled=false (an installed client's
+	 * vmoptions.txt) turns it off.
 	 */
 	public static final String fieldViewerEnabled = record("vcell.fieldViewer.enabled", ValueType.BOOL);
-	public static final boolean fieldViewerEnabled_default_value = false;
+	public static final boolean fieldViewerEnabled_default_value = true;
 	/** Port for the loopback field server; any free port is used if this one is taken. */
 	public static final String fieldViewerPort = record("vcell.fieldViewer.port", ValueType.GEN);
 	/** Where the browser-based viewer page is served from. */
