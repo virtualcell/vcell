@@ -284,10 +284,10 @@ moving-boundary path (PRs #176–#178: 3D ALE, 3D remeshing, verification agains
 - **GUI:** the kinematics parameter table shows the Z components on 3D geometries.
 - **Tests:** `FenicsSolverTest` reads the task the client generated for the "Furrow 3D" application, checks
   the `<Z>` survives an XML round trip, and checks that the Moving Boundary solver is refused.
-- The default image is `sha-479d653`. It adds the 3D remesh fallback (vcell-fenics #180), after the
-  first cluster run failed at a remesh on linux/amd64: Netgen returned a partial volume mesh that was
-  accepted, and a later surface overlapped. A remesh now tries surfaces of decreasing fidelity and
-  accepts only complete, untangled fills.
+- The default image is `sha-ca4604f`. It adds, after the 3D remesh fallback of `sha-479d653`
+  (vcell-fenics #180), models with several species per compartment and membrane species coupled to
+  both compartments (vcell-fenics #184, #183): the Ran tutorial and receptor–ligand binding run on
+  FEniCSx. Still refused: membrane species with bulk species on one side only.
 
 ## Verification
 - **Per PR:**
