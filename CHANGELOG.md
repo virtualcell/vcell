@@ -16,10 +16,48 @@ followed by flat Keep-a-Changelog categories. API consumers should scan
 
 _(Release-manager scratchpad. Populated at release-cut time.)_
 
+## [8.2.0.02] - 2026-09-27
+
+**Highlights.** FEniCSx and the browser field viewer are **on by default** from
+this build. The FEniCSx solver it ships (`sha-b90ea72`) covers much more than
+8.2.0.01's:
+- two-compartment models with any number of species in each;
+- membrane species coupled to both compartments, such as receptor–ligand binding;
+- well-mixed species and the membrane potential (VCell's region variables);
+- a more robust 3D remesh for moving boundaries.
+
+The field viewer refreshes while a job is running.
+
+### Added
+- The field viewer has a refresh button and refreshes itself while the job is
+  running, so a running simulation's results fill in without reloading the
+  page. (#2108)
+- FEniCSx solves **region variables** (well-mixed species, and the membrane
+  potential), one value per region, in two-compartment models with or without
+  membrane species. (vcell-fenics #197, #198, #200)
+
 ### Changed
-- FEniCSx and the browser field viewer are **on by default**: `vcell.fenics.enabled` and
-  `vcell.fieldViewer.enabled` now default to true, and the installer's `vmoptions.txt` lists both
-  (as `true`), so either can be turned off there with `=false`.
+- FEniCSx and the browser field viewer are **on by default**:
+  `vcell.fenics.enabled` and `vcell.fieldViewer.enabled` now default to true,
+  and the installer's `vmoptions.txt` lists both (as `true`), so either can be
+  turned off there with `=false`. (#2110)
+- The default FEniCSx image is `sha-b90ea72`, for the desktop quick run and the
+  cluster (`htc_vcellfenics_apptainer_image`). It passes through:
+  - `sha-479d653`: the 3D remesh fallback (#2109);
+  - `sha-ca4604f`: several species per compartment and membrane species coupled
+    to both compartments (#2111);
+  - `sha-b90ea72`: region variables, and an exact interface-flux Jacobian that
+    tightens mass conservation in two-compartment models.
+
+### Fixed
+- A 3D moving-boundary run on FEniCSx could fail at a remesh on Linux ("Netgen
+  could not tetrahedralize the surface", then "boundary mesh is overlapping")
+  when Netgen returned a partial volume mesh. The remesh now falls back
+  through coarser surfaces and rejects incomplete fills. (vcell-fenics #180,
+  through #2109)
+
+### Notes for API consumers
+- No `/api/` changes in this build.
 
 ## [8.2.0.01] - 2026-09-25
 
