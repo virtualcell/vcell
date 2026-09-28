@@ -16,6 +16,37 @@ followed by flat Keep-a-Changelog categories. API consumers should scan
 
 _(Release-manager scratchpad. Populated at release-cut time.)_
 
+## [8.2.0.04] - 2026-09-28
+
+**Highlights.** FEniCSx solves models with any number of compartments and
+membranes: a nucleus inside a cytosol inside extracellular space, organelles,
+or two cells touching. On a nucleus–cytosol–extracellular model with nuclear
+transport and a plasma-membrane receptor it matches the finite-volume solver
+to 0.1% in the nucleus and 0.05% in the cytosol, converging as the mesh
+refines. In a survey of public BioModels, 26% of the saved spatial
+applications now run on FEniCSx, up from 8% in the first survey.
+
+### Added
+- FEniCSx solves **multi-compartment models**: any number of compartments and
+  membranes, species and membrane species on each, and well-mixed species or a
+  membrane potential on any of them. (vcell-fenics #206)
+- FEniCSx runs geometries whose **subvolumes touch the domain boundary** (a
+  half cell on a symmetry plane, a cell cut by the box), in 2D and 3D, and
+  analytic geometries where three compartments meet. (vcell-fenics #204, #206)
+- FEniCSx runs **membrane species beside a compartment without species** (a
+  receptor binding an extracellular ligand, with nothing modeled inside the
+  cell). (vcell-fenics #203)
+
+### Changed
+- The default FEniCSx image is `sha-7790431`, for the desktop quick run and
+  the cluster.
+- FEniCSx applies VCell's per-face boundary values to each compartment's own
+  share of a box face, and ignores values for faces a compartment does not
+  touch. (vcell-fenics #206, #207)
+
+### Notes for API consumers
+- No `/api/` changes in this build.
+
 ## [8.2.0.03] - 2026-09-27
 
 **Highlights.** FEniCSx runs VCell's electrophysiology models: a membrane
