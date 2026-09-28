@@ -42,6 +42,27 @@ Query parameters:
 | `var`, `domain`, `time` | initial selection; the viewer then drives itself from `/info` |
 | `base` | data origin, if not this page's own; **loopback only** |
 
+## Browser support
+
+The vtk.wasm bundle needs **WebAssembly JSPI** (JavaScript Promise Integration: `WebAssembly.Suspending`,
+`WebAssembly.promising`), and rendering needs **WebGL 2**. VTK links its WebAssembly module with `-sJSPI=1`
+whenever the WebGPU renderer is built in, which the stock all-modules bundle does, even though this viewer
+draws with WebGL 2.
+
+| browser | runs the viewer |
+|---|---|
+| Safari 26 (WebKit 26.6 checked) | yes |
+| Safari 18 and earlier (WebKit 18.2 checked; Safari 18.6 reported) | no |
+| Chrome / Edge 137 and later (Chromium 153 checked) | yes |
+| Firefox 153 and 155 (checked) | yes |
+| Firefox 132 (checked) | no |
+
+A browser without JSPI or WebGL 2 gets a message saying what it lacks and which browsers work, with the page's
+address to copy into one (`missingBrowserSupport` in `viewer.js`), rather than the loader's own "undefined is
+not a constructor (evaluating 'new WebAssembly.Suspending(…)')". Checked with Playwright's WebKit, Firefox and
+Chromium builds (current and a year old) and the installed Firefox. A bundle for older browsers would be a
+second build without JSPI, and therefore without WebGPU, in virtualcell/vcell-vtk-wasm.
+
 ## What it does
 
 Runs VCell's finite-volume pipeline client-side: build the whole-voxel unstructured grid in memory

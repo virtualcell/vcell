@@ -16,6 +16,12 @@ followed by flat Keep-a-Changelog categories. API consumers should scan
 
 _(Release-manager scratchpad. Populated at release-cut time.)_
 
+### Fixed
+- The field viewer says when a browser can't run it. That applies to Safari 18 and earlier, Chrome and Edge
+  before 137, and older Firefox, which lack WebAssembly JSPI. The message names the browsers that work and
+  gives the page address to copy into one. Before, the page failed with "undefined is not a constructor
+  (evaluating 'new WebAssembly.Suspending…')".
+
 ## [8.2.0.04] - 2026-09-28
 
 **Highlights.** FEniCSx solves models with any number of compartments and

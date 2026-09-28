@@ -1621,10 +1621,41 @@ el.smoothingReset.addEventListener('click', () => {
 // startup
 // ---------------------------------------------------------------------------
 
+/**
+ * What this browser lacks for the viewer, or null. The vtk.wasm bundle is linked with JSPI (WebAssembly
+ * JavaScript Promise Integration: `WebAssembly.Suspending` / `WebAssembly.promising`), because VTK links its
+ * WebAssembly module asynchronously whenever the WebGPU renderer is built in. A browser without JSPI —
+ * Safari 18 and earlier, Chrome and Edge before 137, older Firefox — fails deep inside the loader with
+ * "undefined is not a constructor (evaluating 'new WebAssembly.Suspending(…)')". Say so up front instead.
+ * Rendering is WebGL2.
+ */
+function missingBrowserSupport() {
+  const missing = [];
+  if (typeof WebAssembly === 'undefined' || typeof WebAssembly.Suspending !== 'function'
+      || typeof WebAssembly.promising !== 'function') {
+    missing.push('WebAssembly JSPI (JavaScript Promise Integration)');
+  }
+  if (!document.createElement('canvas').getContext('webgl2')) missing.push('WebGL 2');
+  if (!missing.length) return null;
+  return `This browser can't run the field viewer: it lacks ${missing.join(' and ')}.\n`
+    + 'Use a current Safari (26 or later), Chrome or Edge (137 or later), or Firefox — updating this one may be '
+    + 'enough — or copy this page\'s address into one of them:\n' + window.location.href;
+}
+
 (async () => {
   try {
     const t0 = performance.now();
     if (!window.vtkwasm) throw new Error('vtkwasm global not available — vendor/vtk.umd.js did not load');
+    const unsupported = missingBrowserSupport();
+    if (unsupported) {
+      setStatus(unsupported, true);
+      const notice = document.createElement('div'); // where the picture would be, not only below the controls
+      notice.className = 'notice';
+      notice.textContent = unsupported;
+      el.box.append(notice);
+      console.error('vcell field viewer: unsupported browser —', navigator.userAgent);
+      return;
+    }
     state.dataset = datasetFromSearch(window.location.search);
     if (!state.dataset) {
       throw new Error('no dataset given. Open this page with ?sim=<simulationKey>&job=<n> — the '
