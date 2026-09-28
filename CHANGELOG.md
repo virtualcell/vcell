@@ -16,6 +16,38 @@ followed by flat Keep-a-Changelog categories. API consumers should scan
 
 _(Release-manager scratchpad. Populated at release-cut time.)_
 
+## [8.2.0.03] - 2026-09-27
+
+**Highlights.** FEniCSx runs VCell's electrophysiology models: a membrane
+potential with voltage-gated channels, non-diffusing species (buffers, gating
+variables), region sizes, and time-dependent stimuli. On a Hodgkin–Huxley
+model it reproduces the finite-volume solver's repetitive firing: the same
+action potentials, and the membrane potential to 0.1 mV between spikes.
+
+### Added
+- FEniCSx solves **non-diffusing species** (VCell's ODE species in a spatial
+  application: immobile buffers, ER-bound states, channel gating variables),
+  and **region sizes** (`vcRegionVolume`, `vcRegionArea`). (vcell-fenics #201,
+  #202)
+
+### Changed
+- The default FEniCSx image is `sha-8360060`, for the desktop quick run and
+  the cluster.
+- FEniCSx follows a **time-dependent stimulus** (expressions using time) in
+  two-compartment models. It honors VCell's per-face boundary values when
+  every face holds the same value, which is a reservoir on the outer wall.
+
+### Fixed
+- FEniCSx no longer returns wrong results for models with a **FastSystem**
+  (VCell's rapid-equilibrium reduction, e.g. fast calcium buffering). It
+  refuses them with a message saying why; they need one of VCell's
+  finite-volume solvers.
+- A membrane ODE's kinetics (a channel gating variable) were ignored in
+  models with membrane species.
+
+### Notes for API consumers
+- No `/api/` changes in this build.
+
 ## [8.2.0.02] - 2026-09-27
 
 **Highlights.** FEniCSx and the browser field viewer are **on by default** from

@@ -284,7 +284,9 @@ moving-boundary path (PRs #176–#178: 3D ALE, 3D remeshing, verification agains
 - **GUI:** the kinematics parameter table shows the Z components on 3D geometries.
 - **Tests:** `FenicsSolverTest` reads the task the client generated for the "Furrow 3D" application, checks
   the `<Z>` survives an XML round trip, and checks that the Moving Boundary solver is refused.
-- The default image is `sha-b90ea72`. After the 3D remesh fallback of `sha-479d653` (vcell-fenics
+- The default image is `sha-8360060`: after `sha-b90ea72` it adds region sizes (`vcRegionVolume` /
+  `vcRegionArea`), non-diffusing species (buffers, gating variables), a live simulation time, VCell's
+  per-face reservoir BCs, and a clear refusal of FastSystem models (vcell-fenics #201, #202). Before it: the 3D remesh fallback of `sha-479d653` (vcell-fenics
   #180) and, in `sha-ca4604f`, models with several species per compartment and membrane species
   coupled to both compartments (vcell-fenics #184, #183: the Ran tutorial and receptor–ligand binding),
   it adds **region variables**. These are VCell's well-mixed species and the membrane potential, one
