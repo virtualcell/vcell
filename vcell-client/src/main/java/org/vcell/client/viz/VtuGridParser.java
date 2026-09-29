@@ -253,6 +253,102 @@ final class VtuGridParser {
 		return w;
 	}
 
+	/**
+	 * The nearest point on a membrane mesh (line or triangle cells) to a lab-frame point that misses it,
+	 * as {@code {x, y, z, cell}}, or null when the mesh has no such cells or the nearest one is farther
+	 * away than its own diameter. A click almost never lands exactly on a curve or surface, so a
+	 * membrane probe snaps; the diameter bound keeps a click far from the membrane from snapping to it.
+	 * Other cell types are skipped: a volume cell either contains the point or it doesn't.
+	 */
+	static double[] nearestOnMesh(VtuGrid grid, double x, double y, double z) {
+		double[] p = grid.points;
+		double[] q = { x, y, z };
+		double best = Double.POSITIVE_INFINITY;
+		double[] nearest = null;
+		int nearestCell = -1;
+		for (int c = 0; c < grid.cells.length; c++) {
+			int[] cell = grid.cells[c];
+			double[] on = switch (grid.cellTypes[c]) {
+				case VTK_LINE -> closestOnSegment(q, vertex(p, cell[0]), vertex(p, cell[1]));
+				case VTK_TRIANGLE -> closestOnTriangle(q, vertex(p, cell[0]), vertex(p, cell[1]), vertex(p, cell[2]));
+				default -> null;
+			};
+			if (on == null) {
+				continue;
+			}
+			double d = dist2(on, q);
+			if (d < best) {
+				best = d;
+				nearest = on;
+				nearestCell = c;
+			}
+		}
+		if (nearest == null) {
+			return null;
+		}
+		double diameter2 = 0;
+		int[] cell = grid.cells[nearestCell];
+		for (int a = 0; a < cell.length; a++) {
+			for (int b = a + 1; b < cell.length; b++) {
+				diameter2 = Math.max(diameter2, dist2(vertex(p, cell[a]), vertex(p, cell[b])));
+			}
+		}
+		return best <= diameter2 ? new double[] { nearest[0], nearest[1], nearest[2], nearestCell } : null;
+	}
+
+	private static double dist2(double[] a, double[] b) {
+		double dx = a[0] - b[0], dy = a[1] - b[1], dz = a[2] - b[2];
+		return dx * dx + dy * dy + dz * dz;
+	}
+
+	private static double dot(double[] a, double[] b) {
+		return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+	}
+
+	private static double[] closestOnSegment(double[] q, double[] a, double[] b) {
+		double[] ab = sub(b, a);
+		double len2 = dot(ab, ab);
+		double t = len2 == 0 ? 0 : Math.max(0, Math.min(1, dot(sub(q, a), ab) / len2));
+		return new double[] { a[0] + t * ab[0], a[1] + t * ab[1], a[2] + t * ab[2] };
+	}
+
+	/** closest point on triangle abc to q, by Voronoi regions (Ericson, Real-Time Collision Detection §5.1.5) */
+	private static double[] closestOnTriangle(double[] q, double[] a, double[] b, double[] c) {
+		double[] ab = sub(b, a), ac = sub(c, a), ap = sub(q, a);
+		double d1 = dot(ab, ap), d2 = dot(ac, ap);
+		if (d1 <= 0 && d2 <= 0) {
+			return a;
+		}
+		double[] bp = sub(q, b);
+		double d3 = dot(ab, bp), d4 = dot(ac, bp);
+		if (d3 >= 0 && d4 <= d3) {
+			return b;
+		}
+		double vc = d1 * d4 - d3 * d2;
+		if (vc <= 0 && d1 >= 0 && d3 <= 0) {
+			return closestOnSegment(q, a, b);
+		}
+		double[] cp = sub(q, c);
+		double d5 = dot(ab, cp), d6 = dot(ac, cp);
+		if (d6 >= 0 && d5 <= d6) {
+			return c;
+		}
+		double vb = d5 * d2 - d1 * d6;
+		if (vb <= 0 && d2 >= 0 && d6 <= 0) {
+			return closestOnSegment(q, a, c);
+		}
+		double va = d3 * d6 - d5 * d4;
+		if (va <= 0 && d4 - d3 >= 0 && d5 - d6 >= 0) {
+			return closestOnSegment(q, b, c);
+		}
+		double denom = va + vb + vc;
+		if (denom == 0) {
+			return closestOnSegment(q, a, b); // degenerate triangle
+		}
+		double v = vb / denom, w = vc / denom;
+		return new double[] { a[0] + ab[0] * v + ac[0] * w, a[1] + ab[1] * v + ac[1] * w, a[2] + ab[2] * v + ac[2] * w };
+	}
+
 	private static double[] vertex(double[] p, int i) {
 		return new double[] { p[3 * i], p[3 * i + 1], p[3 * i + 2] };
 	}

@@ -1,0 +1,5 @@
+# CompartmentSubDomain name, handle
+# MembraneSubDomain name, inside compartment name, handle, outside compartment name, handle
+CompartmentSubDomain, Cyt, 1
+CompartmentSubDomain, EC, 0
+MembraneSubDomain, Cyt_EC_membrane, Cyt, 1, EC, 0

@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.ResourceLock;
 
 import java.io.File;
 import java.net.URI;
@@ -20,6 +21,8 @@ import java.net.http.HttpResponse;
  * on {@code cytosol_dom}, three output times), through the running loopback server.
  */
 @Tag("Fast")
+// one static server per JVM: classes that start and stop it must not run concurrently
+@ResourceLock("fieldViewerServer")
 public class FenicsBundleViewsTest {
 
 	private static final String SIM = "987654321";
@@ -118,6 +121,107 @@ public class FenicsBundleViewsTest {
 		JsonObject outside = get("/timeseries", "&domain=cytosol_dom&var=u&x=100&y=100");
 		Assertions.assertEquals(0, outside.get("insideCount").getAsInt());
 		Assertions.assertTrue(outside.getAsJsonArray("values").get(0).isJsonNull());
+	}
+
+	private String body(String sim, String path, String query) throws Exception {
+		HttpResponse<String> r = HttpClient.newHttpClient().send(
+				HttpRequest.newBuilder(URI.create("http://127.0.0.1:" + port + path + "?sim=" + sim + "&job=0" + query)).build(),
+				HttpResponse.BodyHandlers.ofString());
+		Assertions.assertEquals(200, r.statusCode(), r.body());
+		return r.body();
+	}
+
+	/** The single-point responses, recorded before multi-point {@code /timeseries} existed: they must not change. */
+	@Test
+	public void legacySinglePointResponsesAreUnchanged() throws Exception {
+		File moving = new File(FenicsBundleViewsTest.class.getResource("moving_translate.fenics/.zattrs").toURI()).getParentFile();
+		FieldViewerServer.registerBundle("777", 0, moving, "moving");
+		Assertions.assertEquals("{\"name\":\"u\",\"domain\":\"cytosol_dom\",\"x\":0.1,\"y\":0.2,\"z\":0.0,\"insideCount\":3,"
+				+ "\"times\":[0.0,0.1,0.2],\"values\":[1.0,0.9999085035980163,0.9997258219674996]}",
+				body(SIM, "/timeseries", "&domain=cytosol_dom&var=u&x=0.1&y=0.2"));
+		Assertions.assertEquals("{\"name\":\"u\",\"domain\":\"cytosol_dom\",\"x\":100.0,\"y\":100.0,\"z\":0.0,\"insideCount\":0,"
+				+ "\"times\":[0.0,0.1,0.2],\"values\":[null,null,null]}",
+				body(SIM, "/timeseries", "&domain=cytosol_dom&var=u&x=100&y=100"));
+		Assertions.assertEquals("{\"name\":\"u\",\"domain\":\"cytosol_dom\",\"x\":0.3,\"y\":-0.1,\"z\":0.0,\"insideCount\":3,"
+				+ "\"times\":[0.0,0.1,0.2],\"values\":[0.999999999999999,0.9998088821182801,0.9995221814992524]}",
+				body(SIM, "/timeseries", "&var=u&x=0.3&y=-0.1&z=0"));
+		Assertions.assertEquals("{\"name\":\"C_cyt\",\"domain\":\"cell\",\"x\":2.2,\"y\":5.0,\"z\":0.0,\"insideCount\":6,"
+				+ "\"times\":[0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0],"
+				+ "\"values\":[2.1999999999999815,3.1693396749240588,3.801383512936291,4.300003942076041,4.721658207981124,"
+				+ "5.0916313355537755,null,null,null,null,null]}",
+				body("777", "/timeseries", "&domain=cell&var=C_cyt&x=2.2&y=5.0"));
+	}
+
+	@Test
+	public void severalPointsInOnePass() throws Exception {
+		JsonObject grid = get("/grid", "&domain=cytosol_dom");
+		JsonArray points = grid.getAsJsonArray("points");
+		JsonArray u = get("/field", "&domain=cytosol_dom&var=u&time=0.2").getAsJsonArray("values");
+		int[] triangles = { 100, 400 };
+		double[][] centroids = new double[2][3];
+		double[] expected = new double[2];
+		for (int t = 0; t < 2; t++) {
+			JsonArray triangle = grid.getAsJsonArray("cells").get(triangles[t]).getAsJsonArray();
+			for (int k = 0; k < 3; k++) {
+				int v = triangle.get(k).getAsInt();
+				centroids[t][0] += points.get(3 * v).getAsDouble() / 3;
+				centroids[t][1] += points.get(3 * v + 1).getAsDouble() / 3;
+				expected[t] += u.get(v).getAsDouble() / 3;
+			}
+		}
+		// 2D: z may be left out, and is on the second point
+		String query = "&domain=cytosol_dom&var=u&points=" + centroids[0][0] + "," + centroids[0][1] + ",0;"
+				+ centroids[1][0] + "," + centroids[1][1] + ";100,100,0";
+		JsonObject multi = get("/timeseries", query);
+		Assertions.assertEquals("point", multi.get("location").getAsString());
+		Assertions.assertEquals(3, multi.getAsJsonArray("times").size());
+		JsonArray series = multi.getAsJsonArray("series");
+		Assertions.assertEquals(3, series.size());
+		for (int t = 0; t < 2; t++) {
+			JsonObject s = series.get(t).getAsJsonObject();
+			Assertions.assertTrue(s.get("inDomain").getAsBoolean());
+			Assertions.assertEquals(triangles[t], s.get("cell").getAsInt(), "a fixed mesh: one cell per point");
+			Assertions.assertEquals(expected[t], s.getAsJsonArray("values").get(2).getAsDouble(), 1e-12);
+			JsonObject single = get("/timeseries", "&domain=cytosol_dom&var=u&x=" + centroids[t][0] + "&y=" + centroids[t][1]);
+			Assertions.assertEquals(single.getAsJsonArray("values"), s.getAsJsonArray("values"), "same as one point at a time");
+		}
+		JsonObject outside = series.get(2).getAsJsonObject();
+		Assertions.assertFalse(outside.get("inDomain").getAsBoolean());
+		Assertions.assertEquals(-1, outside.get("cell").getAsInt());
+		for (com.google.gson.JsonElement v : outside.getAsJsonArray("values")) {
+			Assertions.assertTrue(v.isJsonNull());
+		}
+		Assertions.assertFalse(series.get(0).getAsJsonObject().has("volumeIndex"), "volume indices are finite-volume only");
+	}
+
+	@Test
+	public void severalPointsOnAMovingMesh() throws Exception {
+		File moving = new File(FenicsBundleViewsTest.class.getResource("moving_translate.fenics/.zattrs").toURI()).getParentFile();
+		FieldViewerServer.registerBundle("777", 0, moving, "moving");
+		JsonObject multi = get777("/timeseries", "&domain=cell&var=C_cyt&points=2.2,5.0;5,5");
+		JsonArray series = multi.getAsJsonArray("series");
+		JsonObject trailing = series.get(0).getAsJsonObject();
+		Assertions.assertEquals(get777("/timeseries", "&domain=cell&var=C_cyt&x=2.2&y=5.0").getAsJsonArray("values"),
+				trailing.getAsJsonArray("values"));
+		Assertions.assertFalse(trailing.has("cell"), "the mesh moves, so a point has no single cell");
+		Assertions.assertTrue(trailing.get("inDomain").getAsBoolean(), "inside at some of the times");
+		JsonArray centre = series.get(1).getAsJsonObject().getAsJsonArray("values");
+		for (com.google.gson.JsonElement v : centre) {
+			Assertions.assertFalse(v.isJsonNull(), "the disk's centre stays inside it");
+		}
+	}
+
+	@Test
+	public void tooManyPointsIsABadRequest() throws Exception {
+		StringBuilder many = new StringBuilder("&var=u&points=");
+		for (int i = 0; i <= PointSeries.MAX_POINTS; i++) {
+			many.append(i > 0 ? ";" : "").append("0,0");
+		}
+		HttpResponse<String> r = HttpClient.newHttpClient().send(
+				HttpRequest.newBuilder(URI.create("http://127.0.0.1:" + port + "/timeseries?sim=" + SIM + "&job=0" + many)).build(),
+				HttpResponse.BodyHandlers.ofString());
+		Assertions.assertEquals(400, r.statusCode(), r.body());
+		Assertions.assertTrue(r.body().contains("at most 64 points"), r.body());
 	}
 
 	@Test

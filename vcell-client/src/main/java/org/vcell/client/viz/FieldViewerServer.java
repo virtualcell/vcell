@@ -359,6 +359,8 @@ public final class FieldViewerServer {
 			server = null;
 		}
 		meshCache.clear();
+		domainIndexCache.clear();
+		mbGridCache.clear();
 		dataSources.clear();
 		bundleSources.clear();
 	}
@@ -772,6 +774,10 @@ public final class FieldViewerServer {
 	 * each saved time's own body-fitted mesh; STATIC locates it once in the one embedded-boundary
 	 * mesh. Times where the point lies outside the domain (for a moving boundary: the boundary has
 	 * moved past it) serialize as {@code null} — a physically meaningful gap, not missing data.
+	 * <p>
+	 * {@code &points=x,y,z;…} asks for several points in the same single pass over the times (the
+	 * multi-point response, {@link PointSeries#json}): each time's values cross the remote seam once,
+	 * however many points read them.
 	 */
 	private static String handleTimeSeriesVtu(DataSource source, Map<String, String> q,
 			VtuMode mode) throws Exception {
@@ -783,51 +789,67 @@ public final class FieldViewerServer {
 		if (domain.isEmpty()) {
 			domain = vtuDomains(source).get(0);
 		}
-		if (q.get("x") == null || q.get("y") == null) {
+		String pointsParam = q.get("points");
+		if (pointsParam == null && (q.get("x") == null || q.get("y") == null)) {
 			throw new IllegalArgumentException(
 					"a body-fitted time series is addressed by lab-frame point: 'x' and 'y' are required"
 							+ " ('cell' ordinals are per-mesh, not solver raster indices)");
 		}
-		double x = Double.parseDouble(q.get("x"));
-		double y = Double.parseDouble(q.get("y"));
-		double z = q.get("z") != null ? Double.parseDouble(q.get("z")) : 0;
 		VtuVarInfo varInfo = vtuVarInfoFor(source, varName);
-
 		double[] times = source.dataManager.getDataSetTimes(source.vcdID);
 		if (times == null || times.length == 0) {
 			throw new IllegalArgumentException("run " + source.vcdID.getID() + " has no saved times");
 		}
-		double[] values = new double[times.length];
-		int inside = 0;
-		int staticCell = mode == VtuMode.STATIC
-				? VtuGridParser.locateCell(mbGrid(source, domain, 0), x, y, z)
-				: -1;
-		for (int i = 0; i < times.length; i++) {
-			int cell = staticCell;
-			if (mode == VtuMode.TIME_VARYING) {
-				VtuGridParser.VtuGrid grid = mbGrid(source, domain, i);
-				cell = VtuGridParser.locateCell(grid, x, y, z);
+		final String dom = domain;
+		PointSeries.Rows rows = new PointSeries.Rows() {
+			@Override
+			public VtuGridParser.VtuGrid grid(int row) throws Exception {
+				// a Chombo mesh is static; a MovingBoundary mesh is a different geometry at every saved time
+				return mbGrid(source, dom, mode == VtuMode.TIME_VARYING ? row : 0);
 			}
-			if (cell < 0) {
-				values[i] = Double.NaN; // serializes as null: the point is outside the domain
-				continue;
+
+			@Override
+			public double[] values(int row) throws Exception {
+				return source.dataManager.getVtuMeshData(emptyOutputContext(), source.vcdID, varInfo, times[row]);
 			}
-			inside++;
-			values[i] = source.dataManager.getVtuMeshData(emptyOutputContext(), source.vcdID,
-					varInfo, times[i])[cell];
+		};
+		if (pointsParam != null) {
+			VtuGridParser.VtuGrid first = rows.grid(0);
+			double[][] points = PointSeries.parsePoints(pointsParam, isVolume3D(first) ? null : first.points[2]);
+			PointSeries.Result r = PointSeries.sample(times.length, points, rows, PointSeries.Location.CELL, false);
+			return PointSeries.json(varName, domain, times, PointSeries.Location.CELL, PointSeries.series(points, r));
 		}
+		double x = Double.parseDouble(q.get("x"));
+		double y = Double.parseDouble(q.get("y"));
+		double z = q.get("z") != null ? Double.parseDouble(q.get("z")) : 0;
+		PointSeries.Result r = PointSeries.sample(times.length, new double[][] { { x, y, z } }, rows,
+				PointSeries.Location.CELL, false);
+		double[] values = r.values[0];
 
 		StringBuilder sb = new StringBuilder(32 * times.length + 256);
 		sb.append("{\"name\":\"").append(jsonEscape(varName)).append('"');
 		sb.append(",\"domain\":\"").append(jsonEscape(domain)).append('"');
 		sb.append(",\"x\":").append(x).append(",\"y\":").append(y);
-		sb.append(",\"insideCount\":").append(inside);
+		sb.append(",\"insideCount\":").append(r.insideCount[0]);
 		sb.append(",\"times\":");
 		appendDoubles(sb, times, times.length);
 		sb.append(",\"values\":");
 		appendDoubles(sb, values, values.length);
 		sb.append('}');
 		return sb.toString();
+	}
+
+	/**
+	 * True when the grid has volume cells: tets (10), voxels (11), hexes (12), wedges (13), pyramids
+	 * (14) or polyhedra (42). A 2D run's grid has only polygons.
+	 */
+	private static boolean isVolume3D(VtuGridParser.VtuGrid grid) {
+		for (int type : grid.cellTypes) {
+			if (type >= 10 && type <= 14 || type == VtuGridParser.VTK_POLYHEDRON) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -1018,9 +1040,12 @@ public final class FieldViewerServer {
 		if (varName == null || varName.isEmpty()) {
 			throw new IllegalArgumentException("missing required query parameter 'var'");
 		}
+		if (q.get("points") != null) {
+			return handleTimeSeriesPoints(source, domain, varName, q.get("points"));
+		}
 		String cellParam = q.get("cell");
 		if (cellParam == null || cellParam.isEmpty()) {
-			throw new IllegalArgumentException("missing required query parameter 'cell'");
+			throw new IllegalArgumentException("missing required query parameter 'cell' (or 'points')");
 		}
 		Cells cells = new Cells(grid(source, domain));
 		int cell = Integer.parseInt(cellParam);
@@ -1053,6 +1078,132 @@ public final class FieldViewerServer {
 		appendDoubles(sb, timesAndValues[1], timesAndValues[1].length);
 		sb.append('}');
 		return sb.toString();
+	}
+
+	/**
+	 * {@code /timeseries?…&points=x,y,z;…} for a finite-volume run: each lab-frame point maps to the
+	 * voxel containing it exactly as the desktop's point selections do
+	 * ({@code SpatialSelectionVolume.getIndex(0)}: {@link cbit.vcell.solvers.CartesianMesh#getFractionalCoordinateIndex}
+	 * rounded to a {@code CoordinateIndex}, then its volume index), and every point inside the domain is
+	 * answered by ONE {@link TimeSeriesJobSpec}, as the desktop's multi-point time plot is.
+	 * <p>
+	 * The raw data array covers the whole mesh, so a point in another compartment would read that
+	 * compartment's numbers; it is masked instead (its values are null and {@code inDomain} false), using
+	 * the domain's own cells — the same set {@code /grid} serves. A point outside the mesh has
+	 * {@code volumeIndex} -1; {@code cell} is the point's cell in {@code /grid}'s list, -1 outside it.
+	 */
+	private static String handleTimeSeriesPoints(DataSource source, String domain, String varName,
+			String pointsParam) throws Exception {
+		cbit.vcell.solvers.CartesianMesh mesh = (cbit.vcell.solvers.CartesianMesh) source.dataManager.getMesh(source.vcdID);
+		VisMesh visMesh = grid(source, domain);
+		// a 2D point may leave out z: it takes the plane the served grid lies in
+		Double planeZ = mesh.getGeometryDimension() < 3 ? visMesh.getPoints().get(0).getZ() : null;
+		double[][] points = PointSeries.parsePoints(pointsParam, planeZ);
+		DomainIndex domainIndex = domainIndex(source, domain);
+
+		int n = points.length;
+		int[] volumeIndex = new int[n];
+		int[] cell = new int[n];
+		// in-domain voxels, each once: two probes in one voxel share a column of the job
+		Map<Integer, Integer> column = new java.util.LinkedHashMap<>();
+		for (int p = 0; p < n; p++) {
+			volumeIndex[p] = volumeIndexAt(mesh, points[p]);
+			cell[p] = volumeIndex[p] >= 0 ? domainIndex.cellOf(volumeIndex[p]) : -1;
+			if (cell[p] >= 0) {
+				column.putIfAbsent(volumeIndex[p], column.size());
+			}
+		}
+
+		double[] times = source.dataManager.getDataSetTimes(source.vcdID);
+		if (times == null || times.length == 0) {
+			throw new IllegalArgumentException("run " + source.vcdID.getID() + " has no saved times");
+		}
+		double[][] timesAndValues = null;
+		if (!column.isEmpty()) {
+			int[] indices = column.keySet().stream().mapToInt(Integer::intValue).toArray();
+			TimeSeriesJobSpec spec = new TimeSeriesJobSpec(new String[] { varName }, new int[][] { indices },
+					null, times[0], 1, times[times.length - 1],
+					VCDataJobID.createVCDataJobID(source.vcdID.getOwner(), true));
+			TSJobResultsNoStats results = (TSJobResultsNoStats) source.dataManager
+					.getTimeSeriesValues(emptyOutputContext(), source.vcdID, spec);
+			// row 0 is the times, row 1 + k the values at indices[k]
+			timesAndValues = results.getTimesAndValuesForVariable(varName);
+			times = timesAndValues[0];
+		}
+		PointSeries.Series[] series = new PointSeries.Series[n];
+		for (int p = 0; p < n; p++) {
+			double[] values;
+			if (cell[p] >= 0) {
+				values = timesAndValues[1 + column.get(volumeIndex[p])];
+			} else {
+				values = new double[times.length];
+				Arrays.fill(values, Double.NaN);
+			}
+			series[p] = new PointSeries.Series(points[p], cell[p], volumeIndex[p], cell[p] >= 0, null, values);
+		}
+		return PointSeries.json(varName, domain, times, PointSeries.Location.CELL, series);
+	}
+
+	/**
+	 * The volume index of the voxel containing a lab-frame point, or -1 outside the mesh. VCell's
+	 * Cartesian mesh is node-centred (element i at {@code origin + i·extent/(N−1)}), so this rounds the
+	 * fractional index, as the desktop does.
+	 */
+	static int volumeIndexAt(cbit.vcell.solvers.CartesianMesh mesh, double[] point) {
+		double[] origin = { mesh.getOrigin().getX(), mesh.getOrigin().getY(), mesh.getOrigin().getZ() };
+		double[] extent = { mesh.getExtent().getX(), mesh.getExtent().getY(), mesh.getExtent().getZ() };
+		int[] size = { mesh.getSizeX(), mesh.getSizeY(), mesh.getSizeZ() };
+		for (int axis = 0; axis < 3; axis++) {
+			// an axis the mesh doesn't resolve (z in 2D) doesn't bound the point
+			double slack = 1e-9 * extent[axis];
+			if (size[axis] > 1 && (point[axis] < origin[axis] - slack || point[axis] > origin[axis] + extent[axis] + slack)) {
+				return -1;
+			}
+		}
+		org.vcell.util.CoordinateIndex ci = mesh.getCoordinateIndexFromFractionalIndex(
+				mesh.getFractionalCoordinateIndex(new org.vcell.util.Coordinate(point[0], point[1], point[2])));
+		int[] index = { ci.x, ci.y, ci.z };
+		for (int axis = 0; axis < 3; axis++) {
+			if (index[axis] < 0 || index[axis] >= size[axis]) {
+				return -1;
+			}
+		}
+		return mesh.getVolumeIndex(ci);
+	}
+
+	/**
+	 * The cells of one domain of a finite-volume run, as {@code /grid} serves them, indexed by the
+	 * solver's volume index: which voxels are in the domain (the mask), and each one's position in the
+	 * served list.
+	 */
+	private static final class DomainIndex {
+		final java.util.BitSet inDomain = new java.util.BitSet();
+		private final Map<Integer, Integer> cellByVolumeIndex = new HashMap<>();
+
+		DomainIndex(Cells cells) {
+			for (int c = 0; c < cells.size(); c++) {
+				inDomain.set(cells.globalIndices[c]);
+				cellByVolumeIndex.put(cells.globalIndices[c], c);
+			}
+		}
+
+		/** the served cell holding volume index {@code v}, or -1 when the voxel is not in the domain */
+		int cellOf(int v) {
+			return inDomain.get(v) ? cellByVolumeIndex.get(v) : -1;
+		}
+	}
+
+	/** Per sim+domain, like {@link #meshCache}; dropped with it. */
+	private static final Map<String, DomainIndex> domainIndexCache = new HashMap<>();
+
+	private static synchronized DomainIndex domainIndex(DataSource source, String domain) throws Exception {
+		String key = source.vcdID.getID() + "/" + domain;
+		DomainIndex cached = domainIndexCache.get(key);
+		if (cached == null) {
+			cached = new DomainIndex(new Cells(grid(source, domain)));
+			domainIndexCache.put(key, cached);
+		}
+		return cached;
 	}
 
 	/**
@@ -1272,6 +1423,7 @@ public final class FieldViewerServer {
 	public static synchronized void unregister(VCSimulationDataIdentifier vcdID) {
 		if (dataSources.remove(key(vcdID)) != null) {
 			meshCache.keySet().removeIf(cached -> cached.startsWith(vcdID.getID() + "/"));
+			domainIndexCache.keySet().removeIf(cached -> cached.startsWith(vcdID.getID() + "/"));
 			mbGridCache.keySet().removeIf(cached -> cached.startsWith(vcdID.getID() + "/"));
 		}
 	}

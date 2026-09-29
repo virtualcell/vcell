@@ -270,6 +270,10 @@ final class FenicsBundleViews {
 	 * {@code /timeseries?...&x=&y=[&z=]}: the variable's time course at a lab-frame point, interpolated
 	 * from the P1 values of the cell containing it (in each segment's own mesh). Times where the point
 	 * is outside the domain are {@code null}.
+	 * <p>
+	 * {@code &points=x,y,z;…} instead asks for several points in one pass (the multi-point response,
+	 * {@link PointSeries#json}); {@code &snap=nearest} moves a point that misses a membrane domain's mesh
+	 * onto it.
 	 */
 	static String timeSeries(BundleSource source, Map<String, String> q) throws Exception {
 		FenicsBundle bundle = open(source);
@@ -278,43 +282,42 @@ final class FenicsBundleViews {
 		if (domain == null || domain.isEmpty()) {
 			domain = domainOfVariable(bundle, varName);
 		}
+		double[] times = times(bundle);
+		final String dom = domain;
+		PointSeries.Rows rows = new PointSeries.Rows() {
+			@Override
+			public VtuGridParser.VtuGrid grid(int row) throws Exception {
+				return source.grid(bundle, dom, row);
+			}
+
+			@Override
+			public double[] values(int row) throws Exception {
+				return bundle.field(dom, varName, row);
+			}
+		};
+		if (q.get("points") != null) {
+			FenicsBundle.Domain d = bundle.domain(domain);
+			// a 2D point may leave out z: it takes the mesh plane's
+			Double planeZ = d.gdim() < 3 ? source.grid(bundle, domain, 0).points[2] : null;
+			double[][] points = PointSeries.parsePoints(q.get("points"), planeZ);
+			boolean snap = "nearest".equals(q.get("snap")) && d.isMembrane();
+			PointSeries.Result r = PointSeries.sample(times.length, points, rows, PointSeries.Location.POINT, snap);
+			return PointSeries.json(varName, domain, times, PointSeries.Location.POINT, PointSeries.series(points, r));
+		}
 		if (q.get("x") == null || q.get("y") == null) {
 			throw new IllegalArgumentException("a FEniCSx time series is addressed by lab-frame point: 'x' and 'y' are required");
 		}
 		double x = Double.parseDouble(q.get("x"));
 		double y = Double.parseDouble(q.get("y"));
 		double z = q.get("z") != null ? Double.parseDouble(q.get("z")) : 0;
-		double[] times = times(bundle);
-		double[] values = new double[times.length];
-		int inside = 0;
-		VtuGridParser.VtuGrid located = null;
-		int cell = -1;
-		double[] weights = null;
-		for (int i = 0; i < times.length; i++) {
-			VtuGridParser.VtuGrid grid = source.grid(bundle, domain, i);
-			if (grid != located) {
-				located = grid;
-				cell = VtuGridParser.locateCell(grid, x, y, z);
-				weights = cell < 0 ? null : VtuGridParser.vertexWeights(grid, cell, x, y, z);
-			}
-			if (cell < 0) {
-				values[i] = Double.NaN;
-				continue;
-			}
-			double[] row = bundle.field(domain, varName, i);
-			double v = 0;
-			int[] vertices = grid.cells[cell];
-			for (int k = 0; k < vertices.length; k++) {
-				v += weights[k] * row[vertices[k]];
-			}
-			values[i] = v;
-			inside++;
-		}
+		PointSeries.Result r = PointSeries.sample(times.length, new double[][] { { x, y, z } }, rows,
+				PointSeries.Location.POINT, false);
+		double[] values = r.values[0];
 		StringBuilder sb = new StringBuilder(32 * times.length + 256);
 		sb.append("{\"name\":\"").append(FieldViewerServer.jsonEscape(varName)).append('"');
 		sb.append(",\"domain\":\"").append(FieldViewerServer.jsonEscape(domain)).append('"');
 		sb.append(",\"x\":").append(x).append(",\"y\":").append(y).append(",\"z\":").append(z);
-		sb.append(",\"insideCount\":").append(inside);
+		sb.append(",\"insideCount\":").append(r.insideCount[0]);
 		sb.append(",\"times\":");
 		FieldViewerServer.appendDoubles(sb, times, times.length);
 		sb.append(",\"values\":");

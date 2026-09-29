@@ -1,6 +1,6 @@
 # Plan — multi-point time plots and kymographs in the browser field viewer
 
-**Status:** planning (2026-09-29). This is a living plan: tick PRs off as they merge.
+**Status:** in progress: P1 merged (2026-09-29). This is a living plan: tick PRs off as they merge.
 
 ## Context
 
@@ -434,7 +434,9 @@ A path wholly outside the domain returns **200 with all nulls** and `inDomain` a
 - **VtuGridParser:** the `CellLocator` agrees with the linear `locateCell` on `fenics-3d-tetra.vtu` and
   `polyhedron-cells.vtu` for random points.
 - **FV Cartesian** (new `FieldViewerServerFvTest`). vcell-client has **no FV harness today**, so build one:
-  - data: `vcell-core/src/test/resources/simdata/MembraneFrap3D/`, a 3D FV run with membranes;
+  - data: ~~`vcell-core/src/test/resources/simdata/MembraneFrap3D/`, a 3D FV run with membranes~~. P1 found that
+    MembraneFrap3D saves **only membrane variables** (`r_PM`, `rf_PM`), so it has nothing to plot here. The harness
+    uses the two `N5ExporterTest` runs instead (see P1 below);
   - a `DataSetControllerImpl` over a `Cachetable`, as `N5ExporterTest` does (N5ExporterTest.java:130-136),
     wrapped as `new VCDataManager(() -> controller)`;
   - registered with `FieldViewerServer.register(vcdID, dm, subdomainInfo, name)`;
@@ -496,13 +498,52 @@ through vcell-fenics's `cross_validation/` harness; agreement is approximate (re
 
 Order: P1 → P2 (points end to end) → P3 → P4 (FV kymograph end to end) → P5 → P6 → P7.
 
-### PR P1 — `/timeseries` with several points (server)
+### PR P1 — `/timeseries` with several points (server) ✅ (#2120)
 - The `points=` list in all four modes; FV point → volume index, with the domain mask and one
   `TimeSeriesJobSpec`; the shared per-point loop for Chombo, MovingBoundary and FEniCSx; `snap=nearest` for
   FEniCSx membranes; the limits.
 - The FV test harness (fixture and `VCDataManager` wiring).
 - **Done when:** the FEniCSx tests and the new FV test pass, and the legacy `cell=` and `x=&y=` responses are
   byte-for-byte unchanged.
+
+Decisions and deviations recorded in P1:
+- **FV fixture.** MembraneFrap3D has no volume variables (above), so the harness uses the `N5ExporterTest` runs
+  from `vcell-core/src/test/resources/simdata/n5/ezequiel23/`. Both have two compartments and a membrane:
+  - `597714292`: 2D, 15 × 15, `Cyt` inside `EC`, volume variable `Dex` in `Cyt`, 5 times;
+  - `868220316`: 3D, 5 × 5 × 5, `subdomain0` and `subdomain1`, volume variables `s0`, `s1`, … in `subdomain0`,
+    6 times.
+
+  They are **copied**, not shared through a test-jar: six files per run (`.functions .log .mesh .meshmetrics
+  .subdomains 00.zip`, 104 KB) in `vcell-client/src/test/resources/org/vcell/client/viz/fv/`. A copy keeps
+  vcell-client's tests independent of vcell-core's test packaging and of CI's two-step build. `.log` and `.zip`
+  are ignored globally by `.gitignore`, so they are force-added. **P3 and §6.3 should use these two runs**
+  where they say MembraneFrap3D.
+- **Wiring.** `DataSetControllerImpl` is not a `DataSetController`, so the harness wraps it the way
+  `LocalWorkspace` does: `new VCDataManager(() -> new LocalDataSetController(null, impl, null, owner))`, with
+  `SubdomainInfo.read(<.subdomains>)` for the domain names. `FieldViewerServerFvTest.registerFvFixtures(root)`
+  stages both runs and registers them, for reuse by P2's fixture server.
+- **Shared loop.** `PointSeries` (new) holds the points parser, the per-point loop for FEniCSx, Chombo and
+  MovingBoundary (`PointSeries.sample` over a `Rows` supplier; one read per row for all points, none when no point
+  is inside), and the response writer. The single-point handlers call it with one point.
+- **Response details** the plan left open:
+  - `cell` is given for FV (its index in `/grid`'s list, -1 outside the domain) and for a body-fitted mesh that is
+    the same at every time. It is left out for MovingBoundary and ALE runs, where a point has no single cell.
+  - `volumeIndex` is FV only: -1 outside the mesh. A point in the mesh but in another compartment keeps its
+    `volumeIndex`, gets `cell: -1`, `inDomain: false` and null values.
+  - Body-fitted `inDomain` is true when the point is inside at any time.
+  - `snapped: [x, y, z]` appears when `snap=nearest` moved the point (the first mesh it snapped in).
+  - FV probes in the same voxel share one index in the job.
+- **Snap.** The nearest point on the membrane's line or triangle cells, accepted within the nearest cell's
+  diameter. `snap` is ignored for volume domains. Neither FEniCSx fixture has a membrane domain, so snapping is
+  tested on hand-built grids (`PointSeriesTest`).
+- **2D `z`.** FV takes the plane of the served grid's points; FEniCSx and the VTU modes take the mesh's `z`.
+  The legacy `x=&y=` form still defaults `z` to 0, which keeps its response unchanged.
+- **Legacy responses.** Golden strings recorded from `master` before the change guard them
+  (`FieldViewerServerFvTest.legacyCellResponsesAreUnchanged`, `FenicsBundleViewsTest.legacySinglePointResponsesAreUnchanged`).
+- **Not in P1.** The heavy-job semaphore and the larger pool stay in P3, as listed there. Multi-point requests on
+  Chombo and MovingBoundary are not throttled yet.
+- The server test classes carry `@ResourceLock("fieldViewerServer")`: CI runs Fast test classes concurrently
+  and the server is static. `stop()` now also drops the parsed VTU meshes.
 
 ### PR P2 — probes in the viewer
 - `pickAt`, `state.probes`, shift-click and the Add toggle, `#probePanel` (list, ✕, ⌖, Clear, CSV), the SVG
