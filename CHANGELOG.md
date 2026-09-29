@@ -16,11 +16,20 @@ followed by flat Keep-a-Changelog categories. API consumers should scan
 
 _(Release-manager scratchpad. Populated at release-cut time.)_
 
+## [8.2.0.05] - 2026-09-29
+
+**Highlights.** The field viewer tells you when your browser can't run it,
+and which browsers can, instead of failing with a cryptic error. It needs a
+current Safari (26 or later), Chrome or Edge (137 or later), or Firefox.
+
 ### Fixed
 - The field viewer says when a browser can't run it. That applies to Safari 18 and earlier, Chrome and Edge
   before 137, and older Firefox, which lack WebAssembly JSPI. The message names the browsers that work and
   gives the page address to copy into one. Before, the page failed with "undefined is not a constructor
   (evaluating 'new WebAssembly.Suspending…')".
+
+### Notes for API consumers
+- No `/api/` changes in this build.
 
 ## [8.2.0.04] - 2026-09-28
 
