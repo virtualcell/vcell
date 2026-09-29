@@ -822,17 +822,25 @@ public class InitialConditionsPanel extends DocumentEditorSubPanel implements Ap
 				// try if localMathVariable is a speciesContext init parameter
 				String initSuffix = DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONC_UNIT_PREFIX + TokenMangler.fixTokenStrict(scs.getInitialConcentrationParameter().getUnitDefinition().getSymbol());
 				localMathVariable = mathSymbolMapping.findVariableByName(mathVariable.getName() + initSuffix);
+				if (null == localMathVariable) return null; // Still couldn't find it
 			}
-			if (null == localMathVariable) return null; // Still couldn't find it
+
 			for (SymbolTableEntry symbolTableEntry : mathSymbolMapping.getBiologicalSymbol(localMathVariable)) {
-				if (symbolTableEntry instanceof SpeciesContext && scs.getSpeciesContext() == symbolTableEntry) {
-					SpeciesContextSpecParameter potentialPasteDestination = scs.getInitialConditionParameter();
-					if (null != potentialPasteDestination) return potentialPasteDestination;
-				} else if (symbolTableEntry instanceof SpeciesContextSpecParameter speciesContextSpecParameter) {
+				if (symbolTableEntry instanceof SpeciesContextSpecParameter speciesContextSpecParameter) {
 					for (SymbolTableEntry parameter : scs.getParameters()) {
 						if (parameter != symbolTableEntry) continue;
 						return speciesContextSpecParameter;
 					}
+				} else if (scs.getSpeciesContext() == symbolTableEntry && symbolTableEntry != null) {
+					SpeciesContextSpecParameter potentialPasteDestination = scs.getInitialConditionParameter();
+					if (null != potentialPasteDestination) return potentialPasteDestination;
+				} else if (
+						symbolTableEntry instanceof AbstractMathMapping.SpeciesAmountParameter speciesAmountParameter
+						&& speciesAmountParameter.getSpeciesContext() == scs.getSpeciesContext()
+						&& InitialConditionsPanel.this.getSimulationContext().isUsingConcentration() != speciesAmountParameter.isUnitless()
+				) {
+					SpeciesContextSpecParameter potentialPasteDestination = scs.getInitialConditionParameter();
+					if (null != potentialPasteDestination) return potentialPasteDestination;
 				}
 			}
 			lg.warn("Was not able to find destination for math variable `{}`.", mathVariable.getName());

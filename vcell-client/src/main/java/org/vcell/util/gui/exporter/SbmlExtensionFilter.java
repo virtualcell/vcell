@@ -255,7 +255,7 @@ public class SbmlExtensionFilter extends SelectorExtensionFilter {
 				BioModelTransforms.applyMathOverrides(selectedSimWOSBE, scanIndex, clonedBM);
 				String resultString = XmlHelper.exportSBML(clonedBM, sbmlLevel, sbmlVersion, sbmlPkgVersion, isSpatial, selectedSimContext, bRoundTripValidation);
 				// Need to export each parameter scan into a separate file
-				String newExportFileName = exportFile.getPath().substring(0, exportFile.getPath().indexOf(".xml")) + "_" + scanIndex.index + ".xml";
+				String newExportFileName = exportFile.getPath().substring(0, exportFile.getPath().indexOf(".xml")) + "_" + scanIndex.index() + ".xml";
 				Files.deleteIfExists(Paths.get(newExportFileName));
 				XmlUtil.writeXMLStringToFile(resultString, exportFile.getAbsolutePath(), true);
 				exportFile.renameTo(new File(newExportFileName));
