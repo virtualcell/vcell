@@ -1286,7 +1286,9 @@ public final class FieldViewerServer {
 	 * variable's values along a polyline at every saved time (every {@code tstep}-th), rows = times, as the
 	 * desktop's kymograph shows them.
 	 * <p>
-	 * Finite volume only for now. The samples are the desktop's ({@link FvLineSampler}): one per voxel the
+	 * A FEniCSx bundle or a run served through the VTU seam (Chombo, MovingBoundary) is sampled evenly
+	 * ({@link BodyFittedKymograph}; a MovingBoundary line is a fixed lab-frame line through each time's mesh).
+	 * For finite volume, the samples are the desktop's ({@link FvLineSampler}): one per voxel the
 	 * line crosses, two at each membrane crossing. The values come from ONE {@link TimeSeriesJobSpec} over
 	 * all samples with the membrane-crossing indices, exactly as {@code KymographPanel.initDataManagerVariable}
 	 * builds it, so the two samples at a crossing carry the {@code _INSIDE}/{@code _OUTSIDE} membrane values.
@@ -1305,9 +1307,6 @@ public final class FieldViewerServer {
 		}
 		DataSource source = sourceFor(q);
 		VtuMode mode = vtuMode(source);
-		if (mode == VtuMode.TIME_VARYING) {
-			throw new IllegalArgumentException("kymographs of MovingBoundary runs are not supported yet");
-		}
 		if (mode != null) {
 			return heavy(() -> vtuKymograph(source, q, mode, tstep));
 		}

@@ -7,11 +7,11 @@ import io
 
 import pytest
 
-# every mode that can place probes: finite volume 2D and 3D, FEniCSx 2D (fixed and moving) and 3D, and
-# MovingBoundary 2D (a stand-in served through the real VTU seam)
-ALL = ['fv2d', 'fv3d', 'fenics2d', 'fenicsMoving', 'fenics3d', 'movingBoundary']
+# every mode that can place probes: finite volume 2D and 3D, FEniCSx 2D (fixed and moving) and 3D,
+# MovingBoundary 2D, and Chombo 2D and 3D (stand-ins served through the real VTU seam)
+ALL = ['fv2d', 'fv3d', 'fenics2d', 'fenicsMoving', 'fenics3d', 'movingBoundary', 'chombo2d', 'chombo3d']
 # modes whose probe is the very point clicked (body-fitted); a finite-volume probe is its voxel's centre
-BODY_FITTED = ['fenics2d', 'fenicsMoving', 'fenics3d', 'movingBoundary']
+BODY_FITTED = ['fenics2d', 'fenicsMoving', 'fenics3d', 'movingBoundary', 'chombo2d', 'chombo3d']
 
 
 @pytest.mark.parametrize('role', ALL)
@@ -66,7 +66,7 @@ def test_markers_sit_where_the_probes_were_clicked(open_viewer, role):
         assert abs(x - want['x']) < 1.5 and abs(y - want['y']) < 1.5, (k, (x, y), want)
 
 
-@pytest.mark.parametrize('role', ['fv3d', 'fenics3d'])
+@pytest.mark.parametrize('role', ['fv3d', 'fenics3d', 'chombo3d'])
 def test_markers_follow_the_camera(open_viewer, role):
     v = open_viewer(role)
     v.click()
