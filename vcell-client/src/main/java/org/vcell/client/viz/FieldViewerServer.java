@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -177,6 +178,84 @@ public final class FieldViewerServer {
 		}
 	}
 
+	/** Raised when a heavy job is already running; reported as 503 so the viewer retries. */
+	private static final class BusyException extends RuntimeException {
+		private static final long serialVersionUID = 1L;
+
+		BusyException(String message) {
+			super(message);
+		}
+	}
+
+	/**
+	 * Raised when a kymograph would return more values than {@link #maxKymographValues()}; a 400 whose JSON
+	 * also carries {@code suggestedTstep}, the smallest stride over the saved times that fits.
+	 */
+	static final class TooManyValuesException extends IllegalArgumentException {
+		private static final long serialVersionUID = 1L;
+		final int suggestedTstep;
+
+		TooManyValuesException(String message, int suggestedTstep) {
+			super(message);
+			this.suggestedTstep = suggestedTstep;
+		}
+	}
+
+	/**
+	 * Heavy jobs run one at a time: a kymograph, and a multi-point time series on Chombo or MovingBoundary
+	 * (which reads every saved time over the remote seam). A second one gets a 503 rather than a place in a
+	 * queue: the viewer retries it once, and a long job then cannot pile work up behind it.
+	 */
+	static final Semaphore HEAVY_JOBS = new Semaphore(1);
+
+	private interface HeavyJob {
+		String run() throws Exception;
+	}
+
+	private static String heavy(HeavyJob job) throws Exception {
+		if (!HEAVY_JOBS.tryAcquire()) {
+			throw new BusyException("the field viewer is busy with another kymograph or time series; try again");
+		}
+		try {
+			return job.run();
+		} finally {
+			HEAVY_JOBS.release();
+		}
+	}
+
+	/** Samples × returned times per kymograph; {@code -Dvcell.fieldViewer.maxKymographValues} overrides it. */
+	static final int DEFAULT_MAX_KYMOGRAPH_VALUES = 500_000;
+
+	static int maxKymographValues() {
+		return Integer.getInteger("vcell.fieldViewer.maxKymographValues", DEFAULT_MAX_KYMOGRAPH_VALUES);
+	}
+
+	/** How many of {@code nTimes} saved times a stride of {@code tstep} returns: indices 0, k, 2k, … as {@link TimeSeriesJobSpec} steps. */
+	static int strideCount(int nTimes, int tstep) {
+		return (nTimes - 1) / tstep + 1;
+	}
+
+	/**
+	 * Refuses a kymograph of {@code nSamples} over the times a stride returns when that is more values than
+	 * the limit, suggesting the smallest stride that fits.
+	 */
+	static void checkValueLimit(int nSamples, int nTimes, int tstep) {
+		int limit = maxKymographValues();
+		if ((long) nSamples * strideCount(nTimes, tstep) <= limit) {
+			return;
+		}
+		if (nSamples > limit) {
+			throw new IllegalArgumentException("the line has " + nSamples + " samples, more than the limit of "
+					+ limit + " values per kymograph; draw a shorter line");
+		}
+		int k = Math.max(tstep + 1, (int) Math.ceil((double) nSamples * nTimes / limit));
+		while ((long) nSamples * strideCount(nTimes, k) > limit) {
+			k++;
+		}
+		throw new TooManyValuesException(nSamples + " samples × " + strideCount(nTimes, tstep) + " times is more than "
+				+ limit + " values; use tstep=" + k, k);
+	}
+
 	private FieldViewerServer() {
 	}
 
@@ -237,13 +316,15 @@ public final class FieldViewerServer {
 		s.createContext("/field", wrap(FieldViewerServer::handleField));
 		s.createContext("/timeseries", wrap(FieldViewerServer::handleTimeSeries));
 		s.createContext("/stats", wrap(FieldViewerServer::handleStats));
+		s.createContext("/kymograph", wrap(FieldViewerServer::handleKymograph));
 		Path viewerRoot = staticRoot();
 		if (viewerRoot != null) {
 			// least-specific context: the data routes above still win, this catches the rest
 			s.createContext("/", ex -> serveStatic(ex, viewerRoot));
 			LG.info("field viewer page served from {}", viewerRoot);
 		}
-		s.setExecutor(Executors.newFixedThreadPool(2, r -> {
+		// four threads: a heavy job (one at a time, see HEAVY_JOBS) must not starve the viewer's other requests
+		s.setExecutor(Executors.newFixedThreadPool(4, r -> {
 			Thread t = new Thread(r, "vcell-field-viewer");
 			t.setDaemon(true);
 			return t;
@@ -1033,7 +1114,9 @@ public final class FieldViewerServer {
 		DataSource source = sourceFor(q);
 		VtuMode tsMode = vtuMode(source);
 		if (tsMode != null) {
-			return handleTimeSeriesVtu(source, q, tsMode);
+			// several points read every saved time over the remote seam: a heavy job
+			return q.get("points") != null ? heavy(() -> handleTimeSeriesVtu(source, q, tsMode))
+					: handleTimeSeriesVtu(source, q, tsMode);
 		}
 		String domain = domainOf(q, source);
 		String varName = q.get("var");
@@ -1195,6 +1278,174 @@ public final class FieldViewerServer {
 
 	/** Per sim+domain, like {@link #meshCache}; dropped with it. */
 	private static final Map<String, DomainIndex> domainIndexCache = new HashMap<>();
+
+	/**
+	 * {@code /kymograph?sim=&job=&domain=&var=<name>&path=x1,y1,z1;x2,y2,z2[;…][&tstep=k][&raw=1]} — one
+	 * variable's values along a polyline at every saved time (every {@code tstep}-th), rows = times, as the
+	 * desktop's kymograph shows them.
+	 * <p>
+	 * Finite volume only for now. The samples are the desktop's ({@link FvLineSampler}): one per voxel the
+	 * line crosses, two at each membrane crossing. The values come from ONE {@link TimeSeriesJobSpec} over
+	 * all samples with the membrane-crossing indices, exactly as {@code KymographPanel.initDataManagerVariable}
+	 * builds it, so the two samples at a crossing carry the {@code _INSIDE}/{@code _OUTSIDE} membrane values.
+	 * The job runs next to the reader: only samples × times values travel.
+	 * <p>
+	 * Samples outside the variable's domain are gaps (null), since the raw array would give another
+	 * compartment's numbers there; {@code raw=1} keeps the raw values, as the desktop shows them. A heavy job
+	 * ({@link #heavy}), refused over {@link #maxKymographValues()} with a suggested {@code tstep}.
+	 */
+	private static String handleKymograph(HttpExchange ex) throws Exception {
+		Map<String, String> q = query(ex);
+		if (bundleSourceFor(q) != null) {
+			throw new IllegalArgumentException("kymographs of FEniCSx results are not supported yet");
+		}
+		DataSource source = sourceFor(q);
+		if (vtuMode(source) != null) {
+			throw new IllegalArgumentException("kymographs of " + (vtuMode(source) == VtuMode.STATIC ? "Chombo"
+					: "MovingBoundary") + " runs are not supported yet");
+		}
+		String domain = domainOf(q, source);
+		String varName = q.get("var");
+		if (varName == null || varName.isEmpty()) {
+			throw new IllegalArgumentException("missing required query parameter 'var'");
+		}
+		DataIdentifier variable = null;
+		for (DataIdentifier id : source.dataManager.getDataIdentifiers(emptyOutputContext(), source.vcdID)) {
+			if (id.getName().equals(varName)) {
+				variable = id;
+			}
+		}
+		if (variable == null) {
+			throw new IllegalArgumentException("unknown variable '" + varName + "'");
+		}
+		cbit.vcell.math.VariableType type = variable.getVariableType();
+		if (type.equals(cbit.vcell.math.VariableType.MEMBRANE) || type.equals(cbit.vcell.math.VariableType.MEMBRANE_REGION)) {
+			throw new IllegalArgumentException("membrane kymographs are not supported yet ('" + varName
+					+ "' is a membrane variable)");
+		}
+		if (!type.equals(cbit.vcell.math.VariableType.VOLUME)) {
+			throw new IllegalArgumentException("a kymograph needs a volume variable; '" + varName + "' is "
+					+ type.getTypeName());
+		}
+		int tstep = 1;
+		if (q.get("tstep") != null && !q.get("tstep").isEmpty()) {
+			try {
+				tstep = Integer.parseInt(q.get("tstep").trim());
+			} catch (NumberFormatException e) {
+				throw new IllegalArgumentException("malformed 'tstep' '" + q.get("tstep") + "'");
+			}
+			if (tstep < 1) {
+				throw new IllegalArgumentException("'tstep' must be at least 1");
+			}
+		}
+		boolean raw = "1".equals(q.get("raw")) || "true".equalsIgnoreCase(q.get("raw"));
+		final int stride = tstep;
+		final String dom = domain;
+		return heavy(() -> fvKymograph(source, dom, varName, q.get("path"), stride, raw));
+	}
+
+	private static String fvKymograph(DataSource source, String domain, String varName, String pathParam,
+			int tstep, boolean raw) throws Exception {
+		cbit.vcell.solvers.CartesianMesh mesh = (cbit.vcell.solvers.CartesianMesh) source.dataManager.getMesh(source.vcdID);
+		boolean flat = mesh.getGeometryDimension() < 3;
+		// a 2D path lies in the plane the served grid lies in; its vertices may leave out z
+		Double planeZ = flat ? grid(source, domain).getPoints().get(0).getZ() : null;
+		double[][] path = PointSeries.parsePoints(pathParam, planeZ, "path", FvLineSampler.MAX_PATH_VERTICES, "path vertices");
+		if (flat) {
+			for (double[] v : path) {
+				v[2] = planeZ;
+			}
+		}
+		path = FvLineSampler.checkPath(mesh, path);
+		FvLineSampler.Samples samples = FvLineSampler.sample(mesh, path);
+		int n = samples.size();
+
+		double[] allTimes = source.dataManager.getDataSetTimes(source.vcdID);
+		if (allTimes == null || allTimes.length == 0) {
+			throw new IllegalArgumentException("run " + source.vcdID.getID() + " has no saved times");
+		}
+		checkValueLimit(n, allTimes.length, tstep);
+		TimeSeriesJobSpec spec = new TimeSeriesJobSpec(new String[] { varName }, new int[][] { samples.volumeIndex() },
+				samples.membraneIndex() != null ? new int[][] { samples.membraneIndex() } : null,
+				allTimes[0], tstep, allTimes[allTimes.length - 1],
+				VCDataJobID.createVCDataJobID(source.vcdID.getOwner(), true));
+		TSJobResultsNoStats results = (TSJobResultsNoStats) source.dataManager
+				.getTimeSeriesValues(emptyOutputContext(), source.vcdID, spec);
+		// row 0 the times, row 1 + i the values at sample i
+		double[][] timesAndValues = results.getTimesAndValuesForVariable(varName);
+		double[] times = timesAndValues[0];
+		int[] timeIndices = new int[times.length];
+		for (int r = 0, k = 0; r < times.length; r++) {
+			while (k < allTimes.length - 1 && allTimes[k] != times[r]) {
+				k++;
+			}
+			timeIndices[r] = k;
+		}
+
+		DomainIndex domainIndex = domainIndex(source, domain);
+		boolean[] inDomain = new boolean[n];
+		for (int i = 0; i < n; i++) {
+			inDomain[i] = domainIndex.inDomain.get(samples.volumeIndex()[i]);
+		}
+		double min = Double.POSITIVE_INFINITY;
+		double max = Double.NEGATIVE_INFINITY;
+		double[][] values = new double[times.length][n];
+		for (int r = 0; r < times.length; r++) {
+			for (int i = 0; i < n; i++) {
+				double v = raw || inDomain[i] ? timesAndValues[1 + i][r] : Double.NaN;
+				values[r][i] = v;
+				if (Double.isFinite(v)) {
+					min = Math.min(min, v);
+					max = Math.max(max, v);
+				}
+			}
+		}
+		if (min > max) { // no value: the line lies outside the domain
+			min = 0;
+			max = 0;
+		}
+
+		StringBuilder sb = new StringBuilder(512 + 64 * n + 20 * n * times.length);
+		sb.append("{\"name\":\"").append(jsonEscape(varName)).append('"');
+		sb.append(",\"domain\":\"").append(jsonEscape(domain)).append('"');
+		sb.append(",\"location\":\"cell\"");
+		sb.append(",\"sampling\":\"").append(samples.sampling().json).append('"');
+		sb.append(",\"raw\":").append(raw);
+		sb.append(",\"path\":[");
+		for (int v = 0; v < path.length; v++) {
+			sb.append(v > 0 ? "," : "");
+			appendDoubles(sb, path[v], 3);
+		}
+		sb.append("],\"pathLength\":").append(FvLineSampler.length(path));
+		sb.append(",\"times\":");
+		appendDoubles(sb, times, times.length);
+		sb.append(",\"timeIndices\":").append(Arrays.toString(timeIndices).replace(" ", ""));
+		sb.append(",\"samples\":{\"arcLength\":");
+		appendDoubles(sb, samples.arcLength(), n);
+		sb.append(",\"points\":[");
+		for (int i = 0; i < n; i++) {
+			double[] p = samples.points()[i];
+			sb.append(i > 0 ? "," : "");
+			for (int a = 0; a < 3; a++) {
+				sb.append(a > 0 ? "," : "").append(p[a]);
+			}
+		}
+		sb.append("],\"volumeIndex\":").append(Arrays.toString(samples.volumeIndex()).replace(" ", ""));
+		int[] membraneIndex = samples.membraneIndex();
+		if (membraneIndex == null) {
+			membraneIndex = new int[n];
+			Arrays.fill(membraneIndex, -1);
+		}
+		sb.append(",\"membraneIndex\":").append(Arrays.toString(membraneIndex).replace(" ", ""));
+		sb.append(",\"inDomain\":").append(Arrays.toString(inDomain).replace(" ", ""));
+		sb.append("},\"values\":[");
+		for (int r = 0; r < times.length; r++) {
+			sb.append(r > 0 ? "," : "");
+			appendDoubles(sb, values[r], n);
+		}
+		sb.append("],\"range\":[").append(min).append(',').append(max).append("]}");
+		return sb.toString();
+	}
 
 	private static synchronized DomainIndex domainIndex(DataSource source, String domain) throws Exception {
 		String key = source.vcdID.getID() + "/" + domain;
@@ -1508,6 +1759,12 @@ public final class FieldViewerServer {
 			} catch (NoSuchDatasetException e) {
 				respond(ex, 404, "application/json",
 						("{\"error\":\"" + jsonEscape(e.getMessage()) + "\"}").getBytes(StandardCharsets.UTF_8));
+			} catch (BusyException e) {
+				respond(ex, 503, "application/json",
+						("{\"error\":\"" + jsonEscape(e.getMessage()) + "\",\"busy\":true}").getBytes(StandardCharsets.UTF_8));
+			} catch (TooManyValuesException e) {
+				respond(ex, 400, "application/json", ("{\"error\":\"" + jsonEscape(e.getMessage())
+						+ "\",\"suggestedTstep\":" + e.suggestedTstep + "}").getBytes(StandardCharsets.UTF_8));
 			} catch (IllegalArgumentException e) {
 				// a malformed request, not a server fault - report it as such and don't log a stack trace
 				respond(ex, 400, "application/json",

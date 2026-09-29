@@ -80,6 +80,17 @@ public class FieldViewerServerFvTest {
 	 * @return the server's port
 	 */
 	static int registerFvFixtures(Path root) throws Exception {
+		stageFvFixtures(root);
+		return FieldViewerServer.start();
+	}
+
+	/**
+	 * Stages both FV fixture runs under {@code root/<user>/} and registers them with the field viewer,
+	 * without starting it.
+	 *
+	 * @return the data manager they are registered with, for reading the runs directly as the desktop does
+	 */
+	static VCDataManager stageFvFixtures(Path root) throws Exception {
 		Path userDir = Files.createDirectories(root.resolve(OWNER.getName()));
 		DataSetControllerImpl controller = new DataSetControllerImpl(
 				new Cachetable(10 * Cachetable.minute, 100_000_000L), root.toFile(), root.toFile());
@@ -98,7 +109,12 @@ public class FieldViewerServerFvTest {
 			SubdomainInfo subdomains = SubdomainInfo.read(userDir.resolve("SimID_" + sim + "_0_.subdomains").toFile());
 			FieldViewerServer.register(vcdID, dataManager, subdomains, sim.equals(SIM_2D) ? "fv::2d" : "fv::3d");
 		}
-		return FieldViewerServer.start();
+		return dataManager;
+	}
+
+	/** The data identifier of a fixture run, as {@link #stageFvFixtures} registers it. */
+	static VCSimulationDataIdentifier vcdID(String sim) {
+		return new VCSimulationDataIdentifier(new VCSimulationIdentifier(new KeyValue(sim), OWNER), 0);
 	}
 
 	private HttpResponse<String> send(String sim, String path, String query) throws Exception {

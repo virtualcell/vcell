@@ -86,4 +86,32 @@ public class FieldViewerServerMovingBoundaryTest {
 		// the same as the single-point form, one point at a time
 		Assertions.assertEquals(get("/timeseries", "&domain=cell&var=C&x=2.6&y=5.1").getAsJsonArray("values"), trailing);
 	}
+
+	private HttpResponse<String> send(String path, String query) throws Exception {
+		return HttpClient.newHttpClient().send(
+				HttpRequest.newBuilder(URI.create("http://127.0.0.1:" + port + path + "?sim=" + FakeMovingBoundaryRun.SIM
+						+ "&job=0" + query)).build(),
+				HttpResponse.BodyHandlers.ofString());
+	}
+
+	/** Several points read every saved time over the remote seam: a heavy job, one at a time. */
+	@Test
+	public void severalPointsWaitForAHeavyJobAlreadyRunning() throws Exception {
+		Assertions.assertTrue(FieldViewerServer.HEAVY_JOBS.tryAcquire());
+		try {
+			HttpResponse<String> busy = send("/timeseries", "&domain=cell&var=C&points=2.6,5.1%3B8.1,5.1");
+			Assertions.assertEquals(503, busy.statusCode(), busy.body());
+			Assertions.assertTrue(JsonParser.parseString(busy.body()).getAsJsonObject().get("busy").getAsBoolean());
+		} finally {
+			FieldViewerServer.HEAVY_JOBS.release();
+		}
+		Assertions.assertEquals(200, send("/timeseries", "&domain=cell&var=C&points=2.6,5.1%3B8.1,5.1").statusCode());
+	}
+
+	@Test
+	public void kymographsAreNotServedYet() throws Exception {
+		HttpResponse<String> r = send("/kymograph", "&domain=cell&var=C&path=2,5%3B8,5");
+		Assertions.assertEquals(400, r.statusCode());
+		Assertions.assertTrue(r.body().contains("MovingBoundary runs are not supported yet"), r.body());
+	}
 }
