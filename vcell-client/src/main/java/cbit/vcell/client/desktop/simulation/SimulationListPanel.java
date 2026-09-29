@@ -46,7 +46,10 @@ import javax.swing.border.Border;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.TableCellEditor;
 
+import cbit.vcell.client.ClientRequestManager;
 import cbit.vcell.solver.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.NumberUtils;
 import org.vcell.util.document.User;
 import org.vcell.util.gui.DefaultScrollTableActionManager;
@@ -87,6 +90,9 @@ import cbit.vcell.solver.SolverDescription.SolverFeature;
  */
 @SuppressWarnings("serial")
 public class SimulationListPanel extends DocumentEditorSubPanel {
+
+	private static final Logger lg = LogManager.getLogger(SimulationListPanel.class);
+
 	private static final Date FINITEVOLUME_CUTTOFF = getFiniteVolumeMissingDataRegenerateDate();
 
 //	private static final String QUICK_RUN_PYTHON_TOOL_TIP = "Python Quick Run";
@@ -857,7 +863,8 @@ private Object getSimulationStatusDisplay(int row) {
 							  && simStatus.getProgress() != null && simStatus.getProgress().doubleValue() >= 0;
 	if (displayProgress){
 		double progress = simStatus.getProgress().doubleValue() / simulation.getJobCount();
-		System.out.println(" ===== Progress: " + progress + ", Jobs Total: " + simulation.getJobCount() + ", Jobs Done: " + simStatus.numberOfJobsDone());
+		lg.info(" ===== Progress: " + progress + ", Jobs Total: " + simulation.getJobCount() + ", Jobs Done: " + simStatus.numberOfJobsDone());
+
 		JProgressBar progressBar = new JProgressBar();
 		progressBar.setStringPainted(true);
 		progressBar.setValue((int)(progress * 100));
