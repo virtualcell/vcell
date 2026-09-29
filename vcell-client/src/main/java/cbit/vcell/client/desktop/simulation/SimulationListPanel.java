@@ -47,7 +47,10 @@ import javax.swing.border.Border;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.TableCellEditor;
 
+import cbit.vcell.client.ClientRequestManager;
 import cbit.vcell.solver.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.NumberUtils;
 import org.vcell.util.document.User;
 import org.vcell.util.gui.DefaultScrollTableActionManager;
@@ -89,6 +92,9 @@ import org.vcell.solver.fenics.FenicsDocker;
  */
 @SuppressWarnings("serial")
 public class SimulationListPanel extends DocumentEditorSubPanel {
+
+	private static final Logger lg = LogManager.getLogger(SimulationListPanel.class);
+
 	private static final Date FINITEVOLUME_CUTTOFF = getFiniteVolumeMissingDataRegenerateDate();
 
 //	private static final String QUICK_RUN_PYTHON_TOOL_TIP = "Python Quick Run";
@@ -859,6 +865,8 @@ private Object getSimulationStatusDisplay(int row) {
 							  && simStatus.getProgress() != null && simStatus.getProgress().doubleValue() >= 0;
 	if (displayProgress){
 		double progress = simStatus.getProgress().doubleValue() / simulation.getJobCount();
+		lg.info(" ===== Progress: " + progress + ", Jobs Total: " + simulation.getJobCount() + ", Jobs Done: " + simStatus.numberOfJobsDone());
+
 		JProgressBar progressBar = new JProgressBar();
 		progressBar.setStringPainted(true);
 		progressBar.setValue((int)(progress * 100));
@@ -916,6 +924,8 @@ private void initConnections() throws java.lang.Exception {
 				setText(value+"");
 			}
 			boolean bFinitVolumeRerun = false;
+			boolean bLangevinSimulation = false;
+			String langevinToolTipExtension = "";
 			if (value instanceof SolverDescription) {
 				SolverDescription solverDescription = (SolverDescription) value;
 				try{
@@ -932,8 +942,22 @@ private void initConnections() throws java.lang.Exception {
 							}
 						}
 					}
-				}catch(Exception e){
-					//ignore, let table cell render anyway
+
+					if (solverDescription.isLangevinSolver()) {		// icon indicating Langevin single run / multi run
+						Simulation sim = (Simulation) getSimulationListTableModel1().getValueAt(row);
+						SolverTaskDescription std = sim.getSolverTaskDescription();
+						LangevinSimulationOptions lso = std.getLangevinSimulationOptions();
+						int totalJobs = lso.getTotalNumberOfJobs();
+						if (totalJobs == 1) {
+							setIcon(isSelected ? VCellIcons.singleRunNegativeIcon : VCellIcons.singleRunIcon);
+							langevinToolTipExtension = " (single run)";
+						} else {
+							setIcon(isSelected ? VCellIcons.multiRunNegativeIcon : VCellIcons.multiRunIcon );
+							langevinToolTipExtension = " (batch run)";
+						}
+						bLangevinSimulation = true;
+					}
+				} catch(Exception e) {		// ignore, let table cell render anyway
 					e.printStackTrace();
 				}
 				setText(solverDescription.getShortDisplayLabel());
@@ -941,9 +965,11 @@ private void initConnections() throws java.lang.Exception {
 			} else {
 				setToolTipText(getText());
 			}
-			if(bFinitVolumeRerun){
+			if(bFinitVolumeRerun) {
 				setText(getText()+(bFinitVolumeRerun?"(*)":""));
 				setToolTipText(getToolTipText()+(bFinitVolumeRerun?" (data regenerated using FiniteVolumeStandalone)":""));
+			} else if(bLangevinSimulation) {
+				setToolTipText(getToolTipText()+langevinToolTipExtension);
 			}
 			return this;
 		}

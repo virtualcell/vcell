@@ -30,6 +30,7 @@ import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.solver.*;
 import org.vcell.chombo.ChomboSolverSpec;
 import org.vcell.model.rbm.MolecularType;
+import org.vcell.model.ssld.SsldUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
@@ -158,14 +159,16 @@ private void displayMesh() {
     	boolean isSpatial = getSimulation().isSpatial();
     	getJLabel11().setVisible(isSpatial);
     	getJLabelMesh().setVisible(isSpatial);
+		labelMeshRefinementTitle.setToolTipText(null);	// langevin only for now, we reset it here
     	labelMeshRefinementTitle.setVisible(isSpatial);
-			getJLabelMeshRefinement().setVisible(isSpatial);
-			labelFinestMeshTitle.setVisible(isSpatial);
-			labelFinestMesh.setVisible(isSpatial);
-			labelRefinementRoiTitle.setVisible(isSpatial);
-			labelRefinementRoi.setVisible(isSpatial);
-			labelViewLevelMeshTitle.setVisible(isSpatial);
-			labelViewLevelMesh.setVisible(isSpatial);
+		getJLabelMeshRefinement().setToolTipText(null);	// langevin only for now, we reset it here
+		getJLabelMeshRefinement().setVisible(isSpatial);
+		labelFinestMeshTitle.setVisible(isSpatial);
+		labelFinestMesh.setVisible(isSpatial);
+		labelRefinementRoiTitle.setVisible(isSpatial);
+		labelRefinementRoi.setVisible(isSpatial);
+		labelViewLevelMeshTitle.setVisible(isSpatial);
+		labelViewLevelMesh.setVisible(isSpatial);
 			
       if (getSimulation()!=null && getSimulation().getMeshSpecification() != null) {
 				ISize samplingSize = getSimulation().getMeshSpecification().getSamplingSize();
@@ -195,10 +198,11 @@ private void displayMesh() {
 				}getJLabel11().setText(labelName);
 				getJLabelMesh().setText(labelText);
 
-        ChomboSolverSpec chomboSolverSpec = getSimulation().getSolverTaskDescription().getChomboSolverSpec();
+        		ChomboSolverSpec chomboSolverSpec = getSimulation().getSolverTaskDescription().getChomboSolverSpec();
 				if (getSimulation().getSolverTaskDescription().getSolverDescription().isChomboSolver()) {
 					int numRefinementLevels = chomboSolverSpec.getNumRefinementLevels();				
 					labelMeshRefinementTitle.setVisible(true);
+					labelMeshRefinementTitle.setText("Mesh Refinement:");	// multi-use now, must be set explicitly
 					getJLabelMeshRefinement().setVisible(true);
 					labelFinestMeshTitle.setVisible(true);
 					labelFinestMesh.setVisible(true);
@@ -228,11 +232,44 @@ private void displayMesh() {
 						labelViewLevelMeshTitle.setVisible(false);
 						labelViewLevelMesh.setVisible(false);
 					}
-        } else {
-        	labelMeshRefinementTitle.setVisible(false);
-        	getJLabelMeshRefinement().setVisible(false);
-        	labelFinestMesh.setVisible(false);
-        	labelFinestMeshTitle.setVisible(false);
+				// hijacking the mesh refinement label to display langevin specific concurrent run info
+        		} else if(getSimulation().getSolverTaskDescription().getSolverDescription().isLangevinSolver()) {
+					LangevinSimulationOptions lso = getSimulation().getSolverTaskDescription().getLangevinSimulationOptions();
+					if(lso.getTotalNumberOfJobs() > 1) {
+						ServerInfo si = getServerInfo();
+						int timeoutPerTaskSeconds = si != null ? si.getTimeoutPerTaskSeconds() : ServerInfo.VCELL_SLURM_LANGEVIN_TIMEOUTPERTASKSECONDS;
+						int timeoutDays = timeoutPerTaskSeconds / 86400;
+						int maxNumConcurrentTasks = si != null ? si.getMaxNumConcurrentTasks() : ServerInfo.VCELL_SLURM_LANGEVIN_MAXNUMCONCURRENTTASKS;		// concurrent sims + watchdog
+						int maxNumConcurrentSimulations = maxNumConcurrentTasks - 1;	// concurrent sims only
+
+						labelMeshRefinementTitle.setVisible(true);
+						labelMeshRefinementTitle.setText(SsldUtils.ConcurrentWallsLabel);
+						labelMeshRefinementTitle.setToolTipText(SsldUtils.ConcurrentWallsLabelToolTip);
+						getJLabelMeshRefinement().setVisible(true);
+						getJLabelMeshRefinement().setText(SsldUtils.langevinFormatConcurrentWallsText(timeoutDays, maxNumConcurrentSimulations));
+						getJLabelMeshRefinement().setToolTipText(SsldUtils.ConcurrentWallsLabelToolTip);
+						labelFinestMesh.setVisible(false);
+						labelFinestMeshTitle.setVisible(false);
+						labelRefinementRoiTitle.setVisible(false);
+						labelRefinementRoi.setVisible(false);
+						labelViewLevelMeshTitle.setVisible(false);
+						labelViewLevelMesh.setVisible(false);
+					} else {
+						labelMeshRefinementTitle.setVisible(false);
+						getJLabelMeshRefinement().setVisible(false);
+						labelFinestMesh.setVisible(false);
+						labelFinestMeshTitle.setVisible(false);
+						labelRefinementRoiTitle.setVisible(false);
+						labelRefinementRoi.setVisible(false);
+						labelViewLevelMeshTitle.setVisible(false);
+						labelViewLevelMesh.setVisible(false);
+					}
+
+				}else {		// not chombo, not langevin
+        			labelMeshRefinementTitle.setVisible(false);
+        			getJLabelMeshRefinement().setVisible(false);
+        			labelFinestMesh.setVisible(false);
+        			labelFinestMeshTitle.setVisible(false);
 					labelRefinementRoiTitle.setVisible(false);
 					labelRefinementRoi.setVisible(false);
 					labelViewLevelMeshTitle.setVisible(false);
@@ -342,9 +379,11 @@ private void displayTask() {
 		getJLabel10().setText("Sensitivity Analysis");
 		getJLabel10().setEnabled(true);
 		getJLabel20().setEnabled(false);
+		getJLabel20().setToolTipText(null);		// used only for Langevin so far, so we reset it here
 		getJLabel21().setEnabled(false);
 		getJLabel20().setVisible(false);
 		getJLabel21().setVisible(false);
+		getJLabel21().setToolTipText(null);		// used only for Langevin so far, so we reset it here
 		if (solverDescription.equals(SolverDescription.StochGibson)) {
 			getJLabel12().setEnabled(false);
 			getJLabelTimestep().setText("");
@@ -368,8 +407,10 @@ private void displayTask() {
 			getJLabelSensitivity().setText(str);
 			int tot = lso.getTotalNumberOfJobs();
 			if(tot == 1) {
-				getJLabel20().setText("Single run.");
+				getJLabel20().setText(SsldUtils.LangevinSingleRunInfoLabel);
+				getJLabel20().setToolTipText(SsldUtils.LangevinSingleRunInfoLabelToolTip);
 				getJLabel21().setText("");
+				getJLabel21().setToolTipText(SsldUtils.LangevinSingleRunInfoLabelToolTip);
 				getJLabel21().setEnabled(false);
 				getJLabel21().setVisible(false);
 			} else {
@@ -378,8 +419,10 @@ private void displayTask() {
 				int concurrentSimulations = Math.min(tot, maxNumConcurrentTasks - 1);	// concurrent sims only
 				// number of nodes needed - computed based on concurrentSimulations + 1 watchdog
 				int nodes = (int)Math.ceil((concurrentSimulations+1) / ServerInfo.VCELL_SLURM_MAX_JOBS_PER_NODE);
-				getJLabel20().setText("Batch run:");
-				getJLabel21().setText(concurrentSimulations + " concurrent runs / " + tot + " total runs. Nodes used: " + nodes);
+				getJLabel20().setText(SsldUtils.LangevinBatchRunInfoLabel);
+				getJLabel20().setToolTipText(SsldUtils.langevinFormatConcurrentSimulationsToolTip(tot, concurrentSimulations, nodes));
+				getJLabel21().setText(SsldUtils.langevinFormatBatchRunSummary2(tot, concurrentSimulations, nodes));
+				getJLabel21().setToolTipText(SsldUtils.langevinFormatConcurrentSimulationsToolTip(tot, concurrentSimulations, nodes));
 				getJLabel21().setEnabled(true);
 				getJLabel21().setVisible(true);
 			}

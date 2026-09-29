@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16">
+    <!-- horizontal bar (white) -->
+    <line x1="1" y1="8" x2="14" y2="8"
+          stroke="#FFFFFF" stroke-width="1" />
+
+    <!-- cabernet-purple circle (original color preserved below) -->
+    <!-- original color: fill="#C0204D" -->
+    <circle cx="10" cy="8" r="2"
+            fill="#FFFFFF" />
+</svg>
