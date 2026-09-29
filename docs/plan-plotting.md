@@ -1,6 +1,6 @@
 # Plan — multi-point time plots and kymographs in the browser field viewer
 
-**Status:** in progress: P1 and P2 merged (2026-09-29). This is a living plan: tick PRs off as they merge.
+**Status:** in progress: P1, P2 and P3 merged (2026-09-29). This is a living plan: tick PRs off as they merge.
 
 ## Context
 
@@ -593,11 +593,65 @@ Decisions and deviations recorded in P2:
   desktop-parity test in place of MembraneFrap3D. It is 5 × 5 × 5 with unit spacing, so a diagonal through
   voxel corners is easy to write down.
 
-### PR P3 — `/kymograph` for FV (server)
+### PR P3 — `/kymograph` for FV (server) ✅ (#2122)
 - SSHelper sampling with crossing indices, the DDA fallback, `tstep`, `raw`, the value limit, the heavy-job
   semaphore and the larger pool.
 - **Done when:** the desktop-parity Java test (§6.1) passes, and a 3D diagonal line through voxel corners
   returns `sampling: "dda"`.
+
+Decisions and deviations recorded in P3:
+- **Where it lives.** `FvLineSampler` (new) holds the sampling: the desktop's
+  `SpatialSelectionVolume(new CurveSelectionInfo(new PolyLine(vertices)), VOLUME, mesh).getIndexSamples(0, 1)`,
+  and the DDA fallback. `FieldViewerServer.handleKymograph` runs **one** `TimeSeriesJobSpec` over all samples
+  with the crossing indices, as `KymographPanel.initDataManagerVariable` does. The sample points come from a
+  new one-line getter, `SSHelper.getSampleCoordinates()` (vcell-core, tested by `SpatialSelectionVolumeTest`).
+- **Voxel rule.** Sampling uses the solver mesh's own rule, as P1's probes do. VCell's Cartesian mesh is
+  **node-centred**: element `i` sits at `origin + i·extent/(N−1)`, and a point belongs to the element its
+  fractional index rounds to, so the two end elements of an axis are half-width. The served grid (`/grid`,
+  `CartesianMeshMapping`) instead draws `N` equal boxes of `extent/N`. So a kymograph's voxel spans can differ
+  a little from the voxels drawn in the viewer; the kymograph follows the solver (and the desktop). P4 should
+  draw the spans from `arcLength`, not from the drawn grid.
+- **The DDA fallback** walks that node-centred lattice (Amanatides and Woo), stepping all axes at once where
+  the line passes through a voxel edge or vertex, so it never visits the zero-length neighbours. Its samples
+  follow the desktop's layout: the first at the path's start, the last at its end, each other one at the
+  middle of its voxel's stretch of the path, and two samples at the ends of a path that stays in one voxel.
+  Its arc length is measured along the path. It has no membrane-crossing pairs (`membraneIndex` all -1).
+  It is used when SSHelper throws, or returns an index outside the mesh or decreasing arc lengths.
+- **Arc length.** `arcLength` is the desktop's: accumulated distance between the sample points, so it starts at
+  0. On an axis-aligned or 45° line the desktop snaps samples to voxel centres, so the last `arcLength` can be
+  shorter than `pathLength` (which is the polyline's own length).
+- **Path checks.** Every vertex must lie in the mesh's box (to a relative 1e-6; then it is clamped into it),
+  else 400: SSHelper would index outside the mesh. Repeated consecutive vertices are dropped; fewer than two
+  distinct vertices is 400 ("zero length"). In 2D, `z` may be left out and is always set to the served grid's
+  plane, so arc lengths are in-plane.
+- **Variables.** An unknown variable is 400; a membrane or membrane-region variable is 400 "membrane kymographs
+  are not supported yet"; any other non-volume type (e.g. a volume-region variable) is 400. `samples=` is
+  ignored for FV. A FEniCSx bundle, Chombo or MovingBoundary run gets 400 "… not supported yet" until P5/P6.
+- **`tstep`** is `TimeSeriesJobSpec`'s step: rows are saved times `0, k, 2k, …`, so the last saved time is
+  returned only when `k` divides `nt − 1`. `timeIndices` gives each row's index in the saved times.
+- **The value limit** is samples × returned times (default 500,000; `-Dvcell.fieldViewer.maxKymographValues`).
+  Over it is a 400 whose JSON carries `suggestedTstep`: the **smallest** stride that fits, found by stepping up
+  from `ceil(n·nt / limit)` (the plan's formula alone can overshoot or undershoot with the `0, k, 2k` rule).
+- **Heavy jobs.** A `Semaphore(1)`, `FieldViewerServer.HEAVY_JOBS`: `/kymograph` and a multi-point
+  (`points=`) `/timeseries` on Chombo or MovingBoundary. A second one is refused at once with 503
+  `{"error", "busy": true}`, not queued. The pool is 4 threads.
+- **Response extras.** `samples.cell`: each sample's voxel in `/grid`'s list (-1 outside the domain), so the
+  viewer can probe a sample at its voxel's centre (P2's probe point) rather than at a point on a voxel face;
+  `"raw": true|false`; `range` is `[0, 0]` when no sample has a value (a line wholly outside
+  the domain), as `/field` does.
+- **Masking.** All samples, in the domain or not, go into the one job (so `raw=1` is the desktop's job exactly);
+  out-of-domain samples are nulled afterwards, using P1's `DomainIndex`.
+- **Tests** (`FieldViewerServerKymographTest`): desktop parity with `raw=1` (indices, arc lengths, points,
+  membrane indices and every value identical) on an oblique and an axis-aligned line through the membrane of
+  the 3D run, and on a straight line and a polyline in the 2D run; the masking; the DDA fallback on the
+  diagonal `(0,0,0)→(4,4,4)` (the desktop's sampling throws on it; samples `0, 31, 62, 93, 124`, arc lengths
+  `k·√3`, values equal to `/timeseries` at the sample points); `tstep`; the value limit and its suggested
+  stride; the 2D `z`; a line wholly outside the domain; the 400s; and the 503. The MovingBoundary test class
+  checks the 503 for multi-point requests and the 400 for its kymograph.
+- **Fixture limit.** The 3D run saves no membrane-adjacent data, so its `_INSIDE`/`_OUTSIDE` correction returns
+  the voxels' own values; the parity test still proves the job is the desktop's, crossing indices included.
+- **Cost** (plan §8). SSHelper sampling on MembraneFrap3D's mesh (21³, 1,158 membrane elements), four lines
+  including an oblique 3D chord (which SSHelper handled, 59 samples, 4 crossings): under 1.2 ms each once warm.
 
 ### PR P4 — kymograph in the viewer (line and polyline)
 - The Line tool (vertex clicks, Enter, Esc, Backspace), the coordinate field, the overlay line with a start

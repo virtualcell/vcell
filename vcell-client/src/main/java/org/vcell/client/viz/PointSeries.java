@@ -29,8 +29,20 @@ final class PointSeries {
 	 *             3D, or more than {@link #MAX_POINTS} points
 	 */
 	static double[][] parsePoints(String param, Double planeZ) {
+		return parsePoints(param, planeZ, "points", MAX_POINTS, "points");
+	}
+
+	/**
+	 * {@link #parsePoints(String, Double)} for any list of lab-frame points, such as a kymograph's
+	 * {@code path}.
+	 *
+	 * @param name the query parameter, for messages
+	 * @param max the most entries allowed
+	 * @param noun what an entry is called in the "at most" message, e.g. "points" or "path vertices"
+	 */
+	static double[][] parsePoints(String param, Double planeZ, String name, int max, String noun) {
 		if (param == null || param.isBlank()) {
-			throw new IllegalArgumentException("'points' is empty; expected x,y,z;x,y,z;…");
+			throw new IllegalArgumentException("'" + name + "' is empty; expected x,y,z;x,y,z;…");
 		}
 		String[] entries = param.split(";");
 		List<double[]> points = new java.util.ArrayList<>();
@@ -40,17 +52,17 @@ final class PointSeries {
 			}
 			String[] parts = entry.split(",");
 			if (parts.length < 2 || parts.length > 3) {
-				throw new IllegalArgumentException("malformed point '" + entry + "' in 'points'; expected x,y,z or, in 2D, x,y");
+				throw new IllegalArgumentException("malformed point '" + entry + "' in '" + name + "'; expected x,y,z or, in 2D, x,y");
 			}
 			double[] p = new double[3];
 			for (int k = 0; k < parts.length; k++) {
 				try {
 					p[k] = Double.parseDouble(parts[k].trim());
 				} catch (NumberFormatException e) {
-					throw new IllegalArgumentException("malformed coordinate '" + parts[k] + "' in 'points'");
+					throw new IllegalArgumentException("malformed coordinate '" + parts[k] + "' in '" + name + "'");
 				}
 				if (!Double.isFinite(p[k])) {
-					throw new IllegalArgumentException("non-finite coordinate '" + parts[k] + "' in 'points'");
+					throw new IllegalArgumentException("non-finite coordinate '" + parts[k] + "' in '" + name + "'");
 				}
 			}
 			if (parts.length == 2) {
@@ -60,12 +72,12 @@ final class PointSeries {
 				p[2] = planeZ;
 			}
 			points.add(p);
-			if (points.size() > MAX_POINTS) {
-				throw new IllegalArgumentException("at most " + MAX_POINTS + " points");
+			if (points.size() > max) {
+				throw new IllegalArgumentException("at most " + max + " " + noun);
 			}
 		}
 		if (points.isEmpty()) {
-			throw new IllegalArgumentException("'points' is empty; expected x,y,z;x,y,z;…");
+			throw new IllegalArgumentException("'" + name + "' is empty; expected x,y,z;x,y,z;…");
 		}
 		return points.toArray(new double[0][]);
 	}

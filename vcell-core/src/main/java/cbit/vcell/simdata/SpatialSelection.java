@@ -79,6 +79,14 @@ public abstract class SpatialSelection implements java.io.Serializable, org.vcel
 		public int[] getSampledIndexes(){
 			return indexes;
 		}
+		/**
+		 * The world coordinate of each sample, parallel to {@link #getSampledIndexes()}: the points the
+		 * accumulated lengths ({@link #getWorldCoordinateLengths()}) are measured between. A membrane
+		 * crossing contributes two samples at the same point, one per side.
+		 */
+		public Coordinate[] getSampleCoordinates(){
+			return meshCoords;
+		}
 		public double[] getSampledValues(){
 			return values;
 		}
