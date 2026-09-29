@@ -13,23 +13,36 @@ import org.vcell.util.document.VCDataJobID;
 
 import cbit.vcell.geometry.CurveSelectionInfo;
 import cbit.vcell.geometry.PolyLine;
+import cbit.vcell.geometry.SampledCurve;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.simdata.SpatialSelection;
+import cbit.vcell.simdata.SpatialSelectionMembrane;
 import cbit.vcell.simdata.SpatialSelectionVolume;
 import cbit.vcell.simdata.VCDataManager;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solvers.CartesianMesh;
+import cbit.vcell.solvers.MeshDisplayAdapter;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import java.io.File;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URLEncoder;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 /**
@@ -47,6 +60,13 @@ import java.util.stream.Stream;
  * ({@code webapp-viewer/test/test_kymograph.py}) compares with the viewer's {@code Desktop CSV} export. The two
  * together are the desktop cross-check: the viewer's export equals what the desktop would show, value for value.
  * <p>
+ * <p>
+ * Membrane curves (plan P7) likewise: {@link #MEMBRANE_CASES} are desktop selections — segments of the slice's
+ * membrane curve, as the desktop's user picks them — built into {@code SpatialSelectionMembrane.getIndexSamples()}
+ * and its {@link TimeSeriesJobSpec}, resampled the same way. Each also has the line a viewer user types for it
+ * (the drawn midpoints of its first and last segments), and this test checks that the viewer's server turns that
+ * line into the same samples, so the browser test can type it and compare its {@code Desktop CSV}.
+ * <p>
  * {@code -Dvcell.kymographGolden.write=<dir>} rewrites the golden files into {@code <dir>} instead of checking.
  */
 @Tag("Fast")
@@ -59,6 +79,16 @@ public class KymographDesktopResampleTest {
 			{ FieldViewerServerFvTest.SIM_2D, "Dex", "-10,0;0,0;3,10" },
 			{ FieldViewerServerFvTest.SIM_3D, "s0", "0,0.3,2;4,3.4,2" },
 			{ FieldViewerServerFvTest.SIM_3D, "s0", "0,2,2;4,2,2" },
+	};
+
+	/**
+	 * Desktop membrane selections: sim, variable, membrane domain, slice normal (x, y or z), slice index, first and
+	 * last segment of the slice's membrane curve (the positive direction), and the line a viewer user types.
+	 */
+	static final String[][] MEMBRANE_CASES = {
+			{ FieldViewerServerFvTest.SIM_2D, "xy_PM", "Cyt_EC_membrane", "z", "0", "4", "12", "2.93333,-9.53333; 8.8,-3.66667" },
+			{ FieldViewerServerFvTest.SIM_MEMBRANE_3D, "r_PM", "subdomain0_subdomain1_membrane", "z", "10", "16", "28",
+					"8.57143,4.04762,5; 6.90476,8.09524,5" },
 	};
 
 	private Path root;
@@ -81,6 +111,23 @@ public class KymographDesktopResampleTest {
 	/** The golden file's name for a case: {@code <sim>-<var>-<n>.csv}. */
 	static String goldenName(int c) {
 		return CASES[c][0] + "-" + CASES[c][1] + "-" + c + ".csv";
+	}
+
+	/** The golden file's name for a membrane case: {@code <sim>-<var>-m<n>.csv}. */
+	static String membraneGoldenName(int c) {
+		return MEMBRANE_CASES[c][0] + "-" + MEMBRANE_CASES[c][1] + "-m" + c + ".csv";
+	}
+
+	/** The desktop's samples of a membrane case: its selection, as the desktop builds it from the picked segments. */
+	private SpatialSelection.SSHelper desktopMembraneSamples(int c) throws Exception {
+		String[] mc = MEMBRANE_CASES[c];
+		CartesianMesh mesh = dataManager.getMesh(FieldViewerServerFvTest.vcdID(mc[0]));
+		int axis = "xyz".indexOf(mc[3]);
+		Map<SampledCurve, int[]> curves = new MeshDisplayAdapter(mesh).getCurvesAndMembraneIndexes(axis, Integer.parseInt(mc[4]));
+		Assertions.assertEquals(1, curves.size());
+		Map.Entry<SampledCurve, int[]> e = curves.entrySet().iterator().next();
+		CurveSelectionInfo selection = new CurveSelectionInfo(e.getKey(), Integer.parseInt(mc[5]), Integer.parseInt(mc[6]), false);
+		return new SpatialSelectionMembrane(selection, VariableType.MEMBRANE, mesh, e.getValue(), e.getKey()).getIndexSamples();
 	}
 
 	/**
@@ -132,13 +179,23 @@ public class KymographDesktopResampleTest {
 		}
 		SpatialSelection.SSHelper ssh = new SpatialSelectionVolume(new CurveSelectionInfo(new PolyLine(coords)),
 				VariableType.VOLUME, mesh).getIndexSamples(0.0, 1.0);
+		return resampled(vcdID, CASES[c][1], ssh);
+	}
+
+	/** The desktop's kymograph of a membrane case, resampled, as {@link #desktopKymograph}. */
+	private List<String> desktopMembraneKymograph(int c) throws Exception {
+		return resampled(FieldViewerServerFvTest.vcdID(MEMBRANE_CASES[c][0]), MEMBRANE_CASES[c][1], desktopMembraneSamples(c));
+	}
+
+	/** {@code KymographPanel}'s job over the samples (with their crossing indices, if any) and its resampling. */
+	private List<String> resampled(VCSimulationDataIdentifier vcdID, String var, SpatialSelection.SSHelper ssh) throws Exception {
 		double[] times = dataManager.getDataSetTimes(vcdID);
-		TimeSeriesJobSpec spec = new TimeSeriesJobSpec(new String[] { CASES[c][1] }, new int[][] { ssh.getSampledIndexes() },
+		TimeSeriesJobSpec spec = new TimeSeriesJobSpec(new String[] { var }, new int[][] { ssh.getSampledIndexes() },
 				ssh.getMembraneIndexesInOut() != null ? new int[][] { ssh.getMembraneIndexesInOut() } : null,
 				times[0], 1, times[times.length - 1], VCDataJobID.createVCDataJobID(vcdID.getOwner(), true));
 		TSJobResultsNoStats results = (TSJobResultsNoStats) dataManager.getTimeSeriesValues(
 				new OutputContext(new AnnotatedFunction[0]), vcdID, spec);
-		double[][] timeSeries = results.getTimesAndValuesForVariable(CASES[c][1]);
+		double[][] timeSeries = results.getTimesAndValuesForVariable(var);
 		double[][] r = resample(timeSeries, ssh.getWorldCoordinateLengths());
 		List<String> lines = new ArrayList<>();
 		lines.add("Distances," + join(r[0]));
@@ -158,27 +215,61 @@ public class KymographDesktopResampleTest {
 
 	@Test
 	public void theGoldenFilesAreWhatTheDesktopShows() throws Exception {
-		String writeTo = System.getProperty("vcell.kymographGolden.write");
 		for (int c = 0; c < CASES.length; c++) {
-			List<String> lines = desktopKymograph(c);
-			if (writeTo != null) {
-				Files.write(Path.of(writeTo, goldenName(c)), (String.join("\n", lines) + "\n").getBytes(StandardCharsets.UTF_8));
-				continue;
-			}
-			try (InputStream in = getClass().getResourceAsStream("kymo/" + goldenName(c))) {
-				Assertions.assertNotNull(in, goldenName(c));
-				List<String> golden = List.of(new String(in.readAllBytes(), StandardCharsets.UTF_8).split("\n"));
-				Assertions.assertEquals(golden.size(), lines.size(), goldenName(c));
-				for (int i = 0; i < lines.size(); i++) {
-					String[] want = golden.get(i).split(",");
-					String[] got = lines.get(i).split(",");
-					Assertions.assertEquals(want.length, got.length, goldenName(c) + " line " + i);
-					Assertions.assertEquals(want[0], got[0]);
-					for (int k = 1; k < want.length; k++) {
-						Assertions.assertEquals(Double.parseDouble(want[k]), Double.parseDouble(got[k]), 0.0,
-								goldenName(c) + " line " + i + " column " + k);
-					}
+			checkGolden(goldenName(c), desktopKymograph(c));
+		}
+		for (int c = 0; c < MEMBRANE_CASES.length; c++) {
+			checkGolden(membraneGoldenName(c), desktopMembraneKymograph(c));
+		}
+	}
+
+	private void checkGolden(String name, List<String> lines) throws Exception {
+		String writeTo = System.getProperty("vcell.kymographGolden.write");
+		if (writeTo != null) {
+			Files.write(Path.of(writeTo, name), (String.join("\n", lines) + "\n").getBytes(StandardCharsets.UTF_8));
+			return;
+		}
+		try (InputStream in = getClass().getResourceAsStream("kymo/" + name)) {
+			Assertions.assertNotNull(in, name);
+			List<String> golden = List.of(new String(in.readAllBytes(), StandardCharsets.UTF_8).split("\n"));
+			Assertions.assertEquals(golden.size(), lines.size(), name);
+			for (int i = 0; i < lines.size(); i++) {
+				String[] want = golden.get(i).split(",");
+				String[] got = lines.get(i).split(",");
+				Assertions.assertEquals(want.length, got.length, name + " line " + i);
+				Assertions.assertEquals(want[0], got[0]);
+				for (int k = 1; k < want.length; k++) {
+					Assertions.assertEquals(Double.parseDouble(want[k]), Double.parseDouble(got[k]), 0.0,
+							name + " line " + i + " column " + k);
 				}
+			}
+		}
+	}
+
+	/**
+	 * The line typed for each membrane case selects the desktop's samples, so the browser test that types it
+	 * compares like with like: the server's membrane indices and arc lengths are the desktop selection's.
+	 */
+	@Test
+	public void theTypedMembraneLinesAreTheDesktopSelections() throws Exception {
+		int port = FieldViewerServer.start();
+		for (int c = 0; c < MEMBRANE_CASES.length; c++) {
+			String[] mc = MEMBRANE_CASES[c];
+			boolean flat = mc[0].equals(FieldViewerServerFvTest.SIM_2D);
+			String query = "?sim=" + mc[0] + "&job=0&domain=" + mc[2] + "&var=" + mc[1] + (flat ? "" : "&plane=" + mc[3])
+					+ "&path=" + URLEncoder.encode(mc[7].replace(" ", ""), StandardCharsets.UTF_8);
+			HttpResponse<String> r = HttpClient.newHttpClient().send(
+					HttpRequest.newBuilder(URI.create("http://127.0.0.1:" + port + "/kymograph" + query)).build(),
+					HttpResponse.BodyHandlers.ofString());
+			Assertions.assertEquals(200, r.statusCode(), r.body());
+			JsonObject samples = JsonParser.parseString(r.body()).getAsJsonObject().getAsJsonObject("samples");
+			SpatialSelection.SSHelper desktop = desktopMembraneSamples(c);
+			JsonArray index = samples.getAsJsonArray("membraneIndex");
+			JsonArray arc = samples.getAsJsonArray("arcLength");
+			Assertions.assertEquals(desktop.getSampledIndexes().length, index.size(), membraneGoldenName(c));
+			for (int i = 0; i < index.size(); i++) {
+				Assertions.assertEquals(desktop.getSampledIndexes()[i], index.get(i).getAsInt(), membraneGoldenName(c) + " " + i);
+				Assertions.assertEquals(desktop.getWorldCoordinateLengths()[i], arc.get(i).getAsDouble(), 0.0);
 			}
 		}
 	}

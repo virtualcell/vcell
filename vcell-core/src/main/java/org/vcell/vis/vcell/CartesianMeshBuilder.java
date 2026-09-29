@@ -25,8 +25,9 @@ import cbit.vcell.math.SubDomain;
  * and never a file path. Converting that mesh here lets one visualization path serve local and
  * remote runs alike.
  * <p>
- * Volume domains only: membrane and contour elements come back empty, because the solver mesh
- * does not carry them and the volume-field pipeline never asks for them.
+ * Membrane elements are carried over (index, inside and outside voxel, and each one's membrane
+ * region), so a membrane domain can be mapped too (the field viewer draws membrane variables on its
+ * faces). Contour elements come back empty: nothing here asks for them.
  */
 public class CartesianMeshBuilder {
 
@@ -52,10 +53,21 @@ public class CartesianMeshBuilder {
 		meshRegionInfo.setCompressedVolumeElementMapVolumeRegion(
 				compressedRegionIndices(solverMesh, numVolumeElements), numVolumeElements);
 
+		cbit.vcell.solvers.MembraneElement[] solverMembranes = solverMesh.getMembraneElements();
+		int numMembraneElements = solverMembranes == null ? 0 : solverMembranes.length;
+		MembraneElement[] membraneElements = new MembraneElement[numMembraneElements];
+		int[] membraneRegions = new int[numMembraneElements];
+		for (int m = 0; m < numMembraneElements; m++) {
+			cbit.vcell.solvers.MembraneElement me = solverMembranes[m];
+			membraneElements[m] = new MembraneElement(me.getMembraneIndex(), me.getInsideVolumeIndex(), me.getOutsideVolumeIndex());
+			membraneRegions[m] = solverMesh.getMembraneRegionIndex(me.getMembraneIndex());
+		}
+		meshRegionInfo.mapMembraneElementsToMembraneRegions(membraneRegions);
+
 		return new CartesianMesh(
 				"in-memory",
 				subdomainInfo,
-				new MembraneElement[0],
+				membraneElements,
 				new ContourElement[0],
 				meshRegionInfo,
 				solverMesh.getISize(),

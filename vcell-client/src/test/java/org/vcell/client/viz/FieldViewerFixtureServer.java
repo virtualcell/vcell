@@ -31,7 +31,7 @@ public final class FieldViewerFixtureServer {
 		PropertyLoader.setProperty(PropertyLoader.fieldViewerStaticDir, webapp.getPath());
 		PropertyLoader.setProperty(PropertyLoader.fieldViewerPort, "0"); // any free port
 
-		// finite volume: 2D and 3D runs, read as the desktop reads a local run
+		// finite volume: 2D and 3D runs, and MembraneFrap3D (membrane variables only), read as the desktop reads a local run
 		Path fvRoot = Files.createTempDirectory("FieldViewerFixtureServer_");
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
 			try (java.util.stream.Stream<Path> walk = Files.walk(fvRoot)) {
@@ -59,6 +59,7 @@ public final class FieldViewerFixtureServer {
 		System.out.println("FIXTURE {\"port\":" + port + ",\"datasets\":{"
 				+ "\"fv2d\":{\"sim\":\"" + FieldViewerServerFvTest.SIM_2D + "\",\"job\":0},"
 				+ "\"fv3d\":{\"sim\":\"" + FieldViewerServerFvTest.SIM_3D + "\",\"job\":0},"
+				+ "\"fvMembrane3d\":{\"sim\":\"" + FieldViewerServerFvTest.SIM_MEMBRANE_3D + "\",\"job\":0},"
 				+ "\"fenics2d\":{\"sim\":\"987654321\",\"job\":0},"
 				+ "\"fenicsMoving\":{\"sim\":\"777\",\"job\":0},"
 				+ "\"fenics3d\":{\"sim\":\"555\",\"job\":0},"

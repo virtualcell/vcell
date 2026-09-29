@@ -187,13 +187,22 @@ scrub time — a time step costs about 5.7× less than shipping both.
   it), as the 2D pick does. Server-side, locating the point in each row's mesh
   had copied the whole point array per tetrahedron face (5 s for 25 rows of a 40k-tet mesh); it now
   takes ~40 ms.
+- **Finite-volume membrane variables** are listed by `/info` (with `"membrane": true`, after the volume
+  variables; membrane region variables, one value per region, are not) and drawn on their membrane's faces: the
+  server's `/grid` for a membrane domain is the faces between inside and outside voxels (`"membrane": true`;
+  quads in 3D, segments in 2D, from `CartesianMeshMapping`), one value per face. The faces are drawn as they
+  are, not smoothed (the smoothing belongs to the voxel grid: the slider is off, with a note), and the crop
+  clips them like a body-fitted mesh. `/stats` covers them (area-weighted, as the desktop's space statistics
+  are). A variable on the other kind of domain is a 400.
 - **Probes: time courses at several points.** A click puts a probe where it lands and replaces the
   others; **shift-click**, or a click while **＋ Add points** is pressed (for trackpads and touch screens),
   adds one, up to 12. A probe is a lab-frame point: the picked voxel's centre for finite volume, the
   point under the 2D camera, or the tetrahedron entry point in 3D (`pickAt`). Probes therefore carry over
   a variable or domain switch and a run refresh, and are refetched after either. A probe outside the new
   domain is listed as "outside <domain>". On a body-fitted run the request asks `snap=nearest`, so a click
-  beside a FEniCSx membrane lands on it. All the probes are fetched in **one** request
+  beside a FEniCSx membrane lands on it; a finite-volume membrane probe always snaps to the nearest membrane
+  face, and reads that membrane element (`membraneIndex`). A 3D membrane (FEniCSx triangles, a finite-volume
+  membrane's quads) is picked by a ray–surface test (`pickSurface`). All the probes are fetched in **one** request
   (`/timeseries?points=x,y,z;…`), debounced by 150 ms, with a superseded request aborted.
   - The **probe panel** is separate from Stats. It lists `P1 (x, y, z)` with the value at the current time,
     ⌖ (centre the view on it) and ✕ (remove), plus Clear and CSV buttons.
@@ -253,6 +262,19 @@ scrub time — a time step costs about 5.7× less than shipping both.
     along the curve, so the curve's length is the sum of its edge lengths. The overlay draws the curve through
     those samples, with a dot at each snapped pick. Not yet: a moving or remeshed membrane, and curves on a 3D
     membrane surface (geodesics), where the tool is off with a tooltip saying so.
+  - **Curves along a finite-volume membrane** are the desktop's own. The desktop picks segments of the membrane
+    curves it draws in its 2D slice (`MeshDisplayAdapter.getCurvesAndMembraneIndexes`); here each pick snaps to
+    the nearest segment of the variable's membrane in the slice, and the curve is the run of segments from the
+    first pick's to the last one's (the shorter way round a closed curve; a pick between them chooses the way),
+    sampled by the desktop's `SpatialSelectionMembrane.getIndexSamples()`: one sample per membrane element, with
+    arc length along the curve (`FvMembraneCurve`). The values come from one `TimeSeriesJobSpec` over the
+    samples' membrane indices, as the desktop's kymograph builds it, so *Desktop CSV* works here too. In 2D the
+    slice is the run's only one. **In 3D the curve lies in the crop's cut plane**, as the desktop's lies in its
+    slice: turn the crop on (the tool says so until then), and click along the membrane at the cut; each pick
+    is moved onto the cut plane, and the server takes the solver slice nearest it (`plane=x|y|z`). The desktop's
+    points are in the solver's node-centred frame, a little off the voxels the viewer draws on a coarse mesh, so
+    the response also carries them mapped onto the drawn faces (`drawnPoints`, `drawnPath`), and the overlay
+    draws those.
   - **The image** has one row per saved time, the first at the top as on the desktop, and arc length across.
     It is `min(1024, 4·n)` columns, scaled up with `image-rendering: pixelated`. Each column shows the sample
     whose span holds it, a span ending halfway to each neighbouring sample, so voxels keep their true widths

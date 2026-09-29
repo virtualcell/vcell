@@ -42,6 +42,11 @@ _(Release-manager scratchpad. Populated at release-cut time.)_
   membrane: click on or beside it, and the curve follows the membrane between your clicks (the shorter way
   round; click on the far side to go the other way). The kymograph has one sample per mesh vertex on the curve,
   at distances measured along the membrane.
+- The field viewer shows membrane variables of finite-volume runs, on the membrane itself (a surface in 3D, a curve
+  in 2D), and they can be probed, plotted in Stats, and have kymographs along the membrane. A membrane kymograph is
+  the desktop's: one sample per membrane element, the same elements, distances and values. In 3D it lies in the
+  crop's cut plane, as the desktop's lies in its slice: turn the crop on and click along the membrane at the cut.
+- Clicking a 3D FEniCSx membrane places a probe on it.
 
 ### Changed
 - The field viewer finds the mesh cell under a point much faster on body-fitted runs (FEniCSx, Chombo,

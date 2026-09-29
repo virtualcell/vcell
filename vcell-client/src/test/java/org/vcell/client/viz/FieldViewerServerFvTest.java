@@ -52,6 +52,8 @@ public class FieldViewerServerFvTest {
 
 	static final String SIM_2D = "597714292";
 	static final String SIM_3D = "868220316";
+	/** MembraneFrap3D: 3D, 21³, membrane variables only ({@code r_PM}, {@code rf_PM} on the membrane of a ball) */
+	static final String SIM_MEMBRANE_3D = "956955326";
 	private static final String[] EXTENSIONS = { ".functions", ".log", ".mesh", ".meshmetrics", ".subdomains", "00.zip" };
 	private static final User OWNER = new User("ezequiel23", new KeyValue("258925427"));
 
@@ -74,7 +76,7 @@ public class FieldViewerServerFvTest {
 	}
 
 	/**
-	 * Stages both FV fixture runs under {@code root/<user>/}, registers them with the field viewer and
+	 * Stages the three FV fixture runs under {@code root/<user>/}, registers them with the field viewer and
 	 * starts it.
 	 *
 	 * @return the server's port
@@ -85,7 +87,7 @@ public class FieldViewerServerFvTest {
 	}
 
 	/**
-	 * Stages both FV fixture runs under {@code root/<user>/} and registers them with the field viewer,
+	 * Stages the three FV fixture runs under {@code root/<user>/} and registers them with the field viewer,
 	 * without starting it.
 	 *
 	 * @return the data manager they are registered with, for reading the runs directly as the desktop does
@@ -96,7 +98,7 @@ public class FieldViewerServerFvTest {
 				new Cachetable(10 * Cachetable.minute, 100_000_000L), root.toFile(), root.toFile());
 		LocalDataSetController local = new LocalDataSetController(null, controller, null, OWNER);
 		VCDataManager dataManager = new VCDataManager(() -> local);
-		for (String sim : new String[] { SIM_2D, SIM_3D }) {
+		for (String sim : new String[] { SIM_2D, SIM_3D, SIM_MEMBRANE_3D }) {
 			for (String ext : EXTENSIONS) {
 				String name = "SimID_" + sim + "_0_" + ext;
 				try (InputStream in = FieldViewerServerFvTest.class.getResourceAsStream("fv/" + name)) {
@@ -107,7 +109,8 @@ public class FieldViewerServerFvTest {
 			VCSimulationDataIdentifier vcdID = new VCSimulationDataIdentifier(
 					new VCSimulationIdentifier(new KeyValue(sim), OWNER), 0);
 			SubdomainInfo subdomains = SubdomainInfo.read(userDir.resolve("SimID_" + sim + "_0_.subdomains").toFile());
-			FieldViewerServer.register(vcdID, dataManager, subdomains, sim.equals(SIM_2D) ? "fv::2d" : "fv::3d");
+			FieldViewerServer.register(vcdID, dataManager, subdomains,
+					sim.equals(SIM_2D) ? "fv::2d" : sim.equals(SIM_3D) ? "fv::3d" : "fv::membrane frap 3d");
 		}
 		return dataManager;
 	}

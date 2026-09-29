@@ -354,9 +354,9 @@ public class FieldViewerServerKymographTest {
 				{ q + "&path=", "empty" },
 				{ q + "&path=1,1,1%3B2,2,2&tstep=0", "tstep" },
 				{ "&domain=subdomain0&var=nothing&path=1,1,1%3B2,2,2", "unknown variable" },
-				{ "&domain=subdomain0&var=sobj_subdomain11_subdomain00_size&path=1,1,1%3B2,2,2", "membrane kymographs are not supported yet" },
+				{ "&domain=subdomain0&var=sobj_subdomain11_subdomain00_size&path=1,1,1%3B2,2,2", "membrane region variable is not supported" },
 				{ "&domain=subdomain0&var=Size_c0&path=1,1,1%3B2,2,2", "volume variable" },
-				{ "&domain=nowhere&var=s0&path=1,1,1%3B2,2,2", "unknown volume domain" },
+				{ "&domain=nowhere&var=s0&path=1,1,1%3B2,2,2", "unknown domain" },
 		};
 		for (String[] c : cases) {
 			HttpResponse<String> r = send(SIM_3D, c[0]);

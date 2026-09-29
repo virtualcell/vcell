@@ -196,15 +196,19 @@ final class PointSeries {
 		return result;
 	}
 
-	/** One series of a multi-point response. {@code cell} and {@code volumeIndex} are left out when null. */
-	record Series(double[] point, Integer cell, Integer volumeIndex, boolean inDomain, double[] snapped, double[] values) {
+	/**
+	 * One series of a multi-point response. {@code cell}, {@code volumeIndex} and {@code membraneIndex} are left
+	 * out when null.
+	 */
+	record Series(double[] point, Integer cell, Integer volumeIndex, Integer membraneIndex, boolean inDomain,
+			double[] snapped, double[] values) {
 	}
 
 	/** The body-fitted series of a {@link Result}: {@code cell} only for a single mesh, {@code inDomain} when inside at any row. */
 	static Series[] series(double[][] points, Result r) {
 		Series[] out = new Series[points.length];
 		for (int p = 0; p < points.length; p++) {
-			out[p] = new Series(points[p], r.singleMesh ? Integer.valueOf(r.cell[p]) : null, null,
+			out[p] = new Series(points[p], r.singleMesh ? Integer.valueOf(r.cell[p]) : null, null, null,
 					r.insideCount[p] > 0, r.snapped[p], r.values[p]);
 		}
 		return out;
@@ -235,6 +239,9 @@ final class PointSeries {
 			}
 			if (se.volumeIndex() != null) {
 				sb.append(",\"volumeIndex\":").append(se.volumeIndex().intValue());
+			}
+			if (se.membraneIndex() != null) {
+				sb.append(",\"membraneIndex\":").append(se.membraneIndex().intValue());
 			}
 			sb.append(",\"inDomain\":").append(se.inDomain());
 			sb.append(",\"values\":");

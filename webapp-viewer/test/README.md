@@ -6,8 +6,9 @@ vcell-client's test sources, `org.vcell.client.viz.FieldViewerFixtureServer`. It
 
 | role | run |
 |---|---|
-| `fv2d` | finite volume, 2D (15 × 15, `Cyt` in `EC`) |
+| `fv2d` | finite volume, 2D (15 × 15, `Cyt` in `EC`; the test membrane function `xy_PM = x + 2y + 10t` on their membrane) |
 | `fv3d` | finite volume, 3D (5 × 5 × 5, two compartments) |
+| `fvMembrane3d` | finite volume, 3D: MembraneFrap3D (21³, membrane variables `r_PM`, `rf_PM` on a ball's membrane, no volume variables) |
 | `fenics2d` | FEniCSx, a 2D disk |
 | `fenicsMoving` | FEniCSx, a 2D disk moving along x (ALE) |
 | `fenics3d` | FEniCSx, a sphere in a box with its membrane (3D) |
@@ -24,12 +25,15 @@ and fails if the console shows an `is not permitted` refusal from the wasm invok
 | `test_probes.py` | probes: click, shift-click, the Add toggle, markers, the time cursor, CSV |
 | `test_kymograph.py` | kymographs: the Line tool and the typed line, the image and cursor, click → time, shift-click → probe, the exports, the retries, and the desktop cross-check |
 | `test_kymograph_bodyfitted.py` | kymographs of FEniCSx (2D, 3D, ALE), Chombo (2D, 3D) and MovingBoundary runs: evenly spaced samples, the lab-frame label, gaps in the other domain |
+| `test_fv_membranes.py` | finite-volume membrane variables: drawn on their faces, probed there, curves along them in 2D and in the 3D cut plane, Stats, and the desktop cross-check for membrane curves |
 | `test_membrane_curves.py` | curves along a 2D FEniCSx membrane: the curve follows the membrane between the snapped picks, the overlay follows its samples, the long way round, the tool off on a 3D membrane surface |
 
 The desktop cross-check compares the viewer's *Desktop CSV* with the golden files in
 `vcell-client/src/test/resources/org/vcell/client/viz/kymo/`. Those are what the desktop kymograph shows for
 the same lines, computed by `KymographDesktopResampleTest` with the desktop's own sampling and resampling; that
-Java test checks them, and rewrites them with `-Dvcell.kymographGolden.write=<dir>`.
+Java test checks them, and rewrites them with `-Dvcell.kymographGolden.write=<dir>`. The `-m<n>` files are membrane
+curves: desktop selections of membrane segments, with the lines typed for them (which that test checks select the
+same samples).
 
 ## Running them
 

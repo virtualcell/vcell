@@ -1,6 +1,9 @@
 # Plan — multi-point time plots and kymographs in the browser field viewer
 
-**Status:** in progress: P1 to P6 and P7a merged (2026-09-29); P7b (FV membrane variables and curves) remains. This is a living plan: tick PRs off as they merge.
+**Status:** complete (2026-09-29): P1 to P7 merged (#2120–#2127). What remains is listed under "Later" (§7): several
+variables in the point plot, units from the server, a binary response, VTK markers, and membrane curves beyond P7
+(3D surface geodesics, moving FEniCSx membranes, Chombo and MovingBoundary membrane variables, FV membrane region
+variables).
 
 ## Context
 
@@ -274,7 +277,8 @@ multi-point included.
 Also 400:
 - a malformed `points` or `path`, or a path of length zero;
 - an unknown variable or domain (the existing checks);
-- an FV variable that is not a volume variable: "membrane kymographs are not supported yet" (until P7).
+- an FV variable that is neither a volume nor a membrane variable (P7 serves membrane variables; a membrane region
+  variable is refused).
 
 A path wholly outside the domain returns **200 with all nulls** and `inDomain` all false. The viewer shows
 "the line lies outside <domain>".
@@ -399,11 +403,11 @@ A path wholly outside the domain returns **200 with all nulls** and `inDomain` a
   `_OUTSIDE` extrapolated values, as on the desktop. One of the pair usually lies in the other compartment,
   so the mask removes it and keeps the in-domain membrane-adjacent value. `raw=1` keeps both.
 - **Membrane variables.**
-  - FV `/info` lists only volume variables (FieldViewerServer.java:396), so FV membrane probes and
-    kymographs wait until membrane variables are served (P7).
+  - FV `/info` listed only volume variables (FieldViewerServer.java:396), so FV membrane probes and
+    kymographs waited until membrane variables were served (P7b: they are, on their membrane's faces).
   - FEniCSx membrane variables are listed already: probes use `snap=nearest` (P1). A kymograph needs a curve
     *along* the membrane, because a straight line essentially never lies on a surface or curve mesh. The 2D
-    case is P7; 3D surface curves (geodesics) are later.
+    case is P7 (P7a); 3D surface curves (geodesics) are later.
 - **MovingBoundary** (P6). The line is fixed in the lab frame, so a sample's value at each time is the value
   of whichever cell contains that point at that time. Samples outside the moving domain are gaps, so the
   kymograph shows the boundary moving past as the edge of its gaps. Label it "fixed line (lab frame)".
@@ -882,7 +886,7 @@ Decisions and deviations recorded in P6:
     and let the server choose the path, so the overlay should draw the returned sample points, not the typed
     vertices.
 
-### PR P7 — membrane curves (decision 1)
+### PR P7 — membrane curves (decision 1) ✅ (#2126, #2127)
 - FEniCSx 2D membrane arcs: the shortest path along the line mesh between two snapped picks, sampled at the
   mesh vertices.
 - FV membrane variables in `/info`, and FV membrane kymographs through `SpatialSelectionMembrane`-style
@@ -891,7 +895,7 @@ Decisions and deviations recorded in P6:
   values; FV membrane kymographs match the desktop's on MembraneFrap3D.
 
 P7 is two PRs: **P7a** (FEniCSx 2D membrane arcs) ✅ (#2126), and **P7b** (FV membrane variables: shown, probed,
-and curves along them).
+and curves along them) ✅ (#2127).
 
 Decisions and deviations recorded in P7a:
 - **Fixture.** `receptor_2d.fenics` (72 KB, `vcell-client` test resources): vcell-fenics's
@@ -946,6 +950,81 @@ Decisions and deviations recorded in P7a:
     `s_cyto`. `open_viewer` takes extra URL parameters. **Results: 165 browser tests pass** on Chromium
     (SwiftShader), WebKit and Firefox, with no `is not permitted` refusals and no page errors.
 
+Decisions and deviations recorded in P7b:
+- **Fixtures.** No committed FV run had both a 2D membrane and a membrane variable, so:
+  - **MembraneFrap3D** (`vcell-core/src/test/resources/simdata/MembraneFrap3D/`, 21³, a ball's membrane with
+    `r_PM` and `rf_PM`, and no volume variables) is copied into vcell-client's `fv/` resources, the same six files
+    as P1's runs (`.log` and `.zip` force-added), staged by `FieldViewerServerFvTest.stageFvFixtures` and served
+    by the fixture server as `fvMembrane3d`. It is the desktop-parity fixture, as the "For P7" note proposed.
+  - The 2D run `597714292` gets a **test membrane function**, `Cyt_EC_membrane::xy_PM = x + 2y + 10t`, appended to
+    its copied `.functions`: VCell evaluates it from the saved data like any membrane function, and its values are
+    known at every element.
+- **The vis mesh now has membranes.** `CartesianMeshBuilder.fromSolverMesh` (vcell-core) left membrane elements out
+  ("volume domains only"); it now carries them over (index, inside and outside voxel, membrane region), so
+  `CartesianMeshMapping`'s existing membrane mappings work: the faces between inside and outside voxels, **quads
+  in 3D and segments in 2D**, each tagged with its membrane index, placed on the viewer's drawn voxel boxes.
+- **Showing a membrane variable.**
+  - `/info` lists `MEMBRANE` variables after the volume ones, with `"membrane": true`, and the membrane domains
+    (those with elements) after the volume domains. Membrane **region** variables (one value per region) are not
+    listed, and their kymograph is a 400.
+  - `/grid?domain=<membrane>` serves the faces (`"membrane": true`, `dimension` from the mesh, no `sinc`);
+    `/field` reads the membrane-indexed data through them, unchanged. A variable on the other kind of domain is a
+    400 (its data are indexed differently).
+  - The viewer draws the faces **as they are**, like a body-fitted mesh (`state.membraneMesh`: the crop clips them
+    directly), not through the voxel grid's smoothing and deform, which would move them off the voxels they
+    separate; the smoothing slider is off with a note. Switching back to a volume variable rewires the crop to the
+    deformed grid.
+  - `/stats` covers membrane variables (`TimeSeriesJobSpec`'s space statistics, weighted by element area as on the
+    desktop), so Stats works on MembraneFrap3D.
+- **Probes** on an FV membrane: `points=` snaps each point to the nearest served face within one face diameter
+  (`nearestOnMesh`, which now takes quads), and **one** `TimeSeriesJobSpec` over the faces' membrane indices reads
+  them; each series has the face's `cell`, its `membraneIndex` and `snapped`. In 3D a click picks the surface with a
+  ray–triangle test (`pickSurface`, new; quads as two triangles); the same pick makes **FEniCSx 3D membranes
+  clickable** for probes, which `pickCell` (3D cells only) could not do.
+- **Curves: the desktop's own sampling** (`FvMembraneCurve`, new). The desktop picks segments of the membrane
+  curves it draws in its slice (`MeshDisplayAdapter.getCurvesAndMembraneIndexes(normal, slice)`) as a
+  `CurveSelectionInfo(curve, first, last, direction)`, and samples it with
+  `SpatialSelectionMembrane.getIndexSamples()`. The server builds exactly those: each pick snaps to the nearest
+  segment of the variable's membrane in the slice (within four segment lengths); all picks must be on one curve;
+  the run goes from the first pick's segment to the last one's, through the others in order, and on a closed curve
+  with two picks the shorter way round. `KymographPanel`'s job follows (one `TimeSeriesJobSpec` over the samples'
+  membrane indices, no crossing indices). The response is FV's (`location: "cell"`, `sampling: "membrane"`,
+  `membraneIndex` per sample, `volumeIndex` all -1, `cell` = the sample's face), plus `slice` in 3D.
+- **3D: the curve lies in the crop's cut plane** (the UI decision the task left open). The desktop's curves lie in
+  its slice, so the browser's are in the slice the crop cuts: the Line tool on a 3D FV membrane is off until the
+  crop is on (its tooltip says so), each pick is moved onto the cut plane, and the request names the plane's normal
+  (`plane=x|y|z`); the server takes the solver slice nearest the first pick along it. Two picks on the membrane
+  surface with a path over it (a geodesic) stay under "Later".
+- **Two frames.** The desktop's curves are in the solver's node-centred frame (a segment's ends at the corners of
+  the membrane face, halfway between element centres), which on a coarse mesh lies up to half a voxel off the boxes
+  the viewer draws (P3's "voxel rule"). The map `o + f·E/(N−1) ↦ o + (f + ½)·E/N` (by fractional index f) takes each
+  desktop segment exactly onto the drawn face between the same two elements. So picks are mapped into the solver's
+  frame before they snap, the samples are reported in the desktop's frame (`samples.points`, `arcLength`,
+  `path`: parity and exports), and also mapped onto the drawn faces (`drawnPoints`, `drawnPath`), which the
+  overlay draws.
+- **Viewer.** On an FV membrane `lineKind()` is `'membrane'` (2D, and 3D with the crop on); the note says "one
+  per membrane element … (the desktop's membrane curve)", with the slice in 3D; *Desktop CSV* stays (the desktop's
+  resampling applies to membrane kymographs too; `raw=1` is ignored for them).
+- **Tests.**
+  - Java: `FieldViewerServerMembraneTest` (new, 7): `/info`; the faces and their values (every element once in
+    3D; `xy_PM` at each element's coordinate in 2D, through probes at the face centres); probes read their face's
+    element with the desktop's `TimeSeriesJobSpec` values, a point far off is a gap, a click beside a 2D membrane
+    snaps; **desktop parity** for seven desktop selections (2D: the short way, through segment 0, the long way via
+    a third pick, one segment; 3D: z, x and y slices of MembraneFrap3D): picks at the drawn midpoints of the
+    selection's segments give the desktop's membrane indices, sample points, arc lengths and every value exactly,
+    and each drawn point lies on its sample's face; `tstep` and the value limit; Stats; the 400s.
+    `KymographDesktopResampleTest` adds two membrane golden files (`597714292-xy_PM-m0.csv`,
+    `956955326-r_PM-m1.csv`, built from desktop selections) and checks that the lines typed for them select the same
+    samples. P3's bad-request test updated for the new messages. **74 `org.vcell.client.viz` tests pass** (66
+    before).
+  - Browser: `test/test_fv_membranes.py` (new, 8 per engine): a 2D membrane variable drawn on its faces and probed;
+    a 2D curve by clicks (one overlay piece per sample, no gaps); switching between membrane and volume variables;
+    a 3D membrane probe by click; the 3D curve in the z cut plane (picks on the plane, slice 10, samples in it);
+    Stats; and **the desktop cross-check for membranes**: typing the two golden lines, the viewer's *Desktop CSV*
+    equals the desktop's, value for value. `test_membrane_curves.py` adds a click probe on a 3D FEniCSx membrane.
+    **Results: 192 browser tests pass** on Chromium (SwiftShader), WebKit and Firefox, with no `is not permitted`
+    refusals and no page errors.
+
 ### Later
 - **Several variables** in the point plot: the desktop's "Y Axis" multi-select, `var=a,b` over the same
   points. The server change is small, because `TimeSeriesJobSpec` already takes `indices[v][i]`.
@@ -954,7 +1033,12 @@ Decisions and deviations recorded in P7a:
 - A **binary response** (Float32) for large kymographs, if JSON becomes the bottleneck
   (3d-renderer-design.md, "Expect the wire format…").
 - VTK markers in place of the SVG overlay, after a `probe.html` capability check.
-- 3D membrane curves (geodesics on surface meshes).
+- 3D membrane curves (geodesics on surface meshes), FEniCSx and FV: two picks on a surface with the path over it.
+  Today a 3D FV membrane curve lies in the crop's cut plane (P7b), and a 3D FEniCSx membrane has none.
+- Membrane curves on a **moving or remeshed** FEniCSx membrane (P7a refuses them: the curve is built on one mesh).
+- **Chombo and MovingBoundary membrane variables** (the VTU seam's `membrane kymographs are not supported yet`).
+- **FV membrane region variables** (one value per region): listed nowhere today; drawing them on the faces would be
+  easy, a kymograph of them is flat by construction.
 
 ---
 

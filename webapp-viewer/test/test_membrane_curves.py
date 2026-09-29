@@ -95,3 +95,14 @@ def test_the_tool_is_off_on_a_3d_membrane_surface(open_viewer):
     # and back on for a volume variable
     v.page.select_option('#variable', 's_cyto')
     v.page.wait_for_function("!document.getElementById('lineTool').disabled", timeout=60000)
+
+
+def test_a_click_on_a_3d_membrane_surface_probes_it(open_viewer):
+    """The surface pick (P7): a 3D membrane's triangles are pickable, so a click there places a membrane probe."""
+    v = open_viewer('fenics3d', MEMBRANE)
+    with v.page.expect_response(lambda r: '/timeseries?' in r.url and r.status == 200) as response:
+        v.click()
+    s = response.value.json()['series'][0]
+    assert s['inDomain'] and all(x is not None for x in s['values']), s
+    v.wait_probes(1)
+    assert len(v.markers()) == 1

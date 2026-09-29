@@ -106,6 +106,7 @@ const state = {
   geometryId: '',
   dimension: 3,
   bodyFitted: false, // MovingBoundary runs: solver's body-fitted mesh, geometry varies per time
+  membraneMesh: false, // the grid is a finite-volume membrane's faces (a membrane variable): drawn as is, no smoothing
   // 'cell' (finite-volume data: one value per cell) or 'point' (FEniCSx P1 data: one value per mesh
   // vertex, interpolated across each cell); set by the field the server sends
   fieldLocation: 'cell',
@@ -498,6 +499,9 @@ function boundsOf(geometry) {
 /** Builds the in-memory grid and points the pipeline at it. Re-run when the domain changes. */
 async function buildGrid(geometry, field) {
   state.dimension = geometry.dimension ?? 3;
+  // a finite-volume membrane variable lives on its membrane's faces (quads in 3D, segments in 2D): that mesh is
+  // drawn as it is, as a body-fitted one is, not through the voxel grid's smoothing and deform
+  state.membraneMesh = !state.bodyFitted && !!geometry.membrane;
   const points = vtk.vtkPoints();
   await points.setNumberOfPoints(geometry.numPoints);
   const P = geometry.points;
@@ -544,14 +548,18 @@ async function buildGrid(geometry, field) {
     await (await (state.fieldLocation === 'point' ? ug.getPointData() : ug.getCellData())).setScalars(arr);
     fieldArray = arr;
   }
-  if (state.bodyFitted) {
+  if (state.bodyFitted || state.membraneMesh) {
     // body-fitted: the mesh IS the solver's geometry — no smoothing, no deform; the crop clips
-    // this mesh directly, so a cut exposes the solver's own interior cells (voxels and cut tets)
+    // this mesh directly, so a cut exposes the solver's own interior cells (voxels and cut tets).
+    // A finite-volume membrane's faces likewise
     currentUg = ug;
     await tableClip.setInputData(ug);
     await extractCells.setInputData(ug);
     await geomFilter.setInputData(ug);
   } else {
+    // (back from a membrane variable: the crop and the whole-cells cut take the deformed grid again)
+    await tableClip.setInputConnection(await deform.getOutputPort());
+    await extractCells.setInputConnection(await deform.getOutputPort());
     // the raw grid feeds the smoothing chain and the deform filter; everything the user sees
     // (shell, crop, cut face) derives from the ONE deformed grid downstream of them
     await surfSource.setInputData(ug);
@@ -569,13 +577,16 @@ async function buildGrid(geometry, field) {
     await (await actor.getProperty()).setColor(0.30, 0.65, 0.45);
   }
   state.bounds = boundsOf(geometry);
-  state.pick = buildPickIndex(geometry, state.bounds);
+  state.pick = state.membraneMesh ? null : buildPickIndex(geometry, state.bounds); // the voxel walk's index
   state.fieldValues = field ? field.values : null;
   if (cubeAxes) await cubeAxes.setBounds(...state.bounds);
   await applyCrop(); // a domain switch changes the bounds the slider position maps into
   state.nominalSinc = geometry.sinc;
   previewSmoothing(state.smoothing);
-  if (state.ready) updateLineTool();
+  if (state.ready) {
+    updateLineTool();
+    updateSmoothingControls();
+  }
 }
 
 /**
@@ -589,7 +600,7 @@ async function applyCrop() {
   if (!tableClip) return;
   const axis = state.sliceAxis;
   if (axis < 0) {
-    if (state.bodyFitted) {
+    if (state.bodyFitted || state.membraneMesh) {
       if (currentUg) await geomFilter.setInputData(currentUg);
     } else {
       await geomFilter.setInputConnection(await deform.getOutputPort());
@@ -689,7 +700,7 @@ async function updateCropStats() {
       + (mean != null && Number.isFinite(mean) ? `mean ${mean.toExponential(3)} · ` : '')
       + `max ${range[1].toExponential(3)}`
       + (volume != null && Number.isFinite(volume) ? ` · volume ${volume.toExponential(3)}` : '')
-      + (state.bodyFitted ? ' (body-fitted solver mesh)'
+      + (state.bodyFitted ? ' (body-fitted solver mesh)' : state.membraneMesh ? ' (membrane faces)'
         : ` (smoothing ${p.iterations} iters · pass-band ${formatPassBand(p.passBand)})`);
   } catch (e) {
     console.warn('display-mesh stats failed', e);
@@ -1269,6 +1280,70 @@ function pickCell(origin, dir) {
   return { point, cell: best.cell, weights };
 }
 
+/**
+ * The first point of a surface mesh the mouse ray meets: a membrane of a 3D model (FEniCSx triangles, or a
+ * finite-volume membrane's quads), which `pickCell` (3D cells only) can't pick. Each polygon is a fan of
+ * triangles, each tested with Möller–Trumbore; the crop is honoured as the picture shows it (the smooth cut's
+ * kept side, or the whole cells the cut keeps). Returns {point, cell, weights} — barycentric weights for a
+ * triangle, for its P1 value — or null. O(cells) per call.
+ */
+function pickSurface(origin, dir) {
+  const P = state.cellPoints;
+  const cells = state.cellList;
+  if (!P || !cells || state.dimension !== 3) return null;
+  const axis = state.sliceAxis;
+  let cutPos = null;
+  if (axis >= 0) {
+    const b = state.bounds;
+    cutPos = b[2 * axis] + (0.005 + 0.99 * (state.slicePos / 100)) * (b[2 * axis + 1] - b[2 * axis]);
+  }
+  const wholeCells = cutPos !== null && state.cutMode === 'cells';
+  const v = (i) => [P[3 * i], P[3 * i + 1], P[3 * i + 2]];
+  const sub3 = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+  const dot3 = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+  const cross3 = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+  let best = null;
+  for (let c = 0; c < cells.length; c++) {
+    const cell = cells[c];
+    if (cell.length < 3) continue;
+    if (wholeCells && !cell.some((i) => P[3 * i + axis] <= cutPos)) continue;
+    const a = v(cell[0]);
+    for (let k = 1; k + 1 < cell.length; k++) {
+      const e1 = sub3(v(cell[k]), a);
+      const e2 = sub3(v(cell[k + 1]), a);
+      const pv = cross3(dir, e2);
+      const det = dot3(e1, pv);
+      if (Math.abs(det) < 1e-300) continue;
+      const tv = sub3(origin, a);
+      const u = dot3(tv, pv) / det;
+      if (u < -1e-9 || u > 1 + 1e-9) continue;
+      const qv = cross3(tv, e1);
+      const w = dot3(dir, qv) / det;
+      if (w < -1e-9 || u + w > 1 + 1e-9) continue;
+      const t = dot3(e2, qv) / det;
+      if (!(t > 0) || (best && t >= best.t)) continue;
+      const point = [0, 1, 2].map((x) => origin[x] + t * dir[x]);
+      if (cutPos !== null && !wholeCells && point[axis] > cutPos) continue; // clipped away
+      best = { t, cell: c, point, weights: cell.length === 3 ? [1 - u - w, u, w] : null };
+    }
+  }
+  return best && { point: best.point, cell: best.cell, weights: best.weights };
+}
+
+/** The 3D pick: a finite-volume membrane's faces, else the body-fitted mesh's 3D cells, or its surface cells. */
+function pick3d(origin, dir) {
+  return state.membraneMesh ? pickSurface(origin, dir) : (pickCell(origin, dir) ?? pickSurface(origin, dir));
+}
+
+/** The distance along a unit ray to the first geometry it meets, as the picture shows it; null for a miss. */
+function firstHitDistance(origin, dir) {
+  if (state.bodyFitted || state.membraneMesh) {
+    const hit = pick3d(origin, dir);
+    return hit ? Math.hypot(...[0, 1, 2].map((a) => hit.point[a] - origin[a])) : null;
+  }
+  return castRay(origin, dir)?.t ?? null;
+}
+
 /** The shown field at a picked point of a 3D cell: P1-interpolated in a tetrahedron, or the cell's value. */
 function valueAtCellPick(hit) {
   const values = state.fieldValues;
@@ -1276,7 +1351,7 @@ function valueAtCellPick(hit) {
   if (state.fieldLocation !== 'point' || !hit.weights) return values[hit.cell] ?? null;
   const cell = state.cellList[hit.cell];
   let sum = 0;
-  for (let k = 0; k < 4; k++) {
+  for (let k = 0; k < hit.weights.length; k++) {
     const x = values[cell[k]];
     if (x == null) return null;
     sum += hit.weights[k] * x;
@@ -1291,11 +1366,11 @@ const pickHint = () => (state.lineDraft
 let hoverBusy = false;
 async function hoverPick(clientX, clientY) {
   if (!state.ready || hoverBusy) return;
-  if (state.bodyFitted && state.dimension === 3) {
+  if ((state.bodyFitted || state.membraneMesh) && state.dimension === 3) {
     hoverBusy = true;
     try {
       const { origin, dir } = await rayFromMouse(clientX, clientY);
-      const hit = pickCell(origin, dir);
+      const hit = pick3d(origin, dir);
       if (!hit) {
         el.pickReadout.textContent = '';
         return;
@@ -1311,8 +1386,8 @@ async function hoverPick(clientX, clientY) {
     }
     return;
   }
-  if (state.bodyFitted) {
-    // no occupancy index on a body-fitted mesh; the readout shows where a click would sample
+  if (state.bodyFitted || state.membraneMesh) {
+    // no occupancy index on a body-fitted mesh or a membrane's faces; the readout shows where a click would sample
     if (state.dimension !== 2) return;
     hoverBusy = true;
     try {
@@ -1360,13 +1435,13 @@ async function hoverPick(clientX, clientY) {
  * inside. Null where nothing is picked.
  */
 async function pickAt(clientX, clientY) {
-  if (state.bodyFitted) {
+  if (state.bodyFitted || state.membraneMesh) {
     if (state.dimension === 2) {
       const [x, y] = await labPointFromMouse(clientX, clientY);
       return { point: [x, y, state.bounds ? state.bounds[4] : 0] };
     }
     const { origin, dir } = await rayFromMouse(clientX, clientY);
-    const hit = pickCell(origin, dir);
+    const hit = pick3d(origin, dir);
     return hit ? { point: hit.point, cell: hit.cell } : null;
   }
   if (!state.pick) return null;
@@ -1852,7 +1927,7 @@ function updateOcclusion() {
   const view = state.cameraView;
   if (!view || !state.bounds) return;
   const b = state.bounds;
-  const slack = state.bodyFitted || !state.pick
+  const slack = state.bodyFitted || state.membraneMesh || !state.pick
     ? 0.01 * Math.hypot(b[1] - b[0], b[3] - b[2], b[5] - b[4])
     : Math.hypot(...state.pick.d);
   for (const probe of state.probes) {
@@ -1860,13 +1935,7 @@ function updateOcclusion() {
     const dist = Math.hypot(...d);
     if (!(dist > 0)) continue;
     const dir = d.map((v) => v / dist);
-    let t = null;
-    if (state.bodyFitted) {
-      const hit = pickCell(view.P, dir);
-      if (hit) t = Math.hypot(...[0, 1, 2].map((a) => hit.point[a] - view.P[a]));
-    } else {
-      t = castRay(view.P, dir)?.t ?? null;
-    }
+    const t = firstHitDistance(view.P, dir);
     if (t != null && t < dist - slack) occluded.add(probe.id);
   }
   updateLineOcclusion(slack);
@@ -1916,8 +1985,12 @@ function parseLine(text) {
  *   snaps each onto the membrane and runs the curve along the mesh between them, the shorter way round, so the
  *   overlay draws the curve's own samples, not straight segments between the picks;
  * - 'surface': a 3D membrane surface, where curves (geodesics) are not served yet.
+ * A finite-volume membrane is a 'membrane' in 2D and 3D: its curves are the desktop's, in the one slice of a 2D
+ * run or, in 3D, in the crop's cut plane (the curve where the plane cuts the membrane), so there the tool needs the
+ * crop on.
  */
 function lineKind() {
+  if (state.membraneMesh) return 'membrane'; // a finite-volume membrane: its curve in 2D, or in the cut plane in 3D
   if (!state.bodyFitted || state.cellTypes) return 'line';
   if (state.cellType === 3) return 'membrane'; // VTK_LINE
   if (state.cellType === 5 && state.dimension === 3) return 'surface'; // VTK_TRIANGLE in 3D
@@ -1933,11 +2006,22 @@ const CURVE_TOOL_TITLE = 'Draw a curve along the membrane for a kymograph: click
 /** The Line tool for the current domain: a curve on a 2D membrane, off (with the reason) on a 3D membrane surface. */
 function updateLineTool() {
   const kind = lineKind();
-  el.lineTool.disabled = kind === 'surface';
+  const needsCut = kind === 'membrane' && state.membraneMesh && state.dimension === 3 && state.sliceAxis < 0;
+  el.lineTool.disabled = kind === 'surface' || needsCut;
   el.lineTool.title = kind === 'surface'
     ? 'Curves on a 3D membrane surface are not supported yet: choose a volume variable for a line through the data'
-    : kind === 'membrane' ? CURVE_TOOL_TITLE : LINE_TOOL_TITLE;
-  if (kind === 'surface' && state.lineDraft) setLineTool(false);
+    : needsCut ? 'A curve along a 3D membrane lies in a slice, as on the desktop: turn on the crop (Slice), then click '
+      + 'along the membrane at the cut'
+      : kind === 'membrane' ? CURVE_TOOL_TITLE : LINE_TOOL_TITLE;
+  if ((kind === 'surface' || needsCut) && state.lineDraft) setLineTool(false);
+}
+
+/** The crop's cut plane: {axis, pos} in lab coordinates, or null with the crop off. */
+function cutPlane() {
+  const axis = state.sliceAxis;
+  if (axis < 0 || !state.bounds) return null;
+  const b = state.bounds;
+  return { axis, pos: b[2 * axis] + (0.005 + 0.99 * (state.slicePos / 100)) * (b[2 * axis + 1] - b[2 * axis]) };
 }
 
 /** The Line tool: on starts a new line (the current one stays until the new one is finished); off cancels it. */
@@ -1958,7 +2042,10 @@ function addLineVertex(clientX, clientY) {
     try {
       const hit = await pickAt(clientX, clientY);
       if (!hit || !state.lineDraft) return;
-      const point = roundPoint(hit.entry ?? hit.point);
+      const picked = (hit.entry ?? hit.point).slice();
+      const cut = state.membraneMesh && state.dimension === 3 ? cutPlane() : null;
+      if (cut) picked[cut.axis] = cut.pos; // a curve along a 3D membrane lies in the cut plane: its picks too
+      const point = roundPoint(picked);
       const last = state.lineDraft[state.lineDraft.length - 1];
       if (last && last.every((v, a) => v === point[a])) return; // the second click of a double-click
       state.lineDraft.push(point);
@@ -2077,10 +2164,11 @@ function lineGeometry() {
   if (!line) return null;
   const k = state.kymo;
   if (k && k.line === line && k.sampling === 'membrane') {
-    const P = k.samples.points;
+    // a finite-volume curve's samples are in the solver's node-centred frame: drawnPoints are them on the drawn faces
+    const P = k.drawnPoints ?? k.samples.points;
     const vertices = [];
     for (let i = 0; i + 2 < P.length; i += 3) vertices.push([P[i], P[i + 1], P[i + 2]]);
-    return { vertices, pieces: 1, marks: k.path };
+    return { vertices, pieces: 1, marks: k.drawnPath ?? k.path };
   }
   return { vertices: line.vertices, pieces: LINE_PIECES, marks: line.vertices };
 }
@@ -2143,13 +2231,7 @@ function updateLineOcclusion(slack) {
       const dist = Math.hypot(...d);
       if (!(dist > 0)) continue;
       const dir = d.map((v) => v / dist);
-      let t = null;
-      if (state.bodyFitted) {
-        const hit = pickCell(view.P, dir);
-        if (hit) t = Math.hypot(...[0, 1, 2].map((a) => hit.point[a] - view.P[a]));
-      } else {
-        t = castRay(view.P, dir)?.t ?? null;
-      }
+      const t = firstHitDistance(view.P, dir);
       if (t != null && t < dist - slack) lineOccluded.add((s - 1) * pieces + k);
     }
   }
@@ -2181,6 +2263,8 @@ async function requestKymograph(line, { raw = false, tstep = 1, signal } = {}) {
     };
     if (tstep > 1) params.tstep = String(tstep);
     if (raw) params.raw = '1';
+    // a curve along a 3D finite-volume membrane lies in the slice normal to the crop's axis
+    if (state.membraneMesh && state.dimension === 3 && state.sliceAxis >= 0) params.plane = 'xyz'[state.sliceAxis];
     const r = await fetch(url('/kymograph', params), { signal });
     if (r.ok) return { data: await r.json(), tstep };
     let body = {};
@@ -2355,6 +2439,10 @@ function updateKymoNote(message, warn = false) {
         notes.push("one sample per voxel crossed, by a voxel walk (the desktop's sampling can't take this line, so there is no membrane-crossing correction)");
       } else if (k.sampling === 'voxel-crossing') {
         notes.push("one sample per voxel crossed, two at each membrane (the desktop's sampling); hatched: outside the domain");
+      } else if (k.sampling === 'membrane' && k.location === 'cell') {
+        notes.push(`${k.samples.arcLength.length} samples along the membrane`
+          + (k.slice ? ` in the ${k.slice.axis} slice ${k.slice.index}` : '')
+          + ": one per membrane element, each its element's value (the desktop's membrane curve)");
       } else if (k.sampling === 'membrane' && k.location === 'point') {
         notes.push(`${k.samples.arcLength.length} samples along the membrane: the mesh vertices between the picks, `
           + 'each pick snapped onto the membrane; interpolated linearly between vertices');
@@ -2890,8 +2978,20 @@ function smoothingFor(strength) {
 const formatPassBand = (v) => (v >= 0.01 ? v.toFixed(3) : v.toExponential(1));
 
 /** Update the readout while dragging, without re-running the filter. */
+/** The smoothing controls: off, with a note, for a mesh drawn as it is (body-fitted, or a membrane's faces). */
+function updateSmoothingControls() {
+  el.smoothing.disabled = state.bodyFitted || state.membraneMesh;
+  if (state.bodyFitted) return; // set once at startup
+  if (state.membraneMesh) {
+    el.smoothingReadout.textContent = 'membrane faces — shown as computed';
+    el.smoothingReset.disabled = true;
+  } else {
+    previewSmoothing(state.smoothing);
+  }
+}
+
 function previewSmoothing(strength) {
-  if (state.bodyFitted) return; // the readout explains the mode; there is nothing to preview
+  if (state.bodyFitted || state.membraneMesh) return; // the readout explains the mode; there is nothing to preview
   state.smoothing = strength;
   const p = smoothingFor(strength);
   let note = '';
@@ -3135,6 +3235,7 @@ el.sliceAxis.addEventListener('change', () => {
   state.sliceAxis = el.sliceAxis.value === '' ? -1 : Number(el.sliceAxis.value);
   el.slicePos.disabled = state.sliceAxis < 0;
   el.cutMode.disabled = state.sliceAxis < 0;
+  updateLineTool(); // a curve along a 3D finite-volume membrane needs the cut plane
   void refreshCrop();
 });
 el.cutMode.addEventListener('change', () => {
@@ -3242,6 +3343,7 @@ function missingBrowserSupport() {
       el.smoothingReset.disabled = true;
     }
     previewSmoothing(state.smoothing);
+    updateSmoothingControls(); // a run that opens on a membrane variable
     setStatus(`rendered ${describe()} ✓ (${Math.round(performance.now() - t0)} ms) — ${state.dimension === 2 ? 'drag to pan' : 'drag to rotate, shift- or right-drag to pan'}, wheel to zoom, click to probe`);
   } catch (e) {
     setStatus('viewer failed: ' + (e?.message ?? e), true);
