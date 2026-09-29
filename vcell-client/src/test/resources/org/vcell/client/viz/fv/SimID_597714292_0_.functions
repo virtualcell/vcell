@@ -10,3 +10,4 @@ Cyt_EC_membrane::sobj_Cyt1_EC0_size; vcRegionArea('Cyt_EC_membrane'); ; Membrane
 Cyt::vobj_Cyt1_size; vcRegionVolume('Cyt'); ; Volume_Region_VariableType; false
 EC::vobj_EC0_size; vcRegionVolume('EC'); ; Volume_Region_VariableType; false
 
+Cyt_EC_membrane::xy_PM; (x + (2.0 * y) + (10.0 * t)); ; Membrane_VariableType; false

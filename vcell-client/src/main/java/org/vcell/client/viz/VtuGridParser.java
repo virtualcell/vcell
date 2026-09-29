@@ -475,7 +475,8 @@ final class VtuGridParser {
 	}
 
 	/**
-	 * The nearest point on a membrane mesh (line or triangle cells) to a lab-frame point that misses it,
+	 * The nearest point on a membrane mesh (line, triangle or quad cells: a finite-volume membrane's faces are
+	 * quads) to a lab-frame point that misses it,
 	 * as {@code {x, y, z, cell}}, or null when the mesh has no such cells or the nearest one is farther
 	 * away than its own diameter. A click almost never lands exactly on a curve or surface, so a
 	 * membrane probe snaps; the diameter bound keeps a click far from the membrane from snapping to it.
@@ -492,6 +493,8 @@ final class VtuGridParser {
 			double[] on = switch (grid.cellTypes[c]) {
 				case VTK_LINE -> closestOnSegment(q, vertex(p, cell[0]), vertex(p, cell[1]));
 				case VTK_TRIANGLE -> closestOnTriangle(q, vertex(p, cell[0]), vertex(p, cell[1]), vertex(p, cell[2]));
+				case VTK_QUAD -> nearer(q, closestOnTriangle(q, vertex(p, cell[0]), vertex(p, cell[1]), vertex(p, cell[2])),
+						closestOnTriangle(q, vertex(p, cell[0]), vertex(p, cell[2]), vertex(p, cell[3])));
 				default -> null;
 			};
 			if (on == null) {
@@ -515,6 +518,11 @@ final class VtuGridParser {
 			}
 		}
 		return best <= diameter2 ? new double[] { nearest[0], nearest[1], nearest[2], nearestCell } : null;
+	}
+
+	/** whichever of {@code a} and {@code b} is nearer {@code q} */
+	private static double[] nearer(double[] q, double[] a, double[] b) {
+		return dist2(a, q) <= dist2(b, q) ? a : b;
 	}
 
 	private static double dist2(double[] a, double[] b) {

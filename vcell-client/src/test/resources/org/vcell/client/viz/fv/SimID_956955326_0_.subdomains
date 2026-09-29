@@ -1,0 +1,5 @@
+# CompartmentSubDomain name, handle
+# MembraneSubDomain name, inside compartment name, handle, outside compartment name, handle
+CompartmentSubDomain, subdomain1, 1
+CompartmentSubDomain, subdomain0, 0
+MembraneSubDomain, subdomain0_subdomain1_membrane, subdomain1, 1, subdomain0, 0

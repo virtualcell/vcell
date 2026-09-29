@@ -1,0 +1,14 @@
+##---------------------------------------------
+##  /Users/schaff/.vcell/simdata/temp/SimID_956955326_0_.functions
+##---------------------------------------------
+
+subdomain0_subdomain1_membrane::J_bleaching1_mem; (50.0 * rf_PM * ((t < 0.1) && (x > 5.0))); ; Membrane_VariableType; false
+subdomain0_subdomain1_membrane::Laser_PM; ((t < 0.1) && (x > 5.0)); ; Membrane_VariableType; false
+subdomain0_subdomain1_membrane::Laser_PM_init_molecules_um_2; ((t < 0.1) && (x > 5.0)); ; Membrane_VariableType; false
+subdomain1::Size_cyt; vcRegionVolume('subdomain1'); ; Volume_Region_VariableType; false
+subdomain0::Size_ec; vcRegionVolume('subdomain0'); ; Volume_Region_VariableType; false
+subdomain0_subdomain1_membrane::Size_PM; vcRegionArea('subdomain0_subdomain1_membrane'); ; Membrane_Region_VariableType; false
+subdomain0_subdomain1_membrane::sobj_subdomain11_subdomain00_size; vcRegionArea('subdomain0_subdomain1_membrane'); ; Membrane_Region_VariableType; false
+subdomain0::vobj_subdomain00_size; vcRegionVolume('subdomain0'); ; Volume_Region_VariableType; false
+subdomain1::vobj_subdomain11_size; vcRegionVolume('subdomain1'); ; Volume_Region_VariableType; false
+
