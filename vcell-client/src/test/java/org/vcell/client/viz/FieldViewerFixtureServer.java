@@ -47,6 +47,8 @@ public final class FieldViewerFixtureServer {
 		FieldViewerServer.registerBundle("555", 0, bundle("receptor_3d.fenics"), "fenics::receptor 3d");
 		// MovingBoundary: a disk moving along x, through the VTU seam
 		FakeMovingBoundaryRun.register();
+		// Chombo: a disk (2D) and a ball (3D) on one static embedded-boundary mesh, through the VTU seam
+		FakeChomboRun.register();
 
 		int port = FieldViewerServer.start();
 		if (port < 0) {
@@ -58,7 +60,9 @@ public final class FieldViewerFixtureServer {
 				+ "\"fenics2d\":{\"sim\":\"987654321\",\"job\":0},"
 				+ "\"fenicsMoving\":{\"sim\":\"777\",\"job\":0},"
 				+ "\"fenics3d\":{\"sim\":\"555\",\"job\":0},"
-				+ "\"movingBoundary\":{\"sim\":\"" + FakeMovingBoundaryRun.SIM + "\",\"job\":0}}}");
+				+ "\"movingBoundary\":{\"sim\":\"" + FakeMovingBoundaryRun.SIM + "\",\"job\":0},"
+				+ "\"chombo2d\":{\"sim\":\"" + FakeChomboRun.SIM_2D + "\",\"job\":0},"
+				+ "\"chombo3d\":{\"sim\":\"" + FakeChomboRun.SIM_3D + "\",\"job\":0}}}");
 		System.out.flush();
 		Thread.currentThread().join(); // the server's threads are daemons; stay up until killed
 	}

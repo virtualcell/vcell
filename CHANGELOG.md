@@ -29,6 +29,19 @@ _(Release-manager scratchpad. Populated at release-cut time.)_
   colour bar, a time cursor that follows the slider, and a line profile at the current time. Click it to go
   to that time, shift-click to probe that point. Export the samples or the matrix as CSV, the desktop-style
   resampling as CSV, or the image as PNG.
+- Kymographs also work for FEniCSx runs, in 2D and 3D, and for Chombo 2D runs. The line is sampled evenly
+  (two samples per mesh cell, on average), and FEniCSx values are interpolated between mesh vertices, so the
+  kymograph is smooth. A line through two compartments shows the other one as a gap. On a FEniCSx run whose
+  mesh moves, the line stays fixed in place (labelled "fixed line (lab frame)"), so the moving boundary shows
+  as the edge of the gaps.
+
+### Changed
+- The field viewer finds the mesh cell under a point much faster on body-fitted runs (FEniCSx, Chombo,
+  MovingBoundary), which speeds up probes on large meshes.
+
+### Fixed
+- A probe on a 3D FEniCSx membrane no longer reads a horizontal membrane triangle lying above or below the
+  clicked point; it moves onto the membrane surface as it does elsewhere.
 
 ## [8.2.0.05] - 2026-09-29
 

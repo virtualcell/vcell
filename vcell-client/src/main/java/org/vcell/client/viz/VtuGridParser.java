@@ -56,6 +56,215 @@ final class VtuGridParser {
 		int numPoints() {
 			return points.length / 3;
 		}
+
+		private volatile Boolean flat;
+		private volatile CellLocator locator;
+		private volatile double meanDiameter = Double.NaN;
+
+		/**
+		 * True when every point has the same z: a 2D mesh, whose polygons are tested in the xy plane with z
+		 * ignored. A mesh with depth (a 3D surface or volume mesh) holds a point in a polygon only in the
+		 * polygon's own plane, horizontal ones included.
+		 */
+		boolean isFlat() {
+			Boolean f = flat;
+			if (f == null) {
+				boolean same = true;
+				for (int i = 5; i < points.length && same; i += 3) {
+					same = points[i] == points[2];
+				}
+				flat = f = same;
+			}
+			return f;
+		}
+
+		/** The grid's point locator, built on first use and kept with the grid (a moved mesh is another grid). */
+		CellLocator locator() {
+			CellLocator l = locator;
+			if (l == null) {
+				synchronized (this) {
+					l = locator;
+					if (l == null) {
+						locator = l = new CellLocator(this);
+					}
+				}
+			}
+			return l;
+		}
+
+		/** h̄: the mean over cells of the cell's diameter (its longest vertex-to-vertex distance); 0 for no cells. */
+		double meanCellDiameter() {
+			double h = meanDiameter;
+			if (Double.isNaN(h)) {
+				double sum = 0;
+				for (int[] cell : cells) {
+					double d2 = 0;
+					for (int a = 0; a < cell.length; a++) {
+						for (int b = a + 1; b < cell.length; b++) {
+							double dx = points[3 * cell[b]] - points[3 * cell[a]];
+							double dy = points[3 * cell[b] + 1] - points[3 * cell[a] + 1];
+							double dz = points[3 * cell[b] + 2] - points[3 * cell[a] + 2];
+							d2 = Math.max(d2, dx * dx + dy * dy + dz * dz);
+						}
+					}
+					sum += Math.sqrt(d2);
+				}
+				meanDiameter = h = cells.length > 0 ? sum / cells.length : 0;
+			}
+			return h;
+		}
+	}
+
+	/**
+	 * Finds the cell containing a point without scanning every cell: a uniform grid of buckets over the
+	 * mesh's bounding box, each listing the cells whose (slightly padded) bounding boxes overlap it. A lookup
+	 * tests only its bucket's cells, in ascending order with the same containment test as
+	 * {@link VtuGridParser#locateCell}, so it returns the same cell the linear scan does — the lowest-numbered
+	 * one containing the point — including on a face two cells share.
+	 * <p>
+	 * An axis along which the mesh has no extent (z of a 2D mesh) gets one bucket and bounds nothing: a flat
+	 * mesh's polygons ignore z, and its line cells test z themselves.
+	 */
+	static final class CellLocator {
+		private final VtuGrid grid;
+		private final double[] lo = new double[3];
+		private final double[] hi = new double[3];
+		private final double[] size = new double[3];
+		private final int[] n = { 1, 1, 1 };
+		private final boolean[] resolved = new boolean[3];
+		/** per cell: min x, y, z, max x, y, z, padded */
+		private final double[] boxes;
+		/** bucket b holds items[start[b] … start[b + 1]) */
+		private final int[] start;
+		private final int[] items;
+
+		CellLocator(VtuGrid grid) {
+			this.grid = grid;
+			int nc = grid.cells.length;
+			double[] p = grid.points;
+			boxes = new double[6 * nc];
+			java.util.Arrays.fill(lo, Double.POSITIVE_INFINITY);
+			java.util.Arrays.fill(hi, Double.NEGATIVE_INFINITY);
+			for (int c = 0; c < nc; c++) {
+				int o = 6 * c;
+				boxes[o] = boxes[o + 1] = boxes[o + 2] = Double.POSITIVE_INFINITY;
+				boxes[o + 3] = boxes[o + 4] = boxes[o + 5] = Double.NEGATIVE_INFINITY;
+				for (int i : grid.cells[c]) {
+					for (int a = 0; a < 3; a++) {
+						boxes[o + a] = Math.min(boxes[o + a], p[3 * i + a]);
+						boxes[o + 3 + a] = Math.max(boxes[o + 3 + a], p[3 * i + a]);
+					}
+				}
+				// pad past every containment tolerance (1e-6 of a cell's size for curves and surfaces)
+				double dx = boxes[o + 3] - boxes[o], dy = boxes[o + 4] - boxes[o + 1], dz = boxes[o + 5] - boxes[o + 2];
+				double pad = 1e-5 * Math.sqrt(dx * dx + dy * dy + dz * dz);
+				for (int a = 0; a < 3; a++) {
+					boxes[o + a] -= pad;
+					boxes[o + 3 + a] += pad;
+					lo[a] = Math.min(lo[a], boxes[o + a]);
+					hi[a] = Math.max(hi[a], boxes[o + 3 + a]);
+				}
+			}
+			double largest = 0;
+			for (int a = 0; a < 3 && nc > 0; a++) {
+				largest = Math.max(largest, hi[a] - lo[a]);
+			}
+			int dims = 0;
+			double measure = 1;
+			for (int a = 0; a < 3 && nc > 0; a++) {
+				resolved[a] = hi[a] - lo[a] > 1e-9 * largest && !(a == 2 && grid.isFlat());
+				if (resolved[a]) {
+					dims++;
+					measure *= hi[a] - lo[a];
+				}
+			}
+			// about one cell per bucket: buckets of side s with (extent / s)^dims ≈ cells
+			// (a thin slab — a nearly planar surface in 3D — would overshoot that, so widen s until it doesn't)
+			double s = dims > 0 ? Math.pow(measure / Math.max(1, nc), 1.0 / dims) : 1;
+			long total;
+			do {
+				total = 1;
+				for (int a = 0; a < 3; a++) {
+					if (resolved[a]) {
+						n[a] = (int) Math.max(1, Math.min(1024, Math.ceil((hi[a] - lo[a]) / s)));
+						size[a] = (hi[a] - lo[a]) / n[a];
+					}
+					total *= n[a];
+				}
+				s *= 1.5;
+			} while (total > 4L * nc + 64);
+			// compressed rows: count each bucket's cells, then fill them in ascending cell order
+			start = new int[(int) total + 1];
+			int[] range = new int[6];
+			for (int c = 0; c < nc; c++) {
+				bucketRange(c, range);
+				forEachBucket(range, bucket -> start[bucket + 1]++);
+			}
+			for (int bucket = 0; bucket < total; bucket++) {
+				start[bucket + 1] += start[bucket];
+			}
+			items = new int[start[(int) total]];
+			int[] fill = start.clone();
+			for (int c = 0; c < nc; c++) {
+				final int cell = c;
+				bucketRange(c, range);
+				forEachBucket(range, bucket -> items[fill[bucket]++] = cell);
+			}
+		}
+
+		private void forEachBucket(int[] range, java.util.function.IntConsumer action) {
+			for (int k = range[2]; k <= range[5]; k++) {
+				for (int j = range[1]; j <= range[4]; j++) {
+					for (int i = range[0]; i <= range[3]; i++) {
+						action.accept((k * n[1] + j) * n[0] + i);
+					}
+				}
+			}
+		}
+
+		private void bucketRange(int c, int[] range) {
+			for (int a = 0; a < 3; a++) {
+				if (resolved[a]) {
+					range[a] = bucket(a, boxes[6 * c + a]);
+					range[3 + a] = bucket(a, boxes[6 * c + 3 + a]);
+				} else {
+					range[a] = range[3 + a] = 0;
+				}
+			}
+		}
+
+		private int bucket(int a, double v) {
+			int i = (int) Math.floor((v - lo[a]) / size[a]);
+			return i < 0 ? 0 : i >= n[a] ? n[a] - 1 : i;
+		}
+
+		/** The cell containing the point, or -1: the same answer as {@link VtuGridParser#locateCell}. */
+		int locate(double x, double y, double z) {
+			double[] q = { x, y, z };
+			int b = 0;
+			for (int a = 2; a >= 0; a--) {
+				int i = 0;
+				if (resolved[a]) {
+					if (!(q[a] >= lo[a] && q[a] <= hi[a])) {
+						return -1; // outside the mesh's box, or NaN
+					}
+					i = bucket(a, q[a]);
+				}
+				b = b * n[a] + i;
+			}
+			for (int k = start[b]; k < start[b + 1]; k++) {
+				int c = items[k];
+				int o = 6 * c;
+				boolean inBox = true;
+				for (int a = 0; a < 3 && inBox; a++) {
+					inBox = !resolved[a] || q[a] >= boxes[o + a] && q[a] <= boxes[o + 3 + a];
+				}
+				if (inBox && contains(grid, c, x, y, z)) {
+					return c;
+				}
+			}
+			return -1;
+		}
 	}
 
 	/** a straight segment: FEniCSx writes a 2D membrane (a curve) as line cells */
@@ -178,27 +387,39 @@ final class VtuGridParser {
 	 * tolerance, since a lab-frame point is rarely exactly on a membrane.
 	 */
 	static int locateCell(VtuGrid grid, double x, double y, double z) {
-		double[] p = grid.points;
 		for (int c = 0; c < grid.cells.length; c++) {
-			int[] cell = grid.cells[c];
-			boolean hit = switch (grid.cellTypes[c]) {
-				case VTK_LINE -> pointOnSegment(p, cell[0], cell[1], x, y, z);
-				case VTK_TRIANGLE, VTK_POLYGON, VTK_QUAD -> pointInPlanarPolygon(p, cell, x, y, z);
-				case VTK_VOXEL -> x >= Math.min(p[3 * cell[0]], p[3 * cell[7]])
-						&& x <= Math.max(p[3 * cell[0]], p[3 * cell[7]])
-						&& y >= Math.min(p[3 * cell[0] + 1], p[3 * cell[7] + 1])
-						&& y <= Math.max(p[3 * cell[0] + 1], p[3 * cell[7] + 1])
-						&& z >= Math.min(p[3 * cell[0] + 2], p[3 * cell[7] + 2])
-						&& z <= Math.max(p[3 * cell[0] + 2], p[3 * cell[7] + 2]);
-				case VTK_TETRA -> pointInTetra(p, cell, x, y, z);
-				case VTK_POLYHEDRON -> pointInPolyhedron(p, grid.facesOf(c), cell, x, y, z);
-				default -> false;
-			};
-			if (hit) {
+			if (contains(grid, c, x, y, z)) {
 				return c;
 			}
 		}
 		return -1;
+	}
+
+	/**
+	 * {@link #locateCell} through the grid's {@link CellLocator}: the same cell, found by testing only the
+	 * cells near the point. Every located point on the server goes through this.
+	 */
+	static int locate(VtuGrid grid, double x, double y, double z) {
+		return grid.locator().locate(x, y, z);
+	}
+
+	/** Whether cell {@code c} holds the point, by the tests {@link #locateCell} describes. */
+	private static boolean contains(VtuGrid grid, int c, double x, double y, double z) {
+		double[] p = grid.points;
+		int[] cell = grid.cells[c];
+		return switch (grid.cellTypes[c]) {
+			case VTK_LINE -> pointOnSegment(p, cell[0], cell[1], x, y, z);
+			case VTK_TRIANGLE, VTK_POLYGON, VTK_QUAD -> pointInPlanarPolygon(p, cell, x, y, z, grid.isFlat());
+			case VTK_VOXEL -> x >= Math.min(p[3 * cell[0]], p[3 * cell[7]])
+					&& x <= Math.max(p[3 * cell[0]], p[3 * cell[7]])
+					&& y >= Math.min(p[3 * cell[0] + 1], p[3 * cell[7] + 1])
+					&& y <= Math.max(p[3 * cell[0] + 1], p[3 * cell[7] + 1])
+					&& z >= Math.min(p[3 * cell[0] + 2], p[3 * cell[7] + 2])
+					&& z <= Math.max(p[3 * cell[0] + 2], p[3 * cell[7] + 2]);
+			case VTK_TETRA -> pointInTetra(p, cell, x, y, z);
+			case VTK_POLYHEDRON -> pointInPolyhedron(p, grid.facesOf(c), cell, x, y, z);
+			default -> false;
+		};
 	}
 
 	/**
@@ -380,17 +601,17 @@ final class VtuGridParser {
 	}
 
 	/**
-	 * Point in a planar polygon. A polygon in (or parallel to) the xy plane keeps the original 2D
-	 * test with z ignored; one tilted out of it (a membrane triangle of a 3D mesh) must hold the
-	 * point in its plane and is tested in the coordinate plane it projects onto best.
+	 * Point in a planar polygon. A polygon of a flat (2D) mesh keeps the original 2D test with z
+	 * ignored; one of a mesh with depth (a membrane triangle of a 3D mesh, horizontal or tilted) must
+	 * hold the point in its plane and is tested in the coordinate plane it projects onto best.
 	 */
-	private static boolean pointInPlanarPolygon(double[] p, int[] cell, double x, double y, double z) {
+	private static boolean pointInPlanarPolygon(double[] p, int[] cell, double x, double y, double z, boolean flatMesh) {
 		double[] n = newellNormal(p, cell);
 		double norm = Math.sqrt(n[0] * n[0] + n[1] * n[1] + n[2] * n[2]);
 		if (norm == 0) {
 			return false;
 		}
-		if (Math.abs(n[0]) <= ON_CELL_TOLERANCE * norm && Math.abs(n[1]) <= ON_CELL_TOLERANCE * norm) {
+		if (flatMesh && Math.abs(n[0]) <= ON_CELL_TOLERANCE * norm && Math.abs(n[1]) <= ON_CELL_TOLERANCE * norm) {
 			return pointInPolygon(p, cell, x, y, 0, 1);
 		}
 		// distance from the plane, relative to the cell's size (sqrt of twice its area)

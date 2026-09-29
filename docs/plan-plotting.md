@@ -1,6 +1,6 @@
 # Plan — multi-point time plots and kymographs in the browser field viewer
 
-**Status:** in progress: P1 to P4 merged (2026-09-29). This is a living plan: tick PRs off as they merge.
+**Status:** in progress: P1 to P5 merged (2026-09-29). This is a living plan: tick PRs off as they merge.
 
 ## Context
 
@@ -727,12 +727,98 @@ Decisions and deviations recorded in P4:
   - Already ready: the image interpolates `location: "point"` samples; line occlusion uses `pickTetrahedron`
     on body-fitted meshes; shift-click falls back to the sample point when there is no `samples.cell`.
 
-### PR P5 — kymographs for FEniCSx and Chombo
+### PR P5 — kymographs for FEniCSx and Chombo ✅ (#2124)
 - `CellLocator`, which also speeds up the P1 paths; uniform sampling; P1 interpolation (FEniCSx) and cell
   spans (Chombo); the default sample-count rule.
 - The UI enabled for these modes: FEniCSx 2D and 3D, and **Chombo 2D**. Chombo 3D has no picker until P6.
 - **Done when:** the FEniCSx kymograph tests pass (including the ALE fixture), the locator agrees with the
   linear scan, and a 3D FEniCSx line through a two-domain bundle shows gaps in the other domain.
+
+Decisions and deviations recorded in P5:
+- **`CellLocator`** (`VtuGridParser.CellLocator`, built on first use and kept on its `VtuGrid`, so a moved ALE
+  or MovingBoundary mesh gets its own). A uniform bucket grid over the mesh's box, about one cell per bucket
+  (at most `4·cells + 64` buckets, so a thin slab can't blow it up), each bucket listing the cells whose bounding
+  boxes, padded by 1e-5 of the cell's size (past every containment tolerance), overlap it. A lookup tests its
+  bucket's cells in ascending order with the linear scan's own test, so it returns **the same cell**, the
+  lowest-numbered one holding the point, shared faces included. An axis along which the mesh has no extent
+  (z of a 2D mesh) is one bucket and bounds nothing. `VtuGridParser.locate` goes through it and every server
+  path uses that (`PointSeries.sample`, so multi-point `/timeseries` and the kymographs); `locateCell` stays as
+  the linear reference. `nearestOnMesh` (the membrane snap) is still a scan: it runs once per probe.
+  - **Timing** (`VtuGridParserTest.theLocatorIsFastOnALargeMesh`, a 40³ lattice of cubes split into 384,000
+    tetrahedra): built in ~90 ms, then **~1.1 µs per point, against ~4,200 µs** for the linear scan: about
+    3,700× faster.
+  - **Agreement** (`theLocatorAgreesWithTheLinearScan`): the same cell for 4,000 random points plus every
+    vertex, centroid and edge midpoint, on `fenics-3d-tetra.vtu`, `fenics-2d-triangles.vtu`,
+    `polyhedron-cells.vtu`, the Chombo stand-ins (2D quads and cut pentagons; 3D voxels and polyhedra), the
+    MovingBoundary stand-in's polygons at two times, and line cells.
+  - **A fix it exposed.** A polygon whose normal is along z was tested in xy with z ignored, in every mesh. That
+    is right for a 2D mesh but let a horizontal membrane triangle of a **3D** surface mesh hold any point above
+    or below it (so a probe there read it instead of snapping). z is now ignored only in a flat mesh (every
+    point at one z); in a mesh with depth a horizontal polygon, like a tilted one, must hold the point in its
+    plane. CHANGELOG "Fixed".
+- **Where it lives.** `BodyFittedKymograph` (new): path parsing, the sample count, the evenly spaced samples, and
+  the response; it runs `PointSeries.sample` over the returned rows. `FenicsBundleViews.kymograph` and
+  `FieldViewerServer.vtuKymograph` supply the rows, both inside `heavy(…)`. `tstep` parsing is shared with FV.
+- **Samples.** `n` evenly spaced in arc length, the first at the path's start and the last at its end, so
+  `arcLength` runs from 0 to `pathLength` exactly. Default `clamp(ceil(2·L / h̄), 16, 1000)`, with `h̄` the mean
+  over cells of the cell's diameter (its longest vertex-to-vertex distance), cached per grid and taken from the
+  first saved time's mesh. `samples=` takes 2 to 2,000 (else 400); FV ignores it.
+- **Chombo samples are not merged** (a deviation from §3.2). Merging consecutive samples in one cell into one
+  sample would put its arc length at the run's middle, and the viewer ends each span halfway between samples, so
+  the drawn cell edges would move off the real ones. Uniform samples keep every span the same width, the reads
+  are the same (one row per time for all samples), and only the JSON is larger (≤ 2,000 samples).
+- **Path.** 2 to 64 vertices; in 2D `z` may be left out and is always set to the mesh plane's; consecutive
+  repeats dropped; fewer than two distinct vertices is 400 "zero length". Unlike FV, a vertex **may lie outside
+  the mesh**: its samples are gaps (there is no index to overflow).
+- **Response.** As FV's, with `sampling: "uniform"`, `location` `"point"` (FEniCSx) or `"cell"` (Chombo), and a
+  new `movingMesh` flag. `samples` has `arcLength`, `points` and `inDomain` (in the domain at any returned time);
+  no `volumeIndex`, `membraneIndex` or `cell` (a sample is probed at its own point). No `raw`.
+- **Moving meshes.** A FEniCSx ALE run's line is a fixed lab-frame line too, like MovingBoundary's (§5), so
+  `movingMesh` is true there and the viewer labels it "fixed line (lab frame)" in the title and the note.
+- **Refused (400).** A FEniCSx membrane domain ("membrane kymographs are not supported yet": a straight line
+  almost never lies on it; P7); an unknown variable (FEniCSx: unknown in that domain); a VTU variable that is not
+  cell data, or is a membrane variable. MovingBoundary stays 400 "not supported yet" until P6.
+- **`/info`** for a run served through the VTU seam now carries `"solver": "Chombo"` or `"MovingBoundary"` (a
+  FEniCSx bundle already said `"FEniCSx"`), so the viewer can tell the two apart.
+- **Viewer.** `lineUnavailable()` decides the Line tool: on for FV, FEniCSx (2D and 3D) and Chombo 2D; off with a
+  tooltip saying why for Chombo 3D (no picker for voxels and polyhedra) and MovingBoundary (P6). *Desktop CSV* is
+  hidden on body-fitted runs. The note says "N evenly spaced samples, interpolated linearly within each mesh cell"
+  (FEniCSx) or "each the value of the cell holding it" (Chombo). Body-fitted 3D line vertices are
+  `pickTetrahedron`'s point, nudged just inside the surface, so the line's ends have values.
+- **Chombo fixture.** `FakeChomboRun` (vcell-client test sources), like `FakeMovingBoundaryRun`: a proxy
+  `DataSetController` whose mesh is a `CartesianMeshChombo` (an anonymous subclass giving origin, extent and
+  size), serving one mesh in Chombo's doubled-index coordinates, which the server maps back to microns.
+  - `666`: 2D, a disk of `VTK_QUAD`s with `VTK_POLYGON` pentagons where a corner is cut;
+  - `667`: 3D, a ball of `VTK_VOXEL`s with `VTK_POLYHEDRON`s at its surface;
+  - one variable `C = x + 2y + 3z + 10t` at each cell's centre, 4 times.
+
+  `FieldViewerFixtureServer` registers both (roles `chombo2d`, `chombo3d`), so **Chombo 2D is covered in the
+  browser**, and P6 has a Chombo 3D fixture for its picker.
+- **Tests.**
+  - Java: `BodyFittedKymographTest` (new, rather than growing `FenicsBundleViewsTest`): a disk diameter (evenly
+    spaced arc lengths from 0 to the path's length, gaps beyond the disk, and **every sample's column equal to
+    `/timeseries` at the sample's point**); the default sample count against `h̄` computed from `/grid`; the ALE
+    fixture (the gap edges move along +x over time, by about 0.5 µm); a 3D chord through `receptor_3d`'s ball
+    and box (in one domain or the other, never both, and the columns equal the time series in each); `tstep`
+    and the value limit with its suggested stride; the 400s; a line outside the domain; the 503; and Chombo 2D
+    and 3D (each sample is its lattice cell's value). `VtuGridParserTest`: the locator's agreement, timing and
+    the horizontal-triangle rule. **60 `org.vcell.client.viz` tests pass** (48 before).
+  - Browser: `test/test_kymograph_bodyfitted.py`, 8 tests per engine: two clicks and Enter on FEniCSx 2D, ALE
+    and 3D and on Chombo 2D (image size, not blank, cursor, profile, the note, *Desktop CSV* hidden, the
+    lab-frame label exactly on the ALE run); the 3D line through two domains (complementary gaps, from the two
+    responses); Chombo's samples CSV and shift-click → probe; the tool off, with its reason, on MovingBoundary
+    and Chombo 3D. The P4 test "the tool is disabled on a FEniCSx run" is gone (it is enabled now).
+    **Results: 129 browser tests pass** (probes, kymographs and these) on Chromium (SwiftShader), WebKit and
+    Firefox, with no `is not permitted` refusals and no page errors.
+- **For P6.**
+  - Server: `handleKymograph` refuses MovingBoundary with one `if` (`mode == VtuMode.TIME_VARYING`); delete it.
+    `vtuKymograph` already locates the samples in each time's mesh and sets `movingMesh`. Update
+    `FieldViewerServerMovingBoundaryTest.kymographsAreNotServedYet`.
+  - Viewer: `lineUnavailable()` holds both remaining refusals (MovingBoundary; Chombo 3D until its picker exists).
+    The lab-frame label already appears whenever `movingMesh` is true.
+  - The Chombo 3D fixture is `chombo3d` (voxels inside, polyhedra at the surface); `pickTetrahedron` skips every
+    cell that is not a tetrahedron (`cell.length !== 4`), so it needs the general voxel/polyhedron ray pick. The
+    served `/grid` carries `cellTypes` and `cellFaces` for it.
 
 ### PR P6 — MovingBoundary kymograph, and picking on Chombo 3D
 - A fixed lab-frame kymograph for MovingBoundary (§3.2, §5) within the value limit, labelled as such, with

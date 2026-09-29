@@ -3,7 +3,8 @@ Fixtures for the field viewer's browser tests.
 
 The page is served by the real `FieldViewerServer`, started over vcell-client's test fixtures by
 `org.vcell.client.viz.FieldViewerFixtureServer` (a Java main in vcell-client's test sources): finite-volume
-runs in 2D and 3D, FEniCSx bundles in 2D (fixed and moving) and 3D, and a stand-in MovingBoundary run.
+runs in 2D and 3D, FEniCSx bundles in 2D (fixed and moving) and 3D, and stand-in MovingBoundary and Chombo
+(2D and 3D) runs.
 Every test runs once per browser engine (Chromium, WebKit, Firefox), and fails if the console shows an
 `is not permitted` refusal from the wasm invoker (README, "Notes for anyone editing this").
 """

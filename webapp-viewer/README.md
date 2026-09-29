@@ -205,10 +205,12 @@ scrub time — a time step costs about 5.7× less than shipping both.
     After a camera move, debounced, a ray is cast from the camera to each probe (`castRay` or
     `pickTetrahedron`, honoring the crop). A probe the geometry hides is drawn hollow at 40 % opacity.
   - Checked by the committed browser tests (`test/`, see its README) in Chromium, WebKit and Firefox:
-    - FV 2D and 3D, FEniCSx 2D (fixed and moving) and 3D, and a stand-in MovingBoundary run;
+    - FV 2D and 3D, FEniCSx 2D (fixed and moving) and 3D, and stand-in MovingBoundary and Chombo runs;
     - markers land within 1.5 px of the clicked point on the body-fitted runs;
     - no `is not permitted` refusals.
-- **Kymographs: a variable along a line, over time** (finite volume for now; FEniCSx and Chombo come next).
+- **Kymographs: a variable along a line, over time**, for finite volume, FEniCSx (2D, 3D, moving meshes) and
+  Chombo 2D. MovingBoundary follows (plan P6), as does Chombo 3D, which first needs a picker for its voxels and
+  polyhedra; the Line tool says why it is off there.
   - **Drawing.** **╱ Line** starts a line: each click on the view adds a vertex, at the exact surface or
     cut-face point under the mouse (`pickAt`'s `entry`). **Enter** or a double-click finishes, **Backspace**
     removes the last vertex, **Esc** cancels. In 3D two surface picks make a chord through the inside; with a
@@ -222,9 +224,24 @@ scrub time — a time step costs about 5.7× less than shipping both.
     `_INSIDE`/`_OUTSIDE` membrane values. All samples × times come from one server-side `TimeSeriesJobSpec`,
     so only the kymograph's values travel. A 3D line the desktop's code can't take (one through voxel
     vertices) is walked voxel by voxel instead, without the membrane correction, and the panel says so.
+  - **Sampling (body-fitted: FEniCSx, Chombo).** The line is sampled **evenly**: by default
+    `clamp(ceil(2·L / h̄), 16, 1000)` samples, two per mean cell diameter `h̄` of the mesh, at most 2,000 with
+    `samples=`. The server locates each sample in the mesh (a bucket grid of cell bounding boxes,
+    `VtuGridParser.CellLocator`, built once per mesh) and reads each saved time once for all samples, the loop
+    the multi-point `/timeseries` uses. A FEniCSx sample is interpolated from the P1 vertex values of the cell
+    holding it, so the image and profile are continuous (linear between samples); a Chombo sample takes its
+    cell's value, drawn as a step per sample. There is no *Desktop CSV* for these runs: the desktop has no
+    kymograph of them.
+  - **A moving mesh** (a FEniCSx ALE run; MovingBoundary in P6): the line stays where it was drawn, a **fixed
+    line in the lab frame** (an Eulerian line), and each sample reads whichever cell holds its point at that
+    time. The moving boundary therefore shows as the edge of the gaps, moving across the image. The title and
+    note say "fixed line (lab frame)". A line that follows the material can't be built from the saved data.
   - **Gaps.** Samples outside the variable's compartment are **gaps**, drawn as a grey hatch and listed as
     "no data" by the colour bar (the desktop shows the raw array there, i.e. another compartment's numbers). A
-    line wholly outside says "the line lies outside <domain>".
+    line wholly outside says "the line lies outside <domain>". On a body-fitted run the other compartment is
+    another mesh, so a 3D line through a ball in a box is a gap in the ball for the box's variable, and the
+    other way round. A FEniCSx membrane domain has no kymograph yet (a straight line almost never lies on it;
+    curves along a membrane are plan P7).
   - **The image** has one row per saved time, the first at the top as on the desktop, and arc length across.
     It is `min(1024, 4·n)` columns, scaled up with `image-rendering: pixelated`. Each column shows the sample
     whose span holds it, a span ending halfway to each neighbouring sample, so voxels keep their true widths
@@ -233,7 +250,7 @@ scrub time — a time step costs about 5.7× less than shipping both.
     current time, or typed. Rows are the saved times, labelled with their real times.
   - **Interaction.** A dashed cursor marks the slider's time and follows it; a click on the image moves the
     slider to that row's time; hovering reads `d, t, value`; **shift-click adds a probe** at that sample (its
-    voxel's centre), for its time course in the probe panel. Below, the line profile at the current time (a
+    voxel's centre for finite volume, the sample's own point otherwise), for its time course in the probe panel. Below, the line profile at the current time (a
     step per voxel, jumps at membranes).
   - **Limits.** Over the server's 500,000 samples × times the viewer retries once with the stride the server
     suggests (every k-th saved time) and says so; a busy server (another kymograph running) is retried once. A
