@@ -72,6 +72,36 @@
   .probe-panel .grid { stroke: currentColor; stroke-opacity: .08; }
   .probe-panel .time-cursor { stroke: currentColor; stroke-opacity: .5; stroke-dasharray: 3 3; }
   .probe-panel .title { font: 11px ui-monospace, monospace; fill: currentColor; fill-opacity: .8; }
+  /* the kymograph: an image of the variable along a line (x) over time (y), with a line profile below */
+  .canvas-box.drawing-line canvas { cursor: crosshair; }
+  .overlay .kymo-line { fill: none; stroke: #fff; stroke-width: 2; }
+  .overlay .kymo-line.occluded { stroke-dasharray: 5 4; stroke-opacity: .7; }
+  .overlay .kymo-line-under { fill: none; stroke: #000; stroke-opacity: .55; stroke-width: 4; }
+  .overlay .kymo-vertex { fill: #fff; stroke: #000; stroke-opacity: .6; stroke-width: 1; }
+  .overlay .kymo-start { stroke: #fff; stroke-width: 3; }
+  .overlay .kymo-line.draft { stroke-dasharray: 2 3; }
+  .kymo-panel .plot-head .tools { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .kymo-panel .plot-head input[type=number] { width: 7em; font: 12px ui-monospace, monospace; }
+  .kymo-panel .kymo-coords { display: flex; align-items: center; gap: 6px; font: 12px/1.4 ui-monospace, monospace;
+                             margin: 2px 0 4px; }
+  .kymo-panel .kymo-coords input { flex: 1 1 auto; font: 12px ui-monospace, monospace; min-width: 0; }
+  .kymo-panel .note { font: 12px/1.4 ui-monospace, monospace; opacity: .75; min-height: 1.4em; }
+  .kymo-panel .note.warn { color: #d70; opacity: 1; }
+  .kymo-panel .stale { font: 11px ui-monospace, monospace; padding: 0 6px; border-radius: 9px;
+                       background: #d70; color: #fff; border: none; cursor: pointer; }
+  .kymo-panel .kymo-plot { position: relative; height: 260px; }
+  .kymo-panel .kymo-plot svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  /* gaps (no data: outside the variable's domain) are transparent pixels over this hatch */
+  .kymo-panel .kymo-plot canvas { position: absolute; image-rendering: pixelated; cursor: crosshair;
+    background: repeating-linear-gradient(45deg, #9a9aa3 0 3px, #c8c8cf 3px 6px); }
+  .kymo-panel .no-data { fill: url(#kymoHatch); }
+  .kymo-panel .time-cursor { stroke: #fff; stroke-width: 1.5; stroke-dasharray: 4 3; pointer-events: none; }
+  .kymo-panel .time-cursor-under { stroke: #000; stroke-opacity: .6; stroke-width: 3.5; pointer-events: none; }
+  .kymo-panel .profile { height: 170px; }
+  .kymo-panel .profile .trace { fill: none; stroke: #07c; stroke-width: 2; vector-effect: non-scaling-stroke; }
+  .kymo-panel .grid { stroke: currentColor; stroke-opacity: .08; }
+  .kymo-panel .title { font: 11px ui-monospace, monospace; fill: currentColor; fill-opacity: .8; }
+  .kymo-panel .readout { font: 12px/1.4 ui-monospace, monospace; min-height: 1.4em; opacity: .85; }
 </style>
 </head>
 <body>
@@ -88,6 +118,7 @@
   <label for="time">Time</label>
   <input id="time" type="range" min="0" max="0" step="1" value="0" disabled>
   <button id="addProbes" type="button" disabled aria-pressed="false" title="Each click adds a probe instead of replacing them (shift-click does the same)">＋ Add points</button>
+  <button id="lineTool" type="button" disabled aria-pressed="false" title="Draw a line for a kymograph: click to add vertices, Enter or double-click to finish, Backspace removes the last, Esc cancels">╱ Line</button>
   <button id="statsBtn" type="button" disabled title="min / mean / max over space, per variable, over time">Stats</button>
   <button id="refreshBtn" type="button" disabled title="Fetch output times written since the page loaded (automatic every 10 s while the run is in progress)">Refresh</button>
   <span class="readout" id="runStatus"></span>
@@ -105,6 +136,33 @@
   </div>
   <ul class="probe-list" id="probeList"></ul>
   <svg id="probeSvg" aria-label="time courses at the probes"></svg>
+</div>
+
+<div class="plot-panel kymo-panel" id="kymoPanel" hidden>
+  <div class="plot-head">
+    <span id="kymoTitle"></span>
+    <span class="tools">
+      <button id="kymoStale" class="stale" type="button" hidden title="The run has new output times since this kymograph was computed">stale – recompute</button>
+      <select id="kymoRange" title="Colour range: the kymograph's own min and max, the 3D view's range at the current time, or your own">
+        <option value="all" selected>All (kymograph)</option>
+        <option value="view">3D view (current time)</option>
+        <option value="user">User</option>
+      </select>
+      <input id="kymoMin" type="number" step="any" hidden aria-label="colour range minimum">
+      <input id="kymoMax" type="number" step="any" hidden aria-label="colour range maximum">
+      <button id="kymoSamplesCsv" type="button" disabled title="Save the samples as CSV: arc length, point, volume index, membrane index, in domain">Samples CSV</button>
+      <button id="kymoMatrixCsv" type="button" disabled title="Save the kymograph as CSV: the arc lengths, then one row per time">Matrix CSV</button>
+      <button id="kymoDesktopCsv" type="button" disabled title="Save the kymograph resampled as the desktop's kymograph resamples it (raw values, nearest neighbour, evenly spaced), to compare with its Copy output">Desktop CSV</button>
+      <button id="kymoPng" type="button" disabled title="Save the kymograph image as PNG">PNG</button>
+      <button id="kymoClose" type="button" title="Remove the line">✕</button>
+    </span>
+  </div>
+  <label class="kymo-coords">Line <input id="lineCoords" type="text" spellcheck="false" autocomplete="off"
+    placeholder="x,y,z; x,y,z; …" title="The line's vertices, in µm. Edit and press Enter to redraw it"></label>
+  <div class="note" id="kymoNote"></div>
+  <div class="kymo-plot" id="kymoPlot"><canvas id="kymoCanvas" width="1" height="1"></canvas><svg id="kymoSvg" aria-label="kymograph axes"></svg></div>
+  <div class="readout" id="kymoReadout"></div>
+  <svg class="profile" id="kymoProfile" aria-label="line profile at the current time"></svg>
 </div>
 
 <div class="plot-panel" id="plotPanel" hidden>

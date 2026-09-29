@@ -1,6 +1,6 @@
 # Plan — multi-point time plots and kymographs in the browser field viewer
 
-**Status:** in progress: P1, P2 and P3 merged (2026-09-29). This is a living plan: tick PRs off as they merge.
+**Status:** in progress: P1 to P4 merged (2026-09-29). This is a living plan: tick PRs off as they merge.
 
 ## Context
 
@@ -653,12 +653,79 @@ Decisions and deviations recorded in P3:
 - **Cost** (plan §8). SSHelper sampling on MembraneFrap3D's mesh (21³, 1,158 membrane elements), four lines
   including an oblique 3D chord (which SSHelper handled, 59 samples, 4 crossings): under 1.2 ms each once warm.
 
-### PR P4 — kymograph in the viewer (line and polyline)
+### PR P4 — kymograph in the viewer (line and polyline) ✅ (#2123)
 - The Line tool (vertex clicks, Enter, Esc, Backspace), the coordinate field, the overlay line with a start
   tick, `#kymoPanel` (canvas, JS colour map, colour bar, range modes, profile, cursors, click → time,
   shift-click → probe), CSV and PNG export, the automatic `tstep` retry.
 - **Done when:** the kymograph browser tests pass, and the by-hand desktop cross-check (§6.3) matches on the 2D
   and 3D FV runs.
+
+Decisions and deviations recorded in P4:
+- **FV only.** The Line tool is enabled for finite-volume runs and disabled (with a tooltip) for the body-fitted
+  modes until P5/P6 serve their kymographs. The drawing code is mode-agnostic: body-fitted picks give their
+  `point`, FV picks their exact `entry`. The image already interpolates `location: "point"` samples linearly,
+  ready for P5.
+- **The tool and the field.** **╱ Line** opens the panel with the coordinate field and starts a draft; the
+  current line stays until the draft is finished. Finishing (Enter, a double-click, or the 64th vertex) turns
+  the tool off. Typing vertices in the field and pressing Enter sets the line directly (so for §6.3: press Line,
+  type, Enter). Vertices are rounded to six significant digits when placed, so the line *is* what the field
+  shows and a typed copy reproduces it exactly. A double-click's two clicks give one vertex (a repeat of the
+  last vertex is dropped). Vertex picks are async; Enter, Backspace and a double-click queue behind them.
+- **The "snap vertices to the cut plane" checkbox** (optional in §4.2) is left out: with a crop on, picks
+  already land on the cut face.
+- **Image.** Gaps are transparent pixels over a CSS hatch behind the canvas, since a hatch drawn into a
+  `W × rows` image would be stretched by the pixelated scaling. A column shows the sample whose span holds its
+  middle, spans ending halfway between neighbouring samples, so the two samples of a membrane crossing (one
+  point) split the gap between their neighbours. Time ticks label up to six rows with their real times. The
+  range modes are All (the response's `range`), 3D view (the last `/field` range, redrawn on each time step
+  while chosen) and User (min and max inputs, prefilled with the current range).
+- **Profile.** Its y scale is the kymograph's own range, fixed across times, so scrubbing moves the curve,
+  not the axis. FV draws a step per sample span.
+- **Shift-click → probe** probes the sample's voxel centre (the `samples.cell` P3 added, P2's probe point),
+  or the sample point outside the domain.
+- **Retries.** A 400 with `suggestedTstep` is retried once with that stride, and the note says "every k-th
+  saved time …". A 503 is retried once after 600 ms. Otherwise the error shows in the panel and the status.
+- **Keeping it current.** A variable switch refetches (debounced 150 ms, so a domain switch that follows is
+  included). A run refresh that adds times shows the "stale – recompute" chip. A crop doesn't refetch.
+- **Overlay.** The line is drawn in the probes' SVG overlay, white over a dark under-stroke, with a tick across
+  its start and a dot per vertex. Occlusion is tested at the middle of 16 pieces per segment with the probes'
+  rule, and hidden pieces are dashed. The draft is drawn dotted, without occlusion.
+- **Exports.** Four buttons, not one CSV button with an optional third file, since a browser may block several
+  downloads from one click: *Samples CSV*, *Matrix CSV* (first cell `time\arcLength`), *Desktop CSV* and *PNG*.
+  - The *Desktop CSV* refetches the line with `raw=1`, because the desktop does not mask. It then applies a
+    line-for-line port of `initStandAloneTimeSeries_private`'s resampling (`desktopResample`). The layout is
+    `Distances,…`, `Times`, then one `time,values…` row per time. That is the desktop's Copy layout with commas;
+    the numbers print as JS prints them, so the comparison is numeric, not textual.
+  - The PNG is the image alone, each row and column scaled up by whole pixels (to at least 512 × 256), with
+    gaps transparent.
+- **§6.3 cross-check, automated.** The desktop GUI can't be driven from a test, so the check has two halves:
+  - `KymographDesktopResampleTest` (vcell-client) builds the desktop's `SpatialSelectionVolume`, its
+    crossing-index `TimeSeriesJobSpec` and `KymographPanel`'s resampling (copied) for four lines: a straight
+    line and a polyline in the 2D run, an oblique and an axis-aligned line through the membrane in the 3D run.
+    It checks them against golden files, `vcell-client/src/test/resources/org/vcell/client/viz/kymo/*.csv`.
+  - `test_kymograph.py::test_the_desktop_csv_is_what_the_desktop_shows` types the same four lines in the
+    viewer and requires its *Desktop CSV* to equal those files **exactly** (the same doubles).
+  - Result: identical, all four lines, in all three engines. Recorded in the README ("Verified 2026-09-29 against
+    the desktop kymograph").
+- **Tests.** `webapp-viewer/test/test_kymograph.py`, 17 tests per engine:
+  - Line tool: two clicks and Enter, in 2D and 3D. The canvas is `min(1024, 4n) × times`, not blank, with the
+    cursor on the current row, a profile and the overlay line.
+  - A row click moves the slider and the cursor; shift-click on the image adds a probe.
+  - Backspace, Esc and a double-click.
+  - The three CSVs and the PNG signature.
+  - The desktop cross-check, four cases.
+  - A line outside the domain.
+  - The stride retry and the busy retry, faked with `page.route`.
+  - A variable switch refetches; the line re-projects after an orbit; the tool is disabled on a FEniCSx run.
+  - **Results: 108 browser tests pass** (probes and kymographs) on Chromium (SwiftShader), WebKit and Firefox,
+    with no `is not permitted` refusals and no page errors. All 48 `org.vcell.client.viz` Java tests pass.
+- **For P5.**
+  - Server: `handleKymograph` answers a FEniCSx bundle or a VTU run with 400 today; replace that branch, and
+    keep the body-fitted job inside `heavy(…)`.
+  - Viewer: enable the tool where the startup sets `el.lineTool.disabled = state.bodyFitted`.
+  - Viewer: hide *Desktop CSV* for body-fitted runs, since `raw=1` and the desktop's resampling are FV only.
+  - Already ready: the image interpolates `location: "point"` samples; line occlusion uses `pickTetrahedron`
+    on body-fitted meshes; shift-click falls back to the sample point when there is no `samples.cell`.
 
 ### PR P5 — kymographs for FEniCSx and Chombo
 - `CellLocator`, which also speeds up the P1 paths; uniform sampling; P1 interpolation (FEniCSx) and cell
