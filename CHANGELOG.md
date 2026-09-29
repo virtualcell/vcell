@@ -16,6 +16,13 @@ followed by flat Keep-a-Changelog categories. API consumers should scan
 
 _(Release-manager scratchpad. Populated at release-cut time.)_
 
+### Added
+- The field viewer plots time courses at several points at once. Click to place a probe, and shift-click
+  (or use **＋ Add points**) to add more, up to 12. Each probe gets its own coloured trace in one plot, and a
+  marker in the 3D view. The plot has labelled axes and a time cursor that follows the slider. Probes stay in
+  place when you switch variable, and export as CSV. This works for finite-volume, FEniCSx and
+  MovingBoundary runs.
+
 ## [8.2.0.05] - 2026-09-29
 
 **Highlights.** The field viewer tells you when your browser can't run it,

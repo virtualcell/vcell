@@ -1,6 +1,6 @@
 # Plan — multi-point time plots and kymographs in the browser field viewer
 
-**Status:** in progress: P1 merged (2026-09-29). This is a living plan: tick PRs off as they merge.
+**Status:** in progress: P1 and P2 merged (2026-09-29). This is a living plan: tick PRs off as they merge.
 
 ## Context
 
@@ -461,8 +461,8 @@ A path wholly outside the domain returns **200 with all nulls** and `inDomain` a
   - one test module per feature;
   - a `README.md` saying how to run them.
 - **Fixture server:** a small Java main in vcell-client's test sources,
-  `org.vcell.client.viz.FieldViewerFixtureServer`. It registers the FEniCSx fixture bundles (and, from P3,
-  the FV fixture) with `FieldViewerServer`, points `vcell.fieldViewer.staticDir` at `webapp-viewer/`, and
+  `org.vcell.client.viz.FieldViewerFixtureServer`. It registers the FEniCSx fixture bundles, the FV runs and a
+  stand-in MovingBoundary run (all from P2 on; see P2) with `FieldViewerServer`, points `vcell.fieldViewer.staticDir` at `webapp-viewer/`, and
   prints the port. The Python fixture runs it through Maven's exec plugin, or `java -cp` against the
   test classpath.
 - **Browsers:** Chromium (SwiftShader), WebKit and Firefox. Playwright's builds of all three already reproduce
@@ -545,7 +545,7 @@ Decisions and deviations recorded in P1:
 - The server test classes carry `@ResourceLock("fieldViewerServer")`: CI runs Fast test classes concurrently
   and the server is static. `stop()` now also drops the parsed VTU meshes.
 
-### PR P2 — probes in the viewer
+### PR P2 — probes in the viewer ✅ (#2121)
 - `pickAt`, `state.probes`, shift-click and the Add toggle, `#probePanel` (list, ✕, ⌖, Clear, CSV), the SVG
   overlay with projection and occlusion, `renderTraces` (ticks, titles, time cursor), refetching on a
   variable or domain switch.
@@ -553,6 +553,45 @@ Decisions and deviations recorded in P1:
 - README: fix the stale MovingBoundary note and document probes.
 - **Done when:** the probe browser tests pass on Chromium, WebKit and Firefox with no console refusals, in FV
   2D and 3D, FEniCSx 2D and 3D, and MovingBoundary 2D.
+
+Decisions and deviations recorded in P2:
+- **Fixtures for the browser tests.** The done-when above needs FV, FEniCSx 3D and MovingBoundary runs, which
+  §6.2 had deferred or lacked, so P2 adds them:
+  - **FV:** `FieldViewerFixtureServer` registers the two FV runs from P1 now, not from P3.
+  - **FEniCSx 3D:** a new bundle, `receptor_3d.fenics` (84 KB). It has three domains: `cyto_dom` and
+    `ext_dom` (tetrahedra) and the membrane `mem_dom` (triangles). It was made with vcell-fenics from its
+    `cross_validation/receptor_3d` model at `--h 0.35 --t-final 0.2 --output-dt 0.1`, with `provenance/`
+    dropped. It also gives `snap=nearest` an end-to-end test (`FenicsBundleViewsTest`).
+  - **MovingBoundary:** `FakeMovingBoundaryRun` (vcell-client test sources) is a proxy `DataSetController`.
+    It returns a `CartesianMeshMovingBoundary`, which is how the server recognises the mode, and a different
+    ASCII `.vtu` at every time: a disk moving along x. The server serves it through the real VTU seam.
+    `FieldViewerServerMovingBoundaryTest` covers it end to end in Java.
+- **Running the fixture server.** The tests use `java -cp`, not the exec plugin. The classpath comes from
+  `mvn -pl vcell-client -am test-compile dependency:build-classpath` into `vcell-client/target/fixture-classpath.txt`.
+  `conftest.py` runs that first unless given `--no-build`, and the server prints `FIXTURE {port, datasets}`.
+- **Probe points.** An FV probe sends the **vertex mean** of the picked voxel in the served grid, not the
+  pick index's lattice centre. P1's `everyServedVoxelCentreMapsBackToItsOwnCell` proves that point maps
+  back to the same voxel. Every body-fitted request sends `snap=nearest`: the server ignores it for volume
+  domains and the VTU modes.
+- **`castRay`** now returns `{cell, t}`, where `t` is the voxel entry, or the cut-plane point on a cut
+  voxel. `pickAt` returns that point as `entry`, ready for P4's line vertices.
+- **Labels and colours.** A new probe takes the smallest unused number (`P<n>`) and the first unused
+  colour, so a label and colour stay with a probe until it is removed. A plain click restarts at P1.
+  `SERIES_COLORS` has 12 colours, shared with Stats. Stats still asks for at most 6 variables
+  (`STATS_MAX_VARIABLES`).
+- **Occlusion.** A marker counts as hidden when the ray from the camera meets the geometry clearly before
+  the probe. "Clearly" is one voxel diagonal for FV and 1 % of the scene diagonal for body-fitted meshes.
+  There is no cell-identity test, so cell ordinals that go stale after a domain switch don't matter.
+- **The plots.** The probe plot is drawn at the SVG's own pixel size, so its tick labels are not stretched.
+  The Stats plot keeps its fixed viewBox. The viewer's old single-trace click plot (`renderPlot`) is gone,
+  and the viewer no longer sends `cell=` or `x=&y=`. The server keeps both forms.
+- **Test results** (run by hand; not in CI yet): 57 browser tests pass on Chromium (SwiftShader), WebKit and
+  Firefox (Playwright 1.63's builds) across FV 2D and 3D, FEniCSx 2D (fixed and ALE) and 3D, and MovingBoundary
+  2D, with no `is not permitted` refusals and no page errors. The console's `vtkSerializer …
+  vtkIntegrationLinearStrategy` errors at startup predate P2 and are not refusals.
+- **For P3.** The fixture server already registers both FV runs. Use `868220316` (3D, membranes) for the
+  desktop-parity test in place of MembraneFrap3D. It is 5 × 5 × 5 with unit spacing, so a diagonal through
+  voxel corners is easy to write down.
 
 ### PR P3 — `/kymograph` for FV (server)
 - SSHelper sampling with crossing indices, the DDA fallback, `tstep`, `raw`, the value limit, the heavy-job
