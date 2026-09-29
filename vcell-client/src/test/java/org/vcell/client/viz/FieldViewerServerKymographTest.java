@@ -209,6 +209,7 @@ public class FieldViewerServerKymographTest {
 		JsonObject raw = kymograph(SIM_3D, "&domain=subdomain0&var=s0&raw=1" + path(line));
 		Assertions.assertFalse(masked.get("raw").getAsBoolean());
 		JsonArray inDomain = masked.getAsJsonObject("samples").getAsJsonArray("inDomain");
+		int[] cells = ints(masked.getAsJsonObject("samples").getAsJsonArray("cell"));
 		int[] indices = ints(masked.getAsJsonObject("samples").getAsJsonArray("volumeIndex"));
 		// voxels (0..4, 2, 2): the ball holds x = 1..3; the crossing pairs put one sample on each side
 		boolean[] expected = new boolean[indices.length];
@@ -216,7 +217,18 @@ public class FieldViewerServerKymographTest {
 			int x = indices[i] % 5;
 			expected[i] = x == 0 || x == 4;
 			Assertions.assertEquals(expected[i], inDomain.get(i).getAsBoolean(), "sample " + i);
+			Assertions.assertEquals(expected[i], cells[i] >= 0, "a served cell exactly where in the domain");
 		}
+		// a sample's cell is the served cell /timeseries maps its voxel to
+		StringBuilder pts = new StringBuilder("&points=");
+		double[] points = doubles(masked.getAsJsonObject("samples").getAsJsonArray("points"));
+		pts.append(points[0]).append(',').append(points[1]).append(',').append(points[2]).append("%3B")
+				.append(points[3 * 8]).append(',').append(points[3 * 8 + 1]).append(',').append(points[3 * 8 + 2]);
+		JsonArray ts = JsonParser.parseString(HttpClient.newHttpClient().send(HttpRequest.newBuilder(URI.create(
+				"http://127.0.0.1:" + port + "/timeseries?sim=" + SIM_3D + "&job=0&domain=subdomain0&var=s0" + pts)).build(),
+				HttpResponse.BodyHandlers.ofString()).body()).getAsJsonObject().getAsJsonArray("series");
+		Assertions.assertEquals(cells[0], ts.get(0).getAsJsonObject().get("cell").getAsInt());
+		Assertions.assertEquals(cells[8], ts.get(1).getAsJsonObject().get("cell").getAsInt());
 		for (int r = 0; r < masked.getAsJsonArray("values").size(); r++) {
 			JsonArray m = masked.getAsJsonArray("values").get(r).getAsJsonArray();
 			JsonArray w = raw.getAsJsonArray("values").get(r).getAsJsonArray();

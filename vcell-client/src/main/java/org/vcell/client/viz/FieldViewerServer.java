@@ -1384,8 +1384,10 @@ public final class FieldViewerServer {
 
 		DomainIndex domainIndex = domainIndex(source, domain);
 		boolean[] inDomain = new boolean[n];
+		int[] cell = new int[n];
 		for (int i = 0; i < n; i++) {
-			inDomain[i] = domainIndex.inDomain.get(samples.volumeIndex()[i]);
+			cell[i] = domainIndex.cellOf(samples.volumeIndex()[i]);
+			inDomain[i] = cell[i] >= 0;
 		}
 		double min = Double.POSITIVE_INFINITY;
 		double max = Double.NEGATIVE_INFINITY;
@@ -1438,6 +1440,8 @@ public final class FieldViewerServer {
 		}
 		sb.append(",\"membraneIndex\":").append(Arrays.toString(membraneIndex).replace(" ", ""));
 		sb.append(",\"inDomain\":").append(Arrays.toString(inDomain).replace(" ", ""));
+		// the sample's voxel in /grid's list (-1 outside the domain): the viewer probes a sample at its voxel
+		sb.append(",\"cell\":").append(Arrays.toString(cell).replace(" ", ""));
 		sb.append("},\"values\":[");
 		for (int r = 0; r < times.length; r++) {
 			sb.append(r > 0 ? "," : "");

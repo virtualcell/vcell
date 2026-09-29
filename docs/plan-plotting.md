@@ -635,7 +635,9 @@ Decisions and deviations recorded in P3:
 - **Heavy jobs.** A `Semaphore(1)`, `FieldViewerServer.HEAVY_JOBS`: `/kymograph` and a multi-point
   (`points=`) `/timeseries` on Chombo or MovingBoundary. A second one is refused at once with 503
   `{"error", "busy": true}`, not queued. The pool is 4 threads.
-- **Response extras.** `"raw": true|false`; `range` is `[0, 0]` when no sample has a value (a line wholly outside
+- **Response extras.** `samples.cell`: each sample's voxel in `/grid`'s list (-1 outside the domain), so the
+  viewer can probe a sample at its voxel's centre (P2's probe point) rather than at a point on a voxel face;
+  `"raw": true|false`; `range` is `[0, 0]` when no sample has a value (a line wholly outside
   the domain), as `/field` does.
 - **Masking.** All samples, in the domain or not, go into the one job (so `raw=1` is the desktop's job exactly);
   out-of-domain samples are nulled afterwards, using P1's `DomainIndex`.
