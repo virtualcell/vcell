@@ -38,12 +38,18 @@ _(Release-manager scratchpad. Populated at release-cut time.)_
   line (lab frame)"): each point on it reads whichever mesh cell holds it at each time, and is a gap while the
   domain is elsewhere, so the kymograph shows the boundary moving past the line.
 - Chombo 3D runs can be probed and can have kymographs: clicks now pick through their voxels and cut cells.
+- Kymographs along a membrane, for FEniCSx 2D runs. On a membrane variable, **╱ Line** draws a curve along the
+  membrane: click on or beside it, and the curve follows the membrane between your clicks (the shorter way
+  round; click on the far side to go the other way). The kymograph has one sample per mesh vertex on the curve,
+  at distances measured along the membrane.
 
 ### Changed
 - The field viewer finds the mesh cell under a point much faster on body-fitted runs (FEniCSx, Chombo,
   MovingBoundary), which speeds up probes on large meshes.
 
 ### Fixed
+- Opening the field viewer on a domain (`?domain=`) without naming a variable now shows one of that domain's
+  variables, instead of failing with "/field failed: 400".
 - A probe on a 3D FEniCSx membrane no longer reads a horizontal membrane triangle lying above or below the
   clicked point; it moves onto the membrane surface as it does elsewhere.
 

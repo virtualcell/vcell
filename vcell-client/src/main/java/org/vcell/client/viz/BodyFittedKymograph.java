@@ -131,12 +131,30 @@ final class BodyFittedKymograph {
 			}
 		}, location, false);
 
-		double min = Double.POSITIVE_INFINITY;
-		double max = Double.NEGATIVE_INFINITY;
 		boolean[] inDomain = new boolean[nSamples];
 		for (int i = 0; i < nSamples; i++) {
 			inDomain[i] = result.insideCount[i] > 0;
-			for (double v : result.values[i]) {
+		}
+		return write(name, domain, location, "uniform", movingMesh, path, length, times, timeIndices, arc, points,
+				inDomain, null, result.values);
+	}
+
+	/**
+	 * Writes a body-fitted kymograph response.
+	 *
+	 * @param sampling {@code "uniform"} (evenly spaced along a line) or {@code "membrane"} (along a membrane)
+	 * @param vertex each sample's mesh vertex (-1 for none), or null to leave the field out
+	 * @param values {@code values[sample][row]}, NaN for a gap
+	 */
+	static String write(String name, String domain, PointSeries.Location location, String sampling, boolean movingMesh,
+			double[][] path, double length, double[] times, int[] timeIndices, double[] arc, double[][] points,
+			boolean[] inDomain, int[] vertex, double[][] values) {
+		int nSamples = arc.length;
+		int nt = times.length;
+		double min = Double.POSITIVE_INFINITY;
+		double max = Double.NEGATIVE_INFINITY;
+		for (int i = 0; i < nSamples; i++) {
+			for (double v : values[i]) {
 				if (Double.isFinite(v)) {
 					min = Math.min(min, v);
 					max = Math.max(max, v);
@@ -152,7 +170,7 @@ final class BodyFittedKymograph {
 		sb.append("{\"name\":\"").append(FieldViewerServer.jsonEscape(name)).append('"');
 		sb.append(",\"domain\":\"").append(FieldViewerServer.jsonEscape(domain)).append('"');
 		sb.append(",\"location\":\"").append(location.json).append('"');
-		sb.append(",\"sampling\":\"uniform\"");
+		sb.append(",\"sampling\":\"").append(sampling).append('"');
 		sb.append(",\"movingMesh\":").append(movingMesh);
 		sb.append(",\"path\":[");
 		for (int v = 0; v < path.length; v++) {
@@ -172,16 +190,52 @@ final class BodyFittedKymograph {
 			}
 		}
 		sb.append("],\"inDomain\":").append(Arrays.toString(inDomain).replace(" ", ""));
+		if (vertex != null) {
+			sb.append(",\"vertex\":").append(Arrays.toString(vertex).replace(" ", ""));
+		}
 		sb.append("},\"values\":[");
 		double[] row = new double[nSamples];
 		for (int r = 0; r < nt; r++) {
 			for (int i = 0; i < nSamples; i++) {
-				row[i] = result.values[i][r];
+				row[i] = values[i][r];
 			}
 			sb.append(r > 0 ? "," : "");
 			FieldViewerServer.appendDoubles(sb, row, nSamples);
 		}
 		sb.append("],\"range\":[").append(min).append(',').append(max).append("]}");
 		return sb.toString();
+	}
+
+	/**
+	 * The kymograph along a 2D membrane ({@link MembraneArc}) over a fixed mesh: {@code sampling: "membrane"},
+	 * one sample per mesh vertex the arc passes plus its two snapped ends, each row's P1 values read once.
+	 *
+	 * @param readRow the P1 values of a saved time (by its index in {@code allTimes})
+	 */
+	static String membraneJson(String name, String domain, MembraneArc arc, double[] allTimes, int tstep,
+			RowReader readRow) throws Exception {
+		int n = arc.size();
+		FieldViewerServer.checkValueLimit(n, allTimes.length, tstep);
+		int nt = FieldViewerServer.strideCount(allTimes.length, tstep);
+		int[] timeIndices = new int[nt];
+		double[] times = new double[nt];
+		double[][] values = new double[n][nt];
+		for (int r = 0; r < nt; r++) {
+			timeIndices[r] = r * tstep;
+			times[r] = allTimes[r * tstep];
+			double[] row = arc.values(readRow.read(timeIndices[r]));
+			for (int i = 0; i < n; i++) {
+				values[i][r] = row[i];
+			}
+		}
+		boolean[] inDomain = new boolean[n];
+		Arrays.fill(inDomain, true);
+		return write(name, domain, PointSeries.Location.POINT, "membrane", false, arc.waypoints, arc.length(), times,
+				timeIndices, arc.arcLength, arc.points, inDomain, arc.vertex, values);
+	}
+
+	/** One saved time's values. */
+	interface RowReader {
+		double[] read(int timeIndex) throws Exception;
 	}
 }

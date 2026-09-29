@@ -331,6 +331,8 @@ final class FenicsBundleViews {
 	 * saved time (every {@code tstep}-th), P1-interpolated at evenly spaced samples located in each row's mesh
 	 * ({@link BodyFittedKymograph}). On an ALE run the line is fixed in the lab frame and the moving mesh passes
 	 * through it. The default sample count follows the mesh's mean cell diameter, in the first row's mesh.
+	 * On a 2D membrane (a line mesh) the curve runs along the membrane between the snapped path vertices
+	 * ({@link MembraneArc}), sampled at the mesh vertices; {@code samples} is ignored there.
 	 * A heavy job for the caller to run ({@link FieldViewerServer#heavy}).
 	 */
 	static String kymograph(BundleSource source, Map<String, String> q, int tstep) throws Exception {
@@ -348,18 +350,28 @@ final class FenicsBundleViews {
 			throw new IllegalArgumentException("unknown variable '" + varName + "' in domain '" + domain + "'");
 		}
 		FenicsBundle.Domain d = bundle.domain(domain);
-		if (d.isMembrane()) {
-			throw new IllegalArgumentException("membrane kymographs are not supported yet ('" + domain
-					+ "' is a membrane: a straight line almost never lies on it)");
-		}
 		VtuGridParser.VtuGrid first = source.grid(bundle, domain, 0);
+		final String dom = domain;
+		if (d.isMembrane()) {
+			// a straight line almost never lies on a membrane: the curve runs along it, between the snapped picks
+			if (d.gdim() >= 3) {
+				throw new IllegalArgumentException("membrane curves on a 3D membrane surface are not supported yet ('"
+						+ domain + "'); a 2D membrane's curves are");
+			}
+			if (!bundle.isFixed()) {
+				throw new IllegalArgumentException("membrane curves on a moving or remeshed membrane are not supported yet");
+			}
+			double[][] waypoints = BodyFittedKymograph.parsePath(q.get("path"), first.points[2]);
+			MembraneArc arc = MembraneArc.build(first, waypoints, BodyFittedKymograph.MAX_SAMPLES);
+			return BodyFittedKymograph.membraneJson(varName, domain, arc, times(bundle), tstep,
+					row -> bundle.field(dom, varName, row));
+		}
 		double[][] path = BodyFittedKymograph.parsePath(q.get("path"), d.gdim() < 3 ? first.points[2] : null);
 		int n = BodyFittedKymograph.sampleCount(q.get("samples"), FvLineSampler.length(path), first.meanCellDiameter());
 		boolean moving = false;
 		for (FenicsBundle.Segment segment : bundle.getSegments()) {
 			moving |= "ale".equals(segment.motion());
 		}
-		final String dom = domain;
 		PointSeries.Rows rows = new PointSeries.Rows() {
 			@Override
 			public VtuGridParser.VtuGrid grid(int row) throws Exception {

@@ -274,7 +274,7 @@ public class BodyFittedKymographTest {
 				{ DISK, "&var=u&tstep=0&path=" + enc("0,0;0.1,0"), "'tstep' must be at least 1" },
 				{ DISK, "&var=nope&path=" + enc("0,0;0.1,0"), "unknown variable" },
 				{ RECEPTOR, "&domain=ext_dom&var=s_ext&path=" + enc("0,0;0.1,0"), "the domain is 3D" },
-				{ RECEPTOR, "&domain=mem_dom&var=R&path=" + enc("0,0,0;0.1,0,0"), "membrane kymographs are not supported yet" },
+				{ RECEPTOR, "&domain=mem_dom&var=R&path=" + enc("0,0,0;0.1,0,0"), "3D membrane surface are not supported yet" },
 				{ FakeChomboRun.SIM_2D, "&domain=cyt&var=nope&path=" + enc("1,3;7,3"), "unknown variable" },
 				{ FakeChomboRun.SIM_2D, "&domain=cyt&var=C&samples=2001&path=" + enc("1,3;7,3"), "at most 2000 samples" },
 		};

@@ -11,6 +11,7 @@ vcell-client's test sources, `org.vcell.client.viz.FieldViewerFixtureServer`. It
 | `fenics2d` | FEniCSx, a 2D disk |
 | `fenicsMoving` | FEniCSx, a 2D disk moving along x (ALE) |
 | `fenics3d` | FEniCSx, a sphere in a box with its membrane (3D) |
+| `fenics2dMembrane` | FEniCSx, a 2D disk in a box with its membrane, a closed curve of line cells (`receptor_2d.fenics`) |
 | `movingBoundary` | a stand-in MovingBoundary run (`FakeMovingBoundaryRun`), served through the real VTU seam |
 | `chombo2d` | a stand-in Chombo run (`FakeChomboRun`), 2D: a disk of quads and cut pentagons, through the VTU seam |
 | `chombo3d` | the same, 3D: a ball of voxels with polyhedra at its surface |
@@ -22,7 +23,8 @@ and fails if the console shows an `is not permitted` refusal from the wasm invok
 |---|---|
 | `test_probes.py` | probes: click, shift-click, the Add toggle, markers, the time cursor, CSV |
 | `test_kymograph.py` | kymographs: the Line tool and the typed line, the image and cursor, click → time, shift-click → probe, the exports, the retries, and the desktop cross-check |
-| `test_kymograph_bodyfitted.py` | kymographs of FEniCSx (2D, 3D, ALE) and Chombo 2D runs: evenly spaced samples, the lab-frame label, gaps in the other domain |
+| `test_kymograph_bodyfitted.py` | kymographs of FEniCSx (2D, 3D, ALE), Chombo (2D, 3D) and MovingBoundary runs: evenly spaced samples, the lab-frame label, gaps in the other domain |
+| `test_membrane_curves.py` | curves along a 2D FEniCSx membrane: the curve follows the membrane between the snapped picks, the overlay follows its samples, the long way round, the tool off on a 3D membrane surface |
 
 The desktop cross-check compares the viewer's *Desktop CSV* with the golden files in
 `vcell-client/src/test/resources/org/vcell/client/viz/kymo/`. Those are what the desktop kymograph shows for
