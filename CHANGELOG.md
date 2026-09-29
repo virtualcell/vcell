@@ -16,6 +16,15 @@ followed by flat Keep-a-Changelog categories. API consumers should scan
 
 _(Release-manager scratchpad. Populated at release-cut time.)_
 
+## [8.2.0.06] - 2026-09-29
+
+**Highlights.** The browser field viewer gains the desktop's time plots and
+kymographs. Click several points to plot a time course at each, or draw a line
+to see a kymograph: the variable along the line at every saved time. They work
+for finite-volume, FEniCSx, Chombo and MovingBoundary results, and along
+membranes. On finite-volume runs a kymograph matches the desktop's value for
+value.
+
 ### Added
 - The field viewer plots time courses at several points at once. Click to place a probe, and shift-click
   (or use **＋ Add points**) to add more, up to 12. Each probe gets its own coloured trace in one plot, and a
@@ -57,6 +66,10 @@ _(Release-manager scratchpad. Populated at release-cut time.)_
   variables, instead of failing with "/field failed: 400".
 - A probe on a 3D FEniCSx membrane no longer reads a horizontal membrane triangle lying above or below the
   clicked point; it moves onto the membrane surface as it does elsewhere.
+
+### Notes for API consumers
+- No `/api/` changes in this build. The field viewer's loopback server (in the desktop client) gains
+  `/timeseries?points=` and `/kymograph`.
 
 ## [8.2.0.05] - 2026-09-29
 
