@@ -327,6 +327,54 @@ final class FenicsBundleViews {
 	}
 
 	/**
+	 * {@code /kymograph?…&var=&path=x,y,z;…[&samples=N][&tstep=k]}: the variable along a polyline at every
+	 * saved time (every {@code tstep}-th), P1-interpolated at evenly spaced samples located in each row's mesh
+	 * ({@link BodyFittedKymograph}). On an ALE run the line is fixed in the lab frame and the moving mesh passes
+	 * through it. The default sample count follows the mesh's mean cell diameter, in the first row's mesh.
+	 * A heavy job for the caller to run ({@link FieldViewerServer#heavy}).
+	 */
+	static String kymograph(BundleSource source, Map<String, String> q, int tstep) throws Exception {
+		FenicsBundle bundle = open(source);
+		String varName = requireVar(q);
+		String domain = q.get("domain");
+		if (domain == null || domain.isEmpty()) {
+			domain = domainOfVariable(bundle, varName);
+		}
+		boolean known = false;
+		for (FenicsBundle.Variable v : bundle.getVariables()) {
+			known |= v.name().equals(varName) && v.domain().equals(domain);
+		}
+		if (!known) {
+			throw new IllegalArgumentException("unknown variable '" + varName + "' in domain '" + domain + "'");
+		}
+		FenicsBundle.Domain d = bundle.domain(domain);
+		if (d.isMembrane()) {
+			throw new IllegalArgumentException("membrane kymographs are not supported yet ('" + domain
+					+ "' is a membrane: a straight line almost never lies on it)");
+		}
+		VtuGridParser.VtuGrid first = source.grid(bundle, domain, 0);
+		double[][] path = BodyFittedKymograph.parsePath(q.get("path"), d.gdim() < 3 ? first.points[2] : null);
+		int n = BodyFittedKymograph.sampleCount(q.get("samples"), FvLineSampler.length(path), first.meanCellDiameter());
+		boolean moving = false;
+		for (FenicsBundle.Segment segment : bundle.getSegments()) {
+			moving |= "ale".equals(segment.motion());
+		}
+		final String dom = domain;
+		PointSeries.Rows rows = new PointSeries.Rows() {
+			@Override
+			public VtuGridParser.VtuGrid grid(int row) throws Exception {
+				return source.grid(bundle, dom, row);
+			}
+
+			@Override
+			public double[] values(int row) throws Exception {
+				return bundle.field(dom, varName, row);
+			}
+		};
+		return BodyFittedKymograph.json(varName, domain, PointSeries.Location.POINT, path, n, times(bundle), tstep, rows, moving);
+	}
+
+	/**
 	 * {@code /stats[?var=a,b]}: per time, min, max and mean of each variable over its own domain, as the
 	 * solver computed them (mean = the finite-element integral over the domain's measure), plus the
 	 * integral itself ({@code total}) and the domain measure (summed from its mesh).

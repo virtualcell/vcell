@@ -148,7 +148,7 @@ final class PointSeries {
 				meshes++;
 				for (int p = 0; p < n; p++) {
 					double x = points[p][0], y = points[p][1], z = points[p][2];
-					int c = VtuGridParser.locateCell(grid, x, y, z);
+					int c = VtuGridParser.locate(grid, x, y, z);
 					if (c < 0 && snap) {
 						double[] near = VtuGridParser.nearestOnMesh(grid, x, y, z);
 						if (near != null) {

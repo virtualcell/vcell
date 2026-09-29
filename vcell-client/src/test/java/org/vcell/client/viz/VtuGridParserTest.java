@@ -212,4 +212,158 @@ public class VtuGridParserTest {
 		// line: linear along the segment
 		Assertions.assertArrayEquals(new double[] { 0.75, 0.25 }, VtuGridParser.vertexWeights(grid, 2, 1.5, 0, 0.5), 1e-12);
 	}
+
+	// the CellLocator (docs/plan-plotting.md P5): the same answers as the linear scan, found faster
+
+	/** Random points over the grid's padded box, plus every vertex, cell centroid and edge midpoint (on shared faces). */
+	private static double[][] probePoints(VtuGrid grid, long seed, int random) {
+		double[] lo = { Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE };
+		double[] hi = { -Double.MAX_VALUE, -Double.MAX_VALUE, -Double.MAX_VALUE };
+		for (int i = 0; i < grid.points.length; i++) {
+			lo[i % 3] = Math.min(lo[i % 3], grid.points[i]);
+			hi[i % 3] = Math.max(hi[i % 3], grid.points[i]);
+		}
+		java.util.List<double[]> out = new java.util.ArrayList<>();
+		java.util.Random rnd = new java.util.Random(seed);
+		for (int k = 0; k < random; k++) {
+			double[] q = new double[3];
+			for (int a = 0; a < 3; a++) {
+				double pad = 0.1 * (hi[a] - lo[a]);
+				q[a] = lo[a] - pad + rnd.nextDouble() * (hi[a] - lo[a] + 2 * pad);
+			}
+			out.add(q);
+		}
+		for (int i = 0; i < grid.numPoints(); i++) {
+			out.add(new double[] { grid.points[3 * i], grid.points[3 * i + 1], grid.points[3 * i + 2] });
+		}
+		for (int[] cell : grid.cells) {
+			double[] c = new double[3];
+			for (int v : cell) {
+				for (int a = 0; a < 3; a++) {
+					c[a] += grid.points[3 * v + a] / cell.length;
+				}
+			}
+			out.add(c);
+			for (int v = 0; v < cell.length; v++) {
+				int w = cell[(v + 1) % cell.length];
+				out.add(new double[] { (grid.points[3 * cell[v]] + grid.points[3 * w]) / 2,
+						(grid.points[3 * cell[v] + 1] + grid.points[3 * w + 1]) / 2,
+						(grid.points[3 * cell[v] + 2] + grid.points[3 * w + 2]) / 2 });
+			}
+		}
+		return out.toArray(new double[0][]);
+	}
+
+	private static void assertLocatorAgrees(String what, VtuGrid grid) {
+		assertLocatorAgrees(what, grid, 100);
+	}
+
+	private static void assertLocatorAgrees(String what, VtuGrid grid, int minHits) {
+		int hits = 0;
+		for (double[] q : probePoints(grid, 20260929L, 4000)) {
+			int expected = VtuGridParser.locateCell(grid, q[0], q[1], q[2]);
+			Assertions.assertEquals(expected, VtuGridParser.locate(grid, q[0], q[1], q[2]),
+					what + " at " + java.util.Arrays.toString(q));
+			hits += expected >= 0 ? 1 : 0;
+		}
+		Assertions.assertTrue(hits >= minHits, what + ": the probe points reach into the mesh (" + hits + ")");
+	}
+
+	@Test
+	public void theLocatorAgreesWithTheLinearScan() throws Exception {
+		assertLocatorAgrees("3D tetrahedra", parseResource("fenics-3d-tetra.vtu"));
+		assertLocatorAgrees("2D triangles", parseResource("fenics-2d-triangles.vtu"));
+		assertLocatorAgrees("a voxel and a polyhedron", parseResource("polyhedron-cells.vtu"));
+		// Chombo-like: quads and cut pentagons in 2D, voxels and polyhedra in 3D (in Chombo's index frame)
+		assertLocatorAgrees("Chombo 2D", VtuGridParser.parse(chomboVtu(FakeChomboRun.SIM_2D)));
+		assertLocatorAgrees("Chombo 3D", VtuGridParser.parse(chomboVtu(FakeChomboRun.SIM_3D)));
+		// MovingBoundary-like polygons, at two of the times
+		assertLocatorAgrees("MovingBoundary t=0", VtuGridParser.parse(FakeMovingBoundaryRun.vtu(0)));
+		assertLocatorAgrees("MovingBoundary t=1", VtuGridParser.parse(FakeMovingBoundaryRun.vtu(1)));
+		// a 2D membrane: line cells, which test z themselves
+		assertLocatorAgrees("line cells", new VtuGrid(new double[] { 0, 0, 0, 3, 4, 0, 3, 5, 0, 1, 7, 0 },
+				new int[][] { { 0, 1 }, { 1, 2 }, { 2, 3 } }, new int[] { 3, 3, 3 }), 10); // random points miss a curve
+	}
+
+	private static byte[] chomboVtu(String sim) throws Exception {
+		java.lang.reflect.Constructor<FakeChomboRun> make = FakeChomboRun.class.getDeclaredConstructor(int.class);
+		make.setAccessible(true);
+		return make.newInstance(sim.equals(FakeChomboRun.SIM_2D) ? 2 : 3).vtu();
+	}
+
+	@Test
+	public void aHorizontalTriangleOfA3DSurfaceHoldsOnlyPointsInItsPlane() {
+		// a surface mesh with depth: a triangle in z = 1 and one in the x = 0 plane
+		VtuGrid surface = new VtuGrid(new double[] { 0, 0, 1, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1 },
+				new int[][] { { 0, 1, 2 }, { 3, 4, 5 } }, new int[] { 5, 5 });
+		Assertions.assertEquals(0, VtuGridParser.locateCell(surface, 0.2, 0.2, 1));
+		Assertions.assertEquals(-1, VtuGridParser.locateCell(surface, 0.2, 0.2, 0.5), "below the triangle, not on it");
+		Assertions.assertEquals(0, VtuGridParser.locate(surface, 0.2, 0.2, 1));
+		Assertions.assertEquals(-1, VtuGridParser.locate(surface, 0.2, 0.2, 0.5));
+		// in a flat (2D) mesh z is ignored, as before
+		VtuGrid flat = new VtuGrid(new double[] { 0, 0, 0, 1, 0, 0, 0, 1, 0 }, new int[][] { { 0, 1, 2 } }, new int[] { 5 });
+		Assertions.assertEquals(0, VtuGridParser.locateCell(flat, 0.2, 0.2, 7));
+		Assertions.assertEquals(0, VtuGridParser.locate(flat, 0.2, 0.2, 7));
+	}
+
+	/**
+	 * A 40 × 40 × 40 lattice of cubes, each split into six tetrahedra (384,000 cells): the locator and the linear
+	 * scan agree, and the timings of both are printed (the scan on a sample of the points, as it is slow).
+	 */
+	@Test
+	public void theLocatorIsFastOnALargeMesh() {
+		int m = 40;
+		double[] points = new double[3 * (m + 1) * (m + 1) * (m + 1)];
+		for (int k = 0, i = 0; k <= m; k++) {
+			for (int j = 0; j <= m; j++) {
+				for (int l = 0; l <= m; l++, i++) {
+					points[3 * i] = l;
+					points[3 * i + 1] = j;
+					points[3 * i + 2] = k;
+				}
+			}
+		}
+		int[][] tets = { { 0, 1, 3, 7 }, { 0, 1, 5, 7 }, { 0, 2, 3, 7 }, { 0, 2, 6, 7 }, { 0, 4, 5, 7 }, { 0, 4, 6, 7 } };
+		int[][] cells = new int[6 * m * m * m][];
+		for (int k = 0, c = 0; k < m; k++) {
+			for (int j = 0; j < m; j++) {
+				for (int l = 0; l < m; l++) {
+					int[] corner = new int[8];
+					for (int b = 0; b < 8; b++) {
+						corner[b] = ((k + (b >> 2 & 1)) * (m + 1) + j + (b >> 1 & 1)) * (m + 1) + l + (b & 1);
+					}
+					for (int[] t : tets) {
+						cells[c++] = new int[] { corner[t[0]], corner[t[1]], corner[t[2]], corner[t[3]] };
+					}
+				}
+			}
+		}
+		int[] types = new int[cells.length];
+		java.util.Arrays.fill(types, 10);
+		VtuGrid grid = new VtuGrid(points, cells, types);
+		java.util.Random rnd = new java.util.Random(7);
+		double[][] q = new double[20000][];
+		for (int i = 0; i < q.length; i++) {
+			q[i] = new double[] { rnd.nextDouble() * m, rnd.nextDouble() * m, rnd.nextDouble() * m };
+		}
+		long t0 = System.nanoTime();
+		grid.locator();
+		long built = System.nanoTime();
+		int[] found = new int[q.length];
+		for (int i = 0; i < q.length; i++) {
+			found[i] = VtuGridParser.locate(grid, q[i][0], q[i][1], q[i][2]);
+		}
+		long located = System.nanoTime();
+		int scanned = 200;
+		for (int i = 0; i < scanned; i++) {
+			Assertions.assertEquals(VtuGridParser.locateCell(grid, q[i][0], q[i][1], q[i][2]), found[i]);
+			Assertions.assertTrue(found[i] >= 0);
+		}
+		long scanEnd = System.nanoTime();
+		double perLocate = (located - built) / 1e3 / q.length;
+		double perScan = (scanEnd - located) / 1e3 / scanned;
+		System.out.printf(java.util.Locale.ROOT, "CellLocator on %d tetrahedra: built in %.1f ms; %.2f µs per point"
+				+ " (%d points) vs the linear scan's %.0f µs per point (%d points): %.0f× faster%n",
+				cells.length, (built - t0) / 1e6, perLocate, q.length, perScan, scanned, perScan / perLocate);
+	}
 }

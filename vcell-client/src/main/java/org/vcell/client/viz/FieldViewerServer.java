@@ -593,6 +593,8 @@ public final class FieldViewerServer {
 			sb.append(",\"simName\":\"").append(jsonEscape(source.simName)).append('"');
 		}
 		sb.append(",\"jobIndex\":").append(vcdID.getJobIndex());
+		// which body-fitted mode: the viewer's tools differ (a static mesh or one per time; voxels and polyhedra in 3D)
+		sb.append(",\"solver\":\"").append(mode == VtuMode.STATIC ? "Chombo" : "MovingBoundary").append('"');
 		sb.append(",\"times\":");
 		appendDoubles(sb, times, times.length);
 		List<String> domains = vtuDomains(source);
@@ -1296,13 +1298,18 @@ public final class FieldViewerServer {
 	 */
 	private static String handleKymograph(HttpExchange ex) throws Exception {
 		Map<String, String> q = query(ex);
-		if (bundleSourceFor(q) != null) {
-			throw new IllegalArgumentException("kymographs of FEniCSx results are not supported yet");
+		int tstep = parseTstep(q);
+		FenicsBundleViews.BundleSource bundle = bundleSourceFor(q);
+		if (bundle != null) {
+			return heavy(() -> FenicsBundleViews.kymograph(bundle, q, tstep));
 		}
 		DataSource source = sourceFor(q);
-		if (vtuMode(source) != null) {
-			throw new IllegalArgumentException("kymographs of " + (vtuMode(source) == VtuMode.STATIC ? "Chombo"
-					: "MovingBoundary") + " runs are not supported yet");
+		VtuMode mode = vtuMode(source);
+		if (mode == VtuMode.TIME_VARYING) {
+			throw new IllegalArgumentException("kymographs of MovingBoundary runs are not supported yet");
+		}
+		if (mode != null) {
+			return heavy(() -> vtuKymograph(source, q, mode, tstep));
 		}
 		String domain = domainOf(q, source);
 		String varName = q.get("var");
@@ -1327,21 +1334,74 @@ public final class FieldViewerServer {
 			throw new IllegalArgumentException("a kymograph needs a volume variable; '" + varName + "' is "
 					+ type.getTypeName());
 		}
-		int tstep = 1;
-		if (q.get("tstep") != null && !q.get("tstep").isEmpty()) {
-			try {
-				tstep = Integer.parseInt(q.get("tstep").trim());
-			} catch (NumberFormatException e) {
-				throw new IllegalArgumentException("malformed 'tstep' '" + q.get("tstep") + "'");
-			}
-			if (tstep < 1) {
-				throw new IllegalArgumentException("'tstep' must be at least 1");
-			}
-		}
 		boolean raw = "1".equals(q.get("raw")) || "true".equalsIgnoreCase(q.get("raw"));
-		final int stride = tstep;
 		final String dom = domain;
-		return heavy(() -> fvKymograph(source, dom, varName, q.get("path"), stride, raw));
+		return heavy(() -> fvKymograph(source, dom, varName, q.get("path"), tstep, raw));
+	}
+
+	/** {@code tstep}, the stride over the saved times: 1 when absent. */
+	private static int parseTstep(Map<String, String> q) {
+		String param = q.get("tstep");
+		if (param == null || param.isEmpty()) {
+			return 1;
+		}
+		int tstep;
+		try {
+			tstep = Integer.parseInt(param.trim());
+		} catch (NumberFormatException e) {
+			throw new IllegalArgumentException("malformed 'tstep' '" + param + "'");
+		}
+		if (tstep < 1) {
+			throw new IllegalArgumentException("'tstep' must be at least 1");
+		}
+		return tstep;
+	}
+
+	/**
+	 * {@code /kymograph} for a run served through the VTU seam: evenly spaced samples along the line
+	 * ({@link BodyFittedKymograph}), each reading the value of the cell holding it, one {@code getVtuMeshData}
+	 * per returned time for all samples. Chombo's mesh is static, so the samples are located once. A
+	 * MovingBoundary mesh differs per saved time, so the samples are located again at every time: a fixed
+	 * lab-frame line the moving boundary passes through. {@code raw} is finite-volume only and ignored here.
+	 */
+	private static String vtuKymograph(DataSource source, Map<String, String> q, VtuMode mode, int tstep) throws Exception {
+		String varName = q.get("var");
+		if (varName == null || varName.isEmpty()) {
+			throw new IllegalArgumentException("missing required query parameter 'var'");
+		}
+		String domain = q.getOrDefault("domain", "");
+		if (domain.isEmpty()) {
+			domain = vtuDomains(source).get(0);
+		}
+		VtuVarInfo varInfo = vtuVarInfoFor(source, varName);
+		if (varInfo.bMeshVariable || varInfo.dataType != VtuVarInfo.DataType.CellData) {
+			throw new IllegalArgumentException("a kymograph needs a cell-data variable; '" + varName + "' is not one");
+		}
+		if (varInfo.variableDomain == cbit.vcell.math.VariableType.VariableDomain.VARIABLEDOMAIN_MEMBRANE) {
+			throw new IllegalArgumentException("membrane kymographs are not supported yet ('" + varName
+					+ "' is a membrane variable)");
+		}
+		double[] times = source.dataManager.getDataSetTimes(source.vcdID);
+		if (times == null || times.length == 0) {
+			throw new IllegalArgumentException("run " + source.vcdID.getID() + " has no saved times");
+		}
+		final String dom = domain;
+		PointSeries.Rows rows = new PointSeries.Rows() {
+			@Override
+			public VtuGridParser.VtuGrid grid(int row) throws Exception {
+				return mbGrid(source, dom, mode == VtuMode.TIME_VARYING ? row : 0);
+			}
+
+			@Override
+			public double[] values(int row) throws Exception {
+				return source.dataManager.getVtuMeshData(emptyOutputContext(), source.vcdID, varInfo, times[row]);
+			}
+		};
+		VtuGridParser.VtuGrid first = rows.grid(0);
+		double[][] path = BodyFittedKymograph.parsePath(q.get("path"), isVolume3D(first) ? null : first.points[2]);
+		int n = BodyFittedKymograph.sampleCount(q.get("samples"), FvLineSampler.length(path), first.meanCellDiameter());
+		return BodyFittedKymograph.json(varName, domain, PointSeries.Location.CELL, path, n, times, tstep, rows,
+				mode == VtuMode.TIME_VARYING);
 	}
 
 	private static String fvKymograph(DataSource source, String domain, String varName, String pathParam,

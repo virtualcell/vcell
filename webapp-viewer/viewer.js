@@ -99,6 +99,7 @@ const state = {
   times: [],
   timeIndex: 0,
   runStatus: null, // FEniCSx bundles: 'running' | 'completed' | 'failed' (from /info); null for other runs
+  solver: null, // /info's solver: 'FEniCSx', 'Chombo' or 'MovingBoundary'; null for a finite-volume run
   runProgress: null, // fraction 0..1 while running
   selectedVar: '',
   selectedDomain: '',
@@ -228,6 +229,7 @@ async function loadInfo() {
   setStatus('asking the server what this run contains…');
   const info = await fetchJson(url('/info', {}), '/info');
   showRunTitle(info);
+  state.solver = info.solver ?? null;
   state.times = info.times ?? [];
   showRunStatus(info);
   state.variables = (info.variables ?? []).map((v) => ({ name: v.name, domain: v.domain }));
@@ -1798,6 +1800,15 @@ function parseLine(text) {
   return vertices;
 }
 
+/** Why this run can't have a kymograph line yet (the Line tool's tooltip), or null when it can. */
+function lineUnavailable() {
+  if (!state.bodyFitted || state.solver === 'FEniCSx') return null;
+  if (state.solver === 'Chombo') {
+    return state.dimension === 2 ? null : 'Kymographs of Chombo 3D runs need a picker for their voxels and polyhedra, which is not available yet';
+  }
+  return 'Kymographs of MovingBoundary runs are not available yet';
+}
+
 /** The Line tool: on starts a new line (the current one stays until the new one is finished); off cancels it. */
 function setLineTool(on) {
   state.lineDraft = on ? [] : null;
@@ -2182,6 +2193,13 @@ function updateKymoNote(message, warn = false) {
         notes.push("one sample per voxel crossed, by a voxel walk (the desktop's sampling can't take this line, so there is no membrane-crossing correction)");
       } else if (k.sampling === 'voxel-crossing') {
         notes.push("one sample per voxel crossed, two at each membrane (the desktop's sampling); hatched: outside the domain");
+      } else if (k.sampling === 'uniform') {
+        notes.push(`${k.samples.arcLength.length} evenly spaced samples, `
+          + (k.location === 'point' ? 'interpolated linearly within each mesh cell' : 'each the value of the cell holding it')
+          + '; hatched: outside the domain');
+      }
+      if (k.movingMesh) {
+        notes.push('fixed line (lab frame): the mesh moves through it, so the gaps show where the boundary has passed');
       }
       text = notes.join(' · ');
     } else {
@@ -2309,7 +2327,8 @@ function renderKymograph() {
   state.kymoView = { rows, W, cols, rowY, sx, M, plotW, cursor: [under, over], lo, hi };
 
   const length = Number(k.pathLength.toPrecision(4));
-  el.kymoTitle.textContent = `${k.name} · ${k.domain} · ${n} samples × ${rows} times · line ${length} µm`;
+  el.kymoTitle.textContent = `${k.name} · ${k.domain} · ${n} samples × ${rows} times · line ${length} µm`
+    + (k.movingMesh ? ' · fixed line (lab frame)' : '');
   updateKymoNote();
   updateKymoTime();
 }
@@ -3042,9 +3061,13 @@ function missingBrowserSupport() {
     el.refreshBtn.disabled = false;
     // probes need a picker: finite volume, body-fitted 2D, and body-fitted 3D tetrahedra (not Chombo 3D yet)
     el.addProbes.disabled = false;
-    // kymographs: finite volume for now (docs/plan-plotting.md P4); the body-fitted modes follow in P5/P6
-    el.lineTool.disabled = state.bodyFitted;
-    if (state.bodyFitted) el.lineTool.title = 'Kymographs of this kind of run are not available yet';
+    // kymographs (docs/plan-plotting.md P4, P5): finite volume, FEniCSx 2D and 3D, and Chombo 2D. Chombo 3D has
+    // no picker for its voxels and polyhedra yet, and MovingBoundary kymographs are not served yet (P6)
+    const noLine = lineUnavailable();
+    el.lineTool.disabled = !!noLine;
+    if (noLine) el.lineTool.title = noLine;
+    // the desktop's resampling of the raw (unmasked) values: finite-volume parity only
+    el.kymoDesktopCsv.hidden = state.bodyFitted;
     scheduleAutoRefresh();
     if (state.bodyFitted) {
       el.smoothingReadout.textContent = 'body-fitted solver mesh — shown as computed';

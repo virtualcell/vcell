@@ -259,7 +259,3 @@ def test_the_line_follows_the_camera(open_viewer):
     after = first()
     assert abs(after[0] - before[0]) > 3, (before, after)
 
-
-def test_the_line_tool_waits_for_later_versions_on_body_fitted_runs(open_viewer):
-    v = open_viewer('fenics2d')
-    assert v.page.is_disabled('#lineTool')
