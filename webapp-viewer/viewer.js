@@ -64,6 +64,25 @@ const el = {
   probeCsv: document.getElementById('probeCsv'),
   probeClear: document.getElementById('probeClear'),
   statsBtn: document.getElementById('statsBtn'),
+  lineTool: document.getElementById('lineTool'),
+  kymoPanel: document.getElementById('kymoPanel'),
+  kymoTitle: document.getElementById('kymoTitle'),
+  kymoStale: document.getElementById('kymoStale'),
+  kymoRange: document.getElementById('kymoRange'),
+  kymoMin: document.getElementById('kymoMin'),
+  kymoMax: document.getElementById('kymoMax'),
+  kymoSamplesCsv: document.getElementById('kymoSamplesCsv'),
+  kymoMatrixCsv: document.getElementById('kymoMatrixCsv'),
+  kymoDesktopCsv: document.getElementById('kymoDesktopCsv'),
+  kymoPng: document.getElementById('kymoPng'),
+  kymoClose: document.getElementById('kymoClose'),
+  lineCoords: document.getElementById('lineCoords'),
+  kymoNote: document.getElementById('kymoNote'),
+  kymoPlot: document.getElementById('kymoPlot'),
+  kymoCanvas: document.getElementById('kymoCanvas'),
+  kymoSvg: document.getElementById('kymoSvg'),
+  kymoReadout: document.getElementById('kymoReadout'),
+  kymoProfile: document.getElementById('kymoProfile'),
   dataControls: document.getElementById('dataControls'),
   variable: document.getElementById('variable'),
   time: document.getElementById('time'),
@@ -104,6 +123,14 @@ const state = {
   probeSeries: null, // the last /timeseries?points= response, for the plot, the list and the CSV
   probePlot: null, // the probe plot's time scale and cursor, for moving the cursor with the slider
   cameraView: null, // the camera as last rendered, for projecting probe markers onto the canvas
+  // the kymograph's line (docs/plan-plotting.md §4.2): lab-frame vertices, like the probes, so it survives
+  // a variable or domain switch. One line at a time, as on the desktop.
+  line: null, // {vertices: [[x, y, z], …]}
+  lineDraft: null, // the vertices placed so far while the Line tool is on, else null
+  kymo: null, // the last /kymograph response, with the line it was computed for and the stride asked
+  kymoStale: false, // the run has new times since the kymograph was computed
+  kymoView: null, // the drawn kymograph's layout, for the time cursor, clicks and hover
+  fieldRange: null, // the last /field range: the kymograph's "3D view" colour range
   fieldValues: null, // raw per-cell values of the shown field (nulls = blanked cells)
   nominalSinc: null,
   smoothing: NOMINAL_STRENGTH,
@@ -279,6 +306,8 @@ async function loadField(allowMismatch = false) {
   }
   el.dataReadout.textContent =
     `t = ${field.time} · [${field.range[0].toExponential(2)}, ${field.range[1].toExponential(2)}]`;
+  state.fieldRange = field.range;
+  if (state.kymo && el.kymoRange.value === 'view') renderKymograph();
   return field;
 }
 
@@ -827,6 +856,7 @@ window.addEventListener('resize', () => {
     try {
       await matchBufferToCanvas();
       if (renderWindow) await render();
+      if (state.kymo) renderKymograph();
     } catch (e) {
       console.warn('resize re-render failed', e);
     }
@@ -867,10 +897,19 @@ function attachTrackball() {
     if (!dragging) return;
     dragging = false;
     try { el.canvas.releasePointerCapture(e.pointerId); } catch { /* already released */ }
-    // a left press that never really moved is a pick: shift (or the Add toggle) adds a probe, a plain
-    // click replaces them
-    if (dragDistance < 4 && e.button === 0) void probeAt(e.clientX, e.clientY, e.shiftKey || state.addMode);
+    // a left press that never really moved is a pick: with the Line tool on it places a vertex; otherwise
+    // shift (or the Add toggle) adds a probe, and a plain click replaces them
+    if (dragDistance < 4 && e.button === 0) {
+      if (state.lineDraft) void addLineVertex(e.clientX, e.clientY);
+      else void probeAt(e.clientX, e.clientY, e.shiftKey || state.addMode);
+    }
   };
+  // a double-click finishes a line (its two clicks have placed its last vertex, once: repeats are dropped)
+  el.canvas.addEventListener('dblclick', (e) => {
+    if (!state.lineDraft) return;
+    e.preventDefault();
+    lineVertexQueue = lineVertexQueue.then(() => finishLine());
+  });
   el.canvas.addEventListener('pointerup', release);
   el.canvas.addEventListener('pointercancel', release);
   el.canvas.addEventListener('pointerleave', () => { el.pickReadout.textContent = ''; });
@@ -1135,7 +1174,8 @@ function valueAtTetPick(hit) {
   return sum;
 }
 
-const PICK_HINT = ' — click: probe · shift-click: add a probe';
+const pickHint = () => (state.lineDraft ? ' — click: add a line vertex · Enter: finish'
+  : ' — click: probe · shift-click: add a probe');
 
 let hoverBusy = false;
 async function hoverPick(clientX, clientY) {
@@ -1152,7 +1192,7 @@ async function hoverPick(clientX, clientY) {
       const value = valueAtTetPick(hit);
       const at = ` @ (${hit.point.map((x) => x.toFixed(2)).join(', ')})`;
       el.pickReadout.textContent = (value == null ? `no data${at}` : `${state.selectedVar} = ${value.toExponential(3)}${at}`)
-        + PICK_HINT;
+        + pickHint();
     } catch (e) {
       console.warn('hover pick failed', e);
     } finally {
@@ -1166,7 +1206,7 @@ async function hoverPick(clientX, clientY) {
     hoverBusy = true;
     try {
       const [x, y] = await labPointFromMouse(clientX, clientY);
-      el.pickReadout.textContent = `lab (${x.toFixed(2)}, ${y.toFixed(2)})${PICK_HINT}`;
+      el.pickReadout.textContent = `lab (${x.toFixed(2)}, ${y.toFixed(2)})${pickHint()}`;
     } catch (e) {
       console.warn('hover failed', e);
     } finally {
@@ -1188,7 +1228,7 @@ async function hoverPick(clientX, clientY) {
     const c = cellCenter(cell);
     const at = c ? ` @ (${c.slice(0, state.dimension === 2 ? 2 : 3).map((x) => x.toFixed(1)).join(', ')})` : '';
     el.pickReadout.textContent =
-      (v == null ? `no data${at}` : `${state.selectedVar} = ${v.toExponential(3)}${at}`) + PICK_HINT;
+      (v == null ? `no data${at}` : `${state.selectedVar} = ${v.toExponential(3)}${at}`) + pickHint();
   } catch (e) {
     console.warn('hover pick failed', e);
   } finally {
@@ -1254,24 +1294,29 @@ async function probeAt(clientX, clientY, add) {
   try {
     const hit = await pickAt(clientX, clientY);
     if (!hit) return;
-    if (!add) state.probes = [];
-    if (state.probes.length >= MAX_PROBES) {
-      setStatus(`at most ${MAX_PROBES} probes; remove one first`, true);
-      return;
-    }
-    const used = new Set(state.probes.map((p) => p.color));
-    let id = 1;
-    while (state.probes.some((p) => p.id === id)) id++;
-    state.probes.push({
-      id,
-      label: `P${id}`,
-      point: hit.point,
-      color: SERIES_COLORS.find((c) => !used.has(c)) ?? SERIES_COLORS[0],
-    });
-    probesChanged();
+    addProbe(hit.point, add);
   } catch (e) {
     setStatus('probe failed: ' + (e?.message ?? e), true);
   }
+}
+
+/** A probe at a lab-frame point, added to the others or replacing them. */
+function addProbe(point, add = true) {
+  if (!add) state.probes = [];
+  if (state.probes.length >= MAX_PROBES) {
+    setStatus(`at most ${MAX_PROBES} probes; remove one first`, true);
+    return;
+  }
+  const used = new Set(state.probes.map((p) => p.color));
+  let id = 1;
+  while (state.probes.some((p) => p.id === id)) id++;
+  state.probes.push({
+    id,
+    label: `P${id}`,
+    point,
+    color: SERIES_COLORS.find((c) => !used.has(c)) ?? SERIES_COLORS[0],
+  });
+  probesChanged();
 }
 
 function removeProbe(id) {
@@ -1557,13 +1602,7 @@ function probesCsv() {
 function saveProbesCsv() {
   const text = probesCsv();
   if (!text) return;
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([text], { type: 'text/csv' }));
-  a.download = `${state.probeSeries.name}-probes.csv`;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  saveBlob(new Blob([text], { type: 'text/csv' }), `${state.probeSeries.name}-probes.csv`);
 }
 
 /** ⌖: move the view so the probe is at its centre, keeping the direction and distance; orbit then turns about it. */
@@ -1673,12 +1712,13 @@ function drawOverlay() {
     g.append(ring, text);
     svg.appendChild(g);
   }
+  drawLineOverlay(svg);
 }
 
 let occlusionTimer = 0;
 function scheduleOcclusion() {
   clearTimeout(occlusionTimer);
-  if (!state.probes.length || state.dimension === 2) return; // a 2D view hides nothing
+  if ((!state.probes.length && !state.line) || state.dimension === 2) return; // a 2D view hides nothing
   occlusionTimer = setTimeout(() => {
     try {
       updateOcclusion();
@@ -1718,9 +1758,837 @@ function updateOcclusion() {
     }
     if (t != null && t < dist - slack) occluded.add(probe.id);
   }
+  updateLineOcclusion(slack);
 }
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
+
+// ---------------------------------------------------------------------------
+// lines and kymographs (docs/plan-plotting.md §4.2, §4.4, §4.5)
+// ---------------------------------------------------------------------------
+
+/** The server's limit on a line's vertices. */
+const MAX_LINE_VERTICES = 64;
+/** Each segment of the line is drawn in this many pieces, each dashed on its own where the geometry hides it. */
+const LINE_PIECES = 16;
+
+// vertex picks are async (they read the camera); Enter, Backspace and a double-click wait for them in order
+let lineVertexQueue = Promise.resolve();
+
+/** A coordinate as the line's field shows it, and as the line keeps it: six significant digits. */
+const fmtVertex = (v) => String(Number(v.toPrecision(6)));
+const roundPoint = (p) => p.map((v) => Number(v.toPrecision(6)));
+
+function formatLine(vertices) {
+  return vertices.map((v) => v.slice(0, state.dimension === 2 ? 2 : 3).map(fmtVertex).join(',')).join('; ');
+}
+
+/** `x,y,z; x,y,z; …` (in 2D `x,y` will do) → vertices; throws with a message saying what is wrong. */
+function parseLine(text) {
+  const vertices = text.split(';').map((t) => t.trim()).filter(Boolean).map((entry) => {
+    const parts = entry.split(',').map((t) => Number(t.trim()));
+    if (parts.length === 2 && state.dimension === 2) parts.push(state.bounds ? state.bounds[4] : 0);
+    if (parts.length !== 3 || !parts.every(Number.isFinite)) {
+      throw new Error(`'${entry}' is not a point: write x,y,z${state.dimension === 2 ? ' (or x,y)' : ''}`);
+    }
+    return parts;
+  });
+  if (vertices.length < 2) throw new Error('a line needs at least two vertices, separated by ;');
+  if (vertices.length > MAX_LINE_VERTICES) throw new Error(`a line has at most ${MAX_LINE_VERTICES} vertices`);
+  return vertices;
+}
+
+/** The Line tool: on starts a new line (the current one stays until the new one is finished); off cancels it. */
+function setLineTool(on) {
+  state.lineDraft = on ? [] : null;
+  el.lineTool.setAttribute('aria-pressed', String(on));
+  el.box.classList.toggle('drawing-line', on);
+  el.kymoPanel.hidden = !on && !state.line;
+  el.lineCoords.value = formatLine(on ? [] : state.line?.vertices ?? []);
+  updateKymoNote();
+  drawOverlay();
+}
+
+/** A click with the Line tool on: a vertex at the exact surface or cut-face point under the mouse. */
+function addLineVertex(clientX, clientY) {
+  lineVertexQueue = lineVertexQueue.then(async () => {
+    if (!state.lineDraft) return;
+    try {
+      const hit = await pickAt(clientX, clientY);
+      if (!hit || !state.lineDraft) return;
+      const point = roundPoint(hit.entry ?? hit.point);
+      const last = state.lineDraft[state.lineDraft.length - 1];
+      if (last && last.every((v, a) => v === point[a])) return; // the second click of a double-click
+      state.lineDraft.push(point);
+      el.lineCoords.value = formatLine(state.lineDraft);
+      updateKymoNote();
+      drawOverlay();
+      if (state.lineDraft.length >= MAX_LINE_VERTICES) finishLine();
+    } catch (e) {
+      setStatus('placing a line vertex failed: ' + (e?.message ?? e), true);
+    }
+  });
+  return lineVertexQueue;
+}
+
+/** Enter or a double-click: the draft becomes the line, once it has two vertices. */
+function finishLine() {
+  const draft = state.lineDraft;
+  if (!draft) return;
+  if (draft.length < 2) {
+    updateKymoNote('a line needs at least two vertices: click the view again, or Esc to cancel', true);
+    return;
+  }
+  setLine(draft);
+}
+
+/** Make `vertices` the line, drawn and fetched; ends any drawing. */
+function setLine(vertices) {
+  state.line = { vertices };
+  state.lineDraft = null;
+  el.lineTool.setAttribute('aria-pressed', 'false');
+  el.box.classList.remove('drawing-line');
+  el.kymoPanel.hidden = false;
+  el.lineCoords.value = formatLine(vertices);
+  lineOccluded.clear();
+  drawOverlay();
+  scheduleOcclusion();
+  void fetchKymograph();
+}
+
+function clearLine() {
+  clearTimeout(kymoFetchTimer);
+  kymoFetch?.abort();
+  kymoFetch = null;
+  state.line = null;
+  state.lineDraft = null;
+  state.kymo = null;
+  state.kymoStale = false;
+  el.kymoStale.hidden = true;
+  el.lineTool.setAttribute('aria-pressed', 'false');
+  el.box.classList.remove('drawing-line');
+  el.kymoPanel.hidden = true;
+  renderKymograph();
+  drawOverlay();
+}
+
+/** The typed line: redraw and refetch when it differs from the current one. */
+function applyLineCoords() {
+  let vertices;
+  try {
+    vertices = parseLine(el.lineCoords.value);
+  } catch (e) {
+    updateKymoNote(e.message, true);
+    return;
+  }
+  if (state.line && !state.lineDraft && formatLine(vertices) === formatLine(state.line.vertices)) return;
+  setLine(vertices);
+}
+
+el.lineTool.addEventListener('click', () => setLineTool(!state.lineDraft));
+el.kymoClose.addEventListener('click', clearLine);
+el.lineCoords.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    applyLineCoords();
+  }
+});
+el.lineCoords.addEventListener('change', applyLineCoords);
+el.kymoStale.addEventListener('click', () => void fetchKymograph());
+document.addEventListener('keydown', (e) => {
+  if (!state.lineDraft) return;
+  const t = e.target;
+  if (t instanceof HTMLInputElement || t instanceof HTMLSelectElement || t instanceof HTMLTextAreaElement) return;
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    lineVertexQueue = lineVertexQueue.then(() => finishLine());
+  } else if (e.key === 'Backspace') {
+    e.preventDefault();
+    lineVertexQueue = lineVertexQueue.then(() => {
+      if (!state.lineDraft) return;
+      state.lineDraft.pop();
+      el.lineCoords.value = formatLine(state.lineDraft);
+      updateKymoNote();
+      drawOverlay();
+    });
+  } else if (e.key === 'Escape') {
+    e.preventDefault();
+    setLineTool(false);
+  }
+});
+
+// --- the line over the 3D/2D view ---
+
+const lineOccluded = new Set(); // pieces of the line the geometry hides: index (segment · LINE_PIECES + piece)
+
+const lerp3 = (a, b, f) => [a[0] + f * (b[0] - a[0]), a[1] + f * (b[1] - a[1]), a[2] + f * (b[2] - a[2])];
+
+/**
+ * The line (or the one being drawn) over the view: white over a dark under-stroke, dashed where the geometry
+ * hides it, a dot at each vertex and a tick across its start, where the kymograph's distance 0 is.
+ */
+function drawLineOverlay(svg) {
+  const drafting = !!state.lineDraft;
+  const vertices = drafting ? state.lineDraft : state.line?.vertices;
+  if (!vertices?.length) return;
+  const g = document.createElementNS(SVG_NS, 'g');
+  g.setAttribute('class', 'kymo-overlay');
+  const add = (tag, attrs) => {
+    const n = document.createElementNS(SVG_NS, tag);
+    for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v);
+    g.appendChild(n);
+    return n;
+  };
+  const pieces = [];
+  for (let s = 1; s < vertices.length; s++) {
+    for (let k = 0; k < LINE_PIECES; k++) {
+      const a = projectToScreen(lerp3(vertices[s - 1], vertices[s], k / LINE_PIECES));
+      const b = projectToScreen(lerp3(vertices[s - 1], vertices[s], (k + 1) / LINE_PIECES));
+      if (a && b) pieces.push({ a, b, hidden: !drafting && lineOccluded.has((s - 1) * LINE_PIECES + k) });
+    }
+  }
+  const seg = (p, cls) => add('line', { class: cls, x1: p.a[0].toFixed(1), y1: p.a[1].toFixed(1),
+    x2: p.b[0].toFixed(1), y2: p.b[1].toFixed(1) });
+  for (const p of pieces) if (!p.hidden) seg(p, 'kymo-line-under');
+  for (const p of pieces) seg(p, 'kymo-line' + (p.hidden ? ' occluded' : '') + (drafting ? ' draft' : ''));
+  const screen = vertices.map(projectToScreen);
+  if (screen[0] && screen[1]) {
+    const dx = screen[1][0] - screen[0][0];
+    const dy = screen[1][1] - screen[0][1];
+    const l = Math.hypot(dx, dy) || 1;
+    const [px, py] = [(-dy / l) * 7, (dx / l) * 7];
+    add('line', { class: 'kymo-start', x1: (screen[0][0] - px).toFixed(1), y1: (screen[0][1] - py).toFixed(1),
+      x2: (screen[0][0] + px).toFixed(1), y2: (screen[0][1] + py).toFixed(1) });
+  }
+  screen.forEach((p, i) => {
+    if (p) add('circle', { class: 'kymo-vertex', cx: p[0].toFixed(1), cy: p[1].toFixed(1), r: i === 0 ? '4' : '3' });
+  });
+  svg.appendChild(g);
+}
+
+/** As for the probes (updateOcclusion): a piece is hidden when the camera's ray to its middle meets the geometry first. */
+function updateLineOcclusion(slack) {
+  lineOccluded.clear();
+  const view = state.cameraView;
+  const vertices = state.line?.vertices;
+  if (!view || !vertices || state.dimension === 2) return;
+  for (let s = 1; s < vertices.length; s++) {
+    for (let k = 0; k < LINE_PIECES; k++) {
+      const m = lerp3(vertices[s - 1], vertices[s], (k + 0.5) / LINE_PIECES);
+      const d = [0, 1, 2].map((a) => m[a] - view.P[a]);
+      const dist = Math.hypot(...d);
+      if (!(dist > 0)) continue;
+      const dir = d.map((v) => v / dist);
+      let t = null;
+      if (state.bodyFitted) {
+        const hit = pickTetrahedron(view.P, dir);
+        if (hit) t = Math.hypot(...[0, 1, 2].map((a) => hit.point[a] - view.P[a]));
+      } else {
+        t = castRay(view.P, dir)?.t ?? null;
+      }
+      if (t != null && t < dist - slack) lineOccluded.add((s - 1) * LINE_PIECES + k);
+    }
+  }
+}
+
+// --- fetching ---
+
+let kymoFetch = null; // the AbortController of the request in flight
+let kymoFetchTimer = 0;
+
+function scheduleKymoFetch() {
+  clearTimeout(kymoFetchTimer);
+  kymoFetchTimer = setTimeout(() => void fetchKymograph(), 150);
+}
+
+/**
+ * One /kymograph request for a line: {data, tstep}. Over the server's limit on samples × times it answers 400
+ * with the smallest stride over the saved times that fits (`suggestedTstep`): the viewer retries once with
+ * it, and says so. A 503 means another heavy job is running on the server: it retries once, after a pause.
+ */
+async function requestKymograph(line, { raw = false, tstep = 1, signal } = {}) {
+  let strided = false;
+  let busyRetried = false;
+  for (;;) {
+    const params = {
+      domain: state.selectedDomain,
+      var: state.selectedVar,
+      path: line.vertices.map((v) => v.map(String).join(',')).join(';'),
+    };
+    if (tstep > 1) params.tstep = String(tstep);
+    if (raw) params.raw = '1';
+    const r = await fetch(url('/kymograph', params), { signal });
+    if (r.ok) return { data: await r.json(), tstep };
+    let body = {};
+    try { body = await r.json(); } catch { /* not JSON */ }
+    if (r.status === 400 && Number.isInteger(body.suggestedTstep) && !strided) {
+      tstep = body.suggestedTstep;
+      strided = true;
+      continue;
+    }
+    if (r.status === 503 && !busyRetried) {
+      busyRetried = true;
+      await new Promise((resolve) => setTimeout(resolve, 600));
+      continue;
+    }
+    throw new Error(`/kymograph failed: ${r.status} ${body.error || r.statusText}`);
+  }
+}
+
+async function fetchKymograph() {
+  clearTimeout(kymoFetchTimer);
+  kymoFetch?.abort();
+  kymoFetch = null;
+  if (!state.line || !state.dataset) return;
+  const controller = new AbortController();
+  kymoFetch = controller;
+  const line = state.line;
+  el.kymoTitle.textContent = `${state.selectedVar} · ${state.selectedDomain} · loading…`;
+  try {
+    const { data, tstep } = await requestKymograph(line, { signal: controller.signal });
+    if (kymoFetch !== controller) return; // superseded while the body was read
+    state.kymo = { ...data, line, tstep };
+    state.kymoStale = false;
+    el.kymoStale.hidden = true;
+    renderKymograph();
+    setStatus(`${describe()} ✓ — kymograph: ${data.samples.arcLength.length} samples × ${data.times.length} times`);
+  } catch (e) {
+    if (e?.name === 'AbortError') return;
+    state.kymo = null;
+    renderKymograph();
+    updateKymoNote(e?.message ?? String(e), true);
+    setStatus('kymograph failed: ' + (e?.message ?? e), true);
+  } finally {
+    if (kymoFetch === controller) kymoFetch = null;
+  }
+}
+
+// --- drawing ---
+
+/**
+ * The viewer's colour map, ported from the vtkLookupTable it builds for the 3D view (hue 0.66667 → 0,
+ * saturation and value 1, 256 entries: blue low, red high), so the kymograph and the view agree.
+ */
+const KYMO_LUT = (() => {
+  const table = new Uint8ClampedArray(256 * 3);
+  for (let i = 0; i < 256; i++) {
+    const h = 0.66667 + (i * (0.0 - 0.66667)) / 255;
+    let r; let g; let b; // vtkMath::HSVToRGB at s = v = 1
+    if (h > 1 / 6 && h <= 1 / 3) { g = 1; r = (1 / 3 - h) * 6; b = 0; }
+    else if (h > 1 / 3 && h <= 0.5) { g = 1; b = (h - 1 / 3) * 6; r = 0; }
+    else if (h > 0.5 && h <= 2 / 3) { b = 1; g = (2 / 3 - h) * 6; r = 0; }
+    else if (h > 2 / 3 && h <= 5 / 6) { b = 1; r = (h - 2 / 3) * 6; g = 0; }
+    else if (h > 5 / 6 && h <= 1) { r = 1; b = (1 - h) * 6; g = 0; }
+    else { r = 1; g = h * 6; b = 0; }
+    table[3 * i] = r * 255 + 0.5;
+    table[3 * i + 1] = g * 255 + 0.5;
+    table[3 * i + 2] = b * 255 + 0.5;
+  }
+  return table;
+})();
+
+/** The LUT entry for v over [lo, hi], clamped at both ends, as vtkLookupTable maps a value. */
+function lutIndex(v, lo, hi) {
+  const i = Math.floor(((v - lo) * 256) / (hi - lo || 1));
+  return i < 0 ? 0 : i > 255 ? 255 : i;
+}
+
+/** The kymograph's colour range for the selected mode. */
+function kymoRange() {
+  const k = state.kymo;
+  let [lo, hi] = k.range;
+  const mode = el.kymoRange.value;
+  if (mode === 'view' && state.fieldRange) [lo, hi] = state.fieldRange;
+  if (mode === 'user') {
+    const a = parseFloat(el.kymoMin.value);
+    const b = parseFloat(el.kymoMax.value);
+    if (Number.isFinite(a)) lo = a;
+    if (Number.isFinite(b)) hi = b;
+  }
+  if (!(hi > lo)) hi = lo + (Math.abs(lo) || 1) * 1e-6; // a flat kymograph is one colour, not a divide by zero
+  return [lo, hi];
+}
+
+/**
+ * Which sample each image column shows. Finite volume ('cell'): the sample whose span holds the column's
+ * middle, spans ending halfway between neighbouring samples, so each voxel shows at its true width (and a
+ * membrane crossing's two samples, at one point, share the gap between their neighbours). FEniCSx ('point'):
+ * the two samples either side, and the fraction between them, for linear interpolation.
+ */
+function columnSamples(k, W) {
+  const arc = k.samples.arcLength;
+  const n = arc.length;
+  const a0 = arc[0];
+  const span = arc[n - 1] - a0;
+  const cols = [];
+  for (let c = 0; c < W; c++) {
+    const s = span > 0 ? a0 + ((c + 0.5) / W) * span : a0;
+    if (k.location === 'point') {
+      let j = 0;
+      while (j < n - 2 && arc[j + 1] < s) j++;
+      const f = arc[j + 1] > arc[j] ? Math.min(1, Math.max(0, (s - arc[j]) / (arc[j + 1] - arc[j]))) : 0;
+      cols.push({ i: f > 0.5 ? j + 1 : j, j, f });
+    } else {
+      let lo = 0;
+      let hi = n - 1;
+      while (lo < hi) { // the first sample whose span ends after s
+        const mid = (lo + hi) >> 1;
+        if (s < (arc[mid] + arc[mid + 1]) / 2) hi = mid;
+        else lo = mid + 1;
+      }
+      cols.push({ i: lo });
+    }
+  }
+  return cols;
+}
+
+/** A column's value in a row: the sample's, or interpolated; null for a gap. */
+function columnValue(k, row, col) {
+  const values = k.values[row];
+  if (k.location === 'point') {
+    const a = values[col.j];
+    const b = values[col.j + 1];
+    if (a == null || b == null) return null;
+    return a + col.f * (b - a);
+  }
+  return values[col.i];
+}
+
+/** The span of arc length a sample stands for: halfway to each neighbour, and the ends of the line at the ends. */
+function sampleSpan(arc, i) {
+  const n = arc.length;
+  return [i === 0 ? arc[0] : (arc[i - 1] + arc[i]) / 2, i === n - 1 ? arc[n - 1] : (arc[i] + arc[i + 1]) / 2];
+}
+
+/** One line of the note under the line's field: while drawing, how to draw; else what to know about the kymograph. */
+function updateKymoNote(message, warn = false) {
+  let text = message;
+  if (text == null) {
+    const k = state.kymo;
+    if (state.lineDraft) {
+      text = `Click the view to add vertices (${state.lineDraft.length} so far): Enter or double-click finishes, `
+        + 'Backspace removes the last, Esc cancels. Or type the vertices above and press Enter.';
+    } else if (k) {
+      const notes = [];
+      if (!k.samples.inDomain.some(Boolean)) {
+        notes.push(`the line lies outside ${k.domain}`);
+        warn = true;
+      }
+      if (k.tstep > 1) {
+        notes.push(`every ${k.tstep}${k.tstep === 2 ? 'nd' : k.tstep === 3 ? 'rd' : 'th'} saved time: the full kymograph is over the server's limit on values`);
+        warn = true;
+      }
+      if (k.sampling === 'dda') {
+        notes.push("one sample per voxel crossed, by a voxel walk (the desktop's sampling can't take this line, so there is no membrane-crossing correction)");
+      } else if (k.sampling === 'voxel-crossing') {
+        notes.push("one sample per voxel crossed, two at each membrane (the desktop's sampling); hatched: outside the domain");
+      }
+      text = notes.join(' · ');
+    } else {
+      text = '';
+    }
+  }
+  el.kymoNote.textContent = text;
+  el.kymoNote.classList.toggle('warn', warn);
+}
+
+/**
+ * The kymograph: an image with one row per returned time (the first at the top, as the desktop draws it)
+ * and the line's arc length across, W = min(1024, 4·n) columns scaled up with `image-rendering: pixelated`;
+ * ticked axes, a colour bar and a time-row cursor drawn over it in SVG; and the line profile at the current
+ * time below. Gaps are transparent, over a hatch.
+ */
+function renderKymograph() {
+  const k = state.kymo;
+  const svg = el.kymoSvg;
+  const canvas = el.kymoCanvas;
+  const has = !!k;
+  for (const b of [el.kymoSamplesCsv, el.kymoMatrixCsv, el.kymoDesktopCsv, el.kymoPng]) b.disabled = !has;
+  if (!k) {
+    svg.replaceChildren();
+    el.kymoProfile.replaceChildren();
+    canvas.width = 1;
+    canvas.height = 1;
+    canvas.hidden = true;
+    state.kymoView = null;
+    el.kymoTitle.textContent = state.line ? `${state.selectedVar} · ${state.selectedDomain}` : 'kymograph';
+    el.kymoReadout.textContent = '';
+    updateKymoNote();
+    return;
+  }
+  canvas.hidden = false;
+  const arc = k.samples.arcLength;
+  const n = arc.length;
+  const rows = k.values.length;
+  const Wpx = Math.max(360, Math.round(el.kymoPlot.clientWidth || 640));
+  const Hpx = Math.round(el.kymoPlot.clientHeight || 260);
+  const M = { l: 70, r: 96, t: 10, b: 36 };
+  const plotW = Wpx - M.l - M.r;
+  const plotH = Hpx - M.t - M.b;
+  Object.assign(canvas.style, { left: `${M.l}px`, top: `${M.t}px`, width: `${plotW}px`, height: `${plotH}px` });
+
+  // the image
+  const W = Math.min(1024, 4 * n);
+  canvas.width = W;
+  canvas.height = rows;
+  const [lo, hi] = kymoRange();
+  const cols = columnSamples(k, W);
+  const ctx = canvas.getContext('2d');
+  const image = ctx.createImageData(W, rows);
+  const px = image.data;
+  let gaps = false;
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < W; c++) {
+      const v = columnValue(k, r, cols[c]);
+      const o = 4 * (r * W + c);
+      if (v == null || !Number.isFinite(v)) {
+        gaps = true;
+        continue; // transparent: the hatch behind shows through
+      }
+      const e = 3 * lutIndex(v, lo, hi);
+      px[o] = KYMO_LUT[e];
+      px[o + 1] = KYMO_LUT[e + 1];
+      px[o + 2] = KYMO_LUT[e + 2];
+      px[o + 3] = 255;
+    }
+  }
+  ctx.putImageData(image, 0, 0);
+
+  // the axes, colour bar and cursor
+  svg.setAttribute('viewBox', `0 0 ${Wpx} ${Hpx}`);
+  svg.replaceChildren();
+  const mk = (tag, attrs, text, parent = svg) => {
+    const node = document.createElementNS(SVG_NS, tag);
+    for (const [key, val] of Object.entries(attrs)) node.setAttribute(key, val);
+    if (text != null) node.textContent = text;
+    parent.appendChild(node);
+    return node;
+  };
+  const a0 = arc[0];
+  const a1 = arc[n - 1] > a0 ? arc[n - 1] : a0 + 1;
+  const sx = (s) => M.l + ((s - a0) / (a1 - a0)) * plotW;
+  const rowY = (r) => M.t + ((r + 0.5) / rows) * plotH;
+  const defs = mk('defs', {});
+  const hatch = mk('pattern', { id: 'kymoHatch', width: 6, height: 6, patternUnits: 'userSpaceOnUse',
+    patternTransform: 'rotate(45)' }, null, defs);
+  mk('rect', { width: 3, height: 6, fill: '#9a9aa3' }, null, hatch);
+  mk('rect', { x: 3, width: 3, height: 6, fill: '#c8c8cf' }, null, hatch);
+  const grad = mk('linearGradient', { id: 'kymoGradient', x1: 0, y1: 1, x2: 0, y2: 0 }, null, defs);
+  for (let i = 0; i <= 32; i++) {
+    const e = 3 * Math.min(255, Math.round((i / 32) * 255));
+    mk('stop', { offset: (i / 32).toFixed(4), 'stop-color': `rgb(${KYMO_LUT[e]},${KYMO_LUT[e + 1]},${KYMO_LUT[e + 2]})` }, null, grad);
+  }
+  mk('rect', { class: 'axis', x: M.l, y: M.t, width: plotW, height: plotH, fill: 'none' });
+  const xt = niceTicks(a0, a1);
+  for (const s of xt.ticks) {
+    mk('line', { class: 'axis', x1: sx(s), x2: sx(s), y1: M.t + plotH, y2: M.t + plotH + 4 });
+    mk('text', { class: 'lbl', x: sx(s), y: M.t + plotH + 15, 'text-anchor': 'middle' }, tickLabel(s, xt.step));
+  }
+  mk('text', { class: 'title', x: M.l + plotW / 2, y: Hpx - 4, 'text-anchor': 'middle' }, 'distance along line (µm)');
+  // rows are the saved times, not a uniform time scale: label a handful of rows with their real times
+  const labelled = rows <= 6 ? [...Array(rows).keys()]
+    : [...new Set([0, 1, 2, 3, 4, 5].map((q) => Math.round((q * (rows - 1)) / 5)))];
+  const tStep = rows > 1 ? Math.abs(k.times[rows - 1] - k.times[0]) / 5 : 1;
+  for (const r of labelled) {
+    mk('line', { class: 'axis', x1: M.l - 4, x2: M.l, y1: rowY(r), y2: rowY(r) });
+    mk('text', { class: 'lbl', x: M.l - 6, y: rowY(r) + 4, 'text-anchor': 'end' }, tickLabel(k.times[r], tStep || 1));
+  }
+  mk('text', { class: 'title', x: 0, y: 0, 'text-anchor': 'middle',
+    transform: `translate(12 ${M.t + plotH / 2}) rotate(-90)` }, 'time (s)');
+  const barX = M.l + plotW + 12;
+  const barH = gaps ? plotH - 22 : plotH;
+  mk('rect', { x: barX, y: M.t, width: 12, height: barH, fill: 'url(#kymoGradient)' });
+  mk('text', { class: 'lbl', x: barX + 16, y: M.t + 9 }, hi.toExponential(2));
+  mk('text', { class: 'lbl', x: barX + 16, y: M.t + barH }, lo.toExponential(2));
+  if (gaps) {
+    mk('rect', { class: 'no-data', x: barX, y: M.t + plotH - 12, width: 12, height: 12 });
+    mk('text', { class: 'lbl', x: barX + 16, y: M.t + plotH - 2 }, 'no data');
+  }
+  const under = mk('line', { class: 'time-cursor-under', x1: M.l, x2: M.l + plotW });
+  const over = mk('line', { class: 'time-cursor', x1: M.l, x2: M.l + plotW });
+  state.kymoView = { rows, W, cols, rowY, sx, M, plotW, cursor: [under, over], lo, hi };
+
+  const length = Number(k.pathLength.toPrecision(4));
+  el.kymoTitle.textContent = `${k.name} · ${k.domain} · ${n} samples × ${rows} times · line ${length} µm`;
+  updateKymoNote();
+  updateKymoTime();
+}
+
+/** The row showing the slider's time: the one whose saved-time index is nearest (every row, unless strided). */
+function kymoRowAt(timeIndex) {
+  const idx = state.kymo.timeIndices;
+  let best = 0;
+  for (let r = 1; r < idx.length; r++) if (Math.abs(idx[r] - timeIndex) < Math.abs(idx[best] - timeIndex)) best = r;
+  return best;
+}
+
+/** The time-row cursor and the line profile follow the slider. */
+function updateKymoTime() {
+  const view = state.kymoView;
+  if (!view || !state.kymo) return;
+  const r = kymoRowAt(state.timeIndex);
+  for (const line of view.cursor) {
+    line.setAttribute('y1', view.rowY(r).toFixed(1));
+    line.setAttribute('y2', view.rowY(r).toFixed(1));
+  }
+  el.kymoCanvas.dataset.row = String(r);
+  renderProfile(r);
+}
+
+/**
+ * The values along the line at one row, on the kymograph's x scale: steps at the samples' spans for finite
+ * volume (a membrane crossing is a jump), straight segments between samples for FEniCSx. Gaps break it.
+ */
+function renderProfile(row) {
+  const k = state.kymo;
+  const svg = el.kymoProfile;
+  const Wpx = Math.max(360, Math.round(svg.clientWidth || 640));
+  const H = 170;
+  const M = { l: 70, r: 96, t: 16, b: 34 };
+  svg.setAttribute('viewBox', `0 0 ${Wpx} ${H}`);
+  svg.replaceChildren();
+  const mk = (tag, attrs, text) => {
+    const node = document.createElementNS(SVG_NS, tag);
+    for (const [key, val] of Object.entries(attrs)) node.setAttribute(key, val);
+    if (text != null) node.textContent = text;
+    svg.appendChild(node);
+    return node;
+  };
+  const arc = k.samples.arcLength;
+  const n = arc.length;
+  const a0 = arc[0];
+  const a1 = arc[n - 1] > a0 ? arc[n - 1] : a0 + 1;
+  const plotW = Wpx - M.l - M.r;
+  const sx = (s) => M.l + ((s - a0) / (a1 - a0)) * plotW;
+  // one y scale for every row (the kymograph's own range), so the profile moves, not its axis
+  let [lo, hi] = k.range;
+  if (!(hi > lo)) hi = lo + (Math.abs(lo) || 1);
+  const pad = 0.04 * (hi - lo);
+  lo -= pad;
+  hi += pad;
+  const sy = (v) => H - M.b - ((v - lo) / (hi - lo)) * (H - M.t - M.b);
+  const yt = niceTicks(lo, hi, 4);
+  for (const v of yt.ticks) {
+    mk('line', { class: 'grid', x1: M.l, x2: M.l + plotW, y1: sy(v), y2: sy(v) });
+    mk('text', { class: 'lbl', x: M.l - 5, y: sy(v) + 4, 'text-anchor': 'end' }, tickLabel(v, yt.step));
+  }
+  const xt = niceTicks(a0, a1);
+  for (const s of xt.ticks) {
+    mk('line', { class: 'axis', x1: sx(s), x2: sx(s), y1: H - M.b, y2: H - M.b + 4 });
+    mk('text', { class: 'lbl', x: sx(s), y: H - M.b + 15, 'text-anchor': 'middle' }, tickLabel(s, xt.step));
+  }
+  mk('line', { class: 'axis', x1: M.l, y1: H - M.b, x2: M.l + plotW, y2: H - M.b });
+  mk('line', { class: 'axis', x1: M.l, y1: M.t, x2: M.l, y2: H - M.b });
+  mk('text', { class: 'title', x: M.l + plotW / 2, y: H - 3, 'text-anchor': 'middle' }, 'distance along line (µm)');
+  mk('text', { class: 'title', x: M.l, y: 11 }, `${k.name} [${k.domain}] at t = ${k.times[row]} s`);
+  const values = k.values[row];
+  let seg = [];
+  const flush = () => {
+    if (seg.length > 1) mk('polyline', { class: 'trace', points: seg.join(' ') });
+    seg = [];
+  };
+  for (let i = 0; i < n; i++) {
+    const v = values[i];
+    if (v == null || !Number.isFinite(v)) {
+      flush();
+      continue;
+    }
+    const y = sy(v).toFixed(1);
+    if (k.location === 'point') {
+      seg.push(`${sx(arc[i]).toFixed(1)},${y}`);
+    } else {
+      const [s0, s1] = sampleSpan(arc, i);
+      seg.push(`${sx(s0).toFixed(1)},${y}`, `${sx(s1).toFixed(1)},${y}`);
+    }
+  }
+  flush();
+}
+
+/** The image cell under a mouse event: {row, col, sample}, or null outside the image. */
+function kymoCellAt(e) {
+  const view = state.kymoView;
+  if (!view) return null;
+  const rect = el.kymoCanvas.getBoundingClientRect();
+  const fx = (e.clientX - rect.left) / rect.width;
+  const fy = (e.clientY - rect.top) / rect.height;
+  if (fx < 0 || fx >= 1 || fy < 0 || fy >= 1) return null;
+  const row = Math.min(view.rows - 1, Math.floor(fy * view.rows));
+  const col = Math.min(view.W - 1, Math.floor(fx * view.W));
+  return { row, col, sample: view.cols[col].i };
+}
+
+/** Click: move the slider to the row's time. Shift-click: a probe at the sample, for its time course. */
+el.kymoCanvas.addEventListener('click', (e) => {
+  const at = kymoCellAt(e);
+  const k = state.kymo;
+  if (!at || !k || !state.ready) return;
+  if (e.shiftKey) {
+    // a finite-volume sample probes its voxel's centre, the point P2's probes use; else the sample's point
+    const cell = k.samples.cell?.[at.sample] ?? -1;
+    const point = cell >= 0 && k.domain === state.selectedDomain && state.cellList?.[cell]
+      ? cellCentroid(cell) : k.samples.points.slice(3 * at.sample, 3 * at.sample + 3);
+    addProbe(point, true);
+    return;
+  }
+  const index = k.timeIndices[at.row];
+  if (index === state.timeIndex) return;
+  el.time.value = String(index);
+  el.time.dispatchEvent(new Event('input'));
+  el.time.dispatchEvent(new Event('change'));
+});
+el.kymoCanvas.addEventListener('mousemove', (e) => {
+  const at = kymoCellAt(e);
+  const k = state.kymo;
+  if (!at || !k) {
+    el.kymoReadout.textContent = '';
+    return;
+  }
+  const s = k.samples.arcLength[0] + ((at.col + 0.5) / state.kymoView.W)
+    * (k.samples.arcLength[k.samples.arcLength.length - 1] - k.samples.arcLength[0]);
+  const v = columnValue(k, at.row, state.kymoView.cols[at.col]);
+  el.kymoReadout.textContent = `d = ${Number(s.toPrecision(4))} µm · t = ${k.times[at.row]} s · `
+    + (v == null ? `no data (outside ${k.domain})` : `${k.name} = ${v.toExponential(4)}`)
+    + ' — click: go to this time · shift-click: probe this point';
+});
+el.kymoCanvas.addEventListener('mouseleave', () => { el.kymoReadout.textContent = ''; });
+
+el.kymoRange.addEventListener('change', () => {
+  const user = el.kymoRange.value === 'user';
+  el.kymoMin.hidden = !user;
+  el.kymoMax.hidden = !user;
+  if (user && state.kymoView) {
+    el.kymoMin.value = String(state.kymoView.lo);
+    el.kymoMax.value = String(state.kymoView.hi);
+  }
+  if (state.kymo) renderKymograph();
+});
+for (const input of [el.kymoMin, el.kymoMax]) {
+  input.addEventListener('change', () => { if (state.kymo) renderKymograph(); });
+}
+
+// --- export (made in the page: nothing goes over the network but the raw refetch for the desktop CSV) ---
+
+function saveBlob(blob, name) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+const csvCell = (v) => (v == null || (typeof v === 'number' && !Number.isFinite(v)) ? '' : String(v));
+
+function kymoComments(k) {
+  return [
+    `# sim: ${state.dataset.sim}`,
+    `# job: ${state.dataset.job}`,
+    `# var: ${k.name}`,
+    `# domain: ${k.domain}`,
+    `# sampling: ${k.sampling}`,
+    `# path: ${k.line.vertices.map((v) => v.join(',')).join('; ')}`,
+    ...(k.tstep > 1 ? [`# tstep: ${k.tstep}`] : []),
+  ];
+}
+
+/** kymo-samples.csv: one row per sample. */
+function kymoSamplesCsv(k) {
+  const s = k.samples;
+  const lines = [...kymoComments(k), 'i,arcLength,x,y,z,volumeIndex,membraneIndex,inDomain'];
+  s.arcLength.forEach((a, i) => {
+    lines.push([i, a, s.points[3 * i], s.points[3 * i + 1], s.points[3 * i + 2],
+      csvCell(s.volumeIndex?.[i]), csvCell(s.membraneIndex?.[i]), s.inDomain[i]].join(','));
+  });
+  return lines.join('\n') + '\n';
+}
+
+/** kymo-matrix.csv: the arc lengths, then one row per time; gaps are empty fields. */
+function kymoMatrixCsv(k) {
+  const lines = [...kymoComments(k), ['time\\arcLength', ...k.samples.arcLength].join(',')];
+  k.times.forEach((t, r) => lines.push([t, ...k.values[r].map(csvCell)].join(',')));
+  return lines.join('\n') + '\n';
+}
+
+/**
+ * The desktop kymograph's display resampling, ported from KymographPanel.initStandAloneTimeSeries_private:
+ * n evenly spaced distances from 0 to the last arc length, each taking the nearer of the two samples it
+ * falls between (nearest neighbour, ties to the left). Exactly its arithmetic, so its Copy output and this
+ * agree value for value. `values` is rows × samples.
+ */
+function desktopResample(arc, values) {
+  const n = arc.length;
+  const incr = arc[n - 1] / (n - 1);
+  const distances = new Array(n);
+  const out = values.map((row) => {
+    const res = new Array(n);
+    let sourceIndex = 0;
+    let currentDistance = 0;
+    for (let k = 0; k < n; k++) {
+      while (currentDistance > arc[sourceIndex + 1]) sourceIndex++;
+      const subShort = currentDistance - arc[sourceIndex];
+      const subLong = arc[sourceIndex + 1] - arc[sourceIndex];
+      const proportion = subShort / subLong;
+      res[k] = row[sourceIndex + (proportion > 0.5 ? 1 : 0)];
+      distances[k] = currentDistance;
+      currentDistance += incr;
+      if (currentDistance > arc[n - 1]) currentDistance = arc[n - 1];
+    }
+    return res;
+  });
+  return { distances, values: out };
+}
+
+/**
+ * kymo-desktop-resampled.csv: the RAW kymograph (raw=1: values outside the domain too, as the desktop
+ * shows them) resampled as the desktop resamples it, in the layout of its Copy output: a Distances row,
+ * then one row per time.
+ */
+async function kymoDesktopCsv(k) {
+  const { data, tstep } = await requestKymograph(k.line, { raw: true, tstep: k.tstep });
+  const r = desktopResample(data.samples.arcLength, data.values);
+  const lines = [
+    ...kymoComments({ ...data, line: k.line, tstep }),
+    '# the desktop kymograph\'s resampling (KymographPanel): raw values, nearest neighbour, evenly spaced distances',
+    ['Distances', ...r.distances].join(','),
+    'Times',
+  ];
+  data.times.forEach((t, row) => lines.push([t, ...r.values[row].map(csvCell)].join(',')));
+  return lines.join('\n') + '\n';
+}
+
+/** The image as PNG: each row and column scaled up by whole pixels, so a few times still make a picture. */
+function saveKymoPng() {
+  const src = el.kymoCanvas;
+  const sxf = Math.max(1, Math.ceil(512 / src.width));
+  const syf = Math.max(1, Math.ceil(256 / src.height));
+  const out = document.createElement('canvas');
+  out.width = src.width * sxf;
+  out.height = src.height * syf;
+  const ctx = out.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(src, 0, 0, out.width, out.height);
+  out.toBlob((blob) => { if (blob) saveBlob(blob, `${state.kymo.name}-kymograph.png`); }, 'image/png');
+}
+
+const kymoCsvBlob = (text) => new Blob([text], { type: 'text/csv' });
+el.kymoSamplesCsv.addEventListener('click', () => {
+  if (state.kymo) saveBlob(kymoCsvBlob(kymoSamplesCsv(state.kymo)), `${state.kymo.name}-kymo-samples.csv`);
+});
+el.kymoMatrixCsv.addEventListener('click', () => {
+  if (state.kymo) saveBlob(kymoCsvBlob(kymoMatrixCsv(state.kymo)), `${state.kymo.name}-kymo-matrix.csv`);
+});
+el.kymoDesktopCsv.addEventListener('click', async () => {
+  const k = state.kymo;
+  if (!k) return;
+  try {
+    saveBlob(kymoCsvBlob(await kymoDesktopCsv(k)), `${k.name}-kymo-desktop-resampled.csv`);
+  } catch (e) {
+    setStatus('desktop CSV failed: ' + (e?.message ?? e), true);
+  }
+});
+el.kymoPng.addEventListener('click', () => { if (state.kymo) saveKymoPng(); });
+
 
 /** Fresh axes + scales in the Stats plot's SVG; renderStatsPlot draws on top of this. */
 function plotFrame(times, lo, hi) {
@@ -1936,6 +2804,11 @@ async function refreshRun({ auto = false } = {}) {
     el.time.max = String(Math.max(0, state.times.length - 1));
     el.time.disabled = state.times.length < 2;
     if (state.times.length > before && state.probes.length) scheduleProbeFetch(); // the traces grow too
+    // a kymograph is not refetched every 10 s: it says it is out of date, and recomputes on request
+    if (state.times.length > before && state.kymo) {
+      state.kymoStale = true;
+      el.kymoStale.hidden = false;
+    }
     if (state.times.length > before && wasAtEnd) {
       state.timeIndex = state.times.length - 1;
       el.time.value = String(state.timeIndex);
@@ -1976,6 +2849,7 @@ el.time.addEventListener('input', () => {
   state.timeIndex = Number(el.time.value);
   el.dataReadout.textContent = `t = ${state.times[state.timeIndex] ?? ''}`;
   if (state.probes.length) renderProbes(); // the time cursor and the list's current values
+  if (state.kymo) updateKymoTime(); // the kymograph's time-row cursor and its line profile
 });
 el.time.addEventListener('change', () => {
   state.timeIndex = Number(el.time.value);
@@ -2013,6 +2887,7 @@ el.variable.addEventListener('change', () => {
   state.selectedVar = chosen.name;
   // probes are lab-frame points, so they carry over to the new variable (and domain): one request
   if (state.probes.length) scheduleProbeFetch();
+  if (state.line) scheduleKymoFetch(); // the line too (debounced: the domain may change just below)
   // switching variable can also switch domain — a nuclear species lives on different geometry from
   // a cytosolic one — in which case the grid is rebuilt, not just recoloured
   if (chosen.domain && chosen.domain !== state.selectedDomain) {
@@ -2167,6 +3042,9 @@ function missingBrowserSupport() {
     el.refreshBtn.disabled = false;
     // probes need a picker: finite volume, body-fitted 2D, and body-fitted 3D tetrahedra (not Chombo 3D yet)
     el.addProbes.disabled = false;
+    // kymographs: finite volume for now (docs/plan-plotting.md P4); the body-fitted modes follow in P5/P6
+    el.lineTool.disabled = state.bodyFitted;
+    if (state.bodyFitted) el.lineTool.title = 'Kymographs of this kind of run are not available yet';
     scheduleAutoRefresh();
     if (state.bodyFitted) {
       el.smoothingReadout.textContent = 'body-fitted solver mesh — shown as computed';

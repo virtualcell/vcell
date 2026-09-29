@@ -22,6 +22,13 @@ _(Release-manager scratchpad. Populated at release-cut time.)_
   marker in the 3D view. The plot has labelled axes and a time cursor that follows the slider. Probes stay in
   place when you switch variable, and export as CSV. This works for finite-volume, FEniCSx and
   MovingBoundary runs.
+- The field viewer draws kymographs of finite-volume runs. Press **╱ Line** and click two or more points in the
+  view (Enter or a double-click finishes), or type the vertices. The kymograph shows the variable along the
+  line (across) at every saved time (down), sampled exactly as the desktop kymograph samples it: one sample per
+  voxel crossed, two at each membrane. Voxels outside the variable's compartment are hatched gaps. It has a
+  colour bar, a time cursor that follows the slider, and a line profile at the current time. Click it to go
+  to that time, shift-click to probe that point. Export the samples or the matrix as CSV, the desktop-style
+  resampling as CSV, or the image as PNG.
 
 ## [8.2.0.05] - 2026-09-29
 

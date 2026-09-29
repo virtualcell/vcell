@@ -126,7 +126,8 @@ scrub time — a time step costs about 5.7× less than shipping both.
   no registry dependence. The walk applies the same crop keep-rule as the renderer, so picking the
   cut face reads the cap voxel. A click places a probe at the picked voxel's centre (see **Probes**), and
   the probes' time courses come from one `/timeseries?points=` request, reduced server-side next to the
-  reader — never fetch every timestep to build one curve. The Stats button
+  reader — never fetch every timestep to build one curve (a kymograph likewise comes from one
+  `/kymograph` request, see **Kymographs**). The Stats button
   does the same for whole-domain min/mean/max per variable via `/stats` (one space-stats
   `TimeSeriesJobSpec` carrying all the variables at once).
 - **2D runs are first-class, through the same convention.** The server emits the mesh's
@@ -207,6 +208,48 @@ scrub time — a time step costs about 5.7× less than shipping both.
     - FV 2D and 3D, FEniCSx 2D (fixed and moving) and 3D, and a stand-in MovingBoundary run;
     - markers land within 1.5 px of the clicked point on the body-fitted runs;
     - no `is not permitted` refusals.
+- **Kymographs: a variable along a line, over time** (finite volume for now; FEniCSx and Chombo come next).
+  - **Drawing.** **╱ Line** starts a line: each click on the view adds a vertex, at the exact surface or
+    cut-face point under the mouse (`pickAt`'s `entry`). **Enter** or a double-click finishes, **Backspace**
+    removes the last vertex, **Esc** cancels. In 3D two surface picks make a chord through the inside; with a
+    crop on, picks land on the cut face, so the line lies in the slice, as on the desktop. The line's field
+    (`x,y,z; x,y,z; …`, µm, six significant digits) shows the vertices and takes typed ones (Enter redraws), so
+    a line can be reproduced exactly. One line at a time. It is a lab-frame polyline, so it carries over a
+    variable or domain switch (refetched). ✕ removes it.
+  - **Sampling (the FV rule).** The server samples the line exactly as the desktop kymograph does
+    (`SpatialSelectionVolume.getIndexSamples`, see `FvLineSampler`): one sample per voxel crossed, in the
+    solver's node-centred voxels, and **two samples at each membrane crossing**, one per side, carrying the
+    `_INSIDE`/`_OUTSIDE` membrane values. All samples × times come from one server-side `TimeSeriesJobSpec`,
+    so only the kymograph's values travel. A 3D line the desktop's code can't take (one through voxel
+    vertices) is walked voxel by voxel instead, without the membrane correction, and the panel says so.
+  - **Gaps.** Samples outside the variable's compartment are **gaps**, drawn as a grey hatch and listed as
+    "no data" by the colour bar (the desktop shows the raw array there, i.e. another compartment's numbers). A
+    line wholly outside says "the line lies outside <domain>".
+  - **The image** has one row per saved time, the first at the top as on the desktop, and arc length across.
+    It is `min(1024, 4·n)` columns, scaled up with `image-rendering: pixelated`. Each column shows the sample
+    whose span holds it, a span ending halfway to each neighbouring sample, so voxels keep their true widths
+    (the desktop instead resamples to evenly spaced distances). The colour map is a JS port of the 3D view's
+    `vtkLookupTable` (blue low, red high). The range is the kymograph's own (default), the 3D view's at the
+    current time, or typed. Rows are the saved times, labelled with their real times.
+  - **Interaction.** A dashed cursor marks the slider's time and follows it; a click on the image moves the
+    slider to that row's time; hovering reads `d, t, value`; **shift-click adds a probe** at that sample (its
+    voxel's centre), for its time course in the probe panel. Below, the line profile at the current time (a
+    step per voxel, jumps at membranes).
+  - **Limits.** Over the server's 500,000 samples × times the viewer retries once with the stride the server
+    suggests (every k-th saved time) and says so; a busy server (another kymograph running) is retried once. A
+    run in progress doesn't refetch it every 10 s: new times show a "stale – recompute" chip.
+  - **Over the view** the line is an SVG polyline in the probes' overlay: a tick across its start (distance 0),
+    a dot per vertex, dashed where the geometry hides it (tested in 16 pieces per segment).
+  - **Export**, made in the page: *Samples CSV* (`i,arcLength,x,y,z,volumeIndex,membraneIndex,inDomain`),
+    *Matrix CSV* (the arc lengths, then `time,values…` per time; gaps empty), *Desktop CSV* (the raw values,
+    `raw=1`, resampled exactly as `KymographPanel` resamples them for display and Copy: `Distances,…` then one
+    row per time) and *PNG* (the image, scaled up by whole pixels, gaps transparent).
+  - **Verified 2026-09-29 against the desktop kymograph** (plan §6.3), on the 2D and 3D FV fixture runs, two
+    lines each (straight, oblique, a polyline). The desktop GUI can't be driven from a test, so
+    `KymographDesktopResampleTest` builds what the desktop builds (its `SpatialSelectionVolume`, its crossing
+    `TimeSeriesJobSpec`, and `KymographPanel`'s resampling, copied) and checks golden files; the browser test
+    types the same lines and compares the viewer's *Desktop CSV* with them: identical, value for value, in
+    Chromium, WebKit and Firefox.
 - `probe.html` is a scratch page for exactly these capability probes: point it at a suspect class,
   read the on-page result, and keep the console open for `is not permitted`.
 - **The scalar bar labels the lookup table's range, not the mapper's.** `mapper.setScalarRange`

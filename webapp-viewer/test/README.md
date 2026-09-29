@@ -16,6 +16,16 @@ vcell-client's test sources, `org.vcell.client.viz.FieldViewerFixtureServer`. It
 Every test runs in Chromium (WebGL 2 through SwiftShader), WebKit and Firefox, Playwright's own builds,
 and fails if the console shows an `is not permitted` refusal from the wasm invoker or an uncaught error.
 
+| module | covers |
+|---|---|
+| `test_probes.py` | probes: click, shift-click, the Add toggle, markers, the time cursor, CSV |
+| `test_kymograph.py` | kymographs: the Line tool and the typed line, the image and cursor, click → time, shift-click → probe, the exports, the retries, and the desktop cross-check |
+
+The desktop cross-check compares the viewer's *Desktop CSV* with the golden files in
+`vcell-client/src/test/resources/org/vcell/client/viz/kymo/`. Those are what the desktop kymograph shows for
+the same lines, computed by `KymographDesktopResampleTest` with the desktop's own sampling and resampling; that
+Java test checks them, and rewrites them with `-Dvcell.kymographGolden.write=<dir>`.
+
 ## Running them
 
 Once:
