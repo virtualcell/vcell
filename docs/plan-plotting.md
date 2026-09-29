@@ -498,7 +498,7 @@ through vcell-fenics's `cross_validation/` harness; agreement is approximate (re
 
 Order: P1 → P2 (points end to end) → P3 → P4 (FV kymograph end to end) → P5 → P6 → P7.
 
-### PR P1 — `/timeseries` with several points (server) ✅ (#PRNUM)
+### PR P1 — `/timeseries` with several points (server) ✅ (#2120)
 - The `points=` list in all four modes; FV point → volume index, with the domain mask and one
   `TimeSeriesJobSpec`; the shared per-point loop for Chombo, MovingBoundary and FEniCSx; `snap=nearest` for
   FEniCSx membranes; the limits.
