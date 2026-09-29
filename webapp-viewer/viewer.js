@@ -36,6 +36,7 @@ const MIN_PASS_BAND = 0.005;
 const el = {
   canvas: document.getElementById('canvas'),
   box: document.querySelector('.canvas-box'),
+  overlay: document.getElementById('overlay'),
   runTitle: document.getElementById('runTitle'),
   runName: document.getElementById('runName'),
   runId: document.getElementById('runId'),
@@ -55,6 +56,13 @@ const el = {
   refreshBtn: document.getElementById('refreshBtn'),
   runStatus: document.getElementById('runStatus'),
   plotClose: document.getElementById('plotClose'),
+  addProbes: document.getElementById('addProbes'),
+  probePanel: document.getElementById('probePanel'),
+  probeTitle: document.getElementById('probeTitle'),
+  probeList: document.getElementById('probeList'),
+  probeSvg: document.getElementById('probeSvg'),
+  probeCsv: document.getElementById('probeCsv'),
+  probeClear: document.getElementById('probeClear'),
   statsBtn: document.getElementById('statsBtn'),
   dataControls: document.getElementById('dataControls'),
   variable: document.getElementById('variable'),
@@ -89,6 +97,13 @@ const state = {
   cellList: null,
   pivot: null, // 3D rotation center: the scene center; a pan does not move it (null: take the focal point)
   pick: null, // Cartesian occupancy index of the current grid, for mouse picking
+  // probes: lab-frame points, each with a time course. Points, not cell ordinals, so they survive a
+  // variable, domain or (moving-boundary) mesh change: {id, label, point: [x, y, z], color}
+  probes: [],
+  addMode: false, // the '+ Add points' toggle: a plain click adds a probe, as shift-click does
+  probeSeries: null, // the last /timeseries?points= response, for the plot, the list and the CSV
+  probePlot: null, // the probe plot's time scale and cursor, for moving the cursor with the slider
+  cameraView: null, // the camera as last rendered, for projecting probe markers onto the canvas
   fieldValues: null, // raw per-cell values of the shown field (nulls = blanked cells)
   nominalSinc: null,
   smoothing: NOMINAL_STRENGTH,
@@ -329,17 +344,21 @@ function buildPickIndex(geometry, bounds) {
   return { o, d, n, occ, keyByCell };
 }
 
-/** Cell under the given ray, honoring the crop: cells above an active cut are not pickable. */
+/**
+ * The first cell along the given ray, honoring the crop (cells above an active cut are not pickable), as
+ * {cell, t}: t is the ray parameter where the ray enters it — at the cut plane when that is the face it
+ * shows. Null when the ray misses.
+ */
 function castRay(origin, dir) {
   const pk = state.pick;
-  if (!pk) return -1;
+  if (!pk) return null;
   const b = state.bounds;
   // slab-clip the ray to the grid bounds
   let t0 = 0;
   let t1 = Infinity;
   for (let a = 0; a < 3; a++) {
     if (Math.abs(dir[a]) < 1e-12) {
-      if (origin[a] < b[2 * a] || origin[a] > b[2 * a + 1]) return -1;
+      if (origin[a] < b[2 * a] || origin[a] > b[2 * a + 1]) return null;
       continue;
     }
     let near = (b[2 * a] - origin[a]) / dir[a];
@@ -348,7 +367,7 @@ function castRay(origin, dir) {
     t0 = Math.max(t0, near);
     t1 = Math.min(t1, far);
   }
-  if (t0 > t1) return -1;
+  if (t0 > t1) return null;
   // crop plane: same keep-rule as the renderer (low side of the sliced axis survives)
   let cropAxis = -1;
   let cropPos = 0;
@@ -369,19 +388,26 @@ function castRay(origin, dir) {
     const edge = pk.o[a] + (i[a] + (step[a] > 0 ? 1 : 0)) * pk.d[a];
     return t0 + (edge - start[a]) / dir[a];
   });
+  let tEnter = t0;
   for (let guard = pk.n[0] + pk.n[1] + pk.n[2] + 3; guard > 0; guard--) {
     const cell = pk.occ.get(i[0] + pk.n[0] * (i[1] + pk.n[1] * i[2]));
     if (cell !== undefined) {
-      if (cropAxis < 0) return cell;
+      if (cropAxis < 0) return { cell, t: tEnter };
       const center = pk.o[cropAxis] + (i[cropAxis] + 0.5) * pk.d[cropAxis];
-      if (center <= cropPos) return cell;
+      if (center <= cropPos) {
+        // a voxel the cut passes through shows its cut face, not the part of it the crop removed
+        const t = origin[cropAxis] + tEnter * dir[cropAxis] > cropPos && dir[cropAxis] < 0
+          ? (cropPos - origin[cropAxis]) / dir[cropAxis] : tEnter;
+        return { cell, t };
+      }
     }
     const a = tMax[0] <= tMax[1] ? (tMax[0] <= tMax[2] ? 0 : 2) : (tMax[1] <= tMax[2] ? 1 : 2);
     i[a] += step[a];
-    if (i[a] < 0 || i[a] >= pk.n[a] || tMax[a] > t1) return -1;
+    if (i[a] < 0 || i[a] >= pk.n[a] || tMax[a] > t1) return null;
+    tEnter = tMax[a];
     tMax[a] += tDelta[a];
   }
-  return -1;
+  return null;
 }
 
 /**
@@ -578,7 +604,7 @@ async function refreshCrop() {
   cropInFlight = true;
   try {
     await applyCrop();
-    await renderWindow.render();
+    await render();
     await updateCropStats();
   } catch (e) {
     setStatus('crop update failed: ' + (e?.message ?? e), true);
@@ -752,7 +778,23 @@ async function buildScene(geometry, field) {
   await cubeAxes.setZTitle('Z');
   await renderer.addViewProp(cubeAxes);
   attachTrackball();
+  await render();
+}
+
+/**
+ * Every render goes through here, so the probe markers follow what VTK draws: after the frame, cache the
+ * camera it was drawn with, re-project the markers from it, and (debounced, since it casts rays) re-check
+ * which markers the geometry hides.
+ */
+async function render() {
   await renderWindow.render();
+  try {
+    await cacheCameraView();
+    drawOverlay();
+    scheduleOcclusion();
+  } catch (e) {
+    console.warn('probe overlay update failed', e);
+  }
 }
 
 /**
@@ -784,7 +826,7 @@ window.addEventListener('resize', () => {
   resizeTimer = setTimeout(async () => {
     try {
       await matchBufferToCanvas();
-      if (renderWindow) await renderWindow.render();
+      if (renderWindow) await render();
     } catch (e) {
       console.warn('resize re-render failed', e);
     }
@@ -825,8 +867,9 @@ function attachTrackball() {
     if (!dragging) return;
     dragging = false;
     try { el.canvas.releasePointerCapture(e.pointerId); } catch { /* already released */ }
-    // a left press that never really moved is a pick, not an orbit
-    if (dragDistance < 4 && e.button === 0) void plotPick(e.clientX, e.clientY);
+    // a left press that never really moved is a pick: shift (or the Add toggle) adds a probe, a plain
+    // click replaces them
+    if (dragDistance < 4 && e.button === 0) void probeAt(e.clientX, e.clientY, e.shiftKey || state.addMode);
   };
   el.canvas.addEventListener('pointerup', release);
   el.canvas.addEventListener('pointercancel', release);
@@ -886,7 +929,7 @@ async function orbit(dx, dy) {
     await camera.setViewUp(...U);
     await camera.orthogonalizeViewUp();
     await renderer.resetCameraClippingRange();
-    await renderWindow.render();
+    await render();
   } catch (e) {
     console.warn('orbit failed', e);
   } finally {
@@ -900,7 +943,7 @@ async function dolly(factor) {
   try {
     await camera.dolly(factor);
     await renderer.resetCameraClippingRange();
-    await renderWindow.render();
+    await render();
   } catch (e) {
     console.warn('dolly failed', e);
   } finally {
@@ -936,7 +979,7 @@ async function pan3d(dx, dy) {
     await camera.setPosition(P[0] + m[0], P[1] + m[1], P[2] + m[2]);
     await camera.setFocalPoint(F[0] + m[0], F[1] + m[1], F[2] + m[2]);
     await renderer.resetCameraClippingRange();
-    await renderWindow.render();
+    await render();
   } catch (e) {
     console.warn('pan failed', e);
   } finally {
@@ -957,7 +1000,7 @@ async function pan2d(dx, dy) {
     const my = dy * worldPerPixel; // screen y grows downward; world y grows upward
     await camera.setPosition(P[0] + mx, P[1] + my, P[2]);
     await camera.setFocalPoint(F[0] + mx, F[1] + my, F[2]);
-    await renderWindow.render();
+    await render();
   } catch (e) {
     console.warn('pan failed', e);
   } finally {
@@ -971,7 +1014,7 @@ async function zoom2d(factor) {
   state.drawing = true;
   try {
     await camera.setParallelScale((await camera.getParallelScale()) / factor);
-    await renderWindow.render();
+    await render();
   } catch (e) {
     console.warn('zoom failed', e);
   } finally {
@@ -1092,6 +1135,8 @@ function valueAtTetPick(hit) {
   return sum;
 }
 
+const PICK_HINT = ' — click: probe · shift-click: add a probe';
+
 let hoverBusy = false;
 async function hoverPick(clientX, clientY) {
   if (!state.ready || hoverBusy) return;
@@ -1107,7 +1152,7 @@ async function hoverPick(clientX, clientY) {
       const value = valueAtTetPick(hit);
       const at = ` @ (${hit.point.map((x) => x.toFixed(2)).join(', ')})`;
       el.pickReadout.textContent = (value == null ? `no data${at}` : `${state.selectedVar} = ${value.toExponential(3)}${at}`)
-        + ' — click to plot time course';
+        + PICK_HINT;
     } catch (e) {
       console.warn('hover pick failed', e);
     } finally {
@@ -1121,7 +1166,7 @@ async function hoverPick(clientX, clientY) {
     hoverBusy = true;
     try {
       const [x, y] = await labPointFromMouse(clientX, clientY);
-      el.pickReadout.textContent = `lab (${x.toFixed(2)}, ${y.toFixed(2)}) — click to plot time course`;
+      el.pickReadout.textContent = `lab (${x.toFixed(2)}, ${y.toFixed(2)})${PICK_HINT}`;
     } catch (e) {
       console.warn('hover failed', e);
     } finally {
@@ -1133,16 +1178,17 @@ async function hoverPick(clientX, clientY) {
   hoverBusy = true;
   try {
     const { origin, dir } = await rayFromMouse(clientX, clientY);
-    const cell = castRay(origin, dir);
-    if (cell < 0) {
+    const hit = castRay(origin, dir);
+    if (!hit) {
       el.pickReadout.textContent = '';
       return;
     }
+    const cell = hit.cell;
     const v = state.fieldValues?.[cell];
     const c = cellCenter(cell);
     const at = c ? ` @ (${c.slice(0, state.dimension === 2 ? 2 : 3).map((x) => x.toFixed(1)).join(', ')})` : '';
     el.pickReadout.textContent =
-      v == null ? `no data${at}` : `${state.selectedVar} = ${v.toExponential(3)}${at}`;
+      (v == null ? `no data${at}` : `${state.selectedVar} = ${v.toExponential(3)}${at}`) + PICK_HINT;
   } catch (e) {
     console.warn('hover pick failed', e);
   } finally {
@@ -1150,73 +1196,533 @@ async function hoverPick(clientX, clientY) {
   }
 }
 
-/**
- * Click → time course at the picked cell. The series comes from /timeseries, which reduces
- * server-side next to the reader — fetching every timestep to build one curve is the design
- * explicitly ruled out in #1859.
- */
-async function plotPick(clientX, clientY) {
-  if (!state.ready || !state.dataset) return;
-  if (state.bodyFitted) return void plotLabPick(clientX, clientY);
-  if (!state.pick) return;
-  try {
-    const { origin, dir } = await rayFromMouse(clientX, clientY);
-    const cell = castRay(origin, dir);
-    if (cell < 0) return;
-    const c = cellCenter(cell);
-    setStatus(`fetching time series for ${state.selectedVar} at cell ${cell}…`);
-    const series = await fetchJson(
-      url('/timeseries', { domain: state.selectedDomain, var: state.selectedVar, cell: String(cell) }),
-      '/timeseries');
-    renderPlot(series, c);
-    setStatus(`${describe()} ✓`);
-  } catch (e) {
-    setStatus('time-series pick failed: ' + (e?.message ?? e), true);
-  }
-}
+// ---------------------------------------------------------------------------
+// probes: time courses at lab-frame points (docs/plan-plotting.md §4.1, §4.3)
+// ---------------------------------------------------------------------------
 
 /**
- * Click on a moving-boundary view → time course at that fixed LAB-FRAME point. The point does not
- * follow the material: /timeseries locates it in each saved time's own mesh, and frames where the
- * boundary has moved past it come back as nulls, drawn as gaps in the curve.
+ * What lies under the mouse, as a lab-frame point: {point, cell?}. Shared by probes and, later, line
+ * vertices. Finite volume: the centre of the first voxel the ray reaches (its vertex mean — the point the
+ * server maps back to that voxel exactly as the desktop does), plus `entry`, the exact surface or cut-face
+ * point. Body-fitted 2D: the point under the orthographic camera, in the mesh's plane. Body-fitted 3D: the
+ * tetrahedron entry point, nudged just inside. Null where nothing is picked (and for Chombo 3D, whose voxels
+ * and polyhedra have no picker yet).
  */
-async function plotLabPick(clientX, clientY) {
-  if (state.dimension === 3) return void plotLabPick3d(clientX, clientY);
-  if (state.dimension !== 2) return;
-  try {
-    const [x, y] = await labPointFromMouse(clientX, clientY);
-    setStatus(`fetching time series for ${state.selectedVar} at lab (${x.toFixed(2)}, ${y.toFixed(2)})…`);
-    const series = await fetchJson(
-      url('/timeseries', { domain: state.selectedDomain, var: state.selectedVar, x: String(x), y: String(y) }),
-      '/timeseries');
-    renderPlot(series, [x, y, 0]);
-    setStatus(`${describe()} ✓`);
-  } catch (e) {
-    setStatus('time-series pick failed: ' + (e?.message ?? e), true);
-  }
-}
-
-/** The 3D counterpart: the lab-frame point is where the mouse ray first meets the mesh on screen. */
-async function plotLabPick3d(clientX, clientY) {
-  try {
+async function pickAt(clientX, clientY) {
+  if (state.bodyFitted) {
+    if (state.dimension === 2) {
+      const [x, y] = await labPointFromMouse(clientX, clientY);
+      return { point: [x, y, state.bounds ? state.bounds[4] : 0] };
+    }
     const { origin, dir } = await rayFromMouse(clientX, clientY);
     const hit = pickTetrahedron(origin, dir);
+    return hit ? { point: hit.point, cell: hit.cell } : null;
+  }
+  if (!state.pick) return null;
+  const { origin, dir } = await rayFromMouse(clientX, clientY);
+  const hit = castRay(origin, dir);
+  if (!hit) return null;
+  return {
+    point: cellCentroid(hit.cell),
+    cell: hit.cell,
+    entry: [0, 1, 2].map((a) => origin[a] + hit.t * dir[a]),
+  };
+}
+
+/** The mean of a cell's vertices in the served grid. */
+function cellCentroid(cell) {
+  const P = state.cellPoints;
+  const ids = state.cellList[cell];
+  const c = [0, 0, 0];
+  for (const i of ids) {
+    for (let a = 0; a < 3; a++) c[a] += P[3 * i + a] / ids.length;
+  }
+  return c;
+}
+
+/**
+ * Twelve colours that stay apart on the light page and the dark canvas, shared by the Stats plot and the
+ * probes; a probe keeps its colour for its trace, its list swatch and its marker. The UI caps the probes
+ * at this many (the server takes 64).
+ */
+const SERIES_COLORS = ['#2a7', '#d70', '#07c', '#c2c', '#a33', '#578', '#e6b800', '#0aa', '#85f', '#b60', '#6a0', '#f58'];
+const MAX_PROBES = SERIES_COLORS.length;
+
+/** Click on the canvas: replace the probes with the picked point, or add it to them. */
+async function probeAt(clientX, clientY, add) {
+  if (!state.ready || !state.dataset) return;
+  try {
+    const hit = await pickAt(clientX, clientY);
     if (!hit) return;
-    const [x, y, z] = hit.point;
-    setStatus(`fetching time series for ${state.selectedVar} at lab (${x.toFixed(2)}, ${y.toFixed(2)}, ${z.toFixed(2)})…`);
-    const series = await fetchJson(
-      url('/timeseries', { domain: state.selectedDomain, var: state.selectedVar, x: String(x), y: String(y), z: String(z) }),
-      '/timeseries');
-    renderPlot(series, hit.point);
-    setStatus(`${describe()} ✓`);
+    if (!add) state.probes = [];
+    if (state.probes.length >= MAX_PROBES) {
+      setStatus(`at most ${MAX_PROBES} probes; remove one first`, true);
+      return;
+    }
+    const used = new Set(state.probes.map((p) => p.color));
+    let id = 1;
+    while (state.probes.some((p) => p.id === id)) id++;
+    state.probes.push({
+      id,
+      label: `P${id}`,
+      point: hit.point,
+      color: SERIES_COLORS.find((c) => !used.has(c)) ?? SERIES_COLORS[0],
+    });
+    probesChanged();
   } catch (e) {
-    setStatus('time-series pick failed: ' + (e?.message ?? e), true);
+    setStatus('probe failed: ' + (e?.message ?? e), true);
+  }
+}
+
+function removeProbe(id) {
+  state.probes = state.probes.filter((p) => p.id !== id);
+  probesChanged();
+}
+
+function clearProbes() {
+  state.probes = [];
+  probesChanged();
+}
+
+/** Any change to the probes: redraw what we already know at once, and fetch the new traces. */
+function probesChanged() {
+  occluded.clear();
+  drawOverlay();
+  scheduleOcclusion();
+  renderProbes();
+  scheduleProbeFetch();
+}
+
+let probeFetchTimer = 0;
+let probeFetch = null; // the AbortController of the request in flight
+
+/**
+ * One /timeseries request for all the probes, debounced so a burst of clicks (or a variable switch right
+ * after one) costs one request, with a superseded request aborted rather than raced.
+ */
+function scheduleProbeFetch() {
+  clearTimeout(probeFetchTimer);
+  probeFetchTimer = setTimeout(() => void fetchProbes(), 150);
+}
+
+async function fetchProbes() {
+  probeFetch?.abort();
+  probeFetch = null;
+  if (!state.probes.length || !state.dataset) {
+    state.probeSeries = null;
+    renderProbes();
+    return;
+  }
+  const controller = new AbortController();
+  probeFetch = controller;
+  const probes = state.probes.slice();
+  const params = {
+    domain: state.selectedDomain,
+    var: state.selectedVar,
+    points: probes.map((p) => p.point.map(String).join(',')).join(';'),
+  };
+  // a membrane probe snaps onto the curve or surface it was clicked beside; volume domains ignore it
+  if (state.bodyFitted) params.snap = 'nearest';
+  try {
+    const r = await fetch(url('/timeseries', params), { signal: controller.signal });
+    if (!r.ok) {
+      let detail = '';
+      try { detail = (await r.json()).error ?? ''; } catch { /* not JSON */ }
+      throw new Error(`/timeseries failed: ${r.status} ${detail || r.statusText}`);
+    }
+    const series = await r.json();
+    if (probeFetch !== controller) return; // superseded while the body was read
+    state.probeSeries = { ...series, probes };
+    renderProbes();
+    setStatus(`${describe()} ✓ — ${probes.length} probe${probes.length === 1 ? '' : 's'}`);
+  } catch (e) {
+    if (e?.name === 'AbortError') return;
+    setStatus('probe time series failed: ' + (e?.message ?? e), true);
+  } finally {
+    if (probeFetch === controller) probeFetch = null;
+  }
+}
+
+const fmtCoord = (v) => String(Number(v.toPrecision(4)));
+const probeWhere = (p) => `(${p.point.slice(0, state.dimension === 2 ? 2 : 3).map(fmtCoord).join(', ')})`;
+
+/** The panel: one row per probe, and the plot. Both read the last response, matched to probes by id. */
+function renderProbes() {
+  if (!state.probes.length) {
+    el.probePanel.hidden = true;
+    el.probeList.replaceChildren();
+    el.probeSvg.replaceChildren();
+    return;
+  }
+  el.probePanel.hidden = false;
+  const data = state.probeSeries;
+  const seriesOf = (probe) => {
+    const k = data ? data.probes.findIndex((p) => p === probe) : -1;
+    return k >= 0 ? data.series[k] : null;
+  };
+  el.probeTitle.textContent = `${state.selectedVar} · ${state.selectedDomain} · ${state.probes.length} probe${state.probes.length === 1 ? '' : 's'}`
+    + (data ? '' : ' · loading…');
+  el.probeList.replaceChildren(...state.probes.map((probe) => {
+    const li = document.createElement('li');
+    li.dataset.probe = String(probe.id);
+    const swatch = document.createElement('span');
+    swatch.className = 'swatch';
+    swatch.style.background = probe.color;
+    const label = document.createElement('span');
+    label.textContent = `${probe.label} ${probeWhere(probe)}`;
+    const value = document.createElement('span');
+    const s = seriesOf(probe);
+    if (s && !s.inDomain) {
+      value.className = 'outside';
+      value.textContent = `outside ${data.domain}`;
+    } else {
+      const v = s?.values[state.timeIndex];
+      value.className = 'value';
+      value.textContent = v == null ? (s ? 'no data now' : '') : `= ${v.toExponential(3)}`;
+    }
+    const centre = document.createElement('button');
+    centre.type = 'button';
+    centre.textContent = '⌖';
+    centre.title = `centre the view on ${probe.label}`;
+    centre.addEventListener('click', () => void centreOn(probe.point));
+    const remove = document.createElement('button');
+    remove.type = 'button';
+    remove.textContent = '✕';
+    remove.title = `remove ${probe.label}`;
+    remove.addEventListener('click', () => removeProbe(probe.id));
+    li.append(swatch, label, value, centre, remove);
+    return li;
+  }));
+  if (data) {
+    renderTraces(data.times, state.probes.map((p) => ({ probe: p, series: seriesOf(p) })).filter((t) => t.series));
+  }
+}
+
+/** "Nice" tick values (1, 2 or 5 × 10^k apart) covering [lo, hi], about `count` of them. */
+function niceTicks(lo, hi, count = 5) {
+  const span = hi - lo;
+  if (!(span > 0)) return { step: 1, ticks: [lo] };
+  const raw = span / count;
+  const mag = 10 ** Math.floor(Math.log10(raw));
+  const step = [1, 2, 5, 10].map((m) => m * mag).find((s) => s >= raw) ?? 10 * mag;
+  const ticks = [];
+  for (let v = Math.ceil(lo / step - 1e-9) * step; v <= hi + step * 1e-9; v += step) ticks.push(Math.abs(v) < step * 1e-9 ? 0 : v);
+  return { step, ticks };
+}
+
+/** A tick label: plain decimals when the step allows, exponent form otherwise. */
+function tickLabel(v, step) {
+  const a = Math.abs(step);
+  if (a >= 1e-3 && a < 1e5) return v.toFixed(Math.max(0, -Math.floor(Math.log10(a) + 1e-9)));
+  return v.toExponential(Math.max(0, Math.round(Math.log10(Math.abs(v) || a) - Math.log10(a))));
+}
+
+/**
+ * One trace per probe on one shared scale, with ticked axes, titled `time (s)` and `<var> [<domain>]`
+ * (VCell's default units, until the server reports units), and a time cursor at the slider's time. Null
+ * values break a trace — outside the domain, or where a moving boundary has passed the point — and a
+ * lone value is a dot. Drawn at the SVG's own pixel size, so the labels are not stretched.
+ */
+function renderTraces(times, traces) {
+  const svg = el.probeSvg;
+  const W = Math.max(320, Math.round(svg.clientWidth || 640));
+  const H = 240;
+  const M = { l: 70, r: 12, t: 12, b: 38 };
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svg.replaceChildren();
+  const mk = (tag, attrs, text) => {
+    const n = document.createElementNS(SVG_NS, tag);
+    for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v);
+    if (text != null) n.textContent = text;
+    svg.appendChild(n);
+    return n;
+  };
+  const finite = traces.flatMap((t) => t.series.values).filter((v) => v != null && Number.isFinite(v));
+  let lo = finite.length ? Math.min(...finite) : 0;
+  let hi = finite.length ? Math.max(...finite) : 1;
+  const pad = hi > lo ? 0.04 * (hi - lo) : Math.abs(lo) * 0.05 || 1; // keep the traces off the frame
+  lo -= pad;
+  hi += pad;
+  const t0 = times[0];
+  const t1 = times.length > 1 ? times[times.length - 1] : t0 + 1;
+  const sx = (t) => M.l + ((t - t0) / (t1 - t0 || 1)) * (W - M.l - M.r);
+  const sy = (v) => H - M.b - ((v - lo) / (hi - lo)) * (H - M.t - M.b);
+  const yt = niceTicks(lo, hi);
+  for (const v of yt.ticks) {
+    mk('line', { class: 'grid', x1: M.l, x2: W - M.r, y1: sy(v), y2: sy(v) });
+    mk('text', { class: 'lbl', x: M.l - 5, y: sy(v) + 4, 'text-anchor': 'end' }, tickLabel(v, yt.step));
+  }
+  const xt = niceTicks(t0, t1);
+  for (const t of xt.ticks) {
+    mk('line', { class: 'axis', x1: sx(t), x2: sx(t), y1: H - M.b, y2: H - M.b + 4 });
+    mk('text', { class: 'lbl', x: sx(t), y: H - M.b + 15, 'text-anchor': 'middle' }, tickLabel(t, xt.step));
+  }
+  mk('line', { class: 'axis', x1: M.l, y1: H - M.b, x2: W - M.r, y2: H - M.b });
+  mk('line', { class: 'axis', x1: M.l, y1: M.t, x2: M.l, y2: H - M.b });
+  mk('text', { class: 'title', x: (M.l + W - M.r) / 2, y: H - 4, 'text-anchor': 'middle' }, 'time (s)');
+  const yTitle = `${state.probeSeries?.name ?? state.selectedVar} [${state.probeSeries?.domain ?? state.selectedDomain}]`;
+  mk('text', { class: 'title', x: 0, y: 0, 'text-anchor': 'middle',
+    transform: `translate(12 ${(M.t + H - M.b) / 2}) rotate(-90)` }, yTitle);
+  if (!finite.length) {
+    mk('text', { class: 'lbl', x: (M.l + W - M.r) / 2, y: (M.t + H - M.b) / 2, 'text-anchor': 'middle' },
+      `no data: the probes lie outside ${state.probeSeries?.domain ?? state.selectedDomain}`);
+  }
+  for (const { probe, series } of traces) {
+    const g = mk('g', { class: 'trace-group', 'data-probe': String(probe.id) });
+    let seg = [];
+    const flush = () => {
+      if (seg.length > 1) {
+        const n = document.createElementNS(SVG_NS, 'polyline');
+        n.setAttribute('class', 'trace');
+        n.setAttribute('stroke', probe.color);
+        n.setAttribute('points', seg.join(' '));
+        g.appendChild(n);
+      } else if (seg.length === 1) {
+        const [cx, cy] = seg[0].split(',');
+        const n = document.createElementNS(SVG_NS, 'circle');
+        n.setAttribute('cx', cx);
+        n.setAttribute('cy', cy);
+        n.setAttribute('r', '3');
+        n.setAttribute('fill', probe.color);
+        g.appendChild(n);
+      }
+      seg = [];
+    };
+    times.forEach((t, i) => {
+      const v = series.values[i];
+      if (v == null || !Number.isFinite(v)) {
+        flush();
+        return;
+      }
+      seg.push(`${sx(t).toFixed(1)},${sy(v).toFixed(1)}`);
+    });
+    flush();
+  }
+  const cursor = mk('line', { class: 'time-cursor', y1: M.t, y2: H - M.b });
+  state.probePlot = { times, sx, cursor, M, W };
+  updateTimeCursor();
+}
+
+/** Keep the plot's time cursor, and the list's current values, on the slider's time. */
+function updateTimeCursor() {
+  const plot = state.probePlot;
+  if (!plot || !plot.cursor.isConnected) return;
+  const t = state.times[state.timeIndex];
+  const visible = t != null && t >= plot.times[0] && t <= plot.times[plot.times.length - 1];
+  plot.cursor.setAttribute('visibility', visible ? 'visible' : 'hidden');
+  if (visible) {
+    const x = plot.sx(t).toFixed(1);
+    plot.cursor.setAttribute('x1', x);
+    plot.cursor.setAttribute('x2', x);
+  }
+}
+
+/** Clicking the plot moves the time slider to the nearest saved time, as if the slider were dragged there. */
+el.probeSvg.addEventListener('click', (e) => {
+  const plot = state.probePlot;
+  if (!plot || !state.ready) return;
+  const rect = el.probeSvg.getBoundingClientRect();
+  const x = ((e.clientX - rect.left) / rect.width) * plot.W;
+  let best = 0;
+  plot.times.forEach((t, i) => {
+    if (Math.abs(plot.sx(t) - x) < Math.abs(plot.sx(plot.times[best]) - x)) best = i;
+  });
+  const index = nearestTimeIndex(plot.times[best]);
+  if (index === state.timeIndex) return;
+  el.time.value = String(index);
+  el.time.dispatchEvent(new Event('input'));
+  el.time.dispatchEvent(new Event('change'));
+});
+
+/**
+ * The probes as CSV: comment lines naming the run, then `time,P1(x;y;z),…` and one row per time. Gaps
+ * are empty fields. Built and saved in the page — nothing goes over the network.
+ */
+function probesCsv() {
+  const data = state.probeSeries;
+  if (!data) return null;
+  const lines = [
+    `# sim: ${state.dataset.sim}`,
+    `# job: ${state.dataset.job}`,
+    `# var: ${data.name}`,
+    `# domain: ${data.domain}`,
+    ['time', ...data.probes.map((p) => `${p.label}(${p.point.map(fmtCoord).join(';')})`)].join(','),
+  ];
+  data.times.forEach((t, i) => {
+    lines.push([t, ...data.series.map((s) => (s.values[i] == null ? '' : s.values[i]))].join(','));
+  });
+  return lines.join('\n') + '\n';
+}
+
+function saveProbesCsv() {
+  const text = probesCsv();
+  if (!text) return;
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([text], { type: 'text/csv' }));
+  a.download = `${state.probeSeries.name}-probes.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+/** ⌖: move the view so the probe is at its centre, keeping the direction and distance; orbit then turns about it. */
+async function centreOn(point) {
+  if (!camera || !state.ready || state.drawing) return;
+  state.drawing = true;
+  try {
+    const P = await camera.getPosition();
+    const F = await camera.getFocalPoint();
+    const d = [0, 1, 2].map((a) => point[a] - F[a]);
+    if (state.dimension === 2) d[2] = 0; // the top-down camera stays above the plane
+    await camera.setPosition(P[0] + d[0], P[1] + d[1], P[2] + d[2]);
+    await camera.setFocalPoint(F[0] + d[0], F[1] + d[1], F[2] + d[2]);
+    state.pivot = [F[0] + d[0], F[1] + d[1], F[2] + d[2]];
+    if (state.dimension !== 2) await renderer.resetCameraClippingRange();
+    await render();
+  } catch (e) {
+    console.warn('centring the view failed', e);
+  } finally {
+    state.drawing = false;
+  }
+}
+
+el.addProbes.addEventListener('click', () => {
+  state.addMode = !state.addMode;
+  el.addProbes.setAttribute('aria-pressed', String(state.addMode));
+});
+el.probeClear.addEventListener('click', clearProbes);
+el.probeCsv.addEventListener('click', saveProbesCsv);
+
+// ---------------------------------------------------------------------------
+// the overlay: probe markers drawn over the canvas, projected from the camera
+// ---------------------------------------------------------------------------
+
+/** The camera VTK last drew with; projection reads this, so markers and picture cannot disagree. */
+async function cacheCameraView() {
+  if (!camera) return;
+  state.cameraView = {
+    P: await camera.getPosition(),
+    F: await camera.getFocalPoint(),
+    U: await camera.getViewUp(),
+    viewAngle: await camera.getViewAngle(),
+    parallelScale: state.dimension === 2 ? await camera.getParallelScale() : null,
+  };
+}
+
+/**
+ * A world point → canvas pixels (CSS), the inverse of rayFromMouse: perspective (vertical view angle) in
+ * 3D, the top-down orthographic view in 2D. Null for a point behind the camera.
+ */
+function projectToScreen(X) {
+  const view = state.cameraView;
+  if (!view) return null;
+  const rect = el.canvas.getBoundingClientRect();
+  const norm = (v) => {
+    const l = Math.hypot(v[0], v[1], v[2]) || 1;
+    return [v[0] / l, v[1] / l, v[2] / l];
+  };
+  const cross = (u, v) => [u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2], u[0] * v[1] - u[1] * v[0]];
+  const dot = (u, v) => u[0] * v[0] + u[1] * v[1] + u[2] * v[2];
+  const { P, F, U } = view;
+  const fwd = norm([F[0] - P[0], F[1] - P[1], F[2] - P[2]]);
+  const right = norm(cross(fwd, U));
+  const up = cross(right, fwd);
+  const aspect = rect.width / rect.height;
+  const d = [X[0] - P[0], X[1] - P[1], X[2] - P[2]];
+  let xN;
+  let yN;
+  if (state.dimension === 2) {
+    xN = dot(d, right) / (view.parallelScale * aspect);
+    yN = dot(d, up) / view.parallelScale;
+  } else {
+    const z = dot(d, fwd);
+    if (z <= 0) return null;
+    const halfTan = Math.tan((view.viewAngle * Math.PI) / 360);
+    xN = dot(d, right) / (z * halfTan * aspect);
+    yN = dot(d, up) / (z * halfTan);
+  }
+  return [((xN + 1) / 2) * rect.width, ((1 - yN) / 2) * rect.height];
+}
+
+const occluded = new Set(); // ids of the probes the geometry hides from the current view
+
+/** One marker per probe: a ring in its colour with its label, hollow and faint where hidden. */
+function drawOverlay() {
+  const svg = el.overlay;
+  if (!svg) return;
+  svg.replaceChildren();
+  for (const probe of state.probes) {
+    const at = projectToScreen(probe.point);
+    if (!at) continue;
+    const hidden = occluded.has(probe.id);
+    const g = document.createElementNS(SVG_NS, 'g');
+    g.setAttribute('class', 'marker' + (hidden ? ' occluded' : ''));
+    g.dataset.probe = String(probe.id);
+    g.setAttribute('opacity', hidden ? '0.4' : '1');
+    const ring = document.createElementNS(SVG_NS, 'circle');
+    ring.setAttribute('cx', at[0].toFixed(1));
+    ring.setAttribute('cy', at[1].toFixed(1));
+    ring.setAttribute('r', '5');
+    ring.setAttribute('stroke', probe.color);
+    ring.setAttribute('fill', hidden ? 'none' : probe.color);
+    const text = document.createElementNS(SVG_NS, 'text');
+    text.setAttribute('x', (at[0] + 8).toFixed(1));
+    text.setAttribute('y', (at[1] - 6).toFixed(1));
+    text.textContent = probe.label;
+    g.append(ring, text);
+    svg.appendChild(g);
+  }
+}
+
+let occlusionTimer = 0;
+function scheduleOcclusion() {
+  clearTimeout(occlusionTimer);
+  if (!state.probes.length || state.dimension === 2) return; // a 2D view hides nothing
+  occlusionTimer = setTimeout(() => {
+    try {
+      updateOcclusion();
+      drawOverlay();
+    } catch (e) {
+      console.warn('probe occlusion check failed', e);
+    }
+  }, 150);
+}
+
+/**
+ * Which markers something else hides: cast a ray from the camera to each probe (the voxel walk, or the
+ * tetrahedron pick, honoring the crop as the picture does), and call it hidden when the ray meets the
+ * geometry clearly before it reaches the probe. "Clearly" is a voxel's diagonal for finite volume (a probe
+ * sits at its voxel's centre, inside the surface the ray meets) and a sliver of the scene for a body-fitted
+ * mesh (a probe sits just inside the surface it was picked on).
+ */
+function updateOcclusion() {
+  occluded.clear();
+  const view = state.cameraView;
+  if (!view || !state.bounds) return;
+  const b = state.bounds;
+  const slack = state.bodyFitted || !state.pick
+    ? 0.01 * Math.hypot(b[1] - b[0], b[3] - b[2], b[5] - b[4])
+    : Math.hypot(...state.pick.d);
+  for (const probe of state.probes) {
+    const d = [0, 1, 2].map((a) => probe.point[a] - view.P[a]);
+    const dist = Math.hypot(...d);
+    if (!(dist > 0)) continue;
+    const dir = d.map((v) => v / dist);
+    let t = null;
+    if (state.bodyFitted) {
+      const hit = pickTetrahedron(view.P, dir);
+      if (hit) t = Math.hypot(...[0, 1, 2].map((a) => hit.point[a] - view.P[a]));
+    } else {
+      t = castRay(view.P, dir)?.t ?? null;
+    }
+    if (t != null && t < dist - slack) occluded.add(probe.id);
   }
 }
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
-/** Fresh axes + scales in the plot SVG; both plot modes draw on top of this. */
+/** Fresh axes + scales in the Stats plot's SVG; renderStatsPlot draws on top of this. */
 function plotFrame(times, lo, hi) {
   if (hi - lo < 1e-300) hi = lo + 1;
   const W = 640;
@@ -1241,45 +1747,8 @@ function plotFrame(times, lo, hi) {
   return { mk, sx, sy, lo };
 }
 
-/**
- * Framework-free line plot: polylines in an SVG, min/max labels, nothing else to maintain. Null
- * values break the curve into segments — on a moving-boundary run a null means the domain had
- * moved past the sampled lab point at that time, a physically meaningful gap that must not be
- * drawn through. A segment of one frame renders as a dot so it does not vanish.
- */
-function renderPlot(series, center) {
-  const { times, values, name } = series;
-  const finite = values.filter((v) => v != null && Number.isFinite(v));
-  if (!times?.length || !finite.length) return;
-  const f = plotFrame(times, Math.min(...finite), Math.max(...finite));
-  let seg = [];
-  const flush = () => {
-    if (seg.length > 1) {
-      f.mk('polyline', { class: 'curve', points: seg.join(' ') });
-    } else if (seg.length === 1) {
-      const [cx, cy] = seg[0].split(',');
-      f.mk('circle', { class: 'curve-dot', cx, cy, r: 3 });
-    }
-    seg = [];
-  };
-  times.forEach((t, i) => {
-    const v = values[i];
-    if (v == null || !Number.isFinite(v)) {
-      flush();
-      return;
-    }
-    seg.push(`${f.sx(t).toFixed(1)},${f.sy(v).toFixed(1)}`);
-  });
-  flush();
-  const gaps = values.length - finite.length;
-  const at = center ? ` @ (${center.slice(0, state.dimension === 2 ? 2 : 3).map((x) => x.toFixed(1)).join(', ')})` : '';
-  el.plotTitle.textContent = `${name}${at} · ${times.length} timepoints`
-    + (gaps > 0 ? ` · ${gaps} outside the moving domain` : '');
-  el.plotLegend.innerHTML = '';
-  el.plotPanel.hidden = false;
-}
-
-const SERIES_COLORS = ['#2a7', '#d70', '#07c', '#c2c', '#a33', '#578'];
+/** the Stats plot keeps to a handful of variables, so it stays readable */
+const STATS_MAX_VARIABLES = 6;
 
 /**
  * Item 9 (#1859): per-variable spatial min/max/mean over time — mean as a solid curve, the
@@ -1322,7 +1791,7 @@ async function plotStats() {
   if (!state.ready || !state.dataset) return;
   try {
     // the server defaults to all volume variables; ask for a handful so the plot stays readable
-    const vars = state.variables.slice(0, SERIES_COLORS.length).map((v) => v.name);
+    const vars = state.variables.slice(0, STATS_MAX_VARIABLES).map((v) => v.name);
     setStatus(`fetching space statistics for ${vars.length} variable(s)…`);
     const stats = await fetchJson(url('/stats', { var: vars.join(',') }), '/stats');
     renderStatsPlot(stats);
@@ -1388,7 +1857,7 @@ async function applySmoothing(strength) {
     await sinc.setPassBand(p.passBand);
     // the deform filter re-executes downstream at render, re-shaping the ONE mesh that the
     // shell, the crop and the display-mesh statistics all derive from
-    await renderWindow.render();
+    await render();
     await updateCropStats();
     setStatus(`smoothing: ${p.iterations} iters · pass-band ${formatPassBand(p.passBand)} ✓ (${Math.round(performance.now() - t0)} ms)`);
   } catch (e) {
@@ -1409,7 +1878,7 @@ async function refreshField() {
   const t0 = performance.now();
   try {
     await applyField(await loadField());
-    await renderWindow.render();
+    await render();
     await updateCropStats(); // new values, same mesh
     setStatus(`${describe()} ✓ (${Math.round(performance.now() - t0)} ms)`);
   } catch (e) {
@@ -1430,7 +1899,7 @@ async function rebuildGeometry(resetCam = true) {
       await renderer.resetCamera();
       state.pivot = null;
     }
-    await renderWindow.render();
+    await render();
     setStatus(`${describe()} ✓ (${Math.round(performance.now() - t0)} ms)`);
   } catch (e) {
     setStatus('geometry update failed: ' + (e?.message ?? e), true);
@@ -1466,6 +1935,7 @@ async function refreshRun({ auto = false } = {}) {
     showRunStatus(info);
     el.time.max = String(Math.max(0, state.times.length - 1));
     el.time.disabled = state.times.length < 2;
+    if (state.times.length > before && state.probes.length) scheduleProbeFetch(); // the traces grow too
     if (state.times.length > before && wasAtEnd) {
       state.timeIndex = state.times.length - 1;
       el.time.value = String(state.timeIndex);
@@ -1505,6 +1975,7 @@ document.addEventListener('visibilitychange', () => {
 el.time.addEventListener('input', () => {
   state.timeIndex = Number(el.time.value);
   el.dataReadout.textContent = `t = ${state.times[state.timeIndex] ?? ''}`;
+  if (state.probes.length) renderProbes(); // the time cursor and the list's current values
 });
 el.time.addEventListener('change', () => {
   state.timeIndex = Number(el.time.value);
@@ -1528,7 +1999,7 @@ async function refreshTimeStep() {
     } else {
       await applyField(field);
     }
-    await renderWindow.render();
+    await render();
     setStatus(`${describe()} ✓ (${Math.round(performance.now() - t0)} ms)`);
   } catch (e) {
     setStatus('time step failed: ' + (e?.message ?? e), true);
@@ -1540,6 +2011,8 @@ el.variable.addEventListener('change', () => {
   const chosen = state.variables.find((v) => v.name === el.variable.value);
   if (!chosen || state.busy) return;
   state.selectedVar = chosen.name;
+  // probes are lab-frame points, so they carry over to the new variable (and domain): one request
+  if (state.probes.length) scheduleProbeFetch();
   // switching variable can also switch domain — a nuclear species lives on different geometry from
   // a cytosolic one — in which case the grid is rebuilt, not just recoloured
   if (chosen.domain && chosen.domain !== state.selectedDomain) {
@@ -1555,7 +2028,7 @@ async function toggleProp(prop, on) {
   try {
     if (on) await prop.visibilityOn();
     else await prop.visibilityOff();
-    await renderWindow.render();
+    await render();
   } catch (e) {
     console.warn('toggling annotation failed', e);
   }
@@ -1580,7 +2053,7 @@ async function applyMeshStyle(style) {
     await property.setEdgeVisibility(style === 'edges' ? 1 : 0);
     await property.setEdgeColor(0.08, 0.08, 0.1);
     await property.setLineWidth(1.0);
-    await renderWindow.render();
+    await render();
   } catch (e) {
     console.warn('changing the mesh style failed', e);
   }
@@ -1692,13 +2165,15 @@ function missingBrowserSupport() {
     el.sliceAxis.disabled = false; // body-fitted 3D included: the crop clips the solver mesh
     el.statsBtn.disabled = false;
     el.refreshBtn.disabled = false;
+    // probes need a picker: finite volume, body-fitted 2D, and body-fitted 3D tetrahedra (not Chombo 3D yet)
+    el.addProbes.disabled = false;
     scheduleAutoRefresh();
     if (state.bodyFitted) {
       el.smoothingReadout.textContent = 'body-fitted solver mesh — shown as computed';
       el.smoothingReset.disabled = true;
     }
     previewSmoothing(state.smoothing);
-    setStatus(`rendered ${describe()} ✓ (${Math.round(performance.now() - t0)} ms) — ${state.dimension === 2 ? 'drag to pan' : 'drag to rotate, shift- or right-drag to pan'}, wheel to zoom`);
+    setStatus(`rendered ${describe()} ✓ (${Math.round(performance.now() - t0)} ms) — ${state.dimension === 2 ? 'drag to pan' : 'drag to rotate, shift- or right-drag to pan'}, wheel to zoom, click to probe`);
   } catch (e) {
     setStatus('viewer failed: ' + (e?.message ?? e), true);
     console.error('vcell field viewer', e);

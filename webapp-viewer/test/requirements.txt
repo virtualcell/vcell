@@ -1,0 +1,4 @@
+# The field viewer's browser tests (see README.md). Pinned: a Playwright release pins its own browser
+# builds, which are what the README's browser-support table was checked with.
+playwright==1.63.0
+pytest==9.1.1

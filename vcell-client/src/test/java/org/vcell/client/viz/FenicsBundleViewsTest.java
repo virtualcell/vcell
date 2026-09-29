@@ -211,6 +211,64 @@ public class FenicsBundleViewsTest {
 		}
 	}
 
+	/**
+	 * A 3D bundle with a membrane (receptor binding on a sphere: {@code cyto_dom} inside {@code ext_dom},
+	 * {@code R} on the surface {@code mem_dom}): a probe beside the membrane snaps onto it.
+	 */
+	@Test
+	public void aMembraneProbeSnapsOntoTheSurface() throws Exception {
+		File receptor = new File(FenicsBundleViewsTest.class.getResource("receptor_3d.fenics/.zattrs").toURI()).getParentFile();
+		FieldViewerServer.registerBundle("555", 0, receptor, "receptor 3d");
+		JsonObject grid = get555("/grid", "&domain=mem_dom");
+		Assertions.assertEquals(3, grid.get("dimension").getAsInt());
+		JsonArray points = grid.getAsJsonArray("points");
+		JsonArray triangle = grid.getAsJsonArray("cells").get(10).getAsJsonArray();
+		double[][] v = new double[3][3];
+		for (int k = 0; k < 3; k++) {
+			for (int a = 0; a < 3; a++) {
+				v[k][a] = points.get(3 * triangle.get(k).getAsInt() + a).getAsDouble();
+			}
+		}
+		double[] centroid = new double[3];
+		double[] e1 = new double[3], e2 = new double[3];
+		for (int a = 0; a < 3; a++) {
+			centroid[a] = (v[0][a] + v[1][a] + v[2][a]) / 3;
+			e1[a] = v[1][a] - v[0][a];
+			e2[a] = v[2][a] - v[0][a];
+		}
+		double[] n = { e1[1] * e2[2] - e1[2] * e2[1], e1[2] * e2[0] - e1[0] * e2[2], e1[0] * e2[1] - e1[1] * e2[0] };
+		double len = Math.sqrt(n[0] * n[0] + n[1] * n[1] + n[2] * n[2]);
+		double off = 0.02; // well under the triangle's size
+		String p = (centroid[0] + off * n[0] / len) + "," + (centroid[1] + off * n[1] / len) + "," + (centroid[2] + off * n[2] / len);
+
+		JsonObject plain = get555("/timeseries", "&domain=mem_dom&var=R&points=" + p);
+		Assertions.assertFalse(plain.getAsJsonArray("series").get(0).getAsJsonObject().get("inDomain").getAsBoolean(),
+				"a point beside a surface is not on it");
+		JsonObject snapped = get555("/timeseries", "&domain=mem_dom&var=R&snap=nearest&points=" + p);
+		JsonObject s = snapped.getAsJsonArray("series").get(0).getAsJsonObject();
+		Assertions.assertTrue(s.get("inDomain").getAsBoolean());
+		Assertions.assertEquals(10, s.get("cell").getAsInt());
+		JsonArray at = s.getAsJsonArray("snapped");
+		for (int a = 0; a < 3; a++) {
+			Assertions.assertEquals(centroid[a], at.get(a).getAsDouble(), 1e-9, "snapped along the normal, onto the centroid");
+		}
+		JsonArray r = get555("/field", "&domain=mem_dom&var=R&time=0.2").getAsJsonArray("values");
+		double mean = 0;
+		for (int k = 0; k < 3; k++) {
+			mean += r.get(triangle.get(k).getAsInt()).getAsDouble() / 3;
+		}
+		Assertions.assertEquals(mean, s.getAsJsonArray("values").get(2).getAsDouble(), 1e-9);
+		// snap is for membranes: a volume domain ignores it
+		JsonObject volume = get555("/timeseries", "&domain=ext_dom&var=s_ext&snap=nearest&points=0.9,0.9,0.9;5,5,5");
+		Assertions.assertFalse(volume.getAsJsonArray("series").get(1).getAsJsonObject().has("snapped"));
+		Assertions.assertFalse(volume.getAsJsonArray("series").get(1).getAsJsonObject().get("inDomain").getAsBoolean());
+		Assertions.assertTrue(volume.getAsJsonArray("series").get(0).getAsJsonObject().get("inDomain").getAsBoolean());
+	}
+
+	private JsonObject get555(String path, String query) throws Exception {
+		return JsonParser.parseString(body("555", path, query)).getAsJsonObject();
+	}
+
 	@Test
 	public void tooManyPointsIsABadRequest() throws Exception {
 		StringBuilder many = new StringBuilder("&var=u&points=");

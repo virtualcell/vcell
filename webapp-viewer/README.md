@@ -124,8 +124,9 @@ scrub time — a time step costs about 5.7× less than shipping both.
 - **Picking is plain JS, not a VTK picker.** The browser holds the whole grid and field, so the
   hover readout is an occupancy map + 3D-DDA ray walk over the Cartesian lattice — no round trip,
   no registry dependence. The walk applies the same crop keep-rule as the renderer, so picking the
-  cut face reads the cap voxel. A click sends the picked cell to `/timeseries`, which reduces
-  server-side next to the reader — never fetch every timestep to build one curve. The Stats button
+  cut face reads the cap voxel. A click places a probe at the picked voxel's centre (see **Probes**), and
+  the probes' time courses come from one `/timeseries?points=` request, reduced server-side next to the
+  reader — never fetch every timestep to build one curve. The Stats button
   does the same for whole-domain min/mean/max per variable via `/stats` (one space-stats
   `TimeSeriesJobSpec` carrying all the variables at once).
 - **2D runs are first-class, through the same convention.** The server emits the mesh's
@@ -142,9 +143,11 @@ scrub time — a time step costs about 5.7× less than shipping both.
   binary-uncompressed `.vtu` into the same JSON contract (`bodyFitted: true`, `cellType` 7 cut
   polygons, `geometryId` carrying the time index). The viewer bypasses the whole smooth/deform
   chain — the mesh IS the solver's geometry — and re-fetches `/grid` on every time step, keeping
-  the camera where the user put it. Smoothing, crop, picking and statistics are gated off
-  (per-cell ordinals are not stable across time on a moving mesh; spatial-point formulations are
-  the #1879 follow-up).
+  the camera where the user put it. Smoothing is off, since the mesh is shown as the solver computed
+  it. `/stats` integrates each time over that time's own mesh (`"weighting": "measure"`). Probes are
+  lab-frame points, not cell ordinals, because the ordinals change from one mesh to the next: the
+  server locates each probe in every time's mesh, and a time where the boundary has passed the point
+  is a gap in its trace.
 - **FEniCSx results bundles are the fourth mode: body-fitted, POINT data.** The server serves a
   FEniCSx run from its results bundle (`FenicsBundleViews`, vcell-fenics ADR 010) in the same
   contract with `bodyFitted: true`, and `/field` says `"location": "point"`: one value per mesh
@@ -176,10 +179,34 @@ scrub time — a time step costs about 5.7× less than shipping both.
   (`pickTetrahedron`: clip the ray against each tet's four faces, and against the cut's half-space
   for the smooth cut, or over the kept cells only for the whole-cells cut) and takes the nearest
   entry: the point on the surface, or on the cut face, under the mouse. Hover reads the P1 value
-  there; a click sends it to `/timeseries?x=&y=&z=`, a fixed lab-frame point (gaps where the moving
-  boundary has passed it), as the 2D pick does. Server-side, locating the point in each row's mesh
+  there; a click places a probe there, a fixed lab-frame point (gaps where the moving boundary has passed
+  it), as the 2D pick does. Server-side, locating the point in each row's mesh
   had copied the whole point array per tetrahedron face (5 s for 25 rows of a 40k-tet mesh); it now
   takes ~40 ms.
+- **Probes: time courses at several points.** A click puts a probe where it lands and replaces the
+  others; **shift-click**, or a click while **＋ Add points** is pressed (for trackpads and touch screens),
+  adds one, up to 12. A probe is a lab-frame point: the picked voxel's centre for finite volume, the
+  point under the 2D camera, or the tetrahedron entry point in 3D (`pickAt`). Probes therefore carry over
+  a variable or domain switch and a run refresh, and are refetched after either. A probe outside the new
+  domain is listed as "outside <domain>". On a body-fitted run the request asks `snap=nearest`, so a click
+  beside a FEniCSx membrane lands on it. All the probes are fetched in **one** request
+  (`/timeseries?points=x,y,z;…`), debounced by 150 ms, with a superseded request aborted.
+  - The **probe panel** is separate from Stats. It lists `P1 (x, y, z)` with the value at the current time,
+    ⌖ (centre the view on it) and ✕ (remove), plus Clear and CSV buttons.
+  - The **plot** has one trace per probe on one shared scale, ticked axes titled `time (s)` and
+    `<var> [domain]` (VCell's default units), and a time cursor that follows the slider. Clicking the plot
+    moves the slider to the nearest saved time. Nulls are gaps.
+  - **CSV** is made in the page: comment lines `# sim / job / var / domain`, a header
+    `time,P1(x;y;z),…`, then one row per time, with gaps as empty fields.
+  - **Markers** are an SVG overlay over the canvas, not VTK actors. `render()` wraps every
+    `renderWindow.render()`: after each frame it caches the camera it drew with and re-projects the
+    markers from it (`projectToScreen`, the inverse of `rayFromMouse`). A marker's colour matches its trace.
+    After a camera move, debounced, a ray is cast from the camera to each probe (`castRay` or
+    `pickTetrahedron`, honoring the crop). A probe the geometry hides is drawn hollow at 40 % opacity.
+  - Checked by the committed browser tests (`test/`, see its README) in Chromium, WebKit and Firefox:
+    - FV 2D and 3D, FEniCSx 2D (fixed and moving) and 3D, and a stand-in MovingBoundary run;
+    - markers land within 1.5 px of the clicked point on the body-fitted runs;
+    - no `is not permitted` refusals.
 - `probe.html` is a scratch page for exactly these capability probes: point it at a suspect class,
   read the on-page result, and keep the console open for `is not permitted`.
 - **The scalar bar labels the lookup table's range, not the mapper's.** `mapper.setScalarRange`
