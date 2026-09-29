@@ -3,7 +3,7 @@ Fixtures for the field viewer's browser tests.
 
 The page is served by the real `FieldViewerServer`, started over vcell-client's test fixtures by
 `org.vcell.client.viz.FieldViewerFixtureServer` (a Java main in vcell-client's test sources): finite-volume
-runs in 2D and 3D, FEniCSx bundles in 2D (fixed and moving) and 3D, and stand-in MovingBoundary and Chombo
+runs in 2D and 3D, FEniCSx bundles in 2D (fixed, moving, and with a membrane) and 3D, and stand-in MovingBoundary and Chombo
 (2D and 3D) runs.
 Every test runs once per browser engine (Chromium, WebKit, Firefox), and fails if the console shows an
 `is not permitted` refusal from the wasm invoker (README, "Notes for anyone editing this").
@@ -133,17 +133,17 @@ class Viewer:
 
 @pytest.fixture
 def open_viewer(browser, fixture_server):
-    """open_viewer(role) → a Viewer on that fixture dataset, rendered and ready."""
+    """open_viewer(role[, query]) → a Viewer on that fixture dataset, rendered and ready; `query` adds URL parameters."""
     pages = []
 
-    def open_(role):
+    def open_(role, query=''):
         dataset = fixture_server['datasets'][role]
         page = browser.new_page(viewport={'width': 1000, 'height': 1000})
         logs = []
         page.on('console', lambda m: logs.append(m.text))
         page.on('pageerror', lambda e: logs.append(f'page error: {e}'))
         pages.append((page, logs))
-        page.goto(f"http://127.0.0.1:{fixture_server['port']}/?sim={dataset['sim']}&job={dataset['job']}")
+        page.goto(f"http://127.0.0.1:{fixture_server['port']}/?sim={dataset['sim']}&job={dataset['job']}{query}")
         page.wait_for_function(
             "document.getElementById('status').textContent.includes('rendered')"
             " || document.getElementById('status').classList.contains('err')", timeout=120000)

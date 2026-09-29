@@ -240,7 +240,10 @@ async function loadInfo() {
   if (!state.variables.length) throw new Error(`run ${info.simId} exposes no volume variables`);
 
   const requested = state.dataset.variable;
-  const chosen = (requested ? state.variables.find((v) => v.name === requested) : null) ?? state.variables[0];
+  // a domain asked for without a variable opens that domain's first variable, not one from another domain
+  const chosen = (requested ? state.variables.find((v) => v.name === requested) : null)
+    ?? (state.dataset.domain ? state.variables.find((v) => v.domain === state.dataset.domain) : null)
+    ?? state.variables[0];
   state.selectedVar = chosen.name;
   state.selectedDomain = state.dataset.domain ?? chosen.domain;
   state.timeIndex = nearestTimeIndex(
@@ -572,6 +575,7 @@ async function buildGrid(geometry, field) {
   await applyCrop(); // a domain switch changes the bounds the slider position maps into
   state.nominalSinc = geometry.sinc;
   previewSmoothing(state.smoothing);
+  if (state.ready) updateLineTool();
 }
 
 /**
@@ -1280,7 +1284,8 @@ function valueAtCellPick(hit) {
   return sum;
 }
 
-const pickHint = () => (state.lineDraft ? ' — click: add a line vertex · Enter: finish'
+const pickHint = () => (state.lineDraft
+  ? (lineKind() === 'membrane' ? ' — click: add a point on the membrane · Enter: finish' : ' — click: add a line vertex · Enter: finish')
   : ' — click: probe · shift-click: add a probe');
 
 let hoverBusy = false;
@@ -1904,6 +1909,37 @@ function parseLine(text) {
   return vertices;
 }
 
+/**
+ * What a line is on the current domain (docs/plan-plotting.md P7):
+ * - 'line': a polyline through the data, sampled along its straight segments;
+ * - 'membrane': a curve along a 2D membrane (a body-fitted line mesh). The picks are waypoints: the server
+ *   snaps each onto the membrane and runs the curve along the mesh between them, the shorter way round, so the
+ *   overlay draws the curve's own samples, not straight segments between the picks;
+ * - 'surface': a 3D membrane surface, where curves (geodesics) are not served yet.
+ */
+function lineKind() {
+  if (!state.bodyFitted || state.cellTypes) return 'line';
+  if (state.cellType === 3) return 'membrane'; // VTK_LINE
+  if (state.cellType === 5 && state.dimension === 3) return 'surface'; // VTK_TRIANGLE in 3D
+  return 'line';
+}
+
+const LINE_TOOL_TITLE = 'Draw a line for a kymograph: click to add vertices, Enter or double-click to finish, '
+  + 'Backspace removes the last, Esc cancels';
+const CURVE_TOOL_TITLE = 'Draw a curve along the membrane for a kymograph: click on or beside the membrane to add '
+  + 'points (the curve follows the membrane between them), Enter or double-click to finish, Backspace removes the '
+  + 'last, Esc cancels';
+
+/** The Line tool for the current domain: a curve on a 2D membrane, off (with the reason) on a 3D membrane surface. */
+function updateLineTool() {
+  const kind = lineKind();
+  el.lineTool.disabled = kind === 'surface';
+  el.lineTool.title = kind === 'surface'
+    ? 'Curves on a 3D membrane surface are not supported yet: choose a volume variable for a line through the data'
+    : kind === 'membrane' ? CURVE_TOOL_TITLE : LINE_TOOL_TITLE;
+  if (kind === 'surface' && state.lineDraft) setLineTool(false);
+}
+
 /** The Line tool: on starts a new line (the current one stays until the new one is finished); off cancels it. */
 function setLineTool(on) {
   state.lineDraft = on ? [] : null;
@@ -2030,13 +2066,34 @@ const lineOccluded = new Set(); // pieces of the line the geometry hides: index 
 const lerp3 = (a, b, f) => [a[0] + f * (b[0] - a[0]), a[1] + f * (b[1] - a[1]), a[2] + f * (b[2] - a[2])];
 
 /**
+ * What the overlay draws for the line: {vertices, pieces, marks}. A straight line is its own vertices, each
+ * segment in LINE_PIECES pieces (occlusion is tested per piece). A curve along a membrane is the polyline
+ * through the samples the server returned, one piece per sample interval, with the marks at the snapped picks
+ * (the response's path); until its response arrives, it is drawn like a line through the picks.
+ */
+function lineGeometry() {
+  if (state.lineDraft) return { vertices: state.lineDraft, pieces: LINE_PIECES, marks: state.lineDraft };
+  const line = state.line;
+  if (!line) return null;
+  const k = state.kymo;
+  if (k && k.line === line && k.sampling === 'membrane') {
+    const P = k.samples.points;
+    const vertices = [];
+    for (let i = 0; i + 2 < P.length; i += 3) vertices.push([P[i], P[i + 1], P[i + 2]]);
+    return { vertices, pieces: 1, marks: k.path };
+  }
+  return { vertices: line.vertices, pieces: LINE_PIECES, marks: line.vertices };
+}
+
+/**
  * The line (or the one being drawn) over the view: white over a dark under-stroke, dashed where the geometry
  * hides it, a dot at each vertex and a tick across its start, where the kymograph's distance 0 is.
  */
 function drawLineOverlay(svg) {
   const drafting = !!state.lineDraft;
-  const vertices = drafting ? state.lineDraft : state.line?.vertices;
-  if (!vertices?.length) return;
+  const geometry = lineGeometry();
+  if (!geometry?.vertices.length) return;
+  const { vertices, pieces: perSegment, marks } = geometry;
   const g = document.createElementNS(SVG_NS, 'g');
   g.setAttribute('class', 'kymo-overlay');
   const add = (tag, attrs) => {
@@ -2047,10 +2104,10 @@ function drawLineOverlay(svg) {
   };
   const pieces = [];
   for (let s = 1; s < vertices.length; s++) {
-    for (let k = 0; k < LINE_PIECES; k++) {
-      const a = projectToScreen(lerp3(vertices[s - 1], vertices[s], k / LINE_PIECES));
-      const b = projectToScreen(lerp3(vertices[s - 1], vertices[s], (k + 1) / LINE_PIECES));
-      if (a && b) pieces.push({ a, b, hidden: !drafting && lineOccluded.has((s - 1) * LINE_PIECES + k) });
+    for (let k = 0; k < perSegment; k++) {
+      const a = projectToScreen(lerp3(vertices[s - 1], vertices[s], k / perSegment));
+      const b = projectToScreen(lerp3(vertices[s - 1], vertices[s], (k + 1) / perSegment));
+      if (a && b) pieces.push({ a, b, hidden: !drafting && lineOccluded.has((s - 1) * perSegment + k) });
     }
   }
   const seg = (p, cls) => add('line', { class: cls, x1: p.a[0].toFixed(1), y1: p.a[1].toFixed(1),
@@ -2058,7 +2115,7 @@ function drawLineOverlay(svg) {
   for (const p of pieces) if (!p.hidden) seg(p, 'kymo-line-under');
   for (const p of pieces) seg(p, 'kymo-line' + (p.hidden ? ' occluded' : '') + (drafting ? ' draft' : ''));
   const screen = vertices.map(projectToScreen);
-  if (screen[0] && screen[1]) {
+  if (screen[0] && screen[1]) { // the start tick, across the line's first segment
     const dx = screen[1][0] - screen[0][0];
     const dy = screen[1][1] - screen[0][1];
     const l = Math.hypot(dx, dy) || 1;
@@ -2066,7 +2123,7 @@ function drawLineOverlay(svg) {
     add('line', { class: 'kymo-start', x1: (screen[0][0] - px).toFixed(1), y1: (screen[0][1] - py).toFixed(1),
       x2: (screen[0][0] + px).toFixed(1), y2: (screen[0][1] + py).toFixed(1) });
   }
-  screen.forEach((p, i) => {
+  marks.map(projectToScreen).forEach((p, i) => {
     if (p) add('circle', { class: 'kymo-vertex', cx: p[0].toFixed(1), cy: p[1].toFixed(1), r: i === 0 ? '4' : '3' });
   });
   svg.appendChild(g);
@@ -2076,11 +2133,12 @@ function drawLineOverlay(svg) {
 function updateLineOcclusion(slack) {
   lineOccluded.clear();
   const view = state.cameraView;
-  const vertices = state.line?.vertices;
-  if (!view || !vertices || state.dimension === 2) return;
+  const geometry = state.lineDraft ? null : lineGeometry();
+  if (!view || !geometry || state.dimension === 2) return;
+  const { vertices, pieces } = geometry;
   for (let s = 1; s < vertices.length; s++) {
-    for (let k = 0; k < LINE_PIECES; k++) {
-      const m = lerp3(vertices[s - 1], vertices[s], (k + 0.5) / LINE_PIECES);
+    for (let k = 0; k < pieces; k++) {
+      const m = lerp3(vertices[s - 1], vertices[s], (k + 0.5) / pieces);
       const d = [0, 1, 2].map((a) => m[a] - view.P[a]);
       const dist = Math.hypot(...d);
       if (!(dist > 0)) continue;
@@ -2092,7 +2150,7 @@ function updateLineOcclusion(slack) {
       } else {
         t = castRay(view.P, dir)?.t ?? null;
       }
-      if (t != null && t < dist - slack) lineOccluded.add((s - 1) * LINE_PIECES + k);
+      if (t != null && t < dist - slack) lineOccluded.add((s - 1) * pieces + k);
     }
   }
 }
@@ -2157,6 +2215,11 @@ async function fetchKymograph() {
     state.kymoStale = false;
     el.kymoStale.hidden = true;
     renderKymograph();
+    if (data.sampling === 'membrane') { // the overlay now follows the curve's own samples
+      lineOccluded.clear();
+      drawOverlay();
+      scheduleOcclusion();
+    }
     setStatus(`${describe()} ✓ — kymograph: ${data.samples.arcLength.length} samples × ${data.times.length} times`);
   } catch (e) {
     if (e?.name === 'AbortError') return;
@@ -2271,7 +2334,11 @@ function updateKymoNote(message, warn = false) {
   let text = message;
   if (text == null) {
     const k = state.kymo;
-    if (state.lineDraft) {
+    if (state.lineDraft && lineKind() === 'membrane') {
+      text = `Click on or beside the membrane to add points (${state.lineDraft.length} so far): the curve follows `
+        + 'the membrane between them, the shorter way round. Enter or double-click finishes, Backspace removes the '
+        + 'last, Esc cancels. Or type the points above and press Enter.';
+    } else if (state.lineDraft) {
       text = `Click the view to add vertices (${state.lineDraft.length} so far): Enter or double-click finishes, `
         + 'Backspace removes the last, Esc cancels. Or type the vertices above and press Enter.';
     } else if (k) {
@@ -2288,6 +2355,9 @@ function updateKymoNote(message, warn = false) {
         notes.push("one sample per voxel crossed, by a voxel walk (the desktop's sampling can't take this line, so there is no membrane-crossing correction)");
       } else if (k.sampling === 'voxel-crossing') {
         notes.push("one sample per voxel crossed, two at each membrane (the desktop's sampling); hatched: outside the domain");
+      } else if (k.sampling === 'membrane' && k.location === 'point') {
+        notes.push(`${k.samples.arcLength.length} samples along the membrane: the mesh vertices between the picks, `
+          + 'each pick snapped onto the membrane; interpolated linearly between vertices');
       } else if (k.sampling === 'uniform') {
         notes.push(`${k.samples.arcLength.length} evenly spaced samples, `
           + (k.location === 'point' ? 'interpolated linearly within each mesh cell' : 'each the value of the cell holding it')
@@ -2304,6 +2374,9 @@ function updateKymoNote(message, warn = false) {
   el.kymoNote.textContent = text;
   el.kymoNote.classList.toggle('warn', warn);
 }
+
+/** The kymograph's and the profile's x-axis title. */
+const distanceTitle = (k) => (k?.sampling === 'membrane' ? 'distance along the membrane (µm)' : 'distance along line (µm)');
 
 /**
  * The kymograph: an image with one row per returned time (the first at the top, as the desktop draws it)
@@ -2397,7 +2470,7 @@ function renderKymograph() {
     mk('line', { class: 'axis', x1: sx(s), x2: sx(s), y1: M.t + plotH, y2: M.t + plotH + 4 });
     mk('text', { class: 'lbl', x: sx(s), y: M.t + plotH + 15, 'text-anchor': 'middle' }, tickLabel(s, xt.step));
   }
-  mk('text', { class: 'title', x: M.l + plotW / 2, y: Hpx - 4, 'text-anchor': 'middle' }, 'distance along line (µm)');
+  mk('text', { class: 'title', x: M.l + plotW / 2, y: Hpx - 4, 'text-anchor': 'middle' }, distanceTitle(k));
   // rows are the saved times, not a uniform time scale: label a handful of rows with their real times
   const labelled = rows <= 6 ? [...Array(rows).keys()]
     : [...new Set([0, 1, 2, 3, 4, 5].map((q) => Math.round((q * (rows - 1)) / 5)))];
@@ -2422,7 +2495,8 @@ function renderKymograph() {
   state.kymoView = { rows, W, cols, rowY, sx, M, plotW, cursor: [under, over], lo, hi };
 
   const length = Number(k.pathLength.toPrecision(4));
-  el.kymoTitle.textContent = `${k.name} · ${k.domain} · ${n} samples × ${rows} times · line ${length} µm`
+  el.kymoTitle.textContent = `${k.name} · ${k.domain} · ${n} samples × ${rows} times · `
+    + (k.sampling === 'membrane' ? `curve ${length} µm along the membrane` : `line ${length} µm`)
     + (k.movingMesh ? ' · fixed line (lab frame)' : '');
   updateKymoNote();
   updateKymoTime();
@@ -2493,7 +2567,7 @@ function renderProfile(row) {
   }
   mk('line', { class: 'axis', x1: M.l, y1: H - M.b, x2: M.l + plotW, y2: H - M.b });
   mk('line', { class: 'axis', x1: M.l, y1: M.t, x2: M.l, y2: H - M.b });
-  mk('text', { class: 'title', x: M.l + plotW / 2, y: H - 3, 'text-anchor': 'middle' }, 'distance along line (µm)');
+  mk('text', { class: 'title', x: M.l + plotW / 2, y: H - 3, 'text-anchor': 'middle' }, distanceTitle(k));
   mk('text', { class: 'title', x: M.l, y: 11 }, `${k.name} [${k.domain}] at t = ${k.times[row]} s`);
   const values = k.values[row];
   let seg = [];
@@ -3157,8 +3231,9 @@ function missingBrowserSupport() {
     // probes and lines need a picker, which every mode has: the voxel walk (finite volume), the 2D camera point,
     // and the 3D cell pick (tetrahedra, voxels and polyhedra)
     el.addProbes.disabled = false;
-    // kymographs (docs/plan-plotting.md P4–P6): every mode; a MovingBoundary line is fixed in the lab frame
-    el.lineTool.disabled = false;
+    // kymographs (docs/plan-plotting.md P4–P7): every mode; a MovingBoundary line is fixed in the lab frame, and
+    // on a 2D membrane the line is a curve along it
+    updateLineTool();
     // the desktop's resampling of the raw (unmasked) values: finite-volume parity only
     el.kymoDesktopCsv.hidden = state.bodyFitted;
     scheduleAutoRefresh();

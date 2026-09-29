@@ -1,6 +1,6 @@
 # Plan — multi-point time plots and kymographs in the browser field viewer
 
-**Status:** in progress: P1 to P6 merged (2026-09-29); P7 (membrane curves) remains. This is a living plan: tick PRs off as they merge.
+**Status:** in progress: P1 to P6 and P7a merged (2026-09-29); P7b (FV membrane variables and curves) remains. This is a living plan: tick PRs off as they merge.
 
 ## Context
 
@@ -889,6 +889,62 @@ Decisions and deviations recorded in P6:
   sampling.
 - **Done when:** a membrane arc's length equals the sum of its edge lengths, and its values equal the P1 vertex
   values; FV membrane kymographs match the desktop's on MembraneFrap3D.
+
+P7 is two PRs: **P7a** (FEniCSx 2D membrane arcs) ✅ (#2126), and **P7b** (FV membrane variables: shown, probed,
+and curves along them).
+
+Decisions and deviations recorded in P7a:
+- **Fixture.** `receptor_2d.fenics` (72 KB, `vcell-client` test resources): vcell-fenics's
+  `cross_validation/receptor_math.yaml` + `receptor_geom.yaml` (a disk of radius 0.5 in a 2 × 2 box; `s_cyto`,
+  `s_ext` and the membrane species `R` on `mem_dom`), with R's initial condition changed to
+  `10·(x + 0.5) + 4·y` so it varies along the membrane (the model's own R starts uniform, so every arc would be
+  flat), run at `--h 0.2 --t-final 0.3 --output-dt 0.1`, `provenance/` dropped. `mem_dom` is a closed curve of
+  61 `VTK_LINE` cells. (An x-dependent initial `s_cyto` made the multi-compartment solver fail, "Found multiple
+  domains", so the variation went into R.) `FieldViewerFixtureServer` registers it as `fenics2dMembrane`
+  (sim `556`).
+- **The request is the ordinary `/kymograph`**: on a FEniCSx membrane domain of a 2D model, `path` is read as
+  **waypoints** along the membrane rather than a straight polyline. `MembraneArc` (new):
+  - each waypoint snaps to the nearest point on the line cells, accepted within **four lengths** of that cell
+    (P1's probe snap accepts one diameter; a curve's picks are placed by eye, so it is kinder), else 400 "vertex
+    k … is not on the membrane";
+  - consecutive waypoints are joined by the **shortest path along the line cells**: Dijkstra over the mesh
+    vertices, entering and leaving through the snapped points' own cells (two picks on one cell are joined
+    directly). So on a closed membrane two picks take the shorter way round, and a third pick on the far side
+    chooses the other way. Separate pieces of membrane are a 400;
+  - the samples are the snapped ends and each mesh vertex on the way, consecutive duplicates dropped (a pick
+    that snaps onto a vertex is that vertex, once; the legs of a multi-pick curve share their meeting point);
+  - a vertex sample's value is its P1 value; a snapped end's is interpolated along its cell, which is what the
+    membrane probe (`snap=nearest`) reads there;
+  - `arcLength` accumulates along the curve, so `pathLength` is the sum of its edge lengths (the end edges in
+    part). `samples=` is ignored, as for FV; more than 2,000 samples is a 400; the value limit and `tstep` apply.
+- **Response.** P5's body-fitted JSON (its writer is now shared, `BodyFittedKymograph.write`), with
+  `sampling: "membrane"`, `location: "point"`, `path` = the **snapped** waypoints, and a new `samples.vertex`
+  (each sample's mesh vertex, -1 for an end inside a cell).
+- **Refused (400).** A 3D membrane surface ("curves on a 3D membrane surface are not supported yet"; plan
+  "Later"), and a moving or remeshed bundle (a curve built on one mesh; no fixture has a moving membrane).
+- **Viewer.** `lineKind()` says what the Line tool makes on the current domain: `'membrane'` on a body-fitted line
+  mesh, `'surface'` on a 3D triangle mesh (the tool is off, with a tooltip saying why, and back on for a volume
+  variable), else `'line'`. On a membrane the tool's tooltip, the drawing note and the hover hint say the clicks
+  are points on the membrane. **The overlay draws the returned samples** (one piece per sample interval, dots at
+  the snapped picks, `lineGeometry()`), not straight segments between the clicks; until the response arrives it
+  shows the clicks. The title says "curve … µm along the membrane", the axes "distance along the membrane (µm)",
+  and the note how it was sampled. The line field keeps the waypoints as typed or clicked.
+- **Fixed on the way.** `?domain=` without `?var=` opened the run's first variable, whatever its domain, so
+  `/field` failed with 400; it now opens the first variable of that domain. CHANGELOG "Fixed".
+- **Tests.**
+  - Java (`MembraneArcTest`, new): a quarter arc between a pick outside and one inside the membrane: the ends are
+    the snapped picks, on the membrane; the interior samples are consecutive mesh vertices at their own points;
+    `arcLength` accumulates the edges and `pathLength` is their sum (≈ π/4); every interior value equals `/field`
+    at that vertex at every time, and the ends equal the membrane probes at the picks; row 0 follows R's initial
+    condition. The shorter way round versus the long way with a third pick; `tstep`; the 400s (a pick far off,
+    zero length); and, on hand-built line meshes, a pick snapping onto a vertex once, separate pieces, the
+    sample limit and a triangle mesh. **66 `org.vcell.client.viz` tests pass** (61 before).
+  - Browser (`test/test_membrane_curves.py`, new, 5 per engine): two clicks beside the membrane give a curve
+    whose overlay pieces all lie on the circle and bulge away from the chord, one piece per sample interval and
+    two marks, no gaps, the title and note; a third pick takes the long way round; a typed pick far off shows the
+    server's message; `?domain=mem_dom` alone opens R; the tool is off on `fenics3d`'s membrane and on again for
+    `s_cyto`. `open_viewer` takes extra URL parameters. **Results: 165 browser tests pass** on Chromium
+    (SwiftShader), WebKit and Firefox, with no `is not permitted` refusals and no page errors.
 
 ### Later
 - **Several variables** in the point plot: the desktop's "Y Axis" multi-select, `var=a,b` over the same

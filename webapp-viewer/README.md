@@ -208,7 +208,7 @@ scrub time — a time step costs about 5.7× less than shipping both.
     After a camera move, debounced, a ray is cast from the camera to each probe (`castRay` or
     `pickCell`, honoring the crop). A probe the geometry hides is drawn hollow at 40 % opacity.
   - Checked by the committed browser tests (`test/`, see its README) in Chromium, WebKit and Firefox:
-    - FV 2D and 3D, FEniCSx 2D (fixed and moving) and 3D, and stand-in MovingBoundary and Chombo runs;
+    - FV 2D and 3D, FEniCSx 2D (fixed, moving, and with a membrane) and 3D, and stand-in MovingBoundary and Chombo runs;
     - markers land within 1.5 px of the clicked point on the body-fitted runs;
     - no `is not permitted` refusals.
 - **Kymographs: a variable along a line, over time**, for every kind of run: finite volume, FEniCSx (2D, 3D,
@@ -242,8 +242,17 @@ scrub time — a time step costs about 5.7× less than shipping both.
     "no data" by the colour bar (the desktop shows the raw array there, i.e. another compartment's numbers). A
     line wholly outside says "the line lies outside <domain>". On a body-fitted run the other compartment is
     another mesh, so a 3D line through a ball in a box is a gap in the ball for the box's variable, and the
-    other way round. A FEniCSx membrane domain has no kymograph yet (a straight line almost never lies on it;
-    curves along a membrane are plan P7).
+    other way round.
+  - **Curves along a 2D membrane** (a FEniCSx membrane domain of a 2D model, a curve of line cells). A straight
+    line almost never lies on a curve, so there the tool draws a **curve along the membrane**: each click (or
+    typed vertex) is a waypoint, which the server snaps onto the membrane (the nearest point on its line cells,
+    within four cell lengths), and consecutive waypoints are joined by the **shortest path along the mesh**
+    (`MembraneArc`). On a closed membrane two picks take the shorter way round; a pick on the far side makes the
+    curve go the other way. The samples are the snapped ends and every mesh vertex between them (`sampling:
+    "membrane"`), each vertex its P1 value and the ends interpolated along their cells; arc length is measured
+    along the curve, so the curve's length is the sum of its edge lengths. The overlay draws the curve through
+    those samples, with a dot at each snapped pick. Not yet: a moving or remeshed membrane, and curves on a 3D
+    membrane surface (geodesics), where the tool is off with a tooltip saying so.
   - **The image** has one row per saved time, the first at the top as on the desktop, and arc length across.
     It is `min(1024, 4·n)` columns, scaled up with `image-rendering: pixelated`. Each column shows the sample
     whose span holds it, a span ending halfway to each neighbouring sample, so voxels keep their true widths
