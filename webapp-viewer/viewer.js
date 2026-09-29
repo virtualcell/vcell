@@ -1287,6 +1287,9 @@ function pickCell(origin, dir) {
  * kept side, or the whole cells the cut keeps). Returns {point, cell, weights} — barycentric weights for a
  * triangle, for its P1 value — or null. O(cells) per call.
  */
+/** VTK_TRIANGLE, VTK_POLYGON and VTK_QUAD: the cells of a surface mesh. */
+const SURFACE_CELL_TYPES = new Set([5, 7, 9]);
+
 function pickSurface(origin, dir) {
   const P = state.cellPoints;
   const cells = state.cellList;
@@ -1305,7 +1308,8 @@ function pickSurface(origin, dir) {
   let best = null;
   for (let c = 0; c < cells.length; c++) {
     const cell = cells[c];
-    if (cell.length < 3) continue;
+    const type = state.cellTypes ? state.cellTypes[c] : state.cellType;
+    if (!SURFACE_CELL_TYPES.has(type)) continue; // a volume cell's vertices are no polygon: pickCell's job
     if (wholeCells && !cell.some((i) => P[3 * i + axis] <= cutPos)) continue;
     const a = v(cell[0]);
     for (let k = 1; k + 1 < cell.length; k++) {
