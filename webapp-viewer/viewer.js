@@ -115,6 +115,10 @@ const state = {
   cutMode: 'smooth', // 'smooth' (clip through the cells) or 'cells' (keep whole cells)
   cellPoints: null, // the grid's point coordinates and cells, for choosing the whole cells to keep
   cellList: null,
+  cellType: null, // the grid's one VTK cell type, or …
+  cellTypes: null, // … one per cell (Chombo 3D: voxels and polyhedra)
+  cellFaces: null, // a polyhedron's faces, [numFaces, numPoints, ids…, …], null at other cells
+  cellPlanes: null, // the 3D pick's per-cell face planes and boxes (cellPlanes())
   pivot: null, // 3D rotation center: the scene center; a pan does not move it (null: take the focal point)
   pick: null, // Cartesian occupancy index of the current grid, for mouse picking
   // probes: lab-frame points, each with a time course. Points, not cell ordinals, so they survive a
@@ -499,6 +503,10 @@ async function buildGrid(geometry, field) {
   await ug.setPoints(points);
   state.cellPoints = P;
   state.cellList = geometry.cells;
+  state.cellType = geometry.cellType;
+  state.cellTypes = geometry.cellTypes ?? null;
+  state.cellFaces = geometry.cellFaces ?? null;
+  state.cellPlanes = null; // the pick's per-cell planes, rebuilt for this grid on first use
   if (geometry.cellTypes) {
     // mixed cell types (Chombo: whole voxels + the polyhedra it cuts at the boundary)
     const faces = geometry.cellFaces;
@@ -1092,17 +1100,99 @@ function cellCenter(cell) {
   return [pk.o[0] + (ix + 0.5) * pk.d[0], pk.o[1] + (iy + 0.5) * pk.d[1], pk.o[2] + (iz + 0.5) * pk.d[2]];
 }
 
+/** VTK cell types a 3D pick can enter, and the faces of the fixed-shape ones as vertex positions in the cell. */
+const VTK_TETRA = 10;
+const VTK_VOXEL = 11;
+const VTK_HEXAHEDRON = 12;
+const VTK_POLYHEDRON = 42;
+const CELL_FACES = {
+  [VTK_TETRA]: [[0, 1, 2], [0, 1, 3], [0, 2, 3], [1, 2, 3]],
+  // x varies fastest, then y, then z
+  [VTK_VOXEL]: [[0, 2, 3, 1], [4, 5, 7, 6], [0, 1, 5, 4], [2, 6, 7, 3], [0, 4, 6, 2], [1, 3, 7, 5]],
+  [VTK_HEXAHEDRON]: [[0, 1, 2, 3], [4, 5, 6, 7], [0, 1, 5, 4], [1, 2, 6, 5], [2, 3, 7, 6], [3, 0, 4, 7]],
+};
+
 /**
- * The first point of a body-fitted 3D mesh the mouse ray reaches, as the view shows it: the ray is
- * clipped against each tetrahedron's four faces (and, for the smooth cut, the cut's half-space; for
- * the whole-cells cut, only the kept cells take part), and the nearest entry wins. Returns the point
- * nudged just inside that tetrahedron — a boundary point is ambiguous for a containment test — with
- * its cell and barycentric weights, or null when the ray misses. O(cells) per call, a few ms.
+ * Each 3D cell's bounding planes, for the ray pick, built once per grid: per cell a Float64Array of
+ * (nx, ny, nz, d) per face, the normal pointing out of the cell (away from its vertex centroid), so a point x is
+ * inside the face's half-space when n·x ≤ d; plus the cell's bounding box. Tetrahedra, voxels and hexahedra use
+ * their fixed faces; a polyhedron (Chombo's cut cells) the faces the server sends. Cells are taken to be convex,
+ * as Chombo's cut cells and every tetrahedron are. Cells of other types (polygons, lines) are null.
  */
-function pickTetrahedron(origin, dir) {
+function cellPlanes() {
+  if (state.cellPlanes) return state.cellPlanes;
   const P = state.cellPoints;
   const cells = state.cellList;
-  if (!P || !cells) return null;
+  const planes = new Array(cells.length).fill(null);
+  const boxes = new Float64Array(6 * cells.length);
+  for (let c = 0; c < cells.length; c++) {
+    const cell = cells[c];
+    const type = state.cellTypes ? state.cellTypes[c] : state.cellType;
+    let faces;
+    if (type === VTK_POLYHEDRON) {
+      const stream = state.cellFaces?.[c]; // [numFaces, numPoints, ids…, numPoints, ids…]
+      if (!stream) continue;
+      faces = [];
+      for (let k = 1, f = 0; f < stream[0]; f++) {
+        faces.push(stream.slice(k + 1, k + 1 + stream[k]));
+        k += 1 + stream[k];
+      }
+    } else if (CELL_FACES[type] && cell.length === (type === VTK_TETRA ? 4 : 8)) {
+      faces = CELL_FACES[type].map((f) => f.map((i) => cell[i]));
+    } else {
+      continue;
+    }
+    const centre = [0, 0, 0];
+    for (const i of cell) for (let a = 0; a < 3; a++) centre[a] += P[3 * i + a] / cell.length;
+    const out = new Float64Array(4 * faces.length);
+    let n = 0;
+    for (const face of faces) {
+      // the normal of the face's polygon (Newell's method: robust for a quad that is not quite planar)
+      let nx = 0; let ny = 0; let nz = 0;
+      for (let v = 0; v < face.length; v++) {
+        const i = face[v];
+        const j = face[(v + 1) % face.length];
+        nx += (P[3 * i + 1] - P[3 * j + 1]) * (P[3 * i + 2] + P[3 * j + 2]);
+        ny += (P[3 * i + 2] - P[3 * j + 2]) * (P[3 * i] + P[3 * j]);
+        nz += (P[3 * i] - P[3 * j]) * (P[3 * i + 1] + P[3 * j + 1]);
+      }
+      const len = Math.hypot(nx, ny, nz);
+      if (!(len > 0)) continue;
+      nx /= len; ny /= len; nz /= len;
+      const i0 = face[0];
+      let d = nx * P[3 * i0] + ny * P[3 * i0 + 1] + nz * P[3 * i0 + 2];
+      if (nx * centre[0] + ny * centre[1] + nz * centre[2] > d) { // point out of the cell
+        nx = -nx; ny = -ny; nz = -nz; d = -d;
+      }
+      out.set([nx, ny, nz, d], 4 * n++);
+    }
+    planes[c] = out.subarray(0, 4 * n);
+    const o = 6 * c;
+    boxes.fill(Infinity, o, o + 3);
+    boxes.fill(-Infinity, o + 3, o + 6);
+    for (const i of cell) {
+      for (let a = 0; a < 3; a++) {
+        boxes[o + a] = Math.min(boxes[o + a], P[3 * i + a]);
+        boxes[o + 3 + a] = Math.max(boxes[o + 3 + a], P[3 * i + a]);
+      }
+    }
+  }
+  state.cellPlanes = { planes, boxes };
+  return state.cellPlanes;
+}
+
+/**
+ * The first point of a body-fitted 3D mesh the mouse ray reaches, as the view shows it: the ray is clipped
+ * against each cell's faces (tetrahedra, voxels, hexahedra and polyhedra alike: `cellPlanes`), and, for the
+ * smooth cut, the cut's half-space; for the whole-cells cut only the kept cells take part. The nearest entry
+ * wins. Returns the point nudged just inside that cell (a boundary point is ambiguous for a containment test),
+ * with its cell and, for a tetrahedron, its barycentric weights; null when the ray misses. O(cells) per call.
+ */
+function pickCell(origin, dir) {
+  const P = state.cellPoints;
+  const cells = state.cellList;
+  if (!P || !cells || state.dimension !== 3) return null;
+  const { planes, boxes } = cellPlanes();
   const axis = state.sliceAxis;
   let cutPos = null;
   if (axis >= 0) {
@@ -1110,18 +1200,28 @@ function pickTetrahedron(origin, dir) {
     cutPos = b[2 * axis] + (0.005 + 0.99 * (state.slicePos / 100)) * (b[2 * axis + 1] - b[2 * axis]);
   }
   const wholeCells = cutPos !== null && state.cutMode === 'cells';
-  const v = (i) => [P[3 * i], P[3 * i + 1], P[3 * i + 2]];
-  const sub3 = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
-  const dot3 = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
-  const cross3 = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+  const inv = dir.map((v) => 1 / v);
   let best = null;
   for (let c = 0; c < cells.length; c++) {
-    const cell = cells[c];
-    if (cell.length !== 4) continue;
-    if (wholeCells && !cell.some((i) => P[3 * i + axis] <= cutPos)) continue;
-    const q = cell.map(v);
+    const pl = planes[c];
+    if (!pl) continue;
+    if (wholeCells && !cells[c].some((i) => P[3 * i + axis] <= cutPos)) continue;
     let tIn = 0;
     let tOut = Infinity;
+    // the bounding box first (slabs): most cells are rejected here
+    const o = 6 * c;
+    for (let a = 0; a < 3 && tIn <= tOut; a++) {
+      if (!Number.isFinite(inv[a])) {
+        if (origin[a] < boxes[o + a] || origin[a] > boxes[o + 3 + a]) tOut = -Infinity;
+        continue;
+      }
+      let t0 = (boxes[o + a] - origin[a]) * inv[a];
+      let t1 = (boxes[o + 3 + a] - origin[a]) * inv[a];
+      if (t0 > t1) [t0, t1] = [t1, t0];
+      tIn = Math.max(tIn, t0);
+      tOut = Math.min(tOut, t1);
+    }
+    if (tIn > tOut || (best && tIn >= best.t)) continue;
     if (cutPos !== null && !wholeCells) {
       // the kept side of the smooth cut: x[axis] <= cutPos
       if (Math.abs(dir[axis]) < 1e-15) {
@@ -1132,12 +1232,10 @@ function pickTetrahedron(origin, dir) {
         else tIn = Math.max(tIn, t);
       }
     }
-    for (let f = 0; f < 4 && tIn <= tOut; f++) {
-      const [a, b, d] = [0, 1, 2, 3].filter((k) => k !== f).map((k) => q[k]);
-      let n = cross3(sub3(b, a), sub3(d, a));
-      if (dot3(n, sub3(q[f], a)) > 0) n = [-n[0], -n[1], -n[2]]; // point away from the opposite vertex
-      const num = -dot3(n, sub3(origin, a));
-      const den = dot3(n, dir);
+    for (let f = 0; f < pl.length && tIn <= tOut; f += 4) {
+      // inside the face's half-space: n·(origin + t·dir) <= d
+      const num = pl[f + 3] - (pl[f] * origin[0] + pl[f + 1] * origin[1] + pl[f + 2] * origin[2]);
+      const den = pl[f] * dir[0] + pl[f + 1] * dir[1] + pl[f + 2] * dir[2];
       if (Math.abs(den) < 1e-300) {
         if (num < 0) tOut = -Infinity; // parallel and outside this face
       } else if (den > 0) {
@@ -1147,25 +1245,31 @@ function pickTetrahedron(origin, dir) {
       }
     }
     if (tIn > tOut || (best && tIn >= best.t)) continue;
-    best = { t: tIn, tOut, cell: c, q };
+    best = { t: tIn, tOut, cell: c };
   }
   if (!best) return null;
   const t = best.t + 1e-3 * (best.tOut - best.t);
   const point = [0, 1, 2].map((a) => origin[a] + t * dir[a]);
+  const cell = cells[best.cell];
+  const type = state.cellTypes ? state.cellTypes[best.cell] : state.cellType;
+  if (type !== VTK_TETRA) return { point, cell: best.cell, weights: null };
   // barycentric weights: the volume of the sub-tetrahedron opposite each vertex
+  const sub3 = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+  const dot3 = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+  const cross3 = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
   const vol = (a, b, c2, d) => dot3(sub3(b, a), cross3(sub3(c2, a), sub3(d, a)));
-  const [q0, q1, q2, q3] = best.q;
+  const [q0, q1, q2, q3] = cell.map((i) => [P[3 * i], P[3 * i + 1], P[3 * i + 2]]);
   const total = vol(q0, q1, q2, q3);
   const weights = [vol(point, q1, q2, q3), vol(q0, point, q2, q3), vol(q0, q1, point, q3), vol(q0, q1, q2, point)]
     .map((w) => w / total);
   return { point, cell: best.cell, weights };
 }
 
-/** The shown field at a picked tetrahedron point: P1-interpolated, or the cell's value. */
-function valueAtTetPick(hit) {
+/** The shown field at a picked point of a 3D cell: P1-interpolated in a tetrahedron, or the cell's value. */
+function valueAtCellPick(hit) {
   const values = state.fieldValues;
   if (!values) return null;
-  if (state.fieldLocation !== 'point') return values[hit.cell] ?? null;
+  if (state.fieldLocation !== 'point' || !hit.weights) return values[hit.cell] ?? null;
   const cell = state.cellList[hit.cell];
   let sum = 0;
   for (let k = 0; k < 4; k++) {
@@ -1186,12 +1290,12 @@ async function hoverPick(clientX, clientY) {
     hoverBusy = true;
     try {
       const { origin, dir } = await rayFromMouse(clientX, clientY);
-      const hit = pickTetrahedron(origin, dir);
+      const hit = pickCell(origin, dir);
       if (!hit) {
         el.pickReadout.textContent = '';
         return;
       }
-      const value = valueAtTetPick(hit);
+      const value = valueAtCellPick(hit);
       const at = ` @ (${hit.point.map((x) => x.toFixed(2)).join(', ')})`;
       el.pickReadout.textContent = (value == null ? `no data${at}` : `${state.selectedVar} = ${value.toExponential(3)}${at}`)
         + pickHint();
@@ -1247,8 +1351,8 @@ async function hoverPick(clientX, clientY) {
  * vertices. Finite volume: the centre of the first voxel the ray reaches (its vertex mean — the point the
  * server maps back to that voxel exactly as the desktop does), plus `entry`, the exact surface or cut-face
  * point. Body-fitted 2D: the point under the orthographic camera, in the mesh's plane. Body-fitted 3D: the
- * tetrahedron entry point, nudged just inside. Null where nothing is picked (and for Chombo 3D, whose voxels
- * and polyhedra have no picker yet).
+ * entry point into the first cell the ray meets (tetrahedron, voxel or polyhedron: `pickCell`), nudged just
+ * inside. Null where nothing is picked.
  */
 async function pickAt(clientX, clientY) {
   if (state.bodyFitted) {
@@ -1257,7 +1361,7 @@ async function pickAt(clientX, clientY) {
       return { point: [x, y, state.bounds ? state.bounds[4] : 0] };
     }
     const { origin, dir } = await rayFromMouse(clientX, clientY);
-    const hit = pickTetrahedron(origin, dir);
+    const hit = pickCell(origin, dir);
     return hit ? { point: hit.point, cell: hit.cell } : null;
   }
   if (!state.pick) return null;
@@ -1733,7 +1837,7 @@ function scheduleOcclusion() {
 
 /**
  * Which markers something else hides: cast a ray from the camera to each probe (the voxel walk, or the
- * tetrahedron pick, honoring the crop as the picture does), and call it hidden when the ray meets the
+ * body-fitted cell pick, honoring the crop as the picture does), and call it hidden when the ray meets the
  * geometry clearly before it reaches the probe. "Clearly" is a voxel's diagonal for finite volume (a probe
  * sits at its voxel's centre, inside the surface the ray meets) and a sliver of the scene for a body-fitted
  * mesh (a probe sits just inside the surface it was picked on).
@@ -1753,7 +1857,7 @@ function updateOcclusion() {
     const dir = d.map((v) => v / dist);
     let t = null;
     if (state.bodyFitted) {
-      const hit = pickTetrahedron(view.P, dir);
+      const hit = pickCell(view.P, dir);
       if (hit) t = Math.hypot(...[0, 1, 2].map((a) => hit.point[a] - view.P[a]));
     } else {
       t = castRay(view.P, dir)?.t ?? null;
@@ -1798,15 +1902,6 @@ function parseLine(text) {
   if (vertices.length < 2) throw new Error('a line needs at least two vertices, separated by ;');
   if (vertices.length > MAX_LINE_VERTICES) throw new Error(`a line has at most ${MAX_LINE_VERTICES} vertices`);
   return vertices;
-}
-
-/** Why this run can't have a kymograph line yet (the Line tool's tooltip), or null when it can. */
-function lineUnavailable() {
-  if (!state.bodyFitted || state.solver === 'FEniCSx') return null;
-  if (state.solver === 'Chombo') {
-    return state.dimension === 2 ? null : 'Kymographs of Chombo 3D runs need a picker for their voxels and polyhedra, which is not available yet';
-  }
-  return 'Kymographs of MovingBoundary runs are not available yet';
 }
 
 /** The Line tool: on starts a new line (the current one stays until the new one is finished); off cancels it. */
@@ -1992,7 +2087,7 @@ function updateLineOcclusion(slack) {
       const dir = d.map((v) => v / dist);
       let t = null;
       if (state.bodyFitted) {
-        const hit = pickTetrahedron(view.P, dir);
+        const hit = pickCell(view.P, dir);
         if (hit) t = Math.hypot(...[0, 1, 2].map((a) => hit.point[a] - view.P[a]));
       } else {
         t = castRay(view.P, dir)?.t ?? null;
@@ -3059,13 +3154,11 @@ function missingBrowserSupport() {
     el.sliceAxis.disabled = false; // body-fitted 3D included: the crop clips the solver mesh
     el.statsBtn.disabled = false;
     el.refreshBtn.disabled = false;
-    // probes need a picker: finite volume, body-fitted 2D, and body-fitted 3D tetrahedra (not Chombo 3D yet)
+    // probes and lines need a picker, which every mode has: the voxel walk (finite volume), the 2D camera point,
+    // and the 3D cell pick (tetrahedra, voxels and polyhedra)
     el.addProbes.disabled = false;
-    // kymographs (docs/plan-plotting.md P4, P5): finite volume, FEniCSx 2D and 3D, and Chombo 2D. Chombo 3D has
-    // no picker for its voxels and polyhedra yet, and MovingBoundary kymographs are not served yet (P6)
-    const noLine = lineUnavailable();
-    el.lineTool.disabled = !!noLine;
-    if (noLine) el.lineTool.title = noLine;
+    // kymographs (docs/plan-plotting.md P4–P6): every mode; a MovingBoundary line is fixed in the lab frame
+    el.lineTool.disabled = false;
     // the desktop's resampling of the raw (unmasked) values: finite-volume parity only
     el.kymoDesktopCsv.hidden = state.bodyFitted;
     scheduleAutoRefresh();

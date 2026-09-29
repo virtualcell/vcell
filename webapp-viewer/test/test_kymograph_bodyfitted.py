@@ -1,13 +1,13 @@
 """
-Kymographs of body-fitted runs (docs/plan-plotting.md P5): FEniCSx 2D, 3D and ALE, and Chombo 2D. The line is
-sampled evenly; FEniCSx samples are interpolated (P1), Chombo samples take their cell's value; samples outside
+Kymographs of body-fitted runs (docs/plan-plotting.md P5, P6): FEniCSx 2D, 3D and ALE, Chombo 2D and 3D, and
+MovingBoundary. The line is sampled evenly; FEniCSx samples are interpolated (P1), Chombo samples take their cell's value; samples outside
 the variable's domain are gaps; on a moving mesh the line is fixed in the lab frame, and says so.
 """
 import pytest
 
 from test_kymograph import csv_rows, download_text, draw_line, kymo_state, samples_in_title, type_line, wait_kymograph
 
-BODY_FITTED_LINES = ['fenics2d', 'fenicsMoving', 'fenics3d', 'chombo2d']
+BODY_FITTED_LINES = ['fenics2d', 'fenicsMoving', 'fenics3d', 'chombo2d', 'chombo3d', 'movingBoundary']
 
 
 def typed_kymograph(v, text):
@@ -28,7 +28,7 @@ def test_two_clicks_and_enter_draw_a_body_fitted_kymograph(open_viewer, role):
     n = samples_in_title(k['title'])
     times = int(v.page.get_attribute('#time', 'max')) + 1
     assert data['sampling'] == 'uniform' and len(data['samples']['arcLength']) == n
-    assert data['location'] == ('cell' if role.startswith('chombo') else 'point')
+    assert data['location'] == ('point' if role.startswith('fenics') else 'cell')
     assert k['width'] == min(1024, 4 * n) and k['height'] == times, k
     assert k['opaque'] > 0, 'the image is not blank'
     assert k['cursorY'] is not None and k['row'] == str(times - 1)
@@ -36,7 +36,7 @@ def test_two_clicks_and_enter_draw_a_body_fitted_kymograph(open_viewer, role):
     assert 'evenly spaced samples' in k['note'], k['note']
     # the desktop's resampling of raw values is finite-volume parity only
     assert v.page.is_hidden('#kymoDesktopCsv')
-    moving = role == 'fenicsMoving'
+    moving = role in ('fenicsMoving', 'movingBoundary')
     assert data['movingMesh'] is moving
     assert ('fixed line (lab frame)' in k['title']) is moving, k['title']
     assert ('fixed line (lab frame)' in k['note']) is moving, k['note']
@@ -85,8 +85,30 @@ def test_a_chombo_kymograph_is_a_step_per_cell_and_its_samples_export(open_viewe
     assert v.rows()[0].startswith('P1 (')
 
 
-@pytest.mark.parametrize('role,why', [('movingBoundary', 'MovingBoundary'), ('chombo3d', 'picker')])
-def test_the_line_tool_waits_where_it_cannot_work_yet(open_viewer, role, why):
-    v = open_viewer(role)
-    assert v.page.is_disabled('#lineTool')
-    assert why in v.page.get_attribute('#lineTool', 'title')
+def test_a_moving_boundary_kymograph_shows_the_boundary_moving_past_a_fixed_line(open_viewer):
+    v = open_viewer('movingBoundary')
+    data = typed_kymograph(v, '0.1,5.1; 15.9,5.1')  # the disk (radius 3) moves from x = 5 to x = 9
+    assert data['movingMesh'] and data['location'] == 'cell'
+    xs = data['samples']['points'][0::3]
+
+    def extent(row):
+        inside = [x for x, value in zip(xs, row) if value is not None]
+        return min(inside), max(inside)
+
+    first, last = extent(data['values'][0]), extent(data['values'][-1])
+    assert abs(first[0] - 2) < 0.6 and abs(first[1] - 8) < 0.6, first
+    assert abs(last[0] - 6) < 0.6 and abs(last[1] - 12) < 0.6, last
+    k = kymo_state(v)
+    assert 'fixed line (lab frame)' in k['title'] and 'the gaps show where the boundary has passed' in k['note']
+
+
+def test_a_chombo_3d_line_is_picked_through_voxels_and_polyhedra(open_viewer):
+    v = open_viewer('chombo3d')
+    with v.page.expect_response(lambda r: '/kymograph?' in r.url and r.status == 200) as response:
+        draw_line(v, [(-60, 0), (60, 0)])
+    data = response.value.json()
+    ends = [data['path'][0], data['path'][-1]]
+    for p in ends:  # each vertex lies in the ball (radius 2.2 about (3, 3, 3)), just inside its surface
+        r = sum((p[a] - 3) ** 2 for a in range(3)) ** 0.5
+        assert r < 2.2 + 0.5, p
+    assert data['samples']['inDomain'][0] and data['samples']['inDomain'][-1], 'the picked ends have values'

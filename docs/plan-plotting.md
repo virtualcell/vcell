@@ -1,6 +1,6 @@
 # Plan — multi-point time plots and kymographs in the browser field viewer
 
-**Status:** in progress: P1 to P5 merged (2026-09-29). This is a living plan: tick PRs off as they merge.
+**Status:** in progress: P1 to P6 merged (2026-09-29); P7 (membrane curves) remains. This is a living plan: tick PRs off as they merge.
 
 ## Context
 
@@ -820,7 +820,7 @@ Decisions and deviations recorded in P5:
     cell that is not a tetrahedron (`cell.length !== 4`), so it needs the general voxel/polyhedron ray pick. The
     served `/grid` carries `cellTypes` and `cellFaces` for it.
 
-### PR P6 — MovingBoundary kymograph, and picking on Chombo 3D
+### PR P6 — MovingBoundary kymograph, and picking on Chombo 3D ✅ (#2125)
 - A fixed lab-frame kymograph for MovingBoundary (§3.2, §5) within the value limit, labelled as such, with
   the UI enabled for it.
 - A general ray pick through voxels and polyhedra, so Chombo 3D can place probes and line vertices.
@@ -830,6 +830,57 @@ Decisions and deviations recorded in P5:
     points;
   - Chombo 3D probes and lines work in the browser tests on a Chombo fixture, if a small one can be made
     (otherwise by hand).
+
+Decisions and deviations recorded in P6:
+- **Server.** The one refusal is gone: a MovingBoundary `/kymograph` goes through P5's `vtuKymograph`, which
+  locates the evenly spaced samples in every saved time's own mesh (`mbGrid`, cached per time) with the
+  `CellLocator`, reads each time's values once for all samples (`getVtuMeshData`), and runs inside `heavy(…)`
+  under the same value limit. `movingMesh: true` is the lab-frame flag; the viewer labels it "fixed line (lab
+  frame)" in the title and the note, as it does for a FEniCSx ALE run.
+- **The general ray pick** (`pickCell`, replacing `pickTetrahedron`). Each 3D cell is a convex set of face
+  half-spaces: a tetrahedron's four faces, a voxel's or hexahedron's six (fixed vertex orders), or a polyhedron's
+  own faces from `/grid`'s `cellFaces` (Chombo's cut cells). The planes (Newell normals, pointed away from the
+  cell's vertex centroid) and each cell's bounding box are built once per grid (`cellPlanes`, reset in
+  `buildGrid`); the ray is clipped by the box first, then the planes, and the cut's half-space, as before. The
+  hit is nudged 1e-3 of the chord inside, as before. Barycentric weights are returned for tetrahedra only (P1
+  hover values); other cells read their cell value. It considers 3D cells only, so on a 2D mesh it returns null:
+  the old tetrahedron pick treated a quad as a flat "tetrahedron" in the 2D occlusion check.
+- **Viewer.** The Line tool and probes are on for every mode; P5's `lineUnavailable()` is gone.
+- **The by-hand check against a server-side MovingBoundary run was not done**: no MovingBoundary run on a VCell
+  server was reachable from this session. The check rests on the stand-in instead: `FakeMovingBoundaryRun`
+  goes through the real VTU seam and the server's own MovingBoundary code (per-time meshes, `mbGrid`, the
+  locator), and its gaps are checked against `/timeseries` at the same points (below). Worth doing by hand on the
+  first real MovingBoundary run viewed after release.
+- **Tests.**
+  - Java (`FieldViewerServerMovingBoundaryTest`): the kymograph along `y = 5.1` through the moving disk: every
+    sample at every time is the value of its lattice square while that square is in the disk and a gap
+    otherwise; the gaps' edges move 4 µm along +x with the disk; every sample's column equals `/timeseries` at
+    its point; the 503; the value limit and its suggested stride; `/info`'s `solver`. The synthetic moving-mesh
+    unit test of §6.1 is `PointSeriesTest.aMovingMeshIsLocatedPerRowWithGapsWhereTheBoundaryHasPassed` (P1).
+    **61 `org.vcell.client.viz` tests pass.**
+  - Browser: `chombo2d` and `chombo3d` join every probe test (click, shift-click, ✕, Clear; markers where
+    clicked; markers follow an orbit, Chombo 3D included); `test_kymograph_bodyfitted.py` draws lines by clicks
+    on MovingBoundary and Chombo 3D too, checks the MovingBoundary gaps move from x ≈ 2…8 to 6…12 with the
+    lab-frame label, and that a Chombo 3D line's picked ends lie just inside the ball and have values.
+    **Results: 150 browser tests pass** on Chromium (SwiftShader), WebKit and Firefox, with no `is not
+    permitted` refusals and no page errors.
+- **For P7** (membrane curves).
+  - FEniCSx 2D membrane arcs: the membrane domains are line meshes (`VTK_LINE`); `VtuGridParser.nearestOnMesh`
+    already snaps a pick onto one (P1's `snap=nearest`), so two snapped picks give the arc's ends; the shortest
+    path along the line cells between them, sampled at the mesh vertices, is the sample set. `FenicsBundleViews.kymograph`
+    refuses membrane domains today ("membrane kymographs are not supported yet"); replace that refusal. The
+    response can reuse `BodyFittedKymograph`'s JSON with `sampling: "membrane"`; `location: "point"` draws it
+    linearly. None of the committed FEniCSx bundles has a 2D membrane domain (`receptor_3d` has a 3D surface):
+    a small 2D bundle with one would be needed for the done-when's "values equal the P1 vertex values".
+  - FV membrane variables: `/info` lists only volume variables (`handleInfo`), and `handleKymograph` refuses
+    `MEMBRANE`/`MEMBRANE_REGION` with "membrane kymographs are not supported yet". MembraneFrap3D
+    (`vcell-core/src/test/resources/simdata/MembraneFrap3D/`) saves only membrane variables (`r_PM`, `rf_PM`), so
+    it is the natural fixture for the desktop parity (`SpatialSelectionMembrane.getIndexSamples`), copied into
+    vcell-client's test resources as P1 did for the FV runs. The viewer would also need to draw membrane
+    variables (they live on membrane elements, not voxels) before a membrane probe or line can be placed.
+  - The viewer's Line tool draws straight segments between picks; a membrane curve would instead take two picks
+    and let the server choose the path, so the overlay should draw the returned sample points, not the typed
+    vertices.
 
 ### PR P7 — membrane curves (decision 1)
 - FEniCSx 2D membrane arcs: the shortest path along the line mesh between two snapped picks, sampled at the

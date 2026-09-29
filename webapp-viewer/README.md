@@ -176,11 +176,14 @@ scrub time — a time step costs about 5.7× less than shipping both.
   still rotates in place (ParaView's behavior) rather than about the middle of the screen; the orbit
   is computed in JS (azimuth about the view up, then elevation about the right axis, centered on the
   pivot) and matches vtkCamera azimuth/elevation pixel for pixel when nothing has been panned.
-- **Picking on a 3D body-fitted mesh** casts the mouse ray through the tetrahedra in JS
-  (`pickTetrahedron`: clip the ray against each tet's four faces, and against the cut's half-space
+- **Picking on a 3D body-fitted mesh** casts the mouse ray through the cells in JS
+  (`pickCell`: clip the ray against each cell's face planes, and against the cut's half-space
   for the smooth cut, or over the kept cells only for the whole-cells cut) and takes the nearest
-  entry: the point on the surface, or on the cut face, under the mouse. Hover reads the P1 value
-  there; a click places a probe there, a fixed lab-frame point (gaps where the moving boundary has passed
+  entry: the point on the surface, or on the cut face, under the mouse. The cells are FEniCSx's
+  tetrahedra and **Chombo 3D's voxels and polyhedra** (its cut cells, whose faces `/grid` sends as
+  `cellFaces`), all convex; each cell's outward face planes and bounding box are built once per grid
+  (`cellPlanes`), and the box is tested first. So Chombo 3D can place probes and line vertices too. Hover
+  reads the P1 value there (a tetrahedron) or the cell's value; a click places a probe there, a fixed lab-frame point (gaps where the moving boundary has passed
   it), as the 2D pick does. Server-side, locating the point in each row's mesh
   had copied the whole point array per tetrahedron face (5 s for 25 rows of a 40k-tet mesh); it now
   takes ~40 ms.
@@ -203,14 +206,13 @@ scrub time — a time step costs about 5.7× less than shipping both.
     `renderWindow.render()`: after each frame it caches the camera it drew with and re-projects the
     markers from it (`projectToScreen`, the inverse of `rayFromMouse`). A marker's colour matches its trace.
     After a camera move, debounced, a ray is cast from the camera to each probe (`castRay` or
-    `pickTetrahedron`, honoring the crop). A probe the geometry hides is drawn hollow at 40 % opacity.
+    `pickCell`, honoring the crop). A probe the geometry hides is drawn hollow at 40 % opacity.
   - Checked by the committed browser tests (`test/`, see its README) in Chromium, WebKit and Firefox:
     - FV 2D and 3D, FEniCSx 2D (fixed and moving) and 3D, and stand-in MovingBoundary and Chombo runs;
     - markers land within 1.5 px of the clicked point on the body-fitted runs;
     - no `is not permitted` refusals.
-- **Kymographs: a variable along a line, over time**, for finite volume, FEniCSx (2D, 3D, moving meshes) and
-  Chombo 2D. MovingBoundary follows (plan P6), as does Chombo 3D, which first needs a picker for its voxels and
-  polyhedra; the Line tool says why it is off there.
+- **Kymographs: a variable along a line, over time**, for every kind of run: finite volume, FEniCSx (2D, 3D,
+  moving meshes), Chombo (2D and 3D) and MovingBoundary.
   - **Drawing.** **╱ Line** starts a line: each click on the view adds a vertex, at the exact surface or
     cut-face point under the mouse (`pickAt`'s `entry`). **Enter** or a double-click finishes, **Backspace**
     removes the last vertex, **Esc** cancels. In 3D two surface picks make a chord through the inside; with a
@@ -224,7 +226,7 @@ scrub time — a time step costs about 5.7× less than shipping both.
     `_INSIDE`/`_OUTSIDE` membrane values. All samples × times come from one server-side `TimeSeriesJobSpec`,
     so only the kymograph's values travel. A 3D line the desktop's code can't take (one through voxel
     vertices) is walked voxel by voxel instead, without the membrane correction, and the panel says so.
-  - **Sampling (body-fitted: FEniCSx, Chombo).** The line is sampled **evenly**: by default
+  - **Sampling (body-fitted: FEniCSx, Chombo, MovingBoundary).** The line is sampled **evenly**: by default
     `clamp(ceil(2·L / h̄), 16, 1000)` samples, two per mean cell diameter `h̄` of the mesh, at most 2,000 with
     `samples=`. The server locates each sample in the mesh (a bucket grid of cell bounding boxes,
     `VtuGridParser.CellLocator`, built once per mesh) and reads each saved time once for all samples, the loop
@@ -232,7 +234,7 @@ scrub time — a time step costs about 5.7× less than shipping both.
     holding it, so the image and profile are continuous (linear between samples); a Chombo sample takes its
     cell's value, drawn as a step per sample. There is no *Desktop CSV* for these runs: the desktop has no
     kymograph of them.
-  - **A moving mesh** (a FEniCSx ALE run; MovingBoundary in P6): the line stays where it was drawn, a **fixed
+  - **A moving mesh** (MovingBoundary, a FEniCSx ALE run): the line stays where it was drawn, a **fixed
     line in the lab frame** (an Eulerian line), and each sample reads whichever cell holds its point at that
     time. The moving boundary therefore shows as the edge of the gaps, moving across the image. The title and
     note say "fixed line (lab frame)". A line that follows the material can't be built from the saved data.

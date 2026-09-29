@@ -34,6 +34,10 @@ _(Release-manager scratchpad. Populated at release-cut time.)_
   kymograph is smooth. A line through two compartments shows the other one as a gap. On a FEniCSx run whose
   mesh moves, the line stays fixed in place (labelled "fixed line (lab frame)"), so the moving boundary shows
   as the edge of the gaps.
+- Kymographs of MovingBoundary runs. The line stays fixed in place while the boundary moves (labelled "fixed
+  line (lab frame)"): each point on it reads whichever mesh cell holds it at each time, and is a gap while the
+  domain is elsewhere, so the kymograph shows the boundary moving past the line.
+- Chombo 3D runs can be probed and can have kymographs: clicks now pick through their voxels and cut cells.
 
 ### Changed
 - The field viewer finds the mesh cell under a point much faster on body-fitted runs (FEniCSx, Chombo,
