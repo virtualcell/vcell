@@ -593,7 +593,7 @@ Decisions and deviations recorded in P2:
   desktop-parity test in place of MembraneFrap3D. It is 5 × 5 × 5 with unit spacing, so a diagonal through
   voxel corners is easy to write down.
 
-### PR P3 — `/kymograph` for FV (server) ✅ (#P3PR)
+### PR P3 — `/kymograph` for FV (server) ✅ (#2122)
 - SSHelper sampling with crossing indices, the DDA fallback, `tstep`, `raw`, the value limit, the heavy-job
   semaphore and the larger pool.
 - **Done when:** the desktop-parity Java test (§6.1) passes, and a 3D diagonal line through voxel corners
