@@ -188,9 +188,46 @@ a deployed site runs.
 These flow through `docker-compose.yml` → `Dockerfile-service-dev` (run as `submit`)
 → Java system properties → `PropertyLoader` → `SlurmProxy.java`.
 
-The solver-to-container mapping in `SlurmProxy.generateScript`
-maps each solver name to the appropriate `*_apptainer_image` property,
-then derives the local SIF filename from that ORAS URL.
+### Solver image families
+
+`SlurmProxy.generateScript` picks the solver's image from an ordered table of **solver families**
+(`SolverImageFamily.FAMILIES`). Each family is a pair of properties,
+`htc_vcell<family>_apptainer_image` and `htc_vcell<family>_solver_list` (a comma-separated list of
+`SolverDescription` names), set in the environment as `VCELL_HTC_VCELL<FAMILY>_APPTAINER_IMAGE` and
+`VCELL_HTC_VCELL<FAMILY>_SOLVER_LIST`:
+
+| order | family | image (from each solver repo) |
+|---|---|---|
+| 1 | `fenics` | `vcell-fenics_singularity` |
+| 2 | `fvsolver` | `vcell-fvsolver_singularity` |
+| 3 | `ode` | `vcell-ode_singularity` |
+| 4 | `stochastic` | `vcell-stochastic_singularity` |
+| 5 | `nfsim` | `vcell-nfsim_singularity` |
+| 6 | `mbsolver` | `vcell-mbsolver_singularity` |
+| 7 | `hy3s` | `vcell-hy3s_singularity` |
+| 8 | `chombo` | `vcell-chombo_singularity` |
+| 9 | `solvers` | legacy `vcell-solvers_singularity` (the fallback) |
+| 10 | `batch` | `vcell-batch_singularity` (the Java solvers) |
+
+- The first family, in this order, whose list names the solver wins; its SIF path is derived from the
+  ORAS URL as above.
+- A family whose image is unset or whose list is empty is skipped, so a site configures only the
+  families it runs. (`HtcSimulationWorker` still requires the `fvsolver` list and the `solvers` and
+  `batch` pairs at startup.)
+- A solver named on more than one list is not an error: the first family wins and a warning is logged.
+- A solver on no configured list is refused (`solverName=... not in vcellfenics_solverList=[...] or ...`).
+
+Moving a solver to its own image is configuration only: add the family's image and list, and take
+the solver's name off `VCELL_HTC_VCELLSOLVERS_SOLVER_LIST` (or `..._VCELLFVSOLVER_...`). For example:
+
+```
+VCELL_HTC_VCELLODE_APPTAINER_IMAGE=oras://ghcr.io/virtualcell/vcell-ode_singularity:0.9.5
+VCELL_HTC_VCELLODE_SOLVER_LIST=CVODE,IDA,CombinedSundials
+```
+
+Every solver and batch container gets `--env TMPDIR=/solvertmp`, the Slurm tmp dir bound into the
+container, so temporary files (and vcell-fenics' JIT cache) don't land in the small `/tmp` of
+`--containall`. The vcell-batch image already sets the same `TMPDIR` in its Dockerfile.
 
 ## Atomic write
 
