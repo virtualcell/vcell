@@ -139,8 +139,12 @@ public synchronized void removeSimStatusListener(SimStatusListener listener) {
 
 public void simulationJobStatusChanged(cbit.rmi.event.SimulationJobStatusEvent simJobStatusEvent) {
 	try {
+
+		System.out.println(" ======================== ClientJobManager.simulationJobStatusChanged: "+simJobStatusEvent.getJobStatus().getSimulationMessage().getDetailedState());
+
 		getClientServerManager().getDocumentManager().updateServerSimulationStatusFromJobEvent(simJobStatusEvent);
 		fireSimStatusEvent(new SimStatusEvent(this, simJobStatusEvent.getVCSimulationIdentifier(), simJobStatusEvent.getTimepoint() != null, simJobStatusEvent.getJobStatus().getSchedulerStatus().isFailed(), simJobStatusEvent.getJobStatus().getJobIndex()));
+
 	} catch (Exception e) {
 		lg.error(e.getMessage(), e);
 	}
