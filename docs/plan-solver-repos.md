@@ -138,7 +138,10 @@ Each applies the contract (§1). The table lists what each repo needs beyond it.
 
 ## 3. Phase B — VCell
 
-### PR B1 — SlurmProxy chooses the image from a table (no dependency on Phase A)
+### PR B1 ✅ [#2131](https://github.com/virtualcell/vcell/pull/2131) — SlurmProxy chooses the image from a table (no dependency on Phase A)
+
+Done: `SolverImageFamily` holds the ordered registry. A solver on several lists is allowed: the first family wins, with a warning, because existing sites already overlap their lists.
+
 
 - Replace the four hard-coded image and solver-list pairs in `SlurmProxy.generateScript` with an **ordered
   registry of solver families**: fenics, fvsolver, ode, stochastic, nfsim, mbsolver, hy3s, chombo, solvers
