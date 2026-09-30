@@ -16,7 +16,7 @@ where `ResourceUtil.findSolverExecutable` looks for `<name>_x64` (`.exe` on Wind
 | [vcell-nfsim](https://github.com/virtualcell/vcell-nfsim) | `NFsim_x64` |
 | [vcell-hy3s](https://github.com/virtualcell/vcell-hy3s) | `Hybrid_EM_x64`, `Hybrid_MIL_x64`, `Hybrid_MIL_Adaptive_x64` |
 | [vcell-chombo](https://github.com/virtualcell/vcell-chombo) | `VCellChombo2D_x64`, `VCellChombo3D_x64` (linux64 and mac64 only) |
-| [vcell-solvers](https://github.com/virtualcell/vcell-solvers) v0.0.44-dev4 (legacy) | `MovingBoundary_x64` (mac64 only, x86_64), until vcell-mbsolver is released |
+| [vcell-mbsolver](https://github.com/virtualcell/vcell-mbsolver) | `MovingBoundary_x64` |
 | [cam-center/LangevinNoVis01](https://github.com/cam-center/LangevinNoVis01) | `langevin_x64` |
 
 Each repo's `LICENSE`, `VERSION` and other license files land in `<platform>/licenses/<repo>/`.

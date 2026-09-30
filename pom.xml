@@ -236,11 +236,10 @@
 		<solvers-chombo.version>v1.0.0</solvers-chombo.version>	<!-- VCellChombo2D_x64, VCellChombo3D_x64 (no Windows build) -->
 		<solvers-chombo.sha256.linux64>726249539cbd28f93fe6ed8d66778ebacbd630e65965be2b7e948c3c233eae61</solvers-chombo.sha256.linux64>
 		<solvers-chombo.sha256.mac64>68006d82a5452c95cf2628fb8d10014c56ca932d271b543d41b3877153da2856</solvers-chombo.sha256.mac64>
-		<!-- MovingBoundary_x64 still comes from the legacy vcell-solvers mac archive (x86_64 only, mac only)
-		     until virtualcell/vcell-mbsolver publishes a release that meets the solver-release contract.
-		     That archive has no SHA256SUMS; this is the sha256 of the downloaded asset. -->
-		<solvers-legacy-movingboundary.version>v0.0.44-dev4</solvers-legacy-movingboundary.version>
-		<solvers-legacy-movingboundary.sha256.mac64>ec59296b1769172b8db09b4a1d474bd450e05c1d9a77bcfa7329943523d18f99</solvers-legacy-movingboundary.sha256.mac64>
+		<solvers-mbsolver.version>v1.0.5</solvers-mbsolver.version>	<!-- MovingBoundary_x64 -->
+		<solvers-mbsolver.sha256.linux64>7c746a2b27b25e74fe1a8fae1790f6969cc4407dbac4bd5da7e13221067ba5a4</solvers-mbsolver.sha256.linux64>
+		<solvers-mbsolver.sha256.mac64>9f3eda2edda80e2f8a9d66ee82522c5471cd056122cc31e7c4bc821c1054affe</solvers-mbsolver.sha256.mac64>
+		<solvers-mbsolver.sha256.win64>f2fed5d1a2356a4b5c2993f4123462d76dc95642561199a863163b6c6a33b883</solvers-mbsolver.sha256.win64>
 		<!-- Langevin (SpringSaLaD) comes from cam-center/LangevinNoVis01, fetched by vcell-core's OS profiles. -->
 		<solvers-langevin-mac.version>1.4.15</solvers-langevin-mac.version>
 		<solvers-langevin-windows.version>1.4.15</solvers-langevin-windows.version>

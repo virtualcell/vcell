@@ -1001,20 +1001,55 @@
 						</fileMappers>
 					</configuration>
 				</execution>
-				<!-- Legacy source, until vcell-mbsolver is released: only MovingBoundary_x64 (x86_64, runs under
-				     Rosetta on Apple silicon) from the vcell-solvers mac archive. It loads @executable_path/libsz.2.dylib,
-				     which vcell-fvsolver's mac64 archive supplies (compatibility 3.0 >= the 2.0 it needs); libz and libc++
-				     come from macOS. There is no Linux or Windows MovingBoundary, as before. -->
 				<execution>
-					<id>solver-legacy-movingboundary-mac64</id>
+					<id>solver-mbsolver-linux64</id>
 					<phase>generate-test-resources</phase>
 					<goals><goal>wget</goal></goals>
 					<configuration>
-						<url>https://github.com/virtualcell/vcell-solvers/releases/download/${solvers-legacy-movingboundary.version}/mac64.tgz</url>
-						<sha256>${solvers-legacy-movingboundary.sha256.mac64}</sha256>
+						<url>https://github.com/virtualcell/vcell-mbsolver/releases/download/${solvers-mbsolver.version}/linux64.tgz</url>
+						<sha256>${solvers-mbsolver.sha256.linux64}</sha256>
+						<unpack>true</unpack>
+						<outputDirectory>${project.basedir}/../localsolvers/linux64</outputDirectory>
+						<fileMappers>
+							<org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
+								<pattern>${solvers.licenseFiles}</pattern>
+								<replacement>licenses/vcell-mbsolver/</replacement>
+							</org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
+						</fileMappers>
+					</configuration>
+				</execution>
+				<execution>
+					<id>solver-mbsolver-mac64</id>
+					<phase>generate-test-resources</phase>
+					<goals><goal>wget</goal></goals>
+					<configuration>
+						<url>https://github.com/virtualcell/vcell-mbsolver/releases/download/${solvers-mbsolver.version}/mac64.tgz</url>
+						<sha256>${solvers-mbsolver.sha256.mac64}</sha256>
 						<unpack>true</unpack>
 						<outputDirectory>${project.basedir}/../localsolvers/mac64</outputDirectory>
-						<includes><include>**/MovingBoundary_x64</include></includes>
+						<fileMappers>
+							<org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
+								<pattern>${solvers.licenseFiles}</pattern>
+								<replacement>licenses/vcell-mbsolver/</replacement>
+							</org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
+						</fileMappers>
+					</configuration>
+				</execution>
+				<execution>
+					<id>solver-mbsolver-win64</id>
+					<phase>generate-test-resources</phase>
+					<goals><goal>wget</goal></goals>
+					<configuration>
+						<url>https://github.com/virtualcell/vcell-mbsolver/releases/download/${solvers-mbsolver.version}/win64.zip</url>
+						<sha256>${solvers-mbsolver.sha256.win64}</sha256>
+						<unpack>true</unpack>
+						<outputDirectory>${project.basedir}/../localsolvers/win64</outputDirectory>
+						<fileMappers>
+							<org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
+								<pattern>${solvers.licenseFiles}</pattern>
+								<replacement>licenses/vcell-mbsolver/</replacement>
+							</org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
+						</fileMappers>
 					</configuration>
 				</execution>
 				</executions>
