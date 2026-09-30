@@ -205,15 +205,43 @@
 		<xalan.version>2.7.3</xalan.version>
 		<xom.version>1.2.5</xom.version>
 
-		<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
-		<!-- Note: for containerized HPC/singularity solvers - see Dockerfile-batch-dev  -->
-		<!--       - vcell solvers from ghcr.io/virtualcell/vcell-solvers:v0.0.42-dev3   -->
-		<!--       - langevin solver from 'solvers-langevin-linux.version'               -->
-		<!--	   - for solvers-langevin-mac.version we use the amd64 (intel)  (13)     -->
-		<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
-		<solvers-vcell-mac.version>v0.0.44-dev4</solvers-vcell-mac.version>
-		<solvers-vcell-windows.version>v0.0.40</solvers-vcell-windows.version>
-		<solvers-vcell-linux.version>v0.0.44-dev4</solvers-vcell-linux.version>
+		<!-- Native solvers for local (desktop) runs. Each comes from its own virtualcell/<repo>
+		     GitHub release, downloaded and unpacked into localsolvers/{linux64,mac64,win64}/ by
+		     vcell-core/pom.xml (execution per repo and platform). To bump a solver: set its tag here and
+		     copy the three sha256 values from that release's SHA256SUMS asset
+		     (gh release download <tag> -R virtualcell/<repo> -p SHA256SUMS -O -).
+		     A mismatched sha256 fails the build.
+		     HPC runs don't use these: SlurmProxy runs each solver family's own image, pinned in
+		     vcell-fluxcd's submit.env (see docs/plan-solver-repos.md). -->
+		<solvers-fvsolver.version>v0.10.6</solvers-fvsolver.version>	<!-- FiniteVolume_x64, smoldyn_x64 -->
+		<solvers-fvsolver.sha256.linux64>21f6d0420ed4c79244f321417b5444d14aa468533df728483167b6f732168369</solvers-fvsolver.sha256.linux64>
+		<solvers-fvsolver.sha256.mac64>342519843bc50ed04903f4042a7a009994924ad0ae0f69a680b2ec331a77b2d2</solvers-fvsolver.sha256.mac64>
+		<solvers-fvsolver.sha256.win64>2cc44950f8fad9857a3dd798caa4478d4769618955eb90786e51e5e485bb54e8</solvers-fvsolver.sha256.win64>
+		<solvers-ode.version>v0.9.5</solvers-ode.version>	<!-- SundialsSolverStandalone_x64 -->
+		<solvers-ode.sha256.linux64>2c4877d3184d282556b3f08a262b2f292e85fadbe68133ef304663875c10927b</solvers-ode.sha256.linux64>
+		<solvers-ode.sha256.mac64>6c9f07fae81609e37f8fe6723c306af1817e2a7084800c3e52fdd51ea985f2d5</solvers-ode.sha256.mac64>
+		<solvers-ode.sha256.win64>bb3b8b8abf25d989f4dca631505d311c19914613fc7771271ecd1eed16aa3d54</solvers-ode.sha256.win64>
+		<solvers-stochastic.version>v1.0.0</solvers-stochastic.version>	<!-- VCellStoch_x64 -->
+		<solvers-stochastic.sha256.linux64>b4867bb8f3abea152639bc8fe05f0aa6eb2a067720613308f480c86eefec4ca3</solvers-stochastic.sha256.linux64>
+		<solvers-stochastic.sha256.mac64>ff2da185d1b6f85bb5bfc670e9c9e6fe820cdb2b6a2d11880f2eb885a4d5a472</solvers-stochastic.sha256.mac64>
+		<solvers-stochastic.sha256.win64>9fbe1c99fe98952f17c6919e5d791f56339ced79ed34004741f6e041b923a2f3</solvers-stochastic.sha256.win64>
+		<solvers-nfsim.version>v0.2.1</solvers-nfsim.version>	<!-- NFsim_x64 -->
+		<solvers-nfsim.sha256.linux64>533141b278e63bf57dff047dd1c2eaacfc8c92515fb648c085f66b0884e85e9d</solvers-nfsim.sha256.linux64>
+		<solvers-nfsim.sha256.mac64>f9f0c82f4ebdbc3af7e9402489ced059a394d344122a420f06fa3ed4fe5b3c29</solvers-nfsim.sha256.mac64>
+		<solvers-nfsim.sha256.win64>3d760305c8a29695a8e562ea5b8ecad2d626d1833d8936ae8d18c0c60040c55f</solvers-nfsim.sha256.win64>
+		<solvers-hy3s.version>v1.0.0</solvers-hy3s.version>	<!-- Hybrid_EM_x64, Hybrid_MIL_x64, Hybrid_MIL_Adaptive_x64 -->
+		<solvers-hy3s.sha256.linux64>b3db1ce5667747543331dad015e068b7750e4127b7e49c28057cfb45afb1d0d3</solvers-hy3s.sha256.linux64>
+		<solvers-hy3s.sha256.mac64>aac4e9167493e247b43da37b6d547870cc427979cc17a4592dc8c7e5674ee015</solvers-hy3s.sha256.mac64>
+		<solvers-hy3s.sha256.win64>63602b4aeb75e746a5a392b40aa5d1c6f3830e54d309aba2646d9928f85533b4</solvers-hy3s.sha256.win64>
+		<solvers-chombo.version>v1.0.0</solvers-chombo.version>	<!-- VCellChombo2D_x64, VCellChombo3D_x64 (no Windows build) -->
+		<solvers-chombo.sha256.linux64>726249539cbd28f93fe6ed8d66778ebacbd630e65965be2b7e948c3c233eae61</solvers-chombo.sha256.linux64>
+		<solvers-chombo.sha256.mac64>68006d82a5452c95cf2628fb8d10014c56ca932d271b543d41b3877153da2856</solvers-chombo.sha256.mac64>
+		<!-- MovingBoundary_x64 still comes from the legacy vcell-solvers mac archive (x86_64 only, mac only)
+		     until virtualcell/vcell-mbsolver publishes a release that meets the solver-release contract.
+		     That archive has no SHA256SUMS; this is the sha256 of the downloaded asset. -->
+		<solvers-legacy-movingboundary.version>v0.0.44-dev4</solvers-legacy-movingboundary.version>
+		<solvers-legacy-movingboundary.sha256.mac64>ec59296b1769172b8db09b4a1d474bd450e05c1d9a77bcfa7329943523d18f99</solvers-legacy-movingboundary.sha256.mac64>
+		<!-- Langevin (SpringSaLaD) comes from cam-center/LangevinNoVis01, fetched by vcell-core's OS profiles. -->
 		<solvers-langevin-mac.version>1.4.15</solvers-langevin-mac.version>
 		<solvers-langevin-windows.version>1.4.15</solvers-langevin-windows.version>
 		<solvers-langevin-linux.version>1.4.15</solvers-langevin-linux.version>

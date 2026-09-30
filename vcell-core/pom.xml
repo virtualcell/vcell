@@ -74,6 +74,9 @@
 	<properties>
 		<license.licenseName>MIT</license.licenseName>
 		<license.copyrightOwners>UConn Health</license.copyrightOwners>
+		<!-- Archive-root files every solver release carries under the same name (LICENSE, VERSION, ...):
+		     unpacked to localsolvers/<os>/licenses/<repo>/ so they don't overwrite each other. -->
+		<solvers.licenseFiles>^(?:\./)?(?=LICENSE|VERSION|COPYING|THIRD-PARTY-LICENSES)</solvers.licenseFiles>
 	</properties>
 
 	<dependencies>
@@ -682,6 +685,343 @@
 
     </dependencies>
 	
+	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<!-- If you get ClassNotFoundException, remove {HomeDir}/.m2/repository/.cache/download-maven-plugin and rebuild -->
+					<groupId>com.googlecode.maven-download-plugin</groupId>
+					<artifactId>download-maven-plugin</artifactId>
+					<version>1.13.0</version>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+		<plugins>
+			<!-- Native solvers for every platform, on every build OS: one execution per solver repo and
+			     platform, each pinned to a release tag and checked against its sha256 (both in the root
+			     pom.xml). Archives unpack flat into localsolvers/<os>/, where ResourceUtil looks for
+			     <exe>_x64[.exe].
+			     Order matters where two archives bundle the same runtime library: a later execution
+			     overwrites an earlier one's copy. vcell-chombo goes first because its mac gcc runtime dylibs
+			     (libgfortran, libquadmath, libgcc_s) name each other through @rpath, and vcell-hy3s's copies
+			     of the same libraries - which win - use @loader_path, which works for every executable in
+			     the directory. The Linux duplicates (libgfortran, libquadmath, libz) are the same library
+			     versions either way.
+			     Langevin is fetched separately, in the OS profiles below. -->
+			<plugin>
+				<groupId>com.googlecode.maven-download-plugin</groupId>
+				<artifactId>download-maven-plugin</artifactId>
+				<executions>
+				<execution>
+					<id>solver-chombo-linux64</id>
+					<phase>generate-test-resources</phase>
+					<goals><goal>wget</goal></goals>
+					<configuration>
+						<url>https://github.com/virtualcell/vcell-chombo/releases/download/${solvers-chombo.version}/linux64.tgz</url>
+						<sha256>${solvers-chombo.sha256.linux64}</sha256>
+						<unpack>true</unpack>
+						<outputDirectory>${project.basedir}/../localsolvers/linux64</outputDirectory>
+						<fileMappers>
+							<org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
+								<pattern>${solvers.licenseFiles}</pattern>
+								<replacement>licenses/vcell-chombo/</replacement>
+							</org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
+						</fileMappers>
+					</configuration>
+				</execution>
+				<execution>
+					<id>solver-chombo-mac64</id>
+					<phase>generate-test-resources</phase>
+					<goals><goal>wget</goal></goals>
+					<configuration>
+						<url>https://github.com/virtualcell/vcell-chombo/releases/download/${solvers-chombo.version}/mac64.tgz</url>
+						<sha256>${solvers-chombo.sha256.mac64}</sha256>
+						<unpack>true</unpack>
+						<outputDirectory>${project.basedir}/../localsolvers/mac64</outputDirectory>
+						<fileMappers>
+							<org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
+								<pattern>${solvers.licenseFiles}</pattern>
+								<replacement>licenses/vcell-chombo/</replacement>
+							</org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
+						</fileMappers>
+					</configuration>
+				</execution>
+				<execution>
+					<id>solver-fvsolver-linux64</id>
+					<phase>generate-test-resources</phase>
+					<goals><goal>wget</goal></goals>
+					<configuration>
+						<url>https://github.com/virtualcell/vcell-fvsolver/releases/download/${solvers-fvsolver.version}/linux64.tgz</url>
+						<sha256>${solvers-fvsolver.sha256.linux64}</sha256>
+						<unpack>true</unpack>
+						<outputDirectory>${project.basedir}/../localsolvers/linux64</outputDirectory>
+						<fileMappers>
+							<org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
+								<pattern>${solvers.licenseFiles}</pattern>
+								<replacement>licenses/vcell-fvsolver/</replacement>
+							</org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
+						</fileMappers>
+					</configuration>
+				</execution>
+				<execution>
+					<id>solver-fvsolver-mac64</id>
+					<phase>generate-test-resources</phase>
+					<goals><goal>wget</goal></goals>
+					<configuration>
+						<url>https://github.com/virtualcell/vcell-fvsolver/releases/download/${solvers-fvsolver.version}/mac64.tgz</url>
+						<sha256>${solvers-fvsolver.sha256.mac64}</sha256>
+						<unpack>true</unpack>
+						<outputDirectory>${project.basedir}/../localsolvers/mac64</outputDirectory>
+						<fileMappers>
+							<org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
+								<pattern>${solvers.licenseFiles}</pattern>
+								<replacement>licenses/vcell-fvsolver/</replacement>
+							</org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
+						</fileMappers>
+					</configuration>
+				</execution>
+				<execution>
+					<id>solver-fvsolver-win64</id>
+					<phase>generate-test-resources</phase>
+					<goals><goal>wget</goal></goals>
+					<configuration>
+						<url>https://github.com/virtualcell/vcell-fvsolver/releases/download/${solvers-fvsolver.version}/win64.zip</url>
+						<sha256>${solvers-fvsolver.sha256.win64}</sha256>
+						<unpack>true</unpack>
+						<outputDirectory>${project.basedir}/../localsolvers/win64</outputDirectory>
+						<fileMappers>
+							<org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
+								<pattern>${solvers.licenseFiles}</pattern>
+								<replacement>licenses/vcell-fvsolver/</replacement>
+							</org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
+						</fileMappers>
+					</configuration>
+				</execution>
+				<execution>
+					<id>solver-ode-linux64</id>
+					<phase>generate-test-resources</phase>
+					<goals><goal>wget</goal></goals>
+					<configuration>
+						<url>https://github.com/virtualcell/vcell-ode/releases/download/${solvers-ode.version}/linux64.tgz</url>
+						<sha256>${solvers-ode.sha256.linux64}</sha256>
+						<unpack>true</unpack>
+						<outputDirectory>${project.basedir}/../localsolvers/linux64</outputDirectory>
+						<fileMappers>
+							<org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
+								<pattern>${solvers.licenseFiles}</pattern>
+								<replacement>licenses/vcell-ode/</replacement>
+							</org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
+						</fileMappers>
+					</configuration>
+				</execution>
+				<execution>
+					<id>solver-ode-mac64</id>
+					<phase>generate-test-resources</phase>
+					<goals><goal>wget</goal></goals>
+					<configuration>
+						<url>https://github.com/virtualcell/vcell-ode/releases/download/${solvers-ode.version}/mac64.tgz</url>
+						<sha256>${solvers-ode.sha256.mac64}</sha256>
+						<unpack>true</unpack>
+						<outputDirectory>${project.basedir}/../localsolvers/mac64</outputDirectory>
+						<fileMappers>
+							<org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
+								<pattern>${solvers.licenseFiles}</pattern>
+								<replacement>licenses/vcell-ode/</replacement>
+							</org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
+						</fileMappers>
+					</configuration>
+				</execution>
+				<execution>
+					<id>solver-ode-win64</id>
+					<phase>generate-test-resources</phase>
+					<goals><goal>wget</goal></goals>
+					<configuration>
+						<url>https://github.com/virtualcell/vcell-ode/releases/download/${solvers-ode.version}/win64.zip</url>
+						<sha256>${solvers-ode.sha256.win64}</sha256>
+						<unpack>true</unpack>
+						<outputDirectory>${project.basedir}/../localsolvers/win64</outputDirectory>
+						<fileMappers>
+							<org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
+								<pattern>${solvers.licenseFiles}</pattern>
+								<replacement>licenses/vcell-ode/</replacement>
+							</org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
+						</fileMappers>
+					</configuration>
+				</execution>
+				<execution>
+					<id>solver-stochastic-linux64</id>
+					<phase>generate-test-resources</phase>
+					<goals><goal>wget</goal></goals>
+					<configuration>
+						<url>https://github.com/virtualcell/vcell-stochastic/releases/download/${solvers-stochastic.version}/linux64.tgz</url>
+						<sha256>${solvers-stochastic.sha256.linux64}</sha256>
+						<unpack>true</unpack>
+						<outputDirectory>${project.basedir}/../localsolvers/linux64</outputDirectory>
+						<fileMappers>
+							<org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
+								<pattern>${solvers.licenseFiles}</pattern>
+								<replacement>licenses/vcell-stochastic/</replacement>
+							</org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
+						</fileMappers>
+					</configuration>
+				</execution>
+				<execution>
+					<id>solver-stochastic-mac64</id>
+					<phase>generate-test-resources</phase>
+					<goals><goal>wget</goal></goals>
+					<configuration>
+						<url>https://github.com/virtualcell/vcell-stochastic/releases/download/${solvers-stochastic.version}/mac64.tgz</url>
+						<sha256>${solvers-stochastic.sha256.mac64}</sha256>
+						<unpack>true</unpack>
+						<outputDirectory>${project.basedir}/../localsolvers/mac64</outputDirectory>
+						<fileMappers>
+							<org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
+								<pattern>${solvers.licenseFiles}</pattern>
+								<replacement>licenses/vcell-stochastic/</replacement>
+							</org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
+						</fileMappers>
+					</configuration>
+				</execution>
+				<execution>
+					<id>solver-stochastic-win64</id>
+					<phase>generate-test-resources</phase>
+					<goals><goal>wget</goal></goals>
+					<configuration>
+						<url>https://github.com/virtualcell/vcell-stochastic/releases/download/${solvers-stochastic.version}/win64.zip</url>
+						<sha256>${solvers-stochastic.sha256.win64}</sha256>
+						<unpack>true</unpack>
+						<outputDirectory>${project.basedir}/../localsolvers/win64</outputDirectory>
+						<fileMappers>
+							<org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
+								<pattern>${solvers.licenseFiles}</pattern>
+								<replacement>licenses/vcell-stochastic/</replacement>
+							</org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
+						</fileMappers>
+					</configuration>
+				</execution>
+				<execution>
+					<id>solver-nfsim-linux64</id>
+					<phase>generate-test-resources</phase>
+					<goals><goal>wget</goal></goals>
+					<configuration>
+						<url>https://github.com/virtualcell/vcell-nfsim/releases/download/${solvers-nfsim.version}/linux64.tgz</url>
+						<sha256>${solvers-nfsim.sha256.linux64}</sha256>
+						<unpack>true</unpack>
+						<outputDirectory>${project.basedir}/../localsolvers/linux64</outputDirectory>
+						<fileMappers>
+							<org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
+								<pattern>${solvers.licenseFiles}</pattern>
+								<replacement>licenses/vcell-nfsim/</replacement>
+							</org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
+						</fileMappers>
+					</configuration>
+				</execution>
+				<execution>
+					<id>solver-nfsim-mac64</id>
+					<phase>generate-test-resources</phase>
+					<goals><goal>wget</goal></goals>
+					<configuration>
+						<url>https://github.com/virtualcell/vcell-nfsim/releases/download/${solvers-nfsim.version}/mac64.tgz</url>
+						<sha256>${solvers-nfsim.sha256.mac64}</sha256>
+						<unpack>true</unpack>
+						<outputDirectory>${project.basedir}/../localsolvers/mac64</outputDirectory>
+						<fileMappers>
+							<org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
+								<pattern>${solvers.licenseFiles}</pattern>
+								<replacement>licenses/vcell-nfsim/</replacement>
+							</org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
+						</fileMappers>
+					</configuration>
+				</execution>
+				<execution>
+					<id>solver-nfsim-win64</id>
+					<phase>generate-test-resources</phase>
+					<goals><goal>wget</goal></goals>
+					<configuration>
+						<url>https://github.com/virtualcell/vcell-nfsim/releases/download/${solvers-nfsim.version}/win64.zip</url>
+						<sha256>${solvers-nfsim.sha256.win64}</sha256>
+						<unpack>true</unpack>
+						<outputDirectory>${project.basedir}/../localsolvers/win64</outputDirectory>
+						<fileMappers>
+							<org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
+								<pattern>${solvers.licenseFiles}</pattern>
+								<replacement>licenses/vcell-nfsim/</replacement>
+							</org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
+						</fileMappers>
+					</configuration>
+				</execution>
+				<execution>
+					<id>solver-hy3s-linux64</id>
+					<phase>generate-test-resources</phase>
+					<goals><goal>wget</goal></goals>
+					<configuration>
+						<url>https://github.com/virtualcell/vcell-hy3s/releases/download/${solvers-hy3s.version}/linux64.tgz</url>
+						<sha256>${solvers-hy3s.sha256.linux64}</sha256>
+						<unpack>true</unpack>
+						<outputDirectory>${project.basedir}/../localsolvers/linux64</outputDirectory>
+						<fileMappers>
+							<org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
+								<pattern>${solvers.licenseFiles}</pattern>
+								<replacement>licenses/vcell-hy3s/</replacement>
+							</org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
+						</fileMappers>
+					</configuration>
+				</execution>
+				<execution>
+					<id>solver-hy3s-mac64</id>
+					<phase>generate-test-resources</phase>
+					<goals><goal>wget</goal></goals>
+					<configuration>
+						<url>https://github.com/virtualcell/vcell-hy3s/releases/download/${solvers-hy3s.version}/mac64.tgz</url>
+						<sha256>${solvers-hy3s.sha256.mac64}</sha256>
+						<unpack>true</unpack>
+						<outputDirectory>${project.basedir}/../localsolvers/mac64</outputDirectory>
+						<fileMappers>
+							<org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
+								<pattern>${solvers.licenseFiles}</pattern>
+								<replacement>licenses/vcell-hy3s/</replacement>
+							</org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
+						</fileMappers>
+					</configuration>
+				</execution>
+				<execution>
+					<id>solver-hy3s-win64</id>
+					<phase>generate-test-resources</phase>
+					<goals><goal>wget</goal></goals>
+					<configuration>
+						<url>https://github.com/virtualcell/vcell-hy3s/releases/download/${solvers-hy3s.version}/win64.zip</url>
+						<sha256>${solvers-hy3s.sha256.win64}</sha256>
+						<unpack>true</unpack>
+						<outputDirectory>${project.basedir}/../localsolvers/win64</outputDirectory>
+						<fileMappers>
+							<org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
+								<pattern>${solvers.licenseFiles}</pattern>
+								<replacement>licenses/vcell-hy3s/</replacement>
+							</org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
+						</fileMappers>
+					</configuration>
+				</execution>
+				<!-- Legacy source, until vcell-mbsolver is released: only MovingBoundary_x64 (x86_64, runs under
+				     Rosetta on Apple silicon) from the vcell-solvers mac archive. It loads @executable_path/libsz.2.dylib,
+				     which vcell-fvsolver's mac64 archive supplies (compatibility 3.0 >= the 2.0 it needs); libz and libc++
+				     come from macOS. There is no Linux or Windows MovingBoundary, as before. -->
+				<execution>
+					<id>solver-legacy-movingboundary-mac64</id>
+					<phase>generate-test-resources</phase>
+					<goals><goal>wget</goal></goals>
+					<configuration>
+						<url>https://github.com/virtualcell/vcell-solvers/releases/download/${solvers-legacy-movingboundary.version}/mac64.tgz</url>
+						<sha256>${solvers-legacy-movingboundary.sha256.mac64}</sha256>
+						<unpack>true</unpack>
+						<outputDirectory>${project.basedir}/../localsolvers/mac64</outputDirectory>
+						<includes><include>**/MovingBoundary_x64</include></includes>
+					</configuration>
+				</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
 	<profiles>
 		<profile>
 			<id>winprofile</id>
@@ -693,24 +1033,9 @@
 				<build>
 					<plugins>
 						<plugin>
-<!-- If you get ClassNotFoundException, remove directory {HomeDir}\.m2\repository\.cache\download-maven-plugin and rebuild -->
 							<groupId>com.googlecode.maven-download-plugin</groupId>
 							<artifactId>download-maven-plugin</artifactId>
-							<version>1.3.0</version>
 							<executions>
-								<execution>
-									<id>install-solvers-win64</id>
-									<phase>generate-test-resources</phase>
-									<goals>
-										<goal>wget</goal>
-									</goals>
-									<!-- This will download resource to {HomeDir}\.m2\repository\.cache\download-maven-plugin then extract to <outputDirectory>-->
-									<configuration>
-										<url>https://github.com/virtualcell/vcell-solvers/releases/download/${solvers-vcell-windows.version}/win64.zip</url>
-										<unpack>true</unpack>
-										<outputDirectory>${project.build.directory}/../../localsolvers/win64</outputDirectory>
-									</configuration>
-								</execution>
 								<execution>
 									<id>install-langevin-win64</id>
 									<phase>generate-test-resources</phase>
@@ -741,53 +1066,7 @@
 						<plugin>
 							<groupId>com.googlecode.maven-download-plugin</groupId>
 							<artifactId>download-maven-plugin</artifactId>
-							<version>1.3.0</version>
 							<executions>
-								<execution>
-									<id>install-solvers-linux64</id>
-									<phase>generate-test-resources</phase>
-									<goals>
-										<goal>wget</goal>
-									</goals>
-									<configuration>
-										<url>https://github.com/virtualcell/vcell-solvers/releases/download/${solvers-vcell-linux.version}/linux64.tgz</url>
-										<!-- Unpacked by the plugin, as mac64 and win64 already are. It used to be extracted
-										     afterwards by shelling out to `tar xzfh`, which BSD tar (that is, every macOS
-										     machine) rejects: "tar: Option -L is not permitted in mode -x". The build printed
-										     an [ERROR] and carried on green, leaving the linux solvers unextracted locally.
-										     Ant's <untar> is not the alternative: it does not restore unix permissions, and
-										     nothing chmods these binaries - they rely on the archive's own modes, which this
-										     plugin preserves. mac64 is the proof: unpacked the same way, no chmod task, and
-										     localsolvers/mac64/FiniteVolume_x64 comes out executable. -->
-										<unpack>true</unpack>
-										<outputDirectory>${project.build.directory}/../../localsolvers/linux64</outputDirectory>
-									</configuration>
-								</execution>
-								<execution>
-									<id>install-solvers-win64</id>
-									<phase>generate-test-resources</phase>
-									<goals>
-										<goal>wget</goal>
-									</goals>
-									<configuration>
-										<url>https://github.com/virtualcell/vcell-solvers/releases/download/${solvers-vcell-windows.version}/win64.zip</url>
-										<unpack>true</unpack>
-										<outputDirectory>${project.build.directory}/../../localsolvers/win64</outputDirectory>
-										<skipCache>true</skipCache>
-									</configuration>
-								</execution>
-								<execution>
-									<id>install-solvers-mac64</id>
-									<phase>generate-test-resources</phase>
-									<goals>
-										<goal>wget</goal>
-									</goals>
-									<configuration>
-										<url>https://github.com/virtualcell/vcell-solvers/releases/download/${solvers-vcell-mac.version}/mac64.tgz</url>
-										<unpack>true</unpack>
-										<outputDirectory>${project.build.directory}/../../localsolvers/mac64</outputDirectory>
-									</configuration>
-								</execution>
 								<execution>
 									<id>install-langevin-win64</id>
 									<phase>generate-test-resources</phase>
@@ -872,53 +1151,7 @@
 						<plugin>
 							<groupId>com.googlecode.maven-download-plugin</groupId>
 							<artifactId>download-maven-plugin</artifactId>
-							<version>1.3.0</version>
 							<executions>
-								<execution>
-									<id>install-solvers-linux64</id>
-									<phase>generate-test-resources</phase>
-									<goals>
-										<goal>wget</goal>
-									</goals>
-									<configuration>
-										<url>https://github.com/virtualcell/vcell-solvers/releases/download/${solvers-vcell-linux.version}/linux64.tgz</url>
-										<!-- Unpacked by the plugin, as mac64 and win64 already are. It used to be extracted
-										     afterwards by shelling out to `tar xzfh`, which BSD tar (that is, every macOS
-										     machine) rejects: "tar: Option -L is not permitted in mode -x". The build printed
-										     an [ERROR] and carried on green, leaving the linux solvers unextracted locally.
-										     Ant's <untar> is not the alternative: it does not restore unix permissions, and
-										     nothing chmods these binaries - they rely on the archive's own modes, which this
-										     plugin preserves. mac64 is the proof: unpacked the same way, no chmod task, and
-										     localsolvers/mac64/FiniteVolume_x64 comes out executable. -->
-										<unpack>true</unpack>
-										<outputDirectory>${project.build.directory}/../../localsolvers/linux64</outputDirectory>
-									</configuration>
-								</execution>
-								<execution>
-									<id>install-solvers-win64</id>
-									<phase>generate-test-resources</phase>
-									<goals>
-										<goal>wget</goal>
-									</goals>
-									<configuration>
-										<url>https://github.com/virtualcell/vcell-solvers/releases/download/${solvers-vcell-windows.version}/win64.zip</url>
-										<unpack>true</unpack>
-										<outputDirectory>${project.build.directory}/../../localsolvers/win64</outputDirectory>
-										<skipCache>true</skipCache>
-									</configuration>
-								</execution>
-			 					<execution>
-									<id>install-solvers-mac64</id>
-									<phase>generate-test-resources</phase>
-									<goals>
-										<goal>wget</goal>
-									</goals>
-									<configuration>
-										<url>https://github.com/virtualcell/vcell-solvers/releases/download/${solvers-vcell-mac.version}/mac64.tgz</url>
-										<unpack>true</unpack>
-										<outputDirectory>${project.build.directory}/../../localsolvers/mac64</outputDirectory>
-									</configuration>
-								</execution>
 								<execution>
 									<id>install-langevin-win64</id>
 									<phase>generate-test-resources</phase>
