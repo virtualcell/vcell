@@ -27,12 +27,17 @@
         <entry>*.so</entry>
         <entry>*.jnilib</entry>
         <entry>FiniteVolume_x64</entry>
-        <entry>VCellStoch_x64</entry>
-        <entry>testzip</entry>
-        <entry>ziptool</entry>
         <entry>smoldyn_x64</entry>
         <entry>SundialsSolverStandalone_x64</entry>
+        <entry>VCellStoch_x64</entry>
         <entry>NFsim_x64</entry>
+        <entry>Hybrid_EM_x64</entry>
+        <entry>Hybrid_MIL_x64</entry>
+        <entry>Hybrid_MIL_Adaptive_x64</entry>
+        <entry>VCellChombo2D_x64</entry>
+        <entry>VCellChombo3D_x64</entry>
+        <entry>MovingBoundary_x64</entry>
+        <entry>langevin_x64</entry>
       </macAdditionalBinaries>
     </codeSigning>
     <jreBundles jdkProviderId="JBR" release="17/17.0.7-b1000.6" />
