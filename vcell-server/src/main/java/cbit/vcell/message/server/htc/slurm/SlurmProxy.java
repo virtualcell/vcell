@@ -793,6 +793,7 @@ public class SlurmProxy extends HtcProxy {
 		lsb.write("container_env+=\"--env htclogdir_external=" + htclogDir + " \"");
 		lsb.write("container_env+=\"--env softwareVersion=" + softwareVersion + " \"");
 		lsb.write("container_env+=\"--env serverid=" + serverId + " \"");
+		lsb.write("container_env+=\"--env TMPDIR=/solvertmp \"");
 		lsb.write("");
 	}
 	private void writeBatchContainerImageAndPrefixes(LineStringBuilder lsb) {
@@ -939,26 +940,10 @@ public class SlurmProxy extends HtcProxy {
 		String simDataDirArchiveInternal = PropertyLoader.getRequiredProperty(PropertyLoader.simDataDirArchiveInternal);
 
 		String solverName = simTask.getSimulation().getSolverTaskDescription().getSolverDescription().name();
-		List<String> vcellfvsolver_solverList = List.of(PropertyLoader.getRequiredProperty(PropertyLoader.htc_vcellfvsolver_solver_list).split(","));
-		List<String> vcellsolvers_solverList = List.of(PropertyLoader.getRequiredProperty(PropertyLoader.htc_vcellsolvers_solver_list).split(","));
-		List<String> vcellbatch_solverList = List.of(PropertyLoader.getRequiredProperty(PropertyLoader.htc_vcellbatch_solver_list).split(","));
-		// optional: a site that does not run FEniCSx (docs/plan-fenics.md) need not configure it
-		String vcellfenics_solverListProperty = PropertyLoader.getProperty(PropertyLoader.htc_vcellfenics_solver_list, "");
-		List<String> vcellfenics_solverList = vcellfenics_solverListProperty.isBlank() ? List.of() : List.of(vcellfenics_solverListProperty.split(","));
-
-		final String solverApptainerImage;
+		// the image comes from the first solver family (SolverImageFamily.FAMILIES, in order) whose list names the solver;
+		// a family with no image or an empty list is skipped. The batch image is always needed (pre/post-processing).
 		final String batchApptainerImage = PropertyLoader.getRequiredProperty(PropertyLoader.htc_vcellbatch_apptainer_image);
-		if (vcellfenics_solverList.contains(solverName)) {
-			solverApptainerImage = PropertyLoader.getRequiredProperty(PropertyLoader.htc_vcellfenics_apptainer_image);
-		} else if (vcellfvsolver_solverList.contains(solverName)) {
-			solverApptainerImage = PropertyLoader.getRequiredProperty(PropertyLoader.htc_vcellfvsolver_apptainer_image);
-		} else if (vcellsolvers_solverList.contains(solverName)) {
-			solverApptainerImage = PropertyLoader.getRequiredProperty(PropertyLoader.htc_vcellsolvers_apptainer_image);
-		} else if (vcellbatch_solverList.contains(solverName)) {
-			solverApptainerImage = batchApptainerImage;
-		} else {
-			throw new RuntimeException("solverName="+solverName+" not in vcellfvsolver_solverList="+vcellfvsolver_solverList+" or vcellsolvers_solverList="+vcellsolvers_solverList+" or vcellbatch_solverList="+vcellbatch_solverList+" or vcellfenics_solverList="+vcellfenics_solverList);
-		}
+		final String solverApptainerImage = SolverImageFamily.resolveImage(solverName);
 		final String sifImageDir = PropertyLoader.getRequiredProperty(PropertyLoader.htc_singularity_imagedir);
 
 		String[] environmentVars = new String[] {
@@ -976,7 +961,9 @@ public class SlurmProxy extends HtcProxy {
 				"secondary_datadir_external="+secondaryDataDirExternal,
 				"htclogdir_external="+htclogdir_external,
 				"softwareVersion="+softwareVersion,
-				"serverid="+serverid
+				"serverid="+serverid,
+				// solvers write temporary files to the Slurm tmp dir bound at /solvertmp, not to the small /tmp of --containall
+				"TMPDIR=/solvertmp"
 		};
 
 		List<SingularityBinding> bindings = List.of(

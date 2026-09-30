@@ -2,9 +2,9 @@
 #SBATCH --partition=vcell
 #SBATCH --reservation=
 #SBATCH --qos=vcell
-#SBATCH -J V_REL_274633859_0_0
-#SBATCH -o /share/apps/vcell3/htclogs/V_REL_274633859_0_0.slurm.log
-#SBATCH -e /share/apps/vcell3/htclogs/V_REL_274633859_0_0.slurm.log
+#SBATCH -J V_REL_274641698_0_0
+#SBATCH -o /share/apps/vcell3/htclogs/V_REL_274641698_0_0.slurm.log
+#SBATCH -e /share/apps/vcell3/htclogs/V_REL_274641698_0_0.slurm.log
 #SBATCH --mem=4096M
 #SBATCH --no-kill
 #SBATCH --no-requeue
@@ -45,7 +45,7 @@ container_env+="--env htclogdir_external=/share/apps/vcell3/htclogs "
 container_env+="--env softwareVersion=Rel_Version_7.6.0_build_28 "
 container_env+="--env serverid=REL "
 container_env+="--env TMPDIR=/solvertmp "
-solver_sif=/share/apps/vcell3/singularityImages/ghcr.io_virtualcell_vcell-batch_singularity_7.6.0.43.img
+solver_sif=/share/apps/vcell3/singularityImages/ghcr.io_virtualcell_vcell-hy3s_singularity_1.0.0.img
 if [ ! -f "$solver_sif" ]; then
     echo "ERROR: missing SIF $solver_sif" >&2
     exit 1
@@ -60,7 +60,7 @@ batch_container_prefix="singularity run --containall ${container_bindings} ${con
 
 
 sendFailureMsg() {
-  ${batch_container_prefix}  --msg-userid clientUser --msg-password dummy --msg-host rke-wn-01.cam.uchc.edu --msg-port 31618 --msg-job-host `hostname` --msg-job-userid schaff --msg-job-simkey 274633859 --msg-job-jobindex 0 --msg-job-taskid 0 --msg-job-errmsg "$1" SendErrorMsg
+  ${batch_container_prefix}  --msg-userid clientUser --msg-password dummy --msg-host rke-wn-01.cam.uchc.edu --msg-port 31618 --msg-job-host `hostname` --msg-job-userid schaff --msg-job-simkey 274641698 --msg-job-jobindex 0 --msg-job-taskid 0 --msg-job-errmsg "$1" SendErrorMsg
   stat=$?
   if [[ $stat -ne 0 ]]; then
     echo 'failed to send error message, retcode=$stat'
@@ -71,11 +71,20 @@ sendFailureMsg() {
 
 
 callExitProcessor( ) {
-	${batch_container_prefix} JavaPostprocessor64 274633859 schaff 17 0 0 $1 /htclogs/V_REL_274633859_0_0.slurm.sub
+	${batch_container_prefix} JavaPostprocessor64 274641698 schaff 17 0 0 $1 /htclogs/V_REL_274641698_0_0.slurm.sub
 }
 
 
-${solver_container_prefix} JavaSimExe64 /simdata/schaff/SimID_274633859_0__0.simtask.xml /simdata/schaff
+${batch_container_prefix} JavaPreprocessor64 /simdata/schaff/SimID_274641698_0__0.simtask.xml /simdata/schaff
+stat=$?
+echo returned $stat
+if [ $stat -ne 0 ]; then
+	callExitProcessor $stat
+	echo returning $stat to Slurm
+	exit $stat
+fi
+
+${solver_container_prefix} Hybrid_EM_x64 /simdata/schaff/SimID_274641698_0_.nc 100.0 10.0 0.01 0.1 -OV -tid 0
 stat=$?
 echo returned $stat
 if [ $stat -ne 0 ]; then

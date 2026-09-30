@@ -101,6 +101,7 @@ container_env+="--env secondary_datadir_external=/share/apps/vcell7/users "
 container_env+="--env htclogdir_external=/share/apps/vcell3/htclogs "
 container_env+="--env softwareVersion=Rel_Version_8.0.5_build_01 "
 container_env+="--env serverid=TEST2 "
+container_env+="--env TMPDIR=/solvertmp "
 
 # Full solver command
 solver_sif=/share/apps/vcell3/singularityImages/ghcr.io_virtualcell_vcell-batch_singularity_8.0.5.01.img

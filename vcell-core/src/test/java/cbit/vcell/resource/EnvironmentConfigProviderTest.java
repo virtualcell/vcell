@@ -347,6 +347,29 @@ public class EnvironmentConfigProviderTest {
 				"should name the list that needs editing: " + e.getMessage());
 	}
 
+	/**
+	 * The per-repo solver image families SlurmProxy chooses from (docs/plan-solver-repos.md, PR B1)
+	 * are configured in the deployment as VCELL_HTC_VCELL&lt;FAMILY&gt;_APPTAINER_IMAGE / _SOLVER_LIST.
+	 */
+	@Test
+	public void solverImageFamiliesResolveFromTheirUpperSnakeNames() {
+		Map<String, String[]> families = Map.of(
+				"ODE", new String[] { PropertyLoader.htc_vcellode_apptainer_image, PropertyLoader.htc_vcellode_solver_list },
+				"STOCHASTIC", new String[] { PropertyLoader.htc_vcellstochastic_apptainer_image, PropertyLoader.htc_vcellstochastic_solver_list },
+				"NFSIM", new String[] { PropertyLoader.htc_vcellnfsim_apptainer_image, PropertyLoader.htc_vcellnfsim_solver_list },
+				"MBSOLVER", new String[] { PropertyLoader.htc_vcellmbsolver_apptainer_image, PropertyLoader.htc_vcellmbsolver_solver_list },
+				"HY3S", new String[] { PropertyLoader.htc_vcellhy3s_apptainer_image, PropertyLoader.htc_vcellhy3s_solver_list },
+				"CHOMBO", new String[] { PropertyLoader.htc_vcellchombo_apptainer_image, PropertyLoader.htc_vcellchombo_solver_list },
+				"FENICS", new String[] { PropertyLoader.htc_vcellfenics_apptainer_image, PropertyLoader.htc_vcellfenics_solver_list });
+		for (Map.Entry<String, String[]> family : families.entrySet()) {
+			String imageEnv = "VCELL_HTC_VCELL" + family.getKey() + "_APPTAINER_IMAGE";
+			String listEnv = "VCELL_HTC_VCELL" + family.getKey() + "_SOLVER_LIST";
+			EnvironmentConfigProvider p = readingEnvironment(Map.of(imageEnv, "oras://image", listEnv, "A,B"));
+			assertEquals("oras://image", p.getConfigValue(family.getValue()[0]), imageEnv);
+			assertEquals("A,B", p.getConfigValue(family.getValue()[1]), listEnv);
+		}
+	}
+
 	// ------------------------------------------- no legacy fallback
 
 	/** A provider reading a fixed environment, so resolution can be tested deterministically. */
