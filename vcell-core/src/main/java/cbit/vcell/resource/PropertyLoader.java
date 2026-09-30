@@ -110,6 +110,22 @@ public class PropertyLoader {
 	/** FEniCSx solver image (docs/plan-fenics.md): oras://ghcr.io/virtualcell/vcell-fenics_singularity:<tag>; optional, like its solver list */
 	public static final String htc_vcellfenics_apptainer_image = 	record("vcell.htc.vcellfenics.apptainer.image",ValueType.GEN);
 	public static final String htc_vcellfenics_solver_list = 	record("vcell.htc.vcellfenics.solver.list",ValueType.GEN);
+	/*
+	 * Per-repo solver images (docs/plan-solver-repos.md, PR B1), each optional like fenics: a family whose image
+	 * is unset or whose list is empty is skipped. SlurmProxy searches them in the order of SolverImageFamily.FAMILIES.
+	 */
+	public static final String htc_vcellode_apptainer_image = 	record("vcell.htc.vcellode.apptainer.image",ValueType.GEN);
+	public static final String htc_vcellode_solver_list = 	record("vcell.htc.vcellode.solver.list",ValueType.GEN);
+	public static final String htc_vcellstochastic_apptainer_image = 	record("vcell.htc.vcellstochastic.apptainer.image",ValueType.GEN);
+	public static final String htc_vcellstochastic_solver_list = 	record("vcell.htc.vcellstochastic.solver.list",ValueType.GEN);
+	public static final String htc_vcellnfsim_apptainer_image = 	record("vcell.htc.vcellnfsim.apptainer.image",ValueType.GEN);
+	public static final String htc_vcellnfsim_solver_list = 	record("vcell.htc.vcellnfsim.solver.list",ValueType.GEN);
+	public static final String htc_vcellmbsolver_apptainer_image = 	record("vcell.htc.vcellmbsolver.apptainer.image",ValueType.GEN);
+	public static final String htc_vcellmbsolver_solver_list = 	record("vcell.htc.vcellmbsolver.solver.list",ValueType.GEN);
+	public static final String htc_vcellhy3s_apptainer_image = 	record("vcell.htc.vcellhy3s.apptainer.image",ValueType.GEN);
+	public static final String htc_vcellhy3s_solver_list = 	record("vcell.htc.vcellhy3s.solver.list",ValueType.GEN);
+	public static final String htc_vcellchombo_apptainer_image = 	record("vcell.htc.vcellchombo.apptainer.image",ValueType.GEN);
+	public static final String htc_vcellchombo_solver_list = 	record("vcell.htc.vcellchombo.solver.list",ValueType.GEN);
 	public static final String htc_singularity_imagedir = 		record("vcell.htc.singularity.imagedir",ValueType.GEN);
 
 	public static final String slurm_cmd_sbatch				= record("vcell.slurm.cmd.sbatch",ValueType.GEN);

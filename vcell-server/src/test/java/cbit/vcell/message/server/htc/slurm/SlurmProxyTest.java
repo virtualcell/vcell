@@ -106,11 +106,16 @@ public class SlurmProxyTest {
 	}
 
 	public String createScriptForNativeSolvers(String simTaskResourcePath, String[] command, String JOB_NAME) throws IOException, XmlParseException, ExpressionException {
+		return createScriptForNativeSolversFromXml(readTextFileFromResource(simTaskResourcePath), command, JOB_NAME);
+	}
+
+	/** Like {@link #createScriptForNativeSolvers}, from a simtask's XML text (so a test can swap the solver in a fixture). */
+	public String createScriptForNativeSolversFromXml(String simTaskXml, String[] command, String JOB_NAME) throws IOException, XmlParseException, ExpressionException {
 
 		String os = System.getProperty("os.name").toLowerCase();
 		boolean isWindows = os.startsWith("windows");
 
-		SimulationTask simTask = XmlHelper.XMLToSimTask(readTextFileFromResource(simTaskResourcePath));
+		SimulationTask simTask = XmlHelper.XMLToSimTask(simTaskXml);
 		KeyValue simKey = simTask.getSimKey();
 
 		SlurmProxy slurmProxy = new SlurmProxy(null, "vcell");
@@ -444,6 +449,138 @@ public class SlurmProxyTest {
 		String slurmScript = createScriptForJavaSolvers(simTaskResourcePath, JOB_NAME);
 		String expectedSlurmScript = readTextFileFromResource("slurm_fixtures/adams_moulton/V_REL_274633859_0_0.slurm.sub");
 		Assertions.assertEquals(expectedSlurmScript.trim(), slurmScript.trim());
+	}
+
+	// ---- solver image families (docs/plan-solver-repos.md, PR B1) ----
+
+	/** A fixture's simtask XML with its solver swapped for another (by the solver's database name, as the XML stores it). */
+	private String simTaskXmlWithSolver(String simTaskResourcePath, SolverDescription from, SolverDescription to) throws IOException {
+		String xml = readTextFileFromResource(simTaskResourcePath);
+		String fromAttr = "Solver=\"" + from.getDatabaseName() + "\"";
+		Assertions.assertTrue(xml.contains(fromAttr), "fixture " + simTaskResourcePath + " does not use " + from);
+		return xml.replace(fromAttr, "Solver=\"" + to.getDatabaseName() + "\"");
+	}
+
+	private void assertScript(String expectedResourcePath, String actualScript) throws IOException {
+		Assertions.assertEquals(readTextFileFromResource(expectedResourcePath).trim(), actualScript.trim());
+	}
+
+	@Test
+	public void testFamilyOde() throws Exception {
+		setProperty(PropertyLoader.htc_vcellode_solver_list, "CVODE,IDA,CombinedSundials");
+		setProperty(PropertyLoader.htc_vcellode_apptainer_image, "oras://ghcr.io/virtualcell/vcell-ode_singularity:0.9.5");
+		String xml = simTaskXmlWithSolver("slurm_fixtures/cvode/SimID_274630682_0__0.simtask.xml", SolverDescription.CombinedSundials, SolverDescription.CVODE);
+		String[] command = new String[] { "/usr/local/app/localsolvers/linux64/SundialsSolverStandalone_x64",
+				"/share/apps/vcell3/users/schaff/SimID_274630682_0_.cvodeInput", "/share/apps/vcell3/users/schaff/SimID_274630682_0_.ida", "-tid", "0" };
+		assertScript("slurm_fixtures/families/ode/V_REL_274630682_0_0.slurm.sub",
+				createScriptForNativeSolversFromXml(xml, command, "V_REL_274630682_0_0"));
+	}
+
+	@Test
+	public void testFamilyStochastic() throws Exception {
+		// StochGibson is also on the legacy solvers list (setup()): the stochastic family comes first, so it wins
+		setProperty(PropertyLoader.htc_vcellstochastic_solver_list, "StochGibson");
+		setProperty(PropertyLoader.htc_vcellstochastic_apptainer_image, "oras://ghcr.io/virtualcell/vcell-stochastic_singularity:1.0.0");
+		String[] command = new String[] { "/usr/local/app/localsolvers/linux64/VCellStoch_x64", "gibson",
+				"/share/apps/vcell3/users/schaff/SimID_274635122_0_.stochInput", "/share/apps/vcell3/users/schaff/SimID_274635122_0_.ida", "-tid", "0" };
+		assertScript("slurm_fixtures/families/stochastic/V_REL_274635122_0_0.slurm.sub",
+				createScriptForNativeSolvers("slurm_fixtures/gibson/SimID_274635122_0__0.simtask.xml", command, "V_REL_274635122_0_0"));
+	}
+
+	@Test
+	public void testFamilyNfsim() throws Exception {
+		setProperty(PropertyLoader.htc_vcellnfsim_solver_list, "NFSim");
+		setProperty(PropertyLoader.htc_vcellnfsim_apptainer_image, "oras://ghcr.io/virtualcell/vcell-nfsim_singularity:1.0.0");
+		String dir = "/share/apps/vcell3/users/schaff/SimID_274642453_0_";
+		String[] command = new String[] { "/usr/local/app/localsolvers/linux64/NFsim_x64", "-seed", "716746135", "-vcell", "-xml", dir + ".nfsimInput",
+				"-o", dir + ".gdat", "-sim", "1.0", "-ss", dir + ".species", "-oSteps", "20", "-notf", "-utl", "1000",
+				"-cb", "-pcmatch", "-tid", "0" };
+		assertScript("slurm_fixtures/families/nfsim/V_REL_274642453_0_0.slurm.sub",
+				createScriptForNativeSolvers("slurm_fixtures/nfsim/SimID_274642453_0__0.simtask.xml", command, "V_REL_274642453_0_0"));
+	}
+
+	@Test
+	public void testFamilyMbsolver() throws Exception {
+		setProperty(PropertyLoader.htc_vcellmbsolver_solver_list, "MovingBoundary");
+		setProperty(PropertyLoader.htc_vcellmbsolver_apptainer_image, "oras://ghcr.io/virtualcell/vcell-mbsolver_singularity:1.0.5");
+		String[] command = new String[] { "/usr/local/app/localsolvers/linux64/MovingBoundary_x64", "--config",
+				"/share/apps/vcell3/users/schaff/SimID_274641196_0_mb.xml", "-tid", "0" };
+		assertScript("slurm_fixtures/families/mbsolver/V_REL_274641196_0_0.slurm.sub",
+				createScriptForNativeSolvers("slurm_fixtures/moving_boundary/SimID_274641196_0__0.simtask.xml", command, "V_REL_274641196_0_0"));
+	}
+
+	@Test
+	public void testFamilyHy3s() throws Exception {
+		setProperty(PropertyLoader.htc_vcellhy3s_solver_list, "HybridEuler,HybridMilstein,HybridMilAdaptive");
+		setProperty(PropertyLoader.htc_vcellhy3s_apptainer_image, "oras://ghcr.io/virtualcell/vcell-hy3s_singularity:1.0.0");
+		String xml = simTaskXmlWithSolver("slurm_fixtures/gibson_milstein/SimID_274641698_0__0.simtask.xml", SolverDescription.HybridMilstein, SolverDescription.HybridEuler);
+		String[] command = new String[] { "/usr/local/app/localsolvers/linux64/Hybrid_EM_x64",
+				"/share/apps/vcell3/users/schaff/SimID_274641698_0_.nc", "100.0", "10.0", "0.01", "0.1", "-OV", "-tid", "0" };
+		assertScript("slurm_fixtures/families/hy3s/V_REL_274641698_0_0.slurm.sub",
+				createScriptForNativeSolversFromXml(xml, command, "V_REL_274641698_0_0"));
+	}
+
+	@Test
+	public void testFamilyChombo() throws Exception {
+		setProperty(PropertyLoader.htc_vcellchombo_solver_list, "Chombo");
+		setProperty(PropertyLoader.htc_vcellchombo_apptainer_image, "oras://ghcr.io/virtualcell/vcell-chombo_singularity:1.0.0");
+		String xml = simTaskXmlWithSolver("slurm_fixtures/finite_volume/SimID_274514696_0__0.simtask.xml", SolverDescription.SundialsPDE, SolverDescription.Chombo);
+		String[] command = new String[] { "/usr/local/app/localsolvers/linux64/VCellChombo3D_x64",
+				"/share/apps/vcell3/users/schaff/SimID_274514696_0_.fvinput", "-tid", "0" };
+		assertScript("slurm_fixtures/families/chombo/V_REL_274514696_0_0.slurm.sub",
+				createScriptForNativeSolversFromXml(xml, command, "V_REL_274514696_0_0"));
+	}
+
+	@Test
+	public void testFamilyWithoutImageIsSkipped() throws Exception {
+		// the ode list names CombinedSundials, but the ode image is unset: skip the family, fall through to legacy solvers
+		setProperty(PropertyLoader.htc_vcellode_solver_list, "CVODE,IDA,CombinedSundials");
+		Assertions.assertEquals("oras://ghcr.io/virtualcell/vcell-solvers_singularity:v0.8.1.2", SolverImageFamily.resolveImage("CombinedSundials"));
+		// ... and the generated script is the legacy one, unchanged
+		String[] command = new String[] { "/usr/local/app/localsolvers/linux64/SundialsSolverStandalone_x64",
+				"/share/apps/vcell3/users/schaff/SimID_274630682_0_.cvodeInput", "/share/apps/vcell3/users/schaff/SimID_274630682_0_.ida", "-tid", "0" };
+		assertScript("slurm_fixtures/cvode/V_REL_274630682_0_0.slurm.sub",
+				createScriptForNativeSolvers("slurm_fixtures/cvode/SimID_274630682_0__0.simtask.xml", command, "V_REL_274630682_0_0"));
+	}
+
+	@Test
+	public void testFamilyWithEmptyListIsSkipped() {
+		// an image with an empty (or blank) list claims no solver
+		setProperty(PropertyLoader.htc_vcellode_apptainer_image, "oras://ghcr.io/virtualcell/vcell-ode_singularity:0.9.5");
+		setProperty(PropertyLoader.htc_vcellode_solver_list, " ");
+		Assertions.assertEquals("oras://ghcr.io/virtualcell/vcell-solvers_singularity:v0.8.1.2", SolverImageFamily.resolveImage("CombinedSundials"));
+	}
+
+	@Test
+	public void testFallbackToLegacySolvers() {
+		// ode is configured, but only for CVODE and IDA: CombinedSundials stays on the legacy image until it is moved
+		setProperty(PropertyLoader.htc_vcellode_solver_list, "CVODE, IDA");
+		setProperty(PropertyLoader.htc_vcellode_apptainer_image, "oras://ghcr.io/virtualcell/vcell-ode_singularity:0.9.5");
+		Assertions.assertEquals("oras://ghcr.io/virtualcell/vcell-ode_singularity:0.9.5", SolverImageFamily.resolveImage("CVODE"));
+		Assertions.assertEquals("oras://ghcr.io/virtualcell/vcell-ode_singularity:0.9.5", SolverImageFamily.resolveImage("IDA"));
+		Assertions.assertEquals("oras://ghcr.io/virtualcell/vcell-solvers_singularity:v0.8.1.2", SolverImageFamily.resolveImage("CombinedSundials"));
+		// solvers on no per-repo list still resolve as before: fvsolver first, then legacy solvers, then batch
+		Assertions.assertEquals("oras://ghcr.io/virtualcell/vcell-fvsolver_singularity:v0.9.4", SolverImageFamily.resolveImage("Smoldyn"));
+		Assertions.assertEquals("oras://ghcr.io/virtualcell/vcell-solvers_singularity:v0.8.1.2", SolverImageFamily.resolveImage("NFSim"));
+		Assertions.assertEquals("oras://ghcr.io/virtualcell/vcell-batch_singularity:7.6.0.43", SolverImageFamily.resolveImage("RungeKuttaFehlberg"));
+	}
+
+	@Test
+	public void testSolverNotInAnyFamily() {
+		RuntimeException e = Assertions.assertThrows(RuntimeException.class, () -> SolverImageFamily.resolveImage("Comsol"));
+		Assertions.assertEquals("solverName=Comsol not in vcellfenics_solverList=[]"
+				+ " or vcellfvsolver_solverList=[Smoldyn, SundialsPDE]"
+				+ " or vcellode_solverList=[] or vcellstochastic_solverList=[] or vcellnfsim_solverList=[]"
+				+ " or vcellmbsolver_solverList=[] or vcellhy3s_solverList=[] or vcellchombo_solverList=[]"
+				+ " or vcellsolvers_solverList=[HybridMilstein, StochGibson, Smoldyn, MovingBoundary, SundialsPDE, CombinedSundials, NFSim]"
+				+ " or vcellbatch_solverList=[RungeKuttaFehlberg, HybridMilstein, StochGibson, Langevin, AdamsMoulton, Smoldyn, MovingBoundary, SundialsPDE, CombinedSundials, NFSim]",
+				e.getMessage());
+	}
+
+	@Test
+	public void testFamilyOrderMatchesPlan() {
+		Assertions.assertEquals(List.of("fenics", "fvsolver", "ode", "stochastic", "nfsim", "mbsolver", "hy3s", "chombo", "solvers", "batch"),
+				SolverImageFamily.FAMILIES.stream().map(f -> f.name).collect(Collectors.toList()));
 	}
 
 	private String readTextFileFromResource(String filename) throws IOException {
