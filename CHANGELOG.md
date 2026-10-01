@@ -16,6 +16,27 @@ followed by flat Keep-a-Changelog categories. API consumers should scan
 
 _(Release-manager scratchpad. Populated at release-cut time.)_
 
+## [8.2.0.09] - 2026-10-01
+
+**Highlights.** FEniCSx runs say what they are doing. Instead of sitting at 0% while the mesh is built and
+the solver compiles, a FEniCSx simulation shows its phase: loading model, meshing, compiling, solving with
+a percentage, then writing results, both in the desktop's run dialog and in the simulation list for runs on
+the server.
+
+### Changed
+- FEniCSx simulations report their phase (loading model, meshing, compiling, solving N%, writing results)
+  in the local run dialog and in the simulation list's status for server runs (single-job simulations;
+  parameter scans keep the overall percent). Needs vcell-fenics 0.1.1 or later; an older solver image still
+  shows plain progress. (#2147, virtualcell/vcell-fenics#209)
+- The desktop's default FEniCSx image is `vcell-fenics:0.1.1`.
+
+### Fixed
+- A running simulation's status updates when its solver enters a new phase without its progress changing
+  (VCell had ignored such updates). (#2147)
+
+### Notes for API consumers
+- No `/api/` changes in this build.
+
 ## [8.2.0.08] - 2026-10-01
 
 **Highlights.** VCell's native solvers now come from their own repositories (vcell-fvsolver, vcell-ode,
