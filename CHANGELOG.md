@@ -16,6 +16,36 @@ followed by flat Keep-a-Changelog categories. API consumers should scan
 
 _(Release-manager scratchpad. Populated at release-cut time.)_
 
+## [8.2.0.10] - 2026-10-01
+
+**Highlights.** Saving a model from Windows no longer corrupts non-ASCII text. The Windows client decoded
+models from the server in the platform charset, so every open-and-save doubled any non-ASCII annotation
+text (μ, superscripts, accented letters); one model's 308-character note had grown to 11.8 MB and could no
+longer be saved (HTTP 413). The field viewer's kymographs gain the desktop's two crosshairs and linked
+line plots, and draw faster.
+
+### Fixed
+- The desktop client decodes models it loads from or saves to the server as UTF-8. On Windows it used the
+  platform charset (windows-1252), adding one layer of mojibake to non-ASCII text on every open-and-save.
+  `BigString`, `XmlUtil.getXMLString`, `FileUtils.readFileToString` and `ExternalDocInfo.getReader` also use
+  UTF-8 now. (#2151)
+- All desktop launchers run Java with `-Dfile.encoding=UTF-8`, so the client behaves the same on Windows as
+  on macOS and Linux. (#2150)
+
+### Added
+- Field-viewer kymographs have a time crosshair and a space crosshair, as in the desktop: below the image,
+  the variable along the line at the crosshair's time and over time at its position. Click or drag to move
+  them, arrow keys step one sample or one time; both plots export as CSV. (#2148)
+
+### Changed
+- Field-viewer kymographs read the mesh and variable list once per dataset and keep the last few results,
+  so repeating a line, exporting it or stepping in time no longer recomputes it; slow requests are logged
+  with per-stage timings. The pointer is a crosshair in point and line modes, a hand only for rotate/pan.
+  (#2148)
+
+### Notes for API consumers
+- No `/api/` changes in this build.
+
 ## [8.2.0.09] - 2026-10-01
 
 **Highlights.** FEniCSx runs say what they are doing. Instead of sitting at 0% while the mesh is built and
