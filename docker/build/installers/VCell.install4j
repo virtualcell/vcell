@@ -140,6 +140,7 @@ java.desktop/sun.awt.image=ALL-UNNAMED
 -Dcom.apple.mrj.application.apple.menu.about.name=VCell_${compiler:Site}
 # set to true to enable the experimental browser-based 3D field viewer
 -Dvcell.fieldViewer.enabled=false
+-Dfile.encoding=UTF-8
 -Dvcell.dummyvm=${compiler:sys.date}</content>
       </vmOptionsFile>
       <infoPlist>&lt;key&gt;LSEnvironment&lt;/key&gt;
@@ -181,6 +182,7 @@ java.desktop/sun.awt.image=ALL-UNNAMED
 -Dvcell.imagej.plugin.url=http://vcell.org/webstart
 # set to true to enable the experimental browser-based 3D field viewer
 -Dvcell.fieldViewer.enabled=false
+-Dfile.encoding=UTF-8
 -Dvcell.dummyvm=${compiler:sys.date}</content>
       </vmOptionsFile>
       <iconImageFiles>
@@ -218,6 +220,7 @@ java.desktop/sun.awt.image=ALL-UNNAMED
 -Xmx800M
 # set to true to enable the experimental browser-based 3D field viewer
 -Dvcell.fieldViewer.enabled=false
+-Dfile.encoding=UTF-8
 -Dvcell.dummyvm=${compiler:sys.date}</content>
       </vmOptionsFile>
       <iconImageFiles>
@@ -254,6 +257,7 @@ java.desktop/sun.awt.image=ALL-UNNAMED
 -Dvcell.imagej.plugin.url=http://vcell.org/webstart
 # set to true to enable the experimental browser-based 3D field viewer
 -Dvcell.fieldViewer.enabled=false
+-Dfile.encoding=UTF-8
 -Dvcell.dummyvm=${compiler:sys.date}</content>
       </vmOptionsFile>
     </launcher>
@@ -287,6 +291,7 @@ java.desktop/sun.awt.image=ALL-UNNAMED
 -Dvcell.imagej.plugin.url=http://vcell.org/webstart
 # set to true to enable the experimental browser-based 3D field viewer
 -Dvcell.fieldViewer.enabled=false
+-Dfile.encoding=UTF-8
 -Dvcell.dummyvm=${compiler:sys.date}</content>
       </vmOptionsFile>
     </launcher>
@@ -320,6 +325,7 @@ java.desktop/sun.awt.image=ALL-UNNAMED
 -Dvcell.imagej.plugin.url=http://vcell.org/webstart
 # set to true to enable the experimental browser-based 3D field viewer
 -Dvcell.fieldViewer.enabled=false
+-Dfile.encoding=UTF-8
 -Dvcell.dummyvm=${compiler:sys.date}</content>
       </vmOptionsFile>
       <iconImageFiles>
