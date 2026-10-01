@@ -870,8 +870,11 @@ private Object getSimulationStatusDisplay(int row) {
 		JProgressBar progressBar = new JProgressBar();
 		progressBar.setStringPainted(true);
 		progressBar.setValue((int)(progress * 100));
+		String phase = simStatus.runningPhaseDisplay();
 		if (simStatus.isFailed()) {
 			progressBar.setString("one or more jobs failed");
+		} else if (phase != null) {
+			progressBar.setString(phase); // the solver's phase: "meshing", "solving 37%"
 		} else {
 			progressBar.setString(NumberUtils.formatNumber(progress * 100, 4) + "%");
 		}

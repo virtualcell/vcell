@@ -196,6 +196,14 @@ As built:
   and non-2D/3D geometries as ERROR issues (`FenicsSolver.unsupportedReasons` →
   `Simulation.gatherIssues`), so the run stops before a container starts. A failure shows only the
   solver's `error:` line.
+- **Run phases in the status:** a FEniCSx run sat at "0%" while it meshed and JIT-compiled. vcell-fenics
+  (ADR 011 §4) now names its phase — `loading model`, `meshing`, `compiling`, `solving`, `writing
+  results` — as `[[[progress:<phase>:NN.N%]]]` locally and as `WORKEREVENT_PROGRESS|<phase>` in a
+  PROGRESS event's status message remotely; older VCells parse both as plain progress.
+  `FenicsSolver.getProgressMessage` turns the marker into a progress `SimulationMessage` with the phase;
+  the quick-run dialog and the simulation list's progress bar show it ("meshing", "solving 37%")
+  through `SimulationMessage.getProgressPhase` / `SimulationStatus.getRunningPhaseDisplay`; and
+  `SimulationJobStatus.isSupercededBy` lets a new phase at unchanged progress through.
 - **V6, UI and options:**
   - `FenicsSolverOptions` wired through `SolverTaskDescription` / `XMLTags` / `Xmlproducer` /
     `XmlReader` / VCML. Copy the VCML shape from `SundialsPdeSolverOptions`, not MB, whose `getVCML`

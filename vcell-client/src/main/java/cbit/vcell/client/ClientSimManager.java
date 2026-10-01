@@ -893,6 +893,8 @@ public void runQuickSimulation(final Simulation originalSimulation, ViewerType v
 				}
 			}
 			solver.addSolverListener(new SolverListener() {
+				/** what a running solver last said it was doing: its phase ("solving 37%"), or the generic text */
+				private String runningMessage = "Running...";
 				public void solverStopped(SolverEvent event) {
 					getClientTaskStatusSupport().setMessage(event.getSimulationMessage().getDisplayMessage());
 				}
@@ -907,12 +909,14 @@ public void runQuickSimulation(final Simulation originalSimulation, ViewerType v
 					}
 				}
 				public void solverProgress(SolverEvent event) {
-					getClientTaskStatusSupport().setMessage("Running...");
+					// a solver that names no phase (or no longer: its final 100%) keeps the text it had
+					runningMessage = SimulationMessage.describeSolverProgress(event.getSimulationMessage(), event.getProgress(), runningMessage);
+					getClientTaskStatusSupport().setMessage(runningMessage);
 					int progress = (int)(event.getProgress() * 100);
 					getClientTaskStatusSupport().setProgress(progress);
 				}
 				public void solverPrinted(SolverEvent event) {
-					getClientTaskStatusSupport().setMessage("Running...");
+					getClientTaskStatusSupport().setMessage(runningMessage);
 				}
 				public void solverFinished(SolverEvent event) {
 					getClientTaskStatusSupport().setMessage(event.getSimulationMessage().getDisplayMessage());
