@@ -76,7 +76,6 @@
 		<license.copyrightOwners>UConn Health</license.copyrightOwners>
 		<!-- Archive-root files every solver release carries under the same name (LICENSE, VERSION, ...):
 		     unpacked to localsolvers/<os>/licenses/<repo>/ so they don't overwrite each other. -->
-		<solvers.licenseFiles>^(?:\./)?(?=LICENSE|VERSION|COPYING|THIRD-PARTY-LICENSES)</solvers.licenseFiles>
 	</properties>
 
 	<dependencies>
@@ -699,14 +698,10 @@
 		<plugins>
 			<!-- Native solvers for every platform, on every build OS: one execution per solver repo and
 			     platform, each pinned to a release tag and checked against its sha256 (both in the root
-			     pom.xml). Archives unpack flat into localsolvers/<os>/, where ResourceUtil looks for
-			     <exe>_x64[.exe].
-			     Order matters where two archives bundle the same runtime library: a later execution
-			     overwrites an earlier one's copy. vcell-chombo goes first because its mac gcc runtime dylibs
-			     (libgfortran, libquadmath, libgcc_s) name each other through @rpath, and vcell-hy3s's copies
-			     of the same libraries - which win - use @loader_path, which works for every executable in
-			     the directory. The Linux duplicates (libgfortran, libquadmath, libz) are the same library
-			     versions either way.
+			     pom.xml). Each repo unpacks into its own directory, localsolvers/<os>/<repo>/, with the
+			     libraries it bundles, so no repo's libraries replace another's and the order of the
+			     executions doesn't matter. ResourceUtil.findSolverExecutable looks for <exe>_x64[.exe] in
+			     those directories, and a Linux run's LD_LIBRARY_PATH is only that solver's directory.
 			     Langevin is fetched separately, in the OS profiles below. -->
 			<plugin>
 				<groupId>com.googlecode.maven-download-plugin</groupId>
@@ -720,13 +715,7 @@
 						<url>https://github.com/virtualcell/vcell-chombo/releases/download/${solvers-chombo.version}/linux64.tgz</url>
 						<sha256>${solvers-chombo.sha256.linux64}</sha256>
 						<unpack>true</unpack>
-						<outputDirectory>${project.basedir}/../localsolvers/linux64</outputDirectory>
-						<fileMappers>
-							<org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
-								<pattern>${solvers.licenseFiles}</pattern>
-								<replacement>licenses/vcell-chombo/</replacement>
-							</org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
-						</fileMappers>
+						<outputDirectory>${project.basedir}/../localsolvers/linux64/vcell-chombo</outputDirectory>
 					</configuration>
 				</execution>
 				<execution>
@@ -737,13 +726,7 @@
 						<url>https://github.com/virtualcell/vcell-chombo/releases/download/${solvers-chombo.version}/mac64.tgz</url>
 						<sha256>${solvers-chombo.sha256.mac64}</sha256>
 						<unpack>true</unpack>
-						<outputDirectory>${project.basedir}/../localsolvers/mac64</outputDirectory>
-						<fileMappers>
-							<org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
-								<pattern>${solvers.licenseFiles}</pattern>
-								<replacement>licenses/vcell-chombo/</replacement>
-							</org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
-						</fileMappers>
+						<outputDirectory>${project.basedir}/../localsolvers/mac64/vcell-chombo</outputDirectory>
 					</configuration>
 				</execution>
 				<execution>
@@ -754,13 +737,7 @@
 						<url>https://github.com/virtualcell/vcell-fvsolver/releases/download/${solvers-fvsolver.version}/linux64.tgz</url>
 						<sha256>${solvers-fvsolver.sha256.linux64}</sha256>
 						<unpack>true</unpack>
-						<outputDirectory>${project.basedir}/../localsolvers/linux64</outputDirectory>
-						<fileMappers>
-							<org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
-								<pattern>${solvers.licenseFiles}</pattern>
-								<replacement>licenses/vcell-fvsolver/</replacement>
-							</org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
-						</fileMappers>
+						<outputDirectory>${project.basedir}/../localsolvers/linux64/vcell-fvsolver</outputDirectory>
 					</configuration>
 				</execution>
 				<execution>
@@ -771,13 +748,7 @@
 						<url>https://github.com/virtualcell/vcell-fvsolver/releases/download/${solvers-fvsolver.version}/mac64.tgz</url>
 						<sha256>${solvers-fvsolver.sha256.mac64}</sha256>
 						<unpack>true</unpack>
-						<outputDirectory>${project.basedir}/../localsolvers/mac64</outputDirectory>
-						<fileMappers>
-							<org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
-								<pattern>${solvers.licenseFiles}</pattern>
-								<replacement>licenses/vcell-fvsolver/</replacement>
-							</org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
-						</fileMappers>
+						<outputDirectory>${project.basedir}/../localsolvers/mac64/vcell-fvsolver</outputDirectory>
 					</configuration>
 				</execution>
 				<execution>
@@ -788,13 +759,7 @@
 						<url>https://github.com/virtualcell/vcell-fvsolver/releases/download/${solvers-fvsolver.version}/win64.zip</url>
 						<sha256>${solvers-fvsolver.sha256.win64}</sha256>
 						<unpack>true</unpack>
-						<outputDirectory>${project.basedir}/../localsolvers/win64</outputDirectory>
-						<fileMappers>
-							<org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
-								<pattern>${solvers.licenseFiles}</pattern>
-								<replacement>licenses/vcell-fvsolver/</replacement>
-							</org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
-						</fileMappers>
+						<outputDirectory>${project.basedir}/../localsolvers/win64/vcell-fvsolver</outputDirectory>
 					</configuration>
 				</execution>
 				<execution>
@@ -805,13 +770,7 @@
 						<url>https://github.com/virtualcell/vcell-ode/releases/download/${solvers-ode.version}/linux64.tgz</url>
 						<sha256>${solvers-ode.sha256.linux64}</sha256>
 						<unpack>true</unpack>
-						<outputDirectory>${project.basedir}/../localsolvers/linux64</outputDirectory>
-						<fileMappers>
-							<org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
-								<pattern>${solvers.licenseFiles}</pattern>
-								<replacement>licenses/vcell-ode/</replacement>
-							</org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
-						</fileMappers>
+						<outputDirectory>${project.basedir}/../localsolvers/linux64/vcell-ode</outputDirectory>
 					</configuration>
 				</execution>
 				<execution>
@@ -822,13 +781,7 @@
 						<url>https://github.com/virtualcell/vcell-ode/releases/download/${solvers-ode.version}/mac64.tgz</url>
 						<sha256>${solvers-ode.sha256.mac64}</sha256>
 						<unpack>true</unpack>
-						<outputDirectory>${project.basedir}/../localsolvers/mac64</outputDirectory>
-						<fileMappers>
-							<org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
-								<pattern>${solvers.licenseFiles}</pattern>
-								<replacement>licenses/vcell-ode/</replacement>
-							</org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
-						</fileMappers>
+						<outputDirectory>${project.basedir}/../localsolvers/mac64/vcell-ode</outputDirectory>
 					</configuration>
 				</execution>
 				<execution>
@@ -839,13 +792,7 @@
 						<url>https://github.com/virtualcell/vcell-ode/releases/download/${solvers-ode.version}/win64.zip</url>
 						<sha256>${solvers-ode.sha256.win64}</sha256>
 						<unpack>true</unpack>
-						<outputDirectory>${project.basedir}/../localsolvers/win64</outputDirectory>
-						<fileMappers>
-							<org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
-								<pattern>${solvers.licenseFiles}</pattern>
-								<replacement>licenses/vcell-ode/</replacement>
-							</org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
-						</fileMappers>
+						<outputDirectory>${project.basedir}/../localsolvers/win64/vcell-ode</outputDirectory>
 					</configuration>
 				</execution>
 				<execution>
@@ -856,13 +803,7 @@
 						<url>https://github.com/virtualcell/vcell-stochastic/releases/download/${solvers-stochastic.version}/linux64.tgz</url>
 						<sha256>${solvers-stochastic.sha256.linux64}</sha256>
 						<unpack>true</unpack>
-						<outputDirectory>${project.basedir}/../localsolvers/linux64</outputDirectory>
-						<fileMappers>
-							<org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
-								<pattern>${solvers.licenseFiles}</pattern>
-								<replacement>licenses/vcell-stochastic/</replacement>
-							</org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
-						</fileMappers>
+						<outputDirectory>${project.basedir}/../localsolvers/linux64/vcell-stochastic</outputDirectory>
 					</configuration>
 				</execution>
 				<execution>
@@ -873,13 +814,7 @@
 						<url>https://github.com/virtualcell/vcell-stochastic/releases/download/${solvers-stochastic.version}/mac64.tgz</url>
 						<sha256>${solvers-stochastic.sha256.mac64}</sha256>
 						<unpack>true</unpack>
-						<outputDirectory>${project.basedir}/../localsolvers/mac64</outputDirectory>
-						<fileMappers>
-							<org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
-								<pattern>${solvers.licenseFiles}</pattern>
-								<replacement>licenses/vcell-stochastic/</replacement>
-							</org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
-						</fileMappers>
+						<outputDirectory>${project.basedir}/../localsolvers/mac64/vcell-stochastic</outputDirectory>
 					</configuration>
 				</execution>
 				<execution>
@@ -890,13 +825,7 @@
 						<url>https://github.com/virtualcell/vcell-stochastic/releases/download/${solvers-stochastic.version}/win64.zip</url>
 						<sha256>${solvers-stochastic.sha256.win64}</sha256>
 						<unpack>true</unpack>
-						<outputDirectory>${project.basedir}/../localsolvers/win64</outputDirectory>
-						<fileMappers>
-							<org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
-								<pattern>${solvers.licenseFiles}</pattern>
-								<replacement>licenses/vcell-stochastic/</replacement>
-							</org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
-						</fileMappers>
+						<outputDirectory>${project.basedir}/../localsolvers/win64/vcell-stochastic</outputDirectory>
 					</configuration>
 				</execution>
 				<execution>
@@ -907,13 +836,7 @@
 						<url>https://github.com/virtualcell/vcell-nfsim/releases/download/${solvers-nfsim.version}/linux64.tgz</url>
 						<sha256>${solvers-nfsim.sha256.linux64}</sha256>
 						<unpack>true</unpack>
-						<outputDirectory>${project.basedir}/../localsolvers/linux64</outputDirectory>
-						<fileMappers>
-							<org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
-								<pattern>${solvers.licenseFiles}</pattern>
-								<replacement>licenses/vcell-nfsim/</replacement>
-							</org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
-						</fileMappers>
+						<outputDirectory>${project.basedir}/../localsolvers/linux64/vcell-nfsim</outputDirectory>
 					</configuration>
 				</execution>
 				<execution>
@@ -924,13 +847,7 @@
 						<url>https://github.com/virtualcell/vcell-nfsim/releases/download/${solvers-nfsim.version}/mac64.tgz</url>
 						<sha256>${solvers-nfsim.sha256.mac64}</sha256>
 						<unpack>true</unpack>
-						<outputDirectory>${project.basedir}/../localsolvers/mac64</outputDirectory>
-						<fileMappers>
-							<org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
-								<pattern>${solvers.licenseFiles}</pattern>
-								<replacement>licenses/vcell-nfsim/</replacement>
-							</org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
-						</fileMappers>
+						<outputDirectory>${project.basedir}/../localsolvers/mac64/vcell-nfsim</outputDirectory>
 					</configuration>
 				</execution>
 				<execution>
@@ -941,13 +858,7 @@
 						<url>https://github.com/virtualcell/vcell-nfsim/releases/download/${solvers-nfsim.version}/win64.zip</url>
 						<sha256>${solvers-nfsim.sha256.win64}</sha256>
 						<unpack>true</unpack>
-						<outputDirectory>${project.basedir}/../localsolvers/win64</outputDirectory>
-						<fileMappers>
-							<org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
-								<pattern>${solvers.licenseFiles}</pattern>
-								<replacement>licenses/vcell-nfsim/</replacement>
-							</org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
-						</fileMappers>
+						<outputDirectory>${project.basedir}/../localsolvers/win64/vcell-nfsim</outputDirectory>
 					</configuration>
 				</execution>
 				<execution>
@@ -958,13 +869,7 @@
 						<url>https://github.com/virtualcell/vcell-hy3s/releases/download/${solvers-hy3s.version}/linux64.tgz</url>
 						<sha256>${solvers-hy3s.sha256.linux64}</sha256>
 						<unpack>true</unpack>
-						<outputDirectory>${project.basedir}/../localsolvers/linux64</outputDirectory>
-						<fileMappers>
-							<org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
-								<pattern>${solvers.licenseFiles}</pattern>
-								<replacement>licenses/vcell-hy3s/</replacement>
-							</org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
-						</fileMappers>
+						<outputDirectory>${project.basedir}/../localsolvers/linux64/vcell-hy3s</outputDirectory>
 					</configuration>
 				</execution>
 				<execution>
@@ -975,13 +880,7 @@
 						<url>https://github.com/virtualcell/vcell-hy3s/releases/download/${solvers-hy3s.version}/mac64.tgz</url>
 						<sha256>${solvers-hy3s.sha256.mac64}</sha256>
 						<unpack>true</unpack>
-						<outputDirectory>${project.basedir}/../localsolvers/mac64</outputDirectory>
-						<fileMappers>
-							<org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
-								<pattern>${solvers.licenseFiles}</pattern>
-								<replacement>licenses/vcell-hy3s/</replacement>
-							</org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
-						</fileMappers>
+						<outputDirectory>${project.basedir}/../localsolvers/mac64/vcell-hy3s</outputDirectory>
 					</configuration>
 				</execution>
 				<execution>
@@ -992,13 +891,7 @@
 						<url>https://github.com/virtualcell/vcell-hy3s/releases/download/${solvers-hy3s.version}/win64.zip</url>
 						<sha256>${solvers-hy3s.sha256.win64}</sha256>
 						<unpack>true</unpack>
-						<outputDirectory>${project.basedir}/../localsolvers/win64</outputDirectory>
-						<fileMappers>
-							<org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
-								<pattern>${solvers.licenseFiles}</pattern>
-								<replacement>licenses/vcell-hy3s/</replacement>
-							</org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
-						</fileMappers>
+						<outputDirectory>${project.basedir}/../localsolvers/win64/vcell-hy3s</outputDirectory>
 					</configuration>
 				</execution>
 				<execution>
@@ -1009,13 +902,7 @@
 						<url>https://github.com/virtualcell/vcell-mbsolver/releases/download/${solvers-mbsolver.version}/linux64.tgz</url>
 						<sha256>${solvers-mbsolver.sha256.linux64}</sha256>
 						<unpack>true</unpack>
-						<outputDirectory>${project.basedir}/../localsolvers/linux64</outputDirectory>
-						<fileMappers>
-							<org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
-								<pattern>${solvers.licenseFiles}</pattern>
-								<replacement>licenses/vcell-mbsolver/</replacement>
-							</org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
-						</fileMappers>
+						<outputDirectory>${project.basedir}/../localsolvers/linux64/vcell-mbsolver</outputDirectory>
 					</configuration>
 				</execution>
 				<execution>
@@ -1026,13 +913,7 @@
 						<url>https://github.com/virtualcell/vcell-mbsolver/releases/download/${solvers-mbsolver.version}/mac64.tgz</url>
 						<sha256>${solvers-mbsolver.sha256.mac64}</sha256>
 						<unpack>true</unpack>
-						<outputDirectory>${project.basedir}/../localsolvers/mac64</outputDirectory>
-						<fileMappers>
-							<org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
-								<pattern>${solvers.licenseFiles}</pattern>
-								<replacement>licenses/vcell-mbsolver/</replacement>
-							</org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
-						</fileMappers>
+						<outputDirectory>${project.basedir}/../localsolvers/mac64/vcell-mbsolver</outputDirectory>
 					</configuration>
 				</execution>
 				<execution>
@@ -1043,13 +924,7 @@
 						<url>https://github.com/virtualcell/vcell-mbsolver/releases/download/${solvers-mbsolver.version}/win64.zip</url>
 						<sha256>${solvers-mbsolver.sha256.win64}</sha256>
 						<unpack>true</unpack>
-						<outputDirectory>${project.basedir}/../localsolvers/win64</outputDirectory>
-						<fileMappers>
-							<org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
-								<pattern>${solvers.licenseFiles}</pattern>
-								<replacement>licenses/vcell-mbsolver/</replacement>
-							</org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
-						</fileMappers>
+						<outputDirectory>${project.basedir}/../localsolvers/win64/vcell-mbsolver</outputDirectory>
 					</configuration>
 				</execution>
 				</executions>

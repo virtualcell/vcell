@@ -5,8 +5,18 @@ Native solver executables for local (desktop) runs, one directory per platform:
 
 The build downloads them: `vcell-core/pom.xml` has one `download-maven-plugin` execution per solver
 repo and platform, bound to `generate-test-resources`, so `mvn clean install dependency:copy-dependencies`
-fills all three directories on any build OS. Each archive is checked against its sha256 and unpacked flat,
-where `ResourceUtil.findSolverExecutable` looks for `<name>_x64` (`.exe` on Windows).
+fills all three directories on any build OS. Each download is checked against its sha256.
+
+Each repo unpacks into **its own subdirectory**, `<platform>/<repo>/` (e.g. `mac64/vcell-hy3s/`), together
+with the libraries it bundles and its `LICENSE` and `VERSION`:
+- `ResourceUtil.findSolverExecutable` looks for `<name>_x64` (`.exe` on Windows) in those subdirectories. It
+  refuses a name found in two of them, and falls back to the flat path otherwise.
+- On Linux, a local run's `LD_LIBRARY_PATH` is only that solver's subdirectory.
+- On mac, the executables find their dylibs through `@loader_path`/`@rpath`; on Windows, the loader looks
+  next to the `.exe`.
+
+So no repo's `libgfortran`, `libstdc++` or `libz` can replace another's, and the order of the downloads
+doesn't matter.
 
 | solver repo | executables |
 |---|---|
@@ -18,8 +28,6 @@ where `ResourceUtil.findSolverExecutable` looks for `<name>_x64` (`.exe` on Wind
 | [vcell-chombo](https://github.com/virtualcell/vcell-chombo) | `VCellChombo2D_x64`, `VCellChombo3D_x64` (linux64 and mac64 only) |
 | [vcell-mbsolver](https://github.com/virtualcell/vcell-mbsolver) | `MovingBoundary_x64` |
 | [cam-center/LangevinNoVis01](https://github.com/cam-center/LangevinNoVis01) | `langevin_x64` |
-
-Each repo's `LICENSE`, `VERSION` and other license files land in `<platform>/licenses/<repo>/`.
 
 **Versions and checksums** are properties in the root `pom.xml` (`solvers-<repo>.version` and
 `solvers-<repo>.sha256.<platform>`). To bump a solver, change its tag and copy the three checksums from
