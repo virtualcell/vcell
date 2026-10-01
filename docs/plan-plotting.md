@@ -1025,6 +1025,41 @@ Decisions and deviations recorded in P7b:
     **Results: 192 browser tests pass** on Chromium (SwiftShader), WebKit and Firefox, with no `is not permitted`
     refusals and no page errors.
 
+### P8 — kymograph speed, the desktop's crosshair, and the pointer
+
+Three follow-ups from use. Measured on the `3D pde` application of the public tutorial BioModel
+`Tutorial_MultiApp` (101 × 101 × 36 voxels, 101 saved times), run locally with the FV solver, and a line
+across the cell that crosses both membranes (96 samples).
+
+**Speed.** Where a kymograph's time goes, by stage (now in the client log, see `StageTimer`):
+
+| stage | read locally | over the remote seam (modelled: 300 ms + Java serialization per call) |
+|---|---|---|
+| the domain, the variable, the mesh and the saved times | 4 reads, 180 ms | 4 round trips, 1.7 s (the mesh, 0.6 MB, twice) |
+| the time-series job | 0.9–1.6 s | 1.3–1.9 s |
+
+The job reads every saved time once for the samples and once more for the membrane crossings' `_INSIDE` /
+`_OUTSIDE` values: 450 ms a pass here, and on the data server a pass over the run's files (1.2 GB of zipped output for this run).
+That is the desktop kymograph's job too. What the viewer added was the rest:
+
+- **The mesh and the variables are read once per dataset**, not per request (`DataSource.solverMesh`,
+  `visMesh`, `dataIdentifiers`). A kymograph now makes two data-manager calls (the saved times, the job), not
+  five; a time step two, not four.
+- **The last four kymographs' series are kept per dataset**, keyed by everything the job depends on, the
+  number of saved times included. The *Desktop CSV* export (`raw=1`, the same job), a variable switched back
+  to and a line redrawn are answered from memory.
+
+| request (this run) | before, local | after, local | before, remote model | after, remote model |
+|---|---|---|---|---|
+| first kymograph of a line | 1.6 s | 1.6 s | 3.5 s | 2.4 s |
+| the same line again, or its Desktop CSV | 1.5 s | 0.05 s | 3.5 s | 0.4 s |
+| another variable on the line | 1.1 s | 1.0 s | 3.1 s | 1.8 s |
+| a time step (`/field`) | 0.3 s | 0.2 s | 1.8 s | 0.9 s |
+
+Left for later: the second pass over the files for the crossings is in `DataSetControllerImpl`
+(`adjustMembraneAdjacentVolumeValues`, reached by the desktop kymograph too) and would halve a job with
+crossings on the data server.
+
 ### Later
 - **Several variables** in the point plot: the desktop's "Y Axis" multi-select, `var=a,b` over the same
   points. The server change is small, because `TimeSeriesJobSpec` already takes `indices[v][i]`.

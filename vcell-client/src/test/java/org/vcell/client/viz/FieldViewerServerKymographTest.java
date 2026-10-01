@@ -202,6 +202,39 @@ public class FieldViewerServerKymographTest {
 		assertDesktopParity(SIM_2D, "Cyt", "Dex", new double[][] { { -10, 0, z }, { 0, 0, z }, { 3, 10, z } });
 	}
 
+	/**
+	 * A kymograph's time series is read once: asking again for the same line and variable, raw (the viewer's desktop
+	 * CSV) or not, is answered from memory with the same values, while another variable, another stride or the
+	 * dataset registered again (a results window reopened) reads anew.
+	 */
+	@Test
+	public void theSameKymographIsReadOnce() throws Exception {
+		double[][] line = { { 0, 2, 2 }, { 4, 2, 2 } };
+		int before = FieldViewerServer.kymographJobsRun.get();
+		JsonObject first = kymograph(SIM_3D, "&domain=subdomain0&var=s0" + path(line));
+		Assertions.assertEquals(before + 1, FieldViewerServer.kymographJobsRun.get());
+		JsonObject again = kymograph(SIM_3D, "&domain=subdomain0&var=s0" + path(line));
+		JsonObject raw = kymograph(SIM_3D, "&domain=subdomain0&var=s0&raw=1" + path(line));
+		Assertions.assertEquals(before + 1, FieldViewerServer.kymographJobsRun.get(), "answered from memory");
+		Assertions.assertEquals(first, again);
+		JsonArray inDomain = first.getAsJsonObject("samples").getAsJsonArray("inDomain");
+		for (int r = 0; r < first.getAsJsonArray("values").size(); r++) {
+			double[] masked = doubles(first.getAsJsonArray("values").get(r).getAsJsonArray());
+			double[] all = doubles(raw.getAsJsonArray("values").get(r).getAsJsonArray());
+			for (int i = 0; i < masked.length; i++) {
+				if (inDomain.get(i).getAsBoolean()) {
+					Assertions.assertEquals(masked[i], all[i], "row " + r + " sample " + i);
+				}
+			}
+		}
+		kymograph(SIM_3D, "&domain=subdomain0&var=s1" + path(line));
+		kymograph(SIM_3D, "&domain=subdomain0&var=s0&tstep=2" + path(line));
+		Assertions.assertEquals(before + 3, FieldViewerServer.kymographJobsRun.get(), "another variable, another stride");
+		FieldViewerServerFvTest.stageFvFixtures(root); // the results window opened again
+		kymograph(SIM_3D, "&domain=subdomain0&var=s0" + path(line));
+		Assertions.assertEquals(before + 4, FieldViewerServer.kymographJobsRun.get(), "a new registration reads anew");
+	}
+
 	@Test
 	public void samplesOutsideTheDomainAreGapsUnlessRaw() throws Exception {
 		double[][] line = { { 0, 2, 2 }, { 4, 2, 2 } };
