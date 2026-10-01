@@ -2,10 +2,16 @@ package org.vcell.vis.vtk;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.vcell.vis.vismesh.thrift.MovingBoundaryIndexData;
+import org.vcell.vis.vismesh.thrift.MovingBoundarySurfaceIndex;
+import org.vcell.vis.vismesh.thrift.MovingBoundaryVolumeIndex;
+import org.vcell.vis.vismesh.thrift.VisLine;
 import org.vcell.vis.vismesh.thrift.VisMesh;
+import org.vcell.vis.vismesh.thrift.VisPolygon;
 
 public abstract class VtkService {
 	public static VtkService vtkService = null;
@@ -22,7 +28,41 @@ public abstract class VtkService {
 
 	public abstract void writeFiniteVolumeSmoothedVtkGridAndIndexData(VisMesh visMesh, String domainName, File vtkFile, File indexFile) throws IOException, InterruptedException;
 	
-	public abstract void writeMovingBoundaryVtkGridAndIndexData(VisMesh visMesh, String domainName, File vtkFile, File indexFile) throws IOException, InterruptedException;
+	/**
+	 * Writes a MovingBoundary domain's grid and its {@link MovingBoundaryIndexData} in pure Java, for every
+	 * service: the grid is just the mesh's points and polygons ({@link VtuWriter}), with nothing for VTK itself to
+	 * compute, so there is no reason to start Python for it — and the desktop client, which runs MovingBoundary
+	 * locally and opens its results in the field viewer, has no Python VTK service to start.
+	 * <p>
+	 * Equivalent to the Python service's {@code writeMovingBoundaryVolumeVtkGridAndIndexData}: the same points and
+	 * cells in the same order, and one volume index per polygon, in polygon order ({@code timeIndex} is 0 there
+	 * too: the file name, not the record, carries the time).
+	 */
+	public void writeMovingBoundaryVtkGridAndIndexData(VisMesh visMesh, String domainName, File vtkFile, File indexFile) throws IOException {
+		if (visMesh.getDimension() != 2) {
+			throw new UnsupportedOperationException("MovingBoundary meshes are 2D, found dimension " + visMesh.getDimension());
+		}
+		VtuWriter.writeVolumeGrid(visMesh, vtkFile);
+		MovingBoundaryIndexData indexData = new MovingBoundaryIndexData();
+		indexData.setDomainName(domainName);
+		indexData.setTimeIndex(0);
+		indexData.setMovingBoundaryVolumeIndices(new ArrayList<MovingBoundaryVolumeIndex>());
+		if (visMesh.getPolygons() != null) {
+			for (VisPolygon polygon : visMesh.getPolygons()) {
+				indexData.addToMovingBoundaryVolumeIndices(polygon.getMovingBoundaryVolumeIndex());
+			}
+		}
+		if (visMesh.getVisLines() != null) {
+			indexData.setMovingBoundarySurfaceIndices(new ArrayList<MovingBoundarySurfaceIndex>());
+			for (VisLine visLine : visMesh.getVisLines()) {
+				indexData.addToMovingBoundarySurfaceIndices(visLine.getMovingBoundarySurfaceIndex());
+			}
+		}
+		if (indexData.getMovingBoundaryVolumeIndicesSize() == 0 && indexData.getMovingBoundarySurfaceIndicesSize() == 0) {
+			lg.warn("MovingBoundary domain " + domainName + " has no cells: writing an empty index for " + indexFile);
+		}
+		VisMeshUtils.writeMovingBoundaryIndexData(indexFile, indexData);
+	}
 	
 	public abstract void writeComsolVtkGridAndIndexData(VisMesh visMesh, String domainName, File vtkFile, File indexFile) throws IOException, InterruptedException;
 }

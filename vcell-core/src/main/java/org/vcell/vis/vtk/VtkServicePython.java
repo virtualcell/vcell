@@ -34,11 +34,6 @@ public class VtkServicePython extends VtkService {
 	}
 
 	@Override
-	public void writeMovingBoundaryVtkGridAndIndexData(VisMesh visMesh, String domainName, File vtkFile, File indexFile) throws IOException, InterruptedException {
-		writeVtkGridAndIndexData(MeshType.movingboundary, visMesh, domainName, vtkFile, indexFile);
-	}
-
-	@Override
 	public void writeComsolVtkGridAndIndexData(VisMesh visMesh, String domainName, File vtkFile, File indexFile) throws IOException, InterruptedException {
 		writeVtkGridAndIndexData(MeshType.comsolvolume, visMesh, domainName, vtkFile, indexFile);
 	}
