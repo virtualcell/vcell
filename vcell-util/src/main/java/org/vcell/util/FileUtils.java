@@ -15,6 +15,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -191,7 +192,7 @@ public static String readFileToString(File file) throws IOException {
 	BufferedReader br = null;
 	StringBuffer stringBuffer = new StringBuffer();
 	try {
-		br = new BufferedReader(new FileReader(file));
+		br = new BufferedReader(new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8));
 		char charArray[] = new char[10000];
 		while (true) {
 			int numRead = br.read(charArray, 0, charArray.length);
