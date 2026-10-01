@@ -240,10 +240,13 @@
 		<solvers-mbsolver.sha256.linux64>7c746a2b27b25e74fe1a8fae1790f6969cc4407dbac4bd5da7e13221067ba5a4</solvers-mbsolver.sha256.linux64>
 		<solvers-mbsolver.sha256.mac64>9f3eda2edda80e2f8a9d66ee82522c5471cd056122cc31e7c4bc821c1054affe</solvers-mbsolver.sha256.mac64>
 		<solvers-mbsolver.sha256.win64>f2fed5d1a2356a4b5c2993f4123462d76dc95642561199a863163b6c6a33b883</solvers-mbsolver.sha256.win64>
-		<!-- Langevin (SpringSaLaD) comes from cam-center/LangevinNoVis01, fetched by vcell-core's OS profiles. -->
-		<solvers-langevin-mac.version>1.4.15</solvers-langevin-mac.version>
-		<solvers-langevin-windows.version>1.4.15</solvers-langevin-windows.version>
-		<solvers-langevin-linux.version>1.4.15</solvers-langevin-linux.version>
+		<!-- Langevin (SpringSaLaD) comes from cam-center/LangevinNoVis01 as bare executables with no
+		     SHA256SUMS; these checksums are of the downloaded assets (langevin-ubuntu-latest,
+		     langevin-macos-universal, langevin-windows-latest). -->
+		<solvers-langevin.version>1.4.15</solvers-langevin.version>
+		<solvers-langevin.sha256.linux64>aff46d7bfc0701f28b671818fe01be1d30a89be90024f0d29e73960247efecb7</solvers-langevin.sha256.linux64>
+		<solvers-langevin.sha256.mac64>48acffd11304749e17a77161038932b5b816b552a96f698c796019103df9f798</solvers-langevin.sha256.mac64>
+		<solvers-langevin.sha256.win64>eb7fa4b39deab3c72c7d75dd4f4e187e08fd94485c88884c93cebd1d8967a7b2</solvers-langevin.sha256.win64>
 	</properties>
 
 

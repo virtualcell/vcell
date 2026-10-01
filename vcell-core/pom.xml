@@ -702,7 +702,8 @@
 			     libraries it bundles, so no repo's libraries replace another's and the order of the
 			     executions doesn't matter. ResourceUtil.findSolverExecutable looks for <exe>_x64[.exe] in
 			     those directories, and a Linux run's LD_LIBRARY_PATH is only that solver's directory.
-			     Langevin is fetched separately, in the OS profiles below. -->
+			     Langevin (cam-center/LangevinNoVis01) publishes bare executables, not archives, so its
+			     executions name the output file and the antrun step below sets the executable bit. -->
 			<plugin>
 				<groupId>com.googlecode.maven-download-plugin</groupId>
 				<artifactId>download-maven-plugin</artifactId>
@@ -927,211 +928,61 @@
 						<outputDirectory>${project.basedir}/../localsolvers/win64/vcell-mbsolver</outputDirectory>
 					</configuration>
 				</execution>
+				<execution>
+					<id>solver-langevin-linux64</id>
+					<phase>generate-test-resources</phase>
+					<goals><goal>wget</goal></goals>
+					<configuration>
+						<url>https://github.com/cam-center/LangevinNoVis01/releases/download/${solvers-langevin.version}/langevin-ubuntu-latest</url>
+						<sha256>${solvers-langevin.sha256.linux64}</sha256>
+						<outputDirectory>${project.basedir}/../localsolvers/linux64/langevin</outputDirectory>
+						<outputFileName>langevin_x64</outputFileName>
+					</configuration>
+				</execution>
+				<execution>
+					<id>solver-langevin-mac64</id>
+					<phase>generate-test-resources</phase>
+					<goals><goal>wget</goal></goals>
+					<configuration>
+						<url>https://github.com/cam-center/LangevinNoVis01/releases/download/${solvers-langevin.version}/langevin-macos-universal</url>
+						<sha256>${solvers-langevin.sha256.mac64}</sha256>
+						<outputDirectory>${project.basedir}/../localsolvers/mac64/langevin</outputDirectory>
+						<outputFileName>langevin_x64</outputFileName>
+					</configuration>
+				</execution>
+				<execution>
+					<id>solver-langevin-win64</id>
+					<phase>generate-test-resources</phase>
+					<goals><goal>wget</goal></goals>
+					<configuration>
+						<url>https://github.com/cam-center/LangevinNoVis01/releases/download/${solvers-langevin.version}/langevin-windows-latest</url>
+						<sha256>${solvers-langevin.sha256.win64}</sha256>
+						<outputDirectory>${project.basedir}/../localsolvers/win64/langevin</outputDirectory>
+						<outputFileName>langevin_x64.exe</outputFileName>
+					</configuration>
+				</execution>
+				</executions>
+			</plugin>
+			<!-- Langevin is a bare executable, not an archive, so it arrives without its executable bit
+			     (archives keep theirs). Ant's chmod does nothing on Windows. -->
+			<plugin>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<version>3.1.0</version>
+				<executions>
+					<execution>
+						<id>chmod-langevin</id>
+						<phase>process-test-resources</phase>
+						<goals><goal>run</goal></goals>
+						<configuration>
+							<target>
+								<chmod file="${project.basedir}/../localsolvers/linux64/langevin/langevin_x64" perm="755"/>
+								<chmod file="${project.basedir}/../localsolvers/mac64/langevin/langevin_x64" perm="755"/>
+							</target>
+						</configuration>
+					</execution>
 				</executions>
 			</plugin>
 		</plugins>
 	</build>
 
-	<profiles>
-		<profile>
-			<id>winprofile</id>
-		    <activation> <!-- if more than 1 elements under activation they are AND together -->
-				<os>
-					<family>windows</family> <!-- names defined in the plexus-utils project, in Os.java -->
-				</os>
-		    </activation>
-				<build>
-					<plugins>
-						<plugin>
-							<groupId>com.googlecode.maven-download-plugin</groupId>
-							<artifactId>download-maven-plugin</artifactId>
-							<executions>
-								<execution>
-									<id>install-langevin-win64</id>
-									<phase>generate-test-resources</phase>
-									<goals>
-										<goal>wget</goal>
-									</goals>
-									<configuration>
-										<url>https://github.com/cam-center/LangevinNoVis01/releases/download/${solvers-langevin-windows.version}/langevin-windows-latest</url>
-										<outputDirectory>${project.build.directory}/../../localsolvers/win64</outputDirectory>
-										<outputFileName>langevin_x64.exe</outputFileName>
-									</configuration>
-								</execution>
-							</executions>
-						</plugin>
-					</plugins>
-				</build>
-		</profile>
-		<profile>
-			<id>macprofile</id>
-		    <activation>
-				<os>
-					<family>mac</family>
-					<name>Mac OS X</name>
-				</os>
-		    </activation>
-				<build>
-					<plugins>
-						<plugin>
-							<groupId>com.googlecode.maven-download-plugin</groupId>
-							<artifactId>download-maven-plugin</artifactId>
-							<executions>
-								<execution>
-									<id>install-langevin-win64</id>
-									<phase>generate-test-resources</phase>
-									<goals>
-										<goal>wget</goal>
-									</goals>
-									<configuration>
-										<url>https://github.com/cam-center/LangevinNoVis01/releases/download/${solvers-langevin-windows.version}/langevin-windows-latest</url>
-										<outputDirectory>${project.build.directory}/../../localsolvers/win64</outputDirectory>
-										<outputFileName>langevin_x64.exe</outputFileName>
-									</configuration>
-								</execution>
-								<execution>
-									<id>install-langevin-mac64</id>
-									<phase>generate-test-resources</phase>
-									<goals>
-										<goal>wget</goal>
-									</goals>
-									<configuration>
-										<url>https://github.com/cam-center/LangevinNoVis01/releases/download/${solvers-langevin-mac.version}/langevin-macos-universal</url>
-										<outputDirectory>${project.build.directory}/../../localsolvers/mac64</outputDirectory>
-										<outputFileName>langevin_x64</outputFileName>
-									</configuration>
-								</execution>
-								<execution>
-									<id>install-langevin-linux</id>
-									<phase>generate-test-resources</phase>
-									<goals>
-										<goal>wget</goal>
-									</goals>
-									<configuration>
-										<url>https://github.com/cam-center/LangevinNoVis01/releases/download/${solvers-langevin-linux.version}/langevin-ubuntu-latest</url>
-										<outputDirectory>${project.build.directory}/../../localsolvers/linux64</outputDirectory>
-										<outputFileName>langevin_x64</outputFileName>
-									</configuration>
-								</execution>
-							</executions>
-						</plugin>
-						<plugin>
-							<artifactId>maven-antrun-plugin</artifactId>
-							<version>3.1.0</version>
-							<executions>
-								<execution>
-									<id>chmod-langevin-mac64</id>
-									<phase>process-test-resources</phase>
-									<goals>
-										<goal>run</goal>
-									</goals>
-									<configuration>
-										<target>
-											<chmod file="${project.build.directory}/../../localsolvers/mac64/langevin_x64" perm="755"/>
-										</target>
-									</configuration>
-								</execution>
-								<execution>
-									<id>process-solvers-linux64</id>
-									<phase>process-test-resources</phase>
-									<goals>
-										<goal>run</goal>
-									</goals>
-									<configuration>
-										<target>
-											<chmod file="${project.build.directory}/../../localsolvers/linux64/langevin_x64" perm="755"/>
-										</target>
-									</configuration>
-								</execution>
-							</executions>
-						</plugin>
-					</plugins>
-				</build>
-		</profile>
-		<profile>
-			<id>unixprofile</id>
-		    <activation>
-				<os>
-					<family>unix</family>
-					<name>Linux</name>
-				</os>
-		    </activation>
-				<build>
-					<plugins>
-						<plugin>
-							<groupId>com.googlecode.maven-download-plugin</groupId>
-							<artifactId>download-maven-plugin</artifactId>
-							<executions>
-								<execution>
-									<id>install-langevin-win64</id>
-									<phase>generate-test-resources</phase>
-									<goals>
-										<goal>wget</goal>
-									</goals>
-									<configuration>
-										<url>https://github.com/cam-center/LangevinNoVis01/releases/download/${solvers-langevin-windows.version}/langevin-windows-latest</url>
-										<outputDirectory>${project.build.directory}/../../localsolvers/win64</outputDirectory>
-										<outputFileName>langevin_x64.exe</outputFileName>
-									</configuration>
-								</execution>
-								<execution>
-									<id>install-langevin-mac64</id>
-									<phase>generate-test-resources</phase>
-									<goals>
-										<goal>wget</goal>
-									</goals>
-									<configuration>
-										<url>https://github.com/cam-center/LangevinNoVis01/releases/download/${solvers-langevin-mac.version}/langevin-macos-universal</url>
-										<outputDirectory>${project.build.directory}/../../localsolvers/mac64</outputDirectory>
-										<outputFileName>langevin_x64</outputFileName>
-									</configuration>
-								</execution>
-								<execution>
-									<id>install-langevin-linux</id>
-									<phase>generate-test-resources</phase>
-									<goals>
-										<goal>wget</goal>
-									</goals>
-									<configuration>
-										<url>https://github.com/cam-center/LangevinNoVis01/releases/download/${solvers-langevin-linux.version}/langevin-ubuntu-latest</url>
-										<outputDirectory>${project.build.directory}/../../localsolvers/linux64</outputDirectory>
-										<outputFileName>langevin_x64</outputFileName>
-									</configuration>
-								</execution>
-							</executions>
-						</plugin>
-						<plugin>
-							<artifactId>maven-antrun-plugin</artifactId>
-							<version>3.1.0</version>
-							<executions>
-								<execution>
-									<id>chmod-langevin-mac64</id>
-									<phase>process-test-resources</phase>
-									<goals>
-										<goal>run</goal>
-									</goals>
-									<configuration>
-										<target>
-											<chmod file="${project.build.directory}/../../localsolvers/mac64/langevin_x64" perm="755"/>
-										</target>
-									</configuration>
-								</execution>
-								<execution>
-									<id>process-solvers-linux64</id>
-									<phase>process-test-resources</phase>
-									<goals>
-										<goal>run</goal>
-									</goals>
-									<configuration>
-										<target>
-											<chmod file="${project.build.directory}/../../localsolvers/linux64/langevin_x64" perm="755"/>
-										</target>
-									</configuration>
-								</execution>
-							</executions>
-						</plugin>
-					</plugins>
-				</build>
-		</profile>
-    </profiles>
 </project>

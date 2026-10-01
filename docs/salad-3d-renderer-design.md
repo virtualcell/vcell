@@ -82,7 +82,7 @@ renderer is ever swapped in.
 ### 2.1 SaLaD trajectory data — **written by the solver, discarded by VCell**
 
 This is the pivotal finding. The solver **`LangevinNoVis01`**
-(`../LangevinNoVis01`, the source for the `localsolvers/*/langevin_x64` binaries)
+(`../LangevinNoVis01`, the source for the `localsolvers/*/langevin/langevin_x64` binaries)
 — despite the "NoVis" name, which refers to the removed *GUI* viewer — **still
 writes a per-particle position file** every `dt_image` step
 (`MySystem.writePositions()`). VCell passes `dt_image` to the solver, the solver

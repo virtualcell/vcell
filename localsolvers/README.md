@@ -27,7 +27,7 @@ doesn't matter.
 | [vcell-hy3s](https://github.com/virtualcell/vcell-hy3s) | `Hybrid_EM_x64`, `Hybrid_MIL_x64`, `Hybrid_MIL_Adaptive_x64` |
 | [vcell-chombo](https://github.com/virtualcell/vcell-chombo) | `VCellChombo2D_x64`, `VCellChombo3D_x64` (linux64 and mac64 only) |
 | [vcell-mbsolver](https://github.com/virtualcell/vcell-mbsolver) | `MovingBoundary_x64` |
-| [cam-center/LangevinNoVis01](https://github.com/cam-center/LangevinNoVis01) | `langevin_x64` |
+| [cam-center/LangevinNoVis01](https://github.com/cam-center/LangevinNoVis01) | `langevin_x64`, in `<platform>/langevin/` |
 
 **Versions and checksums** are properties in the root `pom.xml` (`solvers-<repo>.version` and
 `solvers-<repo>.sha256.<platform>`). To bump a solver, change its tag and copy the three checksums from
@@ -36,6 +36,10 @@ that release's `SHA256SUMS` asset:
 ```bash
 gh release download <tag> -R virtualcell/<repo> -p SHA256SUMS -O -
 ```
+
+Langevin publishes bare executables (`langevin-ubuntu-latest`, `langevin-macos-universal`,
+`langevin-windows-latest`) and no `SHA256SUMS`, so its checksums are computed from the downloaded assets
+(`shasum -a 256`). Its executions name the output file, and an antrun step sets the executable bit.
 
 A stale file from an older layout stays in these directories until you delete it (`mvn clean` does not
 touch `localsolvers/`), so clear the platform directories if a solver behaves unexpectedly after a bump.

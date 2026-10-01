@@ -336,7 +336,7 @@ same "binding bond length" "$(cell "$RS" "$(row "$RS" binding --exact)" 'Bond Le
 same "transition_bound enabled" "$(cell "$RS" "$(row "$RS" transition_bound --exact)" 'Enabled')" 'false'
 
 step "Run the Langevin solver on this machine"
-# Native Quick Run, with the bundled localsolvers/<platform>/langevin_x64 - no account, no
+# Native Quick Run, with the bundled localsolvers/<platform>/langevin/langevin_x64 - no account, no
 # server, and nothing saved. This is the document's "Run Simulation", minus the walk it
 # recommends taking while it finishes.
 must tab name=ApplicationTabbedPane "Simulations" >/dev/null; sleep 4
