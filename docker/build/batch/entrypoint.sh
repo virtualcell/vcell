@@ -167,6 +167,11 @@ case $command in
 		/vcellbin/langevin_x64 $arguments
 		exit $?
 		;;
+	/bin/bash|bash)
+		# SlurmProxy's Langevin job sends its final progress and COMPLETED messages with
+		# "${solver_container_prefix} /bin/bash -c \"curl ...\"" (langevinFixture.slurm.sub)
+		exec /bin/bash "$@"
+		;;
 	JavaPreprocessor64)
 		/vcellscripts/JavaPreprocessor64 $arguments
 		exit $?
