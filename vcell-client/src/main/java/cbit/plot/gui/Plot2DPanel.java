@@ -117,6 +117,7 @@ public class Plot2DPanel extends JPanel {
 	private boolean fieldBStepMode = false;
 	private boolean fieldIsHistogram = false; //added March 30,2007. to indicate this plot if for trajectory or histogram
 	private boolean fieldVaryLineStyles = true;
+	private boolean fieldIsolateCurrentSeries = false;
 	private boolean ivjConnPtoP14Aligning = false;
 	
 	private Color[] userDefinedColors;
@@ -1279,6 +1280,11 @@ private void controlKeys() {
 			cycleCurrentPlot(false);
 		}
 	}, KeyStroke.getKeyStroke("ctrl P"), WHEN_IN_FOCUSED_WINDOW);
+	registerKeyboardAction(new ActionListener() {
+		public void actionPerformed(ActionEvent e) {
+			toggleSeriesIsolation();
+		}
+	}, KeyStroke.getKeyStroke("ctrl I"), WHEN_IN_FOCUSED_WINDOW);
 }
 
 
@@ -2186,8 +2192,11 @@ public void paintComponent(Graphics g) {
 		for (int i=0;i<plotDatas.length;i++) {
 			if (getPlot2D().isVisiblePlot(i)) {
 				int seriesIndex = visiblePlotIndex;
-				g2D.setPaint(getVisiblePlotPaint(seriesIndex));
 				visiblePlotIndex++;
+				if (fieldIsolateCurrentSeries && i != getCurrentPlotIndex()) {
+					continue;
+				}
+				g2D.setPaint(getVisiblePlotPaint(seriesIndex));
 				if(getIsHistogram())
 					drawHistogram(plotDatas[i], i, g2D,getPlot2D().getRenderHints()[i],10, seriesIndex);
 				else 
@@ -2458,6 +2467,35 @@ private void setCurrentPlotIndex(int currentPlotIndex) {
 	int oldValue = fieldCurrentPlotIndex;
 	fieldCurrentPlotIndex = currentPlotIndex;
 	firePropertyChange("currentPlotIndex", oldValue, currentPlotIndex);
+	publishSeriesSelection();
+}
+
+/**
+ * Keyboard selection names the current series without a pointer move.
+ * Ctrl+I isolates that series; a second Ctrl+I shows every visible series again.
+ */
+private void toggleSeriesIsolation() {
+	if (getPlot2D() == null || getPlot2D().getNumberOfVisiblePlots() < 1 || getCurrentPlotIndex() < 0) {
+		return;
+	}
+	fieldIsolateCurrentSeries = !fieldIsolateCurrentSeries;
+	publishSeriesSelection();
+	repaint();
+}
+
+boolean isCurrentSeriesIsolated() {
+	return fieldIsolateCurrentSeries;
+}
+
+private void publishSeriesSelection() {
+	if (getStatusLabel() == null) {
+		return;
+	}
+	String name = seriesName(fieldCurrentPlotIndex);
+	if (name == null) {
+		return;
+	}
+	getStatusLabel().setText(fieldIsolateCurrentSeries ? name + " (only this series)" : name);
 }
 
 
@@ -2978,6 +3016,7 @@ private void updatePlot(cbit.plot.Plot2D plot2D) {
  * Comment
  */
 private void updateVisiblePlots(Plot2D plot2D) {
+	fieldIsolateCurrentSeries = false;
 	int index = -1;
 	if (plot2D.getNumberOfVisiblePlots() > 0) {
 		for (int i = 0; i < plot2D.getNumberOfPlots(); i++){

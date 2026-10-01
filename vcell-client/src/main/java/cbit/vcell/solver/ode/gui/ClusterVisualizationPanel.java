@@ -38,7 +38,7 @@ public class ClusterVisualizationPanel extends AbstractVisualizationPanel {
 
     private final Map<String, Color> persistentColorMap = new LinkedHashMap<>();
     private final java.util.List<Color> globalPalette = new ArrayList<>();
-    private int nextColorIndex = 0;
+    private final LangevinSeriesIdentity seriesIdentity = new LangevinSeriesIdentity();
 
     private ClusterPlotPanel clusterPlotPanel = null;   // here are the plots being drawn
     private ClusterDataPanel clusterDataPanel = null;   // here resides the data table
@@ -118,11 +118,12 @@ public class ClusterVisualizationPanel extends AbstractVisualizationPanel {
                 clusterPlotPanel.setName("ClusterPlotPanel");
                 clusterPlotPanel.setCoordinateCallback(coords -> {
                     if (coords == null) {
-                        clearCrosshairCoordinates();
+                        restoreSeriesStatusOrClear();
                     } else {
                         updateCrosshairCoordinates(coords[0], coords[1]);
                     }
                 });
+                clusterPlotPanel.setSeriesStatusCallback(this::showSeriesStatus);
                 clusterPlotPanel.addComponentListener(new ComponentAdapter() {
                     @Override
                     public void componentShown(ComponentEvent e) {
@@ -204,9 +205,9 @@ public class ClusterVisualizationPanel extends AbstractVisualizationPanel {
     // ---------------------------------------------------------------------
 
     private void initializeGlobalPalette() {
-        // Use a curated palette from ColorUtil
         globalPalette.clear();
-        globalPalette.addAll(Arrays.asList(ColorUtil.DARK20));
+        globalPalette.addAll(Arrays.asList(ColorUtil.CVD_SAFE_LIGHT));
+        seriesIdentity.reset();
 
         // Reserve ACS and ACO immediately
         ensureColorsAssigned("ACS");
@@ -225,11 +226,7 @@ public class ClusterVisualizationPanel extends AbstractVisualizationPanel {
         }
     }
     private void ensureColorsAssigned(String name) {
-        if (!persistentColorMap.containsKey(name)) {
-            Color c = globalPalette.get(nextColorIndex % globalPalette.size());
-            persistentColorMap.put(name, c);
-            nextColorIndex++;
-        }
+        seriesIdentity.assignIfAbsent(name, persistentColorMap);
     }
     private Color deriveEnvelopeColor(Color base) {
         return new Color(
@@ -298,7 +295,7 @@ public class ClusterVisualizationPanel extends AbstractVisualizationPanel {
 
         // Visible label
         String shortLabel = "<html>" + name + "<font color=\"#8B0000\">" + " [" + unitSymbol + "] " + "</font></html>";
-        JLabel line = new JLabel(new LineIcon(color));
+        JLabel line = new JLabel(new LineIcon(color, seriesIdentity.index(name)));
         JLabel text = new JLabel(shortLabel);
         line.setBorder(new EmptyBorder(6, 0, 1, 0));
         text.setBorder(new EmptyBorder(1, 8, 6, 0));
@@ -322,8 +319,18 @@ public class ClusterVisualizationPanel extends AbstractVisualizationPanel {
         };
         line.addMouseListener(hover);
         text.addMouseListener(hover);
+        bindLegendSeries(text, name, () -> getClusterPlotPanel().selectSeries(name));
 
         return p;
+    }
+
+    private void restoreSeriesStatusOrClear() {
+        String status = getClusterPlotPanel().seriesStatusText();
+        if (status.isEmpty()) {
+            clearCrosshairCoordinates();
+        } else {
+            showSeriesStatus(status);
+        }
     }
 
     private void redrawPlot(ClusterSpecificationPanel.ClusterSelection sel) throws ExpressionException {
@@ -410,10 +417,10 @@ public class ClusterVisualizationPanel extends AbstractVisualizationPanel {
             // Cluster curves are AVG curves in the new API
             if (sel.plotStyle == ClusterSpecificationPanel.PlotStyle.LINE) {
                 lg.debug("Adding avg renderer for " + name + ", color = " + c);
-                plot.addAvgRenderer(times, y, c, name, "AVG");
+                plot.addAvgRenderer(times, y, c, name, "AVG", seriesIdentity.index(name));
             } else {
                 lg.debug("Adding bubble renderer for " + name + ", color = " + c);
-                plot.addBubbleRenderer(times, y, c, name);
+                plot.addBubbleRenderer(times, y, c, name, seriesIdentity.index(name));
             }
         }
 

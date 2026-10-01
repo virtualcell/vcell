@@ -43,7 +43,7 @@ public class MoleculeVisualizationPanel extends AbstractVisualizationPanel {
 
     private final Map<String, Color> persistentColorMap = new LinkedHashMap<>();
     private final java.util.List<Color> globalPalette = new ArrayList<>();
-    private int nextColorIndex = 0;
+    private final LangevinSeriesIdentity seriesIdentity = new LangevinSeriesIdentity();
 
     private MoleculePlotPanel moleculePlotPanel = null;   // here are the plots being drawn
     private MoleculeDataPanel moleculeDataPanel = null;   // here resides the data table
@@ -122,11 +122,12 @@ public class MoleculeVisualizationPanel extends AbstractVisualizationPanel {
                 moleculePlotPanel.setName("ClusterPlotPanel");
                 moleculePlotPanel.setCoordinateCallback(coords -> {
                     if (coords == null) {
-                        clearCrosshairCoordinates();
+                        restoreSeriesStatusOrClear();
                     } else {
                         updateCrosshairCoordinates(coords[0], coords[1]);
                     }
                 });
+                moleculePlotPanel.setSeriesStatusCallback(this::showSeriesStatus);
                 moleculePlotPanel.addComponentListener(new ComponentAdapter() {
                     @Override
                     public void componentShown(ComponentEvent e) {
@@ -286,7 +287,8 @@ public class MoleculeVisualizationPanel extends AbstractVisualizationPanel {
             // --- AVG line ---
             if (sel.selectedStatistics.contains(MoleculeSpecificationPanel.StatisticSelection.AVG)
                     && s.avg != null) {
-                plot.addAvgRenderer(time, s.avg, baseColor, name, MoleculeSpecificationPanel.StatisticSelection.AVG);
+                plot.addAvgRenderer(time, s.avg, baseColor, name, MoleculeSpecificationPanel.StatisticSelection.AVG,
+                        seriesIdentity.index(name));
             }
         }
 
@@ -330,19 +332,19 @@ public class MoleculeVisualizationPanel extends AbstractVisualizationPanel {
                 // fallback or auto-assign if needed
                 c = Color.GRAY;
             }
-            legend.add(createLegendEntry(name, c));
+            legend.add(createLegendEntry(name, c, seriesIdentity.index(name)));
         }
         legend.revalidate();
         legend.repaint();
     }
-    private JComponent createLegendEntry(String name, Color color) {
+    private JComponent createLegendEntry(String name, Color color, int seriesIndex) {
         JPanel p = new JPanel();
         p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
         p.setOpaque(false);
 
         String unitSymbol = "molecules";
         String tooltip = "<html><b>" + name + "</b><br>" + unitSymbol + "</html>";
-        JLabel line = new JLabel(new LineIcon(color));
+        JLabel line = new JLabel(new LineIcon(color, seriesIndex));
 
 //        JLabel text = new JLabel("<html>" + name + " <font color=\"#8B0000\">[" + unitSymbol + "]</font></html>");
         JLabel text = new JLabel("<html>" + name + " <font color=\"#8B0000\"></font></html>");
@@ -379,8 +381,18 @@ public class MoleculeVisualizationPanel extends AbstractVisualizationPanel {
         };
         line.addMouseListener(hover);
         text.addMouseListener(hover);
+        bindLegendSeries(text, name, () -> getMoleculePlotPanel().selectSeries(name));
 
         return p;
+    }
+
+    private void restoreSeriesStatusOrClear() {
+        String status = getMoleculePlotPanel().seriesStatusText();
+        if (status.isEmpty()) {
+            clearCrosshairCoordinates();
+        } else {
+            showSeriesStatus(status);
+        }
     }
 
     private void redrawDataTable(MoleculeSpecificationPanel.MoleculeSelection sel) throws ExpressionException {
@@ -421,9 +433,9 @@ public class MoleculeVisualizationPanel extends AbstractVisualizationPanel {
     // -------------------------------------------------------------------------------
 
     private void initializeGlobalPalette() {
-        // Use a curated palette from ColorUtil
         globalPalette.clear();
-        globalPalette.addAll(Arrays.asList(ColorUtil.TABLEAU20));
+        globalPalette.addAll(Arrays.asList(ColorUtil.CVD_SAFE_LIGHT));
+        seriesIdentity.reset();
 
         // Reserve ACS and ACO immediately
         ensureColorsAssigned("ACS");
@@ -442,11 +454,7 @@ public class MoleculeVisualizationPanel extends AbstractVisualizationPanel {
         }
     }
     private void ensureColorsAssigned(String name) {
-        if (!persistentColorMap.containsKey(name)) {
-            Color c = globalPalette.get(nextColorIndex % globalPalette.size());
-            persistentColorMap.put(name, c);
-            nextColorIndex++;
-        }
+        seriesIdentity.assignIfAbsent(name, persistentColorMap);
     }
     private Color deriveEnvelopeColor(Color base) {
         return new Color(

@@ -31,6 +31,12 @@ public class PlotOptionsPanel extends JPanel {
         gbc.gridx = 0; gbc.gridy = ++row;
         add(showLines, gbc);
 
+        JCheckBox varyLineStyles = new JCheckBox("Vary line styles", plot.isVaryLineStyles());
+        gbc.gridx = 1;
+        gbc.insets = new Insets(4, 0, 2, 4);
+        add(varyLineStyles, gbc);
+        varyLineStyles.addActionListener(e -> plot.setVaryLineStyles(varyLineStyles.isSelected()));
+
         // --- Mutual exclusion logic ---
         Runnable enforceAtLeastOne = () -> {
             if (!showNodes.isSelected() && !showLines.isSelected()) {

@@ -3,11 +3,14 @@ package cbit.vcell.solver.ode.gui;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.vcell.util.ColorUtil;
 import org.vcell.util.gui.JToolBarToggleButton;
 import org.vcell.util.gui.VCellIcons;
 
 
 import java.awt.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
@@ -20,23 +23,62 @@ public abstract class AbstractVisualizationPanel extends DocumentEditorSubPanel 
 
     protected class LineIcon implements Icon {
         private final Color color;
+        private final int seriesIndex;
+
         public LineIcon(Color color) {
-            this.color = color;
+            this(color, 0);
         }
+
+        public LineIcon(Color color, int seriesIndex) {
+            this.color = color;
+            this.seriesIndex = seriesIndex;
+        }
+
         @Override
         public void paintIcon(Component c, Graphics g, int x, int y) {
-            Graphics2D g2 = (Graphics2D)g;
-            g2.setStroke(new BasicStroke(6.0f));
-            g2.setPaint(color);
-            int midY = y + getIconHeight() / 2;
-            g2.drawLine(x, midY, x + getIconWidth(), midY);
+            Graphics2D g2 = (Graphics2D) g.create();
+            try {
+                g2.setStroke(new BasicStroke(1.5f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND, 10f,
+                        ColorUtil.seriesDash(seriesIndex), 0f));
+                g2.setPaint(color);
+                int midY = y + getIconHeight() / 2;
+                g2.drawLine(x + 1, midY, x + getIconWidth() - 1, midY);
+            } finally {
+                g2.dispose();
+            }
         }
+
         @Override
         public int getIconWidth() { return 80; }
+
         @Override
         public int getIconHeight() {
-            return 4;  // more vertical room for a wider stroke
+            return 12;
         }
+    }
+
+    protected void bindLegendSeries(JLabel label, String seriesName, Runnable select) {
+        label.setFocusable(true);
+        label.getAccessibleContext().setAccessibleName(seriesName);
+        label.getAccessibleContext().setAccessibleDescription(seriesName);
+        label.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER || e.getKeyCode() == KeyEvent.VK_SPACE) {
+                    select.run();
+                    e.consume();
+                }
+            }
+        });
+    }
+
+    protected void showSeriesStatus(String text) {
+        if (text == null || text.isEmpty()) {
+            return;
+        }
+        getCrosshairCoordLabel().setText(text);
+        getCrosshairCoordLabel().getAccessibleContext().setAccessibleName(text);
+        adjustCoordLabelWidth(text);
     }
 
     protected JPanel cardPanel;

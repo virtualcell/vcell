@@ -41,19 +41,25 @@ public final class PlotRenderers {
         final double[] time;
         final double[] values;
         final Color color;
+        final int seriesIndex;
         final AbstractPlotPanel parent;
 
         private int[] xs;
         private int[] ys;
 
-        AvgRenderer(String seriesName, double[] time, double[] values, Color color, AbstractPlotPanel parent) {
+        AvgRenderer(String seriesName, double[] time, double[] values, Color color, int seriesIndex, AbstractPlotPanel parent) {
             this.seriesName = seriesName;
             this.time = time;
             this.values = values;
             this.color = color;
+            this.seriesIndex = seriesIndex;
             this.parent = parent;
         }
         public String getSeriesName() { return seriesName; }
+
+        BasicStroke stroke() {
+            return PlotSeriesStyle.stroke(seriesIndex, parent.isVaryLineStyles());
+        }
 
         @Override
         public void draw(Graphics2D g2,
@@ -61,6 +67,12 @@ public final class PlotRenderers {
                          int plotWidth, int plotHeight,
                          double xMaxRounded, double yMaxRounded, double yMinRounded,
                          double dt) {
+
+            if (!parent.isSeriesVisible(seriesName)) {
+                xs = null;
+                ys = null;
+                return;
+            }
 
             int n = values.length;
             if (n < 2) return;
@@ -76,47 +88,38 @@ public final class PlotRenderers {
             }
 
             Color c = color;
-            // Dim this line if hovering another series
-            if (parent.hoveredSeriesName != null) {
-                if (!parent.hoveredSeriesName.equals(seriesName)) {
-                    c = new Color(c.getRed(), c.getGreen(), c.getBlue(), DIMMED_LINE_ALPHA);
-                }
+            if (parent.isSeriesDimmed(seriesName)) {
+                c = new Color(c.getRed(), c.getGreen(), c.getBlue(), DIMMED_LINE_ALPHA);
             }
 
-            // Unite the poins as a polyline or as steps, depending on the setting
+            // One path keeps the dash phase continuous, including step mode.
             if(parent.getShowLines()) {
-                if (!parent.isShowAvgAsStep()) {      // draw the polyline (unite the data points directly)
-                    g2.setColor(c);
-                    g2.setStroke(new BasicStroke(CURVE_STROKE, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-                    g2.drawPolyline(xs, ys, n);
-                } else {                    // unite the data points as steps
-                    // step function: horizontal line from (time[i], values[i]) to (time[i+1], values[i]),
-                    // then vertical jump at time[i+1]
-                    g2.setColor(c);
-                    g2.setStroke(new BasicStroke(CURVE_STROKE, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL));
+                Path2D path = new Path2D.Double();
+                path.moveTo(xs[0], ys[0]);
+                if (!parent.isShowAvgAsStep()) {
+                    for (int i = 1; i < n; i++) {
+                        path.lineTo(xs[i], ys[i]);
+                    }
+                } else {
                     for (int i = 0; i < n - 1; i++) {
-                        int xStart = xs[i];
-                        int yStart = ys[i];
-                        int xEnd = xs[i + 1];
-                        int yEnd = ys[i + 1];
-                        g2.drawLine(xStart, yStart, xEnd, yStart); // horizontal segment
-                        g2.drawLine(xEnd, yStart, xEnd, yEnd);     // vertical jump
+                        path.lineTo(xs[i + 1], ys[i]);
+                        path.lineTo(xs[i + 1], ys[i + 1]);
                     }
                 }
+                g2.setColor(c);
+                g2.setStroke(stroke());
+                g2.draw(path);
             }
 
-            // Draw nodes if enabled
-            if (parent.getShowNodes()) {          // parent is the AbstractPlotPanel
+            // Draw nodes if enabled. Marker shape follows the stable series index.
+            if (parent.getShowNodes()) {
                 g2.setColor(c);
-                int diameter = parent.getNodeDiameter();                 // small, unobtrusive
+                int diameter = Math.max(6, parent.getNodeDiameter());
                 if(!parent.getShowLines()) {
-                    diameter += 2;                // if no lines, make nodes bigger to be more visible
+                    diameter += 2;
                 }
-                int radius = diameter / 2;
                 for (int i = 0; i < n; i++) {
-                    int cx = xs[i] - radius;
-                    int cy = ys[i] - radius;
-                    g2.fillOval(cx, cy, diameter, diameter);
+                    PlotSeriesStyle.paintMarker(g2, seriesIndex, xs[i], ys[i], diameter);
                 }
             }
         }
@@ -169,6 +172,10 @@ public final class PlotRenderers {
                          double xMaxRounded, double yMaxRounded, double yMinRounded,
                          double dt) {
 
+            if (!parent.isSeriesVisible(seriesName)) {
+                return;
+            }
+
             int n = upper.length;
             if (n < 2) return;
 
@@ -201,12 +208,8 @@ public final class PlotRenderers {
             path.closePath();
 
             Color c = fillColor;
-            // If hovering, dim all bands except the hovered one
-            if (parent.hoveredSeriesName != null) {
-                if (!parent.hoveredSeriesName.equals(parent.getSeriesNameForRenderer(this))) {
-                    // Dim this band heavily
-                    c = new Color(c.getRed(), c.getGreen(), c.getBlue(), DIMMED_BAND_ALPHA);
-                }
+            if (parent.isSeriesDimmed(seriesName)) {
+                c = new Color(c.getRed(), c.getGreen(), c.getBlue(), DIMMED_BAND_ALPHA);
             }
             if (!parent.isShowBandAsStep()) {
                 // your existing Path2D polygon
@@ -315,12 +318,14 @@ public final class PlotRenderers {
                          int plotWidth, int plotHeight,
                          double xMaxRounded, double yMaxRounded, double yMinRounded,
                          double dt) {
+            if (!parent.isSeriesVisible(seriesName)) {
+                return;
+            }
             int n = upper.length;
             if (n == 0) return;
             Color c = color;
 
-            if (parent.hoveredSeriesName != null &&         // dimming logic is the same as in BandRenderer
-                    !parent.hoveredSeriesName.equals(parent.getSeriesNameForRenderer(this))) {
+            if (parent.isSeriesDimmed(seriesName)) {
                 c = new Color(c.getRed(), c.getGreen(), c.getBlue(), AbstractPlotPanel.DIMMED_BAND_ALPHA);
             }
 
@@ -366,6 +371,7 @@ public final class PlotRenderers {
         final double[] values;        // counts or mass
         final int clusterSize;        // extracted from seriesName, used for Y-position
         final Color color;
+        final int seriesIndex;
         final AbstractPlotPanel parent;
 
         private int[] xs;             // pixel x positions
@@ -373,11 +379,12 @@ public final class PlotRenderers {
         private int[] diameters;      // bubble diameters in pixels
 
         BubbleRenderer(String seriesName, double[] time, double[] values,
-                       Color color, AbstractPlotPanel parent) {
+                       Color color, int seriesIndex, AbstractPlotPanel parent) {
             this.seriesName = seriesName;
             this.time = time;
             this.values = values;
             this.color = color;
+            this.seriesIndex = seriesIndex;
             this.clusterSize = extractClusterSize(seriesName);
             this.parent = parent;
         }
@@ -407,6 +414,13 @@ public final class PlotRenderers {
                          int plotWidth, int plotHeight,
                          double xMaxRounded, double yMaxRounded, double yMinRounded,
                          double dt) {
+
+            if (!parent.isSeriesVisible(seriesName)) {
+                xs = null;
+                ys = null;
+                diameters = null;
+                return;
+            }
 
             int n = values.length;
             if (n == 0) return;
@@ -484,8 +498,7 @@ public final class PlotRenderers {
                 c = color;
             }
 
-            // 5. Hover dimming - if another series is hovered, dim this one.
-            if (parent.hoveredSeriesName != null && !parent.hoveredSeriesName.equals(seriesName)) {
+            if (parent.isSeriesDimmed(seriesName)) {
                 c = new Color(c.getRed(), c.getGreen(), c.getBlue(), DIMMED_SOLID_BUBBLE_ALPHA);
                 if(parent.isShowBubbleFading()) {
                     c = new Color(c.getRed(), c.getGreen(), c.getBlue(), DIMMED_FADING_BUBBLE_ALPHA);
@@ -532,7 +545,7 @@ public final class PlotRenderers {
             // fading colors
             Color edge = new Color(base.getRed(), base.getGreen(), base.getBlue(), 40);     // 60
             Color mid  = new Color(base.getRed(), base.getGreen(), base.getBlue(), 160);    // 128
-            if (parent.hoveredSeriesName != null && !parent.hoveredSeriesName.equals(seriesName)) {
+            if (parent.isSeriesDimmed(seriesName)) {
                 edge = new Color(base.getRed(), base.getGreen(), base.getBlue(), 10);
                 mid  = new Color(base.getRed(), base.getGreen(), base.getBlue(), 40);
             }
@@ -564,7 +577,7 @@ public final class PlotRenderers {
             g2.setColor(c);
             g2.fillOval(xCenter - dotR, yCenter - dotR, dot, dot);
             // contour
-            g2.setStroke(new BasicStroke(1.5f));
+            g2.setStroke(PlotSeriesStyle.stroke(seriesIndex, parent.isVaryLineStyles()));
             g2.drawOval(cx, cy, d, d);
         }
 

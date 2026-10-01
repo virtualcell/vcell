@@ -9,6 +9,8 @@ import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
@@ -46,6 +48,16 @@ public class PlotPaneAccessibilityTest {
 			assertTrue(sawStyledIcon);
 			assertTrue(seriesTwo != null);
 			seriesTwo.dispatchEvent(new MouseEvent(seriesTwo, MouseEvent.MOUSE_CLICKED, 0, 0, 1, 1, 1, false));
+			assertEquals(2, pane.accessiblePlotPanel().getCurrentPlotIndex());
+			assertEquals("s2", seriesTwo.getAccessibleContext().getAccessibleName());
+			assertTrue(seriesTwo.isFocusable());
+			pane.accessiblePlotPanel().setCurrentPlot("s0");
+			KeyListener[] listeners = seriesTwo.getKeyListeners();
+			assertTrue(listeners.length > 0);
+			listeners[0].keyPressed(new KeyEvent(seriesTwo, KeyEvent.KEY_PRESSED, 0, 0, KeyEvent.VK_ENTER, KeyEvent.CHAR_UNDEFINED));
+			assertEquals(2, pane.accessiblePlotPanel().getCurrentPlotIndex());
+			pane.accessiblePlotPanel().setCurrentPlot("s0");
+			listeners[0].keyPressed(new KeyEvent(seriesTwo, KeyEvent.KEY_PRESSED, 0, 0, KeyEvent.VK_SPACE, ' '));
 			assertEquals(2, pane.accessiblePlotPanel().getCurrentPlotIndex());
 		});
 	}

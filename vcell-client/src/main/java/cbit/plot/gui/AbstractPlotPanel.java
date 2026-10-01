@@ -10,6 +10,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -91,8 +92,14 @@ public abstract class AbstractPlotPanel extends JPanel {
     // we'll track when the mouse hovers over any entity in the legend
     // we'll make min/max and SD bands very transparent for all other entities
     protected String hoveredSeriesName = null;
+    private String selectedSeriesName = null;
+    private boolean isolateSelectedSeries = false;
+    private boolean varyLineStyles = true;
+    private Consumer<String> seriesStatusCallback;
 
     public AbstractPlotPanel() {
+        setFocusable(true);
+        registerSeriesKeys();
         addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseMoved(MouseEvent e) {
@@ -234,6 +241,9 @@ public abstract class AbstractPlotPanel extends JPanel {
     }
     public void clearAllRenderers() {
         renderers.clear();
+        selectedSeriesName = null;
+        isolateSelectedSeries = false;
+        publishSeriesSelection();
     }
     public void setGlobalMinMax(double min, double max) {
         this.globalMin = min;
@@ -244,8 +254,8 @@ public abstract class AbstractPlotPanel extends JPanel {
     }
 
     // High-level, stat-aware renderers
-    public void addAvgRenderer(double[] time, double[] avg, Color color, String name, Object statTag) {
-        renderers.add(new AvgRenderer(name, time, avg, color, this));
+    public void addAvgRenderer(double[] time, double[] avg, Color color, String name, Object statTag, int seriesIndex) {
+        renderers.add(new AvgRenderer(name, time, avg, color, seriesIndex, this));
     }
     public void addMinMaxRenderer(double[] time, double[] min, double[] max, Color color, String name, Object statTag) {
         renderers.add(new BandRenderer(name, time, max, min, color, this));
@@ -257,8 +267,8 @@ public abstract class AbstractPlotPanel extends JPanel {
             renderers.add(new BandRenderer(name, time, low, high, color, this));
         }
     }
-    public void addBubbleRenderer(double[] time, double[] values, Color color, String name) {
-        renderers.add(new PlotRenderers.BubbleRenderer(name, time, values, color, this));
+    public void addBubbleRenderer(double[] time, double[] values, Color color, String name, int seriesIndex) {
+        renderers.add(new PlotRenderers.BubbleRenderer(name, time, values, color, seriesIndex, this));
     }
 
     // Utilities
@@ -301,6 +311,10 @@ public abstract class AbstractPlotPanel extends JPanel {
     }
     public void setShowLines(boolean b) {
         this.options.showLines = b;
+        repaint();
+    }
+    public void setVaryLineStyles(boolean b) {
+        this.varyLineStyles = b;
         repaint();
     }
     public void setShowNodes(boolean b) {
@@ -375,6 +389,7 @@ public abstract class AbstractPlotPanel extends JPanel {
     public boolean isShowAvgAsStep() { return options.showAvgAsStep; }
     public boolean isShowBandAsStep() { return options.showBandAsStep; }
     public boolean getShowLines() { return options.showLines; }
+    public boolean isVaryLineStyles() { return varyLineStyles; }
     public boolean getShowNodes() { return options.showNodes; }
     public boolean isSnapToNodes() { return options.snapToNodes; }
     public boolean isShowBarForSD() { return options.showBarForSD; }
@@ -404,6 +419,9 @@ public abstract class AbstractPlotPanel extends JPanel {
         Point best = null;
         double bestDist2 = Double.POSITIVE_INFINITY;
         for (SeriesRenderer r : renderers) {
+            if (!isSeriesVisible(r.getSeriesName())) {
+                continue;
+            }
             Point p = r.getClosestPoint(mouseX, mouseY);
             if (p != null) {
                 double dx = p.x - mouseX;
@@ -427,6 +445,9 @@ public abstract class AbstractPlotPanel extends JPanel {
         double bestDist2 = Double.POSITIVE_INFINITY;
 
         for (SeriesRenderer r : renderers) {
+            if (!isSeriesVisible(r.getSeriesName())) {
+                continue;
+            }
             if (r instanceof BubbleRenderer br) {
                 BubbleHit hit = br.getClosestBubble(mouseX, mouseY);
                 if (hit != null) {
@@ -459,8 +480,128 @@ public abstract class AbstractPlotPanel extends JPanel {
         this.hoveredSeriesName = name;
         repaint();
     }
+    public void setSeriesStatusCallback(Consumer<String> callback) {
+        this.seriesStatusCallback = callback;
+    }
     public String getSeriesNameForRenderer(SeriesRenderer r) {
         return r.getSeriesName();
+    }
+
+    public void selectSeries(String name) {
+        selectedSeriesName = name;
+        publishSeriesSelection();
+        repaint();
+    }
+
+    public void selectNextSeries(boolean forward) {
+        List<String> names = plottedSeriesNames();
+        if (names.isEmpty()) {
+            return;
+        }
+        int current = names.indexOf(selectedSeriesName);
+        int next;
+        if (current < 0) {
+            next = forward ? 0 : names.size() - 1;
+        } else if (forward) {
+            next = (current + 1) % names.size();
+        } else {
+            next = (current - 1 + names.size()) % names.size();
+        }
+        selectSeries(names.get(next));
+    }
+
+    public void toggleSeriesIsolation() {
+        if (selectedSeriesName == null) {
+            selectNextSeries(true);
+        }
+        isolateSelectedSeries = !isolateSelectedSeries;
+        publishSeriesSelection();
+        repaint();
+    }
+
+    public String seriesStatusText() {
+        if (selectedSeriesName == null) {
+            return "";
+        }
+        if (isolateSelectedSeries) {
+            return selectedSeriesName + " (only this series)";
+        }
+        return selectedSeriesName;
+    }
+
+    public boolean isSeriesVisible(String name) {
+        return !isolateSelectedSeries || selectedSeriesName == null || selectedSeriesName.equals(name);
+    }
+
+    public boolean isSeriesDimmed(String name) {
+        String emphasis = hoveredSeriesName != null ? hoveredSeriesName : selectedSeriesName;
+        return emphasis != null && !emphasis.equals(name);
+    }
+
+    public BasicStroke strokeForSeries(String name) {
+        for (SeriesRenderer renderer : renderers) {
+            if (renderer instanceof AvgRenderer avg && name.equals(avg.seriesName)) {
+                return avg.stroke();
+            }
+        }
+        return null;
+    }
+
+    public double[] valuesForSeries(String name) {
+        for (SeriesRenderer renderer : renderers) {
+            if (!name.equals(renderer.getSeriesName())) {
+                continue;
+            }
+            if (renderer instanceof AvgRenderer avg) {
+                return avg.values.clone();
+            }
+            if (renderer instanceof BubbleRenderer bubble) {
+                return bubble.values.clone();
+            }
+            if (renderer instanceof BandRenderer band) {
+                return highEnvelope(band.lower, band.upper);
+            }
+            if (renderer instanceof BarRenderer bar) {
+                return highEnvelope(bar.lower, bar.upper);
+            }
+        }
+        return new double[0];
+    }
+
+    private static double[] highEnvelope(double[] lower, double[] upper) {
+        int n = Math.min(lower.length, upper.length);
+        double[] high = new double[n];
+        for (int i = 0; i < n; i++) {
+            high[i] = Math.max(lower[i], upper[i]);
+        }
+        return high;
+    }
+
+    private List<String> plottedSeriesNames() {
+        LinkedHashSet<String> names = new LinkedHashSet<>();
+        for (SeriesRenderer renderer : renderers) {
+            if (renderer.getSeriesName() != null) {
+                names.add(renderer.getSeriesName());
+            }
+        }
+        return new ArrayList<>(names);
+    }
+
+    private void publishSeriesSelection() {
+        String text = seriesStatusText();
+        if (getAccessibleContext() != null) {
+            getAccessibleContext().setAccessibleName(text.isEmpty() ? "Plot" : text);
+            getAccessibleContext().setAccessibleDescription(text.isEmpty() ? "Plot" : text);
+        }
+        if (seriesStatusCallback != null) {
+            seriesStatusCallback.accept(text);
+        }
+    }
+
+    private void registerSeriesKeys() {
+        registerKeyboardAction(e -> selectNextSeries(true), KeyStroke.getKeyStroke("ctrl N"), WHEN_FOCUSED);
+        registerKeyboardAction(e -> selectNextSeries(false), KeyStroke.getKeyStroke("ctrl P"), WHEN_FOCUSED);
+        registerKeyboardAction(e -> toggleSeriesIsolation(), KeyStroke.getKeyStroke("ctrl I"), WHEN_FOCUSED);
     }
 
     // -------------------------------------------------------------------

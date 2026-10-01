@@ -17,6 +17,8 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.Stroke;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 
 import javax.swing.BorderFactory;
 import javax.swing.ButtonModel;
@@ -104,6 +106,7 @@ public static class LineIcon implements Icon {
 		}
 	}
 	private java.awt.event.MouseListener ml = null;
+	private java.awt.event.KeyListener legendKeys = null;
 	private Plot2DPanel ivjPlot2DPanel1 = null;
 	private JLabel ivjJLabel5 = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
@@ -1383,6 +1386,13 @@ public Icon createSeriesStyleIcon(Paint paint, int prospectiveVisibleIndex, int 
 /**
  * Comment
  */
+private void selectLegendSeries(JComponent source) {
+	Object rawName = source.getClientProperty("plotName");
+	if (rawName instanceof String) {
+		getPlot2DPanel1().setCurrentPlot((String) rawName);
+	}
+}
+
 private void updateLegend() {
 	Plot2D plot = getPlot2DPanel1().getPlot2D();
 	SymbolTableEntry[] steList = plot.getSymbolTableEntries();
@@ -1394,9 +1404,15 @@ private void updateLegend() {
 	if (ml == null) {
 		ml = new java.awt.event.MouseAdapter() {
 			public void mouseClicked(java.awt.event.MouseEvent evt) {
-				Object rawName = ((JComponent) evt.getSource()).getClientProperty("plotName");
-				if (rawName instanceof String) {
-					getPlot2DPanel1().setCurrentPlot((String) rawName);
+				selectLegendSeries((JComponent) evt.getSource());
+			}
+		};
+	}
+	if (legendKeys == null) {
+		legendKeys = new KeyAdapter() {
+			public void keyPressed(KeyEvent evt) {
+				if (evt.getKeyCode() == KeyEvent.VK_ENTER || evt.getKeyCode() == KeyEvent.VK_SPACE) {
+					selectLegendSeries((JComponent) evt.getSource());
 				}
 			}
 		};
@@ -1409,6 +1425,8 @@ private void updateLegend() {
 		getJPanelPlotLegends().add(line);
 		getJPanelPlotLegends().add(text);
 		text.addMouseListener(ml);
+		text.setFocusable(true);
+		text.addKeyListener(legendKeys);
 	}
 	legends = getJPanelPlotLegends().getComponents();
 	// update labels and show them,use reverse loop to generate non-repeatable colors
@@ -1460,6 +1478,9 @@ private void updateLegend() {
 		int modelIndex = plotIndices[i];
 		if (plotNames != null && modelIndex >= 0 && modelIndex < plotNames.length) {
 			textLabel.putClientProperty("plotName", plotNames[modelIndex]);
+			textLabel.setFocusable(true);
+			textLabel.getAccessibleContext().setAccessibleName(plotNames[modelIndex]);
+			textLabel.getAccessibleContext().setAccessibleDescription("Plot series " + plotNames[modelIndex]);
 		}
 		legends[2 * i].setVisible(true);
 		legends[2 * i + 1].setVisible(true);

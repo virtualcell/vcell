@@ -478,9 +478,13 @@ Colors referenced below were measured with `.agents/cvd_analysis.py`.
 
 ### Phase 2 — Legacy plot framework (MUST, #1605)
 
-Automated wiring is in the working tree (2026-09-30) and is **not** marked complete. Manual
-8.7, filtered-image 8.6-b, the baseline fidelity/raster comparison now required by 8.8-c, and the broad Fast group in 8.1
-were not run. Nothing here is committed.
+Automated wiring is in the working tree. On 2026-10-01 the remaining Phase 2 engineering
+gaps were closed: keyboard series isolation, the six-curve style/node/step/size matrix, the
+scientific-mapping check for 8.8-c, and the legacy-plot grayscale half of 8.6-b. Manual 8.7
+(two reviewers on macOS, Windows, and Linux) is still not run. 8.6-b's reaction-diagram,
+geometry, spatial, and field-viewer scenes remain later phases. A pixel compare against a
+pinned pre-change commit is not a pass: path joins, markers, and histogram outlines differ
+on purpose. Nothing here is committed.
 
 **Dash contract (C1), decided 2026-09-30.** `ColorUtil.seriesDash` is an 8-slot cycle,
 `i % 8`: solid, `{6,3}`, `{2,2}`, `{8,3,2,3}`, `{6,3}`, `{2,2}`, `{8,3,2,3}`, solid. Series 0
@@ -507,10 +511,10 @@ run and would not be limited to color. That difference is intentional.
 - **Nodes:** when shown, draw marker shape `i % 5` (circle, square, triangle, diamond, cross) at
   ≥6 px, so the shape is legible.
 - **`drawHistogram` (`:1390`):** outline bars with the series stroke.
-- **Styles off:** a solid stroke is allowed so a scientist can inspect undashed curves. §15 C
-  requires that labels, selection, or the data view still identify every displayed series with
-  styles off, nodes off, custom colors, overlaps, and hidden series. The status prefix in 2.4
-  does not meet that keyboard-accessible isolation requirement by itself.
+- **Styles off:** a solid stroke is allowed so a scientist can inspect undashed curves. With
+  styles off, Ctrl+N and Ctrl+P still name the current series in the status label, and Ctrl+I
+  isolates that series (a second Ctrl+I shows every visible series). Legend labels accept
+  Enter and Space. Repeated patterns beyond 24 series remain a §15 C item.
 - **Rationale:** 1.4.1 sufficient technique G111 (color **and** pattern), completed for repeated
   and suppressed styles only by §15 C.
 - **Risk:**
@@ -527,7 +531,10 @@ run and would not be limited to color. That difference is intentional.
   bars are filled and then drawn with the series stroke; histogram nodes stay gray.
   `Plot2DPanelAccessibilityTest.sixCurveDashAcceptance_8_3_a` and
   `denseDashAcceptance_8_3_b` (6 curves, 5,000 points) passed: series 1 background gaps are
-  ≤12 px. Manual 8.7 was not run.
+  ≤12 px. On 2026-10-01, `sixCurveStyleNodeStepSizeMatrix` (400×300 and 800×600, styles,
+  nodes, and step), `scientificMappingSurvivesStyleNodesStepHistogramAndClip`,
+  `grayscaleKeepsSeriesOneDashGaps`, and `keyboardIsolationNamesSeriesWithoutPointer` also
+  passed. Manual 8.7 was not run.
 
 **2.2** `vcell-client/src/main/java/cbit/plot/gui/PlotPane.java` · `LineIcon` (`:55`) and
 `updateLegend` (`:1349`) — ✅ automated checks done (2026-09-30)
@@ -537,8 +544,9 @@ run and would not be limited to color. That difference is intentional.
 - **Verify:** test 8.3-c.
 - **Result:** `LineIcon` is a public static icon of at least 50×12, drawn with the series stroke
   and a centered marker. Legend clicks store the raw plot name and pass that to `setCurrentPlot`.
-  `PlotPaneAccessibilityTest` passed: icon size, stroke equal to `getVisiblePlotStroke`, and a
-  click on the `s2` label selects model index 2.
+  `PlotPaneAccessibilityTest` passed: icon size, stroke equal to `getVisiblePlotStroke`, a
+  click on the `s2` label selects model index 2, and Enter and Space on that focusable label
+  do the same. The label's accessible name is the raw plot name.
 
 **2.3** `vcell-client/src/main/java/cbit/plot/gui/Plot2DSettingsPanel.java` (+ `Plot2DSettings` bean)
 (MUST) — ✅ automated checks done (2026-09-30)
@@ -553,8 +561,9 @@ run and would not be limited to color. That difference is intentional.
 
 **2.4** `Plot2DPanel.pointerMoved` (`:2205`) (MUST) — ✅ automated checks done (2026-09-30)
 - **Change:** prefix the status text with the current series name.
-- **Limit:** this pointer readout is required and is not the §15 C keyboard-accessible series
-  isolation. That isolation still has to work with the pointer absent.
+- **Keyboard:** Ctrl+N and Ctrl+P set the status label to the series name with no pointer
+  event. Ctrl+I isolates the current series and sets the status to `name (only this series)`.
+  A second Ctrl+I restores every visible series. Replacing the plot clears isolation.
 - **Verify:** test 8.3-d.
 - **Result:** A successful readout is `name + ": " + coordinates`. A blank name omits the prefix.
   `getGraphics()` is used only after the status text is set, and a null graphics object skips the
@@ -570,15 +579,26 @@ list renderer `:257`) (MUST) — ✅ automated checks done (2026-09-30)
   `MultisourcePlotPaneAccessibilityTest` passed. `rg generateAutoColor` on `Plot2DPanel.java` and
   `MultisourcePlotPane.java` returns no matches (8.4-b).
 
-Command for the focused set, Java 17, headless, 2026-09-30 17:30: `mvn test -pl vcell-client -am -Dgroups=Fast -Djava.awt.headless=true -Dtest=ColorAccessibilityTest,Plot2DSettingsTest,PlotSeriesStyleTest,Plot2DPanelAccessibilityTest,PlotPaneAccessibilityTest,Plot2DSettingsPanelTest,MultisourcePlotPaneAccessibilityTest -Dsurefire.failIfNoSpecifiedTests=false`. `ColorAccessibilityTest`: 8 run, 0 failures, 1 skipped. `Plot2DSettingsTest`: 2 run, 0 failures. Client classes in that filter: 17 run, 0 failures. A later run of `Plot2DPanelAccessibilityTest` and `PlotPaneAccessibilityTest` after the 5,000-point case and legend stroke check: 10 run, 0 failures. One 100,000-point curve painted in under 5 seconds inside `histogramAndLargeCurvePaint`. The six-curve / two-size / styles / nodes / step matrix was not run.
+Command for the focused set, Java 17, headless, 2026-10-01: `mvn --batch-mode test -pl vcell-client -am -Dgroups=Fast -Djava.awt.headless=true -Dtest=ColorAccessibilityTest,Plot2DSettingsTest,PlotSeriesStyleTest,Plot2DPanelAccessibilityTest,PlotPaneAccessibilityTest,Plot2DSettingsPanelTest,MultisourcePlotPaneAccessibilityTest -Dsurefire.failIfNoSpecifiedTests=false`. `ColorAccessibilityTest`: 8 run, 0 failures, 1 skipped. `Plot2DSettingsTest`: 2 run, 0 failures. `Plot2DPanelAccessibilityTest`: 12 run, 0 failures, including the six-curve / two-size / styles / nodes / step matrix, the 8.8-c scientific-mapping check, the grayscale dash check, and keyboard isolation. `PlotPaneAccessibilityTest`: 2 run, 0 failures. One 100,000-point curve still paints in under 5 seconds inside `histogramAndLargeCurvePaint`.
+
+Gate 8.1 on 2026-10-01, `mvn --batch-mode test -Dgroups=Fast -pl vcell-util,vcell-core,vcell-client -am -Djava.awt.headless=true`: `vcell-util` 50 run, 0 failures, 1 skipped. `vcell-core` 644 run, 0 failures, 10 errors, 26 skipped. Those 10 errors are the existing Python-environment set (`MathOverrideRoundTripTest` 7, `CopasiOptimizationSolverTest` 2, `VCellDataTest` 1), the same set that fails when the Poetry environments are absent. The reactor stopped before `vcell-client`; the focused client accessibility tests above passed in a separate run. No new plot-test failure.
 
 ### Phase 3 — Langevin plot framework (MUST for palette, styles, and accessible interaction)
+
+Automated checks for 3.1 and 3.2 passed on 2026-10-01. Manual 8.7 was not run. Machado
+protan/deutan/tritan image filters were not applied to Langevin screenshots. Nothing here is
+committed. This phase does not close #1605 or the §9 / §16 gate.
 
 **3.1** `vcell-client/src/main/java/cbit/vcell/solver/ode/gui/MoleculeVisualizationPanel.java`
 (`:423`) and `ClusterVisualizationPanel.java` (`:206`)
 - **Change:** `globalPalette` ← `ColorUtil.CVD_SAFE_LIGHT`; pass the stable full series index to
   `seriesDash` (never palette-slot division or modulo as the identity).
   Keep `deriveEnvelopeColor` for SD bands.
+- **Result:** both `initializeGlobalPalette` methods assign `ColorUtil.CVD_SAFE_LIGHT`.
+  `LangevinSeriesIdentity` stores the full assignment index and calls `ColorUtil.seriesColor`.
+  SD still uses `deriveEnvelopeColor` and does not take a series index. A custom color already
+  in the map is kept and still receives that full index. `LangevinSeriesIdentityTest` passed
+  (ACS/ACO/SD slot rule, index 8 rather than palette slot 0, stable reassignment, custom color).
 
 **3.2** `vcell-client/src/main/java/cbit/plot/gui/PlotRenderers.java` (`AvgRenderer`, `:90,:96`)
 and `AbstractVisualizationPanel.LineIcon` (`:21`) (MUST)
@@ -588,6 +608,22 @@ and `AbstractVisualizationPanel.LineIcon` (`:21`) (MUST)
 - **§15 C also applies here:** the same repeated-pattern, styles-off, and custom-color identity
   rules as Phase 2. Test 8.3-e checks that two strokes differ; it does not close §15 C.
 - **Verify:** test 8.3-e, then the §15 C series-count and styles-off checks.
+- **Result:** `AvgRenderer` draws one `Path2D` with `PlotSeriesStyle.stroke(seriesIndex, varyLineStyles)`.
+  The legend icon is 80×12 and strokes `ColorUtil.seriesDash(seriesIndex)`. Ctrl+N / Ctrl+P name
+  the series and Ctrl+I isolates it while that plot has focus, so the molecule and cluster plots
+  in one window do not both move. Legend labels accept Enter and Space. The data table accessible
+  name is "Series data". Hover dimming remains, and keyboard selection is a separate cue.
+  `PlotRenderersAccessibilityTest.avgRendererSeriesStrokesDiffer_8_3_e` passed (series 0 solid,
+  series 1 dash, painted gap >0 and ≤12 px with nodes off). Series counts 1, 6, 8, 24, 25, and 30
+  use `seriesDash(i)` for index `i`; series 6 does not reuse the palette-slot-0 dash; series 0 and
+  24 share a dash and are still named separately. Styles off, overlapping custom colors, and
+  hidden-series isolation passed. Band and bubble selection return the series name and values,
+  including single-color bubbles. `grayscaleKeepsSeriesOneDashGaps` passed for the olive series
+  after a luminance conversion. `LangevinLegendAccessibilityTest` passed. Static check 8.4-a:
+  `rg -n -e "ColorUtil.TABLEAU20" -e "ColorUtil.DARK20" --glob "*VisualizationPanel.java"` under
+  `vcell-client/src/main/java` returned no matches.
+  Command, Java 17, headless, 2026-10-01: `mvn --batch-mode test -pl vcell-client -am -Dgroups=Fast -Djava.awt.headless=true -Dtest=PlotRenderersAccessibilityTest,LangevinSeriesIdentityTest,LangevinLegendAccessibilityTest -Dsurefire.failIfNoSpecifiedTests=false`.
+  11 tests, 0 failures.
 
 ### Phase 4 — Model viewer (MUST, #1605)
 
@@ -727,7 +763,7 @@ The issue numbers are ownership. They do not move the work out of #1605.
 
 | §15 C item | Issue | Required beyond Phases 0–7 |
 |---|---|---|
-| Repeated dash patterns; styles off; custom colors | P1–P5, W1 | Non-color discriminator or keyboard-accessible isolation for every displayed series |
+| Repeated dash patterns; custom colors; other frameworks | P1–P5, W1 | Phase 2 and Phase 3 isolate the current legacy or Langevin series from the keyboard when styles are off or the 8-slot dash cycle repeats. The same identity rules for W1 are still required |
 | D4 glyph errors and S8 red status text | #2140 | Shape or label cues, and the shared error/warning tokens on every affected renderer |
 | G2 palette and keyboard region list | #2139 | Region list and keyboard readout. The hover name in 4.4 is the first cue |
 | X1 SpringSaLaD | #2132 | Presentation-only labels, outlines, or patterns, and keyboard site isolation. Persisted scientific colors stay unchanged |

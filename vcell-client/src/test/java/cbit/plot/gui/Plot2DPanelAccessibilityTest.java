@@ -8,14 +8,19 @@ import org.vcell.util.ColorUtil;
 import org.vcell.util.Range;
 
 import javax.swing.JLabel;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -105,6 +110,93 @@ public class Plot2DPanelAccessibilityTest {
 	}
 
 	@Test
+	public void sixCurveStyleNodeStepSizeMatrix() throws Exception {
+		int[][] sizes = {{400, 300}, {800, 600}};
+		for (int[] size : sizes) {
+			for (boolean styles : new boolean[]{true, false}) {
+				for (boolean nodes : new boolean[]{false, true}) {
+					for (boolean step : new boolean[]{false, true}) {
+						int hints = Plot2D.RENDERHINT_DRAWLINE | (nodes ? Plot2D.RENDERHINT_DRAWPOINT : 0);
+						Plot2DPanel panel = panelWithCurves(6, false, hints, nodes);
+						SwingUtilities.invokeAndWait(() -> {
+							panel.setSize(size[0], size[1]);
+							panel.setVaryLineStyles(styles);
+							panel.setShowNodes(nodes);
+							panel.setBStepMode(step);
+						});
+						BufferedImage image = paint(panel);
+						assertTrue(countInk(image) > 20, "empty paint " + size[0] + " styles=" + styles);
+						assertArrayEquals(new double[]{2, 2, 2, 2, 2, 2, 2, 2},
+								panel.getPlot2D().getPlotDatas()[1].getDependent(), 0);
+						if (styles) {
+							int seriesOneRow = rowWithMost(image, Plot2DPanelAccessibilityTest::isOlive);
+							int longestGap = longestInteriorGap(image, seriesOneRow, Plot2DPanelAccessibilityTest::isOlive);
+							assertTrue(longestGap > 0 && longestGap <= 12, "gaps " + longestGap + " step=" + step);
+						} else {
+							assertNull(panel.getVisiblePlotStroke(1).getDashArray());
+						}
+					}
+				}
+			}
+		}
+	}
+
+	@Test
+	public void scientificMappingSurvivesStyleNodesStepHistogramAndClip() throws Exception {
+		Plot2DPanel panel = panelWithCurves(3, false, Plot2D.RENDERHINT_DRAWLINE, false, 5);
+		double[] independent = panel.getPlot2D().getPlotDatas()[1].getIndependent().clone();
+		double[] dependent = panel.getPlot2D().getPlotDatas()[1].getDependent().clone();
+		SwingUtilities.invokeAndWait(() -> {
+			panel.setVaryLineStyles(false);
+			panel.setShowNodes(true);
+			panel.setBStepMode(true);
+			panel.setIsHistogram(true);
+			panel.setXAuto(false);
+			panel.setXManualRange(new Range(1, 3));
+		});
+		paint(panel);
+		assertArrayEquals(independent, panel.getPlot2D().getPlotDatas()[1].getIndependent(), 0);
+		assertArrayEquals(dependent, panel.getPlot2D().getPlotDatas()[1].getDependent(), 0);
+		assertEquals(1, panel.getXManualRange().getMin(), 0);
+		assertEquals(3, panel.getXManualRange().getMax(), 0);
+		assertEquals(ColorUtil.seriesColor(0), panel.getVisiblePlotPaint(0));
+		assertEquals(ColorUtil.seriesColor(2), panel.getVisiblePlotPaint(2));
+		assertEquals(3, panel.getPlot2D().getNumberOfVisiblePlots());
+		assertEquals(5, panel.getPlot2D().getPlotDatas()[2].getDependent().length);
+	}
+
+	@Test
+	public void grayscaleKeepsSeriesOneDashGaps() throws Exception {
+		BufferedImage image = paint(panelWithCurves(6, false, Plot2D.RENDERHINT_DRAWLINE, false));
+		int seriesOneRow = rowWithMost(image, Plot2DPanelAccessibilityTest::isOlive);
+		BufferedImage gray = grayscale(image);
+		int longestGap = longestInteriorGap(gray, seriesOneRow, Plot2DPanelAccessibilityTest::isMidGray);
+		assertTrue(longestGap > 0 && longestGap <= 12, "grayscale gaps " + longestGap);
+	}
+
+	@Test
+	public void keyboardIsolationNamesSeriesWithoutPointer() throws Exception {
+		Plot2DPanel panel = panelWithCurves(3, false, Plot2D.RENDERHINT_DRAWLINE, false);
+		SwingUtilities.invokeAndWait(() -> panel.setVaryLineStyles(false));
+		JLabel status = new JLabel();
+		panel.setStatusLabel(status);
+		fire(panel, "ctrl N");
+		assertEquals("s1", status.getText());
+		assertFalse(panel.isCurrentSeriesIsolated());
+		BufferedImage allSeries = paint(panel);
+		fire(panel, "ctrl I");
+		assertEquals("s1 (only this series)", status.getText());
+		assertTrue(panel.isCurrentSeriesIsolated());
+		BufferedImage isolated = paint(panel);
+		assertTrue(countInk(isolated) < countInk(allSeries));
+		int seriesOneRow = rowWithMost(isolated, Plot2DPanelAccessibilityTest::isOlive);
+		assertTrue(seriesOneRow >= 0);
+		fire(panel, "ctrl I");
+		assertEquals("s1", status.getText());
+		assertFalse(panel.isCurrentSeriesIsolated());
+	}
+
+	@Test
 	public void histogramAndLargeCurvePaint() throws Exception {
 		BufferedImage histogram = paint(panelWithCurves(1, true, Plot2D.RENDERHINT_DRAWLINE | Plot2D.RENDERHINT_DRAWPOINT, true));
 		assertTrue(countInk(histogram) > 20);
@@ -170,6 +262,35 @@ public class Plot2DPanelAccessibilityTest {
 
 	private interface PixelTest {
 		boolean matches(int rgb);
+	}
+
+	private static void fire(Plot2DPanel panel, String keyStroke) {
+		ActionListener action = panel.getActionForKeyStroke(KeyStroke.getKeyStroke(keyStroke));
+		assertNotNull(action, keyStroke);
+		action.actionPerformed(new ActionEvent(panel, ActionEvent.ACTION_PERFORMED, keyStroke));
+	}
+
+	private static BufferedImage grayscale(BufferedImage source) {
+		BufferedImage gray = new BufferedImage(source.getWidth(), source.getHeight(), BufferedImage.TYPE_INT_RGB);
+		for (int y = 0; y < source.getHeight(); y++) {
+			for (int x = 0; x < source.getWidth(); x++) {
+				int rgb = source.getRGB(x, y);
+				int r = (rgb >> 16) & 0xff;
+				int g = (rgb >> 8) & 0xff;
+				int b = rgb & 0xff;
+				int lum = (r * 2126 + g * 7152 + b * 722) / 10000;
+				gray.setRGB(x, y, (lum << 16) | (lum << 8) | lum);
+			}
+		}
+		return gray;
+	}
+
+	private static boolean isMidGray(int rgb) {
+		int r = (rgb >> 16) & 0xff;
+		int g = (rgb >> 8) & 0xff;
+		int b = rgb & 0xff;
+		int lum = (r * 2126 + g * 7152 + b * 722) / 10000;
+		return lum > 70 && lum < 210;
 	}
 
 	private static boolean isOlive(int rgb) {

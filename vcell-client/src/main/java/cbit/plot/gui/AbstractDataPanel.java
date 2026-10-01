@@ -146,6 +146,9 @@ public abstract class AbstractDataPanel extends JPanel {
             try {
                 scrollPaneTable = new ScrollTable();
                 scrollPaneTable.setCellSelectionEnabled(true);
+                scrollPaneTable.getAccessibleContext().setAccessibleName("Series data");
+                scrollPaneTable.getAccessibleContext().setAccessibleDescription(
+                        "Numeric values for each plotted series. Column headers are the series names.");
             } catch (Throwable ivjExc) {
                 handleException(ivjExc);
             }
