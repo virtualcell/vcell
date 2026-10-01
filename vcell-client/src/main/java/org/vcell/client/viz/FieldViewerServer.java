@@ -172,9 +172,9 @@ public final class FieldViewerServer {
 
 	/**
 	 * Detected from the mesh type the data manager returns rather than from the simulation, so it
-	 * works identically for a re-opened remote run where only the data still exists. Both solvers
-	 * are server-only, so these paths always reach the data over the remote seam, where the
-	 * server-side Python VTK service that writes the .vtu is available.
+	 * works identically for a re-opened remote run where only the data still exists. Chombo runs
+	 * only on the server, where its .vtu is written by the Python VTK service; MovingBoundary also
+	 * runs locally (a desktop quick run), and its .vtu is written in pure Java on either side.
 	 */
 	private static VtuMode vtuMode(DataSource source) throws Exception {
 		if (!source.vtuModeResolved) {
@@ -667,9 +667,10 @@ public final class FieldViewerServer {
 	 * mesh, whose boundary cells are true cut polygons. These handlers reach it through the
 	 * VTU-era {@link VCDataManager} methods, which are already time-indexed for MovingBoundary
 	 * and already pair each mesh with a per-cell value array by shared ordinal — and which work
-	 * against today's deployed servers with no interface changes (MovingBoundary is server-only,
-	 * so the data always arrives over this remote seam; the server side runs the Python VTK
-	 * service that writes the .vtu). {@link VtuGridParser} converts those bytes to the viewer's
+	 * against today's deployed servers with no interface changes. The data arrives over the remote
+	 * seam for a server run and from the desktop's own data set controller for a local quick run;
+	 * either way the .vtu is written by the pure-Java writer ({@code org.vcell.vis.vtk.VtuWriter}),
+	 * so no Python is needed. {@link VtuGridParser} converts those bytes to the viewer's
 	 * JSON contract; the geometryId carries the time index, which is what tells the viewer to
 	 * re-fetch geometry as time moves.
 	 */

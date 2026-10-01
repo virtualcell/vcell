@@ -15,10 +15,11 @@ import org.w3c.dom.NodeList;
  * Parses a VTK XML unstructured-grid file ({@code .vtu}) into flat arrays, for re-serving as the
  * field viewer's JSON grid contract.
  * <p>
- * This is deliberately NOT a general VTU reader. It exists for two producers that write the same
+ * This is deliberately NOT a general VTU reader. It exists for the producers that write the same
  * restricted form: the server's Python VTK service ({@code pythonVtk/.../vtkService.py,
- * writevtk()}) and the FEniCSx solver's results bundle ({@code mesh/<domain>.vtu}, vcell-fenics
- * ADR 010). Both write single-piece, LittleEndian, <b>binary-uncompressed</b>
+ * writevtk()}), its pure-Java counterpart for MovingBoundary meshes ({@code org.vcell.vis.vtk.VtuWriter}),
+ * and the FEniCSx solver's results bundle ({@code mesh/<domain>.vtu}, vcell-fenics
+ * ADR 010). All write single-piece, LittleEndian, <b>binary-uncompressed</b>
  * ({@code SetCompressorTypeToNone()} + {@code SetDataModeToBinary()}) files — inline base64
  * blocks, each prefixed by a byte-count header whose width is the {@code VTKFile header_type}
  * (UInt32 here, UInt64 tolerated). ASCII data arrays are also accepted for robustness. Anything
