@@ -3,15 +3,14 @@
 ## Problem
 
 SLURM jobs on the mantis cluster run VCell workloads inside Apptainer
-containers. Five container images are used:
+containers:
 
 | Image | Purpose | Version tracks |
 |-------|---------|---------------|
 | vcell-opt | Parameter estimation (COPASI) | VCell release tag |
-| vcell-batch | Batch solvers (Langevin, RK, etc.) | VCell release tag |
-| vcell-solvers | Native solvers (CombinedSundials, CVODE, NFSim, etc.) | Independent (e.g. v0.8.2) |
-| vcell-fvsolver | Finite volume solvers (Smoldyn, SundialsPDE, etc.) | Independent (e.g. 0.9.7) |
-| vcell-fenics | FEniCSx finite-element solver ([plan-fenics.md](plan-fenics.md)) | Independent: the vcell-fenics commit (e.g. sha-74e7386) |
+| vcell-batch | VCell's Java tools: pre/post-processors, the Java ODE solvers (RK, Adams-Moulton, ...), Langevin, `Send*Msg`. Java only: a JRE on Debian, no native solvers | VCell release tag |
+| vcell-<repo> | One image per native solver repo (fvsolver, ode, stochastic, nfsim, mbsolver, hy3s, chombo, fenics); see "Solver image families" below | That repo's release (e.g. vcell-ode 0.9.5) |
+| vcell-solvers | Legacy: all native solvers in one image. Optional; a site that has moved every solver to its own family drops it | Independent (e.g. v0.8.2) |
 
 Previously, every SLURM job invocation ran:
 
