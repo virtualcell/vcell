@@ -97,7 +97,7 @@ private XmlUtil() {
 			bis = new BufferedInputStream(fis);
 			int readCount = 0;
 			while((readCount+= bis.read(stringBytes, readCount, stringBytes.length-readCount)) != stringBytes.length){}
-			return new String(stringBytes);
+			return new String(stringBytes, StandardCharsets.UTF_8);
 		}finally{
 			try{
 				if(bis != null){bis.close();}
