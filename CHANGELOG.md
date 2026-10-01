@@ -16,6 +16,63 @@ followed by flat Keep-a-Changelog categories. API consumers should scan
 
 _(Release-manager scratchpad. Populated at release-cut time.)_
 
+## [8.2.0.08] - 2026-10-01
+
+**Highlights.** VCell's native solvers now come from their own repositories (vcell-fvsolver, vcell-ode,
+vcell-stochastic, vcell-nfsim, vcell-mbsolver, vcell-hy3s, vcell-chombo) instead of the old combined
+vcell-solvers build. On the desktop, every solver runs natively on Apple-silicon Macs, and the Hybrid
+solvers, MovingBoundary and Chombo are available on more platforms. On the cluster, each solver runs from
+its own repository's container image.
+
+### Added
+- The desktop build downloads each native solver from its own repository's release, for Linux, macOS and
+  Windows, and checks each download against its sha256. The macOS solvers are universal, so they run
+  natively on Apple silicon instead of under Rosetta.
+- More solvers run locally: the three Hybrid solvers (Euler, Milstein, adaptive Milstein) on all three
+  platforms, MovingBoundary on Linux and Windows as well as macOS, and Chombo on Linux and macOS.
+- SlurmProxy chooses each solver's container image from a table of solver families (fenics, fvsolver, ode,
+  stochastic, nfsim, mbsolver, hy3s, chombo, the legacy solvers image, batch), configured per site by
+  `VCELL_HTC_VCELL<FAMILY>_APPTAINER_IMAGE` / `_SOLVER_LIST`. Moving a solver to its own image is a
+  configuration change. Solver containers get `TMPDIR=/solvertmp`. (#2131)
+
+### Changed
+- `localsolvers/<os>/` holds one subdirectory per solver repository, with the libraries that repository
+  bundles, so one solver's libraries can no longer replace another's. A Linux run's library path is only its
+  solver's directory. Developers: delete the old flat files in `localsolvers/<os>/` once. (#2142)
+- Langevin is downloaded like the other solvers, with checksums, for all three platforms on every build OS.
+  (#2142)
+- The `vcell-batch` image is Java only: a Java 17 runtime on Debian, the VCell jars, `langevin_x64` and the
+  pre/post-processor and messaging scripts. It no longer builds on the vcell-solvers image (1.36 GB to
+  232 MB), and its entrypoint no longer runs native solvers, which run from their own images. (#2144)
+- The submit service no longer requires the legacy `VCELL_HTC_VCELLSOLVERS_*` pair, so a site that has moved
+  every solver to its own image can drop it. (#2143)
+
+### Fixed
+- HybridMilstein and HybridMilAdaptive ran the Hybrid_EM executable; each now runs its own. (#2142)
+- Hybrid solvers on the cluster report their status: the input file names the message broker in the form
+  the solver uses (`host:restport`). (#2142)
+- A Langevin job on the cluster sends its final progress and COMPLETED messages; the batch image's
+  entrypoint had refused the `/bin/bash` command that sends them. (#2144)
+- Fixes in the new solver releases, among them:
+  - IDA could not parse any input (vcell-ode 0.9.5);
+  - every MovingBoundary run exited with code 6 after writing its output (vcell-mbsolver 1.0.5);
+  - the two Milstein Hybrid solvers crashed on their first stochastic step (vcell-hy3s 1.0.0);
+  - FiniteVolume results on arm64 differed from x86_64 by up to 2.5% (vcell-fvsolver 0.10.6).
+
+### Notes for API consumers
+- No `/api/` changes in this build.
+- Deploy sites: `submit.env` gains optional per-family `VCELL_HTC_VCELL<FAMILY>_APPTAINER_IMAGE` /
+  `_SOLVER_LIST` pairs; existing settings keep working unchanged.
+
+## [8.2.0.07] - 2026-09-29
+
+**Highlights.** Clearer Langevin (SpringSaLaD) simulation panels for single and multiple runs. (#2117)
+
+### Changed
+- The Langevin panels use one consistent terminology, show an icon that tells a single run from multiple
+  runs, and tell the user about concurrent runs.
+- Uses the latest Langevin solver.
+
 ## [8.2.0.06] - 2026-09-29
 
 **Highlights.** The browser field viewer gains the desktop's time plots and
