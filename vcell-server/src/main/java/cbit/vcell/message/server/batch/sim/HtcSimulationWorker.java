@@ -495,10 +495,9 @@ private static final String REQUIRED_SERVICE_PROPERTIES[] = {
 		PropertyLoader.slurm_partition,
 		PropertyLoader.htc_vcellbatch_apptainer_image,
 		PropertyLoader.htc_vcellbatch_solver_list,
-		PropertyLoader.htc_vcellsolvers_apptainer_image,
-		PropertyLoader.htc_vcellsolvers_solver_list,
-		PropertyLoader.htc_vcellbatch_apptainer_image,
-		PropertyLoader.htc_vcellbatch_solver_list,
+		// The legacy vcell-solvers family (htc_vcellsolvers_*) is optional, like the per-repo
+		// families: a site that has moved every solver to its own image sets neither, and
+		// SolverImageFamily skips a family that is not configured.
 		PropertyLoader.htc_vcellopt_apptainer_image,
 		PropertyLoader.slurm_singularity_module_name,
 		PropertyLoader.slurm_reservation,

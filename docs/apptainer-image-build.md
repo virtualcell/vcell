@@ -212,8 +212,9 @@ These flow through `docker-compose.yml` → `Dockerfile-service-dev` (run as `su
 - The first family, in this order, whose list names the solver wins; its SIF path is derived from the
   ORAS URL as above.
 - A family whose image is unset or whose list is empty is skipped, so a site configures only the
-  families it runs. (`HtcSimulationWorker` still requires the `fvsolver` list and the `solvers` and
-  `batch` pairs at startup.)
+  families it runs. (`HtcSimulationWorker` still requires the `fvsolver` list and the `batch` pair at
+  startup. The legacy `solvers` pair is optional, so a site that has moved every solver to its own
+  family can drop it.)
 - A solver named on more than one list is not an error: the first family wins and a warning is logged.
 - A solver on no configured list is refused (`solverName=... not in vcellfenics_solverList=[...] or ...`).
 
