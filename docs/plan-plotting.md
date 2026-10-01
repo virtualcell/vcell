@@ -1068,6 +1068,11 @@ That is the desktop kymograph's job too. What the viewer added was the rest:
 
 **Crosshair.** The desktop kymograph's crosshair and its two plots (§4.4), and their CSVs (§4.5).
 
+**Pointer.** Over the view, the open hand where a drag rotates or pans (and a click probes); a crosshair while
+clicks place line vertices (the Line tool) or add points (*+ Add points*); the closed hand only during a real
+drag, in any mode. It was the open hand in *Add points* mode, where a press also showed the closed hand (CSS
+`:active`) when it only added a point.
+
 Left for later: the second pass over the files for the crossings is in `DataSetControllerImpl`
 (`adjustMembraneAdjacentVolumeValues`, reached by the desktop kymograph too) and would halve a job with
 crossings on the data server.

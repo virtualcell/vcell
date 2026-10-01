@@ -922,12 +922,15 @@ function attachTrackball() {
     const dy = e.clientY - lastY;
     lastX = e.clientX; lastY = e.clientY;
     dragDistance += Math.abs(dx) + Math.abs(dy);
+    // the closed hand only once it is a drag: a click that places a vertex or a point keeps the crosshair
+    if (dragDistance >= 4) el.box.classList.add('dragging');
     if (dx || dy) void (state.dimension === 2 ? pan2d(dx, dy) : panning ? pan3d(dx, dy) : orbit(dx, dy));
     e.preventDefault();
   });
   const release = (e) => {
     if (!dragging) return;
     dragging = false;
+    el.box.classList.remove('dragging');
     try { el.canvas.releasePointerCapture(e.pointerId); } catch { /* already released */ }
     // a left press that never really moved is a pick: with the Line tool on it places a vertex; otherwise
     // shift (or the Add toggle) adds a probe, and a plain click replaces them
@@ -1826,6 +1829,7 @@ async function centreOn(point) {
 el.addProbes.addEventListener('click', () => {
   state.addMode = !state.addMode;
   el.addProbes.setAttribute('aria-pressed', String(state.addMode));
+  el.box.classList.toggle('adding-probes', state.addMode); // the pointer: a crosshair while clicks add points
 });
 el.probeClear.addEventListener('click', clearProbes);
 el.probeCsv.addEventListener('click', saveProbesCsv);

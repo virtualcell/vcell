@@ -156,3 +156,29 @@ def test_a_variable_switch_keeps_the_probes_and_refetches(open_viewer):
         timeout=30000)
     v.wait_probes(2)
     assert len(v.markers()) == 2
+
+
+@pytest.mark.parametrize('role', ['fv3d', 'fenics2d'])
+def test_the_pointer_says_what_a_press_does(open_viewer, role):
+    """The open hand where a drag rotates or pans, a crosshair while clicks add points or line vertices, the closed
+    hand only during a real drag, in any mode."""
+    v = open_viewer(role)
+    cursor = lambda: v.page.evaluate("getComputedStyle(document.getElementById('canvas')).cursor")
+    assert cursor() == 'grab'
+    v.page.click('#addProbes')
+    assert cursor() == 'crosshair', 'adding points'
+    v.page.click('#addProbes')
+    assert cursor() == 'grab'
+    v.page.click('#lineTool')
+    assert cursor() == 'crosshair', 'drawing a line'
+    box = v.canvas.bounding_box()
+    x, y = box['x'] + box['width'] / 2, box['y'] + box['height'] / 2
+    v.page.mouse.move(x, y)
+    v.page.mouse.down()
+    assert cursor() == 'crosshair', 'a press that may be a vertex'
+    v.page.mouse.move(x + 40, y + 10, steps=4)
+    assert cursor() == 'grabbing', 'a drag rotates or pans, also while drawing'
+    v.page.mouse.up()
+    assert cursor() == 'crosshair'
+    v.page.keyboard.press('Escape')
+    assert cursor() == 'grab', 'the tool off'
