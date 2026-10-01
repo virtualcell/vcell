@@ -83,6 +83,9 @@ const el = {
   kymoSvg: document.getElementById('kymoSvg'),
   kymoReadout: document.getElementById('kymoReadout'),
   kymoProfile: document.getElementById('kymoProfile'),
+  kymoTimePlot: document.getElementById('kymoTimePlot'),
+  kymoProfileCsv: document.getElementById('kymoProfileCsv'),
+  kymoTimeCsv: document.getElementById('kymoTimeCsv'),
   dataControls: document.getElementById('dataControls'),
   variable: document.getElementById('variable'),
   time: document.getElementById('time'),
@@ -136,6 +139,10 @@ const state = {
   kymo: null, // the last /kymograph response, with the line it was computed for and the stride asked
   kymoStale: false, // the run has new times since the kymograph was computed
   kymoView: null, // the drawn kymograph's layout, for the time cursor, clicks and hover
+  // the crosshair's distance along the line it was placed on: {line, s}; its time is the slider's (kymoDragRow
+  // while it is dragged), so the vertical cursor stays where it was put across variables and refetches
+  kymoCross: null,
+  kymoDragRow: null,
   fieldRange: null, // the last /field range: the kymograph's "3D view" colour range
   fieldValues: null, // raw per-cell values of the shown field (nulls = blanked cells)
   nominalSinc: null,
@@ -2373,30 +2380,40 @@ function kymoRange() {
  * the two samples either side, and the fraction between them, for linear interpolation.
  */
 function columnSamples(k, W) {
+  const cols = [];
+  for (let c = 0; c < W; c++) cols.push(sampleAtDistance(k, columnDistance(k, c, W)));
+  return cols;
+}
+
+/** The distance along the line at the middle of image column c of W. */
+function columnDistance(k, c, W) {
+  const arc = k.samples.arcLength;
+  const a0 = arc[0];
+  const span = arc[arc.length - 1] - a0;
+  return span > 0 ? a0 + ((c + 0.5) / W) * span : a0;
+}
+
+/**
+ * The sample a distance s along the line shows, as columnSamples picks it for an image column: finite volume,
+ * the sample whose span holds s ({i}); FEniCSx, the samples either side and the fraction between them ({i, j, f}).
+ */
+function sampleAtDistance(k, s) {
   const arc = k.samples.arcLength;
   const n = arc.length;
-  const a0 = arc[0];
-  const span = arc[n - 1] - a0;
-  const cols = [];
-  for (let c = 0; c < W; c++) {
-    const s = span > 0 ? a0 + ((c + 0.5) / W) * span : a0;
-    if (k.location === 'point') {
-      let j = 0;
-      while (j < n - 2 && arc[j + 1] < s) j++;
-      const f = arc[j + 1] > arc[j] ? Math.min(1, Math.max(0, (s - arc[j]) / (arc[j + 1] - arc[j]))) : 0;
-      cols.push({ i: f > 0.5 ? j + 1 : j, j, f });
-    } else {
-      let lo = 0;
-      let hi = n - 1;
-      while (lo < hi) { // the first sample whose span ends after s
-        const mid = (lo + hi) >> 1;
-        if (s < (arc[mid] + arc[mid + 1]) / 2) hi = mid;
-        else lo = mid + 1;
-      }
-      cols.push({ i: lo });
-    }
+  if (k.location === 'point') {
+    let j = 0;
+    while (j < n - 2 && arc[j + 1] < s) j++;
+    const f = arc[j + 1] > arc[j] ? Math.min(1, Math.max(0, (s - arc[j]) / (arc[j + 1] - arc[j]))) : 0;
+    return { i: f > 0.5 ? j + 1 : j, j, f };
   }
-  return cols;
+  let lo = 0;
+  let hi = n - 1;
+  while (lo < hi) { // the first sample whose span ends after s
+    const mid = (lo + hi) >> 1;
+    if (s < (arc[mid] + arc[mid + 1]) / 2) hi = mid;
+    else lo = mid + 1;
+  }
+  return { i: lo };
 }
 
 /** A column's value in a row: the sample's, or interpolated; null for a gap. */
@@ -2481,10 +2498,12 @@ function renderKymograph() {
   const svg = el.kymoSvg;
   const canvas = el.kymoCanvas;
   const has = !!k;
-  for (const b of [el.kymoSamplesCsv, el.kymoMatrixCsv, el.kymoDesktopCsv, el.kymoPng]) b.disabled = !has;
+  for (const b of [el.kymoSamplesCsv, el.kymoMatrixCsv, el.kymoDesktopCsv, el.kymoPng, el.kymoProfileCsv,
+    el.kymoTimeCsv]) b.disabled = !has;
   if (!k) {
     svg.replaceChildren();
     el.kymoProfile.replaceChildren();
+    el.kymoTimePlot.replaceChildren();
     canvas.width = 1;
     canvas.height = 1;
     canvas.hidden = true;
@@ -2582,9 +2601,13 @@ function renderKymograph() {
     mk('rect', { class: 'no-data', x: barX, y: M.t + plotH - 12, width: 12, height: 12 });
     mk('text', { class: 'lbl', x: barX + 16, y: M.t + plotH - 2 }, 'no data');
   }
+  // the crosshair, as the desktop kymograph's: a time row (horizontal) and a distance (vertical)
   const under = mk('line', { class: 'time-cursor-under', x1: M.l, x2: M.l + plotW });
+  const spaceUnder = mk('line', { class: 'space-cursor-under', y1: M.t, y2: M.t + plotH });
   const over = mk('line', { class: 'time-cursor', x1: M.l, x2: M.l + plotW });
-  state.kymoView = { rows, W, cols, rowY, sx, M, plotW, cursor: [under, over], lo, hi };
+  const spaceOver = mk('line', { class: 'space-cursor', y1: M.t, y2: M.t + plotH });
+  state.kymoView = { rows, W, cols, rowY, sx, M, plotW, plotH, cursor: [under, over], spaceCursor: [spaceUnder, spaceOver],
+    lo, hi };
 
   const length = Number(k.pathLength.toPrecision(4));
   el.kymoTitle.textContent = `${k.name} · ${k.domain} · ${n} samples × ${rows} times · `
@@ -2602,24 +2625,52 @@ function kymoRowAt(timeIndex) {
   return best;
 }
 
-/** The time-row cursor and the line profile follow the slider. */
+/**
+ * The crosshair's distance along the line: where it was put on this line, else the middle of the line; on the
+ * line either way (a refetch over a stride, or a variable whose line is the same, keeps it).
+ */
+function crossDistance(k) {
+  const arc = k.samples.arcLength;
+  const a0 = arc[0];
+  const a1 = arc[arc.length - 1];
+  const c = state.kymoCross;
+  const s = c && c.line === k.line && Number.isFinite(c.s) ? c.s : (a0 + a1) / 2;
+  return Math.min(a1, Math.max(a0, s));
+}
+
+/** The crosshair's row: the one being dragged to, else the slider's. */
+const crossRow = () => state.kymoDragRow ?? kymoRowAt(state.timeIndex);
+
+/**
+ * The crosshair and its two plots, as the desktop kymograph's (KymographPanel.configurePlotData): the line
+ * scan, the variable along the line at the crosshair's time, and the time series, the variable over time at
+ * its distance. The time row follows the slider.
+ */
 function updateKymoTime() {
   const view = state.kymoView;
-  if (!view || !state.kymo) return;
-  const r = kymoRowAt(state.timeIndex);
+  const k = state.kymo;
+  if (!view || !k) return;
+  const r = crossRow();
+  const s = crossDistance(k);
   for (const line of view.cursor) {
     line.setAttribute('y1', view.rowY(r).toFixed(1));
     line.setAttribute('y2', view.rowY(r).toFixed(1));
   }
+  for (const line of view.spaceCursor) {
+    line.setAttribute('x1', view.sx(s).toFixed(1));
+    line.setAttribute('x2', view.sx(s).toFixed(1));
+  }
   el.kymoCanvas.dataset.row = String(r);
-  renderProfile(r);
+  el.kymoCanvas.dataset.distance = String(s);
+  renderProfile(r, s);
+  renderTimePlot(s, r);
 }
 
 /**
  * The values along the line at one row, on the kymograph's x scale: steps at the samples' spans for finite
  * volume (a membrane crossing is a jump), straight segments between samples for FEniCSx. Gaps break it.
  */
-function renderProfile(row) {
+function renderProfile(row, distance) {
   const k = state.kymo;
   const svg = el.kymoProfile;
   const Wpx = Math.max(360, Math.round(svg.clientWidth || 640));
@@ -2660,7 +2711,9 @@ function renderProfile(row) {
   mk('line', { class: 'axis', x1: M.l, y1: H - M.b, x2: M.l + plotW, y2: H - M.b });
   mk('line', { class: 'axis', x1: M.l, y1: M.t, x2: M.l, y2: H - M.b });
   mk('text', { class: 'title', x: M.l + plotW / 2, y: H - 3, 'text-anchor': 'middle' }, distanceTitle(k));
-  mk('text', { class: 'title', x: M.l, y: 11 }, `${k.name} [${k.domain}] at t = ${k.times[row]} s`);
+  mk('text', { class: 'title', x: M.l, y: 11 }, `line scan: ${k.name} [${k.domain}] at t = ${k.times[row]} s`);
+  // the crosshair's distance, where the time series below is taken
+  if (distance != null) mk('line', { class: 'cross-marker', x1: sx(distance), x2: sx(distance), y1: M.t, y2: H - M.b });
   const values = k.values[row];
   let seg = [];
   const flush = () => {
@@ -2684,6 +2737,89 @@ function renderProfile(row) {
   flush();
 }
 
+/**
+ * The time series at a distance along the line: {times, values, sample} over every row, the values as the image
+ * shows that distance (a finite-volume sample's, or interpolated between two FEniCSx samples); null for a gap.
+ * From the kymograph already in hand: no request.
+ */
+function timeSeriesAt(k, s) {
+  const at = sampleAtDistance(k, s);
+  return { times: k.times, values: k.values.map((_, r) => columnValue(k, r, at)), sample: at };
+}
+
+/** A distance for a title: four significant figures. */
+const fmtDistance = (s) => String(Number(s.toPrecision(4)));
+
+/**
+ * The time series at the crosshair's distance, as the desktop's second plot ("Time Series (d=…)"): the variable
+ * over time, the saved times on a true time scale, a dot per time when there are few, and the crosshair's time
+ * marked. One y scale, the kymograph's own range, as the line scan's.
+ */
+function renderTimePlot(distance, row) {
+  const k = state.kymo;
+  const svg = el.kymoTimePlot;
+  const Wpx = Math.max(360, Math.round(svg.clientWidth || 640));
+  const H = 170;
+  const M = { l: 70, r: 96, t: 16, b: 34 };
+  svg.setAttribute('viewBox', `0 0 ${Wpx} ${H}`);
+  svg.replaceChildren();
+  const mk = (tag, attrs, text) => {
+    const node = document.createElementNS(SVG_NS, tag);
+    for (const [key, val] of Object.entries(attrs)) node.setAttribute(key, val);
+    if (text != null) node.textContent = text;
+    svg.appendChild(node);
+    return node;
+  };
+  const { times, values, sample } = timeSeriesAt(k, distance);
+  const t0 = times[0];
+  const t1 = times[times.length - 1] > t0 ? times[times.length - 1] : t0 + 1;
+  const plotW = Wpx - M.l - M.r;
+  const sx = (t) => M.l + ((t - t0) / (t1 - t0)) * plotW;
+  let [lo, hi] = k.range;
+  if (!(hi > lo)) hi = lo + (Math.abs(lo) || 1);
+  const pad = 0.04 * (hi - lo);
+  lo -= pad;
+  hi += pad;
+  const sy = (v) => H - M.b - ((v - lo) / (hi - lo)) * (H - M.t - M.b);
+  const yt = niceTicks(lo, hi, 4);
+  for (const v of yt.ticks) {
+    mk('line', { class: 'grid', x1: M.l, x2: M.l + plotW, y1: sy(v), y2: sy(v) });
+    mk('text', { class: 'lbl', x: M.l - 5, y: sy(v) + 4, 'text-anchor': 'end' }, tickLabel(v, yt.step));
+  }
+  const xt = niceTicks(t0, t1);
+  for (const t of xt.ticks) {
+    mk('line', { class: 'axis', x1: sx(t), x2: sx(t), y1: H - M.b, y2: H - M.b + 4 });
+    mk('text', { class: 'lbl', x: sx(t), y: H - M.b + 15, 'text-anchor': 'middle' }, tickLabel(t, xt.step));
+  }
+  mk('line', { class: 'axis', x1: M.l, y1: H - M.b, x2: M.l + plotW, y2: H - M.b });
+  mk('line', { class: 'axis', x1: M.l, y1: M.t, x2: M.l, y2: H - M.b });
+  mk('text', { class: 'title', x: M.l + plotW / 2, y: H - 3, 'text-anchor': 'middle' }, 'time (s)');
+  const where = k.location === 'point' ? '' : ` (sample ${sample.i})`;
+  mk('text', { class: 'title', x: M.l, y: 11 },
+    `time series: ${k.name} [${k.domain}] at d = ${fmtDistance(distance)} µm${where}`
+    + (values.every((v) => v == null || !Number.isFinite(v)) ? ` — no data: outside ${k.domain}` : ''));
+  // the crosshair's time, where the line scan above is taken
+  mk('line', { class: 'cross-marker', x1: sx(times[row]), x2: sx(times[row]), y1: M.t, y2: H - M.b });
+  let seg = [];
+  const flush = () => {
+    if (seg.length > 1) mk('polyline', { class: 'trace', points: seg.join(' ') });
+    seg = [];
+  };
+  const dots = times.length <= 60;
+  for (let r = 0; r < times.length; r++) {
+    const v = values[r];
+    if (v == null || !Number.isFinite(v)) {
+      flush();
+      continue;
+    }
+    const x = sx(times[r]).toFixed(1);
+    const y = sy(v).toFixed(1);
+    seg.push(`${x},${y}`);
+    if (dots) mk('circle', { class: 'dot', cx: x, cy: y, r: 2 });
+  }
+  flush();
+}
+
 /** The image cell under a mouse event: {row, col, sample}, or null outside the image. */
 function kymoCellAt(e) {
   const view = state.kymoView;
@@ -2697,25 +2833,90 @@ function kymoCellAt(e) {
   return { row, col, sample: view.cols[col].i };
 }
 
-/** Click: move the slider to the row's time. Shift-click: a probe at the sample, for its time course. */
+/** Shift-click: a probe at the sample, for its time course (a plain click moves the crosshair, below). */
 el.kymoCanvas.addEventListener('click', (e) => {
   const at = kymoCellAt(e);
   const k = state.kymo;
-  if (!at || !k || !state.ready) return;
-  if (e.shiftKey) {
-    // a finite-volume sample probes its voxel's centre, the point P2's probes use; else the sample's point
-    const cell = k.samples.cell?.[at.sample] ?? -1;
-    const point = cell >= 0 && k.domain === state.selectedDomain && state.cellList?.[cell]
-      ? cellCentroid(cell) : k.samples.points.slice(3 * at.sample, 3 * at.sample + 3);
-    addProbe(point, true);
+  if (!e.shiftKey || !at || !k || !state.ready) return;
+  // a finite-volume sample probes its voxel's centre, the point P2's probes use; else the sample's point
+  const cell = k.samples.cell?.[at.sample] ?? -1;
+  const point = cell >= 0 && k.domain === state.selectedDomain && state.cellList?.[cell]
+    ? cellCentroid(cell) : k.samples.points.slice(3 * at.sample, 3 * at.sample + 3);
+  addProbe(point, true);
+});
+
+/** The slider to a row's time; the crosshair's time row follows it (updateKymoTime, through the slider's input). */
+function goToKymoRow(row) {
+  const k = state.kymo;
+  state.kymoDragRow = null;
+  const index = k.timeIndices[row];
+  if (index === state.timeIndex) {
+    updateKymoTime();
     return;
   }
-  const index = k.timeIndices[at.row];
-  if (index === state.timeIndex) return;
   el.time.value = String(index);
   el.time.dispatchEvent(new Event('input'));
   el.time.dispatchEvent(new Event('change'));
+}
+
+/**
+ * The crosshair under a pointer, clamped to the image (a drag may leave it): the column's distance and the row,
+ * which the slider takes only when the drag ends, so a drag across the times does not fetch every one of them.
+ */
+function moveCrosshair(e) {
+  const view = state.kymoView;
+  const k = state.kymo;
+  const rect = el.kymoCanvas.getBoundingClientRect();
+  const fx = Math.min(1 - 1e-9, Math.max(0, (e.clientX - rect.left) / rect.width));
+  const fy = Math.min(1 - 1e-9, Math.max(0, (e.clientY - rect.top) / rect.height));
+  state.kymoCross = { line: k.line, s: columnDistance(k, Math.floor(fx * view.W), view.W) };
+  state.kymoDragRow = Math.floor(fy * view.rows);
+  updateKymoTime();
+}
+
+// Click or drag: the crosshair, and the slider to its time when released (the desktop's crosshair, which
+// there moves on release); shift-click probes instead, above
+let kymoDragging = false;
+el.kymoCanvas.addEventListener('pointerdown', (e) => {
+  if (e.button !== 0 || e.shiftKey || !state.kymoView || !state.kymo || !kymoCellAt(e)) return;
+  kymoDragging = true;
+  el.kymoCanvas.setPointerCapture(e.pointerId);
+  el.kymoCanvas.focus({ preventScroll: true, focusVisible: false });
+  moveCrosshair(e);
+  e.preventDefault();
 });
+el.kymoCanvas.addEventListener('pointermove', (e) => {
+  if (kymoDragging && state.kymoView) moveCrosshair(e);
+});
+const endKymoDrag = (e) => {
+  if (!kymoDragging) return;
+  kymoDragging = false;
+  try { el.kymoCanvas.releasePointerCapture(e.pointerId); } catch { /* already released */ }
+  if (state.kymo && state.kymoDragRow != null) goToKymoRow(state.kymoDragRow);
+};
+el.kymoCanvas.addEventListener('pointerup', endKymoDrag);
+el.kymoCanvas.addEventListener('pointercancel', endKymoDrag);
+
+// arrow keys step the crosshair, as on the desktop: left and right by a sample, up and down by a saved time
+el.kymoCanvas.addEventListener('keydown', (e) => {
+  const k = state.kymo;
+  if (!k || !state.kymoView || !['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) return;
+  e.preventDefault();
+  if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+    const row = Math.min(k.values.length - 1, Math.max(0, crossRow() + (e.key === 'ArrowDown' ? 1 : -1)));
+    goToKymoRow(row);
+    return;
+  }
+  const arc = k.samples.arcLength;
+  const s = crossDistance(k);
+  // the next sample's distance either way (a membrane crossing's two samples share one)
+  const eps = 1e-9 * (Math.abs(arc[arc.length - 1] - arc[0]) || 1);
+  const next = e.key === 'ArrowRight' ? arc.find((a) => a > s + eps) : arc.findLast((a) => a < s - eps);
+  if (next == null) return;
+  state.kymoCross = { line: k.line, s: next };
+  updateKymoTime();
+});
+
 el.kymoCanvas.addEventListener('mousemove', (e) => {
   const at = kymoCellAt(e);
   const k = state.kymo;
@@ -2728,7 +2929,7 @@ el.kymoCanvas.addEventListener('mousemove', (e) => {
   const v = columnValue(k, at.row, state.kymoView.cols[at.col]);
   el.kymoReadout.textContent = `d = ${Number(s.toPrecision(4))} µm · t = ${k.times[at.row]} s · `
     + (v == null ? `no data (outside ${k.domain})` : `${k.name} = ${v.toExponential(4)}`)
-    + ' — click: go to this time · shift-click: probe this point';
+    + ' — click or drag: crosshair (and time) · arrows: step · shift-click: probe this point';
 });
 el.kymoCanvas.addEventListener('mouseleave', () => { el.kymoReadout.textContent = ''; });
 
@@ -2787,6 +2988,32 @@ function kymoSamplesCsv(k) {
 function kymoMatrixCsv(k) {
   const lines = [...kymoComments(k), ['time\\arcLength', ...k.samples.arcLength].join(',')];
   k.times.forEach((t, r) => lines.push([t, ...k.values[r].map(csvCell)].join(',')));
+  return lines.join('\n') + '\n';
+}
+
+/** kymo-line-scan.csv: the crosshair's line scan, the variable at every sample at the crosshair's time. */
+function kymoProfileCsv(k) {
+  const r = crossRow();
+  const lines = [...kymoComments(k), `# line scan at time ${k.times[r]} (saved time ${k.timeIndices[r]})`,
+    'arcLength,value'];
+  k.samples.arcLength.forEach((a, i) => lines.push([a, csvCell(k.values[r][i])].join(',')));
+  return lines.join('\n') + '\n';
+}
+
+/**
+ * kymo-time-series.csv: the crosshair's time series, the variable at every returned time at the crosshair's
+ * distance: one sample's values for finite volume, interpolated between two samples for FEniCSx, as drawn.
+ */
+function kymoTimeCsv(k) {
+  const s = crossDistance(k);
+  const { values, sample } = timeSeriesAt(k, s);
+  const p = k.samples.points;
+  const lines = [...kymoComments(k), `# time series at distance ${s} along the line`
+    + (k.location === 'point'
+      ? ` (between samples ${sample.j} and ${sample.j + 1}, fraction ${sample.f})`
+      : ` (sample ${sample.i} at ${p[3 * sample.i]},${p[3 * sample.i + 1]},${p[3 * sample.i + 2]})`),
+  'time,value'];
+  k.times.forEach((t, r) => lines.push([t, csvCell(values[r])].join(',')));
   return lines.join('\n') + '\n';
 }
 
@@ -2868,6 +3095,12 @@ el.kymoDesktopCsv.addEventListener('click', async () => {
   }
 });
 el.kymoPng.addEventListener('click', () => { if (state.kymo) saveKymoPng(); });
+el.kymoProfileCsv.addEventListener('click', () => {
+  if (state.kymo) saveBlob(kymoCsvBlob(kymoProfileCsv(state.kymo)), `${state.kymo.name}-kymo-line-scan.csv`);
+});
+el.kymoTimeCsv.addEventListener('click', () => {
+  if (state.kymo) saveBlob(kymoCsvBlob(kymoTimeCsv(state.kymo)), `${state.kymo.name}-kymo-time-series.csv`);
+});
 
 
 /** Fresh axes + scales in the Stats plot's SVG; renderStatsPlot draws on top of this. */

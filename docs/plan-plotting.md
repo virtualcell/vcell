@@ -362,11 +362,18 @@ A path wholly outside the domain returns **200 with all nulls** and `inDomain` a
 - **Range.** "All (kymograph)" by default; "3D view (current time)", which uses the last `/field` range; or
   "User" min/max inputs. These mirror the desktop's All and User modes.
 - **Interaction.**
-  - A horizontal cursor marks the current time row and follows the slider.
-  - Clicking the image moves the time slider to that row.
+  - A **crosshair**, as the desktop kymograph's (`KymographPanel`): a horizontal cursor at the time row, which
+    follows the slider, and a vertical cursor at a distance along the line (the middle of a new line; it stays
+    where it was put across a variable switch or a refetch of the same line).
+  - Clicking or dragging on the image moves the crosshair; on release the time slider goes to its row (during a
+    drag only the crosshair moves, so a drag does not fetch every time it crosses). Arrow keys step it, as on the
+    desktop: left and right by a sample, up and down by a saved time.
+  - Its two plots, as the desktop's, from the kymograph in hand (no request): the **line scan** (the variable
+    along the line at the crosshair's time) and the **time series** (the variable over time at its distance:
+    that sample's values for finite volume, interpolated between two samples for FEniCSx). Each marks the other
+    coordinate, and both share the kymograph's value range.
   - Hovering shows `d = …, t = …, value`.
-  - Shift-clicking the image **adds a probe** at that sample's point. That gives the desktop's crosshair
-    time-series plot, through the probe panel.
+  - Shift-clicking the image **adds a probe** at that sample's point.
 - **Keeping it current.**
   - A variable or domain change refetches it (one request).
   - When a run in progress adds times (`refreshRun`), the panel shows a "stale – recompute" chip rather than
@@ -383,6 +390,9 @@ A path wholly outside the domain returns **200 with all nulls** and `inDomain` a
   3. optional `kymo-desktop-resampled.csv`: a port of `initStandAloneTimeSeries_private`'s nearest-neighbour
      uniform resampling, for diffing against the desktop's Copy output.
 - **PNG** of the kymograph via `canvas.toBlob`.
+- **The crosshair's plots:** `kymo-line-scan.csv` (`arcLength,value` at the crosshair's time) and
+  `kymo-time-series.csv` (`time,value` at its distance, with the sample it is), the desktop's *Copy LineScan*
+  and *Copy TimeSeries*.
 - All exports use `URL.createObjectURL`: nothing goes over the network.
 
 ---
@@ -1055,6 +1065,8 @@ That is the desktop kymograph's job too. What the viewer added was the rest:
 | the same line again, or its Desktop CSV | 1.5 s | 0.05 s | 3.5 s | 0.4 s |
 | another variable on the line | 1.1 s | 1.0 s | 3.1 s | 1.8 s |
 | a time step (`/field`) | 0.3 s | 0.2 s | 1.8 s | 0.9 s |
+
+**Crosshair.** The desktop kymograph's crosshair and its two plots (§4.4), and their CSVs (§4.5).
 
 Left for later: the second pass over the files for the crossings is in `DataSetControllerImpl`
 (`adjustMembraneAdjacentVolumeValues`, reached by the desktop kymograph too) and would halve a job with

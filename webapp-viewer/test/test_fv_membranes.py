@@ -68,6 +68,9 @@ def test_a_2d_membrane_curve_follows_the_membrane(open_viewer):
     marks = v.page.eval_on_selector_all('#overlay .kymo-vertex', 'cs => cs.length')
     assert pieces == n - 1 and marks == 2
     assert v.page.is_visible('#kymoDesktopCsv'), 'a finite-volume curve has the desktop resampling'
+    # the crosshair's plots work along a membrane curve too
+    assert v.page.eval_on_selector_all('#kymoTimePlot .trace', 'ls => ls.length') >= 1
+    assert 'at d = ' in v.page.text_content('#kymoTimePlot')
 
 
 def test_switching_between_membrane_and_volume_variables(open_viewer):

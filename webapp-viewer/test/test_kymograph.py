@@ -101,6 +101,100 @@ def test_clicking_a_row_moves_the_slider_and_the_cursor_follows(open_viewer):
     assert after['row'] == '0' and after['cursorY'] < before - 50, (before, after)
 
 
+def crosshair(v):
+    """The crosshair and its two plots, as drawn: rows, distances, cursor positions, titles, traces."""
+    return v.page.evaluate("""() => {
+        const c = document.getElementById('kymoCanvas');
+        const attr = (sel, a) => { const e = document.querySelector(sel); return e ? +e.getAttribute(a) : null; };
+        const titles = (id) => [...document.querySelectorAll(`#${id} .title`)].map((e) => e.textContent);
+        return { row: c.dataset.row, distance: c.dataset.distance === undefined ? null : +c.dataset.distance,
+                 slider: document.getElementById('time').value,
+                 timeY: attr('#kymoSvg .time-cursor', 'y1'), spaceX: attr('#kymoSvg .space-cursor', 'x1'),
+                 spaceY: [attr('#kymoSvg .space-cursor', 'y1'), attr('#kymoSvg .space-cursor', 'y2')],
+                 scanTitles: titles('kymoProfile'), seriesTitles: titles('kymoTimePlot'),
+                 scanTraces: document.querySelectorAll('#kymoProfile .trace').length,
+                 seriesTraces: document.querySelectorAll('#kymoTimePlot .trace').length,
+                 scanMarker: attr('#kymoProfile .cross-marker', 'x1'),
+                 seriesMarker: attr('#kymoTimePlot .cross-marker', 'x1') };
+    }""")
+
+
+def kymo_point(v, fx, fy):
+    """A point on the kymograph image, as fractions of its width and height, in viewport coordinates (scrolled into view)."""
+    v.page.locator('#kymoCanvas').scroll_into_view_if_needed()
+    box = v.page.locator('#kymoCanvas').bounding_box()
+    return box['x'] + box['width'] * fx, box['y'] + box['height'] * fy
+
+
+@pytest.mark.parametrize('role', FV)
+def test_the_crosshair_has_a_time_and_a_distance_and_two_plots(open_viewer, role):
+    v = open_viewer(role)
+    draw_line(v, [(-120, -60), (110, 70)])
+    c = crosshair(v)
+    times = int(v.page.get_attribute('#time', 'max')) + 1
+    # as the desktop's: a horizontal cursor at the time, a vertical one at a distance (the middle of a new line)
+    assert c['timeY'] is not None and c['spaceX'] is not None and c['spaceY'][1] > c['spaceY'][0], c
+    assert c['row'] == str(times - 1) and c['distance'] is not None
+    # the line scan at the crosshair's time, the time series at its distance, each marking the other coordinate
+    assert any('line scan' in t and 'at t = ' in t for t in c['scanTitles']), c['scanTitles']
+    assert any('time series' in t and 'at d = ' in t for t in c['seriesTitles']), c['seriesTitles']
+    assert c['scanTraces'] >= 1 and c['seriesTraces'] >= 1
+    assert c['scanMarker'] is not None and c['seriesMarker'] is not None
+
+
+def test_dragging_moves_the_crosshair_and_the_time_follows_on_release(open_viewer):
+    v = open_viewer('fv3d')
+    draw_line(v, [(-120, -60), (110, 70)])
+    before = crosshair(v)
+    v.page.mouse.move(*kymo_point(v, 0.1, 0.9))
+    v.page.mouse.down()
+    v.page.mouse.move(*kymo_point(v, 0.5, 0.5), steps=4)
+    v.page.mouse.move(*kymo_point(v, 0.8, 0.1), steps=4)
+    during = crosshair(v)
+    assert during['row'] == '0' and during['slider'] == before['slider'], 'the slider waits for the release'
+    assert during['spaceX'] > before['spaceX'] and during['timeY'] < before['timeY'], (before, during)
+    v.page.mouse.up()
+    v.page.wait_for_function("document.getElementById('time').value === '0'")
+    after = crosshair(v)
+    assert after['row'] == '0' and after['distance'] == during['distance'], (during, after)
+    # the vertical cursor stays where it was put when the time moves on the slider
+    v.page.eval_on_selector('#time', "t => { t.value = '3'; t.dispatchEvent(new Event('input')); }")
+    moved = crosshair(v)
+    assert moved['row'] == '3' and moved['spaceX'] == after['spaceX'], moved
+
+
+def test_the_time_series_is_the_kymograph_column_at_the_crosshair(open_viewer):
+    v = open_viewer('fv3d')
+    type_line(v, '0,0.3,2; 4,3.4,2')
+    v.page.locator('#kymoCanvas').click(position={'x': 3, 'y': 3})  # the first sample, the first time
+    v.page.wait_for_function("document.getElementById('time').value === '0'")
+    matrix = csv_rows(download_text(v, '#kymoMatrixCsv'))
+    series = download_text(v, '#kymoTimeCsv')
+    assert '# time series at distance' in series and '(sample 0 at ' in series, series[:400]
+    rows = csv_rows(series)
+    assert rows[0] == ['time', 'value'] and len(rows) == len(matrix)
+    assert [r[0] for r in rows[1:]] == [r[0] for r in matrix[1:]]
+    assert [r[1] for r in rows[1:]] == [r[1] for r in matrix[1:]], 'the first sample\'s column'
+    scan = csv_rows(download_text(v, '#kymoProfileCsv'))
+    assert scan[0] == ['arcLength', 'value'] and [r[1] for r in scan[1:]] == matrix[1][1:], 'the first time\'s row'
+
+
+def test_arrow_keys_step_the_crosshair(open_viewer):
+    v = open_viewer('fv2d')
+    type_line(v, '-10,-9; 9,8')
+    v.page.locator('#kymoCanvas').click(position={'x': 3, 'y': 3})
+    v.page.wait_for_function("document.getElementById('time').value === '0'")
+    start = crosshair(v)
+    v.page.keyboard.press('ArrowRight')
+    right = crosshair(v)
+    assert right['distance'] > start['distance'] and right['row'] == '0'
+    v.page.keyboard.press('ArrowLeft')
+    assert crosshair(v)['distance'] < right['distance']
+    v.page.keyboard.press('ArrowDown')
+    v.page.wait_for_function("document.getElementById('time').value === '1'")
+    assert crosshair(v)['row'] == '1'
+
+
 def test_shift_clicking_the_kymograph_probes_that_point(open_viewer):
     v = open_viewer('fv2d')
     type_line(v, '-10,-9; 9,8')

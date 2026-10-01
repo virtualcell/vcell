@@ -33,6 +33,10 @@ def test_two_clicks_and_enter_draw_a_body_fitted_kymograph(open_viewer, role):
     assert k['opaque'] > 0, 'the image is not blank'
     assert k['cursorY'] is not None and k['row'] == str(times - 1)
     assert k['profile'] >= 1 and k['overlay'] > 0
+    # the crosshair's time series, from the kymograph in hand
+    assert v.page.eval_on_selector_all('#kymoSvg .space-cursor', 'ls => ls.length') == 1
+    assert v.page.eval_on_selector_all('#kymoTimePlot .trace', 'ls => ls.length') >= 1 or 'no data' in \
+        v.page.text_content('#kymoTimePlot')
     assert 'evenly spaced samples' in k['note'], k['note']
     # the desktop's resampling of raw values is finite-volume parity only
     assert v.page.is_hidden('#kymoDesktopCsv')
