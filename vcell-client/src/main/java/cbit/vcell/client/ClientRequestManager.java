@@ -3250,7 +3250,7 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 							JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[2]);
 					if (returnCode == JOptionPane.YES_OPTION) {
 						try {
-							FileWriter fw = new FileWriter(file);
+							Writer fw = new OutputStreamWriter(new FileOutputStream(file), java.nio.charset.StandardCharsets.UTF_8);
 							fw.write(fileText);
 							fw.close();
 						} catch (IOException e) {

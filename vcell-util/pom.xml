@@ -146,4 +146,42 @@
 		  <version>${jaxb-impl.version}</version>
 		</dependency>
 	</dependencies>
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>default-test</id>
+						<configuration>
+							<excludes>
+								<exclude>**/*CharsetTest.java</exclude>
+							</excludes>
+						</configuration>
+					</execution>
+					<!-- *CharsetTest classes run in their own fork whose DEFAULT charset is
+					     windows-1252, as on a Windows desktop client (Java 17 there defaults to the
+					     ANSI code page, not UTF-8). The default charset is fixed at JVM start, so
+					     this is the only way to catch a byte<->String conversion that forgot to name
+					     its charset. -->
+					<execution>
+						<id>windows-1252-default-charset</id>
+						<phase>test</phase>
+						<goals>
+							<goal>test</goal>
+						</goals>
+						<configuration>
+							<argLine>-Dfile.encoding=windows-1252</argLine>
+							<includes>
+								<include>**/*CharsetTest.java</include>
+							</includes>
+							<systemPropertyVariables>
+								<vcell.test.windows1252Fork>true</vcell.test.windows1252Fork>
+							</systemPropertyVariables>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
 </project>
