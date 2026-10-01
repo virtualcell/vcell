@@ -1,6 +1,10 @@
 # Plan — move VCell to the split vcell-* solver repos (local executables and HPC containers)
 
-**Status:** planning (2026-09-30). This is a living plan: tick PRs off as they merge.
+**Status:** in progress (2026-10-01). This is a living plan: tick PRs off as they merge.
+Done: all of Phase A, B1–B3 (+ #2143, the legacy solvers family optional). Releases: vcell-fvsolver 0.10.6,
+vcell-ode 0.9.5, vcell-stochastic 1.0.0, vcell-nfsim 0.2.1, vcell-mbsolver 1.0.5, vcell-hy3s 1.0.0,
+vcell-chombo 1.0.0, vcell-fenics 0.1.0. Next: C3 (8.2.0.08 to dev), then C1+C2 together on dev
+(vcell-fluxcd#63: dev runs every native solver from its own image and drops the legacy one).
 
 ## Context
 
@@ -125,14 +129,14 @@ Each applies the contract (§1). The table lists what each repo needs beyond it.
 
 | PR | Repo | Beyond the contract | Done when |
 |---|---|---|---|
-| **A1** | vcell-fvsolver | Merge PR #18 (`release_auto_attach`) into main, then release 0.10.6 from main. Messaging ON in the image (currently `-DOPTION_TARGET_MESSAGING=OFF`). One multi-arch `vcell-fvsolver` package, replacing `vcell_fvsolver_{x86_64,aarch64}`. Drop glibc from the Linux archives. Fix or remove the broken Windows-ARM step. | 0.10.6 has the contract's assets, image and SIF; the smoke test passes with `-tid`; FV and Smoldyn reference outputs match 0.9.7's |
-| **A2** | vcell-ode | Reconcile `stabilize-new-build` with `master`, then release 0.9.5 from `master`. arm64 in the image, the entrypoint, a SIF. Strip glibc, `libgtest*.a` and `unit_tests` from the archives. | 0.9.5 has the assets, image and SIF; CVODE and IDA reference outputs match `vcell-solvers` v0.0.44-dev4 |
-| **A3** | vcell-stochastic | Semver releases in place of `ci-<timestamp>`. A universal mac build with HDF5 bundled through `@rpath`. Package the executable as `VCellStoch_x64`. Image and SIF. | A `vX.Y.Z` release with every asset; Gibson reference statistics match the legacy binary within sampling tolerance |
-| **A4** | vcell-nfsim | Executable archives (`NFsim_x64`) next to the wheels. Image and SIF. | Release assets and SIF; an NFsim reference run matches the legacy binary within sampling tolerance |
-| **A5** | vcell-mbsolver | Archives with HDF5 bundled (or statically linked), plus a mac universal and a linux arm64 build. Package the executable as `MovingBoundary_x64`. Image and SIF. Fix the wheels workflow (its publish trigger is commented out; the CMake version says 1.0.3 for v1.0.4). | Portable archives on all platforms; MovingBoundary reference output matches the legacy mac binary and the v0.8.2 image |
-| **A6** | vcell-hy3s | Merge CI PR #1, then a first release with `Hybrid_EM_x64`, `Hybrid_MIL_x64` and `Hybrid_MIL_Adaptive_x64`. Image and SIF. | Release assets and SIF; each Hybrid variant runs a reference model (there is no working legacy image to compare with, so check against a statistical reference) |
-| **A7** | vcell-chombo | A first release of `VCellChombo2D_x64` / `VCellChombo3D_x64` (linux and mac; Windows if it builds). Image and SIF, serial first; MPI (parallel Chombo) is a follow-up. | Release assets and SIF; a 2D and a 3D Chombo reference model run |
-| **A8** | vcell-fenics | Already meets the contract except for version tags. Add `vX.Y.Z` tags that trigger the same container workflow, so VCell can pin versions and not only `sha-*`. | `vcell-fenics:vX.Y.Z` and `_singularity:vX.Y.Z` exist |
+| **A1** ✅ | vcell-fvsolver | Merge PR #18 (`release_auto_attach`) into main, then release 0.10.6 from main. Messaging ON in the image (currently `-DOPTION_TARGET_MESSAGING=OFF`). One multi-arch `vcell-fvsolver` package, replacing `vcell_fvsolver_{x86_64,aarch64}`. Drop glibc from the Linux archives. Fix or remove the broken Windows-ARM step. | 0.10.6 has the contract's assets, image and SIF; the smoke test passes with `-tid`; FV and Smoldyn reference outputs match 0.9.7's |
+| **A2** ✅ | vcell-ode | Reconcile `stabilize-new-build` with `master`, then release 0.9.5 from `master`. arm64 in the image, the entrypoint, a SIF. Strip glibc, `libgtest*.a` and `unit_tests` from the archives. | 0.9.5 has the assets, image and SIF; CVODE and IDA reference outputs match `vcell-solvers` v0.0.44-dev4 |
+| **A3** ✅ | vcell-stochastic | Semver releases in place of `ci-<timestamp>`. A universal mac build with HDF5 bundled through `@rpath`. Package the executable as `VCellStoch_x64`. Image and SIF. | A `vX.Y.Z` release with every asset; Gibson reference statistics match the legacy binary within sampling tolerance |
+| **A4** ✅ | vcell-nfsim | Executable archives (`NFsim_x64`) next to the wheels. Image and SIF. | Release assets and SIF; an NFsim reference run matches the legacy binary within sampling tolerance |
+| **A5** ✅ | vcell-mbsolver | Archives with HDF5 bundled (or statically linked), plus a mac universal and a linux arm64 build. Package the executable as `MovingBoundary_x64`. Image and SIF. Fix the wheels workflow (its publish trigger is commented out; the CMake version says 1.0.3 for v1.0.4). | Portable archives on all platforms; MovingBoundary reference output matches the legacy mac binary and the v0.8.2 image |
+| **A6** ✅ | vcell-hy3s | Merge CI PR #1, then a first release with `Hybrid_EM_x64`, `Hybrid_MIL_x64` and `Hybrid_MIL_Adaptive_x64`. Image and SIF. | Release assets and SIF; each Hybrid variant runs a reference model (there is no working legacy image to compare with, so check against a statistical reference) |
+| **A7** ✅ | vcell-chombo | A first release of `VCellChombo2D_x64` / `VCellChombo3D_x64` (linux and mac; Windows if it builds). Image and SIF, serial first; MPI (parallel Chombo) is a follow-up. | Release assets and SIF; a 2D and a 3D Chombo reference model run |
+| **A8** ✅ | vcell-fenics | Already meets the contract except for version tags. Add `vX.Y.Z` tags that trigger the same container workflow, so VCell can pin versions and not only `sha-*`. | `vcell-fenics:vX.Y.Z` and `_singularity:vX.Y.Z` exist |
 
 ---
 
@@ -159,7 +163,7 @@ Done: `SolverImageFamily` holds the ordered registry. A solver on several lists 
   (`vcell-server/src/test/resources/slurm_fixtures/`), and the existing fixtures are unchanged apart from the
   added `TMPDIR`.
 
-### PR B2 — local executables from the split repos (after Phase A)
+### PR B2 ✅ [#2142](https://github.com/virtualcell/vcell/pull/2142) — local executables from the split repos (after Phase A)
 
 - Replace the three `vcell-solvers` download executions in `vcell-core/pom.xml` with one execution per repo
   and platform:
@@ -182,7 +186,7 @@ Done: `SolverImageFamily` holds the ordered registry. A solver on several lists 
     Windows;
   - the mac installer notarizes.
 
-### PR B3 — a slimmer vcell-batch image
+### PR B3 ✅ [#2144](https://github.com/virtualcell/vcell/pull/2144) — a slimmer vcell-batch image
 
 - `docker/build/Dockerfile-batch-dev` moves off `vcell-solvers:v0.8.2` onto a JRE base. It needs only Java,
   `langevin_x64`, `bash` and `curl`.
