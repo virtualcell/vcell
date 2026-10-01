@@ -73,6 +73,22 @@ The client-side smoothing is bit-identical to the pyvcell/VisIt reference.
 Geometry and field values come from separate endpoints, because the geometry does not change as you
 scrub time — a time step costs about 5.7× less than shipping both.
 
+## When a request is slow
+
+Every kymograph logs how long each stage took, in the client log (`~/.vcell/logs/vcellrun_<site>.log`):
+
+```
+kymograph sim=… var=RanC_cyt path=… total 2373 ms: source 0 ms, domain 0 ms, variable 0 ms, acquire 0 ms,
+mesh 0 ms, sample 35 ms, times 384 ms, timeseries[96 samples, with crossings] 1950 ms, domainIndex 0 ms, json 2 ms
+```
+
+At debug level for logger `org.vcell.client.viz`; one over 5 s is logged at warn level too, which the client
+logs by default. `timeseries` is the data server's job (or the local reader's): it reads every saved time.
+
+To look at one finite-volume run outside the client, `org.vcell.client.viz.FieldViewerRunServer` (vcell-client
+test sources) serves it from its files, as a local quick run is read; `--latency=<ms>` models the data
+server's round trips. Its Javadoc has the command line.
+
 ## Notes for anyone editing this
 
 - **Load the UMD loader, not the ESM entry.** The ESM runtime does a dynamic `import()` of the

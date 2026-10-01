@@ -26,8 +26,13 @@
   .canvas-box { position: relative; width: 100%; max-width: 960px; aspect-ratio: 4 / 3;
                 max-height: calc(100dvh - 170px); min-height: 160px; min-width: 240px;
                 background: #12121a; border-radius: 6px; overflow: hidden; }
+  /*
+    The pointer says what a press does: the open hand where a drag rotates or pans and a click probes, a
+    crosshair while clicks place line vertices (the Line tool, .drawing-line) or add points (+ Add points,
+    .adding-probes), and the closed hand during a drag in any mode (.dragging, set by viewer.js once the
+    pointer has really moved: a bare :active would show it for every click, a vertex or a point included).
+  */
   .canvas-box canvas { display: block; width: 100%; height: 100%; cursor: grab; touch-action: none; }
-  .canvas-box canvas:active { cursor: grabbing; }
   .canvas-box .notice { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
                         padding: 24px 32px; color: #e8e8ee; font: 15px/1.6 system-ui, sans-serif; text-align: center;
                         white-space: pre-wrap; overflow-wrap: anywhere; }
@@ -73,7 +78,8 @@
   .probe-panel .time-cursor { stroke: currentColor; stroke-opacity: .5; stroke-dasharray: 3 3; }
   .probe-panel .title { font: 11px ui-monospace, monospace; fill: currentColor; fill-opacity: .8; }
   /* the kymograph: an image of the variable along a line (x) over time (y), with a line profile below */
-  .canvas-box.drawing-line canvas { cursor: crosshair; }
+  .canvas-box.drawing-line canvas, .canvas-box.adding-probes canvas { cursor: crosshair; }
+  .canvas-box.dragging canvas { cursor: grabbing; }
   .overlay .kymo-line { fill: none; stroke: #fff; stroke-width: 2; }
   .overlay .kymo-line.occluded { stroke-dasharray: 5 4; stroke-opacity: .7; }
   .overlay .kymo-line-under { fill: none; stroke: #000; stroke-opacity: .55; stroke-width: 4; }
@@ -92,11 +98,16 @@
   .kymo-panel .kymo-plot { position: relative; height: 260px; }
   .kymo-panel .kymo-plot svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
   /* gaps (no data: outside the variable's domain) are transparent pixels over this hatch */
-  .kymo-panel .kymo-plot canvas { position: absolute; image-rendering: pixelated; cursor: crosshair;
+  .kymo-panel .kymo-plot canvas { position: absolute; image-rendering: pixelated; cursor: crosshair; touch-action: none;
     background: repeating-linear-gradient(45deg, #9a9aa3 0 3px, #c8c8cf 3px 6px); }
   .kymo-panel .no-data { fill: url(#kymoHatch); }
   .kymo-panel .time-cursor { stroke: #fff; stroke-width: 1.5; stroke-dasharray: 4 3; pointer-events: none; }
   .kymo-panel .time-cursor-under { stroke: #000; stroke-opacity: .6; stroke-width: 3.5; pointer-events: none; }
+  .kymo-panel .space-cursor { stroke: #fff; stroke-width: 1.5; stroke-dasharray: 4 3; pointer-events: none; }
+  .kymo-panel .space-cursor-under { stroke: #000; stroke-opacity: .6; stroke-width: 3.5; pointer-events: none; }
+  .kymo-panel .cross-marker { stroke: currentColor; stroke-opacity: .5; stroke-dasharray: 3 3; }
+  .kymo-panel .profile .dot { fill: #07c; }
+  .kymo-panel .kymo-plot canvas:focus-visible { outline: 2px solid #07c; outline-offset: 2px; }
   .kymo-panel .profile { height: 170px; }
   .kymo-panel .profile .trace { fill: none; stroke: #07c; stroke-width: 2; vector-effect: non-scaling-stroke; }
   .kymo-panel .grid { stroke: currentColor; stroke-opacity: .08; }
@@ -154,15 +165,18 @@
       <button id="kymoMatrixCsv" type="button" disabled title="Save the kymograph as CSV: the arc lengths, then one row per time">Matrix CSV</button>
       <button id="kymoDesktopCsv" type="button" disabled title="Save the kymograph resampled as the desktop's kymograph resamples it (raw values, nearest neighbour, evenly spaced), to compare with its Copy output">Desktop CSV</button>
       <button id="kymoPng" type="button" disabled title="Save the kymograph image as PNG">PNG</button>
+      <button id="kymoProfileCsv" type="button" disabled title="Save the line scan as CSV: the value at each sample at the crosshair's time">Line scan CSV</button>
+      <button id="kymoTimeCsv" type="button" disabled title="Save the time series as CSV: the value at each time at the crosshair's distance">Time series CSV</button>
       <button id="kymoClose" type="button" title="Remove the line">✕</button>
     </span>
   </div>
   <label class="kymo-coords">Line <input id="lineCoords" type="text" spellcheck="false" autocomplete="off"
     placeholder="x,y,z; x,y,z; …" title="The line's vertices, in µm. Edit and press Enter to redraw it"></label>
   <div class="note" id="kymoNote"></div>
-  <div class="kymo-plot" id="kymoPlot"><canvas id="kymoCanvas" width="1" height="1"></canvas><svg id="kymoSvg" aria-label="kymograph axes"></svg></div>
+  <div class="kymo-plot" id="kymoPlot"><canvas id="kymoCanvas" width="1" height="1" tabindex="0" aria-label="kymograph: click or drag to move the crosshair, arrow keys to step it"></canvas><svg id="kymoSvg" aria-label="kymograph axes"></svg></div>
   <div class="readout" id="kymoReadout"></div>
-  <svg class="profile" id="kymoProfile" aria-label="line profile at the current time"></svg>
+  <svg class="profile" id="kymoProfile" aria-label="line scan at the crosshair's time"></svg>
+  <svg class="profile" id="kymoTimePlot" aria-label="time series at the crosshair's distance"></svg>
 </div>
 
 <div class="plot-panel" id="plotPanel" hidden>

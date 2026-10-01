@@ -128,6 +128,27 @@ public final class FieldViewerServer {
 		volatile VtuVarInfo[] vtuVarInfos;
 		/** the membrane domains with membrane elements, read once from the mesh */
 		volatile List<String> membraneDomains;
+		/*
+		 * A run's mesh and variables do not change while it is registered, and for a run on the data server each
+		 * read is a round trip carrying the whole mesh (about 0.6 MB for 101 × 101 × 36). They were read again by
+		 * every request, up to three times by one kymograph; now once per dataset (see solverMesh, visMesh and
+		 * dataIdentifiers). The saved times are still read per request: a running simulation adds to them.
+		 */
+		/** the solver's mesh, read once */
+		volatile cbit.vcell.solvers.CartesianMesh solverMesh;
+		/** the solver's mesh with its domains named, built once from {@link #solverMesh} */
+		volatile org.vcell.vis.vcell.CartesianMesh visMesh;
+		/** the run's variables and functions, read once (the viewer always asks with an empty output context) */
+		volatile DataIdentifier[] dataIdentifiers;
+		/** the last few kymographs' time series ({@link #kymographSeries}), most recently used last */
+		final Map<String, double[][]> kymographSeries = new java.util.LinkedHashMap<>(8, 0.75f, true) {
+			private static final long serialVersionUID = 1L;
+
+			@Override
+			protected boolean removeEldestEntry(Map.Entry<String, double[][]> eldest) {
+				return size() > KYMOGRAPH_SERIES_KEPT;
+			}
+		};
 
 		DataSource(VCSimulationDataIdentifier vcdID, VCDataManager dataManager, SubdomainInfo subdomainInfo,
 				String simName) {
@@ -157,7 +178,7 @@ public final class FieldViewerServer {
 	 */
 	private static VtuMode vtuMode(DataSource source) throws Exception {
 		if (!source.vtuModeResolved) {
-			Object mesh = source.dataManager.getMesh(source.vcdID);
+			Object mesh = solverMesh(source);
 			source.vtuMode = mesh instanceof CartesianMeshMovingBoundary ? VtuMode.TIME_VARYING
 					: mesh instanceof CartesianMeshChombo ? VtuMode.STATIC : null;
 			source.vtuModeResolved = true;
@@ -218,14 +239,64 @@ public final class FieldViewerServer {
 	}
 
 	private static String heavy(HeavyJob job) throws Exception {
+		return heavy(job, null);
+	}
+
+	/** {@link #heavy(HeavyJob)}, noting on {@code timer} the moment the job starts. */
+	private static String heavy(HeavyJob job, StageTimer timer) throws Exception {
 		if (!HEAVY_JOBS.tryAcquire()) {
 			throw new BusyException("the field viewer is busy with another kymograph or time series; try again");
 		}
 		try {
+			if (timer != null) {
+				timer.lap("acquire");
+			}
 			return job.run();
 		} finally {
 			HEAVY_JOBS.release();
 		}
+	}
+
+	/** How many kymographs' time series each dataset keeps ({@link #kymographSeries}). */
+	static final int KYMOGRAPH_SERIES_KEPT = 4;
+
+	/** How many kymograph time-series jobs have been run, not answered from memory ({@link #kymographSeries}); for tests. */
+	static final java.util.concurrent.atomic.AtomicInteger kymographJobsRun = new java.util.concurrent.atomic.AtomicInteger();
+
+	/**
+	 * One kymograph's values: {@code timesAndValues} (row 0 the times, row 1 + i the values at sample i) of ONE
+	 * {@link TimeSeriesJobSpec} over the samples' volume indices, with their membrane-crossing indices when not
+	 * null, or over membrane indices for a membrane variable.
+	 * <p>
+	 * The job reads every returned saved time, twice with membrane crossings (once more for the values at the
+	 * crossings): that is nearly all of a kymograph's time, about 1 s for 101 times of a 101 × 101 × 36 run read
+	 * locally. So the last few are kept per dataset, keyed by everything the job depends on, the number of saved
+	 * times included (a running simulation's next time makes a new job). The viewer asks for the same series
+	 * again for its desktop CSV ({@code raw=1}: the same values, gaps kept), on a variable switched back to, and on
+	 * a line redrawn; those are now answered from memory.
+	 */
+	private static double[][] kymographSeries(DataSource source, String varName, int[] indices, int[] crossingIndices,
+			boolean membrane, double[] allTimes, int tstep) throws Exception {
+		String key = (membrane ? "membrane " : "volume ") + varName + " tstep=" + tstep + " times=" + allTimes.length
+				+ " last=" + allTimes[allTimes.length - 1] + " indices=" + Arrays.toString(indices)
+				+ " crossings=" + Arrays.toString(crossingIndices);
+		synchronized (source.kymographSeries) {
+			double[][] kept = source.kymographSeries.get(key);
+			if (kept != null) {
+				return kept;
+			}
+		}
+		TimeSeriesJobSpec spec = new TimeSeriesJobSpec(new String[] { varName }, new int[][] { indices },
+				crossingIndices != null ? new int[][] { crossingIndices } : null, allTimes[0], tstep,
+				allTimes[allTimes.length - 1], VCDataJobID.createVCDataJobID(source.vcdID.getOwner(), true));
+		TSJobResultsNoStats results = (TSJobResultsNoStats) source.dataManager
+				.getTimeSeriesValues(emptyOutputContext(), source.vcdID, spec);
+		kymographJobsRun.incrementAndGet();
+		double[][] timesAndValues = results.getTimesAndValuesForVariable(varName);
+		synchronized (source.kymographSeries) {
+			source.kymographSeries.put(key, timesAndValues);
+		}
+		return timesAndValues;
 	}
 
 	/** Samples × returned times per kymograph; {@code -Dvcell.fieldViewer.maxKymographValues} overrides it. */
@@ -469,7 +540,7 @@ public final class FieldViewerServer {
 		}
 
 		double[] times = source.dataManager.getDataSetTimes(vcdID);
-		DataIdentifier[] ids = source.dataManager.getDataIdentifiers(emptyOutputContext(), vcdID);
+		DataIdentifier[] ids = dataIdentifiers(source);
 		List<String> domains = new ArrayList<>(readMesh(source).getVolumeDomainNames());
 		domains.addAll(membraneDomains(source)); // after the volume domains, so the first is still a volume
 
@@ -721,8 +792,7 @@ public final class FieldViewerServer {
 	 */
 	private static VtuGridParser.VtuGrid chomboToPhysical(VtuGridParser.VtuGrid grid,
 			DataSource source) throws Exception {
-		cbit.vcell.solvers.CartesianMesh mesh =
-				(cbit.vcell.solvers.CartesianMesh) source.dataManager.getMesh(source.vcdID);
+		cbit.vcell.solvers.CartesianMesh mesh = solverMesh(source);
 		double[] origin = { mesh.getOrigin().getX(), mesh.getOrigin().getY(), mesh.getOrigin().getZ() };
 		double[] extent = { mesh.getExtent().getX(), mesh.getExtent().getY(), mesh.getExtent().getZ() };
 		int[] n = { mesh.getSizeX(), mesh.getSizeY(), mesh.getSizeZ() };
@@ -1199,7 +1269,7 @@ public final class FieldViewerServer {
 	 */
 	private static String handleTimeSeriesPoints(DataSource source, String domain, String varName,
 			String pointsParam) throws Exception {
-		cbit.vcell.solvers.CartesianMesh mesh = (cbit.vcell.solvers.CartesianMesh) source.dataManager.getMesh(source.vcdID);
+		cbit.vcell.solvers.CartesianMesh mesh = solverMesh(source);
 		VisMesh visMesh = grid(source, domain);
 		// a 2D point may leave out z: it takes the plane the served grid lies in
 		Double planeZ = mesh.getGeometryDimension() < 3 ? visMesh.getPoints().get(0).getZ() : null;
@@ -1393,23 +1463,34 @@ public final class FieldViewerServer {
 	 */
 	private static String handleKymograph(HttpExchange ex) throws Exception {
 		Map<String, String> q = query(ex);
+		StageTimer timer = new StageTimer(LG, "kymograph sim=" + q.get("sim") + " job=" + q.getOrDefault("job", "0")
+				+ " domain=" + q.get("domain") + " var=" + q.get("var") + " path=" + q.get("path")
+				+ (q.containsKey("tstep") ? " tstep=" + q.get("tstep") : ""));
+		String json = kymograph(q, timer);
+		timer.done(json.length() + " chars");
+		return json;
+	}
+
+	private static String kymograph(Map<String, String> q, StageTimer timer) throws Exception {
 		int tstep = parseTstep(q);
 		FenicsBundleViews.BundleSource bundle = bundleSourceFor(q);
 		if (bundle != null) {
-			return heavy(() -> FenicsBundleViews.kymograph(bundle, q, tstep));
+			return heavy(() -> FenicsBundleViews.kymograph(bundle, q, tstep), timer);
 		}
 		DataSource source = sourceFor(q);
 		VtuMode mode = vtuMode(source);
+		timer.lap("source");
 		if (mode != null) {
-			return heavy(() -> vtuKymograph(source, q, mode, tstep));
+			return heavy(() -> vtuKymograph(source, q, mode, tstep, timer), timer);
 		}
 		String domain = domainOf(q, source);
+		timer.lap("domain");
 		String varName = q.get("var");
 		if (varName == null || varName.isEmpty()) {
 			throw new IllegalArgumentException("missing required query parameter 'var'");
 		}
 		DataIdentifier variable = null;
-		for (DataIdentifier id : source.dataManager.getDataIdentifiers(emptyOutputContext(), source.vcdID)) {
+		for (DataIdentifier id : dataIdentifiers(source)) {
 			if (id.getName().equals(varName)) {
 				variable = id;
 			}
@@ -1417,6 +1498,7 @@ public final class FieldViewerServer {
 		if (variable == null) {
 			throw new IllegalArgumentException("unknown variable '" + varName + "'");
 		}
+		timer.lap("variable");
 		cbit.vcell.math.VariableType type = variable.getVariableType();
 		if (type.equals(cbit.vcell.math.VariableType.MEMBRANE)) {
 			// a curve along the membrane, as the desktop selects and samples it
@@ -1424,7 +1506,8 @@ public final class FieldViewerServer {
 			if (!isMembraneDomain(source, membraneDomain)) {
 				throw new IllegalArgumentException("'" + varName + "' is a membrane variable; its domain is not a membrane");
 			}
-			return heavy(() -> fvMembraneKymograph(source, membraneDomain, varName, q.get("path"), q.get("plane"), tstep));
+			return heavy(() -> fvMembraneKymograph(source, membraneDomain, varName, q.get("path"), q.get("plane"), tstep,
+					timer), timer);
 		}
 		if (type.equals(cbit.vcell.math.VariableType.MEMBRANE_REGION)) {
 			throw new IllegalArgumentException("a kymograph of a membrane region variable is not supported ('" + varName
@@ -1436,7 +1519,7 @@ public final class FieldViewerServer {
 		}
 		boolean raw = "1".equals(q.get("raw")) || "true".equalsIgnoreCase(q.get("raw"));
 		final String dom = domain;
-		return heavy(() -> fvKymograph(source, dom, varName, q.get("path"), tstep, raw));
+		return heavy(() -> fvKymograph(source, dom, varName, q.get("path"), tstep, raw, timer), timer);
 	}
 
 	/** {@code tstep}, the stride over the saved times: 1 when absent. */
@@ -1464,7 +1547,8 @@ public final class FieldViewerServer {
 	 * MovingBoundary mesh differs per saved time, so the samples are located again at every time: a fixed
 	 * lab-frame line the moving boundary passes through. {@code raw} is finite-volume only and ignored here.
 	 */
-	private static String vtuKymograph(DataSource source, Map<String, String> q, VtuMode mode, int tstep) throws Exception {
+	private static String vtuKymograph(DataSource source, Map<String, String> q, VtuMode mode, int tstep, StageTimer timer)
+			throws Exception {
 		String varName = q.get("var");
 		if (varName == null || varName.isEmpty()) {
 			throw new IllegalArgumentException("missing required query parameter 'var'");
@@ -1498,15 +1582,19 @@ public final class FieldViewerServer {
 			}
 		};
 		VtuGridParser.VtuGrid first = rows.grid(0);
+		timer.lap("grid");
 		double[][] path = BodyFittedKymograph.parsePath(q.get("path"), isVolume3D(first) ? null : first.points[2]);
 		int n = BodyFittedKymograph.sampleCount(q.get("samples"), FvLineSampler.length(path), first.meanCellDiameter());
-		return BodyFittedKymograph.json(varName, domain, PointSeries.Location.CELL, path, n, times, tstep, rows,
+		String json = BodyFittedKymograph.json(varName, domain, PointSeries.Location.CELL, path, n, times, tstep, rows,
 				mode == VtuMode.TIME_VARYING);
+		timer.lap("rows[" + n + " samples × " + strideCount(times.length, tstep) + " times]");
+		return json;
 	}
 
 	private static String fvKymograph(DataSource source, String domain, String varName, String pathParam,
-			int tstep, boolean raw) throws Exception {
-		cbit.vcell.solvers.CartesianMesh mesh = (cbit.vcell.solvers.CartesianMesh) source.dataManager.getMesh(source.vcdID);
+			int tstep, boolean raw, StageTimer timer) throws Exception {
+		cbit.vcell.solvers.CartesianMesh mesh = solverMesh(source);
+		timer.lap("mesh");
 		boolean flat = mesh.getGeometryDimension() < 3;
 		// a 2D path lies in the plane the served grid lies in; its vertices may leave out z
 		Double planeZ = flat ? grid(source, domain).getPoints().get(0).getZ() : null;
@@ -1519,20 +1607,18 @@ public final class FieldViewerServer {
 		path = FvLineSampler.checkPath(mesh, path);
 		FvLineSampler.Samples samples = FvLineSampler.sample(mesh, path);
 		int n = samples.size();
+		timer.lap("sample");
 
 		double[] allTimes = source.dataManager.getDataSetTimes(source.vcdID);
 		if (allTimes == null || allTimes.length == 0) {
 			throw new IllegalArgumentException("run " + source.vcdID.getID() + " has no saved times");
 		}
+		timer.lap("times");
 		checkValueLimit(n, allTimes.length, tstep);
-		TimeSeriesJobSpec spec = new TimeSeriesJobSpec(new String[] { varName }, new int[][] { samples.volumeIndex() },
-				samples.membraneIndex() != null ? new int[][] { samples.membraneIndex() } : null,
-				allTimes[0], tstep, allTimes[allTimes.length - 1],
-				VCDataJobID.createVCDataJobID(source.vcdID.getOwner(), true));
-		TSJobResultsNoStats results = (TSJobResultsNoStats) source.dataManager
-				.getTimeSeriesValues(emptyOutputContext(), source.vcdID, spec);
 		// row 0 the times, row 1 + i the values at sample i
-		double[][] timesAndValues = results.getTimesAndValuesForVariable(varName);
+		double[][] timesAndValues = kymographSeries(source, varName, samples.volumeIndex(), samples.membraneIndex(), false,
+				allTimes, tstep);
+		timer.lap("timeseries[" + n + " samples, " + (samples.membraneIndex() != null ? "with" : "no") + " crossings]");
 		double[] times = timesAndValues[0];
 		int[] timeIndices = new int[times.length];
 		for (int r = 0, k = 0; r < times.length; r++) {
@@ -1543,6 +1629,7 @@ public final class FieldViewerServer {
 		}
 
 		DomainIndex domainIndex = domainIndex(source, domain);
+		timer.lap("domainIndex");
 		boolean[] inDomain = new boolean[n];
 		int[] cell = new int[n];
 		for (int i = 0; i < n; i++) {
@@ -1560,9 +1647,11 @@ public final class FieldViewerServer {
 			membraneIndex = new int[n];
 			Arrays.fill(membraneIndex, -1);
 		}
-		return fvKymographJson(varName, domain, samples.sampling().json, ",\"raw\":" + raw, path, FvLineSampler.length(path),
-				times, timeIndices, samples.arcLength(), samples.points(), samples.volumeIndex(), membraneIndex, inDomain,
-				cell, values);
+		String json = fvKymographJson(varName, domain, samples.sampling().json, ",\"raw\":" + raw, path,
+				FvLineSampler.length(path), times, timeIndices, samples.arcLength(), samples.points(), samples.volumeIndex(),
+				membraneIndex, inDomain, cell, values);
+		timer.lap("json");
+		return json;
 	}
 
 	/**
@@ -1573,8 +1662,9 @@ public final class FieldViewerServer {
 	 * indices, as {@code KymographPanel} builds it for a membrane variable (no crossing indices).
 	 */
 	private static String fvMembraneKymograph(DataSource source, String domain, String varName, String pathParam,
-			String planeParam, int tstep) throws Exception {
-		cbit.vcell.solvers.CartesianMesh mesh = (cbit.vcell.solvers.CartesianMesh) source.dataManager.getMesh(source.vcdID);
+			String planeParam, int tstep, StageTimer timer) throws Exception {
+		cbit.vcell.solvers.CartesianMesh mesh = solverMesh(source);
+		timer.lap("mesh");
 		boolean flat = mesh.getGeometryDimension() < 3;
 		Double planeZ = flat ? grid(source, domain).getPoints().get(0).getZ() : null;
 		double[][] path = BodyFittedKymograph.parsePath(pathParam, planeZ);
@@ -1583,18 +1673,16 @@ public final class FieldViewerServer {
 		FvMembraneCurve curve = FvMembraneCurve.select(mesh, domainIndex.inDomain, path, axis, BodyFittedKymograph.MAX_SAMPLES,
 				flat ? planeZ : 0);
 		int n = curve.size();
+		timer.lap("curve");
 
 		double[] allTimes = source.dataManager.getDataSetTimes(source.vcdID);
 		if (allTimes == null || allTimes.length == 0) {
 			throw new IllegalArgumentException("run " + source.vcdID.getID() + " has no saved times");
 		}
+		timer.lap("times");
 		checkValueLimit(n, allTimes.length, tstep);
-		TimeSeriesJobSpec spec = new TimeSeriesJobSpec(new String[] { varName }, new int[][] { curve.membraneIndex },
-				null, allTimes[0], tstep, allTimes[allTimes.length - 1],
-				VCDataJobID.createVCDataJobID(source.vcdID.getOwner(), true));
-		TSJobResultsNoStats results = (TSJobResultsNoStats) source.dataManager
-				.getTimeSeriesValues(emptyOutputContext(), source.vcdID, spec);
-		double[][] timesAndValues = results.getTimesAndValuesForVariable(varName);
+		double[][] timesAndValues = kymographSeries(source, varName, curve.membraneIndex, null, true, allTimes, tstep);
+		timer.lap("timeseries[" + n + " samples]");
 		double[] times = timesAndValues[0];
 		int[] timeIndices = new int[times.length];
 		for (int r = 0, k = 0; r < times.length; r++) {
@@ -1633,8 +1721,10 @@ public final class FieldViewerServer {
 			}
 		}
 		extra.append(']');
-		return fvKymographJson(varName, domain, "membrane", extra.toString(), curve.waypoints, curve.arcLength[n - 1], times,
-				timeIndices, curve.arcLength, curve.points, volumeIndex, curve.membraneIndex, inDomain, cell, values);
+		String json = fvKymographJson(varName, domain, "membrane", extra.toString(), curve.waypoints, curve.arcLength[n - 1],
+				times, timeIndices, curve.arcLength, curve.points, volumeIndex, curve.membraneIndex, inDomain, cell, values);
+		timer.lap("json");
+		return json;
 	}
 
 	/**
@@ -1731,7 +1821,7 @@ public final class FieldViewerServer {
 		if (statsMode != null) {
 			return handleStatsVtu(source, q, statsMode);
 		}
-		DataIdentifier[] ids = source.dataManager.getDataIdentifiers(emptyOutputContext(), source.vcdID);
+		DataIdentifier[] ids = dataIdentifiers(source);
 		Set<String> requested = null;
 		String varParam = q.get("var");
 		if (varParam != null && !varParam.isEmpty()) {
@@ -1852,7 +1942,7 @@ public final class FieldViewerServer {
 	 */
 	private static void checkVariableFitsDomain(DataSource source, String varName, String domain) throws Exception {
 		boolean membraneDomain = isMembraneDomain(source, domain);
-		for (DataIdentifier id : source.dataManager.getDataIdentifiers(emptyOutputContext(), source.vcdID)) {
+		for (DataIdentifier id : dataIdentifiers(source)) {
 			if (id.getName().equals(varName)) {
 				boolean membraneVariable = id.getVariableType().equals(cbit.vcell.math.VariableType.MEMBRANE);
 				if (membraneVariable != membraneDomain) {
@@ -2014,7 +2104,37 @@ public final class FieldViewerServer {
 	 * {@link CartesianMeshBuilder} bridges.
 	 */
 	private static org.vcell.vis.vcell.CartesianMesh readMesh(DataSource source) throws Exception {
-		return CartesianMeshBuilder.fromSolverMesh(source.dataManager.getMesh(source.vcdID), source.subdomainInfo);
+		org.vcell.vis.vcell.CartesianMesh mesh = source.visMesh;
+		if (mesh == null) {
+			mesh = CartesianMeshBuilder.fromSolverMesh(solverMesh(source), source.subdomainInfo);
+			source.visMesh = mesh;
+		}
+		return mesh;
+	}
+
+	/** The solver's mesh, read from the data manager once per dataset ({@link DataSource#solverMesh}). */
+	private static cbit.vcell.solvers.CartesianMesh solverMesh(DataSource source) throws Exception {
+		cbit.vcell.solvers.CartesianMesh mesh = source.solverMesh;
+		if (mesh == null) {
+			mesh = source.dataManager.getMesh(source.vcdID);
+			source.solverMesh = mesh;
+		}
+		return mesh;
+	}
+
+	/**
+	 * The run's variables and functions, read from the data manager once per dataset
+	 * ({@link DataSource#dataIdentifiers}); an empty answer, as from a run with no output yet, is not kept.
+	 */
+	private static DataIdentifier[] dataIdentifiers(DataSource source) throws Exception {
+		DataIdentifier[] ids = source.dataIdentifiers;
+		if (ids == null) {
+			ids = source.dataManager.getDataIdentifiers(emptyOutputContext(), source.vcdID);
+			if (ids != null && ids.length > 0) {
+				source.dataIdentifiers = ids;
+			}
+		}
+		return ids;
 	}
 
 	private static synchronized VisMesh grid(DataSource source, String domainName) throws Exception {

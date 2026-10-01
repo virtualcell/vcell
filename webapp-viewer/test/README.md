@@ -23,7 +23,7 @@ and fails if the console shows an `is not permitted` refusal from the wasm invok
 | module | covers |
 |---|---|
 | `test_probes.py` | probes: click, shift-click, the Add toggle, markers, the time cursor, CSV |
-| `test_kymograph.py` | kymographs: the Line tool and the typed line, the image and cursor, click → time, shift-click → probe, the exports, the retries, and the desktop cross-check |
+| `test_kymograph.py` | kymographs: the Line tool and the typed line, the image, the crosshair (click, drag, arrow keys) and its line scan and time series, click → time, shift-click → probe, the exports, the retries, and the desktop cross-check |
 | `test_kymograph_bodyfitted.py` | kymographs of FEniCSx (2D, 3D, ALE), Chombo (2D, 3D) and MovingBoundary runs: evenly spaced samples, the lab-frame label, gaps in the other domain |
 | `test_fv_membranes.py` | finite-volume membrane variables: drawn on their faces, probed there, curves along them in 2D and in the 3D cut plane, Stats, and the desktop cross-check for membrane curves |
 | `test_membrane_curves.py` | curves along a 2D FEniCSx membrane: the curve follows the membrane between the snapped picks, the overlay follows its samples, the long way round, the tool off on a 3D membrane surface |
