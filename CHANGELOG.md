@@ -369,6 +369,25 @@ instead of a 500 for a BNGL download of a BioModel with no applications.
 - `/api/v0/biomodel/{id}/biomodel.bngl` now answers 404, not 500, for a BioModel
   with no applications.
 
+## [8.1.8.05] - 2026-10-01
+
+**Highlights.** Saving a model from Windows no longer corrupts non-ASCII text in
+annotations (μ, superscripts, accented letters). Built from the `vc8.1-prod`
+release branch.
+
+### Fixed
+- The desktop client decodes models it loads from or saves to the server as
+  UTF-8. On Windows it used the platform charset (windows-1252), so every
+  open-and-save doubled non-ASCII annotation text, until a model could no
+  longer be saved (HTTP 413). `BigString`, `XmlUtil.getXMLString`,
+  `FileUtils.readFileToString` and `ExternalDocInfo.getReader` also use UTF-8.
+  (#2151, cherry-picked in #2153)
+- All desktop launchers run Java with `-Dfile.encoding=UTF-8`. (#2150, backported
+  in #2153)
+
+### Notes for API consumers
+- No `/api/v1/` schema changes in this build.
+
 ## [8.1.8.04] - 2026-09-25
 
 **Highlights.** Downloading BNGL for a BioModel with no applications returns a
