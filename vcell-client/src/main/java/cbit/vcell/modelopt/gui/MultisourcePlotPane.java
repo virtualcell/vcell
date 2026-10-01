@@ -48,6 +48,7 @@ public class MultisourcePlotPane extends javax.swing.JPanel {
 	private javax.swing.JScrollPane ivjReferenceDataListScrollPane = null;
 	
 	private Color[] autoContrastColors;
+	private int[] plottedVisibleIndex = new int[0];
 	private JPanel panel;
 	
 class IvjEventHandler implements java.beans.PropertyChangeListener, javax.swing.event.ListSelectionListener {
@@ -69,6 +70,10 @@ public MultisourcePlotPane() {
 	initialize();
 }
 
+javax.swing.JList<cbit.vcell.modelopt.DataReference> getJList1ForTest() {
+	return getJList1();
+}
+
 public Color[] getAutoContrastColorsInListOrder(){
 	return autoContrastColors.clone();
 }
@@ -76,8 +81,13 @@ private void createAutoContrastColors(){
 	if(getmultisourcePlotListModel() == null || getmultisourcePlotListModel().getSize() <=0){
 		return;
 	}
-	if(autoContrastColors == null || getmultisourcePlotListModel().getSize() > autoContrastColors.length){
-		autoContrastColors = ColorUtil.generateAutoColor(getmultisourcePlotListModel().getSize(), getBackground(),0);
+	int size = getmultisourcePlotListModel().getSize();
+	if(autoContrastColors == null || size > autoContrastColors.length){
+		Color[] colors = new Color[size];
+		for (int unsortedIndex = 0; unsortedIndex < size; unsortedIndex++) {
+			colors[unsortedIndex] = ColorUtil.seriesColor(unsortedIndex);
+		}
+		autoContrastColors = colors;
 	}
 }
 
@@ -265,6 +275,26 @@ private javax.swing.JList<DataReference> getJList1() {
 					}catch(Exception e){
 						e.printStackTrace();
 					}
+					if (comp instanceof JLabel) {
+						JLabel label = (JLabel) comp;
+						label.setIcon(null);
+						label.setToolTipText(null);
+						if (value != null && index >= 0) {
+							int visible = visibleRank(index);
+							if (visible >= 0) {
+								label.setIcon(getplotPane().createVisiblePlotIcon(visible));
+							} else {
+								int prospective = prospectiveRank(index);
+								int unsorted = unsortedIndex(index);
+								Color paint = autoContrastColors != null && unsorted >= 0 && unsorted < autoContrastColors.length
+										? autoContrastColors[unsorted]
+										: ColorUtil.seriesColor(Math.max(0, unsorted));
+								int hints = value.getDataSource() == null ? Plot2D.RENDERHINT_DRAWLINE : value.getDataSource().getRenderHints();
+								label.setIcon(getplotPane().createSeriesStyleIcon(paint, prospective, hints));
+								label.setToolTipText("Not plotted; style shown for selection.");
+							}
+						}
+					}
 					return comp;
 				}
 			});
@@ -426,6 +456,11 @@ private void initialize() {
 		add(getPanel(), BorderLayout.WEST);
 		add(getplotPane(), BorderLayout.CENTER);
 		initConnections();
+		getplotPane().addPropertyChangeListener("seriesStyle", evt -> {
+			if (ivjJList1 != null) {
+				ivjJList1.repaint();
+			}
+		});
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
@@ -486,6 +521,10 @@ private void selectionModel1_ValueChanged(javax.swing.event.ListSelectionEvent l
 
 	Vector<Color> colorV = new Vector<Color>();
 	
+	int modelSize = getmultisourcePlotListModel() == null ? 0 : getmultisourcePlotListModel().getSize();
+	int[] visibleByRow = new int[modelSize];
+	Arrays.fill(visibleByRow, -1);
+	int emitted = 0;
 	int[] selectedIndices = getJList1().getSelectedIndices();
 	for (int ii = 0; ii < selectedIndices.length; ii++){
 		int selectedIndex = selectedIndices[ii];
@@ -511,6 +550,10 @@ private void selectionModel1_ValueChanged(javax.swing.event.ListSelectionEvent l
 				colorV.add(autoContrastColors[unsortedSelecteIndex]);
 				nameList.add(prefix+columnNames[i]);
 				renderHintList.add(dataSource.getRenderHints());
+				if (selectedIndex >= 0 && selectedIndex < visibleByRow.length) {
+					visibleByRow[selectedIndex] = emitted;
+				}
+				emitted++;
 				break;
 			}
 		}
@@ -531,9 +574,43 @@ private void selectionModel1_ValueChanged(javax.swing.event.ListSelectionEvent l
 //	if(colorV.size() == plot2D.getNumberOfPlots()){
 //		colorArr = colorV.toArray(new Color[0]);
 //	}
+	plottedVisibleIndex = visibleByRow;
 	getplotPane().setPlot2D(plot2D,colorArr);
+	getJList1().repaint();
 
 	return;
+}
+
+private int visibleRank(int listIndex) {
+	int rank = 0;
+	int[] selected = getJList1().getSelectedIndices();
+	for (int selectedIndex : selected) {
+		if (selectedIndex == listIndex) {
+			return rank;
+		}
+		if (selectedIndex < listIndex) {
+			rank++;
+		}
+	}
+	return -1;
+}
+
+private int prospectiveRank(int listIndex) {
+	int rank = 0;
+	for (int selectedIndex : getJList1().getSelectedIndices()) {
+		if (selectedIndex < listIndex) {
+			rank++;
+		}
+	}
+	return rank;
+}
+
+private int unsortedIndex(int listIndex) {
+	if (getmultisourcePlotListModel() == null || getmultisourcePlotListModel().getSortedDataReferences() == null
+			|| listIndex < 0 || listIndex >= getmultisourcePlotListModel().getSortedDataReferences().size()) {
+		return listIndex;
+	}
+	return getmultisourcePlotListModel().getSortedDataReferences().get(listIndex).unsortedIndex;
 }
 
 
@@ -559,7 +636,9 @@ public void setDataSources(DataSource[] dataSources, Color[] colorArray) {
 		}
 		autoContrastColors = colorArray;
 	}
-	
+	if (ivjJList1 != null) {
+		ivjJList1.repaint();
+	}
 }
 
 /**

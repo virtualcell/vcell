@@ -147,6 +147,14 @@ public class ColorUtil {
 			new Color(158,218,229)    // light teal
 	};
 
+	/**
+	 * Not CVD-safe. Measured 2026-09-30: among the first 8 colors, minimum
+	 * CAM02-UCS ΔE′ is 2.9 under deuteranopia and 3.3 under tritanopia, and 6 of
+	 * these 20 entries are below 3:1 contrast on white. Near-duplicates include
+	 * (213,94,0)/(200,55,0) and (0,114,178)/(0,90,160). The array is unchanged
+	 * because existing callers depend on these exact values. New categorical
+	 * series must use {@link #CVD_SAFE_LIGHT} via {@link #seriesColor(int)}.
+	 */
 	public static final Color[] COLORBLIND20 = {
 			new Color(0,114,178),     // deep blue
 			new Color(213,94,0),      // orange
@@ -169,6 +177,62 @@ public class ColorUtil {
 			new Color(153,102,204),   // lavender
 			new Color(136,34,85)      // plum
 	};
+
+	/**
+	 * Categorical series colors for light backgrounds, in greedy maximum-separation
+	 * order. Every entry is at least 3:1 against white. The six entries are not
+	 * separable in grayscale; {@link #seriesDash(int)} carries that distinction.
+	 * Do not reorder: {@code seriesColor(0)} is black and is the solid series.
+	 */
+	public static final Color[] CVD_SAFE_LIGHT = {
+			new Color(0x00, 0x00, 0x00), // #000000
+			new Color(0x99, 0x99, 0x33), // #999933
+			new Color(0x00, 0x44, 0x88), // #004488
+			new Color(0x8C, 0x51, 0x0A), // #8C510A
+			new Color(0x00, 0x72, 0xB2), // #0072B2
+			new Color(0xCC, 0x66, 0x77)  // #CC6677
+	};
+
+	private static final float[] DASH_LONG = {6f, 3f};
+	private static final float[] DASH_DOT = {2f, 2f};
+	private static final float[] DASH_DASH_DOT = {8f, 3f, 2f, 3f};
+
+	/** Palette color for series {@code i}, cycling every {@link #CVD_SAFE_LIGHT} entry. */
+	public static Color seriesColor(int i) {
+		if (i < 0) {
+			throw new IllegalArgumentException("series index must be >= 0: " + i);
+		}
+		return CVD_SAFE_LIGHT[i % CVD_SAFE_LIGHT.length];
+	}
+
+	/**
+	 * Dash array for series {@code i}, in user-space units for {@code BasicStroke}.
+	 * {@code null} means solid. The returned array is a copy; callers may mutate it.
+	 * <p>
+	 * Cycle length 8, chosen so series 0 is solid, series 1 is non-solid, and the
+	 * pair {@code (seriesColor(i), seriesDash(i))} is unique for {@code i < 24}
+	 * (least common multiple of the color period 6 and this cycle). Index {@code i % 8}:
+	 * solid, {6,3}, {2,2}, {8,3,2,3}, {6,3}, {2,2}, {8,3,2,3}, solid.
+	 */
+	public static float[] seriesDash(int i) {
+		if (i < 0) {
+			throw new IllegalArgumentException("series index must be >= 0: " + i);
+		}
+		// 0 solid, 1 long, 2 dot, 3 dash-dot. Even and odd slots are each a permutation
+		// of all four patterns, which is what keeps 24 (color, dash) pairs unique.
+		int[] cycle = {0, 1, 2, 3, 1, 2, 3, 0};
+		int slot = cycle[i % cycle.length];
+		if (slot == 0) {
+			return null;
+		}
+		if (slot == 1) {
+			return Arrays.copyOf(DASH_LONG, DASH_LONG.length);
+		}
+		if (slot == 2) {
+			return Arrays.copyOf(DASH_DOT, DASH_DOT.length);
+		}
+		return Arrays.copyOf(DASH_DASH_DOT, DASH_DASH_DOT.length);
+	}
 
 	public static final Color[] LIGHT20 = {
 			new Color(231,203,148),   // muted beige

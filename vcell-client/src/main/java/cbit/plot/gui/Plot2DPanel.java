@@ -26,6 +26,7 @@ import java.awt.geom.Ellipse2D;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
 import java.awt.geom.NoninvertibleTransformException;
+import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.text.DecimalFormat;
@@ -115,8 +116,9 @@ public class Plot2DPanel extends JPanel {
 	private boolean fieldBCompact = false;
 	private boolean fieldBStepMode = false;
 	private boolean fieldIsHistogram = false; //added March 30,2007. to indicate this plot if for trajectory or histogram
+	private boolean fieldVaryLineStyles = true;
+	private boolean ivjConnPtoP14Aligning = false;
 	
-	private Color[] autoContrastColors;
 	private Color[] userDefinedColors;
 
 class IvjEventHandler implements java.awt.event.MouseListener, java.awt.event.MouseMotionListener, java.beans.PropertyChangeListener, javax.swing.event.ChangeListener {
@@ -184,6 +186,10 @@ class IvjEventHandler implements java.awt.event.MouseListener, java.awt.event.Mo
 				connPtoP4SetTarget();
 			if (evt.getSource() == Plot2DPanel.this && (evt.getPropertyName().equals("showNodes"))) 
 				connPtoP4SetSource();
+			if (evt.getSource() == Plot2DPanel.this.getplot2DSettings1() && (evt.getPropertyName().equals("varyLineStyles")))
+				connPtoP14SetTarget();
+			if (evt.getSource() == Plot2DPanel.this && (evt.getPropertyName().equals("varyLineStyles")))
+				connPtoP14SetSource();
 			if (evt.getSource() == Plot2DPanel.this.getplot2DSettings1() && (evt.getPropertyName().equals("snapToNodes"))) 
 				connPtoP5SetTarget();
 			if (evt.getSource() == Plot2DPanel.this && (evt.getPropertyName().equals("snapToNodes"))) 
@@ -957,6 +963,38 @@ private void connPtoP4SetTarget() {
 }
 
 
+private void connPtoP14SetSource() {
+	try {
+		if (ivjConnPtoP14Aligning == false) {
+			ivjConnPtoP14Aligning = true;
+			if ((getplot2DSettings1() != null)) {
+				getplot2DSettings1().setVaryLineStyles(this.getVaryLineStyles());
+			}
+			ivjConnPtoP14Aligning = false;
+		}
+	} catch (java.lang.Throwable ivjExc) {
+		ivjConnPtoP14Aligning = false;
+		handleException(ivjExc);
+	}
+}
+
+
+private void connPtoP14SetTarget() {
+	try {
+		if (ivjConnPtoP14Aligning == false) {
+			ivjConnPtoP14Aligning = true;
+			if ((getplot2DSettings1() != null)) {
+				this.setVaryLineStyles(getplot2DSettings1().getVaryLineStyles());
+			}
+			ivjConnPtoP14Aligning = false;
+		}
+	} catch (java.lang.Throwable ivjExc) {
+		ivjConnPtoP14Aligning = false;
+		handleException(ivjExc);
+	}
+}
+
+
 /**
  * connPtoP5SetSource:  (plot2DSettings1.snapToNodes <--> Plot2DPanel.snapToNodes)
  */
@@ -1339,110 +1377,96 @@ private void drawCrossHair(Graphics2D g, Point p) {
  * Creation date: (2/7/2001 2:22:29 AM)
  * @param plotData cbit.plot.PlotData
  */
-private void drawLinePlot(PlotData plotData, int index, Graphics2D g, int renderHints) {
-	if (plotData != null) {
-		g.setStroke(lineBS_15);
-		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		if( plotRectHolder == null ||
-			plotRectHolder.x != getLMargin() + getTick() ||
-			plotRectHolder.y != getTMargin() + getTick() - (getBCompact()?2:0) ||
-			plotRectHolder.width != getWidth() - 2 * getTick() - getLMargin() - getRMargin() ||
-			plotRectHolder.height != getHeight() - 2 * getTick() - getTMargin() - getBMargin() + (getBCompact()?4:0)){
-				
-			plotRectHolder = new Rectangle(
-				getLMargin() + getTick(),
-				getTMargin() + getTick() - (getBCompact()?2:0),
-				getWidth() - 2 * getTick() - getLMargin() - getRMargin(),
-				getHeight() - 2 * getTick() - getTMargin() - getBMargin() + (getBCompact()?4:0));
-		}
-		g.setClip(plotRectHolder);
-		//Area plotArea = new Area(plotRect);
-
-		Line2D[] segments = getLinePlotSegments(plotData, index);
-		if ((renderHints & Plot2D.RENDERHINT_DRAWLINE) == Plot2D.RENDERHINT_DRAWLINE){
-			for (int i=0;i<segments.length;i++){
-				if (segments[i].intersects(plotRectHolder)) {
-					Line2D line = GeneralGuiUtils.clipLine(segments[i], plotRectHolder);
-//					Line2D max = new Line2D(1,2,3,4);
-					g.draw(line);
-//					line.
-				}
-			}
+private void drawLinePlot(PlotData plotData, int index, Graphics2D g, int renderHints, int visibleSeriesIndex) {
+	if (plotData == null) {
+		return;
+	}
+	Graphics2D plotGraphics = (Graphics2D) g.create();
+	try {
+		plotGraphics.setStroke(getVisiblePlotStroke(visibleSeriesIndex));
+		plotGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		ensurePlotRect();
+		plotGraphics.clip(plotRectHolder);
+		nodes[index].setPoints(mapPoints(plotData));
+		Point2D[] points = nodes[index].getPoints();
+		if ((renderHints & Plot2D.RENDERHINT_DRAWLINE) == Plot2D.RENDERHINT_DRAWLINE) {
+			plotGraphics.draw(PlotSeriesStyle.curvePath(points, getBStepMode()));
 		}
 		if (getShowNodes() && ((renderHints & Plot2D.RENDERHINT_DRAWPOINT) == Plot2D.RENDERHINT_DRAWPOINT)) {
-//			nodes[index].setPoints(mapPoints(plotData));
-			Ellipse2D.Double circle = new Ellipse2D.Double();
-			int diameter = 2;
-			if (renderHints == Plot2D.RENDERHINT_DRAWPOINT) { // only draw points, make them larger
-				diameter = 3;	// 4 is too large when we may draw a mix of points and lines, like in param estimation (expected vs estimated)
-			}
-			for (int i=0;i<plotData.getSize();i++) {
-				circle.setFrameFromCenter(nodes[index].getPoints()[i].getX(), nodes[index].getPoints()[i].getY(), nodes[index].getPoints()[i].getX() + diameter, nodes[index].getPoints()[i].getY() + diameter);
-				if (circle.intersects(plotRectHolder)) {
-					g.fill(circle);
+			double markerSize = 6;
+			for (int i = 0; i < points.length; i++) {
+				double x = points[i].getX();
+				double y = points[i].getY();
+				if (!PlotSeriesStyle.isFinite(x) || !PlotSeriesStyle.isFinite(y)) {
+					continue;
+				}
+				Rectangle2D markerBounds = new Rectangle2D.Double(x - markerSize / 2.0, y - markerSize / 2.0, markerSize, markerSize);
+				if (markerBounds.intersects(plotRectHolder)) {
+					PlotSeriesStyle.paintMarker(plotGraphics, visibleSeriesIndex, x, y, markerSize);
 				}
 			}
 		}
+	} finally {
+		plotGraphics.dispose();
 	}
 }
 
 //added March 30 to display histogram
-private void drawHistogram(PlotData plotData, int index, Graphics2D g, int renderHints, int width) {
-	if (plotData != null) {
-		g.setStroke(lineBS_15);
-		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		if( plotRectHolder == null ||
-			plotRectHolder.x != getLMargin() + getTick() ||
-			plotRectHolder.y != getTMargin() + getTick() - (getBCompact()?2:0) ||
-			plotRectHolder.width != getWidth() - 2 * getTick() - getLMargin() - getRMargin() ||
-			plotRectHolder.height != getHeight() - 2 * getTick() - getTMargin() - getBMargin() + (getBCompact()?4:0)){
-				
-			plotRectHolder = new Rectangle(
-				getLMargin() + getTick(),
-				getTMargin() + getTick() - (getBCompact()?2:0),
-				getWidth() - 2 * getTick() - getLMargin() - getRMargin(),
-				getHeight() - 2 * getTick() - getTMargin() - getBMargin() + (getBCompact()?4:0));
-		}
-		g.setClip(plotRectHolder);
-		
-		
-		if (plotData != null && plotData.getSize()>0) 
-		{
+private void drawHistogram(PlotData plotData, int index, Graphics2D g, int renderHints, int width, int visibleSeriesIndex) {
+	if (plotData == null) {
+		return;
+	}
+	Graphics2D plotGraphics = (Graphics2D) g.create();
+	try {
+		plotGraphics.setStroke(getVisiblePlotStroke(visibleSeriesIndex));
+		plotGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		ensurePlotRect();
+		plotGraphics.clip(plotRectHolder);
+		Paint seriesPaint = plotGraphics.getPaint();
+		if (plotData.getSize() > 0) {
 			nodes[index].setPoints(mapPoints(plotData));
-			Point2D[] points =nodes[index].getPoints();
+			Point2D[] points = nodes[index].getPoints();
 			int w = width;
-			if (width % 2 != 0) w=w+1;
-			for(int k=0;k<points.length;k++)
-			{
-				double x=points[k].getX()-w/2;
-				double y=points[k].getY();
-				//to get transformed coordinate for y0=0, h=y0-y
+			if (width % 2 != 0) {
+				w = w + 1;
+			}
+			for (int k = 0; k < points.length; k++) {
+				double x = points[k].getX() - w / 2.0;
+				double y = points[k].getY();
+				if (!PlotSeriesStyle.isFinite(x) || !PlotSeriesStyle.isFinite(y)) {
+					continue;
+				}
 				Point2D[] transH = new Point2D.Double[1];
-				Point2D temp = new Point2D.Double(plotData.getPoints()[k].getX(),0);
+				Point2D temp = new Point2D.Double(plotData.getPoints()[k].getX(), 0);
 				Point2D[] origH = new Point2D.Double[1];
 				origH[0] = temp;
 				getTransform().transform(origH, 0, transH, 0, 1);
-				double h = transH[0].getY()-y;
-				Rectangle2D reac=new Rectangle2D.Double(x,y,w,h);
-				g.fill(reac);
+				double h = transH[0].getY() - y;
+				Rectangle2D bar = new Rectangle2D.Double(x, y, w, h);
+				plotGraphics.setPaint(seriesPaint);
+				plotGraphics.fill(bar);
+				plotGraphics.draw(bar);
 			}
 		}
 		if (getShowNodes() && ((renderHints & Plot2D.RENDERHINT_DRAWPOINT) == Plot2D.RENDERHINT_DRAWPOINT)) {
-//			nodes[index].setPoints(mapPoints(plotData));
-			Ellipse2D.Double circle = new Ellipse2D.Double();
-			int diameter = 2;
-			if (renderHints == Plot2D.RENDERHINT_DRAWPOINT) { // only draw points, make them larger
-				diameter = 4;
-			}
-			for (int i=0;i<plotData.getSize();i++) {
-				circle.setFrameFromCenter(nodes[index].getPoints()[i].getX(), nodes[index].getPoints()[i].getY(), nodes[index].getPoints()[i].getX() + diameter, nodes[index].getPoints()[i].getY() + diameter);
-				if (circle.intersects(plotRectHolder)) {
-					g.setColor(Color.gray);
-					g.fill(circle);
+			double markerSize = renderHints == Plot2D.RENDERHINT_DRAWPOINT ? 8 : 6;
+			Point2D[] points = nodes[index].getPoints();
+			for (int i = 0; i < points.length; i++) {
+				double x = points[i].getX();
+				double y = points[i].getY();
+				if (!PlotSeriesStyle.isFinite(x) || !PlotSeriesStyle.isFinite(y)) {
+					continue;
+				}
+				Rectangle2D markerBounds = new Rectangle2D.Double(x - markerSize / 2.0, y - markerSize / 2.0, markerSize, markerSize);
+				if (markerBounds.intersects(plotRectHolder)) {
+					plotGraphics.setPaint(Color.gray);
+					PlotSeriesStyle.paintMarker(plotGraphics, visibleSeriesIndex, x, y, markerSize);
+					plotGraphics.setPaint(seriesPaint);
 				}
 			}
 		}
-		
+	} finally {
+		plotGraphics.dispose();
 	}
 }
 /**
@@ -1674,34 +1698,6 @@ private GeneralPath getLinePlot(PlotData plotData, int index) {
  * @param index int
  * @return java.awt.geom.Line2D[]
  */
-private Line2D[] getLinePlotSegments(PlotData plotData, int index) { //index means which plot(for a spacific variable), The array 'nodes' stores all the plots. comment added 4th Oct, 2006 
-	if (plotData != null && plotData.getSize()>0) {
-		nodes[index].setPoints(mapPoints(plotData));
-		if(!getBStepMode())
-		{
-			Line2D[] segments = new Line2D[plotData.getSize()-1];
-			for (int i=0;i<plotData.getSize()-1;i++) {
-				segments[i] = new Line2D.Double(nodes[index].getPoints()[i], nodes[index].getPoints()[i+1]);
-			}
-			return segments;
-		}
-		else
-		{
-			Line2D[] segments = new Line2D[(plotData.getSize()-1)*2];
-			for (int i=0;i<plotData.getSize()-1;i++) {
-
-				Point2D transientNode = new Point2D.Double(nodes[index].getPoints()[i+1].getX(),nodes[index].getPoints()[i].getY());
-				segments[2*i] = new Line2D.Double(nodes[index].getPoints()[i], transientNode);
-				segments[2*i+1] = new Line2D.Double(transientNode, nodes[index].getPoints()[i+1]);
-			}
-			return segments;
-		}
-		
-	} else {
-		return null;
-	}
-}
-
 /**
  * Insert the method's description here.
  * Creation date: (2/15/2001 10:09:17 AM)
@@ -1776,22 +1772,27 @@ private Plot2DSettingsPanel getPlot2DSettingsPanel1() {
  * @param visiblePlotIndex int
  */
 public Paint getVisiblePlotPaint(int visiblePlotIndex) {
-//	if (getAutoColor()) {
-//		return Color.getHSBColor((float) plotIndex / plotDatas.length, 1.0f, 1.0f);
-//	} else {
-//		return Color.black;
-//	}
-
-	if(userDefinedColors != null && userDefinedColors.length > visiblePlotIndex){
+	if (userDefinedColors != null && userDefinedColors.length > visiblePlotIndex) {
 		return userDefinedColors[visiblePlotIndex];
 	}
 	if (getAutoColor()) {
-		if(autoContrastColors == null || visiblePlotIndex >= autoContrastColors.length){
-			autoContrastColors = ColorUtil.generateAutoColor(getPlot2D().getNumberOfVisiblePlots(),getBackground(), 0);
-		}
-		return autoContrastColors[visiblePlotIndex];
-	} else {
-		return Color.black;
+		return ColorUtil.seriesColor(visiblePlotIndex);
+	}
+	return Color.black;
+}
+
+BasicStroke getVisiblePlotStroke(int visiblePlotIndex) {
+	return PlotSeriesStyle.stroke(visiblePlotIndex, getVaryLineStyles());
+}
+
+private void ensurePlotRect() {
+	int x = getLMargin() + getTick();
+	int y = getTMargin() + getTick() - (getBCompact() ? 2 : 0);
+	int width = getWidth() - 2 * getTick() - getLMargin() - getRMargin();
+	int height = getHeight() - 2 * getTick() - getTMargin() - getBMargin() + (getBCompact() ? 4 : 0);
+	if (plotRectHolder == null || plotRectHolder.x != x || plotRectHolder.y != y
+			|| plotRectHolder.width != width || plotRectHolder.height != height) {
+		plotRectHolder = new Rectangle(x, y, width, height);
 	}
 }
 
@@ -2077,6 +2078,7 @@ private void initConnections() throws java.lang.Exception {
 	connPtoP11SetTarget();
 	connPtoP12SetTarget();
 	connPtoP13SetTarget();
+	connPtoP14SetTarget();
 }
 
 
@@ -2183,12 +2185,13 @@ public void paintComponent(Graphics g) {
 		int visiblePlotIndex = 0;
 		for (int i=0;i<plotDatas.length;i++) {
 			if (getPlot2D().isVisiblePlot(i)) {
-				g2D.setPaint(getVisiblePlotPaint(visiblePlotIndex ++));
-				//amended March 30,2007. draw trajectory or histogram
+				int seriesIndex = visiblePlotIndex;
+				g2D.setPaint(getVisiblePlotPaint(seriesIndex));
+				visiblePlotIndex++;
 				if(getIsHistogram())
-					drawHistogram(plotDatas[i], i, g2D,getPlot2D().getRenderHints()[i],10);
+					drawHistogram(plotDatas[i], i, g2D,getPlot2D().getRenderHints()[i],10, seriesIndex);
 				else 
-					drawLinePlot(plotDatas[i], i, g2D,getPlot2D().getRenderHints()[i]);
+					drawLinePlot(plotDatas[i], i, g2D,getPlot2D().getRenderHints()[i], seriesIndex);
 			}
 		}
 	} catch (Throwable exc) {
@@ -2208,47 +2211,70 @@ private void pointerMoved(java.awt.event.MouseEvent mouseEvent) {
 	}
 	Point point = mouseEvent.getPoint();
 	Point nodePoint = null;
-	Graphics2D g = (Graphics2D)getGraphics();
-	g.setColor(Color.white);
-	g.setXORMode(getBackground());
-	g.setStroke(lineBS_20);
 	int index = getCurrentPlotIndex();
 	PlotData plotData = null;
 	try {
-		if (index>=0){
+		if (index>=0 && index < plotDatas.length){
 			plotData = plotDatas[index];
 		}
 	} catch (IndexOutOfBoundsException exc) {
 		// ignore - we probably don't have any visible plot, so plotData should stay null;
 	}
-	if (plotData != null) {
+	Point2D[] sampled = plotData == null || nodes == null || index < 0 || index >= nodes.length || nodes[index] == null
+			? null : nodes[index].getPoints();
+	if (plotData != null && sampled != null && sampled.length > 0) {
 		int i = 0;
-		while (i < plotData.getSize() && nodes[index].getPoints()[i].getX() < point.getX()) i++;
-		if (i == plotData.getSize()) {
-			i--;
-		} else {
-			if (i > 0) {
-				if (nodes[index].getPoints()[i].getX() - point.getX() > point.getX() - nodes[index].getPoints()[i-1].getX()) {
-					i--;
-				}
+		while (i < plotData.getSize() && i < sampled.length && sampled[i].getX() < point.getX()) i++;
+		if (i >= sampled.length) {
+			i = sampled.length - 1;
+		} else if (i > 0) {
+			if (sampled[i].getX() - point.getX() > point.getX() - sampled[i-1].getX()) {
+				i--;
 			}
 		}
-		nodePoint = new Point((int)nodes[index].getPoints()[i].getX(), (int)nodes[index].getPoints()[i].getY());
-		getStatusLabel().setText(snf.format(plotData.getIndependent()[i]) + ", " + snf.format(plotData.getDependent()[i]));
+		nodePoint = new Point((int)sampled[i].getX(), (int)sampled[i].getY());
+		String coordinates = snf.format(plotData.getIndependent()[i]) + ", " + snf.format(plotData.getDependent()[i]);
+		String seriesName = seriesName(index);
+		if (getStatusLabel() != null) {
+			getStatusLabel().setText(seriesName == null ? coordinates : seriesName + ": " + coordinates);
+		}
 		if (getSnapToNodes()) {
 			point = nodePoint;
 		}
-	} else {
+	} else if (getStatusLabel() != null) {
 		getStatusLabel().setText(" ");
 	}
-	if (! point.equals(getLastPoint())) {
-		if (drawn) {
-			drawCrossHair(g, getLastPoint());
-		}
-		drawCrossHair(g, point);
-		setLastPoint(point);
-		drawn = true;
+	Graphics graphics = getGraphics();
+	if (graphics == null || point == null) {
+		return;
 	}
+	Graphics2D g = (Graphics2D) graphics;
+	try {
+		g.setColor(Color.white);
+		g.setXORMode(getBackground());
+		g.setStroke(lineBS_20);
+		if (! point.equals(getLastPoint())) {
+			if (drawn && getLastPoint() != null) {
+				drawCrossHair(g, getLastPoint());
+			}
+			drawCrossHair(g, point);
+			setLastPoint(point);
+			drawn = true;
+		}
+	} finally {
+		g.dispose();
+	}
+}
+
+private String seriesName(int modelIndex) {
+	if (getPlot2D() == null || getPlot2D().getPlotNames() == null || modelIndex < 0 || modelIndex >= getPlot2D().getPlotNames().length) {
+		return null;
+	}
+	String name = getPlot2D().getPlotNames()[modelIndex];
+	if (name == null || name.isBlank()) {
+		return null;
+	}
+	return name;
 }
 
 
@@ -2554,6 +2580,7 @@ private void setplot2DSettings1(Plot2DSettings newValue) {
 			connPtoP11SetTarget();
 			connPtoP12SetTarget();
 			connPtoP13SetTarget();
+			connPtoP14SetTarget();
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -2598,6 +2625,19 @@ public void setShowNodes(boolean showNodes) {
 	boolean oldValue = fieldShowNodes;
 	fieldShowNodes = showNodes;
 	firePropertyChange("showNodes", oldValue, showNodes);
+}
+
+public boolean getVaryLineStyles() {
+	return fieldVaryLineStyles;
+}
+
+public void setVaryLineStyles(boolean varyLineStyles) {
+	boolean oldValue = fieldVaryLineStyles;
+	fieldVaryLineStyles = varyLineStyles;
+	firePropertyChange("varyLineStyles", oldValue, varyLineStyles);
+	if (oldValue != varyLineStyles) {
+		repaint();
+	}
 }
 
 
@@ -2955,11 +2995,15 @@ public boolean getIsHistogram() {
 	return fieldIsHistogram;
 }
 public void setIsHistogram(boolean fieldIsHistogram) {
+	boolean oldValue = this.fieldIsHistogram;
 	this.fieldIsHistogram = fieldIsHistogram;
+	firePropertyChange("histogramMode", oldValue, fieldIsHistogram);
 }
 
 public void setUserDefinedColors(Color[] userDefinedColors) {
+	Color[] oldValue = this.userDefinedColors;
 	this.userDefinedColors = userDefinedColors;
+	firePropertyChange("userDefinedColors", oldValue, userDefinedColors);
 }
 
 }

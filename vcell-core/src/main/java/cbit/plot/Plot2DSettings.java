@@ -23,6 +23,7 @@ public class Plot2DSettings {
 	private boolean fieldYAuto = true;
 	private boolean fieldYStretch = false;
 	private boolean fieldShowNodes = true;
+	private boolean fieldVaryLineStyles = true;
 	private boolean fieldShowCrosshair = true;
 	private boolean fieldSnapToNodes = true;
 	private Range fieldXAutoRange = null;
@@ -114,7 +115,14 @@ public boolean getShowCrosshair() {
  */
 public boolean getShowNodes() {
 	return fieldShowNodes;
-}
+	}
+
+/**
+ * Whether successive series use the shared dash cycle. Defaults to true.
+ */
+public boolean getVaryLineStyles() {
+	return fieldVaryLineStyles;
+	}
 
 
 /**
@@ -239,6 +247,7 @@ public void restoreSavedSettings() {
 	if (savedSettings != null) {
 		setShowCrosshair(savedSettings.getShowCrosshair());
 		setShowNodes(savedSettings.getShowNodes());
+		setVaryLineStyles(savedSettings.getVaryLineStyles());
 		setSnapToNodes(savedSettings.getSnapToNodes());
 		setXAuto(savedSettings.getXAuto());
 		setXStretch(savedSettings.getXStretch());
@@ -262,6 +271,7 @@ public void saveSettings() {
 	}
 	savedSettings.setShowCrosshair(getShowCrosshair());
 	savedSettings.setShowNodes(getShowNodes());
+	savedSettings.setVaryLineStyles(getVaryLineStyles());
 	savedSettings.setSnapToNodes(getSnapToNodes());
 	savedSettings.setXAuto(getXAuto());
 	savedSettings.setXStretch(getXStretch());
@@ -295,6 +305,15 @@ public void setShowNodes(boolean showNodes) {
 	boolean oldValue = fieldShowNodes;
 	fieldShowNodes = showNodes;
 	firePropertyChange("showNodes", new Boolean(oldValue), new Boolean(showNodes));
+}
+
+/**
+ * Sets the varyLineStyles property. Equal values do not fire a change.
+ */
+public void setVaryLineStyles(boolean varyLineStyles) {
+	boolean oldValue = fieldVaryLineStyles;
+	fieldVaryLineStyles = varyLineStyles;
+	firePropertyChange("varyLineStyles", oldValue, varyLineStyles);
 }
 
 

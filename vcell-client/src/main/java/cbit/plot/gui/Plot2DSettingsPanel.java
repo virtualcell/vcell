@@ -41,6 +41,7 @@ public class Plot2DSettingsPanel extends JPanel {
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private JCheckBox ivjJCheckBoxCrosshair = null;
 	private JCheckBox ivjJCheckBoxNodes = null;
+	private JCheckBox ivjJCheckBoxVaryLineStyles = null;
 	private JCheckBox ivjJCheckBoxSnap = null;
 	private JLabel ivjJLabelPlots = null;
 	private Plot2DSettings fieldPlot2DSettings = new Plot2DSettings();
@@ -52,6 +53,7 @@ public class Plot2DSettingsPanel extends JPanel {
 	private boolean ivjConnPtoP7Aligning = false;
 	private boolean ivjConnPtoP8Aligning = false;
 	private boolean ivjConnPtoP9Aligning = false;
+	private boolean ivjConnPtoP10Aligning = false;
 	private Plot2DSettings ivjplot2DSettings1 = null;
 	private Range ivjcurrentXRange = null;
 	private Range ivjcurrentYRange = null;
@@ -85,6 +87,8 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.F
 				connPtoP3SetSource();
 			if (e.getSource() == Plot2DSettingsPanel.this.getJCheckBoxNodes()) 
 				connPtoP4SetSource();
+			if (e.getSource() == Plot2DSettingsPanel.this.getJCheckBoxVaryLineStyles())
+				connPtoP10SetSource();
 			if (e.getSource() == Plot2DSettingsPanel.this.getJCheckBoxSnap()) 
 				connPtoP5SetSource();
 			if (e.getSource() == Plot2DSettingsPanel.this.getJCheckBoxXauto()) 
@@ -103,6 +107,8 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.F
 				connPtoP3SetTarget();
 			if (evt.getSource() == Plot2DSettingsPanel.this.getplot2DSettings1() && (evt.getPropertyName().equals("showNodes"))) 
 				connPtoP4SetTarget();
+			if (evt.getSource() == Plot2DSettingsPanel.this.getplot2DSettings1() && (evt.getPropertyName().equals("varyLineStyles")))
+				connPtoP10SetTarget();
 			if (evt.getSource() == Plot2DSettingsPanel.this.getplot2DSettings1() && (evt.getPropertyName().equals("snapToNodes"))) 
 				connPtoP5SetTarget();
 			if (evt.getSource() == Plot2DSettingsPanel.this.getplot2DSettings1() && (evt.getPropertyName().equals("xAuto"))) 
@@ -681,6 +687,38 @@ private void connPtoP4SetTarget() {
 }
 
 
+private void connPtoP10SetSource() {
+	try {
+		if (ivjConnPtoP10Aligning == false) {
+			ivjConnPtoP10Aligning = true;
+			if ((getplot2DSettings1() != null)) {
+				getplot2DSettings1().setVaryLineStyles(getJCheckBoxVaryLineStyles().isSelected());
+			}
+			ivjConnPtoP10Aligning = false;
+		}
+	} catch (java.lang.Throwable ivjExc) {
+		ivjConnPtoP10Aligning = false;
+		handleException(ivjExc);
+	}
+}
+
+
+private void connPtoP10SetTarget() {
+	try {
+		if (ivjConnPtoP10Aligning == false) {
+			ivjConnPtoP10Aligning = true;
+			if ((getplot2DSettings1() != null)) {
+				getJCheckBoxVaryLineStyles().setSelected(getplot2DSettings1().getVaryLineStyles());
+			}
+			ivjConnPtoP10Aligning = false;
+		}
+	} catch (java.lang.Throwable ivjExc) {
+		ivjConnPtoP10Aligning = false;
+		handleException(ivjExc);
+	}
+}
+
+
 /**
  * connPtoP5SetSource:  (plot2DSettings1.snapToNodes <--> JCheckBoxSnap.selected)
  */
@@ -1019,6 +1057,21 @@ private javax.swing.JCheckBox getJCheckBoxNodes() {
 		}
 	}
 	return ivjJCheckBoxNodes;
+}
+
+
+private javax.swing.JCheckBox getJCheckBoxVaryLineStyles() {
+	if (ivjJCheckBoxVaryLineStyles == null) {
+		try {
+			ivjJCheckBoxVaryLineStyles = new javax.swing.JCheckBox();
+			ivjJCheckBoxVaryLineStyles.setName("JCheckBoxVaryLineStyles");
+			ivjJCheckBoxVaryLineStyles.setSelected(true);
+			ivjJCheckBoxVaryLineStyles.setText("Vary line styles");
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return ivjJCheckBoxVaryLineStyles;
 }
 
 
@@ -1426,6 +1479,7 @@ private void initConnections() throws java.lang.Exception {
 	getJCheckBoxCrosshair().addItemListener(ivjEventHandler);
 	this.addPropertyChangeListener(ivjEventHandler);
 	getJCheckBoxNodes().addItemListener(ivjEventHandler);
+	getJCheckBoxVaryLineStyles().addItemListener(ivjEventHandler);
 	getJCheckBoxSnap().addItemListener(ivjEventHandler);
 	getJCheckBoxXauto().addItemListener(ivjEventHandler);
 	getJCheckBoxXstretch().addItemListener(ivjEventHandler);
@@ -1448,6 +1502,7 @@ private void initConnections() throws java.lang.Exception {
 	connPtoP7SetTarget();
 	connPtoP8SetTarget();
 	connPtoP9SetTarget();
+	connPtoP10SetTarget();
 }
 
 /**
@@ -1559,15 +1614,22 @@ private void initialize() {
 		constraintsJCheckBoxYstretch.insets = new java.awt.Insets(0, 20, 0, 4);
 		add(getJCheckBoxYstretch(), constraintsJCheckBoxYstretch);
 
+		java.awt.GridBagConstraints constraintsJCheckBoxVaryLineStyles = new java.awt.GridBagConstraints();
+		constraintsJCheckBoxVaryLineStyles.gridx = 0; constraintsJCheckBoxVaryLineStyles.gridy = 8;
+		constraintsJCheckBoxVaryLineStyles.gridwidth = 3;
+		constraintsJCheckBoxVaryLineStyles.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		constraintsJCheckBoxVaryLineStyles.insets = new java.awt.Insets(0, 20, 0, 10);
+		add(getJCheckBoxVaryLineStyles(), constraintsJCheckBoxVaryLineStyles);
+
 		java.awt.GridBagConstraints constraintsJCheckBoxCrosshair = new java.awt.GridBagConstraints();
-		constraintsJCheckBoxCrosshair.gridx = 0; constraintsJCheckBoxCrosshair.gridy = 8;
+		constraintsJCheckBoxCrosshair.gridx = 0; constraintsJCheckBoxCrosshair.gridy = 9;
 		constraintsJCheckBoxCrosshair.gridwidth = 3;
 		constraintsJCheckBoxCrosshair.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		constraintsJCheckBoxCrosshair.insets = new java.awt.Insets(0, 20, 0, 10);
 		add(getJCheckBoxCrosshair(), constraintsJCheckBoxCrosshair);
 
 		java.awt.GridBagConstraints constraintsJCheckBoxSnap = new java.awt.GridBagConstraints();
-		constraintsJCheckBoxSnap.gridx = 0; constraintsJCheckBoxSnap.gridy = 9;
+		constraintsJCheckBoxSnap.gridx = 0; constraintsJCheckBoxSnap.gridy = 10;
 		constraintsJCheckBoxSnap.gridwidth = 3;
 		constraintsJCheckBoxSnap.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		constraintsJCheckBoxSnap.insets = new java.awt.Insets(0, 20, 10, 10);
@@ -1727,6 +1789,7 @@ private void setplot2DSettings1(Plot2DSettings newValue) {
 			connPtoP7SetTarget();
 			connPtoP8SetTarget();
 			connPtoP9SetTarget();
+			connPtoP10SetTarget();
 			firePropertyChange("plot2DSettings", oldValue, newValue);
 			// user code begin {1}
 			// user code end

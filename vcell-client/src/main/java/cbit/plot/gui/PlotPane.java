@@ -9,7 +9,6 @@
  */
 
 package cbit.plot.gui;
-import java.awt.BasicStroke;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -17,11 +16,13 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Paint;
+import java.awt.Stroke;
 
 import javax.swing.BorderFactory;
 import javax.swing.ButtonModel;
 import javax.swing.Icon;
 import javax.swing.JCheckBox;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -52,18 +53,54 @@ import cbit.vcell.units.VCUnitDefinition;
  */
 public class PlotPane extends JPanel {
 
-public class LineIcon implements Icon {
-		private Paint lineColor;
-		private LineIcon(Paint paint) {
-			lineColor = paint;
+public static class LineIcon implements Icon {
+		private final Paint lineColor;
+		private final Stroke stroke;
+		private final int markerIndex;
+		private final boolean drawLine;
+		private final boolean drawMarker;
+		private final Paint markerPaint;
+		private final int markerSize;
+		private final int iconWidth;
+		private final int iconHeight;
+
+		public LineIcon(Paint paint, Stroke stroke, int markerIndex) {
+			this(paint, stroke, markerIndex, true, true, paint, 6, 50, 12);
 		}
-		public int getIconHeight() { return 2; }
-		public int getIconWidth() { return 50; }
+
+		public LineIcon(Paint paint, Stroke stroke, int markerIndex, boolean drawLine, boolean drawMarker,
+				Paint markerPaint, int markerSize, int iconWidth, int iconHeight) {
+			this.lineColor = paint;
+			this.stroke = stroke;
+			this.markerIndex = markerIndex;
+			this.drawLine = drawLine;
+			this.drawMarker = drawMarker;
+			this.markerPaint = markerPaint;
+			this.markerSize = markerSize;
+			this.iconWidth = iconWidth;
+			this.iconHeight = iconHeight;
+		}
+
+		public int getIconHeight() { return iconHeight; }
+		public int getIconWidth() { return iconWidth; }
+		Stroke stroke() { return stroke; }
+		int markerIndex() { return markerIndex; }
 		public void paintIcon(Component c, Graphics g, int x, int y) {
-			 Graphics2D g2 = (Graphics2D)g;
-			 g2.setStroke(new BasicStroke(2.0f));
-			 g2.setPaint(lineColor);
-			 g2.drawLine(x, y, x + getIconWidth(), y);
+			Graphics2D g2 = (Graphics2D) g.create();
+			try {
+				int midY = y + iconHeight / 2;
+				if (drawLine) {
+					g2.setStroke(stroke);
+					g2.setPaint(lineColor);
+					g2.drawLine(x, midY, x + iconWidth, midY);
+				}
+				if (drawMarker) {
+					g2.setPaint(markerPaint);
+					PlotSeriesStyle.paintMarker(g2, markerIndex, x + iconWidth / 2.0, midY, markerSize);
+				}
+			} finally {
+				g2.dispose();
+			}
 		}
 	}
 	private java.awt.event.MouseListener ml = null;
@@ -1121,6 +1158,14 @@ private void initConnections() throws java.lang.Exception {
 	connPtoP2SetTarget();
 	connPtoP3SetTarget();
 	connPtoP4SetTarget();
+	getPlot2DPanel1().addPropertyChangeListener(evt -> {
+		String name = evt.getPropertyName();
+		if ("varyLineStyles".equals(name) || "userDefinedColors".equals(name)
+				|| "histogramMode".equals(name) || "showNodes".equals(name)) {
+			updateLegend();
+			firePropertyChange("seriesStyle", evt.getOldValue(), evt.getNewValue());
+		}
+	});
 }
 
 /**
@@ -1315,6 +1360,26 @@ private void updateLabels() {
 }
 
 
+Plot2DPanel accessiblePlotPanel() {
+	return getPlot2DPanel1();
+}
+
+public Icon createVisiblePlotIcon(int visibleIndex) {
+	Plot2DPanel panel = getPlot2DPanel1();
+	return new LineIcon(panel.getVisiblePlotPaint(visibleIndex), panel.getVisiblePlotStroke(visibleIndex), visibleIndex);
+}
+
+public Icon createSeriesStyleIcon(Paint paint, int prospectiveVisibleIndex, int renderHints) {
+	Plot2DPanel panel = getPlot2DPanel1();
+	boolean drawLine = (renderHints & Plot2D.RENDERHINT_DRAWLINE) != 0;
+	boolean drawPoint = (renderHints & Plot2D.RENDERHINT_DRAWPOINT) != 0;
+	boolean pointOnly = renderHints == Plot2D.RENDERHINT_DRAWPOINT;
+	Paint markerPaint = panel.getIsHistogram() ? Color.gray : paint;
+	int markerSize = panel.getIsHistogram() && pointOnly ? 8 : 6;
+	return new LineIcon(paint, panel.getVisiblePlotStroke(prospectiveVisibleIndex), prospectiveVisibleIndex,
+			drawLine, drawPoint, markerPaint, markerSize, 50, 12);
+}
+
 /**
  * Comment
  */
@@ -1329,8 +1394,10 @@ private void updateLegend() {
 	if (ml == null) {
 		ml = new java.awt.event.MouseAdapter() {
 			public void mouseClicked(java.awt.event.MouseEvent evt) {
-				String name = ((JLabel)evt.getSource()).getText();
-				getPlot2DPanel1().setCurrentPlot(name);
+				Object rawName = ((JComponent) evt.getSource()).getClientProperty("plotName");
+				if (rawName instanceof String) {
+					getPlot2DPanel1().setCurrentPlot((String) rawName);
+				}
 			}
 		};
 	}
@@ -1346,7 +1413,7 @@ private void updateLegend() {
 	legends = getJPanelPlotLegends().getComponents();
 	// update labels and show them,use reverse loop to generate non-repeatable colors
 	for (int i = (plotIndices.length - 1); i >= 0; i--){
-		LineIcon icon = new LineIcon(getPlot2DPanel1().getVisiblePlotPaint(i));
+		LineIcon icon = (LineIcon) createVisiblePlotIcon(i);
 		String plotLabel = null;
 		if (plot instanceof SingleXPlot2D) {
 			plotLabel = plotLabels[i + 1];
@@ -1386,8 +1453,14 @@ private void updateLegend() {
 		shortLabel = "<html>" + shortLabel + "<font color=\"#8B0000\">" + " [" + unitSymbol + "] " + "</font></html>";
 		tooltipString  = "<html>" + plotLabel + "<font color=\"#0000FF\">" + " " + tooltipString + " " + "</font></html>";
 		
-		((JLabel)legends[2 * i + 1]).setText(shortLabel);
-		((JLabel)legends[2 * i + 1]).setToolTipText(tooltipString);
+		JLabel textLabel = (JLabel) legends[2 * i + 1];
+		textLabel.setText(shortLabel);
+		textLabel.setToolTipText(tooltipString);
+		String[] plotNames = plot.getPlotNames();
+		int modelIndex = plotIndices[i];
+		if (plotNames != null && modelIndex >= 0 && modelIndex < plotNames.length) {
+			textLabel.putClientProperty("plotName", plotNames[modelIndex]);
+		}
 		legends[2 * i].setVisible(true);
 		legends[2 * i + 1].setVisible(true);
 	}
