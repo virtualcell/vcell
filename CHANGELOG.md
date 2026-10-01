@@ -55,6 +55,8 @@ its own repository's container image.
   entrypoint had refused the `/bin/bash` command that sends them. (#2144)
 - Fixes in the new solver releases, among them:
   - IDA could not parse any input (vcell-ode 0.9.5);
+  - events triggered with a delay were reported "missed" and aborted the run when due before an event
+    already waiting (vcell-ode 0.9.6; found by the SBML test-suite regression);
   - every MovingBoundary run exited with code 6 after writing its output (vcell-mbsolver 1.0.5);
   - the two Milstein Hybrid solvers crashed on their first stochastic step (vcell-hy3s 1.0.0);
   - FiniteVolume results on arm64 differed from x86_64 by up to 2.5% (vcell-fvsolver 0.10.6).

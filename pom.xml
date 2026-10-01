@@ -217,10 +217,10 @@
 		<solvers-fvsolver.sha256.linux64>21f6d0420ed4c79244f321417b5444d14aa468533df728483167b6f732168369</solvers-fvsolver.sha256.linux64>
 		<solvers-fvsolver.sha256.mac64>342519843bc50ed04903f4042a7a009994924ad0ae0f69a680b2ec331a77b2d2</solvers-fvsolver.sha256.mac64>
 		<solvers-fvsolver.sha256.win64>2cc44950f8fad9857a3dd798caa4478d4769618955eb90786e51e5e485bb54e8</solvers-fvsolver.sha256.win64>
-		<solvers-ode.version>v0.9.5</solvers-ode.version>	<!-- SundialsSolverStandalone_x64 -->
-		<solvers-ode.sha256.linux64>2c4877d3184d282556b3f08a262b2f292e85fadbe68133ef304663875c10927b</solvers-ode.sha256.linux64>
-		<solvers-ode.sha256.mac64>6c9f07fae81609e37f8fe6723c306af1817e2a7084800c3e52fdd51ea985f2d5</solvers-ode.sha256.mac64>
-		<solvers-ode.sha256.win64>bb3b8b8abf25d989f4dca631505d311c19914613fc7771271ecd1eed16aa3d54</solvers-ode.sha256.win64>
+		<solvers-ode.version>v0.9.6</solvers-ode.version>	<!-- SundialsSolverStandalone_x64 -->
+		<solvers-ode.sha256.linux64>a35474700888ba00632aa2b2f26f308428cf2ef9d59984e160f4a05ce11afb41</solvers-ode.sha256.linux64>
+		<solvers-ode.sha256.mac64>e6b08958b0ab4f3b372e74cdd1508cc752719dafabc00de8897956bbf0926233</solvers-ode.sha256.mac64>
+		<solvers-ode.sha256.win64>7cadf61babe4650ef12cbb1d0f0384da35456fb8a7ce5b9178e1aae68a5042aa</solvers-ode.sha256.win64>
 		<solvers-stochastic.version>v1.0.0</solvers-stochastic.version>	<!-- VCellStoch_x64 -->
 		<solvers-stochastic.sha256.linux64>b4867bb8f3abea152639bc8fe05f0aa6eb2a067720613308f480c86eefec4ca3</solvers-stochastic.sha256.linux64>
 		<solvers-stochastic.sha256.mac64>ff2da185d1b6f85bb5bfc670e9c9e6fe820cdb2b6a2d11880f2eb885a4d5a472</solvers-stochastic.sha256.mac64>
