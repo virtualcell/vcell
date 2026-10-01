@@ -146,6 +146,7 @@ java.desktop/sun.awt.image=ALL-UNNAMED
 # set to true to enable the experimental browser-based 3D field viewer
 -Dvcell.fieldViewer.enabled=true
 -Dvcell.fenics.enabled=true
+-Dfile.encoding=UTF-8
 -Dvcell.dummyvm=${compiler:sys.date}</content>
       </vmOptionsFile>
       <infoPlist>&lt;key&gt;LSEnvironment&lt;/key&gt;
@@ -188,6 +189,7 @@ java.desktop/sun.awt.image=ALL-UNNAMED
 # set to true to enable the experimental browser-based 3D field viewer
 -Dvcell.fieldViewer.enabled=true
 -Dvcell.fenics.enabled=true
+-Dfile.encoding=UTF-8
 -Dvcell.dummyvm=${compiler:sys.date}</content>
       </vmOptionsFile>
       <iconImageFiles>
@@ -226,6 +228,7 @@ java.desktop/sun.awt.image=ALL-UNNAMED
 # set to true to enable the experimental browser-based 3D field viewer
 -Dvcell.fieldViewer.enabled=true
 -Dvcell.fenics.enabled=true
+-Dfile.encoding=UTF-8
 -Dvcell.dummyvm=${compiler:sys.date}</content>
       </vmOptionsFile>
       <iconImageFiles>
@@ -263,6 +266,7 @@ java.desktop/sun.awt.image=ALL-UNNAMED
 # set to true to enable the experimental browser-based 3D field viewer
 -Dvcell.fieldViewer.enabled=true
 -Dvcell.fenics.enabled=true
+-Dfile.encoding=UTF-8
 -Dvcell.dummyvm=${compiler:sys.date}</content>
       </vmOptionsFile>
     </launcher>
@@ -297,6 +301,7 @@ java.desktop/sun.awt.image=ALL-UNNAMED
 # set to true to enable the experimental browser-based 3D field viewer
 -Dvcell.fieldViewer.enabled=true
 -Dvcell.fenics.enabled=true
+-Dfile.encoding=UTF-8
 -Dvcell.dummyvm=${compiler:sys.date}</content>
       </vmOptionsFile>
     </launcher>
@@ -331,6 +336,7 @@ java.desktop/sun.awt.image=ALL-UNNAMED
 # set to true to enable the experimental browser-based 3D field viewer
 -Dvcell.fieldViewer.enabled=true
 -Dvcell.fenics.enabled=true
+-Dfile.encoding=UTF-8
 -Dvcell.dummyvm=${compiler:sys.date}</content>
       </vmOptionsFile>
       <iconImageFiles>
