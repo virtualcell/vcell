@@ -13,6 +13,7 @@ import javax.swing.JProgressBar;
 
 import cbit.vcell.server.SimulationJobStatus;
 import cbit.vcell.server.SimulationStatus;
+import cbit.vcell.solver.server.SimulationMessage;
 import cbit.vcell.solver.Simulation;
 
 /**
@@ -73,6 +74,8 @@ Object getSimulationStatusDisplay(int index) {
 		if (jobStatus != null) {
 			if (progress != null && jobStatus.getSchedulerStatus().isRunning() && progress.doubleValue() > 0 ) {
 				statusBars[index].setValue((int)(progress.doubleValue() * 100));
+				String phase = jobStatus.getSimulationMessage().getProgressPhase();
+				statusBars[index].setString(phase == null ? null : SimulationMessage.describeProgressPhase(phase, progress));
 				return statusBars[index];
 			} else {
 				return jobStatus.getSimulationMessage().getDisplayMessage();

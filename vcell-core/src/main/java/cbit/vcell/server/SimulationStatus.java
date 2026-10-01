@@ -222,6 +222,26 @@ public class SimulationStatus implements java.io.Serializable {
 
 
     /**
+     * For a simulation of one job that is running and whose solver names the phase it is in: that phase
+     * as a user sees it ("meshing", "solving 37%"); null otherwise (the caller shows the bare progress).
+     */
+    public String getRunningPhaseDisplay(){
+        if(jobStatuses == null || jobStatuses.length != 1 || jobStatuses[0] == null || !isRunning()){
+            return null;
+        }
+        SimulationJobStatus jobStatus = jobStatuses[0];
+        if(!jobStatus.getSchedulerStatus().isRunning() || jobStatus.getSimulationMessage() == null){
+            return null;
+        }
+        String phase = jobStatus.getSimulationMessage().getProgressPhase();
+        if(phase == null){
+            return null;
+        }
+        return SimulationMessage.describeProgressPhase(phase, progressHash.get(jobStatus.getJobIndex()));
+    }
+
+
+    /**
      * Insert the method's description here.
      * Creation date: (6/25/2001 1:22:22 PM)
      *

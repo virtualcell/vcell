@@ -109,7 +109,7 @@ public class FenicsSolver extends SimpleCompiledSolver {
 
 	/**
 	 * Parses the solver's stdout markers: {@code data:<t>} (value after the last ':') and
-	 * {@code progress:NN.N%} (value between the last ':' and '%').
+	 * {@code progress:NN.N%} or {@code progress:<phase>:NN.N%} (value between the last ':' and '%').
 	 */
 	@Override
 	protected ApplicationMessage getApplicationMessage(String message) {
@@ -124,6 +124,30 @@ public class FenicsSolver extends SimpleCompiledSolver {
 		} else {
 			throw new RuntimeException("unrecognized message from " + EXECUTABLE_NAME + ": " + message);
 		}
+	}
+
+	/**
+	 * A progress marker that names the run's phase ({@code progress:meshing:0.0%}, vcell-fenics ADR 011
+	 * §4) becomes a status message with that phase; a bare {@code progress:NN.N%} (an older solver
+	 * image) the usual number.
+	 */
+	@Override
+	protected SimulationMessage getProgressMessage(ApplicationMessage progressMessage) {
+		String phase = progressPhase(progressMessage.getMessage());
+		return phase != null ? SimulationMessage.solverProgressPhase(phase) : super.getProgressMessage(progressMessage);
+	}
+
+	/** the phase in {@code progress:<phase>:NN.N%}, or null for {@code progress:NN.N%} (or anything else) */
+	static String progressPhase(String marker) {
+		if (marker == null || !marker.startsWith(PROGRESS_PREFIX)) {
+			return null;
+		}
+		int last = marker.lastIndexOf(SEPARATOR);
+		if (last < PROGRESS_PREFIX.length()) {
+			return null;
+		}
+		String phase = marker.substring(PROGRESS_PREFIX.length(), last).trim();
+		return phase.isEmpty() ? null : phase;
 	}
 
 	@Override

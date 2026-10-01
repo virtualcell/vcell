@@ -71,6 +71,14 @@ public abstract class AbstractCompiledSolver extends AbstractSolver implements j
     protected abstract ApplicationMessage getApplicationMessage(String message);
 
     /**
+     * The status message a progress message becomes: by default just the number; a solver that names
+     * its phase overrides this ({@link SimulationMessage#solverProgressPhase}).
+     */
+    protected SimulationMessage getProgressMessage(ApplicationMessage progressMessage) {
+        return SimulationMessage.solverProgress(progressMessage.getProgress());
+    }
+
+    /**
      * Insert the method's description here.
      * Creation date: (6/28/01 2:44:43 PM)
      *
@@ -121,7 +129,7 @@ public abstract class AbstractCompiledSolver extends AbstractSolver implements j
             } else {
                 switch (appMessage.getMessageType()) {
                     case ApplicationMessage.PROGRESS_MESSAGE: {
-                        fireSolverProgress(appMessage.getProgress());
+                        fireSolverProgress(appMessage.getProgress(), getProgressMessage(appMessage));
                         break;
                     }
                     case ApplicationMessage.DATA_MESSAGE: {

@@ -198,6 +198,54 @@ public class SimulationMessage implements Serializable {
 		return new SimulationMessage(DetailedState.WORKEREVENT_PROGRESS, String.valueOf(progress));
 	}
 
+	/**
+	 * A solver's progress that names the phase it is in ("meshing", "solving"), not just a number.
+	 * Remotely the same message arrives serialized, as {@code WORKEREVENT_PROGRESS|<phase>} in a
+	 * worker event's status message (see {@link #fromSerializedMessage}).
+	 */
+	public static SimulationMessage solverProgressPhase(String phase){
+		return new SimulationMessage(DetailedState.SOLVEREVENT_PROGRESS, phase);
+	}
+
+	/**
+	 * The phase a progress message names ("meshing", "solving"), or null: a progress message that holds
+	 * only the number (what {@link #solverProgress} and {@link #workerProgress} make), or any other kind.
+	 */
+	public String getProgressPhase(){
+		if (detailedState != DetailedState.SOLVEREVENT_PROGRESS && detailedState != DetailedState.WORKEREVENT_PROGRESS){
+			return null;
+		}
+		if (message == null || message.isBlank() || message.equals(MESSAGE_WORKEREVENT_PROGRESS.message)){
+			return null;
+		}
+		try {
+			Double.parseDouble(message.trim());
+			return null;
+		} catch (NumberFormatException e) {
+			return message.trim();
+		}
+	}
+
+	/**
+	 * What a user sees for a running phase: the phase alone ("meshing", "writing results") or, part way
+	 * through, with its progress ("solving 37%").
+	 */
+	public static String describeProgressPhase(String phase, Double progress){
+		if (progress == null || progress <= 0 || progress >= 1){
+			return phase;
+		}
+		return phase + " " + (int) Math.floor(progress * 100) + "%";
+	}
+
+	/**
+	 * The text for a running solver's progress event (e.g. the quick-run dialog): its phase as
+	 * {@link #describeProgressPhase} shows it, or {@code fallback} when the solver names no phase.
+	 */
+	public static String describeSolverProgress(SimulationMessage progressMessage, double progress, String fallback){
+		String phase = progressMessage == null ? null : progressMessage.getProgressPhase();
+		return phase == null ? fallback : describeProgressPhase(phase, progress);
+	}
+
 	public static SimulationMessage jobFailed(String failureMessage){
 		return new SimulationMessage(DetailedState.JOB_FAILED,failureMessage);
 	}

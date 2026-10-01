@@ -3,6 +3,7 @@ package org.vcell.solver.fenics;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.solver.SolverDescription;
+import cbit.vcell.solver.server.SimulationMessage;
 import cbit.vcell.solver.server.Solver;
 import cbit.vcell.solver.server.SolverFactory;
 import cbit.vcell.solvers.ApplicationMessage;
@@ -274,5 +275,81 @@ public class FenicsSolverTest {
 		assertEquals(1.25, fenics.getCurrentTime(), 0.0);
 
 		assertThrows(RuntimeException.class, () -> fenics.getApplicationMessage("hello"));
+	}
+
+	@Test
+	public void testPhaseMarkers() throws Exception {
+		FenicsSolver fenics = (FenicsSolver) SolverFactory.createSolver(userDir, fenicsSimTask(), false);
+		ApplicationMessage meshing = fenics.getApplicationMessage("progress:meshing:0.0%");
+		assertEquals(ApplicationMessage.PROGRESS_MESSAGE, meshing.getMessageType());
+		assertEquals(0.0, meshing.getProgress(), 0.0);
+		assertEquals("meshing", fenics.getProgressMessage(meshing).getProgressPhase());
+
+		ApplicationMessage solving = fenics.getApplicationMessage("progress:solving:37.4%");
+		assertEquals(0.374, solving.getProgress(), 1e-12);
+		SimulationMessage solvingMessage = fenics.getProgressMessage(solving);
+		assertEquals(SimulationMessage.DetailedState.SOLVEREVENT_PROGRESS, solvingMessage.getDetailedState());
+		assertEquals("solving 37%", SimulationMessage.describeSolverProgress(solvingMessage, solving.getProgress(), "Running..."));
+
+		ApplicationMessage writing = fenics.getApplicationMessage("progress:writing results:100.0%");
+		assertEquals(1.0, writing.getProgress(), 0.0);
+		assertEquals("writing results", fenics.getProgressMessage(writing).getProgressPhase());
+
+		// an older solver image: just the number
+		ApplicationMessage bare = fenics.getApplicationMessage("progress:42.5%");
+		assertNull(fenics.getProgressMessage(bare).getProgressPhase());
+		assertEquals("Running...", SimulationMessage.describeSolverProgress(fenics.getProgressMessage(bare), 0.425, "Running..."));
+		assertNull(FenicsSolver.progressPhase("progress:42.5%"));
+		assertNull(FenicsSolver.progressPhase("data:1.0"));
+	}
+
+	/**
+	 * The stdout of a real local run (vcell-fenics {@code --simtask SimID_1585623750_0__0.simtask.xml
+	 * --vc-print-status}), replayed through the solver: what the quick-run dialog says at each event.
+	 */
+	@Test
+	public void testCapturedRunShowsItsPhases() throws Exception {
+		String stdout = "[[[progress:0.0%]]]\n"
+				+ "[[[progress:loading model:0.0%]]]\n"
+				+ "[[[progress:meshing:0.0%]]]\n"
+				+ "[[[progress:compiling:0.0%]]]\n"
+				+ "[[[data:0]]]\n"
+				+ "[[[progress:solving:0.0%]]]\n"
+				+ "[[[data:0.0050000000000000001]]]\n"
+				+ "[[[data:0.01]]]\n"
+				+ "[[[progress:writing results:100.0%]]]\n"
+				+ "[[[progress:100.0%]]]\n";
+		FenicsSolver fenics = (FenicsSolver) SolverFactory.createSolver(userDir, fenicsSimTask(), false);
+		fenics.initialize();
+		List<String> shown = new java.util.ArrayList<>();
+		fenics.addSolverListener(new cbit.vcell.solver.server.SolverListener() {
+			String running = "Running..."; // as ClientSimManager's quick-run listener
+			public void solverProgress(cbit.vcell.solver.server.SolverEvent event) {
+				running = SimulationMessage.describeSolverProgress(event.getSimulationMessage(), event.getProgress(), running);
+				shown.add(running);
+			}
+			public void solverPrinted(cbit.vcell.solver.server.SolverEvent event) {
+				shown.add(running + " (data t=" + event.getTimePoint() + ")");
+			}
+			public void solverStarting(cbit.vcell.solver.server.SolverEvent event) {}
+			public void solverStopped(cbit.vcell.solver.server.SolverEvent event) {}
+			public void solverFinished(cbit.vcell.solver.server.SolverEvent event) {}
+			public void solverAborted(cbit.vcell.solver.server.SolverEvent event) {}
+		});
+		// MathExecutable.checkForNewApplicationMessages hands each [[[...]]] to the solver like this
+		for (String marker : stdout.split("\n")) {
+			fenics.getMathExecutable().setApplicationMessage(marker.substring(3, marker.length() - 3));
+		}
+		assertEquals(List.of(
+				"Running...",
+				"loading model",
+				"meshing",
+				"compiling",
+				"compiling (data t=0.0)",
+				"solving",
+				"solving (data t=0.005)",
+				"solving (data t=0.01)",
+				"writing results",
+				"writing results"), shown); // the final bare 100% keeps the last phase until "completed"
 	}
 }
