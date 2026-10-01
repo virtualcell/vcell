@@ -14,6 +14,7 @@ import io.jhdf.api.Attribute;
 import io.jhdf.api.Dataset;
 import io.jhdf.api.Group;
 import io.jhdf.api.Node;
+import io.jhdf.object.datatype.CompoundDataType;
 
 /**
  * Class to recursively parse HDF5 file seeking requested data
@@ -144,8 +145,12 @@ public class MovingBoundaryVH5Path {
             }
         }
         Dataset ds = CastingUtils.downcast(Dataset.class, hobj);
-        if(ds != null && ds.isCompound() && isLastIndex){
-            // a compound dataset's members are addressed by name, like a group's children
+        if(ds != null && ds.isCompound() && isLastIndex && isCompoundMember(ds, finding)){
+            // a compound dataset's members are addressed by name, like a group's children. Reading
+            // one decodes the WHOLE dataset, so it is done only for a name the compound type
+            // actually has: "elements" is [time][x][y], and the mesh scalars read from it
+            // (elements/startX, hx, numX, ...) are its attributes, below — decoding every saved
+            // time to find that out made each MovingBoundaryReader.getMeshInfo() cost ~1 s.
             Object data = ds.getData();
             Map<?, ?> members = CastingUtils.downcast(Map.class, data);
             if(members == null){
@@ -166,6 +171,19 @@ public class MovingBoundaryVH5Path {
         }
 
         return null;
+    }
+
+    private static boolean isCompoundMember(Dataset ds, String name){
+        CompoundDataType type = CastingUtils.downcast(CompoundDataType.class, ds.getDataType());
+        if(type == null){
+            return true; // not a type we can list: fall back to reading the data and looking
+        }
+        for(CompoundDataType.CompoundDataMember member : type.getMembers()){
+            if(member.getName().equals(name)){
+                return true;
+            }
+        }
+        return false;
     }
 
 }
