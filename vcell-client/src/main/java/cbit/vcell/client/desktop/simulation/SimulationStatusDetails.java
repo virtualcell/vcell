@@ -74,7 +74,7 @@ Object getSimulationStatusDisplay(int index) {
 		if (jobStatus != null) {
 			if (progress != null && jobStatus.getSchedulerStatus().isRunning() && progress.doubleValue() > 0 ) {
 				statusBars[index].setValue((int)(progress.doubleValue() * 100));
-				String phase = jobStatus.getSimulationMessage().getProgressPhase();
+				String phase = jobStatus.getSimulationMessage().progressPhase();
 				statusBars[index].setString(phase == null ? null : SimulationMessage.describeProgressPhase(phase, progress));
 				return statusBars[index];
 			} else {

@@ -211,7 +211,7 @@ public class SimulationMessage implements Serializable {
 	 * The phase a progress message names ("meshing", "solving"), or null: a progress message that holds
 	 * only the number (what {@link #solverProgress} and {@link #workerProgress} make), or any other kind.
 	 */
-	public String getProgressPhase(){
+	public String progressPhase(){
 		if (detailedState != DetailedState.SOLVEREVENT_PROGRESS && detailedState != DetailedState.WORKEREVENT_PROGRESS){
 			return null;
 		}
@@ -242,7 +242,7 @@ public class SimulationMessage implements Serializable {
 	 * {@link #describeProgressPhase} shows it, or {@code fallback} when the solver names no phase.
 	 */
 	public static String describeSolverProgress(SimulationMessage progressMessage, double progress, String fallback){
-		String phase = progressMessage == null ? null : progressMessage.getProgressPhase();
+		String phase = progressMessage == null ? null : progressMessage.progressPhase();
 		return phase == null ? fallback : describeProgressPhase(phase, progress);
 	}
 

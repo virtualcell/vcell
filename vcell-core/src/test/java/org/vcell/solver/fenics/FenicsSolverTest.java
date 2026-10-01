@@ -283,7 +283,7 @@ public class FenicsSolverTest {
 		ApplicationMessage meshing = fenics.getApplicationMessage("progress:meshing:0.0%");
 		assertEquals(ApplicationMessage.PROGRESS_MESSAGE, meshing.getMessageType());
 		assertEquals(0.0, meshing.getProgress(), 0.0);
-		assertEquals("meshing", fenics.getProgressMessage(meshing).getProgressPhase());
+		assertEquals("meshing", fenics.getProgressMessage(meshing).progressPhase());
 
 		ApplicationMessage solving = fenics.getApplicationMessage("progress:solving:37.4%");
 		assertEquals(0.374, solving.getProgress(), 1e-12);
@@ -293,11 +293,11 @@ public class FenicsSolverTest {
 
 		ApplicationMessage writing = fenics.getApplicationMessage("progress:writing results:100.0%");
 		assertEquals(1.0, writing.getProgress(), 0.0);
-		assertEquals("writing results", fenics.getProgressMessage(writing).getProgressPhase());
+		assertEquals("writing results", fenics.getProgressMessage(writing).progressPhase());
 
 		// an older solver image: just the number
 		ApplicationMessage bare = fenics.getApplicationMessage("progress:42.5%");
-		assertNull(fenics.getProgressMessage(bare).getProgressPhase());
+		assertNull(fenics.getProgressMessage(bare).progressPhase());
 		assertEquals("Running...", SimulationMessage.describeSolverProgress(fenics.getProgressMessage(bare), 0.425, "Running..."));
 		assertNull(FenicsSolver.progressPhase("progress:42.5%"));
 		assertNull(FenicsSolver.progressPhase("data:1.0"));

@@ -237,7 +237,7 @@ public boolean isSupercededBy(SimulationJobStatus simJobStatus, Double oldProgre
 				return true;
 			}
 			// a solver entering a new phase (meshing, then compiling, both at 0%) without new progress
-			if (oldProgress.equals(newProgress) && simJobStatus.getSimulationMessage().getProgressPhase() != null
+			if (oldProgress.equals(newProgress) && simJobStatus.getSimulationMessage().progressPhase() != null
 					&& !simJobStatus.getSimulationMessage().equals(getSimulationMessage())){
 				return true;
 			}

@@ -50,39 +50,39 @@ public class SimulationStatusPhaseTest {
 	@Test
 	public void phasesShowInTheSimulationList() {
 		SimulationStatus status = update(null, running(SimulationMessage.workerStarting("Starting Job")), null);
-		assertNull(status.getRunningPhaseDisplay());
+		assertNull(status.runningPhaseDisplay());
 		assertEquals("Starting Job", status.getDetails());
 
 		status = update(status, fromWorker("WORKEREVENT_PROGRESS|loading model"), 0.0);
-		assertEquals("loading model", status.getRunningPhaseDisplay());
+		assertEquals("loading model", status.runningPhaseDisplay());
 		// the next phases arrive at the same 0%: each must still replace the last
 		status = update(status, fromWorker("WORKEREVENT_PROGRESS|meshing"), 0.0);
-		assertEquals("meshing", status.getRunningPhaseDisplay());
+		assertEquals("meshing", status.runningPhaseDisplay());
 		status = update(status, fromWorker("WORKEREVENT_PROGRESS|compiling"), 0.0);
-		assertEquals("compiling", status.getRunningPhaseDisplay());
+		assertEquals("compiling", status.runningPhaseDisplay());
 		status = update(status, fromWorker("WORKEREVENT_PROGRESS|solving"), 0.0);
-		assertEquals("solving", status.getRunningPhaseDisplay());
+		assertEquals("solving", status.runningPhaseDisplay());
 		status = update(status, fromWorker("WORKEREVENT_PROGRESS|solving"), 0.374);
-		assertEquals("solving 37%", status.getRunningPhaseDisplay());
+		assertEquals("solving 37%", status.runningPhaseDisplay());
 		assertEquals(0.374, status.getProgress(), 0.0);
 		// a data event at the same progress does not replace the phase
 		status = update(status, running(SimulationMessage.workerData(0.005)), 0.374);
-		assertEquals("solving 37%", status.getRunningPhaseDisplay());
+		assertEquals("solving 37%", status.runningPhaseDisplay());
 		status = update(status, fromWorker("WORKEREVENT_PROGRESS|solving"), 1.0);
-		assertEquals("solving", status.getRunningPhaseDisplay());
+		assertEquals("solving", status.runningPhaseDisplay());
 		status = update(status, fromWorker("WORKEREVENT_PROGRESS|writing results"), 1.0);
-		assertEquals("writing results", status.getRunningPhaseDisplay());
+		assertEquals("writing results", status.runningPhaseDisplay());
 	}
 
 	@Test
 	public void anOlderSolverShowsTheBareProgress() {
 		// before phases, a PROGRESS event carried no status message: WorkerEventMessage made workerProgress(p)
 		SimulationStatus status = update(null, running(SimulationMessage.workerProgress(0.0)), 0.0);
-		assertNull(status.getRunningPhaseDisplay());
+		assertNull(status.runningPhaseDisplay());
 		status = update(status, running(SimulationMessage.workerProgress(0.5)), 0.5);
-		assertNull(status.getRunningPhaseDisplay());
-		assertNull(SimulationMessage.MESSAGE_WORKEREVENT_PROGRESS.getProgressPhase());
-		assertNull(SimulationMessage.solverProgress(0.25).getProgressPhase());
+		assertNull(status.runningPhaseDisplay());
+		assertNull(SimulationMessage.MESSAGE_WORKEREVENT_PROGRESS.progressPhase());
+		assertNull(SimulationMessage.solverProgress(0.25).progressPhase());
 	}
 
 	@Test

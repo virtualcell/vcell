@@ -870,7 +870,7 @@ private Object getSimulationStatusDisplay(int row) {
 		JProgressBar progressBar = new JProgressBar();
 		progressBar.setStringPainted(true);
 		progressBar.setValue((int)(progress * 100));
-		String phase = simStatus.getRunningPhaseDisplay();
+		String phase = simStatus.runningPhaseDisplay();
 		if (simStatus.isFailed()) {
 			progressBar.setString("one or more jobs failed");
 		} else if (phase != null) {
