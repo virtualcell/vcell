@@ -192,10 +192,48 @@ public class ResourceUtil {
 		}
 	}
 
+	/**
+	 * The library directory for a solver run: the executable's own directory when it lies inside the
+	 * local solvers directory (its solver repo's subdirectory, holding the libraries that repo bundles),
+	 * otherwise the local solvers directory itself (e.g. a solver launched through docker).
+	 */
+	public static File getSolverLibraryDirectory(String executablePath) throws IOException {
+		File localSolversDirectory = getLocalSolversDirectory().getCanonicalFile();
+		File executableDirectory = new File(executablePath).getCanonicalFile().getParentFile();
+		for (File dir = executableDirectory; dir != null; dir = dir.getParentFile()) {
+			if (dir.equals(localSolversDirectory)) {
+				return executableDirectory;
+			}
+		}
+		return localSolversDirectory;
+	}
+
+	/**
+	 * Each solver repo unpacks into its own subdirectory of the local solvers directory
+	 * ({@code localsolvers/<os>/<repo>/}), next to the libraries it bundles, so solvers never share
+	 * or overwrite each other's libraries. Look for the executable in those subdirectories; if
+	 * none has it, return the flat path (an older flat install, or a server building a command
+	 * whose path SlurmProxy strips to the bare name anyway).
+	 * @throws IOException if more than one subdirectory has the executable
+	 */
 	public static File findSolverExecutable(String basename) throws IOException {
 		OperatingSystemInfo osi = OperatingSystemInfo.getInstance( );
 		String name = basename + osi.getExeBitSuffix();
-		return new File(getLocalSolversDirectory(),name);
+		File localSolversDirectory = getLocalSolversDirectory();
+		File[] subdirectories = localSolversDirectory.listFiles(File::isDirectory);
+		File found = null;
+		if (subdirectories != null) {
+			for (File subdirectory : subdirectories) {
+				File candidate = new File(subdirectory, name);
+				if (candidate.isFile()) {
+					if (found != null) {
+						throw new IOException("solver executable " + name + " found in both " + found.getParent() + " and " + subdirectory);
+					}
+					found = candidate;
+				}
+			}
+		}
+		return (found != null) ? found : new File(localSolversDirectory, name);
 	}
 	/**
 	 * determine java version from system property

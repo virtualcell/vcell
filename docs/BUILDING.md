@@ -188,7 +188,10 @@ shared with the main checkout:
   keyed by project path, and a worktree is a different path, so it gets its own
 - `target/` per module, including `target/maven-jars/`
 - `localsolvers/` — solver binaries are downloaded per worktree during
-  `generate-test-resources` (gitignored, so they do not come across with the checkout)
+  `generate-test-resources` (gitignored, so they do not come across with the checkout).
+  They come from each solver repo's GitHub release, checked against the sha256 in the root
+  `pom.xml`; the archives themselves are cached in `~/.m2/repository/.cache/download-maven-plugin`,
+  so only the first worktree pays for the download. See `localsolvers/README.md`.
 
 What *is* shared is `~/.m2`, which is why a worktree build is fast once the main
 checkout has populated it: the full reactor takes well under a minute on a

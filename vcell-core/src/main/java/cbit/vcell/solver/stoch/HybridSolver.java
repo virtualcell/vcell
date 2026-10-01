@@ -353,6 +353,18 @@ private String getInputFilename(){
 	return getBaseName() + ".nc";//file used by precompiled solver.
 }
 
+/**
+ * The solver - and so the executable (Hybrid_EM, Hybrid_MIL or Hybrid_MIL_Adaptive) - for an integrator type.
+ * Each variant has its own executable; resolving all three through HybridEuler ran Hybrid_EM for every one.
+ */
+static SolverDescription solverDescriptionFor(int integratorType) {
+	switch (integratorType) {
+		case EMIntegrator: return SolverDescription.HybridEuler;
+		case MilsteinIntegrator: return SolverDescription.HybridMilstein;
+		default: return SolverDescription.HybridMilAdaptive;
+	}
+}
+
 @Override
 protected String[] getMathExecutableCommand() {
 	String randomNumber = "";
@@ -381,18 +393,11 @@ protected String[] getMathExecutableCommand() {
     if(stochOpts.isUseCustomSeed())
     	randomNumber = " -R "+String.valueOf(stochOpts.getCustomSeed());
 	
-    SolverDescription solverDescription = null;
-	if (getIntegratorType() == HybridSolver.EMIntegrator) {
-		solverDescription = SolverDescription.HybridEuler;
-	} else if (getIntegratorType() == HybridSolver.MilsteinIntegrator) {
-		solverDescription = SolverDescription.HybridMilstein;
-	} else {
-		solverDescription = SolverDescription.HybridMilAdaptive;
-	}
+    SolverDescription solverDescription = solverDescriptionFor(getIntegratorType());
 	
 	String executableName;
 	try {
-		executableName = SolverUtilities.getExes(SolverDescription.HybridEuler)[0].getAbsolutePath();
+		executableName = SolverUtilities.getExes(solverDescription)[0].getAbsolutePath();
 	} catch (IOException e) {
 		throw new RuntimeException("failed to get executable for solver "+solverDescription.getDisplayLabel()+": "+e.getMessage(),e);
 	}
