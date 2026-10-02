@@ -408,12 +408,15 @@ public class FieldViewerServerKymographTest {
 	@Test
 	public void aSecondHeavyJobIsTurnedAwayAsBusy() throws Exception {
 		double[][] line = { { 0, 0.3, 2 }, { 4, 3.4, 2 } };
+		// one heavy job running and one already waiting for it: a third is turned away at once
 		Assertions.assertTrue(FieldViewerServer.HEAVY_JOBS.tryAcquire(), "nothing else is running");
+		Assertions.assertTrue(FieldViewerServer.HEAVY_JOB_WAITER.tryAcquire(), "nothing else is waiting");
 		try {
 			HttpResponse<String> busy = send(SIM_3D, "&domain=subdomain0&var=s0" + path(line));
 			Assertions.assertEquals(503, busy.statusCode(), busy.body());
 			Assertions.assertTrue(JsonParser.parseString(busy.body()).getAsJsonObject().get("busy").getAsBoolean());
 		} finally {
+			FieldViewerServer.HEAVY_JOB_WAITER.release();
 			FieldViewerServer.HEAVY_JOBS.release();
 		}
 		kymograph(SIM_3D, "&domain=subdomain0&var=s0" + path(line));

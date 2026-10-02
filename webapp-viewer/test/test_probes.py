@@ -182,3 +182,23 @@ def test_the_pointer_says_what_a_press_does(open_viewer, role):
     assert cursor() == 'crosshair'
     v.page.keyboard.press('Escape')
     assert cursor() == 'grab', 'the tool off'
+
+
+def test_a_busy_server_is_retried_once(open_viewer):
+    """Several probes over a MovingBoundary run are a heavy job: a 503 (one job running, another already waiting
+    for it) is retried once, after a pause, as a kymograph's is, rather than failing the traces."""
+    v = open_viewer('movingBoundary')
+    answered = []
+
+    def once_busy(route):
+        if not answered:
+            answered.append(route.request.url)
+            route.fulfill(status=503, content_type='application/json', body='{"error":"busy","busy":true}')
+        else:
+            route.continue_()
+
+    v.page.route('**/timeseries?**', once_busy)
+    v.click()
+    v.wait_probes(1)
+    assert len(answered) == 1
+    assert not v.page.evaluate("document.getElementById('status').classList.contains('err')"), 'no error shown'

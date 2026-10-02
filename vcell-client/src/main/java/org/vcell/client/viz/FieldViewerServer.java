@@ -229,10 +229,21 @@ public final class FieldViewerServer {
 
 	/**
 	 * Heavy jobs run one at a time: a kymograph, and a multi-point time series on Chombo or MovingBoundary
-	 * (which reads every saved time over the remote seam). A second one gets a 503 rather than a place in a
-	 * queue: the viewer retries it once, and a long job then cannot pile work up behind it.
+	 * (which reads every saved time over the remote seam). One more may wait for its turn, up to
+	 * {@link #heavyWaitMillis()}, in {@link #HEAVY_JOB_WAITER}; any other gets a 503 at once, so a long job
+	 * cannot pile work up behind it. One waiter is enough for what the viewer itself sends together — a
+	 * variable switch asks for the probes' series and the kymograph at the same moment — which used to
+	 * fail one of the two with "busy".
 	 */
 	static final Semaphore HEAVY_JOBS = new Semaphore(1);
+
+	/** the one request allowed to wait for {@link #HEAVY_JOBS} */
+	static final Semaphore HEAVY_JOB_WAITER = new Semaphore(1);
+
+	/** How long a heavy request waits for the running one before a 503 ({@code vcell.fieldViewer.heavyWaitMillis}). */
+	static long heavyWaitMillis() {
+		return Long.getLong("vcell.fieldViewer.heavyWaitMillis", 30_000L);
+	}
 
 	private interface HeavyJob {
 		String run() throws Exception;
@@ -245,7 +256,16 @@ public final class FieldViewerServer {
 	/** {@link #heavy(HeavyJob)}, noting on {@code timer} the moment the job starts. */
 	private static String heavy(HeavyJob job, StageTimer timer) throws Exception {
 		if (!HEAVY_JOBS.tryAcquire()) {
-			throw new BusyException("the field viewer is busy with another kymograph or time series; try again");
+			if (!HEAVY_JOB_WAITER.tryAcquire()) {
+				throw new BusyException("the field viewer is busy with another kymograph or time series; try again");
+			}
+			try {
+				if (!HEAVY_JOBS.tryAcquire(heavyWaitMillis(), java.util.concurrent.TimeUnit.MILLISECONDS)) {
+					throw new BusyException("the field viewer is busy with another kymograph or time series; try again");
+				}
+			} finally {
+				HEAVY_JOB_WAITER.release();
+			}
 		}
 		try {
 			if (timer != null) {

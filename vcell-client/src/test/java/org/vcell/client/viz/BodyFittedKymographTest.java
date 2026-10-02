@@ -303,7 +303,9 @@ public class BodyFittedKymographTest {
 
 	@Test
 	public void aBodyFittedKymographIsAHeavyJob() throws Exception {
+		// one heavy job running and one already waiting for it: a third is turned away at once
 		Assertions.assertTrue(FieldViewerServer.HEAVY_JOBS.tryAcquire());
+		Assertions.assertTrue(FieldViewerServer.HEAVY_JOB_WAITER.tryAcquire());
 		try {
 			for (String sim : new String[] { DISK, FakeChomboRun.SIM_2D }) {
 				HttpResponse<String> busy = send(sim, "/kymograph", "&var=" + (sim.equals(DISK) ? "u" : "C") + "&path=" + enc("1,3;2,3"));
@@ -311,6 +313,7 @@ public class BodyFittedKymographTest {
 				Assertions.assertTrue(JsonParser.parseString(busy.body()).getAsJsonObject().get("busy").getAsBoolean());
 			}
 		} finally {
+			FieldViewerServer.HEAVY_JOB_WAITER.release();
 			FieldViewerServer.HEAVY_JOBS.release();
 		}
 	}

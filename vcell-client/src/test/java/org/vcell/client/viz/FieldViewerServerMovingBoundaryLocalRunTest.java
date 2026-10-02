@@ -139,4 +139,32 @@ public class FieldViewerServerMovingBoundaryLocalRunTest {
 		Assertions.assertTrue(k.get("movingMesh").getAsBoolean());
 		Assertions.assertEquals(3, k.getAsJsonArray("values").size());
 	}
+
+	/**
+	 * What the viewer sends together on a variable switch: the probes' series and the kymograph, both heavy jobs.
+	 * The second waits for the first instead of failing with "busy".
+	 */
+	@Test
+	public void aProbeSeriesAndAKymographRequestedTogetherBothSucceed() throws Exception {
+		get("/info", "");
+		java.util.concurrent.ExecutorService pool = java.util.concurrent.Executors.newFixedThreadPool(2);
+		try {
+			for (int round = 0; round < 3; round++) {
+				java.util.concurrent.Future<HttpResponse<String>> kymograph = pool.submit(() -> send("/kymograph",
+						"&domain=" + DOMAIN + "&var=C&samples=30&path=-1.4,0.01%3B1.4,0.01"));
+				java.util.concurrent.Future<HttpResponse<String>> probes = pool.submit(() -> send("/timeseries",
+						"&domain=" + DOMAIN + "&var=C&points=0.01,0.01%3B0.5,0.2&snap=nearest"));
+				Assertions.assertEquals(200, kymograph.get().statusCode(), kymograph.get().body());
+				Assertions.assertEquals(200, probes.get().statusCode(), probes.get().body());
+			}
+		} finally {
+			pool.shutdownNow();
+		}
+	}
+
+	private HttpResponse<String> send(String path, String query) throws Exception {
+		return HttpClient.newHttpClient().send(
+				HttpRequest.newBuilder(URI.create("http://127.0.0.1:" + port + path + "?sim=" + SIM + "&job=0" + query)).build(),
+				HttpResponse.BodyHandlers.ofString());
+	}
 }

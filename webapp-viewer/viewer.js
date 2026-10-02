@@ -1543,7 +1543,9 @@ let probeFetch = null; // the AbortController of the request in flight
 
 /**
  * One /timeseries request for all the probes, debounced so a burst of clicks (or a variable switch right
- * after one) costs one request, with a superseded request aborted rather than raced.
+ * after one) costs one request, with a superseded request aborted rather than raced. Several points over a
+ * Chombo or MovingBoundary run are a heavy job on the server: one waits there for a running one, and a 503
+ * (a job running and another already waiting) is retried once, after a pause, as a kymograph's is.
  */
 function scheduleProbeFetch() {
   clearTimeout(probeFetchTimer);
@@ -1569,7 +1571,12 @@ async function fetchProbes() {
   // a membrane probe snaps onto the curve or surface it was clicked beside; volume domains ignore it
   if (state.bodyFitted) params.snap = 'nearest';
   try {
-    const r = await fetch(url('/timeseries', params), { signal: controller.signal });
+    let r = await fetch(url('/timeseries', params), { signal: controller.signal });
+    if (r.status === 503) { // the server is busy with a heavy job and already has one waiting: retry once, later
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      if (probeFetch !== controller) return; // superseded meanwhile
+      r = await fetch(url('/timeseries', params), { signal: controller.signal });
+    }
     if (!r.ok) {
       let detail = '';
       try { detail = (await r.json()).error ?? ''; } catch { /* not JSON */ }
