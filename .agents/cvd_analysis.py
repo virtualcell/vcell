@@ -242,7 +242,48 @@ def java_threshold_check():
         print(f"  {name:16s} " + " ".join(f"{k}={v:5.1f}" for k, v in de.items()) + f"  all>=3:1={ok3}  -> {verdict}")
 
 
+# ---------------------------------------------------------------- image filtering (8.6-b screenshot simulation)
+# Pillow-based screenshot filters added for the Phase 3 Langevin evidence (8.6-b / plan method
+# notes): Machado 2009 severity 1.0 (dichromacy) matrix multiply in linear RGB reusing the MACHADO
+# constants above, sRGB<->linear transfer around it; grayscale replicates sim(..., 'achroma') =
+# WCAG relative luminance (0.2126R+0.7152G+0.0722B) through the sRGB transfer function.
+# Numeric analysis above is untouched. Usage: python cvd_analysis.py image <in.png> <out_dir>
+def _img_tolin(a01):
+    a01 = np.asarray(a01, dtype=np.float64)
+    return np.where(a01 <= 0.04045, a01 / 12.92, ((a01 + 0.055) / 1.055) ** 2.4)
+def _img_fromlin(l):
+    l = np.clip(np.asarray(l, dtype=np.float64), 0.0, None)
+    return np.where(l <= 0.0031308, 12.92 * l, 1.055 * l ** (1 / 2.4) - 0.055)
+def filter_image_rgb(arr, kind):
+    """arr: HxWx3 uint8 sRGB. kind: 'protan' | 'deutan' | 'tritan' | 'grayscale'. -> HxWx3 uint8."""
+    a01 = np.asarray(arr, dtype=np.float64) / 255.0
+    lin = _img_tolin(a01)
+    if kind == 'grayscale':
+        y = 0.2126 * lin[..., 0] + 0.7152 * lin[..., 1] + 0.0722 * lin[..., 2]
+        out = np.stack([np.clip(_img_fromlin(y), 0, 1)] * 3, axis=-1)
+    elif kind in MACHADO:
+        out_lin = np.einsum('ij,...j->...i', MACHADO[kind], lin)
+        out = np.clip(_img_fromlin(out_lin), 0, 1)
+    else:
+        raise ValueError('unknown filter kind: %r' % (kind,))
+    return (out * 255.0 + 0.5).astype(np.uint8)
+def image_mode(in_path, out_dir):
+    from PIL import Image
+    import os
+    os.makedirs(out_dir, exist_ok=True)
+    arr = np.asarray(Image.open(in_path).convert('RGB'))
+    stem = os.path.splitext(os.path.basename(in_path))[0]
+    for kind in ('protan', 'deutan', 'tritan', 'grayscale'):
+        out_path = os.path.join(out_dir, '%s-%s.png' % (stem, kind))
+        Image.fromarray(filter_image_rgb(arr, kind)).save(out_path)
+        print(out_path)
+
 if __name__ == '__main__':
+    if len(sys.argv) >= 2 and sys.argv[1] == 'image':
+        if len(sys.argv) != 4:
+            sys.exit('usage: cvd_analysis.py image <in.png> <out_dir>')
+        image_mode(sys.argv[2], sys.argv[3])
+        sys.exit(0)
     contrast_table()
     colormap_luminance()
     print("\n## Categorical palettes: min pairwise perceptual distance under CVD (higher is better)")
