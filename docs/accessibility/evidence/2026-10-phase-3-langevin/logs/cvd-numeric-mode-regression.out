@@ -1,0 +1,155 @@
+## WCAG contrast ratios
+   4.00:1  Color.red text on white (console, constraint renderer)
+   2.89:1  Color.red.darker() (178,0,0) vs Color.black (diagram edge selected vs not)
+   5.25:1  Color.red vs Color.black (selected edge vs unselected)
+   4.00:1  ProblematicTextFieldBorder red vs white field bg
+   2.05:1  issue error border HSB(0,.4,1)=(255,153,153) vs white
+   1.55:1  issue warning border Color.orange vs white
+   1.31:1  DisplayAdapterService below-min black vs BlueRed min (0,0,128)
+   2.96:1  webapp-viewer .readout em #2a7 on white
+   2.96:1  webapp-viewer aria-pressed #fff on #2a7
+   3.13:1  webapp-viewer .stale #fff on #d70
+   3.44:1  webapp-viewer .status.err #c0392b on dark #121212
+   5.44:1  webapp-viewer .status.err #c0392b on white
+   2.78:1  webapp-ng badge-published white on #4caf50
+   2.16:1  webapp-ng badge-archived white on #ff9800
+   2.68:1  webapp-ng badge-current white on #9e9e9e
+   4.35:1  webapp-ng badge-unknown #666 on #e0e0e0
+   3.12:1  webapp-ng badge-public white on #2196f3
+   3.68:1  webapp-ng badge-private white on #f44336
+   6.30:1  webapp-ng badge-shared white on #9c27b0
+   6.57:1  Gemini proposed #B71C1C on white
+   5.13:1  Gemini proposed #2e7d32 bg + white
+   3.79:1  Gemini proposed #e65100 bg + white
+   5.87:1  Gemini proposed #157347 on white
+   6.75:1  Gemini proposed #ff6b6b on #121212
+   8.92:1  Gemini proposed console #990000 on white
+   7.41:1  Gemini proposed console #7A4B00 on white
+  10.86:1  Gemini proposed console #003399 on white
+   5.83:1  Gemini: brand Red #BE2D2D on white
+   3.60:1  Gemini: brand Red #BE2D2D on black
+   8.14:1  Candidate error text #A40000 on white
+   6.80:1  Candidate warning text #8A4B00 on white
+
+## BlueRed colormap (248 data entries) CAM02-UCS lightness J'
+  idx   0 rgb=(0, 0, 128)  J'=14.4
+  idx  31 rgb=(0, 16, 255)  J'=32.1
+  idx  62 rgb=(0, 160, 255)  J'=64.5
+  idx  93 rgb=(0, 255, 206)  J'=89.1
+  idx 124 rgb=(0, 255, 62)  J'=87.2
+  idx 155 rgb=(82, 255, 0)  J'=88.0
+  idx 186 rgb=(226, 255, 0)  J'=95.2
+  idx 217 rgb=(255, 140, 0)  J'=74.3
+  idx 247 rgb=(255, 0, 0)  J'=60.0
+  peak J' at idx 192 rgb=(254, 255, 0) J'=97.3; last idx J'=60.0 -> non-monotonic: True
+  normal    dE(idx93,idx217)= 55.5   dE(idx155,idx247)= 74.6
+  protan    dE(idx93,idx217)= 34.7   dE(idx155,idx247)= 51.1
+  deutan    dE(idx93,idx217)= 31.5   dE(idx155,idx247)= 26.0
+  tritan    dE(idx93,idx217)= 63.1   dE(idx155,idx247)= 76.8
+  protan50  dE(idx93,idx217)= 35.5   dE(idx155,idx247)= 50.5
+  deutan50  dE(idx93,idx217)= 34.5   dE(idx155,idx247)= 36.7
+  achrom    dE(idx93,idx217)= 19.0   dE(idx155,idx247)= 34.3
+  deutan: most-similar pair >=60 steps apart: dE=2.2 at idx (144, 204) rgb (31, 255, 0) vs (255, 200, 0)
+  protan: most-similar pair >=60 steps apart: dE=0.2 at idx (136, 196) rgb (0, 255, 6) vs (255, 237, 0)
+
+## Categorical palettes: min pairwise perceptual distance under CVD (higher is better)
+
+### ColorUtil.TABLEAU20 first 8 (MoleculeVisualizationPanel)  (n=8)
+  min pairwise dE(CAM02-UCS): normal=22.9[4v7]  protan=1.6[2v3]  deutan=4.3[5v7]  tritan=9.4[2v7]  protan50=9.1[1v4]  deutan50=11.0[1v4]  achrom=1.2[0v1]
+  vs bg (255, 255, 255): 5/8 >= 3:1; below 3:1 -> [(2, (255, 127, 14), 2.53), (5, (23, 190, 207), 2.26), (7, (227, 119, 194), 2.73)]
+
+### ColorUtil.DARK20 first 8 (ClusterVisualizationPanel)  (n=8)
+  min pairwise dE(CAM02-UCS): normal=8.1[1v5]  protan=1.6[2v3]  deutan=3.0[1v5]  tritan=4.1[1v5]  protan50=6.4[1v5]  deutan50=4.4[1v5]  achrom=1.2[0v1]
+  vs bg (255, 255, 255): 6/8 >= 3:1; below 3:1 -> [(3, (255, 127, 14), 2.53), (7, (23, 190, 207), 2.26)]
+
+### ColorUtil.COLORBLIND20 first 8  (n=8)
+  min pairwise dE(CAM02-UCS): normal=14.7[2v4]  protan=5.9[4v5]  deutan=2.9[1v7]  tritan=3.3[2v7]  protan50=11.5[4v5]  deutan50=13.0[2v5]  achrom=0.2[4v5]
+  vs bg (255, 255, 255): 6/8 >= 3:1; below 3:1 -> [(4, (0, 170, 170), 2.86), (5, (153, 153, 153), 2.85)]
+
+### ColorUtil.COLORBLIND20 all 20  (n=20)
+  min pairwise dE(CAM02-UCS): normal=9.0[0v16]  protan=3.8[7v12]  deutan=2.9[1v7]  tritan=3.3[2v7]  protan50=8.9[0v16]  deutan50=8.7[0v16]  achrom=0.2[4v5]
+  vs bg (255, 255, 255): 14/20 >= 3:1; below 3:1 -> [(4, (0, 170, 170), 2.86), (5, (153, 153, 153), 2.85), (10, (86, 180, 233), 2.31), (11, (120, 190, 32), 2.29), (12, (230, 159, 0), 2.25), (14, (0, 200, 200), 2.08)]
+
+### Okabe-Ito 8  (n=8)
+  min pairwise dE(CAM02-UCS): normal=20.8[1v4]  protan=14.0[5v7]  deutan=14.8[3v7]  tritan=11.0[1v7]  protan50=18.7[1v4]  deutan50=16.5[1v6]  achrom=0.8[1v2]
+  vs bg (255, 255, 255): 5/8 >= 3:1; below 3:1 -> [(1, (230, 159, 0), 2.25), (2, (86, 180, 233), 2.31), (4, (240, 228, 66), 1.32)]
+
+### Paul Tol bright 7  (n=7)
+  min pairwise dE(CAM02-UCS): normal=23.4[4v6]  protan=15.6[0v5]  deutan=16.2[0v5]  tritan=7.4[0v2]  protan50=18.2[4v6]  deutan50=19.6[4v6]  achrom=0.5[3v6]
+  vs bg (255, 255, 255): 4/7 >= 3:1; below 3:1 -> [(3, (204, 187, 68), 1.95), (4, (102, 204, 238), 1.84), (6, (187, 187, 187), 1.92)]
+
+### CANDIDATE 8 (proposed)  (n=8)
+  min pairwise dE(CAM02-UCS): normal=22.1[2v5]  protan=2.0[2v5]  deutan=7.9[1v7]  tritan=11.7[1v3]  protan50=10.1[2v5]  deutan50=11.0[2v5]  achrom=1.7[1v5]
+  vs bg (255, 255, 255): 7/8 >= 3:1; below 3:1 -> [(6, (86, 180, 233), 2.31)]
+
+### MolecularTypeLargeShape.colorTable 7  (n=7)
+  min pairwise dE(CAM02-UCS): normal=31.5[3v4]  protan=9.7[3v5]  deutan=2.2[3v5]  tritan=6.0[3v4]  protan50=13.0[3v5]  deutan50=10.8[3v5]  achrom=3.0[1v5]
+  vs bg (255, 255, 255): 3/7 >= 3:1; below 3:1 -> [(1, (0, 255, 255), 1.25), (3, (255, 200, 0), 1.55), (4, (255, 175, 175), 1.75), (5, (0, 255, 0), 1.37)]
+
+### SpringSaLaD Colors first 8 (default site order)  (n=8)
+  min pairwise dE(CAM02-UCS): normal=16.4[3v7]  protan=4.1[2v7]  deutan=2.2[2v3]  tritan=6.0[3v6]  protan50=7.4[2v7]  deutan50=10.2[2v7]  achrom=3.0[2v4]
+  vs bg (255, 255, 255): 3/8 >= 3:1; below 3:1 -> [(2, (0, 255, 0), 1.37), (3, (255, 200, 0), 1.55), (4, (0, 255, 255), 1.25), (6, (255, 175, 175), 1.75), (7, (255, 255, 0), 1.07)]
+
+### webapp-viewer SERIES_COLORS 12  (n=12)
+  min pairwise dE(CAM02-UCS): normal=9.3[1v9]  protan=5.3[5v11]  deutan=3.2[1v10]  tritan=3.3[0v7]  protan50=7.7[2v8]  deutan50=7.6[2v8]  achrom=0.1[7v10]
+  vs bg (255, 255, 255): 8/12 >= 3:1; below 3:1 -> [(0, (34, 170, 119), 2.96), (6, (230, 184, 0), 1.87), (7, (0, 170, 170), 2.86), (10, (102, 170, 0), 2.87)]
+
+### DisplayAdapterService.createContrastColorModel handles 0..7 (geometry subvolumes)  (n=8)
+  min pairwise dE(CAM02-UCS): normal=18.2[6v7]  protan=9.2[6v7]  deutan=2.0[1v4]  tritan=11.2[5v6]  protan50=10.6[6v7]  deutan50=10.5[6v7]  achrom=0.2[2v5]
+  vs bg (255, 255, 255): 5/8 >= 3:1; below 3:1 -> [(1, (191, 153, 96), 2.64), (3, (153, 255, 128), 1.24), (4, (0, 191, 77), 2.45)]
+
+## generateAutoColor(n, white, seed 0) -- what Plot2DPanel actually draws
+  n=2: [(140, 29, 152), (187, 212, 61)]
+
+### autoColor n=2  (n=2)
+  min pairwise dE(CAM02-UCS): normal=74.5[0v1]  protan=76.9[0v1]  deutan=67.7[0v1]  tritan=50.6[0v1]  protan50=73.7[0v1]  deutan50=68.9[0v1]  achrom=45.5[0v1]
+  vs bg (255, 255, 255): 1/2 >= 3:1; below 3:1 -> [(1, (187, 212, 61), 1.67)]
+   confusable pairs (dE<10): deutan=0 protan=0 tritan=0 normal=0
+  n=3: [(140, 29, 152), (187, 212, 61), (6, 201, 238)]
+
+### autoColor n=3  (n=3)
+  min pairwise dE(CAM02-UCS): normal=48.3[1v2]  protan=48.6[0v2]  deutan=35.5[0v2]  tritan=27.4[1v2]  protan50=46.0[0v2]  deutan50=40.0[0v2]  achrom=5.6[1v2]
+  vs bg (255, 255, 255): 1/3 >= 3:1; below 3:1 -> [(1, (187, 212, 61), 1.67), (2, (6, 201, 238), 1.98)]
+   confusable pairs (dE<10): deutan=0 protan=0 tritan=0 normal=0
+  n=4: [(170, 12, 230), (151, 169, 70), (232, 24, 19), (4, 126, 195)]
+
+### autoColor n=4  (n=4)
+  min pairwise dE(CAM02-UCS): normal=38.6[0v3]  protan=14.0[0v3]  deutan=6.4[0v3]  tritan=27.0[1v3]  protan50=14.8[0v3]  deutan50=12.1[0v3]  achrom=1.3[2v3]
+  vs bg (255, 255, 255): 3/4 >= 3:1; below 3:1 -> [(1, (151, 169, 70), 2.6)]
+   confusable pairs (dE<10): deutan=1 protan=0 tritan=0 normal=0
+  n=5: [(248, 2, 5), (4, 255, 236), (115, 109, 218), (189, 129, 71), (41, 189, 19)]
+
+### autoColor n=5  (n=5)
+  min pairwise dE(CAM02-UCS): normal=29.2[0v3]  protan=17.7[0v3]  deutan=7.5[3v4]  tritan=21.8[2v4]  protan50=18.5[0v3]  deutan50=12.1[0v3]  achrom=0.4[0v2]
+  vs bg (255, 255, 255): 3/5 >= 3:1; below 3:1 -> [(1, (4, 255, 236), 1.27), (4, (41, 189, 19), 2.51)]
+   confusable pairs (dE<10): deutan=3 protan=0 tritan=0 normal=0
+  n=6: [(9, 93, 240), (86, 237, 193), (252, 17, 6), (31, 253, 17), (210, 7, 221), (121, 136, 79)]
+
+### autoColor n=6  (n=6)
+  min pairwise dE(CAM02-UCS): normal=26.8[1v3]  protan=3.9[0v4]  deutan=12.4[0v4]  tritan=4.3[1v3]  protan50=17.5[0v4]  deutan50=18.8[2v5]  achrom=1.2[2v5]
+  vs bg (255, 255, 255): 4/6 >= 3:1; below 3:1 -> [(1, (86, 237, 193), 1.47), (3, (31, 253, 17), 1.39)]
+   confusable pairs (dE<10): deutan=0 protan=1 tritan=1 normal=0
+  n=8: [(20, 71, 251), (27, 254, 236), (253, 17, 7), (176, 200, 72), (98, 108, 9), (5, 235, 72), (209, 39, 170), (107, 153, 176)]
+
+### autoColor n=8  (n=8)
+  min pairwise dE(CAM02-UCS): normal=18.7[3v5]  protan=2.5[2v4]  deutan=2.7[3v5]  tritan=9.9[1v5]  protan50=8.8[3v5]  deutan50=7.2[3v5]  achrom=2.8[0v4]
+  vs bg (255, 255, 255): 5/8 >= 3:1; below 3:1 -> [(1, (27, 254, 236), 1.28), (3, (176, 200, 72), 1.87), (5, (5, 235, 72), 1.62)]
+   confusable pairs (dE<10): deutan=2 protan=2 tritan=1 normal=0
+  n=10: [(128, 31, 165), (245, 241, 49), (251, 2, 1), (171, 179, 203), (55, 82, 237), (21, 239, 215), (253, 10, 247), (48, 189, 92), (194, 84, 76), (131, 157, 3)]
+
+### autoColor n=10  (n=10)
+  min pairwise dE(CAM02-UCS): normal=17.3[7v9]  protan=5.3[4v6]  deutan=2.4[2v9]  tritan=15.0[6v8]  protan50=11.6[7v9]  deutan50=11.3[7v9]  achrom=1.0[6v9]
+  vs bg (255, 255, 255): 6/10 >= 3:1; below 3:1 -> [(1, (245, 241, 49), 1.2), (3, (171, 179, 203), 2.09), (5, (21, 239, 215), 1.46), (7, (48, 189, 92), 2.45)]
+   confusable pairs (dE<10): deutan=1 protan=1 tritan=0 normal=0
+  COLORBLIND20[:4] confusable (dE<10): deutan=0 protan=0 tritan=0
+  COLORBLIND20[:6] confusable (dE<10): deutan=1 protan=1 tritan=1
+  COLORBLIND20[:8] confusable (dE<10): deutan=2 protan=1 tritan=4
+  COLORBLIND20[:10] confusable (dE<10): deutan=4 protan=1 tritan=5
+
+## JUnit-portable metric: min CIELAB dE76 after Machado(1.0) simulation; pass = >=15 for protan/deutan/tritan AND all >=3:1 on white
+  PROPOSED6        normal= 21.0 protan= 17.5 deutan= 16.3 tritan= 18.9  all>=3:1=True  -> PASS
+  TABLEAU20[:8]    normal= 27.7 protan=  4.6 deutan=  7.3 tritan= 17.9  all>=3:1=False  -> FAIL
+  DARK20[:8]       normal= 16.4 protan=  4.6 deutan=  6.4 tritan=  8.4  all>=3:1=False  -> FAIL
+  COLORBLIND20[:8] normal= 25.9 protan=  6.1 deutan=  7.5 tritan=  5.8  all>=3:1=False  -> FAIL
+  autoColor n=6    normal= 50.4 protan=  6.4 deutan= 27.3 tritan=  9.1  all>=3:1=False  -> FAIL
+  Okabe-Ito        normal= 26.4 protan= 20.7 deutan= 17.0 tritan= 16.1  all>=3:1=False  -> FAIL
