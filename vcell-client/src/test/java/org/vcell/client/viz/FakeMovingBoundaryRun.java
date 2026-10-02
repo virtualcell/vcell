@@ -20,13 +20,14 @@ import cbit.vcell.solvers.CartesianMeshMovingBoundary;
 
 /**
  * A stand-in for a MovingBoundary (mbsolver) run, served through the same VTU seam the real ones use.
- * MovingBoundary runs exist only on the server, so this fakes the data server's side of the seam: a
+ * This fakes the data server's side of the seam (a real local run through the real seam is
+ * {@link FieldViewerServerMovingBoundaryLocalRunTest}): a
  * {@link DataSetController} whose mesh is a {@link CartesianMeshMovingBoundary} (which is how
  * {@link FieldViewerServer} recognises the mode), with a different body-fitted 2D mesh at every saved time.
  * <p>
  * The domain {@code cell} is a disk of radius 3 moving along x, centre {@code (5 + 4t, 5)}, over
  * {@code t = 0, 0.25, …, 1}. Each time's mesh is the squares of a 0.5 µm lattice whose centres lie in the
- * disk, written as {@code VTK_POLYGON} cells the way the Python VTK service writes MovingBoundary meshes. The
+ * disk, written as {@code VTK_POLYGON} cells (the real writer labels a 4-gon {@code VTK_QUAD}; the viewer reads both alike). The
  * one variable {@code C} is {@code x + 2y + 10t} at each cell's centre, so a value names where and when it was
  * read.
  */

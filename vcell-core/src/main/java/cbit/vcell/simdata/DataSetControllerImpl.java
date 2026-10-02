@@ -3838,7 +3838,9 @@ public ComsolSimFiles getComsolSimFiles(VCDataIdentifier vcdataID) throws DataAc
 	public VtuFileContainer getEmptyVtuMeshFiles(MovingBoundarySimFiles movingBoundarySimFiles, VCDataIdentifier vcdataID, int timeIndex) throws DataAccessException {
 		try {
 			MovingBoundaryVtkFileWriter movingBoundaryVtkFileWriter = new MovingBoundaryVtkFileWriter();
-			File primaryDirectory = PropertyLoader.getRequiredDirectory(PropertyLoader.primarySimDataDirInternalProperty);
+			File primaryDirectory = (vcdataID instanceof LocalVCDataIdentifier local)
+					? local.getLocalDirectory() // a desktop (quick) run: no server data directory
+					: PropertyLoader.getRequiredDirectory(PropertyLoader.primarySimDataDirInternalProperty);
 			VtuFileContainer vtuFiles = movingBoundaryVtkFileWriter.getEmptyVtuMeshFiles(movingBoundarySimFiles, timeIndex, primaryDirectory);
 			return vtuFiles;
 		}catch (Exception e){
@@ -3911,7 +3913,10 @@ public ComsolSimFiles getComsolSimFiles(VCDataIdentifier vcdataID) throws DataAc
 			SimDataBlock simDataBlock = getSimDataBlock(outputContext, vcdataID, var.name, time);
 			double[] volumeVarData = simDataBlock.getData();
 			MovingBoundaryVtkFileWriter movingBoundaryVtkFileWriter = new MovingBoundaryVtkFileWriter();
-			double[] vtuData = movingBoundaryVtkFileWriter.getVtuMeshData(movingBoundarySimFiles, volumeVarData, getUserDataDirectory(vcdataID), var, timeIndex);
+			File userDataDirectory = (vcdataID instanceof LocalVCDataIdentifier local)
+					? local.getLocalDirectory() // a desktop (quick) run: no server data directory
+					: getUserDataDirectory(vcdataID);
+			double[] vtuData = movingBoundaryVtkFileWriter.getVtuMeshData(movingBoundarySimFiles, volumeVarData, userDataDirectory, var, timeIndex);
 			return vtuData;
 		}catch (Exception e){
 			throw new DataAccessException("failed to retrieve VTK files: "+e.getMessage(),e);

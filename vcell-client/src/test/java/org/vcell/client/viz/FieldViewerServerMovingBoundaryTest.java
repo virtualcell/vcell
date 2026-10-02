@@ -94,18 +94,55 @@ public class FieldViewerServerMovingBoundaryTest {
 				HttpResponse.BodyHandlers.ofString());
 	}
 
-	/** Several points read every saved time over the remote seam: a heavy job, one at a time. */
+	/**
+	 * Several points read every saved time over the remote seam: a heavy job, one at a time. One more waits for
+	 * the running job and is then served; beyond that one, a request is turned away at once.
+	 */
 	@Test
 	public void severalPointsWaitForAHeavyJobAlreadyRunning() throws Exception {
 		Assertions.assertTrue(FieldViewerServer.HEAVY_JOBS.tryAcquire());
+		java.util.concurrent.CompletableFuture<HttpResponse<String>> waiting;
 		try {
+			// the one waiter: served once the running job ends
+			waiting = java.util.concurrent.CompletableFuture.supplyAsync(() -> {
+				try {
+					return send("/timeseries", "&domain=cell&var=C&points=2.6,5.1%3B8.1,5.1");
+				} catch (Exception e) {
+					throw new RuntimeException(e);
+				}
+			});
+			long deadline = System.currentTimeMillis() + 10_000;
+			while (FieldViewerServer.HEAVY_JOB_WAITER.availablePermits() > 0 && System.currentTimeMillis() < deadline) {
+				Thread.sleep(10);
+			}
+			Assertions.assertEquals(0, FieldViewerServer.HEAVY_JOB_WAITER.availablePermits(), "the request is waiting");
+			// a third, while one runs and one waits: busy at once
 			HttpResponse<String> busy = send("/timeseries", "&domain=cell&var=C&points=2.6,5.1%3B8.1,5.1");
 			Assertions.assertEquals(503, busy.statusCode(), busy.body());
 			Assertions.assertTrue(JsonParser.parseString(busy.body()).getAsJsonObject().get("busy").getAsBoolean());
+			Assertions.assertFalse(waiting.isDone(), "still waiting for the running job");
 		} finally {
 			FieldViewerServer.HEAVY_JOBS.release();
 		}
+		HttpResponse<String> served = waiting.get(30, java.util.concurrent.TimeUnit.SECONDS);
+		Assertions.assertEquals(200, served.statusCode(), served.body());
 		Assertions.assertEquals(200, send("/timeseries", "&domain=cell&var=C&points=2.6,5.1%3B8.1,5.1").statusCode());
+	}
+
+	/** A waiting heavy request gives up with a 503 when the running one outlasts the wait. */
+	@Test
+	public void aWaitingHeavyJobGivesUpAfterTheWait() throws Exception {
+		System.setProperty("vcell.fieldViewer.heavyWaitMillis", "200");
+		Assertions.assertTrue(FieldViewerServer.HEAVY_JOBS.tryAcquire());
+		try {
+			long start = System.nanoTime();
+			HttpResponse<String> busy = send("/kymograph", "&domain=cell&var=C&path=2,5%3B8,5");
+			Assertions.assertEquals(503, busy.statusCode(), busy.body());
+			Assertions.assertTrue((System.nanoTime() - start) / 1e6 >= 190, "it waited first");
+		} finally {
+			FieldViewerServer.HEAVY_JOBS.release();
+			System.clearProperty("vcell.fieldViewer.heavyWaitMillis");
+		}
 	}
 
 	/**
@@ -169,10 +206,12 @@ public class FieldViewerServerMovingBoundaryTest {
 	@Test
 	public void aKymographIsAHeavyJobWithinTheValueLimit() throws Exception {
 		Assertions.assertTrue(FieldViewerServer.HEAVY_JOBS.tryAcquire());
+		Assertions.assertTrue(FieldViewerServer.HEAVY_JOB_WAITER.tryAcquire());
 		try {
 			HttpResponse<String> busy = send("/kymograph", "&domain=cell&var=C&path=2,5%3B8,5");
 			Assertions.assertEquals(503, busy.statusCode(), busy.body());
 		} finally {
+			FieldViewerServer.HEAVY_JOB_WAITER.release();
 			FieldViewerServer.HEAVY_JOBS.release();
 		}
 		// 50 samples × 5 times over a limit of 100: every 3rd saved time (0 and 3) fits

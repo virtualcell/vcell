@@ -172,9 +172,9 @@ public final class FieldViewerServer {
 
 	/**
 	 * Detected from the mesh type the data manager returns rather than from the simulation, so it
-	 * works identically for a re-opened remote run where only the data still exists. Both solvers
-	 * are server-only, so these paths always reach the data over the remote seam, where the
-	 * server-side Python VTK service that writes the .vtu is available.
+	 * works identically for a re-opened remote run where only the data still exists. Chombo runs
+	 * only on the server, where its .vtu is written by the Python VTK service; MovingBoundary also
+	 * runs locally (a desktop quick run), and its .vtu is written in pure Java on either side.
 	 */
 	private static VtuMode vtuMode(DataSource source) throws Exception {
 		if (!source.vtuModeResolved) {
@@ -229,10 +229,21 @@ public final class FieldViewerServer {
 
 	/**
 	 * Heavy jobs run one at a time: a kymograph, and a multi-point time series on Chombo or MovingBoundary
-	 * (which reads every saved time over the remote seam). A second one gets a 503 rather than a place in a
-	 * queue: the viewer retries it once, and a long job then cannot pile work up behind it.
+	 * (which reads every saved time over the remote seam). One more may wait for its turn, up to
+	 * {@link #heavyWaitMillis()}, in {@link #HEAVY_JOB_WAITER}; any other gets a 503 at once, so a long job
+	 * cannot pile work up behind it. One waiter is enough for what the viewer itself sends together — a
+	 * variable switch asks for the probes' series and the kymograph at the same moment — which used to
+	 * fail one of the two with "busy".
 	 */
 	static final Semaphore HEAVY_JOBS = new Semaphore(1);
+
+	/** the one request allowed to wait for {@link #HEAVY_JOBS} */
+	static final Semaphore HEAVY_JOB_WAITER = new Semaphore(1);
+
+	/** How long a heavy request waits for the running one before a 503 ({@code vcell.fieldViewer.heavyWaitMillis}). */
+	static long heavyWaitMillis() {
+		return Long.getLong("vcell.fieldViewer.heavyWaitMillis", 30_000L);
+	}
 
 	private interface HeavyJob {
 		String run() throws Exception;
@@ -245,7 +256,16 @@ public final class FieldViewerServer {
 	/** {@link #heavy(HeavyJob)}, noting on {@code timer} the moment the job starts. */
 	private static String heavy(HeavyJob job, StageTimer timer) throws Exception {
 		if (!HEAVY_JOBS.tryAcquire()) {
-			throw new BusyException("the field viewer is busy with another kymograph or time series; try again");
+			if (!HEAVY_JOB_WAITER.tryAcquire()) {
+				throw new BusyException("the field viewer is busy with another kymograph or time series; try again");
+			}
+			try {
+				if (!HEAVY_JOBS.tryAcquire(heavyWaitMillis(), java.util.concurrent.TimeUnit.MILLISECONDS)) {
+					throw new BusyException("the field viewer is busy with another kymograph or time series; try again");
+				}
+			} finally {
+				HEAVY_JOB_WAITER.release();
+			}
 		}
 		try {
 			if (timer != null) {
@@ -667,9 +687,10 @@ public final class FieldViewerServer {
 	 * mesh, whose boundary cells are true cut polygons. These handlers reach it through the
 	 * VTU-era {@link VCDataManager} methods, which are already time-indexed for MovingBoundary
 	 * and already pair each mesh with a per-cell value array by shared ordinal — and which work
-	 * against today's deployed servers with no interface changes (MovingBoundary is server-only,
-	 * so the data always arrives over this remote seam; the server side runs the Python VTK
-	 * service that writes the .vtu). {@link VtuGridParser} converts those bytes to the viewer's
+	 * against today's deployed servers with no interface changes. The data arrives over the remote
+	 * seam for a server run and from the desktop's own data set controller for a local quick run;
+	 * either way the .vtu is written by the pure-Java writer ({@code org.vcell.vis.vtk.VtuWriter}),
+	 * so no Python is needed. {@link VtuGridParser} converts those bytes to the viewer's
 	 * JSON contract; the geometryId carries the time index, which is what tells the viewer to
 	 * re-fetch geometry as time moves.
 	 */
