@@ -1,0 +1,519 @@
+=== V1 2026-10-02T05:19:31Z commit fc8ebd3aea ===
+[INFO] Scanning for projects...
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Build Order:
+[INFO] 
+[INFO] Virtual Cell Project                                               [pom]
+[INFO] vcell-util                                                         [jar]
+[INFO] vcell-math                                                         [jar]
+[INFO] vcell-core                                                         [jar]
+[INFO] vcell-restclient                                                   [jar]
+[INFO] vcell-api-types                                                    [jar]
+[INFO] vcell-apiclient                                                    [jar]
+[INFO] vcell-client                                                       [jar]
+[INFO] 
+[INFO] ------------------------< org.vcell:vcell-pom >-------------------------
+[INFO] Building Virtual Cell Project 0.0.1-SNAPSHOT                       [1/8]
+[INFO]   from pom.xml
+[INFO] --------------------------------[ pom ]---------------------------------
+[INFO] 
+[INFO] --- enforcer:3.1.0:enforce (enforce) @ vcell-pom ---
+[INFO] 
+[INFO] --- enforcer:3.1.0:enforce (enforce-versions) @ vcell-pom ---
+[INFO] 
+[INFO] ------------------------< org.vcell:vcell-util >------------------------
+[INFO] Building vcell-util 0.0.1-SNAPSHOT                                 [2/8]
+[INFO]   from vcell-util/pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- enforcer:3.1.0:enforce (enforce) @ vcell-util ---
+[INFO] 
+[INFO] --- enforcer:3.1.0:enforce (enforce-versions) @ vcell-util ---
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ vcell-util ---
+[INFO] Copying 1 resource from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ vcell-util ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ vcell-util ---
+[INFO] skip non existing resourceDirectory /Users/novrusshehaj/Github/UCHC/vcell/vcell-util/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ vcell-util ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.1.2:test (default-test) @ vcell-util ---
+[INFO] 
+[INFO] ------------------------< org.vcell:vcell-math >------------------------
+[INFO] Building vcell-math 0.0.1-SNAPSHOT                                 [3/8]
+[INFO]   from vcell-math/pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- enforcer:3.1.0:enforce (enforce) @ vcell-math ---
+[INFO] 
+[INFO] --- enforcer:3.1.0:enforce (enforce-versions) @ vcell-math ---
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ vcell-math ---
+[INFO] skip non existing resourceDirectory /Users/novrusshehaj/Github/UCHC/vcell/vcell-math/src/main/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ vcell-math ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ vcell-math ---
+[INFO] skip non existing resourceDirectory /Users/novrusshehaj/Github/UCHC/vcell/vcell-math/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ vcell-math ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.1.2:test (default-test) @ vcell-math ---
+[INFO] 
+[INFO] ------------------------< org.vcell:vcell-core >------------------------
+[INFO] Building vcell-core 0.0.1-SNAPSHOT                                 [4/8]
+[INFO]   from vcell-core/pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- enforcer:3.1.0:enforce (enforce) @ vcell-core ---
+[INFO] 
+[INFO] --- enforcer:3.1.0:enforce (enforce-versions) @ vcell-core ---
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ vcell-core ---
+[INFO] Copying 16 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ vcell-core ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- download:1.3.0:wget (install-solvers-linux64) @ vcell-core ---
+[INFO] Got from cache: /Users/novrusshehaj/.m2/repository/.cache/download-maven-plugin/linux64.tgz_12a513f1e9ec400eb770da03f3a1b14b
+[INFO] Expanding: /Users/novrusshehaj/Github/UCHC/vcell/vcell-core/target/../../localsolvers/linux64/linux64.tgz into /Users/novrusshehaj/Github/UCHC/vcell/vcell-core/target/../../localsolvers/linux64
+[INFO] 
+[INFO] --- download:1.3.0:wget (install-solvers-win64) @ vcell-core ---
+[INFO] 
+[INFO] --- download:1.3.0:wget (install-solvers-mac64) @ vcell-core ---
+[INFO] Got from cache: /Users/novrusshehaj/.m2/repository/.cache/download-maven-plugin/mac64.tgz_2800adff8d2c23c0410ea85562be24f0
+[INFO] Expanding: /Users/novrusshehaj/Github/UCHC/vcell/vcell-core/target/../../localsolvers/mac64/mac64.tgz into /Users/novrusshehaj/Github/UCHC/vcell/vcell-core/target/../../localsolvers/mac64
+[INFO] 
+[INFO] --- download:1.3.0:wget (install-langevin-win64) @ vcell-core ---
+[INFO] File already exist, skipping
+[INFO] 
+[INFO] --- download:1.3.0:wget (install-langevin-mac64) @ vcell-core ---
+[INFO] File already exist, skipping
+[INFO] 
+[INFO] --- download:1.3.0:wget (install-langevin-linux) @ vcell-core ---
+[INFO] File already exist, skipping
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ vcell-core ---
+[INFO] Copying 6098 resources from src/test/resources to target/test-classes
+[INFO] 
+[INFO] --- antrun:3.1.0:run (chmod-langevin-mac64) @ vcell-core ---
+[INFO] Executing tasks
+[INFO] Executed tasks
+[INFO] 
+[INFO] --- antrun:3.1.0:run (process-solvers-linux64) @ vcell-core ---
+[INFO] Executing tasks
+[INFO] Executed tasks
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ vcell-core ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.1.2:test (default-test) @ vcell-core ---
+[INFO] 
+[INFO] ---------------------< org.vcell:vcell-restclient >---------------------
+[INFO] Building vcell-restclient 0.0.1-SNAPSHOT                           [5/8]
+[INFO]   from vcell-restclient/pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- enforcer:3.1.0:enforce (enforce) @ vcell-restclient ---
+[INFO] 
+[INFO] --- enforcer:3.1.0:enforce (enforce-versions) @ vcell-restclient ---
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ vcell-restclient ---
+[INFO] skip non existing resourceDirectory /Users/novrusshehaj/Github/UCHC/vcell/vcell-restclient/src/main/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ vcell-restclient ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ vcell-restclient ---
+[INFO] skip non existing resourceDirectory /Users/novrusshehaj/Github/UCHC/vcell/vcell-restclient/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ vcell-restclient ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.1.2:test (default-test) @ vcell-restclient ---
+[INFO] 
+[INFO] ---------------------< org.vcell:vcell-api-types >----------------------
+[INFO] Building vcell-api-types 1.0.0                                     [6/8]
+[INFO]   from vcell-api-types/pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- enforcer:3.1.0:enforce (enforce) @ vcell-api-types ---
+[INFO] 
+[INFO] --- enforcer:3.1.0:enforce (enforce-versions) @ vcell-api-types ---
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ vcell-api-types ---
+[INFO] skip non existing resourceDirectory /Users/novrusshehaj/Github/UCHC/vcell/vcell-api-types/src/main/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ vcell-api-types ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ vcell-api-types ---
+[INFO] skip non existing resourceDirectory /Users/novrusshehaj/Github/UCHC/vcell/vcell-api-types/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ vcell-api-types ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.1.2:test (default-test) @ vcell-api-types ---
+[INFO] No tests to run.
+[INFO] 
+[INFO] ---------------------< org.vcell:vcell-apiclient >----------------------
+[INFO] Building vcell-apiclient 0.0.1-SNAPSHOT                            [7/8]
+[INFO]   from vcell-apiclient/pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- enforcer:3.1.0:enforce (enforce) @ vcell-apiclient ---
+[INFO] 
+[INFO] --- enforcer:3.1.0:enforce (enforce-versions) @ vcell-apiclient ---
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ vcell-apiclient ---
+[INFO] skip non existing resourceDirectory /Users/novrusshehaj/Github/UCHC/vcell/vcell-apiclient/src/main/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ vcell-apiclient ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ vcell-apiclient ---
+[INFO] skip non existing resourceDirectory /Users/novrusshehaj/Github/UCHC/vcell/vcell-apiclient/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ vcell-apiclient ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.1.2:test (default-test) @ vcell-apiclient ---
+[INFO] 
+[INFO] -----------------------< org.vcell:vcell-client >-----------------------
+[INFO] Building vcell-client 0.0.1-SNAPSHOT                               [8/8]
+[INFO]   from vcell-client/pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- enforcer:3.1.0:enforce (enforce) @ vcell-client ---
+[INFO] 
+[INFO] --- enforcer:3.1.0:enforce (enforce-versions) @ vcell-client ---
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ vcell-client ---
+[INFO] Copying 637 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.11.0:compile (default-compile) @ vcell-client ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ vcell-client ---
+[INFO] Copying 251 resources from src/test/resources to target/test-classes
+[INFO] 
+[INFO] --- compiler:3.11.0:testCompile (default-testCompile) @ vcell-client ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- surefire:3.1.2:test (default-test) @ vcell-client ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running cbit.vcell.solver.ode.gui.LangevinLegendAccessibilityTest
+2026-10-02T05:19:41.637832Z main WARN The use of package scanning to locate Log4j plugins is deprecated.
+Please remove the `packages` attribute from your configuration file.
+See https://logging.apache.org/log4j/2.x/faq.html#package-scanning for details.
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.607 s -- in cbit.vcell.solver.ode.gui.LangevinLegendAccessibilityTest
+[INFO] Running cbit.vcell.solver.ode.gui.LangevinSeriesIdentityTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.002 s -- in cbit.vcell.solver.ode.gui.LangevinSeriesIdentityTest
+[INFO] Running cbit.plot.gui.PlotRenderersAccessibilityTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.072 s -- in cbit.plot.gui.PlotRenderersAccessibilityTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 11, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Summary:
+[INFO] 
+[INFO] Virtual Cell Project 0.0.1-SNAPSHOT ................ SUCCESS [  0.090 s]
+[INFO] vcell-util 0.0.1-SNAPSHOT .......................... SUCCESS [  0.166 s]
+[INFO] vcell-math 0.0.1-SNAPSHOT .......................... SUCCESS [  0.049 s]
+[INFO] vcell-core 0.0.1-SNAPSHOT .......................... SUCCESS [  7.340 s]
+[INFO] vcell-restclient 0.0.1-SNAPSHOT .................... SUCCESS [  0.106 s]
+[INFO] vcell-api-types 1.0.0 .............................. SUCCESS [  0.051 s]
+[INFO] vcell-apiclient 0.0.1-SNAPSHOT ..................... SUCCESS [  0.089 s]
+[INFO] vcell-client 0.0.1-SNAPSHOT ........................ SUCCESS [  1.733 s]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  10.038 s
+[INFO] Finished at: 2026-10-02T01:19:42-04:00
+[INFO] ------------------------------------------------------------------------
+V1_EXIT=0
+=== V4 2026-10-02T05:19:42Z ===
+[INFO] Scanning for projects...
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Build Order:
+[INFO] 
+[INFO] Virtual Cell Project                                               [pom]
+[INFO] vcell-util                                                         [jar]
+[INFO] vcell-math                                                         [jar]
+[INFO] vcell-core                                                         [jar]
+[INFO] vcell-restclient                                                   [jar]
+[INFO] vcell-api-types                                                    [jar]
+[INFO] vcell-apiclient                                                    [jar]
+[INFO] vcell-client                                                       [jar]
+[INFO] 
+[INFO] ------------------------< org.vcell:vcell-pom >-------------------------
+[INFO] Building Virtual Cell Project 0.0.1-SNAPSHOT                       [1/8]
+[INFO]   from pom.xml
+[INFO] --------------------------------[ pom ]---------------------------------
+[INFO] 
+[INFO] --- enforcer:3.1.0:enforce (enforce) @ vcell-pom ---
+[INFO] 
+[INFO] --- enforcer:3.1.0:enforce (enforce-versions) @ vcell-pom ---
+[INFO] 
+[INFO] ------------------------< org.vcell:vcell-util >------------------------
+[INFO] Building vcell-util 0.0.1-SNAPSHOT                                 [2/8]
+[INFO]   from vcell-util/pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- enforcer:3.1.0:enforce (enforce) @ vcell-util ---
+[INFO] 
+[INFO] --- enforcer:3.1.0:enforce (enforce-versions) @ vcell-util ---
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ vcell-util ---
+[INFO] Copying 1 resource from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ vcell-util ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ vcell-util ---
+[INFO] skip non existing resourceDirectory /Users/novrusshehaj/Github/UCHC/vcell/vcell-util/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ vcell-util ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.1.2:test (default-test) @ vcell-util ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running org.vcell.util.ColorAccessibilityTest
+[WARNING] Tests run: 8, Failures: 0, Errors: 0, Skipped: 1, Time elapsed: 0.035 s -- in org.vcell.util.ColorAccessibilityTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[WARNING] Tests run: 8, Failures: 0, Errors: 0, Skipped: 1
+[INFO] 
+[INFO] 
+[INFO] ------------------------< org.vcell:vcell-math >------------------------
+[INFO] Building vcell-math 0.0.1-SNAPSHOT                                 [3/8]
+[INFO]   from vcell-math/pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- enforcer:3.1.0:enforce (enforce) @ vcell-math ---
+[INFO] 
+[INFO] --- enforcer:3.1.0:enforce (enforce-versions) @ vcell-math ---
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ vcell-math ---
+[INFO] skip non existing resourceDirectory /Users/novrusshehaj/Github/UCHC/vcell/vcell-math/src/main/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ vcell-math ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ vcell-math ---
+[INFO] skip non existing resourceDirectory /Users/novrusshehaj/Github/UCHC/vcell/vcell-math/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ vcell-math ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.1.2:test (default-test) @ vcell-math ---
+[INFO] 
+[INFO] ------------------------< org.vcell:vcell-core >------------------------
+[INFO] Building vcell-core 0.0.1-SNAPSHOT                                 [4/8]
+[INFO]   from vcell-core/pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- enforcer:3.1.0:enforce (enforce) @ vcell-core ---
+[INFO] 
+[INFO] --- enforcer:3.1.0:enforce (enforce-versions) @ vcell-core ---
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ vcell-core ---
+[INFO] Copying 16 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ vcell-core ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- download:1.3.0:wget (install-solvers-linux64) @ vcell-core ---
+[INFO] Got from cache: /Users/novrusshehaj/.m2/repository/.cache/download-maven-plugin/linux64.tgz_12a513f1e9ec400eb770da03f3a1b14b
+[INFO] Expanding: /Users/novrusshehaj/Github/UCHC/vcell/vcell-core/target/../../localsolvers/linux64/linux64.tgz into /Users/novrusshehaj/Github/UCHC/vcell/vcell-core/target/../../localsolvers/linux64
+[INFO] 
+[INFO] --- download:1.3.0:wget (install-solvers-win64) @ vcell-core ---
+[INFO] 
+[INFO] --- download:1.3.0:wget (install-solvers-mac64) @ vcell-core ---
+[INFO] Got from cache: /Users/novrusshehaj/.m2/repository/.cache/download-maven-plugin/mac64.tgz_2800adff8d2c23c0410ea85562be24f0
+[INFO] Expanding: /Users/novrusshehaj/Github/UCHC/vcell/vcell-core/target/../../localsolvers/mac64/mac64.tgz into /Users/novrusshehaj/Github/UCHC/vcell/vcell-core/target/../../localsolvers/mac64
+[INFO] 
+[INFO] --- download:1.3.0:wget (install-langevin-win64) @ vcell-core ---
+[INFO] File already exist, skipping
+[INFO] 
+[INFO] --- download:1.3.0:wget (install-langevin-mac64) @ vcell-core ---
+[INFO] File already exist, skipping
+[INFO] 
+[INFO] --- download:1.3.0:wget (install-langevin-linux) @ vcell-core ---
+[INFO] File already exist, skipping
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ vcell-core ---
+[INFO] Copying 6098 resources from src/test/resources to target/test-classes
+[INFO] 
+[INFO] --- antrun:3.1.0:run (chmod-langevin-mac64) @ vcell-core ---
+[INFO] Executing tasks
+[INFO] Executed tasks
+[INFO] 
+[INFO] --- antrun:3.1.0:run (process-solvers-linux64) @ vcell-core ---
+[INFO] Executing tasks
+[INFO] Executed tasks
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ vcell-core ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.1.2:test (default-test) @ vcell-core ---
+[INFO] 
+[INFO] ---------------------< org.vcell:vcell-restclient >---------------------
+[INFO] Building vcell-restclient 0.0.1-SNAPSHOT                           [5/8]
+[INFO]   from vcell-restclient/pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- enforcer:3.1.0:enforce (enforce) @ vcell-restclient ---
+[INFO] 
+[INFO] --- enforcer:3.1.0:enforce (enforce-versions) @ vcell-restclient ---
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ vcell-restclient ---
+[INFO] skip non existing resourceDirectory /Users/novrusshehaj/Github/UCHC/vcell/vcell-restclient/src/main/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ vcell-restclient ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ vcell-restclient ---
+[INFO] skip non existing resourceDirectory /Users/novrusshehaj/Github/UCHC/vcell/vcell-restclient/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ vcell-restclient ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.1.2:test (default-test) @ vcell-restclient ---
+[INFO] 
+[INFO] ---------------------< org.vcell:vcell-api-types >----------------------
+[INFO] Building vcell-api-types 1.0.0                                     [6/8]
+[INFO]   from vcell-api-types/pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- enforcer:3.1.0:enforce (enforce) @ vcell-api-types ---
+[INFO] 
+[INFO] --- enforcer:3.1.0:enforce (enforce-versions) @ vcell-api-types ---
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ vcell-api-types ---
+[INFO] skip non existing resourceDirectory /Users/novrusshehaj/Github/UCHC/vcell/vcell-api-types/src/main/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ vcell-api-types ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ vcell-api-types ---
+[INFO] skip non existing resourceDirectory /Users/novrusshehaj/Github/UCHC/vcell/vcell-api-types/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ vcell-api-types ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.1.2:test (default-test) @ vcell-api-types ---
+[INFO] No tests to run.
+[INFO] 
+[INFO] ---------------------< org.vcell:vcell-apiclient >----------------------
+[INFO] Building vcell-apiclient 0.0.1-SNAPSHOT                            [7/8]
+[INFO]   from vcell-apiclient/pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- enforcer:3.1.0:enforce (enforce) @ vcell-apiclient ---
+[INFO] 
+[INFO] --- enforcer:3.1.0:enforce (enforce-versions) @ vcell-apiclient ---
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ vcell-apiclient ---
+[INFO] skip non existing resourceDirectory /Users/novrusshehaj/Github/UCHC/vcell/vcell-apiclient/src/main/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ vcell-apiclient ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ vcell-apiclient ---
+[INFO] skip non existing resourceDirectory /Users/novrusshehaj/Github/UCHC/vcell/vcell-apiclient/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ vcell-apiclient ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.1.2:test (default-test) @ vcell-apiclient ---
+[INFO] 
+[INFO] -----------------------< org.vcell:vcell-client >-----------------------
+[INFO] Building vcell-client 0.0.1-SNAPSHOT                               [8/8]
+[INFO]   from vcell-client/pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- enforcer:3.1.0:enforce (enforce) @ vcell-client ---
+[INFO] 
+[INFO] --- enforcer:3.1.0:enforce (enforce-versions) @ vcell-client ---
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ vcell-client ---
+[INFO] Copying 637 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.11.0:compile (default-compile) @ vcell-client ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ vcell-client ---
+[INFO] Copying 251 resources from src/test/resources to target/test-classes
+[INFO] 
+[INFO] --- compiler:3.11.0:testCompile (default-testCompile) @ vcell-client ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- surefire:3.1.2:test (default-test) @ vcell-client ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running cbit.vcell.modelopt.gui.MultisourcePlotPaneAccessibilityTest
+2026-10-02T05:19:52.438837Z main WARN The use of package scanning to locate Log4j plugins is deprecated.
+Please remove the `packages` attribute from your configuration file.
+See https://logging.apache.org/log4j/2.x/faq.html#package-scanning for details.
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.539 s -- in cbit.vcell.modelopt.gui.MultisourcePlotPaneAccessibilityTest
+[INFO] Running cbit.plot.gui.PlotSeriesStyleTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.012 s -- in cbit.plot.gui.PlotSeriesStyleTest
+[INFO] Running cbit.plot.gui.PlotPaneAccessibilityTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.025 s -- in cbit.plot.gui.PlotPaneAccessibilityTest
+[INFO] Running cbit.plot.gui.Plot2DPanelAccessibilityTest
+[INFO] Tests run: 12, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.205 s -- in cbit.plot.gui.Plot2DPanelAccessibilityTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 20, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Summary:
+[INFO] 
+[INFO] Virtual Cell Project 0.0.1-SNAPSHOT ................ SUCCESS [  0.086 s]
+[INFO] vcell-util 0.0.1-SNAPSHOT .......................... SUCCESS [  0.454 s]
+[INFO] vcell-math 0.0.1-SNAPSHOT .......................... SUCCESS [  0.048 s]
+[INFO] vcell-core 0.0.1-SNAPSHOT .......................... SUCCESS [  7.218 s]
+[INFO] vcell-restclient 0.0.1-SNAPSHOT .................... SUCCESS [  0.100 s]
+[INFO] vcell-api-types 1.0.0 .............................. SUCCESS [  0.051 s]
+[INFO] vcell-apiclient 0.0.1-SNAPSHOT ..................... SUCCESS [  0.095 s]
+[INFO] vcell-client 0.0.1-SNAPSHOT ........................ SUCCESS [  1.747 s]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  10.204 s
+[INFO] Finished at: 2026-10-02T01:19:53-04:00
+[INFO] ------------------------------------------------------------------------
+V4_EXIT=0
+=== V1 SIGN-OFF RERUN 2026-10-02T17:17:28Z ===
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.825 s -- in cbit.vcell.solver.ode.gui.LangevinLegendAccessibilityTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.002 s -- in cbit.vcell.solver.ode.gui.LangevinSeriesIdentityTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.067 s -- in cbit.plot.gui.PlotRenderersAccessibilityTest
+[INFO] Tests run: 11, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+=== V2/V3 SIGN-OFF 2026-10-02T17:17:42Z ===
+V2_EXIT=1 (1=PASS)
+V3_EXIT=1 (1=PASS)

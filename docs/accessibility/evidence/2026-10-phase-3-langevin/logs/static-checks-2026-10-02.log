@@ -1,0 +1,4 @@
+=== V2 static check 8.4-a 2026-10-02T05:25:12Z ===
+V2_EXIT=1 (1 = expected no-match PASS)
+=== V3 extended residue scan 2026-10-02T05:25:12Z ===
+V3_EXIT=1 (1 = expected no-match PASS)

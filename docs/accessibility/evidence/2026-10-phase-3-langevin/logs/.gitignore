@@ -1,0 +1,3 @@
+# Evidence logs are part of the accessibility evidence set (§12/§16.3: versioned logs under an
+# evidence directory) — override the repository-wide *.log ignore for this directory only.
+!*.log

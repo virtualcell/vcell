@@ -1,0 +1,12 @@
+image mode exit code: 0
+/Users/novrusshehaj/Github/UCHC/vcell/docs/accessibility/evidence/2026-10-phase-3-langevin/cvd/selfcheck/CVD_SAFE_LIGHT-swatches-protan.png
+/Users/novrusshehaj/Github/UCHC/vcell/docs/accessibility/evidence/2026-10-phase-3-langevin/cvd/selfcheck/CVD_SAFE_LIGHT-swatches-deutan.png
+/Users/novrusshehaj/Github/UCHC/vcell/docs/accessibility/evidence/2026-10-phase-3-langevin/cvd/selfcheck/CVD_SAFE_LIGHT-swatches-tritan.png
+/Users/novrusshehaj/Github/UCHC/vcell/docs/accessibility/evidence/2026-10-phase-3-langevin/cvd/selfcheck/CVD_SAFE_LIGHT-swatches-grayscale.png
+deutan #999933 -> (166, 150, 58)
+deutan #000000 -> (0, 0, 0)
+check (a) deutan #999933 vs #000000 differs: max channel diff = 166 -> PASS
+check (b) grayscale R==G==B everywhere: -> PASS
+grayscale sample values: #999933 -> (148, 148, 148) | #004488 -> (69, 69, 69)
+check (c) four filtered PNGs produced: -> PASS
+selfcheck dir: ['CVD_SAFE_LIGHT-swatches-deutan.png', 'CVD_SAFE_LIGHT-swatches-grayscale.png', 'CVD_SAFE_LIGHT-swatches-protan.png', 'CVD_SAFE_LIGHT-swatches-tritan.png', 'CVD_SAFE_LIGHT-swatches.png']
