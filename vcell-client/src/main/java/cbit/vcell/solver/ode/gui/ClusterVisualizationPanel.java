@@ -1,5 +1,6 @@
 package cbit.vcell.solver.ode.gui;
 
+import cbit.plot.gui.AbstractPlotPanel;
 import cbit.plot.gui.ClusterDataPanel;
 import cbit.vcell.simdata.LangevinSolverResultSet;
 import org.apache.logging.log4j.LogManager;
@@ -103,7 +104,7 @@ public class ClusterVisualizationPanel extends AbstractVisualizationPanel {
 
     // --------------------the abstract class hooks
     @Override
-    protected JPanel createPlotPanel() {
+    protected AbstractPlotPanel createPlotPanel() {
         return getClusterPlotPanel();
     }
     @Override
@@ -124,7 +125,6 @@ public class ClusterVisualizationPanel extends AbstractVisualizationPanel {
                     }
                 });
                 clusterPlotPanel.setSeriesStatusCallback(this::showSeriesStatus);
-                clusterPlotPanel.setVaryLineStylesCallback(() -> getLegendContentPanel().repaint());
                 clusterPlotPanel.addComponentListener(new ComponentAdapter() {
                     @Override
                     public void componentShown(ComponentEvent e) {
@@ -296,7 +296,7 @@ public class ClusterVisualizationPanel extends AbstractVisualizationPanel {
 
         // Visible label
         String shortLabel = "<html>" + name + "<font color=\"#8B0000\">" + " [" + unitSymbol + "] " + "</font></html>";
-        JLabel line = new JLabel(new LineIcon(color, seriesIdentity.index(name), getClusterPlotPanel()));
+        JLabel line = new JLabel(new LineIcon(color, seriesIdentity.index(name)));
         JLabel text = new JLabel(shortLabel);
         line.setBorder(new EmptyBorder(6, 0, 1, 0));
         text.setBorder(new EmptyBorder(1, 8, 6, 0));

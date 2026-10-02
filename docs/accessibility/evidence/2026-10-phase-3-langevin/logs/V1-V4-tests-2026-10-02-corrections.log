@@ -1,0 +1,628 @@
+=== V1 2026-10-02T19:12:42Z working tree on 9897dc37bf (uncommitted: shared legend wiring in AbstractVisualizationPanel; marker spacing in AvgRenderer) ===
+[INFO] Scanning for projects...
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Build Order:
+[INFO] 
+[INFO] Virtual Cell Project                                               [pom]
+[INFO] vcell-util                                                         [jar]
+[INFO] vcell-math                                                         [jar]
+[INFO] vcell-core                                                         [jar]
+[INFO] vcell-restclient                                                   [jar]
+[INFO] vcell-api-types                                                    [jar]
+[INFO] vcell-apiclient                                                    [jar]
+[INFO] vcell-client                                                       [jar]
+[INFO] 
+[INFO] ------------------------< org.vcell:vcell-pom >-------------------------
+[INFO] Building Virtual Cell Project 0.0.1-SNAPSHOT                       [1/8]
+[INFO]   from pom.xml
+[INFO] --------------------------------[ pom ]---------------------------------
+[INFO] 
+[INFO] --- enforcer:3.1.0:enforce (enforce) @ vcell-pom ---
+[INFO] 
+[INFO] --- enforcer:3.1.0:enforce (enforce-versions) @ vcell-pom ---
+[INFO] 
+[INFO] ------------------------< org.vcell:vcell-util >------------------------
+[INFO] Building vcell-util 0.0.1-SNAPSHOT                                 [2/8]
+[INFO]   from vcell-util/pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- enforcer:3.1.0:enforce (enforce) @ vcell-util ---
+[INFO] 
+[INFO] --- enforcer:3.1.0:enforce (enforce-versions) @ vcell-util ---
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ vcell-util ---
+[INFO] Copying 1 resource from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ vcell-util ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ vcell-util ---
+[INFO] skip non existing resourceDirectory /Users/novrusshehaj/Github/UCHC/vcell/vcell-util/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ vcell-util ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.1.2:test (default-test) @ vcell-util ---
+[INFO] 
+[INFO] ------------------------< org.vcell:vcell-math >------------------------
+[INFO] Building vcell-math 0.0.1-SNAPSHOT                                 [3/8]
+[INFO]   from vcell-math/pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- enforcer:3.1.0:enforce (enforce) @ vcell-math ---
+[INFO] 
+[INFO] --- enforcer:3.1.0:enforce (enforce-versions) @ vcell-math ---
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ vcell-math ---
+[INFO] skip non existing resourceDirectory /Users/novrusshehaj/Github/UCHC/vcell/vcell-math/src/main/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ vcell-math ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ vcell-math ---
+[INFO] skip non existing resourceDirectory /Users/novrusshehaj/Github/UCHC/vcell/vcell-math/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ vcell-math ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.1.2:test (default-test) @ vcell-math ---
+[INFO] 
+[INFO] ------------------------< org.vcell:vcell-core >------------------------
+[INFO] Building vcell-core 0.0.1-SNAPSHOT                                 [4/8]
+[INFO]   from vcell-core/pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- enforcer:3.1.0:enforce (enforce) @ vcell-core ---
+[INFO] 
+[INFO] --- enforcer:3.1.0:enforce (enforce-versions) @ vcell-core ---
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ vcell-core ---
+[INFO] Copying 16 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ vcell-core ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- download:1.3.0:wget (install-solvers-linux64) @ vcell-core ---
+[INFO] Got from cache: /Users/novrusshehaj/.m2/repository/.cache/download-maven-plugin/linux64.tgz_12a513f1e9ec400eb770da03f3a1b14b
+[INFO] Expanding: /Users/novrusshehaj/Github/UCHC/vcell/vcell-core/target/../../localsolvers/linux64/linux64.tgz into /Users/novrusshehaj/Github/UCHC/vcell/vcell-core/target/../../localsolvers/linux64
+[INFO] 
+[INFO] --- download:1.3.0:wget (install-solvers-win64) @ vcell-core ---
+[INFO] 
+[INFO] --- download:1.3.0:wget (install-solvers-mac64) @ vcell-core ---
+[INFO] Got from cache: /Users/novrusshehaj/.m2/repository/.cache/download-maven-plugin/mac64.tgz_2800adff8d2c23c0410ea85562be24f0
+[INFO] Expanding: /Users/novrusshehaj/Github/UCHC/vcell/vcell-core/target/../../localsolvers/mac64/mac64.tgz into /Users/novrusshehaj/Github/UCHC/vcell/vcell-core/target/../../localsolvers/mac64
+[INFO] 
+[INFO] --- download:1.3.0:wget (install-langevin-win64) @ vcell-core ---
+[INFO] File already exist, skipping
+[INFO] 
+[INFO] --- download:1.3.0:wget (install-langevin-mac64) @ vcell-core ---
+[INFO] File already exist, skipping
+[INFO] 
+[INFO] --- download:1.3.0:wget (install-langevin-linux) @ vcell-core ---
+[INFO] File already exist, skipping
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ vcell-core ---
+[INFO] Copying 6098 resources from src/test/resources to target/test-classes
+[INFO] 
+[INFO] --- antrun:3.1.0:run (chmod-langevin-mac64) @ vcell-core ---
+[INFO] Executing tasks
+[INFO] Executed tasks
+[INFO] 
+[INFO] --- antrun:3.1.0:run (process-solvers-linux64) @ vcell-core ---
+[INFO] Executing tasks
+[INFO] Executed tasks
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ vcell-core ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.1.2:test (default-test) @ vcell-core ---
+[INFO] 
+[INFO] ---------------------< org.vcell:vcell-restclient >---------------------
+[INFO] Building vcell-restclient 0.0.1-SNAPSHOT                           [5/8]
+[INFO]   from vcell-restclient/pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- enforcer:3.1.0:enforce (enforce) @ vcell-restclient ---
+[INFO] 
+[INFO] --- enforcer:3.1.0:enforce (enforce-versions) @ vcell-restclient ---
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ vcell-restclient ---
+[INFO] skip non existing resourceDirectory /Users/novrusshehaj/Github/UCHC/vcell/vcell-restclient/src/main/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ vcell-restclient ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ vcell-restclient ---
+[INFO] skip non existing resourceDirectory /Users/novrusshehaj/Github/UCHC/vcell/vcell-restclient/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ vcell-restclient ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.1.2:test (default-test) @ vcell-restclient ---
+[INFO] 
+[INFO] ---------------------< org.vcell:vcell-api-types >----------------------
+[INFO] Building vcell-api-types 1.0.0                                     [6/8]
+[INFO]   from vcell-api-types/pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- enforcer:3.1.0:enforce (enforce) @ vcell-api-types ---
+[INFO] 
+[INFO] --- enforcer:3.1.0:enforce (enforce-versions) @ vcell-api-types ---
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ vcell-api-types ---
+[INFO] skip non existing resourceDirectory /Users/novrusshehaj/Github/UCHC/vcell/vcell-api-types/src/main/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ vcell-api-types ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ vcell-api-types ---
+[INFO] skip non existing resourceDirectory /Users/novrusshehaj/Github/UCHC/vcell/vcell-api-types/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ vcell-api-types ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.1.2:test (default-test) @ vcell-api-types ---
+[INFO] No tests to run.
+[INFO] 
+[INFO] ---------------------< org.vcell:vcell-apiclient >----------------------
+[INFO] Building vcell-apiclient 0.0.1-SNAPSHOT                            [7/8]
+[INFO]   from vcell-apiclient/pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- enforcer:3.1.0:enforce (enforce) @ vcell-apiclient ---
+[INFO] 
+[INFO] --- enforcer:3.1.0:enforce (enforce-versions) @ vcell-apiclient ---
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ vcell-apiclient ---
+[INFO] skip non existing resourceDirectory /Users/novrusshehaj/Github/UCHC/vcell/vcell-apiclient/src/main/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ vcell-apiclient ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ vcell-apiclient ---
+[INFO] skip non existing resourceDirectory /Users/novrusshehaj/Github/UCHC/vcell/vcell-apiclient/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ vcell-apiclient ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.1.2:test (default-test) @ vcell-apiclient ---
+[INFO] 
+[INFO] -----------------------< org.vcell:vcell-client >-----------------------
+[INFO] Building vcell-client 0.0.1-SNAPSHOT                               [8/8]
+[INFO]   from vcell-client/pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- enforcer:3.1.0:enforce (enforce) @ vcell-client ---
+[INFO] 
+[INFO] --- enforcer:3.1.0:enforce (enforce-versions) @ vcell-client ---
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ vcell-client ---
+[INFO] Copying 637 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.11.0:compile (default-compile) @ vcell-client ---
+[INFO] Changes detected - recompiling the module! :source
+[INFO] Compiling 888 source files with javac [debug target 16] to target/classes
+[WARNING] system modules path not set in conjunction with -source 16
+[WARNING] Supported source version 'RELEASE_8' from annotation processor 'org.scijava.annotations.AnnotationProcessor' less than -source '16'
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/geometry/gui/CurveEditorTool.java:[596,50] Boolean(boolean) in java.lang.Boolean has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/geometry/gui/CurveEditorTool.java:[596,73] Boolean(boolean) in java.lang.Boolean has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/geometry/gui/CurveEditorTool.java:[627,50] Boolean(boolean) in java.lang.Boolean has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/geometry/gui/CurveEditorTool.java:[627,73] Boolean(boolean) in java.lang.Boolean has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/geometry/gui/CurveEditorTool.java:[637,45] Boolean(boolean) in java.lang.Boolean has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/geometry/gui/CurveEditorTool.java:[637,68] Boolean(boolean) in java.lang.Boolean has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/geometry/gui/CurveEditorTool.java:[666,36] Integer(int) in java.lang.Integer has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/geometry/gui/CurveEditorTool.java:[666,59] Integer(int) in java.lang.Integer has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/image/gui/ImagePaneView.java:[481,40] Boolean(boolean) in java.lang.Boolean has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/image/gui/ImagePaneView.java:[481,63] Boolean(boolean) in java.lang.Boolean has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/image/gui/ImagePaneView.java:[491,41] Boolean(boolean) in java.lang.Boolean has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/image/gui/ImagePaneView.java:[491,64] Boolean(boolean) in java.lang.Boolean has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/org/vcell/util/gui/sorttable/SortPreference.java:[53,16] Integer(int) in java.lang.Integer has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/org/vcell/util/gui/sorttable/SortPreference.java:[53,65] Boolean(boolean) in java.lang.Boolean has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/client/BioModelWindowManager.java:[165,50] Boolean(boolean) in java.lang.Boolean has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/simdata/gui/PDEDataContextPanel.java:[377,36] Double(double) in java.lang.Double has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/simdata/gui/PDEDataContextPanel.java:[1386,42] Integer(int) in java.lang.Integer has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/simdata/gui/PDEDataContextPanel.java:[1386,65] Integer(int) in java.lang.Integer has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/simdata/gui/PDEDataContextPanel.java:[1420,37] Integer(int) in java.lang.Integer has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/simdata/gui/PDEDataContextPanel.java:[1420,60] Integer(int) in java.lang.Integer has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/geometry/gui/DataValueSurfaceViewer.java:[146,58] Boolean(boolean) in java.lang.Boolean has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/geometry/gui/DataValueSurfaceViewer.java:[148,60] Boolean(boolean) in java.lang.Boolean has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/geometry/gui/SurfaceCanvas.java:[607,44] Boolean(boolean) in java.lang.Boolean has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/geometry/gui/SurfaceCanvas.java:[607,67] Boolean(boolean) in java.lang.Boolean has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/geometry/gui/SurfaceCanvas.java:[619,46] Boolean(boolean) in java.lang.Boolean has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/geometry/gui/SurfaceCanvas.java:[619,69] Boolean(boolean) in java.lang.Boolean has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/geometry/gui/SurfaceCanvas.java:[645,49] Boolean(boolean) in java.lang.Boolean has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/geometry/gui/SurfaceCanvas.java:[645,72] Boolean(boolean) in java.lang.Boolean has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/geometry/gui/SurfaceCanvas.java:[691,47] Boolean(boolean) in java.lang.Boolean has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/geometry/gui/SurfaceCanvas.java:[691,70] Boolean(boolean) in java.lang.Boolean has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/geometry/gui/SurfaceCanvas.java:[775,50] Double(double) in java.lang.Double has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/geometry/gui/SurfaceCanvas.java:[775,72] Double(double) in java.lang.Double has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/org/vcell/util/gui/EnhancedJLabel.java:[134,40] Boolean(boolean) in java.lang.Boolean has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/org/vcell/util/gui/EnhancedJLabel.java:[134,63] Boolean(boolean) in java.lang.Boolean has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/export/gui/MediaSettingsPanel.java:[569,50] Integer(int) in java.lang.Integer has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/export/gui/MediaSettingsPanel.java:[570,50] Integer(int) in java.lang.Integer has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/export/gui/MediaSettingsPanel.java:[571,50] Integer(int) in java.lang.Integer has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/export/gui/MediaSettingsPanel.java:[580,46] Integer(int) in java.lang.Integer has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/export/gui/MediaSettingsPanel.java:[582,54] Integer(int) in java.lang.Integer has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/export/gui/MediaSettingsPanel.java:[618,34] Double(java.lang.String) in java.lang.Double has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/client/data/DataSelectRetrieve.java:[2102,41] Double(double) in java.lang.Double has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/client/data/DataSelectRetrieve.java:[2102,63] Double(double) in java.lang.Double has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/client/data/DataSelectRetrieve.java:[2116,41] Double(double) in java.lang.Double has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/client/data/DataSelectRetrieve.java:[2116,63] Double(double) in java.lang.Double has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/org/vcell/util/gui/DialogUtils.java:[1094,24] deprecated item is not annotated with @Deprecated
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/client/desktop/biomodel/BioModelEditorModelPanel.java:[2110,181] non-varargs call of varargs method with inexact argument type for last parameter;
+  cast to java.lang.Object for a varargs call
+  cast to java.lang.Object[] for a non-varargs call and to suppress this warning
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/client/desktop/biomodel/BioModelEditorPathwayDiagramPanel.java:[1180,207] non-varargs call of varargs method with inexact argument type for last parameter;
+  cast to java.lang.Object for a varargs call
+  cast to java.lang.Object[] for a non-varargs call and to suppress this warning
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/desktop/BioModelCellRenderer.java:[350,19] deprecated item is not annotated with @Deprecated
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/desktop/BioModelCellRenderer.java:[362,19] deprecated item is not annotated with @Deprecated
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/desktop/BioModelCellRenderer.java:[374,19] deprecated item is not annotated with @Deprecated
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/org/vcell/optimization/gui/ParameterMappingTableModel.java:[68,70] Double(double) in java.lang.Double has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/org/vcell/optimization/gui/ParameterMappingTableModel.java:[69,70] Double(double) in java.lang.Double has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/org/vcell/optimization/gui/ParameterMappingTableModel.java:[80,98] Double(double) in java.lang.Double has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/org/vcell/optimization/gui/ParameterMappingTableModel.java:[80,57] Double(double) in java.lang.Double has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/org/vcell/optimization/gui/ParameterMappingTableModel.java:[83,94] Double(double) in java.lang.Double has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/org/vcell/optimization/gui/ParameterMappingTableModel.java:[83,57] Double(double) in java.lang.Double has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/org/vcell/optimization/gui/ParameterMappingTableModel.java:[86,95] Double(double) in java.lang.Double has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/org/vcell/optimization/gui/ParameterMappingTableModel.java:[86,57] Double(double) in java.lang.Double has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/org/vcell/optimization/gui/ParameterMappingTableModel.java:[188,40] Double(double) in java.lang.Double has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/org/vcell/optimization/gui/ParameterMappingTableModel.java:[195,32] Double(double) in java.lang.Double has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/org/vcell/optimization/gui/ParameterMappingTableModel.java:[198,32] Double(double) in java.lang.Double has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/org/vcell/optimization/gui/ParameterMappingTableModel.java:[201,32] Double(double) in java.lang.Double has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/mapping/gui/ElectricalMembraneMappingTableModel.java:[122,40] Boolean(boolean) in java.lang.Boolean has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/org/vcell/model/rbm/gui/EditConstraintsPanel.java:[442,52] Integer(java.lang.String) in java.lang.Integer has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/org/vcell/model/rbm/gui/EditConstraintsPanel.java:[443,48] Integer(java.lang.String) in java.lang.Integer has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/org/vcell/model/rbm/gui/EditConstraintsPanel.java:[444,48] Integer(java.lang.String) in java.lang.Integer has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/org/vcell/model/rbm/gui/EditConstraintsPanel.java:[445,48] Integer(java.lang.String) in java.lang.Integer has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/org/vcell/model/rbm/gui/EditConstraintsPanel.java:[465,52] Integer(java.lang.String) in java.lang.Integer has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/org/vcell/model/rbm/gui/EditConstraintsPanel.java:[466,48] Integer(java.lang.String) in java.lang.Integer has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/org/vcell/model/rbm/gui/EditConstraintsPanel.java:[467,48] Integer(java.lang.String) in java.lang.Integer has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/org/vcell/model/rbm/gui/EditConstraintsPanel.java:[468,48] Integer(java.lang.String) in java.lang.Integer has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/mapping/gui/StoichiometryTableModel.java:[159,30] Integer(java.lang.String) in java.lang.Integer has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/geometry/gui/GeometryViewer.java:[165,97] Integer(int) in java.lang.Integer has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/geometry/gui/GeometryViewer.java:[166,89] Integer(int) in java.lang.Integer has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/geometry/gui/GeometryViewer.java:[167,89] Integer(int) in java.lang.Integer has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/geometry/gui/GeometryViewer.java:[168,81] Integer(int) in java.lang.Integer has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/geometry/gui/GeometryViewer.java:[169,81] Integer(int) in java.lang.Integer has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/geometry/gui/GeometryViewer.java:[170,81] Integer(int) in java.lang.Integer has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/geometry/gui/GeometryViewer.java:[171,81] Integer(int) in java.lang.Integer has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/geometry/gui/GeometryViewer.java:[172,81] Integer(int) in java.lang.Integer has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/geometry/gui/GeometryViewer.java:[173,81] Integer(int) in java.lang.Integer has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/geometry/gui/GeometryViewer.java:[174,81] Integer(int) in java.lang.Integer has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/geometry/gui/CurveRendererGeometry.java:[100,55] Boolean(boolean) in java.lang.Boolean has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/geometry/gui/CurveRendererGeometry.java:[102,55] Boolean(boolean) in java.lang.Boolean has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/geometry/gui/SurfaceEditor.java:[922,46] Integer(int) in java.lang.Integer has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/geometry/gui/SurfaceEditor.java:[1090,46] Integer(int) in java.lang.Integer has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/geometry/gui/SurfaceEditor.java:[1091,66] Double(double) in java.lang.Double has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/mapping/gui/SpatialQuantityTableModel.java:[161,40] Boolean(boolean) in java.lang.Boolean has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/desktop/BioModelInfoCellRenderer.java:[48,5] deprecated item is not annotated with @Deprecated
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/desktop/BioModelInfoTreeModel.java:[214,64] Integer(int) in java.lang.Integer has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/client/desktop/biomodel/PhysiologyRelationshipTableRow.java:[18,38] Boolean(boolean) in java.lang.Boolean has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/desktop/MathModelMetaDataTreeModel.java:[175,56] Integer(int) in java.lang.Integer has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/desktop/VCDocumentDbTreeModel.java:[753,42] Boolean(boolean) in java.lang.Boolean has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/desktop/VCDocumentDbTreeModel.java:[753,65] Boolean(boolean) in java.lang.Boolean has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/desktop/BioModelDbTreeModel.java:[150,65] Integer(int) in java.lang.Integer has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/desktop/BioModelDbTreeModel.java:[259,13] deprecated item is not annotated with @Deprecated
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/VirtualMicroscopy/importer/MicroscopyXmlReader.java:[244,16] Integer(java.lang.String) in java.lang.Integer has been deprecated and marked for removal
+[WARNING] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/microscopy/gui/estparamwizard/FRAPReacOffRateParametersPanel.java:[414,64] Integer(int) in java.lang.Integer has been deprecated and marked for removal
+[INFO] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/export/gui/ExportMonitorPanel.java: Some input files use or override a deprecated API.
+[INFO] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/export/gui/ExportMonitorPanel.java: Recompile with -Xlint:deprecation for details.
+[INFO] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/microscopy/gui/estparamwizard/FRAPReacOffRateParametersPanel.java: Some input files additionally use or override a deprecated API that is marked for removal.
+[INFO] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/export/gui/ExportMonitorTableModel.java: Some input files use unchecked or unsafe operations.
+[INFO] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/main/java/cbit/vcell/export/gui/ExportMonitorTableModel.java: Recompile with -Xlint:unchecked for details.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ vcell-client ---
+[INFO] Copying 251 resources from src/test/resources to target/test-classes
+[INFO] 
+[INFO] --- compiler:3.11.0:testCompile (default-testCompile) @ vcell-client ---
+[INFO] Changes detected - recompiling the module! :dependency
+[INFO] Compiling 45 source files with javac [debug target 16] to target/test-classes
+[WARNING] system modules path not set in conjunction with -source 16
+[WARNING] Supported source version 'RELEASE_8' from annotation processor 'org.scijava.annotations.AnnotationProcessor' less than -source '16'
+[INFO] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/test/java/cbit/vcell/client/ChildWindowDetachTest.java: /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/test/java/cbit/vcell/client/ChildWindowDetachTest.java uses or overrides a deprecated API.
+[INFO] /Users/novrusshehaj/Github/UCHC/vcell/vcell-client/src/test/java/cbit/vcell/client/ChildWindowDetachTest.java: Recompile with -Xlint:deprecation for details.
+[INFO] 
+[INFO] --- surefire:3.1.2:test (default-test) @ vcell-client ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running cbit.vcell.solver.ode.gui.LangevinLegendAccessibilityTest
+2026-10-02T19:12:58.406494Z main WARN The use of package scanning to locate Log4j plugins is deprecated.
+Please remove the `packages` attribute from your configuration file.
+See https://logging.apache.org/log4j/2.x/faq.html#package-scanning for details.
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.518 s -- in cbit.vcell.solver.ode.gui.LangevinLegendAccessibilityTest
+[INFO] Running cbit.vcell.solver.ode.gui.LangevinSeriesIdentityTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.002 s -- in cbit.vcell.solver.ode.gui.LangevinSeriesIdentityTest
+[INFO] Running cbit.plot.gui.PlotRenderersAccessibilityTest
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.082 s -- in cbit.plot.gui.PlotRenderersAccessibilityTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 13, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Summary:
+[INFO] 
+[INFO] Virtual Cell Project 0.0.1-SNAPSHOT ................ SUCCESS [  0.097 s]
+[INFO] vcell-util 0.0.1-SNAPSHOT .......................... SUCCESS [  0.155 s]
+[INFO] vcell-math 0.0.1-SNAPSHOT .......................... SUCCESS [  0.045 s]
+[INFO] vcell-core 0.0.1-SNAPSHOT .......................... SUCCESS [  7.008 s]
+[INFO] vcell-restclient 0.0.1-SNAPSHOT .................... SUCCESS [  0.105 s]
+[INFO] vcell-api-types 1.0.0 .............................. SUCCESS [  0.052 s]
+[INFO] vcell-apiclient 0.0.1-SNAPSHOT ..................... SUCCESS [  0.093 s]
+[INFO] vcell-client 0.0.1-SNAPSHOT ........................ SUCCESS [  7.843 s]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  15.848 s
+[INFO] Finished at: 2026-10-02T15:12:59-04:00
+[INFO] ------------------------------------------------------------------------
+V1_EXIT=0
+=== V4 2026-10-02T19:12:59Z ===
+[INFO] Scanning for projects...
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Build Order:
+[INFO] 
+[INFO] Virtual Cell Project                                               [pom]
+[INFO] vcell-util                                                         [jar]
+[INFO] vcell-math                                                         [jar]
+[INFO] vcell-core                                                         [jar]
+[INFO] vcell-restclient                                                   [jar]
+[INFO] vcell-api-types                                                    [jar]
+[INFO] vcell-apiclient                                                    [jar]
+[INFO] vcell-client                                                       [jar]
+[INFO] 
+[INFO] ------------------------< org.vcell:vcell-pom >-------------------------
+[INFO] Building Virtual Cell Project 0.0.1-SNAPSHOT                       [1/8]
+[INFO]   from pom.xml
+[INFO] --------------------------------[ pom ]---------------------------------
+[INFO] 
+[INFO] --- enforcer:3.1.0:enforce (enforce) @ vcell-pom ---
+[INFO] 
+[INFO] --- enforcer:3.1.0:enforce (enforce-versions) @ vcell-pom ---
+[INFO] 
+[INFO] ------------------------< org.vcell:vcell-util >------------------------
+[INFO] Building vcell-util 0.0.1-SNAPSHOT                                 [2/8]
+[INFO]   from vcell-util/pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- enforcer:3.1.0:enforce (enforce) @ vcell-util ---
+[INFO] 
+[INFO] --- enforcer:3.1.0:enforce (enforce-versions) @ vcell-util ---
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ vcell-util ---
+[INFO] Copying 1 resource from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ vcell-util ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ vcell-util ---
+[INFO] skip non existing resourceDirectory /Users/novrusshehaj/Github/UCHC/vcell/vcell-util/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ vcell-util ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.1.2:test (default-test) @ vcell-util ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running org.vcell.util.ColorAccessibilityTest
+[WARNING] Tests run: 8, Failures: 0, Errors: 0, Skipped: 1, Time elapsed: 0.035 s -- in org.vcell.util.ColorAccessibilityTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[WARNING] Tests run: 8, Failures: 0, Errors: 0, Skipped: 1
+[INFO] 
+[INFO] 
+[INFO] ------------------------< org.vcell:vcell-math >------------------------
+[INFO] Building vcell-math 0.0.1-SNAPSHOT                                 [3/8]
+[INFO]   from vcell-math/pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- enforcer:3.1.0:enforce (enforce) @ vcell-math ---
+[INFO] 
+[INFO] --- enforcer:3.1.0:enforce (enforce-versions) @ vcell-math ---
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ vcell-math ---
+[INFO] skip non existing resourceDirectory /Users/novrusshehaj/Github/UCHC/vcell/vcell-math/src/main/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ vcell-math ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ vcell-math ---
+[INFO] skip non existing resourceDirectory /Users/novrusshehaj/Github/UCHC/vcell/vcell-math/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ vcell-math ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.1.2:test (default-test) @ vcell-math ---
+[INFO] 
+[INFO] ------------------------< org.vcell:vcell-core >------------------------
+[INFO] Building vcell-core 0.0.1-SNAPSHOT                                 [4/8]
+[INFO]   from vcell-core/pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- enforcer:3.1.0:enforce (enforce) @ vcell-core ---
+[INFO] 
+[INFO] --- enforcer:3.1.0:enforce (enforce-versions) @ vcell-core ---
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ vcell-core ---
+[INFO] Copying 16 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ vcell-core ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- download:1.3.0:wget (install-solvers-linux64) @ vcell-core ---
+[INFO] Got from cache: /Users/novrusshehaj/.m2/repository/.cache/download-maven-plugin/linux64.tgz_12a513f1e9ec400eb770da03f3a1b14b
+[INFO] Expanding: /Users/novrusshehaj/Github/UCHC/vcell/vcell-core/target/../../localsolvers/linux64/linux64.tgz into /Users/novrusshehaj/Github/UCHC/vcell/vcell-core/target/../../localsolvers/linux64
+[INFO] 
+[INFO] --- download:1.3.0:wget (install-solvers-win64) @ vcell-core ---
+[INFO] 
+[INFO] --- download:1.3.0:wget (install-solvers-mac64) @ vcell-core ---
+[INFO] Got from cache: /Users/novrusshehaj/.m2/repository/.cache/download-maven-plugin/mac64.tgz_2800adff8d2c23c0410ea85562be24f0
+[INFO] Expanding: /Users/novrusshehaj/Github/UCHC/vcell/vcell-core/target/../../localsolvers/mac64/mac64.tgz into /Users/novrusshehaj/Github/UCHC/vcell/vcell-core/target/../../localsolvers/mac64
+[INFO] 
+[INFO] --- download:1.3.0:wget (install-langevin-win64) @ vcell-core ---
+[INFO] File already exist, skipping
+[INFO] 
+[INFO] --- download:1.3.0:wget (install-langevin-mac64) @ vcell-core ---
+[INFO] File already exist, skipping
+[INFO] 
+[INFO] --- download:1.3.0:wget (install-langevin-linux) @ vcell-core ---
+[INFO] File already exist, skipping
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ vcell-core ---
+[INFO] Copying 6098 resources from src/test/resources to target/test-classes
+[INFO] 
+[INFO] --- antrun:3.1.0:run (chmod-langevin-mac64) @ vcell-core ---
+[INFO] Executing tasks
+[INFO] Executed tasks
+[INFO] 
+[INFO] --- antrun:3.1.0:run (process-solvers-linux64) @ vcell-core ---
+[INFO] Executing tasks
+[INFO] Executed tasks
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ vcell-core ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.1.2:test (default-test) @ vcell-core ---
+[INFO] 
+[INFO] ---------------------< org.vcell:vcell-restclient >---------------------
+[INFO] Building vcell-restclient 0.0.1-SNAPSHOT                           [5/8]
+[INFO]   from vcell-restclient/pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- enforcer:3.1.0:enforce (enforce) @ vcell-restclient ---
+[INFO] 
+[INFO] --- enforcer:3.1.0:enforce (enforce-versions) @ vcell-restclient ---
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ vcell-restclient ---
+[INFO] skip non existing resourceDirectory /Users/novrusshehaj/Github/UCHC/vcell/vcell-restclient/src/main/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ vcell-restclient ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ vcell-restclient ---
+[INFO] skip non existing resourceDirectory /Users/novrusshehaj/Github/UCHC/vcell/vcell-restclient/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ vcell-restclient ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.1.2:test (default-test) @ vcell-restclient ---
+[INFO] 
+[INFO] ---------------------< org.vcell:vcell-api-types >----------------------
+[INFO] Building vcell-api-types 1.0.0                                     [6/8]
+[INFO]   from vcell-api-types/pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- enforcer:3.1.0:enforce (enforce) @ vcell-api-types ---
+[INFO] 
+[INFO] --- enforcer:3.1.0:enforce (enforce-versions) @ vcell-api-types ---
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ vcell-api-types ---
+[INFO] skip non existing resourceDirectory /Users/novrusshehaj/Github/UCHC/vcell/vcell-api-types/src/main/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ vcell-api-types ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ vcell-api-types ---
+[INFO] skip non existing resourceDirectory /Users/novrusshehaj/Github/UCHC/vcell/vcell-api-types/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ vcell-api-types ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.1.2:test (default-test) @ vcell-api-types ---
+[INFO] No tests to run.
+[INFO] 
+[INFO] ---------------------< org.vcell:vcell-apiclient >----------------------
+[INFO] Building vcell-apiclient 0.0.1-SNAPSHOT                            [7/8]
+[INFO]   from vcell-apiclient/pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- enforcer:3.1.0:enforce (enforce) @ vcell-apiclient ---
+[INFO] 
+[INFO] --- enforcer:3.1.0:enforce (enforce-versions) @ vcell-apiclient ---
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ vcell-apiclient ---
+[INFO] skip non existing resourceDirectory /Users/novrusshehaj/Github/UCHC/vcell/vcell-apiclient/src/main/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ vcell-apiclient ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ vcell-apiclient ---
+[INFO] skip non existing resourceDirectory /Users/novrusshehaj/Github/UCHC/vcell/vcell-apiclient/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ vcell-apiclient ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.1.2:test (default-test) @ vcell-apiclient ---
+[INFO] 
+[INFO] -----------------------< org.vcell:vcell-client >-----------------------
+[INFO] Building vcell-client 0.0.1-SNAPSHOT                               [8/8]
+[INFO]   from vcell-client/pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- enforcer:3.1.0:enforce (enforce) @ vcell-client ---
+[INFO] 
+[INFO] --- enforcer:3.1.0:enforce (enforce-versions) @ vcell-client ---
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ vcell-client ---
+[INFO] Copying 637 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.11.0:compile (default-compile) @ vcell-client ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ vcell-client ---
+[INFO] Copying 251 resources from src/test/resources to target/test-classes
+[INFO] 
+[INFO] --- compiler:3.11.0:testCompile (default-testCompile) @ vcell-client ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- surefire:3.1.2:test (default-test) @ vcell-client ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running cbit.vcell.modelopt.gui.MultisourcePlotPaneAccessibilityTest
+2026-10-02T19:13:08.620755Z main WARN The use of package scanning to locate Log4j plugins is deprecated.
+Please remove the `packages` attribute from your configuration file.
+See https://logging.apache.org/log4j/2.x/faq.html#package-scanning for details.
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.529 s -- in cbit.vcell.modelopt.gui.MultisourcePlotPaneAccessibilityTest
+[INFO] Running cbit.plot.gui.PlotSeriesStyleTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.011 s -- in cbit.plot.gui.PlotSeriesStyleTest
+[INFO] Running cbit.plot.gui.PlotPaneAccessibilityTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.022 s -- in cbit.plot.gui.PlotPaneAccessibilityTest
+[INFO] Running cbit.plot.gui.Plot2DPanelAccessibilityTest
+[INFO] Tests run: 12, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.205 s -- in cbit.plot.gui.Plot2DPanelAccessibilityTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 20, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Summary:
+[INFO] 
+[INFO] Virtual Cell Project 0.0.1-SNAPSHOT ................ SUCCESS [  0.086 s]
+[INFO] vcell-util 0.0.1-SNAPSHOT .......................... SUCCESS [  0.472 s]
+[INFO] vcell-math 0.0.1-SNAPSHOT .......................... SUCCESS [  0.046 s]
+[INFO] vcell-core 0.0.1-SNAPSHOT .......................... SUCCESS [  6.584 s]
+[INFO] vcell-restclient 0.0.1-SNAPSHOT .................... SUCCESS [  0.114 s]
+[INFO] vcell-api-types 1.0.0 .............................. SUCCESS [  0.051 s]
+[INFO] vcell-apiclient 0.0.1-SNAPSHOT ..................... SUCCESS [  0.090 s]
+[INFO] vcell-client 0.0.1-SNAPSHOT ........................ SUCCESS [  1.721 s]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  9.603 s
+[INFO] Finished at: 2026-10-02T15:13:09-04:00
+[INFO] ------------------------------------------------------------------------
+V4_EXIT=0
+=== V2/V3 2026-10-02T19:13:09Z ===
+V2_EXIT=1 (1=PASS)
+V3_EXIT=1 (1=PASS)

@@ -4,7 +4,6 @@ import cbit.plot.gui.AbstractPlotPanel;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.vcell.util.ColorUtil;
 import org.vcell.util.gui.JToolBarToggleButton;
 import org.vcell.util.gui.VCellIcons;
 
@@ -22,35 +21,22 @@ public abstract class AbstractVisualizationPanel extends DocumentEditorSubPanel 
 
     private static final Logger lg = LogManager.getLogger(AbstractVisualizationPanel.class);
 
+    // Legend sample for one series. It paints the plot's own stroke for the series, so the
+    // sample follows "Vary line styles" exactly as the curve does.
     protected class LineIcon implements Icon {
         private final Color color;
         private final int seriesIndex;
-        private final AbstractPlotPanel plot;
-
-        public LineIcon(Color color) {
-            this(color, 0);
-        }
 
         public LineIcon(Color color, int seriesIndex) {
-            this(color, seriesIndex, null);
-        }
-
-        public LineIcon(Color color, int seriesIndex, AbstractPlotPanel plot) {
             this.color = color;
             this.seriesIndex = seriesIndex;
-            this.plot = plot;
         }
 
         @Override
         public void paintIcon(Component c, Graphics g, int x, int y) {
             Graphics2D g2 = (Graphics2D) g.create();
             try {
-                if (plot != null) {
-                    g2.setStroke(plot.strokeForSeriesIndex(seriesIndex));
-                } else {
-                    g2.setStroke(new BasicStroke(1.5f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND, 10f,
-                            ColorUtil.seriesDash(seriesIndex), 0f));
-                }
+                g2.setStroke(seriesPlot.strokeForSeriesIndex(seriesIndex));
                 g2.setPaint(color);
                 int midY = y + getIconHeight() / 2;
                 g2.drawLine(x + 1, midY, x + getIconWidth() - 1, midY);
@@ -94,6 +80,7 @@ public abstract class AbstractVisualizationPanel extends DocumentEditorSubPanel 
 
     protected JPanel cardPanel;
     protected JPanel plotPanelContainer;
+    private AbstractPlotPanel seriesPlot;   // the plot whose strokes the legend samples paint
     protected JPanel dataPanelContainer;
     protected JPanel legendPanel;
     protected JPanel legendContentPanel;
@@ -131,7 +118,7 @@ public abstract class AbstractVisualizationPanel extends DocumentEditorSubPanel 
     // Abstract hooks
     // -------------------------
     // Subclass must provide the plot panel (MoleculePlotPanel or ClusterPlotPanel)
-    protected abstract JPanel createPlotPanel();
+    protected abstract AbstractPlotPanel createPlotPanel();
     // Subclass must provide the data panel (MoleculeDataPanel or ClusterDataPanel)
     protected abstract JPanel createDataPanel();
 
@@ -155,7 +142,10 @@ public abstract class AbstractVisualizationPanel extends DocumentEditorSubPanel 
             plotPanelContainer = new JPanel();
             plotPanelContainer.setName("PlotPanelContainer");
             plotPanelContainer.setLayout(new BorderLayout());
-            plotPanelContainer.add(createPlotPanel(), BorderLayout.CENTER); // Subclass provides the actual plot panel
+            seriesPlot = createPlotPanel();     // Subclass provides the actual plot panel
+            // Legend samples read the plot's stroke when painted, so a style toggle only needs a repaint
+            seriesPlot.setVaryLineStylesCallback(() -> getLegendContentPanel().repaint());
+            plotPanelContainer.add(seriesPlot, BorderLayout.CENTER);
             plotPanelContainer.add(getTimeLabelBottom(), BorderLayout.SOUTH);   // Bottom label (e.g., "time")
         }
         return plotPanelContainer;

@@ -33,13 +33,19 @@ public class LangevinLegendAccessibilityTest {
 	@Test
 	public void legendIconBecomesSolidWhenStylesAreOff() {
 		Harness harness = new Harness();
-		Icon seriesOne = harness.new LineIcon(Color.BLACK, 1, harness.plot);
+		Icon seriesOne = harness.new LineIcon(Color.BLACK, 1);
 		assertTrue(longestGap(paint(seriesOne)) > 0);
+
+		int repaints = harness.legend.repaints;
 		harness.plot.setVaryLineStyles(false);
 		assertEquals(0, longestGap(paint(seriesOne)));
+		assertTrue(harness.legend.repaints > repaints, "legend repaints when styles turn off");
+
+		repaints = harness.legend.repaints;
 		harness.plot.setVaryLineStyles(true);
 		int gap = longestGap(paint(seriesOne));
 		assertTrue(gap > 0 && gap <= 12);
+		assertTrue(harness.legend.repaints > repaints, "legend repaints when styles turn on");
 	}
 
 	@Test
@@ -95,21 +101,37 @@ public class LangevinLegendAccessibilityTest {
 		return best;
 	}
 
+	// Goes through AbstractVisualizationPanel.initialize(), so the plot and legend are wired as in the product.
 	private static final class Harness extends AbstractVisualizationPanel {
 		final MoleculePlotPanel plot = new MoleculePlotPanel();
+		final RepaintCounter legend = new RepaintCounter();
 
 		Harness() {
 			initialize();
 		}
 
 		@Override
-		protected JPanel createPlotPanel() {
+		protected MoleculePlotPanel createPlotPanel() {
 			return plot;
 		}
 
 		@Override
 		protected JPanel createDataPanel() {
 			return new JPanel();
+		}
+
+		@Override
+		protected JPanel getLegendContentPanel() {
+			return legend;
+		}
+	}
+
+	private static final class RepaintCounter extends JPanel {
+		int repaints;
+
+		@Override
+		public void repaint(long tm, int x, int y, int width, int height) {
+			repaints++;
 		}
 	}
 }

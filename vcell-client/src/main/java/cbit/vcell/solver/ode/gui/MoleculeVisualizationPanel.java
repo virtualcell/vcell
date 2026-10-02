@@ -1,5 +1,6 @@
 package cbit.vcell.solver.ode.gui;
 
+import cbit.plot.gui.AbstractPlotPanel;
 import cbit.plot.gui.ClusterDataPanel;
 import cbit.plot.gui.ClusterPlotPanel;
 import cbit.plot.gui.MoleculeDataPanel;
@@ -100,7 +101,7 @@ public class MoleculeVisualizationPanel extends AbstractVisualizationPanel {
     }
 
     @Override
-    protected JPanel createPlotPanel() {
+    protected AbstractPlotPanel createPlotPanel() {
         return getMoleculePlotPanel();
     }
 
@@ -128,7 +129,6 @@ public class MoleculeVisualizationPanel extends AbstractVisualizationPanel {
                     }
                 });
                 moleculePlotPanel.setSeriesStatusCallback(this::showSeriesStatus);
-                moleculePlotPanel.setVaryLineStylesCallback(() -> getLegendContentPanel().repaint());
                 moleculePlotPanel.addComponentListener(new ComponentAdapter() {
                     @Override
                     public void componentShown(ComponentEvent e) {
@@ -345,7 +345,7 @@ public class MoleculeVisualizationPanel extends AbstractVisualizationPanel {
 
         String unitSymbol = "molecules";
         String tooltip = "<html><b>" + name + "</b><br>" + unitSymbol + "</html>";
-        JLabel line = new JLabel(new LineIcon(color, seriesIndex, getMoleculePlotPanel()));
+        JLabel line = new JLabel(new LineIcon(color, seriesIndex));
 
 //        JLabel text = new JLabel("<html>" + name + " <font color=\"#8B0000\">[" + unitSymbol + "]</font></html>");
         JLabel text = new JLabel("<html>" + name + " <font color=\"#8B0000\"></font></html>");

@@ -58,7 +58,7 @@ public final class PlotRenderers {
         public String getSeriesName() { return seriesName; }
 
         BasicStroke stroke() {
-            return PlotSeriesStyle.stroke(seriesIndex, parent.isVaryLineStyles());
+            return parent.strokeForSeriesIndex(seriesIndex);
         }
 
         @Override
@@ -118,8 +118,18 @@ public final class PlotRenderers {
                 if(!parent.getShowLines()) {
                     diameter += 2;
                 }
+                // Dense samples would merge the markers into a solid band that hides the dash.
+                // With lines on, keep 4 diameters between markers: at the 6 px minimum that leaves
+                // 18 px of line, more than the longest dash period (16 px). Without lines the
+                // markers are the data, so every sample keeps one.
+                int markerSpacing = parent.getShowLines() ? 4 * diameter : 0;
+                int nextMarkerX = Integer.MIN_VALUE;
                 for (int i = 0; i < n; i++) {
+                    if (xs[i] < nextMarkerX) {
+                        continue;
+                    }
                     PlotSeriesStyle.paintMarker(g2, seriesIndex, xs[i], ys[i], diameter);
+                    nextMarkerX = xs[i] + markerSpacing;
                 }
             }
         }
@@ -577,7 +587,7 @@ public final class PlotRenderers {
             g2.setColor(c);
             g2.fillOval(xCenter - dotR, yCenter - dotR, dot, dot);
             // contour
-            g2.setStroke(PlotSeriesStyle.stroke(seriesIndex, parent.isVaryLineStyles()));
+            g2.setStroke(parent.strokeForSeriesIndex(seriesIndex));
             g2.drawOval(cx, cy, d, d);
         }
 

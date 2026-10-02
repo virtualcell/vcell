@@ -154,6 +154,32 @@ public class PlotRenderersAccessibilityTest {
 	}
 
 	@Test
+	public void denseSeriesWithNodesKeepsDashGapsBetweenMarkers() throws Exception {
+		// Langevin output density: 201 samples (0.02 s at 1e-4 s) across ~400 px, with nodes on (the default).
+		BufferedImage dense = paint(olivePanel(201, 1e-4, true));
+		int lineRow = rowWithMost(dense, PlotRenderersAccessibilityTest::isOlive);
+		assertTrue(lineRow >= 0);
+		int gap = longestGapOnRow(dense, lineRow, PlotRenderersAccessibilityTest::isOlive);
+		assertTrue(gap > 0 && gap <= 12, "dash gaps between markers " + gap);
+		assertTrue(inkRuns(dense, firstRowWith(dense, PlotRenderersAccessibilityTest::isOlive) + 1,
+				PlotRenderersAccessibilityTest::isOlive) > 1, "markers are spaced, not removed");
+
+		// Without lines the markers are the data, so every sample keeps its marker.
+		BufferedImage nodesOnly = paint(olivePanel(201, 1e-4, false));
+		int markerRow = firstRowWith(nodesOnly, PlotRenderersAccessibilityTest::isOlive) + 1;
+		assertEquals(0, longestGapOnRow(nodesOnly, markerRow, PlotRenderersAccessibilityTest::isOlive));
+
+		// Sparse samples are already far enough apart to keep every marker.
+		BufferedImage sparseLines = paint(olivePanel(9, 1, true));
+		BufferedImage sparseNodes = paint(olivePanel(9, 1, false));
+		int sparseMarkers = inkRuns(sparseNodes, firstRowWith(sparseNodes, PlotRenderersAccessibilityTest::isOlive) + 1,
+				PlotRenderersAccessibilityTest::isOlive);
+		assertTrue(sparseMarkers > 1);
+		assertEquals(sparseMarkers, inkRuns(sparseLines, firstRowWith(sparseLines, PlotRenderersAccessibilityTest::isOlive) + 1,
+				PlotRenderersAccessibilityTest::isOlive));
+	}
+
+	@Test
 	public void dataViewNamesSeriesValues() {
 		DataView data = new DataView();
 		assertEquals("Series data", data.table().getAccessibleContext().getAccessibleName());
@@ -172,6 +198,23 @@ public class PlotRenderersAccessibilityTest {
 		}
 		panel.setGlobalMinMax(0, count + 1.0);
 		panel.setDt(1);
+		return panel;
+	}
+
+	private static MoleculePlotPanel olivePanel(int samples, double dt, boolean showLines) {
+		MoleculePlotPanel panel = new MoleculePlotPanel();
+		panel.setVaryLineStyles(true);
+		panel.setShowNodes(true);
+		panel.setShowLines(showLines);
+		double[] time = new double[samples];
+		double[] values = new double[samples];
+		for (int i = 0; i < samples; i++) {
+			time[i] = i * dt;
+			values[i] = 1;
+		}
+		panel.addAvgRenderer(time, values, ColorUtil.seriesColor(1), "s1", "AVG", 1);
+		panel.setGlobalMinMax(0, 2);
+		panel.setDt(dt);
 		return panel;
 	}
 
@@ -285,6 +328,30 @@ public class PlotRenderersAccessibilityTest {
 			}
 		}
 		return longest;
+	}
+
+	private static int firstRowWith(BufferedImage image, PixelTest ink) {
+		for (int y = 20; y < image.getHeight() - 30; y++) {
+			for (int x = 60; x < image.getWidth() - 30; x++) {
+				if (ink.matches(image.getRGB(x, y))) {
+					return y;
+				}
+			}
+		}
+		return -1;
+	}
+
+	private static int inkRuns(BufferedImage image, int y, PixelTest ink) {
+		int runs = 0;
+		boolean inRun = false;
+		for (int x = 60; x < image.getWidth() - 30; x++) {
+			boolean inked = ink.matches(image.getRGB(x, y));
+			if (inked && !inRun) {
+				runs++;
+			}
+			inRun = inked;
+		}
+		return runs;
 	}
 
 	private static boolean isOlive(int rgb) {

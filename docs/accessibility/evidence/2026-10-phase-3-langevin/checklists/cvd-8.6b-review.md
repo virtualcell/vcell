@@ -4,6 +4,10 @@ Plan reference: `.agents/uconn-color-blind-accessibility-verified.md` §8 8.6-b 
 method per the plan's notes: Machado 2009 **severity 1.0 (dichromacy)** for protan/deutan/tritan
 and WCAG-luminance grayscale, produced by `.agents/cvd_analysis.py image`.
 
+> **Hold:** S1, S2, S3, S3a, S4, S6, S6b and S10a (and their filtered images) predate the 2026-10-02
+> marker-spacing and legend corrections and are stale. Wait for the recapture listed in
+> `../manifest.md` before reviewing them; S1 as captured fails because markers hide the dash.
+
 **PASS condition (the plan's words, in intent):** *"a reviewer can match each legend entry to
 its curve by style, … without hue."* **Failure = any mapping that requires hue.** Any failure is
 a Phase 3 regression → fix code, re-run V1, re-capture, re-filter.

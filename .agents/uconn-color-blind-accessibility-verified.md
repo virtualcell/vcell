@@ -624,15 +624,39 @@ see the evidence manifest) and remains a reviewer item (C6). Windows/Linux captu
 produced (this session ran on macOS only). This phase does not close #1605 or the §9 / §16
 gate, and **Phase 3 done ≠ #1605 closed ≠ §9/§16 gate passed**.
 
-On 2026-10-02 the legend icon was corrected so it uses the same stroke as the curve.
-`LineIcon` now calls `AbstractPlotPanel.strokeForSeriesIndex`. With "Vary line styles" off,
-series 1's icon is solid; turning the option back on restores the dash, and the legend
-repaints. `LangevinLegendAccessibilityTest.legendIconBecomesSolidWhenStylesAreOff` passed
-(legend tests 3, renderer tests 7, identity tests 2; 0 failures). This correction is in the
-working tree and is not part of `fc8ebd3aea`. The S4 screenshot still shows dashed legend
-samples from before the correction and was not recaptured. Single-color bubbles still have
-no product checkbox. Multi-job SD envelopes, the S2 focus ring, Windows/Linux captures,
-manual 8.7, and 8.6-b T1–T6 remain human or environment work.
+**Corrections after the capture session (2026-10-02).** The first legend correction is committed
+in `9897dc37bf`. The shared legend wiring, the marker spacing, and their tests are in the working
+tree on top of it (not committed). None of this is part of `fc8ebd3aea`.
+
+- **The legend follows "Vary line styles".** `LineIcon` paints
+  `AbstractPlotPanel.strokeForSeriesIndex`, the same method `AvgRenderer` and the empty-bubble
+  outline use. `AbstractVisualizationPanel` keeps the plot it creates and registers the legend
+  repaint on that plot, so both Langevin panels share one wiring.
+  `LangevinLegendAccessibilityTest.legendIconBecomesSolidWhenStylesAreOff` builds the legend
+  through that base class: series 1's icon is solid with styles off and dashed with styles on,
+  and the legend repaints on each change. With the registration removed, the test fails.
+- **Dense markers no longer hide the dash.** Nodes are on by default and the minimum marker is
+  6 px. At Langevin output density (201 samples across about 400 px), a marker at every sample
+  merged into a solid band: on S1 the horizontal runs of the dotted and dash-dot series measured
+  0 px gaps. With lines on, `AvgRenderer` now leaves at least four marker diameters (24 px at
+  the minimum) between markers, which shows more than one period of the longest dash (16 px).
+  With lines off, the markers are the data and every sample keeps one. Samples, crosshair
+  snapping, and the data view are unchanged; only marker density changes. In a six-series plot
+  the pairs that share a dash (indices 2 and 5, 3 and 6) are told apart by marker shape.
+  `PlotRenderersAccessibilityTest.denseSeriesWithNodesKeepsDashGapsBetweenMarkers` failed before
+  the change (0 px gap) and passes after it.
+- **Tests:** renderer 8, legend 3, identity 2; 0 failures. The Phase 1–2 set (V4) is unchanged:
+  28 run, 0 failures, 1 expected skip.
+- **Line-plot evidence is stale.** S1, S2, S3, S3a, S4, S6, S6b, and S10a predate both corrections.
+  They and their filtered images must be recaptured from the commit that contains them. S1 as
+  captured fails the style-identity condition (see the evidence manifest). S4a, S5, S7, S8, S8b,
+  S9, and S10b are unaffected: with styles on, the legend stroke is unchanged, and the bubble and
+  table views draw no markers.
+- **Still open, not human work:** that recapture; S6 with ACO and SD plotted; a multi-series
+  bubble fixture; the Quick Run post-processing helper (`langevin_postprocess_watch.sh`) and its
+  log in the evidence set; push and PR. Single-color bubbles still have no product checkbox.
+- **Human or environment work:** multi-job SD envelopes, the S2 focus ring, Windows/Linux
+  captures, manual 8.7, and 8.6-b T1–T6.
 
 **3.1** `vcell-client/src/main/java/cbit/vcell/solver/ode/gui/MoleculeVisualizationPanel.java`
 (`:423`) and `ClusterVisualizationPanel.java` (`:206`)
@@ -653,10 +677,11 @@ and `AbstractVisualizationPanel.LineIcon` (`:21`) (MUST)
 - **§15 C also applies here:** the same repeated-pattern, styles-off, and custom-color identity
   rules as Phase 2. Test 8.3-e checks that two strokes differ; it does not close §15 C.
 - **Verify:** test 8.3-e, then the §15 C series-count and styles-off checks.
-- **Result:** `AvgRenderer` draws one `Path2D` with `PlotSeriesStyle.stroke(seriesIndex, varyLineStyles)`.
-  The legend icon is 80×12. It paints `strokeForSeriesIndex`, so a styles-on series uses
-  `seriesDash` and a styles-off series is the solid `BasicStroke(1.5f)` the curve uses.
-  Ctrl+N / Ctrl+P name
+- **Result:** `AvgRenderer` draws one `Path2D` with `strokeForSeriesIndex(seriesIndex)`, which is
+  `PlotSeriesStyle.stroke(seriesIndex, varyLineStyles)`. With lines on, its markers are at least
+  four diameters apart; with lines off, every sample has one. The legend icon is 80×12. It paints
+  `strokeForSeriesIndex`, so a styles-on series uses `seriesDash` and a styles-off series is the
+  solid `BasicStroke(1.5f)` the curve uses. Ctrl+N / Ctrl+P name
   the series and Ctrl+I isolates it while that plot has focus, so the molecule and cluster plots
   in one window do not both move. Legend labels accept Enter and Space. The data table accessible
   name is "Series data". Hover dimming remains, and keyboard selection is a separate cue.
@@ -670,7 +695,9 @@ and `AbstractVisualizationPanel.LineIcon` (`:21`) (MUST)
   `rg -n -e "ColorUtil.TABLEAU20" -e "ColorUtil.DARK20" --glob "*VisualizationPanel.java"` under
   `vcell-client/src/main/java` returned no matches.
   Command, Java 17, headless, 2026-10-01: `mvn --batch-mode test -pl vcell-client -am -Dgroups=Fast -Djava.awt.headless=true -Dtest=PlotRenderersAccessibilityTest,LangevinSeriesIdentityTest,LangevinLegendAccessibilityTest -Dsurefire.failIfNoSpecifiedTests=false`.
-  11 tests, 0 failures.
+  11 tests, 0 failures. Same command after the 2026-10-02 corrections above: 13 tests (renderer
+  8, legend 3, identity 2), 0 failures. `denseSeriesWithNodesKeepsDashGapsBetweenMarkers` covers
+  201 samples with nodes on, nodes-only mode, and sparse samples.
 
 ### Phase 4 — Model viewer (MUST, #1605)
 

@@ -5,6 +5,10 @@ Plan reference: `.agents/uconn-color-blind-accessibility-verified.md` §8 8.7-a,
 CVD, otherwise using Sim Daltonism / Color Oracle) run this checklist on macOS, Windows and
 Linux. **PASS = all items "yes" with screenshots attached; any "no" fails.**
 
+> **Hold:** S1, S2, S3, S3a, S4, S6, S6b and S10a (and their filtered images) predate the 2026-10-02
+> marker-spacing and legend corrections and are stale. Wait for the recapture listed in
+> `../manifest.md` before reviewing them; S1 as captured fails because markers hide the dash.
+
 Evidence session context: `../manifest.md` (fixture, SimID, SHA `fc8ebd3aea`, capture inventory
 S1–S10). Reviewers use the keyboard for all C-items.
 
