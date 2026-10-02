@@ -31,6 +31,18 @@ public class LangevinLegendAccessibilityTest {
 	}
 
 	@Test
+	public void legendIconBecomesSolidWhenStylesAreOff() {
+		Harness harness = new Harness();
+		Icon seriesOne = harness.new LineIcon(Color.BLACK, 1, harness.plot);
+		assertTrue(longestGap(paint(seriesOne)) > 0);
+		harness.plot.setVaryLineStyles(false);
+		assertEquals(0, longestGap(paint(seriesOne)));
+		harness.plot.setVaryLineStyles(true);
+		int gap = longestGap(paint(seriesOne));
+		assertTrue(gap > 0 && gap <= 12);
+	}
+
+	@Test
 	public void legendKeyboardSelectsSeriesByName() {
 		Harness harness = new Harness();
 		double[] time = {0, 1, 2, 3, 4};

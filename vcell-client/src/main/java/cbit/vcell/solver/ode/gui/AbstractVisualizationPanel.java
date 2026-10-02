@@ -1,5 +1,6 @@
 package cbit.vcell.solver.ode.gui;
 
+import cbit.plot.gui.AbstractPlotPanel;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -24,22 +25,32 @@ public abstract class AbstractVisualizationPanel extends DocumentEditorSubPanel 
     protected class LineIcon implements Icon {
         private final Color color;
         private final int seriesIndex;
+        private final AbstractPlotPanel plot;
 
         public LineIcon(Color color) {
             this(color, 0);
         }
 
         public LineIcon(Color color, int seriesIndex) {
+            this(color, seriesIndex, null);
+        }
+
+        public LineIcon(Color color, int seriesIndex, AbstractPlotPanel plot) {
             this.color = color;
             this.seriesIndex = seriesIndex;
+            this.plot = plot;
         }
 
         @Override
         public void paintIcon(Component c, Graphics g, int x, int y) {
             Graphics2D g2 = (Graphics2D) g.create();
             try {
-                g2.setStroke(new BasicStroke(1.5f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND, 10f,
-                        ColorUtil.seriesDash(seriesIndex), 0f));
+                if (plot != null) {
+                    g2.setStroke(plot.strokeForSeriesIndex(seriesIndex));
+                } else {
+                    g2.setStroke(new BasicStroke(1.5f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND, 10f,
+                            ColorUtil.seriesDash(seriesIndex), 0f));
+                }
                 g2.setPaint(color);
                 int midY = y + getIconHeight() / 2;
                 g2.drawLine(x + 1, midY, x + getIconWidth() - 1, midY);

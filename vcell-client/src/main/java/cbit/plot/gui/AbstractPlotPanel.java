@@ -95,6 +95,7 @@ public abstract class AbstractPlotPanel extends JPanel {
     private String selectedSeriesName = null;
     private boolean isolateSelectedSeries = false;
     private boolean varyLineStyles = true;
+    private Runnable varyLineStylesCallback;
     private Consumer<String> seriesStatusCallback;
 
     public AbstractPlotPanel() {
@@ -316,6 +317,15 @@ public abstract class AbstractPlotPanel extends JPanel {
     public void setVaryLineStyles(boolean b) {
         this.varyLineStyles = b;
         repaint();
+        if (varyLineStylesCallback != null) {
+            varyLineStylesCallback.run();
+        }
+    }
+    public void setVaryLineStylesCallback(Runnable callback) {
+        this.varyLineStylesCallback = callback;
+    }
+    public BasicStroke strokeForSeriesIndex(int seriesIndex) {
+        return PlotSeriesStyle.stroke(seriesIndex, varyLineStyles);
     }
     public void setShowNodes(boolean b) {
         this.options.showNodes = b;

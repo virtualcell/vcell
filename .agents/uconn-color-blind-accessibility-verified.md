@@ -624,6 +624,16 @@ see the evidence manifest) and remains a reviewer item (C6). Windows/Linux captu
 produced (this session ran on macOS only). This phase does not close #1605 or the §9 / §16
 gate, and **Phase 3 done ≠ #1605 closed ≠ §9/§16 gate passed**.
 
+On 2026-10-02 the legend icon was corrected so it uses the same stroke as the curve.
+`LineIcon` now calls `AbstractPlotPanel.strokeForSeriesIndex`. With "Vary line styles" off,
+series 1's icon is solid; turning the option back on restores the dash, and the legend
+repaints. `LangevinLegendAccessibilityTest.legendIconBecomesSolidWhenStylesAreOff` passed
+(legend tests 3, renderer tests 7, identity tests 2; 0 failures). This correction is in the
+working tree and is not part of `fc8ebd3aea`. The S4 screenshot still shows dashed legend
+samples from before the correction and was not recaptured. Single-color bubbles still have
+no product checkbox. Multi-job SD envelopes, the S2 focus ring, Windows/Linux captures,
+manual 8.7, and 8.6-b T1–T6 remain human or environment work.
+
 **3.1** `vcell-client/src/main/java/cbit/vcell/solver/ode/gui/MoleculeVisualizationPanel.java`
 (`:423`) and `ClusterVisualizationPanel.java` (`:206`)
 - **Change:** `globalPalette` ← `ColorUtil.CVD_SAFE_LIGHT`; pass the stable full series index to
@@ -644,7 +654,9 @@ and `AbstractVisualizationPanel.LineIcon` (`:21`) (MUST)
   rules as Phase 2. Test 8.3-e checks that two strokes differ; it does not close §15 C.
 - **Verify:** test 8.3-e, then the §15 C series-count and styles-off checks.
 - **Result:** `AvgRenderer` draws one `Path2D` with `PlotSeriesStyle.stroke(seriesIndex, varyLineStyles)`.
-  The legend icon is 80×12 and strokes `ColorUtil.seriesDash(seriesIndex)`. Ctrl+N / Ctrl+P name
+  The legend icon is 80×12. It paints `strokeForSeriesIndex`, so a styles-on series uses
+  `seriesDash` and a styles-off series is the solid `BasicStroke(1.5f)` the curve uses.
+  Ctrl+N / Ctrl+P name
   the series and Ctrl+I isolates it while that plot has focus, so the molecule and cluster plots
   in one window do not both move. Legend labels accept Enter and Space. The data table accessible
   name is "Series data". Hover dimming remains, and keyboard selection is a separate cue.
