@@ -16,6 +16,29 @@ followed by flat Keep-a-Changelog categories. API consumers should scan
 
 _(Release-manager scratchpad. Populated at release-cut time.)_
 
+## [8.2.0.11] - 2026-10-02
+
+**Highlights.** Moving Boundary simulations can now be run locally from the desktop (the blue quick-run
+button), and their results open in the field viewer ("View in 3D") — for local runs and, with this
+release's data server, for server runs, which until now failed with an HTTP 500. Moving Boundary time
+series and kymographs in the field viewer are much faster and no longer fail with "busy".
+
+### Added
+- Moving Boundary simulations run locally. The solver was marked server-only in 2018; the desktop has
+  shipped `MovingBoundary_x64` from `virtualcell/vcell-mbsolver` for macOS, Linux and Windows since
+  8.2.0.08. (#2155)
+
+### Fixed
+- The field viewer shows Moving Boundary results. Their mesh files are now written in Java on the desktop
+  and the data server alike; the Python VTK service they needed was not configured on the data server,
+  and does not ship with the desktop. A local run's data is found without server-only properties. (#2155)
+- Moving Boundary results no longer decode the whole result file to read the mesh dimensions on every
+  request: about 1.1 s → 23 ms per saved time, so a probe time series over 386 times takes 9 s instead of
+  8 minutes. (#2155)
+- The field viewer no longer answers "busy" when a probe time series and a kymograph are requested
+  together: one extra heavy request waits up to 30 s for the running one, and the viewer retries a busy
+  probe series once. (#2155)
+
 ## [8.2.0.10] - 2026-10-01
 
 **Highlights.** Saving a model from Windows no longer corrupts non-ASCII text. The Windows client decoded
