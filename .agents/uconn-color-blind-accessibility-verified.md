@@ -420,6 +420,16 @@ Colors referenced below were measured with `.agents/cvd_analysis.py`.
 
 ### Phase 1 — Shared palette and style primitives (MUST, #1603 and #1605)
 
+**Completed sections (2026-09-30).** Tasks 1.1 and 1.2 are complete. The primitives are what
+Phase 2 and Phase 3 call. Committed on `chore/vcell#1605` in `4f0d5efc20` (not pushed; no PR
+yet). The dark-background test stays disabled until #1604. Copying the palette into the
+field viewer remains Phase 6.
+
+| Section | Completed work | Still open |
+|---|---|---|
+| **1.1** `ColorUtil` | `CVD_SAFE_LIGHT`, `seriesColor`, and the 8-slot `seriesDash`. `generateAutoColor`, `TABLEAU20`, `DARK20`, and the `COLORBLIND20` entries are unchanged. Javadoc on `COLORBLIND20` says it failed CVD validation. | Committed in `4f0d5efc20`, not pushed. Field-viewer JavaScript mirror is Phase 6. |
+| **1.2** `ColorAccessibilityTest` | Fast test: contrast on white, Machado protan/deutan/tritan ΔE76, 24 unique pairs, and the `TABLEAU20` entries `0..7` failing that check. 8 run, 0 failures, 1 skipped. | `cvdSafeDarkPaletteMeetsContrastOnDarkBackground` stays `@Disabled` until #1604. |
+
 **1.1** `vcell-util/src/main/java/org/vcell/util/ColorUtil.java` — ✅ done (2026-09-30)
 - **Change:**
   - Add `public static final Color[] CVD_SAFE_LIGHT` (above).
@@ -450,8 +460,9 @@ Colors referenced below were measured with `.agents/cvd_analysis.py`.
     `mvn test -pl vcell-util -Dgroups=Fast -Dtest=ColorAccessibilityTest` — 8 run, 0 failures,
     1 skipped (the #1604 dark-palette hook). The module Fast group also passed (50 run, 0
     failures, that same test skipped), so the new class is picked up by `@Tag("Fast")`.
-  - Not committed. Plot wiring, the Langevin panels, and the field-viewer mirror are still
-    later phases.
+  - Committed on `chore/vcell#1605` in `4f0d5efc20` (not pushed; no PR yet). Legacy plot
+    wiring is Phase 2 and Langevin wiring is Phase 3; both now call these primitives. The
+    field-viewer JavaScript mirror remains Phase 6.
 
 **1.2** `vcell-util/src/test/java/org/vcell/util/ColorAccessibilityTest.java` (new, `@Tag("Fast")`) — ✅ done (2026-09-30)
 - **Change:** implement WCAG luminance/contrast, the Machado 2009 severity-1.0 matrices (protan,
@@ -473,18 +484,28 @@ Colors referenced below were measured with `.agents/cvd_analysis.py`.
     dark-background constant.
   - `mvn --batch-mode test -pl vcell-util -Dgroups=Fast` on 2026-09-30: 50 run, 0 failures, 1
     skipped. `ColorAccessibilityTest` itself: 8 run, 0 failures, 1 skipped.
-  - Not committed. The #1603 dark-background definition-of-done checkbox stays open: it also
-    requires the field viewer's dark-scheme text colors (Phase 6).
+  - Committed on `chore/vcell#1605` in `4f0d5efc20` (not pushed; no PR yet). The #1603
+    dark-background definition-of-done checkbox stays open: it also requires the field
+    viewer's dark-scheme text colors (Phase 6).
 
 ### Phase 2 — Legacy plot framework (MUST, #1605)
 
-Automated wiring is in the working tree. On 2026-10-01 the remaining Phase 2 engineering
-gaps were closed: keyboard series isolation, the six-curve style/node/step/size matrix, the
-scientific-mapping check for 8.8-c, and the legacy-plot grayscale half of 8.6-b. Manual 8.7
-(two reviewers on macOS, Windows, and Linux) is still not run. 8.6-b's reaction-diagram,
-geometry, spatial, and field-viewer scenes remain later phases. A pixel compare against a
-pinned pre-change commit is not a pass: path joins, markers, and histogram outlines differ
-on purpose. Nothing here is committed.
+**Completed sections (automated checks 2026-10-01).** Tasks 2.1 through 2.5 are complete for
+the legacy plot framework. Manual 8.7 (two reviewers on macOS, Windows, and Linux) is not run.
+8.6-b for this phase is the legacy-plot grayscale check only; reaction-diagram, geometry,
+spatial, and field-viewer scenes remain later phases. Machado protan/deutan/tritan image filters
+were not applied. A pixel compare against a pinned pre-change commit is not a pass: path joins,
+markers, and histogram outlines differ on purpose. Committed on `chore/vcell#1605` — primitives
+and tasks 2.1–2.5 in `4f0d5efc20`, keyboard-isolation additions in `fc8ebd3aea` (not pushed; no
+PR yet).
+
+| Section | Completed work | Still open |
+|---|---|---|
+| **2.1** `Plot2DPanel` | Auto color uses `seriesColor`. One `Path2D` per curve. Markers cycle five shapes at 6 px. Histogram bars use the series stroke. Styles off keeps keyboard naming and Ctrl+I isolation, including after the 8-slot dash cycle repeats. | Manual 8.7. |
+| **2.2** `PlotPane` legend | `LineIcon` is at least 50×12 and draws the series stroke and marker. Click, Enter, and Space select the series. Accessible name is the raw plot name. Test 8.3-c passed. | Manual 8.7. |
+| **2.3** Vary line styles | Checkbox `Vary line styles`, default on, saved on the `Plot2DSettings` bean. | None inside this task. Styles off still depends on the 2.1 keyboard identity. |
+| **2.4** Pointer and keyboard status | Status text starts with the series name. Ctrl+N and Ctrl+P name the series with no pointer event. Test 8.3-d passed. | Manual 8.7. |
+| **2.5** `MultisourcePlotPane` | Auto colors are `seriesColor`. List icons use the same stroke. `generateAutoColor` is gone from this class and from `Plot2DPanel` (check 8.4-b). | Manual 8.7. |
 
 **Dash contract (C1), decided 2026-09-30.** `ColorUtil.seriesDash` is an 8-slot cycle,
 `i % 8`: solid, `{6,3}`, `{2,2}`, `{8,3,2,3}`, `{6,3}`, `{2,2}`, `{8,3,2,3}`, solid. Series 0
@@ -514,7 +535,8 @@ run and would not be limited to color. That difference is intentional.
 - **Styles off:** a solid stroke is allowed so a scientist can inspect undashed curves. With
   styles off, Ctrl+N and Ctrl+P still name the current series in the status label, and Ctrl+I
   isolates that series (a second Ctrl+I shows every visible series). Legend labels accept
-  Enter and Space. Repeated patterns beyond 24 series remain a §15 C item.
+  Enter and Space. On this legacy plot, a repeated dash after 24 series is identified by that
+  same keyboard selection and isolation. W1 still needs the same rule.
 - **Rationale:** 1.4.1 sufficient technique G111 (color **and** pattern), completed for repeated
   and suppressed styles only by §15 C.
 - **Risk:**
@@ -585,9 +607,22 @@ Gate 8.1 on 2026-10-01, `mvn --batch-mode test -Dgroups=Fast -pl vcell-util,vcel
 
 ### Phase 3 — Langevin plot framework (MUST for palette, styles, and accessible interaction)
 
-Automated checks for 3.1 and 3.2 passed on 2026-10-01. Manual 8.7 was not run. Machado
-protan/deutan/tritan image filters were not applied to Langevin screenshots. Nothing here is
-committed. This phase does not close #1605 or the §9 / §16 gate.
+Automated checks for 3.1 and 3.2 passed on 2026-10-01, re-run green on 2026-10-02 (V1: 11
+tests, 0 failures; 8.4-a and the extended residue scan: no matches). Committed on
+`chore/vcell#1605` in `fc8ebd3aea` together with the Phase 2 keyboard-isolation work (not
+pushed; no PR yet). Evidence for the Langevin surfaces was produced on 2026-10-02 under
+`docs/accessibility/evidence/2026-10-phase-3-langevin/`: capture set S1–S10 from a local
+Langevin Quick Run of the `biomodel_315318780.vcml` fixture (`SimID_122317207_0`; `allosteric`
+and `transition_free` rules disabled to work around an NPE in the bundled local solver; 1-job
+batch, so SD/min-max envelopes are degenerate — recorded), Machado protan/deutan/tritan and
+grayscale filters applied to all captures via the new `.agents/cvd_analysis.py image` mode
+(self-checked; 60 filtered images). **Manual 8.7 (two reviewers on macOS, Windows, Linux) and
+the 8.6-b human identification task (T1–T6 on the filtered images) are PENDING HUMAN REVIEW**
+with prepared checklists in the evidence directory; the S2 legend focus-ring capture is BLOCKED
+in the automated session (the raw-`java` client instance never receives AWT window activation;
+see the evidence manifest) and remains a reviewer item (C6). Windows/Linux captures were not
+produced (this session ran on macOS only). This phase does not close #1605 or the §9 / §16
+gate, and **Phase 3 done ≠ #1605 closed ≠ §9/§16 gate passed**.
 
 **3.1** `vcell-client/src/main/java/cbit/vcell/solver/ode/gui/MoleculeVisualizationPanel.java`
 (`:423`) and `ClusterVisualizationPanel.java` (`:206`)
