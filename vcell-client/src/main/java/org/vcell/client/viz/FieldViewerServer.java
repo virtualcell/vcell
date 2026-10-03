@@ -848,7 +848,8 @@ public final class FieldViewerServer {
 		}
 		StringBuilder sb = new StringBuilder(32 * grid.numPoints() + 32 * grid.cells.length + 512);
 		sb.append("{\"geometryId\":\"").append(jsonEscape(vtuGeometryId(source, domain, mode, timeIndex))).append('"');
-		sb.append(",\"dimension\":").append(threeD ? 3 : 2).append(",\"bodyFitted\":true");
+		// the embedding dimension, not the cell dimension: a membrane of a 3D run is a surface in 3D
+		sb.append(",\"dimension\":").append(threeD || spansZ(grid) ? 3 : 2).append(",\"bodyFitted\":true");
 		sb.append(",\"timeIndex\":").append(timeIndex);
 		sb.append(",\"numPoints\":").append(grid.numPoints());
 		sb.append(",\"points\":");
@@ -969,7 +970,8 @@ public final class FieldViewerServer {
 	 * <p>
 	 * {@code &points=x,y,z;…} asks for several points in the same single pass over the times (the
 	 * multi-point response, {@link PointSeries#json}): each time's values cross the remote seam once,
-	 * however many points read them.
+	 * however many points read them. {@code &snap=nearest} moves a point that misses a membrane variable's mesh
+	 * (a Chombo membrane: lines in 2D, a triangulated surface in 3D) onto it, within one cell diameter.
 	 */
 	private static String handleTimeSeriesVtu(DataSource source, Map<String, String> q,
 			VtuMode mode) throws Exception {
@@ -992,6 +994,9 @@ public final class FieldViewerServer {
 		if (times == null || times.length == 0) {
 			throw new IllegalArgumentException("run " + source.vcdID.getID() + " has no saved times");
 		}
+		// a click almost never lands exactly on a membrane (Chombo's lines or surface triangles): it snaps onto it
+		boolean snap = "nearest".equals(q.get("snap"))
+				&& varInfo.variableDomain == cbit.vcell.math.VariableType.VariableDomain.VARIABLEDOMAIN_MEMBRANE;
 		final String dom = domain;
 		PointSeries.Rows rows = new PointSeries.Rows() {
 			@Override
@@ -1007,15 +1012,16 @@ public final class FieldViewerServer {
 		};
 		if (pointsParam != null) {
 			VtuGridParser.VtuGrid first = rows.grid(0);
-			double[][] points = PointSeries.parsePoints(pointsParam, isVolume3D(first) ? null : first.points[2]);
-			PointSeries.Result r = PointSeries.sample(times.length, points, rows, PointSeries.Location.CELL, false);
+			// a 2D point may leave out z: it takes the plane of a 2D mesh (a 3D run's membrane surface has none)
+			double[][] points = PointSeries.parsePoints(pointsParam, isVolume3D(first) || spansZ(first) ? null : first.points[2]);
+			PointSeries.Result r = PointSeries.sample(times.length, points, rows, PointSeries.Location.CELL, snap);
 			return PointSeries.json(varName, domain, times, PointSeries.Location.CELL, PointSeries.series(points, r));
 		}
 		double x = Double.parseDouble(q.get("x"));
 		double y = Double.parseDouble(q.get("y"));
 		double z = q.get("z") != null ? Double.parseDouble(q.get("z")) : 0;
 		PointSeries.Result r = PointSeries.sample(times.length, new double[][] { { x, y, z } }, rows,
-				PointSeries.Location.CELL, false);
+				PointSeries.Location.CELL, snap);
 		double[] values = r.values[0];
 
 		StringBuilder sb = new StringBuilder(32 * times.length + 256);
@@ -1029,6 +1035,19 @@ public final class FieldViewerServer {
 		appendDoubles(sb, values, values.length);
 		sb.append('}');
 		return sb.toString();
+	}
+
+	/**
+	 * True when the grid's points do not all share one z: a mesh embedded in 3D, such as the membrane surface of a
+	 * 3D Chombo run (triangles only, so not {@link #isVolume3D}). A 2D run's grid lies in one plane.
+	 */
+	private static boolean spansZ(VtuGridParser.VtuGrid grid) {
+		for (int i = 5; i < grid.points.length; i += 3) {
+			if (grid.points[i] != grid.points[2]) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
