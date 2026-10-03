@@ -31,6 +31,7 @@ import cbit.vcell.biomodel.BioModelMetaData;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.clientdb.ServerRejectedSaveException;
 import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.geometry.SurfaceClass;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.mapping.MappingException;
@@ -142,6 +143,38 @@ public class ServerDocumentManager {
         Simulation[] simulations = bioModel.getSimulations();
         for(int i = 0; simulations != null && i < simulations.length; i++){
             forceDirtyIfForeign(user, simulations[i]);
+        }
+    }
+
+    /**
+     * Reject a NEW oversized or unsegmented geometry image at the point of submission.
+     *
+     * Deliberately keyed on {@code image.getKey() == null}: an image that has never been
+     * persisted is new content and must satisfy the limits, while anything already in the
+     * database is grandfathered and keeps working however large it is. That split is what makes
+     * the limits safe to set at a value the api can actually serve -- see #2021, where a stored
+     * 61,920,000 pixel geometry needed ~1.4 GB to parse against a 1000 MB heap. Vetoing on the
+     * LOAD path instead would have made that model, and others like it, impossible to open.
+     *
+     * Region count comes from the RegionImage the geometry already computed while being parsed,
+     * so this costs nothing; when it is absent the region check is skipped rather than guessed.
+     */
+    private void validateNewGeometryImage(Geometry geometry) throws DataAccessException{
+        if(geometry == null || geometry.getGeometrySpec() == null){
+            return;
+        }
+        VCImage image = geometry.getGeometrySpec().getImage();
+        if(image == null || image.getKey() != null){
+            return;     // no image, or already in the database: grandfathered
+        }
+        int numRegions = -1;
+        GeometrySurfaceDescription gsd = geometry.getGeometrySurfaceDescription();
+        if(gsd != null && gsd.getRegionImage() != null){
+            numRegions = gsd.getRegionImage().getNumRegions();
+        }
+        String reason = GeometrySpec.checkNewImageAcceptable(image, numRegions);
+        if(reason != null){
+            throw new DataAccessException("cannot save geometry '" + geometry.getName() + "': " + reason);
         }
     }
 
@@ -692,6 +725,11 @@ public class ServerDocumentManager {
         // this invokes "update" on the database layer
         //
         BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(bioModelXML));
+
+        for(SimulationContext simulationContext : bioModel.getSimulationContexts()){
+            validateNewGeometryImage(simulationContext.getGeometry());
+        }
+
         if(lg.isInfoEnabled()){
             KeyValue key = (bioModel.getVersion() != null) ? bioModel.getVersion().getVersionKey() : null;
             List<BioModel.VersionableInfo> versionableInfos = bioModel.gatherChildVersionableInfos();
@@ -1548,6 +1586,8 @@ public class ServerDocumentManager {
 
         Geometry geometry = XmlHelper.XMLToGeometry(new XMLSource(geometryXML));
 
+        validateNewGeometryImage(geometry);
+
         forceDeepDirtyIfForeign(user, geometry);
 
         //
@@ -1627,6 +1667,10 @@ public class ServerDocumentManager {
         // this invokes "update" on the database layer
         //
         MathModel mathModel = XmlHelper.XMLToMathModel(new XMLSource(mathModelXML));
+
+        if(mathModel.getMathDescription() != null){
+            validateNewGeometryImage(mathModel.getMathDescription().getGeometry());
+        }
 
         forceDeepDirtyIfForeign(user, mathModel);
         boolean isSaveAsNew = true;
