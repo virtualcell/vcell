@@ -20,11 +20,18 @@ records what is needed to read its output today and to resurrect the solver late
 > 2. **`VtkServicePython` passed the output directory where the .vtu path belongs** (since July
 >    2023) — server-side Chombo/FV/comsol VTU generation was silently broken. Fixed in PR #1893.
 > 3. **`Hdf5PostProcessor` rejects statistic name `mean`** — written by *today's* solver, not just
->    legacy archives — and aborts all data access for the run (issue #1894).
+>    legacy archives — and aborts all data access for the run (issue #1894). Fixed 2026-10:
+>    `mean` is read as the average.
 > 4. **Chombo .vtu files are in doubled-index coordinates**, not microns: `ChomboMeshMapping`
 >    maps vertices to `(p-origin)*N/extent*2 - 1` (exact integers, a VisIt-era convention).
 >    Consumers must invert this (`p = origin + (v+1)*extent/(2N)`); the field viewer does so in
 >    `FieldViewerServer.chomboToPhysical`.
+
+> **2026-10-03 update — a solver bundle ships, and the field viewer is pure Java.** The build now
+> fetches a `vcell-chombo` bundle into `localsolvers/{mac64,linux64}/vcell-chombo/`
+> (`VCellChombo2D_x64`, `VCellChombo3D_x64`); its macOS binaries ran the small sims of
+> `Solver_Suite_6_2.vcml` locally (the vcell-core test fixture in §4). The field viewer's Chombo grids
+> (volume and membrane, 2D and 3D) are written in Java, with no Python VTK service (§4).
 
 ## 1. Current availability (as of 2026-08)
 
@@ -118,14 +125,16 @@ the *solver build* era, not the reading-code era.
   and which aborts *unrelated* data access for the run. Workaround when reading
   legacy runs: move `SimID_<key>_<job>_.hdf5` aside (or extend the enum).
 
-### Reading requires linux/amd64
+### Reading no longer needs linux/amd64
 
-The Chombo readers go through the legacy native HDF5 library (`NativeLib.HDF5`),
-which cannot load on macOS arm64 (documented in `VtkMeshGenerator`). Practical
-recipe: run the reading code inside `ghcr.io/virtualcell/vcell-data:<tag>`
-(`--platform linux/amd64`), jars on classpath from `/usr/local/app/lib/*`, with
-`-Dvcell.installDir=/usr/local/app -Dvcell.primarySimdatadir.internal=<mount>
--Dvcell.python.executable=/usr/local/bin/python -Dvcell.vtk.pythonDir=/usr/local/app/pythonVtk`.
+The Chombo readers used to go through the legacy native HDF5 library (`NativeLib.HDF5`), which cannot
+load on macOS arm64, so reading needed `ghcr.io/virtualcell/vcell-data:<tag>` under
+`--platform linux/amd64`. `ChomboFileReader` (and `Hdf5PostProcessor`) now read with pure-Java jhdf:
+the vcell-core test fixture below is read on macOS arm64 by the ordinary unit tests.
+
+Today's solver writes its post-processing statistics as `<var>_mean`, `_total`, `_min`, `_max`;
+`Hdf5PostProcessor.StatisticType.fromName` accepts `mean` as the average (issue #1894), so a fresh run's
+`SimID_<key>_<job>_.hdf5` no longer aborts data access.
 
 ## 4. VTK / field-viewer pipeline for Chombo results
 
@@ -136,19 +145,56 @@ recipe: run the reading code inside `ghcr.io/virtualcell/vcell-data:<tag>`
   `getEmptyVtuMeshFiles` must be called with `timeIndex = 0`), MovingBoundary is
   **TIME_VARYING** (mesh per time index). Detection: `getMesh() instanceof
   CartesianMeshChombo` vs `CartesianMeshMovingBoundary`.
-- The Python VTK service (`pythonVtk/python_vtk/vtkService/vtkService.py`,
-  `writeChomboVolumeVtkGridAndIndexData`) converts Chombo cut cells (irregular
-  polyhedra) to tetrahedra and emits ordinal `chomboVolumeIndices` pairing data
-  values to cells — 2D: polygons; 3D: **voxels first, then tets**. So a 3D Chombo
-  VTU is a mixed-cell grid: `VTK_VOXEL` (11) interior + `VTK_TETRA` (10) at the
-  embedded boundary; 2D mixes triangle/quad/polygon.
-- VTU files are written single-piece, LittleEndian, binary **uncompressed**
-  (`SetCompressorTypeToNone` + `SetDataModeToBinary`), UInt32 headers, inline
-  base64 — exactly what `org.vcell.client.viz.VtuGridParser` parses (unit-tested
-  against a reference file).
+- The path: `DataSetControllerImpl.getEmptyVtuMeshFiles(ChomboFiles…)` →
+  `ChomboVtkFileWriter.writeEmptyMeshFiles` reads the t-index-0 dataset (`ChomboFileReader`), builds one
+  `VisMesh` per volume domain (`ChomboMeshMapping.fromMeshData2D/3D`) and writes, per domain, a `.vtu` and a
+  `.chomboindex` (thrift `ChomboIndexData`): the volume as `SimID_<key>_<job>_<vol>.vtu`, and — when the
+  domain has membrane variables — its membrane as `SimID_<key>_<job>_<vol>_Membrane.vtu`.
+  `getVtuMeshData` reads the index back and returns one value per cell, in cell order.
+- **The grids are written in pure Java** (since 2026-10, after MovingBoundary in #2155):
+  `VtkService.writeChomboVolumeVtkGridAndIndexData` / `writeChomboMembraneVtkGridAndIndexData`, concrete
+  on the `VtkService` base class, so every service — the desktop and the data server — uses them, with no
+  Python fallback (`vcell.vtk.pythonDir` is not needed; the data server never set it, so before this
+  every Chombo field-viewer request failed there). They write with `VtuWriter`:
+  - **volume** (`writeVolumeGrid`): the `VisMesh` points, then its cells — 2D: polygons
+    (`VTK_QUAD`/`VTK_TRIANGLE`/`VTK_POLYGON`); 3D: whole voxels (`VTK_VOXEL`, 11), then the cut cells
+    as **`VTK_POLYHEDRON` (42)** carrying their own faces (not tetrahedra: a polyhedron keeps the faces it
+    shares with its neighbours, #1895). The `chomboVolumeIndices` follow the same order (2D: polygons;
+    3D: voxels, then tetrahedra, then polyhedra).
+  - **membrane** (`writeSurfaceGrid`): the `VisMesh` surface points, then one `VTK_LINE` (3) per
+    `VisLine` in 2D or one `VTK_TRIANGLE` (5) per `VisSurfaceTriangle` in 3D, with `chomboSurfaceIndices`
+    in that order (the membrane element each cell shows).
+  - The file has the restricted form the Python service wrote: one piece, LittleEndian, inline binary
+    (base64), UInt32 headers, uncompressed. Points are `Float64` (VTK wrote `Float32`). A polyhedron is
+    written as VTK 9.4 writes it (file version 2.3): its connectivity is its distinct point ids ascending,
+    and its faces are `face_connectivity`/`face_offsets` plus `polyhedron_to_faces`/`polyhedron_offsets`.
+    `VtuGridParser` reads this layout and the pre-9.4 `faces`/`faceoffsets` one.
+  - Equivalence with the Python service it replaced (`pythonVtk`, mesh types `chombovolume`,
+    `chombomembrane`) is checked by `ChomboVtuPythonEquivalenceTest` on the real 2D and 3D runs below:
+    identical cells, types, connectivity, polyhedron faces and index files (byte for byte), points equal to
+    Float32 precision. The Python entry points remain, unused by Java.
+- **Directories:** a server run's meshes go where they always have (`getPrimaryUserDir(owner)` for the
+  meshes, `vcell.primarySimdatadir.internal/<owner>` for `getVtuMeshData`); a desktop quick run
+  (`LocalVCDataIdentifier`) uses its own local directory, so the desktop needs no server property.
+- **Coordinates:** a Chombo .vtu is in doubled-index coordinates (`v = (p-origin)*N/extent*2 - 1`); the
+  field viewer converts to microns in `FieldViewerServer.chomboToPhysical`.
+- **Field viewer:** `/info` lists `<vol>_Membrane` whenever membrane cell-data variables exist. `/grid`
+  reports the *embedding* dimension, so a 3D run's membrane (triangles only) is drawn as a surface in 3D
+  (it used to be reported as 2D and drawn top-down in the plane); a 2D membrane is a curve of segments.
+  `/timeseries&snap=nearest` snaps a click onto a membrane variable's lines or triangles. Membrane
+  kymographs are still refused.
 - The viewer renders mixed-cell VTUs via per-cell `insertNextCell(type, npts, ids)`
   (verified marshalled in vtk.wasm ≥ v1.2.0) in "bodyFitted" mode: no deform/smooth,
   the solver mesh is shown as computed.
+- **Fixture:** `vcell-core/src/test/resources/org/vcell/vis/chombo/` holds two real runs of
+  `Solver_Suite_6_2.vcml` (test resource `models/`) made on 2026-10-03 with the vcell-chombo bundle's
+  `VCellChombo2D_x64`/`VCellChombo3D_x64` (macOS arm64): "chombo 2D" (sim 105373152, a disk of radius 3,
+  8 × 8) and "chombo 3d" (sim 104116603, a ball of radius 4, 8 × 8 × 8: 56 voxels, 224 cut-cell
+  polyhedra, 888 membrane triangles), each saved at t = 0, 0.5, 1. Their `s2` (membrane) and `RanC_nuc`
+  (volume, ×1e-8 at t = 0) initial conditions were set to `floor(x/1.25) + 100 floor(y/1.25) +
+  10000 floor(z/1.25)`, so every value names the voxel it was computed in — that is how the tests check
+  that values pair with the right cells (`ChomboVtuWriterTest`, `FieldViewerServerChomboLocalRunTest`,
+  the `chomboRun2d`/`chomboRun3d` browser fixtures). The 2D run needed dt = 0.01 (the saved 0.1 blows up).
 
 ## 5. Known real datasets (dev cluster `/simdata`, for future resurrection work)
 

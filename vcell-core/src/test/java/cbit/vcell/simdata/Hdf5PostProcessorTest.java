@@ -118,6 +118,38 @@ public class Hdf5PostProcessorTest {
         //noinspection OptionalGetWithoutIsPresent
         return Arrays.stream(fluorescence_data_0).flatMap(Arrays::stream).flatMapToDouble(Arrays::stream).min().getAsDouble();
     }
+    /**
+     * The Chombo solver names each variable's average {@code <var>_mean} (its four channels are mean, total, min,
+     * max). That name was rejected ("No Statistic with name mean"), and since the post-processing file is read
+     * when a run's data is opened, every Chombo result failed to open (#1894).
+     */
+    @Test
+    public void testReadChomboStatistics() throws IOException {
+        File chomboHdf5File = File.createTempFile("SimID_104116603_0_", ".hdf5");
+        try {
+            Resources.asByteSource(Resources.getResource("org/vcell/vis/chombo/SimID_104116603_0_.hdf5"))
+                    .copyTo(Files.asByteSink(chomboHdf5File));
+            Hdf5PostProcessor.PostProcessing postProcessing = new Hdf5PostProcessor.PostProcessing(chomboHdf5File.toPath());
+            postProcessing.read();
+            Assertions.assertEquals(3, postProcessing.times.length);
+            Hdf5PostProcessor.VariableInfo first = postProcessing.getVariables().get(0);
+            Assertions.assertEquals("C_cyt_mean", first.stat_var_name());
+            Assertions.assertEquals(average, first.statisticType());
+            Assertions.assertEquals("C_cyt", first.var_name());
+            int averages = 0;
+            for (Hdf5PostProcessor.VariableInfo v : postProcessing.getVariables()) {
+                if (v.stat_var_name().endsWith("_mean")) {
+                    Assertions.assertEquals(average, v.statisticType(), v.stat_var_name());
+                    averages++;
+                }
+            }
+            Assertions.assertEquals(postProcessing.getVariables().size() / 4, averages);
+        } finally {
+            //noinspection ResultOfMethodCallIgnored
+            chomboHdf5File.delete();
+        }
+    }
+
     private static double max_of_array(double[][][] fluorescence_data_0) {
         //noinspection OptionalGetWithoutIsPresent
         return Arrays.stream(fluorescence_data_0).flatMap(Arrays::stream).flatMapToDouble(Arrays::stream).max().getAsDouble();
