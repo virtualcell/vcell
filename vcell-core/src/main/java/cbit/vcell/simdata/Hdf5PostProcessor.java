@@ -35,6 +35,10 @@ public class Hdf5PostProcessor {
                     return statistic;
                 }
             }
+            if ("mean".equals(name)) {
+                // the Chombo solver names the average "mean" (its channels are mean, total, min, max)
+                return average;
+            }
             throw new IllegalArgumentException("No Statistic with name " + name);
         }
     }
