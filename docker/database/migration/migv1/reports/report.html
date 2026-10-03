@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <title>Ora2Pg - Database Migration Report</title>
+  <meta HTTP-EQUIV="Generator" CONTENT="Ora2Pg v24.3">
+  <meta HTTP-EQUIV="Date" CONTENT="Fri Jun 21 09:25:28 2024">
+  <style>
+body {
+	margin: 30px 0;
+	padding: 0;
+	background: #EFEFEF;
+	font-size: 12px;
+	color: #1e1e1e;
+}
+
+h1 {
+	margin-bottom: 20px;
+	border-bottom: 1px solid #DFDFDF;
+	font-size: 22px;
+	padding: 0px;
+	padding-bottom: 5px;
+	font-weight: bold;
+	color: #0094C7;
+}
+
+h2 {
+	margin-bottom: 10px;
+	font-size: 18px;
+	padding: 0px;
+	padding-bottom: 5px;
+	font-weight: bold;
+	color: #0094C7;
+}
+
+#header table {
+	padding: 0 5px 0 5px;
+	border: 1px solid #DBDBDB;
+	margin-bottom: 20px;
+	margin-left: 30px;
+}
+
+#header th {
+	padding: 0 5px 0 5px;
+	text-decoration: none;
+	font-size: 16px;
+	color: #EC5800;
+}
+
+#content table {
+	padding: 0 5px 0 5px;
+	border: 1px solid #DBDBDB;
+	margin-bottom: 20px;
+	margin-left: 10px;
+	margin-right: 10px;
+}
+#content td {
+	padding: 0 5px 0 5px;
+	border-bottom: 1px solid #888888;
+	margin-bottom: 20px;
+	text-align: left;
+	vertical-align: top;
+}
+
+#content th {
+	border-bottom: 1px solid #BBBBBB;
+	padding: 0 5px 0 5px;
+	text-decoration: none;
+	font-size: 16px;
+	color: #EC5800;
+}
+
+.object_name {
+        font-weight: bold;
+        color: #0094C7;
+	text-align: left;
+	white-space: pre;
+}
+
+.detail {
+	white-space: pre;
+}
+
+#footer {
+	margin-right: 10px;
+	text-align: right;
+}
+
+#footer a {
+	color: #EC5800;
+}
+
+#footer a:hover {
+	text-decoration: none;
+}
+  </style>
+</head>
+<body>
+<div id="header">
+<h1>Ora2Pg - Database Migration Report</h1>
+<table>
+<tr><th>Version</th><td>Oracle Database 19c Standard Edition 2 Release 19.0.0.0.0</td></tr>
+<tr><th>Schema</th><td>VCELL</td></tr>
+<tr><th>Size</th><td>31224.06 MB</td></tr>
+</table>
+</div>
+<div id="content">
+<table>
+<tr><th>Object</th><th>Number</th><th>Invalid</th><th>Estimated cost</th><th>Comments</th><th>Details</th></tr>
+<tr><td class="object_name">DATABASE LINK</td><td style="text-align: center;">0</td><td style="text-align: center;">0</td><td style="text-align: center;">0.00</td><td>Database links will be exported as SQL/MED PostgreSQL's Foreign Data Wrapper (FDW) extensions using oracle_fdw.</td><td class="detail"></td></tr>
+<tr><td class="object_name">FUNCTION</td><td style="text-align: center;">13</td><td style="text-align: center;">0</td><td style="text-align: center;">97.00</td><td>Total size of function code: 6238 bytes.</td><td class="detail"><details><summary>See details</summary>getphysicsoption: 3<br>powerfactor: 3<br>gettaskdescription: 12<br>countmath: 3<br>getmathsize: 3<br>countbio: 3<br>getmath: 12<br>countsim: 3<br>getvalencetype: 3<br>getkinetics: 12<br>countsimdata: 3<br>comparekinetics: 24<br></details></td></tr>
+<tr><td class="object_name">GLOBAL TEMPORARY TABLE</td><td style="text-align: center;">1</td><td style="text-align: center;">0</td><td style="text-align: center;">10.00</td><td>Global temporary table are not supported by PostgreSQL and will not be exported. You will have to rewrite some application code to match the PostgreSQL temporary table behavior.</td><td class="detail"><details><summary>See details</summary>tasks<br></details></td></tr>
+<tr><td class="object_name">INDEX</td><td style="text-align: center;">252</td><td style="text-align: center;">0</td><td style="text-align: center;">36.90</td><td>117 index(es) are concerned by the export, others are automatically generated and will do so on PostgreSQL. Bitmap will be exported as btree_gin index(es). Domain index are exported as b-tree but commented to be edited to mainly use FTS. Cluster, bitmap join and IOT indexes will not be exported at all. Reverse indexes are not exported too, you may use a trigram-based index (see pg_trgm) or a reverse() function based index and search. Use 'varchar_pattern_ops', 'text_pattern_ops' or 'bpchar_pattern_ops' operators in your indexes to improve search with the LIKE operator respectively into varchar, text or char columns.</td><td class="detail"><details><summary>See details</summary>117 b-tree index(es)<br></details></td></tr>
+<tr><td class="object_name">JOB</td><td style="text-align: center;">0</td><td style="text-align: center;">0</td><td style="text-align: center;">0.00</td><td>Job are not exported. You may set external cron job with them.</td><td class="detail"></td></tr>
+<tr><td class="object_name">PACKAGE BODY</td><td style="text-align: center;">1</td><td style="text-align: center;">0</td><td style="text-align: center;">16.00</td><td>Total size of package code: 5280 bytes. Number of procedures and functions found inside those packages: 3.</td><td class="detail"><details><summary>See details</summary>toad_profiler.rollup_all_runs: 3<br>toad_profiler.rollup_run: 3<br>toad_profiler.rollup_unit: 4<br></details></td></tr>
+<tr><td class="object_name">PROCEDURE</td><td style="text-align: center;">3</td><td style="text-align: center;">0</td><td style="text-align: center;">21.00</td><td>Total size of procedure code: 3244 bytes.</td><td class="detail"><details><summary>See details</summary>copyoldmath_to_scmath: 6<br>copynewmath_to_scmath: 6<br>copyscmath_to_oldmath: 6<br></details></td></tr>
+<tr><td class="object_name">SEQUENCE</td><td style="text-align: center;">4</td><td style="text-align: center;">0</td><td style="text-align: center;">1.00</td><td>Sequences are fully supported, but all call to sequence_name.NEXTVAL or sequence_name.CURRVAL will be transformed into NEXTVAL('sequence_name') or CURRVAL('sequence_name').</td><td class="detail"></td></tr>
+<tr><td class="object_name">SYNONYM</td><td style="text-align: center;">0</td><td style="text-align: center;">0</td><td style="text-align: center;">0.00</td><td>SYNONYMs will be exported as views. SYNONYMs do not exists with PostgreSQL but a common workaround is to use views or set the PostgreSQL search_path in your session to access object outside the current schema.</td><td class="detail"></td></tr>
+<tr><td class="object_name">TABLE</td><td style="text-align: center;">165</td><td style="text-align: center;">0</td><td style="text-align: center;">17.20</td><td> 7 check constraint(s).</td><td class="detail"><details><summary>See details</summary>Total number of rows: 62331961<br>Top 10 of tables sorted by number of rows:<br>vc_struct has 10722547 rows<br>vc_species has 10375753 rows<br>vc_apiaccesstoken has 7912069 rows<br>vc_simdelfromdisk has 3885907 rows<br>vc_reactionspec has 3652007 rows<br>vc_geometricregion has 3396466 rows<br>vc_speciescontextspec has 3374395 rows<br>vc_reactpart has 3332216 rows<br>vc_login has 2839359 rows<br>vc_simulationjob has 1285781 rows<br>Top 10 of largest tables:<br></details></td></tr>
+<tr><td class="object_name">TRIGGER</td><td style="text-align: center;">6</td><td style="text-align: center;">0</td><td style="text-align: center;">24.00</td><td>Total size of trigger code: 0 bytes.</td><td class="detail"><details><summary>See details</summary>tcrit_lock_trig: 3<br>tc_lock_trig: 3<br>trslt_lock_trig: 3<br>ts_lock_trig: 3<br>update_login: 3<br>web_download_event_trg: 3<br></details></td></tr>
+<tr><td class="object_name">VIEW</td><td style="text-align: center;">3</td><td style="text-align: center;">0</td><td style="text-align: center;">3.00</td><td>Views are fully supported but can use specific functions.</td><td class="detail"></td></tr>
+<tr><th style="text-align: center; border-bottom: 0px; vertical-align: bottom;">Total</th><td style="text-align: center; border-bottom: 0px; vertical-align: bottom;">448</td><td style="text-align: center; border-bottom: 0px; vertical-align: bottom;">0</td><td style="text-align: center; border-bottom: 0px; vertical-align: bottom;">226.10</td><td colspan="2" style="border-bottom: 0px; vertical-align: bottom;">226.10 cost migration units means approximatively 3 person-day(s). The migration unit was set to 5 minute(s)
+</td></tr>
+</table>
+</div>
+<h2>Migration level: B-5</h2>
+
+<ul>
+<li>Migration levels:</li>
+  <ul>
+    <li>A - Migration that might be run automatically</li>
+    <li>B - Migration with code rewrite and a human-days cost up to 5 days</li>
+    <li>C - Migration with code rewrite and a human-days cost above 5 days</li>
+  </ul>
+<li>Technical levels:</li>
+  <ul>
+    <li>1 = trivial: no stored functions and no triggers</li>
+    <li>2 = easy: no stored functions but with triggers, no manual rewriting</li>
+    <li>3 = simple: stored functions and/or triggers, no manual rewriting</li>
+    <li>4 = manual: no stored functions but with triggers or views with code rewriting</li>
+    <li>5 = difficult: stored functions and/or triggers with code rewriting</li>
+  </ul>
+</ul>
+<h2>Details of cost assessment per function</h2>
+<details><summary>Show</summary><ul>
+<li>Function comparekinetics total estimated cost: 24</li>
+<ul>
+<li>DBMS_ => 7 (cost: 3)</li>
+<li>TEST => 2</li>
+<li>SIZE => 1</li>
+</ul>
+<li>Function getkinetics total estimated cost: 12</li>
+<ul>
+<li>DBMS_ => 3 (cost: 3)</li>
+<li>TEST => 2</li>
+<li>SIZE => 1</li>
+</ul>
+<li>Function getmath total estimated cost: 12</li>
+<ul>
+<li>DBMS_ => 3 (cost: 3)</li>
+<li>TEST => 2</li>
+<li>SIZE => 1</li>
+</ul>
+<li>Function gettaskdescription total estimated cost: 12</li>
+<ul>
+<li>DBMS_ => 3 (cost: 3)</li>
+<li>TEST => 2</li>
+<li>SIZE => 1</li>
+</ul>
+<li>Function countsimdata total estimated cost: 3</li>
+<ul>
+<li>TEST => 2</li>
+<li>SIZE => 1</li>
+</ul>
+<li>Function countmath total estimated cost: 3</li>
+<ul>
+<li>TEST => 2</li>
+<li>SIZE => 1</li>
+</ul>
+<li>Function powerfactor total estimated cost: 3</li>
+<ul>
+<li>TEST => 2</li>
+<li>SIZE => 1</li>
+</ul>
+<li>Function countsim total estimated cost: 3</li>
+<ul>
+<li>TEST => 2</li>
+<li>SIZE => 1</li>
+</ul>
+<li>Function getvalencetype total estimated cost: 3</li>
+<ul>
+<li>TEST => 2</li>
+<li>SIZE => 1</li>
+</ul>
+<li>Function getmathsize total estimated cost: 3</li>
+<ul>
+<li>TEST => 2</li>
+<li>SIZE => 1</li>
+</ul>
+<li>Function countbio total estimated cost: 3</li>
+<ul>
+<li>TEST => 2</li>
+<li>SIZE => 1</li>
+</ul>
+<li>Function getphysicsoption total estimated cost: 3</li>
+<ul>
+<li>TEST => 2</li>
+<li>SIZE => 1</li>
+</ul>
+</ul></details>
+<h2>Details of cost assessment per procedure</h2>
+<details><summary>Show</summary><ul>
+<li>Procedure copyscmath_to_oldmath total estimated cost: 6</li>
+<ul>
+<li>TEST => 2</li>
+<li>DBMS_ => 1 (cost: 3)</li>
+<li>SIZE => 1</li>
+</ul>
+<li>Procedure copyoldmath_to_scmath total estimated cost: 6</li>
+<ul>
+<li>TEST => 2</li>
+<li>SIZE => 1</li>
+<li>DBMS_ => 1 (cost: 3)</li>
+</ul>
+<li>Procedure copynewmath_to_scmath total estimated cost: 6</li>
+<ul>
+<li>TEST => 2</li>
+<li>DBMS_ => 1 (cost: 3)</li>
+<li>SIZE => 1</li>
+</ul>
+</ul></details>
+<h2>Details of cost assessment per package function</h2>
+<details><summary>Show</summary><ul>
+<li>Function toad_profiler.rollup_unit total estimated cost: 4</li>
+<ul>
+<li>SIZE => 2</li>
+<li>TEST => 2</li>
+</ul>
+<li>Function toad_profiler.rollup_all_runs total estimated cost: 3</li>
+<ul>
+<li>TEST => 2</li>
+<li>SIZE => 1</li>
+</ul>
+<li>Function toad_profiler.rollup_run total estimated cost: 3</li>
+<ul>
+<li>TEST => 2</li>
+<li>SIZE => 1</li>
+</ul>
+</ul></details>
+<h2>Details of cost assessment per trigger</h2>
+<details><summary>Show</summary><ul>
+<li>Trigger trslt_lock_trig total estimated cost: 3</li>
+<ul>
+<li>TEST => 2</li>
+<li>SIZE => 1</li>
+</ul>
+<li>Trigger web_download_event_trg total estimated cost: 3</li>
+<ul>
+<li>TEST => 2</li>
+<li>SIZE => 1</li>
+</ul>
+<li>Trigger update_login total estimated cost: 3</li>
+<ul>
+<li>TEST => 2</li>
+<li>SIZE => 1</li>
+</ul>
+<li>Trigger tcrit_lock_trig total estimated cost: 3</li>
+<ul>
+<li>TEST => 2</li>
+<li>SIZE => 1</li>
+</ul>
+<li>Trigger tc_lock_trig total estimated cost: 3</li>
+<ul>
+<li>TEST => 2</li>
+<li>SIZE => 1</li>
+</ul>
+<li>Trigger ts_lock_trig total estimated cost: 3</li>
+<ul>
+<li>TEST => 2</li>
+<li>SIZE => 1</li>
+</ul>
+</ul></details>
+
+<div id="footer">
+Generated by <a href="http://ora2pg.darold.net/">Ora2Pg v24.3</a>
+</div>
+</body>
+</html>
