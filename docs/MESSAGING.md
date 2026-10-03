@@ -316,8 +316,19 @@ redelivery policies, advisory watchdogs, DLQ tooling. Effort there has a shelf l
   `kubectl exec … tail /var/log/activemq/activemq.log`, which rotates after ~14 h.
   Making these brokers log to stdout is an easy, worthwhile fix.
 - `VCMessagingServiceActiveMQ` uses a **bounded** failover URL so a wedged transport cannot
-  retry forever; `JmsFailoverWatchdog` runs a terminal action (in production, JVM exit so K8s
-  recycles the pod) when failover gives up.
+  retry forever; `JmsFailoverWatchdog` runs a terminal action when failover gives up. The four
+  long-lived consumer services (submit, sched, data, db) build theirs with
+  `createForLongLivedConsumerService()`, which sets that action to JVM exit so K8s recycles the
+  pod. Everything else — short-lived batch processes, the API server — keeps the `logOnly()`
+  default. Getting this wiring wrong is silent: for two releases every service was on
+  `logOnly()`, so the terminal condition was detected, logged at FATAL, and then ignored
+  (issue #2031).
+- A consumer can also lose its session without the transport noticing. `ConsumerContextJms`
+  routes that through `JmsFailoverWatchdog.onTerminalFailure(…)` rather than ending its poll
+  loop, because a consumer thread that exits leaves a process which consumes nothing and still
+  reports healthy. Note that `attach()` installs its `TransportListener` only for an
+  `ActiveMQConnection`. Both impls use the OpenWire client today so both are covered, but a move
+  to an AMQP client would leave this caller-side route as the *only* path to the terminal action.
 - `transportResumed` fires on a *first connect* as well as after an interruption. A resumed
   count with zero interruptions means new connections, not reconnects — a distinction that once
   cost a misdiagnosis.
