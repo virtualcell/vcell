@@ -41,12 +41,14 @@ public final class FieldViewerFixtureServer {
 			}
 		}));
 		FieldViewerServerFvTest.registerFvFixtures(fvRoot);
-		// FEniCSx: a 2D disk, a 2D disk moving along x (ALE), a 3D sphere in a box with its membrane, and a 2D
-		// disk in a box with its membrane (a closed curve of line cells)
+		// FEniCSx: a 2D disk, a 2D disk moving along x (ALE), a 3D sphere in a box with its membrane, a 2D
+		// disk in a box with its membrane (a closed curve of line cells), and the 3D one with particles
 		FieldViewerServer.registerBundle("987654321", 0, bundle("membrane_efflux.fenics"), "fenics::2d disk");
 		FieldViewerServer.registerBundle("777", 0, bundle("moving_translate.fenics"), "fenics::moving disk");
 		FieldViewerServer.registerBundle("555", 0, bundle("receptor_3d.fenics"), "fenics::receptor 3d");
 		FieldViewerServer.registerBundle("556", 0, bundle("receptor_2d.fenics"), "fenics::receptor 2d");
+		// a hybrid PDE/particle run: the 3D receptor bundle with molecule positions (the particles extension)
+		FieldViewerServer.registerBundle("557", 0, bundle("receptor_3d_particles.fenics"), "fenics::receptor 3d + particles");
 		// MovingBoundary: a disk moving along x, through the VTU seam
 		FakeMovingBoundaryRun.register();
 		// Chombo: a disk (2D) and a ball (3D) on one static embedded-boundary mesh, through the VTU seam
@@ -64,6 +66,7 @@ public final class FieldViewerFixtureServer {
 				+ "\"fenicsMoving\":{\"sim\":\"777\",\"job\":0},"
 				+ "\"fenics3d\":{\"sim\":\"555\",\"job\":0},"
 				+ "\"fenics2dMembrane\":{\"sim\":\"556\",\"job\":0},"
+				+ "\"fenicsParticles\":{\"sim\":\"557\",\"job\":0},"
 				+ "\"movingBoundary\":{\"sim\":\"" + FakeMovingBoundaryRun.SIM + "\",\"job\":0},"
 				+ "\"chombo2d\":{\"sim\":\"" + FakeChomboRun.SIM_2D + "\",\"job\":0},"
 				+ "\"chombo3d\":{\"sim\":\"" + FakeChomboRun.SIM_3D + "\",\"job\":0}}}");

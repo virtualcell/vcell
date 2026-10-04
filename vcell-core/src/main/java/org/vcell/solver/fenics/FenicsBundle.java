@@ -30,6 +30,14 @@ import java.util.zip.Inflater;
  * array's shape, and a row whose chunk has not been written reads as NaN — so a bundle can be read
  * while the solver is still writing it ({@link #refresh()} re-reads the manifest). Only the array form
  * the writer produces is supported: little-endian float64, one row per chunk, zlib or no compression.
+ * <p>
+ * <b>Particles</b> (optional; a hybrid PDE/particle run, e.g. one recorded by viva-pde-particle). A second
+ * root key, {@code particles}, sits next to the manifest:
+ * {@code {"schema": 1, "species": {name: {"xyz": path, "count": path}}}}. Per species, {@code xyz} is a
+ * {@code (T, cap, 3)} array of lab-frame molecule positions (NaN past the row's count) and {@code count} a
+ * {@code (T, 1)} array of the molecules in each row, both stored like the field arrays (float64, one row
+ * per chunk). Rows are global output rows. A bundle without the key has no particles; a newer extension
+ * schema is ignored, so the fields stay viewable.
  */
 public final class FenicsBundle {
 
@@ -48,6 +56,13 @@ public final class FenicsBundle {
 	public record Segment(int index, double t0, int count, String motion, String prefix) {
 	}
 
+	/** a particle species' arrays (see the class comment): positions {@code (T, cap, 3)}, counts {@code (T, 1)} */
+	public record ParticleSpecies(String name, String xyz, String count) {
+	}
+
+	public static final int SUPPORTED_PARTICLES_SCHEMA = 1;
+	static final String PARTICLES_KEY = "particles";
+
 	private final BundleStore store;
 	private final String root; // for messages
 	private final int schema;
@@ -60,8 +75,9 @@ public final class FenicsBundle {
 	private final List<Variable> variables;
 	private final List<Segment> segments;
 	private final List<String> statsColumns;
+	private final Map<String, ParticleSpecies> particleSpecies;
 
-	private FenicsBundle(BundleStore store, JsonObject manifest) {
+	private FenicsBundle(BundleStore store, JsonObject manifest, JsonObject particles) {
 		this.store = store;
 		this.root = store.describe();
 		this.schema = manifest.get("schema").getAsInt();
@@ -113,6 +129,16 @@ public final class FenicsBundle {
 			c.add(e.getAsString());
 		}
 		this.statsColumns = Collections.unmodifiableList(c);
+
+		Map<String, ParticleSpecies> p = new LinkedHashMap<>();
+		if (particles != null && particles.has("schema") && particles.get("schema").getAsInt() <= SUPPORTED_PARTICLES_SCHEMA
+				&& particles.has("species") && particles.get("species").isJsonObject()) {
+			for (Map.Entry<String, JsonElement> e : particles.getAsJsonObject("species").entrySet()) {
+				JsonObject o = e.getValue().getAsJsonObject();
+				p.put(e.getKey(), new ParticleSpecies(e.getKey(), o.get("xyz").getAsString(), o.get("count").getAsString()));
+			}
+		}
+		this.particleSpecies = Collections.unmodifiableMap(p);
 	}
 
 	/** @return whether {@code dir} looks like a results bundle (a directory with a manifest) */
@@ -133,7 +159,9 @@ public final class FenicsBundle {
 		if (!json.has(MANIFEST_KEY)) {
 			throw new IOException(store.describe() + ": .zattrs has no '" + MANIFEST_KEY + "' manifest");
 		}
-		return new FenicsBundle(store, json.getAsJsonObject(MANIFEST_KEY));
+		JsonElement particles = json.get(PARTICLES_KEY);
+		return new FenicsBundle(store, json.getAsJsonObject(MANIFEST_KEY),
+				particles != null && particles.isJsonObject() ? particles.getAsJsonObject() : null);
 	}
 
 	/** re-reads the manifest: a running solver appends to {@code times} as rows land */
@@ -156,6 +184,8 @@ public final class FenicsBundle {
 	public List<Variable> getVariables() { return variables; }
 	public List<Segment> getSegments() { return segments; }
 	public List<String> getStatsColumns() { return statsColumns; }
+	/** the particle species recorded in the bundle, in file order; empty for a run without particles */
+	public Map<String, ParticleSpecies> getParticleSpecies() { return particleSpecies; }
 
 	public Domain domain(String name) {
 		Domain d = domains.get(name);
@@ -221,6 +251,24 @@ public final class FenicsBundle {
 		}
 		domain(domain); // rejects an unknown name
 		return readRow(sr.segment().prefix() + domain + "/_coords", sr.localRow());
+	}
+
+	/**
+	 * The positions of {@code species}' molecules at output row {@code row}, as x,y,z triples (lab frame);
+	 * empty when the row has none, or its chunks have not been written yet.
+	 */
+	public double[] particles(String species, int row) throws IOException {
+		checkRow(row);
+		ParticleSpecies p = particleSpecies.get(species);
+		if (p == null) {
+			throw new IllegalArgumentException("unknown particle species '" + species + "' in " + root);
+		}
+		double count = readRow(p.count(), row)[0];
+		if (!(count > 0)) {
+			return new double[0];
+		}
+		double[] xyz = readRow(p.xyz(), row);
+		return Arrays.copyOf(xyz, 3 * (int) Math.min(Math.round(count), xyz.length / 3));
 	}
 
 	/** whether any output row's mesh moves (an ALE segment) */

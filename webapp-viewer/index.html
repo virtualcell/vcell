@@ -43,6 +43,10 @@
   .controls select { font: 12px ui-monospace, monospace; max-width: 260px; }
   .readout { flex: 1 1 auto; opacity: .8; }
   .toggle { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+  .toggle[hidden] { display: none; }
+  .particle-legend { display: inline-flex; gap: 8px; font-size: 12px; opacity: .85; }
+  .particle-legend .swatch { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 3px;
+                             border: 1px solid #0006; vertical-align: -1px; }
   .readout em { color: #2a7; font-style: normal; }
   .status { font: 12px/1.4 ui-monospace, monospace; opacity: .7; }
   .status.err { color: #c0392b; opacity: 1; white-space: pre-wrap; }
@@ -213,6 +217,9 @@
   <button id="smoothingReset" type="button" disabled>Reset</button>
   <label class="toggle"><input id="colorbar" type="checkbox" checked disabled> Color bar</label>
   <label class="toggle"><input id="axes" type="checkbox" checked disabled> Axes</label>
+  <label class="toggle" id="particlesToggle" hidden
+         title="molecule positions of a hybrid PDE/particle run, at the shown time (at most 20,000 per species are drawn)"><input
+         id="particles" type="checkbox" checked disabled> Particles <span class="particle-legend" id="particleLegend"></span></label>
   <label class="toggle">Mesh
     <select id="meshStyle" disabled title="Show the mesh: its triangles' edges over the colored surface, or edges only (m cycles)">
       <option value="surface" selected>Surface</option>

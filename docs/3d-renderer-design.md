@@ -101,6 +101,30 @@ ALE fresh coordinates are needed every frame, so the geometry/field split buys m
 floats stop being defensible for tens of thousands of values per frame. XDMF already expresses
 shared-topology-per-segment natively, so the server has a source format that matches the structure.
 
+#### Particles of hybrid PDE/particle runs
+
+A results bundle can carry molecule positions next to its fields: a root `.zattrs` key `particles`,
+`{"schema": 1, "species": {name: {"xyz": path, "count": path}}}`. Per species there are two arrays,
+stored like the field arrays (float64, one row per chunk), so `FenicsBundle` reads them with the same
+row reader:
+
+- `xyz`: `(T, cap, 3)` lab-frame positions, NaN past each row's count;
+- `count`: `(T, 1)`, the molecules in each row.
+
+Rows are global output rows. Hybrid PDE/particle co-simulations write this (viva-pde-particle's
+`SpatialRecorder`, which records Smoldyn's molecules alongside the PDE fields). A bundle without the key
+has none, and a newer extension schema is ignored, so the fields stay viewable.
+
+The server lists the species in `/info` (`particleSpecies`). `/particles?time=&max=` returns each
+species' positions at one time, evenly strided down to at most `max` per species (default 20,000), with
+the molecule count. When the run has species, the viewer shows a **Particles** toggle with a
+colour-keyed legend and draws each species as point sprites over the field. It refetches positions per
+time step, and hides the molecules beyond an active cut, as the mesh there is.
+
+Finite-volume hybrid runs (vcell-fvsolver with embedded Smoldyn) write particle *counts per voxel*,
+not positions. They are not covered: drawing them would need the solver to save positions, or a binned
+display.
+
 ### Mode B — `webapp-ng` as an independent web client
 
 A different product rather than a variant: browse and visualize accessible spatial datasets on the
