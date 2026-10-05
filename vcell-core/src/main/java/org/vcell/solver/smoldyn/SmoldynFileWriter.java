@@ -467,7 +467,12 @@ public class SmoldynFileWriter extends SolverFileWriter {
                 printWriter.println(SmoldynVCellMapper.SmoldynKeyword.output_files + " " + outputFile.getName());
                 ISize sampleSize = simulation.getMeshSpecification().getSamplingSize();
                 TimeStep timeStep = simulation.getSolverTaskDescription().getTimeStep();
-                int n = (int) Math.round(((UniformOutputTimeSpec) ots).getOutputTimeStep() / timeStep.getDefaultTimeStep());
+                // n counts Smoldyn steps; in a spatial hybrid Smoldyn steps SmoldynStepMultiplier PDE steps at a time
+                double smoldynTimeStep = timeStep.getDefaultTimeStep();
+                if(simulation.getMathDescription().isSpatialHybrid()){
+                    smoldynTimeStep *= simulation.getSolverTaskDescription().getSmoldynSimulationOptions().getSmoldynStepMultiplier();
+                }
+                int n = Math.max(1, (int) Math.round(((UniformOutputTimeSpec) ots).getOutputTimeStep() / smoldynTimeStep));
                 if(simulation.getSolverTaskDescription().getSmoldynSimulationOptions().isSaveParticleLocations()){
                     printWriter.println(SmoldynVCellMapper.SmoldynKeyword.cmd + " " + SmoldynVCellMapper.SmoldynKeyword.N + " " + n + " " + SmoldynVCellMapper.SmoldynKeyword.incrementfile + " " + outputFile.getName());
                     printWriter.println(SmoldynVCellMapper.SmoldynKeyword.cmd + " " + SmoldynVCellMapper.SmoldynKeyword.N + " " + n + " " + SmoldynVCellMapper.SmoldynKeyword.listmols + " " + outputFile.getName());

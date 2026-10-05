@@ -59,3 +59,15 @@ def test_a_cut_hides_the_molecules_beyond_it_and_the_toggle_hides_all(open_viewe
 def test_runs_without_particles_offer_no_layer(open_viewer):
     v = open_viewer('fenics3d')
     assert v.page.is_hidden('#particlesToggle')
+
+
+def test_a_finite_volume_hybrid_run_draws_its_saved_particles(open_viewer):
+    """vcell-fvsolver's particle files (save particle files), served through the data manager."""
+    v = open_viewer('fvHybrid')
+    assert v.page.is_visible('#particlesToggle') and v.page.is_enabled('#particles')
+    assert legend(v) == {'A': 165}  # the last saved time
+    assert drawn(v) == {'A': 165}
+    v.page.fill('#time', '0')
+    v.page.dispatch_event('#time', 'change')
+    v.page.wait_for_function("document.getElementById('particleLegend').textContent.includes('A 196')", timeout=60000)
+    assert legend(v) == {'A': 196}

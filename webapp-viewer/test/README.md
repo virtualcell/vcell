@@ -13,6 +13,7 @@ vcell-client's test sources, `org.vcell.client.viz.FieldViewerFixtureServer`. It
 | `fenicsMoving` | FEniCSx, a 2D disk moving along x (ALE) |
 | `fenics3d` | FEniCSx, a sphere in a box with its membrane (3D) |
 | `fenics2dMembrane` | FEniCSx, a 2D disk in a box with its membrane, a closed curve of line cells (`receptor_2d.fenics`) |
+| `fvHybrid` | finite volume, 3D: a hybrid run saved with "save particle files" (9 × 9 × 5, species A converting to the field B; 196 … 165 molecules at five times, in `SimID_1000_0__00<n>.smoldynOutput`) |
 | `fenicsParticles` | FEniCSx, the 3D receptor bundle with molecule positions added (the bundle's `particles` extension): species A with 12, 8 and 4 molecules at the three times, B with 3 (`receptor_3d_particles.fenics`) |
 | `movingBoundary` | a stand-in MovingBoundary run (`FakeMovingBoundaryRun`), served through the real VTU seam |
 | `chombo2d` | a stand-in Chombo run (`FakeChomboRun`), 2D: a disk of quads and cut pentagons, through the VTU seam |

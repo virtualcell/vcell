@@ -599,8 +599,64 @@ public final class FieldViewerServer {
 				sb.append(membrane ? ",\"membrane\":true}" : "}");
 			}
 		}
-		sb.append("]}");
+		sb.append(']');
+		List<String> particleSpecies = fvParticleSpecies(source);
+		if (!particleSpecies.isEmpty()) {
+			// a hybrid run saved with particle files: the viewer offers a particle layer, fetched from /particles
+			sb.append(",\"particleSpecies\":[");
+			for (int i = 0; i < particleSpecies.size(); i++) {
+				sb.append(i > 0 ? "," : "").append('"').append(jsonEscape(particleSpecies.get(i))).append('"');
+			}
+			sb.append(']');
+		}
+		sb.append('}');
 		return sb.toString();
+	}
+
+	/** {@code A(solution)} → {@code A}: the particle data's species key without the solution state */
+	static String particleDisplayName(String key) {
+		String solution = "(solution)";
+		return key.endsWith(solution) ? key.substring(0, key.length() - solution.length()) : key;
+	}
+
+	/** a finite-volume run's particle positions at one saved time, grouped by display name, flat x,y,z */
+	private static Map<String, double[]> fvParticles(DataSource source, double time) throws Exception {
+		cbit.vcell.simdata.ParticleDataBlock block = source.dataManager.getParticleDataBlock(source.vcdID, time);
+		Map<String, List<org.vcell.util.Coordinate>> grouped = new java.util.TreeMap<>();
+		for (String key : block.getSpecies()) {
+			grouped.computeIfAbsent(particleDisplayName(key), k -> new ArrayList<>()).addAll(block.getCoordinates(key));
+		}
+		Map<String, double[]> out = new java.util.LinkedHashMap<>();
+		for (Map.Entry<String, List<org.vcell.util.Coordinate>> e : grouped.entrySet()) {
+			double[] xyz = new double[3 * e.getValue().size()];
+			int k = 0;
+			for (org.vcell.util.Coordinate c : e.getValue()) {
+				xyz[k++] = c.getX();
+				xyz[k++] = c.getY();
+				xyz[k++] = c.getZ();
+			}
+			out.put(e.getKey(), xyz);
+		}
+		return out;
+	}
+
+	/**
+	 * The particle species of a finite-volume run that saved particle files (hybrid runs with VCell's "save
+	 * particle files" option): those present at the first or the last saved time, sorted. Empty otherwise.
+	 */
+	private static List<String> fvParticleSpecies(DataSource source) {
+		try {
+			if (!source.dataManager.getParticleDataExists(source.vcdID)) {
+				return List.of();
+			}
+			double[] times = source.dataManager.getDataSetTimes(source.vcdID);
+			java.util.TreeSet<String> names = new java.util.TreeSet<>(fvParticles(source, times[0]).keySet());
+			names.addAll(fvParticles(source, times[times.length - 1]).keySet());
+			return new ArrayList<>(names);
+		} catch (Exception e) {
+			LG.warn("could not read the particle data of " + source.vcdID.getID(), e);
+			return List.of();
+		}
 	}
 
 	/**
@@ -1833,9 +1889,10 @@ public final class FieldViewerServer {
 	 * reduction runs next to the reader in a single pass.
 	 */
 	/**
-	 * {@code /particles}: the molecule positions of a hybrid PDE/particle run at one time
-	 * ({@link FenicsBundleViews#particles}). Only results bundles carry positions; for any other run it is
-	 * a bad request, and the viewer only asks when {@code /info} lists {@code particleSpecies}.
+	 * {@code /particles}: the molecule positions of a hybrid PDE/particle run at one time: a results bundle's
+	 * particles extension ({@link FenicsBundleViews#particles}), or a finite-volume run's particle files
+	 * ({@code <base>_<NNN>.smoldynOutput}, through the data manager, so local and server runs alike). For any
+	 * other run it is a bad request; the viewer only asks when {@code /info} lists {@code particleSpecies}.
 	 */
 	private static String handleParticles(HttpExchange ex) throws Exception {
 		Map<String, String> q = query(ex);
@@ -1843,8 +1900,14 @@ public final class FieldViewerServer {
 		if (bundle != null) {
 			return FenicsBundleViews.particles(bundle, q);
 		}
-		sourceFor(q); // an unknown dataset is a 404, as on the other routes
-		throw new IllegalArgumentException("this run has no particle positions");
+		DataSource source = sourceFor(q); // an unknown dataset is a 404, as on the other routes
+		if (vtuMode(source) != null || !source.dataManager.getParticleDataExists(source.vcdID)) {
+			throw new IllegalArgumentException("this run has no particle positions (hybrid runs save them with "
+					+ "the simulation's \"save particle files\" option)");
+		}
+		double[] times = source.dataManager.getDataSetTimes(source.vcdID);
+		int row = timeIndexFor(source, q);
+		return FenicsBundleViews.particlesJson(times[row], row, fvParticles(source, times[row]), FenicsBundleViews.maxParticles(q));
 	}
 
 	private static String handleStats(HttpExchange ex) throws Exception {
