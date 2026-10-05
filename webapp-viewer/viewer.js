@@ -93,6 +93,9 @@ const el = {
   smoothing: document.getElementById('smoothing'),
   smoothingReadout: document.getElementById('smoothingReadout'),
   smoothingReset: document.getElementById('smoothingReset'),
+  particles: document.getElementById('particles'),
+  particlesToggle: document.getElementById('particlesToggle'),
+  particleLegend: document.getElementById('particleLegend'),
   status: document.getElementById('status'),
 };
 
@@ -144,6 +147,11 @@ const state = {
   kymoCross: null,
   kymoDragRow: null,
   fieldRange: null, // the last /field range: the kymograph's "3D view" colour range
+  // a hybrid PDE/particle run (/info's particleSpecies): its molecules are drawn as points at the shown time
+  particleSpecies: [],
+  particles: null, // the last /particles response
+  particlesRow: -1, // the time index it was fetched for
+  cropCut: null, // the cut plane while one is active: {axis, pos}; points beyond it are hidden like the mesh
   fieldValues: null, // raw per-cell values of the shown field (nulls = blanked cells)
   nominalSinc: null,
   smoothing: NOMINAL_STRENGTH,
@@ -172,6 +180,7 @@ let scalarBar = null;
 let cubeAxes = null;
 let clipPlane = null;
 let extractCells = null; // the whole-cells cut: vtkExtractCells on the same input as tableClip
+let particleLayers = []; // one point actor per particle species: {name, color, polyData, actor}
 
 const setStatus = (text, isError = false) => {
   el.status.textContent = text;
@@ -245,6 +254,7 @@ async function loadInfo() {
   state.times = info.times ?? [];
   showRunStatus(info);
   state.variables = (info.variables ?? []).map((v) => ({ name: v.name, domain: v.domain }));
+  state.particleSpecies = info.particleSpecies ?? [];
   if (!state.variables.length) throw new Error(`run ${info.simId} exposes no volume variables`);
 
   const requested = state.dataset.variable;
@@ -614,6 +624,8 @@ async function applyCrop() {
     }
     el.sliceReadout.textContent = '';
     el.cropStats.textContent = '';
+    state.cropCut = null;
+    await applyParticles();
     return;
   }
   const b = state.bounds;
@@ -635,6 +647,8 @@ async function applyCrop() {
     await geomFilter.setInputConnection(await tableClip.getOutputPort());
   }
   el.sliceReadout.textContent = `${'xyz'[axis]} = ${pos.toFixed(2)}`;
+  state.cropCut = { axis, pos };
+  await applyParticles();
 }
 
 /**
@@ -841,6 +855,81 @@ async function buildScene(geometry, field) {
   attachTrackball();
   await render();
 }
+
+// ---------------------------------------------------------------------------
+// particles: the molecules of a hybrid PDE/particle run (a results bundle's particles extension)
+// ---------------------------------------------------------------------------
+
+// light, saturated colours that stay distinct from the blue-to-red field lookup table on the dark background
+const PARTICLE_COLORS = [[1, 1, 1], [1, 0.3, 1], [0.35, 1, 0.35], [1, 0.75, 0.15], [0.3, 0.9, 1]];
+
+/** One point actor per species, drawn as small spheres; their points are filled in by applyParticles. */
+async function buildParticleLayers() {
+  for (const [k, name] of state.particleSpecies.entries()) {
+    const polyData = vtk.vtkPolyData();
+    const pointMapper = vtk.vtkPolyDataMapper();
+    await pointMapper.setInputData(polyData);
+    await pointMapper.scalarVisibilityOff();
+    const pointActor = vtk.vtkActor({ mapper: pointMapper });
+    const property = await pointActor.getProperty();
+    const color = PARTICLE_COLORS[k % PARTICLE_COLORS.length];
+    await property.setColor(...color);
+    await property.setPointSize(5);
+    await property.renderPointsAsSpheresOn();
+    await renderer.addActor(pointActor);
+    particleLayers.push({ name, color, polyData, actor: pointActor });
+  }
+}
+
+/** Fetch the molecule positions at the shown time (once per time), then draw them. */
+async function updateParticles() {
+  if (!particleLayers.length) return;
+  if (state.particlesRow !== state.timeIndex) {
+    state.particles = await fetchJson(url('/particles', { time: String(state.times[state.timeIndex]) }), '/particles');
+    state.particlesRow = state.timeIndex;
+  }
+  await applyParticles();
+}
+
+/**
+ * Put the last positions into the point actors. While a cut is active, the molecules beyond it are hidden
+ * as the mesh there is (the cut keeps the low side of the plane), so the cut face shows the inside.
+ */
+async function applyParticles() {
+  if (!particleLayers.length || !state.particles) return;
+  const cut = state.cropCut;
+  const legend = [];
+  for (const layer of particleLayers) {
+    const sp = state.particles.species.find((s) => s.name === layer.name);
+    const P = sp?.points ?? [];
+    const keep = [];
+    for (let i = 0; 3 * i < P.length; i++) {
+      if (!cut || P[3 * i + cut.axis] <= cut.pos) keep.push(i);
+    }
+    const points = vtk.vtkPoints();
+    await points.setNumberOfPoints(keep.length);
+    for (let j = 0; j < keep.length; j++) await points.setPoint(j, P[3 * keep[j]], P[3 * keep[j] + 1], P[3 * keep[j] + 2]);
+    const verts = vtk.vtkCellArray();
+    // one poly-vertex cell holding every point: a single call, rather than one vertex cell per molecule
+    if (keep.length) await verts.insertNextCell(keep.length, keep.map((_, j) => j));
+    await layer.polyData.setPoints(points);
+    await layer.polyData.setVerts(verts);
+    await layer.polyData.modified();
+    const count = sp?.count ?? 0;
+    const shown = sp?.shown ?? count;
+    const css = `rgb(${layer.color.map((c) => Math.round(255 * c)).join(',')})`;
+    // the label counts the run's molecules; the tooltip says how many are drawn (a cut and the cap hide some)
+    const sent = shown < count ? `, at most ${shown} sent` : '';
+    legend.push(`<span data-species="${layer.name}" data-drawn="${keep.length}" title="${count} molecules${sent}; `
+      + `${keep.length} drawn"><span class="swatch" style="background:${css}"></span>${layer.name} ${count}`
+      + `${shown < count ? '*' : ''}</span>`);
+  }
+  el.particleLegend.innerHTML = legend.join('');
+}
+
+el.particles?.addEventListener('change', async () => {
+  for (const layer of particleLayers) await toggleProp(layer.actor, el.particles.checked);
+});
 
 /**
  * Every render goes through here, so the probe markers follow what VTK draws: after the frame, cache the
@@ -3282,6 +3371,7 @@ async function refreshField() {
   const t0 = performance.now();
   try {
     await applyField(await loadField());
+    await updateParticles(); // a new time: new positions (the same ones on a variable switch)
     await render();
     await updateCropStats(); // new values, same mesh
     setStatus(`${describe()} ✓ (${Math.round(performance.now() - t0)} ms)`);
@@ -3409,6 +3499,7 @@ async function refreshTimeStep() {
     } else {
       await applyField(field);
     }
+    await updateParticles();
     await render();
     setStatus(`${describe()} ✓ (${Math.round(performance.now() - t0)} ms)`);
   } catch (e) {
@@ -3566,6 +3657,13 @@ function missingBrowserSupport() {
     const geometry = await loadGeometry();
     const field = await loadField();
     await buildScene(geometry, field);
+    if (state.particleSpecies.length) {
+      await buildParticleLayers();
+      await updateParticles();
+      await render();
+      el.particlesToggle.hidden = false;
+      el.particles.disabled = false;
+    }
 
     state.ready = true;
     el.variable.disabled = false;

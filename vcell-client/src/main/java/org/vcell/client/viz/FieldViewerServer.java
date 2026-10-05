@@ -413,6 +413,7 @@ public final class FieldViewerServer {
 		s.createContext("/timeseries", wrap(FieldViewerServer::handleTimeSeries));
 		s.createContext("/stats", wrap(FieldViewerServer::handleStats));
 		s.createContext("/kymograph", wrap(FieldViewerServer::handleKymograph));
+		s.createContext("/particles", wrap(FieldViewerServer::handleParticles));
 		Path viewerRoot = staticRoot();
 		if (viewerRoot != null) {
 			// least-specific context: the data routes above still win, this catches the rest
@@ -1831,6 +1832,21 @@ public final class FieldViewerServer {
 	 * {@link TimeSeriesJobSpec} with {@code calcSpaceStats} carries all the variables, so the
 	 * reduction runs next to the reader in a single pass.
 	 */
+	/**
+	 * {@code /particles}: the molecule positions of a hybrid PDE/particle run at one time
+	 * ({@link FenicsBundleViews#particles}). Only results bundles carry positions; for any other run it is
+	 * a bad request, and the viewer only asks when {@code /info} lists {@code particleSpecies}.
+	 */
+	private static String handleParticles(HttpExchange ex) throws Exception {
+		Map<String, String> q = query(ex);
+		FenicsBundleViews.BundleSource bundle = bundleSourceFor(q);
+		if (bundle != null) {
+			return FenicsBundleViews.particles(bundle, q);
+		}
+		sourceFor(q); // an unknown dataset is a 404, as on the other routes
+		throw new IllegalArgumentException("this run has no particle positions");
+	}
+
 	private static String handleStats(HttpExchange ex) throws Exception {
 		FenicsBundleViews.BundleSource bundle = bundleSourceFor(query(ex));
 		if (bundle != null) {

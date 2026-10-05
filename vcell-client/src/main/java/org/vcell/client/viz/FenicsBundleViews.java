@@ -181,7 +181,18 @@ final class FenicsBundleViews {
 			sb.append(",\"domain\":\"").append(FieldViewerServer.jsonEscape(v.domain())).append('"');
 			sb.append(",\"location\":\"point\",\"isFunction\":false}");
 		}
-		sb.append("]}");
+		sb.append(']');
+		if (!bundle.getParticleSpecies().isEmpty()) {
+			// a hybrid PDE/particle run: the viewer offers a particle layer, fetched from /particles
+			sb.append(",\"particleSpecies\":[");
+			first = true;
+			for (String name : bundle.getParticleSpecies().keySet()) {
+				sb.append(first ? "" : ",").append('"').append(FieldViewerServer.jsonEscape(name)).append('"');
+				first = false;
+			}
+			sb.append(']');
+		}
+		sb.append('}');
 		return sb.toString();
 	}
 
@@ -384,6 +395,52 @@ final class FenicsBundleViews {
 			}
 		};
 		return BodyFittedKymograph.json(varName, domain, PointSeries.Location.POINT, path, n, times(bundle), tstep, rows, moving);
+	}
+
+	/** the most molecule positions {@code /particles} sends per species unless {@code max} says otherwise */
+	static final int DEFAULT_MAX_PARTICLES = 20000;
+
+	/**
+	 * {@code /particles[?time=][&max=]}: every particle species' molecule positions at one time (lab frame,
+	 * flat x,y,z), at most {@code max} per species (default {@value #DEFAULT_MAX_PARTICLES}), evenly strided
+	 * through the molecules when there are more. {@code count} is the species' molecules at that time,
+	 * {@code shown} how many positions were sent.
+	 */
+	static String particles(BundleSource source, Map<String, String> q) throws Exception {
+		FenicsBundle bundle = open(source);
+		if (bundle.getParticleSpecies().isEmpty()) {
+			throw new IllegalArgumentException("the run " + source.simId + " has no particles");
+		}
+		int row = rowFor(bundle, q);
+		int max = DEFAULT_MAX_PARTICLES;
+		if (q.get("max") != null && !q.get("max").isEmpty()) {
+			max = Integer.parseInt(q.get("max"));
+			if (max < 1) {
+				throw new IllegalArgumentException("'max' must be at least 1");
+			}
+		}
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("{\"time\":").append(bundle.getTimes().get(row)).append(",\"timeIndex\":").append(row);
+		sb.append(",\"species\":[");
+		boolean first = true;
+		for (String name : bundle.getParticleSpecies().keySet()) {
+			double[] xyz = bundle.particles(name, row);
+			int count = xyz.length / 3;
+			int stride = Math.max(1, (count + max - 1) / max);
+			int shown = (count + stride - 1) / stride;
+			double[] sent = new double[3 * shown];
+			for (int i = 0, k = 0; i < count; i += stride, k++) {
+				System.arraycopy(xyz, 3 * i, sent, 3 * k, 3);
+			}
+			sb.append(first ? "{" : ",{");
+			first = false;
+			sb.append("\"name\":\"").append(FieldViewerServer.jsonEscape(name)).append('"');
+			sb.append(",\"count\":").append(count).append(",\"shown\":").append(shown).append(",\"points\":");
+			FieldViewerServer.appendDoubles(sb, sent, sent.length);
+			sb.append('}');
+		}
+		sb.append("]}");
+		return sb.toString();
 	}
 
 	/**
