@@ -17,6 +17,8 @@ vcell-client's test sources, `org.vcell.client.viz.FieldViewerFixtureServer`. It
 | `movingBoundary` | a stand-in MovingBoundary run (`FakeMovingBoundaryRun`), served through the real VTU seam |
 | `chombo2d` | a stand-in Chombo run (`FakeChomboRun`), 2D: a disk of quads and cut pentagons, through the VTU seam |
 | `chombo3d` | the same, 3D: a ball of voxels with polyhedra at its surface |
+| `chomboRun2d` | a real Chombo run, 2D (a disk on an 8 × 8 mesh) with its membrane (`s2` on `subdomain1.vol0_Membrane`), read as the desktop reads a local run (vcell-core's `org/vcell/vis/chombo` fixture) |
+| `chomboRun3d` | the same, 3D (a ball on an 8 × 8 × 8 mesh: voxels and cut-cell polyhedra, and a membrane of triangles) |
 
 Every test runs in Chromium (WebGL 2 through SwiftShader), WebKit and Firefox, Playwright's own builds,
 and fails if the console shows an `is not permitted` refusal from the wasm invoker or an uncaught error.
@@ -27,6 +29,7 @@ and fails if the console shows an `is not permitted` refusal from the wasm invok
 | `test_kymograph.py` | kymographs: the Line tool and the typed line, the image, the crosshair (click, drag, arrow keys) and its line scan and time series, click → time, shift-click → probe, the exports, the retries, and the desktop cross-check |
 | `test_kymograph_bodyfitted.py` | kymographs of FEniCSx (2D, 3D, ALE), Chombo (2D, 3D) and MovingBoundary runs: evenly spaced samples, the lab-frame label, gaps in the other domain |
 | `test_fv_membranes.py` | finite-volume membrane variables: drawn on their faces, probed there, curves along them in 2D and in the 3D cut plane, Stats, and the desktop cross-check for membrane curves |
+| `test_chombo_membranes.py` | real Chombo runs: a 3D membrane drawn as a surface in 3D and probed on it, the 3D volume with its cut cells, switching between them, a 2D membrane drawn in the plane |
 | `test_membrane_curves.py` | curves along a 2D FEniCSx membrane: the curve follows the membrane between the snapped picks, the overlay follows its samples, the long way round, the tool off on a 3D membrane surface |
 | `test_particles.py` | the particle layer of a hybrid PDE/particle run: offered only when `/info` lists `particleSpecies`, follows the time slider, hides the molecules beyond a cut, toggles |
 
