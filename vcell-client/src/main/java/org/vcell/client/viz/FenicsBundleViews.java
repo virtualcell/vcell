@@ -412,6 +412,15 @@ final class FenicsBundleViews {
 			throw new IllegalArgumentException("the run " + source.simId + " has no particles");
 		}
 		int row = rowFor(bundle, q);
+		Map<String, double[]> species = new java.util.LinkedHashMap<>();
+		for (String name : bundle.getParticleSpecies().keySet()) {
+			species.put(name, bundle.particles(name, row));
+		}
+		return particlesJson(bundle.getTimes().get(row), row, species, maxParticles(q));
+	}
+
+	/** {@code max} from a {@code /particles} query, default {@value #DEFAULT_MAX_PARTICLES} */
+	static int maxParticles(Map<String, String> q) {
 		int max = DEFAULT_MAX_PARTICLES;
 		if (q.get("max") != null && !q.get("max").isEmpty()) {
 			max = Integer.parseInt(q.get("max"));
@@ -419,12 +428,21 @@ final class FenicsBundleViews {
 				throw new IllegalArgumentException("'max' must be at least 1");
 			}
 		}
+		return max;
+	}
+
+	/**
+	 * The {@code /particles} response: per species (flat x,y,z positions) its molecule count and at most
+	 * {@code max} positions, evenly strided. Shared by results bundles and finite-volume particle files.
+	 */
+	static String particlesJson(double time, int row, Map<String, double[]> species, int max) {
 		StringBuilder sb = new StringBuilder(256);
-		sb.append("{\"time\":").append(bundle.getTimes().get(row)).append(",\"timeIndex\":").append(row);
+		sb.append("{\"time\":").append(time).append(",\"timeIndex\":").append(row);
 		sb.append(",\"species\":[");
 		boolean first = true;
-		for (String name : bundle.getParticleSpecies().keySet()) {
-			double[] xyz = bundle.particles(name, row);
+		for (Map.Entry<String, double[]> entry : species.entrySet()) {
+			String name = entry.getKey();
+			double[] xyz = entry.getValue();
 			int count = xyz.length / 3;
 			int stride = Math.max(1, (count + max - 1) / max);
 			int shown = (count + stride - 1) / stride;

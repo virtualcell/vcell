@@ -29,7 +29,10 @@ import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
+import java.util.List;
 import java.util.stream.Stream;
 
 /**
@@ -54,6 +57,13 @@ public class FieldViewerServerFvTest {
 	static final String SIM_3D = "868220316";
 	/** MembraneFrap3D: 3D, 21³, membrane variables only ({@code r_PM}, {@code rf_PM} on the membrane of a ball) */
 	static final String SIM_MEMBRANE_3D = "956955326";
+	/**
+	 * A hybrid run (vcell-fvsolver with embedded Smoldyn) saved with "save particle files": 3D, 9 × 9 × 5 in a
+	 * 2 × 2 × 1 µm box, particle species A converting to the field B; five saved times, each with its molecule
+	 * positions in {@code SimID_1000_0__00<n>.smoldynOutput} (196, 188, 185, 174, 165 molecules).
+	 */
+	static final String SIM_HYBRID = "1000";
+	static final int[] HYBRID_PARTICLE_COUNTS = { 196, 188, 185, 174, 165 };
 	private static final String[] EXTENSIONS = { ".functions", ".log", ".mesh", ".meshmetrics", ".subdomains", "00.zip" };
 	private static final User OWNER = new User("ezequiel23", new KeyValue("258925427"));
 
@@ -98,8 +108,14 @@ public class FieldViewerServerFvTest {
 				new Cachetable(10 * Cachetable.minute, 100_000_000L), root.toFile(), root.toFile());
 		LocalDataSetController local = new LocalDataSetController(null, controller, null, OWNER);
 		VCDataManager dataManager = new VCDataManager(() -> local);
-		for (String sim : new String[] { SIM_2D, SIM_3D, SIM_MEMBRANE_3D }) {
-			for (String ext : EXTENSIONS) {
+		for (String sim : new String[] { SIM_2D, SIM_3D, SIM_MEMBRANE_3D, SIM_HYBRID }) {
+			List<String> exts = new ArrayList<>(Arrays.asList(EXTENSIONS));
+			if (sim.equals(SIM_HYBRID)) {
+				for (int i = 1; i <= HYBRID_PARTICLE_COUNTS.length; i++) {
+					exts.add(String.format("_%03d.smoldynOutput", i));
+				}
+			}
+			for (String ext : exts) {
 				String name = "SimID_" + sim + "_0_" + ext;
 				try (InputStream in = FieldViewerServerFvTest.class.getResourceAsStream("fv/" + name)) {
 					Assertions.assertNotNull(in, name);
@@ -110,7 +126,8 @@ public class FieldViewerServerFvTest {
 					new VCSimulationIdentifier(new KeyValue(sim), OWNER), 0);
 			SubdomainInfo subdomains = SubdomainInfo.read(userDir.resolve("SimID_" + sim + "_0_.subdomains").toFile());
 			FieldViewerServer.register(vcdID, dataManager, subdomains,
-					sim.equals(SIM_2D) ? "fv::2d" : sim.equals(SIM_3D) ? "fv::3d" : "fv::membrane frap 3d");
+					sim.equals(SIM_2D) ? "fv::2d" : sim.equals(SIM_3D) ? "fv::3d"
+							: sim.equals(SIM_HYBRID) ? "fv::hybrid with particles" : "fv::membrane frap 3d");
 		}
 		return dataManager;
 	}

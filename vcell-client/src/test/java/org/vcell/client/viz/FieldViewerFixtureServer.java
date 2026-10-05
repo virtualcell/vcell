@@ -64,6 +64,7 @@ public final class FieldViewerFixtureServer {
 				+ "\"fv2d\":{\"sim\":\"" + FieldViewerServerFvTest.SIM_2D + "\",\"job\":0},"
 				+ "\"fv3d\":{\"sim\":\"" + FieldViewerServerFvTest.SIM_3D + "\",\"job\":0},"
 				+ "\"fvMembrane3d\":{\"sim\":\"" + FieldViewerServerFvTest.SIM_MEMBRANE_3D + "\",\"job\":0},"
+				+ "\"fvHybrid\":{\"sim\":\"" + FieldViewerServerFvTest.SIM_HYBRID + "\",\"job\":0},"
 				+ "\"fenics2d\":{\"sim\":\"987654321\",\"job\":0},"
 				+ "\"fenicsMoving\":{\"sim\":\"777\",\"job\":0},"
 				+ "\"fenics3d\":{\"sim\":\"555\",\"job\":0},"

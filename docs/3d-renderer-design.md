@@ -121,9 +121,22 @@ the molecule count. When the run has species, the viewer shows a **Particles** t
 colour-keyed legend and draws each species as point sprites over the field. It refetches positions per
 time step, and hides the molecules beyond an active cut, as the mesh there is.
 
-Finite-volume hybrid runs (vcell-fvsolver with embedded Smoldyn) write particle *counts per voxel*,
-not positions. They are not covered: drawing them would need the solver to save positions, or a binned
-display.
+**Finite-volume hybrid runs.** vcell-fvsolver with embedded Smoldyn saves positions when the
+simulation's *save particle files* option is on (`SmoldynSimulationOptions.saveParticleFiles`). It
+writes one `SimID_<key>_<job>__<NNN>.smoldynOutput` per saved time, with `species(state) x y z` per
+molecule, and NNN is the time's 1-based index in the log. VCell already reads these for any run
+(`ParticleDataBlock` via `DataSetController.getParticleDataExists` / `getParticleDataBlock`, local and
+remote), so the viewer server serves them through the data manager:
+- `/info` lists their species, with the `(solution)` state dropped;
+- `/particles` returns the positions.
+
+With a Smoldyn step multiplier k > 1, the `listmols` cadence VCell wrote (counted in PDE steps while
+Smoldyn counts its own) put the files at the wrong times. `SmoldynFileWriter` now counts Smoldyn steps,
+and vcell-fvsolver (virtualcell/vcell-fvsolver#27) writes the files itself at each output time.
+
+**Drawing.** Molecules are drawn in an overlay renderer (layer 1, sharing the field's camera). Most of
+them sit inside the volume, where the opaque field surface would hide them. The cut still hides the
+molecules beyond it.
 
 ### Mode B — `webapp-ng` as an independent web client
 

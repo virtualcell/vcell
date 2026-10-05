@@ -181,6 +181,7 @@ let cubeAxes = null;
 let clipPlane = null;
 let extractCells = null; // the whole-cells cut: vtkExtractCells on the same input as tableClip
 let particleLayers = []; // one point actor per particle species: {name, color, polyData, actor}
+let particleRenderer = null; // an overlay layer over the field, sharing its camera: molecules show through the surface
 
 const setStatus = (text, isError = false) => {
   el.status.textContent = text;
@@ -863,8 +864,17 @@ async function buildScene(geometry, field) {
 // light, saturated colours that stay distinct from the blue-to-red field lookup table on the dark background
 const PARTICLE_COLORS = [[1, 1, 1], [1, 0.3, 1], [0.35, 1, 0.35], [1, 0.75, 0.15], [0.3, 0.9, 1]];
 
-/** One point actor per species, drawn as small spheres; their points are filled in by applyParticles. */
+/**
+ * One point actor per species, drawn as small spheres; their points are filled in by applyParticles. They live in
+ * an overlay renderer (layer 1, the field's camera): most molecules are inside the volume, where the opaque field
+ * surface would hide them, so they are drawn over it. The cut still hides the molecules beyond it.
+ */
 async function buildParticleLayers() {
+  particleRenderer = vtk.vtkRenderer();
+  await particleRenderer.setLayer(1);
+  await particleRenderer.setActiveCamera(camera);
+  await renderWindow.setNumberOfLayers(2);
+  await renderWindow.addRenderer(particleRenderer);
   for (const [k, name] of state.particleSpecies.entries()) {
     const polyData = vtk.vtkPolyData();
     const pointMapper = vtk.vtkPolyDataMapper();
@@ -876,7 +886,7 @@ async function buildParticleLayers() {
     await property.setColor(...color);
     await property.setPointSize(5);
     await property.renderPointsAsSpheresOn();
-    await renderer.addActor(pointActor);
+    await particleRenderer.addActor(pointActor);
     particleLayers.push({ name, color, polyData, actor: pointActor });
   }
 }
