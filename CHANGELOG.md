@@ -16,6 +16,35 @@ followed by flat Keep-a-Changelog categories. API consumers should scan
 
 _(Release-manager scratchpad. Populated at release-cut time.)_
 
+## [8.2.0.12] - 2026-10-05
+
+**Highlights.** The field viewer opens stored Chombo results — 2D and 3D, volume and membrane variables,
+with 3D membranes drawn and probed as surfaces — which until now failed on the server. It also draws the
+molecules of hybrid PDE/particle simulations over their fields, both for VCell's finite-volume hybrid runs
+(with "save particle files" on) and for results bundles that record particles. The finite-volume solver is
+updated to vcell-fvsolver 0.10.8, which saves the particle positions at every output time.
+
+### Added
+- Field viewer: the molecules of hybrid PDE/particle runs are drawn over the fields, follow the time
+  slider, are hidden beyond a cut, and can be toggled. Results bundles that record particles are supported
+  (#2160), and so are finite-volume hybrid runs saved with "save particle files", local or on the server
+  (#2161).
+
+### Fixed
+- Field viewer: Chombo results display. Their volume meshes (voxels and cut cells) and membrane meshes
+  (lines in 2D, triangles in 3D) are written in Java on the desktop and the data server alike; the Python
+  VTK service they needed is not configured on the data server. A 3D membrane is reported as 3D, so it is
+  drawn and probed as a surface rather than flattened. (#2157)
+- Chombo results open: the solver's average statistic, named `mean`, was rejected and stopped every Chombo
+  result from opening (#1894, fixed in #2157).
+- Hybrid runs with a Smoldyn step multiplier greater than 1 wrote particle files at the wrong times; the
+  output cadence now counts Smoldyn steps (#2161).
+
+### Changed
+- Desktop and batch use vcell-fvsolver v0.10.8 (FiniteVolume_x64, smoldyn_x64): hybrid runs save the
+  molecules' positions at every PDE output time when VCell asks for particle files
+  (virtualcell/vcell-fvsolver#27).
+
 ## [8.2.0.11] - 2026-10-02
 
 **Highlights.** Moving Boundary simulations can now be run locally from the desktop (the blue quick-run
