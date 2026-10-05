@@ -213,10 +213,10 @@
 		     A mismatched sha256 fails the build.
 		     HPC runs don't use these: SlurmProxy runs each solver family's own image, pinned in
 		     vcell-fluxcd's submit.env (see docs/plan-solver-repos.md). -->
-		<solvers-fvsolver.version>v0.10.6</solvers-fvsolver.version>	<!-- FiniteVolume_x64, smoldyn_x64 -->
-		<solvers-fvsolver.sha256.linux64>21f6d0420ed4c79244f321417b5444d14aa468533df728483167b6f732168369</solvers-fvsolver.sha256.linux64>
-		<solvers-fvsolver.sha256.mac64>342519843bc50ed04903f4042a7a009994924ad0ae0f69a680b2ec331a77b2d2</solvers-fvsolver.sha256.mac64>
-		<solvers-fvsolver.sha256.win64>2cc44950f8fad9857a3dd798caa4478d4769618955eb90786e51e5e485bb54e8</solvers-fvsolver.sha256.win64>
+		<solvers-fvsolver.version>v0.10.8</solvers-fvsolver.version>	<!-- FiniteVolume_x64, smoldyn_x64 -->
+		<solvers-fvsolver.sha256.linux64>f12feacd42cf3db305e20c5bf5e832f8670492f554f18f876b89a6b75331bdf2</solvers-fvsolver.sha256.linux64>
+		<solvers-fvsolver.sha256.mac64>151bac683d88f600d47a28bea56c3381052214064ca5ef07e63f03ccdc3fd8cd</solvers-fvsolver.sha256.mac64>
+		<solvers-fvsolver.sha256.win64>85a4ba8cf47d21275941e82ba71ba36a00a75fa8312eb3399ebea8115c00aa1a</solvers-fvsolver.sha256.win64>
 		<solvers-ode.version>v0.9.6</solvers-ode.version>	<!-- SundialsSolverStandalone_x64 -->
 		<solvers-ode.sha256.linux64>a35474700888ba00632aa2b2f26f308428cf2ef9d59984e160f4a05ce11afb41</solvers-ode.sha256.linux64>
 		<solvers-ode.sha256.mac64>e6b08958b0ab4f3b372e74cdd1508cc752719dafabc00de8897956bbf0926233</solvers-ode.sha256.mac64>
