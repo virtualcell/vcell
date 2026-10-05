@@ -53,6 +53,8 @@ public final class FieldViewerFixtureServer {
 		FakeMovingBoundaryRun.register();
 		// Chombo: a disk (2D) and a ball (3D) on one static embedded-boundary mesh, through the VTU seam
 		FakeChomboRun.register();
+		// Chombo: real 2D and 3D runs with membranes, read as the desktop reads a local run
+		FieldViewerServerChomboLocalRunTest.registerChomboFixtures(Files.createDirectories(fvRoot.resolve("chombo")));
 
 		int port = FieldViewerServer.start();
 		if (port < 0) {
@@ -70,7 +72,9 @@ public final class FieldViewerFixtureServer {
 				+ "\"fenicsParticles\":{\"sim\":\"557\",\"job\":0},"
 				+ "\"movingBoundary\":{\"sim\":\"" + FakeMovingBoundaryRun.SIM + "\",\"job\":0},"
 				+ "\"chombo2d\":{\"sim\":\"" + FakeChomboRun.SIM_2D + "\",\"job\":0},"
-				+ "\"chombo3d\":{\"sim\":\"" + FakeChomboRun.SIM_3D + "\",\"job\":0}}}");
+				+ "\"chombo3d\":{\"sim\":\"" + FakeChomboRun.SIM_3D + "\",\"job\":0},"
+				+ "\"chomboRun2d\":{\"sim\":\"" + FieldViewerServerChomboLocalRunTest.SIM_2D + "\",\"job\":0},"
+				+ "\"chomboRun3d\":{\"sim\":\"" + FieldViewerServerChomboLocalRunTest.SIM_3D + "\",\"job\":0}}}");
 		System.out.flush();
 		Thread.currentThread().join(); // the server's threads are daemons; stay up until killed
 	}

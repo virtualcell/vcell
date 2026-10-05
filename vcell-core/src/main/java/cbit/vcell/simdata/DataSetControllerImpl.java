@@ -3813,7 +3813,9 @@ public ComsolSimFiles getComsolSimFiles(VCDataIdentifier vcdataID) throws DataAc
 				throw new RuntimeException("only time index 0 supported for chombo vtk mesh files");
 			}
 			ChomboVtkFileWriter chomboVTKFileWriter = new ChomboVtkFileWriter();
-			File primaryDirectory = getPrimaryUserDir(vcdataID.getOwner(), false);
+			File primaryDirectory = (vcdataID instanceof LocalVCDataIdentifier local)
+					? local.getLocalDirectory() // a desktop (quick) run: its own directory
+					: getPrimaryUserDir(vcdataID.getOwner(), false);
 			VtuFileContainer vtuFiles = chomboVTKFileWriter.getEmptyVtuMeshFiles(chomboFiles, primaryDirectory);
 			return vtuFiles;
 		}catch (Exception e){
@@ -3889,7 +3891,10 @@ public ComsolSimFiles getComsolSimFiles(VCDataIdentifier vcdataID) throws DataAc
 				throw new DataAccessException("data for dataset "+vcdataID+" not found at time "+time);
 			}
 			ChomboVtkFileWriter chomboVTKFileWriter = new ChomboVtkFileWriter();
-			double[] vtuData = chomboVTKFileWriter.getVtuMeshData(chomboFiles, outputContext, getUserDataDirectory(vcdataID), time, var, timeIndex);
+			File userDataDirectory = (vcdataID instanceof LocalVCDataIdentifier local)
+					? local.getLocalDirectory() // a desktop (quick) run: no server data directory
+					: getUserDataDirectory(vcdataID);
+			double[] vtuData = chomboVTKFileWriter.getVtuMeshData(chomboFiles, outputContext, userDataDirectory, time, var, timeIndex);
 			return vtuData;
 		}catch (Exception e){
 			throw new DataAccessException("failed to retrieve VTK files: "+e.getMessage(),e);

@@ -13,8 +13,9 @@ import org.w3c.dom.NodeList;
 
 /**
  * Reads back the restricted {@code .vtu} form both {@link VtuWriter} and the Python VTK service write: one
- * piece, inline binary (or ASCII) data arrays, a UInt32 or UInt64 byte-count header. Test-only: enough to
- * compare two grids, nothing more.
+ * piece, inline binary (or ASCII) data arrays, a UInt32 or UInt64 byte-count header, and a polyhedron's faces in
+ * VTK 9.4's layout ({@code face_connectivity}, {@code face_offsets}, {@code polyhedron_to_faces},
+ * {@code polyhedron_offsets}). Test-only: enough to compare two grids, nothing more.
  */
 final class VtuTestReader {
 
@@ -24,14 +25,18 @@ final class VtuTestReader {
 	final double[] points; // x,y,z per point
 	final int[][] cells;
 	final int[] types;
+	/** each cell's faces (each a list of point ids), null where the cell is not a polyhedron; null when no cell is */
+	final int[][][] faces;
 
-	private VtuTestReader(int numberOfPoints, int numberOfCells, String pointsType, double[] points, int[][] cells, int[] types) {
+	private VtuTestReader(int numberOfPoints, int numberOfCells, String pointsType, double[] points, int[][] cells, int[] types,
+			int[][][] faces) {
 		this.numberOfPoints = numberOfPoints;
 		this.numberOfCells = numberOfCells;
 		this.pointsType = pointsType;
 		this.points = points;
 		this.cells = cells;
 		this.types = types;
+		this.faces = faces;
 	}
 
 	static VtuTestReader read(File vtu) throws Exception {
@@ -48,6 +53,7 @@ final class VtuTestReader {
 		Element pointsArray = (Element) ((Element) piece.getElementsByTagName("Points").item(0)).getElementsByTagName("DataArray").item(0);
 		double[] points = values(pointsArray, order, headerBytes);
 		double[] connectivity = null, offsets = null, types = null;
+		double[] faceConnectivity = null, faceOffsets = null, polyhedronToFaces = null, polyhedronOffsets = null;
 		NodeList arrays = ((Element) piece.getElementsByTagName("Cells").item(0)).getElementsByTagName("DataArray");
 		for (int i = 0; i < arrays.getLength(); i++) {
 			Element a = (Element) arrays.item(i);
@@ -55,6 +61,10 @@ final class VtuTestReader {
 				case "connectivity" -> connectivity = values(a, order, headerBytes);
 				case "offsets" -> offsets = values(a, order, headerBytes);
 				case "types" -> types = values(a, order, headerBytes);
+				case "face_connectivity" -> faceConnectivity = values(a, order, headerBytes);
+				case "face_offsets" -> faceOffsets = values(a, order, headerBytes);
+				case "polyhedron_to_faces" -> polyhedronToFaces = values(a, order, headerBytes);
+				case "polyhedron_offsets" -> polyhedronOffsets = values(a, order, headerBytes);
 				default -> {
 				}
 			}
@@ -71,7 +81,28 @@ final class VtuTestReader {
 			cellTypes[c] = (int) types[c];
 			start = end;
 		}
-		return new VtuTestReader(np, nc, pointsArray.getAttribute("type"), points, cells, cellTypes);
+		int[][][] faces = null;
+		if (polyhedronOffsets != null) {
+			faces = new int[nc][][];
+			int faceStart = 0;
+			for (int c = 0; c < nc; c++) {
+				int faceEnd = (int) polyhedronOffsets[c];
+				if (faceEnd > faceStart) {
+					faces[c] = new int[faceEnd - faceStart][];
+					for (int f = faceStart; f < faceEnd; f++) {
+						int id = (int) polyhedronToFaces[f];
+						int pointStart = id == 0 ? 0 : (int) faceOffsets[id - 1];
+						int[] face = new int[(int) faceOffsets[id] - pointStart];
+						for (int v = 0; v < face.length; v++) {
+							face[v] = (int) faceConnectivity[pointStart + v];
+						}
+						faces[c][f - faceStart] = face;
+					}
+				}
+				faceStart = faceEnd;
+			}
+		}
+		return new VtuTestReader(np, nc, pointsArray.getAttribute("type"), points, cells, cellTypes, faces);
 	}
 
 	private static double[] values(Element a, ByteOrder order, int headerBytes) {
