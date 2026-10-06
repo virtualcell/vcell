@@ -16,6 +16,21 @@ followed by flat Keep-a-Changelog categories. API consumers should scan
 
 _(Release-manager scratchpad. Populated at release-cut time.)_
 
+## [8.2.0.13] - 2026-10-06
+
+**Highlights.** Requests to the server no longer slow to one every 30 seconds after heavy use. Since
+8.0.10.01 every reply was rolled back onto a shared reply queue instead of consumed; once about 200 had
+piled up, each request waited for the message broker's 30-second expiry sweep. A field-viewer kymograph
+of a 200-time-point FEniCSx simulation took 20 minutes; any client making many requests in a row was
+affected.
+
+### Fixed
+- Server RPC: the reply to each request is committed when received, so it is consumed rather than
+  rolled back onto the shared reply queue when the request's session closes. The orphaned replies lived
+  for the data server's client timeout (20 minutes) and, once a page of the queue (ActiveMQ
+  `maxPageSize`, 200) was full of them, a reply was only reached at the broker's 30 s expiry sweep.
+  Regression from 8.0.10.01 (per-RPC JMS sessions). (#2163)
+
 ## [8.2.0.12] - 2026-10-05
 
 **Highlights.** The field viewer opens stored Chombo results — 2D and 3D, volume and membrane variables,
