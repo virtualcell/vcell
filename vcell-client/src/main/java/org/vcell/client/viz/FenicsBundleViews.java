@@ -88,6 +88,82 @@ final class FenicsBundleViews {
 	private FenicsBundleViews() {
 	}
 
+	/** the most bytes of rows one prefetch window asks for (see {@link RowPrefetcher}) */
+	static final long PREFETCH_WINDOW_BYTES = 64L * 1024 * 1024;
+
+	/** the most rows one prefetch window asks for */
+	static final int PREFETCH_WINDOW_ROWS = 64;
+
+	/**
+	 * Fetches a run of rows ahead of the loop that reads them, a window at a time, so a bundle read from
+	 * the data server costs a few batched calls per window instead of one call per row
+	 * ({@link BundleStore#prefetch}). The window is sized to the rows' raw bytes, so a fine 3D mesh does
+	 * not pull more into memory than the cache keeps. {@code rows} is the order the loop reads them in.
+	 */
+	static final class RowPrefetcher {
+		interface Fetch {
+			void rows(int[] rows) throws IOException;
+		}
+
+		private final int[] rows;
+		private final Map<Integer, Integer> position = new java.util.HashMap<>();
+		private final int window;
+		private final Fetch fetch;
+		private int fetchedUpTo = 0;
+
+		RowPrefetcher(int[] rows, long bytesPerRow, Fetch fetch) {
+			this.rows = rows;
+			for (int i = rows.length - 1; i >= 0; i--) {
+				position.put(rows[i], i);
+			}
+			this.window = (int) Math.max(1, Math.min(PREFETCH_WINDOW_ROWS, PREFETCH_WINDOW_BYTES / Math.max(1, bytesPerRow)));
+			this.fetch = fetch;
+		}
+
+		/** called before {@code row} is read: fetches its window if it has not been fetched */
+		synchronized void before(int row) throws IOException {
+			Integer at = position.get(row);
+			if (at == null || at < fetchedUpTo) {
+				return;
+			}
+			int end = Math.min(rows.length, at + window);
+			fetch.rows(Arrays.copyOfRange(rows, at, end));
+			fetchedUpTo = end;
+		}
+
+		static int[] allRows(int count) {
+			int[] rows = new int[count];
+			for (int i = 0; i < count; i++) {
+				rows[i] = i;
+			}
+			return rows;
+		}
+
+		static int[] stridedRows(int count, int tstep) {
+			int n = FieldViewerServer.strideCount(count, tstep);
+			int[] rows = new int[n];
+			for (int i = 0; i < n; i++) {
+				rows[i] = i * tstep;
+			}
+			return rows;
+		}
+	}
+
+	/** a prefetcher for a variable's values over {@code rows} */
+	private static RowPrefetcher fieldPrefetcher(FenicsBundle bundle, String domain, String varName, int[] rows) {
+		long bytesPerRow = 8L * bundle.domain(domain).numPoints();
+		return new RowPrefetcher(rows, bytesPerRow, r -> bundle.prefetchField(domain, varName, r));
+	}
+
+	/** a prefetcher for a moving domain's recorded point positions over {@code rows}; null if nothing moves */
+	private static RowPrefetcher coordsPrefetcher(FenicsBundle bundle, String domain, int[] rows) {
+		if (!bundle.isMoving()) {
+			return null;
+		}
+		long bytesPerRow = 24L * bundle.domain(domain).numPoints();
+		return new RowPrefetcher(rows, bytesPerRow, r -> bundle.prefetchCoords(domain, r));
+	}
+
 	private static FenicsBundle open(BundleSource source) throws IOException {
 		FenicsBundle bundle = source.bundle();
 		if (bundle.getTimes().isEmpty()) {
@@ -295,14 +371,21 @@ final class FenicsBundleViews {
 		}
 		double[] times = times(bundle);
 		final String dom = domain;
+		int[] all = RowPrefetcher.allRows(times.length);
+		RowPrefetcher valueRows = fieldPrefetcher(bundle, dom, varName, all);
+		RowPrefetcher coords = coordsPrefetcher(bundle, dom, all);
 		PointSeries.Rows rows = new PointSeries.Rows() {
 			@Override
 			public VtuGridParser.VtuGrid grid(int row) throws Exception {
+				if (coords != null) {
+					coords.before(row);
+				}
 				return source.grid(bundle, dom, row);
 			}
 
 			@Override
 			public double[] values(int row) throws Exception {
+				valueRows.before(row);
 				return bundle.field(dom, varName, row);
 			}
 		};
@@ -361,8 +444,13 @@ final class FenicsBundleViews {
 			throw new IllegalArgumentException("unknown variable '" + varName + "' in domain '" + domain + "'");
 		}
 		FenicsBundle.Domain d = bundle.domain(domain);
-		VtuGridParser.VtuGrid first = source.grid(bundle, domain, 0);
 		final String dom = domain;
+		int[] strided = RowPrefetcher.stridedRows(bundle.getTimes().size(), tstep);
+		RowPrefetcher coords = coordsPrefetcher(bundle, dom, strided);
+		if (coords != null) {
+			coords.before(0);
+		}
+		VtuGridParser.VtuGrid first = source.grid(bundle, domain, 0);
 		if (d.isMembrane()) {
 			// a straight line almost never lies on a membrane: the curve runs along it, between the snapped picks
 			if (d.gdim() >= 3) {
@@ -374,8 +462,11 @@ final class FenicsBundleViews {
 			}
 			double[][] waypoints = BodyFittedKymograph.parsePath(q.get("path"), first.points[2]);
 			MembraneArc arc = MembraneArc.build(first, waypoints, BodyFittedKymograph.MAX_SAMPLES);
-			return BodyFittedKymograph.membraneJson(varName, domain, arc, times(bundle), tstep,
-					row -> bundle.field(dom, varName, row));
+			RowPrefetcher values = fieldPrefetcher(bundle, dom, varName, strided);
+			return BodyFittedKymograph.membraneJson(varName, domain, arc, times(bundle), tstep, row -> {
+				values.before(row);
+				return bundle.field(dom, varName, row);
+			});
 		}
 		double[][] path = BodyFittedKymograph.parsePath(q.get("path"), d.gdim() < 3 ? first.points[2] : null);
 		int n = BodyFittedKymograph.sampleCount(q.get("samples"), FvLineSampler.length(path), first.meanCellDiameter());
@@ -383,14 +474,19 @@ final class FenicsBundleViews {
 		for (FenicsBundle.Segment segment : bundle.getSegments()) {
 			moving |= "ale".equals(segment.motion());
 		}
+		RowPrefetcher values = fieldPrefetcher(bundle, dom, varName, strided);
 		PointSeries.Rows rows = new PointSeries.Rows() {
 			@Override
 			public VtuGridParser.VtuGrid grid(int row) throws Exception {
+				if (coords != null) {
+					coords.before(row);
+				}
 				return source.grid(bundle, dom, row);
 			}
 
 			@Override
 			public double[] values(int row) throws Exception {
+				values.before(row);
 				return bundle.field(dom, varName, row);
 			}
 		};
@@ -488,6 +584,10 @@ final class FenicsBundleViews {
 			throw new IOException(source.store.describe() + ": statistics columns " + columns + " lack mean/total/min/max");
 		}
 		double[] times = times(bundle);
+		int[] all = RowPrefetcher.allRows(times.length);
+		for (FenicsBundle.Variable var : chosen) {
+			bundle.prefetchStats(var.domain(), var.name(), all); // four numbers a row: all of them in one go
+		}
 		StringBuilder sb = new StringBuilder(96 * times.length * chosen.size() + 512);
 		sb.append("{\"times\":");
 		FieldViewerServer.appendDoubles(sb, times, times.length);

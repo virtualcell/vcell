@@ -2468,6 +2468,46 @@ public LangevinBatchResultSet getLangevinBatchResultSet(VCDataIdentifier vcdID) 
  *
  * @return the file's bytes, or null if the bundle or the file does not exist (yet)
  */
+/** the most file bytes one {@link #getFenicsBundleFiles} reply carries (it always carries at least one file) */
+public static final int MAX_FENICS_BUNDLE_BATCH_BYTES = 8 * 1024 * 1024;
+
+/** the most paths one {@link #getFenicsBundleFiles} call may ask for */
+public static final int MAX_FENICS_BUNDLE_BATCH_PATHS = 256;
+
+/**
+ * Several files of a FEniCSx results bundle in one call, each as {@link #getFenicsBundleFile} reads it
+ * (null when absent). Answers a prefix of the paths: it stops adding files once the reply holds
+ * {@link #MAX_FENICS_BUNDLE_BATCH_BYTES} (a reply always holds the first file), so a large mesh or
+ * chunk cannot make one RPC reply unboundedly large; the caller asks again for the rest.
+ */
+public byte[][] getFenicsBundleFiles(VCDataIdentifier vcdID, String[] relativePaths) throws DataAccessException {
+	return getFenicsBundleFiles(vcdID, relativePaths, MAX_FENICS_BUNDLE_BATCH_BYTES);
+}
+
+/** {@link #getFenicsBundleFiles(VCDataIdentifier, String[])} with a byte budget of {@code maxBytes} */
+public byte[][] getFenicsBundleFiles(VCDataIdentifier vcdID, String[] relativePaths, long maxBytes) throws DataAccessException {
+	if (relativePaths == null || relativePaths.length == 0) {
+		return new byte[0][];
+	}
+	if (relativePaths.length > MAX_FENICS_BUNDLE_BATCH_PATHS) {
+		throw new DataAccessException("at most " + MAX_FENICS_BUNDLE_BATCH_PATHS + " bundle files per call, got " + relativePaths.length);
+	}
+	java.util.List<byte[]> files = new java.util.ArrayList<>();
+	long bytes = 0;
+	for (String relativePath : relativePaths) {
+		if (!files.isEmpty() && bytes >= maxBytes) {
+			break;
+		}
+		byte[] file = getFenicsBundleFile(vcdID, relativePath);
+		if (file != null && !files.isEmpty() && bytes + file.length > maxBytes) {
+			break; // the next call carries it
+		}
+		files.add(file);
+		bytes += file == null ? 0 : file.length;
+	}
+	return files.toArray(new byte[0][]);
+}
+
 public byte[] getFenicsBundleFile(VCDataIdentifier vcdID, String relativePath) throws DataAccessException {
 	if (!(vcdID instanceof VCSimulationDataIdentifier)) {
 		throw new DataAccessException("FEniCSx results are simulation data; got " + vcdID);

@@ -50,6 +50,51 @@ public class BodyFittedKymographTest {
 		FieldViewerServer.stop();
 	}
 
+	/**
+	 * A bundle read from the data server, as a cluster run's is: the kymograph must fetch its rows in
+	 * batched calls ({@link org.vcell.solver.fenics.BundleStore#readAll}), not one call per row -- per-row
+	 * RPCs were what made a 201-row kymograph take minutes -- and give the same answer as from disk.
+	 */
+	@Test
+	public void aRemoteBundleFetchesItsRowsInBatches() throws Exception {
+		for (String[] c : new String[][] { { "membrane_efflux.fenics", "&domain=cytosol_dom&var=u&path=" + enc("-0.7,0.013;0.7,0.013") },
+				{ "moving_translate.fenics", "&domain=cell&var=C_cyt&samples=81&path=" + enc("1,5.01;9,5.01") } }) {
+			java.util.concurrent.atomic.AtomicInteger singleReads = new java.util.concurrent.atomic.AtomicInteger();
+			java.util.concurrent.atomic.AtomicInteger batches = new java.util.concurrent.atomic.AtomicInteger();
+			org.vcell.solver.fenics.BundleStore disk = org.vcell.solver.fenics.BundleStore.directory(bundle(c[0]));
+			org.vcell.solver.fenics.BundleStore remote = new org.vcell.solver.fenics.BundleStore() {
+				@Override
+				public byte[] read(String relativePath) throws java.io.IOException {
+					if (relativePath.matches(".*/\\d+(\\.0)+")) {
+						singleReads.incrementAndGet(); // a row chunk read on its own
+					}
+					return disk.read(relativePath);
+				}
+
+				@Override
+				public byte[][] readAll(java.util.List<String> relativePaths) throws java.io.IOException {
+					batches.incrementAndGet();
+					byte[][] out = new byte[relativePaths.size()][];
+					for (int i = 0; i < out.length; i++) {
+						out[i] = disk.read(relativePaths.get(i));
+					}
+					return out;
+				}
+
+				@Override
+				public String describe() {
+					return "remote " + c[0];
+				}
+			};
+			FieldViewerServer.registerBundle("4242", 0, org.vcell.solver.fenics.BundleStore.cached(remote), "remote");
+			FieldViewerServer.registerBundle("4243", 0, bundle(c[0]), "disk");
+			JsonObject fromRemote = get("4242", "/kymograph", c[1]);
+			Assertions.assertEquals(get("4243", "/kymograph", c[1]).getAsJsonArray("values"), fromRemote.getAsJsonArray("values"), c[0]);
+			Assertions.assertEquals(0, singleReads.get(), c[0] + ": every row came in a batch");
+			Assertions.assertTrue(batches.get() >= 1 && batches.get() <= 3, c[0] + ": " + batches.get() + " batched reads");
+		}
+	}
+
 	private static File bundle(String name) throws Exception {
 		return new File(BodyFittedKymographTest.class.getResource(name + "/.zattrs").toURI()).getParentFile();
 	}

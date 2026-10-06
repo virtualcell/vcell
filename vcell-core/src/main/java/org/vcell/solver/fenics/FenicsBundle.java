@@ -271,6 +271,75 @@ public final class FenicsBundle {
 		return Arrays.copyOf(xyz, 3 * (int) Math.min(Math.round(count), xyz.length / 3));
 	}
 
+	/**
+	 * Tells the store which chunks {@link #field} is about to read for {@code rows}, so a remote store
+	 * fetches them in a few batched calls instead of one call per row ({@link BundleStore#prefetch}).
+	 * Rows not written yet are skipped.
+	 */
+	public void prefetchField(String domain, String variable, int[] rows) throws IOException {
+		String path = variable(domain, variable).path();
+		prefetchRows(rows, row -> path);
+	}
+
+	/** {@link #prefetchField} for {@link #stats} */
+	public void prefetchStats(String domain, String variable, int[] rows) throws IOException {
+		String path = variable(domain, variable).stats();
+		prefetchRows(rows, row -> path);
+	}
+
+	/** {@link #prefetchField} for {@link #coords}: the recorded point positions of moving rows */
+	public void prefetchCoords(String domain, int[] rows) throws IOException {
+		domain(domain);
+		java.util.List<Integer> moving = new ArrayList<>();
+		for (int row : rows) {
+			if (row >= 0 && row < times.size() && "ale".equals(segmentOf(row).segment().motion())) {
+				moving.add(row);
+			}
+		}
+		prefetchRows(moving.stream().mapToInt(Integer::intValue).toArray(), row -> domain + "/_coords");
+	}
+
+	private interface ArrayOfRow {
+		String path(int row);
+	}
+
+	private void prefetchRows(int[] rows, ArrayOfRow arrayOfRow) throws IOException {
+		List<String> chunks = new ArrayList<>(rows.length);
+		Map<String, JsonObject> metas = new LinkedHashMap<>();
+		for (int row : rows) {
+			if (row < 0 || row >= times.size()) {
+				continue;
+			}
+			SegmentRow sr = segmentOf(row);
+			String arrayPath = sr.segment().prefix() + arrayOfRow.path(row);
+			JsonObject meta = metas.get(arrayPath);
+			if (meta == null) {
+				meta = arrayMeta(arrayPath);
+				metas.put(arrayPath, meta);
+			}
+			int[] shape = ints(meta.getAsJsonArray("shape"));
+			if (sr.localRow() < shape[0]) {
+				chunks.add(chunkPath(arrayPath, meta, sr.localRow()));
+			}
+		}
+		store.prefetch(chunks);
+	}
+
+	private JsonObject arrayMeta(String arrayPath) throws IOException {
+		byte[] zarray = store.read(arrayPath + "/.zarray");
+		if (zarray == null) {
+			throw new FileNotFoundException(root + "/" + arrayPath + ": no .zarray");
+		}
+		return JsonParser.parseString(new String(zarray, StandardCharsets.UTF_8)).getAsJsonObject();
+	}
+
+	/** the chunk file of a one-row-per-chunk array holding {@code row} */
+	private static String chunkPath(String arrayPath, JsonObject meta, int row) {
+		int dims = meta.getAsJsonArray("shape").size();
+		String separator = string(meta, "dimension_separator", ".");
+		return arrayPath + "/" + row + (separator + "0").repeat(dims - 1);
+	}
+
 	/** whether any output row's mesh moves (an ALE segment) */
 	public boolean isMoving() {
 		return segments.stream().anyMatch(s -> "ale".equals(s.motion()));
@@ -291,11 +360,7 @@ public final class FenicsBundle {
 	/** one row of a 2D zarr v2 array stored one row per chunk; a missing chunk is all fill value */
 	private double[] readRow(String arrayPath, int row) throws IOException {
 		String arrayDir = root + "/" + arrayPath;
-		byte[] zarray = store.read(arrayPath + "/.zarray");
-		if (zarray == null) {
-			throw new FileNotFoundException(arrayDir + ": no .zarray");
-		}
-		JsonObject meta = JsonParser.parseString(new String(zarray, StandardCharsets.UTF_8)).getAsJsonObject();
+		JsonObject meta = arrayMeta(arrayPath);
 		int[] shape = ints(meta.getAsJsonArray("shape"));
 		int[] chunks = ints(meta.getAsJsonArray("chunks"));
 		String dtype = meta.get("dtype").getAsString();
@@ -314,8 +379,7 @@ public final class FenicsBundle {
 		for (int axis = 1; axis < shape.length; axis++) {
 			n *= shape[axis];
 		}
-		String separator = string(meta, "dimension_separator", ".");
-		String chunk = arrayPath + "/" + row + (separator + "0").repeat(shape.length - 1);
+		String chunk = chunkPath(arrayPath, meta, row);
 		double[] values = new double[n];
 		byte[] raw = store.read(chunk);
 		if (raw == null) {
