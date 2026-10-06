@@ -436,6 +436,20 @@ instead of a 500 for a BNGL download of a BioModel with no applications.
 - `/api/v0/biomodel/{id}/biomodel.bngl` now answers 404, not 500, for a BioModel
   with no applications.
 
+## [8.1.8.06] - 2026-10-06
+
+**Highlights.** Requests to the server no longer slow to one every 30 seconds after heavy use. Built from
+the `vc8.1-prod` release branch; the only change from 8.1.8.05.
+
+### Fixed
+- Server RPC: the reply to each request is committed when received, so it is consumed rather than
+  rolled back onto the shared reply queue when the request's session closes. Once about 200 unconsumed
+  replies had piled up, every request waited for the message broker's 30 s expiry sweep, for up to
+  20 minutes. Regression from 8.0.10.01. (#2163, cherry-picked in #2164)
+
+### Notes for API consumers
+- No `/api/v1/` schema changes in this build.
+
 ## [8.1.8.05] - 2026-10-01
 
 **Highlights.** Saving a model from Windows no longer corrupts non-ASCII text in
