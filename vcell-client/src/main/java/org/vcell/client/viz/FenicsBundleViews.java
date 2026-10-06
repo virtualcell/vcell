@@ -92,7 +92,7 @@ final class FenicsBundleViews {
 	static final long PREFETCH_WINDOW_BYTES = 64L * 1024 * 1024;
 
 	/** the most rows one prefetch window asks for */
-	static final int PREFETCH_WINDOW_ROWS = 64;
+	static final int PREFETCH_WINDOW_ROWS = 256;
 
 	/**
 	 * Fetches a run of rows ahead of the loop that reads them, a window at a time, so a bundle read from
