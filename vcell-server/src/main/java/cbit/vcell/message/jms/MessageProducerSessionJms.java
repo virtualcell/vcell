@@ -234,6 +234,13 @@ public class MessageProducerSessionJms implements VCMessageSession {
             String filter = VCMessagingConstants.JMSCORRELATIONID_PROPERTY + "='" + rpcMessage.getJMSMessageID() + "'";
             replyConsumer = rpcSession.createConsumer(getReplyQueue(), filter);
             Message replyMessage = replyConsumer.receive(timeoutMS);
+            // The session is transacted, so the receive is only provisional until committed: closing
+            // the session without this commit rolls it back and puts the reply back on the shared
+            // reply queue, where no consumer will ever select it again. Those orphans live out the
+            // reply's whole time to live (the data server's client timeout), and once a page of the
+            // queue (ActiveMQ maxPageSize, 200) is full of them a selector consumer only reaches a
+            // new reply at the broker's 30 s expiry sweep -- every RPC then took 30 s.
+            rpcSession.commit();
             if(replyMessage == null){
                 lg.info("Request timed out");
             }
