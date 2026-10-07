@@ -16,6 +16,24 @@ followed by flat Keep-a-Changelog categories. API consumers should scan
 
 _(Release-manager scratchpad. Populated at release-cut time.)_
 
+## [8.2.0.15] - 2026-10-07
+
+**Highlights.** Kymographs and time series of server-run FEniCSx results are read on the data server: it
+sends only the values at the points being plotted, not every field at every saved time. A kymograph of a
+200-time-point 3D simulation now needs 2 requests and about 0.1 MB instead of 201 requests and 54 MB.
+This build also carries 8.2.0.14's batched reads (8.2.0.14 was tagged but not deployed).
+
+### Added
+- Data server: `getFenicsBundleSamples` returns the values of several arrays of a FEniCSx results bundle
+  at given mesh points and saved times (up to 8 MB, 16 arrays, 64 K points and 1,000 times per call).
+  (#2169)
+
+### Changed
+- Field viewer: volume and membrane kymographs, probe time series and remeshed runs of server-run FEniCSx
+  results are sampled on the data server. Values are bit-identical to reading whole fields. Moving (ALE)
+  meshes, local runs and older data servers fall back to batched reads (#2166), then to one request per
+  file. (#2169)
+
 ## [8.2.0.14] - 2026-10-07
 
 **Highlights.** The field viewer reads a server-run FEniCSx result in a few batched requests instead of
