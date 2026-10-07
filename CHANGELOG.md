@@ -16,6 +16,21 @@ followed by flat Keep-a-Changelog categories. API consumers should scan
 
 _(Release-manager scratchpad. Populated at release-cut time.)_
 
+## [8.2.0.14] - 2026-10-07
+
+**Highlights.** The field viewer reads a server-run FEniCSx result in a few batched requests instead of
+one request per saved time. A kymograph of a 200-time-point 3D simulation now makes 7 requests to the
+data server instead of 201.
+
+### Changed
+- Data server: new `getFenicsBundleFiles` returns several files of a FEniCSx results bundle in one reply
+  (up to 8 MB and 256 files per call). (#2166)
+- Field viewer: kymographs, time series, moving-mesh coordinates and statistics of server-run FEniCSx
+  results prefetch their rows in batches. A client talking to an older data server falls back to one
+  request per file. (#2166)
+- The client's FEniCSx bundle cache is bounded: 512 MB by default, set by
+  `-Dvcell.fenics.bundleCacheMB`. (#2166)
+
 ## [8.2.0.13] - 2026-10-06
 
 **Highlights.** Requests to the server no longer slow to one every 30 seconds after heavy use. Since
