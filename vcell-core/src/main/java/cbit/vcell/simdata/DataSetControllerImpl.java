@@ -2508,6 +2508,41 @@ public byte[][] getFenicsBundleFiles(VCDataIdentifier vcdID, String[] relativePa
 	return files.toArray(new byte[0][]);
 }
 
+/**
+ * Some values of some arrays of a FEniCSx results bundle ({@link org.vcell.solver.fenics.FenicsBundle#gather}),
+ * read here and decoded here, so a desktop drawing a kymograph or a probe is sent its vertices' values instead
+ * of whole rows. Files are read exactly as {@link #getFenicsBundleFile} reads them (same location rules, same
+ * refusals), and the reply covers the longest prefix of {@code rows} within
+ * {@link org.vcell.solver.fenics.FenicsBundle#MAX_SAMPLE_VALUES} values.
+ */
+public org.vcell.solver.fenics.FenicsSamples getFenicsBundleSamples(VCDataIdentifier vcdID, String[] arrayPaths, int[] indices, int[] rows) throws DataAccessException {
+	return getFenicsBundleSamples(vcdID, arrayPaths, indices, rows, org.vcell.solver.fenics.FenicsBundle.MAX_SAMPLE_VALUES);
+}
+
+/** {@link #getFenicsBundleSamples(VCDataIdentifier, String[], int[], int[])} with a budget of {@code maxValues} */
+public org.vcell.solver.fenics.FenicsSamples getFenicsBundleSamples(VCDataIdentifier vcdID, String[] arrayPaths, int[] indices, int[] rows, long maxValues) throws DataAccessException {
+	org.vcell.solver.fenics.BundleStore bundle = new org.vcell.solver.fenics.BundleStore() {
+		@Override
+		public byte[] read(String relativePath) throws IOException {
+			try {
+				return getFenicsBundleFile(vcdID, relativePath);
+			} catch (DataAccessException e) {
+				throw new IOException(e.getMessage(), e);
+			}
+		}
+
+		@Override
+		public String describe() {
+			return "FEniCSx results of " + vcdID.getID();
+		}
+	};
+	try {
+		return org.vcell.solver.fenics.FenicsBundle.gather(bundle, arrayPaths, indices, rows, maxValues);
+	} catch (IOException e) {
+		throw new DataAccessException("sampling FEniCSx results of " + vcdID.getID() + ": " + e.getMessage(), e);
+	}
+}
+
 public byte[] getFenicsBundleFile(VCDataIdentifier vcdID, String relativePath) throws DataAccessException {
 	if (!(vcdID instanceof VCSimulationDataIdentifier)) {
 		throw new DataAccessException("FEniCSx results are simulation data; got " + vcdID);

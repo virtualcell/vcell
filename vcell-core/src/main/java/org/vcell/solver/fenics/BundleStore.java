@@ -40,6 +40,16 @@ public interface BundleStore {
 	}
 
 	/**
+	 * Some values of some arrays, read where the files are ({@link FenicsBundle#gather}): for each of
+	 * {@code arrayPaths} at each of {@code rows}, the values at {@code indices}. ALL the rows are answered.
+	 * A store that would have to fetch the whole rows anyway (a local directory) answers null, as does one
+	 * whose data server predates sampled reads: the caller then reads whole rows.
+	 */
+	default FenicsSamples sampleRows(String[] arrayPaths, int[] rows, int[] indices) throws IOException {
+		return null;
+	}
+
+	/**
 	 * Rejects anything but a plain relative path inside the bundle: no absolute paths, no '..', no
 	 * backslashes, no empty segments. The data server applies this before touching its storage.
 	 */
@@ -73,28 +83,40 @@ public interface BundleStore {
 
 	/** {@link #cached(BundleStore)} keeping at most {@code maxBytes} of file contents */
 	static BundleStore cached(BundleStore store, long maxBytes) {
-		final class Lru extends java.util.LinkedHashMap<String, byte[]> {
+		// files (byte[]) and sampled rows (double[]) share one budget
+		final class Lru extends java.util.LinkedHashMap<String, Object> {
 			long bytes;
 
 			Lru() {
 				super(64, 0.75f, true);
 			}
 
-			synchronized byte[] lookup(String path) {
-				return get(path);
+			private long size(Object o) {
+				return o instanceof byte[] ? ((byte[]) o).length : 8L * ((double[]) o).length;
 			}
 
-			synchronized void keep(String path, byte[] content) {
-				if (content.length > maxBytes) {
+			synchronized byte[] lookup(String path) {
+				Object o = get(path);
+				return o instanceof byte[] ? (byte[]) o : null;
+			}
+
+			synchronized double[] lookupSample(String key) {
+				Object o = get(key);
+				return o instanceof double[] ? (double[]) o : null;
+			}
+
+			synchronized void keep(String key, Object content) {
+				long size = size(content);
+				if (size > maxBytes) {
 					return;
 				}
-				byte[] old = put(path, content);
-				bytes += content.length - (old != null ? old.length : 0);
-				java.util.Iterator<java.util.Map.Entry<String, byte[]>> eldest = entrySet().iterator();
+				Object old = put(key, content);
+				bytes += size - (old != null ? size(old) : 0);
+				java.util.Iterator<java.util.Map.Entry<String, Object>> eldest = entrySet().iterator();
 				while (bytes > maxBytes && eldest.hasNext()) {
-					byte[] evicted = eldest.next().getValue();
+					Object evicted = eldest.next().getValue();
 					eldest.remove();
-					bytes -= evicted.length;
+					bytes -= size(evicted);
 				}
 			}
 		}
@@ -135,11 +157,72 @@ public interface BundleStore {
 				}
 			}
 
+			/**
+			 * Written rows already sampled at the same indices are answered from the cache; the rest are asked
+			 * for together. A sampled row is keyed by its array, row and the exact index set (by digest).
+			 */
+			@Override
+			public FenicsSamples sampleRows(String[] arrayPaths, int[] rows, int[] indices) throws IOException {
+				String set = indexSetKey(indices);
+				double[][][] values = new double[arrayPaths.length][rows.length][];
+				boolean[][] written = new boolean[arrayPaths.length][rows.length];
+				java.util.List<Integer> missing = new java.util.ArrayList<>();
+				for (int r = 0; r < rows.length; r++) {
+					boolean all = true;
+					for (int a = 0; a < arrayPaths.length && all; a++) {
+						double[] kept = cache.lookupSample(sampleKey(arrayPaths[a], rows[r], set));
+						all = kept != null;
+						values[a][r] = kept;
+						written[a][r] = kept != null;
+					}
+					if (!all) {
+						missing.add(r);
+					}
+				}
+				if (!missing.isEmpty()) {
+					int[] ask = new int[missing.size()];
+					for (int i = 0; i < ask.length; i++) {
+						ask[i] = rows[missing.get(i)];
+					}
+					FenicsSamples got = store.sampleRows(arrayPaths, ask, indices);
+					if (got == null) {
+						return null;
+					}
+					for (int i = 0; i < ask.length; i++) {
+						int r = missing.get(i);
+						for (int a = 0; a < arrayPaths.length; a++) {
+							values[a][r] = got.values[a][i];
+							written[a][r] = got.written[a][i];
+							if (got.written[a][i]) { // an unwritten row may land later
+								cache.keep(sampleKey(arrayPaths[a], rows[r], set), got.values[a][i]);
+							}
+						}
+					}
+				}
+				return new FenicsSamples(rows.clone(), values, written);
+			}
+
 			@Override
 			public String describe() {
 				return store.describe();
 			}
 		};
+	}
+
+	private static String sampleKey(String arrayPath, int row, String indexSet) {
+		return arrayPath + "\n" + row + "\n" + indexSet;
+	}
+
+	/** the index set's identity: its length and a SHA-256 of its contents */
+	private static String indexSetKey(int[] indices) {
+		try {
+			java.security.MessageDigest digest = java.security.MessageDigest.getInstance("SHA-256");
+			java.nio.ByteBuffer buf = java.nio.ByteBuffer.allocate(4 * indices.length);
+			buf.asIntBuffer().put(indices);
+			return indices.length + ":" + new java.math.BigInteger(1, digest.digest(buf.array())).toString(16);
+		} catch (java.security.NoSuchAlgorithmException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	/** a bundle directory on this machine */

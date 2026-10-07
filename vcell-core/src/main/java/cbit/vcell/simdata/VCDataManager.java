@@ -327,6 +327,21 @@ public synchronized byte[] getFenicsBundleFile(VCDataIdentifier vcdID, String re
 	}
 }
 
+/** some values of some arrays of a FEniCSx results bundle, possibly for a prefix of the rows; see DataSetController */
+public synchronized org.vcell.solver.fenics.FenicsSamples getFenicsBundleSamples(VCDataIdentifier vcdID, String[] arrayPaths, int[] indices, int[] rows) throws DataAccessException {
+	try {
+		return getDataSetController().getFenicsBundleSamples(vcdID, arrayPaths, indices, rows);
+	}catch (RemoteProxyException e){
+		handleRemoteProxyException(e);
+		try {
+			return getDataSetController().getFenicsBundleSamples(vcdID, arrayPaths, indices, rows);
+		}catch (RemoteProxyException e2){
+			handleRemoteProxyException(e2);
+			throw new RuntimeException(e2.getMessage());
+		}
+	}
+}
+
 /** several files of a FEniCSx results bundle, possibly only a prefix of them; see DataSetController */
 public synchronized byte[][] getFenicsBundleFiles(VCDataIdentifier vcdID, String[] relativePaths) throws DataAccessException {
 	try {

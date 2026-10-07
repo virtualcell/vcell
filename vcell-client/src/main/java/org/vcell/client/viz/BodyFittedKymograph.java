@@ -129,6 +129,11 @@ final class BodyFittedKymograph {
 			public double[] values(int row) throws Exception {
 				return rows.values(timeIndices[row]);
 			}
+
+			@Override
+			public void located(VtuGridParser.VtuGrid grid, int row, int[] cells) throws Exception {
+				rows.located(grid, timeIndices[row], cells);
+			}
 		}, location, false);
 
 		boolean[] inDomain = new boolean[nSamples];
