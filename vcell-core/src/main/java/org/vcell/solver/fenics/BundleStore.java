@@ -50,6 +50,17 @@ public interface BundleStore {
 	}
 
 	/**
+	 * Lab-frame points located in a moving mesh row by row where the files are ({@link FenicsBundle#locate}): the
+	 * located cells, their vertices' positions and the values of {@code arrayPaths} there, at each of {@code rows}
+	 * of the segment whose mesh is {@code meshPath} and point positions {@code coordsPath}. ALL the rows are
+	 * answered. Null, as for {@link #sampleRows}, where the caller should read whole rows instead.
+	 */
+	default FenicsLocatedSamples locateRows(String meshPath, String coordsPath, String[] arrayPaths, double[] points, boolean snap,
+			int[] rows) throws IOException {
+		return null;
+	}
+
+	/**
 	 * Rejects anything but a plain relative path inside the bundle: no absolute paths, no '..', no
 	 * backslashes, no empty segments. The data server applies this before touching its storage.
 	 */
@@ -200,6 +211,13 @@ public interface BundleStore {
 					}
 				}
 				return new FenicsSamples(rows.clone(), values, written);
+			}
+
+			/** not cached: an answer holds for one set of points, and costs one call */
+			@Override
+			public FenicsLocatedSamples locateRows(String meshPath, String coordsPath, String[] arrayPaths, double[] points,
+					boolean snap, int[] rows) throws IOException {
+				return store.locateRows(meshPath, coordsPath, arrayPaths, points, snap, rows);
 			}
 
 			@Override

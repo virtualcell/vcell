@@ -20,6 +20,8 @@ import java.util.Map;
 import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
 
+import org.vcell.vis.vtk.VtuGridParser;
+
 /**
  * Reads a FEniCSx results bundle, {@code <SimID_..._>.fenics/} (vcell-fenics ADR 010, schema 1): a zarr
  * v2 group whose {@code .zattrs} holds the manifest under {@code vcell_fenics}, a VTU mesh per domain,
@@ -534,6 +536,222 @@ public final class FenicsBundle {
 			throw new IOException(root + ": sampled read answered " + samples.rows.length + " of " + rows.length + " rows");
 		}
 		return samples.values;
+	}
+
+	/** the most lab-frame points one {@link #locate} places (a kymograph has at most 2,000 samples, a probe 64 points) */
+	public static final int MAX_LOCATE_POINTS = 4096;
+	/**
+	 * the most work one {@link #locate} does, counted per row as the values it decodes (x,y,z and each array at every
+	 * mesh point) plus the cells its locator sorts: measured on real moving meshes at 30-55 ns a unit for triangles
+	 * and ~108 ns for tetrahedra, so a call holds one data-server thread for at most about 0.9 s in 2D and 1.8 s in
+	 * 3D. It bounds a call on a fine mesh, where the reply's values alone would allow many rows; the caller asks
+	 * again for the rest.
+	 */
+	public static final long MAX_LOCATE_WORK = 1L << 24;
+
+	/**
+	 * Lab-frame {@code points} (x,y,z each) located in a moving mesh at each of {@code rows}, with the located cells'
+	 * vertices and their positions and the values of {@code arrayPaths} there: the data server's side of
+	 * {@link cbit.vcell.server.DataSetController#getFenicsBundleLocatedSamples}. {@code meshPath} is the segment's
+	 * VTU mesh (its topology), {@code coordsPath} its {@code (T, N, 3)} point positions, the arrays {@code (T, N)}
+	 * values on it; rows are rows of those arrays.
+	 * <p>
+	 * Each row's mesh is the segment's cells on that row's positions, and each point is found in it by
+	 * {@link VtuGridParser#locate} -- the lowest-numbered containing cell -- and, when {@code snap} and it misses,
+	 * moved onto the mesh by {@link VtuGridParser#nearestOnMesh}: the desktop's own steps, on the same numbers.
+	 * <p>
+	 * Answers the longest prefix of {@code rows} whose reply fits in {@code maxValues} values and whose work (values
+	 * decoded plus cells sorted, per row) fits in {@code maxWork}, the first row always; refuses a request of which not even one row fits, and more than
+	 * {@link #MAX_SAMPLE_ARRAYS} arrays, {@link #MAX_LOCATE_POINTS} points or {@link #MAX_SAMPLE_ROWS} rows.
+	 */
+	public static FenicsLocatedSamples locate(BundleStore store, String meshPath, String coordsPath, String[] arrayPaths,
+			double[] points, boolean snap, int[] rows, long maxValues, long maxWork) throws IOException {
+		String root = store.describe();
+		if (meshPath == null || coordsPath == null || arrayPaths == null || points == null || rows == null) {
+			throw new IllegalArgumentException("a locate request needs a mesh, point positions, arrays, points and rows");
+		}
+		if (points.length % 3 != 0 || points.length == 0) {
+			throw new IllegalArgumentException("points are x,y,z triples; got " + points.length + " numbers");
+		}
+		int nPoints = points.length / 3;
+		if (arrayPaths.length > MAX_SAMPLE_ARRAYS || nPoints > MAX_LOCATE_POINTS || rows.length > MAX_SAMPLE_ROWS) {
+			throw new IllegalArgumentException("at most " + MAX_SAMPLE_ARRAYS + " arrays, " + MAX_LOCATE_POINTS + " points and "
+					+ MAX_SAMPLE_ROWS + " rows per locate request; got " + arrayPaths.length + ", " + nPoints + " and " + rows.length);
+		}
+		VtuGridParser.VtuGrid mesh;
+		byte[] meshBytes = store.read(BundleStore.checkRelativePath(meshPath));
+		if (meshBytes == null) {
+			throw new FileNotFoundException(root + ": no mesh " + meshPath);
+		}
+		try {
+			mesh = VtuGridParser.parse(meshBytes);
+		} catch (Exception e) {
+			throw new IOException(root + "/" + meshPath + ": " + e.getMessage(), e);
+		}
+		int n = mesh.numPoints();
+		BundleStore.checkRelativePath(coordsPath);
+		JsonObject coordsMeta = arrayMeta(store, root, coordsPath);
+		int[] coordsShape = checkLayout(coordsMeta, root + "/" + coordsPath);
+		if (rowLength(coordsShape) != 3 * n) {
+			throw new IllegalArgumentException(coordsPath + " holds " + rowLength(coordsShape) + " numbers a row, not x,y,z of the mesh's "
+					+ n + " points");
+		}
+		JsonObject[] metas = new JsonObject[arrayPaths.length];
+		int[][] shapes = new int[arrayPaths.length][];
+		for (int a = 0; a < arrayPaths.length; a++) {
+			BundleStore.checkRelativePath(arrayPaths[a]);
+			metas[a] = arrayMeta(store, root, arrayPaths[a]);
+			shapes[a] = checkLayout(metas[a], root + "/" + arrayPaths[a]);
+			if (rowLength(shapes[a]) != n) {
+				throw new IllegalArgumentException(arrayPaths[a] + " holds " + rowLength(shapes[a]) + " values a row, not one per mesh point ("
+						+ n + ")");
+			}
+		}
+		for (int row : rows) {
+			if (row < 0 || row >= coordsShape[0]) {
+				throw new IndexOutOfBoundsException(root + "/" + coordsPath + ": row " + row + " beyond shape " + Arrays.toString(coordsShape));
+			}
+			for (int a = 0; a < arrayPaths.length; a++) {
+				if (row >= shapes[a][0]) {
+					throw new IndexOutOfBoundsException(root + "/" + arrayPaths[a] + ": row " + row + " beyond shape " + Arrays.toString(shapes[a]));
+				}
+			}
+		}
+		long workPerRow = (long) (3 + arrayPaths.length) * n + mesh.cells.length;
+		List<int[]> cells = new ArrayList<>();
+		List<int[][]> cellVertices = new ArrayList<>();
+		List<int[]> cellTypes = new ArrayList<>();
+		List<double[]> snapped = new ArrayList<>();
+		List<int[]> vertices = new ArrayList<>();
+		List<double[]> coords = new ArrayList<>();
+		List<Boolean> coordsWritten = new ArrayList<>();
+		List<double[][]> values = new ArrayList<>();
+		List<boolean[]> written = new ArrayList<>();
+		long sent = 0;
+		long work = 0;
+		double[] value = new double[n];
+		for (int r = 0; r < rows.length; r++) {
+			if (r > 0 && work + workPerRow > maxWork) {
+				break;
+			}
+			double[] xyz = new double[3 * n];
+			boolean coordsRow = decodeRow(store, coordsPath, coordsMeta, rows[r], xyz);
+			VtuGridParser.VtuGrid grid = new VtuGridParser.VtuGrid(xyz, mesh.cells, mesh.cellTypes, mesh.cellFaces);
+			int[] rowCells = new int[nPoints];
+			int[][] rowCellVertices = new int[nPoints][];
+			int[] rowCellTypes = new int[nPoints];
+			long rowCellInts = 0;
+			double[] rowSnapped = null;
+			java.util.TreeSet<Integer> needed = new java.util.TreeSet<>();
+			for (int p = 0; p < nPoints; p++) {
+				double x = points[3 * p], y = points[3 * p + 1], z = points[3 * p + 2];
+				int c = VtuGridParser.locate(grid, x, y, z);
+				if (c < 0 && snap) {
+					double[] near = VtuGridParser.nearestOnMesh(grid, x, y, z);
+					if (near != null) {
+						c = (int) near[3];
+						if (rowSnapped == null) {
+							rowSnapped = new double[3 * nPoints];
+							Arrays.fill(rowSnapped, Double.NaN);
+						}
+						System.arraycopy(near, 0, rowSnapped, 3 * p, 3);
+					}
+				}
+				rowCells[p] = c;
+				rowCellTypes[p] = c >= 0 ? mesh.cellTypes[c] : -1;
+				if (c >= 0) {
+					rowCellVertices[p] = mesh.cells[c]; // one array per cell: serialized once however many points share it
+					rowCellInts += mesh.cells[c].length;
+					for (int v : mesh.cells[c]) {
+						needed.add(v);
+					}
+				}
+			}
+			int[] rowVertices = needed.stream().mapToInt(Integer::intValue).toArray();
+			long rowValues = 2L * nPoints + rowCellInts + (rowSnapped != null ? 3L * nPoints : 0) + (long) (3 + arrayPaths.length) * rowVertices.length;
+			if (sent + rowValues > maxValues) {
+				if (r == 0) {
+					throw new IllegalArgumentException("one row of " + nPoints + " located points and " + arrayPaths.length
+							+ " arrays is more than " + maxValues + " values; ask for fewer points or arrays");
+				}
+				break;
+			}
+			double[] rowCoords = new double[3 * rowVertices.length];
+			for (int i = 0; i < rowVertices.length; i++) {
+				System.arraycopy(xyz, 3 * rowVertices[i], rowCoords, 3 * i, 3);
+			}
+			double[][] rowArrays = new double[arrayPaths.length][rowVertices.length];
+			boolean[] rowWritten = new boolean[arrayPaths.length];
+			for (int a = 0; a < arrayPaths.length; a++) {
+				rowWritten[a] = decodeRow(store, arrayPaths[a], metas[a], rows[r], value);
+				for (int i = 0; i < rowVertices.length; i++) {
+					rowArrays[a][i] = value[rowVertices[i]];
+				}
+			}
+			cells.add(rowCells);
+			cellVertices.add(rowCellVertices);
+			cellTypes.add(rowCellTypes);
+			snapped.add(rowSnapped);
+			vertices.add(rowVertices);
+			coords.add(rowCoords);
+			coordsWritten.add(coordsRow);
+			values.add(rowArrays);
+			written.add(rowWritten);
+			sent += rowValues;
+			work += workPerRow;
+		}
+		int fit = cells.size();
+		double[][][] byArray = new double[arrayPaths.length][fit][];
+		boolean[][] writtenByArray = new boolean[arrayPaths.length][fit];
+		boolean[] coordsOk = new boolean[fit];
+		for (int r = 0; r < fit; r++) {
+			coordsOk[r] = coordsWritten.get(r);
+			for (int a = 0; a < arrayPaths.length; a++) {
+				byArray[a][r] = values.get(r)[a];
+				writtenByArray[a][r] = written.get(r)[a];
+			}
+		}
+		return new FenicsLocatedSamples(Arrays.copyOf(rows, fit), cells.toArray(new int[0][]), cellVertices.toArray(new int[0][][]),
+				cellTypes.toArray(new int[0][]), snapped.toArray(new double[0][]),
+				vertices.toArray(new int[0][]), coords.toArray(new double[0][]), coordsOk, byArray, writtenByArray);
+	}
+
+	/**
+	 * {@code points} located in {@code domain}'s moving mesh at {@code rows} (output rows, all in ONE moving segment),
+	 * with the located cells' vertices, their positions and the values of {@code variables} there
+	 * ({@link #locate}), from the store's located read ({@link BundleStore#locateRows}); the answer's rows are those
+	 * rows' indices within the segment. Null when the store has no such read: the caller reads whole rows.
+	 */
+	public FenicsLocatedSamples locateFields(String domain, String[] variables, int[] rows, double[] points, boolean snap)
+			throws IOException {
+		if (rows.length == 0) {
+			throw new IllegalArgumentException("no rows to locate in");
+		}
+		Segment segment = segmentOf(rows[0]).segment();
+		if (!"ale".equals(segment.motion())) {
+			throw new IllegalArgumentException("located reads are for a moving segment; segment " + segment.index() + " does not move");
+		}
+		int[] localRows = new int[rows.length];
+		for (int r = 0; r < rows.length; r++) {
+			SegmentRow sr = segmentOf(rows[r]);
+			if (sr.segment().index() != segment.index()) {
+				throw new IllegalArgumentException("located rows must lie in one segment: rows " + rows[0] + " and " + rows[r] + " do not");
+			}
+			localRows[r] = sr.localRow();
+		}
+		String[] paths = new String[variables.length];
+		for (int v = 0; v < variables.length; v++) {
+			paths[v] = segment.prefix() + variable(domain, variables[v]).path();
+		}
+		FenicsLocatedSamples located = store.locateRows(segment.prefix() + domain(domain).mesh(), segment.prefix() + domain + "/_coords",
+				paths, points, snap, localRows);
+		if (located == null) {
+			return null;
+		}
+		if (located.rows.length != rows.length) {
+			throw new IOException(root + ": located read answered " + located.rows.length + " of " + rows.length + " rows");
+		}
+		return located;
 	}
 
 	private static byte[] decompress(JsonObject meta, byte[] raw, int expectedBytes, String chunk) throws IOException {

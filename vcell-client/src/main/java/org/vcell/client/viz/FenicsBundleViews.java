@@ -11,6 +11,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.vcell.solver.fenics.BundleStore;
 import org.vcell.solver.fenics.FenicsBundle;
+import org.vcell.solver.fenics.FenicsLocatedSamples;
+import org.vcell.vis.vtk.VtuGridParser;
 
 /**
  * The field viewer's endpoints for a FEniCSx results bundle ({@code <SimID_..._>.fenics/}, vcell-fenics
@@ -168,8 +170,13 @@ final class FenicsBundleViews {
 	 * segment's mesh ({@link PointSeries.Rows#located}), the located cells' vertices are read for all of that
 	 * segment's rows in one sampled call ({@link FenicsBundle#sampleFields}; a function's variables together):
 	 * from a data server that samples, a kymograph's 201 rows cost one request carrying only those vertices.
-	 * Otherwise -- a local bundle, an older data server, or a moving (ALE) mesh, where the cell changes every
-	 * row -- whole rows are read, prefetched in windows ({@link RowPrefetcher}).
+	 * On a moving (ALE) mesh the cell changes every row, so the data server locates the points itself, in each
+	 * row's moved mesh, with the desktop's own code ({@link FenicsBundle#locateFields}): one call per segment
+	 * answers each row's cells, those cells' vertex positions and the variables there
+	 * ({@link PointSeries.Rows#locatedBySource}), and the row's mesh is handed to the loop holding only those
+	 * positions -- all the weights and a function's x, y, z read. Otherwise -- a local bundle or an older data
+	 * server -- whole rows (and a moving mesh's point positions) are read, prefetched in windows
+	 * ({@link RowPrefetcher}).
 	 * <p>
 	 * A row is handed back as a mesh-sized array holding the values at the needed vertices: a stored variable's
 	 * own values, or the function evaluated AT each vertex (its variables there, the vertex's x, y, z in that
@@ -193,6 +200,23 @@ final class FenicsBundleViews {
 		private double[][] scratchArgs;
 		private VtuGridParser.VtuGrid lastGrid;
 		private int lastGridRow = -1;
+		/** the points the loop will locate, x,y,z each; null until it says ({@link #willLocate}) */
+		private double[] locatePoints;
+		private boolean locateSnap;
+		/** whether moving rows are located on the data server; false once the store says it cannot */
+		private boolean locating;
+		/** per moving row located on the data server: its cells, vertices, their positions and the values there */
+		private final Map<Integer, LocatedRow> locatedRows = new java.util.HashMap<>();
+		/** the moving rows' meshes' buffers: NaN positions and no cells but at the current row's located ones */
+		private double[] locatedPoints = new double[0];
+		private int[][] locatedCells = new int[0][];
+		private int[] locatedCellTypes = new int[0];
+		private LocatedRow locatedLast;
+
+		/** one moving row as the data server located it */
+		private record LocatedRow(PointSeries.Located where, int[][] cellVertices, int[] cellTypes, int[] vertices, double[] coords,
+				double[][] values) {
+		}
 
 		/** @param rows the output rows the loop will read, in its order */
 		SampledRows(BundleSource source, FenicsBundle bundle, String domain, String varName, int[] rows) {
@@ -209,17 +233,122 @@ final class FenicsBundleViews {
 				wholeRows[k] = fieldPrefetcher(bundle, domain, reads[k], rows);
 			}
 			this.coords = coordsPrefetcher(bundle, domain, rows);
-			this.sampling = !bundle.isMoving() && reads.length > 0;
+			this.sampling = reads.length > 0;
+		}
+
+		@Override
+		public void willLocate(double[][] points, boolean snap) {
+			locatePoints = new double[3 * points.length];
+			for (int p = 0; p < points.length; p++) {
+				System.arraycopy(points[p], 0, locatePoints, 3 * p, 3);
+			}
+			locateSnap = snap;
+			locating = bundle.isMoving() && points.length > 0;
+		}
+
+		private boolean moves(int row) {
+			return "ale".equals(bundle.segmentOf(row).segment().motion());
 		}
 
 		@Override
 		public VtuGridParser.VtuGrid grid(int row) throws Exception {
+			if (locating && moves(row)) {
+				LocatedRow located = locatedRows.get(row);
+				if (located == null) {
+					locate(row);
+					located = locatedRows.get(row);
+				}
+				if (located != null) {
+					lastGrid = locatedGrid(located);
+					lastGridRow = row;
+					return lastGrid;
+				}
+			}
 			if (coords != null) {
 				coords.before(row);
 			}
 			lastGrid = source.grid(bundle, domain, row);
 			lastGridRow = row;
 			return lastGrid;
+		}
+
+		/** locates the points on the data server at every row of the moving segment holding {@code row} */
+		private void locate(int row) throws Exception {
+			int segment = bundle.segmentOf(row).segment().index();
+			int[] segmentRows = Arrays.stream(rows).filter(r -> bundle.segmentOf(r).segment().index() == segment).toArray();
+			if (Arrays.stream(segmentRows).noneMatch(r -> r == row)) {
+				segmentRows = new int[] { row };
+			}
+			FenicsLocatedSamples got = bundle.locateFields(domain, reads, segmentRows, locatePoints, locateSnap);
+			if (got == null) {
+				locating = false; // the store reads whole rows: so does this, from here on
+				return;
+			}
+			int n = locatePoints.length / 3;
+			for (int r = 0; r < segmentRows.length; r++) {
+				double[][] snapped = new double[n][];
+				if (got.snapped[r] != null) {
+					for (int p = 0; p < n; p++) {
+						if (!Double.isNaN(got.snapped[r][3 * p])) {
+							snapped[p] = Arrays.copyOfRange(got.snapped[r], 3 * p, 3 * p + 3);
+						}
+					}
+				}
+				double[][] values = new double[reads.length][];
+				for (int k = 0; k < reads.length; k++) {
+					values[k] = got.values[k][r];
+				}
+				locatedRows.put(segmentRows[r], new LocatedRow(new PointSeries.Located(got.cells[r], snapped), got.cellVertices[r],
+						got.cellTypes[r], got.vertices[r], got.coords[r], values));
+			}
+		}
+
+		/**
+		 * The mesh of a located moving row, as far as the loop reads it: the located cells (index, type, vertices) on
+		 * their vertices' positions in that row, NaN and no cell elsewhere -- so a remeshed run's segment meshes need
+		 * not be fetched. A new grid each row, sharing its buffers.
+		 */
+		private VtuGridParser.VtuGrid locatedGrid(LocatedRow located) {
+			if (locatedLast != null) {
+				for (int v : locatedLast.vertices()) {
+					locatedPoints[3 * v] = locatedPoints[3 * v + 1] = locatedPoints[3 * v + 2] = Double.NaN;
+				}
+				for (int c : locatedLast.where().cells()) {
+					if (c >= 0) {
+						locatedCells[c] = null;
+					}
+				}
+			}
+			int[] vertices = located.vertices();
+			int[] cells = located.where().cells();
+			int points = vertices.length > 0 ? vertices[vertices.length - 1] + 1 : 0;
+			int maxCell = Arrays.stream(cells).max().orElse(-1);
+			if (3 * points > locatedPoints.length) {
+				int old = locatedPoints.length;
+				locatedPoints = Arrays.copyOf(locatedPoints, 3 * points);
+				Arrays.fill(locatedPoints, old, locatedPoints.length, Double.NaN);
+			}
+			if (maxCell >= locatedCells.length) {
+				locatedCells = Arrays.copyOf(locatedCells, maxCell + 1);
+				locatedCellTypes = Arrays.copyOf(locatedCellTypes, maxCell + 1);
+			}
+			for (int i = 0; i < vertices.length; i++) {
+				System.arraycopy(located.coords(), 3 * i, locatedPoints, 3 * vertices[i], 3);
+			}
+			for (int p = 0; p < cells.length; p++) {
+				if (cells[p] >= 0) {
+					locatedCells[cells[p]] = located.cellVertices()[p];
+					locatedCellTypes[cells[p]] = located.cellTypes()[p];
+				}
+			}
+			locatedLast = located;
+			return new VtuGridParser.VtuGrid(locatedPoints, locatedCells, locatedCellTypes);
+		}
+
+		@Override
+		public PointSeries.Located locatedBySource(int row) {
+			LocatedRow located = locating ? locatedRows.get(row) : null;
+			return located == null ? null : located.where();
 		}
 
 		/** the mesh of {@code row}: x, y, z of a function's vertices (on a moving mesh, that row's) */
@@ -249,8 +378,8 @@ final class FenicsBundleViews {
 				Arrays.fill(scratch, Double.NaN);
 				scratchArgs = new double[reads.length][numPoints];
 			}
-			if (!sampling || needed.isEmpty()) {
-				return; // no point lies in the domain: no row's values will be asked for
+			if (!sampling || needed.isEmpty() || moves(row)) {
+				return; // no point lies in the domain (no row's values will be asked for), or the cell changes every row
 			}
 			int segment = bundle.segmentOf(row).segment().index();
 			int[] segmentRows = Arrays.stream(rows).filter(r -> bundle.segmentOf(r).segment().index() == segment).toArray();
@@ -270,6 +399,10 @@ final class FenicsBundleViews {
 
 		@Override
 		public double[] values(int row) throws Exception {
+			LocatedRow located = locating ? locatedRows.get(row) : null;
+			if (located != null) {
+				return locatedValues(row, located);
+			}
 			double[][] s = sampled.get(row);
 			if (function == null) {
 				if (s == null) {
@@ -299,6 +432,36 @@ final class FenicsBundleViews {
 			double[] points = gridOf(row).points;
 			for (int v : vertices) {
 				scratch[v] = function.at(times[row], points, v, args);
+			}
+			return scratch;
+		}
+
+		/**
+		 * A located moving row's values, as a mesh-sized array holding them at the located cells' vertices: a stored
+		 * variable's own values, or the function evaluated at each of those vertices (its x, y, z in that row's mesh).
+		 */
+		private double[] locatedValues(int row, LocatedRow located) throws Exception {
+			int numPoints = gridOf(row).numPoints(); // as far as the located vertices reach
+			if (scratch == null || scratch.length < numPoints) {
+				scratch = new double[numPoints];
+				Arrays.fill(scratch, Double.NaN);
+				scratchArgs = new double[reads.length][numPoints];
+			}
+			int[] vertices = located.vertices();
+			if (function == null) {
+				for (int i = 0; i < vertices.length; i++) {
+					scratch[vertices[i]] = located.values()[0][i];
+				}
+				return scratch;
+			}
+			for (int k = 0; k < reads.length; k++) {
+				for (int i = 0; i < vertices.length; i++) {
+					scratchArgs[k][vertices[i]] = located.values()[k][i];
+				}
+			}
+			double[] points = gridOf(row).points;
+			for (int v : vertices) {
+				scratch[v] = function.at(times[row], points, v, scratchArgs);
 			}
 			return scratch;
 		}
@@ -623,9 +786,10 @@ final class FenicsBundleViews {
 		FenicsBundle.Domain d = bundle.domain(domain);
 		final String dom = domain;
 		int[] strided = RowPrefetcher.stridedRows(bundle.getTimes().size(), tstep);
-		RowPrefetcher coords = coordsPrefetcher(bundle, dom, strided);
-		if (coords != null) {
-			coords.before(0);
+		// the first row's mesh alone (on a moving mesh, its positions, as one batched read): the other rows' positions
+		// are read, or located on the data server, by the rows below
+		if (bundle.isMoving()) {
+			bundle.prefetchCoords(dom, new int[] { 0 });
 		}
 		VtuGridParser.VtuGrid first = source.grid(bundle, domain, 0);
 		if (d.isMembrane()) {

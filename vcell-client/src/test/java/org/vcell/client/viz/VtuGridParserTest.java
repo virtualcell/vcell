@@ -6,7 +6,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
-import org.vcell.client.viz.VtuGridParser.VtuGrid;
+import org.vcell.vis.vtk.VtuGridParser.VtuGrid;
+import org.vcell.vis.vtk.VtuGridParser;
 
 /**
  * Parses a reference {@code .vtu} generated with the exact settings of the server's Python VTK
