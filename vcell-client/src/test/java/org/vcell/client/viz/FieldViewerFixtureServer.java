@@ -45,7 +45,10 @@ public final class FieldViewerFixtureServer {
 		// disk in a box with its membrane (a closed curve of line cells), and the 3D one with particles -- served
 		// as a cluster run's bundle is, from a data server that samples (SamplingBundleStore); the Java tests
 		// cover the local, whole-row path
-		FieldViewerServer.registerBundle("987654321", 0, SamplingBundleStore.of(bundle("membrane_efflux.fenics")), "fenics::2d disk");
+		// with a VCell function of its variable and position, evaluated by the viewer (FenicsFunctions)
+		FieldViewerServer.registerBundle("987654321", 0, SamplingBundleStore.of(bundle("membrane_efflux.fenics")), "fenics::2d disk",
+				new FenicsFunctions(java.util.List.of(new FenicsFunctions.Definition("u_times_x",
+						new cbit.vcell.parser.Expression("u*(x+2)"), "cytosol_dom", false, null)), java.util.Set.of()));
 		FieldViewerServer.registerBundle("777", 0, SamplingBundleStore.of(bundle("moving_translate.fenics")), "fenics::moving disk");
 		FieldViewerServer.registerBundle("555", 0, SamplingBundleStore.of(bundle("receptor_3d.fenics")), "fenics::receptor 3d");
 		FieldViewerServer.registerBundle("556", 0, SamplingBundleStore.of(bundle("receptor_2d.fenics")), "fenics::receptor 2d");
