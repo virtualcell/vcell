@@ -13,11 +13,15 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Site marks are presentation. The palette colors the solver file stores stay as they are.
@@ -38,6 +42,101 @@ public class SpringSaladSiteCueTest {
 	@Test
 	public void isolatedCaptionIsDrawn() {
 		assertFalse(Arrays.equals(grayscale(0, null), grayscale(0, "Head")));
+	}
+
+	@Test
+	public void namesAppearWhenMarksRunOut() {
+		assertNull(SpringSaladViewerCanvas.captionFor(2, "Head"));
+		assertNull(SpringSaladViewerCanvas.captionFor(4, "Head"));
+		assertEquals("Head", SpringSaladViewerCanvas.captionFor(1, "Head")); // Alt+I isolation
+		assertEquals("Head", SpringSaladViewerCanvas.captionFor(5, "Head")); // a fifth type repeats a mark
+	}
+
+	/**
+	 * Five co-visible types on the same fill and the same mark: the name each sprite wears is
+	 * what tells them apart, and the five pictures stay different in grayscale.
+	 */
+	@Test
+	public void fiveCoVisibleTypesShareFillButKeepFiveNames() {
+		String[] names = { "Alpha", "Beta", "Gamma", "Delta", "Epsilon" };
+		int[][] rasters = new int[names.length][];
+		for (int i = 0; i < names.length; i++) {
+			rasters[i] = grayscale(0, names[i]); // same pattern slot, same fill
+		}
+		for (int i = 0; i < names.length; i++) {
+			for (int j = i + 1; j < names.length; j++) {
+				assertFalse(Arrays.equals(rasters[i], rasters[j]),
+						names[i] + " and " + names[j] + " look alike in grayscale");
+			}
+		}
+	}
+
+	/**
+	 * The rendered scene: with five co-visible types every sprite carries its name, so the strip
+	 * past the last sprite holds caption ink; with four types the marks suffice and it does not.
+	 */
+	@Test
+	public void fiveCoVisibleTypesPaintTheirNames() {
+		SpringSaladTrajectory traj = fiveTypeTrajectory();
+		SpringSaladViewerCanvas canvas = new SpringSaladViewerCanvas();
+		canvas.setTrajectory(traj);
+		BufferedImage allFive = canvas.renderToImage(400, 400);
+
+		String hiddenKey = traj.siteTypeKey(traj.getFrames().get(0).getSites().get(0));
+		canvas.setSiteTypeVisible(hiddenKey, false); // four types left: marks unique, names off
+		BufferedImage fourTypes = canvas.renderToImage(400, 400);
+
+		int spriteRight = rightmostFillPixel(fourTypes);
+		assertTrue(spriteRight > 0, "no sprite found in the render");
+		int namedInk = inkRightOf(allFive, spriteRight + 2);
+		int unnamedInk = inkRightOf(fourTypes, spriteRight + 2);
+		assertTrue(namedInk >= 20, "five co-visible types painted " + namedInk + " caption pixels");
+		assertTrue(unnamedInk <= 2, "four types still painted " + unnamedInk + " caption pixels");
+	}
+
+	/** Five site types that share one fill and one radius; only their names differ. */
+	private static SpringSaladTrajectory fiveTypeTrajectory() {
+		String[] names = { "Alpha", "Beta", "Gamma", "Delta", "Epsilon" };
+		List<SpringSaladTrajectory.Site> sites = new ArrayList<>();
+		Map<Integer, SpringSaladTrajectory.SiteIdentity> identities = new HashMap<>();
+		for (int i = 0; i < names.length; i++) {
+			sites.add(new SpringSaladTrajectory.Site(i, 4.0, "RED", -30 + 15 * i, 0, 5));
+			identities.put(i, new SpringSaladTrajectory.SiteIdentity("Kinase", i, names[i]));
+		}
+		SpringSaladTrajectory.Frame frame =
+				new SpringSaladTrajectory.Frame(0, 0.0, sites, new ArrayList<int[]>());
+		return new SpringSaladTrajectory(1e-4, 1e-4, 40, 40, 10, 10,
+				new ArrayList<>(List.of(frame)), identities);
+	}
+
+	/** Rightmost x of a red sprite pixel: where the last sprite ends and its caption begins. */
+	private static int rightmostFillPixel(BufferedImage img) {
+		int right = -1;
+		for (int y = 0; y < img.getHeight(); y++) {
+			for (int x = 0; x < img.getWidth(); x++) {
+				int rgb = img.getRGB(x, y);
+				int r = (rgb >> 16) & 0xFF, g = (rgb >> 8) & 0xFF, b = rgb & 0xFF;
+				if (r > 120 && g < r / 2 && b < r / 2) {
+					right = Math.max(right, x);
+				}
+			}
+		}
+		return right;
+	}
+
+	/** Near-white pixels right of {@code x0}: caption ink is white on a red fill (cueInk). */
+	private static int inkRightOf(BufferedImage img, int x0) {
+		int count = 0;
+		for (int y = 0; y < img.getHeight(); y++) {
+			for (int x = Math.max(0, x0); x < img.getWidth(); x++) {
+				int rgb = img.getRGB(x, y);
+				int r = (rgb >> 16) & 0xFF, g = (rgb >> 8) & 0xFF, b = rgb & 0xFF;
+				if (r > 200 && g > 200 && b > 200) {
+					count++;
+				}
+			}
+		}
+		return count;
 	}
 
 	@Test

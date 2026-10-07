@@ -1,0 +1,19 @@
+C9 local RPC pair, 2026-10-07. These targets are in-process objects dispatched
+through VCRpcRequest. They are not a deployed upgraded server and not a deployed
+old server. No release was tagged. §6 R2 stays open.
+
+upgraded modes Gray BlueRed Cividis
+upgraded cividis request object Cividis
+cividis-export.png active Cividis
+  value 0 #00224e  value 10 #fee838
+upgraded bluered request object BlueRed
+bluered-export.png active BlueRed
+  value 0 #000080  value 10 #ff0000
+retained BlueRed data ends #000080 .. #ff0000
+old server error: No such method: getSupportedExportColorModes(org.vcell.util.document.User)
+old treated as legacy true
+old request object BlueRed
+notice: This server will write BlueRed. Cividis is not available on the export server.
+old-server-bluered.png active BlueRed
+  value 0 #000080  value 10 #ff0000
+warning dialog showing true

@@ -1,0 +1,33 @@
+C10 — published help, 2026-10-07
+
+In-app JavaHelp, local rebuild from 2026-10-07T16:04:04-04:00.
+Window “Virtual Cell Help”. The TOC selection is Physiology → Observables Table
+(map id Observables). The page text contains “question mark” and “state's name”.
+It does not contain “shown in green” or “shown in yellow”.
+Screenshot: javahelp-observables.png
+
+The same page’s control is the observables properties editor. Opened window
+“Observables properties” for observable O0_MT0_tot, molecule MT0, compartment c0.
+Site Y has the state name p written on the site. Site l has a question mark,
+because that state is not chosen. Yellow on Y is an extra fill.
+Screenshot: observables-properties.png
+
+The local HTML under vcell-client/target/classes/vcellDoc still has those
+sentences. A byte scan of JavaHelpSearch finds no “shown in yellow”. The term
+map still contains “yellow”, which the rewritten pages use for the extra fill.
+
+Published site, opened in a browser:
+https://vcell.org/webstart/VCell_Tutorials/VCell_Help/topics/ch_2/Physiology/Observables.html
+Title: Observables Table.
+The shipped page says “the site is colored white”, “the site is colored green”,
+and “A site that has a defined state is always shown in green.”
+The depiction line says “Green circles” and “small yellow circles”.
+The page does not mention a written state name or a question mark.
+The published properties page
+topics/ch_8/PropertiesPanes/PP_Observables.html
+says the same: colored white, colored green, “always shown in green.”
+That instruction’s only cue is color. The client control above writes p and ?.
+
+webhelp-deploy.yml was not run. It would rsync the built topics onto
+vcell.org’s VCell_Help directory. Branch chore/vcell#1605 is not on origin.
+§6 R6 stays open.

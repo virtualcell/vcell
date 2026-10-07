@@ -1,0 +1,36 @@
+C8 — live field-viewer probes, 2026-10-07
+
+The VTK WebAssembly bundle already in webapp-viewer/assets/vtk-wasm stayed in
+place. FieldViewerFixtureServer served fenics2d (sim 987654321, job 0) at
+http://127.0.0.1:64504/?sim=987654321&job=0. The page reported the surface
+rendered. Three probes were added with "＋ Add points". The status line reads
+"3 probes". The plot is u(cytosol_dom) against time (s), 0.00 to 0.20.
+
+The display was in a dark color scheme, so the traces use SERIES_COLORS_DARK.
+Each name is drawn at the right end of its line (renderTraces) and the points
+are also labeled on the canvas.
+
+  P1  #6c6c6c  solid          top trace, label P1 at the right end
+  P2  #999933  dash 6 3       middle trace, label P2 at the right end
+  P3  #556998  dash 2 2       bottom trace, label P3 at the right end
+
+Capture: live-probes.png
+
+Grayscale (live-probes-grayscale.png):
+  P1 remains the solid line and still ends at the P1 label.
+  P2 remains the long-dashed line and still ends at the P2 label.
+  P3 remains the dotted line and still ends at the P3 label.
+
+Protan (live-probes-protan.png):
+  Sim Daltonism and Color Oracle are not installed on this machine.
+  The filter is the Machado 2009 full-severity protanopia matrix in linear sRGB,
+  the model Color Oracle uses:
+    0.152286  1.052583  -0.204868
+    0.114503  0.786281   0.099216
+   -0.003882 -0.048116   1.051998
+  After that filter the same three strokes remain:
+  solid ending at P1, long dash ending at P2, dotted ending at P3.
+
+Each name matches its line by the label on the stroke and by the dash. Hue is
+not required. §6 R7 stays checked. The full pytest webapp-viewer/test suite was
+not run. That missing run does not reopen R7.

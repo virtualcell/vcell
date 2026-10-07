@@ -15,12 +15,14 @@ package cbit.xml.merge.gui;
  * Creation date: (7/27/2000 6:30:41 PM)
  * @author: 
  */
+import java.awt.Color;
+
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JTree;
 
 import cbit.xml.merge.NodeInfo;
- 
+
 public class MyRenderer extends javax.swing.tree.DefaultTreeCellRenderer {
 	private javax.swing.ImageIcon fieldAttributeIcon = null;
 	private javax.swing.ImageIcon fieldNewAttributeIcon = null;
@@ -28,11 +30,19 @@ public class MyRenderer extends javax.swing.tree.DefaultTreeCellRenderer {
 	private javax.swing.ImageIcon fieldChangedAttributeIcon = null;
 	private javax.swing.ImageIcon fieldBadAttributeIcon = null;
 	//
-	private javax.swing.ImageIcon fieldFolderIcon = null;	
+	private javax.swing.ImageIcon fieldFolderIcon = null;
 	private javax.swing.ImageIcon fieldNewFolderIcon = null;
 	private javax.swing.ImageIcon fieldRemovedFolderIcon = null;
 	private javax.swing.ImageIcon fieldChangedFolderIcon = null;
 	private javax.swing.ImageIcon fieldBadFolderIcon = null;
+
+	// Status inks for unselected rows. Each is >= 4.5:1 on the papers the tree paints
+	// (white, the #e8edff striping, and the #FDFCDC hover), which Color.red (4.00:1) and
+	// Color.gray (3.95:1) were not. Selected rows keep the look-and-feel selection
+	// foreground, so no ink here ever sits on the selection blue.
+	static final Color NEW_INK = Color.blue;                      // 8.59:1 on white
+	static final Color REMOVED_INK = new Color(0xA4, 0x00, 0x00); // 8.15:1 on white
+	static final Color CHANGED_INK = new Color(0x8A, 0x4B, 0x00); // 6.80:1 on white
 /**
  * MyRenderer constructor comment.
  */
@@ -61,6 +71,15 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 	if (value instanceof NodeInfo) {
 		NodeInfo nodeInfo = (NodeInfo) value;
 
+		// The status is a word on the label first; the icon, the ink and the tooltip repeat it.
+		String word = statusWord(nodeInfo.getStatus());
+		if (word != null) {
+			component.setText(word + ": " + component.getText());
+			if (!sel) {
+				component.setForeground(statusInk(nodeInfo.getStatus()));
+			}
+		}
+
 		//Check the kind of node to decide which icon to use
 		if ( nodeInfo.isAttribute()) {
 			switch (nodeInfo.getStatus()) {
@@ -70,17 +89,14 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 					break;
 				case NodeInfo.STATUS_NEW:
 					component.setIcon(this.fieldNewAttributeIcon);
-					component.setForeground(java.awt.Color.blue);
 					setToolTipText("New " + nodeInfo.getName());
 					break;
 				case NodeInfo.STATUS_REMOVED:
 					component.setIcon(this.fieldRemovedAttributeIcon);
-					component.setForeground(java.awt.Color.red);
 					setToolTipText("Removed " + nodeInfo.getName());
 					break;
 				case NodeInfo.STATUS_CHANGED:
 					component.setIcon(this.fieldChangedAttributeIcon);
-					component.setForeground(java.awt.Color.gray);
 					setToolTipText("Altered " + nodeInfo.getName());
 					break;
 				default:
@@ -96,17 +112,14 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 					break;
 				case NodeInfo.STATUS_NEW:
 					component.setIcon(this.fieldNewFolderIcon);
-					component.setForeground(java.awt.Color.blue);
 					setToolTipText("New " + nodeInfo.getName());
 					break;
 				case NodeInfo.STATUS_REMOVED:
 					component.setIcon(this.fieldRemovedFolderIcon);
-					component.setForeground(java.awt.Color.red);
 					setToolTipText("Removed " + nodeInfo.getName());
 					break;
 				case NodeInfo.STATUS_CHANGED:
 					component.setIcon(this.fieldChangedFolderIcon);
-					component.setForeground(java.awt.Color.gray);
 					setToolTipText("Altered " + nodeInfo.getName());
 					break;
 				default:
@@ -115,7 +128,35 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 			}
 		}
 	}
-		
+
 	return component;
+}
+
+/** The word a node of this status wears on its label, or null for a normal/problem node. */
+static String statusWord(int status) {
+	switch (status) {
+		case NodeInfo.STATUS_NEW:
+			return "new";
+		case NodeInfo.STATUS_REMOVED:
+			return "removed";
+		case NodeInfo.STATUS_CHANGED:
+			return "changed";
+		default:
+			return null;
+	}
+}
+
+/** The unselected-row ink for a status, or null when the default text color is used. */
+static Color statusInk(int status) {
+	switch (status) {
+		case NodeInfo.STATUS_NEW:
+			return NEW_INK;
+		case NodeInfo.STATUS_REMOVED:
+			return REMOVED_INK;
+		case NodeInfo.STATUS_CHANGED:
+			return CHANGED_INK;
+		default:
+			return null;
+	}
 }
 }

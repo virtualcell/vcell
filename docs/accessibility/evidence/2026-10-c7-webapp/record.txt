@@ -1,0 +1,41 @@
+C7 — running webapp, 2026-10-07
+
+`npm install` in webapp-ng, then `npx ng serve --host 127.0.0.1 --port 4200`.
+The page measured was http://127.0.0.1:4200/. The publication editor was mounted on
+the home page for this measurement so the badges rendered without an Auth0 login,
+then that mount was removed. The footer component was already written; it was
+commented out of app.component.html, so the running shell did not show it. That
+comment is removed, and the footer stays on every page.
+
+Computed style (getComputedStyle, WCAG relative luminance) at innerWidth 976 and
+again at 375. Font on every badge: 12px, weight 500 at 976px. The 375px pass
+returned the same eight ratios at 12px. Every ratio is at least 4.5:1. Lowest is
+Archived at 5.60:1. No badge had empty text.
+
+  Published  #ffffff on #1b5e20   7.87:1   version-badge badge-published
+  Public     #ffffff on #0d47a1   8.63:1   privacy-badge badge-public
+  Archived   #ffffff on #bf360c   5.60:1   version-badge badge-archived
+  Private    #ffffff on #b71c1c   6.57:1   privacy-badge badge-private
+  Current    #ffffff on #424242  10.05:1   version-badge badge-current
+  Shared     #ffffff on #9c27b0   6.30:1   privacy-badge badge-shared
+  Unknown    #212121 on #e0e0e0  12.20:1   version-badge badge-unknown
+  Unknown    #212121 on #e0e0e0  12.20:1   privacy-badge badge-unknown
+
+Footer link "Accessibility at the University of Connecticut":
+  ink rgb(11, 61, 145) on footer paper rgb(248, 249, 250), 16px weight 400, 9.53:1
+  href https://accessibility.uconn.edu/
+Enter on that focused link loaded
+  https://accessibility.uconn.edu/
+  title: Home | Accessibility | Office for Inclusion and Civil Rights | University of Connecticut
+The link is the university procedures item. It is not a 1.4.1 pass.
+
+Pages that rendered: home navigation and content links are named (Home, Log in,
+Learn About VCell, VCell on GitHub, Administrative Tools, previous webapp). Each
+badge contains its state word. Each delete control is a button named "delete".
+A search of badge and alert elements with no text returned none. Publication
+routes are behind Auth0 and were not opened. A request for /error returned the
+home page because no Auth0 error was present. The error template shows the
+heading "An error was returned from Auth0" and the error message inside the alert.
+
+The running-app ratios match the component CSS table. §6 R8 stays checked.
+Screenshot: badges-desktop.png (desktop width).

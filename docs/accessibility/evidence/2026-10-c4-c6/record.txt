@@ -1,0 +1,75 @@
+Live windows, 2026-10-07. BlueRed stayed the default. Each C4 check holds. C5 names match the fixture. C6 sentence stays after the dialog and clears after a valid size.
+
+C4, opened window "Simulation results — BlueRed", colormap BlueRed:
+- Color-bar text: labels 0.0 and 10.0, and fields 0.0 and 10.0, are #000000 on #ffffff, 21.00:1. Slice label "Z [0] = 0" is 21.00:1.
+- Special swatches, short name plus long name, ink on the swatch and swatch on the black gap, then neighbor pairs: BM 5.08:1 and 4.14:1; AM 21.00:1 and 21.00:1; NN 5.91:1 and 3.55:1; ND 18.65:1 and 18.65:1; NR 5.88:1 and 3.57:1. Neighbors 5.08:1, 5.91:1, 5.25:1, 5.22:1. All text ≥ 4.5:1. All indicators ≥ 3:1.
+- Focus and slice: "BlueRed selected" has a 2px black border. "XY selected" is showing and has a 2px black border. Slice slider focus is a 3px black border and the slider is the focus owner.
+- Pointer on the image view: "(1.0666667,3.2,0) [49] [1,3,0] Value = 4.25". Right arrow: "(1.0666667,0,0) [1] [1,0,0] Value = 4.25". Screenshot c4-results-bluered.png.
+
+C5, opened window "Geometry — regions", pointer not used to select:
+- Rows: extracellular, cytosol, nucleus.
+- Down arrow selected cytosol, then nucleus. Readout ended "Region: nucleus". Screenshot c5-geometry-regions.png.
+- The slice image was black. The names did not depend on that fill or on a hover.
+
+C6, Mesh specification, keyboard:
+- Typed abc into X, then Tab. Dialog title Error: Wrong number format for input string: "abc". Screenshot c6-error-dialog.png.
+- After the dialog closed, the panel still said Wrong number format for input string: "abc". Screenshot c6-sentence-remains.png.
+- Replaced X with 10 and Tab. The sentence cleared (a single space) and the field was 10. Screenshot c6-sentence-cleared.png.
+
+Measurements follow.
+
+C4 results slice
+frame size 1040x800
+colormap BlueRed
+color button 'Gray' border #000000 x1 showing true bounds java.awt.Rectangle[x=11,y=50,width=578,height=20]
+color button 'BlueRed selected' border #000000 x2 showing true bounds java.awt.Rectangle[x=11,y=70,width=578,height=22]
+color button 'Cividis' border #000000 x1 showing true bounds java.awt.Rectangle[x=11,y=92,width=578,height=20]
+color button 'at time' border com.apple.laf.AquaButtonBorder$Named@50e990a7 showing true bounds java.awt.Rectangle[x=1,y=24,width=76,height=23]
+color button 'all times' border com.apple.laf.AquaButtonBorder$Named@50e990a7 showing true bounds java.awt.Rectangle[x=285,y=24,width=86,height=23]
+color button 'XY selected' border #000000 x2 showing true bounds java.awt.Rectangle[x=224,y=5,width=98,height=22]
+color button 'XZ' border #000000 x1 showing true bounds java.awt.Rectangle[x=327,y=6,width=40,height=20]
+color button 'YZ' border #000000 x1 showing true bounds java.awt.Rectangle[x=372,y=6,width=40,height=20]
+label 'BM Below minimum' ink #ffffff paper #8c6900 5.08:1 showing true
+  swatch #8c6900 on gap #000000 4.14:1
+label 'AM Above maximum' ink #000000 paper #ffffff 21.00:1 showing true
+  swatch #ffffff on gap #000000 21.00:1
+label 'NN Not a number' ink #ffffff paper #3c6c6c 5.91:1 showing true
+  swatch #3c6c6c on gap #000000 3.55:1
+label 'ND Not in domain' ink #000000 paper #f0fc24 18.65:1 showing true
+  swatch #f0fc24 on gap #000000 18.65:1
+label 'NR No range' ink #ffffff paper #c80050 5.88:1 showing true
+  swatch #c80050 on gap #000000 3.57:1
+label '0.0' ink #000000 paper #ffffff 21.00:1 showing true
+label '10.0' ink #000000 paper #ffffff 21.00:1 showing true
+  neighbor #8c6900 / #ffffff 5.08:1
+  neighbor #ffffff / #3c6c6c 5.91:1
+  neighbor #3c6c6c / #f0fc24 5.25:1
+  neighbor #f0fc24 / #c80050 5.22:1
+field '0.0' ink #000000 paper #ffffff 21.00:1 enabled true
+field '10.0' ink #000000 paper #ffffff 21.00:1 enabled true
+slice axis 'XY selected' border #000000 x2 showing true
+slice label 'Z [0] = 0' 21.00:1 showing true
+keyboard readout '(1.0666667,0,0) [1] [1,0,0] Value = 4.25'
+image view candidate 64x805 showing true
+image view 64x805 at 812,91 on-image 4,4
+cursor 817,104 frame 756,33 756x902 hit ImagePaneView
+pointer readout '(1.0666667,3.2,0) [49] [1,3,0] Value = 4.25' at 817,96
+slider focus border #000000 x3 focused true
+wrote c4-results-bluered.png 756x902
+C5 geometry
+region count 3
+region row extracellular
+region row cytosol
+region row nucleus
+readout 'Region: extracellular' focus false
+after down Region: cytosol selected=cytosol
+after down Region: nucleus selected=nucleus
+wrote c5-geometry-regions.png 756x902
+C6 mesh validation
+field after typing 'abc'
+dialog showing true
+wrote c6-error-dialog.png 543x232
+sentence after dialog 'Wrong number format for input string: "abc"'
+wrote c6-sentence-remains.png 756x902
+sentence after correction '  field='10''
+wrote c6-sentence-cleared.png 756x902

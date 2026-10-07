@@ -317,7 +317,7 @@ public class SpringSaladViewerCanvas extends JPanel {
 			}
 			gl.pattern = pattern;
 			SpringSaladTrajectory.SiteIdentity identity = trajectory.getSiteIdentity(s.getId());
-			gl.caption = identity == null ? null : identity.getSiteTypeName();
+			gl.caption = identity != null ? identity.getSiteTypeName() : fallbackCaption(s);
 			glyphs.add(gl);
 			byId.put(gl.id, gl);
 			minD = Math.min(minD, gl.depth); maxD = Math.max(maxD, gl.depth);
@@ -354,7 +354,6 @@ public class SpringSaladViewerCanvas extends JPanel {
 				}));
 			}
 		}
-		boolean soleType = patternByType.size() == 1;
 		for (Glyph gl : glyphs) {
 			double bright = MIN_BRIGHT + (1 - MIN_BRIGHT) * ((gl.depth - minD) / span); // nearer = brighter
 			BufferedImage sprite = getSprite(gl.color, bright);
@@ -362,7 +361,7 @@ public class SpringSaladViewerCanvas extends JPanel {
 			int px = (int) Math.round(gl.sx - gl.screenR), py = (int) Math.round(gl.sy - gl.screenR);
 			int pattern = gl.pattern;
 			Color fill = gl.color;
-			String caption = soleType ? gl.caption : null;
+			String caption = captionFor(patternByType.size(), gl.caption);
 			drawables.add(new Drawable(gl.depth, gg -> {
 				gg.drawImage(sprite, px, py, d, d, null);
 				paintSiteCue(gg, pattern, px, py, Math.max(d, 1), fill, caption);
@@ -468,6 +467,28 @@ public class SpringSaladViewerCanvas extends JPanel {
 
 	private static final int SITE_PATTERNS = 4;
 
+	/**
+	 * The name goes on the sprite whenever the marks alone cannot carry the type: when one type
+	 * is isolated on its own (Alt+I), or when more types are visible than there are distinct
+	 * marks — a fifth co-visible type would otherwise repeat a mark and leave hue as the only
+	 * difference. With few enough types the marks suffice and the view stays uncluttered.
+	 */
+	static String captionFor(int visibleTypeCount, String caption) {
+		return (visibleTypeCount == 1 || visibleTypeCount > SITE_PATTERNS) ? caption : null;
+	}
+
+	/**
+	 * Runs without {@code SiteIDs.csv} name a site by the only things the viewer file knows about
+	 * it — its color and radius — in the same shape the legend's fallback label uses.
+	 */
+	private static String fallbackCaption(SpringSaladTrajectory.Site s) {
+		String color = s.getColor();
+		String name = (color == null || color.trim().isEmpty()) ? "unknown"
+				: color.trim().toLowerCase(Locale.ROOT).replace('_', ' ');
+		name = Character.toUpperCase(name.charAt(0)) + name.substring(1);
+		return name + String.format(Locale.ROOT, " (r=%.3g)", s.getRadius());
+	}
+
 	private static final class Glyph {
 		int id; double sx, sy, depth, screenR; Color color;
 		double wx, wy, wz, radius;   // world-space center + radius (for world-space bond truncation)
@@ -557,7 +578,7 @@ public class SpringSaladViewerCanvas extends JPanel {
 	/**
 	 * Outline or mark drawn on a site after its color sprite. The pattern comes from the site type,
 	 * so two sites that share a hue still differ in grayscale. The saved color is not involved.
-	 * When {@code caption} is set (a site type isolated on its own), the name is drawn as well.
+	 * When {@code caption} is set (see {@link #captionFor}), the type's name is drawn as well.
 	 */
 	static void paintSiteCue(Graphics2D g, int pattern, int x, int y, int diameter, Color fill, String caption) {
 		Color ink = cueInk(fill);
