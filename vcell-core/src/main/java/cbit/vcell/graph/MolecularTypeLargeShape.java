@@ -498,7 +498,6 @@ public class MolecularTypeLargeShape extends IssueManagerContainer implements La
 		g2.setColor(colorOld);
 	}
 	
-	@Override
 	/**
 	 * Word drawn on a molecule that has error issues. The red outline is extra;
 	 * the word names the error without hue.
@@ -522,6 +521,7 @@ public class MolecularTypeLargeShape extends IssueManagerContainer implements La
 		}
 	}
 
+	@Override
 	public void paintSelf(Graphics g) {
 		paintSpecies(g);
 	}

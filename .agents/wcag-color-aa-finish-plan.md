@@ -92,7 +92,7 @@ log; they are not a human pass.
 | Geometry hover | 1.4.1 | Index hover appends the subvolume name. The slice view also lists every subvolume name, and keyboard selection writes that name into the readout. See R3. | A live geometry window was not reviewed separately from `GeometryRegionListTest`. |
 | Spatial colormap | 1.4.1, 1.4.11 | Cividis is registered after Gray and BlueRed. Special colors contrast at least 3:1 with both stored endpoints and have names. BlueRed stays the default. | Review the retained BlueRed default (R1). Client must not send Cividis to an old export server (R2). |
 | Field viewer series and text | 1.4.1, 1.4.3, 1.4.11 | Light palette matches `CVD_SAFE_LIGHT`. Dark palette is measured. Traces and swatches use the dash cycle. `#157347` replaces `#2a7`. Dark error and warning colors are in CSS. 32/32 source pairs passed the 8.5 script. 193 Chromium tests passed in the phase 6 log. | Filtered-image review. `setTable` for Cividis was not run against the VTK WebAssembly bundle. |
-| Overrides table and simulation console | 1.4.3, 1.4.1 | `ERROR_TEXT_COLOR` (`#A40000`) and `WARNING_TEXT_COLOR` (`#8A4B00`). Console lines start with `[Error]`, `[Warning]`, or `[Stopped]`. The six R4 text sites use those colors, with the severity in the words. | Selected rows use the look-and-feel selection ink, measured in R4. Other `Color.red` text remains under R5 and R9. |
+| Overrides table and simulation console | 1.4.3, 1.4.1 | `ERROR_TEXT_COLOR` (`#A40000`) and `WARNING_TEXT_COLOR` (`#8A4B00`). Console lines start with `[Error]`, `[Warning]`, or `[Stopped]`. The six R4 text sites use those colors, with the severity in the words. | Selected rows use the look-and-feel selection ink, measured in R4. `ConstraintPanel` is not a shipped screen (R5). `AnalysisTableRenderer` was recolored in R9. `MyRenderer` still uses `Color.red`. |
 | Seven help pages | 1.3.3 | Those pages name a non-color cue. The help target was rebuilt. | The remaining color-only pages (R6) and the published HTML / JavaHelp index. |
 
 `generateAutoColor`, `TABLEAU20`, `DARK20`, and `COLORBLIND20` are unchanged because solver
@@ -266,9 +266,11 @@ word stays in the text when the row is selected.
 assert that, and they assert the selection ink against the selection paper the component
 paints.
 
-Still `Color.red` text, so the §6 R4 box stays open: `ConstraintPanel` and
-`ConstraintTableCellRenderer` (R5), `AnalysisTableRenderer` (R9), and `MyRenderer`.
-Issue borders and `ProblematicTextFieldBorder` stay in R5.
+`ConstraintPanel` and `ConstraintTableCellRenderer` still contain `Color.red`. R5 records
+that the panel is constructed only from its own `main`, so that red is not a shipped screen.
+`AnalysisTableRenderer` was recolored in R9. `MyRenderer` still uses `Color.red` text, so the
+§6 R4 box stays open. Issue borders stay with the glyph work in R5. Field validation now also
+leaves a sentence on the panel; the red border is extra.
 
 Java 17, 2026-10-07: `GeometryRegionListTest` 1, `ImagePlaneManagerPanelAccessibilityTest` 4,
 `StatusTextContrastTest` 4, `StructureMappingUnmappedTextTest` 1,
@@ -286,6 +288,15 @@ Java 17, 2026-10-07: `GeometryRegionListTest` 1, `ImagePlaneManagerPanelAccessib
 | Validation after a dialog (`OutputOptionsPanel`, `MeshSpecificationPanel`, `StochSimOptionsPanel`, `TableCellEditorAutoCompletion`) | Keep the text. Where the user must recover after the dialog closes, leave a persistent message, not only a red border. | Keyboard user can find the error, fix it, and see the message clear. |
 | Yellow match rows (`DefaultScrollTableCellRenderer`) | Add a match label or icon. Yellow on white is about 1.07:1. | Match rows are identifiable with the yellow removed, including when the row is selected. [#2138](https://github.com/virtualcell/vcell/issues/2138). |
 | `ConstraintPanel` | Prove it is not reachable in the shipped client, or fix it the same way as the other error text. | Reachability note from the packaged entry points, or a remediated UI. [#2137](https://github.com/virtualcell/vcell/issues/2137). |
+
+**Result (2026-10-07):**
+
+- The molecule glyph paints the word `error` in `#A40000` on a white chip when the molecule has error issues. The red outline stays as extra. `MolecularTypeErrorMarkTest` counts that ink on the chip. Contrast of the ink on white is at least 4.5:1. The issue table was not treated as the cue.
+- `OutputOptionsPanel`, `MeshSpecificationPanel`, and `StochSimOptionsPanel` keep the dialog text and also leave that sentence on the panel. Clearing the report removes the sentence and the field's accessible description. `TableCellEditorAutoCompletion` titles the editor border `error` and keeps the recovery sentence as the tooltip and accessible description until editing starts again. The tests call the same show/clear methods the verifiers call. A person did not tab through the live modal dialog.
+- A spatial match row appends ` match` on the name cell when the row is selected and when it is not. Yellow is painted only when the row is not selected. `SpatialMatchLabelTest` covers both.
+- `ConstraintPanelReachabilityTest` walks `src/main` Java and finds `new ConstraintPanel(` only in `ConstraintPanel.java`, in its `main`. The panel is not a shipped screen. It was not deleted, and its red text was not recolored.
+
+Java 17, 2026-10-07: `MolecularTypeErrorMarkTest` 1, `MeshSpecificationValidationTest` 1, `SolverOptionsValidationTest` 2, `TableCellEditorAutoCompletionTest` 1, `SpatialMatchLabelTest` 1, `ConstraintPanelReachabilityTest` 1. Failures 0.
 
 ### R6 — Help text (1.3.3)
 
@@ -311,6 +322,10 @@ Check the JavaHelp search index and the HTML that is actually published, not onl
 follow each rewritten page in the shipped help.
 **Fail:** a page in the shipped help still says to look for a color with no other cue.
 
+**Result (2026-10-07):** `Observables.xml` and `PP_Observables.xml` now say a defined state is the state's name written on the site, and a question mark means the state is not chosen. Yellow and light grey are named only as extra fills. The same pass rewrote the other color-only instructions found in `UserDocumentation`: simulations summary, problems border, geometry mapping squares, reaction-diagram nodes, catalyst toggle, species and reaction depictions, pathway entity types and search marks, output-function `Undefined`, brown non-editable fields, image-geometry region names, BNGL bond indexes, and the trajectory-viewer note that a dark colour can hide a site that is still named in the list.
+
+`mvn process-classes -pl vcell-client -am -Pbuild-documentation` finished BUILD SUCCESS at 2026-10-07T16:04:04-04:00. Generated HTML under `vcell-client/target/classes/vcellDoc` has no `shown in yellow`, `colored yellow`, `shown in red`, `colored distinct`, or `Items in brown`. The pages that still say yellow also name the written state or the question mark. `JavaHelpSearch` was rewritten in that same run. A byte scan of the index finds no `shown in yellow`. The live pages at https://vcell.org/webstart/VCell_Tutorials/VCell_Help/index.html were not republished, and a reviewer has not followed them there. §6 R6 stays open.
+
 ### R7 — Field viewer, closed on the web edition (1.4.1, 1.4.3, 1.4.11)
 
 **Code today:** series colors, dashes, and the text colors in §2. Rainbow stays the default.
@@ -330,6 +345,12 @@ Cividis is a selector choice. The 3D lookup table is supposed to use `setTable` 
 **Pass:** the bundle run is recorded, and the filtered-image review is recorded.
 **Fail:** the 3D view and the kymograph disagree, or a trace can be matched only by hue.
 
+**Result (2026-10-07):** The probe cap stays at six (`MAX_PROBES = seriesColors.length`). Dashes repeat inside that cap, so each probe name is drawn on its trace and listed beside it. Stats curves get the series name on the line as well. The cap was not raised.
+
+On the VTK WebAssembly bundle already in `webapp-viewer/assets/vtk-wasm`, the fixture server served `fv3d` (`sim` 868220316, job 0) at `127.0.0.1:58911`. Rainbow was the first surface: a hue bar, blue at 29.9 and red at 45.3. Cividis changed that bar to dark blue through gray to yellow, and the kymograph gradient stops were `rgb(0,34,78)` and `rgb(254,232,56)`, the Cividis endpoints. The first return to Rainbow updated the kymograph stops to `rgb(0,0,255)`, `rgb(2,255,0)`, and `rgb(255,0,0)` while the 3D bar stayed on Cividis, because `forceBuild` after `setTable` kept the Cividis bytes. Both maps now use `setTable` on the array `fieldLut()` returns. After that change, Rainbow restored the hue bar on the surface and the kymograph together. Screenshots: `docs/accessibility/evidence/2026-10-r7-field-viewer/`.
+
+Filtered review of the six light-palette traces, with the same dashes and the names P1–P6 on each line: protan, deutan, tritan, and grayscale. P2 and P5 share a long dash, and P3 and P6 share a dotted dash, so hue is not a unique match. The names still pair each line with its label in all four views. Those images are drawings of the palette the viewer uses, not a capture of the live probe plot passed through a filter.
+
 ### R8 — Webapp (WCAG 2.2 AA color criteria)
 
 **Issue:** [#2135](https://github.com/virtualcell/vcell/issues/2135).
@@ -348,17 +369,73 @@ Cividis is a selector choice. The 3D lookup table is supposed to use `setTable` 
 viewport, and a click-through of the link.
 **Fail:** any text under 4.5:1, or a status told only by color.
 
+**Result (2026-10-07):** `webapp-ng` ships no dark theme. There is no `prefers-color-scheme`
+rule and no theme switch. Each badge already carries its state in words: Published,
+Archived, Current, Unknown, Public, Private, Shared. Those words are the 1.4.1 cue.
+
+Computed style from `publication-edit.component.css`, at 12px and font-weight 500, so the
+4.5:1 text ratio applies:
+
+| Badge | Ink on its background | Ratio |
+|---|---|---|
+| Published | `#ffffff` on `#1b5e20` | 7.87:1 |
+| Archived | `#ffffff` on `#bf360c` | 5.60:1 |
+| Current | `#ffffff` on `#424242` | 10.05:1 |
+| Unknown | `#212121` on `#e0e0e0` | 12.20:1 |
+| Public | `#ffffff` on `#0d47a1` | 8.63:1 |
+| Private | `#ffffff` on `#b71c1c` | 6.57:1 |
+| Shared | `#ffffff` on `#9c27b0` | 6.30:1 |
+
+Footer links use `#0b3d91` on the Bootstrap `bg-light` paper `#f8f9fa`, 9.53:1. The same
+ratios were read in a 980px desktop viewport and in a 375px-wide frame. An earlier 1280px
+pass of the badge CSS produced the same badge ratios. Enter on the footer link opened
+`https://accessibility.uconn.edu/` (page title: Home | Accessibility | Office for Inclusion
+and Civil Rights | University of Connecticut). That link is the university procedures item.
+It is not a 1.4.1 pass. `node_modules` is not present in this tree, so the Angular dev
+server and the Karma footer spec were not run. The styles measured are the component CSS
+the app ships.
+
 ### R9 — Other color-only scientific views
 
-These are in the audit and are not fixed on the branch. Each one fails 1.4.1, 1.4.3, or
-both until the acceptance line is true. Persisted scientific colors stay in the file
-format. The non-color cue is presentation.
+These are in the audit. Persisted scientific colors stay in the file format. The non-color
+cue is presentation. The 2026-10-07 result is under the table.
 
 | View | Issue | Change | Pass |
 |---|---|---|---|
 | SpringSaLaD sites | [#2132](https://github.com/virtualcell/vcell/issues/2132) | Labels, outlines, or patterns on the canvas. Keyboard isolation of a site. Saved colors unchanged. | Sites are distinguishable in grayscale. Model serialization and solver input are unchanged. |
 | Image-geometry ROI editor | [#2133](https://github.com/virtualcell/vcell/issues/2133) | Named ROI list. Selection and boundary cues that are not hue alone. Keyboard create, select, and edit where the mouse path exists. | A region can be created and selected with no use of its color. ROI data matches the pre-change data. |
 | FRAP analysis table | [#2134](https://github.com/virtualcell/vcell/issues/2134) | “NOT IDENTIFIABLE” already exists. The red text on `(255,170,170)` is 2.21:1. Recolor the text to ≥ 4.5:1 on that pink and on white, selected, and hover. | Every row state meets 1.4.3, and the words still say the result. |
+
+**Result (2026-10-07):**
+
+SpringSaLaD. Each visible site type gets one of four marks on the sprite: a ring, a dashed
+ring, a cross, or a square. The mark is black or white against the fill so it remains in
+grayscale. Alt+I on a focused site checkbox isolates that type, and the canvas then draws
+the site-type name beside those sites. `SpringSaladSiteCueTest` paints the same red fill
+with a ring and with a cross and the grayscale rasters differ, and isolating a demo
+trajectory leaves one checkbox selected. `Colors.java` and the solver writers were not
+edited. `colorForName` still returns each stored palette color. `SpringSaladViewerColorTest`,
+`SpringSaladSpeciesLegendTest`, and `SpringSaladViewerRenderTest` passed in the same run.
+
+ROI editor. The Domain Regions list already shows each name. The list label now reads
+`Domain Regions. Selected: <name>`, including `Selected: none` when nothing is selected.
+The highlight edge is a black/white checker drawn in the composite. `RoiSelectionCue.isBoundary`
+reads the mask and the test asserts the byte array is unchanged. Create is the Add Domain
+button. Enter on the list fires the same find action as a double-click. With the image
+focused, the arrow keys call `drawHighlight` or the fill property, the same methods the
+mouse uses. Paint, Erase, Fill, and the image have accessible names. `RoiSelectionCueTest`
+constructed the panel, added a domain named cytosol, and checked the readout, the list,
+and the arrow-key binding. A before-and-after raster of a painted ROI was not saved. The
+paint path is the existing `drawPaint`.
+
+FRAP table. `Color.red` on `(255,170,170)` is 2.21:1, and `#A40000` on that pink is 4.49:1.
+The not-identifiable ink is `#5C0000`: 7.96:1 on the pink, 14.43:1 on white, and 13.84:1 on
+the hover paper `#FDFCDC`. This renderer has no separate hover background. Unselected
+not-identifiable group cells keep the pink. Selected rows use the look-and-feel selection
+foreground, because `#5C0000` on the Mac selection blue `rgb(8,74,217)` is 2.06:1. The test
+sets that blue and white and still reads `NOT IDENTIFIABLE`. `AnalysisTableContrastTest`:
+2 tests, 0 failures. Java 17, 2026-10-07T16:39:27-04:00, with the SpringSaLaD and ROI tests
+above: 24 tests, 0 failures.
 
 ### R10 — Human review (all four criteria)
 
@@ -379,6 +456,11 @@ script on macOS, Windows, and Linux:
 **Pass:** every item is yes, with the OS, JDK, and browser versions written down.
 **Fail:** any item is no. A missing platform is not a pass.
 
+**Result (2026-10-07):** The script was not run. This session had one person on macOS
+(darwin 27.0.0) and no second reviewer. Windows and Linux were not used. Sim Daltonism and
+Color Oracle were not used for this script. A missing platform is not a pass, so §6 R10
+stays open.
+
 ---
 
 ## 4. Tests to add or re-run
@@ -390,11 +472,12 @@ Existing tests stay. Add the ones this plan introduces. Run Java tests with Java
 |---|---|
 | Re-run `ColorAccessibilityTest`, `Plot2DPanelAccessibilityTest`, `PlotPaneAccessibilityTest`, `Langevin` tests, `DisplayAdapterServiceColormapTest`, `ExportSpecsColorModeFallbackTest`, `GuiConstantsContrastTest`, `SimulationConsolePanelAccessibilityTest` | No new failures |
 | `StatusTextContrastTest`, `StructureMappingUnmappedTextTest`, `MathOverridesWarningButtonTest`, `DefineRoiStatusTextTest` | The six R4 text sites are ≥ 4.5:1 on white, the alternate row, the hover paper, and the selection ink actually painted. Selected rows do not use `#A40000` on the Mac selection blue |
-| New: FRAP non-identifiable cell on its pink background | ≥ 4.5:1 |
+| `MolecularTypeErrorMarkTest`, `MeshSpecificationValidationTest`, `SolverOptionsValidationTest`, `TableCellEditorAutoCompletionTest`, `SpatialMatchLabelTest`, `ConstraintPanelReachabilityTest` | The glyph says `error`, validation sentences stay and clear, match rows say `match` when selected, and `ConstraintPanel` is constructed only from its own `main` |
+| `AnalysisTableContrastTest` | `#5C0000` is 7.96:1 on `(255,170,170)`, 14.43:1 on white, and 13.84:1 on `#FDFCDC`. Selected rows use white on `rgb(8,74,217)`. The cell still says `NOT IDENTIFIABLE`. 2 tests, 0 failures, 2026-10-07 |
 | New: client export request when the server reports no Cividis | `ExportColorModeNegotiationTest` stores BlueRed and builds the notice. A deployed old server and a deployed new server have not been run. |
-| `pytest webapp-viewer/test` plus a Cividis `setTable` check on the wasm bundle | Suite green; surface and kymograph share `CIVIDIS_RGB` |
-| `webapp-ng` contrast on badge and status colors | ≥ 4.5:1 |
-| Help search for color-only instructions | Only lines that also name a non-color cue |
+| `pytest webapp-viewer/test` plus a Cividis `setTable` check on the wasm bundle | The full pytest suite was not run. The fv3d bundle run on 2026-10-07 showed Cividis stops `rgb(0,34,78)` … `rgb(254,232,56)` on the kymograph and the same ramp on the surface. After both maps use `setTable`, Rainbow returns `rgb(0,0,255)` … `rgb(255,0,0)` on both |
+| `webapp-ng` contrast on badge and status colors | Computed 2026-10-07. Lowest badge is Archived, 5.60:1. Shared stays 6.30:1. Desktop 980px and a 375px frame. Footer link 9.53:1, and the link opened `https://accessibility.uconn.edu/`. No dark theme ships. The Angular dev server was not started |
+| Help search for color-only instructions | Local HTML rebuilt 2026-10-07 has no color-only instruction. The JavaHelp index was rebuilt in the same run. The pages on vcell.org were not republished |
 
 A Fast-group run that reports the known missing-Poetry errors
 (`MathOverrideRoundTripTest`, `CopasiOptimizationSolverTest`, `VCellDataTest`) is the
@@ -420,13 +503,13 @@ without the evidence is not allowed.
 - [ ] R1 has a written BlueRed review, and every failed item in it is fixed.
 - [ ] R2 has a real old-server and new-server export run. Labels match the pixels.
 - [x] R3 identifies every test region with no hover and no hue. `GeometryRegionListTest`, 2026-10-07. Adjacent contrast-colormap fills are 1.51:1 and 1.71:1, so the name is the cue.
-- [ ] R4 has no remaining status or data text under 4.5:1, including selected rows. The six listed sites are measured. `ConstraintPanel`, `ConstraintTableCellRenderer`, `AnalysisTableRenderer`, and `MyRenderer` still use `Color.red` text.
-- [ ] R5 errors, match rows, and the glyph error are identifiable without hue. `ConstraintPanel` is either unreachable in the shipped client or fixed.
-- [ ] R6: shipped JavaHelp and published HTML contain no color-only instruction.
-- [ ] R7: field-viewer Cividis and Rainbow were exercised on the VTK bundle, and the filtered-image review passed.
-- [ ] R8: `webapp-ng` text and states meet 1.4.3 and 1.4.1.
-- [ ] R9: SpringSaLaD, ROI editor, and FRAP table meet the pass lines in that section. Saved scientific colors and solver input are unchanged.
-- [ ] R10: two reviewers, three desktop platforms, every script item yes.
+- [ ] R4 has no remaining status or data text under 4.5:1, including selected rows. The six listed sites are measured. `ConstraintPanel` is not a shipped screen (R5). `AnalysisTableRenderer` was recolored in R9. `MyRenderer` still uses `Color.red` text.
+- [x] R5 errors, match rows, and the glyph error are identifiable without hue. `ConstraintPanel` is constructed only from its own `main`. Tests listed in the R5 result, 2026-10-07. The live modal dialog was not tabbed through.
+- [ ] R6: local JavaHelp HTML was rebuilt and the color-only sentences were rewritten. The pages published at vcell.org were not followed.
+- [x] R7: field-viewer Cividis and Rainbow were exercised on the VTK bundle for `fv3d`, and the filtered palette review matched every named trace. 2026-10-07. The full `pytest webapp-viewer/test` suite was not run.
+- [x] R8: badge text is at least 4.5:1 in the default theme. `webapp-ng` ships no dark theme. Badge words are the state. Footer link opened `https://accessibility.uconn.edu/` on 2026-10-07. Desktop 980px and a 375px frame. The Angular dev server was not started. The link is not a 1.4.1 pass.
+- [x] R9: SpringSaLaD marks differ in grayscale and Alt+I isolates a site. ROI selection is the region name, and the boundary checker does not write the mask. FRAP `#5C0000` clears the pink, white, and hover paper, and selected rows keep the selection ink. `Colors.java` and the solver writers were not edited. 24 tests, 0 failures, 2026-10-07T16:39:27-04:00. A painted-ROI before/after raster was not saved.
+- [ ] R10: two reviewers, three desktop platforms, every script item yes. The script was not run. Windows and Linux were not used.
 - [ ] The audit PR #2141 is merged, or its rows are reproduced in the evidence for this build.
 
 When those boxes are true, this branch meets **WCAG 2.1 AA color criteria 1.3.3, 1.4.1,

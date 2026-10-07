@@ -91,19 +91,24 @@ public class OverlayImageDisplayJAI extends DisplayJAI implements BrushRefresh{
 				return result;
 			}
 			int index= 0;
-			for (int Y = 0; Y < contrastEnhancedUnderlyingImage.getHeight(); Y++) {
-				for (int X = 0; X < contrastEnhancedUnderlyingImage.getWidth(); X++) {
+			int highlightWidth = contrastEnhancedUnderlyingImage.getWidth();
+			int highlightHeight = contrastEnhancedUnderlyingImage.getHeight();
+			for (int Y = 0; Y < highlightHeight; Y++) {
+				for (int X = 0; X < highlightWidth; X++) {
 //					if(roiBytes[index] != 0){
 //						System.out.println("X "+X+" Y "+Y+
 //								" roi="+(0x000000FF&roiBytes[index])+
 //								" under="+(underlayBytes[index]&0x000000FF)+
 //								" color="+Hex.toString(blendARGB[roiBytes[index]&0x000000FF][underlayBytes[index]&0x000000FF]));
 //					}
-					newOverlayRasterInts[index] =
-						blendARGB
+					int rgb = blendARGB
 							[(highlightBytes==null?0:(highlightBytes[index]==0?0:1))]
 							[(roiBytes==null?0:roiBytes[index]&0x000000FF)]
 							[contrastUnderlayBytes[index]&0x000000FF];
+					if (highlightBytes != null && RoiSelectionCue.isBoundary(highlightBytes, highlightWidth, highlightHeight, X, Y)) {
+						rgb = RoiSelectionCue.boundaryRgb(X, Y);
+					}
+					newOverlayRasterInts[index] = rgb;
 					index++;
 				}
 			}

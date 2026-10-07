@@ -12,20 +12,26 @@ package cbit.vcell.solver.ode.gui;
 import cbit.vcell.simdata.SpringSaladTrajectory;
 import cbit.vcell.solver.ode.gui.SpringSaladSpeciesLegend.SiteType;
 
+import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.KeyStroke;
 import javax.swing.ScrollPaneConstants;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.KeyboardFocusManager;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -71,6 +77,7 @@ public class SpringSaladSpeciesPanel extends JPanel {
 		scroll.setBorder(BorderFactory.createEmptyBorder());
 		scroll.getVerticalScrollBar().setUnitIncrement(12);
 		add(scroll, BorderLayout.CENTER);
+		installIsolateKey();
 
 		JPanel buttons = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 2));
 		JButton all = new JButton("All");
@@ -142,6 +149,8 @@ public class SpringSaladSpeciesPanel extends JPanel {
 		// text at all; its site-type key is the only durable way to address it.
 		box.setName("SpringSaladSite_" + siteType.getKey());
 		box.setToolTipText(tip);
+		box.getAccessibleContext().setAccessibleDescription(
+				siteType.getLabel() + ". Alt+I shows only this site.");
 		box.addActionListener(e -> {
 			onVisibilityChanged.accept(siteType.getKey(), box.isSelected());
 			refreshHeaders();
@@ -157,6 +166,39 @@ public class SpringSaladSpeciesPanel extends JPanel {
 		// keep rows at their natural height rather than stretching to fill the BoxLayout
 		row.setMaximumSize(new Dimension(Integer.MAX_VALUE, row.getPreferredSize().height));
 		return row;
+	}
+
+	/**
+	 * Show one site type and hide the rest. Alt+I does this for the focused site checkbox.
+	 * The canvas then draws that type's name on the sites. Saved colors are not touched.
+	 */
+	public void isolateSiteType(String key) {
+		for (Map.Entry<String, JCheckBox> entry : new ArrayList<>(boxesByKey.entrySet())) {
+			boolean visible = entry.getKey().equals(key);
+			entry.getValue().setSelected(visible);
+			onVisibilityChanged.accept(entry.getKey(), visible);
+		}
+		refreshHeaders();
+	}
+
+	private void installIsolateKey() {
+		getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
+				.put(KeyStroke.getKeyStroke(KeyEvent.VK_I, KeyEvent.ALT_DOWN_MASK), "isolateSite");
+		getActionMap().put("isolateSite", new AbstractAction() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				Component focus = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
+				if (!(focus instanceof JCheckBox)) {
+					return;
+				}
+				String name = focus.getName();
+				String prefix = "SpringSaladSite_";
+				if (name == null || !name.startsWith(prefix)) {
+					return;
+				}
+				isolateSiteType(name.substring(prefix.length()));
+			}
+		});
 	}
 
 	/** A species header stays checked only while all of its site types are shown. */

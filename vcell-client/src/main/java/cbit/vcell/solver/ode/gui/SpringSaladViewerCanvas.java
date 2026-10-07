@@ -22,6 +22,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
@@ -296,6 +297,7 @@ public class SpringSaladViewerCanvas extends JPanel {
 		List<Glyph> glyphs = new ArrayList<>(frame.getSites().size());
 		double minD = Double.POSITIVE_INFINITY, maxD = Double.NEGATIVE_INFINITY;
 		Map<Integer, Glyph> byId = new HashMap<>();
+		Map<String, Integer> patternByType = new HashMap<>();
 		for (SpringSaladTrajectory.Site s : frame.getSites()) {
 			// Hidden sites are dropped before projection; links to them then find no glyph in byId
 			// and are skipped too, so a bond never dangles into empty space.
@@ -307,6 +309,15 @@ public class SpringSaladViewerCanvas extends JPanel {
 			gl.screenR = Math.max(1.0, s.getRadius() * pixelScale);
 				gl.wx = s.getX(); gl.wy = s.getY(); gl.wz = s.getZ(); gl.radius = s.getRadius();
 			gl.color = colorForName(s.getColor());
+			String typeKey = trajectory.siteTypeKey(s);
+			Integer pattern = patternByType.get(typeKey);
+			if (pattern == null) {
+				pattern = patternByType.size() % SITE_PATTERNS;
+				patternByType.put(typeKey, pattern);
+			}
+			gl.pattern = pattern;
+			SpringSaladTrajectory.SiteIdentity identity = trajectory.getSiteIdentity(s.getId());
+			gl.caption = identity == null ? null : identity.getSiteTypeName();
 			glyphs.add(gl);
 			byId.put(gl.id, gl);
 			minD = Math.min(minD, gl.depth); maxD = Math.max(maxD, gl.depth);
@@ -343,12 +354,19 @@ public class SpringSaladViewerCanvas extends JPanel {
 				}));
 			}
 		}
+		boolean soleType = patternByType.size() == 1;
 		for (Glyph gl : glyphs) {
 			double bright = MIN_BRIGHT + (1 - MIN_BRIGHT) * ((gl.depth - minD) / span); // nearer = brighter
 			BufferedImage sprite = getSprite(gl.color, bright);
 			int d = (int) Math.round(gl.screenR * 2);
 			int px = (int) Math.round(gl.sx - gl.screenR), py = (int) Math.round(gl.sy - gl.screenR);
-			drawables.add(new Drawable(gl.depth, gg -> gg.drawImage(sprite, px, py, d, d, null)));
+			int pattern = gl.pattern;
+			Color fill = gl.color;
+			String caption = soleType ? gl.caption : null;
+			drawables.add(new Drawable(gl.depth, gg -> {
+				gg.drawImage(sprite, px, py, d, d, null);
+				paintSiteCue(gg, pattern, px, py, Math.max(d, 1), fill, caption);
+			}));
 		}
 
 		drawables.sort((p, q) -> Double.compare(p.depth, q.depth)); // far first
@@ -448,9 +466,13 @@ public class SpringSaladViewerCanvas extends JPanel {
 
 	private static double clamp01(double v) { return v < 0 ? 0 : (v > 1 ? 1 : v); }
 
+	private static final int SITE_PATTERNS = 4;
+
 	private static final class Glyph {
 		int id; double sx, sy, depth, screenR; Color color;
 		double wx, wy, wz, radius;   // world-space center + radius (for world-space bond truncation)
+		int pattern;
+		String caption;
 	}
 
 	/** A depth-sorted paint action (glyph sprite, membrane quad, or link). */
@@ -531,6 +553,43 @@ public class SpringSaladViewerCanvas extends JPanel {
 	}
 
 	private static int clamp255(double v) { return (int) Math.max(0, Math.min(255, Math.round(v))); }
+
+	/**
+	 * Outline or mark drawn on a site after its color sprite. The pattern comes from the site type,
+	 * so two sites that share a hue still differ in grayscale. The saved color is not involved.
+	 * When {@code caption} is set (a site type isolated on its own), the name is drawn as well.
+	 */
+	static void paintSiteCue(Graphics2D g, int pattern, int x, int y, int diameter, Color fill, String caption) {
+		Color ink = cueInk(fill);
+		g.setColor(ink);
+		float weight = Math.max(1.5f, diameter / 10f);
+		int inset = Math.max(1, diameter / 6);
+		int slot = Math.floorMod(pattern, SITE_PATTERNS);
+		if (slot == 0) {
+			g.setStroke(new BasicStroke(weight));
+			g.drawOval(x + inset, y + inset, Math.max(1, diameter - 2 * inset), Math.max(1, diameter - 2 * inset));
+		} else if (slot == 1) {
+			g.setStroke(new BasicStroke(weight, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 1f, new float[] { 4f, 3f }, 0f));
+			g.drawOval(x + inset, y + inset, Math.max(1, diameter - 2 * inset), Math.max(1, diameter - 2 * inset));
+		} else if (slot == 2) {
+			g.setStroke(new BasicStroke(weight, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER));
+			g.drawLine(x + inset, y + diameter / 2, x + diameter - inset, y + diameter / 2);
+			g.drawLine(x + diameter / 2, y + inset, x + diameter / 2, y + diameter - inset);
+		} else {
+			g.setStroke(new BasicStroke(weight));
+			g.drawRect(x + inset, y + inset, Math.max(1, diameter - 2 * inset), Math.max(1, diameter - 2 * inset));
+		}
+		if (caption != null && !caption.isEmpty() && diameter >= 12) {
+			g.setFont(new Font(Font.SANS_SERIF, Font.BOLD, Math.max(9, diameter / 3)));
+			g.drawString(caption, x + diameter + 2, y + diameter / 2);
+		}
+	}
+
+	/** Black on a light fill, white on a dark fill, so the mark survives grayscale. */
+	static Color cueInk(Color fill) {
+		double y = (0.2126 * fill.getRed() + 0.7152 * fill.getGreen() + 0.0722 * fill.getBlue()) / 255.0;
+		return y > 0.45 ? Color.BLACK : Color.WHITE;
+	}
 
 	// ---- SpringSaLaD color-name palette ----
 

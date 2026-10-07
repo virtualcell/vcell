@@ -27,6 +27,10 @@ import cbit.vcell.microscopy.FRAPModel;
 @SuppressWarnings("serial")
 public class AnalysisTableRenderer extends DefaultTableCellRenderer
 {
+	/** Dark red. #A40000 on the pink row is 4.49:1, under 4.5:1. This ink is 7.96:1 on that pink. */
+	static final Color NOT_IDENTIFIABLE_TEXT = new Color(0x5C, 0x00, 0x00);
+	static final Color NOT_IDENTIFIABLE_PINK = new Color(255, 170, 170);
+
 	private NumberFormat format;
 	private JButton button = null;
 	public AnalysisTableRenderer(int precision)
@@ -78,52 +82,46 @@ public class AnalysisTableRenderer extends DefaultTableCellRenderer
 			return button;
 		}
 		
-		if(value instanceof String)
-		{
-			if(((String)value).equals(AnalysisTableModel.STR_NOT_SIGNIFICANT))
-			{
-				setForeground(Color.red);
+		// The words already say the result. The pink row stays. Selected rows keep the
+		// look-and-feel selection colors: this ink on the Mac selection blue is 2.06:1.
+		if (isNotIdentifiable(table, value, column)) {
+			if (isSelected) {
+				setForeground(table.getSelectionForeground());
+				setBackground(table.getSelectionBackground());
+			} else {
+				setForeground(NOT_IDENTIFIABLE_TEXT);
+				if (notIdentifiableGroupColumn(column) >= 0) {
+					setBackground(NOT_IDENTIFIABLE_PINK);
+				}
 			}
 		}
-		
-		//show the evaluated model(with confidence intervals)significan in green and not significant in red.
-		if(column == AnalysisTableModel.COLUMN_DIFF_ONE_PARAMETER_VAL || column == AnalysisTableModel.COLUMN_DIFF_ONE_CI)
-		{
-			Object identifyStr = table.getValueAt(AnalysisTableModel.INDEX_MODEL_SIGNIFICANCE, AnalysisTableModel.COLUMN_DIFF_ONE_PARAMETER_VAL);
-			if(identifyStr instanceof String)
-			{
-				if(((String)identifyStr).equals(AnalysisTableModel.STR_NOT_SIGNIFICANT))
-				{
-					setForeground(Color.red);
-					setBackground(new Color(255,170,170));
-				}
-			}
-		}	
-		if(column == AnalysisTableModel.COLUMN_DIFF_TWO_PARAMETER_VAL || column == AnalysisTableModel.COLUMN_DIFF_TWO_CI)
-		{
-			Object identifyStr = table.getValueAt(AnalysisTableModel.INDEX_MODEL_SIGNIFICANCE, AnalysisTableModel.COLUMN_DIFF_TWO_PARAMETER_VAL);
-			if(identifyStr instanceof String)
-			{
-				if(((String)identifyStr).equals(AnalysisTableModel.STR_NOT_SIGNIFICANT))
-				{
-					setForeground(Color.red);
-					setBackground(new Color(255,170,170));
-				}
-			}
-		}	
-		if(column == AnalysisTableModel.COLUMN_KOFF_PARAMETER_VAL || column == AnalysisTableModel.COLUMN_KOFF_CI)
-		{
-			Object identifyStr = table.getValueAt(AnalysisTableModel.INDEX_MODEL_SIGNIFICANCE, AnalysisTableModel.COLUMN_KOFF_PARAMETER_VAL);
-			if(identifyStr instanceof String)
-			{
-				if(((String)identifyStr).equals(AnalysisTableModel.STR_NOT_SIGNIFICANT))
-				{
-					setForeground(Color.red);
-					setBackground(new Color(255,170,170));
-				}
-			}
-		}	
-		
+
 		return this;
+	}
+
+	private static boolean isNotIdentifiable(JTable table, Object value, int column) {
+		if (value instanceof String && AnalysisTableModel.STR_NOT_SIGNIFICANT.equals(value)) {
+			return true;
+		}
+		int significanceColumn = notIdentifiableGroupColumn(column);
+		if (significanceColumn < 0) {
+			return false;
+		}
+		Object identifyStr = table.getValueAt(AnalysisTableModel.INDEX_MODEL_SIGNIFICANCE, significanceColumn);
+		return identifyStr instanceof String && AnalysisTableModel.STR_NOT_SIGNIFICANT.equals(identifyStr);
+	}
+
+	/** Parameter or confidence-interval column whose significance cell paints the pink row, or -1. */
+	private static int notIdentifiableGroupColumn(int column) {
+		if (column == AnalysisTableModel.COLUMN_DIFF_ONE_PARAMETER_VAL || column == AnalysisTableModel.COLUMN_DIFF_ONE_CI) {
+			return AnalysisTableModel.COLUMN_DIFF_ONE_PARAMETER_VAL;
+		}
+		if (column == AnalysisTableModel.COLUMN_DIFF_TWO_PARAMETER_VAL || column == AnalysisTableModel.COLUMN_DIFF_TWO_CI) {
+			return AnalysisTableModel.COLUMN_DIFF_TWO_PARAMETER_VAL;
+		}
+		if (column == AnalysisTableModel.COLUMN_KOFF_PARAMETER_VAL || column == AnalysisTableModel.COLUMN_KOFF_CI) {
+			return AnalysisTableModel.COLUMN_KOFF_PARAMETER_VAL;
+		}
+		return -1;
 	}
 }

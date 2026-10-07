@@ -30,8 +30,8 @@ public class ConstraintPanelReachabilityTest {
 			@Override
 			public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
 				String name = dir.getFileName().toString();
-				if (name.equals("target") || name.equals("node_modules") || name.equals(".git")
-						|| name.equals("localsolvers") || name.equals(".idea")) {
+				if (name.startsWith(".") || name.equals("target") || name.equals("node_modules")
+						|| name.equals("localsolvers")) {
 					return FileVisitResult.SKIP_SUBTREE;
 				}
 				return FileVisitResult.CONTINUE;
@@ -39,8 +39,9 @@ public class ConstraintPanelReachabilityTest {
 
 			@Override
 			public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-				String name = file.getFileName().toString();
-				if (name.endsWith(".java") && Files.readString(file).contains("new ConstraintPanel(")) {
+				String path = file.toString().replace('\\', '/');
+				if (path.contains("/src/main/") && path.endsWith(".java")
+						&& Files.readString(file).contains("new ConstraintPanel(")) {
 					hits.add(root.relativize(file).toString());
 				}
 				return FileVisitResult.CONTINUE;

@@ -37,8 +37,11 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.TreeMap;
 
 import javax.swing.AbstractAction;
@@ -429,6 +432,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 	private JSlider smoothslider;
 	private JPanel panel_3;
 	private JLabel domainRegionLabel;
+	private String domainListTitle = DOMAIN_LIST_TEXT;
 	private JButton mergeButton;
 	private JButton borderToolButton;
 	private JButton extrudeToolButton;
@@ -700,7 +704,8 @@ public class OverlayEditorPanelJAI extends JPanel{
 		gbl_panel_3.rowWeights = new double[]{0.0, 0.0, 0.0, Double.MIN_VALUE};
 		panel_3.setLayout(gbl_panel_3);
 		
-		domainRegionLabel = new JLabel(DOMAIN_LIST_TEXT);
+		domainRegionLabel = new JLabel(RoiSelectionCue.withListTitle(domainListTitle, Collections.<String>emptyList()));
+		domainRegionLabel.setName("RegionSelectionReadout");
 		GridBagConstraints gbc_domainRegionLabel = new GridBagConstraints();
 		gbc_domainRegionLabel.insets = new Insets(0, 0, 2, 0);
 		gbc_domainRegionLabel.gridx = 0;
@@ -755,6 +760,17 @@ public class OverlayEditorPanelJAI extends JPanel{
 		});
 		resolvedList.addListSelectionListener(resolvedListSelectionListener);
 		resolvedList.setCellRenderer(resolvedObjectListCellRenderer);
+		resolvedList.getAccessibleContext().setAccessibleName(DOMAIN_LIST_TEXT);
+		resolvedList.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "findSelectedRegion");
+		resolvedList.getActionMap().put("findSelectedRegion", new AbstractAction() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				Object value = resolvedList.getSelectedValue();
+				if (value != null) {
+					firePropertyChange(FRAP_DATA_FINDROI_PROPERTY, null, value);
+				}
+			}
+		});
 		scrollPane.setViewportView(resolvedList);
 		
 		mergeButton = new JButton("Auto-Merge");
@@ -827,6 +843,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 		addROIButton.setName("roiAddBtn");
 		addROIButton.addActionListener(addROIActionListener);
 		addROIButton.setText("Add Domain...");
+		addROIButton.getAccessibleContext().setAccessibleDescription("Creates a domain. The name is typed in the dialog.");
 		final GridBagConstraints gridBagConstraints_3 = new GridBagConstraints();
 		gridBagConstraints_3.insets = new Insets(4, 4, 5, 5);
 		gridBagConstraints_3.gridy = 0;
@@ -990,6 +1007,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 			boolean bEnableMerge = (numListItems > 1) && (selectedRegionInfos==null?false:(selectedRegionInfos.length == 0?false:true));
 			bEnableMerge = bEnableMerge && (numListItems != selectedRegionInfos.length);
 			mergeButton.setEnabled(bEnableMerge);
+			showSelectedRegionNames(selectedRegionInfos);
 			firePropertyChange(FRAP_DATA_RESOLVEDHIGHLIGHT_PROPERTY, null, selectedRegionInfos);
 		}else{
 			firePropertyChange(FRAP_DATA_RESOLVEDMERGE_PROPERTY, null, selectedRegionInfos);
@@ -1399,7 +1417,84 @@ public class OverlayEditorPanelJAI extends JPanel{
 		this.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke('!'), "Cibele_sep" );
 		this.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke('!'), "Cibele_sep" );
 		this.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke('!'), "Cibele_sep" );
+		installKeyboardRoiEdit();
+	}
 
+	/**
+	 * Arrow keys paint, erase, or fill with the same calls the mouse uses, once the image has focus.
+	 */
+	private void installKeyboardRoiEdit() {
+		getImagePane().setFocusable(true);
+		getImagePane().getAccessibleContext().setAccessibleName("Domain image");
+		getImagePane().getAccessibleContext().setAccessibleDescription(
+				"Arrow keys edit the active domain with the selected paint, erase, or fill tool.");
+		bindRoiKey(KeyEvent.VK_LEFT, -1, 0);
+		bindRoiKey(KeyEvent.VK_RIGHT, 1, 0);
+		bindRoiKey(KeyEvent.VK_UP, 0, -1);
+		bindRoiKey(KeyEvent.VK_DOWN, 0, 1);
+	}
+
+	private void bindRoiKey(int keyCode, int dx, int dy) {
+		String action = "roiKey" + keyCode;
+		getImagePane().getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke(keyCode, 0), action);
+		getImagePane().getActionMap().put(action, new AbstractAction() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				keyboardEdit(dx, dy);
+			}
+		});
+	}
+
+	private void keyboardEdit(int dx, int dy) {
+		if (!bAllowAddROI || roiComboBox.getItemCount() == 0) {
+			return;
+		}
+		int step = Math.max(1, brushToolHelper.getBrushSize(getImagePane().getZoom()));
+		int x = lastMousePoint == null ? step : lastMousePoint.x + dx * step;
+		int y = lastMousePoint == null ? step : lastMousePoint.y + dy * step;
+		if (x < 0) {
+			x = 0;
+		}
+		if (y < 0) {
+			y = 0;
+		}
+		if (fillButton.isSelected()) {
+			firePropertyChange(FRAP_DATA_FILL_PROPERTY, null,
+					new Point((int) (x / imagePane.getZoom()), (int) (y / imagePane.getZoom())));
+			lastMousePoint = new Point(x, y);
+			return;
+		}
+		if (!paintButton.isSelected() && !eraseButton.isSelected()) {
+			return;
+		}
+		firePropertyChange(FRAP_DATA_PAINTERASE_PROPERTY, null, null);
+		drawHighlight(x, y, step, eraseButton.isSelected());
+		lastMousePoint = new Point(x, y);
+	}
+
+	private void showSelectedRegionNames(RegionInfo[] selected) {
+		List<String> names = new ArrayList<String>();
+		if (selected != null) {
+			for (int i = 0; i < selected.length; i++) {
+				RegionInfo info = selected[i];
+				if (info == null) {
+					continue;
+				}
+				if (info.getPixelValue() == 0) {
+					names.add(ICON_BKGRND_NAME);
+				} else {
+					ComboboxROIName roiName = getComboboxROIName(info);
+					names.add(roiName == null ? "unnamed" : roiName.getROIName());
+				}
+			}
+		}
+		String text = RoiSelectionCue.withListTitle(domainListTitle, names);
+		domainRegionLabel.setText(text);
+		domainRegionLabel.getAccessibleContext().setAccessibleName(text);
+	}
+
+	String regionSelectionReadout() {
+		return domainRegionLabel.getText();
 	}
 	public void resolvedSelectionChange(ROIMultiPaintManager.SELECT_FUNC selectFunc,int index){
 		if(selectFunc == ROIMultiPaintManager.SELECT_FUNC.ADD){
@@ -2191,6 +2286,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 			
 			selectButton = new JToggleButton(new ImageIcon(getClass().getResource("/images/geSelect.gif")));
 			selectButton.setToolTipText("Disitnct domain region pick tool");
+			selectButton.getAccessibleContext().setAccessibleName("Select domain region");
 			selectButton.setPreferredSize(new Dimension(32, 32));
 			selectButton.setMinimumSize(new Dimension(32, 32));
 			selectButton.setMaximumSize(new Dimension(32, 32));
@@ -2285,6 +2381,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 			paintButton.setMaximumSize(new Dimension(32, 32));
 			paintButton.setMargin(new Insets(2, 2, 2, 2));
 			paintButton.setToolTipText("Paint, rt-clk menu");
+			paintButton.getAccessibleContext().setAccessibleName("Paint");
 			final GridBagConstraints gridBagConstraints_1 = new GridBagConstraints();
 			gridBagConstraints_1.insets = new Insets(0, 0, 5, 5);
 			gridBagConstraints_1.gridy = 4;
@@ -2301,6 +2398,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 			eraseButton.setMaximumSize(new Dimension(32, 32));
 			eraseButton.setMargin(new Insets(2, 2, 2, 2));
 			eraseButton.setToolTipText("Erase, rt-clk menu");
+			eraseButton.getAccessibleContext().setAccessibleName("Erase");
 			final GridBagConstraints gridBagConstraints_2 = new GridBagConstraints();
 			gridBagConstraints_2.insets = new Insets(0, 0, 5, 0);
 			gridBagConstraints_2.gridy = 4;
@@ -2334,6 +2432,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 			fillButton.setMaximumSize(new Dimension(32, 32));
 			fillButton.setMargin(new Insets(2, 2, 2, 2));
 			fillButton.setToolTipText("Fill");
+			fillButton.getAccessibleContext().setAccessibleName("Fill");
 			final GridBagConstraints gridBagConstraints_3 = new GridBagConstraints();
 			gridBagConstraints_3.insets = new Insets(0, 0, 5, 5);
 			gridBagConstraints_3.gridy = 5;
@@ -2585,9 +2684,9 @@ public class OverlayEditorPanelJAI extends JPanel{
 		SwingUtilities.invokeLater(() -> {
             resolvedList.setListData(allRegionInfos);
             if(allRegionInfos.length == 1){
-                domainRegionLabel.setText(DOMAIN_LIST_TEXT);
+                domainListTitle = DOMAIN_LIST_TEXT;
             }else{
-                domainRegionLabel.setText(allRegionInfos.length+" "+DOMAIN_LIST_TEXT);
+                domainListTitle = allRegionInfos.length+" "+DOMAIN_LIST_TEXT;
             }
             resolvedListSelection(false);
         });

@@ -3,3 +3,7 @@
   height: 60px !important; /* Example height */
   width: 60px !important; /* Example width */
 }
+
+.footer-link {
+  color: #0b3d91;
+}

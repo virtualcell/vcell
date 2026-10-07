@@ -1481,8 +1481,9 @@ function cellCentroid(cell) {
  * #121212, with the palette's min pairwise CAM02-UCS ΔE′ still ≥15 under Machado protan/deutan/
  * tritan (15.3/15.6/15.3). Past the sixth series, the cycle repeats colours, so series i also takes a dash
  * pattern from the same 8-slot cycle the desktop uses (`ColorUtil.seriesDash`): solid, long, dot,
- * dash-dot — keeping (colour, dash) pairs unique for i < 24. The UI caps the probes at this many
- * (the server takes 64).
+ * dash-dot. The UI caps the probes at six, which is shorter than a unique (colour, dash) cycle,
+ * so each probe's name is drawn on its trace and listed beside it. Do not raise the cap unless
+ * the name stays on the trace or in the list. (The server takes 64.)
  */
 const SERIES_COLORS_LIGHT = ['#000000', '#999933', '#004488', '#8C510A', '#0072B2', '#CC6677'];
 const SERIES_COLORS_DARK = ['#6c6c6c', '#999933', '#556998', '#93613a', '#6c93c0', '#d38691'];
@@ -1711,7 +1712,7 @@ function renderTraces(times, traces) {
   const svg = el.probeSvg;
   const W = Math.max(320, Math.round(svg.clientWidth || 640));
   const H = 240;
-  const M = { l: 70, r: 12, t: 12, b: 38 };
+  const M = { l: 70, r: 36, t: 12, b: 38 };
   svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
   svg.replaceChildren();
   const mk = (tag, attrs, text) => {
@@ -1773,15 +1774,28 @@ function renderTraces(times, traces) {
       }
       seg = [];
     };
+    let last = null;
     times.forEach((t, i) => {
       const v = series.values[i];
       if (v == null || !Number.isFinite(v)) {
         flush();
         return;
       }
-      seg.push(`${sx(t).toFixed(1)},${sy(v).toFixed(1)}`);
+      const x = sx(t).toFixed(1);
+      const y = sy(v).toFixed(1);
+      seg.push(`${x},${y}`);
+      last = [x, y];
     });
     flush();
+    // Dashes repeat inside the six-probe cap, so the name is on the trace.
+    if (last) {
+      const label = document.createElementNS(SVG_NS, 'text');
+      label.setAttribute('class', 'lbl');
+      label.setAttribute('x', last[0]);
+      label.setAttribute('y', String(Number(last[1]) - 4));
+      label.textContent = probe.label;
+      g.appendChild(label);
+    }
   }
   const cursor = mk('line', { class: 'time-cursor', y1: M.t, y2: H - M.b });
   state.probePlot = { times, sx, cursor, M, W };
@@ -2379,25 +2393,14 @@ function fieldLut() {
 
 /**
  * Point the 3D lookup table at the same colors fieldLut() returns.
- * Rainbow is rebuilt with forceBuild from the hue range, which clears a previous Cividis table.
- * Cividis is written with setTable (explicit RGBA). SetTable stamps InsertTime, so a later
- * build() keeps those bytes instead of regenerating a hue ramp.
+ * Both maps are written with setTable. A hue rebuild after setTable kept the Cividis bytes
+ * on the surface while the kymograph had already switched, so Rainbow is the same call.
  */
 async function applyFieldColormap(name) {
   state.colormap = name === 'cividis' ? 'cividis' : 'rainbow';
   if (el.colormap && el.colormap.value !== state.colormap) el.colormap.value = state.colormap;
   if (!lut) return;
-  if (state.colormap === 'rainbow') {
-    await lut.setHueRange(0.66667, 0.0);
-    await lut.setSaturationRange(1.0, 1.0);
-    await lut.setValueRange(1.0, 1.0);
-    // A Cividis setTable stamps InsertTime, and a later build() would keep those bytes.
-    // forceBuild regenerates the hue ramp so the selector and the surface agree again.
-    if (state.fieldColormap === 'cividis') await lut.forceBuild();
-    state.fieldColormap = 'rainbow';
-    return;
-  }
-  const rgb = CIVIDIS_RGB;
+  const rgb = fieldLut();
   const table = vtk.vtkUnsignedCharArray();
   await table.setNumberOfComponents(4);
   await table.setNumberOfTuples(256);
@@ -2405,7 +2408,7 @@ async function applyFieldColormap(name) {
     await table.setTuple4(i, rgb[3 * i], rgb[3 * i + 1], rgb[3 * i + 2], 255);
   }
   await lut.setTable(table);
-  state.fieldColormap = 'cividis';
+  state.fieldColormap = state.colormap;
 }
 
 /** The LUT entry for v over [lo, hi], clamped at both ends, as vtkLookupTable maps a value. */
@@ -2986,6 +2989,13 @@ function renderStatsPlot(stats) {
       ...(dash ? { 'stroke-dasharray': dash } : {}),
       points: times.map((t, i) => `${f.sx(t).toFixed(1)},${f.sy(s.mean[i] ?? f.lo).toFixed(1)}`).join(' '),
     });
+    for (let i = times.length - 1; i >= 0; i--) {
+      const v = s.mean[i];
+      if (v != null && Number.isFinite(v)) {
+        f.mk('text', { class: 'lbl', x: f.sx(times[i]) - 2, y: f.sy(v) - 2, 'text-anchor': 'end' }, s.name);
+        break;
+      }
+    }
   });
   el.plotTitle.textContent = `min / mean / max over space · ${times.length} timepoints`
     + (stats.weighting === 'measure' ? ' · area-weighted over the moving domain'

@@ -22,4 +22,12 @@ describe('FooterComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('links to Accessibility at the University of Connecticut', () => {
+    const link: HTMLAnchorElement | null = fixture.nativeElement.querySelector(
+      'a[href="https://accessibility.uconn.edu/"]'
+    );
+    expect(link).toBeTruthy();
+    expect(link?.textContent).toContain('Accessibility at the University of Connecticut');
+  });
 });
