@@ -542,9 +542,10 @@ public final class FenicsBundle {
 	public static final int MAX_LOCATE_POINTS = 4096;
 	/**
 	 * the most work one {@link #locate} does, counted per row as the values it decodes (x,y,z and each array at every
-	 * mesh point) plus the cells its locator sorts: about 0.9 s of one data-server thread at the ~55 ns a unit
-	 * measured on a real moving mesh. It bounds a call on a fine mesh, where the reply's values alone would allow
-	 * many rows; the caller asks again for the rest.
+	 * mesh point) plus the cells its locator sorts: measured on real moving meshes at 30-55 ns a unit for triangles
+	 * and ~108 ns for tetrahedra, so a call holds one data-server thread for at most about 0.9 s in 2D and 1.8 s in
+	 * 3D. It bounds a call on a fine mesh, where the reply's values alone would allow many rows; the caller asks
+	 * again for the rest.
 	 */
 	public static final long MAX_LOCATE_WORK = 1L << 24;
 

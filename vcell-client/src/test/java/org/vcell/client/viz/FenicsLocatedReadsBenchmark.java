@@ -100,7 +100,9 @@ public class FenicsLocatedReadsBenchmark {
 					}
 				}
 				// the data server's work per row: decode the positions, build the row's locator, locate, gather
-				FenicsBundle.Segment seg = bundle.getSegments().get(0);
+				FenicsBundle.Segment seg = bundle.getSegments().stream().max(java.util.Comparator.comparingInt(FenicsBundle.Segment::count)).get();
+				org.vcell.vis.vtk.VtuGridParser.VtuGrid segMesh = org.vcell.vis.vtk.VtuGridParser.parse(
+						BundleStore.directory(target).read(seg.prefix() + bundle.domain(f[1]).mesh()));
 				BundleStore disk = BundleStore.directory(target);
 				int[] rows = java.util.stream.IntStream.range(0, seg.count()).toArray();
 				double[] points = new double[3 * 2000];
@@ -120,7 +122,7 @@ public class FenicsLocatedReadsBenchmark {
 							rows, FenicsBundle.MAX_SAMPLE_VALUES, FenicsBundle.MAX_LOCATE_WORK);
 				}
 				System.out.printf("server locate: %.2f ms per row (%d points, %d mesh points, %d cells, 1 array)%n",
-						(System.nanoTime() - t0) / 1e6 / reps / rows.length, 2000, bundle.domain(f[1]).numPoints(), bundle.domain(f[1]).numCells());
+						(System.nanoTime() - t0) / 1e6 / reps / rows.length, 2000, segMesh.numPoints(), segMesh.cells.length);
 			}
 		} finally {
 			FieldViewerServer.stop();
