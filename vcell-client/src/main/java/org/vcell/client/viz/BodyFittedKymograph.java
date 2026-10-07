@@ -3,6 +3,7 @@ package org.vcell.client.viz;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.vcell.vis.vtk.VtuGridParser;
 
 /**
  * The kymograph of a body-fitted run (a FEniCSx bundle, Chombo, MovingBoundary): a variable's values at

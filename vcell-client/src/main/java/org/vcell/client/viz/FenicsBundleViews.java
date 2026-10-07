@@ -11,6 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.vcell.solver.fenics.BundleStore;
 import org.vcell.solver.fenics.FenicsBundle;
+import org.vcell.vis.vtk.VtuGridParser;
 
 /**
  * The field viewer's endpoints for a FEniCSx results bundle ({@code <SimID_..._>.fenics/}, vcell-fenics

@@ -1,6 +1,7 @@
 package org.vcell.client.viz;
 
 import java.util.List;
+import org.vcell.vis.vtk.VtuGridParser;
 
 /**
  * Time courses at lab-frame points: parsing the {@code points=} list of a {@code /timeseries} request,
