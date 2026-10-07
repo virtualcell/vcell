@@ -147,6 +147,11 @@ public cbit.vcell.solver.ode.ODESimData getODEData(VCDataIdentifier vcdID) throw
 	}
 
 	@Override
+	public org.vcell.solver.fenics.FenicsLocatedSamples getFenicsBundleLocatedSamples(VCDataIdentifier vcdataID, String meshPath, String coordsPath, String[] arrayPaths, double[] points, boolean snap, int[] rows) throws DataAccessException, RemoteProxyException {
+		return dataServerImpl.getFenicsBundleLocatedSamples(user, vcdataID, meshPath, coordsPath, arrayPaths, points, snap, rows);
+	}
+
+	@Override
 	public byte[][] getFenicsBundleFiles(VCDataIdentifier vcdataID, String[] relativePaths) throws DataAccessException, RemoteProxyException {
 		return dataServerImpl.getFenicsBundleFiles(user, vcdataID, relativePaths);
 	}

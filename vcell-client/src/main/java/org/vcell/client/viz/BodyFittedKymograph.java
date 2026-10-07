@@ -135,6 +135,16 @@ final class BodyFittedKymograph {
 			public void located(VtuGridParser.VtuGrid grid, int row, int[] cells) throws Exception {
 				rows.located(grid, timeIndices[row], cells);
 			}
+
+			@Override
+			public void willLocate(double[][] located, boolean snap) throws Exception {
+				rows.willLocate(located, snap);
+			}
+
+			@Override
+			public PointSeries.Located locatedBySource(int row) throws Exception {
+				return rows.locatedBySource(timeIndices[row]);
+			}
 		}, location, false);
 
 		boolean[] inDomain = new boolean[nSamples];
