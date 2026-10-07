@@ -16,6 +16,23 @@ followed by flat Keep-a-Changelog categories. API consumers should scan
 
 _(Release-manager scratchpad. Populated at release-cut time.)_
 
+## [8.2.0.16] - 2026-10-07
+
+**Highlights.** The field viewer shows VCell functions of a FEniCSx simulation (expressions of its
+variables, position and time), not only the variables the solver stores. Functions can be drawn,
+probed and plotted as kymographs like any other variable.
+
+### Added
+- Field viewer: functions of a FEniCSx run are listed and can be drawn, probed and plotted as
+  kymographs. Their definitions come from the open document's simulation, with the job's constants and
+  parameter-scan values substituted. Each function is evaluated at the mesh vertices from the stored
+  variables there, the vertex position (the row's position on a moving mesh) and the row's time, then
+  interpolated, which is what the 3D view draws. A function's variables are read through the data
+  server's sampling (#2169) where available. (#2171)
+- Refused with a message: functions of normals, region sizes, field data, gradients, region variables or
+  other domains' variables; membrane functions of adjacent volume variables; and statistics of a
+  function. (#2171)
+
 ## [8.2.0.15] - 2026-10-07
 
 **Highlights.** Kymographs and time series of server-run FEniCSx results are read on the data server: it
