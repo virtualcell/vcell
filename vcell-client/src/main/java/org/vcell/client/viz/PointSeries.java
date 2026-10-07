@@ -103,6 +103,15 @@ final class PointSeries {
 
 		/** The variable's values at {@code row}, one per cell ({@link Location#CELL}) or per mesh vertex ({@link Location#POINT}). */
 		double[] values(int row) throws Exception;
+
+		/**
+		 * Told, once the points are located on a mesh (at the first row, and at every row whose mesh differs),
+		 * which cell each point fell in ({@code -1}: outside), before that row's values are asked for. A source
+		 * that can read just those cells' values -- a remote bundle sampled on the data server -- may fetch them
+		 * here; the loop then reads only those entries of {@link #values}.
+		 */
+		default void located(VtuGridParser.VtuGrid grid, int row, int[] cells) throws Exception {
+		}
 	}
 
 	/** The loop's output, one entry per requested point. */
@@ -167,6 +176,7 @@ final class PointSeries {
 						result.cell[p] = c;
 					}
 				}
+				rows.located(grid, row, cells.clone());
 			}
 			double[] values = null;
 			for (int p = 0; p < n; p++) {

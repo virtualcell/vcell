@@ -31,11 +31,17 @@ public final class DataServerBundleStore implements BundleStore {
 		byte[] file(String relativePath) throws DataAccessException;
 
 		byte[][] files(String[] relativePaths) throws DataAccessException;
+
+		/** a data server that predates sampled reads answers like this */
+		default FenicsSamples samples(String[] arrayPaths, int[] indices, int[] rows) throws DataAccessException {
+			throw new DataAccessException("No such method: getFenicsBundleSamples");
+		}
 	}
 
 	private final Server server;
 	private final String id;
 	private volatile boolean batchUnsupported = false;
+	private volatile boolean samplesUnsupported = false;
 
 	public DataServerBundleStore(VCDataManager dataManager, VCDataIdentifier vcdID) {
 		this(new Server() {
@@ -47,6 +53,11 @@ public final class DataServerBundleStore implements BundleStore {
 			@Override
 			public byte[][] files(String[] relativePaths) throws DataAccessException {
 				return dataManager.getFenicsBundleFiles(vcdID, relativePaths);
+			}
+
+			@Override
+			public FenicsSamples samples(String[] arrayPaths, int[] indices, int[] rows) throws DataAccessException {
+				return dataManager.getFenicsBundleSamples(vcdID, arrayPaths, indices, rows);
 			}
 		}, vcdID.getID());
 	}
@@ -105,6 +116,63 @@ public final class DataServerBundleStore implements BundleStore {
 			out[next] = read(relativePaths.get(next));
 		}
 		return out;
+	}
+
+	/**
+	 * Sampled reads ({@link cbit.vcell.server.DataSetController#getFenicsBundleSamples}), in calls of at most
+	 * {@link FenicsBundle#MAX_SAMPLE_ROWS} rows, each answering a prefix of its rows. Null -- read whole rows
+	 * instead -- when the data server predates the call (remembered: it is not asked again), when a call fails,
+	 * or when the request is beyond what one call may carry.
+	 */
+	@Override
+	public FenicsSamples sampleRows(String[] arrayPaths, int[] rows, int[] indices) throws IOException {
+		if (samplesUnsupported || arrayPaths.length > FenicsBundle.MAX_SAMPLE_ARRAYS || indices.length > FenicsBundle.MAX_SAMPLE_INDICES
+				|| (long) arrayPaths.length * Math.max(1, indices.length) > FenicsBundle.MAX_SAMPLE_VALUES) {
+			return null;
+		}
+		for (String path : arrayPaths) {
+			BundleStore.checkRelativePath(path);
+		}
+		double[][][] values = new double[arrayPaths.length][rows.length][];
+		boolean[][] written = new boolean[arrayPaths.length][rows.length];
+		int next = 0;
+		while (next < rows.length) {
+			int[] ask = java.util.Arrays.copyOfRange(rows, next, Math.min(rows.length, next + FenicsBundle.MAX_SAMPLE_ROWS));
+			FenicsSamples got;
+			try {
+				got = server.samples(arrayPaths, indices, ask);
+			} catch (Exception e) {
+				String message = String.valueOf(e.getMessage());
+				if (message.contains("No such method")) {
+					lg.info("the data server does not sample FEniCSx bundles; reading whole rows");
+					samplesUnsupported = true;
+				} else {
+					lg.warn("sampled read of " + describe() + " failed; reading whole rows: " + message, e);
+				}
+				return null;
+			}
+			if (got == null || got.rows == null || got.rows.length == 0 || got.rows.length > ask.length
+					|| got.values.length != arrayPaths.length) {
+				lg.warn("sampled read of " + describe() + " answered no usable rows; reading whole rows");
+				return null;
+			}
+			for (int r = 0; r < got.rows.length; r++) {
+				if (got.rows[r] != ask[r]) {
+					lg.warn("sampled read of " + describe() + " answered rows out of order; reading whole rows");
+					return null;
+				}
+				for (int a = 0; a < arrayPaths.length; a++) {
+					if (got.values[a][r].length != indices.length) {
+						lg.warn("sampled read of " + describe() + " answered the wrong number of values; reading whole rows");
+						return null;
+					}
+					values[a][next + r] = got.values[a][r];
+					written[a][next + r] = got.written[a][r];
+				}
+			}
+			next += got.rows.length;
+		}
+		return new FenicsSamples(rows.clone(), values, written);
 	}
 
 	@Override

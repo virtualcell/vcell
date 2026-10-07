@@ -155,6 +155,102 @@ final class FenicsBundleViews {
 		return new RowPrefetcher(rows, bytesPerRow, r -> bundle.prefetchField(domain, varName, r));
 	}
 
+	/**
+	 * The rows of one variable for {@link PointSeries#sample}, read the cheapest way the bundle allows. Once
+	 * the points are located on a segment's mesh ({@link PointSeries.Rows#located}), the located cells' vertices
+	 * are read for all of that segment's rows in one sampled call ({@link FenicsBundle#sampleFields}): from a
+	 * data server that samples, a kymograph's 201 rows cost one request carrying only those vertices. Otherwise
+	 * -- a local bundle, an older data server, or a moving (ALE) mesh, where the cell changes every row -- whole
+	 * rows are read, prefetched in windows ({@link RowPrefetcher}).
+	 * <p>
+	 * A sampled row is handed back as a mesh-sized array holding just the sampled vertices' values (the rest
+	 * NaN), so the interpolation reads the same numbers in the same order as from a whole row: bit-identical.
+	 */
+	static final class SampledRows implements PointSeries.Rows {
+		private final BundleSource source;
+		private final FenicsBundle bundle;
+		private final String domain;
+		private final String varName;
+		private final int[] rows;
+		private final RowPrefetcher wholeRows;
+		private final RowPrefetcher coords;
+		private boolean sampling;
+		private final Map<Integer, double[]> sampled = new java.util.HashMap<>();
+		private int[] vertices = new int[0];
+		private double[] scratch;
+
+		/** @param rows the output rows the loop will read, in its order */
+		SampledRows(BundleSource source, FenicsBundle bundle, String domain, String varName, int[] rows) {
+			this.source = source;
+			this.bundle = bundle;
+			this.domain = domain;
+			this.varName = varName;
+			this.rows = rows;
+			this.wholeRows = fieldPrefetcher(bundle, domain, varName, rows);
+			this.coords = coordsPrefetcher(bundle, domain, rows);
+			this.sampling = !bundle.isMoving();
+		}
+
+		@Override
+		public VtuGridParser.VtuGrid grid(int row) throws Exception {
+			if (coords != null) {
+				coords.before(row);
+			}
+			return source.grid(bundle, domain, row);
+		}
+
+		@Override
+		public void located(VtuGridParser.VtuGrid grid, int row, int[] cells) throws Exception {
+			sampled.clear();
+			if (!sampling) {
+				return;
+			}
+			java.util.TreeSet<Integer> needed = new java.util.TreeSet<>();
+			for (int c : cells) {
+				if (c >= 0) {
+					for (int v : grid.cells[c]) {
+						needed.add(v);
+					}
+				}
+			}
+			sample(needed, row, grid.numPoints());
+		}
+
+		/** samples {@code needed} vertices at every row of the segment holding {@code row} */
+		void sample(java.util.SortedSet<Integer> needed, int row, int numPoints) throws Exception {
+			if (needed.isEmpty()) {
+				return; // no point lies in the domain: no row's values will be asked for
+			}
+			int segment = bundle.segmentOf(row).segment().index();
+			int[] segmentRows = Arrays.stream(rows).filter(r -> bundle.segmentOf(r).segment().index() == segment).toArray();
+			int[] v = needed.stream().mapToInt(Integer::intValue).toArray();
+			double[][][] got = bundle.sampleFields(domain, new String[] { varName }, segmentRows, v);
+			if (got == null) {
+				sampling = false; // the store reads whole rows: so does this, from here on
+				return;
+			}
+			for (int r = 0; r < segmentRows.length; r++) {
+				sampled.put(segmentRows[r], got[0][r]);
+			}
+			vertices = v;
+			scratch = new double[numPoints];
+			Arrays.fill(scratch, Double.NaN);
+		}
+
+		@Override
+		public double[] values(int row) throws Exception {
+			double[] s = sampled.get(row);
+			if (s != null) {
+				for (int i = 0; i < vertices.length; i++) {
+					scratch[vertices[i]] = s[i];
+				}
+				return scratch;
+			}
+			wholeRows.before(row);
+			return bundle.field(domain, varName, row);
+		}
+	}
+
 	/** a prefetcher for a moving domain's recorded point positions over {@code rows}; null if nothing moves */
 	private static RowPrefetcher coordsPrefetcher(FenicsBundle bundle, String domain, int[] rows) {
 		if (!bundle.isMoving()) {
@@ -371,24 +467,7 @@ final class FenicsBundleViews {
 		}
 		double[] times = times(bundle);
 		final String dom = domain;
-		int[] all = RowPrefetcher.allRows(times.length);
-		RowPrefetcher valueRows = fieldPrefetcher(bundle, dom, varName, all);
-		RowPrefetcher coords = coordsPrefetcher(bundle, dom, all);
-		PointSeries.Rows rows = new PointSeries.Rows() {
-			@Override
-			public VtuGridParser.VtuGrid grid(int row) throws Exception {
-				if (coords != null) {
-					coords.before(row);
-				}
-				return source.grid(bundle, dom, row);
-			}
-
-			@Override
-			public double[] values(int row) throws Exception {
-				valueRows.before(row);
-				return bundle.field(dom, varName, row);
-			}
-		};
+		PointSeries.Rows rows = new SampledRows(source, bundle, dom, varName, RowPrefetcher.allRows(times.length));
 		if (q.get("points") != null) {
 			FenicsBundle.Domain d = bundle.domain(domain);
 			// a 2D point may leave out z: it takes the mesh plane's
@@ -462,11 +541,14 @@ final class FenicsBundleViews {
 			}
 			double[][] waypoints = BodyFittedKymograph.parsePath(q.get("path"), first.points[2]);
 			MembraneArc arc = MembraneArc.build(first, waypoints, BodyFittedKymograph.MAX_SAMPLES);
-			RowPrefetcher values = fieldPrefetcher(bundle, dom, varName, strided);
-			return BodyFittedKymograph.membraneJson(varName, domain, arc, times(bundle), tstep, row -> {
-				values.before(row);
-				return bundle.field(dom, varName, row);
-			});
+			SampledRows arcRows = new SampledRows(source, bundle, dom, varName, strided);
+			java.util.TreeSet<Integer> arcVertices = new java.util.TreeSet<>();
+			for (int i = 0; i < arc.size(); i++) {
+				arcVertices.add(arc.a[i]);
+				arcVertices.add(arc.b[i]);
+			}
+			arcRows.sample(arcVertices, 0, first.numPoints());
+			return BodyFittedKymograph.membraneJson(varName, domain, arc, times(bundle), tstep, arcRows::values);
 		}
 		double[][] path = BodyFittedKymograph.parsePath(q.get("path"), d.gdim() < 3 ? first.points[2] : null);
 		int n = BodyFittedKymograph.sampleCount(q.get("samples"), FvLineSampler.length(path), first.meanCellDiameter());
@@ -474,22 +556,7 @@ final class FenicsBundleViews {
 		for (FenicsBundle.Segment segment : bundle.getSegments()) {
 			moving |= "ale".equals(segment.motion());
 		}
-		RowPrefetcher values = fieldPrefetcher(bundle, dom, varName, strided);
-		PointSeries.Rows rows = new PointSeries.Rows() {
-			@Override
-			public VtuGridParser.VtuGrid grid(int row) throws Exception {
-				if (coords != null) {
-					coords.before(row);
-				}
-				return source.grid(bundle, dom, row);
-			}
-
-			@Override
-			public double[] values(int row) throws Exception {
-				values.before(row);
-				return bundle.field(dom, varName, row);
-			}
-		};
+		PointSeries.Rows rows = new SampledRows(source, bundle, dom, varName, strided);
 		return BodyFittedKymograph.json(varName, domain, PointSeries.Location.POINT, path, n, times(bundle), tstep, rows, moving);
 	}
 

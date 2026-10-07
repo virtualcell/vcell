@@ -77,6 +77,11 @@ public byte[] getFenicsBundleFile(VCDataIdentifier vcdID, String relativePath) t
 	return (byte[])rpc("getFenicsBundleFile",new Object[]{userLoginInfo.getUser(), vcdID, relativePath});
 }
 
+/** a data server older than this call answers "No such method: getFenicsBundleSamples(...)" */
+public org.vcell.solver.fenics.FenicsSamples getFenicsBundleSamples(VCDataIdentifier vcdID, String[] arrayPaths, int[] indices, int[] rows) throws org.vcell.util.DataAccessException {
+	return (org.vcell.solver.fenics.FenicsSamples)rpc("getFenicsBundleSamples",new Object[]{userLoginInfo.getUser(), vcdID, arrayPaths, indices, rows});
+}
+
 /** a data server older than this call answers "No such method: getFenicsBundleFiles(...)" */
 public byte[][] getFenicsBundleFiles(VCDataIdentifier vcdID, String[] relativePaths) throws org.vcell.util.DataAccessException {
 	return (byte[][])rpc("getFenicsBundleFiles",new Object[]{userLoginInfo.getUser(), vcdID, relativePaths});
