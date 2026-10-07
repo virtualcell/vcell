@@ -1,0 +1,35 @@
+candidate raw em colors: ['#000000', '#00a8ec']
+PASS  12.63:1 (need 4.5)  .readout em light  eff=#333333
+PASS   4.82:1 (need 4.5)  .readout em dark  eff=#048ac0
+PASS   5.87:1 (need 4.5)  .readout.pick light  eff=#157347
+PASS   8.48:1 (need 4.5)  .readout.pick dark  eff=#4dc47d
+PASS   5.87:1 (need 4.5)  pressed bg: white text  eff=#ffffff
+PASS   5.87:1 (need 3.0)  pressed border vs white (3:1 non-text)  eff=#157347
+PASS   3.19:1 (need 3.0)  pressed border vs #121212 (3:1 non-text)  eff=#157347
+PASS   4.96:1 (need 4.5)  .stale: white text on #a85d00  eff=#ffffff
+PASS   4.96:1 (need 4.5)  .note.warn light  eff=#a85d00
+PASS   9.48:1 (need 4.5)  .note.warn dark  eff=#ffa43d
+PASS   5.44:1 (need 4.5)  .status.err light (kept #c0392b)  eff=#c0392b
+PASS   6.75:1 (need 4.5)  .status.err dark override  eff=#ff6b6b
+PASS   5.87:1 (need 3.0)  .curve fallback light  eff=#157347
+PASS   8.48:1 (need 3.0)  .curve fallback dark  eff=#4dc47d
+PASS  21.00:1 (need 3.0)  series light #000000 on white  eff=#000000
+PASS   3.02:1 (need 3.0)  series light #999933 on white  eff=#999933
+PASS   9.62:1 (need 3.0)  series light #004488 on white  eff=#004488
+PASS   6.37:1 (need 3.0)  series light #8C510A on white  eff=#8c510a
+PASS   5.19:1 (need 3.0)  series light #0072B2 on white  eff=#0072b2
+PASS   3.66:1 (need 3.0)  series light #CC6677 on white  eff=#cc6677
+PASS   3.57:1 (need 3.0)  series dark #6c6c6c on #121212  eff=#6c6c6c
+PASS   3.55:1 (need 3.0)  series dark #6c6c6c on #12121a  eff=#6c6c6c
+PASS   6.21:1 (need 3.0)  series dark #999933 on #121212  eff=#999933
+PASS   6.17:1 (need 3.0)  series dark #999933 on #12121a  eff=#999933
+PASS   3.44:1 (need 3.0)  series dark #556998 on #121212  eff=#556998
+PASS   3.42:1 (need 3.0)  series dark #556998 on #12121a  eff=#556998
+PASS   3.58:1 (need 3.0)  series dark #93613a on #121212  eff=#93613a
+PASS   3.56:1 (need 3.0)  series dark #93613a on #12121a  eff=#93613a
+PASS   5.86:1 (need 3.0)  series dark #6c93c0 on #121212  eff=#6c93c0
+PASS   5.83:1 (need 3.0)  series dark #6c93c0 on #12121a  eff=#6c93c0
+PASS   6.77:1 (need 3.0)  series dark #d38691 on #121212  eff=#d38691
+PASS   6.73:1 (need 3.0)  series dark #d38691 on #12121a  eff=#d38691
+
+32/32 pairs pass

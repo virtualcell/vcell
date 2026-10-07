@@ -1,0 +1,48 @@
+Phase 6 verification runs, 2026-10-06 (EDT), macOS 27.0.1, Java 17.0.20.1, Python 3.12 venv
+(playwright 1.63.0, pytest 9.1.1), Node 26.9.0, Chromium via Playwright (SwiftShader WebGL).
+Working tree: chore/vcell#1605 @ e21a3024c4 + Phase 5/6 webapp-viewer edits (uncommitted).
+Maven on PATH: ~/Applications/IntelliJ IDEA.app/Contents/plugins/maven-plugin/lib/maven3/bin/mvn.
+
+All commands run from the repository root. Each pytest invocation compiled vcell-client's test
+sources (fixture server) on a warm ~/.m2 and served FieldViewerFixtureServer fixtures.
+
+== 8.5 pair computation (test 8.5, on source colors) ==
+
+$ python3 docs/accessibility/evidence/2026-10-phase-6-field-viewer/logs/phase6_8_5_pairs.py
+   (with .agents/cvd_analysis.py on sys.path; output in logs/phase6_8_5_pairs.txt)
+32/32 changed text/background and non-text pairs pass. See manifest.md §2 for the table.
+
+== dark series palette derivation (6.1 "compute with the script") ==
+
+$ python3 docs/accessibility/evidence/2026-10-phase-6-field-viewer/logs/phase6_dark_palette3.py
+   (output in logs/phase6_dark_palette3.txt)
+Final palette all >=3:1 on #12121a and #121212; min pairwise dE' (CAM02-UCS, Machado severity 1.0):
+normal 15.9, protan 15.6, deutan 15.3, tritan 15.3.
+
+== module parse/load ==
+
+$ node -e "import('./webapp-viewer/viewer.js') under DOM stubs"
+Loads; the only error is the expected "vtkwasm global not available" (no browser globals in Node).
+
+== browser suites (Chromium; Playwright fixture server on a free loopback port) ==
+
+$ pytest webapp-viewer/test/test_probes.py -x -q
+........................................................................ [100%]
+72 passed in 168.30s (0:02:48)
+
+$ pytest webapp-viewer/test/test_kymograph.py webapp-viewer/test/test_fv_membranes.py -q
+........................................................................ [100%]
+72 passed in 122.58s (0:02:02)
+
+$ pytest webapp-viewer/test/test_kymograph_bodyfitted.py webapp-viewer/test/test_membrane_curves.py -q
+........................................................ [100%]
+48 passed in 79.01s (0:01:19)
+
+$ pytest webapp-viewer/test/test_colormap.py -q
+.                                                                        [100%]
+1 passed in 0.12s
+
+Total: 193 passed, 0 failed.
+
+Not run (see manifest.md §6): 8.6-b filtered captures for this surface, dark-scheme screenshots,
+8.7 manual QA, §15 E web-semantic/axe-core scans. Recorded as BLOCKED/NOT TESTED, never PASS.

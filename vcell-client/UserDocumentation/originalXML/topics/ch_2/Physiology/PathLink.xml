@@ -21,7 +21,7 @@
 	Annotations and Pathways can be viewed in the Reaction and Species <bold>Object Properties</bold>pane. </item>
 	<item>Select <bold>Show Linked Pathway Objects</bold> under the <bold>Pathway Links</bold> menu.</item>
 	</list>
-	In either case a <link target = "PathwayDiagramView">Pathway Diagram</link> view appear in the main model workspace.  Linked objects appear in red in the pathway diagram. 
+	In either case a <link target = "PathwayDiagramView">Pathway Diagram</link> view appear in the main model workspace.  Linked objects appear in red in the pathway diagram; as noted in the introduction, linked objects are also marked with a letter 'L'.
 	<imgReference target = "LinkedPathwayObject.png"/>
 	</para>
 	<para>

@@ -57,6 +57,7 @@ import cbit.vcell.client.task.ExportDocument;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryOwner;
 import cbit.vcell.geometry.GeometrySpec;
+import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.GeometryThumbnailImageFactoryAWT;
 import cbit.vcell.geometry.surface.RayCaster;
 import cbit.vcell.mapping.SimulationContext;
@@ -242,11 +243,23 @@ public synchronized void addPropertyChangeListener(java.beans.PropertyChangeList
  * @param value cbit.vcell.geometry.Geometry
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
+private SubVolume subVolumeForHandle(int handle) {
+	Geometry geometry = getGeometry();
+	if (geometry == null || geometry.getGeometrySpec() == null) {
+		return null;
+	}
+	return geometry.getGeometrySpec().getSubVolume(handle);
+}
+
 private void refreshSourceDataInfo() {
 	if ( getGeometry() == null){
 		return;
 	}
-	GeometrySpec geometrySpec = getGeometry().getGeometrySpec();	
+	getImagePlaneManagerPanel1().setIndexLabelProvider(handle -> {
+		SubVolume subVolume = subVolumeForHandle(handle);
+		return subVolume == null ? null : subVolume.getName();
+	});
+	GeometrySpec geometrySpec = getGeometry().getGeometrySpec();
 	if (geometrySpec.getSampledImage().isDirty()) {
 		return;
 	}

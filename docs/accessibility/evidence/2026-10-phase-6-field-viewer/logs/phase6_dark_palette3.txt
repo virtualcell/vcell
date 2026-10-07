@@ -1,0 +1,14 @@
+start: min dE' 5.6 (pair 0v5, protanomaly)
+repaired after 27 pushes; final min dE' = 15.3
+
+#000000 -> #6c6c6c  cr(#12121a)=3.55 cr(#121212)=3.57
+#999933 -> #999933  cr(#12121a)=6.17 cr(#121212)=6.21
+#004488 -> #556998  cr(#12121a)=3.42 cr(#121212)=3.44
+#8C510A -> #93613a  cr(#12121a)=3.56 cr(#121212)=3.58
+#0072B2 -> #6c93c0  cr(#12121a)=5.83 cr(#121212)=5.86
+#CC6677 -> #d38691  cr(#12121a)=6.73 cr(#121212)=6.77
+  min dE' normal: 15.9
+  min dE' protanomaly: 15.6
+  min dE' deuteranomaly: 15.3
+  min dE' tritanomaly: 15.3
+all >=3:1 on both dark bgs: True

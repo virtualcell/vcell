@@ -120,14 +120,7 @@ public class DisplayImageOp {
 		});
 		DisplayAdapterService das = imagePanel.getDisplayAdapterServicePanel().getDisplayAdapterService();
 		das.setValueDomain(null);
-		das.addColorModelForValues(
-			DisplayAdapterService.createGrayColorModel(), 
-			DisplayAdapterService.createGraySpecialColors(),
-			DisplayAdapterService.GRAY);
-		das.addColorModelForValues(
-			DisplayAdapterService.createBlueRedColorModel(),
-			DisplayAdapterService.createBlueRedSpecialColors(),
-			DisplayAdapterService.BLUERED);
+		DisplayAdapterService.addStandardColorModels(das);
 		das.setActiveColorModelID(DisplayAdapterService.BLUERED);
 
 		final JFrame jframe = new JFrame();

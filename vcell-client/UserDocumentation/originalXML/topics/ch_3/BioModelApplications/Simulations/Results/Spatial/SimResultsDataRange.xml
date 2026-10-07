@@ -25,9 +25,10 @@ minimum and/or maximum; press enter to accept the values and to update the image
 </para>
 
 <para>Color:
-View the image data either in Grayscale or in a Blue-Red color map where colors are mapped according 
+View the image data in Grayscale, in a Blue-Red color map, or in the Cividis color map where colors are mapped according 
 to concentration. At times some values will be displayed in colors other than the selected color map 
-because they do not fall within the specified range.
+because they do not fall within the specified range. Those special values are identified by the labeled swatches 
+listed below (BM, AM, NN, IL, NR), so they can be recognized by their label rather than by color alone.
 </para>
 <para>
 Color Value:

@@ -13,6 +13,7 @@ package cbit.image.gui;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
+import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.Point;
 import java.awt.Toolkit;
@@ -24,6 +25,7 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.function.IntFunction;
 
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
@@ -61,10 +63,12 @@ public class ImagePlaneManagerPanel extends javax.swing.JPanel {
 	//
 	private static final String defaultInfoString = "Info";
 	//
-	private Cursor panCursor = Toolkit.getDefaultToolkit().createCustomCursor(VCellIcons.panCursorImage, new Point(12, 12), "PanCursor");
-	private Cursor zoomCursor = Toolkit.getDefaultToolkit().createCustomCursor(VCellIcons.zoomCursorImage, new Point(6, 6), "ZoomCursor");
+	private Cursor panCursor;
+	private Cursor zoomCursor;
 	private ImagePaneScroller ivjImagePaneScroller1 = null;
 	private SourceDataInfo fieldSourceDataInfo = null;
+	/** Maps an INDEX_TYPE pixel handle to a compartment name. Null leaves the readout unchanged. */
+	private IntFunction<String> indexLabelProvider;
 	private ImagePlaneManager ivjImagePlaneManager = null;
 	private javax.swing.JPanel ivjJPanel1 = null;
 	private int fieldMode = 0;
@@ -978,7 +982,7 @@ private ImagePlanePanel getImagePlanePanel1() {
  * @return javax.swing.JLabel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JLabel getInfoJlabel() {
+javax.swing.JLabel getInfoJlabel() {
 	if (ivjInfoJlabel == null) {
 		try {
 			ivjInfoJlabel = new javax.swing.JLabel(){
@@ -1366,6 +1370,14 @@ public void setMode(int mode) {
  * @param sourceDataInfo The new value for the property.
  * @see #getSourceDataInfo
  */
+/**
+ * Names the compartment for an INDEX_TYPE pixel handle. The hover readout appends that name.
+ */
+public void setIndexLabelProvider(IntFunction<String> indexLabelProvider) {
+	this.indexLabelProvider = indexLabelProvider;
+	updateInfo(lastValidMouseEvent);
+}
+
 public void setSourceDataInfo(SourceDataInfo sourceDataInfo) {
 	SourceDataInfo oldValue = fieldSourceDataInfo;
 	fieldSourceDataInfo = sourceDataInfo;
@@ -1386,15 +1398,29 @@ public void setSourceDataInfo(SourceDataInfo sourceDataInfo) {
  * Insert the method's description here.
  * Creation date: (7/4/2003 12:04:20 PM)
  */
+private Cursor panCursor() {
+	if (panCursor == null) {
+		panCursor = Toolkit.getDefaultToolkit().createCustomCursor(VCellIcons.panCursorImage, new Point(12, 12), "PanCursor");
+	}
+	return panCursor;
+}
+
+private Cursor zoomCursor() {
+	if (zoomCursor == null) {
+		zoomCursor = Toolkit.getDefaultToolkit().createCustomCursor(VCellIcons.zoomCursorImage, new Point(6, 6), "ZoomCursor");
+	}
+	return zoomCursor;
+}
+
 private void setToolCursor() {
 
 	Cursor cursor = Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR);
 	if(getCurveEditorTool()!= null){
 		if(getCurveEditorTool().getTool() == cbit.vcell.geometry.gui.CurveEditorTool.TOOL_PAN){
-			cursor = panCursor;
+			cursor = panCursor();
 			//cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
 		}else if(getCurveEditorTool().getTool() == cbit.vcell.geometry.gui.CurveEditorTool.TOOL_ZOOM){
-			cursor = zoomCursor;
+			cursor = zoomCursor();
 			//cursor = Cursor.getPredefinedCursor(Cursor.SE_RESIZE_CURSOR);
 		}
 	}
@@ -1434,7 +1460,7 @@ private void sourceDataInfo_set() {
  * Comment
  */
 private MouseEvent lastValidMouseEvent;
-private void updateInfo(MouseEvent mouseEvent) {
+void updateInfo(MouseEvent mouseEvent) {
 	if(mouseEvent == null){
 		return;
 	}
@@ -1504,6 +1530,7 @@ private void updateInfo(MouseEvent mouseEvent) {
 							(getSourceDataInfo().getYSize() > 1?","+ci.y:"")+
 							(getSourceDataInfo().getZSize() > 1?","+ci.z:"")+"] "+
 							(bUndefined?"Undefined":getSourceDataInfo().getDataValueAsString(ci.x, ci.y, ci.z));
+						infoS = appendIndexLabel(infoS, ci);
 						if(getDataInfoProvider() != null ){
 							if(getDataInfoProvider().getPDEDataContext().getCartesianMesh().isChomboMesh()){
 								if (!bUndefined)
@@ -1561,9 +1588,28 @@ private void updateInfo(MouseEvent mouseEvent) {
 	getimagePaneView1().setToolTipText(infoS == null?defaultInfoString:infoS);
 	
 	//make sure the vertical space for the infoText is sufficient to avoid resizing
-	FontMetrics fontMetrics = getInfoJlabel().getGraphics().getFontMetrics();
-	getInfoJlabel().setMinimumSize(new Dimension(50, (fontMetrics.getMaxAscent()+fontMetrics.getMaxDescent()+1)));
+	Graphics labelGraphics = getInfoJlabel().getGraphics();
+	if (labelGraphics != null) {
+		FontMetrics fontMetrics = labelGraphics.getFontMetrics();
+		getInfoJlabel().setMinimumSize(new Dimension(50, (fontMetrics.getMaxAscent()+fontMetrics.getMaxDescent()+1)));
+	}
 	getInfoJlabel().setText((infoS == null?defaultInfoString:infoS));
+}
+
+/**
+ * Appends the compartment name for an INDEX_TYPE handle so the region is readable without hue.
+ */
+private String appendIndexLabel(String infoS, CoordinateIndex ci) {
+	if (infoS == null || indexLabelProvider == null || getSourceDataInfo() == null
+			|| getSourceDataInfo().getType() != SourceDataInfo.INDEX_TYPE
+			|| getSourceDataInfo().isDataNull()) {
+		return infoS;
+	}
+	String name = indexLabelProvider.apply(getSourceDataInfo().getDataAsTypeIndex(ci.x, ci.y, ci.z));
+	if (name == null || name.isEmpty()) {
+		return infoS;
+	}
+	return infoS + " \"" + name + "\"";
 }
 /**
  * Comment

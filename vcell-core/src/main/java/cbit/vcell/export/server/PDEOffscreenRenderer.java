@@ -290,8 +290,7 @@ public class PDEOffscreenRenderer {
 
     public PDEOffscreenRenderer(OutputContext outputContext, User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID) throws Exception{
         setServerPDEDataContext(new ServerPDEDataContext(outputContext, user, dataServerImpl, vcdID));
-        getDisplayAdapterService().addColorModelForValues(DisplayAdapterService.createGrayColorModel(), DisplayAdapterService.createGraySpecialColors(), DisplayAdapterService.GRAY);
-        getDisplayAdapterService().addColorModelForValues(DisplayAdapterService.createBlueRedColorModel(), DisplayAdapterService.createBlueRedSpecialColors(), DisplayAdapterService.BLUERED);
+        DisplayAdapterService.addStandardColorModels(getDisplayAdapterService());
     }
 
     private static Range calculateValueDomain(double[] values, BitSet domainValid){

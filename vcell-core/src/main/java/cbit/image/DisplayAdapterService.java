@@ -13,6 +13,7 @@ import java.awt.Color;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.LinkedHashMap;
 
 import org.vcell.util.Range;
 /**
@@ -29,6 +30,7 @@ public class DisplayAdapterService implements org.vcell.util.Stateful, java.bean
 	
 	public static final String BLUERED = "BlueRed";
 	public static final String GRAY = "Gray";
+	public static final String CIVIDIS = "Cividis";
 	
 	public class DisplayAdapterServiceState {
 		private Range customScaleRange;
@@ -47,7 +49,7 @@ public class DisplayAdapterService implements org.vcell.util.Stateful, java.bean
 	private java.util.Hashtable<String, DisplayAdapterServiceState> states = new java.util.Hashtable<String, DisplayAdapterServiceState>();
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	//
-	private java.util.Hashtable<String, int[]> colorModels = new java.util.Hashtable<String, int[]>();
+	private LinkedHashMap<String, int[]> colorModels = new LinkedHashMap<String, int[]>();
 	private java.util.Hashtable<String, int[]> specialColors = new java.util.Hashtable<String, int[]>();
 	private java.lang.String fieldActiveColorModelID = null;
 	private Range fieldActiveScaleRange = null;
@@ -94,13 +96,11 @@ public DisplayAdapterService(DisplayAdapterService argDAS) {
 	states = (Hashtable<String, DisplayAdapterServiceState>)argDAS.states.clone();
 	fieldColorModelIDs = (String[])argDAS.fieldColorModelIDs.clone();
 
-	java.util.Enumeration<String> enum1 = argDAS.colorModels.keys();
-	while(enum1.hasMoreElements()){
-		String s = (String)enum1.nextElement();
-		colorModels.put(s,((int[])argDAS.colorModels.get(s)).clone());
+	for (String s : argDAS.colorModels.keySet()) {
+		colorModels.put(s, argDAS.colorModels.get(s).clone());
 	}
 
-	enum1 = argDAS.specialColors.keys();
+	java.util.Enumeration<String> enum1 = argDAS.specialColors.keys();
 	while(enum1.hasMoreElements()){
 		String s = (String)enum1.nextElement();
 		specialColors.put(s,((int[])argDAS.specialColors.get(s)).clone());
@@ -154,6 +154,8 @@ private void addColorModel(int[] colorModel, int[] argSpecialColors, String id) 
 		throw new IllegalArgumentException(BLUERED+" color model id must match 'DisplayAdapterService.createBluRedColorModel()'");
 	}else if(id.equals(GRAY) && !Arrays.equals(colorModel, createGrayColorModel())){
 		throw new IllegalArgumentException(GRAY+" color model id must match 'DisplayAdapterService.createGrayColorModel()'");
+	}else if(id.equals(CIVIDIS) && !Arrays.equals(colorModel, createCividisColorModel())){
+		throw new IllegalArgumentException(CIVIDIS+" color model id must match 'DisplayAdapterService.createCividisColorModel()'");
 	}
 	colorModels.put(id, colorModel);
 	if (argSpecialColors != null) {
@@ -335,6 +337,77 @@ public final static int[] createGraySpecialColors() {
 
 
 /**
+ * 248 data colors sampled from {@link CividisColorTable}, plus {@link #NUM_SPECIAL_COLORS}
+ * unused slots reserved at the end of the 256-entry map.
+ */
+public final static int[] createCividisColorModel() {
+	int[] colors = new int[256];
+	int dataCount = 256 - NUM_SPECIAL_COLORS;
+	for (int i = 0; i < dataCount; i += 1) {
+		int source = (int) Math.round(i * 255.0 / (dataCount - 1));
+		colors[i] = 0xFF000000 | CividisColorTable.RGB[source];
+	}
+	return colors;
+}
+
+
+/**
+ * Out-of-range colors for Cividis. Each one contrasts at least 3:1 with both stored endpoints.
+ * The measurement gradient is identified by value; these states are identified by
+ * {@link #specialStateLabel(int)} as well as by color.
+ */
+public final static int[] createCividisSpecialColors() {
+	int[] colors = new int[NUM_SPECIAL_COLORS];
+	colors[BELOW_MIN_COLOR_OFFSET] = new Color(240, 8, 20).getRGB();
+	colors[ABOVE_MAX_COLOR_OFFSET] = new Color(20, 120, 220).getRGB();
+	colors[NAN_COLOR_OFFSET] = new Color(64, 136, 20).getRGB();
+	colors[NOT_IN_DOMAIN_COLOR_OFFSET] = new Color(204, 60, 164).getRGB();
+	colors[NO_RANGE_COLOR_OFFSET] = new Color(216, 68, 8).getRGB();
+	colors[FOREGROUND_HIGHLIGHT_COLOR_OFFSET] = new Color(188, 52, 228).getRGB();
+	colors[FOREGROUND_NONHIGHLIGHT_COLOR_OFFSET] = new Color(80, 116, 208).getRGB();
+	colors[NULL_COLOR_OFFSET] = new Color(236, 20, 68).getRGB();
+	return colors;
+}
+
+
+/**
+ * Text name for a special-color slot. The results viewer also shows a short label on the swatch.
+ */
+public static String specialStateLabel(int offset) {
+	switch (offset) {
+		case BELOW_MIN_COLOR_OFFSET:
+			return "Below minimum";
+		case ABOVE_MAX_COLOR_OFFSET:
+			return "Above maximum";
+		case NAN_COLOR_OFFSET:
+			return "Not a number";
+		case NOT_IN_DOMAIN_COLOR_OFFSET:
+			return "Not in domain";
+		case NO_RANGE_COLOR_OFFSET:
+			return "No range";
+		case FOREGROUND_HIGHLIGHT_COLOR_OFFSET:
+			return "Highlight";
+		case FOREGROUND_NONHIGHLIGHT_COLOR_OFFSET:
+			return "Not highlighted";
+		case NULL_COLOR_OFFSET:
+			return "No value";
+		default:
+			throw new IllegalArgumentException("unknown special color offset " + offset);
+	}
+}
+
+
+/**
+ * Gray, BlueRed, then Cividis. {@link #fetchColorModelIDs()} returns this registration order.
+ */
+public static void addStandardColorModels(DisplayAdapterService das) {
+	das.addColorModelForValues(createGrayColorModel(), createGraySpecialColors(), GRAY);
+	das.addColorModelForValues(createBlueRedColorModel(), createBlueRedSpecialColors(), BLUERED);
+	das.addColorModelForValues(createCividisColorModel(), createCividisSpecialColors(), CIVIDIS);
+}
+
+
+/**
  * Insert the method's description here.
  * Creation date: (10/4/00 9:41:01 AM)
  * @return java.awt.image.ColorModel
@@ -352,14 +425,7 @@ public int[] fetchColorModel(String colorModelID) {
  */
 private String[] fetchColorModelIDs() {
     if (colorModels.size() != 0) {
-        String[] colorModelIDs = new String[colorModels.size()];
-        Enumeration<String> enum1 = colorModels.keys();
-        int c = 0;
-        while (enum1.hasMoreElements()) {
-            colorModelIDs[c] = enum1.nextElement();
-            c += 1;
-        }
-        return colorModelIDs;
+        return colorModels.keySet().toArray(new String[0]);
     } else {
         return null;
     }

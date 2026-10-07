@@ -171,8 +171,7 @@ public static void main(java.lang.String[] args) {
 		das = new DisplayAdapterService();
 		das.setActiveScaleRange(new Range(0, 450));
 		das.setValueDomain(new Range(-50, 550));
-		das.addColorModelForValues(DisplayAdapterService.createGrayColorModel(), DisplayAdapterService.createGraySpecialColors(), DisplayAdapterService.GRAY);
-		das.addColorModelForValues(DisplayAdapterService.createBlueRedColorModel(), DisplayAdapterService.createBlueRedSpecialColors(), DisplayAdapterService.BLUERED);
+		DisplayAdapterService.addStandardColorModels(das);
 		das.setActiveColorModelID(DisplayAdapterService.GRAY);
 	} else if (type.equals("index")) {
 		das = new DisplayAdapterService();

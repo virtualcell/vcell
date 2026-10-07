@@ -20,7 +20,7 @@
 			<imgReference target = "PP_CompositeSpecies_start.png"/>
 			<imgReference target = "PP_CompositeSpecies_new.png"/>
 
-	<para><bold>Add additional information</bold> about the molecular components in the species.  When a molecule is added, if additional information is required the species will be highlighted in red and errors may appear in the <link target = "PP_Problems">Problems tab</link>. In the figure shown, three errors were identified. Two errors arise from the fact that two binding sites have unspecified states; one error arises because molecules within the species are not connected with a bond.</para>
+	<para><bold>Add additional information</bold> about the molecular components in the species.  When a molecule is added, if additional information is required the species will be highlighted in red and its errors will be listed in the <link target = "PP_Problems">Problems tab</link>, where each problem is described in text. In the figure shown, three errors were identified. Two errors arise from the fact that two binding sites have unspecified states; one error arises because molecules within the species are not connected with a bond.</para>
 			<imgReference target = "PP_CompositeSpecies_error.png"/>
 	<para>
 	</para>

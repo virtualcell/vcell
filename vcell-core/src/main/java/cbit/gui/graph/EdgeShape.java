@@ -43,6 +43,12 @@ public abstract class EdgeShape extends Shape implements EdgeVisualState.Owner {
 	protected CubicCurve2D.Double lastCurve = null;
 	protected static final BasicStroke DASHED_STROKE = new BasicStroke(1,
 			BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10f, new float[] { 5,	3 } , 10f);
+	/** Unselected solid edges use the 1 px default stroke. */
+	protected static final BasicStroke UNSELECTED_STROKE = new BasicStroke(1f);
+	/** Selected edges are wider so selection is not carried by hue alone (WCAG 1.4.1). */
+	protected static final BasicStroke SELECTED_STROKE = new BasicStroke(2.5f);
+	protected static final BasicStroke SELECTED_DASHED_STROKE = new BasicStroke(2.5f,
+			BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10f, new float[] { 5, 3 }, 10f);
 
 	public EdgeShape(Shape startShape, Shape endShape,
 			GraphModel graphModel) {
@@ -143,6 +149,24 @@ public abstract class EdgeShape extends Shape implements EdgeVisualState.Owner {
 
 	public int getLineStyle() {
 		return LINE_STYLE_SOLID;
+	}
+
+	/**
+	 * Selection that should draw the 2.5 px stroke. Subclasses add neighbor selection.
+	 */
+	protected boolean usesSelectedStroke() {
+		return isSelected();
+	}
+
+	/**
+	 * Stroke for this edge. Catalysts stay dashed; selection changes width only.
+	 */
+	public BasicStroke curveStroke() {
+		boolean dashed = getLineStyle() == LINE_STYLE_DASHED;
+		if (usesSelectedStroke()) {
+			return dashed ? SELECTED_DASHED_STROKE : SELECTED_STROKE;
+		}
+		return dashed ? DASHED_STROKE : UNSELECTED_STROKE;
 	}
 
 	protected static double getParameterAtArcLength(CubicCurve2D curve,
@@ -275,14 +299,10 @@ public abstract class EdgeShape extends Shape implements EdgeVisualState.Owner {
 	private void paint0(Graphics2D g2D, int xPos, int yPos) {
 		// render curve (make CatalystShapes draw with a dashed line)
 		g2D.setColor(forgroundColor);
-		if (getLineStyle() == LINE_STYLE_DASHED) {
-			Stroke oldStroke = g2D.getStroke();
-			g2D.setStroke(DASHED_STROKE);
-			g2D.draw(getCurve());
-			g2D.setStroke(oldStroke);
-		} else {
-			g2D.draw(getCurve());
-		}
+		Stroke oldStroke = g2D.getStroke();
+		g2D.setStroke(curveStroke());
+		g2D.draw(getCurve());
+		g2D.setStroke(oldStroke);
 		// draw label
 		if (getLabel() != null && getLabel().length() > 0) {
 			g2D.drawString(getLabel(), (start.x + end.x) / 2, (start.y + end.y) / 2);

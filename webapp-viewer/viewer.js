@@ -19,6 +19,8 @@
  * Point it at a dataset with ?sim=<key>&job=<n>, optionally &var=&domain=&time= for the initial
  * selection, and &base=<url> if the data lives somewhere other than this page's own origin.
  */
+import { CIVIDIS_RGB, RAINBOW_RGB } from './colormap.js';
+
 const BUNDLE_URL = 'assets/vtk-wasm/vcell-vtk-wasm32-emscripten.tar.gz';
 
 /**
@@ -41,6 +43,7 @@ const el = {
   runName: document.getElementById('runName'),
   runId: document.getElementById('runId'),
   colorbar: document.getElementById('colorbar'),
+  colormap: document.getElementById('colormap'),
   axes: document.getElementById('axes'),
   meshStyle: document.getElementById('meshStyle'),
   sliceAxis: document.getElementById('sliceAxis'),
@@ -113,6 +116,7 @@ const state = {
   bounds: null,
   sliceAxis: -1,
   slicePos: 50,
+  colormap: 'rainbow',
   cutMode: 'smooth', // 'smooth' (clip through the cells) or 'cells' (keep whole cells)
   cellPoints: null, // the grid's point coordinates and cells, for choosing the whole cells to keep
   cellList: null,
@@ -787,9 +791,8 @@ async function buildScene(geometry, field) {
   // Own the lookup table rather than borrowing the mapper's implicit one, so the surface and the
   // color bar read the same table and cannot disagree about what color means what value.
   lut = vtk.vtkLookupTable();
-  // low→high as blue→red, the direction the desktop results viewer already taught users;
-  // VTK's default rainbow runs the other way
-  await lut.setHueRange(0.66667, 0.0);
+  // Rainbow stays the default. Cividis is the same table the kymograph draws.
+  await applyFieldColormap(state.colormap);
   await mapper.setLookupTable(lut);
   await mapper.useLookupTableScalarRangeOn(); // no-arg form, as for scalarVisibilityOn
   actor = vtk.vtkActor({ mapper });
@@ -1471,12 +1474,41 @@ function cellCentroid(cell) {
 }
 
 /**
- * Twelve colours that stay apart on the light page and the dark canvas, shared by the Stats plot and the
- * probes; a probe keeps its colour for its trace, its list swatch and its marker. The UI caps the probes
- * at this many (the server takes 64).
+ * Six series colours in two scheme variants, mirroring `ColorUtil.CVD_SAFE_LIGHT` (Phase 6.1 of
+ * .agents/uconn-color-blind-accessibility-verified.md): the light scheme draws the six CVD-safe
+ * colours themselves (≥3:1 on the white page); the dark scheme draws a lightened variant computed
+ * with .agents/cvd_analysis.py — every entry ≥3:1 on the dark canvas backgrounds #12121a and
+ * #121212, with the palette's min pairwise CAM02-UCS ΔE′ still ≥15 under Machado protan/deutan/
+ * tritan (15.3/15.6/15.3). Past the sixth series, the cycle repeats colours, so series i also takes a dash
+ * pattern from the same 8-slot cycle the desktop uses (`ColorUtil.seriesDash`): solid, long, dot,
+ * dash-dot — keeping (colour, dash) pairs unique for i < 24. The UI caps the probes at this many
+ * (the server takes 64).
  */
-const SERIES_COLORS = ['#2a7', '#d70', '#07c', '#c2c', '#a33', '#578', '#e6b800', '#0aa', '#85f', '#b60', '#6a0', '#f58'];
-const MAX_PROBES = SERIES_COLORS.length;
+const SERIES_COLORS_LIGHT = ['#000000', '#999933', '#004488', '#8C510A', '#0072B2', '#CC6677'];
+const SERIES_COLORS_DARK = ['#6c6c6c', '#999933', '#556998', '#93613a', '#6c93c0', '#d38691'];
+/** The palette for the current color-scheme. */
+let seriesColors = matchMedia('(prefers-color-scheme: dark)').matches ? SERIES_COLORS_DARK : SERIES_COLORS_LIGHT;
+/** Splice in the dark variant when the OS flips schemes: recolor every drawn series in place. */
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+  seriesColors = e.matches ? SERIES_COLORS_DARK : SERIES_COLORS_LIGHT;
+  for (const p of state.probes) p.color = seriesColors[p.colorIndex] ?? seriesColors[0];
+  probesChanged();
+});
+
+/**
+ * Dash pattern for series i, the 8-slot cycle from `ColorUtil.seriesDash`:
+ * solid, {6,3}, {2,2}, {8,3,2,3}, {6,3}, {2,2}, {8,3,2,3}, solid. `null` = solid.
+ */
+function seriesDash(i) {
+  const slot = [0, 1, 2, 3, 1, 2, 3, 0][i % 8];
+  if (slot === 0) return null;
+  if (slot === 1) return '6 3';
+  if (slot === 2) return '2 2';
+  return '8 3 2 3';
+}
+
+/** How many colours the UI caps the probes at (the server takes 64). */
+const MAX_PROBES = seriesColors.length;
 
 /** Click on the canvas: replace the probes with the picked point, or add it to them. */
 async function probeAt(clientX, clientY, add) {
@@ -1497,14 +1529,19 @@ function addProbe(point, add = true) {
     setStatus(`at most ${MAX_PROBES} probes; remove one first`, true);
     return;
   }
-  const used = new Set(state.probes.map((p) => p.color));
+  const used = new Set(state.probes.map((p) => p.colorIndex));
   let id = 1;
   while (state.probes.some((p) => p.id === id)) id++;
+  // the colour INDEX is the probe's identity; the hex follows the current color-scheme
+  let ci = 0;
+  while (used.has(ci) && ci < MAX_PROBES) ci++;
   state.probes.push({
     id,
     label: `P${id}`,
     point,
-    color: SERIES_COLORS.find((c) => !used.has(c)) ?? SERIES_COLORS[0],
+    colorIndex: ci,
+    color: seriesColors[ci] ?? seriesColors[0],
+    dash: seriesDash(ci),
   });
   probesChanged();
 }
@@ -1600,9 +1637,21 @@ function renderProbes() {
   el.probeList.replaceChildren(...state.probes.map((probe) => {
     const li = document.createElement('li');
     li.dataset.probe = String(probe.id);
-    const swatch = document.createElement('span');
-    swatch.className = 'swatch';
-    swatch.style.background = probe.color;
+    // a short line sample in the trace's own colour and dash pattern, not a colour-only swatch
+    const swatch = document.createElementNS(SVG_NS, 'svg');
+    swatch.setAttribute('class', 'swatch');
+    swatch.setAttribute('width', '18');
+    swatch.setAttribute('height', '10');
+    swatch.setAttribute('aria-hidden', 'true');
+    const sample = document.createElementNS(SVG_NS, 'line');
+    sample.setAttribute('x1', '1');
+    sample.setAttribute('x2', '17');
+    sample.setAttribute('y1', '5');
+    sample.setAttribute('y2', '5');
+    sample.setAttribute('stroke', probe.color);
+    sample.setAttribute('stroke-width', '2');
+    if (probe.dash) sample.setAttribute('stroke-dasharray', probe.dash);
+    swatch.appendChild(sample);
     const label = document.createElement('span');
     label.textContent = `${probe.label} ${probeWhere(probe)}`;
     const value = document.createElement('span');
@@ -1710,6 +1759,7 @@ function renderTraces(times, traces) {
         const n = document.createElementNS(SVG_NS, 'polyline');
         n.setAttribute('class', 'trace');
         n.setAttribute('stroke', probe.color);
+        if (probe.dash) n.setAttribute('stroke-dasharray', probe.dash);
         n.setAttribute('points', seg.join(' '));
         g.appendChild(n);
       } else if (seg.length === 1) {
@@ -2322,27 +2372,41 @@ async function fetchKymograph() {
 
 // --- drawing ---
 
+/** The table selected for both the 3D lookup table and the kymograph. */
+function fieldLut() {
+  return state.colormap === 'cividis' ? CIVIDIS_RGB : RAINBOW_RGB;
+}
+
 /**
- * The viewer's colour map, ported from the vtkLookupTable it builds for the 3D view (hue 0.66667 → 0,
- * saturation and value 1, 256 entries: blue low, red high), so the kymograph and the view agree.
+ * Point the 3D lookup table at the same colors fieldLut() returns.
+ * Rainbow is rebuilt with forceBuild from the hue range, which clears a previous Cividis table.
+ * Cividis is written with setTable (explicit RGBA). SetTable stamps InsertTime, so a later
+ * build() keeps those bytes instead of regenerating a hue ramp.
  */
-const KYMO_LUT = (() => {
-  const table = new Uint8ClampedArray(256 * 3);
-  for (let i = 0; i < 256; i++) {
-    const h = 0.66667 + (i * (0.0 - 0.66667)) / 255;
-    let r; let g; let b; // vtkMath::HSVToRGB at s = v = 1
-    if (h > 1 / 6 && h <= 1 / 3) { g = 1; r = (1 / 3 - h) * 6; b = 0; }
-    else if (h > 1 / 3 && h <= 0.5) { g = 1; b = (h - 1 / 3) * 6; r = 0; }
-    else if (h > 0.5 && h <= 2 / 3) { b = 1; g = (2 / 3 - h) * 6; r = 0; }
-    else if (h > 2 / 3 && h <= 5 / 6) { b = 1; r = (h - 2 / 3) * 6; g = 0; }
-    else if (h > 5 / 6 && h <= 1) { r = 1; b = (1 - h) * 6; g = 0; }
-    else { r = 1; g = h * 6; b = 0; }
-    table[3 * i] = r * 255 + 0.5;
-    table[3 * i + 1] = g * 255 + 0.5;
-    table[3 * i + 2] = b * 255 + 0.5;
+async function applyFieldColormap(name) {
+  state.colormap = name === 'cividis' ? 'cividis' : 'rainbow';
+  if (el.colormap && el.colormap.value !== state.colormap) el.colormap.value = state.colormap;
+  if (!lut) return;
+  if (state.colormap === 'rainbow') {
+    await lut.setHueRange(0.66667, 0.0);
+    await lut.setSaturationRange(1.0, 1.0);
+    await lut.setValueRange(1.0, 1.0);
+    // A Cividis setTable stamps InsertTime, and a later build() would keep those bytes.
+    // forceBuild regenerates the hue ramp so the selector and the surface agree again.
+    if (state.fieldColormap === 'cividis') await lut.forceBuild();
+    state.fieldColormap = 'rainbow';
+    return;
   }
-  return table;
-})();
+  const rgb = CIVIDIS_RGB;
+  const table = vtk.vtkUnsignedCharArray();
+  await table.setNumberOfComponents(4);
+  await table.setNumberOfTuples(256);
+  for (let i = 0; i < 256; i++) {
+    await table.setTuple4(i, rgb[3 * i], rgb[3 * i + 1], rgb[3 * i + 2], 255);
+  }
+  await lut.setTable(table);
+  state.fieldColormap = 'cividis';
+}
 
 /** The LUT entry for v over [lo, hi], clamped at both ends, as vtkLookupTable maps a value. */
 function lutIndex(v, lo, hi) {
@@ -2510,6 +2574,7 @@ function renderKymograph() {
   canvas.width = W;
   canvas.height = rows;
   const [lo, hi] = kymoRange();
+  const rgb = fieldLut();
   const cols = columnSamples(k, W);
   const ctx = canvas.getContext('2d');
   const image = ctx.createImageData(W, rows);
@@ -2524,9 +2589,9 @@ function renderKymograph() {
         continue; // transparent: the hatch behind shows through
       }
       const e = 3 * lutIndex(v, lo, hi);
-      px[o] = KYMO_LUT[e];
-      px[o + 1] = KYMO_LUT[e + 1];
-      px[o + 2] = KYMO_LUT[e + 2];
+      px[o] = rgb[e];
+      px[o + 1] = rgb[e + 1];
+      px[o + 2] = rgb[e + 2];
       px[o + 3] = 255;
     }
   }
@@ -2552,9 +2617,10 @@ function renderKymograph() {
   mk('rect', { width: 3, height: 6, fill: '#9a9aa3' }, null, hatch);
   mk('rect', { x: 3, width: 3, height: 6, fill: '#c8c8cf' }, null, hatch);
   const grad = mk('linearGradient', { id: 'kymoGradient', x1: 0, y1: 1, x2: 0, y2: 0 }, null, defs);
+  const barRgb = fieldLut();
   for (let i = 0; i <= 32; i++) {
     const e = 3 * Math.min(255, Math.round((i / 32) * 255));
-    mk('stop', { offset: (i / 32).toFixed(4), 'stop-color': `rgb(${KYMO_LUT[e]},${KYMO_LUT[e + 1]},${KYMO_LUT[e + 2]})` }, null, grad);
+    mk('stop', { offset: (i / 32).toFixed(4), 'stop-color': `rgb(${barRgb[e]},${barRgb[e + 1]},${barRgb[e + 2]})` }, null, grad);
   }
   mk('rect', { class: 'axis', x: M.l, y: M.t, width: plotW, height: plotH, fill: 'none' });
   const xt = niceTicks(a0, a1);
@@ -2910,12 +2976,14 @@ function renderStatsPlot(stats) {
   if (!finite.length) return;
   const f = plotFrame(times, Math.min(...finite), Math.max(...finite));
   series.forEach((s, k) => {
-    const color = SERIES_COLORS[k % SERIES_COLORS.length];
+    const color = seriesColors[k % seriesColors.length];
+    const dash = seriesDash(k);
     const fwd = times.map((t, i) => `${f.sx(t).toFixed(1)},${f.sy(s.min[i] ?? f.lo).toFixed(1)}`);
     const back = [...times.keys()].reverse().map((i) => `${f.sx(times[i]).toFixed(1)},${f.sy(s.max[i] ?? f.lo).toFixed(1)}`);
     f.mk('path', { d: `M${fwd.join('L')}L${back.join('L')}Z`, fill: color, 'fill-opacity': '0.15', stroke: 'none' });
     f.mk('polyline', {
       class: 'curve', stroke: color,
+      ...(dash ? { 'stroke-dasharray': dash } : {}),
       points: times.map((t, i) => `${f.sx(t).toFixed(1)},${f.sy(s.mean[i] ?? f.lo).toFixed(1)}`).join(' '),
     });
   });
@@ -2925,9 +2993,22 @@ function renderStatsPlot(stats) {
   el.plotLegend.innerHTML = '';
   series.forEach((s, k) => {
     const item = document.createElement('span');
-    const swatch = document.createElement('span');
-    swatch.className = 'swatch';
-    swatch.style.background = SERIES_COLORS[k % SERIES_COLORS.length];
+    // a short line sample in the curve's own colour and dash pattern, not a colour-only swatch
+    const swatch = document.createElementNS(SVG_NS, 'svg');
+    swatch.setAttribute('class', 'swatch');
+    swatch.setAttribute('width', '18');
+    swatch.setAttribute('height', '10');
+    swatch.setAttribute('aria-hidden', 'true');
+    const sample = document.createElementNS(SVG_NS, 'line');
+    sample.setAttribute('x1', '1');
+    sample.setAttribute('x2', '17');
+    sample.setAttribute('y1', '5');
+    sample.setAttribute('y2', '5');
+    sample.setAttribute('stroke', seriesColors[k % seriesColors.length]);
+    sample.setAttribute('stroke-width', '2');
+    const dash = seriesDash(k);
+    if (dash) sample.setAttribute('stroke-dasharray', dash);
+    swatch.appendChild(sample);
     item.appendChild(swatch);
     item.appendChild(document.createTextNode(s.name));
     el.plotLegend.appendChild(item);
@@ -3202,6 +3283,12 @@ async function toggleProp(prop, on) {
 }
 
 el.colorbar.addEventListener('change', () => void toggleProp(scalarBar, el.colorbar.checked));
+el.colormap.addEventListener('change', () => {
+  void applyFieldColormap(el.colormap.value).then(() => {
+    if (state.kymo) renderKymograph();
+    if (lut) return render();
+  });
+});
 el.axes.addEventListener('change', () => void toggleProp(cubeAxes, el.axes.checked));
 
 // VTK property representations (vtkProperty.h): points 0, wireframe 1, surface 2

@@ -523,6 +523,7 @@ public ExportOutput[] makePLYWithTexData(OutputContext outputContext,JobRequest 
 //	boolean bInDomain = (varDomain==null?true:varDomain.getName().equals(memSubdomainName));
 	
 	DisplayAdapterService das = new DisplayAdapterService();
+	DisplayAdapterService.addStandardColorModels(das);
 	
 	StringWriter stringWriter = new StringWriter();
 	PolyTexHelper imgResults = writeStanfordPolygonTex(regionImage, stringWriter/*,bInDomain*/,mesh);
@@ -535,15 +536,6 @@ public ExportOutput[] makePLYWithTexData(OutputContext outputContext,JobRequest 
 	fileDataContainerManager.append(textImagetOut0.getFileDataContainerID(), imgResults.specialNeighborImage);
 	exportOutV.add(textImagetOut0);
 	for (int varNameIndex = 0; varNameIndex < variableSpecs.getVariableNames().length; varNameIndex++) {
-		if(das.fetchColorModel(displayPreferences[varNameIndex].getColorMode()) == null){
-			if(displayPreferences[varNameIndex].getColorMode().equals(DisplayAdapterService.GRAY)){
-				das.addColorModelForValues(DisplayAdapterService.createGrayColorModel(), DisplayAdapterService.createBlueRedSpecialColors(),displayPreferences[varNameIndex].getColorMode());
-			}else{
-				das.addColorModelForValues(DisplayAdapterService.createBlueRedColorModel(), DisplayAdapterService.createGraySpecialColors(),displayPreferences[varNameIndex].getColorMode());
-//				das.setActiveColorModelID("Contrast");
-			}
-		}
-
 //		BitSet domainValid = (displayPreferences[varNameIndex]==null?null:(displayPreferences[varNameIndex].getDomainValid()==null?null:displayPreferences[varNameIndex].getDomainValid()));
 		ExportSpecs.setupDisplayAdapterService(displayPreferences[varNameIndex],das,displayPreferences[varNameIndex].getScaleSettings());
 		for (int j = timeSpecs.getBeginTimeIndex(); j <= timeSpecs.getEndTimeIndex(); j++){

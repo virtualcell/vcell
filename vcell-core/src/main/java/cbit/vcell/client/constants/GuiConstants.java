@@ -122,6 +122,19 @@ public class GuiConstants {
 	public static final String ACTIONCMD_ADD_VFAP_DATASET = "AddDatasetFromvFrap";
 	public static final String ACTIONCMD_ADD_VFRAP_DERIVED_DATA = "AddDerivedDataFromvFrap";
 
+	/**
+	 * Accessible error text color (WCAG 2.1 SC 1.4.3): 8.14:1 on white, 6.98:1 on the
+	 * alternating table row #e8edff, 7.81:1 on the hover row #FDFCDC. Shared token for
+	 * error/status text; first consumers are MathOverridesTableCellRenderer and
+	 * SimulationConsolePanel (remaining S8 consumers are tracked by issue #2140).
+	 */
+	public static final Color ERROR_TEXT_COLOR = new Color(0xA4, 0x00, 0x00);
+	/**
+	 * Accessible warning text color (WCAG 2.1 SC 1.4.3): 6.80:1 on white, 5.83:1 on the
+	 * alternating table row #e8edff, 6.52:1 on the hover row #FDFCDC.
+	 */
+	public static final Color WARNING_TEXT_COLOR = new Color(0x8A, 0x4B, 0x00);
+
 	public static final Border ProblematicTextFieldBorder = BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Color.red), BorderFactory.createEmptyBorder(2, 2, 2, 2));
 	public static final Border TAB_PANEL_BORDER = new LineBorder(new Color(127, 157,185));
 }

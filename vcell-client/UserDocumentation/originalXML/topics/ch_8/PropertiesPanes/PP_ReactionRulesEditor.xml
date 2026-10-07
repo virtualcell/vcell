@@ -10,8 +10,9 @@
   <appearance>
   	Each reaction rule is specified on two lines, with reactants on the firsl line and products underneath. This way a modeler
   	can easily see the transformation of reactants to products. 
-  Sites in white are fully unspecified (they can be bound or unbound, denoted by grey question mark under the site). 
-  	Sites in green must have either binding status defined 
+  Sites that are fully unspecified (they can be bound or unbound) are shown in white and denoted by a grey question mark under the site. 
+  	Sites that still need a binding status or state to be defined are shown in green; they can also be found without relying on color by 
+  	right-clicking a site to check whether its binding status or state is set. A fully specified site has either a binding status defined 
   	(bound to specific site - denoted by color bond with index, bound to arbitrary site - denoted by vertical line , unbound), 
   	or state defined. The first rule describes binding of egfr monomer (site r is unbound) to free egf (site r is unbound).
   	The second rule describes phosphorylation of unbound Y1148 site (change of state from Y to P) on a receptor that is bound to

@@ -2287,8 +2287,7 @@ public class KymographPanel extends javax.swing.JPanel implements org.vcell.util
 	 */
 	private void kymograph_Initialize() {
 
-		getDisplayAdapterService1().addColorModelForValues(DisplayAdapterService.createGrayColorModel(), DisplayAdapterService.createGraySpecialColors(), DisplayAdapterService.GRAY);
-		getDisplayAdapterService1().addColorModelForValues(DisplayAdapterService.createBlueRedColorModel(), DisplayAdapterService.createBlueRedSpecialColors(), DisplayAdapterService.BLUERED);
+		DisplayAdapterService.addStandardColorModels(getDisplayAdapterService1());
 		getDisplayAdapterService1().setActiveColorModelID(DisplayAdapterService.BLUERED);
 
 		updateColorMapDisplay();

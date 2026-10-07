@@ -512,10 +512,11 @@ public class MediaSettingsPanel extends JPanel {
 							
 							boolean bSpecialColorsCustom =
 								!Arrays.equals(DisplayAdapterService.createGraySpecialColors(), displayPreferences[i].getSpecialColors()) &&
-								!Arrays.equals(DisplayAdapterService.createBlueRedSpecialColors(), displayPreferences[i].getSpecialColors());
+								!Arrays.equals(DisplayAdapterService.createBlueRedSpecialColors(), displayPreferences[i].getSpecialColors()) &&
+								!Arrays.equals(DisplayAdapterService.createCividisSpecialColors(), displayPreferences[i].getSpecialColors());
 							exportInfoJTextArea.append(
 								"'"+variableNames[i]+"':\n"+
-								"     ColorScheme: "+(displayPreferences[i].isGrayScale()?"Gray":"Color")+" (click 'Gray' or 'BlueRed' in 'Results Viewer' to change)\n"+
+								"     ColorScheme: "+displayPreferences[i].getColorMode()+" (click 'Gray', 'BlueRed', or 'Cividis' in 'Results Viewer' to change)\n"+
 								"     Data Scale Range: "+
 									(displayPreferences[i].isAuto() && !displayPreferences[i].isAlltimes()?"Min/Max at each timepoint (uncheck 'Auto(current time)' in 'Results Viewer' to change)":
 										(!displayPreferences[i].isAuto()?"User Defined->"+dataScaleRange:"All Times->"+dataScaleRange)

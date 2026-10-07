@@ -38,20 +38,19 @@
   .controls select { font: 12px ui-monospace, monospace; max-width: 260px; }
   .readout { flex: 1 1 auto; opacity: .8; }
   .toggle { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
-  .readout em { color: #2a7; font-style: normal; }
+  .readout em { color: #157347; font-style: normal; }
   .status { font: 12px/1.4 ui-monospace, monospace; opacity: .7; }
   .status.err { color: #c0392b; opacity: 1; white-space: pre-wrap; }
-  .readout.pick { flex: 0 1 auto; opacity: 1; color: #2a7; min-width: 12em; }
+  .readout.pick { flex: 0 1 auto; opacity: 1; color: #157347; min-width: 12em; }
   .plot-panel { width: 100%; max-width: 960px; border: 1px solid color-mix(in srgb, currentColor 25%, transparent);
                 border-radius: 6px; padding: 8px; }
   .plot-head { display: flex; align-items: center; justify-content: space-between; gap: 10px;
                font: 12px/1.4 ui-monospace, monospace; margin-bottom: 4px; }
   .plot-head .legend { display: inline-flex; gap: 12px; flex-wrap: wrap; flex: 1 1 auto; }
-  .plot-head .legend .swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px;
-                               margin-right: 4px; vertical-align: -1px; }
+  .plot-head .legend .swatch { display: inline-block; vertical-align: -1px; margin-right: 4px; }
   .plot-panel svg { display: block; width: 100%; height: 220px; }
-  .plot-panel .curve { fill: none; stroke: #2a7; stroke-width: 2; vector-effect: non-scaling-stroke; }
-  .plot-panel .curve-dot { fill: #2a7; stroke: none; }
+  .plot-panel .curve { fill: none; stroke: #157347; stroke-width: 2; vector-effect: non-scaling-stroke; }
+  .plot-panel .curve-dot { fill: #157347; stroke: none; }
   .plot-panel .axis { stroke: currentColor; stroke-opacity: .3; vector-effect: non-scaling-stroke; }
   .plot-panel .lbl { font: 11px ui-monospace, monospace; fill: currentColor; fill-opacity: .7; }
   /* probes: markers over the canvas, drawn in page coordinates projected from the camera */
@@ -59,11 +58,11 @@
   .overlay .marker circle { stroke-width: 2; }
   .overlay .marker text { font: 600 11px ui-monospace, monospace; fill: #fff; paint-order: stroke;
                           stroke: #000; stroke-width: 3px; stroke-opacity: .7; }
-  button[aria-pressed=true] { background: #2a7; color: #fff; border-color: #2a7; }
+  button[aria-pressed=true] { background: #157347; color: #fff; border-color: #157347; }
   .probe-list { list-style: none; margin: 0 0 4px; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 14px;
                 font: 12px/1.6 ui-monospace, monospace; }
   .probe-list li { display: inline-flex; align-items: center; gap: 5px; }
-  .probe-list .swatch { display: inline-block; width: 10px; height: 10px; border-radius: 50%; }
+  .probe-list .swatch { display: inline-block; }
   .probe-list .value { opacity: .75; }
   .probe-list .outside { opacity: .6; font-style: italic; }
   .probe-list button { font: 11px ui-monospace, monospace; padding: 0 4px; line-height: 1.4; }
@@ -86,9 +85,9 @@
                              margin: 2px 0 4px; }
   .kymo-panel .kymo-coords input { flex: 1 1 auto; font: 12px ui-monospace, monospace; min-width: 0; }
   .kymo-panel .note { font: 12px/1.4 ui-monospace, monospace; opacity: .75; min-height: 1.4em; }
-  .kymo-panel .note.warn { color: #d70; opacity: 1; }
+  .kymo-panel .note.warn { color: #a85d00; opacity: 1; }
   .kymo-panel .stale { font: 11px ui-monospace, monospace; padding: 0 6px; border-radius: 9px;
-                       background: #d70; color: #fff; border: none; cursor: pointer; }
+                       background: #a85d00; color: #fff; border: none; cursor: pointer; }
   .kymo-panel .kymo-plot { position: relative; height: 260px; }
   .kymo-panel .kymo-plot svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
   /* gaps (no data: outside the variable's domain) are transparent pixels over this hatch */
@@ -102,6 +101,18 @@
   .kymo-panel .grid { stroke: currentColor; stroke-opacity: .08; }
   .kymo-panel .title { font: 11px ui-monospace, monospace; fill: currentColor; fill-opacity: .8; }
   .kymo-panel .readout { font: 12px/1.4 ui-monospace, monospace; min-height: 1.4em; opacity: .85; }
+  /*
+    Dark color-scheme overrides (Phase 6.2): the light-scheme colors above fall below 4.5:1 on the
+    #121212 page background, so each gets a dark variant verified with .agents/cvd_analysis.py:
+    #ff6b6b 6.75:1, #4dc47d 8.48:1, #ffa43d 9.48:1 on #121212.
+  */
+  @media (prefers-color-scheme: dark) {
+    .readout em, .readout.pick { color: #4dc47d; }
+    .plot-panel .curve { stroke: #4dc47d; }
+    .plot-panel .curve-dot { fill: #4dc47d; }
+    .status.err { color: #ff6b6b; }
+    .kymo-panel .note.warn { color: #ffa43d; }
+  }
 </style>
 </head>
 <body>
@@ -198,6 +209,12 @@
   <span class="readout" id="smoothingReadout"></span>
   <button id="smoothingReset" type="button" disabled>Reset</button>
   <label class="toggle"><input id="colorbar" type="checkbox" checked disabled> Color bar</label>
+  <label class="toggle" for="colormap">Colormap
+    <select id="colormap" title="Rainbow is the default. Cividis is the color-vision-deficiency map used by the 3D view and the kymograph.">
+      <option value="rainbow" selected>Rainbow</option>
+      <option value="cividis">Cividis</option>
+    </select>
+  </label>
   <label class="toggle"><input id="axes" type="checkbox" checked disabled> Axes</label>
   <label class="toggle">Mesh
     <select id="meshStyle" disabled title="Show the mesh: its triangles' edges over the colored surface, or edges only (m cycles)">

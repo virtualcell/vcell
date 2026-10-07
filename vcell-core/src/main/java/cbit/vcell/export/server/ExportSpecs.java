@@ -18,6 +18,9 @@ import org.vcell.util.Compare;
 import org.vcell.util.Range;
 import org.vcell.util.document.VCDataIdentifier;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import cbit.image.DisplayAdapterService;
 import cbit.image.DisplayPreferences;
 
@@ -26,6 +29,8 @@ import cbit.image.DisplayPreferences;
  */
 @SuppressWarnings("serial")
 public class ExportSpecs implements Serializable {
+	private static final Logger LG = LogManager.getLogger(ExportSpecs.class);
+
 	private org.vcell.util.document.VCDataIdentifier vcDataIdentifier = null;
 	private ExportFormat format;
 	private TimeSpecs timeSpecs;
@@ -195,6 +200,11 @@ public class ExportSpecs implements Serializable {
 			displayAdapterService.setActiveScaleRange(BeanUtils.selectRange(displayPreferences.isAuto(), displayPreferences.isAlltimes(), displayPreferences.getScaleSettings(), currentVarAndTimeValRange));
 		}
 		String colorMode = (displayPreferences==null?DisplayAdapterService.BLUERED:(displayPreferences.getColorMode()==null?DisplayAdapterService.BLUERED:displayPreferences.getColorMode()));
+		if (displayAdapterService.fetchColorModel(colorMode) == null) {
+			LG.warn("Export color mode '{}' is not registered; rendering with {} so the image is not labeled as the requested map",
+					colorMode, DisplayAdapterService.BLUERED);
+			colorMode = DisplayAdapterService.BLUERED;
+		}
 		displayAdapterService.setActiveColorModelID(colorMode);
 		
 		int[] specialColors = (displayPreferences==null?displayAdapterService.getSpecialColors():(displayPreferences.getSpecialColors()==null?displayAdapterService.getSpecialColors():displayPreferences.getSpecialColors()));

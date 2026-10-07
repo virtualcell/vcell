@@ -135,20 +135,21 @@ public abstract class RuleParticipantEdgeDiagramShape extends EdgeShape {
 	public ReactionRuleDiagramShape getReactionRuleShape() { return (ReactionRuleDiagramShape) endShape; }
 
 	@Override
+	protected boolean usesSelectedStroke() {
+		return isSelected() || (startShape != null && startShape.isSelected());
+	}
+
+	@Override
 	public void paintSelf(Graphics2D g2D, int parentOffsetX, int parentOffsetY) {
 		// draw cubic spline with horizontal reactant-end (p' = 0) at reaction
 		g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		CubicCurve2D.Double cubicCurve = getCurve();
 		// render curve (make CatalystShapes draw with a dashed line)
 		g2D.setColor(forgroundColor);
-		if(getLineStyle() == LINE_STYLE_DASHED){
-			Stroke oldStroke = g2D.getStroke();
-			g2D.setStroke(DASHED_STROKE);
-			g2D.draw(cubicCurve);
-			g2D.setStroke(oldStroke);
-		} else {
-			g2D.draw(cubicCurve);
-		}
+		Stroke oldStroke = g2D.getStroke();
+		g2D.setStroke(curveStroke());
+		g2D.draw(cubicCurve);
+		g2D.setStroke(oldStroke);
 		int arrowDirection = 0;
 		if (this instanceof ProductPatternEdgeDiagramShape){
 			arrowDirection = 1;

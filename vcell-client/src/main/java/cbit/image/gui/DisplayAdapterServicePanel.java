@@ -16,8 +16,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.Arrays;
-
 import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
 import javax.swing.ButtonModel;
@@ -1093,13 +1091,15 @@ private MouseAdapter mouseAdapter = new MouseAdapter() {
 private void changeSpecialColor(ActionEvent e){
 	
 	if(e.getActionCommand().equals("DF")){
-		if(Arrays.equals(getDisplayAdapterService().getActiveColorModel(), DisplayAdapterService.createBlueRedColorModel())){
-			getDisplayAdapterService().addColorModelForValues(
-					getDisplayAdapterService().getActiveColorModel(), DisplayAdapterService.createBlueRedSpecialColors(), getDisplayAdapterService().getActiveColorModelID());
-		}else{
-			getDisplayAdapterService().addColorModelForValues(
-					getDisplayAdapterService().getActiveColorModel(), DisplayAdapterService.createGraySpecialColors(), getDisplayAdapterService().getActiveColorModelID());
+		String id = getDisplayAdapterService().getActiveColorModelID();
+		int[] defaults = DisplayAdapterService.createGraySpecialColors();
+		if (DisplayAdapterService.CIVIDIS.equals(id)) {
+			defaults = DisplayAdapterService.createCividisSpecialColors();
+		} else if (DisplayAdapterService.BLUERED.equals(id)) {
+			defaults = DisplayAdapterService.createBlueRedSpecialColors();
 		}
+		getDisplayAdapterService().addColorModelForValues(
+				getDisplayAdapterService().getActiveColorModel(), defaults, id);
 		return;
 	}
 	String activeColorModelID = getDisplayAdapterService().getActiveColorModelID();

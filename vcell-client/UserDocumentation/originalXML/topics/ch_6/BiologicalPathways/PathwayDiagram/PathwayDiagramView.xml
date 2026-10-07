@@ -42,7 +42,7 @@ More entities can be added from the
 <para>		
 To simplify operations, the items in the diagram can be filtered in real time by typing a string 
 inside the <bold>Search</bold> field. All the matching entities will show up in the diagram as selected 
-(marked in red).
+	(the diagram is filtered to the matching entities, which are also marked in red).
 	<imgReference target = "PathwayDiagramSearch.png"/>
 	</para>
 	</operations>

@@ -24,7 +24,7 @@ of parameter values.  <bold>Right-click menu</bold> allows for copying and pasti
 	<item>Change Value</item>
 	<para>The Simulation Editor window allows the user to override the default value of any parameter by specifying a
 	 different value to be used during the simulation. The value can be a numerical value or mathematical expressions. Identify the Parameter Name and Double click on the New
-	Value/Expression field to type in a new value or expression. Press Enter to accept the value. Note that values that have changed appear in red.
+	Value/Expression field to type in a new value or expression. Press Enter to accept the value. Note that values that have changed appear in red and have an entry in the New Value/Expression column (parameters at their default values have no entry there).
 	</para>
 	<para></para>
     <item>Scan</item>

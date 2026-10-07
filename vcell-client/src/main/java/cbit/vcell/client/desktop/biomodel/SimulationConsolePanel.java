@@ -1,6 +1,5 @@
 package cbit.vcell.client.desktop.biomodel;
 
-import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -22,6 +21,7 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
+import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.TaskCallbackMessage;
 import cbit.vcell.mapping.TaskCallbackMessage.TaskCallbackStatus;
@@ -114,7 +114,7 @@ public class SimulationConsolePanel extends JPanel {
 		refreshInterface();
 	}
 
-	private void appendToConsole(TaskCallbackMessage newCallbackMessage) {
+	void appendToConsole(TaskCallbackMessage newCallbackMessage) {
 		TaskCallbackStatus status = newCallbackMessage.getStatus();
 		String string = newCallbackMessage.getText();
 		StyledDocument doc = netGenConsoleText.getStyledDocument();
@@ -125,21 +125,21 @@ public class SimulationConsolePanel extends JPanel {
 			netGenConsoleText.setText("");
 			break;
 		case TaskStopped:
-			StyleConstants.setForeground(keyWord, Color.RED);
+			StyleConstants.setForeground(keyWord, GuiConstants.ERROR_TEXT_COLOR);
 			StyleConstants.setBold(keyWord, true);
-			doc.insertString(doc.getLength(), "  " + string + "\n", keyWord);
+			doc.insertString(doc.getLength(), "[Stopped] " + string + "\n", keyWord);
 			break;
-		case Notification:		// normal notification, just display the string
+		case Notification:	// normal notification, just display the string
 			doc.insertString(doc.getLength(), string + "\n", null);
 			break;
-		case Error:			// display this in red, bold
-			StyleConstants.setForeground(keyWord, Color.RED);
+		case Error:			// display with a textual tag and the accessible error color
+			StyleConstants.setForeground(keyWord, GuiConstants.ERROR_TEXT_COLOR);
 			StyleConstants.setBold(keyWord, true);
-			doc.insertString(doc.getLength(), string + "\n", keyWord);
+			doc.insertString(doc.getLength(), "[Error] " + string + "\n", keyWord);
 			break;
-		case Warning:			// display this in red
-			StyleConstants.setForeground(keyWord, Color.RED);
-			doc.insertString(doc.getLength(), string + "\n", keyWord);
+		case Warning:		// display with a textual tag and the accessible warning color
+			StyleConstants.setForeground(keyWord, GuiConstants.WARNING_TEXT_COLOR);
+			doc.insertString(doc.getLength(), "[Warning] " + string + "\n", keyWord);
 			break;
 		default:
 			break;
@@ -147,6 +147,11 @@ public class SimulationConsolePanel extends JPanel {
 		} catch(Exception e) {
 			System.out.println(e);
 		}
+	}
+
+	/** The console text component; package-visible for accessibility tests (8.3-h). */
+	JTextPane accessibleConsoleText() {
+		return netGenConsoleText;
 	}
 
 	private void refreshInterface() {

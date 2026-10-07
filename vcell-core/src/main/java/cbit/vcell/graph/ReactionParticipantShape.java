@@ -171,6 +171,11 @@ public abstract class ReactionParticipantShape extends EdgeShape {
 	public ReactionStepShape getReactionStepShape() { return (ReactionStepShape) endShape; }
 
 	@Override
+	protected boolean usesSelectedStroke() {
+		return isSelected() || (startShape != null && startShape.isSelected());
+	}
+
+	@Override
 	public void paintSelf(Graphics2D g2D, int parentOffsetX, int parentOffsetY) {
 		if(startShape.isSelected()) {
 			forgroundColor = Color.red.darker();
@@ -185,14 +190,10 @@ public abstract class ReactionParticipantShape extends EdgeShape {
 		CubicCurve2D.Double cubicCurve = getCurve();
 		// render curve (make CatalystShapes draw with a dashed line)
 		g2D.setColor(forgroundColor);
-		if(getLineStyle() == LINE_STYLE_DASHED){
-			Stroke oldStroke = g2D.getStroke();
-			g2D.setStroke(DASHED_STROKE);
-			g2D.draw(cubicCurve);
-			g2D.setStroke(oldStroke);
-		} else {
-			g2D.draw(cubicCurve);
-		}
+		Stroke oldStroke = g2D.getStroke();
+		g2D.setStroke(curveStroke());
+		g2D.draw(cubicCurve);
+		g2D.setStroke(oldStroke);
 		int arrowDirection = 0;
 		if (this instanceof ProductShape){
 			arrowDirection = 1;

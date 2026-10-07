@@ -380,7 +380,8 @@ Colors referenced below were measured with `.agents/cvd_analysis.py`.
     chromatic color, each one dispositioned. That sweep found D4, S8 and C3 (below), and corrected
     the plot-consumer count and the X3 row.
   - **Remaining:** PR #2141 needs one approving review and the merge queue (the ruleset requires
-    it). The "merged" item in §9 stays open until then.
+    it). Rechecked 2026-10-07: the PR is still open, review required, and not merged. The audit
+    file is on `docs/1605-color-audit`, not on this branch. The "merged" item in §9 stays open.
 - **Row mapping (verifies "every §5 row appears").** The audit record uses its own stable IDs:
 
   | Plan §5 | Audit record | Note |
@@ -422,12 +423,12 @@ Colors referenced below were measured with `.agents/cvd_analysis.py`.
 
 **Completed sections (2026-09-30).** Tasks 1.1 and 1.2 are complete. The primitives are what
 Phase 2 and Phase 3 call. Committed on `chore/vcell#1605` in `4f0d5efc20` (not pushed; no PR
-yet). The dark-background test stays disabled until #1604. Copying the palette into the
-field viewer remains Phase 6.
+yet). The dark-background test stays disabled until #1604. The field viewer's JS mirror of the
+palette and dash cycle landed with Phase 6 (2026-10-06).
 
 | Section | Completed work | Still open |
 |---|---|---|
-| **1.1** `ColorUtil` | `CVD_SAFE_LIGHT`, `seriesColor`, and the 8-slot `seriesDash`. `generateAutoColor`, `TABLEAU20`, `DARK20`, and the `COLORBLIND20` entries are unchanged. Javadoc on `COLORBLIND20` says it failed CVD validation. | Committed in `4f0d5efc20`, not pushed. Field-viewer JavaScript mirror is Phase 6. |
+| **1.1** `ColorUtil` | `CVD_SAFE_LIGHT`, `seriesColor`, and the 8-slot `seriesDash`. `generateAutoColor`, `TABLEAU20`, `DARK20`, and the `COLORBLIND20` entries are unchanged. Javadoc on `COLORBLIND20` says it failed CVD validation. | Committed in `4f0d5efc20`, not pushed. Field-viewer JS mirror done in Phase 6 (2026-10-06). |
 | **1.2** `ColorAccessibilityTest` | Fast test: contrast on white, Machado protan/deutan/tritan ΔE76, 24 unique pairs, and the `TABLEAU20` entries `0..7` failing that check. 8 run, 0 failures, 1 skipped. | `cvdSafeDarkPaletteMeetsContrastOnDarkBackground` stays `@Disabled` until #1604. |
 
 **1.1** `vcell-util/src/main/java/org/vcell/util/ColorUtil.java` — ✅ done (2026-09-30)
@@ -462,7 +463,7 @@ field viewer remains Phase 6.
     failures, that same test skipped), so the new class is picked up by `@Tag("Fast")`.
   - Committed on `chore/vcell#1605` in `4f0d5efc20` (not pushed; no PR yet). Legacy plot
     wiring is Phase 2 and Langevin wiring is Phase 3; both now call these primitives. The
-    field-viewer JavaScript mirror remains Phase 6.
+    field-viewer JavaScript mirror landed with Phase 6 (2026-10-06).
 
 **1.2** `vcell-util/src/test/java/org/vcell/util/ColorAccessibilityTest.java` (new, `@Tag("Fast")`) — ✅ done (2026-09-30)
 - **Change:** implement WCAG luminance/contrast, the Machado 2009 severity-1.0 matrices (protan,
@@ -485,8 +486,9 @@ field viewer remains Phase 6.
   - `mvn --batch-mode test -pl vcell-util -Dgroups=Fast` on 2026-09-30: 50 run, 0 failures, 1
     skipped. `ColorAccessibilityTest` itself: 8 run, 0 failures, 1 skipped.
   - Committed on `chore/vcell#1605` in `4f0d5efc20` (not pushed; no PR yet). The #1603
-    dark-background definition-of-done checkbox stays open: it also requires the field
-    viewer's dark-scheme text colors (Phase 6).
+    dark-background definition-of-done checkbox stays open: the field viewer's dark-scheme
+    series and text colors landed with Phase 6 (2026-10-06); the Swing dark palette (#1604)
+    is still required.
 
 ### Phase 2 — Legacy plot framework (MUST, #1605)
 
@@ -607,10 +609,20 @@ Gate 8.1 on 2026-10-01, `mvn --batch-mode test -Dgroups=Fast -pl vcell-util,vcel
 
 ### Phase 3 — Langevin plot framework (MUST for palette, styles, and accessible interaction)
 
-Automated checks for 3.1 and 3.2 passed on 2026-10-01, re-run green on 2026-10-02 (V1: 11
-tests, 0 failures; 8.4-a and the extended residue scan: no matches). Committed on
-`chore/vcell#1605` in `fc8ebd3aea` together with the Phase 2 keyboard-isolation work (not
-pushed; no PR yet). Evidence for the Langevin surfaces was produced on 2026-10-02 under
+**Implementation of 3.1 and 3.2 is complete** on `chore/vcell#1605` at `e21a3024c4`
+(2026-10-06 check; working tree clean for these files). The first implementation is
+`fc8ebd3aea`. The legend stroke correction is `9897dc37bf`. Shared legend wiring and marker
+spacing are `e21a3024c4`. The branch is not pushed and has no pull request. Completing these
+two tasks does not close #1605 or the §9 / §16 gate.
+
+| Section | Status | What is done |
+|---|---|---|
+| **3.1** Palette and series index | Complete | Both panels assign `ColorUtil.CVD_SAFE_LIGHT`. `LangevinSeriesIdentity` stores the full series index for `seriesDash`. SD still uses `deriveEnvelopeColor` and does not take an index. |
+| **3.2** Strokes, legend, keyboard, data | Complete | `AvgRenderer` draws one path with `strokeForSeriesIndex`. The 80×12 legend icon uses that same stroke, including a solid stroke when styles are off. Markers stay at least four diameters apart while lines are on. Ctrl+N / Ctrl+P / Ctrl+I, legend Enter/Space, and the "Series data" table are in place. Tests 8.3-e and the §15 C series-count and styles-off checks passed (13 tests, 0 failures, 2026-10-02). |
+
+Automated checks for 3.1 and 3.2 passed on 2026-10-01, re-run green on 2026-10-02 (first run:
+11 tests, 0 failures; after the corrections: 13 tests, 0 failures; 8.4-a and the extended
+residue scan: no matches). Evidence for the Langevin surfaces was produced on 2026-10-02 under
 `docs/accessibility/evidence/2026-10-phase-3-langevin/`: capture set S1–S10 from a local
 Langevin Quick Run of the `biomodel_315318780.vcml` fixture (`SimID_122317207_0`; `allosteric`
 and `transition_free` rules disabled to work around an NPE in the bundled local solver; 1-job
@@ -621,12 +633,11 @@ the 8.6-b human identification task (T1–T6 on the filtered images) are PENDING
 with prepared checklists in the evidence directory; the S2 legend focus-ring capture is BLOCKED
 in the automated session (the raw-`java` client instance never receives AWT window activation;
 see the evidence manifest) and remains a reviewer item (C6). Windows/Linux captures were not
-produced (this session ran on macOS only). This phase does not close #1605 or the §9 / §16
-gate, and **Phase 3 done ≠ #1605 closed ≠ §9/§16 gate passed**.
+produced (this session ran on macOS only).
 
-**Corrections after the capture session (2026-10-02).** The first legend correction is committed
-in `9897dc37bf`. The shared legend wiring, the marker spacing, and their tests are in the working
-tree on top of it (not committed). None of this is part of `fc8ebd3aea`.
+**Corrections after the capture session (2026-10-02), committed.** None of the corrections
+below are part of `fc8ebd3aea`. Both are in the branch history: legend stroke in `9897dc37bf`,
+shared wiring and marker spacing in `e21a3024c4`.
 
 - **The legend follows "Vary line styles".** `LineIcon` paints
   `AbstractPlotPanel.strokeForSeriesIndex`, the same method `AvgRenderer` and the empty-bubble
@@ -659,7 +670,7 @@ tree on top of it (not committed). None of this is part of `fc8ebd3aea`.
   captures, manual 8.7, and 8.6-b T1–T6.
 
 **3.1** `vcell-client/src/main/java/cbit/vcell/solver/ode/gui/MoleculeVisualizationPanel.java`
-(`:423`) and `ClusterVisualizationPanel.java` (`:206`)
+(`:423`) and `ClusterVisualizationPanel.java` (`:206`) — ✅ complete (`e21a3024c4`)
 - **Change:** `globalPalette` ← `ColorUtil.CVD_SAFE_LIGHT`; pass the stable full series index to
   `seriesDash` (never palette-slot division or modulo as the identity).
   Keep `deriveEnvelopeColor` for SD bands.
@@ -670,7 +681,7 @@ tree on top of it (not committed). None of this is part of `fc8ebd3aea`.
   (ACS/ACO/SD slot rule, index 8 rather than palette slot 0, stable reassignment, custom color).
 
 **3.2** `vcell-client/src/main/java/cbit/plot/gui/PlotRenderers.java` (`AvgRenderer`, `:90,:96`)
-and `AbstractVisualizationPanel.LineIcon` (`:21`) (MUST)
+and `AbstractVisualizationPanel.LineIcon` (`:21`) (MUST) — ✅ complete (`e21a3024c4`)
 - **Change:** apply `seriesDash`, and draw the dash in the legend icon. Band and bubble renderers
   must expose series identity and values through keyboard-accessible selection, labels, and the
   accessible data view; hover dimming alone is insufficient evidence.
@@ -701,46 +712,98 @@ and `AbstractVisualizationPanel.LineIcon` (`:21`) (MUST)
 
 ### Phase 4 — Model viewer (MUST, #1605)
 
-**4.1** `vcell-core/src/main/java/cbit/gui/graph/EdgeShape.java`
+**4.1–4.4 code is in the working tree** (2026-10-06, not committed). Automated checks passed:
+`ReactionParticipantShapeAccessibilityTest` 2 tests, 0 failures; `ImagePlaneManagerPanelAccessibilityTest`
+2 tests, 0 failures (headless). Manual 8.7 and the §15 C diagram checks are still open. Width is
+the non-color selection cue. A shape or label where width does not identify the state, adjacent
+contrast of the indicator, keyboard and assistive-technology exposure, the D4 glyph-error and S8
+red-text fixes (#2140), and the G1/G2 region list and keyboard readout (#2139) are not part of
+this change. This phase does not close #1605 or the §9 / §16 gate.
+
+| Section | Status | What is done |
+|---|---|---|
+| **4.1** Selected edge stroke | Implemented | `SELECTED_STROKE` is 2.5 px. `SELECTED_DASHED_STROKE` is 2.5 px with the same dash as `DASHED_STROKE`. `paintSelf` uses them when the edge is selected. The previous stroke is restored before labels and arrow fills. |
+| **4.2** Reaction edges | Implemented | The 2.5 px stroke is used when the edge or its start species is selected. Catalysts stay dashed. Red and black hues are unchanged. |
+| **4.3** Rule edges | Implemented | Same selection rule as 4.2. |
+| **4.4** Geometry hover name | Implemented | `ImagePlaneManagerPanel` takes an `IntFunction<String>` index label provider. `GeometryViewer.refreshSourceDataInfo` sets it from `subVolumeForHandle(handle).getName()`. `updateInfo` appends `"name"` for `INDEX_TYPE` pixels. |
+
+**4.1** `vcell-core/src/main/java/cbit/gui/graph/EdgeShape.java` — ✅ implemented (working tree)
 - **Change:** add `protected static final BasicStroke SELECTED_STROKE = new BasicStroke(2.5f)` and
   `SELECTED_DASHED_STROKE` (2.5 px, same dash). In `paintSelf` (`:259`), use them when
   `isSelected()`.
+- **Result:** `SELECTED_STROKE` is `new BasicStroke(2.5f)`. `SELECTED_DASHED_STROKE` is 2.5 px with
+  the same dash array as `DASHED_STROKE` (`{5, 3}`). `curveStroke()` returns the selected stroke
+  when `isSelected()` and the 1 px stroke otherwise. `paint0` sets that stroke, draws the curve,
+  and restores the previous stroke before the label. Hit-testing still uses the curve geometry.
 
 **4.2** `vcell-core/src/main/java/cbit/vcell/graph/ReactionParticipantShape.java` · `paintSelf`
-(`:174`)
+(`:174`) — ✅ implemented (working tree)
 - **Change:** use the 2.5 px stroke when `isSelected()` **or** `startShape.isSelected()`, keeping
   the dashed variant for catalysts. Keep the red hues; width becomes the non-color cue.
+- **Result:** `usesSelectedStroke()` is true for the edge or its start species. `paintSelf` draws
+  `curveStroke()` and restores the previous stroke before the arrow fill, so arrowheads stay on
+  the curve. Catalysts remain `LINE_STYLE_DASHED`; selection changes width only. Red and
+  `red.darker()` are unchanged. Test 8.3-f passed: unselected width 1.0; selected width ≥2.5,
+  including when only the start species is selected; a catalyst keeps its dash at the wider
+  stroke. `ReactionParticipantShapeAccessibilityTest`: 2 tests, 0 failures, headless, Java 17,
+  2026-10-06.
 
 **4.3** `vcell-core/src/main/java/cbit/vcell/graph/RuleParticipantEdgeDiagramShape.java` ·
-`paintSelf` (`:138`)
+`paintSelf` (`:138`) — ✅ implemented (working tree)
 - **Change:** same as 4.2.
+- **Result:** the rule edge uses the same `usesSelectedStroke()` rule and `curveStroke()` draw
+  path as 4.2, including the stroke restore before the arrow fill.
 - **Rationale for 4.1–4.3:** 1.4.1 (dark red vs black is 2.89:1) and UConn red/black guidance.
 - **§15 C governs 4.1–4.3:** width is the non-color selection cue. Also required: a shape or label
   where width does not identify the state, adjacent-color contrast of at least 3:1 for the
   indicator that carries the state, keyboard and assistive-technology exposure of that state, and
   the D4 glyph-error and S8 red-text fixes in #2140. Keeping the red hues is acceptable when those
   checks pass.
-- **Risk:** edge hit-testing is unaffected (it uses the curve geometry, not the stroke); verify
-  arrowheads still align.
-- **Verify:** test 8.3-f, manual QA 8.7, and the §15 C diagram checks.
+- **Risk:** edge hit-testing is unaffected (it uses the curve geometry, not the stroke); arrow
+  geometry is unchanged because the stroke is restored before the fill.
+- **Verify:** test 8.3-f passed. Manual QA 8.7 and the §15 C diagram checks are still open.
 
 **4.4** `vcell-client/src/main/java/cbit/vcell/geometry/gui/GeometryViewer.java` +
-`vcell-client/src/main/java/cbit/image/gui/ImagePlaneManagerPanel.java`
+`vcell-client/src/main/java/cbit/image/gui/ImagePlaneManagerPanel.java` — ✅ implemented (working tree)
 - **Change:** give `ImagePlaneManagerPanel` an optional `IntFunction<String> indexLabelProvider`.
   `GeometryViewer.refreshSourceDataInfo` (`:245`) sets it to
   `handle -> subVolumeForHandle(handle).getName()`. `updateInfo` (`:1437`) appends
   `" \"" + name + "\""` for `SourceDataInfo.INDEX_TYPE` data.
+- **Result:** `setIndexLabelProvider` stores the function. `refreshSourceDataInfo` sets it from
+  `subVolumeForHandle`, which returns null when the geometry or the handle has no subvolume, so
+  a missing handle adds no text. `appendIndexLabel` appends `"name"` only for `INDEX_TYPE` data
+  with a non-empty name. Test 8.3-g passed: the info label contains `"cytosol"` for a pixel of
+  that handle, and the name is absent when no provider is set.
+  `ImagePlaneManagerPanelAccessibilityTest`: 2 tests, 0 failures, headless, Java 17, 2026-10-06.
 - **Rationale:** 1.4.1: compartment identity is readable without hue. This mirrors how the results
   viewer already names compartments.
-- **§15 C governs 4.4:** the hover name is required. G1/G2 also require an accessible region list
-  and a keyboard-selected readout, so identification does not depend on hover, plus measured
-  palette and boundary contrast (#2139).
+- **§15 C governs 4.4:** the hover name is required and is in place. G1/G2 also require an
+  accessible region list and a keyboard-selected readout, so identification does not depend on
+  hover, plus measured palette and boundary contrast (#2139).
 - **Risk:** low for the added hover text. The region list and keyboard readout are additional work.
-- **Verify:** test 8.3-g, then the §15 C no-hover identification check.
+- **Verify:** test 8.3-g passed. The §15 C no-hover identification check is still open.
 
 ### Phase 5 — Spatial colormap (MUST for the #1603 palette clause)
 
-**5.1** `vcell-core/src/main/java/cbit/image/DisplayAdapterService.java`
+**5.1–5.5 code is in the working tree** (2026-10-06, not committed). BlueRed stays the desktop
+default. Rainbow stays the field-viewer default. Automated checks passed:
+`DisplayAdapterServiceColormapTest` 3 tests, 0 failures; `ExportSpecsColorModeFallbackTest`
+3 tests, 0 failures (headless, Java 17). `node webapp-viewer/test/colormap_lut.mjs` reports
+Cividis endpoints `[0,34,78]` and `[254,232,56]` and strictly increasing CIELAB L* over 256
+entries. The first run did not execute pytest. The Phase 6 evidence log later records
+`test_colormap.py` as 1 passed. Mixed-version export (8.8-b), client capability negotiation, Q5 release authorization,
+and the retained-BlueRed full-criterion review are still open. This phase does not close
+#1605, #1603, or the §9 / §16 gate.
+
+| Section | Status | What is done |
+|---|---|---|
+| **5.1** Cividis model | Implemented | `CIVIDIS`, `createCividisColorModel` (248 samples plus 8 reserved slots), `createCividisSpecialColors`, `addStandardColorModels` (Gray, BlueRed, Cividis), `LinkedHashMap` registration order. License note is in `CividisColorTable` and `webapp-viewer/colormap.js`. |
+| **5.2** Call sites | Implemented | `PDEDataContextPanel`, `KymographPanel` (B/W checkbox still toggles Gray/BlueRed), `PDEOffscreenRenderer`, `RasterExporter` (the Gray↔BlueRed special-color swap is gone), `DisplayImageOp`, `ImagePaneScrollerTest`. `IMGExporter` still requests BlueRed and does not register models; the renderer it reaches now uses `addStandardColorModels`. `MediaSettingsPanel` names Gray, BlueRed, or Cividis. |
+| **5.3** Export fallback | Partial | An unregistered mode logs a warning and renders BlueRed. Unknown ids are not stored under the requested name. Client negotiation and a real old-server test are not done. |
+| **5.4** Default | Kept | `setActiveColorModelID(BLUERED)` remains after registration. Q3 has no approved default change. |
+| **5.5** Field viewer | Implemented in source | Rainbow \| Cividis selector, default Rainbow. The kymograph and `CIVIDIS_RGB` share one table. The selector was switched in the page without a dataset. `setTable` / `setTuple4` / `forceBuild` were not run against the VTK WebAssembly bundle. |
+
+**5.1** `vcell-core/src/main/java/cbit/image/DisplayAdapterService.java` — ✅ implemented (working tree)
 - **Change:**
   - Add `public static final String CIVIDIS = "Cividis"` and `createCividisColorModel()`: 248 data
     entries from the published cividis table (Nuñez et al. 2018 / matplotlib `_cividis_data`,
@@ -752,9 +815,25 @@ and `AbstractVisualizationPanel.LineIcon` (`:21`) (MUST)
     BlueRed and Cividis **in that order**.
   - Make `fetchColorModelIDs` (`:353`) return registration order (switch `colorModels` to a
     `LinkedHashMap`, or sort by a fixed order).
-- **Verify:** tests 8.2-b/c.
+- **Result:** `CividisColorTable.RGB` holds the 256 published colors as 8-bit RGB. The Matplotlib
+  BSD-3-Clause note and the Nuñez, Anderton, and Renslow 2018 citation
+  (doi:10.1371/journal.pone.0199239) are in that class and in `webapp-viewer/colormap.js`.
+  Indices 25, 42, and 101 have green raised by one level so stored CIELAB L* is strictly
+  increasing; that is a quantization repair. `createCividisColorModel` samples 248 entries with
+  `round(i * 255 / 247)` and leaves the last 8 slots unused. `colorModels` is a `LinkedHashMap`.
+  `addStandardColorModels` registers Gray, BlueRed, then Cividis. `createCividisSpecialColors`
+  gives each of the eight states its own color and `specialStateLabel`. The "reset to default"
+  action in `DisplayAdapterServicePanel` uses those Cividis special colors when Cividis is active.
+- **Verify:** tests 8.2-b/c passed (2026-10-06, headless, Java 17).
+  `DisplayAdapterServiceColormapTest`: 3 tests, 0 failures. Order is Gray, BlueRed, Cividis.
+  L* increases over the 248 data entries. `setActiveColorModelID("Cividis")` succeeds. Each
+  special color contrasts at least 3:1 with both stored endpoints and has a unique label. An
+  interior gradient sample can fall under 3:1 against an indicator. That sample is the
+  measurement gradient. The state name is the non-color cue. Q4 is not closed: NaN, selection,
+  and controls still need their own checks, and a label in the API is not a shipped
+  assistive-technology pass.
 
-**5.2** Replace the hand registration with `addStandardColorModels`:
+**5.2** Replace the hand registration with `addStandardColorModels` — ✅ implemented (working tree)
 - `vcell-client/.../simdata/gui/PDEDataContextPanel.java:1091`
 - `vcell-client/.../client/data/KymographPanel.java:2290` (keep its Gray/BlueRed toggle at `:2521`)
 - `vcell-core/.../export/server/PDEOffscreenRenderer.java:293`
@@ -763,53 +842,134 @@ and `AbstractVisualizationPanel.LineIcon` (`:21`) (MUST)
 - `vcell-vmicro/.../op/display/DisplayImageOp.java:124`
 
 Also update `IMGExporter`, and `MediaSettingsPanel.java:518`'s "click 'Gray' or 'BlueRed'" text.
+- **Result:** those five sites call `addStandardColorModels`. `KymographPanel`'s B/W checkbox
+  still sets Gray or BlueRed only. `RasterExporter` registers the three models once, before the
+  variable loop, so Gray is no longer stored with BlueRed's special colors. `IMGExporter` still
+  builds a BlueRed `DisplayPreferences` and does not register models; the renderer it reaches
+  now uses `addStandardColorModels`. `MediaSettingsPanel` names the mode from `getColorMode()`
+  and tells the user to click Gray, BlueRed, or Cividis. Cividis default special colors are
+  recognized, so they are not reported as user-defined. `ImagePaneScrollerTest`'s value-model
+  path uses the same helper. Its index-model path still registers Gray and BlueRed without
+  special colors. Static check 8.4-c: the hand-registration pattern
+  `createBlueRedColorModel(), DisplayAdapterService.createBlueRedSpecialColors` has no matches.
+  The value-model pair lives inside `addStandardColorModels` without that class prefix.
 
-**5.3** Export compatibility guard: in `ExportSpecs.setupDisplayAdapterService` (`vcell-core`,
-`:190`), if the requested `colorMode` isn't registered, log a warning and fall back to `BLUERED`
-instead of throwing.
+**5.3** Export compatibility guard — ✅ server fallback implemented; client negotiation open
+- **Change:** in `ExportSpecs.setupDisplayAdapterService` (`vcell-core`, `:190`), if the
+  requested `colorMode` isn't registered, log a warning and fall back to `BLUERED` instead of
+  throwing.
+- **Result:** an unregistered mode logs the requested id and `BlueRed`, then
+  `setActiveColorModelID(BLUERED)`. A registered Cividis request stays Cividis. If BlueRed
+  itself is missing, the existing exception remains. The incoming `DisplayPreferences` object
+  is left as the client sent it. Test 8.2-e passed: `ExportSpecsColorModeFallbackTest`, 3 tests,
+  0 failures, headless, Java 17, 2026-10-06.
 - **Why:** it protects requests reaching an upgraded server. A change in the new server cannot
   modify an already deployed old server. Before exposing Cividis, implement and test client-side
   capability negotiation or gate on an upgraded server; otherwise warn and send a supported ID.
   Never silently mislabel exported colors. Test the actual mixed-version deployment.
+- **Still open:** no client capability check, and no real old-server run (8.8-b, §10 Q5). The
+  unit fallback is not that deployment test.
 - **Deploy order:** export server (`vcell-server`/data service) **before** a client that exposes
   Cividis. Deployment requires the normal release authorization; see §10 Q5.
 
-**5.4** Default colormap
+**5.4** Default colormap — ✅ kept (working tree)
 - **Change:** keep **BlueRed as the default** (`PDEDataContextPanel.java:1099`,
   `KymographPanel.java:2292`) unless §10 Q3 records an approved change.
+- **Result:** both panels still call `setActiveColorModelID(BLUERED)` after
+  `addStandardColorModels`. Q3 has no approved default change. The field viewer still starts
+  on Rainbow.
 - **Rationale:** changing the default changes every user's figures and movies.
 - **Acceptance:** a retained BlueRed default still has to pass every applicable criterion. §15 C
   limits the heat-map essential-presentation exception to a measurement gradient that meets the
   exception's conditions. Axes, legends, controls, focus, selection, NaN and out-of-range states,
-  and numeric access stay in scope. A failing default blocks closure.
+  and numeric access stay in scope. A failing default blocks closure. That full check is not
+  done. Keeping the default is not a pass of those criteria.
 
-**5.5** `webapp-viewer/viewer.js` (`:792`, `:2329`)
+**5.5** `webapp-viewer/viewer.js` (`:792`, `:2329`) — ✅ implemented in source (working tree)
 - **Change:** add a colormap selector (Rainbow | Cividis), backed by a 256-entry cividis table
   shared by the vtkLookupTable (`setTable` with explicit RGBA) and `KYMO_LUT`, so the 3D view and
   the kymograph stay in agreement.
-- **Verify:** extend `webapp-viewer/test` with a LUT-endpoint and monotonic-lightness test.
+- **Result:** `index.html` has a Rainbow | Cividis control, default Rainbow. `colormap.js`
+  exports `CIVIDIS_RGB` and `RAINBOW_RGB`. The kymograph image and its color bar both read
+  `fieldLut()`, so they follow the selection. Cividis fills a `vtkUnsignedCharArray` with
+  `setTuple4` and installs it with `lut.setTable`. Rainbow keeps `setHueRange(0.66667, 0)`.
+  Returning from Cividis calls `forceBuild` so a later `build()` does not leave the Cividis
+  bytes in place. On 2026-10-06 the page was opened without a dataset: the selector switched
+  to Cividis and back to Rainbow, and the module loaded. The VTK WebAssembly bundle is not in
+  this checkout, so `setTable`, `setTuple4`, and `forceBuild` were not run against a 3D view.
+- **Verify:** `webapp-viewer/test/colormap_lut.mjs` and `test_colormap.py`.
+  `node webapp-viewer/test/colormap_lut.mjs` (2026-10-06) reports length 768, low
+  `[0, 34, 78]`, high `[254, 232, 56]`, and strictly increasing L* over 256 entries. Rainbow's
+  high end is `[255, 0, 0]`. Pytest was not installed in the default Python during the first Phase 5 run. The Phase 6
+  evidence log (`docs/accessibility/evidence/2026-10-phase-6-field-viewer/logs/pytest-runs.txt`)
+  later records `pytest webapp-viewer/test/test_colormap.py` as 1 passed.
 
 ### Phase 6 — Field viewer text and traces (MUST, web content)
 
-**6.1** `webapp-viewer/viewer.js` (`:1478`)
+**Completed sections (automated checks 2026-10-06).** Items 6.1 and 6.2 are implemented and
+verified on the working tree (`chore/vcell#1605` @ `e21a3024c4` plus these uncommitted edits).
+Test 8.5 passes for every changed pair (32/32, computed on source colors with
+`.agents/cvd_analysis.py`). The field-viewer browser suites pass (193 tests, Chromium). Test
+8.6-b filtered captures for this surface and 8.7 manual QA are NOT RUN — PENDING HUMAN REVIEW.
+Evidence: `docs/accessibility/evidence/2026-10-phase-6-field-viewer/` (manifest, scripts, logs).
+
+**6.1** `webapp-viewer/viewer.js` (`:1478`) — ✅ implemented in source (working tree, 2026-10-06)
 - **Change:** `SERIES_COLORS` ← the six `CVD_SAFE_LIGHT` colors. On dark `color-scheme`, use a dark
   variant verified at ≥3:1 on `#12121a`/`#121212` (compute with the script; §10 Q6).
+- **Result:** light scheme draws `CVD_SAFE_LIGHT` verbatim. The dark variant
+  (`#6c6c6c, #999933, #556998, #93613a, #6c93c0, #d38691`) was derived with
+  `.agents/cvd_analysis.py`: linear-light lightening to ≥3.4:1 on both dark canvases, then
+  pairwise repair to min pairwise CAM02-UCS ΔE′ ≥15 under Machado protan/deutan/tritan
+  (15.3–15.6; the naive 3:1-minimum palette fails at 6.1). Selected and swapped live via
+  `matchMedia('(prefers-color-scheme: dark)')`. Probes key on a color *index* so a scheme flip
+  recolors markers, traces and swatches consistently; `MAX_PROBES` is now 6.
 - **Change:** probe and stats traces get `stroke-dasharray` from the same dash sequence, and list
   swatches become short SVG line samples.
+- **Result:** `seriesDash(i)` mirrors `ColorUtil.seriesDash`'s 8-slot cycle; probe polylines,
+  Stats mean curves and both legends' 18×10 SVG line samples draw the series' own dash. With 6
+  colors the `(color, dash)` pair cycle repeats only at series 24, past either panel's capacity;
+  the Phase 2 identity rules (§15 C) still govern beyond that. Swatches are `aria-hidden` samples
+  beside text labels, so identity never rests on color or dash alone.
 - **§15 C and E govern Phase 6:** the Phase 2 identity rules apply when a dash pattern repeats or
   a style cannot be shown. These color and contrast edits cover the field viewer's color findings.
   The remaining §13 rows for this web surface are §15 E.
+- **Verify:** test 8.5 (below); `pytest webapp-viewer/test` (193 passed, Chromium, 2026-10-06);
+  palette derivation and pair logs in the evidence directory.
 
-**6.2** `webapp-viewer/index.html`
+**6.2** `webapp-viewer/index.html` — ✅ implemented in source (working tree, 2026-10-06)
 - **Change:** replace `#2a7` text/pressed background with a color ≥4.5:1 (for example `#157347`,
   5.87:1 on white). `.stale` background ≥4.5:1 with white text. `.status.err` gets a dark-scheme
   override ≥4.5:1 (for example `#ff6b6b`, 6.75:1 on `#121212`), using `@media
   (prefers-color-scheme: dark)`.
+- **Result:** `#2a7` → `#157347` (5.87:1 on white) in `.readout em`, `.readout.pick`,
+  `.plot-panel .curve`/`.curve-dot` and the pressed-button background/border; `.stale` and
+  `.note.warn` `#d70` → `#a85d00` (white text 4.96:1; warn text 4.96:1 on white). A
+  `@media (prefers-color-scheme: dark)` block sets `.readout em`/`.readout.pick`/
+  `.curve`/`.curve-dot` to `#4dc47d` (8.48:1), `.status.err` to `#ff6b6b` (6.75:1) and
+  `.note.warn` to `#ffa43d` (9.48:1) on `#121212`. `.status.err` keeps `#c0392b` (5.44:1) in the
+  light scheme. `.readout em`'s dark pair is computed through the parent's `opacity: .8`
+  compositing (4.82:1 effective).
 - **Verify:** test 8.5 (computed on source colors).
+- **Result:** 32/32 changed pairs pass (script and output in
+  `docs/accessibility/evidence/2026-10-phase-6-field-viewer/logs/`). The §14/#1603 dark-background
+  definition-of-done item in 1.2 is satisfied for the field viewer's series and text colors; the
+  Swing dark palette (#1604) remains separate.
 
 ### Phase 7 — Text contrast and wording (MUST, #1605)
 
-**7.1** `vcell-core/src/main/java/cbit/vcell/client/constants/GuiConstants.java`
+**Completed sections (2026-10-07).** Tasks 7.1 and 7.2 are implemented on the working tree
+(`chore/vcell#1605` @ `e21a3024c4` plus these uncommitted edits; not committed, no PR). Tests
+8.2-d and 8.3-h pass (1 test each, 0 failures, headless, Java 17). The help was rebuilt with the
+repo's doc tooling and the verify scan passes. Per §15 C, the two 7.1 call sites are the first
+consumers only: the remaining S8 renderers/panels (#2140), selected-background checks, and the
+full §15 F help sweep are still open. This phase does not close #1605 or the §9 / §16 gate.
+
+| Section | Status | What is done |
+|---|---|---|
+| **7.1** `GuiConstants` tokens | Implemented | `ERROR_TEXT_COLOR` (`0xA40000`) and `WARNING_TEXT_COLOR` (`0x8A4B00`) with the measured contrast javadoc. `MathOverridesTableCellRenderer` changed rows use `ERROR_TEXT_COLOR`. `SimulationConsolePanel` prepends `[Error] `, `[Warning] `, `[Stopped] ` and uses `ERROR_TEXT_COLOR` (Error, Stopped, bold) / `WARNING_TEXT_COLOR` (Warning). |
+| **7.2** Help text | Implemented | All seven H1 pages reworded to name the non-color cue; help rebuilt (`DocumentCompiler` via `mvn process-classes -Pbuild-documentation`); verify `rg` returns only reworded lines (plus the pre-existing `parameterEstimationMethods.xml` "again reduced" false positive). |
+
+**7.1** `vcell-core/src/main/java/cbit/vcell/client/constants/GuiConstants.java` — ✅ done (2026-10-07)
 - **Change:** add `ERROR_TEXT_COLOR = new Color(0xA4,0,0)` (8.14:1 on white, 6.98:1 on the
   alternating row `#e8edff`, 7.81:1 on the hover row `#FDFCDC`) and
   `WARNING_TEXT_COLOR = new Color(0x8A,0x4B,0)` (6.80, 5.83 and 6.52:1).
@@ -820,8 +980,30 @@ instead of throwing.
   console, with textual severity and programmatic status, including selected backgrounds. The two
   call sites above are the first consumers, not the full set (#2140).
 - **Verify:** tests 8.2-d, 8.3-h, then every remaining S8 consumer.
+- **Result:**
+  - `GuiConstants` carries both constants with the measured contrast values in javadoc, naming
+    the two first consumers and #2140 for the rest. The change is additive;
+    `ProblematicTextFieldBorder` is untouched.
+  - `MathOverridesTableCellRenderer` changed rows now use `GuiConstants.ERROR_TEXT_COLOR`
+    (behavior otherwise unchanged: red text only for non-default rows outside the Default
+    column). `SimulationConsolePanel.appendToConsole` inserts `[Error] boom`, `[Warning] …`,
+    `[Stopped] …` tags; Error and Stopped use `ERROR_TEXT_COLOR` bold, Warning uses
+    `WARNING_TEXT_COLOR`; `Notification` stays untagged plain text. The method is
+    package-visible and `accessibleConsoleText()` exposes the text pane for tests (8.3-h).
+  - Test 8.2-d passed: `GuiConstantsContrastTest` (new, `@Tag("Fast")`, vcell-core) — 1 test,
+    0 failures; both constants ≥4.5:1 on white, `#e8edff`, and `#FDFCDC`.
+  - Test 8.3-h passed: `SimulationConsolePanelAccessibilityTest` (new, `@Tag("Fast")`,
+    vcell-client) — 1 test, 0 failures; tags present at line starts, foregrounds equal the
+    constants, Notification untagged.
+  - Command, headless, Java 17 (Homebrew `openjdk@17`), 2026-10-07:
+    `mvn --batch-mode test -pl vcell-client -am -Dgroups=Fast -Djava.awt.headless=true -Dtest=GuiConstantsContrastTest,SimulationConsolePanelAccessibilityTest -Dsurefire.failIfNoSpecifiedTests=false`
+    — BUILD SUCCESS (reactor vcell-util through vcell-client). No other tests reference the
+    changed classes. Uncommitted on `chore/vcell#1605`.
+  - **Still open:** every remaining S8 renderer/panel consumer and the selected-background
+    variant of the renderer color (#2140, §15 C); `GuiConstants.ProblematicTextFieldBorder`
+    still uses `Color.red` (border, not text; S5/#2136 scope).
 
-**7.2** Help text (`vcell-client/UserDocumentation/originalXML/...`, H1 list)
+**7.2** Help text (`vcell-client/UserDocumentation/originalXML/...`, H1 list) — ✅ done (2026-10-07)
 - **Change:** name the non-color cue. For example, "changed values appear in red **and have an
   entry in the Override column**"; "Blue-Red, Gray or Cividis color map". Rebuild the help per the
   repo's doc tooling.
@@ -829,6 +1011,77 @@ instead of throwing.
   JavaHelp and HTML. The H1 examples are the seed list. §14 discovery can add further pages.
 - **Verify:** `rg -n -i "appear(s)? in red|in green|in red" vcell-client/UserDocumentation` returns
   only reworded lines, and the shipped help matches §15 F.
+- **Result:** all seven H1 pages reworded (each names a non-color cue alongside the color):
+  - `simulationEditor.xml`: changed values "appear in red and have an entry in the New
+    Value/Expression column" (the real column name; `MathOverridesTableModel` blanks that cell
+    for default rows).
+  - `simulations.xml`: changed parameters "are listed in this section of the simulation summary
+    and their values are shown in red" (the section itself lists only changed parameters).
+  - `PP_Species.xml`: errors "will be listed in the Problems tab, where each problem is described
+    in text".
+  - `PP_ReactionRulesEditor.xml`: fully unspecified sites are "shown in white and denoted by a
+    grey question mark"; sites needing binding status/state "are shown in green" and "can also be
+    found without relying on color by right-clicking a site to check whether its binding status or
+    state is set".
+  - `PathwayDiagramView.xml`: matches are "(the diagram is filtered to the matching entities,
+    which are also marked in red)".
+  - `PathLink.xml`: linked objects "appear in red … also marked with a letter 'L'" (the page's own
+    introduction documents the 'L' mark).
+  - `SimResultsDataRange.xml`: colormap choices are "Grayscale, Blue-Red or Cividis" (matching the
+    post-Phase-5 `DisplayAdapterServicePanel` radio buttons), and out-of-range values "are
+    identified by the labeled swatches listed below (BM, AM, NN, IL, NR)".
+  - Help rebuilt 2026-10-07 via the `build-documentation` profile
+    (`mvn --batch-mode process-classes -pl vcell-client -am -Pbuild-documentation`, after
+    removing `target/classes/vcellDoc`); BUILD SUCCESS, and all seven reworded phrases are present
+    in the generated `target/classes/vcellDoc/topics/...` HTML. The compiler's "not referenced in
+    either table of contents" messages for `SimResultsDataRange` and `WarningsList` are pre-existing
+    TOC gaps, unchanged by this edit.
+  - Verify `rg` passes: the pattern matches only the reworded lines above plus the pre-existing
+    false positive in `parameterEstimationMethods.xml` ("population is aga**in red**uced").
+  - **Still open (§15 F):** the full sensory-only sweep beyond the H1 seed list — a broader scan
+    found `Observables.xml:17` / `PP_Observables.xml:16` ("A site that has a defined state is
+    always shown in yellow") as candidates — and the §15 F rebuilt-artifact verification (JavaHelp
+    search index, published HTML).
+
+### Phases 0–7 completion score (verified 2026-10-07)
+
+**90/100.** This is the unweighted mean of the 24 numbered tasks in phases 0–7 (2,160 / 24).
+It is a task score, not a conformance claim. §9, §16, manual 8.7, and the §15 C table below
+are outside this number. Rechecked against this working tree on `chore/vcell#1605` at
+`e21a3024c4` plus the uncommitted phase 4–7 edits, the `docs/1605-color-audit` branch, and
+PR #2141.
+
+A task scores 100 when its change is present and its own automated verify step has a recorded
+pass. A lower score is the part of that task the phase text still leaves open. Human review
+that the phase text places outside the numbered task does not lower the task, and it also
+does not close the phase.
+
+| Task | Score | Why |
+|---|---|---|
+| **0.1** Audit file | 85 | `docs/accessibility/color-audit.md` is on `docs/1605-color-audit`. PR #2141 is open and review is required (2026-10-07). It is not merged and not on this branch. |
+| **0.2** Issue filing | 100 | #1603 sub-issues are 1604, 1605, 1606, and 2132–2140. |
+| **1.1** `ColorUtil` | 100 | `CVD_SAFE_LIGHT`, `seriesColor`, and `seriesDash` are present. |
+| **1.2** Contrast test | 100 | The Fast test is recorded as passed. The dark-background case stays disabled until #1604, which is what the task specifies. |
+| **2.1** `Plot2DPanel` | 85 | Automated dash tests are recorded. The task also names manual 8.7, which is not run. |
+| **2.2** Legend icon | 100 | Test 8.3-c is recorded as passed. |
+| **2.3** Vary line styles | 100 | The checkbox defaults on and the bean tests are recorded as passed. |
+| **2.4** Status text | 100 | Test 8.3-d is recorded as passed. |
+| **2.5** Multisource plot | 100 | `seriesColor` is used. Check 8.4-b is recorded as clean. |
+| **3.1** Langevin palette | 100 | Both visualization panels assign `CVD_SAFE_LIGHT`. |
+| **3.2** Langevin strokes | 85 | 13 tests are recorded as passed. The phase still requires recapture of the stale line-plot evidence. |
+| **4.1** Selected stroke | 100 | `SELECTED_STROKE` is 2.5 px. Test 8.3-f is recorded as passed. |
+| **4.2** Reaction edges | 100 | `usesSelectedStroke` includes the start species. |
+| **4.3** Rule edges | 100 | The same override is present. |
+| **4.4** Hover name | 100 | `indexLabelProvider` is present. Test 8.3-g is recorded as passed. |
+| **5.1** Cividis model | 100 | Tests 8.2-b and 8.2-c are recorded as passed. |
+| **5.2** Shared registration | 100 | The listed call sites use `addStandardColorModels`. |
+| **5.3** Export fallback | 55 | Test 8.2-e is recorded as passed. Client negotiation and the real old-server run (8.8-b) are not done. |
+| **5.4** BlueRed default | 50 | BlueRed is still the default. The task's retained-default criterion review is not done. |
+| **5.5** Field colormap | 80 | The selector is in the page. `test_colormap.py` is 1 passed in the Phase 6 log. `setTable` was not run against the VTK WebAssembly bundle. |
+| **6.1** Series traces | 90 | Light and dark palettes and the dash samples are present. The evidence log records 193 Chromium tests passed. Filtered-image review 8.6-b is not run. |
+| **6.2** Text contrast | 95 | `#157347` and the dark overrides are present. The 8.5 log records 32/32 pairs passing. |
+| **7.1** Error and warning text | 70 | The two constants and the first two consumers are tested. The remaining S8 renderers are not done. |
+| **7.2** Help wording | 65 | The seven H1 pages are reworded and the help target was rebuilt. `Observables.xml` and `PP_Observables.xml` still say a defined state is shown in yellow, and the published help check is open. |
 
 ### Color work required by §15 C and not completed by Phases 0–7
 
@@ -847,7 +1100,7 @@ The issue numbers are ownership. They do not move the work out of #1605.
 | S6 constraints UI | #2137 | Shipped-artifact reachability proof, or remediation |
 | S7 match-row highlight | #2138 | Match label or icon, and accessible cell state, including selected rows |
 | X4 webapp-ng | #2135 | Badge contrast, the UConn accessibility link, and the §15 E route audit |
-| C1–C4 numeric and special states | — | Keyboard and programmatic value access, and special-state cues, on the client and the export server |
+| C1–C4 numeric and special states | — | Phase 5 registers Cividis and names its special states. Still required: keyboard and programmatic value access, client capability negotiation, and a real new/old export-server run |
 
 Keyboard, focus, names and roles, reflow, media, input, and the remaining §13 rows are §§15 B, D,
 E, and F. Those packages are mandatory for the full WCAG conformance gate.
@@ -871,6 +1124,13 @@ E, and F. Those packages are mandatory for the full WCAG conformance gate.
 | 8.2-c | same | Each special state is distinguishable by label/pattern and accessible value/state readout; required graphical indicators pass ≥3:1 against actual adjacent colors. Test endpoints and interior neighbors | State ambiguous, required contrast fails, or exemption lacks criterion-specific evidence |
 | 8.2-d | `GuiConstantsContrastTest` | `ERROR_TEXT_COLOR` and `WARNING_TEXT_COLOR` ≥4.5:1 vs white and vs `#e8edff` | < 4.5:1 |
 | 8.2-e | `ExportSpecsColorModeFallbackTest` | Unknown `colorMode` → BlueRed, with no exception | Exception |
+
+Recorded 2026-10-06, headless, Java 17, working tree, not a §9 pass:
+`DisplayAdapterServiceColormapTest` (8.2-b and 8.2-c) 3 tests, 0 failures;
+`ExportSpecsColorModeFallbackTest` (8.2-e) 3 tests, 0 failures. 8.2-c checks the Cividis
+special colors against both stored endpoints and records an interior gradient neighbor. It does
+not close Q4 for NaN, selection, or controls, and it is not an assistive-technology pass.
+8.2-a and 8.2-d were not part of this run.
 
 ### Integration / UI Tests (headless `BufferedImage` rendering, `@Tag("Fast")`)
 
@@ -897,6 +1157,12 @@ E, and F. Those packages are mandatory for the full WCAG conformance gate.
 Treat `rg` exit code 1 as the expected no-match result for negative scans; any command error is
 BLOCKED, not PASS. Static scans supplement runtime validation and cannot prove the absence of all
 color failures.
+
+Recorded 2026-10-06 for 8.4-c: `rg` of
+`createBlueRedColorModel(), DisplayAdapterService.createBlueRedSpecialColors` under `*.java`
+returned no matches. The value-model pair is inside `addStandardColorModels` without that class
+prefix. `ImagePaneScrollerTest` still registers BlueRed as an index model, without special
+colors, so that line is outside this pattern.
 
 ### Contrast Verification
 
@@ -931,6 +1197,9 @@ in §14, including retained defaults and custom/theme backgrounds, under §§15�
 | 8.8-c | Compare fixed plots to a pinned pre-change commit with styles/nodes on and off, linear/log/step/histogram and clipping | Scientific values, transforms, axes, extrema and sample/series mapping unchanged; reviewed raster differences limited to documented paths/joins/markers/outlines | Lost/reordered data, shifted coordinates, hidden extrema or unexplained raster difference |
 | 8.8-d | `SmoldynFileWriter` golden output (existing tests / MathGen regression) | Unchanged | Changed (means `generateAutoColor` was touched) |
 | 8.8-e | Narrow-spike check: a 1-sample spike on a dashed series is visible with styles on, or with the toggle off | Visible in at least one mode, and the toggle documented | Spike invisible in both |
+
+8.8-b is not run. The 8.2-e unit fallback on a new server is a different check. It does not show
+what an already deployed old server does, and the client does not yet detect an unsupported mode.
 
 ---
 
@@ -1003,7 +1272,7 @@ historical evidence only. Test omissions must be recorded as BLOCKED/NOT TESTED,
 | Q4 | Special colors | Implement non-color state cues plus actual adjacent-color checks; essential-gradient exception does not automatically cover NaN/selection/controls. No waiver-as-PASS | Color and conformance gates |
 | Q5 | Export deployment compatibility | Test upgraded server and real old-server/client negotiation or gating before exposing Cividis; no claim that new server code repairs an old server | Cividis enablement/export gate |
 | Q6 | Themes/fonts | Implement #1604/#1606 work under §15; test actual supported OS themes, font scaling and high contrast | Full release and affected #1605 checks |
-| Q7 | Cividis attribution | Verify upstream data license and include required attribution before distribution | Shipping affected data |
+| Q7 | Cividis attribution | Verify upstream data license and include required attribution before distribution. The Matplotlib BSD-3-Clause note and the 2018 paper citation are in `CividisColorTable` and `webapp-viewer/colormap.js` (2026-10-06). That comment is not a distribution sign-off | Shipping affected data |
 | Q8 | Rendering fidelity/performance | Replace incompatible channel-only raster assertion with revised 8.8-c; benchmark pinned datasets and document performance budgets before implementation | Scientific acceptance |
 | Q9 | Platform/AT support | Record real OS/JDK/browser/AT versions and supported bridges; add missing semantics or functional accessible alternatives. Unsupported combinations are limitations, never silent N/A | Full claim |
 | Q10 | Unknown surfaces/criteria | Phase A discovery assigns a named implementer and reviewer to every row; discovery remains open as new views are found | Inventory and release gate |
@@ -1042,7 +1311,8 @@ Retained as provenance. The 2026-09-30 cuts below are not the current scope. §�
   - `axe-core` on Swing: still inapplicable to Swing. §15 E requires a repeatable accessibility
     scan on `webapp-ng` and `webapp-viewer`.
   - A new desktop colormap selector: still unnecessary, because the desktop selector is already
-    dynamic. Phase 5.5 still adds the field-viewer selector.
+    dynamic. The field-viewer Rainbow | Cividis selector is in the working tree (5.5). Its
+    `setTable` path has not been run against the VTK WebAssembly bundle.
   - REC-04 global theme setting: outside the color-only slice of #1605. §15 B requires the #1604
     theme and contrast work for the WCAG gate.
 - **Reprioritized**
@@ -1265,8 +1535,8 @@ to PASS. The categorical palette metric is an engineering aid, not a WCAG succes
 |---|---|---|
 | P1–P5 / W1 | Stable series identity across filtering/reordering and all plot frameworks; expose direct labels/markers and keyboard-accessible series isolation/data access | Exercise 1, 6, 8, 24, 25 and larger realistic series counts; no identity collision left dependent on hue |
 | Repeated dash patterns | The existing eight-slot dash cycle is a primitive, not the identity guarantee. Add another non-color discriminator or accessible selection/isolation when patterns repeat | Match **every** displayed curve to its name with grayscale/CVD simulation; test nodes off, styles off, custom colors, overlaps and hidden series |
-| D1/D2/D4 and #2140 | Width/shape/label cues for selected edges, selected neighbors and glyph errors; fix all newly found red status text | Both reaction/rule diagrams, arrowheads, dense diagrams, error and selection co-occurrence; keyboard/AT state inspection |
-| G1/G2 and #2139 | Region names/handles plus accessible region list and keyboard-selected readout; measured palette/boundaries | Identify every region with no hue and no hover dependency; contrast-check meaningful boundaries |
+| D1/D2/D4 and #2140 | Width cue for selected edges and selected neighbors is implemented in 4.1–4.3. Still required: a shape or label where width does not identify the state, glyph-error cues, and the red status-text fixes | Both reaction/rule diagrams, arrowheads, dense diagrams, error and selection co-occurrence; keyboard/AT state inspection. 8.3-f passed; manual 8.7 is open |
+| G1/G2 and #2139 | Hover name is implemented in 4.4. Still required: accessible region list, keyboard-selected readout, and measured palette/boundaries | Identify every region with no hue and no hover dependency; contrast-check meaningful boundaries. 8.3-g passed |
 | X1 / #2132 | Presentation-only labels/outlines/patterns and keyboard site selection/isolation in SpringSaLaD; preserve persisted scientific colors | Distinguish sites under CVD/grayscale; unchanged model serialization and solver input |
 | X2 / #2133 | Named ROI list, non-color boundary/selection cues and keyboard alternatives for region management/editing where required | Create/select/edit regions without hue; keyboard completion and actual ROI data equality |
 | X3 / #2134 | FRAP text/background fixes plus readable status and accessible cell semantics | Normal/selected/alternate/hover/disabled states and non-identifiable results |
@@ -1276,7 +1546,7 @@ to PASS. The categorical palette metric is an engineering aid, not a WCAG succes
 | S7 / #2138 | Add explicit match-state label/icon and accessible table-cell state | Identify match rows without yellow background, including selected rows |
 | X4 / #2135 | Repair web badge contrast and required UConn accessibility link; include all routes in web audit | Browser contrast/state tests, link navigation and AT reading |
 | H1 | Fix all sensory-only help instructions and rebuild delivered help | Compare instructions with actual UI and verify HTML/JavaHelp/document output |
-| C1–C4 | Complete client/server Cividis registration, capability handling, state cues and equivalent numeric access | Actual new/old server combinations, output identity, special-state readout and unchanged scientific values |
+| C1–C4 | Shared Cividis registration and endpoint special-color checks are in the working tree (Phase 5). Still required: client capability negotiation, a real new/old server run, and equivalent numeric access where a state is still color-only | Actual new/old server combinations, output identity, special-state readout and unchanged scientific values. 8.2-b/c/e passed; 8.8-b is open |
 
 The heat-map essential-presentation exception applies only where its actual conditions hold. It
 never automatically exempts axes, legends, controls, focus, selection, NaN/out-of-range states or
