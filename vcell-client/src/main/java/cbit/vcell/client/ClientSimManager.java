@@ -1131,7 +1131,7 @@ private void showFenicsServerResults(Simulation simulation) {
 			VCSimulationDataIdentifier vcdID = new VCSimulationDataIdentifier(vcSimID, job);
 			FieldViewerServer.registerBundle(simKey, job,
 					org.vcell.solver.fenics.BundleStore.cached(new org.vcell.solver.fenics.DataServerBundleStore(dataManager, vcdID)),
-					simulation.getName());
+					simulation.getName(), simulation);
 		}
 		int port = FieldViewerServer.startForFenics();
 		if (port < 0) {
@@ -1183,7 +1183,8 @@ private AsynchClientTask reportFenicsBundleTask() {
 			String simKey = (String) hashTable.get(H_FENICS_SIMKEY);
 			Simulation[] sims = (Simulation[]) hashTable.get("simsArray");
 			String simName = sims != null && sims.length > 0 ? sims[0].getName() : null;
-			FieldViewerServer.registerBundle(simKey, 0, bundle, simName);
+			FieldViewerServer.registerBundle(simKey, 0, org.vcell.solver.fenics.BundleStore.directory(bundle), simName,
+					sims != null && sims.length > 0 ? sims[0] : null);
 			int port = FieldViewerServer.startForFenics();
 			if (port < 0) {
 				PopupGenerator.showInfoDialog(getDocumentWindowManager(),

@@ -2171,7 +2171,21 @@ public final class FieldViewerServer {
 
 	/** A bundle read through any store, e.g. from the data server for a cluster run (cached). */
 	public static void registerBundle(String simKey, int jobIndex, org.vcell.solver.fenics.BundleStore store, String simName) {
-		bundleSources.put(simKey + ":" + jobIndex, new FenicsBundleViews.BundleSource(simKey, jobIndex, store, simName));
+		registerBundle(simKey, jobIndex, store, simName, FenicsFunctions.NONE);
+	}
+
+	/**
+	 * A bundle with its simulation, whose VCell functions the viewer then offers alongside the bundle's stored
+	 * variables, evaluated from them ({@link FenicsFunctions}).
+	 */
+	public static void registerBundle(String simKey, int jobIndex, org.vcell.solver.fenics.BundleStore store, String simName,
+			cbit.vcell.solver.Simulation simulation) {
+		registerBundle(simKey, jobIndex, store, simName, FenicsFunctions.fromSimulation(simulation, jobIndex));
+	}
+
+	static void registerBundle(String simKey, int jobIndex, org.vcell.solver.fenics.BundleStore store, String simName,
+			FenicsFunctions functions) {
+		bundleSources.put(simKey + ":" + jobIndex, new FenicsBundleViews.BundleSource(simKey, jobIndex, store, simName, functions));
 		LG.debug("field viewer FEniCSx bundle registered: {} job {} from {}", simKey, jobIndex, store.describe());
 	}
 
