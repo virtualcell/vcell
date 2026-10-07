@@ -12,8 +12,11 @@ package cbit.image.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 
 import javax.swing.JLabel;
+import javax.swing.JRadioButton;
 import javax.swing.JSlider;
 import javax.swing.border.LineBorder;
 import javax.swing.event.ChangeEvent;
@@ -556,6 +559,7 @@ private void imagePlanePanel_Initialize() {
 	getButtonGroup().add(getYAxisCheckbox());
 	getButtonGroup().add(getZAxisCheckbox());
 	initView();
+	showAxisSelection();
 }
 /**
  * Initializes connections
@@ -691,8 +695,52 @@ private void normalAxisChanged() {
         if(getSlider().getMaximum() != max){
         	getSlider().setMaximum(max);
         }
-
+        showAxisSelection();
     }
+}
+
+private static final String SELECTED_SUFFIX = " selected";
+
+/**
+ * Axis choice and slice focus are a word and a black stroke, so the state is readable without hue.
+ */
+private void showAxisSelection() {
+	markAxis(getXAxisCheckbox());
+	markAxis(getYAxisCheckbox());
+	markAxis(getZAxisCheckbox());
+	JSlider sliceSlider = getSlider();
+	sliceSlider.setName("SliceSlider");
+	sliceSlider.setFocusable(true);
+	if (sliceSlider.getClientProperty("slice-focus") == null) {
+		sliceSlider.putClientProperty("slice-focus", Boolean.TRUE);
+		sliceSlider.addFocusListener(new FocusAdapter() {
+			@Override
+			public void focusGained(FocusEvent e) {
+				sliceSlider.setBorder(new LineBorder(Color.BLACK, 3));
+			}
+			@Override
+			public void focusLost(FocusEvent e) {
+				sliceSlider.setBorder(new LineBorder(Color.BLACK, 1));
+			}
+		});
+	}
+	getSliceLabel().setOpaque(true);
+	getSliceLabel().setBackground(Color.WHITE);
+	getSliceLabel().setForeground(Color.BLACK);
+}
+
+private void markAxis(JRadioButton button) {
+	String text = button.getText() == null ? "" : button.getText();
+	if (text.endsWith(SELECTED_SUFFIX)) {
+		text = text.substring(0, text.length() - SELECTED_SUFFIX.length());
+	}
+	button.setText(button.isSelected() ? text + SELECTED_SUFFIX : text);
+	button.setOpaque(true);
+	button.setBackground(Color.WHITE);
+	button.setForeground(Color.BLACK);
+	button.setBorder(new LineBorder(Color.BLACK, button.isSelected() ? 2 : 1));
+	button.setBorderPainted(true);
+	button.getAccessibleContext().setAccessibleName(button.getText());
 }
 /**
  * Sets the imagePlaneMananager property (cbit.image.ImagePlaneManager) value.
@@ -791,18 +839,21 @@ private void updateSliceLabel() {
  */
 private void xAxisCheckbox_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
 	normalAxis(Coordinate.X_AXIS);
+	showAxisSelection();
 }
 /**
  * Comment
  */
 private void yAxisCheckbox_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
 	normalAxis(Coordinate.Y_AXIS);
+	showAxisSelection();
 }
 /**
  * Comment
  */
 private void zAxisCheckbox_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
     normalAxis(Coordinate.Z_AXIS);
+    showAxisSelection();
 }
 	private JSlider getSlider() {
 		if (slider == null) {

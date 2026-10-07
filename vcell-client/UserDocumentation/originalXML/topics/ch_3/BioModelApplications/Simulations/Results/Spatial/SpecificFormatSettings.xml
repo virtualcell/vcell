@@ -55,7 +55,7 @@ Sets the amount of time the movie will take to do one complete play-through.
 <item><bold>Particle Mode </bold> 
 is enabled when a 'particle' variable is chosen for export.  
 Selecting 'Particles' creates 'spheres' rendered at their location in space for the exported slice and times.  
-'Histogram' exports an image where each pixel in a slice is colored according to the number of particles  at the corresponding point in the mesh at each time.
+'Histogram' exports an image of the particle count at each mesh point in a slice at each time. The count is the number of particles at that point; the pixel color shows the same count.
 </item>
 <item><bold>Select Continue...</bold> 
 to continue the export.  A summary of the settings you have chosen  and the resulting export file sized will be displayed.

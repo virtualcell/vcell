@@ -32,6 +32,7 @@ import org.vcell.util.NumberUtils;
 import org.vcell.util.gui.sorttable.SortTableModel;
 
 import cbit.gui.ModelProcessEquation;
+import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.client.desktop.biomodel.BioModelEditorApplicationsTableModel;
 import cbit.vcell.client.desktop.biomodel.BioModelEditorRightSideTableModel;
 import cbit.vcell.client.desktop.biomodel.SelectionManager;
@@ -71,6 +72,20 @@ public class DefaultScrollTableCellRenderer extends DefaultTableCellRenderer {
 	public void disableUneditableForeground() {
 		bEnableUneditableForeground = false;
 	}
+
+	/**
+	 * A network-constraint value that is not the default. The word "changed" is the cue;
+	 * bold text is not used as a contrast substitute.
+	 */
+	protected boolean valueDiffersFromDefault(TableModel tableModel, Object value, int row, int column) {
+		if (!(tableModel instanceof NetworkConstraintsTableModel)
+				|| column != NetworkConstraintsTableModel.iColValue
+				|| !(value instanceof String)) {
+			return false;
+		}
+		Object defaultValue = tableModel.getValueAt(row, NetworkConstraintsTableModel.iColDefault);
+		return defaultValue instanceof String && !value.equals(defaultValue);
+	}
 	
 	/**
 	 * Insert the method's description here.
@@ -99,17 +114,6 @@ public class DefaultScrollTableCellRenderer extends DefaultTableCellRenderer {
 				setBackground(row % 2 == 0 ? table.getBackground() : everyOtherRowColor);				
 			}
 			
-			if(table.getModel() instanceof SpatialProcessTableModel /* && column == SpatialProcessTableModel.COLUMN_SpatialProcess_SPATIALOBJECTS */) {
-				boolean found = isMatchWithSelectedObject(table, row);
-				if(found == true) {
-					setBackground(Color.yellow);
-				}
-			} else if(table.getModel() instanceof SpatialObjectTableModel /* && column == SpatialObjectTableModel.COLUMN_SpatialObject_NAME */) {
-				boolean found = isMatchWithSelectedProcess(table, row);
-				if(found == true) {
-					setBackground(Color.yellow);
-				}
-			}
 			setForeground(table.getForeground());
 		}
 		
@@ -117,14 +121,11 @@ public class DefaultScrollTableCellRenderer extends DefaultTableCellRenderer {
 		if (bEnableUneditableForeground && (!table.isEnabled() || !tableModel.isCellEditable(row, column))) {
 			if (!isSelected) {
 				setForeground(uneditableForeground);
-				if(tableModel instanceof NetworkConstraintsTableModel && column == NetworkConstraintsTableModel.iColValue) {
-					NetworkConstraintsTableModel tm = (NetworkConstraintsTableModel)tableModel;
-					String def = (String) tm.getValueAt(row, NetworkConstraintsTableModel.iColDefault);
-					String val = (String)value;
-					if(!val.equals(def)){
-						value = "<html><b>" + value + "</b></html>";
-						setForeground(Color.red);
-					}
+			}
+			if (valueDiffersFromDefault(tableModel, value, row, column) && value instanceof String) {
+				setText(value + " changed");
+				if (!isSelected) {
+					setForeground(GuiConstants.WARNING_TEXT_COLOR);
 				}
 			}
 		}
@@ -199,7 +200,37 @@ public class DefaultScrollTableCellRenderer extends DefaultTableCellRenderer {
 		} else if (tableModel instanceof SortTableModel) {	// for most other tables we reserve the icon spot to display issues
 			DefaultScrollTableCellRenderer.issueRenderer(this, defaultToolTipText, table, row, column, (SortTableModel)tableModel);
 		}
+		if (isSpatialMatchRow(table, row)) {
+			if (!isSelected) {
+				setBackground(Color.yellow);
+			}
+			if (column == 0) {
+				setText(withMatchLabel(getText()));
+			}
+		}
 		return this;
+	}
+
+	/**
+	 * A spatial process or object row that matches the current selection.
+	 * The name cell says "match"; yellow is extra and is not used on a selected row.
+	 */
+	protected boolean isSpatialMatchRow(JTable table, int row) {
+		if (table.getModel() instanceof SpatialProcessTableModel) {
+			return isMatchWithSelectedObject(table, row);
+		}
+		if (table.getModel() instanceof SpatialObjectTableModel) {
+			return isMatchWithSelectedProcess(table, row);
+		}
+		return false;
+	}
+
+	static String withMatchLabel(String text) {
+		String base = text == null ? "" : text;
+		if (base.endsWith(" match")) {
+			return base;
+		}
+		return base + " match";
 	}
 
 	private boolean isMatchWithSelectedObject(JTable table, int row) {

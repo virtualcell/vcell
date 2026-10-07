@@ -7,7 +7,7 @@
 	</introduction>
 	
 	<appearance>
-The structure table lists structures and their properties (Name, Type of structure, Notes, Electrical properties).  Items in black can be edited; items that cannot be edited are in brown.
+The structure table lists structures and their properties (Name, Type of structure, Notes, Electrical properties).  Items you can edit accept a new value when you click them. Items that cannot be edited do not. Editable items may be shown in black and the others in brown.
 	<imgReference target = "StructureTable.png"/>	
 	</appearance>
 	

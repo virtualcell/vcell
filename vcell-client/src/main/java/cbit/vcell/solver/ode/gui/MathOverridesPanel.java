@@ -22,6 +22,7 @@ import java.util.stream.Stream;
 
 import javax.swing.*;
 
+import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.copypaste.PasteOperationDataSource;
@@ -65,6 +66,10 @@ public class MathOverridesPanel extends JPanel {
 	private JPopupMenu rightClickMenu = null;
 	private JLabel titleLabel = null;
 	private JButton removeUnusedButton = null;
+
+	JButton unusedOverrideButton() {
+		return removeUnusedButton;
+	}
     private final Semaphore mathOverridesSynchronizationLock = new Semaphore(1);
 
 	private enum ActionType {
@@ -354,8 +359,8 @@ public class MathOverridesPanel extends JPanel {
 			gridBagConstraints.gridx = 0;
 			gridBagConstraints.gridy = 2;
 			this.removeUnusedButton = new JButton();
-			this.removeUnusedButton.setForeground(Color.red);
-			this.removeUnusedButton.setText("remove unused parameter overrides");
+			this.removeUnusedButton.setForeground(GuiConstants.WARNING_TEXT_COLOR);
+			this.removeUnusedButton.setText("Warning: remove unused parameter overrides");
 			this.removeUnusedButton.addActionListener(e -> {
 				MathOverrides mathOverrides = this.getMathOverrides();
 				if (mathOverrides != null) {

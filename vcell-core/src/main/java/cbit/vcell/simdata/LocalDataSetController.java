@@ -11,6 +11,7 @@
 package cbit.vcell.simdata;
 
 import cbit.rmi.event.ExportEvent;
+import cbit.vcell.export.server.ExportColorModeNegotiation;
 import cbit.vcell.export.server.ExportServiceImpl;
 import cbit.vcell.field.io.FieldData;
 import cbit.vcell.field.io.FieldDataShape;
@@ -220,6 +221,11 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,cbit.vcell.export.
 	}*/
 }
 
+
+@Override
+public String[] getSupportedExportColorModes() {
+	return ExportColorModeNegotiation.currentModes();
+}
 
 @Override
 public DataSetMetadata getDataSetMetadata(VCDataIdentifier vcdataID) throws DataAccessException {

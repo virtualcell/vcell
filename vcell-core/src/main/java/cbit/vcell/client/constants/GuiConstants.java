@@ -124,14 +124,16 @@ public class GuiConstants {
 
 	/**
 	 * Accessible error text color (WCAG 2.1 SC 1.4.3): 8.14:1 on white, 6.98:1 on the
-	 * alternating table row #e8edff, 7.81:1 on the hover row #FDFCDC. Shared token for
-	 * error/status text; first consumers are MathOverridesTableCellRenderer and
-	 * SimulationConsolePanel (remaining S8 consumers are tracked by issue #2140).
+	 * alternating table row #e8edff, 7.81:1 on the hover row #FDFCDC. On a dark selection
+	 * background this color is about 1.16:1, so a selected row keeps the look-and-feel
+	 * selection foreground and puts the severity in the text. Shared token for
+	 * error/status text.
 	 */
 	public static final Color ERROR_TEXT_COLOR = new Color(0xA4, 0x00, 0x00);
 	/**
 	 * Accessible warning text color (WCAG 2.1 SC 1.4.3): 6.80:1 on white, 5.83:1 on the
-	 * alternating table row #e8edff, 6.52:1 on the hover row #FDFCDC.
+	 * alternating table row #e8edff, 6.52:1 on the hover row #FDFCDC. A selected row
+	 * keeps the look-and-feel selection foreground; the warning word stays in the text.
 	 */
 	public static final Color WARNING_TEXT_COLOR = new Color(0x8A, 0x4B, 0x00);
 

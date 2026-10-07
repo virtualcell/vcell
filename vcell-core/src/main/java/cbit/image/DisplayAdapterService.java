@@ -270,16 +270,19 @@ public final static int[] createBlueRedColorModel0(boolean bSpecial) {
  */
 public final static int[] createBlueRedSpecialColors() {
 	int[] blueRedSpecialColors = new int[NUM_SPECIAL_COLORS];
-	//
-	blueRedSpecialColors[BELOW_MIN_COLOR_OFFSET] 				= Color.black.getRGB();// 0
-	blueRedSpecialColors[ABOVE_MAX_COLOR_OFFSET]				= Color.white.getRGB();// 255
-	blueRedSpecialColors[NAN_COLOR_OFFSET]						= Color.lightGray.getRGB();// 196
-	blueRedSpecialColors[NOT_IN_DOMAIN_COLOR_OFFSET]					= Color.darkGray.getRGB();// 64
-	blueRedSpecialColors[NO_RANGE_COLOR_OFFSET]					= Color.gray.getRGB();// 128
-	blueRedSpecialColors[FOREGROUND_HIGHLIGHT_COLOR_OFFSET]		= new Color(176,176,176).getRGB();
-	blueRedSpecialColors[FOREGROUND_NONHIGHLIGHT_COLOR_OFFSET]	= new Color(140,140,140).getRGB();
-	blueRedSpecialColors[NULL_COLOR_OFFSET]						= new Color(32,32,32).getRGB();
-	//
+	// The 248 data colors are unchanged. These eight are the out-of-range and overlay
+	// indicators. Legend order is below-min, above-max, NaN, not-in-domain, no-range,
+	// and that row sits on a black gap. Each of those five clears 3:1 against the gap
+	// and against its legend neighbor. Below-min also clears the dark-blue data end,
+	// and above-max clears the red data end.
+	blueRedSpecialColors[BELOW_MIN_COLOR_OFFSET] = new Color(140, 105, 0).getRGB();
+	blueRedSpecialColors[ABOVE_MAX_COLOR_OFFSET] = Color.white.getRGB();
+	blueRedSpecialColors[NAN_COLOR_OFFSET] = new Color(60, 108, 108).getRGB();
+	blueRedSpecialColors[NOT_IN_DOMAIN_COLOR_OFFSET] = new Color(240, 252, 36).getRGB();
+	blueRedSpecialColors[NO_RANGE_COLOR_OFFSET] = new Color(200, 0, 80).getRGB();
+	blueRedSpecialColors[FOREGROUND_HIGHLIGHT_COLOR_OFFSET] = new Color(200, 80, 200).getRGB();
+	blueRedSpecialColors[FOREGROUND_NONHIGHLIGHT_COLOR_OFFSET] = new Color(180, 180, 180).getRGB();
+	blueRedSpecialColors[NULL_COLOR_OFFSET] = new Color(110, 110, 110).getRGB();
 	return blueRedSpecialColors;
 }
 
@@ -369,6 +372,35 @@ public final static int[] createCividisSpecialColors() {
 	return colors;
 }
 
+
+/**
+ * WCAG 2 contrast ratio for two packed ARGB colors. Alpha is ignored.
+ */
+public static double contrastRatio(int argbA, int argbB) {
+	double lighter = Math.max(relativeLuminance(argbA), relativeLuminance(argbB));
+	double darker = Math.min(relativeLuminance(argbA), relativeLuminance(argbB));
+	return (lighter + 0.05) / (darker + 0.05);
+}
+
+/**
+ * Black or white text, whichever has the higher contrast on {@code fill}.
+ */
+public static int contrastingTextRgb(int fill) {
+	double onBlack = contrastRatio(fill, 0xFF000000);
+	double onWhite = contrastRatio(fill, 0xFFFFFFFF);
+	return onBlack >= onWhite ? 0xFF000000 : 0xFFFFFFFF;
+}
+
+private static double relativeLuminance(int argb) {
+	double r = linearize(((argb >> 16) & 0xFF) / 255.0);
+	double g = linearize(((argb >> 8) & 0xFF) / 255.0);
+	double b = linearize((argb & 0xFF) / 255.0);
+	return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+private static double linearize(double channel) {
+	return channel <= 0.04045 ? channel / 12.92 : Math.pow((channel + 0.055) / 1.055, 2.4);
+}
 
 /**
  * Text name for a special-color slot. The results viewer also shows a short label on the swatch.

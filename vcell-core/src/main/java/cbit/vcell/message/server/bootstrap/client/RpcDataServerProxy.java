@@ -107,6 +107,10 @@ public org.vcell.util.document.TimeSeriesJobResults getTimeSeriesValues(OutputCo
 }
 
 
+public String[] getSupportedExportColorModes() throws DataAccessException {
+	return (String[]) rpc("getSupportedExportColorModes", new Object[] { userLoginInfo.getUser() });
+}
+
 public cbit.rmi.event.ExportEvent makeRemoteFile(OutputContext outputContext,cbit.vcell.export.server.ExportSpecs exportSpecs) throws DataAccessException {
 	try {
 		rpc(RpcServiceType.DATA, "makeRemoteFile", new Object[]{outputContext,userLoginInfo.getUser(), exportSpecs}, false, new String[]{RpcServiceType.DATAEXPORT.getName()}, new Object[]{true});

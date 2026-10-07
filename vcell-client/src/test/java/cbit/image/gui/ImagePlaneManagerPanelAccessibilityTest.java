@@ -1,14 +1,18 @@
 package cbit.image.gui;
 
+import cbit.image.DisplayAdapterService;
 import cbit.image.SourceDataInfo;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.vcell.util.Extent;
 import org.vcell.util.Origin;
 
+import javax.swing.JList;
 import java.awt.event.MouseEvent;
 import java.util.Arrays;
+import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -26,6 +30,30 @@ public class ImagePlaneManagerPanelAccessibilityTest {
 
 		String text = panel.getInfoJlabel().getText();
 		assertTrue(text.contains("\"cytosol\""), text);
+	}
+
+	@Test
+	public void regionListNamesEverySubvolumeWithoutThePointer() {
+		ImagePlaneManagerPanel panel = new ImagePlaneManagerPanel();
+		List<String> names = List.of("extracellular", "cytosol", "nucleus");
+		panel.setRegionNames(names);
+
+		JList<String> regions = panel.getRegionList();
+		assertEquals(names.size(), regions.getModel().getSize());
+		for (int i = 0; i < names.size(); i++) {
+			regions.setSelectedIndex(i);
+			assertEquals(names.get(i), regions.getSelectedValue());
+			assertTrue(panel.getInfoJlabel().getText().contains(names.get(i)), panel.getInfoJlabel().getText());
+		}
+	}
+
+	@Test
+	public void adjacentRegionFillsStayBelowNonTextContrastSoTheNameIsTheCue() {
+		int[] colors = DisplayAdapterService.createContrastColorModel();
+		double firstPair = DisplayAdapterService.contrastRatio(colors[0], colors[1]);
+		double secondPair = DisplayAdapterService.contrastRatio(colors[1], colors[2]);
+		assertEquals(1.51, firstPair, 0.05);
+		assertEquals(1.71, secondPair, 0.05);
 	}
 
 	@Test

@@ -20,6 +20,7 @@ import java.awt.Insets;
 import javax.swing.BorderFactory;
 import javax.swing.InputVerifier;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
@@ -30,6 +31,7 @@ import javax.swing.border.EtchedBorder;
 import org.vcell.solver.nfsim.gui.NFSimSimulationOptionsPanel;
 import org.vcell.util.gui.CollapsiblePanel;
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.PersistentFieldError;
 
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.constants.GuiConstants;
@@ -63,7 +65,8 @@ public class StochSimOptionsPanel extends CollapsiblePanel {
 	private javax.swing.JLabel ivjMSRToleranceLabel = null;
 	private javax.swing.JTextField ivjMSRToleranceTextField = null;
 	private javax.swing.JLabel ivjSDEToleranceLabel = null;
-	private javax.swing.JTextField ivjSDEToleranceTextField = null;	
+	private javax.swing.JTextField ivjSDEToleranceTextField = null;
+	private final JLabel validationMessage = new JLabel(" ");
 	
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 
@@ -123,6 +126,19 @@ public class StochSimOptionsPanel extends CollapsiblePanel {
 		super("Stochastic Options");
 		addPropertyChangeListener(ivjEventHandler);
 		initialize();		
+	}
+
+	/** The sentence that stays after the error dialog closes. */
+	JLabel validationMessage() {
+		return validationMessage;
+	}
+
+	void reportFieldError(JComponent field, String message) {
+		if (message == null) {
+			PersistentFieldError.clear(validationMessage, field);
+		} else {
+			PersistentFieldError.show(validationMessage, field, message);
+		}
 	}
 	
 	private void initialize() {
@@ -295,6 +311,17 @@ public class StochSimOptionsPanel extends CollapsiblePanel {
 			gbc.weighty = 1.0;
 			gbc.insets = new Insets(10,4,10,4);
 			getContentPanel().add(advancedPanel, gbc);
+
+			gbc = new GridBagConstraints();
+			gbc.gridx = 0;
+			gbc.gridy = 2;
+			gbc.gridwidth = 2;
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.weightx = 1.0;
+			gbc.insets = new Insets(4, 4, 4, 4);
+			gbc.anchor = GridBagConstraints.LINE_START;
+			validationMessage.setForeground(GuiConstants.ERROR_TEXT_COLOR);
+			getContentPanel().add(validationMessage, gbc);
 		    
 			getButtonGroupSeed().add(getRandomSeedRadioButton());
 			getButtonGroupSeed().add(getCustomizedSeedRadioButton());
@@ -334,16 +361,20 @@ public class StochSimOptionsPanel extends CollapsiblePanel {
 			public boolean shouldYieldFocus(final JComponent input) {
 				String text = ((JTextField)input).getText();
 				boolean bValid = true;
+				String error = null;
 				try {
 					Double.parseDouble(text);
 				} catch (NumberFormatException ex) {
-					DialogUtils.showErrorDialog(StochSimOptionsPanel.this, ex.getMessage() + "Wrong number format " + ex.getMessage().toLowerCase());
+					error = ex.getMessage() + "Wrong number format " + ex.getMessage().toLowerCase();
+					DialogUtils.showErrorDialog(StochSimOptionsPanel.this, error);
 					bValid = false;
 				}
 				if (bValid) {
 					input.setBorder(UIManager.getBorder("TextField.border"));
+					reportFieldError(input, null);
 				} else {
 					input.setBorder(GuiConstants.ProblematicTextFieldBorder);
+					reportFieldError(input, error);
 					SwingUtilities.invokeLater(new Runnable() { 
 					    public void run() { 
 					    	input.requestFocus();

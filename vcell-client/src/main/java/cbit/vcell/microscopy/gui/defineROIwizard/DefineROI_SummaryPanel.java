@@ -26,6 +26,7 @@ import javax.swing.border.TitledBorder;
 import org.vcell.util.gui.GeneralGuiUtils;
 import org.vcell.util.NumberUtils;
 
+import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.microscopy.FRAPData;
@@ -211,6 +212,11 @@ public class DefineROI_SummaryPanel extends JPanel {
         return infoPanel;
     }
 
+    JLabel startIndexStatusLabel() {
+        getIndexPanel();
+        return startIndexAvaliableLabel;
+    }
+
     public JPanel getIndexPanel() {
         if (indexPanel == null) {
             final GridBagLayout gridBagLayout = new GridBagLayout();
@@ -237,7 +243,7 @@ public class DefineROI_SummaryPanel extends JPanel {
 
             startIndexAvaliableLabel = new JLabel();
             startIndexAvaliableLabel.setText("");
-            startIndexAvaliableLabel.setForeground(Color.red);
+            startIndexAvaliableLabel.setForeground(GuiConstants.ERROR_TEXT_COLOR);
             final GridBagConstraints gridBagConstraints_1 = new GridBagConstraints();
             gridBagConstraints_1.gridwidth = 4;
             gridBagConstraints_1.gridy = 1;

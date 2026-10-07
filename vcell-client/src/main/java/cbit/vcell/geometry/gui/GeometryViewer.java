@@ -16,7 +16,9 @@ import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Objects;
 
 import javax.swing.BorderFactory;
@@ -261,6 +263,7 @@ private void refreshSourceDataInfo() {
 	});
 	GeometrySpec geometrySpec = getGeometry().getGeometrySpec();
 	if (geometrySpec.getSampledImage().isDirty()) {
+		publishRegionNames();
 		return;
 	}
 
@@ -285,7 +288,26 @@ private void refreshSourceDataInfo() {
 	} catch (Exception e) {
 		e.printStackTrace();
 		DialogUtils.showErrorDialog(this, e.getMessage(), e);
+	} finally {
+		publishRegionNames();
 	}
+}
+
+private void publishRegionNames() {
+	Geometry geometry = getGeometry();
+	List<String> names = new ArrayList<>();
+	if (geometry != null && geometry.getGeometrySpec() != null && geometry.getGeometrySpec().getSubVolumes() != null) {
+		for (SubVolume subVolume : geometry.getGeometrySpec().getSubVolumes()) {
+			if (subVolume != null && subVolume.getName() != null) {
+				names.add(subVolume.getName());
+			}
+		}
+	}
+	getImagePlaneManagerPanel1().setRegionNames(names);
+}
+
+ImagePlaneManagerPanel geometrySlicePanel() {
+	return getImagePlaneManagerPanel1();
 }
 
 /**

@@ -107,6 +107,7 @@ public class DisplayAdapterServicePanel extends JPanel implements java.awt.event
 				}
 				if (evt.getSource() == DisplayAdapterServicePanel.this.getDisplayAdapterService() && (evt.getPropertyName().equals("activeColorModelID"))) {
 					updateColorMapDisplay();
+					markSelectedColorMode();
 				}
 				if (evt.getSource() == DisplayAdapterServicePanel.this.getDisplayAdapterService() && (evt.getPropertyName().equals("activeColorModelID"))) {
 					getColorMapButtonGroup().setSelection(String.valueOf(getDisplayAdapterService().getActiveColorModelID()));
@@ -993,6 +994,8 @@ private javax.swing.JPanel getSpecialColorsJPanel() {
 			ivjSpecialColorsJPanel = new javax.swing.JPanel();
 			ivjSpecialColorsJPanel.setName("SpecialColorsJPanel");
 			ivjSpecialColorsJPanel.setLayout(new java.awt.GridBagLayout());
+			ivjSpecialColorsJPanel.setOpaque(true);
+			ivjSpecialColorsJPanel.setBackground(java.awt.Color.BLACK);
 
 			java.awt.GridBagConstraints constraintsSCBelowMinJLabel = new java.awt.GridBagConstraints();
 			constraintsSCBelowMinJLabel.gridx = 0; constraintsSCBelowMinJLabel.gridy = 0;
@@ -1441,49 +1444,92 @@ private void updateColorMapDisplay() {
 	if(specialColors != null){
 		for(int i=0;i < specialColors.length;i+= 1){
 			java.awt.Color specialColor = new java.awt.Color(specialColors[i]);
-			java.awt.Color contrast = java.awt.Color.white;
-			//Calculate contrast color for foreground text
-			if(specialColor.getRed() == specialColor.getGreen() &&
-				specialColor.getRed() == specialColor.getBlue() &&
-				specialColor.getBlue() == specialColor.getGreen()){
-				contrast = (specialColor.getRed() <= 128?java.awt.Color.white:java.awt.Color.black);
-			}else{
-				java.awt.color.ICC_Profile iccGrayProfile = java.awt.color.ICC_Profile.getInstance(java.awt.color.ColorSpace.CS_GRAY);
-				java.awt.color.ICC_ColorSpace iccGrayColorSpace = new java.awt.color.ICC_ColorSpace(iccGrayProfile);
-				float[] fColor = new float[3];
-				fColor[0] = (float)specialColor.getRed()/255;
-				fColor[1] =(float)specialColor.getGreen()/255;
-				fColor[2] =(float)specialColor.getBlue()/255;
-				float[] fGray = iccGrayColorSpace.fromRGB(fColor);
-				contrast = (fGray[0] < .5f ? java.awt.Color.white:java.awt.Color.black);
-			}
-			//
 			switch(i){
 				case DisplayAdapterService.BELOW_MIN_COLOR_OFFSET:
-					getSCBelowMinJLabel().setBackground(specialColor);
-					getSCBelowMinJLabel().setForeground(contrast);
+					applySpecialSwatch(getSCBelowMinJLabel(), "BM", i, specialColor);
 					break;
 				case DisplayAdapterService.ABOVE_MAX_COLOR_OFFSET:
-					getSCAboveMaxJLabel().setBackground(specialColor);
-					getSCAboveMaxJLabel().setForeground(contrast);
+					applySpecialSwatch(getSCAboveMaxJLabel(), "AM", i, specialColor);
 					break;
 				case DisplayAdapterService.NAN_COLOR_OFFSET:
-					getSCNANJLabel().setBackground(specialColor);
-					getSCNANJLabel().setForeground(contrast);
+					applySpecialSwatch(getSCNANJLabel(), "NN", i, specialColor);
 					break;
 				case DisplayAdapterService.NOT_IN_DOMAIN_COLOR_OFFSET:
-					getSCIllegalJLabel().setBackground(specialColor);
-					getSCIllegalJLabel().setForeground(contrast);
+					applySpecialSwatch(getSCIllegalJLabel(), "ND", i, specialColor);
 					break;
 				case DisplayAdapterService.NO_RANGE_COLOR_OFFSET:
-					getSCNoRangeJLabel().setBackground(specialColor);
-					getSCNoRangeJLabel().setForeground(contrast);
+					applySpecialSwatch(getSCNoRangeJLabel(), "NR", i, specialColor);
 					break;
 			}
 		}
 	}
 	//
 	getColorMapJLabel().repaint();
+	applyScaleTextColors();
+}
+
+private void applySpecialSwatch(javax.swing.JLabel label, String code, int offset, java.awt.Color fill) {
+	String longName = DisplayAdapterService.specialStateLabel(offset);
+	int textRgb = DisplayAdapterService.contrastingTextRgb(fill.getRGB());
+	label.setOpaque(true);
+	label.setBackground(fill);
+	label.setForeground(new java.awt.Color(textRgb));
+	label.setText(code + " " + longName);
+	label.setToolTipText(longName);
+	label.getAccessibleContext().setAccessibleName(code + " " + longName);
+}
+
+private void applyScaleTextColors() {
+	java.awt.Color ink = java.awt.Color.BLACK;
+	java.awt.Color paper = java.awt.Color.WHITE;
+	getScalePanel().setOpaque(true);
+	getScalePanel().setBackground(paper);
+	if (getScalePanel().getBorder() instanceof javax.swing.border.TitledBorder) {
+		((javax.swing.border.TitledBorder) getScalePanel().getBorder()).setTitleColor(ink);
+	}
+	javax.swing.JLabel[] labels = new javax.swing.JLabel[] {
+			getMinLabel(), getMaxLabel(), getMinRangeJLabel(), getMaxRangeJLabel()
+	};
+	for (javax.swing.JLabel label : labels) {
+		label.setOpaque(true);
+		label.setBackground(paper);
+		label.setForeground(ink);
+	}
+	javax.swing.JTextField[] fields = new javax.swing.JTextField[] { getMinTextField(), getMaxTextField() };
+	for (javax.swing.JTextField field : fields) {
+		field.setOpaque(true);
+		field.setBackground(paper);
+		field.setForeground(ink);
+		field.setDisabledTextColor(ink);
+	}
+}
+
+javax.swing.JLabel specialStateSwatch(int offset) {
+	switch (offset) {
+		case DisplayAdapterService.BELOW_MIN_COLOR_OFFSET:
+			return getSCBelowMinJLabel();
+		case DisplayAdapterService.ABOVE_MAX_COLOR_OFFSET:
+			return getSCAboveMaxJLabel();
+		case DisplayAdapterService.NAN_COLOR_OFFSET:
+			return getSCNANJLabel();
+		case DisplayAdapterService.NOT_IN_DOMAIN_COLOR_OFFSET:
+			return getSCIllegalJLabel();
+		case DisplayAdapterService.NO_RANGE_COLOR_OFFSET:
+			return getSCNoRangeJLabel();
+		default:
+			throw new IllegalArgumentException("no legend swatch for offset " + offset);
+	}
+}
+
+java.awt.Color legendGapColor() {
+	return getSpecialColorsJPanel().getBackground();
+}
+
+javax.swing.JComponent[] scaleReadouts() {
+	return new javax.swing.JComponent[] {
+			getMinLabel(), getMaxLabel(), getMinRangeJLabel(), getMaxRangeJLabel(),
+			getMinTextField(), getMaxTextField()
+	};
 }
 
 
@@ -1531,7 +1577,30 @@ private void updateColorModelRadioButtons() {
 			toBeSelectedButton.setSelected(true);
 		}
 	}
+	markSelectedColorMode();
 	getColorGridPanel().revalidate();
+}
+
+/**
+ * The chosen colormap is named in the button text and outlined in black.
+ */
+private void markSelectedColorMode() {
+	if (getDisplayAdapterService() == null) {
+		return;
+	}
+	String current = getDisplayAdapterService().getActiveColorModelID();
+	java.util.Enumeration<AbstractButton> buttons = getColorMapButtonGroup().getElements();
+	while (buttons.hasMoreElements()) {
+		AbstractButton button = buttons.nextElement();
+		String id = button.getActionCommand();
+		boolean selected = id != null && id.equals(current);
+		button.setText(selected ? id + " selected" : id);
+		button.setOpaque(true);
+		button.setBackground(java.awt.Color.WHITE);
+		button.setForeground(java.awt.Color.BLACK);
+		button.setBorder(new javax.swing.border.LineBorder(java.awt.Color.BLACK, selected ? 2 : 1));
+		button.setBorderPainted(true);
+	}
 }
 
 public void setDisplayAdapterService(DisplayAdapterService newValue) {

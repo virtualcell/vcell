@@ -98,6 +98,7 @@ import javax.swing.undo.UndoManager;
 import org.vcell.util.Commented;
 import org.vcell.util.CountingLineReader;
 
+import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.math.ReservedMathSymbolEntries;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.parser.ASTFuncNode.FunctionType;
@@ -379,7 +380,7 @@ public class MultiPurposeTextPanel extends JPanel {
 	}
 	
 	public class LineNumberPanel extends JPanel {
-		private int preferred_size = 50;
+		private int preferred_size = 84;
 		private int errorLine = -1;			// 1-indexed; once the user presses any key the errorLine is reset
 
 		public LineNumberPanel() {
@@ -396,9 +397,17 @@ public class MultiPurposeTextPanel extends JPanel {
 		public void setErrorLine(int line) {
 			if(line >= 0) {
 				this.errorLine = line + 1;	// line is 0-indexed while errorLine is 1-indexed
+				getAccessibleContext().setAccessibleDescription(errorLineLabel());
 			} else {
 				this.errorLine = -1;
+				getAccessibleContext().setAccessibleDescription(null);
 			}
+			repaint();
+		}
+
+		/** The painted error mark, or null when no line is marked. The word "error" is the severity cue. */
+		public String errorLineLabel() {
+			return errorLine < 0 ? null : "error " + errorLine;
 		}
 
 		public void paint(Graphics g) {
@@ -441,13 +450,17 @@ public class MultiPurposeTextPanel extends JPanel {
 				}
 				
 				if(line == errorLine) {
-//					Icon icon = VCellIcons.issueGoodIcon;
 					Color oldColor = g.getColor();
 					Font oldFont = g.getFont();
-					Font newFont = oldFont.deriveFont(Font.BOLD);
-					g.setColor(Color.red);
-					g.setFont(newFont);
-					g.drawString(linestr, preferred_size - width - 2, y + 2);
+					String label = errorLineLabel();
+					Font bold = oldFont.deriveFont(Font.BOLD);
+					g.setFont(bold);
+					int labelWidth = g.getFontMetrics().stringWidth(label);
+					int textX = Math.max(2, getWidth() - labelWidth - 2);
+					g.setColor(Color.white);
+					g.fillRect(0, y - fontHeight + fontDesc, getWidth(), fontHeight);
+					g.setColor(GuiConstants.ERROR_TEXT_COLOR);
+					g.drawString(label, textX, y + 2);
 					g.setColor(oldColor);
 					g.setFont(oldFont);
 				} else {

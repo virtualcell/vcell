@@ -30,7 +30,7 @@
 	<para>
 	<bold>Choose</bold> one of the methods below to map each physiology structure to the appropriate geometry subdomain: 
 	<list>
-	<item>1.  For each distinct physiology structure, select the "mapping" tool and click on a point within the physiology structure (left panel) and drag the colored square next to the appropriate geometry subdomain (right panel).  (ignore any 2-color squares, these represent membranes that are defined as the boundary between two structures).</item>
+	<item>1.  For each distinct physiology structure, select the "mapping" tool and click on a point within the named physiology structure (left panel) and drag to the named geometry subdomain (right panel). A square beside the subdomain may be colored; the subdomain name is how you tell which domain you chose. Ignore squares that show two fills; those are membranes, and each membrane is also named in the Structure Mapping table as the boundary between two structures.</item>
 	- or -
 	<item>2.  In the "Structure Mapping" table click the table under the "Subdomain" heading next to the "Structure" you want to map and choose a geometry domain from the pop-up list that appears to define the mapping.</item></list></para>
 	<para>

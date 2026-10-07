@@ -30,7 +30,7 @@
 	
 	<para>
 	In spatial models, output functions are defined in a specific subdomain, either in a volume or on a membrane. This determines the function type of an output function. 
-	In subdomains where an output function is not defined, Gray color will be displayed with "Undefined" as the value in results viewer.  	
+	In subdomains where an output function is not defined, the results viewer shows the word Undefined. The region may also be gray.  	
 	</para>
 	</introduction>
 	

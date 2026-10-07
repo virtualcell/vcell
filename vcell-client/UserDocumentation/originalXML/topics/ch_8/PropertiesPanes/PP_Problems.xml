@@ -26,8 +26,8 @@ The Problems Tab within the Properties pane provides errors and warnings identif
     </para>
    	<imgReference target = "ProblemExample.png"/>
    	<para>
-	The Problems Panel is not the only way to identify problems. Each table will display a small Error or Warning icon next to the entity involved. 
-	A colored border will also be drawn around the table row of the entity, red for Errors and orange for Warnings.
+	The Problems Panel is not the only way to identify problems. Each table will display a small Error or Warning icon next to the entity involved. The icon says Error or Warning.
+	A border is also drawn around the table row. The border color is extra; the icon is how you tell an error from a warning.
     </para>
    	<para>
 	Finally, hovering the mouse cursor over such an icon will open a tool tip window which a description of the problem and sometimes with 

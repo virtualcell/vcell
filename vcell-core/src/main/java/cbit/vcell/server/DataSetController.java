@@ -12,6 +12,7 @@ package cbit.vcell.server;
 
 import cbit.plot.PlotData;
 import cbit.rmi.event.ExportEvent;
+import cbit.vcell.export.server.ExportColorModeNegotiation;
 import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.field.io.FieldData;
 import cbit.vcell.field.io.FieldDataShape;
@@ -133,6 +134,14 @@ public org.vcell.util.document.TimeSeriesJobResults getTimeSeriesValues(OutputCo
  * @exception RemoteProxyException The exception description.
  */
 ExportEvent makeRemoteFile(OutputContext outputContext,ExportSpecs exportSpecs) throws DataAccessException, RemoteProxyException;
+
+/**
+ * Colormap ids this server can draw into an export. A server built before Cividis does not
+ * have this method; callers treat that failure as {@link ExportColorModeNegotiation#legacyModes()}.
+ */
+default String[] getSupportedExportColorModes() throws DataAccessException, RemoteProxyException {
+	return ExportColorModeNegotiation.legacyModes();
+}
 
 
 public VtuVarInfo[] getVtuVarInfos(OutputContext outputContext,	VCDataIdentifier vcDataIdentifier) throws DataAccessException, RemoteProxyException;

@@ -13,8 +13,7 @@
   properties, charge valence (i.e. the electric charge per molecule) and rate law for the electrical current and/or molecular flux. 
   A button is available to convert the rate law either from flux and current ("molecules per second") to 
   flux density and current density ("micromolar per second") or vice versa.  Below is a table of the kinetic terms used to define the reaction rate J and the electric current density I that 
-  includes all mathematical terms referred to in the mathematical expression for J or other kinetic terms. Items in brown 
-  cannot be edited.
+  includes all mathematical terms referred to in the mathematical expression for J or other kinetic terms. Items that cannot be edited do not accept a new value when you click them. They may also be shown in brown.
   </para>
   </appearance>
   <operations>

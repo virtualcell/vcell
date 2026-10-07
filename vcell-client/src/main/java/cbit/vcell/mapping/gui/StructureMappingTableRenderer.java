@@ -35,6 +35,7 @@ import org.vcell.util.gui.ColorIconEx;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 
 import cbit.image.DisplayAdapterService;
+import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;
@@ -118,6 +119,18 @@ public class StructureMappingTableRenderer extends DefaultScrollTableCellRendere
 		setHorizontalTextPosition(SwingConstants.LEFT);
 	}
 
+	/**
+	 * Unmapped is the status word. The error color is used only when the row is not selected,
+	 * because the selection foreground is the color that clears 4.5:1 on the selection background.
+	 */
+	void showUnmappedSubdomain(boolean selected) {
+		setText("Unmapped");
+		setIcon(null);
+		if (!selected) {
+			setForeground(GuiConstants.ERROR_TEXT_COLOR);
+		}
+	}
+
 	private int[] colormap = DisplayAdapterService.createContrastColorModel();
 	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column)
 	{
@@ -153,9 +166,7 @@ public class StructureMappingTableRenderer extends DefaultScrollTableCellRendere
 			}
 			if (structureMappingTableModel.isSubdomainColumn(column)) { // can be null
 				if (value == null) {
-					setText("Unmapped");
-					setForeground(Color.red);
-					setIcon(null);
+					showUnmappedSubdomain(isSelected);
 				} else {
 					if (value instanceof GeometryClass) {
 						setText(((GeometryClass)value).getName());

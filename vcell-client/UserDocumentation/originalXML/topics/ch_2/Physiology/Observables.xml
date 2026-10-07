@@ -12,9 +12,9 @@
 	<item>Each Observable consists of one or more <bold>Species Patterns</bold>. Each observable selects species that match at least one of the species patterns (not both). </item>
 	<item>A species pattern defines common features of multiple species, and consists of one 
 	or more of the <link target = "Molecules">molecules</link> that compose a species. Molecules may or may not be explicitly connected, but must be present in every species selected by the species pattern. Sites that have multiple possible states are depicted with a small ball above the site. </item>
-	<item>Each molecule within a species pattern may have sites left undefined. If a site does not have defined states (where states are possible) and the site can be in the bound or unbound state, the site is colored light grey.</item>
-	<item>An observable may identify sites with a defined binding state - i.e. the function can explicitly identify a site bound to another site, a site unbound, or a site bound to an unspecified (i.e. any other) site; in this case the site is colored yellow with a bond drawn as a colored line if one exists.</item>
-	<item> A site that has a defined state is always shown in yellow.</item>
+	<item>Each molecule within a species pattern may have sites left undefined. If a site does not have defined states (where states are possible) and the site can be in the bound or unbound state, the properties editor writes a question mark on the site. The site may also be filled light grey.</item>
+	<item>An observable may identify sites with a defined binding state - i.e. the function can explicitly identify a site bound to another site, a site unbound, or a site bound to an unspecified (i.e. any other) site. The properties editor draws that bond as a line. The site may also be filled yellow.</item>
+	<item> A site that has a defined state has that state's name written on the site in the properties editor. A question mark means the state is not chosen. The site may also be filled yellow.</item>
 	</list>
 	</introduction>
 	
@@ -24,7 +24,7 @@
 		<list>
 			<item>The <bold>Name</bold> of Observable (can be edited).</item>
 			<item>The <bold>Structure</bold> indicates where the species selected by an Observable are located .</item>
-			<item>The <bold>Depiction</bold> of each Observable. Grey circles within each molecular shape denote molecular sites, small grey circles associated with the site denote that this site has possible states. If the Observable selects one possible state of a site with multiple possible states, the small circle is colored yellow.  If the Observable selects a specific bond for a binding site, the site is colored yellow.</item>
+			<item>The <bold>Depiction</bold> of each Observable. Circles within each molecular shape denote molecular sites, and a smaller circle above a site denotes that the site has possible states. If the Observable selects one possible state, that state's name is written on the site in the properties pane; a question mark means the state is not chosen. The small circle in the table may also be yellow. If the Observable selects a specific bond, the properties pane draws that bond as a line. The site may also be yellow.</item>
 			<item><bold>Notes</bold> show a link icon if there are annotated links to database entries or a text bubble if there are text annotations for the reaction.  Double click in the Notes column to show the <link target ="PP_Annotations">Annotations Properties</link> Pane for a reaction.</item>
 			<item>A <def target = "def_BioNetGen">BioNetGen</def> definition.  The definition cannot be edited but can be searched.</item>
 			<item> The <bold>Count</bold> of either <bold>Molecules</bold> or <bold>Species</bold>. The count of molecules is a <bold>weighted</bold> sum of the population levels of all the species that match the pattern(s) defined in the observable. Each amount is multiplied by the number of times that the species is matched by the pattern(s). For example, a species that consists of two instances of a receptor (i.e. a dimer) is counted twice.

@@ -10,11 +10,11 @@
 
 package cbit.gui;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.swing.BorderFactory;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JComponent;
 import javax.swing.JTable;
@@ -22,6 +22,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.LineBorder;
 
 import org.vcell.util.gui.DialogUtils;
+
+import cbit.vcell.client.constants.GuiConstants;
 
 import cbit.vcell.parser.ASTFuncNode;
 import cbit.vcell.parser.ASTFuncNode.FunctionType;
@@ -36,6 +38,7 @@ import cbit.vcell.parser.SymbolTableFunctionEntry;
 public class TableCellEditorAutoCompletion extends DefaultCellEditor {
 	protected TextFieldAutoCompletion textFieldAutoCompletion = null;
 	private JTable thisTable = null;
+	private String expressionError = null;
 	
 	public TableCellEditorAutoCompletion(JTable table) {		
 		this(new TextFieldAutoCompletion(), table);
@@ -60,6 +63,7 @@ public class TableCellEditorAutoCompletion extends DefaultCellEditor {
 		final int editingColumn = thisTable.getEditingColumn();
 		textFieldAutoCompletion.stopEditing();
 		boolean bExpressionValid = true;
+		String error = null;
 		if (thisTable.getColumnClass(editingColumn).equals(ScopedExpression.class)) {
 			if (textFieldAutoCompletion.getSymbolTable() != null) {
 				ScopedExpression scopedExpression = (ScopedExpression) thisTable.getValueAt(editingRow, editingColumn);
@@ -101,28 +105,53 @@ public class TableCellEditorAutoCompletion extends DefaultCellEditor {
 						}
 					} catch (ExpressionBindingException ex) {
 						ex.printStackTrace(System.out);
-						DialogUtils.showErrorDialog(thisTable.getParent(), ex.getMessage() + "\n\nUse 'Ctrl-Space' to see a list of available names in your model or 'Esc' to revert to the original expression.");
+						error = ex.getMessage() + "\n\nUse 'Ctrl-Space' to see a list of available names in your model or 'Esc' to revert to the original expression.";
+						DialogUtils.showErrorDialog(thisTable.getParent(), error);
 						bExpressionValid = false;
 					} catch (ExpressionException ex) {
 						ex.printStackTrace(System.out);
-						DialogUtils.showErrorDialog(thisTable.getParent(), ex.getMessage() + "\n\nUse 'Esc' to revert to the original expression.");
+						error = ex.getMessage() + "\n\nUse 'Esc' to revert to the original expression.";
+						DialogUtils.showErrorDialog(thisTable.getParent(), error);
 						bExpressionValid = false;
 					}
 				}
 			}
 		}
 		if (!bExpressionValid) {
+			final String message = error != null ? error : "The expression is not valid.";
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
 					thisTable.requestFocus();
 					thisTable.setRowSelectionInterval(editingRow, editingRow);
-					((JComponent)getComponent()).setBorder(new LineBorder(Color.red));
+					showExpressionError(message);
 					textFieldAutoCompletion.requestFocus();										
 				}				
 			});
 			return false;
 		}
+		clearExpressionError();
 		return super.stopCellEditing();
+	}
+
+	/** Word and sentence that stay on the editor after the error dialog closes. */
+	void showExpressionError(String message) {
+		expressionError = message;
+		JComponent editor = (JComponent) getComponent();
+		editor.setBorder(BorderFactory.createTitledBorder(new LineBorder(GuiConstants.ERROR_TEXT_COLOR), "error"));
+		editor.getAccessibleContext().setAccessibleDescription(message);
+		editor.setToolTipText(message);
+	}
+
+	void clearExpressionError() {
+		expressionError = null;
+		JComponent editor = (JComponent) getComponent();
+		editor.setBorder(null);
+		editor.getAccessibleContext().setAccessibleDescription(null);
+		editor.setToolTipText(null);
+	}
+
+	String expressionError() {
+		return expressionError;
 	}
 
 	@Override
@@ -140,7 +169,7 @@ public class TableCellEditorAutoCompletion extends DefaultCellEditor {
 				textFieldAutoCompletion.setAutoCompleteSymbolFilter(reactionEquation.getAutoCompleteSymbolFilter());
 			}
 		}
-		((JComponent)getComponent()).setBorder(null);
+		clearExpressionError();
 		return super.getTableCellEditorComponent(table, value, isSelected, row, column);
 	}
 

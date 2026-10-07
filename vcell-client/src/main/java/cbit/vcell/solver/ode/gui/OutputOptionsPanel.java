@@ -27,6 +27,7 @@ import org.vcell.util.NumberUtils;
 import org.vcell.util.Range;
 import org.vcell.util.gui.CollapsiblePanel;
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.PersistentFieldError;
 
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
@@ -57,6 +58,7 @@ public class OutputOptionsPanel extends CollapsiblePanel {
     private javax.swing.JTextField ivjKeepEveryTextField = null;
     private javax.swing.JTextField ivjKeepAtMostTextField = null;
     private javax.swing.JLabel ivjKeepAtMostLabel = null;
+    private final JLabel validationMessage = new JLabel(" ");
 
     private javax.swing.ButtonGroup ivjbuttonGroup1 = null;
 
@@ -128,6 +130,19 @@ public class OutputOptionsPanel extends CollapsiblePanel {
         super("Output Options");
         addPropertyChangeListener(ivjEventHandler);
         initialize();
+    }
+
+    /** The sentence that stays after the error dialog closes. */
+    JLabel validationMessage() {
+        return validationMessage;
+    }
+
+    void reportFieldError(JComponent field, String message) {
+        if (message == null) {
+            PersistentFieldError.clear(validationMessage, field);
+        } else {
+            PersistentFieldError.show(validationMessage, field, message);
+        }
     }
 
     /**
@@ -447,6 +462,17 @@ public class OutputOptionsPanel extends CollapsiblePanel {
             gbc.insets = new java.awt.Insets(0, 4, 4, 4);
             getContentPanel().add(chomboOutputOptionsPanel, gbc);
 
+            GridBagConstraints validationConstraints = new GridBagConstraints();
+            validationConstraints.gridx = 0;
+            validationConstraints.gridy = 4;
+            validationConstraints.gridwidth = 2;
+            validationConstraints.fill = GridBagConstraints.HORIZONTAL;
+            validationConstraints.weightx = 1.0;
+            validationConstraints.anchor = GridBagConstraints.LINE_START;
+            validationConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+            validationMessage.setForeground(GuiConstants.ERROR_TEXT_COLOR);
+            getContentPanel().add(validationMessage, validationConstraints);
+
             getbuttonGroup1().add(getDefaultOutputRadioButton());
             getbuttonGroup1().add(getUniformOutputRadioButton());
             getbuttonGroup1().add(getExplicitOutputRadioButton());
@@ -571,8 +597,11 @@ public class OutputOptionsPanel extends CollapsiblePanel {
         }
         if (bValid) {
             getOutputTimesTextField().setBorder(UIManager.getBorder("TextField.border"));
+            reportFieldError(getOutputTimesTextField(), null);
         } else {
             getOutputTimesTextField().setBorder(GuiConstants.ProblematicTextFieldBorder);
+            reportFieldError(getOutputTimesTextField(),
+                    "Output times should be within [" + startingTime + "," + endingTime + "].");
             javax.swing.SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     getOutputTimesTextField().requestFocus();
@@ -821,6 +850,7 @@ public class OutputOptionsPanel extends CollapsiblePanel {
             @Override
             public boolean shouldYieldFocus(JComponent input) {
                 boolean bValid = true;
+                String error = null;
                 try {
                     double outputTime = Double.parseDouble(getOutputTimeStepTextField().getText());
                     if (solverTaskDescription.getOutputTimeSpec().isUniform() && !solverTaskDescription.getSolverDescription().hasVariableTimestep()) {
@@ -840,23 +870,28 @@ public class OutputOptionsPanel extends CollapsiblePanel {
                         }
 
                         if (!bValid) {
+                            error = "Output Interval must be integer multiple of time step.";
                             String ret = PopupGenerator.showWarningDialog(OutputOptionsPanel.this, "Output Interval", "Output Interval must " +
                                             "be integer multiple of time step.\n\nChange Output Interval to " + suggestedInterval + "?",
                                     new String[]{UserMessage.OPTION_YES, UserMessage.OPTION_NO}, UserMessage.OPTION_YES);
                             if (ret.equals(UserMessage.OPTION_YES)) {
                                 getOutputTimeStepTextField().setText(suggestedInterval + "");
                                 bValid = true;
+                                error = null;
                             }
                         }
                     }
                 } catch (NumberFormatException ex) {
-                    DialogUtils.showErrorDialog(OutputOptionsPanel.this, "Wrong number format " + ex.getMessage().toLowerCase());
+                    error = "Wrong number format " + ex.getMessage().toLowerCase();
+                    DialogUtils.showErrorDialog(OutputOptionsPanel.this, error);
                     bValid = false;
                 }
                 if (bValid) {
                     getOutputTimeStepTextField().setBorder(UIManager.getBorder("TextField.border"));
+                    reportFieldError(getOutputTimeStepTextField(), null);
                 } else {
                     getOutputTimeStepTextField().setBorder(GuiConstants.ProblematicTextFieldBorder);
+                    reportFieldError(getOutputTimeStepTextField(), error);
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
                             getOutputTimeStepTextField().requestFocus();

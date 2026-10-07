@@ -8,7 +8,7 @@
   </introduction>
 		
   <appearance>
- The Object Properties for a Reaction shows the Reaction Name,a combobox for Kinetic Type,  and a button to convert the rate law either from molecules per second to micromolar per second or vice versa. A link or text bubble icon next to the reaction name indicates an associated link or text annotation associated with the reaction. Click the icon to navigate to the Annotations Pane. Below is a table of the kinetic terms used to define the reaction rate (J) that includes all terms referred to in the mathematical expression for J or for expressions for other kinetic terms.  Items in brown cannot be edited.
+ The Object Properties for a Reaction shows the Reaction Name,a combobox for Kinetic Type,  and a button to convert the rate law either from molecules per second to micromolar per second or vice versa. A link or text bubble icon next to the reaction name indicates an associated link or text annotation associated with the reaction. Click the icon to navigate to the Annotations Pane. Below is a table of the kinetic terms used to define the reaction rate (J) that includes all terms referred to in the mathematical expression for J or for expressions for other kinetic terms.  Items that cannot be edited do not accept a new value when you click them. They may also be shown in brown.
   </appearance>
 	
   <operations>

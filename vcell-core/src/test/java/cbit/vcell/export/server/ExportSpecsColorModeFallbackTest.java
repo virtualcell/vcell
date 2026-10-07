@@ -25,6 +25,31 @@ public class ExportSpecsColorModeFallbackTest {
 		ExportSpecs.setupDisplayAdapterService(requested, das, new Range(0, 1));
 
 		assertEquals(DisplayAdapterService.BLUERED, das.getActiveColorModelID());
+		assertEquals(DisplayAdapterService.BLUERED, requested.getColorMode());
+	}
+
+	@Test
+	public void unregisteredCividisDoesNotStayOnTheRequest() {
+		DisplayAdapterService das = new DisplayAdapterService();
+		das.addColorModelForValues(
+				DisplayAdapterService.createGrayColorModel(),
+				DisplayAdapterService.createGraySpecialColors(),
+				DisplayAdapterService.GRAY);
+		das.addColorModelForValues(
+				DisplayAdapterService.createBlueRedColorModel(),
+				DisplayAdapterService.createBlueRedSpecialColors(),
+				DisplayAdapterService.BLUERED);
+		DisplayPreferences requested = new DisplayPreferences(
+				DisplayAdapterService.CIVIDIS,
+				new Range(0, 1),
+				DisplayAdapterService.createCividisSpecialColors(),
+				true,
+				false);
+
+		ExportSpecs.setupDisplayAdapterService(requested, das, new Range(0, 1));
+
+		assertEquals(DisplayAdapterService.BLUERED, requested.getColorMode());
+		assertEquals(DisplayAdapterService.BLUERED, das.getActiveColorModelID());
 	}
 
 	@Test

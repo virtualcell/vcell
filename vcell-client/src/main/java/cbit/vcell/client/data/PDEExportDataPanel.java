@@ -31,6 +31,7 @@ import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.simdata.*;
 import cbit.vcell.solver.*;
 import cbit.vcell.solvers.CartesianMesh;
+import org.apache.logging.log4j.LogManager;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.LocalVCDataIdentifier;
 import org.vcell.util.document.User;
@@ -1964,6 +1965,31 @@ public void setDataInfoProvider(DataInfoProvider dataInfoProvider){
 /**
  * Comment
  */
+/**
+ * Modes the export server can draw. A local run uses this client. A remote server that
+ * does not answer the colormap query is treated as Gray and BlueRed, and the request
+ * is rewritten to one of those before it is sent.
+ */
+private String[] supportedExportColorModes() {
+	try {
+		if (getPdeDataContext() == null || getPdeDataContext().getVCDataIdentifier() == null) {
+			return ExportColorModeNegotiation.legacyModes();
+		}
+		if (getPdeDataContext().getVCDataIdentifier() instanceof LocalVCDataIdentifier) {
+			return ExportColorModeNegotiation.currentModes();
+		}
+		if (getPdeDataContext() instanceof ClientPDEDataContext) {
+			return ((ClientPDEDataContext) getPdeDataContext()).getDataManager().getSupportedExportColorModes();
+		}
+	} catch (Exception e) {
+		if (!ExportColorModeNegotiation.isUnsupportedColorModeQuery(e)) {
+			LogManager.getLogger(PDEExportDataPanel.class)
+					.warn("Export colormap query failed; the request will stay on a mode an older server can draw", e);
+		}
+	}
+	return ExportColorModeNegotiation.legacyModes();
+}
+
 private void startExport() {
 	if(getExportSettings1().getSelectedFormat() == ExportFormat.QUICKTIME &&
 		getJSlider1().getValue() == getJSlider2().getValue()){
@@ -1983,6 +2009,8 @@ private void startExport() {
 		case ANIMATED_GIF: {
 			
 			displayPreferences = new DisplayPreferences[variableSelections.length];
+			String[] supportedColorModes = supportedExportColorModes();
+			String colorModeNotice = null;
 			
 			StringBuffer noScaleInfoNames = new StringBuffer();
 			for (int i = 0; i < displayPreferences.length; i++) {
@@ -2021,10 +2049,20 @@ private void startExport() {
 					DialogUtils.showErrorDialog(this, "Error during domain evaluation:\n"+e.getMessage());
 					return;
 				}
-				displayPreferences[i] = new DisplayPreferences(getDisplayAdapterService().getDisplayPreferences((String)variableSelections[i]), domainValid);
+				DisplayPreferences requestedPreferences = getDisplayAdapterService().getDisplayPreferences((String)variableSelections[i]);
+				DisplayPreferences writtenPreferences = ExportColorModeNegotiation.preferencesForServer(requestedPreferences, supportedColorModes);
+				String oneNotice = ExportColorModeNegotiation.notice(
+						requestedPreferences.getColorMode(), writtenPreferences.getColorMode());
+				if (oneNotice != null) {
+					colorModeNotice = oneNotice;
+				}
+				displayPreferences[i] = new DisplayPreferences(writtenPreferences, domainValid);
 				if(!getDisplayAdapterService().hasStateID((String)variableSelections[i])){
 					noScaleInfoNames.append("--- "+(String)variableSelections[i]+"\n");
 				}
+			}
+			if (colorModeNotice != null) {
+				DialogUtils.showWarningDialog(this, colorModeNotice);
 			}
 			break;
 		}

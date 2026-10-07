@@ -14,11 +14,9 @@ linking to species and reactions in Physiology.
 	</introduction>
 	
 	<appearance>
-Various physical entities and interactions are shown as circles of different colors 
-(brown for complexes, blue for small molecules, green for proteins and others).
+Various physical entities and interactions are shown as circles. Select a circle to read its type (complex, small molecule, protein, or other) in the Entity Properties pane. A shortened name is drawn on the circle, and pointing at the circle shows the full name. The circle may also be filled brown, blue, or green; the properties pane is how you tell the type.
 The relationships between entities are shown as full lines (for biochemical reactions) 
-or dotted lines 9for catalysis and control). Entity names are shortened. 
-Mouse over entity gives the full entity name.
+or dotted lines (for catalysis and control).
 		<imgReference target = "PathwayDiagramView.png"/>
 <para>
 Selecting a single entity activates the bottom 
@@ -42,7 +40,7 @@ More entities can be added from the
 <para>		
 To simplify operations, the items in the diagram can be filtered in real time by typing a string 
 inside the <bold>Search</bold> field. All the matching entities will show up in the diagram as selected 
-	(the diagram is filtered to the matching entities, which are also marked in red).
+	(the diagram is filtered to the matching entities). They may also be marked in red.
 	<imgReference target = "PathwayDiagramSearch.png"/>
 	</para>
 	</operations>

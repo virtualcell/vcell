@@ -6,7 +6,7 @@
 	<introduction> 
 	<para>
 	The parameter properties pane allows editing of parameter attributes including name, expression, units and 
-	annotations.  Fields in brown cannot be edited.
+	annotations.  Fields that cannot be edited do not accept a new value when you click them. They may also be shown in brown.
 	<bold>Note:</bold>
 	</para>
 	<list>

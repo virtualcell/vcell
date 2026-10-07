@@ -20,15 +20,26 @@ import java.awt.Toolkit;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.List;
 import java.util.function.IntFunction;
 
+import javax.swing.AbstractAction;
+import javax.swing.BorderFactory;
+import javax.swing.DefaultListModel;
+import javax.swing.JComponent;
+import javax.swing.JList;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.KeyStroke;
+import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.ToolTipManager;
 
@@ -69,6 +80,8 @@ public class ImagePlaneManagerPanel extends javax.swing.JPanel {
 	private SourceDataInfo fieldSourceDataInfo = null;
 	/** Maps an INDEX_TYPE pixel handle to a compartment name. Null leaves the readout unchanged. */
 	private IntFunction<String> indexLabelProvider;
+	private DefaultListModel<String> regionListModel;
+	private JList<String> regionList;
 	private ImagePlaneManager ivjImagePlaneManager = null;
 	private javax.swing.JPanel ivjJPanel1 = null;
 	private int fieldMode = 0;
@@ -1038,6 +1051,14 @@ private javax.swing.JPanel getJPanel3() {
 			constraintsImagePlanePanel1.fill = java.awt.GridBagConstraints.BOTH;
 			constraintsImagePlanePanel1.ipadx = 20;
 			getJPanel3().add(getImagePlanePanel1(), constraintsImagePlanePanel1);
+
+			java.awt.GridBagConstraints constraintsRegionList = new java.awt.GridBagConstraints();
+			constraintsRegionList.gridx = 0; constraintsRegionList.gridy = 3;
+			constraintsRegionList.fill = java.awt.GridBagConstraints.BOTH;
+			constraintsRegionList.weightx = 1.0;
+			constraintsRegionList.weighty = 0.3;
+			constraintsRegionList.insets = new java.awt.Insets(4, 4, 4, 4);
+			getJPanel3().add(getRegionListScroll(), constraintsRegionList);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
@@ -1343,6 +1364,7 @@ private void setimagePaneView1(ImagePaneView newValue) {
 			if (ivjimagePaneView1 != null) {
 				ivjimagePaneView1.addMouseListener(ivjEventHandler);
 				ivjimagePaneView1.addMouseMotionListener(ivjEventHandler);
+				installKeyboardSample(ivjimagePaneView1);
 			}
 			// user code begin {1}
 			// user code end
@@ -1378,9 +1400,72 @@ public void setIndexLabelProvider(IntFunction<String> indexLabelProvider) {
 	updateInfo(lastValidMouseEvent);
 }
 
+/**
+ * Names every geometry region. Keyboard selection of a row writes that name into the info readout.
+ * Hover text stays available and is not required to identify a region.
+ */
+public void setRegionNames(List<String> names) {
+	DefaultListModel<String> model = regionModel();
+	model.clear();
+	if (names != null) {
+		for (String name : names) {
+			if (name != null && !name.isEmpty()) {
+				model.addElement(name);
+			}
+		}
+	}
+	if (model.getSize() > 0) {
+		getRegionList().setSelectedIndex(0);
+	}
+}
+
+public JList<String> getRegionList() {
+	getJPanel3();
+	return regionList;
+}
+
+public String regionReadout() {
+	return getInfoJlabel().getText();
+}
+
+private DefaultListModel<String> regionModel() {
+	getJPanel3();
+	return regionListModel;
+}
+
+private JScrollPane getRegionListScroll() {
+	if (regionList == null) {
+		regionListModel = new DefaultListModel<>();
+		regionList = new JList<>(regionListModel);
+		regionList.setName("RegionList");
+		regionList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		regionList.setVisibleRowCount(4);
+		regionList.getAccessibleContext().setAccessibleName("Regions");
+		regionList.addListSelectionListener(event -> {
+			if (!event.getValueIsAdjusting()) {
+				showSelectedRegion();
+			}
+		});
+	}
+	JScrollPane scroll = new JScrollPane(regionList);
+	scroll.setBorder(BorderFactory.createTitledBorder("Regions"));
+	return scroll;
+}
+
+private void showSelectedRegion() {
+	if (regionList == null) {
+		return;
+	}
+	String name = regionList.getSelectedValue();
+	if (name != null) {
+		getInfoJlabel().setText("Region: " + name);
+	}
+}
+
 public void setSourceDataInfo(SourceDataInfo sourceDataInfo) {
 	SourceDataInfo oldValue = fieldSourceDataInfo;
 	fieldSourceDataInfo = sourceDataInfo;
+	keyboardSample = null;
 	firePropertyChange("sourceDataInfo", oldValue, sourceDataInfo);
 	//
 	//Sometimes if a change of data timepoint,variable,paramscan takes a long time and the user moves the mouse
@@ -1460,6 +1545,120 @@ private void sourceDataInfo_set() {
  * Comment
  */
 private MouseEvent lastValidMouseEvent;
+private CoordinateIndex keyboardSample;
+
+private void installKeyboardSample(ImagePaneView view) {
+	view.setFocusable(true);
+	javax.swing.InputMap input = view.getInputMap(JComponent.WHEN_FOCUSED);
+	javax.swing.ActionMap actions = view.getActionMap();
+	bindSampleKey(input, actions, KeyEvent.VK_LEFT, -1, 0);
+	bindSampleKey(input, actions, KeyEvent.VK_RIGHT, 1, 0);
+	bindSampleKey(input, actions, KeyEvent.VK_UP, 0, -1);
+	bindSampleKey(input, actions, KeyEvent.VK_DOWN, 0, 1);
+	view.addMouseListener(new MouseAdapter() {
+		@Override
+		public void mousePressed(MouseEvent e) {
+			view.requestFocusInWindow();
+		}
+	});
+}
+
+private void bindSampleKey(javax.swing.InputMap input, javax.swing.ActionMap actions, int keyCode, int dx, int dy) {
+	String name = "sample-" + keyCode;
+	input.put(KeyStroke.getKeyStroke(keyCode, 0), name);
+	actions.put(name, new AbstractAction() {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			moveKeyboardSample(dx, dy);
+		}
+	});
+}
+
+/**
+ * Moves the sample one data step and writes the same numeric readout the pointer uses.
+ */
+void moveKeyboardSample(int dx, int dy) {
+	SourceDataInfo info = getSourceDataInfo();
+	if (info == null || info.isDataNull()) {
+		return;
+	}
+	if (keyboardSample == null) {
+		keyboardSample = new CoordinateIndex(0, 0, 0);
+	}
+	int x = clampSample(keyboardSample.x + dx, info.getXSize());
+	int y = clampSample(keyboardSample.y + dy, info.getYSize());
+	int z = clampSample(keyboardSample.z, info.getZSize());
+	keyboardSample = new CoordinateIndex(x, y, z);
+	String text = formatDataSample(keyboardSample, info.getWorldCoordinateFromIndex(keyboardSample));
+	getimagePaneView1().setToolTipText(text == null ? "Unknown" : text);
+	getInfoJlabel().setText(text == null ? "Unknown" : text);
+}
+
+boolean sampleArrowKeysInstalled() {
+	ImagePaneView view = getimagePaneView1();
+	if (view == null) {
+		return false;
+	}
+	return view.getInputMap(JComponent.WHEN_FOCUSED).get(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0)) != null
+			&& view.getInputMap(JComponent.WHEN_FOCUSED).get(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0)) != null;
+}
+
+private static int clampSample(int value, int size) {
+	int max = Math.max(0, size - 1);
+	return Math.max(0, Math.min(max, value));
+}
+
+private String formatDataSample(CoordinateIndex ci, Coordinate wc) {
+	if (ci == null || getSourceDataInfo() == null) {
+		return null;
+	}
+	int volumeIndex = getSourceDataInfo().calculateWorldIndex(ci);
+	Coordinate quantizedWC = getSourceDataInfo().getWorldCoordinateFromIndex(ci);
+	boolean bUndefined = getSourceDataInfo().isDataNull() || (getDataInfoProvider() != null && !getDataInfoProvider().isDefined(volumeIndex));
+	String xCoordString = NumberUtils.formatNumber(quantizedWC.getX());
+	String yCoordString = NumberUtils.formatNumber(quantizedWC.getY());
+	String zCoordString = NumberUtils.formatNumber(quantizedWC.getZ());
+	String infoS =
+		"(" + xCoordString +
+		(getSourceDataInfo().getYSize() > 1 ? "," + yCoordString : "") +
+		(getSourceDataInfo().getZSize() > 1 ? "," + zCoordString : "") + ") " +
+		"[" + volumeIndex + "]" +
+		" [" + ci.x +
+		(getSourceDataInfo().getYSize() > 1 ? "," + ci.y : "") +
+		(getSourceDataInfo().getZSize() > 1 ? "," + ci.z : "") + "] " +
+		(bUndefined ? "Undefined" : getSourceDataInfo().getDataValueAsString(ci.x, ci.y, ci.z));
+	infoS = appendIndexLabel(infoS, ci);
+	if (getDataInfoProvider() != null) {
+		if (getDataInfoProvider().getPDEDataContext().getCartesianMesh().isChomboMesh()) {
+			if (!bUndefined) {
+				StructureMetricsEntry structure = ((CartesianMeshChombo) getDataInfoProvider().getPDEDataContext().getCartesianMesh()).getStructureInfo(getDataInfoProvider().getPDEDataContext().getDataIdentifier());
+				if (structure != null) {
+					infoS += " || " + structure.getDisplayLabel();
+				}
+			}
+		} else {
+			infoS += "          ";
+			try {
+				VolumeDataInfo volumeDataInfo = getDataInfoProvider().getVolumeDataInfo(volumeIndex);
+				if (volumeDataInfo.subvolumeID0 != null) {
+					infoS += " \"" + volumeDataInfo.volumeNamePhysiology + "\"" + " (\"" + volumeDataInfo.volumeNameGeometry + "\")";
+					infoS += " svID=" + volumeDataInfo.subvolumeID0;
+					infoS += " vrID=" + volumeDataInfo.volumeRegionID;
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	if (wc != null) {
+		String curveDescr = CurveRenderer.getROIDescriptions(wc, getCurveRenderer());
+		if (curveDescr != null) {
+			infoS += "     " + curveDescr;
+		}
+	}
+	return infoS;
+}
+
 void updateInfo(MouseEvent mouseEvent) {
 	if(mouseEvent == null){
 		return;
@@ -1515,50 +1714,10 @@ void updateInfo(MouseEvent mouseEvent) {
 					}
 					if (infoS == null && getSourceDataInfo() != null) {
 						CoordinateIndex ci = getImagePlaneManager().getDataIndexFromUnitized2D(unitP.getX(), unitP.getY());
-						int volumeIndex = getSourceDataInfo().calculateWorldIndex(ci);
-						Coordinate quantizedWC = getSourceDataInfo().getWorldCoordinateFromIndex(ci);
-						boolean bUndefined = getSourceDataInfo().isDataNull()||(getDataInfoProvider() != null && !getDataInfoProvider().isDefined(volumeIndex));
-						String xCoordString = NumberUtils.formatNumber(quantizedWC.getX());
-						String yCoordString = NumberUtils.formatNumber(quantizedWC.getY());
-						String zCoordString = NumberUtils.formatNumber(quantizedWC.getZ());
-						infoS = 
-							"(" + xCoordString +
-							(getSourceDataInfo().getYSize() > 1?"," + yCoordString:"") +
-							(getSourceDataInfo().getZSize() > 1?"," + zCoordString:"") + ") "+
-							"["+volumeIndex+"]"+
-							" ["+ci.x+
-							(getSourceDataInfo().getYSize() > 1?","+ci.y:"")+
-							(getSourceDataInfo().getZSize() > 1?","+ci.z:"")+"] "+
-							(bUndefined?"Undefined":getSourceDataInfo().getDataValueAsString(ci.x, ci.y, ci.z));
-						infoS = appendIndexLabel(infoS, ci);
-						if(getDataInfoProvider() != null ){
-							if(getDataInfoProvider().getPDEDataContext().getCartesianMesh().isChomboMesh()){
-								if (!bUndefined)
-								{
-									StructureMetricsEntry structure = ((CartesianMeshChombo)getDataInfoProvider().getPDEDataContext().getCartesianMesh()).getStructureInfo(getDataInfoProvider().getPDEDataContext().getDataIdentifier());
-									if (structure != null)
-									{
-										infoS += " || " + structure.getDisplayLabel();
-									}
-								}
-							}else if(getDataInfoProvider() != null){
-								infoS+= "          ";
-								try{
-									VolumeDataInfo volumeDataInfo =
-										getDataInfoProvider().getVolumeDataInfo(volumeIndex);
-									if(volumeDataInfo.subvolumeID0 != null){
-										infoS+= " \""+volumeDataInfo.volumeNamePhysiology+"\""+" (\""+volumeDataInfo.volumeNameGeometry+"\")";
-										infoS+= " svID="+volumeDataInfo.subvolumeID0;
-										infoS+= " vrID="+volumeDataInfo.volumeRegionID;
-									}
-								}catch(Exception e){
-									//This can happen with FieldData viewer
-									e.printStackTrace();
-								}
-							}
+						if (ci != null) {
+							keyboardSample = new CoordinateIndex(ci.x, ci.y, ci.z);
 						}
-						String curveDescr = CurveRenderer.getROIDescriptions(wc,getCurveRenderer());
-						if(curveDescr != null){infoS+= "     "+curveDescr;}
+						infoS = formatDataSample(ci, wc);
 					}
 					if(infoS == null){
 						infoS = "Unknown";

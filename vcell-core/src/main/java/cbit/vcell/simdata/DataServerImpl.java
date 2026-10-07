@@ -11,6 +11,7 @@
 package cbit.vcell.simdata;
 
 import cbit.rmi.event.ExportEvent;
+import cbit.vcell.export.server.ExportColorModeNegotiation;
 import cbit.vcell.export.server.ExportServiceImpl;
 import cbit.vcell.field.io.FieldData;
 import cbit.vcell.field.io.FieldDataShape;
@@ -339,6 +340,10 @@ public org.vcell.util.document.TimeSeriesJobResults getTimeSeriesValues(OutputCo
  * @param exportSpecs cbit.vcell.export.server.ExportSpecs
  * @exception org.vcell.util.DataAccessException The exception description.
  */
+public String[] getSupportedExportColorModes(User user) {
+	return ExportColorModeNegotiation.currentModes();
+}
+
 public ExportEvent makeRemoteFile(OutputContext outputContext,User user, cbit.vcell.export.server.ExportSpecs exportSpecs) throws org.vcell.util.DataAccessException {
 	if (lg.isTraceEnabled()) lg.trace("DataServerImpl.makeRemoteFile(" + exportSpecs.getVCDataIdentifier() + ")");
 	try {

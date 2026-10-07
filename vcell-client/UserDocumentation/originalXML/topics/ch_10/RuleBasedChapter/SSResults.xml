@@ -64,8 +64,7 @@
 	<para><bold>A note on colour.</bold> The viewer draws on a black background, so sites given a dark colour are
 	hard to see or invisible. Colours are set per site on the
 	<link target="SSSpeciesSpecifications">Molecular Structures</link> tab, and the reserved Anchor site defaults
-	to DARK_GRAY - which reads perfectly well in the tables and the molecule diagram, and disappears here. If a
-	molecule seems to be missing from the scene, check its colours before its coordinates.</para>
+	to DARK_GRAY - which reads perfectly well in the tables and the molecule diagram, and disappears here. The site list names each site. If a drawing seems to be missing from the scene, check that site's colour and its coordinates; the name in the list is still there.</para>
 	</operations>
 
 </page>

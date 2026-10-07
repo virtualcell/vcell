@@ -5,7 +5,7 @@
   <introduction>
   The reaction properties panel is used to display and edit kinetics and annotations for a reaction rule.</introduction>
   <appearance> The kinetics pane shows the Reaction Name and a table of the kinetic terms used 
-  	to define the reaction rate. Items in brown cannot be edited.
+  	to define the reaction rate. Items that cannot be edited do not accept a new value when you click them. They may also be shown in brown.
   <imgReference target = "PP_ReactionRuleRate.png"/>
   	<para><bold>Note</bold> that the rate defined for a reaction rule may differ from the actual reaction rate. Reaction rules can currently only be defined using mass action kinetics.</para>
   	<list>

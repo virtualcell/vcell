@@ -222,6 +222,10 @@ public VCDataIdentifier getVCDataIdentifier() {
 }
 
 
+public String[] getSupportedExportColorModes() throws org.vcell.util.DataAccessException {
+	return getVCDataManager().getSupportedExportColorModes();
+}
+
 /**
  * Insert the method's description here.
  * Creation date: (6/11/2004 3:53:21 PM)

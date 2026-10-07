@@ -12,6 +12,7 @@ package cbit.vcell.client;
 
 import cbit.plot.PlotData;
 import cbit.rmi.event.ExportEvent;
+import cbit.vcell.export.server.ExportColorModeNegotiation;
 import cbit.vcell.export.server.ExportServiceImpl;
 import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.field.io.FieldData;
@@ -157,6 +158,11 @@ public class LocalDataSetControllerProvider implements DataSetControllerProvider
 		@Override
 		public NFSimMolecularConfigurations getNFSimMolecularConfigurations(VCDataIdentifier vcdataID) throws RemoteProxyException, DataAccessException {
 			return dataServerImpl.getNFSimMolecularConfigurations(user, vcdataID);
+		}
+
+		@Override
+		public String[] getSupportedExportColorModes() {
+			return ExportColorModeNegotiation.currentModes();
 		}
 
 	}

@@ -12,6 +12,7 @@ package org.vcell.api.messaging;
 
 import cbit.plot.PlotData;
 import cbit.rmi.event.ExportEvent;
+import cbit.vcell.export.server.ExportColorModeNegotiation;
 import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.export.server.ExportEnums;
 import cbit.vcell.export.server.N5Specs;
@@ -344,6 +345,23 @@ public org.vcell.util.document.TimeSeriesJobResults getTimeSeriesValues(OutputCo
  * @exception org.vcell.util.DataAccessException The exception description.
  * @throws RemoteProxyException 
  */
+@Override
+public String[] getSupportedExportColorModes() throws DataAccessException, RemoteProxyException {
+	try {
+		return dataServerProxy.getSupportedExportColorModes();
+	} catch (DataAccessException e) {
+		if (ExportColorModeNegotiation.isUnsupportedColorModeQuery(e)) {
+			return ExportColorModeNegotiation.legacyModes();
+		}
+		throw e;
+	} catch (RuntimeException e) {
+		if (ExportColorModeNegotiation.isUnsupportedColorModeQuery(e)) {
+			return ExportColorModeNegotiation.legacyModes();
+		}
+		throw e;
+	}
+}
+
 public ExportEvent makeRemoteFile(OutputContext outputContext,ExportSpecs exportSpecs) throws DataAccessException, RemoteProxyException {
 	if (lg.isTraceEnabled()) lg.trace("LocalDataSetControllerMessaging.makeRemoteFile(vcdID=" + exportSpecs.getVCDataIdentifier() + ")");
 	if (exportSpecs.getFormatSpecificSpecs() instanceof N5Specs){

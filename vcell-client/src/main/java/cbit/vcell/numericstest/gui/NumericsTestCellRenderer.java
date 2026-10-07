@@ -12,6 +12,7 @@ package cbit.vcell.numericstest.gui;
 
 import javax.swing.JLabel;
 
+import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.numericstest.TestCaseNew;
 import cbit.vcell.numericstest.TestCaseNewBioModel;
@@ -142,7 +143,7 @@ public java.awt.Component getTreeCellRendererComponent(javax.swing.JTree tree, O
 					//}
 				//}
 				setComponentProperties(component, (TestCaseNew)node.getUserObject(),
-					/*hasResult,*/ hasFailures, hasNoData, hasNoRefRegr,hasReportErrors,isSimRunning,isSimFailed,needsReport,isSimNotRunFialOrDone);
+					/*hasResult,*/ hasFailures, hasNoData, hasNoRefRegr,hasReportErrors,isSimRunning,isSimFailed,needsReport,isSimNotRunFialOrDone, sel);
 			} else if (node.getUserObject() instanceof TestCriteriaNew) {
 				TestCriteriaNew testCriteria = (TestCriteriaNew)node.getUserObject();				
 				String extraText = null;
@@ -153,11 +154,11 @@ public java.awt.Component getTreeCellRendererComponent(javax.swing.JTree tree, O
 				component.setText("["+testCriteria.getSimInfo().getVersion().getVersionKey()+"] "+
 					testCriteria.getSimInfo().getVersion().getName()+(extraText != null?" ("+extraText+")":""));
 				component.setToolTipText(" Test Criteria info");
-				if(extraText != null){
-					component.setForeground(java.awt.Color.magenta);
+				if(extraText != null && !sel){
+					component.setForeground(GuiConstants.WARNING_TEXT_COLOR);
 				}
-				if(testCriteria.getReportStatus().equals(TestCriteriaNew.TCRIT_STATUS_FAILEDVARS)){
-					component.setForeground(java.awt.Color.red);
+				if(testCriteria.getReportStatus().equals(TestCriteriaNew.TCRIT_STATUS_FAILEDVARS) && !sel){
+					component.setForeground(GuiConstants.ERROR_TEXT_COLOR);
 				}
 					
 				////TestCaseNew tcn = null;
@@ -192,8 +193,14 @@ public java.awt.Component getTreeCellRendererComponent(javax.swing.JTree tree, O
 			}else if(node.getRenderHint(cbit.vcell.client.desktop.testingframework.TestingFrmwkTreeModel.FAILED_VARIABLE_MAE_MRE) instanceof Boolean){
 				Boolean fv_MAE_MRE = (Boolean)node.getRenderHint(cbit.vcell.client.desktop.testingframework.TestingFrmwkTreeModel.FAILED_VARIABLE_MAE_MRE);
 				if(fv_MAE_MRE.booleanValue()){
-					component.setForeground(java.awt.Color.red);
-				}else{
+					String text = component.getText() == null ? "" : component.getText();
+					if (!text.toLowerCase().contains("fail")) {
+						component.setText(text + " failed");
+					}
+					if (!sel) {
+						component.setForeground(GuiConstants.ERROR_TEXT_COLOR);
+					}
+				}else if (!sel){
 					component.setForeground(java.awt.Color.black);
 				} 
 			}
@@ -222,14 +229,19 @@ private void setComponentProperties(
     boolean isSimRunning,
     boolean isSimFailed,
     boolean needsReport,
-    boolean isSimNotRunFailOrDone) {
+    boolean isSimNotRunFailOrDone,
+    boolean selected) {
 
   	if(hasFailures || hasNoData || hasNoRefRegr || hasReportErrors || isSimRunning || isSimFailed || needsReport || isSimNotRunFailOrDone){
-	  	component.setForeground(java.awt.Color.magenta);
+	  	if (!selected) {
+		  	component.setForeground(GuiConstants.WARNING_TEXT_COLOR);
+	  	}
   	}
   	
   	if(hasFailures && !hasNoData && !hasNoRefRegr && !hasReportErrors && !isSimRunning && !isSimFailed && !needsReport && !isSimNotRunFailOrDone){
-	  	component.setForeground(java.awt.Color.red);
+	  	if (!selected) {
+		  	component.setForeground(GuiConstants.ERROR_TEXT_COLOR);
+	  	}
   	}
  	
     String info = "";

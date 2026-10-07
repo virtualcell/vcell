@@ -204,6 +204,9 @@ public class ExportSpecs implements Serializable {
 			LG.warn("Export color mode '{}' is not registered; rendering with {} so the image is not labeled as the requested map",
 					colorMode, DisplayAdapterService.BLUERED);
 			colorMode = DisplayAdapterService.BLUERED;
+			if (displayPreferences != null) {
+				displayPreferences.replaceColorMode(colorMode, DisplayAdapterService.createBlueRedSpecialColors());
+			}
 		}
 		displayAdapterService.setActiveColorModelID(colorMode);
 		

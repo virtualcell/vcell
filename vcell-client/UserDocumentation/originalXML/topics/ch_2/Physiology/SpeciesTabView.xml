@@ -22,13 +22,13 @@
 		<item>The species <bold>Name</bold>.  New species are automatically named s_number. When a BNGL file is imported species names are automatically generated. 
 			The name can be edited in the column.</item> 
 		<item>The <def target = "def_structure">structure</def> that contains the species.</item>
-		<item><bold>Depiction</bold> depicts the molecular structure of the species. Species without molecular details appear as green shapes. 
-			Different molecules comprising a species appear as differently colored shapes, connect by bonds.  
-			Sites that have states are marked with a yellow dot. 
+		<item><bold>Depiction</bold> depicts the molecular structure of the species. Species without molecular details appear as shapes; the species name is in the Name column. 
+			Different molecules comprising a species appear as shapes connected by bonds, and each molecule's name is written on the shape when the diagram is large enough to show text.  
+			Sites that have states are marked with a dot. The state's name is written on the site in the species editor; a question mark means the state is not chosen. The dot may also be yellow.
 			The states of sites are omitted for clarity.</item>
 		<item><bold>Notes</bold> show a link icon if there are annotated links to database entries or a text bubble if there are text annotations for the species.  Double click in the Notes column to show the <link target ="PP_Annotations">Annotations Properties</link> Pane for a species.</item>	
 		<item><bold>Links</bold> show links to pathway items (see <link target="PathwayOverview">Biology Pathways</link>); double click on that link to navigate to the Pathway Diagram.</item>
-		<item><bold>BioNetGen Definition</bold> provides a BNGL string for species with molecular detail. The two ends of the same bond will have the same color font. This field is cannot be edited but is searchable.</item></list> 
+		<item><bold>BioNetGen Definition</bold> provides a BNGL string for species with molecular detail. The two ends of the same bond share the same bond index in that string. The font color may also match. This field cannot be edited but is searchable.</item></list> 
 	</appearance>
 	
 	<operations>

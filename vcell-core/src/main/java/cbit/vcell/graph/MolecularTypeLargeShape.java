@@ -28,6 +28,8 @@ import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.util.Displayable;
 import org.vcell.util.Issue;
+
+import cbit.vcell.client.constants.GuiConstants;
 import org.vcell.util.Issue.Severity;
 import org.vcell.util.IssueContext;
 
@@ -497,6 +499,29 @@ public class MolecularTypeLargeShape extends IssueManagerContainer implements La
 	}
 	
 	@Override
+	/**
+	 * Word drawn on a molecule that has error issues. The red outline is extra;
+	 * the word names the error without hue.
+	 */
+	static void paintErrorMark(Graphics2D g2, int x, int y) {
+		String mark = "error";
+		Font markFont = new Font(Font.SANS_SERIF, Font.BOLD, 11);
+		Object previousHint = g2.getRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING);
+		g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_OFF);
+		g2.setFont(markFont);
+		FontMetrics fm = g2.getFontMetrics();
+		int pad = 2;
+		int w = fm.stringWidth(mark) + pad * 2;
+		int h = fm.getHeight() + pad;
+		g2.setColor(Color.WHITE);
+		g2.fillRect(x, y, w, h);
+		g2.setColor(GuiConstants.ERROR_TEXT_COLOR);
+		g2.drawString(mark, x + pad, y + pad + fm.getAscent());
+		if (previousHint != null) {
+			g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, previousHint);
+		}
+	}
+
 	public void paintSelf(Graphics g) {
 		paintSpecies(g);
 	}
@@ -765,6 +790,9 @@ public class MolecularTypeLargeShape extends IssueManagerContainer implements La
 					g2.drawString(mtp.getParticipantMatchLabel(), textX + stringWidth + 2, textY + 2);
 				}
 			}
+		}
+		if (hasErrorIssues(owner, mt)) {
+			paintErrorMark(g2, xPos + 4, yPos + 4);
 		}
 		g.setFont(fontOld);
 		g.setColor(colorOld);

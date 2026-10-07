@@ -30,6 +30,7 @@ import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.gui.CollapsiblePanel;
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.PersistentFieldError;
 
 import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.solver.MeshSpecification;
@@ -59,6 +60,7 @@ public class MeshSpecificationPanel extends CollapsiblePanel {
 	private JTextField ivjDzTextField = new JTextField();
 	private JLabel ivjDyLabel = new JLabel("\u0394y");
 	private JLabel ivjDzLabel = new JLabel("\u0394z");
+	private final JLabel validationMessage = new JLabel(" ");
 	private Simulation simulation = null;
 
 class IvjEventHandler implements java.awt.event.FocusListener, ItemListener, DocumentListener {
@@ -97,6 +99,19 @@ class IvjEventHandler implements java.awt.event.FocusListener, ItemListener, Doc
 public MeshSpecificationPanel() {
 	super("Mesh Size");
 	initialize();
+}
+
+/** The sentence that stays after the error dialog closes. */
+JLabel validationMessage() {
+	return validationMessage;
+}
+
+void reportFieldError(JComponent field, String message) {
+	if (message == null) {
+		PersistentFieldError.clear(validationMessage, field);
+	} else {
+		PersistentFieldError.show(validationMessage, field, message);
+	}
 }
 
 /**
@@ -417,16 +432,20 @@ private void initConnections() {
 		public boolean shouldYieldFocus(final JComponent input) {
 			boolean bValid = true;
 			JTextField jtf = (JTextField)input;
+			String error = null;
 			try {
 				Integer.parseInt(jtf.getText());
 			} catch (NumberFormatException ex) {
-				DialogUtils.showErrorDialog(MeshSpecificationPanel.this, "Wrong number format " + ex.getMessage().toLowerCase());
+				error = "Wrong number format " + ex.getMessage().toLowerCase();
+				DialogUtils.showErrorDialog(MeshSpecificationPanel.this, error);
 				bValid = false;
 			}
 			if (bValid) {
 				input.setBorder(UIManager.getBorder("TextField.border"));
+				reportFieldError(jtf, null);
 			} else {
 				input.setBorder(GuiConstants.ProblematicTextFieldBorder);
+				reportFieldError(jtf, error);
 				SwingUtilities.invokeLater(new Runnable() { 
 				    public void run() { 
 				    	input.requestFocusInWindow();
@@ -618,6 +637,17 @@ private void initialize() {
 		gbc.insets = new java.awt.Insets(4, 4, 1, 4);
 		ivjDzTextField.setForeground(Color.blue);
 		getContentPanel().add(ivjDzTextField, gbc);
+
+		java.awt.GridBagConstraints constraintsValidationMessage = new java.awt.GridBagConstraints();
+		constraintsValidationMessage.gridx = 0;
+		constraintsValidationMessage.gridy = gridy + 1;
+		constraintsValidationMessage.gridwidth = 4;
+		constraintsValidationMessage.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		constraintsValidationMessage.weightx = 1.0;
+		constraintsValidationMessage.insets = new java.awt.Insets(4, 4, 4, 4);
+		constraintsValidationMessage.anchor = java.awt.GridBagConstraints.LINE_START;
+		validationMessage.setForeground(GuiConstants.ERROR_TEXT_COLOR);
+		getContentPanel().add(validationMessage, constraintsValidationMessage);
 		
 		initConnections();		
 	} catch (java.lang.Throwable ivjExc) {
@@ -878,10 +908,13 @@ private void autoUpdateSizes(DocumentEvent e) {
 			}
 		}
 		input.setBorder(UIManager.getBorder("TextField.border"));
+		reportFieldError(input, null);
 		updateTotalSizeAndSpatialStep();
 	} catch (NumberFormatException ex) {
-		DialogUtils.showErrorDialog(this, "Wrong number format " + ex.getMessage().toLowerCase());
-		input.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Color.red), BorderFactory.createEmptyBorder(2, 2, 2, 2)));
+		String message = "Wrong number format " + ex.getMessage().toLowerCase();
+		DialogUtils.showErrorDialog(this, message);
+		reportFieldError(input, message);
+		input.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(GuiConstants.ERROR_TEXT_COLOR), BorderFactory.createEmptyBorder(2, 2, 2, 2)));
 		clearTotalSizeAndSpatialStep();
 	} finally {
 		bInProgress = false;

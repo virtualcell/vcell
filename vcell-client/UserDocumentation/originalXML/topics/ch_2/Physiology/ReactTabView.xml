@@ -19,7 +19,7 @@
 		<item><bold>Depiction</bold> shows the molecular details of the reactants and products. Species that do not have molecular details are depicted as green balls. For reactions, molecular
 		details of species appear only if they are first specified in the <link target = "SpeciesTabView">Species</link> tab. For reaction rules, 
 		reactant and product molecular details are specified below in the <link target = "PP_ReactionRulesEditor"> Reaction Rules Properties</link> pane. 
-		For species with molecular details, yellow sites denote that the state of the site is specified in the Reaction Rule (e.g. bound/unbound, phosphorylated/unphosphorylated), grey sites are undefined in the Reaction Rule. Green sites indicate that multiple states are specified. </item>
+		For species with molecular details, a site whose state is specified in the Reaction Rule (for example bound or unbound, phosphorylated or unphosphorylated) has that state's name written on the site in the reaction-rule editor. A question mark means the state is not chosen. A site with more than one specified state lists those states in the editor. The table depiction may also fill a specified site yellow, an unspecified site grey, and a multi-state site green; the written name is how you tell. </item>
 		<item><bold>Kinetics</bold> list the kinetic type for the reaction; select the reaction and edit in the properties pane below. For reaction rules, only Mass Action kinetics are allowed. </item>
 		<item><bold>BioNetGen Definition</bold> provides the BioNetGen Language (BNGL) string that encodes the rule. It
 			cannot be edited but can be searched.</item>

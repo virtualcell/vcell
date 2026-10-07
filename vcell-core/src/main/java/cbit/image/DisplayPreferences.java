@@ -96,6 +96,14 @@ public String getColorMode() {
 	return colorMode;
 }
 
+/**
+ * Records the colormap that was actually drawn when the requested mode could not be used.
+ */
+public void replaceColorMode(String colorMode, int[] specialColors) {
+	this.colorMode = colorMode;
+	this.specialColors = specialColors;
+}
+
 
 /**
  * Insert the method's description here.

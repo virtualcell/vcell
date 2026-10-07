@@ -5,18 +5,18 @@
 	<introduction> 
 	The reactions diagram shows a bipartite graph of the phsyiological components of the model; this diagram can be used to construct the underlying physiology for the Biomodel.  It consists of
 	<def target = "def_species">species</def>
-	(<bold>green</bold> balls for species without <link target = "Molecules">molecular details</link>,
-	or <bold>blue</bold> balls for species with <link target = "Molecules">molecular details</link>) 
-	and <def target = "def_reactions">reaction</def> nodes(<bold>yellow</bold> squares),
+	(balls labeled with the species name: a plain ball when the species has no <link target = "Molecules">molecular details</link>,
+	or a ball that shows its molecules and sites when it has <link target = "Molecules">molecular details</link>) 
+	and <def target = "def_reactions">reaction</def> nodes (squares labeled with the reaction name),
 	each within the appropriate
-	compartment.  Lines connect species that participate in a reaction.  In rule-based models, species patterns representing reactants and products defined within rules are depicted with ovals around balls (molecules) of various colors.
+	compartment.  Lines connect species that participate in a reaction.  In rule-based models, species patterns representing reactants and products defined within rules are depicted with ovals around balls. Each molecule is labeled with its name.
 	</introduction>
 	
 	<appearance> 
 	<imgReference target = "ReactDiagView2.png"/> 
 	<para> 
 	Structures are depicted as connected rectangles within the workspace. 
-	Lines each connect one species (green or blue balls) with one reaction (yellow square): solid lines with arrows denote reactants and products with the arrow indicating the direction of the forward reaction; dashed lines denote catalysts as defined by the reaction kinetics.
+	Lines each connect one species ball with one reaction square: solid lines with arrows denote reactants and products with the arrow indicating the direction of the forward reaction; dashed lines denote catalysts as defined by the reaction kinetics. Each node is labeled with its name.
 	Stoichiometric coefficients, if different from one, are displayed next to the appropriate lines. Toolbars above and below the diagram provide tools to edit the diagram.
 	</para>
 	<para> When a single object in the graph is selected, properties of that object are displayed in the Properties Pane in the bottom right pane of the window.  Kinetics of reactions and fluxes are edited in this pane, as described in the <link target = "PP_Reactions">reaction</link> and the <link target = "PP_MemFlux">membrane flux</link> Properties Pane Help.
@@ -70,7 +70,7 @@
 		Buttons to the right of the layout buttons alter the depiction of species and reactions in the diagram and are particularly useful for <bold>Rule-based models</bold>.
 	    <imgReference target="RxDiag_RulePartUngroup.png"/>  Depicts reaction rules individually; species are repeated for each rule in which they participate.  Only appears when a rule-based model is opened.
 	    <imgReference target="RxDiag_RulePartGroup.png"/>  Depicts reaction rules organized by individual species. Only appears when a rule-based model is opened.
-	    <imgReference target="RxDiag_HighlightCatalyst.png"/>  Toggles all catalysts to be colored distinct from reactant and product species.
+	    <imgReference target="RxDiag_HighlightCatalyst.png"/>  Toggles a distinct depiction for catalysts. Each species stays labeled with its name, and a dashed line already marks a catalyst, so the catalyst is not identified by color alone.
 		<imgReference target="RxDiag_EqSpecies.png"/>  Depicts all species as the same size.
 		<imgReference target="RxDiag_RxSizeSpecies.png"/>  Depicts species as different sizes based on the number of reactions they are involved in.
 		<imgReference target="RxDiag_MolSizeSpecies.png"/>  Depicts species as different sizes based on the number of molecules that make up the species.

@@ -150,6 +150,14 @@ private DataSetController getDataSetController() throws DataAccessException {
  *
  * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
  */
+public String[] getSupportedExportColorModes() throws DataAccessException {
+	try {
+		return getDataSetController().getSupportedExportColorModes();
+	} catch (RemoteProxyException e) {
+		throw new DataAccessException(e.getMessage(), e);
+	}
+}
+
 public synchronized double[] getDataSetTimes(VCDataIdentifier vcdID) throws DataAccessException {
 	try {
 		return getDataSetController().getDataSetTimes(vcdID);
