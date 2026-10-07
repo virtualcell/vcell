@@ -161,4 +161,139 @@ public class FenicsBundleDataServerTest {
 		again.meshBytes("cytosol_dom", 0);
 		assertEquals(before + 1, calls.get(), "only .zattrs is re-read");
 	}
+	@Test
+	public void servesSeveralFilesInOneCall() throws Exception {
+		File bundle = installBundle(primary);
+		DataSetControllerImpl ds = dataServer();
+		String[] paths = { "cytosol_dom/u/0.0", "cytosol_dom/u/7.0", ".zattrs", "cytosol_dom/u/2.0" };
+		byte[][] files = ds.getFenicsBundleFiles(SIM, paths);
+		assertEquals(4, files.length, "a small batch comes back whole");
+		assertArrayEquals(Files.readAllBytes(new File(bundle, "cytosol_dom/u/0.0").toPath()), files[0]);
+		assertNull(files[1], "an unwritten chunk is absent, not an error");
+		assertArrayEquals(Files.readAllBytes(new File(bundle, ".zattrs").toPath()), files[2]);
+		assertArrayEquals(Files.readAllBytes(new File(bundle, "cytosol_dom/u/2.0").toPath()), files[3]);
+		assertThrows(IllegalArgumentException.class, () -> ds.getFenicsBundleFiles(SIM, new String[] { ".zattrs", "../secret" }));
+		assertThrows(DataAccessException.class, () -> ds.getFenicsBundleFiles(SIM,
+				new String[DataSetControllerImpl.MAX_FENICS_BUNDLE_BATCH_PATHS + 1]));
+
+		// over the wire, by reflection, as the data server answers it
+		cbit.vcell.simdata.DataServerImpl server = new cbit.vcell.simdata.DataServerImpl(ds, null);
+		cbit.vcell.message.VCRpcRequest request = roundTrip(new cbit.vcell.message.VCRpcRequest(OWNER,
+				cbit.vcell.message.VCRpcRequest.RpcServiceType.DATA, "getFenicsBundleFiles", new Object[] { OWNER, SIM, paths }));
+		byte[][] reply = (byte[][]) roundTrip(request.rpc(server));
+		for (int i = 0; i < paths.length; i++) {
+			assertArrayEquals(files[i], reply[i]);
+		}
+	}
+
+	@Test
+	public void aLargeBatchAnswersAPrefix() throws Exception {
+		File bundle = installBundle(primary);
+		DataSetControllerImpl ds = dataServer();
+		long twoChunks = new File(bundle, "cytosol_dom/u/1.0").length() + new File(bundle, "cytosol_dom/u/2.0").length();
+		String[] paths = { "cytosol_dom/u/1.0", "cytosol_dom/u/2.0", "cytosol_dom/u/0.0", "cytosol_dom/u/3.0" };
+		byte[][] files = ds.getFenicsBundleFiles(SIM, paths, twoChunks);
+		assertEquals(2, files.length, "the reply stops before it would pass the byte budget");
+		assertEquals(1, ds.getFenicsBundleFiles(SIM, paths, 1).length, "a reply always carries the first file");
+	}
+
+	/** an old data server, a failing one, and one that answers in parts, as the client store sees them */
+	@Test
+	public void theClientStoreBatchesAndFallsBack() throws Exception {
+		installBundle(primary);
+		DataSetControllerImpl ds = dataServer();
+		AtomicInteger singles = new AtomicInteger();
+		AtomicInteger batches = new AtomicInteger();
+		String[] mode = { "prefix" };
+		DataServerBundleStore store = new DataServerBundleStore(new DataServerBundleStore.Server() {
+			@Override
+			public byte[] file(String relativePath) throws DataAccessException {
+				singles.incrementAndGet();
+				return ds.getFenicsBundleFile(SIM, relativePath);
+			}
+
+			@Override
+			public byte[][] files(String[] relativePaths) throws DataAccessException {
+				batches.incrementAndGet();
+				switch (mode[0]) {
+					case "old": throw new DataAccessException("No such method: getFenicsBundleFiles(cbit.vcell.solver.VCSimulationDataIdentifier,[Ljava.lang.String;)");
+					case "failing": throw new DataAccessException("Server is temporarily not responding");
+					default: return java.util.Arrays.copyOf(ds.getFenicsBundleFiles(SIM, relativePaths), Math.min(2, relativePaths.length));
+				}
+			}
+		}, "test");
+		List<String> paths = List.of("cytosol_dom/u/0.0", "cytosol_dom/u/1.0", "cytosol_dom/u/7.0", "cytosol_dom/u/2.0", ".zattrs");
+		byte[][] expected = new byte[paths.size()][];
+		for (int i = 0; i < expected.length; i++) {
+			expected[i] = ds.getFenicsBundleFile(SIM, paths.get(i));
+		}
+
+		byte[][] got = store.readAll(paths);
+		for (int i = 0; i < expected.length; i++) {
+			assertArrayEquals(expected[i], got[i], paths.get(i));
+		}
+		assertEquals(3, batches.get(), "answered two at a time: three calls");
+		assertEquals(0, singles.get());
+
+		mode[0] = "failing";
+		got = store.readAll(paths);
+		assertArrayEquals(expected[3], got[3]);
+		assertEquals(4, batches.get());
+		assertEquals(5, singles.get(), "a failed batch falls back to one file at a time");
+
+		mode[0] = "old";
+		store.readAll(paths);
+		store.readAll(paths);
+		assertEquals(5, batches.get(), "an old data server is asked for a batch once, then never again");
+		assertEquals(15, singles.get());
+	}
+
+	@Test
+	public void theCacheFetchesAVariablesRowsTogetherAndStaysWithinItsBudget() throws Exception {
+		File bundle = installBundle(primary);
+		DataSetControllerImpl ds = dataServer();
+		AtomicInteger singles = new AtomicInteger();
+		AtomicInteger batches = new AtomicInteger();
+		DataServerBundleStore remote = new DataServerBundleStore(new DataServerBundleStore.Server() {
+			@Override
+			public byte[] file(String relativePath) throws DataAccessException {
+				singles.incrementAndGet();
+				return ds.getFenicsBundleFile(SIM, relativePath);
+			}
+
+			@Override
+			public byte[][] files(String[] relativePaths) throws DataAccessException {
+				batches.incrementAndGet();
+				return ds.getFenicsBundleFiles(SIM, relativePaths);
+			}
+		}, "test");
+		FenicsBundle local = FenicsBundle.open(FenicsBundleTest.fixture("membrane_efflux"));
+		int n = local.getTimes().size();
+		int[] rows = new int[n];
+		for (int i = 0; i < n; i++) {
+			rows[i] = i;
+		}
+
+		FenicsBundle viaCache = FenicsBundle.open(BundleStore.cached(remote));
+		viaCache.prefetchField("cytosol_dom", "u", rows);
+		assertEquals(1, batches.get(), "every row in one call");
+		int afterPrefetch = singles.get();
+		for (int row = 0; row < n; row++) {
+			assertArrayEquals(local.field("cytosol_dom", "u", row), viaCache.field("cytosol_dom", "u", row), 0.0);
+		}
+		assertEquals(afterPrefetch, singles.get(), "the rows were already there");
+		viaCache.prefetchField("cytosol_dom", "u", rows);
+		assertEquals(1, batches.get(), "nothing left to fetch");
+
+		// a budget of two chunks keeps only the two most recently used
+		long twoChunks = new File(bundle, "cytosol_dom/u/1.0").length() + new File(bundle, "cytosol_dom/u/2.0").length();
+		BundleStore small = BundleStore.cached(remote, twoChunks);
+		small.prefetch(List.of("cytosol_dom/u/0.0", "cytosol_dom/u/1.0", "cytosol_dom/u/2.0"));
+		int before = singles.get();
+		small.read("cytosol_dom/u/2.0");
+		small.read("cytosol_dom/u/1.0");
+		assertEquals(before, singles.get(), "the newest two are kept");
+		small.read("cytosol_dom/u/0.0");
+		assertEquals(before + 1, singles.get(), "the oldest was evicted");
+	}
 }

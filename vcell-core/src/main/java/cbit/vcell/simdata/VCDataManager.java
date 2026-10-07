@@ -327,6 +327,21 @@ public synchronized byte[] getFenicsBundleFile(VCDataIdentifier vcdID, String re
 	}
 }
 
+/** several files of a FEniCSx results bundle, possibly only a prefix of them; see DataSetController */
+public synchronized byte[][] getFenicsBundleFiles(VCDataIdentifier vcdID, String[] relativePaths) throws DataAccessException {
+	try {
+		return getDataSetController().getFenicsBundleFiles(vcdID, relativePaths);
+	}catch (RemoteProxyException e){
+		handleRemoteProxyException(e);
+		try {
+			return getDataSetController().getFenicsBundleFiles(vcdID, relativePaths);
+		}catch (RemoteProxyException e2){
+			handleRemoteProxyException(e2);
+			throw new RuntimeException(e2.getMessage());
+		}
+	}
+}
+
 public synchronized NFSimMolecularConfigurations getNFSimMolecularConfigurations(VCDataIdentifier vcdID) throws DataAccessException {
 	try {
 		return getDataSetController().getNFSimMolecularConfigurations(vcdID);

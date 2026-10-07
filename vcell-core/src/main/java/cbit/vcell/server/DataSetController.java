@@ -95,6 +95,20 @@ cbit.vcell.solver.ode.ODESimData getODEData(VCDataIdentifier vcdataID) throws Da
  	return null;
  }
 
+/**
+ * getFenicsBundleFiles - several files of a FEniCSx results bundle in one call (a kymograph's rows),
+ * each null if it does not exist. The answer may be a PREFIX of the paths asked for: the data server
+ * stops adding files once the reply is large enough, and the caller asks again for the rest. Default
+ * reads them one by one through {@link #getFenicsBundleFile}.
+ */
+ default byte[][] getFenicsBundleFiles(VCDataIdentifier vcdataID, String[] relativePaths) throws DataAccessException, RemoteProxyException {
+ 	byte[][] files = new byte[relativePaths.length][];
+ 	for (int i = 0; i < files.length; i++) {
+ 		files[i] = getFenicsBundleFile(vcdataID, relativePaths[i]);
+ 	}
+ 	return files;
+ }
+
  /**
  * This method was created in VisualAge.
  * @return ParticleData

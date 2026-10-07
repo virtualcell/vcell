@@ -217,6 +217,17 @@ public cbit.vcell.solver.ode.ODESimData getODEData(User user, VCDataIdentifier v
 		}
 	}
 
+	/** several bundle files in one RPC; see {@link DataSetControllerImpl#getFenicsBundleFiles} */
+	public byte[][] getFenicsBundleFiles(User user, VCDataIdentifier vcdID, String[] relativePaths) throws DataAccessException {
+		checkReadAccess(user, vcdID);
+		try {
+			return dataSetControllerImpl.getFenicsBundleFiles(vcdID, relativePaths);
+		}catch (Throwable e){
+			lg.error(e.getMessage(), e);
+			throw new DataAccessException(e.getMessage());
+		}
+	}
+
 
 /**
  * This method was created by a SmartGuide.

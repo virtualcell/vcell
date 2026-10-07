@@ -77,6 +77,11 @@ public byte[] getFenicsBundleFile(VCDataIdentifier vcdID, String relativePath) t
 	return (byte[])rpc("getFenicsBundleFile",new Object[]{userLoginInfo.getUser(), vcdID, relativePath});
 }
 
+/** a data server older than this call answers "No such method: getFenicsBundleFiles(...)" */
+public byte[][] getFenicsBundleFiles(VCDataIdentifier vcdID, String[] relativePaths) throws org.vcell.util.DataAccessException {
+	return (byte[][])rpc("getFenicsBundleFiles",new Object[]{userLoginInfo.getUser(), vcdID, relativePaths});
+}
+
 public ParticleDataBlock getParticleDataBlock(VCDataIdentifier vcdID, double time) throws org.vcell.util.DataAccessException {
 	return (ParticleDataBlock)rpc("getParticleDataBlock",new Object[]{userLoginInfo.getUser(), vcdID,time});
 }

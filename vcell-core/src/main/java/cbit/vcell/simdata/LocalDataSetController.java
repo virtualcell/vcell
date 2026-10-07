@@ -141,6 +141,11 @@ public cbit.vcell.solver.ode.ODESimData getODEData(VCDataIdentifier vcdID) throw
 		return dataServerImpl.getFenicsBundleFile(user, vcdataID, relativePath);
 	}
 
+	@Override
+	public byte[][] getFenicsBundleFiles(VCDataIdentifier vcdataID, String[] relativePaths) throws DataAccessException, RemoteProxyException {
+		return dataServerImpl.getFenicsBundleFiles(user, vcdataID, relativePaths);
+	}
+
 
 	/**
  * This method was created by a SmartGuide.
