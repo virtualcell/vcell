@@ -1984,7 +1984,12 @@ public class SBMLImporter {
         //
         try {
             Geometry geometry = new Geometry(BioModelChildSummary.COMPARTMENTAL_GEO_STR, 0);
-            SimulationContext simulationContext = new SimulationContext(vcBioModel.getModel(), geometry, null, null, Application.NETWORK_DETERMINISTIC);
+            // a spatial model with any species represented as particles imports as a spatial stochastic application
+            // (see applySpeciesRepresentation); it is created stochastic here so that everything mapped onto it
+            // during import (e.g. initial conditions in the SBMLSymbolMapping) stays valid.
+            Application appType = isSpatialModel(sbmlModel) && hasParticleSpecies(sbmlModel)
+                    ? Application.NETWORK_STOCHASTIC : Application.NETWORK_DETERMINISTIC;
+            SimulationContext simulationContext = new SimulationContext(vcBioModel.getModel(), geometry, null, null, appType);
             vcBioModel.addSimulationContext(simulationContext);
             simulationContext.setName(vcBioModel.getSimulationContext(0).getModel().getName());
         } catch(Exception e){        // PropertyVetoException
@@ -3031,6 +3036,7 @@ public class SBMLImporter {
         createAssignmentRules(sbmlModel, vcBioModel, sbmlSymbolMapping, localIssueList, issueContext, vcLogger);
         createRateRules(sbmlModel, vcBioModel, sbmlSymbolMapping);
         postProcessing(vcBioModel);
+        applySpeciesRepresentation(sbmlModel, vcBioModel, sbmlSymbolMapping, localIssueList, issueContext);
 
         vcBioModel.refreshDependencies();
 
@@ -3232,6 +3238,82 @@ public class SBMLImporter {
             } catch(Exception e){
                 logger.error("failed to set expression for SBML object " + assignmentRuleTargetSbase + " on vcell object " + assignmentRuleTargetSte);
             }
+        }
+    }
+
+    private static boolean isSpatialModel(org.sbml.jsbml.Model sbmlModel){
+        SpatialModelPlugin mplugin = (SpatialModelPlugin) sbmlModel.getPlugin(SBMLUtils.SBML_SPATIAL_NS_PREFIX);
+        return mplugin != null && mplugin.isSetGeometry();
+    }
+
+    /**
+     * The species' representation from its vcell annotation
+     * (&lt;vcell:SpeciesContextSpecSettings vcell:representation="continuous|particle"/&gt;), or null when absent
+     * (which means continuous).
+     */
+    static String getSpeciesRepresentation(org.sbml.jsbml.Species sbmlSpecies){
+        if(!sbmlSpecies.isSetAnnotation()){
+            return null;
+        }
+        XMLNode speciesNonRdfAnnotation = sbmlSpecies.getAnnotation().getNonRDFannotation();
+        if(speciesNonRdfAnnotation == null){
+            return null;
+        }
+        XMLNode settings = speciesNonRdfAnnotation.getChildElement(XMLTags.SBML_VCELL_SpeciesContextSpecSettingsTag, "*");
+        if(settings == null){
+            return null;
+        }
+        int index = settings.getAttrIndex(XMLTags.SBML_VCELL_SpeciesContextSpecSettingsTag_representationAttr, SBMLUtils.SBML_VCELL_NS);
+        if(index < 0){
+            return null;
+        }
+        String value = settings.getAttrValue(index);
+        if(!value.equals(XMLTags.SBML_VCELL_Representation_continuous) && !value.equals(XMLTags.SBML_VCELL_Representation_particle)){
+            throw new RuntimeException("unexpected value '" + value + "' for " + XMLTags.SBML_VCELL_SpeciesContextSpecSettingsTag + ":"
+                    + XMLTags.SBML_VCELL_SpeciesContextSpecSettingsTag_representationAttr + " of species '" + sbmlSpecies.getId()
+                    + "' (expected '" + XMLTags.SBML_VCELL_Representation_continuous + "' or '" + XMLTags.SBML_VCELL_Representation_particle + "')");
+        }
+        return value;
+    }
+
+    private static boolean hasParticleSpecies(org.sbml.jsbml.Model sbmlModel){
+        for(org.sbml.jsbml.Species sbmlSpecies : sbmlModel.getListOfSpecies()){
+            if(XMLTags.SBML_VCELL_Representation_particle.equals(getSpeciesRepresentation(sbmlSpecies))){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * In a spatial stochastic application (created when a spatial model has 'particle' species), every species not
+     * represented as particles is forced continuous, which makes the application a PDE/particle hybrid. Clamped
+     * species are always continuous. In a non-spatial model the representation is ignored, with a warning.
+     */
+    private static void applySpeciesRepresentation(org.sbml.jsbml.Model sbmlModel, BioModel vcBioModel, SBMLSymbolMapping sbmlSymbolMapping,
+                                                   Vector<Issue> localIssueList, IssueContext issueContext){
+        SimulationContext simContext = vcBioModel.getSimulationContext(0);
+        if(!(simContext.isStoch() && simContext.getGeometry().getDimension() > 0)){
+            if(hasParticleSpecies(sbmlModel)){
+                localIssueList.add(new Issue(vcBioModel, issueContext, IssueCategory.SBMLImport_UnsupportedAttributeOrElement,
+                        "species represented as particles in a non-spatial model: the representation is ignored", Issue.Severity.WARNING));
+            }
+            return;
+        }
+        simContext.fixFlags(); // well-mixed applies to deterministic spatial applications only
+        for(SpeciesContextSpec scs : simContext.getReactionContext().getSpeciesContextSpecs()){
+            SBase sbase = sbmlSymbolMapping.getSBase(scs.getSpeciesContext(), SymbolContext.RUNTIME);
+            if(!(sbase instanceof org.sbml.jsbml.Species)){
+                continue;
+            }
+            org.sbml.jsbml.Species sbmlSpecies = (org.sbml.jsbml.Species) sbase;
+            boolean bParticle = XMLTags.SBML_VCELL_Representation_particle.equals(getSpeciesRepresentation(sbmlSpecies));
+            if(bParticle && scs.isClamped()){
+                localIssueList.add(new Issue(vcBioModel, issueContext, IssueCategory.SBMLImport_RestrictedFeature,
+                        "species '" + sbmlSpecies.getId() + "' is clamped and cannot be particles: it is continuous", Issue.Severity.WARNING));
+                bParticle = false;
+            }
+            scs.setForceContinuous(!bParticle);
         }
     }
 
