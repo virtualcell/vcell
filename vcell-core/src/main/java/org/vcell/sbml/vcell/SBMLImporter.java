@@ -50,6 +50,7 @@ import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.AnnotatedFunction.FunctionCategory;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitSystem;
+import cbit.vcell.biomodel.ModelUnitConverter;
 import cbit.vcell.xml.XMLTags;
 import cbit.vcell.xml.XmlHelper;
 import org.apache.commons.io.FileUtils;
@@ -1953,7 +1954,7 @@ public class SBMLImporter {
         //
         // create VCell unit system from the SBML model and create the bioModel.
         //
-        final BioModel vcBioModel;
+        BioModel vcBioModel;
         final HashMap<String, VCUnitDefinition> sbmlUnitIdentifierHash = new HashMap<>();
         ModelUnitSystem modelUnitSystem;
         try {
@@ -2017,6 +2018,23 @@ public class SBMLImporter {
             translateSBMLModel(sbmlModel, vcBioModel, sbmlAnnotationUtil, sbmlUnitIdentifierHash, sbmlSymbolMapping, vcLogger);
         } catch(Exception e){
             throw new SBMLImportException("Failed to translate SBML model into BioModel: " + e.getMessage(), e);
+        }
+
+        //
+        // VCell's spatial stochastic math (Smoldyn, and the PDE/particle hybrid) is only consistent in VCell's default
+        // units: with another length unit the Smoldyn world takes the model's lengths (e.g. dm) while field-dependent
+        // particle creation stays per um3, so it creates almost nothing. Convert such a model to the default units
+        // (geometry included). This replaces the BioModel, so getSymbolMapping() no longer refers to it.
+        //
+        SimulationContext importedSimContext = vcBioModel.getSimulationContext(0);
+        ModelUnitSystem vcellUnitSystem = ModelUnitSystem.createDefaultVCModelUnitSystem();
+        if(importedSimContext.isStoch() && importedSimContext.getGeometry().getDimension() > 0
+                && !vcBioModel.getModel().getUnitSystem().compareEqual(vcellUnitSystem)){
+            try {
+                vcBioModel = ModelUnitConverter.createBioModelWithNewUnitSystem(vcBioModel, vcellUnitSystem);
+            } catch(Exception e){
+                throw new SBMLImportException("Failed to convert spatial stochastic model to VCell units: " + e.getMessage(), e);
+            }
         }
 
         //

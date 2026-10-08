@@ -8,6 +8,7 @@ import cbit.vcell.math.MathCompareResults;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.ParticleVariable;
 import cbit.vcell.math.VolVariable;
+import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.xml.XMLSource;
@@ -49,7 +50,8 @@ public class SBMLSpatialHybridTest {
 
 	/**
 	 * A hybrid application (A particles, B a continuous field; A_p -> B and B -> A_p) exports with an explicit
-	 * representation per species and imports back as the same hybrid, with equivalent math.
+	 * representation per species and imports back as the same hybrid, in VCell units, with math equivalent to the
+	 * original's.
 	 */
 	@Test
 	public void testHybridRoundTrip() throws Exception {
@@ -77,11 +79,16 @@ public class SBMLSpatialHybridTest {
 		Assertions.assertFalse(spec(imported, "A").isForceContinuous(), "A should import as particles");
 		Assertions.assertTrue(spec(imported, "B").isForceContinuous(), "B should import as continuous");
 
+		// spatial stochastic math is only consistent in VCell's units, so the import converts back to them
+		Assertions.assertTrue(roundTrip.getModel().getUnitSystem().compareEqual(ModelUnitSystem.createDefaultVCModelUnitSystem()));
+		Assertions.assertTrue(original.getGeometry().getExtent().compareEqual(imported.getGeometry().getExtent()),
+				"extent " + imported.getGeometry().getExtent() + " is not the original's");
+
 		MathDescription math = imported.getMathDescription();
 		Assertions.assertTrue(math.getVariable("A") instanceof ParticleVariable, "A is not a particle variable");
 		Assertions.assertTrue(math.getVariable("B") instanceof VolVariable, "B is not a continuous variable");
 		MathCompareResults equivalent = MathDescription.testEquivalency(SimulationSymbolTable.createMathSymbolTableFactory(),
-				bioModelSBML.getSimulationContext(0).getMathDescription(), math);
+				original.getMathDescription(), math);
 		Assertions.assertTrue(equivalent.isEquivalent(), "math descriptions didn't match: " + equivalent.toDatabaseStatus());
 	}
 
