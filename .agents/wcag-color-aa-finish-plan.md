@@ -1,7 +1,8 @@
 # WCAG color AA finish plan
 
 **Date:** 2026-10-07
-**Branch under test:** `chore/vcell#1605` at `e21a3024c4` (clean working tree)
+**Branch under test:** `chore/vcell#1605` at `d1077b2ec5`, which contains the C1–C10
+code and evidence. C11 has no commit yet, and the C12 record is uncommitted working tree.
 **Status:** execution plan. Not a conformance claim. Not a closure of #1605 or #1603.
 
 This plan is what remains to meet the color-accessibility requirements named below. Provenance
@@ -9,7 +10,10 @@ and the phase 0–7 build log stay in
 [`.agents/uconn-color-blind-accessibility-verified.md`](uconn-color-blind-accessibility-verified.md).
 The 2026-09-30 inventory is
 [`docs/accessibility/color-audit.md`](../docs/accessibility/color-audit.md) on
-`docs/1605-color-audit` (PR [#2141](https://github.com/virtualcell/vcell/pull/2141), open).
+`docs/1605-color-audit` (PR [#2141](https://github.com/virtualcell/vcell/pull/2141)).
+That PR was not merged here; every finding row is reproduced with its disposition in
+this build in [`docs/accessibility/evidence/2026-10-c12-audit/`](../docs/accessibility/evidence/2026-10-c12-audit/)
+(closeout C12, 2026-10-08).
 
 ---
 
@@ -93,7 +97,7 @@ log; they are not a human pass.
 | Spatial colormap | 1.4.1, 1.4.11 | Cividis is registered after Gray and BlueRed. Special colors contrast at least 3:1 with both stored endpoints and have names. BlueRed stays the default. | Opened BlueRed results window, closeout C4, 2026-10-07. Client must not send Cividis to an old export server (R2). |
 | Field viewer series and text | 1.4.1, 1.4.3, 1.4.11 | Light palette matches `CVD_SAFE_LIGHT`. Dark palette is measured. Traces and swatches use the dash cycle. `#157347` replaces `#2a7`. Dark error and warning colors are in CSS. 32/32 source pairs passed the 8.5 script. 193 Chromium tests passed in the phase 6 log. | fv3d `setTable` run is in the R7 result. Closeout C8, 2026-10-07: live fenics2d probes P1–P3 match by name in grayscale and a Machado protan filter. |
 | Overrides table and simulation console | 1.4.3, 1.4.1 | `ERROR_TEXT_COLOR` (`#A40000`) and `WARNING_TEXT_COLOR` (`#8A4B00`). Console lines start with `[Error]`, `[Warning]`, or `[Stopped]`. The six R4 text sites use those colors, with the severity in the words. | Selected rows use the look-and-feel selection ink, measured in R4. `ConstraintPanel` is not a shipped screen (R5). `AnalysisTableRenderer` was recolored in R9. `MyRenderer` leads with the status word and uses ≥ 4.5:1 inks (R4 update, closeout C1). |
-| Seven help pages | 1.3.3 | Those pages name a non-color cue. The help target was rebuilt. | Closeout C10, 2026-10-07: JavaHelp Observables page matches the properties editor (state name and question mark). The pages on vcell.org still say “shown in green” (R6). |
+| Seven help pages | 1.3.3 | Those pages name a non-color cue. The help target was rebuilt. | Rewritten local and JavaHelp pages are done (closeout C10: Observables names the written state and the question mark). Only the copies published on vcell.org still say “shown in green” (R6). |
 
 `generateAutoColor`, `TABLEAU20`, `DARK20`, and `COLORBLIND20` are unchanged because solver
 and FRAP input depend on their exact values. New UI must not call `generateAutoColor` for
@@ -571,7 +575,7 @@ without the evidence is not allowed.
 - [x] R8: badge text is at least 4.5:1 in the default theme. `webapp-ng` ships no dark theme. Badge words are the state. Running app, closeout C7, 2026-10-07: computed styles at 976px and 375px match the CSS table (lowest Archived 5.60:1). Footer link opened `https://accessibility.uconn.edu/`. The link is not a 1.4.1 pass.
 - [x] R9: SpringSaLaD marks differ in grayscale and Alt+I isolates a site; when more than four types are co-visible every sprite also carries its type name (closeout C2). ROI selection is the region name, the boundary checker does not write the mask, and the keyboard stroke and mouse stroke leave byte-identical ROI pixel buffers (closeout C3). FRAP `#5C0000` clears the pink, white, and hover paper, and selected rows keep the selection ink. `Colors.java` and the solver writers were not edited. 24 tests, 0 failures, 2026-10-07T16:39:27-04:00; C1–C3 run 32 tests, 0 failures, 2026-10-07T17:30:10-04:00. A painted-ROI before/after raster was not saved.
 - [ ] R10: two reviewers, three desktop platforms, every script item yes. The script was not run. Windows and Linux were not used.
-- [ ] The audit PR #2141 is merged, or its rows are reproduced in the evidence for this build.
+- [x] Every finding row of audit PR #2141 is reproduced with its disposition in the evidence for this build (`docs/accessibility/evidence/2026-10-c12-audit/`, closeout C12, 2026-10-08). The PR itself is not merged.
 
 When those boxes are true, this branch meets **WCAG 2.1 AA color criteria 1.3.3, 1.4.1,
 1.4.3, and 1.4.11** for the Swing client under WCAG2ICT, and **WCAG 2.2 AA for those same
