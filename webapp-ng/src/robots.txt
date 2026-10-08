@@ -1,0 +1,18 @@
+# https://vcell.cam.uchc.edu/robots.txt
+#
+# The /api/ paths are machine interfaces returning JSON and VCML, not pages. They are
+# not useful as search results, and fetching one is not cheap: a single request to
+# /api/v0/biomodel/{id}/simulation/{id} can parse a multi-megapixel geometry. On
+# 2026-08-22 a crawler walking those links exhausted the heap of two api pods.
+#
+# Crawl-delay is deliberately not used. It is not part of the robots.txt standard and
+# Google ignores it outright, so it would read as a control while being none. A slower
+# crawl would also still pay the full parse cost per request.
+#
+# The web application at / stays crawlable. If published models should be
+# discoverable, that belongs in real pages plus a sitemap, not in crawlers walking the
+# API.
+
+User-agent: *
+Disallow: /api/
+Disallow: /n5Data/
