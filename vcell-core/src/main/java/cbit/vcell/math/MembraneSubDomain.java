@@ -370,7 +370,7 @@ public boolean compareEqual(Matchable object) {
 	if (!super.compareEqual0(object)){
 		return false;
 	}
-	if (!Compare.isEqualFields(this,object)) {
+	if (Compare.hasNonEqualFields(this, object)) {
 		return false;
 	}
 	// compare jumpConditions

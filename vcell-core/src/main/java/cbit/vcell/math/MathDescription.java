@@ -33,6 +33,7 @@ import org.vcell.util.document.BioModelChildSummary.MathType;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.Versionable;
+import org.vcell.util.Compare.Nullness;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -1014,7 +1015,7 @@ public class MathDescription implements Versionable, Matchable, SymbolTable, Ser
     private static boolean compareUpdate(Expression nExp, Expression oExp, Consumer<Expression> newSet){
 
         Objects.requireNonNull(newSet);
-        switch(Compare.nullState(nExp, oExp)){
+        switch(Compare.Nullness.determineNullState(nExp, oExp)){
             case BOTH_NULL:
                 return true;
             case FIRST_NULL:

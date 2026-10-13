@@ -11,6 +11,7 @@
 package cbit.vcell.math;
 import java.io.Serializable;
 import java.util.*;
+import java.util.stream.Stream;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -571,6 +572,14 @@ public Equation getEquation(Variable variable) {
  */
 public Enumeration<Equation> getEquations() {
 	return equationList.elements();
+}
+
+public List<Equation> getEquationList() {
+	return Collections.unmodifiableList(equationList);
+}
+
+public Stream<Equation> getEquationStream() {
+	return equationList.stream();
 }
 
 /**

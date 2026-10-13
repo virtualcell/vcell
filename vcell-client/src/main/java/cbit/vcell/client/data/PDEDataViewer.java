@@ -3267,7 +3267,7 @@ private BitSet calcInDomainBitSet(){
 }
 
 private void calcAutoAllTimes() throws Exception {
-	HashSet<String> stateVarNames = null;
+	Set<String> stateVarNames = null;
 	Variable theVariable = null;
 	boolean bStateVar = true;
 	boolean isFieldData = getPdeDataContext().getVCDataIdentifier() instanceof ExternalDataIdentifier || getPdeDataContext().getVCDataIdentifier() instanceof MergedDataInfo;
