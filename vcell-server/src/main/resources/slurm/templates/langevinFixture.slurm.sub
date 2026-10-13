@@ -80,10 +80,13 @@ echo "WATCHDOG_TIMEOUT_SECONDS: ${WATCHDOG_TIMEOUT_SECONDS}" >> "${LOG_FILE}"
 # watchdog solver invocation (monitors the other jobs and sends progress messages)
 # timeouts early if no jobs is being launched, does not timeout once in main loop
 echo "Starting watchdog job at $(date)" >> "${LOG_FILE}"
+CUTOFF_TIME=$(date +%s)   # log files older than this are stale
 ${slurm_prefix} ${solver_container_prefix} \
         langevin_x64 watchdog \
         "${INPUT_DIR}/SimID_${SIM_KEY}_0_.langevinInput" \
         ${TOTAL_JOBS} \
+        --max-concurrent-jobs="${max_concurrent_jobs}" \
+        --watchdog-cutoff="${CUTOFF_TIME}" \
         --watchdog-tick="${WATCHDOG_TICK_SECONDS}" \
         --watchdog-timeout="${WATCHDOG_TIMEOUT_SECONDS}" \
         --vc-send-status-config="${INPUT_DIR}/SimID_${SIM_KEY}_0_.langevinMessagingConfig" &
