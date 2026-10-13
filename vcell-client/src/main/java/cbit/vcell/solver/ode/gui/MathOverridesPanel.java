@@ -16,6 +16,7 @@ import java.awt.event.MouseEvent;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.Semaphore;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -26,6 +27,8 @@ import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.copypaste.PasteOperationDataSource;
 import cbit.vcell.desktop.copypaste.PasteOperationMathOverrideDataSource;
+import cbit.vcell.mapping.MathSymbolMapping;
+import cbit.vcell.math.*;
 import cbit.vcell.solver.ConstantArraySpec;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -37,17 +40,11 @@ import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.desktop.copypaste.VCellCopyPasteHelper;
 import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.mapping.DiffEquMathMapping;
-import cbit.vcell.math.Constant;
-import cbit.vcell.math.Function;
-import cbit.vcell.math.MathDescription;
-import cbit.vcell.math.MemVariable;
-import cbit.vcell.math.MembraneRegionVariable;
-import cbit.vcell.math.VolVariable;
-import cbit.vcell.math.VolumeRegionVariable;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.solver.MathOverrides;
 import org.vcell.util.gui.ShortcutsWizard;
+import org.w3c.tools.sexpr.Cons;
 
 public class MathOverridesPanel extends JPanel {
 	private static final Logger lg = LogManager.getLogger(MathOverridesPanel.class);
@@ -57,6 +54,7 @@ public class MathOverridesPanel extends JPanel {
 	private boolean isEditable = true;
 	private ScrollTable scrollTable = null;
 	private MathOverrides mathOverrides = null;
+	private MathSymbolMapping mathSymbolMapping = null;
 	private MathOverridesTableCellRenderer mathOverridesTableCellRenderer = null;
 	private JMenuItem copyMenuItem = null;
 	private JMenuItem copyAllMenuItem = null;
@@ -280,6 +278,10 @@ public class MathOverridesPanel extends JPanel {
 		return this.mathOverrides;
 	}
 
+	public MathSymbolMapping getMathSymbolMapping() {
+		return this.mathSymbolMapping;
+	}
+
 	private MathOverridesTableCellRenderer getMathOverridesTableCellRenderer() {
         if (null != this.mathOverridesTableCellRenderer) return this.mathOverridesTableCellRenderer;
 		try {
@@ -409,12 +411,23 @@ public class MathOverridesPanel extends JPanel {
 		this.firePropertyChange("editable", oldValue, editable);
 	}
 
-	public void setMathOverrides(MathOverrides mathOverrides) {
+	public void setMath(MathOverrides mathOverrides, MathSymbolMapping mathSymbolMapping) {
+		this.setMathOverrides(mathOverrides);
+		this.setMathSymbolMapping(mathSymbolMapping);
+	}
+
+	private void setMathOverrides(MathOverrides mathOverrides) {
 		// Note: no propertyEventChange fired for change to `removeUnusedButton`
 		MathOverrides oldValue = this.mathOverrides;
 		this.mathOverrides = mathOverrides;
 		this.removeUnusedButton.setVisible(this.mathOverrides != null && this.mathOverrides.hasUnusedOverrides());
 		this.firePropertyChange("mathOverrides", oldValue, mathOverrides);
+	}
+
+	private void setMathSymbolMapping(MathSymbolMapping mathSymbolMapping) {
+		MathSymbolMapping oldValue = this.mathSymbolMapping;
+		this.mathSymbolMapping = mathSymbolMapping;
+		this.firePropertyChange("mathSymbolMapping", oldValue, mathSymbolMapping);
 	}
 
 	private void showPopupMenu(MouseEvent mouseEvent) {
@@ -550,66 +563,77 @@ public class MathOverridesPanel extends JPanel {
 			IntStream rows = this.shouldPasteAll ?
 					IntStream.range(0, MathOverridesPanel.this.getScrollTable().getRowCount()) :
 					Arrays.stream(MathOverridesPanel.this.getScrollTable().getSelectedRows());
+			MathDescription mathDescription = MathOverridesPanel.this.getMathOverrides().getSimulation().getMathDescription();
 			try {
 				Object pasteThis = VCellTransferable.getFromClipboard(VCellTransferable.OBJECT_FLAVOR);
 				if (!(pasteThis instanceof VCellTransferable.ResolvedValuesSelection rvs)) return;
-				for (int row : rows.toArray()) {
-					Object[] potentialValues = rvs.getValues();
-					for (int j = 0; j < rvs.getPrimarySymbolTableEntries().length; j += 1) {
-						SymbolTableEntry primarySymbolTableEntry = rvs.getPrimarySymbolTableEntries()[j];
-						SymbolTableEntry alternateSymbolTableEntry = null == rvs.getAlternateSymbolTableEntries() ? null : rvs.getAlternateSymbolTableEntries()[j];
-						Object currentValue = potentialValues[j];
-						Constant pastedConstant;
-						if (primarySymbolTableEntry instanceof Constant constantSymbolTableEntry) {
-							pastedConstant = constantSymbolTableEntry;
-						} else if (alternateSymbolTableEntry instanceof Constant constantSymbolTableEntry) {
-							pastedConstant = constantSymbolTableEntry;
-						} else {
-							pastedConstant = null;
-						}
+				Object[] potentialValues = rvs.getValues();
+				Map<String, Integer> rowMapping = rows.boxed().collect(Collectors.toMap(
+						(Integer rowNum) ->(String) MathOverridesPanel.this.getScrollTable().getValueAt(rowNum, MathOverridesTableModel.PARAMETER_COLUMN_INDEX),
+						Function.identity()
+				));
+				for (int j = 0; j < rvs.getPrimarySymbolTableEntries().length; j += 1) {
+					Object valueToPaste = potentialValues[j];
+					SymbolTableEntry primarySymbolTableEntry = rvs.getPrimarySymbolTableEntries()[j];
+					SymbolTableEntry alternateSymbolTableEntry = null == rvs.getAlternateSymbolTableEntries() ? null : rvs.getAlternateSymbolTableEntries()[j];
+					Constant constantToOverride = this.getConstantToOverride(mathDescription, primarySymbolTableEntry, alternateSymbolTableEntry, valueToPaste);
+					if (null == constantToOverride) continue;
 
-						// if a Constant is not on the clipboard, try to find a corresponding Constant that starts with "varname_init_"
-						if (pastedConstant == null &&
-								(primarySymbolTableEntry instanceof Function) ||
-								(primarySymbolTableEntry instanceof VolVariable) ||
-								(primarySymbolTableEntry instanceof VolumeRegionVariable) ||
-								(primarySymbolTableEntry instanceof MemVariable) ||
-								(primarySymbolTableEntry instanceof MembraneRegionVariable)) {
+					// find row of math overrides table with the same name as the pastedConstant and propose to change that override to the pasted value
+					String rowName = constantToOverride.getName();
+					if (!rowMapping.containsKey(rowName)) continue;
 
-							MathDescription mathDescription = MathOverridesPanel.this.getMathOverrides().getSimulation().getMathDescription();
-							for (Constant constant : Collections.list(mathDescription.getConstants())) {
-								String prefix = primarySymbolTableEntry.getName() + DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONC_UNIT_PREFIX;
-								if (!constant.getName().startsWith(prefix)) continue;
-								if (!(currentValue instanceof Expression currentExpression)) continue;
-								pastedConstant = new Constant(constant.getName(), currentExpression);
-								break;
-							}
-						}
-
-						// find row of math overrides table with the same name as the pastedConstant and propose to change that override to the pasted value
-						String rowName = (String) MathOverridesPanel.this.getScrollTable().getValueAt(row, MathOverridesTableModel.PARAMETER_COLUMN_INDEX);
-						if (null == pastedConstant || !rowName.equals(pastedConstant.getName())) continue;
-						Object originalValueDescription;
-						ConstantArraySpec arraySpec;
-						Expression actualExpression;
-						if (null != (arraySpec = MathOverridesPanel.this.getMathOverrides().getConstantArraySpec(rowName))) {
-							originalValueDescription = arraySpec;
-						} else if (null != (actualExpression = MathOverridesPanel.this.getMathOverrides().getActualExpression(rowName, MathOverrides.ScanIndex.ZERO))) {
-							originalValueDescription = actualExpression;
-						} else {
-							throw new Exception("MathOverridesPanel can't find value for '" + rowName + "'");
-						}
-						this.rawDataSources.add(new PasteOperationMathOverrideDataSource(
-								MathOverridesPanel.this.getMathOverrides(),
-								rowName,
-								originalValueDescription,
-								currentValue
-						));
+					Object originalValueDescription;
+					// We either get an array-spec (param-scan), or an expression (override)
+					ConstantArraySpec arraySpec; Expression actualExpression;
+					if (null != (arraySpec = MathOverridesPanel.this.getMathOverrides().getConstantArraySpec(rowName))) {
+						originalValueDescription = arraySpec;
+					} else if (null != (actualExpression = MathOverridesPanel.this.getMathOverrides().getActualExpression(rowName, MathOverrides.ScanIndex.ZERO))) {
+						originalValueDescription = actualExpression;
+					} else {
+						throw new Exception("MathOverridesPanel can't find value for '" + rowName + "'");
 					}
+					this.rawDataSources.add(new PasteOperationMathOverrideDataSource(
+							MathOverridesPanel.this.getMathOverrides(),
+							rowName,
+							originalValueDescription,
+							valueToPaste
+					));
 				}
 			} catch (Throwable e) {
 				PopupGenerator.showErrorDialog(MathOverridesPanel.this, "Paste failed during pre-check (no changes made).\n" + e.getClass().getName() + " " + e.getMessage(), e);
 			}
+		}
+
+		private Constant getConstantToOverride(MathDescription mathDescription, SymbolTableEntry primarySTE, SymbolTableEntry alternateSTE, Object valueToPaste) {
+			for (SymbolTableEntry currentSte : new SymbolTableEntry[]{primarySTE, alternateSTE}){
+				Constant pastedConstant = null;
+				if (currentSte instanceof Constant constant){
+					pastedConstant = constant;
+				} else if (currentSte instanceof Variable variable){
+					Constant derivedConstant = this.attemptToDeriveInitialConditionConstantFromVariableThroughMathDescription(mathDescription, variable);
+					pastedConstant = (null == derivedConstant) ? this.attemptToDeriveInitialConditionConstantFromVariableThroughPrefixMatching(mathDescription, currentSte, valueToPaste) : derivedConstant;
+				}
+				if (null == pastedConstant) continue;
+				return pastedConstant;
+			}
+			return null;
+		}
+
+		private Constant attemptToDeriveInitialConditionConstantFromVariableThroughMathDescription(MathDescription mathDescription, Variable variable){
+			MathRelationMappings relationMappings = new MathRelationMappings(mathDescription);
+			Optional<Constant> initialConditionConstant = relationMappings.findInitializingFactor(variable);
+			return initialConditionConstant.orElse(null);
+		}
+
+		private Constant attemptToDeriveInitialConditionConstantFromVariableThroughPrefixMatching(MathDescription mathDescription, SymbolTableEntry currentSte, Object valueToPaste){
+			if (null == currentSte || !(valueToPaste instanceof Expression expressionToPaste)) return null;
+			String prefix = currentSte.getName() + DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONC_UNIT_PREFIX;
+			for (Constant constant : Collections.list(mathDescription.getConstants())) {
+				if (!constant.getName().startsWith(prefix)) continue;
+				return new Constant(constant.getName(), expressionToPaste);
+			}
+			return null;
 		}
 	}
 
