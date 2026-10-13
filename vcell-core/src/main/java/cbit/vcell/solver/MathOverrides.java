@@ -41,7 +41,7 @@ import java.util.stream.Stream;
  * @see MathOverrides.Element
  */
 public class MathOverrides implements Matchable, java.io.Serializable {
-	private final static Logger logger = LogManager.getLogger(MathOverrides.class);
+	private final static Logger lg = LogManager.getLogger(MathOverrides.class);
 
 	//TODO: Two different types of sorting are performed within this class; find a way to optimize this sorting
 	private final Map<String, Element> overridesHash = new HashMap<>();
@@ -363,8 +363,8 @@ public class MathOverrides implements Matchable, java.io.Serializable {
 	}
 
 	public String[] getAllConstantNames() {
-		Enumeration<Constant> en = this.getSimulation().getMathDescription().getConstants();
-		List<String> constantNames = Collections.list(en).stream().map(Constant::getName).collect(Collectors.toCollection(ArrayList::new));
+		List<Constant> en = Collections.list(this.getSimulation().getMathDescription().getConstants());
+		List<String> constantNames = en.stream().map(Constant::getName).collect(Collectors.toCollection(ArrayList::new));
 
 		// add in the overridden parameters that don't exist in the math (these are errors, but have to be displayed).
 		for (String overridden : this.overridesHash.keySet()) {
@@ -482,14 +482,11 @@ public class MathOverrides implements Matchable, java.io.Serializable {
 	 */
 	public boolean isValid(MathDescription mathDescription) {
 		// look for Constants from MathDescription not present in Overrides
-		Enumeration<Constant> enumeration = mathDescription.getConstants();
 		Set<String> mathDescriptionHash = new java.util.HashSet<>();
-		while (enumeration.hasMoreElements()) {
-			Constant constant = enumeration.nextElement();
-			mathDescriptionHash.add(constant.getName());
-			if (!this.overridesHash.containsKey(constant.getName())) {
-				return false;
-			}
+
+		for (Constant nextConstant : Collections.list(mathDescription.getConstants())) {
+			if (!this.overridesHash.containsKey(nextConstant.getName())) return false;
+			mathDescriptionHash.add(nextConstant.getName());
 		}
 
 		//  look for Constants from Overrides not present in MathDescription
@@ -533,7 +530,7 @@ public class MathOverrides implements Matchable, java.io.Serializable {
 		if (var instanceof Constant) {
 			def = var.getExpression();
 		} else { // ignore
-			logger.warn("Math override '{}' not found, adding to overrides anyway", name);
+			lg.warn("Math override '{}' not found, adding to overrides anyway", name);
 		}
 
 		if (!act.compareEqual(def)){
@@ -659,15 +656,11 @@ public class MathOverrides implements Matchable, java.io.Serializable {
 	void updateFromMathDescription(boolean bTransformUnits) {
 		MathDescription mathDescription = this.getSimulation().getMathDescription();
 		// get list of names of constants in this math
-		Enumeration<Constant> enumeration = mathDescription.getConstants();
-		Set<String> mathDescriptionHash = new LinkedHashSet<>();
-		while (enumeration.hasMoreElements()) {
-			Constant constant = enumeration.nextElement();
-			mathDescriptionHash.add(constant.getName());
-		}
+		Set<String> mathDescriptionHash = Collections.list(mathDescription.getConstants()).stream()
+				.map(Constant::getName).collect(Collectors.toCollection(LinkedHashSet::new));
 
 		// get list of referenced names (in overridden constant names or those referenced in overridden expressions)
-		LinkedHashSet<String> referencedNames = new LinkedHashSet<>();
+		Set<String> referencedNames = new LinkedHashSet<>();
 
 		for (String name : this.overridesHash.keySet()) {
 			referencedNames.add(name);
@@ -675,24 +668,19 @@ public class MathOverrides implements Matchable, java.io.Serializable {
 			if (element.getSpec() != null) {
 				for (Constant constant : element.getSpec().getConstants()) {
 					String[] symbols = constant.getExpression().getSymbols();
-					if (symbols != null) {
-						referencedNames.addAll(Arrays.asList(symbols));
-					}
+					if (null == symbols) continue;
+					referencedNames.addAll(Arrays.asList(symbols));
 				}
 			}
 			if (element.getActualValue() != null) {
 				String[] symbols = element.getActualValue().getSymbols();
-				if (symbols != null) {
-					referencedNames.addAll(Arrays.asList(symbols));
-				}
+				if (symbols != null) referencedNames.addAll(Arrays.asList(symbols));
 			}
 		}
 
+		Set<String> allFactorSymbols = new LinkedHashSet<>();
 
-		LinkedHashSet<String> allFactorSymbols = new LinkedHashSet<>();
-
-
-		HashMap<String, MathOverridesResolver.SymbolReplacement> renamedMap = new HashMap<>();
+		Map<String, MathOverridesResolver.SymbolReplacement> renamedMap = new HashMap<>();
 		for (String name : referencedNames) {
 			SimulationOwner so = this.getSimulation().getSimulationOwner();
 			if (null == so) continue;
@@ -717,9 +705,7 @@ public class MathOverrides implements Matchable, java.io.Serializable {
 					}
 				}
 			}
-			if (!mathDescriptionHash.contains(name)) {
-				logger.error("didn't find a replacement for math override symbol {}", name);
-			}
+			if (!mathDescriptionHash.contains(name)) lg.error("didn't find a replacement for math override symbol {}", name);
 		}
 
 		java.util.function.Function<Expression, Expression> substituteWithFactors = exp -> {
@@ -754,7 +740,7 @@ public class MathOverrides implements Matchable, java.io.Serializable {
 				simplifiedExp.bindExpression(mathDescription);
 				exp = simplifiedExp;
 			} catch (Exception e) {
-				logger.error("unable to simplify expression: '{}': {}", exp.infix(), e.getMessage(), e);
+				lg.error("unable to simplify expression: '{}': {}", exp.infix(), e.getMessage(), e);
 			}
 			return exp;
 		};
@@ -770,8 +756,8 @@ public class MathOverrides implements Matchable, java.io.Serializable {
 	}
 
 
-	private void replace(LinkedHashSet<String> allFactorSymbols,
-	                     HashMap<String, MathOverridesResolver.SymbolReplacement> renamedMap, String name,
+	private void replace(Set<String> allFactorSymbols,
+	                     Map<String, MathOverridesResolver.SymbolReplacement> renamedMap, String name,
 	                     MathOverridesResolver.SymbolReplacement replacement, boolean bForceDuplicate) {
 		allFactorSymbols.addAll(replacement.getFactorSymbols());
 		Element element = this.overridesHash.remove(name);
@@ -781,7 +767,7 @@ public class MathOverrides implements Matchable, java.io.Serializable {
 				try {
 					substitutedExp = substitutedExp.simplifyJSCL();
 				} catch (ExpressionException e) {
-					logger.warn("failed to simplify '" + substitutedExp.infix() + "': " + e.getMessage(), e);
+					lg.warn("failed to simplify '" + substitutedExp.infix() + "': " + e.getMessage(), e);
 				}
 				return substitutedExp;
 			};
@@ -821,7 +807,7 @@ public class MathOverrides implements Matchable, java.io.Serializable {
 			try {
 				element.bind(this.getSimulation().getMathDescription());
 			} catch (ExpressionBindingException e) {
-				logger.error("failed to bind a math override: {}", e.getMessage(), e);
+				lg.error("failed to bind a math override: {}", e.getMessage(), e);
 				throw new RuntimeException("failed to bind a math override", e);
 			}
 		}
@@ -851,10 +837,9 @@ public class MathOverrides implements Matchable, java.io.Serializable {
 	 * explicit user action invokes this method (currently pressing a button), this is not automatic cleanup of old/obsolete models ... we want the user to address the issues.
 	 */
 	public void removeUnusedOverrides() {
-		MathDescription mathDescription = this.getSimulation().getMathDescription();
 		// get list of names of constants in this math
-		List<Constant> constants = Collections.list(mathDescription.getConstants());
-		Set<String> mathDescriptionHash = constants.stream().map(Constant::getName).collect(Collectors.toSet());
+		List<Constant> constants = Collections.list(this.getSimulation().getMathDescription().getConstants());
+		Set<String> mathDescriptionHash = constants.stream().map(Constant::getName).collect(Collectors.toCollection(LinkedHashSet::new));
 
 		//  for any elements in this MathOverrides but not in the new MathDescription, add an "error" issue
 		List<String> overridesToDelete = new ArrayList<>();
