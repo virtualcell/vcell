@@ -1,9 +1,9 @@
-package cbit.vcell.math;
+package cbit.vcell.mapping;
 
+import cbit.vcell.math.*;
 import cbit.vcell.parser.Expression;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import cbit.vcell.mapping.AbstractMathMapping;
 import cbit.vcell.math.ParticleProperties.ParticleInitialCondition;
 import cbit.vcell.math.ParticleProperties.ParticleInitialConditionCount;
 import cbit.vcell.math.ParticleProperties.ParticleInitialConditionConcentration;

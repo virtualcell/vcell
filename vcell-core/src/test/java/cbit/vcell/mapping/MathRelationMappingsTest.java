@@ -1,8 +1,9 @@
-package cbit.vcell.math;
+package cbit.vcell.mapping;
 
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.mapping.MappingException;
-import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.math.Constant;
+import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.Variable;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
@@ -95,9 +96,4 @@ public class MathRelationMappingsTest {
 		Assertions.assertTrue(foundConstant.isPresent());
 		Assertions.assertTrue(foundConstant.get().compareEqual(testCase.correspondingInitialConditionConstant()));
 	}
-
-
-
-
-
 }

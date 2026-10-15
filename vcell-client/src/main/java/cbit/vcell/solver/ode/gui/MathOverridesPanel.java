@@ -27,6 +27,7 @@ import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.copypaste.PasteOperationDataSource;
 import cbit.vcell.desktop.copypaste.PasteOperationMathOverrideDataSource;
+import cbit.vcell.mapping.MathRelationMappings;
 import cbit.vcell.mapping.MathSymbolMapping;
 import cbit.vcell.math.*;
 import cbit.vcell.solver.ConstantArraySpec;
@@ -44,7 +45,6 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.solver.MathOverrides;
 import org.vcell.util.gui.ShortcutsWizard;
-import org.w3c.tools.sexpr.Cons;
 
 public class MathOverridesPanel extends JPanel {
 	private static final Logger lg = LogManager.getLogger(MathOverridesPanel.class);
