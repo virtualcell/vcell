@@ -109,12 +109,6 @@ public class MathDescription implements Versionable, Matchable, SymbolTable, Ser
     }
 
 
-    /**
-     * Insert the method's description here.
-     * Creation date: (9/2/2004 3:05:54 PM)
-     *
-     * @param mathDescription cbit.vcell.math.MathDescription
-     */
     public MathDescription(MathDescription mathDescription){
         this.fieldName = mathDescription.getName();
         this.fieldDescription = mathDescription.getDescription();

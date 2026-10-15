@@ -1020,7 +1020,7 @@ public class VcmlTestSuiteFiles {
     }
 
     public static InputStream getVcmlTestCase(String testFile) {
-        if (!Arrays.stream(allTestFiles).anyMatch(file -> file.equals(testFile))) {
+        if (Arrays.stream(allTestFiles).noneMatch(file -> file.equals(testFile))) {
             throw new RuntimeException("file not found for VCell Published Test Suite test "+testFile);
         }
         List<String> pathPrefixes = Arrays.asList(
