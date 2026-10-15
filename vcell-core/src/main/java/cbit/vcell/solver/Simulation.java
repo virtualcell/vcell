@@ -21,7 +21,6 @@ import cbit.vcell.math.MathException;
 import cbit.vcell.math.VCML;
 import cbit.vcell.solver.SolverDescription.SolverFeature;
 import org.vcell.model.rbm.LinkNode;
-import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.util.*;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
@@ -1043,7 +1042,7 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 		if (trialIndex.index >= getNumTrials()) {
 			throw new IllegalArgumentException("trialIndex must be less than numTrials");
 		}
-		if (scanIndex.index >= getScanCount()) {
+		if (scanIndex.index() >= getScanCount()) {
 			throw new IllegalArgumentException("scanIndex must be less than scanCount");
 		}
 		return getJobIndex(scanIndex, trialIndex, getScanCount());
@@ -1065,10 +1064,10 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 		if (scanCount <= 0) {
 			throw new IllegalArgumentException("scanCount must be positive");
 		}
-		if (scanIndex.index >= scanCount) {
+		if (scanIndex.index() >= scanCount) {
 			throw new IllegalArgumentException("scanIndex must be less than scanCount");
 		}
-		return trialIndex.index * scanCount + scanIndex.index;
+		return trialIndex.index * scanCount + scanIndex.index();
 	}
 
 	public static MathOverrides.ScanIndex getScanIndex(int jobIndex, int scanCount) {

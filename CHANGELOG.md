@@ -16,6 +16,56 @@ followed by flat Keep-a-Changelog categories. API consumers should scan
 
 _(Release-manager scratchpad. Populated at release-cut time.)_
 
+## [8.2.0.16] - 2026-10-07
+
+**Highlights.** The field viewer shows VCell functions of a FEniCSx simulation (expressions of its
+variables, position and time), not only the variables the solver stores. Functions can be drawn,
+probed and plotted as kymographs like any other variable.
+
+### Added
+- Field viewer: functions of a FEniCSx run are listed and can be drawn, probed and plotted as
+  kymographs. Their definitions come from the open document's simulation, with the job's constants and
+  parameter-scan values substituted. Each function is evaluated at the mesh vertices from the stored
+  variables there, the vertex position (the row's position on a moving mesh) and the row's time, then
+  interpolated, which is what the 3D view draws. A function's variables are read through the data
+  server's sampling (#2169) where available. (#2171)
+- Refused with a message: functions of normals, region sizes, field data, gradients, region variables or
+  other domains' variables; membrane functions of adjacent volume variables; and statistics of a
+  function. (#2171)
+
+## [8.2.0.15] - 2026-10-07
+
+**Highlights.** Kymographs and time series of server-run FEniCSx results are read on the data server: it
+sends only the values at the points being plotted, not every field at every saved time. A kymograph of a
+200-time-point 3D simulation now needs 2 requests and about 0.1 MB instead of 201 requests and 54 MB.
+This build also carries 8.2.0.14's batched reads (8.2.0.14 was tagged but not deployed).
+
+### Added
+- Data server: `getFenicsBundleSamples` returns the values of several arrays of a FEniCSx results bundle
+  at given mesh points and saved times (up to 8 MB, 16 arrays, 64 K points and 1,000 times per call).
+  (#2169)
+
+### Changed
+- Field viewer: volume and membrane kymographs, probe time series and remeshed runs of server-run FEniCSx
+  results are sampled on the data server. Values are bit-identical to reading whole fields. Moving (ALE)
+  meshes, local runs and older data servers fall back to batched reads (#2166), then to one request per
+  file. (#2169)
+
+## [8.2.0.14] - 2026-10-07
+
+**Highlights.** The field viewer reads a server-run FEniCSx result in a few batched requests instead of
+one request per saved time. A kymograph of a 200-time-point 3D simulation now makes 7 requests to the
+data server instead of 201.
+
+### Changed
+- Data server: new `getFenicsBundleFiles` returns several files of a FEniCSx results bundle in one reply
+  (up to 8 MB and 256 files per call). (#2166)
+- Field viewer: kymographs, time series, moving-mesh coordinates and statistics of server-run FEniCSx
+  results prefetch their rows in batches. A client talking to an older data server falls back to one
+  request per file. (#2166)
+- The client's FEniCSx bundle cache is bounded: 512 MB by default, set by
+  `-Dvcell.fenics.bundleCacheMB`. (#2166)
+
 ## [8.2.0.13] - 2026-10-06
 
 **Highlights.** Requests to the server no longer slow to one every 30 seconds after heavy use. Since

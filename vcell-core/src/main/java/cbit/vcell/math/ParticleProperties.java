@@ -12,6 +12,7 @@ package cbit.vcell.math;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
@@ -243,7 +244,7 @@ public class ParticleProperties implements Serializable, Matchable {
 	private Expression driftXExp = null;
 	private Expression driftYExp = null;
 	private Expression driftZExp = null;
-	private ArrayList<ParticleInitialCondition> listOfParticleInitialConditions = new ArrayList<ParticleInitialCondition>();
+	private List<ParticleInitialCondition> listOfParticleInitialConditions = new ArrayList<ParticleInitialCondition>();
 	
 	public ParticleProperties(Variable var, Expression diffExp, Expression driftXExp, Expression driftYExp, Expression driftZExp, ArrayList<ParticleInitialCondition> initialConditions) {
 		super();
@@ -325,7 +326,13 @@ public class ParticleProperties implements Serializable, Matchable {
 		return diffExp;
 	}
 
-	public final ArrayList<ParticleInitialCondition> getParticleInitialConditions() {
+	/**
+	 * Returns the list of initial conditions.
+	 * <br/>
+	 * Note that there should only be 1 object of each subtype of ParticleInitialCondition
+	 * @return a list of particle initial conditions, no more than one object per child subtype of ParticleInitialCondition
+	 */
+	public final List<ParticleInitialCondition> getParticleInitialConditions() {
 		return listOfParticleInitialConditions;
 	}
 

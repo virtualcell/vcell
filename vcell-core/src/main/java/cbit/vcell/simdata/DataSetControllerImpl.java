@@ -2468,6 +2468,81 @@ public LangevinBatchResultSet getLangevinBatchResultSet(VCDataIdentifier vcdID) 
  *
  * @return the file's bytes, or null if the bundle or the file does not exist (yet)
  */
+/** the most file bytes one {@link #getFenicsBundleFiles} reply carries (it always carries at least one file) */
+public static final int MAX_FENICS_BUNDLE_BATCH_BYTES = 8 * 1024 * 1024;
+
+/** the most paths one {@link #getFenicsBundleFiles} call may ask for */
+public static final int MAX_FENICS_BUNDLE_BATCH_PATHS = 256;
+
+/**
+ * Several files of a FEniCSx results bundle in one call, each as {@link #getFenicsBundleFile} reads it
+ * (null when absent). Answers a prefix of the paths: it stops adding files once the reply holds
+ * {@link #MAX_FENICS_BUNDLE_BATCH_BYTES} (a reply always holds the first file), so a large mesh or
+ * chunk cannot make one RPC reply unboundedly large; the caller asks again for the rest.
+ */
+public byte[][] getFenicsBundleFiles(VCDataIdentifier vcdID, String[] relativePaths) throws DataAccessException {
+	return getFenicsBundleFiles(vcdID, relativePaths, MAX_FENICS_BUNDLE_BATCH_BYTES);
+}
+
+/** {@link #getFenicsBundleFiles(VCDataIdentifier, String[])} with a byte budget of {@code maxBytes} */
+public byte[][] getFenicsBundleFiles(VCDataIdentifier vcdID, String[] relativePaths, long maxBytes) throws DataAccessException {
+	if (relativePaths == null || relativePaths.length == 0) {
+		return new byte[0][];
+	}
+	if (relativePaths.length > MAX_FENICS_BUNDLE_BATCH_PATHS) {
+		throw new DataAccessException("at most " + MAX_FENICS_BUNDLE_BATCH_PATHS + " bundle files per call, got " + relativePaths.length);
+	}
+	java.util.List<byte[]> files = new java.util.ArrayList<>();
+	long bytes = 0;
+	for (String relativePath : relativePaths) {
+		if (!files.isEmpty() && bytes >= maxBytes) {
+			break;
+		}
+		byte[] file = getFenicsBundleFile(vcdID, relativePath);
+		if (file != null && !files.isEmpty() && bytes + file.length > maxBytes) {
+			break; // the next call carries it
+		}
+		files.add(file);
+		bytes += file == null ? 0 : file.length;
+	}
+	return files.toArray(new byte[0][]);
+}
+
+/**
+ * Some values of some arrays of a FEniCSx results bundle ({@link org.vcell.solver.fenics.FenicsBundle#gather}),
+ * read here and decoded here, so a desktop drawing a kymograph or a probe is sent its vertices' values instead
+ * of whole rows. Files are read exactly as {@link #getFenicsBundleFile} reads them (same location rules, same
+ * refusals), and the reply covers the longest prefix of {@code rows} within
+ * {@link org.vcell.solver.fenics.FenicsBundle#MAX_SAMPLE_VALUES} values.
+ */
+public org.vcell.solver.fenics.FenicsSamples getFenicsBundleSamples(VCDataIdentifier vcdID, String[] arrayPaths, int[] indices, int[] rows) throws DataAccessException {
+	return getFenicsBundleSamples(vcdID, arrayPaths, indices, rows, org.vcell.solver.fenics.FenicsBundle.MAX_SAMPLE_VALUES);
+}
+
+/** {@link #getFenicsBundleSamples(VCDataIdentifier, String[], int[], int[])} with a budget of {@code maxValues} */
+public org.vcell.solver.fenics.FenicsSamples getFenicsBundleSamples(VCDataIdentifier vcdID, String[] arrayPaths, int[] indices, int[] rows, long maxValues) throws DataAccessException {
+	org.vcell.solver.fenics.BundleStore bundle = new org.vcell.solver.fenics.BundleStore() {
+		@Override
+		public byte[] read(String relativePath) throws IOException {
+			try {
+				return getFenicsBundleFile(vcdID, relativePath);
+			} catch (DataAccessException e) {
+				throw new IOException(e.getMessage(), e);
+			}
+		}
+
+		@Override
+		public String describe() {
+			return "FEniCSx results of " + vcdID.getID();
+		}
+	};
+	try {
+		return org.vcell.solver.fenics.FenicsBundle.gather(bundle, arrayPaths, indices, rows, maxValues);
+	} catch (IOException e) {
+		throw new DataAccessException("sampling FEniCSx results of " + vcdID.getID() + ": " + e.getMessage(), e);
+	}
+}
+
 public byte[] getFenicsBundleFile(VCDataIdentifier vcdID, String relativePath) throws DataAccessException {
 	if (!(vcdID instanceof VCSimulationDataIdentifier)) {
 		throw new DataAccessException("FEniCSx results are simulation data; got " + vcdID);

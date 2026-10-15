@@ -95,6 +95,32 @@ cbit.vcell.solver.ode.ODESimData getODEData(VCDataIdentifier vcdataID) throws Da
  	return null;
  }
 
+/**
+ * getFenicsBundleFiles - several files of a FEniCSx results bundle in one call (a kymograph's rows),
+ * each null if it does not exist. The answer may be a PREFIX of the paths asked for: the data server
+ * stops adding files once the reply is large enough, and the caller asks again for the rest. Default
+ * reads them one by one through {@link #getFenicsBundleFile}.
+ */
+/**
+ * getFenicsBundleSamples - some values of some arrays of a FEniCSx results bundle, read and decoded where the
+ * bundle is (a kymograph's or probe's mesh vertices at every row, rather than the whole rows): for each of
+ * {@code arrayPaths} (bundle-relative zarr arrays sharing one row length -- one domain of one segment), at
+ * each of {@code rows} (rows of those arrays), the values at {@code indices} (strictly increasing). The answer
+ * may cover only a PREFIX of the rows: it stops at a size budget and the caller asks again for the rest. See
+ * {@link org.vcell.solver.fenics.FenicsBundle#gather}. Default returns null: not served here, read whole rows.
+ */
+ default org.vcell.solver.fenics.FenicsSamples getFenicsBundleSamples(VCDataIdentifier vcdataID, String[] arrayPaths, int[] indices, int[] rows) throws DataAccessException, RemoteProxyException {
+ 	return null;
+ }
+
+ default byte[][] getFenicsBundleFiles(VCDataIdentifier vcdataID, String[] relativePaths) throws DataAccessException, RemoteProxyException {
+ 	byte[][] files = new byte[relativePaths.length][];
+ 	for (int i = 0; i < files.length; i++) {
+ 		files[i] = getFenicsBundleFile(vcdataID, relativePaths[i]);
+ 	}
+ 	return files;
+ }
+
  /**
  * This method was created in VisualAge.
  * @return ParticleData

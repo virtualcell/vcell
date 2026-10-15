@@ -30,13 +30,20 @@ final class FenicsBundleViews {
 		final int jobIndex;
 		final BundleStore store;
 		final String simName;
+		/** the run's VCell functions (from its simulation), evaluated on the bundle's variables */
+		final FenicsFunctions functions;
 		private final Map<String, VtuGridParser.VtuGrid> grids = new ConcurrentHashMap<>();
 
 		BundleSource(String simId, int jobIndex, BundleStore store, String simName) {
+			this(simId, jobIndex, store, simName, FenicsFunctions.NONE);
+		}
+
+		BundleSource(String simId, int jobIndex, BundleStore store, String simName, FenicsFunctions functions) {
 			this.simId = simId;
 			this.jobIndex = jobIndex;
 			this.store = store;
 			this.simName = simName;
+			this.functions = functions == null ? FenicsFunctions.NONE : functions;
 		}
 
 		FenicsBundle bundle() throws IOException {
@@ -86,6 +93,253 @@ final class FenicsBundleViews {
 	}
 
 	private FenicsBundleViews() {
+	}
+
+	/** the most bytes of rows one prefetch window asks for (see {@link RowPrefetcher}) */
+	static final long PREFETCH_WINDOW_BYTES = 64L * 1024 * 1024;
+
+	/** the most rows one prefetch window asks for */
+	static final int PREFETCH_WINDOW_ROWS = 256;
+
+	/**
+	 * Fetches a run of rows ahead of the loop that reads them, a window at a time, so a bundle read from
+	 * the data server costs a few batched calls per window instead of one call per row
+	 * ({@link BundleStore#prefetch}). The window is sized to the rows' raw bytes, so a fine 3D mesh does
+	 * not pull more into memory than the cache keeps. {@code rows} is the order the loop reads them in.
+	 */
+	static final class RowPrefetcher {
+		interface Fetch {
+			void rows(int[] rows) throws IOException;
+		}
+
+		private final int[] rows;
+		private final Map<Integer, Integer> position = new java.util.HashMap<>();
+		private final int window;
+		private final Fetch fetch;
+		private int fetchedUpTo = 0;
+
+		RowPrefetcher(int[] rows, long bytesPerRow, Fetch fetch) {
+			this.rows = rows;
+			for (int i = rows.length - 1; i >= 0; i--) {
+				position.put(rows[i], i);
+			}
+			this.window = (int) Math.max(1, Math.min(PREFETCH_WINDOW_ROWS, PREFETCH_WINDOW_BYTES / Math.max(1, bytesPerRow)));
+			this.fetch = fetch;
+		}
+
+		/** called before {@code row} is read: fetches its window if it has not been fetched */
+		synchronized void before(int row) throws IOException {
+			Integer at = position.get(row);
+			if (at == null || at < fetchedUpTo) {
+				return;
+			}
+			int end = Math.min(rows.length, at + window);
+			fetch.rows(Arrays.copyOfRange(rows, at, end));
+			fetchedUpTo = end;
+		}
+
+		static int[] allRows(int count) {
+			int[] rows = new int[count];
+			for (int i = 0; i < count; i++) {
+				rows[i] = i;
+			}
+			return rows;
+		}
+
+		static int[] stridedRows(int count, int tstep) {
+			int n = FieldViewerServer.strideCount(count, tstep);
+			int[] rows = new int[n];
+			for (int i = 0; i < n; i++) {
+				rows[i] = i * tstep;
+			}
+			return rows;
+		}
+	}
+
+	/** a prefetcher for a variable's values over {@code rows} */
+	private static RowPrefetcher fieldPrefetcher(FenicsBundle bundle, String domain, String varName, int[] rows) {
+		long bytesPerRow = 8L * bundle.domain(domain).numPoints();
+		return new RowPrefetcher(rows, bytesPerRow, r -> bundle.prefetchField(domain, varName, r));
+	}
+
+	/**
+	 * The rows of one variable -- stored, or a function of stored variables ({@link FenicsFunctions}) -- for
+	 * {@link PointSeries#sample}, read the cheapest way the bundle allows. Once the points are located on a
+	 * segment's mesh ({@link PointSeries.Rows#located}), the located cells' vertices are read for all of that
+	 * segment's rows in one sampled call ({@link FenicsBundle#sampleFields}; a function's variables together):
+	 * from a data server that samples, a kymograph's 201 rows cost one request carrying only those vertices.
+	 * Otherwise -- a local bundle, an older data server, or a moving (ALE) mesh, where the cell changes every
+	 * row -- whole rows are read, prefetched in windows ({@link RowPrefetcher}).
+	 * <p>
+	 * A row is handed back as a mesh-sized array holding the values at the needed vertices: a stored variable's
+	 * own values, or the function evaluated AT each vertex (its variables there, the vertex's x, y, z in that
+	 * row's mesh, the row's t). The interpolation then reads the same numbers in the same order as from a whole
+	 * row, and a function's values are exactly those {@code /field} draws: bit-identical either way.
+	 */
+	static final class SampledRows implements PointSeries.Rows {
+		private final BundleSource source;
+		private final FenicsBundle bundle;
+		private final String domain;
+		private final String[] reads; // the stored variables read: the variable itself, or the function's arguments
+		private final FenicsFunctions.Compiled function; // null for a stored variable
+		private final double[] times;
+		private final int[] rows;
+		private final RowPrefetcher[] wholeRows;
+		private final RowPrefetcher coords;
+		private boolean sampling;
+		private final Map<Integer, double[][]> sampled = new java.util.HashMap<>();
+		private int[] vertices = new int[0];
+		private double[] scratch;
+		private double[][] scratchArgs;
+		private VtuGridParser.VtuGrid lastGrid;
+		private int lastGridRow = -1;
+
+		/** @param rows the output rows the loop will read, in its order */
+		SampledRows(BundleSource source, FenicsBundle bundle, String domain, String varName, int[] rows) {
+			this.source = source;
+			this.bundle = bundle;
+			this.domain = domain;
+			this.function = source.functions.has(varName) && !isStored(bundle, domain, varName)
+					? source.functions.compile(bundle, domain, varName) : null;
+			this.reads = function != null ? function.variables : new String[] { varName };
+			this.times = times(bundle);
+			this.rows = rows;
+			this.wholeRows = new RowPrefetcher[reads.length];
+			for (int k = 0; k < reads.length; k++) {
+				wholeRows[k] = fieldPrefetcher(bundle, domain, reads[k], rows);
+			}
+			this.coords = coordsPrefetcher(bundle, domain, rows);
+			this.sampling = !bundle.isMoving() && reads.length > 0;
+		}
+
+		@Override
+		public VtuGridParser.VtuGrid grid(int row) throws Exception {
+			if (coords != null) {
+				coords.before(row);
+			}
+			lastGrid = source.grid(bundle, domain, row);
+			lastGridRow = row;
+			return lastGrid;
+		}
+
+		/** the mesh of {@code row}: x, y, z of a function's vertices (on a moving mesh, that row's) */
+		private VtuGridParser.VtuGrid gridOf(int row) throws Exception {
+			return row == lastGridRow ? lastGrid : grid(row);
+		}
+
+		@Override
+		public void located(VtuGridParser.VtuGrid grid, int row, int[] cells) throws Exception {
+			java.util.TreeSet<Integer> needed = new java.util.TreeSet<>();
+			for (int c : cells) {
+				if (c >= 0) {
+					for (int v : grid.cells[c]) {
+						needed.add(v);
+					}
+				}
+			}
+			sample(needed, row, grid.numPoints());
+		}
+
+		/** the vertices {@code needed} from every row of the segment holding {@code row}: sampled if the store can */
+		void sample(java.util.SortedSet<Integer> needed, int row, int numPoints) throws Exception {
+			sampled.clear();
+			vertices = needed.stream().mapToInt(Integer::intValue).toArray();
+			if (scratch == null || scratch.length != numPoints) {
+				scratch = new double[numPoints];
+				Arrays.fill(scratch, Double.NaN);
+				scratchArgs = new double[reads.length][numPoints];
+			}
+			if (!sampling || needed.isEmpty()) {
+				return; // no point lies in the domain: no row's values will be asked for
+			}
+			int segment = bundle.segmentOf(row).segment().index();
+			int[] segmentRows = Arrays.stream(rows).filter(r -> bundle.segmentOf(r).segment().index() == segment).toArray();
+			double[][][] got = bundle.sampleFields(domain, reads, segmentRows, vertices);
+			if (got == null) {
+				sampling = false; // the store reads whole rows: so does this, from here on
+				return;
+			}
+			for (int r = 0; r < segmentRows.length; r++) {
+				double[][] perRead = new double[reads.length][];
+				for (int k = 0; k < reads.length; k++) {
+					perRead[k] = got[k][r];
+				}
+				sampled.put(segmentRows[r], perRead);
+			}
+		}
+
+		@Override
+		public double[] values(int row) throws Exception {
+			double[][] s = sampled.get(row);
+			if (function == null) {
+				if (s == null) {
+					wholeRows[0].before(row);
+					return bundle.field(domain, reads[0], row);
+				}
+				for (int i = 0; i < vertices.length; i++) {
+					scratch[vertices[i]] = s[0][i];
+				}
+				return scratch;
+			}
+			double[][] args;
+			if (s != null) {
+				for (int k = 0; k < reads.length; k++) {
+					for (int i = 0; i < vertices.length; i++) {
+						scratchArgs[k][vertices[i]] = s[k][i];
+					}
+				}
+				args = scratchArgs;
+			} else {
+				args = new double[reads.length][];
+				for (int k = 0; k < reads.length; k++) {
+					wholeRows[k].before(row);
+					args[k] = bundle.field(domain, reads[k], row);
+				}
+			}
+			double[] points = gridOf(row).points;
+			for (int v : vertices) {
+				scratch[v] = function.at(times[row], points, v, args);
+			}
+			return scratch;
+		}
+	}
+
+	/** whether {@code name} is a stored variable of {@code domain} (a stored variable wins over a function of that name) */
+	static boolean isStored(FenicsBundle bundle, String domain, String name) {
+		for (FenicsBundle.Variable v : bundle.getVariables()) {
+			if (v.name().equals(name) && v.domain().equals(domain)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * A function's values at every vertex of {@code domain}'s mesh at {@code row} ({@code /field}): its variables'
+	 * whole rows, the row's mesh positions, the row's time.
+	 */
+	static double[] functionField(BundleSource source, FenicsBundle bundle, String domain, String name, int row) throws Exception {
+		FenicsFunctions.Compiled f = source.functions.compile(bundle, domain, name);
+		double[][] args = new double[f.variables.length][];
+		for (int k = 0; k < args.length; k++) {
+			args[k] = bundle.field(domain, f.variables[k], row);
+		}
+		VtuGridParser.VtuGrid grid = source.grid(bundle, domain, row);
+		double t = bundle.getTimes().get(row);
+		double[] values = new double[grid.numPoints()];
+		for (int v = 0; v < values.length; v++) {
+			values[v] = f.at(t, grid.points, v, args);
+		}
+		return values;
+	}
+
+	/** a prefetcher for a moving domain's recorded point positions over {@code rows}; null if nothing moves */
+	private static RowPrefetcher coordsPrefetcher(FenicsBundle bundle, String domain, int[] rows) {
+		if (!bundle.isMoving()) {
+			return null;
+		}
+		long bytesPerRow = 24L * bundle.domain(domain).numPoints();
+		return new RowPrefetcher(rows, bytesPerRow, r -> bundle.prefetchCoords(domain, r));
 	}
 
 	private static FenicsBundle open(BundleSource source) throws IOException {
@@ -181,6 +435,19 @@ final class FenicsBundleViews {
 			sb.append(",\"domain\":\"").append(FieldViewerServer.jsonEscape(v.domain())).append('"');
 			sb.append(",\"location\":\"point\",\"isFunction\":false}");
 		}
+		// the run's functions, on each domain where they can be evaluated from the stored variables
+		for (String domain : bundle.getDomains().keySet()) {
+			for (String name : source.functions.namesFor(bundle, domain)) {
+				if (isStored(bundle, domain, name)) {
+					continue;
+				}
+				sb.append(first ? "" : ",");
+				first = false;
+				sb.append("{\"name\":\"").append(FieldViewerServer.jsonEscape(name)).append('"');
+				sb.append(",\"domain\":\"").append(FieldViewerServer.jsonEscape(domain)).append('"');
+				sb.append(",\"location\":\"point\",\"isFunction\":true}");
+			}
+		}
 		sb.append(']');
 		if (!bundle.getParticleSpecies().isEmpty()) {
 			// a hybrid PDE/particle run: the viewer offers a particle layer, fetched from /particles
@@ -241,10 +508,11 @@ final class FenicsBundleViews {
 		String varName = requireVar(q);
 		String domain = q.get("domain");
 		if (domain == null || domain.isEmpty()) {
-			domain = domainOfVariable(bundle, varName);
+			domain = domainOfVariable(source, bundle, varName);
 		}
 		int row = rowFor(bundle, q);
-		double[] values = bundle.field(domain, varName, row);
+		double[] values = isStored(bundle, domain, varName) ? bundle.field(domain, varName, row)
+				: functionField(source, bundle, domain, varName, row);
 		double min = Double.POSITIVE_INFINITY;
 		double max = Double.NEGATIVE_INFINITY;
 		for (double v : values) {
@@ -268,11 +536,14 @@ final class FenicsBundleViews {
 		return sb.toString();
 	}
 
-	private static String domainOfVariable(FenicsBundle bundle, String varName) {
+	private static String domainOfVariable(BundleSource source, FenicsBundle bundle, String varName) {
 		for (FenicsBundle.Variable v : bundle.getVariables()) {
 			if (v.name().equals(varName)) {
 				return v.domain();
 			}
+		}
+		if (source.functions.has(varName)) {
+			return source.functions.domainOf(bundle, varName);
 		}
 		throw new IllegalArgumentException("unknown variable '" + varName + "'");
 	}
@@ -291,21 +562,11 @@ final class FenicsBundleViews {
 		String varName = requireVar(q);
 		String domain = q.get("domain");
 		if (domain == null || domain.isEmpty()) {
-			domain = domainOfVariable(bundle, varName);
+			domain = domainOfVariable(source, bundle, varName);
 		}
 		double[] times = times(bundle);
 		final String dom = domain;
-		PointSeries.Rows rows = new PointSeries.Rows() {
-			@Override
-			public VtuGridParser.VtuGrid grid(int row) throws Exception {
-				return source.grid(bundle, dom, row);
-			}
-
-			@Override
-			public double[] values(int row) throws Exception {
-				return bundle.field(dom, varName, row);
-			}
-		};
+		PointSeries.Rows rows = new SampledRows(source, bundle, dom, varName, RowPrefetcher.allRows(times.length));
 		if (q.get("points") != null) {
 			FenicsBundle.Domain d = bundle.domain(domain);
 			// a 2D point may leave out z: it takes the mesh plane's
@@ -351,18 +612,22 @@ final class FenicsBundleViews {
 		String varName = requireVar(q);
 		String domain = q.get("domain");
 		if (domain == null || domain.isEmpty()) {
-			domain = domainOfVariable(bundle, varName);
+			domain = domainOfVariable(source, bundle, varName);
 		}
-		boolean known = false;
-		for (FenicsBundle.Variable v : bundle.getVariables()) {
-			known |= v.name().equals(varName) && v.domain().equals(domain);
-		}
-		if (!known) {
-			throw new IllegalArgumentException("unknown variable '" + varName + "' in domain '" + domain + "'");
+		if (!isStored(bundle, domain, varName)) {
+			if (!source.functions.has(varName)) {
+				throw new IllegalArgumentException("unknown variable '" + varName + "' in domain '" + domain + "'");
+			}
+			source.functions.compile(bundle, domain, varName); // a 400 saying why it cannot be drawn here
 		}
 		FenicsBundle.Domain d = bundle.domain(domain);
-		VtuGridParser.VtuGrid first = source.grid(bundle, domain, 0);
 		final String dom = domain;
+		int[] strided = RowPrefetcher.stridedRows(bundle.getTimes().size(), tstep);
+		RowPrefetcher coords = coordsPrefetcher(bundle, dom, strided);
+		if (coords != null) {
+			coords.before(0);
+		}
+		VtuGridParser.VtuGrid first = source.grid(bundle, domain, 0);
 		if (d.isMembrane()) {
 			// a straight line almost never lies on a membrane: the curve runs along it, between the snapped picks
 			if (d.gdim() >= 3) {
@@ -374,8 +639,14 @@ final class FenicsBundleViews {
 			}
 			double[][] waypoints = BodyFittedKymograph.parsePath(q.get("path"), first.points[2]);
 			MembraneArc arc = MembraneArc.build(first, waypoints, BodyFittedKymograph.MAX_SAMPLES);
-			return BodyFittedKymograph.membraneJson(varName, domain, arc, times(bundle), tstep,
-					row -> bundle.field(dom, varName, row));
+			SampledRows arcRows = new SampledRows(source, bundle, dom, varName, strided);
+			java.util.TreeSet<Integer> arcVertices = new java.util.TreeSet<>();
+			for (int i = 0; i < arc.size(); i++) {
+				arcVertices.add(arc.a[i]);
+				arcVertices.add(arc.b[i]);
+			}
+			arcRows.sample(arcVertices, 0, first.numPoints());
+			return BodyFittedKymograph.membraneJson(varName, domain, arc, times(bundle), tstep, arcRows::values);
 		}
 		double[][] path = BodyFittedKymograph.parsePath(q.get("path"), d.gdim() < 3 ? first.points[2] : null);
 		int n = BodyFittedKymograph.sampleCount(q.get("samples"), FvLineSampler.length(path), first.meanCellDiameter());
@@ -383,17 +654,7 @@ final class FenicsBundleViews {
 		for (FenicsBundle.Segment segment : bundle.getSegments()) {
 			moving |= "ale".equals(segment.motion());
 		}
-		PointSeries.Rows rows = new PointSeries.Rows() {
-			@Override
-			public VtuGridParser.VtuGrid grid(int row) throws Exception {
-				return source.grid(bundle, dom, row);
-			}
-
-			@Override
-			public double[] values(int row) throws Exception {
-				return bundle.field(dom, varName, row);
-			}
-		};
+		PointSeries.Rows rows = new SampledRows(source, bundle, dom, varName, strided);
 		return BodyFittedKymograph.json(varName, domain, PointSeries.Location.POINT, path, n, times(bundle), tstep, rows, moving);
 	}
 
@@ -480,6 +741,10 @@ final class FenicsBundleViews {
 			}
 		}
 		if (chosen.isEmpty()) {
+			if (requested != null && requested.stream().anyMatch(source.functions::has)) {
+				throw new IllegalArgumentException("statistics are the solver's own integrals of its stored variables;"
+						+ " functions have none (" + varParam + ")");
+			}
 			throw new IllegalArgumentException("no variables match " + varParam);
 		}
 		List<String> columns = bundle.getStatsColumns();
@@ -488,6 +753,10 @@ final class FenicsBundleViews {
 			throw new IOException(source.store.describe() + ": statistics columns " + columns + " lack mean/total/min/max");
 		}
 		double[] times = times(bundle);
+		int[] all = RowPrefetcher.allRows(times.length);
+		for (FenicsBundle.Variable var : chosen) {
+			bundle.prefetchStats(var.domain(), var.name(), all); // four numbers a row: all of them in one go
+		}
 		StringBuilder sb = new StringBuilder(96 * times.length * chosen.size() + 512);
 		sb.append("{\"times\":");
 		FieldViewerServer.appendDoubles(sb, times, times.length);

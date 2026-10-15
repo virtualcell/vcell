@@ -436,62 +436,63 @@ public abstract class AbstractMathMapping implements ScopedSymbolTable, UnitFact
         }
     }
 
+    public interface SpeciesAmountParameter {
+        SpeciesContext getSpeciesContext();
+        boolean isUnitless();
+    }
+
     @SuppressWarnings("serial")
-    public class SpeciesConcentrationParameter extends MathMappingParameter {
-        private SpeciesContext speciesContext = null;
+    public class SpeciesConcentrationParameter extends MathMappingParameter implements SpeciesAmountParameter {
+        private SpeciesContext speciesContext;
 
         protected SpeciesConcentrationParameter(String argName, Expression argExpression, int argRole, VCUnitDefinition argVCUnitDefinition, SpeciesContext argSpeciesContext, GeometryClass geometryClass){
             super(argName, argExpression, argRole, argVCUnitDefinition, geometryClass);
             this.speciesContext = argSpeciesContext;
         }
 
+        @Override
         public SpeciesContext getSpeciesContext(){
-            return speciesContext;
+            return this.speciesContext;
+        }
+
+        @Override
+        public boolean isUnitless() {
+            return false;
         }
 
         @Override
         public boolean compareEqual(Matchable obj){
-            if(!super.compareEqual(obj)){
-                return false;
-            }
-            if(!(obj instanceof SpeciesConcentrationParameter)){
-                return false;
-            }
-            SpeciesConcentrationParameter other = (SpeciesConcentrationParameter) obj;
-            if(!Compare.isEqual(speciesContext, other.speciesContext)){
-                return false;
-            }
-            return true;
+            if(!super.compareEqual(obj)) return false;
+            if(!(obj instanceof SpeciesConcentrationParameter other)) return false;
+	        return Compare.isEqual(this.speciesContext, other.speciesContext);
         }
     }
 
 
     @SuppressWarnings("serial")
-    public class SpeciesCountParameter extends MathMappingParameter {
-        private SpeciesContext speciesContext = null;
+    public class SpeciesCountParameter extends MathMappingParameter implements SpeciesAmountParameter {
+        private SpeciesContext speciesContext;
 
         protected SpeciesCountParameter(String argName, Expression argExpression, int argRole, VCUnitDefinition argVCUnitDefinition, SpeciesContext argSpeciesContext, GeometryClass geometryClass){
             super(argName, argExpression, argRole, argVCUnitDefinition, geometryClass);
             this.speciesContext = argSpeciesContext;
         }
 
+        @Override
         public SpeciesContext getSpeciesContext(){
-            return speciesContext;
+            return this.speciesContext;
+        }
+
+        @Override
+        public boolean isUnitless() {
+            return true;
         }
 
         @Override
         public boolean compareEqual(Matchable obj){
-            if(!super.compareEqual(obj)){
-                return false;
-            }
-            if(!(obj instanceof SpeciesCountParameter)){
-                return false;
-            }
-            SpeciesCountParameter other = (SpeciesCountParameter) obj;
-            if(!Compare.isEqual(speciesContext, other.speciesContext)){
-                return false;
-            }
-            return true;
+            if(!super.compareEqual(obj)) return false;
+            if(!(obj instanceof SpeciesCountParameter other)) return false;
+	        return Compare.isEqual(this.speciesContext, other.speciesContext);
         }
     }
 
@@ -1004,25 +1005,25 @@ public abstract class AbstractMathMapping implements ScopedSymbolTable, UnitFact
         for(int j = 0; j < reactionSteps.length; j++){
             KineticsParameter[] params = reactionSteps[j].getKinetics().getKineticsParameters();
             for(KineticsParameter kp : params){
-                localNameNominalMathSymbols.put(kp, getMathSymbol0(kp, null));
+                localNameNominalMathSymbols.put(kp, deriveMathSymbol(kp, null));
             }
         }
         List<ReactionRule> reactionRules = simContext.getModel().getRbmModelContainer().getReactionRuleList();
         for(ReactionRule reactionRule : reactionRules){
             LocalParameter[] params = reactionRule.getKineticLaw().getLocalParameters();
             for(LocalParameter lp : params){
-                localNameNominalMathSymbols.put(lp, getMathSymbol0(lp, null));
+                localNameNominalMathSymbols.put(lp, deriveMathSymbol(lp, null));
             }
         }
         SpeciesContext scs[] = simContext.getModel().getSpeciesContexts();
         for(SpeciesContext sc : scs){
             StructureMapping structureMapping = simContext.getGeometryContext().getStructureMapping(sc.getStructure());
             GeometryClass geometryClass = (structureMapping != null) ? structureMapping.getGeometryClass() : null;
-            localNameNominalMathSymbols.put(sc, getMathSymbol0(sc, geometryClass));
+            localNameNominalMathSymbols.put(sc, deriveMathSymbol(sc, geometryClass));
         }
         ModelParameter mps[] = simContext.getModel().getModelParameters();
         for(ModelParameter mp : mps){
-            localNameNominalMathSymbols.put(mp, getMathSymbol0(mp, null));
+            localNameNominalMathSymbols.put(mp, deriveMathSymbol(mp, null));
         }
 
         // invert the map (mathSymbols -> list of Biological SymbolTableEntries)
@@ -1175,37 +1176,32 @@ public abstract class AbstractMathMapping implements ScopedSymbolTable, UnitFact
 
     public String getMathSymbol(SymbolTableEntry ste, GeometryClass geometryClass) throws MappingException{
 
-        String mathSymbol = getMathSymbol0(ste, geometryClass);
+        String mathSymbol = this.deriveMathSymbol(ste, geometryClass);
 
-        if(steToCorrectedMathSymbols.containsKey(ste)){
-            mathSymbol = steToCorrectedMathSymbols.get(ste);
+        if(this.steToCorrectedMathSymbols.containsKey(ste)){
+            mathSymbol = this.steToCorrectedMathSymbols.get(ste);
         }
 
-        // check for ptential conflict with existing global parameter (which carries over the name from bio side to math side)
-        ModelParameter[] modelParams = simContext.getModel().getModelParameters();
+        // check for potential conflict with existing global parameter (which carries over the name from bio side to math side)
+        ModelParameter[] modelParams = this.simContext.getModel().getModelParameters();
 
-        if(!(ste instanceof ModelParameter) && !(ste instanceof ProxyParameter && ((ProxyParameter) ste).getTarget() instanceof ModelParameter)){
-            for(int i = 0; i < modelParams.length; i++){
-                if(modelParams[i].getName().equals(mathSymbol)){
-                    throw new MappingException("Local parameter '" + ste.getName() + "' math namescope name is '"
-                            + mathSymbol + "' and conflicts with existing global parameter named '" + mathSymbol
-                            + "'.  Please rename either the local or the global parameter.");
-                }
-            }
+        if (!(ste instanceof ModelParameter) && !(ste instanceof ProxyParameter proxyParameter && proxyParameter.getTarget() instanceof ModelParameter)){
+	        for (ModelParameter modelParam : modelParams) {
+                if (!modelParam.getName().equals(mathSymbol)) continue;
+                String formatStr = "Local parameter '%s' math namescope name is '%s' and conflicts with existing global parameter named '%s'.  Please rename either the local or the global parameter.";
+		        throw new MappingException(String.format(formatStr, ste.getName(), mathSymbol, mathSymbol));
+	        }
         }
-        mathSymbolMapping.put(ste, mathSymbol);
+	    this.mathSymbolMapping.put(ste, mathSymbol);
 
         return mathSymbol;
     }
 
-    private final String getMathSymbol0(SymbolTableEntry ste, GeometryClass geometryClass)
-            throws MappingException{
+    private String deriveMathSymbol(SymbolTableEntry ste, GeometryClass geometryClass) throws MappingException {
         String steName = ste.getName();
         if(ste instanceof Kinetics.KineticsParameter){
-            Integer count = localNameCountHash.get(steName);
-            if(count == null){
-                throw new MappingException("KineticsParameter " + steName + " not found in local name count");
-            }
+            Integer count = this.localNameCountHash.get(steName);
+            if(count == null) throw new MappingException("KineticsParameter " + steName + " not found in local name count");
             // for now keep old style
             if(count > 1 || steName.equals("J") || steName.equals("LumpedJ")){
                 return steName + "_" + ste.getNameScope().getName();
@@ -1216,11 +1212,10 @@ public abstract class AbstractMathMapping implements ScopedSymbolTable, UnitFact
             // will revert to this in the future
             // return steName+"_"+ste.getNameScope().getName();
         }
-        if(ste instanceof LocalParameter && ((LocalParameter) ste).getNameScope() instanceof ReactionRule.ReactionRuleNameScope){
-            Integer count = localNameCountHash.get(steName);
-            if(count == null){
-                throw new MappingException("Reaction Rule Parameter " + steName + " not found in local name count");
-            }
+        if(ste instanceof LocalParameter && ste.getNameScope() instanceof ReactionRule.ReactionRuleNameScope){
+            Integer count = this.localNameCountHash.get(steName);
+            if(count == null) throw new MappingException("Reaction Rule Parameter " + steName + " not found in local name count");
+
             // for now keep old style
             if(count > 1 || steName.equals("J")){
                 return steName + "_" + ste.getNameScope().getName();
@@ -1231,146 +1226,73 @@ public abstract class AbstractMathMapping implements ScopedSymbolTable, UnitFact
             // will revert to this in the future
             // return steName+"_"+ste.getNameScope().getName();
         }
-        if(ste instanceof ProbabilityParameter){ //be careful here, to see if we need mangle the reaction name
-            ProbabilityParameter probParm = (ProbabilityParameter) ste;
-            return probParm.getName() + PARAMETER_PROBABLIITY_RATE_SUFFIX;
-        }
-        if(ste instanceof SpeciesConcentrationParameter){
-            SpeciesConcentrationParameter concParm = (SpeciesConcentrationParameter) ste;
-            return concParm.getSpeciesContext().getName() + MATH_FUNC_SUFFIX_SPECIES_CONCENTRATION;
-        }
-        if(ste instanceof SpeciesCountParameter){
-            SpeciesCountParameter countParm = (SpeciesCountParameter) ste;
-            return countParm.getSpeciesContext().getName() + MATH_VAR_SUFFIX_SPECIES_COUNT;
-        }
-        if(ste instanceof ObservableConcentrationParameter){
-            ObservableConcentrationParameter concParm = (ObservableConcentrationParameter) ste;
-            return concParm.getObservable().getName() + MATH_FUNC_SUFFIX_SPECIES_CONCENTRATION;
-        }
-        if(ste instanceof ObservableCountParameter){
-            ObservableCountParameter countParm = (ObservableCountParameter) ste;
-            return countParm.getObservable().getName() + MATH_VAR_SUFFIX_SPECIES_COUNT;
-        }
-        if(ste instanceof RbmObservable){
-            RbmObservable observable = (RbmObservable) ste;
-            return observable.getName() + MATH_FUNC_SUFFIX_SPECIES_CONCENTRATION;
-        }
-        if(ste instanceof EventAssignmentOrRateRuleInitParameter){
-            EventAssignmentOrRateRuleInitParameter eventInitParm = (EventAssignmentOrRateRuleInitParameter) ste;
-            return eventInitParm.getName(); // + MATH_FUNC_SUFFIX_EVENTASSIGN_OR_RATE_INIT;
-        }
-
-        if(ste instanceof RateRuleRateParameter){
-            RateRuleRateParameter rateRuleRateParm = (RateRuleRateParameter) ste;
-            return rateRuleRateParm.getName(); // + MATH_FUNC_SUFFIX_RATERULE_RATE;
-        }
-
-        if(ste instanceof Model.ReservedSymbol){
-            return steName;
-        }
-        if(ste instanceof Membrane.MembraneVoltage){
-            return steName;
-        }
+        if(ste instanceof ProbabilityParameter probParm) return probParm.getName() + PARAMETER_PROBABLIITY_RATE_SUFFIX; //be careful here, to see if we need mangle the reaction name
+        if(ste instanceof SpeciesConcentrationParameter concParm) return concParm.getSpeciesContext().getName() + MATH_FUNC_SUFFIX_SPECIES_CONCENTRATION;
+        if(ste instanceof SpeciesCountParameter countParm) return countParm.getSpeciesContext().getName() + MATH_VAR_SUFFIX_SPECIES_COUNT;
+        if(ste instanceof ObservableConcentrationParameter concParm) return concParm.getObservable().getName() + MATH_FUNC_SUFFIX_SPECIES_CONCENTRATION;
+        if(ste instanceof ObservableCountParameter countParm) return countParm.getObservable().getName() + MATH_VAR_SUFFIX_SPECIES_COUNT;
+        if(ste instanceof RbmObservable observable) return observable.getName() + MATH_FUNC_SUFFIX_SPECIES_CONCENTRATION;
+        if(ste instanceof EventAssignmentOrRateRuleInitParameter eventInitParm) return eventInitParm.getName(); // + MATH_FUNC_SUFFIX_EVENTASSIGN_OR_RATE_INIT;
+        if(ste instanceof RateRuleRateParameter rateRuleRateParm) return rateRuleRateParm.getName(); // + MATH_FUNC_SUFFIX_RATERULE_RATE;
+        if(ste instanceof Model.ReservedSymbol) return steName;
+        if(ste instanceof Membrane.MembraneVoltage) return steName;
         if(ste instanceof Structure.StructureSize){
             Structure structure = ((Structure.StructureSize) ste).getStructure();
-            StructureMapping.StructureMappingParameter sizeParameter = simContext.getGeometryContext().getStructureMapping(structure).getSizeParameter();
-            return getMathSymbol(sizeParameter, geometryClass);
+            StructureMapping.StructureMappingParameter sizeParameter = this.simContext.getGeometryContext().getStructureMapping(structure).getSizeParameter();
+            return this.getMathSymbol(sizeParameter, geometryClass);
         }
-        if(ste instanceof ProxyParameter){
-            ProxyParameter pp = (ProxyParameter) ste;
-            return getMathSymbol(pp.getTarget(), geometryClass);
-        }
-        //
-        if(ste instanceof ModelParameter){
-            ModelParameter mp = (ModelParameter) ste;
-            return mp.getName();
-        }
-        if(ste instanceof SpeciesContextSpec.SpeciesContextSpecParameter){
-            SpeciesContextSpec.SpeciesContextSpecParameter scsParm = (SpeciesContextSpec.SpeciesContextSpecParameter) ste;
-            SpeciesContext speciesContext = ((SpeciesContextSpec) (scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext();
-            SpeciesContextMapping scm = getSpeciesContextMapping(speciesContext);
-            String speciesContextVarName = null;
-            if(scm.getVariable() != null){
-                speciesContextVarName = scm.getVariable().getName();
-            } else {
-                speciesContextVarName = speciesContext.getName();
-            }
-            if(scsParm.getRole() == SpeciesContextSpec.ROLE_InitialConcentration){
-                return speciesContextVarName + MATH_FUNC_SUFFIX_SPECIES_INIT_CONC_UNIT_PREFIX + TokenMangler.fixTokenStrict(scsParm.getUnitDefinition().getSymbol());
-            }
-            if(scsParm.getRole() == SpeciesContextSpec.ROLE_InitialCount){
-                return speciesContextVarName + MATH_FUNC_SUFFIX_SPECIES_INIT_COUNT;
-            }
-            if(scsParm.getRole() == SpeciesContextSpec.ROLE_DiffusionRate){
-                return speciesContextVarName + PARAMETER_DIFFUSION_RATE_SUFFIX;
-            }
-            if(scsParm.getRole() == SpeciesContextSpec.ROLE_BoundaryValueXm){
-                return speciesContextVarName + PARAMETER_BOUNDARY_XM_SUFFIX;
-            }
-            if(scsParm.getRole() == SpeciesContextSpec.ROLE_BoundaryValueXp){
-                return speciesContextVarName + PARAMETER_BOUNDARY_XP_SUFFIX;
-            }
-            if(scsParm.getRole() == SpeciesContextSpec.ROLE_BoundaryValueYm){
-                return speciesContextVarName + PARAMETER_BOUNDARY_YM_SUFFIX;
-            }
-            if(scsParm.getRole() == SpeciesContextSpec.ROLE_BoundaryValueYp){
-                return speciesContextVarName + PARAMETER_BOUNDARY_YP_SUFFIX;
-            }
-            if(scsParm.getRole() == SpeciesContextSpec.ROLE_BoundaryValueZm){
-                return speciesContextVarName + PARAMETER_BOUNDARY_ZM_SUFFIX;
-            }
-            if(scsParm.getRole() == SpeciesContextSpec.ROLE_BoundaryValueZp){
-                return speciesContextVarName + PARAMETER_BOUNDARY_ZP_SUFFIX;
-            }
-            if(scsParm.getRole() == SpeciesContextSpec.ROLE_VelocityX){
-                return speciesContextVarName + PARAMETER_VELOCITY_X_SUFFIX;
-            }
-            if(scsParm.getRole() == SpeciesContextSpec.ROLE_VelocityY){
-                return speciesContextVarName + PARAMETER_VELOCITY_Y_SUFFIX;
-            }
-            if(scsParm.getRole() == SpeciesContextSpec.ROLE_VelocityZ){
-                return speciesContextVarName + PARAMETER_VELOCITY_Z_SUFFIX;
+        if(ste instanceof ProxyParameter pp) return this.getMathSymbol(pp.getTarget(), geometryClass);
+        if(ste instanceof ModelParameter mp) return mp.getName();
+
+        if(ste instanceof SpeciesContextSpec.SpeciesContextSpecParameter scsParm){
+	        SpeciesContext speciesContext = ((SpeciesContextSpec) (scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext();
+            SpeciesContextMapping scm = this.getSpeciesContextMapping(speciesContext);
+            String speciesContextVarName = scm.getVariable() != null ? scm.getVariable().getName() : speciesContext.getName();
+            switch (scsParm.getRole()){
+                case SpeciesContextSpec.ROLE_InitialConcentration -> { return speciesContextVarName + MATH_FUNC_SUFFIX_SPECIES_INIT_CONC_UNIT_PREFIX + TokenMangler.fixTokenStrict(scsParm.getUnitDefinition().getSymbol()); }
+                case SpeciesContextSpec.ROLE_InitialCount -> { return speciesContextVarName + MATH_FUNC_SUFFIX_SPECIES_INIT_COUNT; }
+	            case SpeciesContextSpec.ROLE_DiffusionRate -> { return speciesContextVarName + PARAMETER_DIFFUSION_RATE_SUFFIX; }
+                case SpeciesContextSpec.ROLE_BoundaryValueXm -> { return speciesContextVarName + PARAMETER_BOUNDARY_XM_SUFFIX; }
+                case SpeciesContextSpec.ROLE_BoundaryValueXp -> { return speciesContextVarName + PARAMETER_BOUNDARY_XP_SUFFIX; }
+                case SpeciesContextSpec.ROLE_BoundaryValueYm -> { return speciesContextVarName + PARAMETER_BOUNDARY_YM_SUFFIX; }
+                case SpeciesContextSpec.ROLE_BoundaryValueYp -> { return speciesContextVarName + PARAMETER_BOUNDARY_YP_SUFFIX; }
+                case SpeciesContextSpec.ROLE_BoundaryValueZm -> { return speciesContextVarName + PARAMETER_BOUNDARY_ZM_SUFFIX;}
+                case SpeciesContextSpec.ROLE_BoundaryValueZp -> { return speciesContextVarName + PARAMETER_BOUNDARY_ZP_SUFFIX; }
+                case SpeciesContextSpec.ROLE_VelocityX -> { return speciesContextVarName + PARAMETER_VELOCITY_X_SUFFIX; }
+                case SpeciesContextSpec.ROLE_VelocityY -> { return speciesContextVarName + PARAMETER_VELOCITY_Y_SUFFIX; }
+                case SpeciesContextSpec.ROLE_VelocityZ -> { return speciesContextVarName + PARAMETER_VELOCITY_Z_SUFFIX; }
             }
         }
-        if(ste instanceof ElectricalDevice.ElectricalDeviceParameter){
-            ElectricalDevice.ElectricalDeviceParameter edParm = (ElectricalDevice.ElectricalDeviceParameter) ste;
-            ElectricalDevice electricalDevice = (ElectricalDevice) edParm.getNameScope().getScopedSymbolTable();
-            if(electricalDevice instanceof MembraneElectricalDevice){
-                String nameWithScope = ((MembraneElectricalDevice) electricalDevice).getMembraneMapping().getMembrane().getNameScope().getName();
-                if(edParm.getRole() == ElectricalDevice.ROLE_TotalCurrent){
-                    return PARAMETER_TOTAL_CURRENT_PREFIX + nameWithScope;
-                }
-                if(edParm.getRole() == ElectricalDevice.ROLE_TransmembraneCurrent){
-                    return PARAMETER_TRANSMEMBRANE_CURRENT_PREFIX + nameWithScope;
-                }
-                //}else if (electricalDevice instanceof CurrentClampElectricalDevice) {
-                //if (edParm.getRole()==ElectricalDevice.ROLE_TotalCurrentDensity){
-                //return "I_"+((CurrentClampElectricalDevice)electricalDevice).getCurrentClampStimulus().getNameScope().getName();
-                //}
-                //if (edParm.getRole()==ElectricalDevice.ROLE_TransmembraneCurrentDensity){
-                //return "F_"+((CurrentClampElectricalDevice)electricalDevice).getCurrentClampStimulus().getNameScope().getName();
-                //}
-                //}else if (electricalDevice instanceof VoltageClampElectricalDevice) {
-                //if (edParm.getRole()==ElectricalDevice.ROLE_TotalCurrentDensity){
-                //return "I_"+((VoltageClampElectricalDevice)electricalDevice).getVoltageClampStimulus().getNameScope().getName();
-                //}
-                //if (edParm.getRole()==ElectricalDevice.ROLE_TransmembraneCurrentDensity){
-                //return "F_"+((VoltageClampElectricalDevice)electricalDevice).getVoltageClampStimulus().getNameScope().getName();
-                //}
-            }
+        if(ste instanceof ElectricalDevice.ElectricalDeviceParameter edParm && edParm.getNameScope().getScopedSymbolTable() instanceof MembraneElectricalDevice electricalDevice){
+	        String nameWithScope = electricalDevice.getMembraneMapping().getMembrane().getNameScope().getName();
+	        if(edParm.getRole() == ElectricalDevice.ROLE_TotalCurrent) return PARAMETER_TOTAL_CURRENT_PREFIX + nameWithScope;
+	        if(edParm.getRole() == ElectricalDevice.ROLE_TransmembraneCurrent) return PARAMETER_TRANSMEMBRANE_CURRENT_PREFIX + nameWithScope;
+
+//	        if (electricalDevice instanceof CurrentClampElectricalDevice) {
+//	        if (edParm.getRole()==ElectricalDevice.ROLE_TotalCurrentDensity){
+//	        return "I_"+((CurrentClampElectricalDevice)electricalDevice).getCurrentClampStimulus().getNameScope().getName();
+//	        }
+//	        if (edParm.getRole()==ElectricalDevice.ROLE_TransmembraneCurrentDensity){
+//	        return "F_"+((CurrentClampElectricalDevice)electricalDevice).getCurrentClampStimulus().getNameScope().getName();
+//	        }
+//	        }else if (electricalDevice instanceof VoltageClampElectricalDevice) {
+//	        if (edParm.getRole()==ElectricalDevice.ROLE_TotalCurrentDensity){
+//	        return "I_"+((VoltageClampElectricalDevice)electricalDevice).getVoltageClampStimulus().getNameScope().getName();
+//	        }
+//	        if (edParm.getRole()==ElectricalDevice.ROLE_TransmembraneCurrentDensity){
+//	        return "F_"+((VoltageClampElectricalDevice)electricalDevice).getVoltageClampStimulus().getNameScope().getName();
+//	        }
         }
-        if(ste instanceof LocalParameter && ((LocalParameter) ste).getNameScope() instanceof ElectricalStimulus.ElectricalStimulusNameScope){
-            LocalParameter esParm = (LocalParameter) ste;
-            String nameWithScope = esParm.getNameScope().getName();
+        if(ste instanceof LocalParameter esParm && ste.getNameScope() instanceof ElectricalStimulus.ElectricalStimulusNameScope){
+	        String nameWithScope = esParm.getNameScope().getName();
             if(esParm.getRole() == ElectricalStimulus.ElectricalStimulusParameterType.TotalCurrent){
                 return PARAMETER_TOTAL_CURRENT_PREFIX + nameWithScope;
             } else if(esParm.getRole() == ElectricalStimulus.ElectricalStimulusParameterType.Voltage){
                 return PARAMETER_VOLTAGE_PREFIX + nameWithScope;
             }
         }
-        if(ste instanceof StructureMapping.StructureMappingParameter){
-            StructureMapping.StructureMappingParameter smParm = (StructureMapping.StructureMappingParameter) ste;
-            Structure structure = ((StructureMapping) (smParm.getNameScope().getScopedSymbolTable())).getStructure();
+        if(ste instanceof StructureMapping.StructureMappingParameter smParm){
+	        Structure structure = ((StructureMapping) (smParm.getNameScope().getScopedSymbolTable())).getStructure();
             String nameWithScope = structure.getNameScope().getName();
             int role = smParm.getRole();
             if(role == StructureMapping.ROLE_InitialVoltage){
@@ -1378,7 +1300,7 @@ public abstract class AbstractMathMapping implements ScopedSymbolTable, UnitFact
             } else if(role == StructureMapping.ROLE_SpecificCapacitance){
                 return PARAMETER_SPECIFIC_CAPACITANCE_PREFIX + nameWithScope;
             } else if(role == StructureMapping.ROLE_Size){
-                if(simContext.getGeometry().getDimension() == 0){
+                if(this.simContext.getGeometry().getDimension() == 0){
                     // if geometry is compartmental, make sure compartment sizes are set if referenced in model.
                     if(smParm.getExpression() == null || smParm.getExpression().isZero()){
                         throw new MappingException("\nIn non-spatial application '" + getSimulationContext().getName() + "', " +
@@ -1404,9 +1326,8 @@ public abstract class AbstractMathMapping implements ScopedSymbolTable, UnitFact
         //
         // substitute Variable or Function if a SpeciesContext
         //
-        if(ste instanceof SpeciesContext){
-            SpeciesContext sc = (SpeciesContext) ste;
-            SpeciesContextMapping scm = getSpeciesContextMapping(sc);
+        if(ste instanceof SpeciesContext sc){
+	        SpeciesContextMapping scm = this.getSpeciesContextMapping(sc);
             if(scm == null){
                 throw new RuntimeException("Species '" + sc.getName() + "' is referenced in model but may have been deleted. " +
                         "Find its references in '" + GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_BIOMODEL_PARAMETERS + "'.");
@@ -1454,7 +1375,7 @@ public abstract class AbstractMathMapping implements ScopedSymbolTable, UnitFact
                 }
             }
         }
-        return getNameScope().getSymbolName(ste);
+        return this.getNameScope().getSymbolName(ste);
     }
 
     /**

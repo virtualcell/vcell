@@ -169,8 +169,8 @@ public Double[][] getDataValuesByRow() {
 	Double[][] valuesByRow = new Double[getMaxPlotDataSize()][2 * getNumberOfPlots()];
 	for (int j = 0; j < getNumberOfPlots(); j++){
 		for (int i = 0; i < plotDatas[j].getSize(); i++){
-			valuesByRow[i][2 * j] = new Double(plotDatas[j].getIndependent()[i]);
-			valuesByRow[i][2 * j + 1] = new Double(plotDatas[j].getDependent()[i]);
+			valuesByRow[i][2 * j] = plotDatas[j].getIndependent()[i];
+			valuesByRow[i][2 * j + 1] = plotDatas[j].getDependent()[i];
 		}
 	}
 	return valuesByRow;
@@ -311,8 +311,8 @@ public Double[][] getVisiblePlotDataValuesByRow() {
 	Double[][] visiblePlotValuesByRow = new Double[getMaxPlotDataSize()][2 * getNumberOfVisiblePlots()];
 	for (int j = 0; j < getVisiblePlotIndices().length; j++){
 		for (int i = 0; i < plotDatas[getVisiblePlotIndices()[j]].getSize(); i++){
-			visiblePlotValuesByRow[i][2 * j] = new Double(plotDatas[getVisiblePlotIndices()[j]].getIndependent()[i]);
-			visiblePlotValuesByRow[i][2 * j + 1] = new Double(plotDatas[getVisiblePlotIndices()[j]].getDependent()[i]);
+			visiblePlotValuesByRow[i][2 * j] = plotDatas[getVisiblePlotIndices()[j]].getIndependent()[i];
+			visiblePlotValuesByRow[i][2 * j + 1] = plotDatas[getVisiblePlotIndices()[j]].getDependent()[i];
 		}
 	}
 	return visiblePlotValuesByRow;
@@ -485,7 +485,6 @@ public void removeChangeListener(javax.swing.event.ChangeListener newListener) {
 /**
  * Sets the visiblePlots property (boolean[]) value.
  * @param visiblePlots The new value for the property.
- * @see #getVisiblePlots
  */
 public void setVisiblePlots(boolean[] visiblePlots, boolean arg_isHistogram) {
 	if (visiblePlots.length != plotDatas.length) {

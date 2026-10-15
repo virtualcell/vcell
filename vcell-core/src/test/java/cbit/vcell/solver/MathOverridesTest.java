@@ -123,15 +123,26 @@ public class MathOverridesTest {
     @Test
     public void test_database_serialization() throws DataAccessException, ExpressionException {
         final String database_string = "MathOverrides {\n" +
-                "   ConstantArraySpec s1_Count_initCount 1001 (Size_c0 / KMOLE) to (5.0 * Size_c0 / KMOLE), 3 values;" +
-                "   ConstantArraySpec s0_Count_initCount 1000 \"KMOLE\", \"(2.0 * KMOLE)\";\n" +
+                "   ConstantArraySpec s0_Count_initCount 1000 \"KMOLE\", \"(2.0 * KMOLE)\";" +
+                "   ConstantArraySpec s1_Count_initCount 1001 (Size_c0 / KMOLE) to (5.0 * Size_c0 / KMOLE), 3 values;\n" +
                 "}\n";
         CommentStringTokenizer mathOverridesTokens = new CommentStringTokenizer(database_string);
         List<MathOverrides.Element> elements = MathOverrides.parseOverrideElementsFromVCML(mathOverridesTokens);
         assertEquals(2, elements.size());
         {
+            // make sure list override is correct (for s0_Count_initCount)
+            ConstantArraySpec listConstantArraySpec = elements.get(0).getSpec();
+            assertEquals(TYPE_LIST, listConstantArraySpec.getType());
+            Expression expectedItem1 = new Expression("KMOLE");
+            Expression expectedItem2 = new Expression("(2.0 * KMOLE)");
+            ConstantArraySpec expected = ConstantArraySpec.createListSpec("s0_Count_initCount", new String[] { expectedItem1.infix(), expectedItem2.infix() });
+            assertTrue(expected.compareEqual(listConstantArraySpec), "list specs didn't match");
+            String expectedDescription = "\"KMOLE\", \"(2.0 * KMOLE)\"";
+            assertEquals(expectedDescription, listConstantArraySpec.toDatabaseString());
+        }
+        {
             // make sure interval override is correct (for s1_Count_initCount)
-            ConstantArraySpec intervalConstantArraySpec = elements.get(0).getSpec();
+            ConstantArraySpec intervalConstantArraySpec = elements.get(1).getSpec();
             assertEquals(TYPE_INTERVAL, intervalConstantArraySpec.getType());
             Expression expectedMinExp = new Expression("(Size_c0 / KMOLE)");
             Expression expectedMaxExp = new Expression("(5.0 * Size_c0 / KMOLE)");
@@ -142,17 +153,6 @@ public class MathOverridesTest {
             assertTrue(expected.compareEqual(intervalConstantArraySpec), "interval specs didn't match");
             String expectedDescription = "(Size_c0 / KMOLE) to (5.0 * Size_c0 / KMOLE), 3 values";
             assertEquals(expectedDescription, intervalConstantArraySpec.toDatabaseString());
-        }
-        {
-            // make sure list override is correct (for s0_Count_initCount)
-            ConstantArraySpec listConstantArraySpec = elements.get(1).getSpec();
-            assertEquals(TYPE_LIST, listConstantArraySpec.getType());
-            Expression expectedItem1 = new Expression("KMOLE");
-            Expression expectedItem2 = new Expression("(2.0 * KMOLE)");
-            ConstantArraySpec expected = ConstantArraySpec.createListSpec("s0_Count_initCount", new String[] { expectedItem1.infix(), expectedItem2.infix() });
-            assertTrue(expected.compareEqual(listConstantArraySpec), "list specs didn't match");
-            String expectedDescription = "\"KMOLE\", \"(2.0 * KMOLE)\"";
-            assertEquals(expectedDescription, listConstantArraySpec.toDatabaseString());
         }
         // make sure generated database text is same as above (for multiple overrides)
         MathOverrides mathOverrides = new MathOverrides(null, new CommentStringTokenizer(database_string));

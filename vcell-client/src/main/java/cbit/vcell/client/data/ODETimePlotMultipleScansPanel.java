@@ -54,12 +54,7 @@ public class ODETimePlotMultipleScansPanel extends JPanel {
 	private String[] variableNames = null;
 	private String xVarColumnName;
 
-/**
- * Insert the method's description here.
- * Creation date: (10/17/2005 11:30:45 PM)
- * @param simulation cbit.vcell.solver.Simulation
- * @param vcDataManager cbit.vcell.client.server.VCDataManager
- */
+
 public ODETimePlotMultipleScansPanel(String[] varnames, Simulation arg_simulation, DataManager arg_dataManager,String xVarColumnName) {
 	variableNames = varnames;
 	simulation = arg_simulation;
@@ -89,7 +84,7 @@ private void initialize()  {
 	
 	plotPane = new PlotPane();
 	plotPane.getPlot2DDataPanel1().setXVarName(xVarColumnName);
-	plotPane.getPlot2DDataPanel1().setSimulation(simulation);
+	//plotPane.getPlot2DDataPanel1().setSimulation(simulation);
 	add(plotPane, BorderLayout.CENTER);
 	
 	JPanel parameterPanel = new JPanel();

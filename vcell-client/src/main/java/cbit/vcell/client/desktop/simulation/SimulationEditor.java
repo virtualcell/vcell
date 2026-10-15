@@ -14,7 +14,8 @@ import java.awt.Dimension;
 import java.util.Objects;
 
 import javax.swing.JFrame;
-import javax.swing.JOptionPane;
+
+import cbit.vcell.mapping.MathMapping;
 import org.vcell.util.gui.DialogUtils;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
@@ -260,7 +261,14 @@ public void prepareToEdit(Simulation simulation, Component parent) throws Chombo
 	try {
 		Simulation clonedSimulation = (Simulation)BeanUtils.cloneSerializable(simulation);
 		clonedSimulation.refreshDependencies();
-		getMathOverridesPanel1().setMathOverrides(clonedSimulation == null ? null : clonedSimulation.getMathOverrides());
+		if (simulation.getSimulationOwner() instanceof SimulationContext simContext) {
+			MathMapping mathMapping = simContext.getMostRecentlyCreatedMathMapping();
+			if (null == mathMapping) simContext.createNewMathMapping();
+			getMathOverridesPanel1().setMath(clonedSimulation.getMathOverrides(), simContext.getMostRecentlyCreatedMathMapping().getMathSymbolMapping());
+		} else {
+			getMathOverridesPanel1().setMath(clonedSimulation.getMathOverrides(), null);
+		}
+
 		getMeshTabPanel().setSimulation(parent, clonedSimulation);
 		SolverTaskDescriptionAdvancedPanel stdap = getSolverTaskDescriptionAdvancedPanel1();
 		{

@@ -271,6 +271,79 @@ public final class FenicsBundle {
 		return Arrays.copyOf(xyz, 3 * (int) Math.min(Math.round(count), xyz.length / 3));
 	}
 
+	/**
+	 * Tells the store which chunks {@link #field} is about to read for {@code rows}, so a remote store
+	 * fetches them in a few batched calls instead of one call per row ({@link BundleStore#prefetch}).
+	 * Rows not written yet are skipped.
+	 */
+	public void prefetchField(String domain, String variable, int[] rows) throws IOException {
+		String path = variable(domain, variable).path();
+		prefetchRows(rows, row -> path);
+	}
+
+	/** {@link #prefetchField} for {@link #stats} */
+	public void prefetchStats(String domain, String variable, int[] rows) throws IOException {
+		String path = variable(domain, variable).stats();
+		prefetchRows(rows, row -> path);
+	}
+
+	/** {@link #prefetchField} for {@link #coords}: the recorded point positions of moving rows */
+	public void prefetchCoords(String domain, int[] rows) throws IOException {
+		domain(domain);
+		java.util.List<Integer> moving = new ArrayList<>();
+		for (int row : rows) {
+			if (row >= 0 && row < times.size() && "ale".equals(segmentOf(row).segment().motion())) {
+				moving.add(row);
+			}
+		}
+		prefetchRows(moving.stream().mapToInt(Integer::intValue).toArray(), row -> domain + "/_coords");
+	}
+
+	private interface ArrayOfRow {
+		String path(int row);
+	}
+
+	private void prefetchRows(int[] rows, ArrayOfRow arrayOfRow) throws IOException {
+		List<String> chunks = new ArrayList<>(rows.length);
+		Map<String, JsonObject> metas = new LinkedHashMap<>();
+		for (int row : rows) {
+			if (row < 0 || row >= times.size()) {
+				continue;
+			}
+			SegmentRow sr = segmentOf(row);
+			String arrayPath = sr.segment().prefix() + arrayOfRow.path(row);
+			JsonObject meta = metas.get(arrayPath);
+			if (meta == null) {
+				meta = arrayMeta(arrayPath);
+				metas.put(arrayPath, meta);
+			}
+			int[] shape = ints(meta.getAsJsonArray("shape"));
+			if (sr.localRow() < shape[0]) {
+				chunks.add(chunkPath(arrayPath, meta, sr.localRow()));
+			}
+		}
+		store.prefetch(chunks);
+	}
+
+	private JsonObject arrayMeta(String arrayPath) throws IOException {
+		return arrayMeta(store, root, arrayPath);
+	}
+
+	private static JsonObject arrayMeta(BundleStore store, String root, String arrayPath) throws IOException {
+		byte[] zarray = store.read(arrayPath + "/.zarray");
+		if (zarray == null) {
+			throw new FileNotFoundException(root + "/" + arrayPath + ": no .zarray");
+		}
+		return JsonParser.parseString(new String(zarray, StandardCharsets.UTF_8)).getAsJsonObject();
+	}
+
+	/** the chunk file of a one-row-per-chunk array holding {@code row} */
+	private static String chunkPath(String arrayPath, JsonObject meta, int row) {
+		int dims = meta.getAsJsonArray("shape").size();
+		String separator = string(meta, "dimension_separator", ".");
+		return arrayPath + "/" + row + (separator + "0").repeat(dims - 1);
+	}
+
 	/** whether any output row's mesh moves (an ALE segment) */
 	public boolean isMoving() {
 		return segments.stream().anyMatch(s -> "ale".equals(s.motion()));
@@ -290,12 +363,21 @@ public final class FenicsBundle {
 
 	/** one row of a 2D zarr v2 array stored one row per chunk; a missing chunk is all fill value */
 	private double[] readRow(String arrayPath, int row) throws IOException {
-		String arrayDir = root + "/" + arrayPath;
-		byte[] zarray = store.read(arrayPath + "/.zarray");
-		if (zarray == null) {
-			throw new FileNotFoundException(arrayDir + ": no .zarray");
+		JsonObject meta = arrayMeta(arrayPath);
+		int[] shape = checkLayout(meta, root + "/" + arrayPath);
+		if (row >= shape[0]) {
+			throw new IndexOutOfBoundsException(root + "/" + arrayPath + ": row " + row + " beyond shape " + Arrays.toString(shape));
 		}
-		JsonObject meta = JsonParser.parseString(new String(zarray, StandardCharsets.UTF_8)).getAsJsonObject();
+		double[] values = new double[rowLength(shape)];
+		decodeRow(store, arrayPath, meta, row, values);
+		return values;
+	}
+
+	/**
+	 * The array's shape, after checking it is the only layout the writer produces (little-endian float64,
+	 * one row per chunk, C order, no filters).
+	 */
+	private static int[] checkLayout(JsonObject meta, String arrayDir) throws IOException {
 		int[] shape = ints(meta.getAsJsonArray("shape"));
 		int[] chunks = ints(meta.getAsJsonArray("chunks"));
 		String dtype = meta.get("dtype").getAsString();
@@ -307,27 +389,151 @@ public final class FenicsBundle {
 				|| (meta.has("filters") && !meta.get("filters").isJsonNull())) {
 			throw new IOException(arrayDir + ": unsupported zarr array layout (expected <f8, one row per chunk, no filters)");
 		}
-		if (row >= shape[0]) {
-			throw new IndexOutOfBoundsException(arrayDir + ": row " + row + " beyond shape " + Arrays.toString(shape));
-		}
-		int n = 1;  // the values in one row (a row of a (T, N, 3) array is N·3, C order)
+		return shape;
+	}
+
+	/** the values in one row (a row of a (T, N, 3) array is N·3, C order) */
+	private static int rowLength(int[] shape) {
+		int n = 1;
 		for (int axis = 1; axis < shape.length; axis++) {
 			n *= shape[axis];
 		}
-		String separator = string(meta, "dimension_separator", ".");
-		String chunk = arrayPath + "/" + row + (separator + "0").repeat(shape.length - 1);
-		double[] values = new double[n];
+		return n;
+	}
+
+	/**
+	 * Decodes row {@code row} into {@code values} (its length is the row's); a missing chunk is all fill value.
+	 *
+	 * @return whether the row's chunk is written
+	 */
+	private static boolean decodeRow(BundleStore store, String arrayPath, JsonObject meta, int row, double[] values) throws IOException {
+		String chunk = chunkPath(arrayPath, meta, row);
 		byte[] raw = store.read(chunk);
 		if (raw == null) {
 			Arrays.fill(values, fillValue(meta));
-			return values;
+			return false;
 		}
+		int n = values.length;
 		byte[] decoded = decompress(meta, raw, n * Double.BYTES, chunk);
 		ByteBuffer buf = ByteBuffer.wrap(decoded).order(ByteOrder.LITTLE_ENDIAN);
 		for (int i = 0; i < n; i++) {
 			values[i] = buf.getDouble();
 		}
-		return values;
+		return true;
+	}
+
+	/** the most values one {@link #gather} answers, over all its arrays and rows (8 MB of doubles) */
+	public static final int MAX_SAMPLE_VALUES = 1 << 20;
+	/** the most arrays one {@link #gather} reads */
+	public static final int MAX_SAMPLE_ARRAYS = 16;
+	/** the most indices one {@link #gather} reads per row */
+	public static final int MAX_SAMPLE_INDICES = 1 << 16;
+	/** the most rows one {@link #gather} may be asked for */
+	public static final int MAX_SAMPLE_ROWS = 1000;
+
+	/**
+	 * Some values of some arrays of the bundle in {@code store}: for each array of {@code arrayPaths} (bundle
+	 * relative, all with the same row length -- one domain of one segment), at each of {@code rows} (rows of
+	 * those arrays), the values at {@code indices} (strictly increasing, within the row). The data server's
+	 * side of {@link cbit.vcell.server.DataSetController#getFenicsBundleSamples}: the chunks are read and
+	 * decoded here, next to the files, and only the asked-for values leave.
+	 * <p>
+	 * Answers the longest prefix of {@code rows} whose values fit in {@code maxValues} (arrays × rows × indices),
+	 * so one reply stays bounded and the caller asks again for the rest; refuses a request of which not even
+	 * one row fits, and more than {@link #MAX_SAMPLE_ARRAYS} arrays, {@link #MAX_SAMPLE_INDICES} indices or
+	 * {@link #MAX_SAMPLE_ROWS} rows.
+	 */
+	public static FenicsSamples gather(BundleStore store, String[] arrayPaths, int[] indices, int[] rows, long maxValues)
+			throws IOException {
+		String root = store.describe();
+		if (arrayPaths == null || arrayPaths.length == 0 || indices == null || rows == null) {
+			throw new IllegalArgumentException("a sample request needs arrays, indices and rows");
+		}
+		if (arrayPaths.length > MAX_SAMPLE_ARRAYS || indices.length > MAX_SAMPLE_INDICES || rows.length > MAX_SAMPLE_ROWS) {
+			throw new IllegalArgumentException("at most " + MAX_SAMPLE_ARRAYS + " arrays, " + MAX_SAMPLE_INDICES + " indices and "
+					+ MAX_SAMPLE_ROWS + " rows per sample request; got " + arrayPaths.length + ", " + indices.length + " and " + rows.length);
+		}
+		for (int i = 1; i < indices.length; i++) {
+			if (indices[i] <= indices[i - 1]) {
+				throw new IllegalArgumentException("sample indices must be strictly increasing");
+			}
+		}
+		JsonObject[] metas = new JsonObject[arrayPaths.length];
+		int[][] shapes = new int[arrayPaths.length][];
+		int n = -1;
+		for (int a = 0; a < arrayPaths.length; a++) {
+			BundleStore.checkRelativePath(arrayPaths[a]);
+			metas[a] = arrayMeta(store, root, arrayPaths[a]);
+			shapes[a] = checkLayout(metas[a], root + "/" + arrayPaths[a]);
+			int length = rowLength(shapes[a]);
+			if (n >= 0 && length != n) {
+				throw new IllegalArgumentException("sampled arrays must share one row length (one domain of one segment): "
+						+ arrayPaths[0] + " has " + n + ", " + arrayPaths[a] + " has " + length);
+			}
+			n = length;
+		}
+		if (indices.length > 0 && (indices[0] < 0 || indices[indices.length - 1] >= n)) {
+			throw new IllegalArgumentException("sample index outside a row of " + n + " values");
+		}
+		for (int row : rows) {
+			for (int a = 0; a < arrayPaths.length; a++) {
+				if (row < 0 || row >= shapes[a][0]) {
+					throw new IndexOutOfBoundsException(root + "/" + arrayPaths[a] + ": row " + row + " beyond shape " + Arrays.toString(shapes[a]));
+				}
+			}
+		}
+		long perRow = (long) arrayPaths.length * Math.max(1, indices.length);
+		int fit = (int) Math.min(rows.length, maxValues / perRow);
+		if (fit < 1 && rows.length > 0) {
+			throw new IllegalArgumentException("one row of " + arrayPaths.length + " arrays at " + indices.length
+					+ " indices is more than " + maxValues + " values; ask for fewer arrays or indices");
+		}
+		double[][][] values = new double[arrayPaths.length][fit][indices.length];
+		boolean[][] written = new boolean[arrayPaths.length][fit];
+		double[] row = new double[n];
+		for (int a = 0; a < arrayPaths.length; a++) {
+			for (int r = 0; r < fit; r++) {
+				written[a][r] = decodeRow(store, arrayPaths[a], metas[a], rows[r], row);
+				double[] out = values[a][r];
+				for (int i = 0; i < indices.length; i++) {
+					out[i] = row[indices[i]];
+				}
+			}
+		}
+		return new FenicsSamples(Arrays.copyOf(rows, fit), values, written);
+	}
+
+	/**
+	 * The values of {@code variables} (all on {@code domain}) at {@code vertices} (strictly increasing) for
+	 * {@code rows} (output rows, all in ONE segment, whose mesh the vertices index): {@code [variable][row][vertex]}.
+	 * From the store's sampled read ({@link BundleStore#sampleRows}) when it has one; null when it has not, and
+	 * the caller reads whole rows instead.
+	 */
+	public double[][][] sampleFields(String domain, String[] variables, int[] rows, int[] vertices) throws IOException {
+		if (rows.length == 0) {
+			return new double[variables.length][0][];
+		}
+		Segment segment = segmentOf(rows[0]).segment();
+		int[] localRows = new int[rows.length];
+		for (int r = 0; r < rows.length; r++) {
+			SegmentRow sr = segmentOf(rows[r]);
+			if (sr.segment().index() != segment.index()) {
+				throw new IllegalArgumentException("sampled rows must lie in one segment: rows " + rows[0] + " and " + rows[r] + " do not");
+			}
+			localRows[r] = sr.localRow();
+		}
+		String[] paths = new String[variables.length];
+		for (int v = 0; v < variables.length; v++) {
+			paths[v] = segment.prefix() + variable(domain, variables[v]).path();
+		}
+		FenicsSamples samples = store.sampleRows(paths, localRows, vertices);
+		if (samples == null) {
+			return null;
+		}
+		if (samples.rows.length != rows.length) {
+			throw new IOException(root + ": sampled read answered " + samples.rows.length + " of " + rows.length + " rows");
+		}
+		return samples.values;
 	}
 
 	private static byte[] decompress(JsonObject meta, byte[] raw, int expectedBytes, String chunk) throws IOException {

@@ -370,6 +370,12 @@ public class XMLTags {
     public final static String SBML_VCELL_GeometrySamplingTag_cutoffFrequencyAttr = "cutoffFrequency";
     public final static String SBML_VCELL_SpeciesContextSpecSettingsTag = "SpeciesContextSpecSettings";
     public final static String SBML_VCELL_SpeciesContextSpecSettingsTag_wellmixedAttr = "wellmixed";
+    // a species' representation in a spatial model: a continuous field (the default when absent) or particles.
+    // Any "particle" species makes the imported application spatial stochastic (a PDE/particle hybrid when some
+    // species are continuous); continuous species of such an application are SpeciesContextSpec.forceContinuous.
+    public final static String SBML_VCELL_SpeciesContextSpecSettingsTag_representationAttr = "representation";
+    public final static String SBML_VCELL_Representation_continuous = "continuous";
+    public final static String SBML_VCELL_Representation_particle = "particle";
     public final static String MeshTag = "Mesh";
     public final static String SizeTag = "Size";
     public final static String XAttrTag = "X";

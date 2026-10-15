@@ -11,8 +11,6 @@ import cbit.vcell.solvers.ExecutableCommand;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 import org.junit.jupiter.api.*;
-import org.junit.jupiter.api.condition.DisabledOnOs;
-import org.junit.jupiter.api.condition.OS;
 import org.vcell.solver.fenics.FenicsSolver;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
@@ -112,20 +110,12 @@ public class SlurmProxyTest {
 	/** Like {@link #createScriptForNativeSolvers}, from a simtask's XML text (so a test can swap the solver in a fixture). */
 	public String createScriptForNativeSolversFromXml(String simTaskXml, String[] command, String JOB_NAME) throws IOException, XmlParseException, ExpressionException {
 
-		String os = System.getProperty("os.name").toLowerCase();
-		boolean isWindows = os.startsWith("windows");
-
 		SimulationTask simTask = XmlHelper.XMLToSimTask(simTaskXml);
 		KeyValue simKey = simTask.getSimKey();
 
 		SlurmProxy slurmProxy = new SlurmProxy(null, "vcell");
 		File subFileExternal = new File("/share/apps/vcell3/htclogs/V_REL_"+simKey+"_0_0.slurm.sub");
-		String subFileExternalPath = subFileExternal.getAbsolutePath();
-		if(isWindows) {
-			subFileExternalPath = subFileExternalPath
-					.replaceAll("[A-Za-z]:", "")   // remove drive letter, keep the leading backslash
-					.replace("\\", "/");           // normalize separators
-		}
+		String subFileExternalPath = SlurmProxy.toClusterPath(subFileExternal.getAbsolutePath());
 
 		User simOwner = simTask.getSimulation().getVersion().getOwner();
 		final int jobId = simTask.getSimulationJob().getJobIndex();
@@ -133,12 +123,7 @@ public class SlurmProxyTest {
 		// preprocessor
 		String simTaskFilePathExternal = "/share/apps/vcell3/users/schaff/SimID_"+simKey+"_0__0.simtask.xml";
 		File primaryUserDirExternal = new File("/share/apps/vcell3/users/schaff");
-		String primaryUserDirExternalPath = primaryUserDirExternal.getAbsolutePath();
-		if(isWindows) {
-			primaryUserDirExternalPath = primaryUserDirExternalPath
-					.replaceAll("[A-Za-z]:", "")
-					.replace("\\", "/");
-		}
+		String primaryUserDirExternalPath = SlurmProxy.toClusterPath(primaryUserDirExternal.getAbsolutePath());
 
 		List<String> args = new ArrayList<>( 4 );
 		args.add( PropertyLoader.getRequiredProperty(PropertyLoader.simulationPreprocessor) );
@@ -210,7 +195,7 @@ public class SlurmProxyTest {
 				Integer.toString(jobId),
 				Integer.toString(simTask.getTaskID()),
 				SOLVER_EXIT_CODE_REPLACE_STRING,
-				subFileExternal.getAbsolutePath());
+				SlurmProxy.toClusterPath(subFileExternal.getAbsolutePath()));
 		postprocessorCmd.setExitCodeToken(SOLVER_EXIT_CODE_REPLACE_STRING);
 
 		ExecutableCommand.Container commandSet = new ExecutableCommand.Container();
@@ -283,7 +268,6 @@ public class SlurmProxyTest {
 		Assertions.assertEquals(expectedSlurmScript.trim(), slurmScript.trim());
 	}
 
-	@DisabledOnOs(OS.WINDOWS)
 	@Test
 	public void testSimJobScriptLangevin() throws IOException, XmlParseException, ExpressionException {
 		String simTaskResourcePath = "slurm_fixtures/langevin/SimID_274672135_0__0.simtask.xml";
@@ -317,8 +301,9 @@ public class SlurmProxyTest {
 		setProperty(PropertyLoader.installationRoot, tempUserDir.getAbsolutePath()); // getCommands() names the local-solvers dir
 		FenicsSolver solver = new FenicsSolver(simTask, tempUserDir, true);
 		List<String> command = new ArrayList<>();
+		String tempUserDirPath = tempUserDir.getAbsolutePath().replace('\\', '/');	// FenicsSolver writes '/' on Windows too
 		for (String token : solver.getCommands().iterator().next().getCommands()) {
-			command.add(token.replace(tempUserDir.getAbsolutePath(), "/share/apps/vcell3/users/schaff"));
+			command.add(token.replace('\\', '/').replace(tempUserDirPath, "/share/apps/vcell3/users/schaff"));
 		}
 		command.add("-tid");
 		command.add("0");
@@ -590,7 +575,7 @@ public class SlurmProxyTest {
 		}
 		String xmlString;
 		try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
-			xmlString = reader.lines().collect(Collectors.joining(System.lineSeparator()));
+			xmlString = reader.lines().collect(Collectors.joining("\n"));	// scripts are Unix text on every OS
 		}
 		return xmlString;
 	}
