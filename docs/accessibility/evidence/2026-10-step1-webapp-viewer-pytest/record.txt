@@ -1,0 +1,29 @@
+Step 1 evidence: full webapp-viewer pytest suite, 2026-10-15.
+
+Command:
+  python -m pytest webapp-viewer/test/ --no-build -v
+
+Environment:
+  Python: 3.14.7 (hermes tools)
+  pytest: 9.1.1
+  playwright: 1.63.0
+  Browsers: chromium, webkit, firefox (all installed via playwright)
+  Java: 17 (OpenJDK 17.0.20.1, Homebrew)
+  OS: macOS 27.0.1 (darwin arm64)
+
+Prerequisite:
+  vcell-client test classes and fixture-classpath.txt were already compiled in
+  target/ from an earlier run. --no-build was passed to skip Maven recompilation.
+  The vtk-wasm bundle was present at webapp-viewer/assets/vtk-wasm/.
+
+Result: 193 passed in 343.76s (5:43). 0 failures, 0 errors, 0 skipped.
+
+This includes test_colormap.py (1 test), test_fv_membranes.py, test_kymograph.py,
+test_kymograph_bodyfitted.py, test_membrane_curves.py, and test_probes.py —
+each parametrized across chromium, webkit, and firefox engines and multiple
+fixture datasets (fv2d, fv3d, fenics2d, fenicsMoving, fenics3d, fenics2dMembrane,
+movingBoundary, chombo2d, chombo3d, fvMembrane3d).
+
+This closes the D2 gap for the full webapp-viewer test suite (Step 1 of the
+100-completion plan). Note: this does not close R10, which requires manual
+human review on macOS, Windows, and Linux with Sim Daltonism or Color Oracle.
