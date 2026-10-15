@@ -26,10 +26,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.EtchedBorder;
-import javax.swing.border.LineBorder;
 
 import cbit.vcell.client.data.SimulationWorkspaceModelInfo;
 import org.vcell.util.Range;
@@ -251,7 +248,7 @@ private void connEtoM2(java.beans.PropertyChangeEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		getPlot2DDataPanel1().setPlot2D(this.getPlot2D());
+		getPlot2DDataPanel1().setUserFacingPlot(this.getPlot2D());
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {

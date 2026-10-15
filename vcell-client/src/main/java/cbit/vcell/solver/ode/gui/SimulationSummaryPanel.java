@@ -17,6 +17,7 @@ import java.beans.PropertyVetoException;
 import cbit.vcell.client.RequestManager;
 import cbit.vcell.client.TopLevelWindowManager;
 import cbit.vcell.client.desktop.DocumentWindow;
+import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.server.ServerInfo;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 
@@ -323,10 +324,14 @@ private void displayOther() {
  */
 private void displayOverrides() {
 	try {
-		getMathOverridesPanel1().setMathOverrides(getSimulation().getMathOverrides());
+		if (getSimulation().getSimulationOwner() instanceof SimulationContext simContext){
+			getMathOverridesPanel1().setMath(getSimulation().getMathOverrides(), simContext.getMostRecentlyCreatedMathMapping().getMathSymbolMapping());
+		} else {
+			getMathOverridesPanel1().setMath(getSimulation().getMathOverrides(), null);
+		}
 	} catch (Exception exc) {
 		exc.printStackTrace(System.out);
-		getMathOverridesPanel1().setMathOverrides(null);
+		getMathOverridesPanel1().setMath(null, null);
 	}
 }
 
@@ -1282,7 +1287,7 @@ private void refreshDisplay() {
 		getJLabelMesh().setText("");
 		getJLabelRelTolValue().setText("");
 		getJLabelAbsTolValue().setText("");
-		getMathOverridesPanel1().setMathOverrides(null);
+		getMathOverridesPanel1().setMath(null, null);
 		getJLabelMeshRefinement().setText("");
 	} else {
 		displayAnnotation();
