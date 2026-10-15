@@ -988,7 +988,8 @@ public class SlurmProxy extends HtcProxy {
 		sendFailMsgScript(simTask, sendFailMsgLSB, jmshost_sim_external, jmsport_sim_external, jmsuser, jmspswd);
 
 		for (SingularityBinding binding : bindings) {
-			commandSet.translatePaths(new File(binding.hostPath), new File(binding.containerPath));
+			commandSet.translatePaths(toClusterPath(new File(binding.hostPath).getAbsolutePath()),
+					toClusterPath(new File(binding.containerPath).getAbsolutePath()));
 		}
 
 		final boolean hasExitProcessor = commandSet.hasExitCodeCommand();
@@ -1130,17 +1131,20 @@ public class SlurmProxy extends HtcProxy {
 	}
 
 
+	// paths in the script are Unix paths on the cluster; on Windows (a developer's machine) java.io.File
+	// turns "/share/apps" into "C:\share\apps", so drop the drive letter and restore the separators
+	static String toClusterPath(String path) {
+		if (File.separatorChar != '\\') {
+			return path;
+		}
+		return path.replaceFirst("^[A-Za-z]:", "").replace('\\', '/');
+	}
+
 	private void slurmScriptInit(String jobName, boolean bPowerUser, MemLimitResults memoryMBAllowed,
 			LineStringBuilder lsb) {
-		String os = System.getProperty("os.name").toLowerCase();
-		boolean isWindows = os.startsWith("windows");
-
 		lsb.write("#!/usr/bin/bash");
 		File htcLogDirExternal = new File(PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDirExternal));
-		String logPath = new File(htcLogDirExternal, jobName + ".slurm.log").getAbsolutePath();
-		if(isWindows) {
-			logPath = logPath.replaceAll("[A-Za-z]:", "").replace("\\", "/");
-		}
+		String logPath = toClusterPath(new File(htcLogDirExternal, jobName + ".slurm.log").getAbsolutePath());
 
 		if(bPowerUser) {
 			String partition_pu = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_partition_pu);
@@ -1339,10 +1343,10 @@ public class SlurmProxy extends HtcProxy {
 		// vcell-rest creates the parest_data directory before writing the input file.
 		// Compute the external path for the SLURM script bindings (host-visible NFS mount point).
 		File optDataDir = optProblemInputFile.getParentFile();
-		File optDataDirExternal = new File(optDataDir.getAbsolutePath().replace(primaryDataDirInternal, primaryDataDirExternal));
+		String optDataDirExternal = toClusterPath(optDataDir.getAbsolutePath()).replace(primaryDataDirInternal, primaryDataDirExternal);
 
 		List<SingularityBinding> bindings = List.of(
-				new SingularityBinding(optDataDirExternal.getAbsolutePath(), "/simdata"),
+				new SingularityBinding(optDataDirExternal, "/simdata"),
 				new SingularityBinding(slurm_tmpdir, "/solvertmp"),
 				new SingularityBinding(htclogdir_external, "/htclogs"),
 				new SingularityBinding(simDataDirArchiveExternal, simDataDirArchiveInternal)
@@ -1357,9 +1361,9 @@ public class SlurmProxy extends HtcProxy {
 		lsb.append("echo command = ");
 		lsb.write("${cmd_prefix}" + "");
 
-		String optProblemInput_container_filename = optProblemInputFile.getAbsolutePath().replace(optProblemInputFile.getParent(),"/simdata");
-		String optProblemOutput_container_filename = optProblemOutputFile.getAbsolutePath().replace(optProblemOutputFile.getParent(),"/simdata");
-		String optReport_container_filename = optReportFile.getAbsolutePath().replace(optReportFile.getParent(),"/simdata");
+		String optProblemInput_container_filename = "/simdata/" + optProblemInputFile.getName();
+		String optProblemOutput_container_filename = "/simdata/" + optProblemOutputFile.getName();
+		String optReport_container_filename = "/simdata/" + optReportFile.getName();
 		lsb.write("${cmd_prefix} " + optProblemInput_container_filename + " " + optProblemOutput_container_filename + " " + optReport_container_filename);
 
         return toUnixStyleText(lsb.toString());
@@ -1372,7 +1376,7 @@ public class SlurmProxy extends HtcProxy {
 		}
 		String xmlString;
 		try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
-			xmlString = reader.lines().collect(Collectors.joining(System.lineSeparator()));
+			xmlString = reader.lines().collect(Collectors.joining("\n"));	// scripts are Unix text on every OS
 		}
 		return xmlString;
 	}
