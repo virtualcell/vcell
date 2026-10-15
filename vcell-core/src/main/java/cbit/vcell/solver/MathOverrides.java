@@ -482,7 +482,7 @@ public class MathOverrides implements Matchable, java.io.Serializable {
 	 */
 	public boolean isValid(MathDescription mathDescription) {
 		// look for Constants from MathDescription not present in Overrides
-		Set<String> mathDescriptionHash = new java.util.HashSet<>();
+		Set<String> mathDescriptionHash = new java.util.LinkedHashSet<>();
 
 		for (Constant nextConstant : Collections.list(mathDescription.getConstants())) {
 			if (!this.overridesHash.containsKey(nextConstant.getName())) return false;
