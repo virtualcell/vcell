@@ -100,9 +100,7 @@ public class CartesianMeshBuilder {
 						new SubdomainInfo.CompartmentSubdomainInfo(outside.getName(), mathDesc.getHandle(outside))));
 			}
 		}
-		return new SubdomainInfo(
-				compartments.toArray(new SubdomainInfo.CompartmentSubdomainInfo[0]),
-				membranes.toArray(new SubdomainInfo.MembraneSubdomainInfo[0]));
+		return new SubdomainInfo(compartments, membranes);
 	}
 
 	/**
