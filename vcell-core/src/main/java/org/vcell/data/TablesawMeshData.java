@@ -16,10 +16,11 @@ import org.tensorflow.ndarray.Shape;
 import org.tensorflow.ndarray.ShortNdArray;
 import org.tensorflow.ndarray.buffer.DataBuffers;
 import org.vcell.util.Coordinate;
+import org.vcell.util.Matchable;
 import tech.tablesaw.api.*;
 import tech.tablesaw.columns.Column;
 
-public record TablesawMeshData(
+public record TablesawMeshData (
 		Map<Coordinate.Axis, Long> sizeData,
 		Map<Coordinate.Axis, Double> extentData,
 		Map<Coordinate.Axis, Double> originData,
@@ -27,11 +28,37 @@ public record TablesawMeshData(
 		Table membraneRegionsMapVolumeRegion,
 		ShortNdArray volumeRegionMapData,
 		Table membraneElements
-) {
-
+) implements Matchable {
 
 	private record ColumnDescription(Class<? extends Column<?>> columnClass, String columnName){}
 	private static final Pattern trailingCommentPattern = Pattern.compile("(\\w)//");
+
+	@Override
+	public boolean compareEqual(Matchable matchable) {
+		if (matchable == this) return true;
+		if (!(matchable instanceof TablesawMeshData otherTable)) return false;
+		if (!this.sizeData.equals(otherTable.sizeData)) return false;
+
+		// There's no convenient method to compare tables :(
+		List<Column<?>> thisColumns = this.membraneElements.columns();
+		List<Column<?>> otherColumns = otherTable.membraneElements.columns();
+		if (thisColumns.size() != otherColumns.size()) return false;
+		for (int i = 0; i < thisColumns.size(); i++) {
+			Column<?> thisColumn = thisColumns.get(i);
+			Column<?> otherColumn = otherColumns.get(i);
+			if (!thisColumn.name().equals(otherColumn.name())) return false;
+			if (!thisColumn.type().equals(otherColumn.type())) return false;
+			if (thisColumn.size() != otherColumn.size()) return false;
+			for (int j = 0; j < thisColumn.size(); j++) {
+				Object thisValue = thisColumn.get(j);
+				Object otherValue = otherColumn.get(j);
+				if (!Objects.equals(thisValue, otherValue)) return false;
+			}
+		}
+		return true;
+	}
+
+	//// Static code to help with constructing TablesawMeshData
 
 	public static TablesawMeshData loadMeshFromFile(File file) throws IOException, DataFormatException {
 		if (!file.exists()) throw new IllegalArgumentException("File does not exist: " + file.getAbsolutePath());

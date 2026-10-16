@@ -10,22 +10,9 @@
 
 package cbit.vcell.solvers;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.io.Serializable;
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.*;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
-import java.util.Vector;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -48,21 +35,60 @@ import cbit.vcell.math.VariableType;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.solvers.MeshRegionInfo.MembraneRegionMapVolumeRegion;
 import cbit.vcell.solvers.MeshRegionInfo.VolumeRegionMapSubvolume;
+import org.vcell.vis.vcell.SubdomainInfo;
 
 
 public class CartesianMesh implements Serializable, Matchable {
 	private final static Logger lg = LogManager.getLogger(CartesianMesh.class);
+	private final static long serialVersionUID = 6758903098098649389L;
 
-	private static final long serialVersionUID = 6758903098098649389L;
+	public enum Version {
+		V1_0("1.0"), // origin, extent, sizeXYZ,
+		V1_1("1.1"), // added: membrane connectivity (August 30th, 2000)
+		V1_2("1.2"); // added: Regions (July 2nd, 2001)
 
-	protected static class MembraneMeshMetrics {
-		public short[] regionIndexes;
-		public float[] areas;
-		public float[][] normals;
-		public float[][] centroids;
+		private final String version;
+		Version(String version) {
+			this.version = version;
+		}
+
+		public boolean supportsConnectivity(){
+			return switch (this) {
+				case V1_0 -> false;
+				case V1_1, V1_2 -> true;
+			};
+		}
+
+		public boolean supportsRegions(){
+			return switch (this) {
+				case V1_0, V1_1 -> false;
+				case V1_2 -> true;
+			};
+		}
+
+		public String str() {
+			return this.version;
+		}
+
+		public static Version fromString(String version) {
+			return switch (version) {
+				case "1.0" -> V1_0;
+				case "1.1" -> V1_1;
+				case "1.2" -> V1_2;
+				default -> throw new IllegalArgumentException("unknown version " + version);
+			};
+		}
+
+
 	}
 
-	//
+	protected record MembraneMeshMetrics (
+			List<Short> regionIndexes,
+			List<Float> areas,
+			List<EnumMap<Coordinate.Axis, Float>> normals,
+			List<EnumMap<Coordinate.Axis, Float>> centroids
+	) {} // it's a good idea when creating an object of this class to make the lists immutable!
+
 	protected byte[] compressedBytes = null;
 
 	protected transient SubdomainInfo subdomainInfo = null;
@@ -72,19 +98,13 @@ public class CartesianMesh implements Serializable, Matchable {
 	protected transient ISize size = null;
 	protected transient Origin origin = new Origin(0, 0, 0);
 	protected transient Extent extent = new Extent(10, 10, 10);
-	protected transient String version = VERSION_1_0;
-
-	public final static String VERSION_1_0 = "1.0";        // origin, extent, sizeXYZ,
-	// membrane (membraneIndex, insideVolumeIndex, outsideVolumeIndex)
-
-	public final static String VERSION_1_1 = "1.1";        // added: membrane connectivity 8/30/2000
-	public final static String VERSION_1_2 = "1.2";        // added: Regions 07/02/2001
+	protected transient Version version = Version.V1_0;
 
 
 	public class UCDInfo {
 		private Coordinate[][][] ucdGridNodes;
 		private final int[][] ucdMembraneQuads;
-		private Vector<Coordinate> reducedUCDGridNodesV;
+		private List<Coordinate> reducedUCDGridNodesV;
 
 		private static final String UCD_LINE_CELL_TYPE = "line"; //line (line, 1 edges, 2 corners)
 		private static final String UCD_QUAD_CELL_TYPE = "quad"; //quadrilateral (box, 4 edges, 4 corners)
@@ -95,7 +115,7 @@ public class CartesianMesh implements Serializable, Matchable {
 			this.ucdMembraneQuads = this.calcUCDMembraneQuads();
 		}
 
-		private UCDInfo(Vector<Coordinate> reducedUCDGridNodesV, int[][] ucdMembraneQuads) {
+		private UCDInfo(List<Coordinate> reducedUCDGridNodesV, int[][] ucdMembraneQuads) {
 			this.reducedUCDGridNodesV = reducedUCDGridNodesV;
 			this.ucdMembraneQuads = ucdMembraneQuads;
 		}
@@ -107,7 +127,7 @@ public class CartesianMesh implements Serializable, Matchable {
 							this.calcNodeCount(Coordinate.Axis.Z);
 			int[] mapOrigNodeIndexToNewNodeIndex = new int[maxGridNodes];
 			Arrays.fill(mapOrigNodeIndexToNewNodeIndex, -1);
-			Vector<Coordinate> newGridNodes = new Vector<Coordinate>();
+			List<Coordinate> newGridNodes = new ArrayList<>();
 			int[][] newMembraneQuads = new int[this.getUCDMembraneQuads().length][4];
 			final int xNodeCount = this.calcNodeCount(Coordinate.Axis.X);
 			final int yNodeCount = this.calcNodeCount(Coordinate.Axis.Y);
@@ -147,30 +167,26 @@ public class CartesianMesh implements Serializable, Matchable {
 
 		public String getMeshGridNodesString(boolean bVTK) {
 			//UCD Node Coordinates (used for Volume cells and unsmoothed Membrane cells)
-			StringBuffer volGridNodeSB = new StringBuffer();
+			StringBuilder volGridNodeSB = new StringBuilder();
 			int nodeCountStart = 0;
 			if (this.ucdGridNodes != null) {//Full Grid Nodes
 				for (int z = 0; z < this.getNumVolumeNodesZ(); z++) {
 					for (int y = 0; y < this.getNumVolumeNodesY(); y++) {
 						for (int x = 0; x < this.getNumVolumeNodesX(); x++) {
-							volGridNodeSB.append(
-									(bVTK ? "" : nodeCountStart + " ") +
-											this.ucdGridNodes[z][y][x].x() + " " +
-											this.ucdGridNodes[z][y][x].y() + " " +
-											this.ucdGridNodes[z][y][x].z() +
-											"\n");
+							volGridNodeSB.append(bVTK ? "" : nodeCountStart + " ")
+									.append(this.ucdGridNodes[z][y][x].x()).append(" ")
+									.append(this.ucdGridNodes[z][y][x].y()).append(" ")
+									.append(this.ucdGridNodes[z][y][x].z()).append("\n");
 							nodeCountStart++;
 						}
 					}
 				}
 			} else {//Reduced Grid Nodes (Only include thos needed for membranes)
-				for (int i = 0; i < this.reducedUCDGridNodesV.size(); i++) {
-					volGridNodeSB.append(
-							(bVTK ? "" : nodeCountStart + " ") +
-									this.reducedUCDGridNodesV.get(i).x() + " " +
-									this.reducedUCDGridNodesV.get(i).y() + " " +
-									this.reducedUCDGridNodesV.get(i).z() +
-									"\n");
+				for (Coordinate coordinate : this.reducedUCDGridNodesV) {
+					volGridNodeSB.append(bVTK ? "" : nodeCountStart + " ")
+							.append(coordinate.x()).append(" ")
+							.append(coordinate.y()).append(" ")
+							.append(coordinate.z()).append("\n");
 					nodeCountStart++;
 				}
 			}
@@ -178,7 +194,7 @@ public class CartesianMesh implements Serializable, Matchable {
 		}
 
 		public String getVolumeCellsString(boolean bVTK) {
-			StringBuffer volCellsSB = new StringBuffer();
+			StringBuilder volCellsSB = new StringBuilder();
 			//UCD Cells (Volume)
 			int volCellID = 0;
 			for (int z = 0; z < (this.getNumVolumeNodesZ() == 1 ? 1 : this.getNumVolumeNodesZ() - 1); z++) {
@@ -187,18 +203,13 @@ public class CartesianMesh implements Serializable, Matchable {
 					int hexCornerY = hexCornerZ + (y * this.getNumVolumeNodesX());
 					for (int x = 0; x < (this.getNumVolumeNodesX() - 1); x++) {
 						int hexCornerX = hexCornerY + x;
-						volCellsSB.append(
-								(bVTK ? (this.getNumVolumeNodesZ() == 1 ? "4" : "8") : volCellID + " " + CartesianMesh.this.getVolumeRegionIndex(CartesianMesh.this.getVolumeIndex(x, y, z)) + " " + (this.getNumVolumeNodesZ() == 1 ? UCD_QUAD_CELL_TYPE : UCD_HEX_CELL_TYPE)) + " " +
-										(hexCornerX) + " " +
-										(hexCornerX + 1) + " " +
-										(hexCornerX + 1 + this.getNumVolumeNodesX()) + " " +
-										(hexCornerX + this.getNumVolumeNodesX()));
+						volCellsSB.append(bVTK ? (this.getNumVolumeNodesZ() == 1 ? "4" : "8") : volCellID + " " + CartesianMesh.this.getVolumeRegionIndex(CartesianMesh.this.getVolumeIndex(x, y, z)) + " " + (this.getNumVolumeNodesZ() == 1 ? UCD_QUAD_CELL_TYPE : UCD_HEX_CELL_TYPE)).append(" ").append(hexCornerX).append(" ").append(hexCornerX + 1).append(" ").append(hexCornerX + 1 + this.getNumVolumeNodesX()).append(" ").append(hexCornerX + this.getNumVolumeNodesX());
 						if (this.getNumVolumeNodesZ() > 1) {
-							volCellsSB.append(" " +
-									(hexCornerX + this.getNumVolumeNodesXY()) + " " +
-									(hexCornerX + 1 + this.getNumVolumeNodesXY()) + " " +
-									(hexCornerX + 1 + this.getNumVolumeNodesX() + this.getNumVolumeNodesXY()) + " " +
-									(hexCornerX + this.getNumVolumeNodesX() + this.getNumVolumeNodesXY()));
+							volCellsSB.append(" ")
+									.append(hexCornerX + this.getNumVolumeNodesXY()).append(" ")
+									.append(hexCornerX + 1 + this.getNumVolumeNodesXY()).append(" ")
+									.append(hexCornerX + 1 + this.getNumVolumeNodesX() + this.getNumVolumeNodesXY()).append(" ")
+									.append(hexCornerX + this.getNumVolumeNodesX() + this.getNumVolumeNodesXY());
 						}
 						volCellsSB.append("\n");
 						volCellID++;
@@ -209,14 +220,13 @@ public class CartesianMesh implements Serializable, Matchable {
 		}
 
 		public String getMembraneCellsString(int cellIDStart, boolean bVTK) {
-			StringBuffer membrCellsString = new StringBuffer();
+			StringBuilder membrCellsString = new StringBuilder();
 			int MembCellID = 0;
 			for (int i = 0; i < this.ucdMembraneQuads.length; i++) {
-				membrCellsString.append(
-						(bVTK ? (this.getNumVolumeNodesZ() == 1 ? "2" : "4") : (MembCellID + cellIDStart) + " " + (CartesianMesh.this.getMembraneRegionIndex(i) + 1) + " " + (this.getNumVolumeNodesZ() == 1 ? UCD_LINE_CELL_TYPE : UCD_QUAD_CELL_TYPE)) + " " +
-								this.ucdMembraneQuads[i][0] + " " + this.ucdMembraneQuads[i][1]);
+				membrCellsString.append(bVTK ? (this.getNumVolumeNodesZ() == 1 ? "2" : "4") : (MembCellID + cellIDStart) + " " + (CartesianMesh.this.getMembraneRegionIndex(i) + 1) + " " + (this.getNumVolumeNodesZ() == 1 ? UCD_LINE_CELL_TYPE : UCD_QUAD_CELL_TYPE)).append(" ").append(this.ucdMembraneQuads[i][0]).append(" ").append(this.ucdMembraneQuads[i][1]);
 				if (this.getNumVolumeNodesZ() > 1) {
-					membrCellsString.append(" " + this.ucdMembraneQuads[i][2] + " " + this.ucdMembraneQuads[i][3]);
+					membrCellsString.append(" ").append(this.ucdMembraneQuads[i][2])
+							.append(" ").append(this.ucdMembraneQuads[i][3]);
 				}
 				membrCellsString.append("\n");
 				MembCellID++;
@@ -244,11 +254,7 @@ public class CartesianMesh implements Serializable, Matchable {
 
 			int numCellData = (volumeData != null ? volumeData.length : 0) + (membraneData != null ? membraneData.length : 0);
 
-			String cellDataS = numCellData + "";
-			for (int i = 0; i < numCellData; i++) {
-				cellDataS = cellDataS + " 1";
-			}
-			writer.write(cellDataS + "\n");
+			writer.write(numCellData + " 1".repeat(Math.max(0, numCellData)) + "\n");
 			for (int i = 0; volumeVariableNames != null && i < volumeVariableNames.length; i++) {
 				writer.write(volumeVariableNames[i] + "," + volumeVariableUnits[i] + "\n");
 			}
@@ -256,13 +262,13 @@ public class CartesianMesh implements Serializable, Matchable {
 				writer.write(membraneVariableNames[i] + "," + membraneVariableUnits[i] + "\n");
 			}
 
-			String membDataFiller = "";
+			StringBuilder membDataFiller = new StringBuilder();
 			for (int i = 0; membraneData != null && i < membraneData.length; i++) {
-				membDataFiller += " 0";
+				membDataFiller.append(" 0");
 			}
-			String volDataFiller = "";
+			StringBuilder volDataFiller = new StringBuilder();
 			for (int i = 0; volumeData != null && i < volumeData.length; i++) {
-				volDataFiller += "0 ";
+				volDataFiller.append("0 ");
 			}
 
 			if (volumeData != null || bFill) {
@@ -272,8 +278,8 @@ public class CartesianMesh implements Serializable, Matchable {
 						for (int j = 0; j < volumeData.length; j++) {
 							writer.write((j != 0 ? " " : "") + volumeData[j][i]);
 						}
-					} else if (bFill) {
-						writer.write(volDataFiller);
+					} else {
+						writer.write(volDataFiller.toString());
 					}
 					writer.write(membDataFiller + "\n");
 				}
@@ -282,13 +288,13 @@ public class CartesianMesh implements Serializable, Matchable {
 			if (membraneData != null || bFill) {
 				for (int i = 0; i < CartesianMesh.this.getNumMembraneElements(); i++) {
 					writer.write(((bFill ? this.getNumVolumeCells() : 0) + i) + " ");
-					writer.write(volDataFiller);
+					writer.write(volDataFiller.toString());
 					if (membraneData != null) {
 						for (int j = 0; j < membraneData.length; j++) {
 							writer.write((j != 0 ? " " : "") + membraneData[j][i]);
 						}
-					} else if (bFill) {
-						writer.write(membDataFiller);
+					} else {
+						writer.write(membDataFiller.toString());
 					}
 					writer.write("\n");
 				}
@@ -449,8 +455,7 @@ public class CartesianMesh implements Serializable, Matchable {
 
 	}
 
-	protected CartesianMesh() {
-	}
+	protected CartesianMesh() {}
 
 	public double calculateMeshElementVolumeFromVolumeIndex(int volumeIndex) {
 
@@ -467,193 +472,14 @@ public class CartesianMesh implements Serializable, Matchable {
 
 
 	public boolean compareEqual(Matchable object) {
-		if (this == object) {
-			return true;
-		}
-		if (object == null) {
-			return false;
-		}
-		CartesianMesh mesh = null;
-		if (!(object instanceof CartesianMesh)) {
-			return false;
-		} else {
-			mesh = (CartesianMesh) object;
-		}
+		if (this == object) return true;
+		if (!(object instanceof CartesianMesh mesh)) return false;
 
-		if (!Compare.isEqualOrNullStrict(this.membraneElements, mesh.membraneElements)) {
-			return false;
-		}
-		if (!Compare.isEqualOrNullStrict(this.contourElements, mesh.contourElements)) {
-			return false;
-		}
-		if (!this.size.compareEqual(mesh.size)) {
-			return false;
-		}
-	/*
-	if (sizeX!=mesh.sizeX || sizeY!=mesh.sizeY || sizeZ!=mesh.sizeZ){
-		return false;
-	}
-	*/
+		if (!Compare.isEqualOrNullStrict(this.membraneElements, mesh.membraneElements)) return false;
+		if (!Compare.isEqualOrNullStrict(this.contourElements, mesh.contourElements)) return false;
+		if (!this.size.compareEqual(mesh.size)) return false;
 		return this.origin.compareEqual(mesh.origin);
 	}
-
-
-	public static boolean compareMesh(CartesianMesh mesh1, CartesianMesh mesh2, PrintWriter pw) {
-		try {
-			if (!CartesianMesh.isSpatialDomainSame(mesh1, mesh2)) {
-				return false;
-			}
-			if (!Compare.isEqualOrNullStrict(mesh1.getContourElements(), mesh2.getContourElements())) {
-				pw.println("ContourElemment is different!");
-				System.out.println("ContourElemment is different!");
-				return false;
-			}
-
-			MeshRegionInfo meshRegionInfo1 = mesh1.getMeshRegionInfo();
-			MeshRegionInfo meshRegionInfo2 = mesh2.getMeshRegionInfo();
-
-
-			// Compare VolumeRegionMapSubVolume
-			if (meshRegionInfo1.getNumVolumeRegions() != meshRegionInfo2.getNumVolumeRegions()) {
-				pw.println("# of volume regions is different!");
-				return false;
-			}
-			Vector<MeshRegionInfo.VolumeRegionMapSubvolume> vrmsv1 = meshRegionInfo1.getVolumeRegionMapSubvolume();
-			Vector<MeshRegionInfo.VolumeRegionMapSubvolume> vrmsv2 = meshRegionInfo2.getVolumeRegionMapSubvolume();
-
-			double precision = 1.1e-15;
-			double MAX_REL_ERROR = 1.1e-15;
-
-			for (int i = 0; i < meshRegionInfo1.getNumVolumeRegions(); i++) {
-				MeshRegionInfo.VolumeRegionMapSubvolume region1 = vrmsv1.elementAt(i);
-				MeshRegionInfo.VolumeRegionMapSubvolume region2 = vrmsv2.elementAt(i);
-				double region1Volume = region1.volumeRegionVolume;
-				double region2Volume = region2.volumeRegionVolume;
-
-				if (region1.volumeRegionID != region2.volumeRegionID
-						|| region1.subvolumeID != region2.subvolumeID
-						|| (Math.abs(region1Volume - region2Volume) > precision && Math.abs(region1Volume - region2Volume) / region1Volume > MAX_REL_ERROR)) {
-					System.out.println("VolumeRegionMapSubVolume is different!");
-					pw.println("VolumeRegionMapSubVolume is different!");
-					return false;
-				}
-			}
-
-			// Compare MembraneRegionsMapVolumeRegion
-			if (meshRegionInfo1.getNumMembraneRegions() != meshRegionInfo2.getNumMembraneRegions()) {
-				System.out.println("# of MembraneRegions is different");
-				pw.println("# of MembraneRegions is different");
-				return false;
-			}
-
-			Vector<MeshRegionInfo.MembraneRegionMapVolumeRegion> mrmsv1 = meshRegionInfo1.getMembraneRegionMapVolumeRegion();
-			Vector<MeshRegionInfo.MembraneRegionMapVolumeRegion> mrmsv2 = meshRegionInfo2.getMembraneRegionMapVolumeRegion();
-
-			for (int i = 0; i < meshRegionInfo2.getNumMembraneRegions(); i++) {
-				MeshRegionInfo.MembraneRegionMapVolumeRegion region1 = mrmsv1.elementAt(i);
-				MeshRegionInfo.MembraneRegionMapVolumeRegion region2 = mrmsv2.elementAt(i);
-
-				double region1Surface = region1.membraneRegionSurface;
-				double region2Surface = region2.membraneRegionSurface;
-
-				// compare surface area, ignoring the index
-				if (Math.abs(region1Surface - region2Surface) / region1Surface > MAX_REL_ERROR && Math.abs(region1Surface - region2Surface) > precision) {
-					System.out.println("MembraneRegionsMapVolumeRegion is different!");
-					pw.println("MembraneRegionsMapVolumeRegion is different!");
-					return false;
-				}
-			}
-
-			// Compare VolumeElementsMapVolumeRegion
-			if (mesh1.getNumVolumeElements() != mesh2.getNumVolumeElements()) {
-				return false;
-			}
-			for (int i = 0; i < mesh1.getNumVolumeElements(); i++) {
-				if (mesh1.getVolumeRegionIndex(i) != mesh2.getVolumeRegionIndex(i)) {
-					System.out.println("VolumeElementsMapVolumeRegion is different at " + i);
-					pw.println("VolumeElementsMapVolumeRegion is different at " + i);
-					return false;
-				}
-			}
-
-			// Compare Membrane Elements
-			if (mesh1.getNumMembraneElements() != mesh2.getNumMembraneElements()) {
-				return false;
-			}
-			if (mesh1.getNumMembraneElements() == 0) {
-				return true;
-			}
-			MembraneElement[] memElements1 = mesh1.getMembraneElements();
-			MembraneElement[] memElements2 = mesh2.getMembraneElements();
-
-			for (int i = 0; i < mesh1.getNumMembraneElements(); i++) {
-
-				// index
-				if (memElements1[i].getMembraneIndex() != memElements2[i].getMembraneIndex()) {
-					return false;
-				}
-
-				// Inside
-				if (memElements1[i].getInsideVolumeIndex() != memElements2[i].getInsideVolumeIndex()) {
-					return false;
-				}
-
-				// Outside
-				if (memElements1[i].getOutsideVolumeIndex() != memElements2[i].getOutsideVolumeIndex()) {
-					return false;
-				}
-
-				// Neighbors
-				int[] neighborIndexes1 = memElements1[i].getMembraneNeighborIndexes();
-				int[] neighborIndexes2 = memElements2[i].getMembraneNeighborIndexes();
-				if ((neighborIndexes1 != null && neighborIndexes2 == null) ||
-						(neighborIndexes1 == null && neighborIndexes2 != null)) {
-					return false;
-				}
-				if (neighborIndexes1 != null && neighborIndexes2 != null) {
-					if (neighborIndexes1.length != neighborIndexes2.length) {
-						return false;
-					}
-					for (int k = 0; k < neighborIndexes1.length; k++) {
-						if (neighborIndexes1[k] != neighborIndexes2[k]) {
-							return false;
-						}
-					}
-				}
-				// Membrane Region ID
-				if (mesh1.getMembraneRegionIndex(i) != mesh2.getMembraneRegionIndex(i)) {
-					return false;
-				}
-
-				// X, Y, Z
-				if (memElements1[i].centroidX != memElements2[i].centroidX
-						|| memElements1[i].centroidY != memElements2[i].centroidY
-						|| memElements1[i].centroidZ != memElements2[i].centroidZ) {
-					return false;
-				}
-				// area
-				if (Math.abs(memElements1[i].area - memElements2[i].area) > precision) {
-					return false;
-				}
-				// normal
-				if (Math.abs(memElements1[i].normalX - memElements2[i].normalX) > precision
-						|| Math.abs(memElements1[i].normalY - memElements2[i].normalY) > precision
-						|| Math.abs(memElements1[i].normalZ - memElements2[i].normalZ) > precision) {
-					return false;
-				}
-			}
-
-		} catch (Exception ex) {
-			lg.error(ex.getMessage(), ex);
-		}
-		return true;
-	}
-
-
-	public static double coordComponentFromSinglePlanePolicy(Origin argOrigin, Extent argExtent, Coordinate.Axis argAxisFlag) {
-		return Coordinate.coordComponentFromSinglePlanePolicy(argOrigin, argExtent, argAxisFlag);
-	}
-
 
 	public static CartesianMesh createSimpleCartesianMesh(Origin orig, Extent extent, ISize size, RegionImage regionImage) throws IOException {
 		return createSimpleCartesianMesh(orig, extent, size, regionImage, false);
@@ -689,10 +515,10 @@ public class CartesianMesh implements Serializable, Matchable {
 		GeometricRegion[] geometricRegions = geometrySurfaceDescription.getGeometricRegions();
 		if (geometricRegions != null) {
 			int memRegionCount = 0;
-			for (int i = 0; i < geometricRegions.length; i++) {
-				if (geometricRegions[i] instanceof VolumeGeometricRegion vgr) {
+			for (GeometricRegion geometricRegion : geometricRegions) {
+				if (geometricRegion instanceof VolumeGeometricRegion vgr) {
 					mesh.meshRegionInfo.mapVolumeRegionToSubvolume(vgr.getRegionID(), vgr.getSubVolume().getHandle(), vgr.getSize(), vgr.getName());
-				} else if (geometricRegions[i] instanceof SurfaceGeometricRegion sgr) {
+				} else if (geometricRegion instanceof SurfaceGeometricRegion sgr) {
 					GeometricRegion[] neighbors = sgr.getAdjacentGeometricRegions();
 					VolumeGeometricRegion insideRegion = (VolumeGeometricRegion) neighbors[0];
 					VolumeGeometricRegion outsideRegion = (VolumeGeometricRegion) neighbors[1];
@@ -791,29 +617,33 @@ public class CartesianMesh implements Serializable, Matchable {
 
 
 	public int getContourRegionIndex(int contourIndex) {
+		ContourElement contourElement = this.getContourElements()[contourIndex];
 		throw new RuntimeException("CartesianMesh.getContourRegionIndex() not yet implemented");
-		//ContourElement contourElement = getContourElements()[contourIndex];
 		//return contourElement.getRegionIndex();
 	}
 
+	public Coordinate getCoordinateFromContourIndex(int contourIndex) {
+		ContourElement ce = this.getContourElements()[contourIndex];
+		Coordinate begCoord = ce.getBeginCoordinate();
+		Coordinate endCoord = ce.getEndCoordinate();
+		return (new Coordinate(
+				0.5 * (begCoord.x() + endCoord.x()),
+				0.5 * (begCoord.y() + endCoord.y()),
+				0.5 * (begCoord.z() + endCoord.z())));
+	}
 
 	public UCDInfo getUCDInfo() {
 		return new UCDInfo();
 	}
 
 	public Coordinate getCoordinate(CoordinateIndex coordIndex) {
-		//
-		//
 		// calculate coordinates based on element coordinates
 		//
 		//     1--------2--------3-------4--------N
 		//
 		// so spacing is divided into (N-1) regions.
 		//
-		//
 		// if N is 1, then take middle of that dimension
-		//
-		//
 		double x = Coordinate.coordComponentFromSinglePlanePolicy(this.origin, this.extent, Coordinate.Axis.X);//extent.getX()/2.0 + origin.getX();
 		if (this.getSizeX() > 1) {
 			x = (((double) coordIndex.x) / (this.getSizeX() - 1)) * this.extent.getX() + this.origin.getX();
@@ -827,17 +657,6 @@ public class CartesianMesh implements Serializable, Matchable {
 			z = (((double) coordIndex.z) / (this.getSizeZ() - 1)) * this.extent.getZ() + this.origin.getZ();
 		}
 		return (new Coordinate(x, y, z));
-	}
-
-
-	public Coordinate getCoordinateFromContourIndex(int contourIndex) {
-		ContourElement ce = this.getContourElements()[contourIndex];
-		Coordinate begCoord = ce.getBeginCoordinate();
-		Coordinate endCoord = ce.getEndCoordinate();
-		return (new Coordinate(
-				0.5 * (begCoord.x() + endCoord.x()),
-				0.5 * (begCoord.y() + endCoord.y()),
-				0.5 * (begCoord.z() + endCoord.z())));
 	}
 
 
@@ -1034,7 +853,7 @@ public class CartesianMesh implements Serializable, Matchable {
 
 	public HashMap<Integer, Integer> getVolumeRegionMapSubvolume() {
 		Vector<MeshRegionInfo.VolumeRegionMapSubvolume> volRegionMapSubVolV = this.getMeshRegionInfo().getVolumeRegionMapSubvolume();
-		HashMap<Integer, Integer> volregMapSubVHashMap = new HashMap<Integer, Integer>();
+		HashMap<Integer, Integer> volregMapSubVHashMap = new HashMap<>();
 		for (int i = 0; i < volRegionMapSubVolV.size(); i++) {
 			volregMapSubVHashMap.put(volRegionMapSubVolV.elementAt(i).volumeRegionID, volRegionMapSubVolV.elementAt(i).subvolumeID);
 		}
@@ -1043,7 +862,7 @@ public class CartesianMesh implements Serializable, Matchable {
 
 	public HashMap<Integer, int[]> getMembraneRegionMapSubvolumesInOut() {
 		Vector<MeshRegionInfo.MembraneRegionMapVolumeRegion> membraneRegionMapVolumeRegionV = this.getMeshRegionInfo().getMembraneRegionMapVolumeRegion();
-		HashMap<Integer, int[]> membrRegMapVolRegionsHashMap = new HashMap<Integer, int[]>();
+		HashMap<Integer, int[]> membrRegMapVolRegionsHashMap = new HashMap<>();
 		for (int i = 0; i < membraneRegionMapVolumeRegionV.size(); i++) {
 			membrRegMapVolRegionsHashMap.put(
 					membraneRegionMapVolumeRegionV.elementAt(i).membraneRegionID,
@@ -1136,7 +955,7 @@ public class CartesianMesh implements Serializable, Matchable {
 	}
 
 	public boolean hasSubvolumeInfo() {
-		return this.getMeshRegionInfo() != null && this.getMeshRegionInfo().getVolumeRegionMapSubvolume() != null && this.getMeshRegionInfo().getVolumeRegionMapSubvolume().size() > 0;
+		return this.getMeshRegionInfo() != null && this.getMeshRegionInfo().getVolumeRegionMapSubvolume() != null && !this.getMeshRegionInfo().getVolumeRegionMapSubvolume().isEmpty();
 	}
 
 	private int getVolumeIndex(int coordX, int coordY, int coordZ) {
@@ -1208,7 +1027,7 @@ public class CartesianMesh implements Serializable, Matchable {
 		try {
 			//Object objArray[] =  { version, size, origin, extent, meshRegionInfo, membraneElements, contourElements};
 			Object[] objArray = (Object[]) CompressionUtils.fromCompressedSerialized(this.compressedBytes);
-			this.version = (String) objArray[0];
+			this.version = Version.fromString((String) objArray[0]);
 			this.size = (ISize) objArray[1];
 			this.origin = (Origin) objArray[2];
 			this.extent = (Extent) objArray[3];
@@ -1235,88 +1054,58 @@ public class CartesianMesh implements Serializable, Matchable {
 
 
 	private boolean isInList(int checkMe, int[] checkList) {
-		boolean bInList = false;
-		for (int i = 0; i < checkList.length; i += 1) {
-			if (checkMe == checkList[i]) {
-				bInList = true;
-				break;
-			}
-		}
-		return bInList;
+		return Arrays.stream(checkList).anyMatch(elem -> checkMe == elem);
 	}
 
 
 	public boolean isMembraneConnectivityOK() {
-		for (int c = 0; c < this.membraneElements.length; c += 1) {
+		for (MembraneElement currentMembraneElement : this.membraneElements) {
 			//Get the next membraneElement in the list
-			MembraneElement currentMembraneElement = this.membraneElements[c];
-			int[] membraneNeighborIndexes =
-					currentMembraneElement.getMembraneNeighborIndexes();
-			//Search the neighbors the the currentMembraneElement
-			for (int mnic = 0; mnic < membraneNeighborIndexes.length; mnic += 1) {
+			int[] membraneNeighborIndexes = currentMembraneElement.getMembraneNeighborIndexes();
+			//Search the neighbors for the currentMembraneElement
+			for (int membraneNeighborIndex : membraneNeighborIndexes) {
 				//Get the connectivity neighbors the of the next neighbor in the list
-				if (!this.isFriendshipMutual(currentMembraneElement, this.membraneElements[membraneNeighborIndexes[mnic]])) {
-					return false;
-				}
+				MembraneElement neighboringElement = this.membraneElements[membraneNeighborIndex];
+				if (this.isFriendshipMutual(currentMembraneElement, neighboringElement)) continue;
+				return false; // Connectivity is broken, no need to continue
 			}
 		}
 		return true;
 	}
 
-	private void read(CommentStringTokenizer tokens, MembraneMeshMetrics membraneMeshMetrics) throws MathException {
-		//
-		// clear previous contents
-		//
-		this.membraneElements = null;
+	private void read(CommentStringTokenizer tokenizer, MembraneMeshMetrics membraneMeshMetrics) throws MathException {
+		this.membraneElements = null; // clear previous contents
 
-		//
-		// read new stuff
-		//
-		String token = null;
-		token = tokens.nextToken();
-		if (token.equalsIgnoreCase(VCML.Version)) {
-			//
-			// read version number
-			//
-			token = tokens.nextToken();
-			this.version = token;
-			token = tokens.nextToken();
-		}
-		if (token.equalsIgnoreCase(VCML.CartesianMesh)) {
-			token = tokens.nextToken();
-		} else {
-			throw new MathFormatException("unexpected token " + token + " expecting " + VCML.CartesianMesh);
-		}
-		//
-		// only Version 1.1 and later supports membrane connectivity  (as of 8/30/2000)
-		//
-		boolean bConnectivity = this.version.equals(VERSION_1_1) || this.version.equals(VERSION_1_2);
-		//
-		// only Version 1.2 and later supports Regions
-		//
-		boolean bRegions = false;
-		if (this.version.equals(VERSION_1_2)) {
-			bRegions = true;
-			this.meshRegionInfo = new MeshRegionInfo();
-		}
-
-		if (!token.equalsIgnoreCase(VCML.BeginBlock)) {
-			throw new MathFormatException("unexpected token " + token + " expecting " + VCML.BeginBlock);
-		}
-		while (tokens.hasMoreTokens()) {
-			token = tokens.nextToken();
-			if (token.equalsIgnoreCase(VCML.EndBlock)) {
-				break;
+		String token = tokenizer.nextToken();
+		if (VCML.Version.equalsIgnoreCase(token)) { // read version number
+			try {
+				this.version = Version.fromString(token = tokenizer.nextToken());
+			} catch (IllegalArgumentException e) {
+				throw new MathFormatException("unexpected token " + token + " expecting \"1.0\", \"1.1\", \"1.2\"");
 			}
+			token = tokenizer.nextToken();
+		}
+		if (!VCML.CartesianMesh.equalsIgnoreCase(token)) throw new MathFormatException("unexpected token " + token + " expecting " + VCML.CartesianMesh);
+
+		boolean supportsConnectivity = this.version.supportsConnectivity();
+		boolean supportsRegions = this.version.supportsRegions();
+		if (supportsRegions) this.meshRegionInfo = new MeshRegionInfo();
+
+		if (!VCML.BeginBlock.equalsIgnoreCase(token = tokenizer.nextToken())) throw new MathFormatException("unexpected token " + token + " expecting " + VCML.BeginBlock);
+
+		while (tokenizer.hasMoreTokens()) {
+			token = tokenizer.nextToken();
+			if (token.equalsIgnoreCase(VCML.EndBlock)) break;
+
 			if (token.equalsIgnoreCase(VCML.Size)) {
 				int sx, sy, sz;
 				try {
-					token = tokens.nextToken();
-					sx = Integer.valueOf(token).intValue();
-					token = tokens.nextToken();
-					sy = Integer.valueOf(token).intValue();
-					token = tokens.nextToken();
-					sz = Integer.valueOf(token).intValue();
+					token = tokenizer.nextToken();
+					sx = Integer.parseInt(token);
+					token = tokenizer.nextToken();
+					sy = Integer.parseInt(token);
+					token = tokenizer.nextToken();
+					sz = Integer.parseInt(token);
 				} catch (NumberFormatException e) {
 					throw new MathFormatException("expected:  " + VCML.Size + " # # #");
 				}
@@ -1326,12 +1115,12 @@ public class CartesianMesh implements Serializable, Matchable {
 			if (token.equalsIgnoreCase(VCML.Extent)) {
 				double ex, ey, ez;
 				try {
-					token = tokens.nextToken();
-					ex = Double.valueOf(token).doubleValue();
-					token = tokens.nextToken();
-					ey = Double.valueOf(token).doubleValue();
-					token = tokens.nextToken();
-					ez = Double.valueOf(token).doubleValue();
+					token = tokenizer.nextToken();
+					ex = Double.parseDouble(token);
+					token = tokenizer.nextToken();
+					ey = Double.parseDouble(token);
+					token = tokenizer.nextToken();
+					ez = Double.parseDouble(token);
 				} catch (NumberFormatException e) {
 					throw new MathFormatException("expected:  " + VCML.Extent + " # # #");
 				}
@@ -1341,45 +1130,43 @@ public class CartesianMesh implements Serializable, Matchable {
 			if (token.equalsIgnoreCase(VCML.Origin)) {
 				double ox, oy, oz;
 				try {
-					token = tokens.nextToken();
-					ox = Double.valueOf(token).doubleValue();
-					token = tokens.nextToken();
-					oy = Double.valueOf(token).doubleValue();
-					token = tokens.nextToken();
-					oz = Double.valueOf(token).doubleValue();
+					token = tokenizer.nextToken();
+					ox = Double.parseDouble(token);
+					token = tokenizer.nextToken();
+					oy = Double.parseDouble(token);
+					token = tokenizer.nextToken();
+					oz = Double.parseDouble(token);
 				} catch (NumberFormatException e) {
 					throw new MathFormatException("expected:  " + VCML.Origin + " # # #");
 				}
 				this.setOrigin(new Origin(ox, oy, oz));
 				continue;
 			}
-			//
-			//
-			//
+
 			if (token.equalsIgnoreCase(VCML.VolumeRegionsMapSubvolume)) {
-				token = tokens.nextToken();
+				token = tokenizer.nextToken();
 				if (!token.equalsIgnoreCase(VCML.BeginBlock)) {
 					throw new MathFormatException("unexpected token " + token + " expecting " + VCML.BeginBlock);
 				}
-				token = tokens.nextToken();
-				int numVolumeRegions = 0;
+				token = tokenizer.nextToken();
+				int numVolumeRegions;
 				try {
-					numVolumeRegions = Integer.valueOf(token).intValue();
+					numVolumeRegions = Integer.parseInt(token);
 				} catch (NumberFormatException e) {
 					throw new MathFormatException("unexpected token " + token + " expecting the VolumeRegionsMapSubvolume list length");
 				}
 				int checkCount = 0;
-				while (tokens.hasMoreTokens()) {
-					token = tokens.nextToken();
+				while (tokenizer.hasMoreTokens()) {
+					token = tokenizer.nextToken();
 					if (token.equalsIgnoreCase(VCML.EndBlock)) {
 						break;
 					}
 					try {
-						int volRegionID = Integer.valueOf(token).intValue();
-						token = tokens.nextToken();
-						int subvolumeID = Integer.valueOf(token).intValue();
-						token = tokens.nextToken();
-						double volume = Double.valueOf(token).doubleValue();
+						int volRegionID = Integer.parseInt(token);
+						token = tokenizer.nextToken();
+						int subvolumeID = Integer.parseInt(token);
+						token = tokenizer.nextToken();
+						double volume = Double.parseDouble(token);
 
 						String subdomainName = null;
 						if (this.subdomainInfo != null) {
@@ -1397,31 +1184,31 @@ public class CartesianMesh implements Serializable, Matchable {
 				continue;
 			}
 			if (token.equalsIgnoreCase(VCML.MembraneRegionsMapVolumeRegion)) {
-				token = tokens.nextToken();
+				token = tokenizer.nextToken();
 				if (!token.equalsIgnoreCase(VCML.BeginBlock)) {
 					throw new MathFormatException("unexpected token " + token + " expecting " + VCML.BeginBlock);
 				}
-				token = tokens.nextToken();
-				int numMembraneRegions = 0;
+				token = tokenizer.nextToken();
+				int numMembraneRegions;
 				try {
-					numMembraneRegions = Integer.valueOf(token).intValue();
+					numMembraneRegions = Integer.parseInt(token);
 				} catch (NumberFormatException e) {
 					throw new MathFormatException("unexpected token " + token + " expecting the MembraneRegionsMapVolumeRegion list length");
 				}
 				int checkCount = 0;
-				while (tokens.hasMoreTokens()) {
-					token = tokens.nextToken();
+				while (tokenizer.hasMoreTokens()) {
+					token = tokenizer.nextToken();
 					if (token.equalsIgnoreCase(VCML.EndBlock)) {
 						break;
 					}
 					try {
-						int memRegionID = Integer.valueOf(token).intValue();
-						token = tokens.nextToken();
-						int volRegionIn = Integer.valueOf(token).intValue();
-						token = tokens.nextToken();
-						int volRegionOut = Integer.valueOf(token).intValue();
-						token = tokens.nextToken();
-						double surface = Double.valueOf(token).doubleValue();
+						int memRegionID = Integer.parseInt(token);
+						token = tokenizer.nextToken();
+						int volRegionIn = Integer.parseInt(token);
+						token = tokenizer.nextToken();
+						int volRegionOut = Integer.parseInt(token);
+						token = tokenizer.nextToken();
+						double surface = Double.parseDouble(token);
 						this.meshRegionInfo.mapMembraneRegionToVolumeRegion(memRegionID, volRegionIn, volRegionOut, surface);
 					} catch (NumberFormatException e) {
 						throw new MathFormatException("expected:  # # #");
@@ -1434,18 +1221,18 @@ public class CartesianMesh implements Serializable, Matchable {
 				continue;
 			}
 			if (token.equalsIgnoreCase(VCML.VolumeElementsMapVolumeRegion)) {
-				token = tokens.nextToken();
+				token = tokenizer.nextToken();
 				if (!token.equalsIgnoreCase(VCML.BeginBlock)) {
 					throw new MathFormatException("unexpected token " + token + " expecting " + VCML.BeginBlock);
 				}
-				token = tokens.nextToken();
-				int numVolumeElements = 0;
+				token = tokenizer.nextToken();
+				int numVolumeElements;
 				try {
-					numVolumeElements = Integer.valueOf(token).intValue();
+					numVolumeElements = Integer.parseInt(token);
 				} catch (NumberFormatException e) {
 					throw new MathFormatException("unexpected token " + token + " expecting the VolumeElementsMapVolumeRegion list length");
 				}
-				token = tokens.nextToken();
+				token = tokenizer.nextToken();
 				boolean bCompressed = token.equalsIgnoreCase("Compressed");
 				if (!bCompressed) {
 					if (!token.equalsIgnoreCase("UnCompressed")) {
@@ -1456,9 +1243,9 @@ public class CartesianMesh implements Serializable, Matchable {
 				int checkCount = 0;
 				if (bCompressed) {
 					//Get HEX encoded bytes of the compressed VolumeElements-RegionID Map
-					StringBuffer hexOfCompressed = new StringBuffer();
-					while (tokens.hasMoreTokens()) {
-						token = tokens.nextToken();
+					StringBuilder hexOfCompressed = new StringBuilder();
+					while (tokenizer.hasMoreTokens()) {
+						token = tokenizer.nextToken();
 						if (token.equalsIgnoreCase(VCML.EndBlock)) {
 							break;
 						}
@@ -1473,13 +1260,13 @@ public class CartesianMesh implements Serializable, Matchable {
 					}
 					checkCount = this.meshRegionInfo.getUncompressedVolumeElementMapVolumeRegionLength();
 				} else {
-					while (tokens.hasMoreTokens()) {
-						token = tokens.nextToken();
+					while (tokenizer.hasMoreTokens()) {
+						token = tokenizer.nextToken();
 						if (token.equalsIgnoreCase(VCML.EndBlock)) {
 							break;
 						}
 						try {
-							int volumeRegionID = Integer.valueOf(token).intValue();
+							int volumeRegionID = Integer.parseInt(token);
 							volumeElementMap[checkCount] = (byte) volumeRegionID;
 						} catch (NumberFormatException e) {
 							throw new MathFormatException("expected:  # # #");
@@ -1492,59 +1279,45 @@ public class CartesianMesh implements Serializable, Matchable {
 				}
 				continue;
 			}
-			//
-			//
-			//
+
 			HashMap<Integer, Integer> volumeRegionMapSubvolume = this.getVolumeRegionMapSubvolume();
 			if (token.equalsIgnoreCase(VCML.MembraneElements)) {
-				//
-				// read '{'
-				//
-				token = tokens.nextToken();
+				token = tokenizer.nextToken(); // read '{'
 				if (!token.equalsIgnoreCase(VCML.BeginBlock)) {
 					throw new MathFormatException("unexpected token " + token + " expecting " + VCML.BeginBlock);
 				}
-				token = tokens.nextToken();
-				int numMemElements = 0;
+				token = tokenizer.nextToken();
+				int numMemElements;
 				try {
-					numMemElements = Integer.valueOf(token).intValue();
+					numMemElements = Integer.parseInt(token);
 				} catch (NumberFormatException e) {
 					throw new MathFormatException("unexpected token " + token + " expecting the membraneElement list length");
 				}
-				//
 				// read list of the following format:
-				//
 				//		memIndex insideVolIndex outsideVolIndex
-				//
 				this.membraneElements = new MembraneElement[numMemElements];
 				int index = 0;
 				int[] membraneElementMapMembraneRegion = null;
-				if (bRegions) {
+				if (supportsRegions) {
 					membraneElementMapMembraneRegion = new int[numMemElements];
 					this.meshRegionInfo.mapMembraneElementsToMembraneRegions(membraneElementMapMembraneRegion);
 				}
-				//
-				// loop until read a "}"
-				//
-				while (tokens.hasMoreTokens()) {
-					token = tokens.nextToken();
-					if (token.equalsIgnoreCase(VCML.EndBlock)) {
-						break;
-					}
-					int memIndex = -1;
-					int insideIndex = -1;
-					int outsideIndex = -1;
+
+				while (tokenizer.hasMoreTokens()) {
+					token = tokenizer.nextToken();
+					if (token.equalsIgnoreCase(VCML.EndBlock)) break; // loop until read a "}"
+
+					int memIndex;
+					int insideIndex;
+					int outsideIndex;
 					try {
-						//
 						// read first three tokens of a membrane element
-						//
 						//     membraneIndex   insideIndex    outsideIndex
-						//
-						memIndex = Integer.valueOf(token).intValue();
-						token = tokens.nextToken();
-						insideIndex = Integer.valueOf(token).intValue();
-						token = tokens.nextToken();
-						outsideIndex = Integer.valueOf(token).intValue();
+						memIndex = Integer.parseInt(token);
+						token = tokenizer.nextToken();
+						insideIndex = Integer.parseInt(token);
+						token = tokenizer.nextToken();
+						outsideIndex = Integer.parseInt(token);
 
 						if (this.subdomainInfo != null) {
 							int insideRegionIndex = this.getVolumeRegionIndex(insideIndex);
@@ -1563,28 +1336,24 @@ public class CartesianMesh implements Serializable, Matchable {
 						throw new MathFormatException("expected:  # # #");
 					}
 
-					MembraneElement me = null;
-					//
+					MembraneElement me;
 					// grab connectivity if enabled (additional four tokens)
-					//
 					//     memNeighbor1  memNeighbor2  memNeighbor3  memNeighbor4
-					//
 					//	where memNeighborX = -1 for missing connections.
-					//
-					if (bConnectivity) {
+					if (supportsConnectivity) {
 						try {
-							token = tokens.nextToken();
-							int neighbor1 = Integer.valueOf(token).intValue();
-							token = tokens.nextToken();
-							int neighbor2 = Integer.valueOf(token).intValue();
-							token = tokens.nextToken();
-							int neighbor3 = Integer.valueOf(token).intValue();
-							token = tokens.nextToken();
-							int neighbor4 = Integer.valueOf(token).intValue();
+							token = tokenizer.nextToken();
+							int neighbor1 = Integer.parseInt(token);
+							token = tokenizer.nextToken();
+							int neighbor2 = Integer.parseInt(token);
+							token = tokenizer.nextToken();
+							int neighbor3 = Integer.parseInt(token);
+							token = tokenizer.nextToken();
+							int neighbor4 = Integer.parseInt(token);
 							//
-							if (bRegions) {
-								token = tokens.nextToken();
-								int regionID = Integer.valueOf(token).intValue();
+							if (supportsRegions) {
+								token = tokenizer.nextToken();
+								int regionID = Integer.parseInt(token);
 								membraneElementMapMembraneRegion[memIndex] = regionID;
 							}
 							if (membraneMeshMetrics == null) {
@@ -1593,13 +1362,13 @@ public class CartesianMesh implements Serializable, Matchable {
 							} else {
 								me = new MembraneElement(memIndex, insideIndex, outsideIndex,
 										neighbor1, neighbor2, neighbor3, neighbor4,
-										membraneMeshMetrics.areas[memIndex],
-										membraneMeshMetrics.normals[memIndex][0],
-										membraneMeshMetrics.normals[memIndex][1],
-										membraneMeshMetrics.normals[memIndex][2],
-										membraneMeshMetrics.centroids[memIndex][0],
-										membraneMeshMetrics.centroids[memIndex][1],
-										membraneMeshMetrics.centroids[memIndex][2]);
+										membraneMeshMetrics.areas.get(memIndex),
+										membraneMeshMetrics.normals.get(memIndex).get(Coordinate.Axis.X),
+										membraneMeshMetrics.normals.get(memIndex).get(Coordinate.Axis.Y),
+										membraneMeshMetrics.normals.get(memIndex).get(Coordinate.Axis.Z),
+										membraneMeshMetrics.centroids.get(memIndex).get(Coordinate.Axis.X),
+										membraneMeshMetrics.centroids.get(memIndex).get(Coordinate.Axis.Y),
+										membraneMeshMetrics.centroids.get(memIndex).get(Coordinate.Axis.Z));
 							}
 						} catch (NumberFormatException e) {
 							throw new MathFormatException("expected:  # # # # # # #");
@@ -1614,75 +1383,57 @@ public class CartesianMesh implements Serializable, Matchable {
 				continue;
 			}
 			if (token.equalsIgnoreCase(VCML.ContourElements)) {
-				//
-				// read '{'
-				//
-				token = tokens.nextToken();
+				token = tokenizer.nextToken(); // read '{'
 				if (!token.equalsIgnoreCase(VCML.BeginBlock)) {
 					throw new MathFormatException("unexpected token " + token + " expecting " + VCML.BeginBlock);
 				}
-				token = tokens.nextToken();
+				token = tokenizer.nextToken();
 				int numContourElements = 0;
 				try {
-					numContourElements = Integer.valueOf(token).intValue();
+					numContourElements = Integer.parseInt(token);
 				} catch (NumberFormatException e) {
 					throw new MathFormatException("unexpected token " + token + " expecting the contourElement list length");
 				}
-				//
 				// read list of the following format:
-				//
 				//		contourIndex volumeIndex beginCoord endCoord prevIndex nextIndex
-				//
 				this.contourElements = new ContourElement[numContourElements];
 				int index = 0;
-				//
-				// loop until read a "}"
-				//
-				while (tokens.hasMoreTokens()) {
-					token = tokens.nextToken();
-					if (token.equalsIgnoreCase(VCML.EndBlock)) {
-						break;
-					}
-					ContourElement ce = null;
+
+				while (tokenizer.hasMoreTokens()) {
+					token = tokenizer.nextToken();
+					if (token.equalsIgnoreCase(VCML.EndBlock)) break; // loop until read a "}"
+
+					ContourElement ce;
 					try {
-						//
 						// read first two tokens of a contour element
-						//
 						//     contourIndex volumeIndex
-						//
-						int contourIndex = Integer.valueOf(token).intValue();
-						token = tokens.nextToken();
-						int volumeIndex = Integer.valueOf(token).intValue();
-						token = tokens.nextToken();
+						int contourIndex = Integer.parseInt(token);
+						token = tokenizer.nextToken();
+						int volumeIndex = Integer.parseInt(token);
+						token = tokenizer.nextToken();
 
-						//
 						// read beginCoord endCoord
-						//
-						double beginX = Double.valueOf(token).doubleValue();
-						token = tokens.nextToken();
-						double beginY = Double.valueOf(token).doubleValue();
-						token = tokens.nextToken();
-						double beginZ = Double.valueOf(token).doubleValue();
-						token = tokens.nextToken();
+						double beginX = Double.parseDouble(token);
+						token = tokenizer.nextToken();
+						double beginY = Double.parseDouble(token);
+						token = tokenizer.nextToken();
+						double beginZ = Double.parseDouble(token);
+						token = tokenizer.nextToken();
 
-						double endX = Double.valueOf(token).doubleValue();
-						token = tokens.nextToken();
-						double endY = Double.valueOf(token).doubleValue();
-						token = tokens.nextToken();
-						double endZ = Double.valueOf(token).doubleValue();
-						token = tokens.nextToken();
+						double endX = Double.parseDouble(token);
+						token = tokenizer.nextToken();
+						double endY = Double.parseDouble(token);
+						token = tokenizer.nextToken();
+						double endZ = Double.parseDouble(token);
+						token = tokenizer.nextToken();
 
 						Coordinate begin = new Coordinate(beginX, beginY, beginZ);
 						Coordinate end = new Coordinate(endX, endY, endZ);
-
-						//
 						// read last two tokens of a contour element
-						//
 						//     prevContourIndex nextContourIndex
-						//
-						int prevContourIndex = Integer.valueOf(token).intValue();
-						token = tokens.nextToken();
-						int nextContourIndex = Integer.valueOf(token).intValue();
+						int prevContourIndex = Integer.parseInt(token);
+						token = tokenizer.nextToken();
+						int nextContourIndex = Integer.parseInt(token);
 
 						ce = new ContourElement(contourIndex, volumeIndex, begin, end, prevContourIndex, nextContourIndex);
 
@@ -1717,10 +1468,7 @@ public class CartesianMesh implements Serializable, Matchable {
 	}
 
 	public MembraneMeshMetrics readMembraneMeshMetrics(CommentStringTokenizer tokens) throws MathException {
-
-		MembraneMeshMetrics membraneMeshMetrics = new MembraneMeshMetrics();
-
-		String token = null;
+		String token;
 		token = tokens.nextToken();
 		if (token.equalsIgnoreCase(VCML.MembraneElements)) {
 			token = tokens.nextToken();
@@ -1732,17 +1480,12 @@ public class CartesianMesh implements Serializable, Matchable {
 		}
 
 		token = tokens.nextToken();
-		int numMembraneElements = 0;
+		int numMembraneElements;
 		try {
-			numMembraneElements = Integer.valueOf(token).intValue();
+			numMembraneElements = Integer.parseInt(token);
 		} catch (NumberFormatException e) {
 			throw new MathFormatException("unexpected token " + token + " expecting MembraneElement count");
 		}
-
-		short[] regionIndex = new short[numMembraneElements];
-		float[] areas = new float[numMembraneElements];
-		float[][] normals = new float[numMembraneElements][3];
-		float[][] centroids = new float[numMembraneElements][3];
 
 		if (
 				!(token = tokens.nextToken()).equals("Index") ||
@@ -1757,44 +1500,50 @@ public class CartesianMesh implements Serializable, Matchable {
 		) {
 			throw new MathFormatException("unexpected MeshMetrics column description = " + token);
 		}
-		int counter = 0;
+
+		List<Short> regionIndex = new ArrayList<>();
+		List<Float> areas = new ArrayList<>();
+		List<EnumMap<Coordinate.Axis, Float>> normals = new ArrayList<>();
+		List<EnumMap<Coordinate.Axis, Float>> centroids = new ArrayList<>();
+
 		while (tokens.hasMoreTokens()) {
 			token = tokens.nextToken();
-			if (token.equalsIgnoreCase(VCML.EndBlock)) {
-				break;
-			}
-			if (counter >= numMembraneElements) {
-				throw new MathFormatException("Error parsing MembraneMeshMetrics values index=" + counter + ".  Expecting only " + numMembraneElements + " MembraneElements");
-			}
+			if (token.equalsIgnoreCase(VCML.EndBlock)) break;
+
+			if (regionIndex.size() >= numMembraneElements) throw new MathFormatException("Error parsing MembraneMeshMetrics values index=" + regionIndex.size() + ".  Expecting only " + numMembraneElements + " MembraneElements");
+			int index = -1;
 			try {
-				int index = Integer.valueOf(token).intValue();
-				if (index != counter) {
-					throw new MathFormatException("unexpected token " + token + " expecting " + counter);
-				}
-				regionIndex[counter] = Short.parseShort(tokens.nextToken());
+				index = Integer.parseInt(token);
+				if (index != regionIndex.size()) throw new MathFormatException("unexpected token " + token + " expecting " + regionIndex.size());
+
+				regionIndex.add(Short.parseShort(tokens.nextToken()));
 				//centroids
-				centroids[counter][0] = Float.parseFloat(tokens.nextToken());
-				centroids[counter][1] = Float.parseFloat(tokens.nextToken());
-				centroids[counter][2] = Float.parseFloat(tokens.nextToken());
+				CartesianMesh.getCoordinateTriplet(tokens, centroids);
 				//area
-				areas[counter] = Float.parseFloat(tokens.nextToken());
+				areas.add(Float.parseFloat(tokens.nextToken()));
 				//normals
-				normals[counter][0] = Float.parseFloat(tokens.nextToken());
-				normals[counter][1] = Float.parseFloat(tokens.nextToken());
-				normals[counter][2] = Float.parseFloat(tokens.nextToken());
+				CartesianMesh.getCoordinateTriplet(tokens, normals);
 
 			} catch (NumberFormatException e) {
-				throw new MathFormatException("Error parsing MembraneMeshMetrics values index=" + counter + "  " + e.getMessage());
+				throw new MathFormatException("Error parsing MembraneMeshMetrics values index=" + index + "  " + e.getMessage());
 			}
-			counter += 1;
 		}
 
-		membraneMeshMetrics.regionIndexes = regionIndex;
-		membraneMeshMetrics.areas = areas;
-		membraneMeshMetrics.normals = normals;
-		membraneMeshMetrics.centroids = centroids;
 
-		return membraneMeshMetrics;
+		return new MembraneMeshMetrics(
+				Collections.unmodifiableList(regionIndex),
+				Collections.unmodifiableList(areas),
+				Collections.unmodifiableList(normals),
+				Collections.unmodifiableList(centroids)
+		);
+	}
+
+	private static void getCoordinateTriplet(CommentStringTokenizer tokens, List<EnumMap<Coordinate.Axis, Float>> normals) {
+		EnumMap<Coordinate.Axis, Float> currentNormals = new EnumMap<>(Coordinate.Axis.class);
+		currentNormals.put(Coordinate.Axis.X, Float.parseFloat(tokens.nextToken()));
+		currentNormals.put(Coordinate.Axis.Y, Float.parseFloat(tokens.nextToken()));
+		currentNormals.put(Coordinate.Axis.Z, Float.parseFloat(tokens.nextToken()));
+		normals.add(currentNormals);
 	}
 
 
@@ -1848,8 +1597,7 @@ public class CartesianMesh implements Serializable, Matchable {
 		this.writeVolumeElementsMapVolumeRegion(out);
 		out.println();
 		this.writeMembraneElements_Connectivity_Region(out);
-//	writeContourElements(out);
-		//
+		//	writeContourElements(out);
 		out.println("}");//End CartesianMesh
 	}
 
@@ -1888,9 +1636,9 @@ public class CartesianMesh implements Serializable, Matchable {
 		out.println("\tMembraneRegionsMapVolumeRegion {");
 		out.println("\t" + numMembraneRegions);
 		out.println("\t//MemRegID  VolReg0  VolReg1  Surface");
-//	if (numMembraneRegions>0){
-//		throw new RuntimeException("membrane regions not supported for write()");
-//	}
+		//	if (numMembraneRegions>0){
+		//		throw new RuntimeException("membrane regions not supported for write()");
+		//	}
 		for (int c = 0; c < numMembraneRegions; c += 1) {
 			MembraneRegionMapVolumeRegion membraneRegion = this.getMeshRegionInfo().getMembraneRegionMapVolumeRegion().get(c);
 			int vrInside = membraneRegion.volumeRegionInsideID;
@@ -1907,28 +1655,28 @@ public class CartesianMesh implements Serializable, Matchable {
 		out.println("\tOrigin " + this.getOrigin().getX() + "   " + this.getOrigin().getY() + "   " + this.getOrigin().getZ());
 	}
 
-//boolean CartesianMesh::writeMeshMetrics(OutputStream out)
-//{
-//	out.println("MembraneElements {\n");
-//	out.println("%d\n",(int)getNumMembraneElements());
-//	out.println("%5s %11s %17s %25s %25s %25s %25s %25s %25s\n","Index","RegionIndex","X","Y","Z","Area","Nx","Ny","Nz");
-//	for (int i=0;i<getNumMembraneElements();i++){
-//		MembraneElement *memEl = pMembraneElement + i;
-//		WorldCoord wc = getMembraneWorldCoord(i);
-//		out.println("%-5ld %11ld %25.17lg %25.17lg %25.17lg %25.17lg %25.17lg %25.17lg %25.17lg\n",
-//			memEl->index,
-//			memEl->region->getId(),
-//			wc.x,
-//			wc.y,
-//			wc.z,
-//			memEl->area,
-//			memEl->unitNormal.x,
-//			memEl->unitNormal.y,
-//			memEl->unitNormal.z);
-//	}
-//	out.println("}");
-//	return TRUE;
-//}
+	//boolean CartesianMesh::writeMeshMetrics(OutputStream out)
+	//{
+	//	out.println("MembraneElements {\n");
+	//	out.println("%d\n",(int)getNumMembraneElements());
+	//	out.println("%5s %11s %17s %25s %25s %25s %25s %25s %25s\n","Index","RegionIndex","X","Y","Z","Area","Nx","Ny","Nz");
+	//	for (int i=0;i<getNumMembraneElements();i++){
+	//		MembraneElement *memEl = pMembraneElement + i;
+	//		WorldCoord wc = getMembraneWorldCoord(i);
+	//		out.println("%-5ld %11ld %25.17lg %25.17lg %25.17lg %25.17lg %25.17lg %25.17lg %25.17lg\n",
+	//			memEl->index,
+	//			memEl->region->getId(),
+	//			wc.x,
+	//			wc.y,
+	//			wc.z,
+	//			memEl->area,
+	//			memEl->unitNormal.x,
+	//			memEl->unitNormal.y,
+	//			memEl->unitNormal.z);
+	//	}
+	//	out.println("}");
+	//	return TRUE;
+	//}
 
 	private void writeMembraneElements_Connectivity_Region(PrintStream out) {
 		out.println("\tMembraneElements {");
@@ -1945,90 +1693,89 @@ public class CartesianMesh implements Serializable, Matchable {
 		out.println("\t}");
 	}
 
-//private void writeContourElements(OutputStream out)
-//{
-//	int i;
-//	//
-//	// write out contour elements (if present)
-//	//
-//	if (getNumContourElements()>0){
-//		out.println("    ContourElements {\n");
-//		out.println("           %d\n",(int)getNumContourElements());
-//		//
-//		// index volumeIndex begin.x begin.y begin.z  end.x, end.y end.z neighbor(prev) neighbor(next)
-//		//
-//		for (i=0;i<getNumContourElements();i++){
-//			ContourElement *cEl = getContourElement(i);
-//			int neighborPrev = -1;
-//			int neighborNext = -1;
-//			if (cEl->getBorder() == CONTOUR_BEGIN){
-//				neighborPrev = -1;
-//				neighborNext = i+1;
-//			}else if (cEl->getBorder() == CONTOUR_END){
-//				neighborPrev = i-1;
-//				neighborNext = -1;
-//			}else if (cEl->getBorder() == CONTOUR_INTERIOR){
-//				neighborPrev = i-1;
-//				neighborNext = i+1;
-//			}else{
-//				throw new Exception("Error writing contour mesh, contour element(%ld) has an illegal ContourBorder type = %d\n",i,cEl->getBorder());
-//			}
-//			out.println("           %ld %ld %lg %lg %lg %lg %lg %lg %ld %ld\n",cEl->getElementIndex(),cEl->getVolumeIndex(),
-//						cEl->getBegin().x,cEl->getBegin().y,cEl->getBegin().z,
-//						cEl->getEnd().x,  cEl->getEnd().y,  cEl->getEnd().z,
-//						neighborPrev, neighborNext);
-//		}
-//		out.println("    }\n");  // end ContourElements
-//	}
-//}
+	//private void writeContourElements(OutputStream out)
+	//{
+	//	int i;
+	//	//
+	//	// write out contour elements (if present)
+	//	//
+	//	if (getNumContourElements()>0){
+	//		out.println("    ContourElements {\n");
+	//		out.println("           %d\n",(int)getNumContourElements());
+	//		//
+	//		// index volumeIndex begin.x begin.y begin.z  end.x, end.y end.z neighbor(prev) neighbor(next)
+	//		//
+	//		for (i=0;i<getNumContourElements();i++){
+	//			ContourElement *cEl = getContourElement(i);
+	//			int neighborPrev = -1;
+	//			int neighborNext = -1;
+	//			if (cEl->getBorder() == CONTOUR_BEGIN){
+	//				neighborPrev = -1;
+	//				neighborNext = i+1;
+	//			}else if (cEl->getBorder() == CONTOUR_END){
+	//				neighborPrev = i-1;
+	//				neighborNext = -1;
+	//			}else if (cEl->getBorder() == CONTOUR_INTERIOR){
+	//				neighborPrev = i-1;
+	//				neighborNext = i+1;
+	//			}else{
+	//				throw new Exception("Error writing contour mesh, contour element(%ld) has an illegal ContourBorder type = %d\n",i,cEl->getBorder());
+	//			}
+	//			out.println("           %ld %ld %lg %lg %lg %lg %lg %lg %ld %ld\n",cEl->getElementIndex(),cEl->getVolumeIndex(),
+	//						cEl->getBegin().x,cEl->getBegin().y,cEl->getBegin().z,
+	//						cEl->getEnd().x,  cEl->getEnd().y,  cEl->getEnd().z,
+	//						neighborPrev, neighborNext);
+	//		}
+	//		out.println("    }\n");  // end ContourElements
+	//	}
+	//}
+
+	public static CartesianMesh readFromStreams(InputStream meshStream, InputStream meshmetricsStream, InputStream subdomainStream) throws MathException, IOException {
+		if (meshStream == null) throw new IllegalArgumentException("meshStream is null");
+		try (
+				BufferedReader meshReader = new BufferedReader(new InputStreamReader(meshStream));
+				BufferedReader meshmetricsReader = (meshmetricsStream != null) ? new BufferedReader(new InputStreamReader(meshmetricsStream)) : null;
+				BufferedReader subdomainReader = (subdomainStream != null) ? new BufferedReader(new InputStreamReader(subdomainStream)) : null
+		){
+			return CartesianMesh.readUsingReaders(meshReader, meshmetricsReader, subdomainReader);
+		} catch (IOException | MathException e) {
+			lg.error(e);
+			throw e;
+		}
+	}
 
 	public static CartesianMesh readFromFiles(File meshFile, File meshmetricsFile, File subdomainFile) throws IOException, MathException {
-		//
-		// read meshFile and parse into 'mesh' object
-		//
-		BufferedReader meshReader = null;
-		BufferedReader meshMetricsReader = null;
-		try {
-			meshReader = new BufferedReader(new FileReader(meshFile));
-			CommentStringTokenizer meshST = new CommentStringTokenizer(meshReader);
-
-			CommentStringTokenizer membraneMeshMetricsST = null;
-			if (meshmetricsFile != null) {
-				meshMetricsReader = new BufferedReader(new FileReader(meshmetricsFile));
-				membraneMeshMetricsST = new CommentStringTokenizer(meshMetricsReader);
-			}
-
-			CartesianMesh mesh = new CartesianMesh();
-			MembraneMeshMetrics membraneMeshMetrics = null;
-			if (membraneMeshMetricsST != null) {
-				membraneMeshMetrics = mesh.readMembraneMeshMetrics(membraneMeshMetricsST);
-			}
-			if (subdomainFile != null) {
-				mesh.subdomainInfo = SubdomainInfo.read(subdomainFile);
-			}
-			mesh.read(meshST, membraneMeshMetrics);
-			return mesh;
-		} finally {
-			if (meshReader != null) {
-				try {
-					meshReader.close();
-				} catch (Exception e) {
-					lg.error(e.getMessage(), e);
-				}
-			}
-			if (meshMetricsReader != null) {
-				try {
-					meshMetricsReader.close();
-				} catch (Exception e) {
-					lg.error(e.getMessage(), e);
-				}
-			}
+		if (meshFile == null) throw new IllegalArgumentException("meshFile is null");
+		try (
+				BufferedReader meshReader = new BufferedReader(new FileReader(meshFile));
+				BufferedReader meshmetricsReader = (meshmetricsFile != null) ? new BufferedReader(new FileReader(meshmetricsFile)) : null;
+				BufferedReader subdomainReader = (subdomainFile != null) ? new BufferedReader(new FileReader(subdomainFile)) : null
+		){
+			return CartesianMesh.readUsingReaders(meshReader, meshmetricsReader, subdomainReader);
+		} catch (IOException e) {
+			lg.error(e);
+			throw e;
 		}
+	}
+
+	private static CartesianMesh readUsingReaders(BufferedReader meshReader, BufferedReader meshMetricsReader, BufferedReader subdomainReader) throws MathException, IOException {
+		// read meshFile and parse into 'mesh' object
+		CartesianMesh mesh = new CartesianMesh();
+		CommentStringTokenizer meshST = new CommentStringTokenizer(meshReader);
+
+		MembraneMeshMetrics membraneMeshMetrics;
+		if (meshMetricsReader == null) membraneMeshMetrics = null;
+		else membraneMeshMetrics = mesh.readMembraneMeshMetrics(new CommentStringTokenizer(meshMetricsReader));
+
+		if (subdomainReader != null) mesh.subdomainInfo = SubdomainInfo.read(subdomainReader);
+
+		mesh.read(meshST, membraneMeshMetrics);
+		return mesh;
 	}
 
 	public static void test() {
 		try {
-			CartesianMesh mesh = null;
+			CartesianMesh mesh;
 
 			File meshFile = new File("users\\fgao\\SimID_28389873_0_.mesh");
 			File membraneMeshMetricsFile = new File("users\\fgao\\SimID_28389873_0_" + SimDataConstants.MESHMETRICSFILE_EXTENSION);

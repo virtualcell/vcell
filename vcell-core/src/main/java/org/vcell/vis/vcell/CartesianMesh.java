@@ -86,11 +86,11 @@ public class CartesianMesh {
 	public List<MembraneElement> getMembraneElements(String domainName) {
 		// get set of membrane regions that are part of domain
 		MembraneSubdomainInfo membraneSubdomainInfo = subdomainInfo.getMembraneSubdomainInfo(domainName);
-		CompartmentSubdomainInfo insideCompartmentInfo = membraneSubdomainInfo.getInsideCompartmentSubdomainInfo();
-		CompartmentSubdomainInfo outsideCompartmentInfo = membraneSubdomainInfo.getOutsideCompartmentSubdomainInfo();
+		CompartmentSubdomainInfo insideCompartmentInfo = membraneSubdomainInfo.insideCompartmentSubdomainInfo();
+		CompartmentSubdomainInfo outsideCompartmentInfo = membraneSubdomainInfo.outsideCompartmentSubdomainInfo();
 		
-		List<Integer> insideVolumeRegionIds = getVolumeRegionIDs(insideCompartmentInfo.getName());
-		List<Integer> outsideVolumeRegionIds = getVolumeRegionIDs(outsideCompartmentInfo.getName());
+		List<Integer> insideVolumeRegionIds = getVolumeRegionIDs(insideCompartmentInfo.name());
+		List<Integer> outsideVolumeRegionIds = getVolumeRegionIDs(outsideCompartmentInfo.name());
 		
 		// find set of all volume elements which are "inside"
 		BitSet insideVolumeSet = new BitSet();
