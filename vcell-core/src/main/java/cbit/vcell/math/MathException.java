@@ -14,7 +14,7 @@ package cbit.vcell.math;
  * This type was created in VisualAge.
  */
 public class MathException extends Exception {
-
+	public MathException() { super(); }
 	public MathException(String s) {
 		super(s);
 	}

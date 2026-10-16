@@ -30,7 +30,7 @@ import cbit.vcell.solver.server.SolverStatus;
 import cbit.vcell.solvers.ApplicationMessage;
 import cbit.vcell.solvers.MathExecutable;
 import cbit.vcell.solvers.SimpleCompiledSolver;
-import cbit.vcell.solvers.SubdomainInfo;
+import org.vcell.vis.vcell.SubdomainInfo;
 
 /**
  * Gibson solver 
