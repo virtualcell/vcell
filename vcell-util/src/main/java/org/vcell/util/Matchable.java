@@ -11,27 +11,30 @@
 package org.vcell.util;
 
 /**
- * This type was created in VisualAge.
+ * VCell-specific interface designed to compare objects that are not meant to equal,
+ * but are meant to be "matched" up regardless.
  */
 public interface Matchable {
-/**
- * Checks for internal representation of objects, not keys from database<br>
- * @see {@link Object#equals(Object)}  
- * @return boolean
- * @param obj java.lang.Object not null
- */
-boolean compareEqual(Matchable obj);
+	/**
+	 * Object specific method for checking the internal representation of objects
+	 * not intended for keys from database
+	 *
+	 * @param matchable Matchable non-null matchable to test
+	 * @return boolean
+	 * @see Object#equals(Object)
+	 */
+	boolean compareEqual(Matchable matchable);
 
-/**
- * null safe compare
- * @param lhs
- * @param rhs
- * @return true if lhs and rhs both null, or lhs.compareEqual(rhs)
- */
-public static boolean areEqual(Matchable lhs, Matchable rhs) {
-	if (lhs != null) {
-		return lhs.compareEqual(rhs);
+	/**
+	 * null safe, static variant of compareEqual
+	 *
+	 * @param leftHandSide first object to test
+	 * @param rightHandSide Matchable second object to test
+	 * @return true if leftHandSide and rightHandSide both null, or leftHandSide.compareEqual(rightHandSide)
+	 * @see Matchable#compareEqual(Matchable)
+	 */
+	static boolean areEqual(Matchable leftHandSide, Matchable rightHandSide) {
+		if (null == leftHandSide) return null == rightHandSide;
+		return leftHandSide.compareEqual(rightHandSide);
 	}
-	return rhs == null;
-}
 }
