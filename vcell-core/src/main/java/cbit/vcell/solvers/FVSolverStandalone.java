@@ -33,6 +33,7 @@ import org.vcell.chombo.ChomboSolverSpec;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ISize;
 import org.vcell.util.document.SimResampleInfoProvider;
+import org.vcell.vis.vcell.SubdomainInfo;
 
 import java.io.File;
 import java.io.FileWriter;
