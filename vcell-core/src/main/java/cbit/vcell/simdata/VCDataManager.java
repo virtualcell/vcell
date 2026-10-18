@@ -327,6 +327,21 @@ public synchronized byte[] getFenicsBundleFile(VCDataIdentifier vcdID, String re
 	}
 }
 
+/** points located in a moving FEniCSx mesh with values there, possibly for a prefix of the rows; see DataSetController */
+public synchronized org.vcell.solver.fenics.FenicsLocatedSamples getFenicsBundleLocatedSamples(VCDataIdentifier vcdID, String meshPath, String coordsPath, String[] arrayPaths, double[] points, boolean snap, int[] rows) throws DataAccessException {
+	try {
+		return getDataSetController().getFenicsBundleLocatedSamples(vcdID, meshPath, coordsPath, arrayPaths, points, snap, rows);
+	}catch (RemoteProxyException e){
+		handleRemoteProxyException(e);
+		try {
+			return getDataSetController().getFenicsBundleLocatedSamples(vcdID, meshPath, coordsPath, arrayPaths, points, snap, rows);
+		}catch (RemoteProxyException e2){
+			handleRemoteProxyException(e2);
+			throw new RuntimeException(e2.getMessage());
+		}
+	}
+}
+
 /** some values of some arrays of a FEniCSx results bundle, possibly for a prefix of the rows; see DataSetController */
 public synchronized org.vcell.solver.fenics.FenicsSamples getFenicsBundleSamples(VCDataIdentifier vcdID, String[] arrayPaths, int[] indices, int[] rows) throws DataAccessException {
 	try {

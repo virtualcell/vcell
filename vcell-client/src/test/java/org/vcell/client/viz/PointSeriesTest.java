@@ -4,7 +4,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
-import org.vcell.client.viz.VtuGridParser.VtuGrid;
+import org.vcell.vis.vtk.VtuGridParser.VtuGrid;
+import org.vcell.vis.vtk.VtuGridParser;
 
 /**
  * The shared per-point loop behind multi-point {@code /timeseries} for the body-fitted modes. Chombo and

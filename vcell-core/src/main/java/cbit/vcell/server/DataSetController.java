@@ -113,6 +113,19 @@ cbit.vcell.solver.ode.ODESimData getODEData(VCDataIdentifier vcdataID) throws Da
  	return null;
  }
 
+/**
+ * getFenicsBundleLocatedSamples - lab-frame {@code points} (x,y,z each) located in a MOVING (ALE) segment's mesh at
+ * each of {@code rows} (rows of that segment's arrays), where the bundle is: per row the cell each point fell in
+ * (snapped onto a membrane mesh when {@code snap}), those cells' vertices with their positions in that row, and
+ * the values of {@code arrayPaths} there, instead of every row's whole positions and values. {@code meshPath} is
+ * the segment's VTU mesh, {@code coordsPath} its point positions. The answer may cover only a PREFIX of the rows;
+ * the caller asks again for the rest. See {@link org.vcell.solver.fenics.FenicsBundle#locate}. Default returns
+ * null: not served here, read whole rows.
+ */
+ default org.vcell.solver.fenics.FenicsLocatedSamples getFenicsBundleLocatedSamples(VCDataIdentifier vcdataID, String meshPath, String coordsPath, String[] arrayPaths, double[] points, boolean snap, int[] rows) throws DataAccessException, RemoteProxyException {
+ 	return null;
+ }
+
  default byte[][] getFenicsBundleFiles(VCDataIdentifier vcdataID, String[] relativePaths) throws DataAccessException, RemoteProxyException {
  	byte[][] files = new byte[relativePaths.length][];
  	for (int i = 0; i < files.length; i++) {
