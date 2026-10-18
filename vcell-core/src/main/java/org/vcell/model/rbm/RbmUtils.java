@@ -199,18 +199,17 @@ public class RbmUtils {
 					SpeciesContext speciesContext = model.createSpeciesContext(structure, seedSpecies.getSpeciesPattern());
 					for(SimulationContext application : appList) {
 						SpeciesContextSpec scs = application.getReactionContext().getSpeciesContextSpec(speciesContext);
-						if (bngUnitSystem.isConcentration() && application.isUsingConcentration()){
-							scs.getParameter(SpeciesContextSpec.ROLE_InitialConcentration).setExpression(exp);
-						}else if (!bngUnitSystem.isConcentration() && !application.isUsingConcentration()){
-							scs.getParameter(SpeciesContextSpec.ROLE_InitialCount).setExpression(exp);
-						}else if (!bngUnitSystem.isConcentration() && application.isUsingConcentration()){
-							Expression covertedConcentration = scs.convertParticlesToConcentration(exp);
-							scs.getParameter(SpeciesContextSpec.ROLE_InitialConcentration).setExpression(covertedConcentration);
-						}else if (bngUnitSystem.isConcentration() && !application.isUsingConcentration()){
-							Expression covertedAmount = scs.convertConcentrationToParticles(exp);
-							scs.getParameter(SpeciesContextSpec.ROLE_InitialCount).setExpression(covertedAmount);
+						if (bngUnitSystem.isConcentration() != application.isUsingConcentration()) {
+							throw new RuntimeException("BNGL model unit system is " + (bngUnitSystem.isConcentration() ? "concentration" : "count") +
+									" but application is using " + (application.isUsingConcentration() ? "concentration" : "count") +
+									". Please change the application unit system to match the model unit system.");
 						}
-						scs.setConstant(node.isClamped());
+						if (application.isUsingConcentration()){
+							scs.getParameter(SpeciesContextSpec.ROLE_InitialConcentration).setExpression(exp);
+						}else{
+							scs.getParameter(SpeciesContextSpec.ROLE_InitialCount).setExpression(exp);
+						}
+						scs.setClamped(node.isClamped());
 					}
 				} catch (Exception ex) {
 					throw new RuntimeException(ex.getMessage(), ex);
