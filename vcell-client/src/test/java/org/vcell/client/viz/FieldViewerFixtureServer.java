@@ -54,6 +54,18 @@ public final class FieldViewerFixtureServer {
 		FieldViewerServer.registerBundle("556", 0, SamplingBundleStore.of(bundle("receptor_2d.fenics")), "fenics::receptor 2d");
 		// a hybrid PDE/particle run: the 3D receptor bundle with molecule positions (the particles extension)
 		FieldViewerServer.registerBundle("557", 0, SamplingBundleStore.of(bundle("receptor_3d_particles.fenics")), "fenics::receptor 3d + particles");
+		// VCell's nucleus model (nucleus | ne_dom | cytosol | pm_dom with receptors R | extracellular), written with the
+		// membrane-to-volume point maps: membrane functions of the adjacent volume values, on the species-less
+		// nuclear envelope (Jne, of s_cyto and s_nuc) and on the plasma membrane (Jpm, of R, s_ext_OUTSIDE, s_cyto_INSIDE)
+		FieldViewerServer.registerBundle("558", 0, SamplingBundleStore.of(bundle("nucleus_2d.fenics")), "fenics::nucleus 2d",
+				new FenicsFunctions(java.util.List.of(
+						new FenicsFunctions.Definition("Jne", new cbit.vcell.parser.Expression("30*(s_cyto - s_nuc)*(1 + s_cyto*s_nuc)"),
+								"ne_dom", true, null),
+						new FenicsFunctions.Definition("Jpm", new cbit.vcell.parser.Expression("R*s_ext_OUTSIDE/(1 + s_cyto_INSIDE*s_cyto_INSIDE) + x"),
+								"pm_dom", true, null)),
+						java.util.Set.of(), java.util.Map.of(
+								"ne_dom", new FenicsFunctions.Sides("cyto_dom", "nuc_dom"),
+								"pm_dom", new FenicsFunctions.Sides("cyto_dom", "ext_dom"))));
 		// MovingBoundary: a disk moving along x, through the VTU seam
 		FakeMovingBoundaryRun.register();
 		// Chombo: a disk (2D) and a ball (3D) on one static embedded-boundary mesh, through the VTU seam
@@ -75,6 +87,7 @@ public final class FieldViewerFixtureServer {
 				+ "\"fenics3d\":{\"sim\":\"555\",\"job\":0},"
 				+ "\"fenics2dMembrane\":{\"sim\":\"556\",\"job\":0},"
 				+ "\"fenicsParticles\":{\"sim\":\"557\",\"job\":0},"
+				+ "\"fenicsNucleus\":{\"sim\":\"558\",\"job\":0},"
 				+ "\"movingBoundary\":{\"sim\":\"" + FakeMovingBoundaryRun.SIM + "\",\"job\":0},"
 				+ "\"chombo2d\":{\"sim\":\"" + FakeChomboRun.SIM_2D + "\",\"job\":0},"
 				+ "\"chombo3d\":{\"sim\":\"" + FakeChomboRun.SIM_3D + "\",\"job\":0},"

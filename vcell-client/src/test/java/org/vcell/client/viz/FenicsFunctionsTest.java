@@ -34,7 +34,8 @@ import java.util.stream.Stream;
  * evaluated AT THE VERTICES from the stored variables, the vertex's x, y, z (a moving mesh's per row) and the row's
  * t, then interpolated -- so a kymograph or probe of a function is, bit for bit, the P1 interpolation of the
  * {@code /field} vertex values, the order that agrees with the 3D view (and not the function of interpolated
- * variables). Read from disk, through a sampling data server, on a moving mesh and on a remeshed run; and the
+ * variables). Read from disk, through a sampling data server, on a moving mesh and on a remeshed run; on a
+ * membrane, of the adjacent compartments' values through the bundle's membrane-to-volume point map; and the
  * functions the bundle cannot supply are refused with a message.
  */
 @Tag("Fast")
@@ -408,7 +409,7 @@ public class FenicsFunctionsTest {
 				{ "size", "cyto_dom", "region size" },
 				{ "fd", "cyto_dom", "field data" },
 				{ "region", "cyto_dom", "region variable" },
-				{ "adjacent", "mem_dom", "adjacent volume" },
+				{ "adjacent", "mem_dom", "re-run the simulation with vcell-fenics newer than " + FenicsFunctions.ADJACENT_MAPS_AFTER },
 				{ "broken", "cyto_dom", "could not be flattened" },
 		};
 		for (String[] c : refused) {
@@ -423,6 +424,224 @@ public class FenicsFunctionsTest {
 		Assertions.assertEquals(400, stats.statusCode());
 		Assertions.assertTrue(stats.body().contains("functions have none"), stats.body());
 	}
+	/** the nucleus model's membranes, as its VCell math has them: ne_dom's inside is the cytosol, pm_dom's too */
+	private static final java.util.Map<String, FenicsFunctions.Sides> NUCLEUS_SIDES = java.util.Map.of(
+			"ne_dom", new FenicsFunctions.Sides("cyto_dom", "nuc_dom"),
+			"pm_dom", new FenicsFunctions.Sides("cyto_dom", "ext_dom"));
+
+	/** a function of both sides of the nuclear envelope (which has no species), and one of the receptors and both sides of the plasma membrane */
+	private static FenicsFunctions nucleusFunctions() throws Exception {
+		return new FenicsFunctions(List.of(
+				def("Jne", "30*(s_cyto - s_nuc)*(1 + s_cyto*s_nuc)", "ne_dom", true),
+				def("Jpm", "R*s_ext_OUTSIDE/(1 + s_cyto_INSIDE*s_cyto_INSIDE) + x", "pm_dom", true),
+				def("far", "s_ext*2", "ne_dom", true),
+				def("wrongSide", "s_ext_INSIDE", "pm_dom", true)),
+				Set.of(), NUCLEUS_SIDES);
+	}
+
+	/**
+	 * {@code variable} of {@code compartment} at each vertex of {@code membrane}, found in plain Java by matching
+	 * coordinates (the reference does not use the bundle's point map, so it checks the map too): a body-fitted
+	 * membrane's vertices ARE vertices of each compartment beside it, at bit-identical positions.
+	 */
+	private static double[] adjacentNodal(FenicsBundleViews.BundleSource ref, FenicsBundle bundle, String membrane, String compartment,
+			String variable, int row) throws Exception {
+		VtuGridParser.VtuGrid m = ref.grid(bundle, membrane, row);
+		VtuGridParser.VtuGrid c = ref.grid(bundle, compartment, row);
+		java.util.Map<String, Integer> at = new java.util.HashMap<>();
+		for (int v = 0; v < c.numPoints(); v++) {
+			at.put(c.points[3 * v] + "," + c.points[3 * v + 1] + "," + c.points[3 * v + 2], v);
+		}
+		double[] values = bundle.field(compartment, variable, row);
+		double[] out = new double[m.numPoints()];
+		for (int v = 0; v < out.length; v++) {
+			Integer j = at.get(m.points[3 * v] + "," + m.points[3 * v + 1] + "," + m.points[3 * v + 2]);
+			Assertions.assertNotNull(j, membrane + " vertex " + v + " is a vertex of " + compartment);
+			out[v] = values[j];
+		}
+		return out;
+	}
+
+	/** the reference vertex values of Jne and Jpm (plain Java, from coordinate-matched compartment values) */
+	private static double[] nucleusReference(FenicsBundleViews.BundleSource ref, FenicsBundle bundle, String name, int row) throws Exception {
+		VtuGridParser.VtuGrid grid = ref.grid(bundle, name.equals("Jne") ? "ne_dom" : "pm_dom", row);
+		double[] out = new double[grid.numPoints()];
+		if (name.equals("Jne")) {
+			double[] cyt = adjacentNodal(ref, bundle, "ne_dom", "cyto_dom", "s_cyto", row);
+			double[] nuc = adjacentNodal(ref, bundle, "ne_dom", "nuc_dom", "s_nuc", row);
+			for (int v = 0; v < out.length; v++) {
+				out[v] = 30 * (cyt[v] - nuc[v]) * (1 + cyt[v] * nuc[v]);
+			}
+		} else {
+			double[] r = bundle.field("pm_dom", "R", row);
+			double[] ext = adjacentNodal(ref, bundle, "pm_dom", "ext_dom", "s_ext", row);
+			double[] cyt = adjacentNodal(ref, bundle, "pm_dom", "cyto_dom", "s_cyto", row);
+			for (int v = 0; v < out.length; v++) {
+				// VCell's parser holds a/b as a*(1/b) (an inverted term): the same arithmetic, so the same bits
+				out[v] = r[v] * ext[v] * (1 / (1 + cyt[v] * cyt[v])) + grid.points[3 * v];
+			}
+		}
+		return out;
+	}
+
+	/**
+	 * Membrane functions of the adjacent volume values (VCell's nucleus model, written by vcell-fenics with its
+	 * membrane-to-volume point maps): a nonlinear flux of the cytosol and nucleus on the species-less nuclear
+	 * envelope, by plain names; and on the plasma membrane, of its receptors and of {@code s_ext_OUTSIDE} /
+	 * {@code s_cyto_INSIDE}. {@code /info} lists them; {@code /field} is the plain-Java vertex values bit for bit;
+	 * the membrane kymograph is their interpolation along the arc bit for bit, from disk and through a sampling
+	 * data server alike, the latter with one sampled call per compartment read; probes agree.
+	 */
+	@Test
+	public void membraneFunctionsOfTheAdjacentVolumeValues() throws Exception {
+		File dir = resource("nucleus_2d.fenics");
+		FenicsFunctions functions = nucleusFunctions();
+		java.util.List<String> sampledDomains = java.util.Collections.synchronizedList(new java.util.ArrayList<>());
+		BundleStore disk = BundleStore.directory(dir);
+		BundleStore sampling = BundleStore.cached(new BundleStore() {
+			@Override
+			public byte[] read(String relativePath) throws java.io.IOException {
+				return disk.read(relativePath);
+			}
+
+			@Override
+			public org.vcell.solver.fenics.FenicsSamples sampleRows(String[] arrayPaths, int[] rows, int[] indices) throws java.io.IOException {
+				sampledDomains.add(arrayPaths[0].substring(0, arrayPaths[0].indexOf('/')));
+				return FenicsBundle.gather(disk, arrayPaths, indices, rows, FenicsBundle.MAX_SAMPLE_VALUES);
+			}
+
+			@Override
+			public String describe() {
+				return "sampling";
+			}
+		});
+		FieldViewerServer.registerBundle("9111", 0, disk, "disk", functions);
+		FieldViewerServer.registerBundle("9112", 0, sampling, "sampling", functions);
+		FenicsBundle bundle = FenicsBundle.open(dir);
+		FenicsBundleViews.BundleSource ref = source(disk);
+		Assertions.assertNotNull(bundle.adjacency("ne_dom"));
+		Assertions.assertNull(bundle.adjacency("cyto_dom"));
+
+		java.util.Map<String, String> listed = new java.util.HashMap<>();
+		for (JsonElement e : get("9111", "/info", "").getAsJsonArray("variables")) {
+			JsonObject v = e.getAsJsonObject();
+			if (v.get("isFunction").getAsBoolean()) {
+				listed.put(v.get("name").getAsString(), v.get("domain").getAsString());
+			}
+		}
+		Assertions.assertEquals(java.util.Map.of("Jne", "ne_dom", "Jpm", "pm_dom"), listed);
+
+		int last = bundle.getTimes().size() - 1;
+		for (String name : new String[] { "Jne", "Jpm" }) {
+			for (int row = 0; row <= last; row++) {
+				JsonObject field = get("9111", "/field", "&var=" + name + "&time=" + bundle.getTimes().get(row));
+				double[] expected = nucleusReference(ref, bundle, name, row);
+				double[] got = doubles(field.getAsJsonArray("values"));
+				Assertions.assertEquals(expected.length, got.length);
+				for (int v = 0; v < got.length; v++) {
+					Assertions.assertEquals(Double.doubleToLongBits(expected[v]), Double.doubleToLongBits(got[v]), name + " row " + row + " vertex " + v);
+				}
+				Assertions.assertTrue(java.util.Arrays.stream(got).anyMatch(g -> g != 0), name + " is not identically zero");
+			}
+		}
+
+		// kymographs along each membrane: the arc's interpolation of the reference vertex values
+		String[][] arcs = {
+				{ "Jne", "ne_dom", "0.35,0.0;0.1,0.25" }, // across the nucleus (centre 0.1, r 0.25)
+				{ "Jpm", "pm_dom", "0.6,0.0;0.0,0.6" }, // a quarter of the plasma membrane (r 0.6)
+		};
+		for (String[] a : arcs) {
+			String q = "&domain=" + a[1] + "&var=" + a[0] + "&path=" + enc(a[2]);
+			sampledDomains.clear();
+			JsonObject k = get("9111", "/kymograph", q);
+			JsonObject kSampled = get("9112", "/kymograph", q);
+			Assertions.assertEquals(k.getAsJsonArray("values").toString(), kSampled.getAsJsonArray("values").toString(), a[0]);
+			java.util.List<String> expectedCalls = a[0].equals("Jne") ? List.of("cyto_dom", "nuc_dom") : List.of("pm_dom", "ext_dom", "cyto_dom");
+			Assertions.assertEquals(new java.util.TreeSet<>(expectedCalls), new java.util.TreeSet<>(sampledDomains), a[0] + ": the domains sampled");
+			Assertions.assertEquals(expectedCalls.size(), sampledDomains.size(), a[0] + ": one sampled call per domain read");
+			VtuGridParser.VtuGrid grid = ref.grid(bundle, a[1], 0);
+			String[] ends = a[2].split(";");
+			double[][] waypoints = new double[2][];
+			for (int i = 0; i < 2; i++) {
+				String[] xy = ends[i].split(",");
+				waypoints[i] = new double[] { Double.parseDouble(xy[0]), Double.parseDouble(xy[1]), grid.points[2] };
+			}
+			MembraneArc arc = MembraneArc.build(grid, waypoints, BodyFittedKymograph.MAX_SAMPLES);
+			JsonArray rows = k.getAsJsonArray("values");
+			Assertions.assertEquals(bundle.getTimes().size(), rows.size());
+			for (int r = 0; r < rows.size(); r++) {
+				double[] expected = arc.values(nucleusReference(ref, bundle, a[0], r));
+				double[] got = doubles(rows.get(r).getAsJsonArray());
+				Assertions.assertEquals(expected.length, got.length);
+				Assertions.assertTrue(got.length > 2, a[0] + ": the arc has samples");
+				for (int i = 0; i < got.length; i++) {
+					Assertions.assertEquals(Double.doubleToLongBits(expected[i]), Double.doubleToLongBits(got[i]), a[0] + " row " + r + " sample " + i);
+				}
+			}
+		}
+
+		// a probe snapped onto the membrane: the same from disk and sampled
+		String probe = "&domain=pm_dom&var=Jpm&snap=nearest&points=" + enc("0.42,0.42");
+		Assertions.assertEquals(get("9111", "/timeseries", probe).get("series").toString(), get("9112", "/timeseries", probe).get("series").toString());
+	}
+
+	/** what a membrane function of adjacent values cannot be drawn from, refused with the reason */
+	@Test
+	public void adjacentValuesAreRefusedWhereTheyCannotBeRead() throws Exception {
+		// a variable of no compartment beside the membrane, and a side that does not hold it
+		FieldViewerServer.registerBundle("9113", 0, BundleStore.directory(resource("nucleus_2d.fenics")), "disk", nucleusFunctions());
+		String[][] refused = {
+				{ "far", "ne_dom", "not beside the membrane" },
+				{ "wrongSide", "pm_dom", "the inside of 'pm_dom'" },
+		};
+		for (String[] c : refused) {
+			HttpResponse<String> r = send("9113", "/field", "&domain=" + c[1] + "&var=" + c[0]);
+			Assertions.assertEquals(400, r.statusCode(), c[0] + ": " + r.body());
+			Assertions.assertTrue(r.body().contains(c[2]), c[0] + ": " + r.body());
+		}
+
+		// a bundle from a vcell-fenics without the point maps: refused with what to do, and not listed
+		Path old = new File(tmp, "old_nucleus.fenics").toPath();
+		copyTree(resource("nucleus_2d.fenics").toPath(), old);
+		JsonObject attrs = JsonParser.parseString(Files.readString(old.resolve(".zattrs"))).getAsJsonObject();
+		JsonObject domains = attrs.getAsJsonObject("vcell_fenics").getAsJsonObject("domains");
+		for (String name : domains.keySet()) {
+			domains.getAsJsonObject(name).remove("adjacent");
+		}
+		Files.writeString(old.resolve(".zattrs"), attrs.toString());
+		FieldViewerServer.registerBundle("9114", 0, BundleStore.directory(old.toFile()), "old", nucleusFunctions());
+		for (JsonElement e : get("9114", "/info", "").getAsJsonArray("variables")) {
+			Assertions.assertFalse(e.getAsJsonObject().get("isFunction").getAsBoolean(), "nothing evaluable: " + e);
+		}
+		String message = "re-run the simulation with vcell-fenics newer than " + FenicsFunctions.ADJACENT_MAPS_AFTER;
+		for (String route : new String[] { "/field", "/kymograph", "/timeseries" }) {
+			HttpResponse<String> r = send("9114", route, "&domain=pm_dom&var=Jpm&path=" + enc("0.6,0.0;0.0,0.6") + "&points=" + enc("0.6,0.0")
+					+ "&snap=nearest");
+			Assertions.assertEquals(400, r.statusCode(), route + ": " + r.body());
+			Assertions.assertTrue(r.body().contains(message), route + ": " + r.body());
+		}
+
+		// ...where an older vcell-fenics wrote no species-less membrane at all: the function's membrane is missing
+		domains.remove("ne_dom");
+		Files.writeString(old.resolve(".zattrs"), attrs.toString());
+		HttpResponse<String> r = send("9114", "/field", "&var=Jne");
+		Assertions.assertEquals(400, r.statusCode(), r.body());
+		Assertions.assertTrue(r.body().contains("do not include") && r.body().contains(FenicsFunctions.ADJACENT_MAPS_AFTER), r.body());
+	}
+
+	private static void copyTree(Path src, Path dst) throws Exception {
+		try (Stream<Path> paths = Files.walk(src)) {
+			for (Path p : (Iterable<Path>) paths::iterator) {
+				Path to = dst.resolve(src.relativize(p).toString());
+				if (Files.isDirectory(p)) {
+					Files.createDirectories(to);
+				} else {
+					Files.copy(p, to);
+				}
+			}
+		}
+	}
+
 	/**
 	 * Where the definitions come from: the simulation's MathDescription, flattened as a finite-volume run's
 	 * {@code .functions} file is, with this job's constants substituted, and each function's membrane/volume
@@ -471,6 +690,20 @@ public class FenicsFunctionsTest {
 			}
 		}
 		Assertions.assertTrue(sawMembrane && sawVolume, "both membrane and volume functions");
+		// each membrane's inside and outside, as the math has them (X_INSIDE / X_OUTSIDE resolve there)
+		java.lang.reflect.Field m = FenicsFunctions.class.getDeclaredField("membranes");
+		m.setAccessible(true);
+		@SuppressWarnings("unchecked")
+		java.util.Map<String, FenicsFunctions.Sides> sides = (java.util.Map<String, FenicsFunctions.Sides>) m.get(functions);
+		int membranes = 0;
+		for (cbit.vcell.math.SubDomain sd : math.getSubDomainCollection()) {
+			if (sd instanceof cbit.vcell.math.MembraneSubDomain msd) {
+				membranes++;
+				Assertions.assertEquals(new FenicsFunctions.Sides(msd.getInsideCompartment().getName(), msd.getOutsideCompartment().getName()),
+						sides.get(msd.getName()), msd.getName());
+			}
+		}
+		Assertions.assertTrue(membranes > 0 && sides.size() == membranes, sides.toString());
 		Assertions.assertSame(FenicsFunctions.NONE, FenicsFunctions.fromSimulation(null, 0));
 	}
 }
