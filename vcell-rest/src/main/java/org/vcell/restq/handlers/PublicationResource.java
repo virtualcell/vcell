@@ -8,6 +8,7 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import org.vcell.restq.services.PublicationService;
 import org.vcell.restq.services.UserRestService;
 import org.vcell.restq.errors.exceptions.*;
@@ -119,7 +120,7 @@ public class PublicationResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @RolesAllowed("user")
     @Operation(operationId = "publishBioModels", summary = "Publish selected BioModels and MathModels associated with a publication")
-    public void publish(@PathParam("id") Long publicationID, PublishModelsRequest request) throws PermissionWebException, NotAuthenticatedWebException, NotFoundWebException, DataAccessWebException {
+    public void publish(@PathParam("id") Long publicationID, @RequestBody(required = false) PublishModelsRequest request) throws PermissionWebException, NotAuthenticatedWebException, NotFoundWebException, DataAccessWebException {
         try {
             User vcellUser = userRestService.getUserFromIdentity(securityIdentity);
             Publication publication = publicationService.getPublication(new KeyValue(publicationID.toString()), vcellUser);

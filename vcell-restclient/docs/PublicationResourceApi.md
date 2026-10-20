@@ -602,7 +602,7 @@ public class Example {
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **id** | **Long**|  | |
-| **publishModelsRequest** | [**PublishModelsRequest**](PublishModelsRequest.md)|  | |
+| **publishModelsRequest** | [**PublishModelsRequest**](PublishModelsRequest.md)|  | [optional] |
 
 ### Return type
 
@@ -676,7 +676,7 @@ public class Example {
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **id** | **Long**|  | |
-| **publishModelsRequest** | [**PublishModelsRequest**](PublishModelsRequest.md)|  | |
+| **publishModelsRequest** | [**PublishModelsRequest**](PublishModelsRequest.md)|  | [optional] |
 
 ### Return type
 

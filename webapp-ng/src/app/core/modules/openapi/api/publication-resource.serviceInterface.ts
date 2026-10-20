@@ -59,7 +59,7 @@ export interface PublicationResourceServiceInterface {
      * @param id 
      * @param publishModelsRequest 
      */
-    publishBioModels(id: number, publishModelsRequest: PublishModelsRequest, extraHttpRequestParams?: any): Observable<{}>;
+    publishBioModels(id: number, publishModelsRequest?: PublishModelsRequest, extraHttpRequestParams?: any): Observable<{}>;
 
     /**
      * Update publication

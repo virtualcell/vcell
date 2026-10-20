@@ -26,7 +26,7 @@ except ImportError:
 
 from pydantic import StrictInt
 
-from typing import List
+from typing import List, Optional
 
 from vcell_client.models.publication import Publication
 from vcell_client.models.publish_models_request import PublishModelsRequest
@@ -1100,7 +1100,7 @@ class PublicationResourceApi:
     def publish_bio_models(
         self,
         id: StrictInt,
-        publish_models_request: PublishModelsRequest,
+        publish_models_request: Optional[PublishModelsRequest] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -1119,7 +1119,7 @@ class PublicationResourceApi:
 
         :param id: (required)
         :type id: int
-        :param publish_models_request: (required)
+        :param publish_models_request:
         :type publish_models_request: PublishModelsRequest
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
@@ -1170,7 +1170,7 @@ class PublicationResourceApi:
     def publish_bio_models_with_http_info(
         self,
         id: StrictInt,
-        publish_models_request: PublishModelsRequest,
+        publish_models_request: Optional[PublishModelsRequest] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -1189,7 +1189,7 @@ class PublicationResourceApi:
 
         :param id: (required)
         :type id: int
-        :param publish_models_request: (required)
+        :param publish_models_request:
         :type publish_models_request: PublishModelsRequest
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
@@ -1240,7 +1240,7 @@ class PublicationResourceApi:
     def publish_bio_models_without_preload_content(
         self,
         id: StrictInt,
-        publish_models_request: PublishModelsRequest,
+        publish_models_request: Optional[PublishModelsRequest] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -1259,7 +1259,7 @@ class PublicationResourceApi:
 
         :param id: (required)
         :type id: int
-        :param publish_models_request: (required)
+        :param publish_models_request:
         :type publish_models_request: PublishModelsRequest
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request

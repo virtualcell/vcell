@@ -284,7 +284,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **publish_bio_models**
-> publish_bio_models(id, publish_models_request)
+> publish_bio_models(id, publish_models_request=publish_models_request)
 
 Publish selected BioModels and MathModels associated with a publication
 
@@ -314,11 +314,11 @@ with vcell_client.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = vcell_client.PublicationResourceApi(api_client)
     id = 56 # int | 
-    publish_models_request = vcell_client.PublishModelsRequest() # PublishModelsRequest | 
+    publish_models_request = vcell_client.PublishModelsRequest() # PublishModelsRequest |  (optional)
 
     try:
         # Publish selected BioModels and MathModels associated with a publication
-        api_instance.publish_bio_models(id, publish_models_request)
+        api_instance.publish_bio_models(id, publish_models_request=publish_models_request)
     except Exception as e:
         print("Exception when calling PublicationResourceApi->publish_bio_models: %s\n" % e)
 ```
@@ -330,7 +330,7 @@ with vcell_client.ApiClient(configuration) as api_client:
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **id** | **int**|  | 
- **publish_models_request** | [**PublishModelsRequest**](PublishModelsRequest.md)|  | 
+ **publish_models_request** | [**PublishModelsRequest**](PublishModelsRequest.md)|  | [optional] 
 
 ### Return type
 

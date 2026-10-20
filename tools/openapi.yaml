@@ -3452,11 +3452,11 @@ paths:
           format: int64
           type: integer
       requestBody:
+        required: false
         content:
           application/json:
             schema:
               $ref: "#/components/schemas/PublishModelsRequest"
-        required: true
       responses:
         "204":
           description: No Content
