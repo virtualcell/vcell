@@ -405,10 +405,13 @@ export class UsersResourceService implements UsersResourceServiceInterface {
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public mapNewUser(userRegistrationInfo?: UserRegistrationInfo, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any>;
-    public mapNewUser(userRegistrationInfo?: UserRegistrationInfo, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<any>>;
-    public mapNewUser(userRegistrationInfo?: UserRegistrationInfo, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<any>>;
-    public mapNewUser(userRegistrationInfo?: UserRegistrationInfo, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
+    public mapNewUser(userRegistrationInfo: UserRegistrationInfo, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any>;
+    public mapNewUser(userRegistrationInfo: UserRegistrationInfo, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<any>>;
+    public mapNewUser(userRegistrationInfo: UserRegistrationInfo, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<any>>;
+    public mapNewUser(userRegistrationInfo: UserRegistrationInfo, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
+        if (userRegistrationInfo === null || userRegistrationInfo === undefined) {
+            throw new Error('Required parameter userRegistrationInfo was null or undefined when calling mapNewUser.');
+        }
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -476,10 +479,13 @@ export class UsersResourceService implements UsersResourceServiceInterface {
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public mapUser(userLoginInfoForMapping?: UserLoginInfoForMapping, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<boolean>;
-    public mapUser(userLoginInfoForMapping?: UserLoginInfoForMapping, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<boolean>>;
-    public mapUser(userLoginInfoForMapping?: UserLoginInfoForMapping, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<boolean>>;
-    public mapUser(userLoginInfoForMapping?: UserLoginInfoForMapping, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
+    public mapUser(userLoginInfoForMapping: UserLoginInfoForMapping, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<boolean>;
+    public mapUser(userLoginInfoForMapping: UserLoginInfoForMapping, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<boolean>>;
+    public mapUser(userLoginInfoForMapping: UserLoginInfoForMapping, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<boolean>>;
+    public mapUser(userLoginInfoForMapping: UserLoginInfoForMapping, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
+        if (userLoginInfoForMapping === null || userLoginInfoForMapping === undefined) {
+            throw new Error('Required parameter userLoginInfoForMapping was null or undefined when calling mapUser.');
+        }
 
         let localVarHeaders = this.defaultHeaders;
 

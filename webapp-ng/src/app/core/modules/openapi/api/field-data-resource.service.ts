@@ -399,10 +399,13 @@ export class FieldDataResourceService implements FieldDataResourceServiceInterfa
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public copyModelsFieldData(sourceModel?: SourceModel, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<{ [key: string]: ExternalDataIdentifier; }>;
-    public copyModelsFieldData(sourceModel?: SourceModel, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<{ [key: string]: ExternalDataIdentifier; }>>;
-    public copyModelsFieldData(sourceModel?: SourceModel, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<{ [key: string]: ExternalDataIdentifier; }>>;
-    public copyModelsFieldData(sourceModel?: SourceModel, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
+    public copyModelsFieldData(sourceModel: SourceModel, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<{ [key: string]: ExternalDataIdentifier; }>;
+    public copyModelsFieldData(sourceModel: SourceModel, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<{ [key: string]: ExternalDataIdentifier; }>>;
+    public copyModelsFieldData(sourceModel: SourceModel, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<{ [key: string]: ExternalDataIdentifier; }>>;
+    public copyModelsFieldData(sourceModel: SourceModel, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
+        if (sourceModel === null || sourceModel === undefined) {
+            throw new Error('Required parameter sourceModel was null or undefined when calling copyModelsFieldData.');
+        }
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -771,10 +774,13 @@ export class FieldDataResourceService implements FieldDataResourceServiceInterfa
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public save(fieldData?: FieldData, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<FieldDataSavedResults>;
-    public save(fieldData?: FieldData, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<FieldDataSavedResults>>;
-    public save(fieldData?: FieldData, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<FieldDataSavedResults>>;
-    public save(fieldData?: FieldData, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
+    public save(fieldData: FieldData, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<FieldDataSavedResults>;
+    public save(fieldData: FieldData, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<FieldDataSavedResults>>;
+    public save(fieldData: FieldData, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<FieldDataSavedResults>>;
+    public save(fieldData: FieldData, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
+        if (fieldData === null || fieldData === undefined) {
+            throw new Error('Required parameter fieldData was null or undefined when calling save.');
+        }
 
         let localVarHeaders = this.defaultHeaders;
 

@@ -4,14 +4,14 @@ All URIs are relative to *https://vcell.cam.uchc.edu*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**export_n5**](ExportResourceApi.md#export_n5) | **POST** /api/v1/export/N5 | 
-[**export_status**](ExportResourceApi.md#export_status) | **GET** /api/v1/export/status | 
+[**export_n5**](ExportResourceApi.md#export_n5) | **POST** /api/v1/export/N5 | Create N 5 Export
+[**export_status**](ExportResourceApi.md#export_status) | **GET** /api/v1/export/status | Poll Export Status
 
 
 # **export_n5**
-> int export_n5(n5_export_request=n5_export_request)
+> int export_n5(n5_export_request)
 
-
+Create N 5 Export
 
 Create an N5 (ImageJ compatible) export. The request must contain the standard export information, exportable data type, dataset name, and sub-volume specifications.
 
@@ -40,10 +40,11 @@ configuration = vcell_client.Configuration(
 with vcell_client.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = vcell_client.ExportResourceApi(api_client)
-    n5_export_request = vcell_client.N5ExportRequest() # N5ExportRequest |  (optional)
+    n5_export_request = vcell_client.N5ExportRequest() # N5ExportRequest | 
 
     try:
-        api_response = api_instance.export_n5(n5_export_request=n5_export_request)
+        # Create N 5 Export
+        api_response = api_instance.export_n5(n5_export_request)
         print("The response of ExportResourceApi->export_n5:\n")
         pprint(api_response)
     except Exception as e:
@@ -56,7 +57,7 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **n5_export_request** | [**N5ExportRequest**](N5ExportRequest.md)|  | [optional] 
+ **n5_export_request** | [**N5ExportRequest**](N5ExportRequest.md)|  | 
 
 ### Return type
 
@@ -86,7 +87,7 @@ Name | Type | Description  | Notes
 # **export_status**
 > List[ExportEvent] export_status(timestamp=timestamp)
 
-
+Poll Export Status
 
 Get the status of your export jobs past the timestamp (Unix epoch in seconds).
 
@@ -118,6 +119,7 @@ with vcell_client.ApiClient(configuration) as api_client:
     timestamp = 56 # int |  (optional)
 
     try:
+        # Poll Export Status
         api_response = api_instance.export_status(timestamp=timestamp)
         print("The response of ExportResourceApi->export_status:\n")
         pprint(api_response)

@@ -97,6 +97,7 @@ export class VCImageResourceService implements VCImageResourceServiceInterface {
     }
 
     /**
+     * Delete VC Image
      * Remove specific image VCML.
      * @param id 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
@@ -155,6 +156,7 @@ export class VCImageResourceService implements VCImageResourceServiceInterface {
     }
 
     /**
+     * Get Summaries
      * Return Image summaries.
      * @param includePublicAndShared Include Image summaries that are public and shared with the requester. Default is true.
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
@@ -217,6 +219,7 @@ export class VCImageResourceService implements VCImageResourceServiceInterface {
     }
 
     /**
+     * Get Summary
      * All of the miscellaneous information about an Image (Extent, ISize, preview, etc...), but not the actual Image itself.
      * @param id 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
@@ -275,6 +278,7 @@ export class VCImageResourceService implements VCImageResourceServiceInterface {
     }
 
     /**
+     * Get VC Image
      * Get specific image VCML.
      * @param id 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
@@ -334,6 +338,7 @@ export class VCImageResourceService implements VCImageResourceServiceInterface {
     }
 
     /**
+     * Save VC Image
      * Save the VCML representation of an image.
      * @param body 
      * @param name Name to save new ImageVCML under. Leave blank if re-saving existing ImageVCML.

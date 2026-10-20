@@ -4,17 +4,17 @@ All URIs are relative to *https://vcell.cam.uchc.edu*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**delete_geometry**](GeometryResourceApi.md#delete_geometry) | **DELETE** /api/v1/geometry/{id} | 
-[**get_geometry_summaries**](GeometryResourceApi.md#get_geometry_summaries) | **GET** /api/v1/geometry/summaries | 
-[**get_geometry_summary**](GeometryResourceApi.md#get_geometry_summary) | **GET** /api/v1/geometry/summary/{id} | 
-[**get_geometry_vcml**](GeometryResourceApi.md#get_geometry_vcml) | **GET** /api/v1/geometry/{id} | 
-[**save_geometry**](GeometryResourceApi.md#save_geometry) | **POST** /api/v1/geometry | 
+[**delete_geometry**](GeometryResourceApi.md#delete_geometry) | **DELETE** /api/v1/geometry/{id} | Delete Geometry
+[**get_geometry_summaries**](GeometryResourceApi.md#get_geometry_summaries) | **GET** /api/v1/geometry/summaries | Get Geometry Summaries
+[**get_geometry_summary**](GeometryResourceApi.md#get_geometry_summary) | **GET** /api/v1/geometry/summary/{id} | Get Geometry Summary
+[**get_geometry_vcml**](GeometryResourceApi.md#get_geometry_vcml) | **GET** /api/v1/geometry/{id} | Get Geometry
+[**save_geometry**](GeometryResourceApi.md#save_geometry) | **POST** /api/v1/geometry | Save
 
 
 # **delete_geometry**
 > delete_geometry(id)
 
-
+Delete Geometry
 
 Remove specific Geometry.
 
@@ -41,6 +41,7 @@ with vcell_client.ApiClient(configuration) as api_client:
     id = 'id_example' # str | 
 
     try:
+        # Delete Geometry
         api_instance.delete_geometry(id)
     except Exception as e:
         print("Exception when calling GeometryResourceApi->delete_geometry: %s\n" % e)
@@ -81,7 +82,7 @@ No authorization required
 # **get_geometry_summaries**
 > List[GeometrySummary] get_geometry_summaries(include_public_and_shared=include_public_and_shared)
 
-
+Get Geometry Summaries
 
 Return Geometry summaries.
 
@@ -109,6 +110,7 @@ with vcell_client.ApiClient(configuration) as api_client:
     include_public_and_shared = True # bool | Include Geometry summaries that are public and shared with the requester. Default is true. (optional)
 
     try:
+        # Get Geometry Summaries
         api_response = api_instance.get_geometry_summaries(include_public_and_shared=include_public_and_shared)
         print("The response of GeometryResourceApi->get_geometry_summaries:\n")
         pprint(api_response)
@@ -148,7 +150,7 @@ No authorization required
 # **get_geometry_summary**
 > GeometrySummary get_geometry_summary(id)
 
-
+Get Geometry Summary
 
 All of the text based information about a Geometry (dimensions, extent, origin, etc...), but not the actual Geometry itself.
 
@@ -176,6 +178,7 @@ with vcell_client.ApiClient(configuration) as api_client:
     id = 'id_example' # str | 
 
     try:
+        # Get Geometry Summary
         api_response = api_instance.get_geometry_summary(id)
         print("The response of GeometryResourceApi->get_geometry_summary:\n")
         pprint(api_response)
@@ -217,7 +220,7 @@ No authorization required
 # **get_geometry_vcml**
 > str get_geometry_vcml(id)
 
-
+Get Geometry
 
 Returns <Geometry> as root element in VCML format.
 
@@ -244,6 +247,7 @@ with vcell_client.ApiClient(configuration) as api_client:
     id = 'id_example' # str | 
 
     try:
+        # Get Geometry
         api_response = api_instance.get_geometry_vcml(id)
         print("The response of GeometryResourceApi->get_geometry_vcml:\n")
         pprint(api_response)
@@ -285,7 +289,7 @@ No authorization required
 # **save_geometry**
 > str save_geometry(body, new_name=new_name)
 
-
+Save
 
 Save's VCML with <Geometry> as the root element.
 
@@ -317,6 +321,7 @@ with vcell_client.ApiClient(configuration) as api_client:
     new_name = 'new_name_example' # str | Name to save new Geometry under. Leave blank if re-saving existing Geometry. (optional)
 
     try:
+        # Save
         api_response = api_instance.save_geometry(body, new_name=new_name)
         print("The response of GeometryResourceApi->save_geometry:\n")
         pprint(api_response)

@@ -65,8 +65,7 @@ paths:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
       security:
-      - openId:
-        - user
+      - openId: []
       summary: Get the status of simulation running
       tags:
       - Simulation Resource
@@ -110,8 +109,7 @@ paths:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
       security:
-      - openId:
-        - user
+      - openId: []
       summary: Start a simulation.
       tags:
       - Simulation Resource
@@ -155,8 +153,7 @@ paths:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
       security:
-      - openId:
-        - user
+      - openId: []
       summary: Stop a simulation.
       tags:
       - Simulation Resource
@@ -191,8 +188,7 @@ paths:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
       security:
-      - openId:
-        - user
+      - openId: []
       summary: Get usage summary
       tags:
       - Admin Resource
@@ -257,8 +253,7 @@ paths:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
       security:
-      - openId:
-        - user
+      - openId: []
       summary: Save's the given BioModel. Optional parameters of name and simulations
         to update due to math changes. Returns saved BioModel as VCML.
       tags:
@@ -458,6 +453,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/N5ExportRequest'
+        required: true
       responses:
         "200":
           content:
@@ -493,8 +489,8 @@ paths:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
       security:
-      - openId:
-        - user
+      - openId: []
+      summary: Create N 5 Export
       tags:
       - Export Resource
       x-content-type: application/json
@@ -537,8 +533,8 @@ paths:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
       security:
-      - openId:
-        - user
+      - openId: []
+      summary: Poll Export Status
       tags:
       - Export Resource
       x-accepts: application/json
@@ -573,8 +569,7 @@ paths:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
       security:
-      - openId:
-        - user
+      - openId: []
       summary: "Get all of the ids used to identify, and retrieve field data."
       tags:
       - Field Data Resource
@@ -612,6 +607,7 @@ paths:
                 style: form
             schema:
               $ref: '#/components/schemas/advancedCreate_request'
+        required: true
       responses:
         "200":
           content:
@@ -640,8 +636,7 @@ paths:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
       security:
-      - openId:
-        - user
+      - openId: []
       summary: "Create Field Data with granular detail in one request.The following\
         \ files are accepted: .tif and .zip."
       tags:
@@ -656,6 +651,7 @@ paths:
           multipart/form-data:
             schema:
               $ref: '#/components/schemas/analyzeFile_request'
+        required: true
       responses:
         "200":
           content:
@@ -684,8 +680,7 @@ paths:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
       security:
-      - openId:
-        - user
+      - openId: []
       summary: "Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and\
         \ return field data. Color mapped images not supported (the colors in those\
         \ images will be interpreted as separate channels). Filenames must be lowercase\
@@ -702,6 +697,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/SourceModel'
+        required: true
       responses:
         "200":
           content:
@@ -711,6 +707,8 @@ paths:
                   $ref: '#/components/schemas/ExternalDataIdentifier'
                 type: object
           description: OK
+        "400":
+          description: Bad Request
         "401":
           content:
             application/json:
@@ -736,8 +734,7 @@ paths:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
       security:
-      - openId:
-        - user
+      - openId: []
       summary: "Copy all existing field data from a BioModel/MathModel that you have\
         \ access to, but don't own."
       tags:
@@ -756,6 +753,7 @@ paths:
                 style: form
             schema:
               $ref: '#/components/schemas/createFromFile_request'
+        required: true
       responses:
         "200":
           content:
@@ -784,8 +782,7 @@ paths:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
       security:
-      - openId:
-        - user
+      - openId: []
       summary: "Submit a .zip or .tif file that converts into field data, with all\
         \ defaults derived from the file submitted."
       tags:
@@ -800,9 +797,12 @@ paths:
           application/x-www-form-urlencoded:
             schema:
               $ref: '#/components/schemas/createFromSimulation_request'
+        required: true
       responses:
         "201":
           description: Created
+        "400":
+          description: Bad Request
         "401":
           content:
             application/json:
@@ -822,8 +822,7 @@ paths:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
       security:
-      - openId:
-        - user
+      - openId: []
       summary: Create new field data from existing simulation results.
       tags:
       - Field Data Resource
@@ -862,8 +861,7 @@ paths:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
       security:
-      - openId:
-        - user
+      - openId: []
       summary: Delete the selected field data.
       tags:
       - Field Data Resource
@@ -876,6 +874,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/FieldData'
+        required: true
       responses:
         "200":
           content:
@@ -883,6 +882,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/FieldDataSavedResults'
           description: OK
+        "400":
+          description: Bad Request
         "401":
           content:
             application/json:
@@ -904,8 +905,7 @@ paths:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
       security:
-      - openId:
-        - user
+      - openId: []
       summary: "Take the generated field data, and save it to the server. User may\
         \ adjust the analyzed file before uploading to edit defaults."
       tags:
@@ -955,8 +955,7 @@ paths:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
       security:
-      - openId:
-        - user
+      - openId: []
       summary: "Get the shape of the field data. That is it's size, origin, extent,\
         \ times, and data identifiers."
       tags:
@@ -1010,8 +1009,8 @@ paths:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
       security:
-      - openId:
-        - user
+      - openId: []
+      summary: Save
       tags:
       - Geometry Resource
       x-content-type: application/xml
@@ -1045,6 +1044,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
+      summary: Get Geometry Summaries
       tags:
       - Geometry Resource
       x-accepts: application/json
@@ -1086,6 +1086,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
+      summary: Get Geometry Summary
       tags:
       - Geometry Resource
       x-accepts: application/json
@@ -1128,6 +1129,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
+      summary: Delete Geometry
       tags:
       - Geometry Resource
       x-accepts: application/json
@@ -1167,6 +1169,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
+      summary: Get Geometry
       tags:
       - Geometry Resource
       x-accepts: application/json
@@ -1235,6 +1238,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
+      summary: Save VC Image
       tags:
       - VC Image Resource
       x-content-type: application/json
@@ -1268,6 +1272,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
+      summary: Get Summaries
       tags:
       - VC Image Resource
       x-accepts: application/json
@@ -1309,6 +1314,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
+      summary: Get Summary
       tags:
       - VC Image Resource
       x-accepts: application/json
@@ -1351,6 +1357,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
+      summary: Delete VC Image
       tags:
       - VC Image Resource
       x-accepts: application/json
@@ -1396,6 +1403,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
+      summary: Get VC Image
       tags:
       - VC Image Resource
       x-accepts: application/json
@@ -1456,8 +1464,8 @@ paths:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
       security:
-      - openId:
-        - user
+      - openId: []
+      summary: Save
       tags:
       - Math Model Resource
       x-content-type: application/xml
@@ -1491,6 +1499,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
+      summary: Get Math Model Summaries
       tags:
       - Math Model Resource
       x-accepts: application/json
@@ -1532,6 +1541,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
+      summary: Get Math Model Summary
       tags:
       - Math Model Resource
       x-accepts: application/json
@@ -1574,6 +1584,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
+      summary: Delete Math Model
       tags:
       - Math Model Resource
       x-accepts: application/json
@@ -1613,6 +1624,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
+      summary: Get Math Model
       tags:
       - Math Model Resource
       x-accepts: application/json
@@ -1643,8 +1655,7 @@ paths:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
       security:
-      - openId:
-        - user
+      - openId: []
       summary: List optimization jobs for the authenticated user
       tags:
       - Optimization Resource
@@ -1656,6 +1667,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/OptProblem'
+        required: true
       responses:
         "200":
           content:
@@ -1663,6 +1675,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/OptimizationJobStatus'
           description: OK
+        "400":
+          description: Bad Request
         "401":
           content:
             application/json:
@@ -1678,8 +1692,7 @@ paths:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
       security:
-      - openId:
-        - user
+      - openId: []
       summary: Submit a new parameter estimation optimization job
       tags:
       - Optimization Resource
@@ -1725,8 +1738,7 @@ paths:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
       security:
-      - openId:
-        - user
+      - openId: []
       summary: "Get status, progress, or results of an optimization job"
       tags:
       - Optimization Resource
@@ -1771,8 +1783,7 @@ paths:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
       security:
-      - openId:
-        - user
+      - openId: []
       summary: Stop a running optimization job
       tags:
       - Optimization Resource
@@ -1806,6 +1817,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Publication'
+        required: true
       responses:
         "200":
           content:
@@ -1839,8 +1851,7 @@ paths:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
       security:
-      - openId:
-        - user
+      - openId: []
       summary: Create publication
       tags:
       - Publication Resource
@@ -1853,6 +1864,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Publication'
+        required: true
       responses:
         "200":
           content:
@@ -1885,8 +1897,7 @@ paths:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
       security:
-      - openId:
-        - user
+      - openId: []
       summary: Update publication
       tags:
       - Publication Resource
@@ -1932,8 +1943,7 @@ paths:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
       security:
-      - openId:
-        - user
+      - openId: []
       summary: Delete publication
       tags:
       - Publication Resource
@@ -1983,9 +1993,12 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/PublishModelsRequest'
+        required: true
       responses:
         "204":
           description: No Content
+        "400":
+          description: Bad Request
         "401":
           content:
             application/json:
@@ -2011,8 +2024,7 @@ paths:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
       security:
-      - openId:
-        - user
+      - openId: []
       summary: Publish selected BioModels and MathModels associated with a publication
       tags:
       - Publication Resource
@@ -2026,6 +2038,7 @@ paths:
           multipart/form-data:
             schema:
               $ref: '#/components/schemas/getFVSolverInputFromSBML_request'
+        required: true
       responses:
         "200":
           content:
@@ -2053,6 +2066,7 @@ paths:
           multipart/form-data:
             schema:
               $ref: '#/components/schemas/getFVSolverInputFromVCML_request'
+        required: true
       responses:
         "200":
           content:
@@ -2097,8 +2111,7 @@ paths:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
       security:
-      - openId:
-        - user
+      - openId: []
       summary: Get token for legacy API
       tags:
       - Users Resource
@@ -2124,8 +2137,7 @@ paths:
         "500":
           description: Internal Error
       security:
-      - openId:
-        - user
+      - openId: []
       summary: "The end user has forgotten the legacy password they used for VCell,\
         \ so they will be emailed it."
       tags:
@@ -2159,6 +2171,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/UserLoginInfoForMapping'
+        required: true
       responses:
         "200":
           content:
@@ -2166,6 +2179,8 @@ paths:
               schema:
                 type: boolean
           description: OK
+        "400":
+          description: Bad Request
         "401":
           content:
             application/json:
@@ -2185,8 +2200,7 @@ paths:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
       security:
-      - openId:
-        - user
+      - openId: []
       summary: map vcell user
       tags:
       - Users Resource
@@ -2223,8 +2237,7 @@ paths:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
       security:
-      - openId:
-        - user
+      - openId: []
       summary: Get mapped VCell identity
       tags:
       - Users Resource
@@ -2251,9 +2264,12 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/UserRegistrationInfo'
+        required: true
       responses:
         "200":
           description: "Successful, returning the identity"
+        "400":
+          description: Bad Request
         "401":
           content:
             application/json:
@@ -2271,8 +2287,7 @@ paths:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
       security:
-      - openId:
-        - user
+      - openId: []
       summary: create vcell user
       tags:
       - Users Resource
@@ -2354,8 +2369,7 @@ paths:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
       security:
-      - openId:
-        - user
+      - openId: []
       summary: request a recovery email to link a VCell account.
       tags:
       - Users Resource
@@ -2397,8 +2411,7 @@ paths:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
       security:
-      - openId:
-        - user
+      - openId: []
       summary: remove vcell identity mapping
       tags:
       - Users Resource
@@ -3372,6 +3385,7 @@ components:
           items:
             items:
               items:
+                format: int16
                 type: integer
               type: array
             type: array

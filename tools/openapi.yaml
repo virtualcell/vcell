@@ -1,2316 +1,5 @@
 ---
 openapi: 3.0.3
-info:
-  title: VCell API
-  description: VCell API
-  termsOfService: Your terms of service here
-  contact:
-    name: VCell API Support
-    url: https://vcell.org
-    email: vcell_support@uchc.com
-  license:
-    name: MIT
-    url: http://opensource.org/licenses/MIT
-  version: 1.0.1
-servers:
-- url: https://vcell.cam.uchc.edu
-paths:
-  /api/v1/Simulation/{simID}/simulationStatus:
-    get:
-      tags:
-      - Simulation Resource
-      summary: Get the status of simulation running
-      operationId: getSimulationStatus
-      parameters:
-      - name: simID
-        in: path
-        required: true
-        schema:
-          type: string
-      - name: bioModelID
-        in: query
-        schema:
-          type: string
-      - name: mathModelID
-        in: query
-        schema:
-          type: string
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SimulationStatusPersistentRecord'
-        "401":
-          description: Not Authenticated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "403":
-          description: Not Allowed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "500":
-          description: Data Access Exception
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-      security:
-      - openId:
-        - user
-  /api/v1/Simulation/{simID}/startSimulation:
-    post:
-      tags:
-      - Simulation Resource
-      summary: Start a simulation.
-      operationId: startSimulation
-      parameters:
-      - name: simID
-        in: path
-        required: true
-        schema:
-          type: string
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/StatusMessage'
-        "401":
-          description: Not Authenticated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "403":
-          description: Not Allowed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "500":
-          description: Data Access Exception
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-      security:
-      - openId:
-        - user
-  /api/v1/Simulation/{simID}/stopSimulation:
-    post:
-      tags:
-      - Simulation Resource
-      summary: Stop a simulation.
-      operationId: stopSimulation
-      parameters:
-      - name: simID
-        in: path
-        required: true
-        schema:
-          type: string
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/StatusMessage'
-        "401":
-          description: Not Authenticated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "403":
-          description: Not Allowed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "500":
-          description: Data Access Exception
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-      security:
-      - openId:
-        - user
-  /api/v1/admin/usage:
-    get:
-      tags:
-      - Admin Resource
-      summary: Get usage summary
-      operationId: getUsage
-      responses:
-        "200":
-          description: The PDF report
-          content:
-            application/pdf:
-              schema:
-                format: binary
-                type: string
-        "401":
-          description: Not Authenticated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "403":
-          description: Not Allowed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "500":
-          description: Data Access Exception
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-      security:
-      - openId:
-        - user
-  /api/v1/bioModel:
-    post:
-      tags:
-      - Bio Model Resource
-      summary: Save's the given BioModel. Optional parameters of name and simulations
-        to update due to math changes. Returns saved BioModel as VCML.
-      operationId: saveBioModel
-      parameters:
-      - name: newName
-        in: query
-        description: Name to save new BioModel under. Leave blank if re-saving existing
-          BioModel.
-        required: false
-        schema:
-          type: string
-        allowEmptyValue: true
-      - name: simsRequiringUpdates
-        in: query
-        description: The name of simulations that will be prepared for future execution.
-        required: false
-        schema:
-          type: array
-          items:
-            type: string
-        allowEmptyValue: true
-      requestBody:
-        description: BioModelVCML which will be saved.
-        content:
-          application/xml:
-            schema:
-              type: string
-        required: true
-      responses:
-        "200":
-          description: OK
-          content:
-            application/xml:
-              schema:
-                type: string
-        "401":
-          description: Not Authenticated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "403":
-          description: Not Allowed
-        "422":
-          description: Unprocessable content submitted
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "500":
-          description: Data Access Exception
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-      security:
-      - openId:
-        - user
-  /api/v1/bioModel/summaries:
-    get:
-      tags:
-      - Bio Model Resource
-      summary: Return BioModel summaries.
-      operationId: getBioModelSummaries
-      parameters:
-      - name: includePublicAndShared
-        in: query
-        description: Includes BioModel summaries that are public or shared with requester.
-          Default is true.
-        required: false
-        schema:
-          type: boolean
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/BioModelSummary'
-        "500":
-          description: Data Access Exception
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-  /api/v1/bioModel/{bioModelID}:
-    get:
-      tags:
-      - Bio Model Resource
-      summary: Get BioModel.
-      operationId: getBioModel
-      parameters:
-      - name: bioModelID
-        in: path
-        required: true
-        schema:
-          type: string
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BioModel'
-        "403":
-          description: Not Allowed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "404":
-          description: Not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "500":
-          description: Data Access Exception
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-    delete:
-      tags:
-      - Bio Model Resource
-      summary: Delete the BioModel from VCell's database.
-      operationId: deleteBioModel
-      parameters:
-      - name: bioModelID
-        in: path
-        required: true
-        schema:
-          type: string
-      responses:
-        "204":
-          description: No Content
-        "401":
-          description: Not Authenticated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "403":
-          description: Not Allowed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "500":
-          description: Data Access Exception
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-  /api/v1/bioModel/{bioModelID}/summary:
-    get:
-      tags:
-      - Bio Model Resource
-      summary: "All of the text based information about a BioModel (summary, version,\
-        \ publication status, etc...), but not the actual BioModel itself."
-      operationId: getBioModelSummary
-      parameters:
-      - name: bioModelID
-        in: path
-        required: true
-        schema:
-          type: string
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BioModelSummary'
-        "403":
-          description: Not Allowed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "500":
-          description: Data Access Exception
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-  /api/v1/bioModel/{bioModelID}/vcml_download:
-    get:
-      tags:
-      - Bio Model Resource
-      summary: Get the BioModel in VCML format.
-      operationId: getBioModelVCML
-      parameters:
-      - name: bioModelID
-        in: path
-        required: true
-        schema:
-          type: string
-      responses:
-        "200":
-          description: OK
-          content:
-            text/xml:
-              schema:
-                type: string
-        "403":
-          description: Not Allowed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "404":
-          description: Not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "500":
-          description: Data Access Exception
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-  /api/v1/export/N5:
-    post:
-      tags:
-      - Export Resource
-      description: "Create an N5 (ImageJ compatible) export. The request must contain\
-        \ the standard export information, exportable data type, dataset name, and\
-        \ sub-volume specifications."
-      operationId: exportN5
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/N5ExportRequest'
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                format: int64
-                type: integer
-        "400":
-          description: Bad Request.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "401":
-          description: Not Authenticated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "403":
-          description: Not Allowed
-        "422":
-          description: Unprocessable content submitted
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "500":
-          description: Data Access Exception
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-      security:
-      - openId:
-        - user
-  /api/v1/export/status:
-    get:
-      tags:
-      - Export Resource
-      description: Get the status of your export jobs past the timestamp (Unix epoch
-        in seconds).
-      operationId: exportStatus
-      parameters:
-      - name: timestamp
-        in: query
-        schema:
-          format: int64
-          type: integer
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ExportEvent'
-        "401":
-          description: Not Authenticated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "403":
-          description: Not Allowed
-        "500":
-          description: Data Access Exception
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-      security:
-      - openId:
-        - user
-  /api/v1/fieldData/IDs:
-    get:
-      tags:
-      - Field Data Resource
-      summary: "Get all of the ids used to identify, and retrieve field data."
-      operationId: getAllIDs
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/FieldDataReference'
-        "401":
-          description: Not Authenticated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "403":
-          description: Not Allowed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "500":
-          description: Data Access Exception
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-      security:
-      - openId:
-        - user
-  /api/v1/fieldData/advancedCreate:
-    post:
-      tags:
-      - Field Data Resource
-      summary: "Create Field Data with granular detail in one request.The following\
-        \ files are accepted: .tif and .zip."
-      operationId: advancedCreate
-      requestBody:
-        content:
-          multipart/form-data:
-            schema:
-              type: object
-              properties:
-                file:
-                  format: binary
-                  type: string
-                fileName:
-                  type: string
-                extent:
-                  $ref: '#/components/schemas/Extent'
-                iSize:
-                  $ref: '#/components/schemas/ISize'
-                channelNames:
-                  type: array
-                  items:
-                    type: string
-                times:
-                  type: array
-                  items:
-                    format: double
-                    type: number
-                annotation:
-                  type: string
-                origin:
-                  $ref: '#/components/schemas/Origin'
-            encoding:
-              extent:
-                contentType: application/json
-              annotation:
-                contentType: text/plain
-              fileName:
-                contentType: text/plain
-              times:
-                contentType: text/plain
-              file:
-                contentType: application/octet-stream
-              iSize:
-                contentType: application/json
-              channelNames:
-                contentType: text/plain
-              origin:
-                contentType: application/json
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/FieldDataSavedResults'
-        "401":
-          description: Not Authenticated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "403":
-          description: Not Allowed
-        "422":
-          description: Unprocessable content submitted
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "500":
-          description: Data Access Exception
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-      security:
-      - openId:
-        - user
-  /api/v1/fieldData/analyzeFile:
-    post:
-      tags:
-      - Field Data Resource
-      summary: "Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and\
-        \ return field data. Color mapped images not supported (the colors in those\
-        \ images will be interpreted as separate channels). Filenames must be lowercase\
-        \ alphanumeric, and can contain underscores."
-      operationId: analyzeFile
-      requestBody:
-        content:
-          multipart/form-data:
-            schema:
-              type: object
-              properties:
-                file:
-                  format: binary
-                  type: string
-                fileName:
-                  type: string
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/FieldData'
-        "401":
-          description: Not Authenticated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "403":
-          description: Not Allowed
-        "422":
-          description: Unprocessable content submitted
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "500":
-          description: Data Access Exception
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-      security:
-      - openId:
-        - user
-  /api/v1/fieldData/copyModelsFieldData:
-    post:
-      tags:
-      - Field Data Resource
-      summary: "Copy all existing field data from a BioModel/MathModel that you have\
-        \ access to, but don't own."
-      operationId: copyModelsFieldData
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/SourceModel'
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                additionalProperties:
-                  $ref: '#/components/schemas/ExternalDataIdentifier'
-        "401":
-          description: Not Authenticated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "403":
-          description: Not Allowed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "422":
-          description: Unprocessable content submitted
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "500":
-          description: Data Access Exception
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-      security:
-      - openId:
-        - user
-  /api/v1/fieldData/createFromFile:
-    post:
-      tags:
-      - Field Data Resource
-      summary: "Submit a .zip or .tif file that converts into field data, with all\
-        \ defaults derived from the file submitted."
-      operationId: createFromFile
-      requestBody:
-        content:
-          multipart/form-data:
-            schema:
-              type: object
-              properties:
-                file:
-                  format: binary
-                  type: string
-                fieldDataName:
-                  type: string
-            encoding:
-              file:
-                contentType: application/octet-stream
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/FieldDataSavedResults'
-        "401":
-          description: Not Authenticated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "403":
-          description: Not Allowed
-        "422":
-          description: Unprocessable content submitted
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "500":
-          description: Data Access Exception
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-      security:
-      - openId:
-        - user
-  /api/v1/fieldData/createFromSimulation:
-    post:
-      tags:
-      - Field Data Resource
-      summary: Create new field data from existing simulation results.
-      operationId: createFromSimulation
-      requestBody:
-        content:
-          application/x-www-form-urlencoded:
-            schema:
-              type: object
-              properties:
-                simKeyReference:
-                  type: string
-                jobIndex:
-                  format: int32
-                  type: integer
-                newFieldDataName:
-                  type: string
-      responses:
-        "201":
-          description: Created
-        "401":
-          description: Not Authenticated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "403":
-          description: Not Allowed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "500":
-          description: Data Access Exception
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-      security:
-      - openId:
-        - user
-  /api/v1/fieldData/delete/{fieldDataID}:
-    delete:
-      tags:
-      - Field Data Resource
-      summary: Delete the selected field data.
-      operationId: delete
-      parameters:
-      - name: fieldDataID
-        in: path
-        required: true
-        schema:
-          type: string
-      responses:
-        "204":
-          description: No Content
-        "401":
-          description: Not Authenticated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "403":
-          description: Not Allowed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "500":
-          description: Data Access Exception
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-      security:
-      - openId:
-        - user
-  /api/v1/fieldData/save:
-    post:
-      tags:
-      - Field Data Resource
-      summary: "Take the generated field data, and save it to the server. User may\
-        \ adjust the analyzed file before uploading to edit defaults."
-      operationId: save
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/FieldData'
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/FieldDataSavedResults'
-        "401":
-          description: Not Authenticated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "403":
-          description: Not Allowed
-        "422":
-          description: Unprocessable content submitted
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "500":
-          description: Data Access Exception
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-      security:
-      - openId:
-        - user
-  /api/v1/fieldData/shape/{fieldDataID}:
-    get:
-      tags:
-      - Field Data Resource
-      summary: "Get the shape of the field data. That is it's size, origin, extent,\
-        \ times, and data identifiers."
-      operationId: getShapeFromID
-      parameters:
-      - name: fieldDataID
-        in: path
-        required: true
-        schema:
-          type: string
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/FieldDataShape'
-        "401":
-          description: Not Authenticated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "403":
-          description: Not Allowed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "404":
-          description: Not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "500":
-          description: Data Access Exception
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-      security:
-      - openId:
-        - user
-  /api/v1/geometry:
-    post:
-      tags:
-      - Geometry Resource
-      description: Save's VCML with <Geometry> as the root element.
-      operationId: saveGeometry
-      parameters:
-      - name: newName
-        in: query
-        description: Name to save new Geometry under. Leave blank if re-saving existing
-          Geometry.
-        required: false
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/xml:
-            schema:
-              type: string
-        required: true
-      responses:
-        "200":
-          description: OK
-          content:
-            application/xml:
-              schema:
-                type: string
-        "401":
-          description: Not Authenticated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "403":
-          description: Not Allowed
-        "422":
-          description: Unprocessable content submitted
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "500":
-          description: Data Access Exception
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-      security:
-      - openId:
-        - user
-  /api/v1/geometry/summaries:
-    get:
-      tags:
-      - Geometry Resource
-      description: Return Geometry summaries.
-      operationId: getGeometrySummaries
-      parameters:
-      - name: includePublicAndShared
-        in: query
-        description: Include Geometry summaries that are public and shared with the
-          requester. Default is true.
-        required: false
-        schema:
-          type: boolean
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/GeometrySummary'
-        "500":
-          description: Data Access Exception
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-  /api/v1/geometry/summary/{id}:
-    get:
-      tags:
-      - Geometry Resource
-      description: "All of the text based information about a Geometry (dimensions,\
-        \ extent, origin, etc...), but not the actual Geometry itself."
-      operationId: getGeometrySummary
-      parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GeometrySummary'
-        "403":
-          description: Not Allowed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "404":
-          description: Not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "500":
-          description: Data Access Exception
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-  /api/v1/geometry/{id}:
-    get:
-      tags:
-      - Geometry Resource
-      description: Returns <Geometry> as root element in VCML format.
-      operationId: getGeometryVCML
-      parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-      responses:
-        "200":
-          description: OK
-          content:
-            application/xml:
-              schema:
-                type: string
-        "403":
-          description: Not Allowed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "404":
-          description: Not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "500":
-          description: Data Access Exception
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-    delete:
-      tags:
-      - Geometry Resource
-      description: Remove specific Geometry.
-      operationId: deleteGeometry
-      parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-      responses:
-        "204":
-          description: No Content
-        "401":
-          description: Not Authenticated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "403":
-          description: Not Allowed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "404":
-          description: Not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "500":
-          description: Data Access Exception
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-  /api/v1/helloworld:
-    get:
-      tags:
-      - Hello World
-      summary: Get hello world message.
-      operationId: getHelloWorld
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HelloWorldMessage'
-        "403":
-          description: Not Allowed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-  /api/v1/image:
-    post:
-      tags:
-      - VC Image Resource
-      description: Save the VCML representation of an image.
-      operationId: saveImageVCML
-      parameters:
-      - name: name
-        in: query
-        description: Name to save new ImageVCML under. Leave blank if re-saving existing
-          ImageVCML.
-        required: false
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: string
-        required: true
-      responses:
-        "200":
-          description: OK
-          content:
-            text/plain:
-              schema:
-                type: string
-        "401":
-          description: Not Authenticated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "422":
-          description: Unprocessable content submitted
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "500":
-          description: Data Access Exception
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-  /api/v1/image/summaries:
-    get:
-      tags:
-      - VC Image Resource
-      description: Return Image summaries.
-      operationId: getImageSummaries
-      parameters:
-      - name: includePublicAndShared
-        in: query
-        description: Include Image summaries that are public and shared with the requester.
-          Default is true.
-        required: false
-        schema:
-          type: boolean
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/VCImageSummary'
-        "500":
-          description: Data Access Exception
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-  /api/v1/image/summary/{id}:
-    get:
-      tags:
-      - VC Image Resource
-      description: "All of the miscellaneous information about an Image (Extent, ISize,\
-        \ preview, etc...), but not the actual Image itself."
-      operationId: getImageSummary
-      parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCImageSummary'
-        "403":
-          description: Not Allowed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "404":
-          description: Not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "500":
-          description: Data Access Exception
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-  /api/v1/image/{id}:
-    get:
-      tags:
-      - VC Image Resource
-      description: Get specific image VCML.
-      operationId: getImageVCML
-      parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-      responses:
-        "200":
-          description: OK
-          content:
-            text/plain:
-              schema:
-                type: string
-        "403":
-          description: Not Allowed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "404":
-          description: Not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "422":
-          description: Unprocessable content submitted
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "500":
-          description: Data Access Exception
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-    delete:
-      tags:
-      - VC Image Resource
-      description: Remove specific image VCML.
-      operationId: deleteImageVCML
-      parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-      responses:
-        "204":
-          description: No Content
-        "401":
-          description: Not Authenticated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "403":
-          description: Not Allowed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "404":
-          description: Not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "500":
-          description: Data Access Exception
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-  /api/v1/mathModel:
-    post:
-      tags:
-      - Math Model Resource
-      operationId: saveMathModel
-      parameters:
-      - name: newName
-        in: query
-        description: Name to save new MathModel under. Leave blank if re-saving existing
-          MathModel.
-        required: false
-        schema:
-          type: string
-      - name: simNames
-        in: query
-        description: The name of simulations that will be prepared for future execution.
-        required: false
-        schema:
-          type: array
-          items:
-            type: string
-      requestBody:
-        content:
-          application/xml:
-            schema:
-              type: string
-        required: true
-      responses:
-        "200":
-          description: OK
-          content:
-            application/xml:
-              schema:
-                type: string
-        "401":
-          description: Not Authenticated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "403":
-          description: Not Allowed
-        "422":
-          description: Unprocessable content submitted
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "500":
-          description: Data Access Exception
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-      security:
-      - openId:
-        - user
-  /api/v1/mathModel/summaries:
-    get:
-      tags:
-      - Math Model Resource
-      description: Return MathModel summaries.
-      operationId: getSummaries
-      parameters:
-      - name: includePublicAndShared
-        in: query
-        description: Include MathModel summaries that are public and shared with the
-          requester. Default is true.
-        required: false
-        schema:
-          type: boolean
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/MathModelSummary'
-        "500":
-          description: Data Access Exception
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-  /api/v1/mathModel/summary/{id}:
-    get:
-      tags:
-      - Math Model Resource
-      description: "All of the text based information about a MathModel (summary,\
-        \ version, publication status, etc...), but not the actual MathModel itself."
-      operationId: getSummary
-      parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MathModelSummary'
-        "403":
-          description: Not Allowed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "404":
-          description: Not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "500":
-          description: Data Access Exception
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-  /api/v1/mathModel/{id}:
-    get:
-      tags:
-      - Math Model Resource
-      description: Returns MathModel in VCML format.
-      operationId: getVCML
-      parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-      responses:
-        "200":
-          description: OK
-          content:
-            application/xml:
-              schema:
-                type: string
-        "403":
-          description: Not Allowed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "404":
-          description: Not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "500":
-          description: Data Access Exception
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-    delete:
-      tags:
-      - Math Model Resource
-      description: Remove specific Math Model.
-      operationId: deleteMathModel
-      parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-      responses:
-        "204":
-          description: No Content
-        "401":
-          description: Not Authenticated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "403":
-          description: Not Allowed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "404":
-          description: Not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "500":
-          description: Data Access Exception
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-  /api/v1/optimization:
-    get:
-      tags:
-      - Optimization Resource
-      summary: List optimization jobs for the authenticated user
-      operationId: listOptimizationJobs
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/OptimizationJobStatus'
-        "401":
-          description: Not Authenticated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "403":
-          description: Not Allowed
-        "500":
-          description: Data Access Exception
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-      security:
-      - openId:
-        - user
-    post:
-      tags:
-      - Optimization Resource
-      summary: Submit a new parameter estimation optimization job
-      operationId: submitOptimization
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/OptProblem'
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/OptimizationJobStatus'
-        "401":
-          description: Not Authenticated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "403":
-          description: Not Allowed
-        "500":
-          description: Data Access Exception
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-      security:
-      - openId:
-        - user
-  /api/v1/optimization/{optId}:
-    get:
-      tags:
-      - Optimization Resource
-      summary: "Get status, progress, or results of an optimization job"
-      operationId: getOptimizationStatus
-      parameters:
-      - name: optId
-        in: path
-        required: true
-        schema:
-          format: int64
-          type: integer
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/OptimizationJobStatus'
-        "401":
-          description: Not Authenticated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "403":
-          description: Not Allowed
-        "404":
-          description: Not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "500":
-          description: Data Access Exception
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-      security:
-      - openId:
-        - user
-  /api/v1/optimization/{optId}/stop:
-    post:
-      tags:
-      - Optimization Resource
-      summary: Stop a running optimization job
-      operationId: stopOptimization
-      parameters:
-      - name: optId
-        in: path
-        required: true
-        schema:
-          format: int64
-          type: integer
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/OptimizationJobStatus'
-        "401":
-          description: Not Authenticated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "403":
-          description: Not Allowed
-        "404":
-          description: Not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "500":
-          description: Data Access Exception
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-      security:
-      - openId:
-        - user
-  /api/v1/publications:
-    get:
-      tags:
-      - Publication Resource
-      summary: Get all publications
-      operationId: getPublications
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Publication'
-        "500":
-          description: Data Access Exception
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-    put:
-      tags:
-      - Publication Resource
-      summary: Update publication
-      operationId: updatePublication
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Publication'
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Publication'
-        "400":
-          description: Bad Request.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "401":
-          description: Not Authenticated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "403":
-          description: Not Allowed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "500":
-          description: Data Access Exception
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-      security:
-      - openId:
-        - user
-    post:
-      tags:
-      - Publication Resource
-      summary: Create publication
-      operationId: createPublication
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Publication'
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                format: int64
-                type: integer
-        "400":
-          description: Bad Request.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "401":
-          description: Not Authenticated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "403":
-          description: Not Allowed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "500":
-          description: Data Access Exception
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-      security:
-      - openId:
-        - user
-  /api/v1/publications/{id}:
-    get:
-      tags:
-      - Publication Resource
-      summary: Get publication by ID
-      operationId: getPublicationById
-      parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          format: int64
-          type: integer
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Publication'
-        "500":
-          description: Data Access Exception
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-    delete:
-      tags:
-      - Publication Resource
-      summary: Delete publication
-      operationId: deletePublication
-      parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          format: int64
-          type: integer
-      responses:
-        "204":
-          description: No Content
-        "401":
-          description: Not Authenticated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "403":
-          description: Not Allowed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "404":
-          description: Not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "500":
-          description: Data Access Exception
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-      security:
-      - openId:
-        - user
-  /api/v1/publications/{id}/publish:
-    put:
-      tags:
-      - Publication Resource
-      summary: Publish selected BioModels and MathModels associated with a publication
-      operationId: publishBioModels
-      parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          format: int64
-          type: integer
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PublishModelsRequest'
-      responses:
-        "204":
-          description: No Content
-        "401":
-          description: Not Authenticated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "403":
-          description: Not Allowed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "404":
-          description: Not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "500":
-          description: Data Access Exception
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-      security:
-      - openId:
-        - user
-  /api/v1/solver/getFVSolverInput:
-    post:
-      tags:
-      - Solver Resource
-      summary: Retrieve finite volume input from SBML spatial model.
-      operationId: getFVSolverInputFromSBML
-      requestBody:
-        content:
-          multipart/form-data:
-            schema:
-              type: object
-              properties:
-                sbmlFile:
-                  format: binary
-                  type: string
-                duration:
-                  format: double
-                  default: 5.0
-                  type: number
-                output_time_step:
-                  format: double
-                  default: 0.1
-                  type: number
-      responses:
-        "200":
-          description: OK
-          content:
-            application/octet-stream:
-              schema:
-                format: binary
-                type: string
-        "422":
-          description: Unprocessable content submitted
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-  /api/v1/solver/getFVSolverInputFromVCML:
-    post:
-      tags:
-      - Solver Resource
-      summary: Retrieve finite volume input from SBML spatial model.
-      operationId: getFVSolverInputFromVCML
-      requestBody:
-        content:
-          multipart/form-data:
-            schema:
-              type: object
-              properties:
-                vcmlFile:
-                  format: binary
-                  type: string
-                simulation_name:
-                  type: string
-      responses:
-        "200":
-          description: OK
-          content:
-            application/octet-stream:
-              schema:
-                format: binary
-                type: string
-        "422":
-          description: Unprocessable content submitted
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-  /api/v1/users/bearerToken:
-    post:
-      tags:
-      - Users Resource
-      summary: Get token for legacy API
-      operationId: getLegacyApiToken
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AccesTokenRepresentationRecord'
-        "401":
-          description: Not Authenticated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "403":
-          description: Not Allowed
-        "500":
-          description: Data Access Exception
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-      security:
-      - openId:
-        - user
-  /api/v1/users/forgotLegacyPassword:
-    post:
-      tags:
-      - Users Resource
-      summary: "The end user has forgotten the legacy password they used for VCell,\
-        \ so they will be emailed it."
-      operationId: forgotLegacyPassword
-      parameters:
-      - name: userID
-        in: query
-        schema:
-          type: string
-      responses:
-        "200":
-          description: Legacy password sent in email
-        "401":
-          description: Need to login to Auth0
-        "403":
-          description: Not Allowed
-        "500":
-          description: Internal Error
-      security:
-      - openId:
-        - user
-  /api/v1/users/guestBearerToken:
-    post:
-      tags:
-      - Users Resource
-      summary: Method to get legacy tokens for guest users
-      operationId: getGuestLegacyApiToken
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AccesTokenRepresentationRecord'
-        "500":
-          description: Data Access Exception
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-  /api/v1/users/mapUser:
-    post:
-      tags:
-      - Users Resource
-      summary: map vcell user
-      operationId: mapUser
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UserLoginInfoForMapping'
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: boolean
-        "401":
-          description: Not Authenticated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "403":
-          description: Not Allowed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "500":
-          description: Data Access Exception
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-      security:
-      - openId:
-        - user
-  /api/v1/users/mappedUser:
-    get:
-      tags:
-      - Users Resource
-      summary: Get mapped VCell identity
-      operationId: getMappedUser
-      responses:
-        "200":
-          description: "Successful, returning the identity"
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UserIdentityJSONSafe'
-        "401":
-          description: Not Authenticated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "403":
-          description: Not Allowed
-        "409":
-          description: Conflict with server state.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "500":
-          description: Data Access Exception
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-      security:
-      - openId:
-        - user
-  /api/v1/users/me:
-    get:
-      tags:
-      - Users Resource
-      summary: Get current user
-      operationId: getMe
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Identity'
-  /api/v1/users/newUser:
-    post:
-      tags:
-      - Users Resource
-      summary: create vcell user
-      operationId: mapNewUser
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UserRegistrationInfo'
-      responses:
-        "200":
-          description: "Successful, returning the identity"
-        "401":
-          description: Not Authenticated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "403":
-          description: Not Allowed
-        "409":
-          description: "VCell Identity not mapped, userid already exists"
-        "500":
-          description: Data Access Exception
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-      security:
-      - openId:
-        - user
-  /api/v1/users/processMagicLink:
-    get:
-      tags:
-      - Users Resource
-      summary: Process the magic link and map the user
-      operationId: processMagicLink
-      parameters:
-      - name: magic
-        in: query
-        schema:
-          type: string
-      responses:
-        "200":
-          description: User mapped successfully
-        "400":
-          description: Invalid or expired magic link
-        "401":
-          description: Not Authenticated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "500":
-          description: Data Access Exception
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-  /api/v1/users/requestRecoveryEmail:
-    post:
-      tags:
-      - Users Resource
-      summary: request a recovery email to link a VCell account.
-      operationId: requestRecoveryEmail
-      parameters:
-      - name: email
-        in: query
-        schema:
-          type: string
-      - name: userID
-        in: query
-        schema:
-          type: string
-      responses:
-        "200":
-          description: magic link sent in email if appropriate
-        "400":
-          description: unable to process request
-        "401":
-          description: Not Authenticated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "403":
-          description: Not Allowed
-        "404":
-          description: Not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "500":
-          description: Data Access Exception
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-      security:
-      - openId:
-        - user
-  /api/v1/users/unmapUser/{userName}:
-    put:
-      tags:
-      - Users Resource
-      summary: remove vcell identity mapping
-      operationId: unmapUser
-      parameters:
-      - name: userName
-        in: path
-        required: true
-        schema:
-          type: string
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: boolean
-        "401":
-          description: Not Authenticated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "403":
-          description: Not Allowed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "500":
-          description: Data Access Exception
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-      security:
-      - openId:
-        - user
-  /api/v1/vcInfoContainer:
-    get:
-      tags:
-      - VC Info Container Resource
-      summary: "Return a single bulk collection of metadata summaries (BioModels,\
-        \ MathModels, Geometries, Images) visible to the requester. Anonymous requests\
-        \ return public records only; an authenticated request additionally includes\
-        \ the requester's own and shared records."
-      operationId: getVCInfoContainer
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCInfoContainerSummary'
-        "500":
-          description: Data Access Exception
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
 components:
   schemas:
     AccesTokenRepresentationRecord:
@@ -2333,21 +22,21 @@ components:
       - type
       type: object
       allOf:
-      - $ref: '#/components/schemas/Curve'
+      - $ref: "#/components/schemas/Curve"
       properties:
         type:
           default: AnalyticCurve
           type: string
         expX:
-          $ref: '#/components/schemas/Expression'
+          $ref: "#/components/schemas/Expression"
         expY:
-          $ref: '#/components/schemas/Expression'
+          $ref: "#/components/schemas/Expression"
         expZ:
-          $ref: '#/components/schemas/Expression'
+          $ref: "#/components/schemas/Expression"
         offset:
-          $ref: '#/components/schemas/Coordinate'
+          $ref: "#/components/schemas/Coordinate"
         analyticOffset:
-          $ref: '#/components/schemas/Coordinate'
+          $ref: "#/components/schemas/Coordinate"
         defaultNumSamples:
           format: int32
           type: integer
@@ -2366,11 +55,11 @@ components:
         error:
           type: string
         domain:
-          $ref: '#/components/schemas/Domain'
+          $ref: "#/components/schemas/Domain"
         functionType:
-          $ref: '#/components/schemas/VariableType'
+          $ref: "#/components/schemas/VariableType"
         category:
-          $ref: '#/components/schemas/FunctionCategory'
+          $ref: "#/components/schemas/FunctionCategory"
     Application:
       type: object
     ApplicationInfo:
@@ -2379,7 +68,7 @@ components:
         name:
           type: string
         type:
-          $ref: '#/components/schemas/MathType'
+          $ref: "#/components/schemas/MathType"
         dimensions:
           format: int32
           type: integer
@@ -2424,11 +113,11 @@ components:
         simulationKeyList:
           type: array
           items:
-            $ref: '#/components/schemas/KeyValue'
+            $ref: "#/components/schemas/KeyValue"
         applications:
           type: array
           items:
-            $ref: '#/components/schemas/Application'
+            $ref: "#/components/schemas/Application"
     BioModelChildSummary:
       type: object
       properties:
@@ -2452,7 +141,7 @@ components:
         appTypes:
           type: array
           items:
-            $ref: '#/components/schemas/MathType'
+            $ref: "#/components/schemas/MathType"
         simNames:
           type: array
           items:
@@ -2489,18 +178,18 @@ components:
         applicationInfo:
           type: array
           items:
-            $ref: '#/components/schemas/ApplicationInfo'
+            $ref: "#/components/schemas/ApplicationInfo"
     BioModelSummary:
       type: object
       properties:
         version:
-          $ref: '#/components/schemas/VersionRep'
+          $ref: "#/components/schemas/VersionRep"
         summary:
-          $ref: '#/components/schemas/BioModelChildSummary'
+          $ref: "#/components/schemas/BioModelChildSummary"
         publicationInformation:
           type: array
           items:
-            $ref: '#/components/schemas/PublicationInfoRep'
+            $ref: "#/components/schemas/PublicationInfoRep"
         vCellSoftwareVersion:
           type: string
     BiomodelRef:
@@ -2527,7 +216,7 @@ components:
       - type
       type: object
       allOf:
-      - $ref: '#/components/schemas/Curve'
+      - $ref: "#/components/schemas/Curve"
       properties:
         type:
           default: CompositeCurve
@@ -2551,7 +240,7 @@ components:
       - type
       type: object
       allOf:
-      - $ref: '#/components/schemas/Curve'
+      - $ref: "#/components/schemas/Curve"
       properties:
         type:
           default: ControlPointCurve
@@ -2559,14 +248,14 @@ components:
         controlPoints:
           type: array
           items:
-            $ref: '#/components/schemas/Coordinate'
+            $ref: "#/components/schemas/Coordinate"
         controlPointCount:
           format: int32
           type: integer
         controlPointsVector:
           type: array
           items:
-            $ref: '#/components/schemas/Coordinate'
+            $ref: "#/components/schemas/Coordinate"
         maxControlPoints:
           format: int32
           type: integer
@@ -2580,8 +269,8 @@ components:
       discriminator:
         propertyName: type
         mapping:
-          Spline: '#/components/schemas/Spline'
-          SampledCurve: '#/components/schemas/SampledCurve'
+          Spline: "#/components/schemas/Spline"
+          SampledCurve: "#/components/schemas/SampledCurve"
     Coordinate:
       type: object
       properties:
@@ -2598,11 +287,11 @@ components:
       type: object
       properties:
         optimizationMethodType:
-          $ref: '#/components/schemas/CopasiOptimizationMethodOptimizationMethodType'
+          $ref: "#/components/schemas/CopasiOptimizationMethodOptimizationMethodType"
         optimizationParameter:
           type: array
           items:
-            $ref: '#/components/schemas/CopasiOptimizationParameter'
+            $ref: "#/components/schemas/CopasiOptimizationParameter"
     CopasiOptimizationMethodOptimizationMethodType:
       enum:
       - SRES
@@ -2623,9 +312,9 @@ components:
       type: object
       properties:
         dataType:
-          $ref: '#/components/schemas/CopasiOptimizationParameterDataType'
+          $ref: "#/components/schemas/CopasiOptimizationParameterDataType"
         paramType:
-          $ref: '#/components/schemas/CopasiOptimizationParameterParamType'
+          $ref: "#/components/schemas/CopasiOptimizationParameterParamType"
         value:
           format: double
           type: number
@@ -2663,12 +352,12 @@ components:
         type:
           type: string
         beginningCoordinate:
-          $ref: '#/components/schemas/Coordinate'
+          $ref: "#/components/schemas/Coordinate"
         defaultNumSamples:
           format: int32
           type: integer
         endingCoordinate:
-          $ref: '#/components/schemas/Coordinate'
+          $ref: "#/components/schemas/Coordinate"
         numSamplePoints:
           format: int32
           type: integer
@@ -2685,14 +374,14 @@ components:
       discriminator:
         propertyName: type
         mapping:
-          AnalyticCurve: '#/components/schemas/AnalyticCurve'
-          CompositeCurve: '#/components/schemas/CompositeCurve'
-          ControlPointCurve: '#/components/schemas/ControlPointCurve'
+          AnalyticCurve: "#/components/schemas/AnalyticCurve"
+          CompositeCurve: "#/components/schemas/CompositeCurve"
+          ControlPointCurve: "#/components/schemas/ControlPointCurve"
     CurveSelectionInfo:
       type: object
       properties:
         fieldCurve:
-          $ref: '#/components/schemas/Curve'
+          $ref: "#/components/schemas/Curve"
         fieldType:
           format: int32
           type: integer
@@ -2726,9 +415,9 @@ components:
         displayName:
           type: string
         variableType:
-          $ref: '#/components/schemas/VariableType'
+          $ref: "#/components/schemas/VariableType"
         domain:
-          $ref: '#/components/schemas/Domain'
+          $ref: "#/components/schemas/Domain"
         bFunction:
           type: boolean
         function:
@@ -2801,7 +490,7 @@ components:
       type: object
       properties:
         eventType:
-          $ref: '#/components/schemas/ExportProgressType'
+          $ref: "#/components/schemas/ExportProgressType"
         progress:
           format: double
           type: number
@@ -2810,16 +499,16 @@ components:
         location:
           type: string
         user:
-          $ref: '#/components/schemas/User'
+          $ref: "#/components/schemas/User"
         jobID:
           format: int64
           type: integer
         dataKey:
-          $ref: '#/components/schemas/KeyValue'
+          $ref: "#/components/schemas/KeyValue"
         dataIdString:
           type: string
         humanReadableData:
-          $ref: '#/components/schemas/HumanReadableExportData'
+          $ref: "#/components/schemas/HumanReadableExportData"
     ExportProgressType:
       enum:
       - EXPORT_START
@@ -2858,20 +547,20 @@ components:
       type: object
       properties:
         key:
-          $ref: '#/components/schemas/KeyValue'
+          $ref: "#/components/schemas/KeyValue"
         owner:
-          $ref: '#/components/schemas/User'
+          $ref: "#/components/schemas/User"
         name:
           type: string
         jobIndex:
           format: int32
           type: integer
         simulationKey:
-          $ref: '#/components/schemas/KeyValue'
+          $ref: "#/components/schemas/KeyValue"
         parameterScanType:
           type: boolean
         dataKey:
-          $ref: '#/components/schemas/KeyValue'
+          $ref: "#/components/schemas/KeyValue"
     FieldData:
       type: object
       properties:
@@ -2882,6 +571,7 @@ components:
             items:
               type: array
               items:
+                format: int16
                 type: integer
         doubleSpecData:
           type: array
@@ -2902,11 +592,11 @@ components:
             format: double
             type: number
         origin:
-          $ref: '#/components/schemas/Origin'
+          $ref: "#/components/schemas/Origin"
         extent:
-          $ref: '#/components/schemas/Extent'
+          $ref: "#/components/schemas/Extent"
         isize:
-          $ref: '#/components/schemas/ISize'
+          $ref: "#/components/schemas/ISize"
         annotation:
           type: string
         name:
@@ -2915,13 +605,13 @@ components:
       type: object
       properties:
         fieldDataID:
-          $ref: '#/components/schemas/ExternalDataIdentifier'
+          $ref: "#/components/schemas/ExternalDataIdentifier"
         annotation:
           type: string
         simulationsReferencingThisID:
           type: array
           items:
-            $ref: '#/components/schemas/KeyValue'
+            $ref: "#/components/schemas/KeyValue"
     FieldDataSavedResults:
       type: object
       properties:
@@ -2933,15 +623,15 @@ components:
       type: object
       properties:
         extent:
-          $ref: '#/components/schemas/Extent'
+          $ref: "#/components/schemas/Extent"
         origin:
-          $ref: '#/components/schemas/Origin'
+          $ref: "#/components/schemas/Origin"
         isize:
-          $ref: '#/components/schemas/ISize'
+          $ref: "#/components/schemas/ISize"
         dataIdentifier:
           type: array
           items:
-            $ref: '#/components/schemas/DataIdentifier'
+            $ref: "#/components/schemas/DataIdentifier"
         times:
           type: array
           items:
@@ -2966,7 +656,7 @@ components:
         selections:
           type: array
           items:
-            $ref: '#/components/schemas/SpatialSelection'
+            $ref: "#/components/schemas/SpatialSelection"
         axis:
           format: int32
           type: integer
@@ -2974,7 +664,7 @@ components:
           format: int32
           type: integer
         geometryMode:
-          $ref: '#/components/schemas/GeometryMode'
+          $ref: "#/components/schemas/GeometryMode"
     GeometrySummary:
       type: object
       properties:
@@ -2982,13 +672,13 @@ components:
           format: int32
           type: integer
         origin:
-          $ref: '#/components/schemas/Origin'
+          $ref: "#/components/schemas/Origin"
         extent:
-          $ref: '#/components/schemas/Extent'
+          $ref: "#/components/schemas/Extent"
         imageRef:
           type: string
         version:
-          $ref: '#/components/schemas/VersionRep'
+          $ref: "#/components/schemas/VersionRep"
         softwareVersion:
           type: string
     GroupAccessRep:
@@ -3001,12 +691,12 @@ components:
         members:
           type: array
           items:
-            $ref: '#/components/schemas/GroupMemberRep'
+            $ref: "#/components/schemas/GroupMemberRep"
     GroupMemberRep:
       type: object
       properties:
         user:
-          $ref: '#/components/schemas/UserRep'
+          $ref: "#/components/schemas/UserRep"
         hidden:
           type: boolean
     HelloWorldMessage:
@@ -3023,7 +713,7 @@ components:
         server:
           type: string
         batchSystemType:
-          $ref: '#/components/schemas/BatchSystemType'
+          $ref: "#/components/schemas/BatchSystemType"
     HumanReadableExportData:
       type: object
       properties:
@@ -3099,7 +789,7 @@ components:
           items:
             type: string
         modelType:
-          $ref: '#/components/schemas/MathType'
+          $ref: "#/components/schemas/MathType"
         geometryDimension:
           format: int32
           type: integer
@@ -3117,17 +807,17 @@ components:
       type: object
       properties:
         version:
-          $ref: '#/components/schemas/VersionRep'
+          $ref: "#/components/schemas/VersionRep"
         keyValue:
           type: string
         modelInfo:
-          $ref: '#/components/schemas/MathModelChildSummary'
+          $ref: "#/components/schemas/MathModelChildSummary"
         softwareVersion:
           type: string
         publicationInfos:
           type: array
           items:
-            $ref: '#/components/schemas/PublicationInfoRep'
+            $ref: "#/components/schemas/PublicationInfoRep"
         annotatedFunctions:
           type: string
     MathType:
@@ -3163,13 +853,13 @@ components:
       type: object
       properties:
         standardExportInformation:
-          $ref: '#/components/schemas/StandardExportInfo'
+          $ref: "#/components/schemas/StandardExportInfo"
         subVolume:
           type: object
           additionalProperties:
             type: string
         exportableDataType:
-          $ref: '#/components/schemas/ExportableDataType'
+          $ref: "#/components/schemas/ExportableDataType"
         datasetName:
           type: string
     OptJobStatus:
@@ -3185,7 +875,7 @@ components:
       type: object
       properties:
         copasiOptimizationMethod:
-          $ref: '#/components/schemas/CopasiOptimizationMethod'
+          $ref: "#/components/schemas/CopasiOptimizationMethod"
         dataSet:
           type: array
           items:
@@ -3201,11 +891,11 @@ components:
         parameterDescriptionList:
           type: array
           items:
-            $ref: '#/components/schemas/ParameterDescription'
+            $ref: "#/components/schemas/ParameterDescription"
         referenceVariable:
           type: array
           items:
-            $ref: '#/components/schemas/ReferenceVariable'
+            $ref: "#/components/schemas/ReferenceVariable"
     OptProgressItem:
       type: object
       properties:
@@ -3226,7 +916,7 @@ components:
         progressItems:
           type: array
           items:
-            $ref: '#/components/schemas/OptProgressItem'
+            $ref: "#/components/schemas/OptProgressItem"
     OptResultSet:
       type: object
       properties:
@@ -3242,22 +932,22 @@ components:
             format: double
             type: number
         optProgressReport:
-          $ref: '#/components/schemas/OptProgressReport'
+          $ref: "#/components/schemas/OptProgressReport"
     OptimizationJobStatus:
       type: object
       properties:
         id:
-          $ref: '#/components/schemas/KeyValue'
+          $ref: "#/components/schemas/KeyValue"
         status:
-          $ref: '#/components/schemas/OptJobStatus'
+          $ref: "#/components/schemas/OptJobStatus"
         statusMessage:
           type: string
         htcJobId:
           type: string
         progressReport:
-          $ref: '#/components/schemas/OptProgressReport'
+          $ref: "#/components/schemas/OptProgressReport"
         results:
-          $ref: '#/components/schemas/Vcellopt'
+          $ref: "#/components/schemas/Vcellopt"
     Origin:
       type: object
       properties:
@@ -3336,13 +1026,13 @@ components:
         biomodelRefs:
           type: array
           items:
-            $ref: '#/components/schemas/BiomodelRef'
+            $ref: "#/components/schemas/BiomodelRef"
         mathmodelRefs:
           type: array
           items:
-            $ref: '#/components/schemas/MathmodelRef'
+            $ref: "#/components/schemas/MathmodelRef"
         date:
-          $ref: '#/components/schemas/Date'
+          $ref: "#/components/schemas/Date"
     PublicationInfoRep:
       type: object
       properties:
@@ -3367,7 +1057,7 @@ components:
         vcDocumentType:
           type: string
         user:
-          $ref: '#/components/schemas/UserRep'
+          $ref: "#/components/schemas/UserRep"
         pubDate:
           format: int64
           type: integer
@@ -3388,7 +1078,7 @@ components:
       type: object
       properties:
         referenceVariableType:
-          $ref: '#/components/schemas/ReferenceVariableReferenceVariableType'
+          $ref: "#/components/schemas/ReferenceVariableReferenceVariableType"
         varName:
           type: string
     ReferenceVariableReferenceVariableType:
@@ -3408,7 +1098,7 @@ components:
       - type
       type: object
       allOf:
-      - $ref: '#/components/schemas/ControlPointCurve'
+      - $ref: "#/components/schemas/ControlPointCurve"
       properties:
         type:
           default: SampledCurve
@@ -3442,30 +1132,30 @@ components:
       type: object
       properties:
         fieldStartDate:
-          $ref: '#/components/schemas/Instant'
+          $ref: "#/components/schemas/Instant"
         fieldLatestUpdateDate:
-          $ref: '#/components/schemas/Instant'
+          $ref: "#/components/schemas/Instant"
         fieldEndDate:
-          $ref: '#/components/schemas/Instant'
+          $ref: "#/components/schemas/Instant"
         fieldComputeHost:
           type: string
         fieldHasData:
           type: boolean
         fieldHtcJobID:
-          $ref: '#/components/schemas/HtcJobID'
+          $ref: "#/components/schemas/HtcJobID"
     SimulationJobStatusRecord:
       type: object
       properties:
         fieldTimeDataStamp:
-          $ref: '#/components/schemas/Instant'
+          $ref: "#/components/schemas/Instant"
         fieldVCSimID:
-          $ref: '#/components/schemas/VCSimulationIdentifier'
+          $ref: "#/components/schemas/VCSimulationIdentifier"
         fieldSubmitDate:
-          $ref: '#/components/schemas/Instant'
+          $ref: "#/components/schemas/Instant"
         fieldSchedulerStatus:
-          $ref: '#/components/schemas/SchedulerStatus'
+          $ref: "#/components/schemas/SchedulerStatus"
         fieldSimulationMessage:
-          $ref: '#/components/schemas/SimulationMessage'
+          $ref: "#/components/schemas/SimulationMessage"
         fieldTaskID:
           format: int32
           type: integer
@@ -3475,18 +1165,18 @@ components:
           format: int32
           type: integer
         fieldSimulationExecutionStatus:
-          $ref: '#/components/schemas/SimulationExecutionStatusRecord'
+          $ref: "#/components/schemas/SimulationExecutionStatusRecord"
         fieldSimulationQueueEntryStatus:
-          $ref: '#/components/schemas/SimulationQueueEntryStatusRecord'
+          $ref: "#/components/schemas/SimulationQueueEntryStatusRecord"
     SimulationMessage:
       type: object
       properties:
         detailedState:
-          $ref: '#/components/schemas/DetailedState'
+          $ref: "#/components/schemas/DetailedState"
         message:
           type: string
         htcJobId:
-          $ref: '#/components/schemas/HtcJobID'
+          $ref: "#/components/schemas/HtcJobID"
         displayMessage:
           type: string
     SimulationQueueEntryStatusRecord:
@@ -3496,9 +1186,9 @@ components:
           format: int32
           type: integer
         fieldQueueDate:
-          $ref: '#/components/schemas/Instant'
+          $ref: "#/components/schemas/Instant"
         fieldQueueID:
-          $ref: '#/components/schemas/SimulationQueueID'
+          $ref: "#/components/schemas/SimulationQueueID"
     SimulationQueueID:
       enum:
       - QUEUE_ID_WAITING
@@ -3509,7 +1199,7 @@ components:
       type: object
       properties:
         status:
-          $ref: '#/components/schemas/Status'
+          $ref: "#/components/schemas/Status"
         details:
           type: string
         hasData:
@@ -3520,23 +1210,23 @@ components:
         modelID:
           type: string
         modelType:
-          $ref: '#/components/schemas/ModelType'
+          $ref: "#/components/schemas/ModelType"
     SpatialSelection:
       required:
       - type
       type: object
       properties:
         curveSelectionInfo:
-          $ref: '#/components/schemas/CurveSelectionInfo'
+          $ref: "#/components/schemas/CurveSelectionInfo"
         varType:
-          $ref: '#/components/schemas/VariableType'
+          $ref: "#/components/schemas/VariableType"
         type:
           type: string
         smallestMeshCellDimensionLength:
           format: double
           type: number
         variableType:
-          $ref: '#/components/schemas/VariableType'
+          $ref: "#/components/schemas/VariableType"
         closed:
           type: boolean
         point:
@@ -3544,15 +1234,15 @@ components:
       discriminator:
         propertyName: type
         mapping:
-          Membrane: '#/components/schemas/SpatialSelectionMembrane'
-          Contour: '#/components/schemas/SpatialSelectionContour'
-          Volume: '#/components/schemas/SpatialSelectionVolume'
+          Membrane: "#/components/schemas/SpatialSelectionMembrane"
+          Contour: "#/components/schemas/SpatialSelectionContour"
+          Volume: "#/components/schemas/SpatialSelectionVolume"
     SpatialSelectionContour:
       required:
       - type
       type: object
       allOf:
-      - $ref: '#/components/schemas/SpatialSelection'
+      - $ref: "#/components/schemas/SpatialSelection"
       properties:
         type:
           default: Contour
@@ -3577,7 +1267,7 @@ components:
       - type
       type: object
       allOf:
-      - $ref: '#/components/schemas/SpatialSelection'
+      - $ref: "#/components/schemas/SpatialSelection"
       properties:
         type:
           default: Membrane
@@ -3588,13 +1278,13 @@ components:
             format: int32
             type: integer
         selectionSource:
-          $ref: '#/components/schemas/SampledCurve'
+          $ref: "#/components/schemas/SampledCurve"
     SpatialSelectionVolume:
       required:
       - type
       type: object
       allOf:
-      - $ref: '#/components/schemas/SpatialSelection'
+      - $ref: "#/components/schemas/SpatialSelection"
       properties:
         type:
           default: Volume
@@ -3606,7 +1296,7 @@ components:
       - type
       type: object
       allOf:
-      - $ref: '#/components/schemas/ControlPointCurve'
+      - $ref: "#/components/schemas/ControlPointCurve"
       properties:
         type:
           default: Spline
@@ -3629,7 +1319,7 @@ components:
         outputContext:
           type: array
           items:
-            $ref: '#/components/schemas/AnnotatedFunctionDTO'
+            $ref: "#/components/schemas/AnnotatedFunctionDTO"
         contextName:
           type: string
         simulationName:
@@ -3640,11 +1330,11 @@ components:
           format: int32
           type: integer
         geometrySpecs:
-          $ref: '#/components/schemas/GeometrySpecDTO'
+          $ref: "#/components/schemas/GeometrySpecDTO"
         timeSpecs:
-          $ref: '#/components/schemas/TimeSpecs'
+          $ref: "#/components/schemas/TimeSpecs"
         variableSpecs:
-          $ref: '#/components/schemas/VariableSpecs'
+          $ref: "#/components/schemas/VariableSpecs"
     Status:
       enum:
       - UNKNOWN
@@ -3664,7 +1354,7 @@ components:
       type: object
       properties:
         jobStatus:
-          $ref: '#/components/schemas/SimulationJobStatusRecord'
+          $ref: "#/components/schemas/SimulationJobStatusRecord"
         userName:
           type: string
         progress:
@@ -3693,18 +1383,18 @@ components:
             format: double
             type: number
         mode:
-          $ref: '#/components/schemas/TimeMode'
+          $ref: "#/components/schemas/TimeMode"
     User:
       type: object
       properties:
         userName:
           type: string
         key:
-          $ref: '#/components/schemas/KeyValue'
+          $ref: "#/components/schemas/KeyValue"
         mySpecials:
           type: array
           items:
-            $ref: '#/components/schemas/SPECIAL_CLAIM'
+            $ref: "#/components/schemas/SPECIAL_CLAIM"
     UserIdentityJSONSafe:
       type: object
       properties:
@@ -3749,13 +1439,13 @@ components:
       type: object
       properties:
         size:
-          $ref: '#/components/schemas/ISize'
+          $ref: "#/components/schemas/ISize"
         extent:
-          $ref: '#/components/schemas/Extent'
+          $ref: "#/components/schemas/Extent"
         version:
-          $ref: '#/components/schemas/VersionRep'
+          $ref: "#/components/schemas/VersionRep"
         preview:
-          $ref: '#/components/schemas/PreviewRep'
+          $ref: "#/components/schemas/PreviewRep"
         softwareVersion:
           type: string
     VCInfoContainerSummary:
@@ -3764,26 +1454,26 @@ components:
         bioModelSummaries:
           type: array
           items:
-            $ref: '#/components/schemas/BioModelSummary'
+            $ref: "#/components/schemas/BioModelSummary"
         mathModelSummaries:
           type: array
           items:
-            $ref: '#/components/schemas/MathModelSummary'
+            $ref: "#/components/schemas/MathModelSummary"
         geometrySummaries:
           type: array
           items:
-            $ref: '#/components/schemas/GeometrySummary'
+            $ref: "#/components/schemas/GeometrySummary"
         vcImageSummaries:
           type: array
           items:
-            $ref: '#/components/schemas/VCImageSummary'
+            $ref: "#/components/schemas/VCImageSummary"
     VCSimulationIdentifier:
       type: object
       properties:
         simulationKey:
-          $ref: '#/components/schemas/KeyValue'
+          $ref: "#/components/schemas/KeyValue"
         owner:
-          $ref: '#/components/schemas/User'
+          $ref: "#/components/schemas/User"
         id:
           type: string
     VCellHTTPError:
@@ -3817,7 +1507,7 @@ components:
           items:
             type: string
         mode:
-          $ref: '#/components/schemas/VariableMode'
+          $ref: "#/components/schemas/VariableMode"
     VariableType:
       type: object
       properties:
@@ -3825,7 +1515,7 @@ components:
           format: int32
           type: integer
         variableDomain:
-          $ref: '#/components/schemas/VariableDomain'
+          $ref: "#/components/schemas/VariableDomain"
         name:
           type: string
         units:
@@ -3844,11 +1534,11 @@ components:
       type: object
       properties:
         optProblem:
-          $ref: '#/components/schemas/OptProblem'
+          $ref: "#/components/schemas/OptProblem"
         optResultSet:
-          $ref: '#/components/schemas/OptResultSet'
+          $ref: "#/components/schemas/OptResultSet"
         status:
-          $ref: '#/components/schemas/VcelloptStatus'
+          $ref: "#/components/schemas/VcelloptStatus"
         statusMessage:
           type: string
     VcelloptStatus:
@@ -3866,7 +1556,7 @@ components:
         name:
           type: string
         owner:
-          $ref: '#/components/schemas/UserRep'
+          $ref: "#/components/schemas/UserRep"
         branchPointRefKey:
           type: string
         branchId:
@@ -3880,9 +1570,2333 @@ components:
         annotation:
           type: string
         groupAccess:
-          $ref: '#/components/schemas/GroupAccessRep'
+          $ref: "#/components/schemas/GroupAccessRep"
   securitySchemes:
     openId:
       type: openIdConnect
-      description: Authentication
       openIdConnectUrl: https://dev-dzhx7i2db3x3kkvq.us.auth0.com/.well-known/openid-configuration
+      description: Authentication
+paths:
+  /api/v1/Simulation/{simID}/simulationStatus:
+    get:
+      summary: Get the status of simulation running
+      operationId: getSimulationStatus
+      parameters:
+      - name: simID
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: bioModelID
+        in: query
+        schema:
+          type: string
+      - name: mathModelID
+        in: query
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SimulationStatusPersistentRecord"
+        "401":
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "403":
+          description: Not Allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+      tags:
+      - Simulation Resource
+      security:
+      - openId: []
+  /api/v1/Simulation/{simID}/startSimulation:
+    post:
+      summary: Start a simulation.
+      operationId: startSimulation
+      parameters:
+      - name: simID
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/StatusMessage"
+        "401":
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "403":
+          description: Not Allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+      tags:
+      - Simulation Resource
+      security:
+      - openId: []
+  /api/v1/Simulation/{simID}/stopSimulation:
+    post:
+      summary: Stop a simulation.
+      operationId: stopSimulation
+      parameters:
+      - name: simID
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/StatusMessage"
+        "401":
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "403":
+          description: Not Allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+      tags:
+      - Simulation Resource
+      security:
+      - openId: []
+  /api/v1/admin/usage:
+    get:
+      summary: Get usage summary
+      operationId: getUsage
+      responses:
+        "200":
+          description: The PDF report
+          content:
+            application/pdf:
+              schema:
+                format: binary
+                type: string
+        "401":
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "403":
+          description: Not Allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+      tags:
+      - Admin Resource
+      security:
+      - openId: []
+  /api/v1/bioModel:
+    post:
+      summary: Save's the given BioModel. Optional parameters of name and simulations
+        to update due to math changes. Returns saved BioModel as VCML.
+      operationId: saveBioModel
+      parameters:
+      - allowEmptyValue: true
+        description: Name to save new BioModel under. Leave blank if re-saving existing
+          BioModel.
+        required: false
+        name: newName
+        in: query
+        schema:
+          type: string
+      - allowEmptyValue: true
+        description: The name of simulations that will be prepared for future execution.
+        required: false
+        name: simsRequiringUpdates
+        in: query
+        schema:
+          type: array
+          items:
+            type: string
+      requestBody:
+        description: BioModelVCML which will be saved.
+        required: true
+        content:
+          application/xml:
+            schema:
+              type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/xml:
+              schema:
+                type: string
+        "401":
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "403":
+          description: Not Allowed
+        "422":
+          description: Unprocessable content submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+      tags:
+      - Bio Model Resource
+      security:
+      - openId: []
+  /api/v1/bioModel/summaries:
+    get:
+      summary: Return BioModel summaries.
+      operationId: getBioModelSummaries
+      parameters:
+      - description: Includes BioModel summaries that are public or shared with requester.
+          Default is true.
+        name: includePublicAndShared
+        in: query
+        schema:
+          type: boolean
+        required: false
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BioModelSummary"
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+      tags:
+      - Bio Model Resource
+  /api/v1/bioModel/{bioModelID}:
+    get:
+      summary: Get BioModel.
+      operationId: getBioModel
+      parameters:
+      - name: bioModelID
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BioModel"
+        "403":
+          description: Not Allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+      tags:
+      - Bio Model Resource
+    delete:
+      summary: Delete the BioModel from VCell's database.
+      operationId: deleteBioModel
+      parameters:
+      - name: bioModelID
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "403":
+          description: Not Allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+      tags:
+      - Bio Model Resource
+  /api/v1/bioModel/{bioModelID}/summary:
+    get:
+      summary: "All of the text based information about a BioModel (summary, version,\
+        \ publication status, etc...), but not the actual BioModel itself."
+      operationId: getBioModelSummary
+      parameters:
+      - name: bioModelID
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BioModelSummary"
+        "403":
+          description: Not Allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+      tags:
+      - Bio Model Resource
+  /api/v1/bioModel/{bioModelID}/vcml_download:
+    get:
+      summary: Get the BioModel in VCML format.
+      operationId: getBioModelVCML
+      parameters:
+      - name: bioModelID
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            text/xml:
+              schema:
+                type: string
+        "403":
+          description: Not Allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+      tags:
+      - Bio Model Resource
+  /api/v1/export/N5:
+    post:
+      description: "Create an N5 (ImageJ compatible) export. The request must contain\
+        \ the standard export information, exportable data type, dataset name, and\
+        \ sub-volume specifications."
+      operationId: exportN5
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/N5ExportRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                format: int64
+                type: integer
+        "400":
+          description: Bad Request.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "401":
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "403":
+          description: Not Allowed
+        "422":
+          description: Unprocessable content submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+      summary: Create N 5 Export
+      tags:
+      - Export Resource
+      security:
+      - openId: []
+  /api/v1/export/status:
+    get:
+      description: Get the status of your export jobs past the timestamp (Unix epoch
+        in seconds).
+      operationId: exportStatus
+      parameters:
+      - name: timestamp
+        in: query
+        schema:
+          format: int64
+          type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ExportEvent"
+        "401":
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "403":
+          description: Not Allowed
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+      summary: Poll Export Status
+      tags:
+      - Export Resource
+      security:
+      - openId: []
+  /api/v1/fieldData/IDs:
+    get:
+      summary: "Get all of the ids used to identify, and retrieve field data."
+      operationId: getAllIDs
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FieldDataReference"
+        "401":
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "403":
+          description: Not Allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+      tags:
+      - Field Data Resource
+      security:
+      - openId: []
+  /api/v1/fieldData/advancedCreate:
+    post:
+      summary: "Create Field Data with granular detail in one request.The following\
+        \ files are accepted: .tif and .zip."
+      operationId: advancedCreate
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  format: binary
+                  type: string
+                fileName:
+                  type: string
+                extent:
+                  $ref: "#/components/schemas/Extent"
+                iSize:
+                  $ref: "#/components/schemas/ISize"
+                channelNames:
+                  type: array
+                  items:
+                    type: string
+                times:
+                  type: array
+                  items:
+                    format: double
+                    type: number
+                annotation:
+                  type: string
+                origin:
+                  $ref: "#/components/schemas/Origin"
+            encoding:
+              extent:
+                contentType: application/json
+              annotation:
+                contentType: text/plain
+              fileName:
+                contentType: text/plain
+              times:
+                contentType: text/plain
+              file:
+                contentType: application/octet-stream
+              iSize:
+                contentType: application/json
+              channelNames:
+                contentType: text/plain
+              origin:
+                contentType: application/json
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FieldDataSavedResults"
+        "401":
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "403":
+          description: Not Allowed
+        "422":
+          description: Unprocessable content submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+      tags:
+      - Field Data Resource
+      security:
+      - openId: []
+  /api/v1/fieldData/analyzeFile:
+    post:
+      summary: "Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and\
+        \ return field data. Color mapped images not supported (the colors in those\
+        \ images will be interpreted as separate channels). Filenames must be lowercase\
+        \ alphanumeric, and can contain underscores."
+      operationId: analyzeFile
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  format: binary
+                  type: string
+                fileName:
+                  type: string
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FieldData"
+        "401":
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "403":
+          description: Not Allowed
+        "422":
+          description: Unprocessable content submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+      tags:
+      - Field Data Resource
+      security:
+      - openId: []
+  /api/v1/fieldData/copyModelsFieldData:
+    post:
+      summary: "Copy all existing field data from a BioModel/MathModel that you have\
+        \ access to, but don't own."
+      operationId: copyModelsFieldData
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceModel"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  $ref: "#/components/schemas/ExternalDataIdentifier"
+        "400":
+          description: Bad Request
+        "401":
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "403":
+          description: Not Allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "422":
+          description: Unprocessable content submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+      tags:
+      - Field Data Resource
+      security:
+      - openId: []
+  /api/v1/fieldData/createFromFile:
+    post:
+      summary: "Submit a .zip or .tif file that converts into field data, with all\
+        \ defaults derived from the file submitted."
+      operationId: createFromFile
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  format: binary
+                  type: string
+                fieldDataName:
+                  type: string
+            encoding:
+              file:
+                contentType: application/octet-stream
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FieldDataSavedResults"
+        "401":
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "403":
+          description: Not Allowed
+        "422":
+          description: Unprocessable content submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+      tags:
+      - Field Data Resource
+      security:
+      - openId: []
+  /api/v1/fieldData/createFromSimulation:
+    post:
+      summary: Create new field data from existing simulation results.
+      operationId: createFromSimulation
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                simKeyReference:
+                  type: string
+                jobIndex:
+                  format: int32
+                  type: integer
+                newFieldDataName:
+                  type: string
+        required: true
+      responses:
+        "201":
+          description: Created
+        "400":
+          description: Bad Request
+        "401":
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "403":
+          description: Not Allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+      tags:
+      - Field Data Resource
+      security:
+      - openId: []
+  /api/v1/fieldData/delete/{fieldDataID}:
+    delete:
+      summary: Delete the selected field data.
+      operationId: delete
+      parameters:
+      - name: fieldDataID
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "403":
+          description: Not Allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+      tags:
+      - Field Data Resource
+      security:
+      - openId: []
+  /api/v1/fieldData/save:
+    post:
+      summary: "Take the generated field data, and save it to the server. User may\
+        \ adjust the analyzed file before uploading to edit defaults."
+      operationId: save
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FieldData"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FieldDataSavedResults"
+        "400":
+          description: Bad Request
+        "401":
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "403":
+          description: Not Allowed
+        "422":
+          description: Unprocessable content submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+      tags:
+      - Field Data Resource
+      security:
+      - openId: []
+  /api/v1/fieldData/shape/{fieldDataID}:
+    get:
+      summary: "Get the shape of the field data. That is it's size, origin, extent,\
+        \ times, and data identifiers."
+      operationId: getShapeFromID
+      parameters:
+      - name: fieldDataID
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FieldDataShape"
+        "401":
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "403":
+          description: Not Allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+      tags:
+      - Field Data Resource
+      security:
+      - openId: []
+  /api/v1/geometry:
+    post:
+      description: Save's VCML with <Geometry> as the root element.
+      operationId: saveGeometry
+      parameters:
+      - description: Name to save new Geometry under. Leave blank if re-saving existing
+          Geometry.
+        name: newName
+        required: false
+        in: query
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/xml:
+            schema:
+              type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/xml:
+              schema:
+                type: string
+        "401":
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "403":
+          description: Not Allowed
+        "422":
+          description: Unprocessable content submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+      summary: Save
+      tags:
+      - Geometry Resource
+      security:
+      - openId: []
+  /api/v1/geometry/summaries:
+    get:
+      description: Return Geometry summaries.
+      operationId: getGeometrySummaries
+      parameters:
+      - description: Include Geometry summaries that are public and shared with the
+          requester. Default is true.
+        required: false
+        name: includePublicAndShared
+        in: query
+        schema:
+          type: boolean
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GeometrySummary"
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+      summary: Get Geometry Summaries
+      tags:
+      - Geometry Resource
+  /api/v1/geometry/summary/{id}:
+    get:
+      description: "All of the text based information about a Geometry (dimensions,\
+        \ extent, origin, etc...), but not the actual Geometry itself."
+      operationId: getGeometrySummary
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeometrySummary"
+        "403":
+          description: Not Allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+      summary: Get Geometry Summary
+      tags:
+      - Geometry Resource
+  /api/v1/geometry/{id}:
+    get:
+      description: Returns <Geometry> as root element in VCML format.
+      operationId: getGeometryVCML
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/xml:
+              schema:
+                type: string
+        "403":
+          description: Not Allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+      summary: Get Geometry
+      tags:
+      - Geometry Resource
+    delete:
+      description: Remove specific Geometry.
+      operationId: deleteGeometry
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "403":
+          description: Not Allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+      summary: Delete Geometry
+      tags:
+      - Geometry Resource
+  /api/v1/helloworld:
+    get:
+      summary: Get hello world message.
+      operationId: getHelloWorld
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HelloWorldMessage"
+        "403":
+          description: Not Allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+      tags:
+      - Hello World
+  /api/v1/image:
+    post:
+      description: Save the VCML representation of an image.
+      operationId: saveImageVCML
+      parameters:
+      - description: Name to save new ImageVCML under. Leave blank if re-saving existing
+          ImageVCML.
+        name: name
+        required: false
+        in: query
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: string
+        "401":
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "422":
+          description: Unprocessable content submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+      summary: Save VC Image
+      tags:
+      - VC Image Resource
+  /api/v1/image/summaries:
+    get:
+      description: Return Image summaries.
+      operationId: getImageSummaries
+      parameters:
+      - description: Include Image summaries that are public and shared with the requester.
+          Default is true.
+        required: false
+        name: includePublicAndShared
+        in: query
+        schema:
+          type: boolean
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/VCImageSummary"
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+      summary: Get Summaries
+      tags:
+      - VC Image Resource
+  /api/v1/image/summary/{id}:
+    get:
+      description: "All of the miscellaneous information about an Image (Extent, ISize,\
+        \ preview, etc...), but not the actual Image itself."
+      operationId: getImageSummary
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCImageSummary"
+        "403":
+          description: Not Allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+      summary: Get Summary
+      tags:
+      - VC Image Resource
+  /api/v1/image/{id}:
+    get:
+      description: Get specific image VCML.
+      operationId: getImageVCML
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: string
+        "403":
+          description: Not Allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "422":
+          description: Unprocessable content submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+      summary: Get VC Image
+      tags:
+      - VC Image Resource
+    delete:
+      description: Remove specific image VCML.
+      operationId: deleteImageVCML
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "403":
+          description: Not Allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+      summary: Delete VC Image
+      tags:
+      - VC Image Resource
+  /api/v1/mathModel:
+    post:
+      operationId: saveMathModel
+      parameters:
+      - description: Name to save new MathModel under. Leave blank if re-saving existing
+          MathModel.
+        name: newName
+        required: false
+        in: query
+        schema:
+          type: string
+      - description: The name of simulations that will be prepared for future execution.
+        name: simNames
+        required: false
+        in: query
+        schema:
+          type: array
+          items:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/xml:
+            schema:
+              type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/xml:
+              schema:
+                type: string
+        "401":
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "403":
+          description: Not Allowed
+        "422":
+          description: Unprocessable content submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+      summary: Save
+      tags:
+      - Math Model Resource
+      security:
+      - openId: []
+  /api/v1/mathModel/summaries:
+    get:
+      description: Return MathModel summaries.
+      operationId: getSummaries
+      parameters:
+      - description: Include MathModel summaries that are public and shared with the
+          requester. Default is true.
+        required: false
+        name: includePublicAndShared
+        in: query
+        schema:
+          type: boolean
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MathModelSummary"
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+      summary: Get Math Model Summaries
+      tags:
+      - Math Model Resource
+  /api/v1/mathModel/summary/{id}:
+    get:
+      description: "All of the text based information about a MathModel (summary,\
+        \ version, publication status, etc...), but not the actual MathModel itself."
+      operationId: getSummary
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MathModelSummary"
+        "403":
+          description: Not Allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+      summary: Get Math Model Summary
+      tags:
+      - Math Model Resource
+  /api/v1/mathModel/{id}:
+    get:
+      description: Returns MathModel in VCML format.
+      operationId: getVCML
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/xml:
+              schema:
+                type: string
+        "403":
+          description: Not Allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+      summary: Get Math Model
+      tags:
+      - Math Model Resource
+    delete:
+      description: Remove specific Math Model.
+      operationId: deleteMathModel
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "403":
+          description: Not Allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+      summary: Delete Math Model
+      tags:
+      - Math Model Resource
+  /api/v1/optimization:
+    post:
+      summary: Submit a new parameter estimation optimization job
+      operationId: submitOptimization
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OptProblem"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OptimizationJobStatus"
+        "400":
+          description: Bad Request
+        "401":
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "403":
+          description: Not Allowed
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+      tags:
+      - Optimization Resource
+      security:
+      - openId: []
+    get:
+      summary: List optimization jobs for the authenticated user
+      operationId: listOptimizationJobs
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/OptimizationJobStatus"
+        "401":
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "403":
+          description: Not Allowed
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+      tags:
+      - Optimization Resource
+      security:
+      - openId: []
+  /api/v1/optimization/{optId}:
+    get:
+      summary: "Get status, progress, or results of an optimization job"
+      operationId: getOptimizationStatus
+      parameters:
+      - name: optId
+        in: path
+        required: true
+        schema:
+          format: int64
+          type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OptimizationJobStatus"
+        "401":
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "403":
+          description: Not Allowed
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+      tags:
+      - Optimization Resource
+      security:
+      - openId: []
+  /api/v1/optimization/{optId}/stop:
+    post:
+      summary: Stop a running optimization job
+      operationId: stopOptimization
+      parameters:
+      - name: optId
+        in: path
+        required: true
+        schema:
+          format: int64
+          type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OptimizationJobStatus"
+        "401":
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "403":
+          description: Not Allowed
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+      tags:
+      - Optimization Resource
+      security:
+      - openId: []
+  /api/v1/publications:
+    put:
+      summary: Update publication
+      operationId: updatePublication
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Publication"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Publication"
+        "400":
+          description: Bad Request.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "401":
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "403":
+          description: Not Allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+      tags:
+      - Publication Resource
+      security:
+      - openId: []
+    get:
+      summary: Get all publications
+      operationId: getPublications
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Publication"
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+      tags:
+      - Publication Resource
+    post:
+      summary: Create publication
+      operationId: createPublication
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Publication"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                format: int64
+                type: integer
+        "400":
+          description: Bad Request.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "401":
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "403":
+          description: Not Allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+      tags:
+      - Publication Resource
+      security:
+      - openId: []
+  /api/v1/publications/{id}:
+    get:
+      summary: Get publication by ID
+      operationId: getPublicationById
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          format: int64
+          type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Publication"
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+      tags:
+      - Publication Resource
+    delete:
+      summary: Delete publication
+      operationId: deletePublication
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          format: int64
+          type: integer
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "403":
+          description: Not Allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+      tags:
+      - Publication Resource
+      security:
+      - openId: []
+  /api/v1/publications/{id}/publish:
+    put:
+      summary: Publish selected BioModels and MathModels associated with a publication
+      operationId: publishBioModels
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          format: int64
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PublishModelsRequest"
+        required: true
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+        "401":
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "403":
+          description: Not Allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+      tags:
+      - Publication Resource
+      security:
+      - openId: []
+  /api/v1/solver/getFVSolverInput:
+    post:
+      summary: Retrieve finite volume input from SBML spatial model.
+      operationId: getFVSolverInputFromSBML
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                sbmlFile:
+                  format: binary
+                  type: string
+                duration:
+                  format: double
+                  default: 5.0
+                  type: number
+                output_time_step:
+                  format: double
+                  default: 0.1
+                  type: number
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/octet-stream:
+              schema:
+                format: binary
+                type: string
+        "422":
+          description: Unprocessable content submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+      tags:
+      - Solver Resource
+  /api/v1/solver/getFVSolverInputFromVCML:
+    post:
+      summary: Retrieve finite volume input from SBML spatial model.
+      operationId: getFVSolverInputFromVCML
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                vcmlFile:
+                  format: binary
+                  type: string
+                simulation_name:
+                  type: string
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/octet-stream:
+              schema:
+                format: binary
+                type: string
+        "422":
+          description: Unprocessable content submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+      tags:
+      - Solver Resource
+  /api/v1/users/bearerToken:
+    post:
+      summary: Get token for legacy API
+      operationId: getLegacyApiToken
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AccesTokenRepresentationRecord"
+        "401":
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "403":
+          description: Not Allowed
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+      tags:
+      - Users Resource
+      security:
+      - openId: []
+  /api/v1/users/forgotLegacyPassword:
+    post:
+      summary: "The end user has forgotten the legacy password they used for VCell,\
+        \ so they will be emailed it."
+      operationId: forgotLegacyPassword
+      parameters:
+      - name: userID
+        in: query
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Legacy password sent in email
+        "401":
+          description: Need to login to Auth0
+        "403":
+          description: Not Allowed
+        "500":
+          description: Internal Error
+      tags:
+      - Users Resource
+      security:
+      - openId: []
+  /api/v1/users/guestBearerToken:
+    post:
+      summary: Method to get legacy tokens for guest users
+      operationId: getGuestLegacyApiToken
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AccesTokenRepresentationRecord"
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+      tags:
+      - Users Resource
+  /api/v1/users/mapUser:
+    post:
+      summary: map vcell user
+      operationId: mapUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserLoginInfoForMapping"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: boolean
+        "400":
+          description: Bad Request
+        "401":
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "403":
+          description: Not Allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+      tags:
+      - Users Resource
+      security:
+      - openId: []
+  /api/v1/users/mappedUser:
+    get:
+      summary: Get mapped VCell identity
+      operationId: getMappedUser
+      responses:
+        "200":
+          description: "Successful, returning the identity"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserIdentityJSONSafe"
+        "401":
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "403":
+          description: Not Allowed
+        "409":
+          description: Conflict with server state.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+      tags:
+      - Users Resource
+      security:
+      - openId: []
+  /api/v1/users/me:
+    get:
+      summary: Get current user
+      operationId: getMe
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Identity"
+      tags:
+      - Users Resource
+  /api/v1/users/newUser:
+    post:
+      summary: create vcell user
+      operationId: mapNewUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserRegistrationInfo"
+        required: true
+      responses:
+        "200":
+          description: "Successful, returning the identity"
+        "400":
+          description: Bad Request
+        "401":
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "403":
+          description: Not Allowed
+        "409":
+          description: "VCell Identity not mapped, userid already exists"
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+      tags:
+      - Users Resource
+      security:
+      - openId: []
+  /api/v1/users/processMagicLink:
+    get:
+      summary: Process the magic link and map the user
+      operationId: processMagicLink
+      parameters:
+      - name: magic
+        in: query
+        schema:
+          type: string
+      responses:
+        "200":
+          description: User mapped successfully
+        "400":
+          description: Invalid or expired magic link
+        "401":
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+      tags:
+      - Users Resource
+  /api/v1/users/requestRecoveryEmail:
+    post:
+      summary: request a recovery email to link a VCell account.
+      operationId: requestRecoveryEmail
+      parameters:
+      - name: email
+        in: query
+        schema:
+          type: string
+      - name: userID
+        in: query
+        schema:
+          type: string
+      responses:
+        "200":
+          description: magic link sent in email if appropriate
+        "400":
+          description: unable to process request
+        "401":
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "403":
+          description: Not Allowed
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+      tags:
+      - Users Resource
+      security:
+      - openId: []
+  /api/v1/users/unmapUser/{userName}:
+    put:
+      summary: remove vcell identity mapping
+      operationId: unmapUser
+      parameters:
+      - name: userName
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: boolean
+        "401":
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "403":
+          description: Not Allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+      tags:
+      - Users Resource
+      security:
+      - openId: []
+  /api/v1/vcInfoContainer:
+    get:
+      summary: "Return a single bulk collection of metadata summaries (BioModels,\
+        \ MathModels, Geometries, Images) visible to the requester. Anonymous requests\
+        \ return public records only; an authenticated request additionally includes\
+        \ the requester's own and shared records."
+      operationId: getVCInfoContainer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCInfoContainerSummary"
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCellHTTPError"
+      tags:
+      - VC Info Container Resource
+servers:
+- url: https://vcell.cam.uchc.edu
+info:
+  title: VCell API
+  version: 1.0.1
+  description: VCell API
+  termsOfService: Your terms of service here
+  contact:
+    name: VCell API Support
+    email: vcell_support@uchc.com
+    url: https://vcell.org
+  license:
+    name: MIT
+    url: http://opensource.org/licenses/MIT

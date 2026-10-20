@@ -475,7 +475,7 @@ public class Example {
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **optProblem** | [**OptProblem**](OptProblem.md)|  | [optional] |
+| **optProblem** | [**OptProblem**](OptProblem.md)|  | |
 
 ### Return type
 
@@ -495,6 +495,7 @@ public class Example {
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
+| **400** | Bad Request |  -  |
 | **401** | Not Authenticated |  -  |
 | **403** | Not Allowed |  -  |
 | **500** | Data Access Exception |  -  |
@@ -546,7 +547,7 @@ public class Example {
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **optProblem** | [**OptProblem**](OptProblem.md)|  | [optional] |
+| **optProblem** | [**OptProblem**](OptProblem.md)|  | |
 
 ### Return type
 
@@ -566,6 +567,7 @@ ApiResponse<[**OptimizationJobStatus**](OptimizationJobStatus.md)>
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
+| **400** | Bad Request |  -  |
 | **401** | Not Authenticated |  -  |
 | **403** | Not Allowed |  -  |
 | **500** | Data Access Exception |  -  |

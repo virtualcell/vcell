@@ -440,7 +440,7 @@ public class UsersResourceApi {
   /**
    * create vcell user
    * 
-   * @param userRegistrationInfo  (optional)
+   * @param userRegistrationInfo  (required)
    * @throws ApiException if fails to make API call
    */
   public void mapNewUser(UserRegistrationInfo userRegistrationInfo) throws ApiException {
@@ -450,7 +450,7 @@ public class UsersResourceApi {
   /**
    * create vcell user
    * 
-   * @param userRegistrationInfo  (optional)
+   * @param userRegistrationInfo  (required)
    * @return ApiResponse&lt;Void&gt;
    * @throws ApiException if fails to make API call
    */
@@ -489,6 +489,10 @@ public class UsersResourceApi {
   }
 
   private HttpRequest.Builder mapNewUserRequestBuilder(UserRegistrationInfo userRegistrationInfo) throws ApiException {
+    // verify the required parameter 'userRegistrationInfo' is set
+    if (userRegistrationInfo == null) {
+      throw new ApiException(400, "Missing the required parameter 'userRegistrationInfo' when calling mapNewUser");
+    }
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
@@ -516,7 +520,7 @@ public class UsersResourceApi {
   /**
    * map vcell user
    * 
-   * @param userLoginInfoForMapping  (optional)
+   * @param userLoginInfoForMapping  (required)
    * @return Boolean
    * @throws ApiException if fails to make API call
    */
@@ -528,7 +532,7 @@ public class UsersResourceApi {
   /**
    * map vcell user
    * 
-   * @param userLoginInfoForMapping  (optional)
+   * @param userLoginInfoForMapping  (required)
    * @return ApiResponse&lt;Boolean&gt;
    * @throws ApiException if fails to make API call
    */
@@ -562,6 +566,10 @@ public class UsersResourceApi {
   }
 
   private HttpRequest.Builder mapUserRequestBuilder(UserLoginInfoForMapping userLoginInfoForMapping) throws ApiException {
+    // verify the required parameter 'userLoginInfoForMapping' is set
+    if (userLoginInfoForMapping == null) {
+      throw new ApiException(400, "Missing the required parameter 'userLoginInfoForMapping' when calling mapUser");
+    }
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 

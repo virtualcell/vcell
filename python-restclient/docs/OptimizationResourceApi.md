@@ -225,7 +225,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **submit_optimization**
-> OptimizationJobStatus submit_optimization(opt_problem=opt_problem)
+> OptimizationJobStatus submit_optimization(opt_problem)
 
 Submit a new parameter estimation optimization job
 
@@ -255,11 +255,11 @@ configuration = vcell_client.Configuration(
 with vcell_client.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = vcell_client.OptimizationResourceApi(api_client)
-    opt_problem = vcell_client.OptProblem() # OptProblem |  (optional)
+    opt_problem = vcell_client.OptProblem() # OptProblem | 
 
     try:
         # Submit a new parameter estimation optimization job
-        api_response = api_instance.submit_optimization(opt_problem=opt_problem)
+        api_response = api_instance.submit_optimization(opt_problem)
         print("The response of OptimizationResourceApi->submit_optimization:\n")
         pprint(api_response)
     except Exception as e:
@@ -272,7 +272,7 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **opt_problem** | [**OptProblem**](OptProblem.md)|  | [optional] 
+ **opt_problem** | [**OptProblem**](OptProblem.md)|  | 
 
 ### Return type
 
@@ -291,6 +291,7 @@ Name | Type | Description  | Notes
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |
+**400** | Bad Request |  -  |
 **401** | Not Authenticated |  -  |
 **403** | Not Allowed |  -  |
 **500** | Data Access Exception |  -  |

@@ -92,7 +92,7 @@ public class PublicationResourceApi {
   /**
    * Create publication
    * 
-   * @param publication  (optional)
+   * @param publication  (required)
    * @return Long
    * @throws ApiException if fails to make API call
    */
@@ -104,7 +104,7 @@ public class PublicationResourceApi {
   /**
    * Create publication
    * 
-   * @param publication  (optional)
+   * @param publication  (required)
    * @return ApiResponse&lt;Long&gt;
    * @throws ApiException if fails to make API call
    */
@@ -138,6 +138,10 @@ public class PublicationResourceApi {
   }
 
   private HttpRequest.Builder createPublicationRequestBuilder(Publication publication) throws ApiException {
+    // verify the required parameter 'publication' is set
+    if (publication == null) {
+      throw new ApiException(400, "Missing the required parameter 'publication' when calling createPublication");
+    }
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
@@ -378,7 +382,7 @@ public class PublicationResourceApi {
    * Publish selected BioModels and MathModels associated with a publication
    * 
    * @param id  (required)
-   * @param publishModelsRequest  (optional)
+   * @param publishModelsRequest  (required)
    * @throws ApiException if fails to make API call
    */
   public void publishBioModels(Long id, PublishModelsRequest publishModelsRequest) throws ApiException {
@@ -389,7 +393,7 @@ public class PublicationResourceApi {
    * Publish selected BioModels and MathModels associated with a publication
    * 
    * @param id  (required)
-   * @param publishModelsRequest  (optional)
+   * @param publishModelsRequest  (required)
    * @return ApiResponse&lt;Void&gt;
    * @throws ApiException if fails to make API call
    */
@@ -432,6 +436,10 @@ public class PublicationResourceApi {
     if (id == null) {
       throw new ApiException(400, "Missing the required parameter 'id' when calling publishBioModels");
     }
+    // verify the required parameter 'publishModelsRequest' is set
+    if (publishModelsRequest == null) {
+      throw new ApiException(400, "Missing the required parameter 'publishModelsRequest' when calling publishBioModels");
+    }
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
@@ -460,7 +468,7 @@ public class PublicationResourceApi {
   /**
    * Update publication
    * 
-   * @param publication  (optional)
+   * @param publication  (required)
    * @return Publication
    * @throws ApiException if fails to make API call
    */
@@ -472,7 +480,7 @@ public class PublicationResourceApi {
   /**
    * Update publication
    * 
-   * @param publication  (optional)
+   * @param publication  (required)
    * @return ApiResponse&lt;Publication&gt;
    * @throws ApiException if fails to make API call
    */
@@ -506,6 +514,10 @@ public class PublicationResourceApi {
   }
 
   private HttpRequest.Builder updatePublicationRequestBuilder(Publication publication) throws ApiException {
+    // verify the required parameter 'publication' is set
+    if (publication == null) {
+      throw new ApiException(400, "Missing the required parameter 'publication' when calling updatePublication");
+    }
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 

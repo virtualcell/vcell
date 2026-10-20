@@ -67,7 +67,7 @@ class GeometryResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> None:
-        """delete_geometry
+        """Delete Geometry
 
         Remove specific Geometry.
 
@@ -134,7 +134,7 @@ class GeometryResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> ApiResponse[None]:
-        """delete_geometry
+        """Delete Geometry
 
         Remove specific Geometry.
 
@@ -201,7 +201,7 @@ class GeometryResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> RESTResponseType:
-        """delete_geometry
+        """Delete Geometry
 
         Remove specific Geometry.
 
@@ -325,7 +325,7 @@ class GeometryResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> List[GeometrySummary]:
-        """get_geometry_summaries
+        """Get Geometry Summaries
 
         Return Geometry summaries.
 
@@ -394,7 +394,7 @@ class GeometryResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> ApiResponse[List[GeometrySummary]]:
-        """get_geometry_summaries
+        """Get Geometry Summaries
 
         Return Geometry summaries.
 
@@ -463,7 +463,7 @@ class GeometryResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> RESTResponseType:
-        """get_geometry_summaries
+        """Get Geometry Summaries
 
         Return Geometry summaries.
 
@@ -591,7 +591,7 @@ class GeometryResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> GeometrySummary:
-        """get_geometry_summary
+        """Get Geometry Summary
 
         All of the text based information about a Geometry (dimensions, extent, origin, etc...), but not the actual Geometry itself.
 
@@ -662,7 +662,7 @@ class GeometryResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> ApiResponse[GeometrySummary]:
-        """get_geometry_summary
+        """Get Geometry Summary
 
         All of the text based information about a Geometry (dimensions, extent, origin, etc...), but not the actual Geometry itself.
 
@@ -733,7 +733,7 @@ class GeometryResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> RESTResponseType:
-        """get_geometry_summary
+        """Get Geometry Summary
 
         All of the text based information about a Geometry (dimensions, extent, origin, etc...), but not the actual Geometry itself.
 
@@ -861,7 +861,7 @@ class GeometryResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> str:
-        """get_geometry_vcml
+        """Get Geometry
 
         Returns <Geometry> as root element in VCML format.
 
@@ -932,7 +932,7 @@ class GeometryResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> ApiResponse[str]:
-        """get_geometry_vcml
+        """Get Geometry
 
         Returns <Geometry> as root element in VCML format.
 
@@ -1003,7 +1003,7 @@ class GeometryResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> RESTResponseType:
-        """get_geometry_vcml
+        """Get Geometry
 
         Returns <Geometry> as root element in VCML format.
 
@@ -1133,7 +1133,7 @@ class GeometryResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> str:
-        """save_geometry
+        """Save
 
         Save's VCML with <Geometry> as the root element.
 
@@ -1209,7 +1209,7 @@ class GeometryResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> ApiResponse[str]:
-        """save_geometry
+        """Save
 
         Save's VCML with <Geometry> as the root element.
 
@@ -1285,7 +1285,7 @@ class GeometryResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> RESTResponseType:
-        """save_geometry
+        """Save
 
         Save's VCML with <Geometry> as the root element.
 

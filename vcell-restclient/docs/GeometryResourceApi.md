@@ -4,16 +4,16 @@ All URIs are relative to *https://vcell.cam.uchc.edu*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
-| [**deleteGeometry**](GeometryResourceApi.md#deleteGeometry) | **DELETE** /api/v1/geometry/{id} |  |
-| [**deleteGeometryWithHttpInfo**](GeometryResourceApi.md#deleteGeometryWithHttpInfo) | **DELETE** /api/v1/geometry/{id} |  |
-| [**getGeometrySummaries**](GeometryResourceApi.md#getGeometrySummaries) | **GET** /api/v1/geometry/summaries |  |
-| [**getGeometrySummariesWithHttpInfo**](GeometryResourceApi.md#getGeometrySummariesWithHttpInfo) | **GET** /api/v1/geometry/summaries |  |
-| [**getGeometrySummary**](GeometryResourceApi.md#getGeometrySummary) | **GET** /api/v1/geometry/summary/{id} |  |
-| [**getGeometrySummaryWithHttpInfo**](GeometryResourceApi.md#getGeometrySummaryWithHttpInfo) | **GET** /api/v1/geometry/summary/{id} |  |
-| [**getGeometryVCML**](GeometryResourceApi.md#getGeometryVCML) | **GET** /api/v1/geometry/{id} |  |
-| [**getGeometryVCMLWithHttpInfo**](GeometryResourceApi.md#getGeometryVCMLWithHttpInfo) | **GET** /api/v1/geometry/{id} |  |
-| [**saveGeometry**](GeometryResourceApi.md#saveGeometry) | **POST** /api/v1/geometry |  |
-| [**saveGeometryWithHttpInfo**](GeometryResourceApi.md#saveGeometryWithHttpInfo) | **POST** /api/v1/geometry |  |
+| [**deleteGeometry**](GeometryResourceApi.md#deleteGeometry) | **DELETE** /api/v1/geometry/{id} | Delete Geometry |
+| [**deleteGeometryWithHttpInfo**](GeometryResourceApi.md#deleteGeometryWithHttpInfo) | **DELETE** /api/v1/geometry/{id} | Delete Geometry |
+| [**getGeometrySummaries**](GeometryResourceApi.md#getGeometrySummaries) | **GET** /api/v1/geometry/summaries | Get Geometry Summaries |
+| [**getGeometrySummariesWithHttpInfo**](GeometryResourceApi.md#getGeometrySummariesWithHttpInfo) | **GET** /api/v1/geometry/summaries | Get Geometry Summaries |
+| [**getGeometrySummary**](GeometryResourceApi.md#getGeometrySummary) | **GET** /api/v1/geometry/summary/{id} | Get Geometry Summary |
+| [**getGeometrySummaryWithHttpInfo**](GeometryResourceApi.md#getGeometrySummaryWithHttpInfo) | **GET** /api/v1/geometry/summary/{id} | Get Geometry Summary |
+| [**getGeometryVCML**](GeometryResourceApi.md#getGeometryVCML) | **GET** /api/v1/geometry/{id} | Get Geometry |
+| [**getGeometryVCMLWithHttpInfo**](GeometryResourceApi.md#getGeometryVCMLWithHttpInfo) | **GET** /api/v1/geometry/{id} | Get Geometry |
+| [**saveGeometry**](GeometryResourceApi.md#saveGeometry) | **POST** /api/v1/geometry | Save |
+| [**saveGeometryWithHttpInfo**](GeometryResourceApi.md#saveGeometryWithHttpInfo) | **POST** /api/v1/geometry | Save |
 
 
 
@@ -21,7 +21,7 @@ All URIs are relative to *https://vcell.cam.uchc.edu*
 
 > void deleteGeometry(id)
 
-
+Delete Geometry
 
 Remove specific Geometry.
 
@@ -89,7 +89,7 @@ No authorization required
 
 > ApiResponse<Void> deleteGeometry deleteGeometryWithHttpInfo(id)
 
-
+Delete Geometry
 
 Remove specific Geometry.
 
@@ -161,7 +161,7 @@ No authorization required
 
 > List<GeometrySummary> getGeometrySummaries(includePublicAndShared)
 
-
+Get Geometry Summaries
 
 Return Geometry summaries.
 
@@ -227,7 +227,7 @@ No authorization required
 
 > ApiResponse<List<GeometrySummary>> getGeometrySummaries getGeometrySummariesWithHttpInfo(includePublicAndShared)
 
-
+Get Geometry Summaries
 
 Return Geometry summaries.
 
@@ -297,7 +297,7 @@ No authorization required
 
 > GeometrySummary getGeometrySummary(id)
 
-
+Get Geometry Summary
 
 All of the text based information about a Geometry (dimensions, extent, origin, etc...), but not the actual Geometry itself.
 
@@ -365,7 +365,7 @@ No authorization required
 
 > ApiResponse<GeometrySummary> getGeometrySummary getGeometrySummaryWithHttpInfo(id)
 
-
+Get Geometry Summary
 
 All of the text based information about a Geometry (dimensions, extent, origin, etc...), but not the actual Geometry itself.
 
@@ -437,7 +437,7 @@ No authorization required
 
 > String getGeometryVCML(id)
 
-
+Get Geometry
 
 Returns &lt;Geometry&gt; as root element in VCML format.
 
@@ -505,7 +505,7 @@ No authorization required
 
 > ApiResponse<String> getGeometryVCML getGeometryVCMLWithHttpInfo(id)
 
-
+Get Geometry
 
 Returns &lt;Geometry&gt; as root element in VCML format.
 
@@ -577,7 +577,7 @@ No authorization required
 
 > String saveGeometry(body, newName)
 
-
+Save
 
 Save&#39;s VCML with &lt;Geometry&gt; as the root element.
 
@@ -650,7 +650,7 @@ public class Example {
 
 > ApiResponse<String> saveGeometry saveGeometryWithHttpInfo(body, newName)
 
-
+Save
 
 Save&#39;s VCML with &lt;Geometry&gt; as the root element.
 

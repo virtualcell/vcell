@@ -89,7 +89,7 @@ public class GeometryResourceApi {
   }
 
   /**
-   * 
+   * Delete Geometry
    * Remove specific Geometry.
    * @param id  (required)
    * @throws ApiException if fails to make API call
@@ -99,7 +99,7 @@ public class GeometryResourceApi {
   }
 
   /**
-   * 
+   * Delete Geometry
    * Remove specific Geometry.
    * @param id  (required)
    * @return ApiResponse&lt;Void&gt;
@@ -164,7 +164,7 @@ public class GeometryResourceApi {
     return localVarRequestBuilder;
   }
   /**
-   * 
+   * Get Geometry Summaries
    * Return Geometry summaries.
    * @param includePublicAndShared Include Geometry summaries that are public and shared with the requester. Default is true. (optional)
    * @return List&lt;GeometrySummary&gt;
@@ -176,7 +176,7 @@ public class GeometryResourceApi {
   }
 
   /**
-   * 
+   * Get Geometry Summaries
    * Return Geometry summaries.
    * @param includePublicAndShared Include Geometry summaries that are public and shared with the requester. Default is true. (optional)
    * @return ApiResponse&lt;List&lt;GeometrySummary&gt;&gt;
@@ -246,7 +246,7 @@ public class GeometryResourceApi {
     return localVarRequestBuilder;
   }
   /**
-   * 
+   * Get Geometry Summary
    * All of the text based information about a Geometry (dimensions, extent, origin, etc...), but not the actual Geometry itself.
    * @param id  (required)
    * @return GeometrySummary
@@ -258,7 +258,7 @@ public class GeometryResourceApi {
   }
 
   /**
-   * 
+   * Get Geometry Summary
    * All of the text based information about a Geometry (dimensions, extent, origin, etc...), but not the actual Geometry itself.
    * @param id  (required)
    * @return ApiResponse&lt;GeometrySummary&gt;
@@ -318,7 +318,7 @@ public class GeometryResourceApi {
     return localVarRequestBuilder;
   }
   /**
-   * 
+   * Get Geometry
    * Returns &lt;Geometry&gt; as root element in VCML format.
    * @param id  (required)
    * @return String
@@ -330,7 +330,7 @@ public class GeometryResourceApi {
   }
 
   /**
-   * 
+   * Get Geometry
    * Returns &lt;Geometry&gt; as root element in VCML format.
    * @param id  (required)
    * @return ApiResponse&lt;String&gt;
@@ -390,7 +390,7 @@ public class GeometryResourceApi {
     return localVarRequestBuilder;
   }
   /**
-   * 
+   * Save
    * Save&#39;s VCML with &lt;Geometry&gt; as the root element.
    * @param body  (required)
    * @param newName Name to save new Geometry under. Leave blank if re-saving existing Geometry. (optional)
@@ -403,7 +403,7 @@ public class GeometryResourceApi {
   }
 
   /**
-   * 
+   * Save
    * Save&#39;s VCML with &lt;Geometry&gt; as the root element.
    * @param body  (required)
    * @param newName Name to save new Geometry under. Leave blank if re-saving existing Geometry. (optional)

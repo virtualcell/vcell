@@ -1305,7 +1305,7 @@ class UsersResourceApi:
     @validate_call
     def map_new_user(
         self,
-        user_registration_info: Optional[UserRegistrationInfo] = None,
+        user_registration_info: UserRegistrationInfo,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -1322,7 +1322,7 @@ class UsersResourceApi:
         """create vcell user
 
 
-        :param user_registration_info:
+        :param user_registration_info: (required)
         :type user_registration_info: UserRegistrationInfo
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
@@ -1371,7 +1371,7 @@ class UsersResourceApi:
     @validate_call
     def map_new_user_with_http_info(
         self,
-        user_registration_info: Optional[UserRegistrationInfo] = None,
+        user_registration_info: UserRegistrationInfo,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -1388,7 +1388,7 @@ class UsersResourceApi:
         """create vcell user
 
 
-        :param user_registration_info:
+        :param user_registration_info: (required)
         :type user_registration_info: UserRegistrationInfo
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
@@ -1437,7 +1437,7 @@ class UsersResourceApi:
     @validate_call
     def map_new_user_without_preload_content(
         self,
-        user_registration_info: Optional[UserRegistrationInfo] = None,
+        user_registration_info: UserRegistrationInfo,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -1454,7 +1454,7 @@ class UsersResourceApi:
         """create vcell user
 
 
-        :param user_registration_info:
+        :param user_registration_info: (required)
         :type user_registration_info: UserRegistrationInfo
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
@@ -1574,7 +1574,7 @@ class UsersResourceApi:
     @validate_call
     def map_user(
         self,
-        user_login_info_for_mapping: Optional[UserLoginInfoForMapping] = None,
+        user_login_info_for_mapping: UserLoginInfoForMapping,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -1591,7 +1591,7 @@ class UsersResourceApi:
         """map vcell user
 
 
-        :param user_login_info_for_mapping:
+        :param user_login_info_for_mapping: (required)
         :type user_login_info_for_mapping: UserLoginInfoForMapping
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
@@ -1625,6 +1625,7 @@ class UsersResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "bool",
+            '400': None,
             '401': "VCellHTTPError",
             '403': "VCellHTTPError",
             '500': "VCellHTTPError"
@@ -1644,7 +1645,7 @@ class UsersResourceApi:
     @validate_call
     def map_user_with_http_info(
         self,
-        user_login_info_for_mapping: Optional[UserLoginInfoForMapping] = None,
+        user_login_info_for_mapping: UserLoginInfoForMapping,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -1661,7 +1662,7 @@ class UsersResourceApi:
         """map vcell user
 
 
-        :param user_login_info_for_mapping:
+        :param user_login_info_for_mapping: (required)
         :type user_login_info_for_mapping: UserLoginInfoForMapping
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
@@ -1695,6 +1696,7 @@ class UsersResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "bool",
+            '400': None,
             '401': "VCellHTTPError",
             '403': "VCellHTTPError",
             '500': "VCellHTTPError"
@@ -1714,7 +1716,7 @@ class UsersResourceApi:
     @validate_call
     def map_user_without_preload_content(
         self,
-        user_login_info_for_mapping: Optional[UserLoginInfoForMapping] = None,
+        user_login_info_for_mapping: UserLoginInfoForMapping,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -1731,7 +1733,7 @@ class UsersResourceApi:
         """map vcell user
 
 
-        :param user_login_info_for_mapping:
+        :param user_login_info_for_mapping: (required)
         :type user_login_info_for_mapping: UserLoginInfoForMapping
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
@@ -1765,6 +1767,7 @@ class UsersResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "bool",
+            '400': None,
             '401': "VCellHTTPError",
             '403': "VCellHTTPError",
             '500': "VCellHTTPError"

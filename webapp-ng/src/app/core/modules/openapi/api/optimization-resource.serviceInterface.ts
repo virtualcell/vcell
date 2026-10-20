@@ -51,6 +51,6 @@ export interface OptimizationResourceServiceInterface {
      * 
      * @param optProblem 
      */
-    submitOptimization(optProblem?: OptProblem, extraHttpRequestParams?: any): Observable<OptimizationJobStatus>;
+    submitOptimization(optProblem: OptProblem, extraHttpRequestParams?: any): Observable<OptimizationJobStatus>;
 
 }

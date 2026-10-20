@@ -720,7 +720,7 @@ public class Example {
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **userRegistrationInfo** | [**UserRegistrationInfo**](UserRegistrationInfo.md)|  | [optional] |
+| **userRegistrationInfo** | [**UserRegistrationInfo**](UserRegistrationInfo.md)|  | |
 
 ### Return type
 
@@ -740,6 +740,7 @@ null (empty response body)
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | Successful, returning the identity |  -  |
+| **400** | Bad Request |  -  |
 | **401** | Not Authenticated |  -  |
 | **403** | Not Allowed |  -  |
 | **409** | VCell Identity not mapped, userid already exists |  -  |
@@ -791,7 +792,7 @@ public class Example {
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **userRegistrationInfo** | [**UserRegistrationInfo**](UserRegistrationInfo.md)|  | [optional] |
+| **userRegistrationInfo** | [**UserRegistrationInfo**](UserRegistrationInfo.md)|  | |
 
 ### Return type
 
@@ -811,6 +812,7 @@ ApiResponse<Void>
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | Successful, returning the identity |  -  |
+| **400** | Bad Request |  -  |
 | **401** | Not Authenticated |  -  |
 | **403** | Not Allowed |  -  |
 | **409** | VCell Identity not mapped, userid already exists |  -  |
@@ -861,7 +863,7 @@ public class Example {
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **userLoginInfoForMapping** | [**UserLoginInfoForMapping**](UserLoginInfoForMapping.md)|  | [optional] |
+| **userLoginInfoForMapping** | [**UserLoginInfoForMapping**](UserLoginInfoForMapping.md)|  | |
 
 ### Return type
 
@@ -881,6 +883,7 @@ public class Example {
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
+| **400** | Bad Request |  -  |
 | **401** | Not Authenticated |  -  |
 | **403** | Not Allowed |  -  |
 | **500** | Data Access Exception |  -  |
@@ -932,7 +935,7 @@ public class Example {
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **userLoginInfoForMapping** | [**UserLoginInfoForMapping**](UserLoginInfoForMapping.md)|  | [optional] |
+| **userLoginInfoForMapping** | [**UserLoginInfoForMapping**](UserLoginInfoForMapping.md)|  | |
 
 ### Return type
 
@@ -952,6 +955,7 @@ ApiResponse<**Boolean**>
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
+| **400** | Bad Request |  -  |
 | **401** | Not Authenticated |  -  |
 | **403** | Not Allowed |  -  |
 | **500** | Data Access Exception |  -  |

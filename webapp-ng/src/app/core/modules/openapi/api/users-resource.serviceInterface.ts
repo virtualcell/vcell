@@ -65,14 +65,14 @@ export interface UsersResourceServiceInterface {
      * 
      * @param userRegistrationInfo 
      */
-    mapNewUser(userRegistrationInfo?: UserRegistrationInfo, extraHttpRequestParams?: any): Observable<{}>;
+    mapNewUser(userRegistrationInfo: UserRegistrationInfo, extraHttpRequestParams?: any): Observable<{}>;
 
     /**
      * map vcell user
      * 
      * @param userLoginInfoForMapping 
      */
-    mapUser(userLoginInfoForMapping?: UserLoginInfoForMapping, extraHttpRequestParams?: any): Observable<boolean>;
+    mapUser(userLoginInfoForMapping: UserLoginInfoForMapping, extraHttpRequestParams?: any): Observable<boolean>;
 
     /**
      * Process the magic link and map the user

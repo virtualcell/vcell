@@ -4,16 +4,16 @@ All URIs are relative to *https://vcell.cam.uchc.edu*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
-| [**deleteImageVCML**](VcImageResourceApi.md#deleteImageVCML) | **DELETE** /api/v1/image/{id} |  |
-| [**deleteImageVCMLWithHttpInfo**](VcImageResourceApi.md#deleteImageVCMLWithHttpInfo) | **DELETE** /api/v1/image/{id} |  |
-| [**getImageSummaries**](VcImageResourceApi.md#getImageSummaries) | **GET** /api/v1/image/summaries |  |
-| [**getImageSummariesWithHttpInfo**](VcImageResourceApi.md#getImageSummariesWithHttpInfo) | **GET** /api/v1/image/summaries |  |
-| [**getImageSummary**](VcImageResourceApi.md#getImageSummary) | **GET** /api/v1/image/summary/{id} |  |
-| [**getImageSummaryWithHttpInfo**](VcImageResourceApi.md#getImageSummaryWithHttpInfo) | **GET** /api/v1/image/summary/{id} |  |
-| [**getImageVCML**](VcImageResourceApi.md#getImageVCML) | **GET** /api/v1/image/{id} |  |
-| [**getImageVCMLWithHttpInfo**](VcImageResourceApi.md#getImageVCMLWithHttpInfo) | **GET** /api/v1/image/{id} |  |
-| [**saveImageVCML**](VcImageResourceApi.md#saveImageVCML) | **POST** /api/v1/image |  |
-| [**saveImageVCMLWithHttpInfo**](VcImageResourceApi.md#saveImageVCMLWithHttpInfo) | **POST** /api/v1/image |  |
+| [**deleteImageVCML**](VcImageResourceApi.md#deleteImageVCML) | **DELETE** /api/v1/image/{id} | Delete VC Image |
+| [**deleteImageVCMLWithHttpInfo**](VcImageResourceApi.md#deleteImageVCMLWithHttpInfo) | **DELETE** /api/v1/image/{id} | Delete VC Image |
+| [**getImageSummaries**](VcImageResourceApi.md#getImageSummaries) | **GET** /api/v1/image/summaries | Get Summaries |
+| [**getImageSummariesWithHttpInfo**](VcImageResourceApi.md#getImageSummariesWithHttpInfo) | **GET** /api/v1/image/summaries | Get Summaries |
+| [**getImageSummary**](VcImageResourceApi.md#getImageSummary) | **GET** /api/v1/image/summary/{id} | Get Summary |
+| [**getImageSummaryWithHttpInfo**](VcImageResourceApi.md#getImageSummaryWithHttpInfo) | **GET** /api/v1/image/summary/{id} | Get Summary |
+| [**getImageVCML**](VcImageResourceApi.md#getImageVCML) | **GET** /api/v1/image/{id} | Get VC Image |
+| [**getImageVCMLWithHttpInfo**](VcImageResourceApi.md#getImageVCMLWithHttpInfo) | **GET** /api/v1/image/{id} | Get VC Image |
+| [**saveImageVCML**](VcImageResourceApi.md#saveImageVCML) | **POST** /api/v1/image | Save VC Image |
+| [**saveImageVCMLWithHttpInfo**](VcImageResourceApi.md#saveImageVCMLWithHttpInfo) | **POST** /api/v1/image | Save VC Image |
 
 
 
@@ -21,7 +21,7 @@ All URIs are relative to *https://vcell.cam.uchc.edu*
 
 > void deleteImageVCML(id)
 
-
+Delete VC Image
 
 Remove specific image VCML.
 
@@ -89,7 +89,7 @@ No authorization required
 
 > ApiResponse<Void> deleteImageVCML deleteImageVCMLWithHttpInfo(id)
 
-
+Delete VC Image
 
 Remove specific image VCML.
 
@@ -161,7 +161,7 @@ No authorization required
 
 > List<VCImageSummary> getImageSummaries(includePublicAndShared)
 
-
+Get Summaries
 
 Return Image summaries.
 
@@ -227,7 +227,7 @@ No authorization required
 
 > ApiResponse<List<VCImageSummary>> getImageSummaries getImageSummariesWithHttpInfo(includePublicAndShared)
 
-
+Get Summaries
 
 Return Image summaries.
 
@@ -297,7 +297,7 @@ No authorization required
 
 > VCImageSummary getImageSummary(id)
 
-
+Get Summary
 
 All of the miscellaneous information about an Image (Extent, ISize, preview, etc...), but not the actual Image itself.
 
@@ -365,7 +365,7 @@ No authorization required
 
 > ApiResponse<VCImageSummary> getImageSummary getImageSummaryWithHttpInfo(id)
 
-
+Get Summary
 
 All of the miscellaneous information about an Image (Extent, ISize, preview, etc...), but not the actual Image itself.
 
@@ -437,7 +437,7 @@ No authorization required
 
 > String getImageVCML(id)
 
-
+Get VC Image
 
 Get specific image VCML.
 
@@ -506,7 +506,7 @@ No authorization required
 
 > ApiResponse<String> getImageVCML getImageVCMLWithHttpInfo(id)
 
-
+Get VC Image
 
 Get specific image VCML.
 
@@ -579,7 +579,7 @@ No authorization required
 
 > String saveImageVCML(body, name)
 
-
+Save VC Image
 
 Save the VCML representation of an image.
 
@@ -649,7 +649,7 @@ No authorization required
 
 > ApiResponse<String> saveImageVCML saveImageVCMLWithHttpInfo(body, name)
 
-
+Save VC Image
 
 Save the VCML representation of an image.
 

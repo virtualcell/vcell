@@ -89,7 +89,7 @@ public class VcImageResourceApi {
   }
 
   /**
-   * 
+   * Delete VC Image
    * Remove specific image VCML.
    * @param id  (required)
    * @throws ApiException if fails to make API call
@@ -99,7 +99,7 @@ public class VcImageResourceApi {
   }
 
   /**
-   * 
+   * Delete VC Image
    * Remove specific image VCML.
    * @param id  (required)
    * @return ApiResponse&lt;Void&gt;
@@ -164,7 +164,7 @@ public class VcImageResourceApi {
     return localVarRequestBuilder;
   }
   /**
-   * 
+   * Get Summaries
    * Return Image summaries.
    * @param includePublicAndShared Include Image summaries that are public and shared with the requester. Default is true. (optional)
    * @return List&lt;VCImageSummary&gt;
@@ -176,7 +176,7 @@ public class VcImageResourceApi {
   }
 
   /**
-   * 
+   * Get Summaries
    * Return Image summaries.
    * @param includePublicAndShared Include Image summaries that are public and shared with the requester. Default is true. (optional)
    * @return ApiResponse&lt;List&lt;VCImageSummary&gt;&gt;
@@ -246,7 +246,7 @@ public class VcImageResourceApi {
     return localVarRequestBuilder;
   }
   /**
-   * 
+   * Get Summary
    * All of the miscellaneous information about an Image (Extent, ISize, preview, etc...), but not the actual Image itself.
    * @param id  (required)
    * @return VCImageSummary
@@ -258,7 +258,7 @@ public class VcImageResourceApi {
   }
 
   /**
-   * 
+   * Get Summary
    * All of the miscellaneous information about an Image (Extent, ISize, preview, etc...), but not the actual Image itself.
    * @param id  (required)
    * @return ApiResponse&lt;VCImageSummary&gt;
@@ -318,7 +318,7 @@ public class VcImageResourceApi {
     return localVarRequestBuilder;
   }
   /**
-   * 
+   * Get VC Image
    * Get specific image VCML.
    * @param id  (required)
    * @return String
@@ -330,7 +330,7 @@ public class VcImageResourceApi {
   }
 
   /**
-   * 
+   * Get VC Image
    * Get specific image VCML.
    * @param id  (required)
    * @return ApiResponse&lt;String&gt;
@@ -398,7 +398,7 @@ public class VcImageResourceApi {
     return localVarRequestBuilder;
   }
   /**
-   * 
+   * Save VC Image
    * Save the VCML representation of an image.
    * @param body  (required)
    * @param name Name to save new ImageVCML under. Leave blank if re-saving existing ImageVCML. (optional)
@@ -411,7 +411,7 @@ public class VcImageResourceApi {
   }
 
   /**
-   * 
+   * Save VC Image
    * Save the VCML representation of an image.
    * @param body  (required)
    * @param name Name to save new ImageVCML under. Leave blank if re-saving existing ImageVCML. (optional)

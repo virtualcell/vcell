@@ -26,35 +26,35 @@ export interface MathModelResourceServiceInterface {
     configuration: Configuration;
 
     /**
-     * 
+     * Delete Math Model
      * Remove specific Math Model.
      * @param id 
      */
     deleteMathModel(id: string, extraHttpRequestParams?: any): Observable<{}>;
 
     /**
-     * 
+     * Get Math Model Summaries
      * Return MathModel summaries.
      * @param includePublicAndShared Include MathModel summaries that are public and shared with the requester. Default is true.
      */
     getSummaries(includePublicAndShared?: boolean, extraHttpRequestParams?: any): Observable<Array<MathModelSummary>>;
 
     /**
-     * 
+     * Get Math Model Summary
      * All of the text based information about a MathModel (summary, version, publication status, etc...), but not the actual MathModel itself.
      * @param id 
      */
     getSummary(id: string, extraHttpRequestParams?: any): Observable<MathModelSummary>;
 
     /**
-     * 
+     * Get Math Model
      * Returns MathModel in VCML format.
      * @param id 
      */
     getVCML(id: string, extraHttpRequestParams?: any): Observable<string>;
 
     /**
-     * 
+     * Save
      * 
      * @param body 
      * @param newName Name to save new MathModel under. Leave blank if re-saving existing MathModel.

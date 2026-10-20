@@ -301,7 +301,7 @@ public class OptimizationResourceApi {
   /**
    * Submit a new parameter estimation optimization job
    * 
-   * @param optProblem  (optional)
+   * @param optProblem  (required)
    * @return OptimizationJobStatus
    * @throws ApiException if fails to make API call
    */
@@ -313,7 +313,7 @@ public class OptimizationResourceApi {
   /**
    * Submit a new parameter estimation optimization job
    * 
-   * @param optProblem  (optional)
+   * @param optProblem  (required)
    * @return ApiResponse&lt;OptimizationJobStatus&gt;
    * @throws ApiException if fails to make API call
    */
@@ -347,6 +347,10 @@ public class OptimizationResourceApi {
   }
 
   private HttpRequest.Builder submitOptimizationRequestBuilder(OptProblem optProblem) throws ApiException {
+    // verify the required parameter 'optProblem' is set
+    if (optProblem == null) {
+      throw new ApiException(400, "Missing the required parameter 'optProblem' when calling submitOptimization");
+    }
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 

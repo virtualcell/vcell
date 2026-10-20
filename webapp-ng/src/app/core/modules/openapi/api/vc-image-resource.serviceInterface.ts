@@ -26,35 +26,35 @@ export interface VCImageResourceServiceInterface {
     configuration: Configuration;
 
     /**
-     * 
+     * Delete VC Image
      * Remove specific image VCML.
      * @param id 
      */
     deleteImageVCML(id: string, extraHttpRequestParams?: any): Observable<{}>;
 
     /**
-     * 
+     * Get Summaries
      * Return Image summaries.
      * @param includePublicAndShared Include Image summaries that are public and shared with the requester. Default is true.
      */
     getImageSummaries(includePublicAndShared?: boolean, extraHttpRequestParams?: any): Observable<Array<VCImageSummary>>;
 
     /**
-     * 
+     * Get Summary
      * All of the miscellaneous information about an Image (Extent, ISize, preview, etc...), but not the actual Image itself.
      * @param id 
      */
     getImageSummary(id: string, extraHttpRequestParams?: any): Observable<VCImageSummary>;
 
     /**
-     * 
+     * Get VC Image
      * Get specific image VCML.
      * @param id 
      */
     getImageVCML(id: string, extraHttpRequestParams?: any): Observable<string>;
 
     /**
-     * 
+     * Save VC Image
      * Save the VCML representation of an image.
      * @param body 
      * @param name Name to save new ImageVCML under. Leave blank if re-saving existing ImageVCML.

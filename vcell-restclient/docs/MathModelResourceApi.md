@@ -4,16 +4,16 @@ All URIs are relative to *https://vcell.cam.uchc.edu*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
-| [**deleteMathModel**](MathModelResourceApi.md#deleteMathModel) | **DELETE** /api/v1/mathModel/{id} |  |
-| [**deleteMathModelWithHttpInfo**](MathModelResourceApi.md#deleteMathModelWithHttpInfo) | **DELETE** /api/v1/mathModel/{id} |  |
-| [**getSummaries**](MathModelResourceApi.md#getSummaries) | **GET** /api/v1/mathModel/summaries |  |
-| [**getSummariesWithHttpInfo**](MathModelResourceApi.md#getSummariesWithHttpInfo) | **GET** /api/v1/mathModel/summaries |  |
-| [**getSummary**](MathModelResourceApi.md#getSummary) | **GET** /api/v1/mathModel/summary/{id} |  |
-| [**getSummaryWithHttpInfo**](MathModelResourceApi.md#getSummaryWithHttpInfo) | **GET** /api/v1/mathModel/summary/{id} |  |
-| [**getVCML**](MathModelResourceApi.md#getVCML) | **GET** /api/v1/mathModel/{id} |  |
-| [**getVCMLWithHttpInfo**](MathModelResourceApi.md#getVCMLWithHttpInfo) | **GET** /api/v1/mathModel/{id} |  |
-| [**saveMathModel**](MathModelResourceApi.md#saveMathModel) | **POST** /api/v1/mathModel |  |
-| [**saveMathModelWithHttpInfo**](MathModelResourceApi.md#saveMathModelWithHttpInfo) | **POST** /api/v1/mathModel |  |
+| [**deleteMathModel**](MathModelResourceApi.md#deleteMathModel) | **DELETE** /api/v1/mathModel/{id} | Delete Math Model |
+| [**deleteMathModelWithHttpInfo**](MathModelResourceApi.md#deleteMathModelWithHttpInfo) | **DELETE** /api/v1/mathModel/{id} | Delete Math Model |
+| [**getSummaries**](MathModelResourceApi.md#getSummaries) | **GET** /api/v1/mathModel/summaries | Get Math Model Summaries |
+| [**getSummariesWithHttpInfo**](MathModelResourceApi.md#getSummariesWithHttpInfo) | **GET** /api/v1/mathModel/summaries | Get Math Model Summaries |
+| [**getSummary**](MathModelResourceApi.md#getSummary) | **GET** /api/v1/mathModel/summary/{id} | Get Math Model Summary |
+| [**getSummaryWithHttpInfo**](MathModelResourceApi.md#getSummaryWithHttpInfo) | **GET** /api/v1/mathModel/summary/{id} | Get Math Model Summary |
+| [**getVCML**](MathModelResourceApi.md#getVCML) | **GET** /api/v1/mathModel/{id} | Get Math Model |
+| [**getVCMLWithHttpInfo**](MathModelResourceApi.md#getVCMLWithHttpInfo) | **GET** /api/v1/mathModel/{id} | Get Math Model |
+| [**saveMathModel**](MathModelResourceApi.md#saveMathModel) | **POST** /api/v1/mathModel | Save |
+| [**saveMathModelWithHttpInfo**](MathModelResourceApi.md#saveMathModelWithHttpInfo) | **POST** /api/v1/mathModel | Save |
 
 
 
@@ -21,7 +21,7 @@ All URIs are relative to *https://vcell.cam.uchc.edu*
 
 > void deleteMathModel(id)
 
-
+Delete Math Model
 
 Remove specific Math Model.
 
@@ -89,7 +89,7 @@ No authorization required
 
 > ApiResponse<Void> deleteMathModel deleteMathModelWithHttpInfo(id)
 
-
+Delete Math Model
 
 Remove specific Math Model.
 
@@ -161,7 +161,7 @@ No authorization required
 
 > List<MathModelSummary> getSummaries(includePublicAndShared)
 
-
+Get Math Model Summaries
 
 Return MathModel summaries.
 
@@ -227,7 +227,7 @@ No authorization required
 
 > ApiResponse<List<MathModelSummary>> getSummaries getSummariesWithHttpInfo(includePublicAndShared)
 
-
+Get Math Model Summaries
 
 Return MathModel summaries.
 
@@ -297,7 +297,7 @@ No authorization required
 
 > MathModelSummary getSummary(id)
 
-
+Get Math Model Summary
 
 All of the text based information about a MathModel (summary, version, publication status, etc...), but not the actual MathModel itself.
 
@@ -365,7 +365,7 @@ No authorization required
 
 > ApiResponse<MathModelSummary> getSummary getSummaryWithHttpInfo(id)
 
-
+Get Math Model Summary
 
 All of the text based information about a MathModel (summary, version, publication status, etc...), but not the actual MathModel itself.
 
@@ -437,7 +437,7 @@ No authorization required
 
 > String getVCML(id)
 
-
+Get Math Model
 
 Returns MathModel in VCML format.
 
@@ -505,7 +505,7 @@ No authorization required
 
 > ApiResponse<String> getVCML getVCMLWithHttpInfo(id)
 
-
+Get Math Model
 
 Returns MathModel in VCML format.
 
@@ -577,7 +577,7 @@ No authorization required
 
 > String saveMathModel(body, newName, simNames)
 
-
+Save
 
 ### Example
 
@@ -650,7 +650,7 @@ public class Example {
 
 > ApiResponse<String> saveMathModel saveMathModelWithHttpInfo(body, newName, simNames)
 
-
+Save
 
 ### Example
 

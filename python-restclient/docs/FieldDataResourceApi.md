@@ -181,7 +181,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **copy_models_field_data**
-> Dict[str, ExternalDataIdentifier] copy_models_field_data(source_model=source_model)
+> Dict[str, ExternalDataIdentifier] copy_models_field_data(source_model)
 
 Copy all existing field data from a BioModel/MathModel that you have access to, but don't own.
 
@@ -211,11 +211,11 @@ configuration = vcell_client.Configuration(
 with vcell_client.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = vcell_client.FieldDataResourceApi(api_client)
-    source_model = vcell_client.SourceModel() # SourceModel |  (optional)
+    source_model = vcell_client.SourceModel() # SourceModel | 
 
     try:
         # Copy all existing field data from a BioModel/MathModel that you have access to, but don't own.
-        api_response = api_instance.copy_models_field_data(source_model=source_model)
+        api_response = api_instance.copy_models_field_data(source_model)
         print("The response of FieldDataResourceApi->copy_models_field_data:\n")
         pprint(api_response)
     except Exception as e:
@@ -228,7 +228,7 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **source_model** | [**SourceModel**](SourceModel.md)|  | [optional] 
+ **source_model** | [**SourceModel**](SourceModel.md)|  | 
 
 ### Return type
 
@@ -247,6 +247,7 @@ Name | Type | Description  | Notes
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |
+**400** | Bad Request |  -  |
 **401** | Not Authenticated |  -  |
 **403** | Not Allowed |  -  |
 **422** | Unprocessable content submitted |  -  |
@@ -396,6 +397,7 @@ void (empty response body)
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **201** | Created |  -  |
+**400** | Bad Request |  -  |
 **401** | Not Authenticated |  -  |
 **403** | Not Allowed |  -  |
 **500** | Data Access Exception |  -  |
@@ -613,7 +615,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **save**
-> FieldDataSavedResults save(field_data=field_data)
+> FieldDataSavedResults save(field_data)
 
 Take the generated field data, and save it to the server. User may adjust the analyzed file before uploading to edit defaults.
 
@@ -643,11 +645,11 @@ configuration = vcell_client.Configuration(
 with vcell_client.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = vcell_client.FieldDataResourceApi(api_client)
-    field_data = vcell_client.FieldData() # FieldData |  (optional)
+    field_data = vcell_client.FieldData() # FieldData | 
 
     try:
         # Take the generated field data, and save it to the server. User may adjust the analyzed file before uploading to edit defaults.
-        api_response = api_instance.save(field_data=field_data)
+        api_response = api_instance.save(field_data)
         print("The response of FieldDataResourceApi->save:\n")
         pprint(api_response)
     except Exception as e:
@@ -660,7 +662,7 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **field_data** | [**FieldData**](FieldData.md)|  | [optional] 
+ **field_data** | [**FieldData**](FieldData.md)|  | 
 
 ### Return type
 
@@ -679,6 +681,7 @@ Name | Type | Description  | Notes
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |
+**400** | Bad Request |  -  |
 **401** | Not Authenticated |  -  |
 **403** | Not Allowed |  -  |
 **422** | Unprocessable content submitted |  -  |

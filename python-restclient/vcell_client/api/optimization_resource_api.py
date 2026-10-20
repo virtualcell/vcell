@@ -26,7 +26,7 @@ except ImportError:
 
 from pydantic import StrictInt
 
-from typing import List, Optional
+from typing import List
 
 from vcell_client.models.opt_problem import OptProblem
 from vcell_client.models.optimization_job_status import OptimizationJobStatus
@@ -847,7 +847,7 @@ class OptimizationResourceApi:
     @validate_call
     def submit_optimization(
         self,
-        opt_problem: Optional[OptProblem] = None,
+        opt_problem: OptProblem,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -864,7 +864,7 @@ class OptimizationResourceApi:
         """Submit a new parameter estimation optimization job
 
 
-        :param opt_problem:
+        :param opt_problem: (required)
         :type opt_problem: OptProblem
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
@@ -898,6 +898,7 @@ class OptimizationResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "OptimizationJobStatus",
+            '400': None,
             '401': "VCellHTTPError",
             '403': None,
             '500': "VCellHTTPError"
@@ -917,7 +918,7 @@ class OptimizationResourceApi:
     @validate_call
     def submit_optimization_with_http_info(
         self,
-        opt_problem: Optional[OptProblem] = None,
+        opt_problem: OptProblem,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -934,7 +935,7 @@ class OptimizationResourceApi:
         """Submit a new parameter estimation optimization job
 
 
-        :param opt_problem:
+        :param opt_problem: (required)
         :type opt_problem: OptProblem
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
@@ -968,6 +969,7 @@ class OptimizationResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "OptimizationJobStatus",
+            '400': None,
             '401': "VCellHTTPError",
             '403': None,
             '500': "VCellHTTPError"
@@ -987,7 +989,7 @@ class OptimizationResourceApi:
     @validate_call
     def submit_optimization_without_preload_content(
         self,
-        opt_problem: Optional[OptProblem] = None,
+        opt_problem: OptProblem,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -1004,7 +1006,7 @@ class OptimizationResourceApi:
         """Submit a new parameter estimation optimization job
 
 
-        :param opt_problem:
+        :param opt_problem: (required)
         :type opt_problem: OptProblem
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
@@ -1038,6 +1040,7 @@ class OptimizationResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "OptimizationJobStatus",
+            '400': None,
             '401': "VCellHTTPError",
             '403': None,
             '500': "VCellHTTPError"

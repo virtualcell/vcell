@@ -84,9 +84,9 @@ public class ExportResourceApi {
   }
 
   /**
-   * 
+   * Create N 5 Export
    * Create an N5 (ImageJ compatible) export. The request must contain the standard export information, exportable data type, dataset name, and sub-volume specifications.
-   * @param n5ExportRequest  (optional)
+   * @param n5ExportRequest  (required)
    * @return Long
    * @throws ApiException if fails to make API call
    */
@@ -96,9 +96,9 @@ public class ExportResourceApi {
   }
 
   /**
-   * 
+   * Create N 5 Export
    * Create an N5 (ImageJ compatible) export. The request must contain the standard export information, exportable data type, dataset name, and sub-volume specifications.
-   * @param n5ExportRequest  (optional)
+   * @param n5ExportRequest  (required)
    * @return ApiResponse&lt;Long&gt;
    * @throws ApiException if fails to make API call
    */
@@ -132,6 +132,10 @@ public class ExportResourceApi {
   }
 
   private HttpRequest.Builder exportN5RequestBuilder(N5ExportRequest n5ExportRequest) throws ApiException {
+    // verify the required parameter 'n5ExportRequest' is set
+    if (n5ExportRequest == null) {
+      throw new ApiException(400, "Missing the required parameter 'n5ExportRequest' when calling exportN5");
+    }
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
@@ -157,7 +161,7 @@ public class ExportResourceApi {
     return localVarRequestBuilder;
   }
   /**
-   * 
+   * Poll Export Status
    * Get the status of your export jobs past the timestamp (Unix epoch in seconds).
    * @param timestamp  (optional)
    * @return List&lt;ExportEvent&gt;
@@ -169,7 +173,7 @@ public class ExportResourceApi {
   }
 
   /**
-   * 
+   * Poll Export Status
    * Get the status of your export jobs past the timestamp (Unix epoch in seconds).
    * @param timestamp  (optional)
    * @return ApiResponse&lt;List&lt;ExportEvent&gt;&gt;

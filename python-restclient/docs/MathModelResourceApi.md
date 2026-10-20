@@ -4,17 +4,17 @@ All URIs are relative to *https://vcell.cam.uchc.edu*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**delete_math_model**](MathModelResourceApi.md#delete_math_model) | **DELETE** /api/v1/mathModel/{id} | 
-[**get_summaries**](MathModelResourceApi.md#get_summaries) | **GET** /api/v1/mathModel/summaries | 
-[**get_summary**](MathModelResourceApi.md#get_summary) | **GET** /api/v1/mathModel/summary/{id} | 
-[**get_vcml**](MathModelResourceApi.md#get_vcml) | **GET** /api/v1/mathModel/{id} | 
-[**save_math_model**](MathModelResourceApi.md#save_math_model) | **POST** /api/v1/mathModel | 
+[**delete_math_model**](MathModelResourceApi.md#delete_math_model) | **DELETE** /api/v1/mathModel/{id} | Delete Math Model
+[**get_summaries**](MathModelResourceApi.md#get_summaries) | **GET** /api/v1/mathModel/summaries | Get Math Model Summaries
+[**get_summary**](MathModelResourceApi.md#get_summary) | **GET** /api/v1/mathModel/summary/{id} | Get Math Model Summary
+[**get_vcml**](MathModelResourceApi.md#get_vcml) | **GET** /api/v1/mathModel/{id} | Get Math Model
+[**save_math_model**](MathModelResourceApi.md#save_math_model) | **POST** /api/v1/mathModel | Save
 
 
 # **delete_math_model**
 > delete_math_model(id)
 
-
+Delete Math Model
 
 Remove specific Math Model.
 
@@ -41,6 +41,7 @@ with vcell_client.ApiClient(configuration) as api_client:
     id = 'id_example' # str | 
 
     try:
+        # Delete Math Model
         api_instance.delete_math_model(id)
     except Exception as e:
         print("Exception when calling MathModelResourceApi->delete_math_model: %s\n" % e)
@@ -81,7 +82,7 @@ No authorization required
 # **get_summaries**
 > List[MathModelSummary] get_summaries(include_public_and_shared=include_public_and_shared)
 
-
+Get Math Model Summaries
 
 Return MathModel summaries.
 
@@ -109,6 +110,7 @@ with vcell_client.ApiClient(configuration) as api_client:
     include_public_and_shared = True # bool | Include MathModel summaries that are public and shared with the requester. Default is true. (optional)
 
     try:
+        # Get Math Model Summaries
         api_response = api_instance.get_summaries(include_public_and_shared=include_public_and_shared)
         print("The response of MathModelResourceApi->get_summaries:\n")
         pprint(api_response)
@@ -148,7 +150,7 @@ No authorization required
 # **get_summary**
 > MathModelSummary get_summary(id)
 
-
+Get Math Model Summary
 
 All of the text based information about a MathModel (summary, version, publication status, etc...), but not the actual MathModel itself.
 
@@ -176,6 +178,7 @@ with vcell_client.ApiClient(configuration) as api_client:
     id = 'id_example' # str | 
 
     try:
+        # Get Math Model Summary
         api_response = api_instance.get_summary(id)
         print("The response of MathModelResourceApi->get_summary:\n")
         pprint(api_response)
@@ -217,7 +220,7 @@ No authorization required
 # **get_vcml**
 > str get_vcml(id)
 
-
+Get Math Model
 
 Returns MathModel in VCML format.
 
@@ -244,6 +247,7 @@ with vcell_client.ApiClient(configuration) as api_client:
     id = 'id_example' # str | 
 
     try:
+        # Get Math Model
         api_response = api_instance.get_vcml(id)
         print("The response of MathModelResourceApi->get_vcml:\n")
         pprint(api_response)
@@ -285,7 +289,7 @@ No authorization required
 # **save_math_model**
 > str save_math_model(body, new_name=new_name, sim_names=sim_names)
 
-
+Save
 
 ### Example
 
@@ -316,6 +320,7 @@ with vcell_client.ApiClient(configuration) as api_client:
     sim_names = ['sim_names_example'] # List[str] | The name of simulations that will be prepared for future execution. (optional)
 
     try:
+        # Save
         api_response = api_instance.save_math_model(body, new_name=new_name, sim_names=sim_names)
         print("The response of MathModelResourceApi->save_math_model:\n")
         pprint(api_response)

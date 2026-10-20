@@ -63,7 +63,7 @@ public class Example {
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **publication** | [**Publication**](Publication.md)|  | [optional] |
+| **publication** | [**Publication**](Publication.md)|  | |
 
 ### Return type
 
@@ -135,7 +135,7 @@ public class Example {
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **publication** | [**Publication**](Publication.md)|  | [optional] |
+| **publication** | [**Publication**](Publication.md)|  | |
 
 ### Return type
 
@@ -602,7 +602,7 @@ public class Example {
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **id** | **Long**|  | |
-| **publishModelsRequest** | [**PublishModelsRequest**](PublishModelsRequest.md)|  | [optional] |
+| **publishModelsRequest** | [**PublishModelsRequest**](PublishModelsRequest.md)|  | |
 
 ### Return type
 
@@ -622,6 +622,7 @@ null (empty response body)
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **204** | No Content |  -  |
+| **400** | Bad Request |  -  |
 | **401** | Not Authenticated |  -  |
 | **403** | Not Allowed |  -  |
 | **404** | Not found |  -  |
@@ -675,7 +676,7 @@ public class Example {
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **id** | **Long**|  | |
-| **publishModelsRequest** | [**PublishModelsRequest**](PublishModelsRequest.md)|  | [optional] |
+| **publishModelsRequest** | [**PublishModelsRequest**](PublishModelsRequest.md)|  | |
 
 ### Return type
 
@@ -695,6 +696,7 @@ ApiResponse<Void>
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **204** | No Content |  -  |
+| **400** | Bad Request |  -  |
 | **401** | Not Authenticated |  -  |
 | **403** | Not Allowed |  -  |
 | **404** | Not found |  -  |
@@ -745,7 +747,7 @@ public class Example {
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **publication** | [**Publication**](Publication.md)|  | [optional] |
+| **publication** | [**Publication**](Publication.md)|  | |
 
 ### Return type
 
@@ -817,7 +819,7 @@ public class Example {
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **publication** | [**Publication**](Publication.md)|  | [optional] |
+| **publication** | [**Publication**](Publication.md)|  | |
 
 ### Return type
 

@@ -97,6 +97,7 @@ export class MathModelResourceService implements MathModelResourceServiceInterfa
     }
 
     /**
+     * Delete Math Model
      * Remove specific Math Model.
      * @param id 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
@@ -155,6 +156,7 @@ export class MathModelResourceService implements MathModelResourceServiceInterfa
     }
 
     /**
+     * Get Math Model Summaries
      * Return MathModel summaries.
      * @param includePublicAndShared Include MathModel summaries that are public and shared with the requester. Default is true.
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
@@ -217,6 +219,7 @@ export class MathModelResourceService implements MathModelResourceServiceInterfa
     }
 
     /**
+     * Get Math Model Summary
      * All of the text based information about a MathModel (summary, version, publication status, etc...), but not the actual MathModel itself.
      * @param id 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
@@ -275,6 +278,7 @@ export class MathModelResourceService implements MathModelResourceServiceInterfa
     }
 
     /**
+     * Get Math Model
      * Returns MathModel in VCML format.
      * @param id 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
@@ -334,6 +338,7 @@ export class MathModelResourceService implements MathModelResourceServiceInterfa
     }
 
     /**
+     * Save
      * @param body 
      * @param newName Name to save new MathModel under. Leave blank if re-saving existing MathModel.
      * @param simNames The name of simulations that will be prepared for future execution.

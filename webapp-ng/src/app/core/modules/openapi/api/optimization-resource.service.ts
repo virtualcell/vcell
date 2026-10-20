@@ -292,10 +292,13 @@ export class OptimizationResourceService implements OptimizationResourceServiceI
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public submitOptimization(optProblem?: OptProblem, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<OptimizationJobStatus>;
-    public submitOptimization(optProblem?: OptProblem, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<OptimizationJobStatus>>;
-    public submitOptimization(optProblem?: OptProblem, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<OptimizationJobStatus>>;
-    public submitOptimization(optProblem?: OptProblem, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
+    public submitOptimization(optProblem: OptProblem, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<OptimizationJobStatus>;
+    public submitOptimization(optProblem: OptProblem, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<OptimizationJobStatus>>;
+    public submitOptimization(optProblem: OptProblem, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<OptimizationJobStatus>>;
+    public submitOptimization(optProblem: OptProblem, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
+        if (optProblem === null || optProblem === undefined) {
+            throw new Error('Required parameter optProblem was null or undefined when calling submitOptimization.');
+        }
 
         let localVarHeaders = this.defaultHeaders;
 
