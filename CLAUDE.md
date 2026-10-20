@@ -39,7 +39,7 @@ mvn compile test-compile -pl vcell-rest -am
 
 **Java:** 17
 **Maven:** 3.8+
-**Quarkus:** 3.5.2 (vcell-rest, vcell-server)
+**Quarkus:** 3.40 LTS (vcell-rest only)
 
 Two traps that cost real debugging time:
 

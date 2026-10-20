@@ -88,7 +88,7 @@ Client displays progress (objective function vs iteration graph, best parameter 
 The optimization messaging uses **cross-protocol communication** through an Apache Artemis broker.
 
 **Protocol mapping:**
-- **vcell-rest** uses **AMQP 1.0** via Quarkus SmallRye Reactive Messaging (`quarkus-smallrye-reactive-messaging-amqp`)
+- **vcell-rest** uses **AMQP 1.0** via Quarkus SmallRye Reactive Messaging (`quarkus-messaging-amqp`)
 - **vcell-submit** uses **OpenWire JMS** via ActiveMQ 5.x client (`org.apache.activemq.ActiveMQConnectionFactory`)
 - **Artemis** accepts both protocols on port 61616 (all-protocol acceptor) and routes messages between them
 
