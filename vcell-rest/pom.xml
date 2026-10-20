@@ -183,6 +183,13 @@
         </exclusion>
       </exclusions>
     </dependency>
+    <!-- log4j 1.x API bridge: JSBML (SBMLReader) logs through org.apache.log4j at run time.
+         No longer managed by the Quarkus BOM, so the version is pinned here. -->
+    <dependency>
+      <groupId>org.jboss.logmanager</groupId>
+      <artifactId>log4j-jboss-logmanager</artifactId>
+      <version>${log4j-jboss-logmanager.version}</version>
+    </dependency>
     <dependency>
       <groupId>org.jboss.slf4j</groupId>
       <artifactId>slf4j-jboss-logmanager</artifactId>
