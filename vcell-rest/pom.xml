@@ -12,17 +12,17 @@
   <artifactId>vcell-rest</artifactId>
   <version>1.0.0-SNAPSHOT</version>
   <properties>
-    <compiler-plugin.version>3.11.0</compiler-plugin.version>
+    <compiler-plugin.version>3.12.1</compiler-plugin.version>
     <maven.compiler.release>17</maven.compiler.release>
 <!--    <ojdbc-bom.version>19.20.0.0</ojdbc-bom.version>-->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
     <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
-    <quarkus.platform.version>3.5.2</quarkus.platform.version>
+    <quarkus.platform.version>3.40.1.1</quarkus.platform.version>
     <skipITs>true</skipITs>
-    <surefire-plugin.version>3.1.2</surefire-plugin.version>
-    <surefire-plugin.version>3.2.2</surefire-plugin.version>
+    <surefire-plugin.version>3.2.3</surefire-plugin.version>
+    <surefire-plugin.version>3.2.3</surefire-plugin.version>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -38,7 +38,7 @@
   <dependencies>
     <dependency>
       <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-resteasy-reactive-jackson</artifactId>
+      <artifactId>quarkus-rest-jackson</artifactId>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
@@ -46,7 +46,7 @@
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-resteasy-reactive</artifactId>
+      <artifactId>quarkus-rest</artifactId>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
@@ -59,7 +59,6 @@
     <dependency>
       <groupId>com.oracle.database.jdbc</groupId>
       <artifactId>ojdbc11</artifactId>
-      <version>${ojdbc-bom.version}</version>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
@@ -68,7 +67,6 @@
     <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
-      <version>${postgresql.version}</version>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
@@ -118,7 +116,7 @@
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-junit5</artifactId>
+      <artifactId>quarkus-junit</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -146,7 +144,6 @@
     <dependency>
       <groupId>net.minidev</groupId>
       <artifactId>json-smart</artifactId>
-      <version>${json-smart.version}</version>
     </dependency>
     <dependency>
       <groupId>io.rest-assured</groupId>
@@ -235,7 +232,6 @@
     <dependency>
       <groupId>org.jboss.logmanager</groupId>
       <artifactId>log4j2-jboss-logmanager</artifactId>
-      <version>${log4j2-jboss-logmanager.version}</version>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
@@ -252,7 +248,7 @@
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-smallrye-reactive-messaging-amqp</artifactId>
+      <artifactId>quarkus-messaging-amqp</artifactId>
     </dependency>
     <dependency>
       <groupId>org.awaitility</groupId>
@@ -313,6 +309,7 @@
             <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
 <!--            <maven.home>${maven.home}</maven.home>-->
           </systemPropertyVariables>
+          <argLine>@{argLine}</argLine>
         </configuration>
       </plugin>
       <plugin>
@@ -333,6 +330,9 @@
             </configuration>
           </execution>
         </executions>
+        <configuration>
+          <argLine>@{argLine}</argLine>
+        </configuration>
       </plugin>
     </plugins>
   </build>
@@ -391,7 +391,8 @@
       </activation>
       <properties>
         <skipITs>false</skipITs>
-        <quarkus.package.type>native</quarkus.package.type>
+        <quarkus.native.enabled>true</quarkus.native.enabled>
+        <quarkus.package.jar.enabled>false</quarkus.package.jar.enabled>
       </properties>
     </profile>
   </profiles>
