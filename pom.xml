@@ -174,13 +174,13 @@
 		<jung-graph-impl.version>2.1.1</jung-graph-impl.version>
 		<jung-samples.version>2.1.1</jung-samples.version>
 		<junit-jupiter.version>5.10.1</junit-jupiter.version>
-		<log4j-slf4j2-impl.version>2.24.0</log4j-slf4j2-impl.version>
-		<log4j-1.2-api.version>2.24.0</log4j-1.2-api.version>
-		<log4j-api.version>2.24.0</log4j-api.version>
-		<log4j-core.version>2.24.0</log4j-core.version>
-		<log4j-jul.version>2.24.0</log4j-jul.version>
+		<log4j-slf4j2-impl.version>2.24.3</log4j-slf4j2-impl.version>
+		<log4j-1.2-api.version>2.24.3</log4j-1.2-api.version>
+		<log4j-api.version>2.24.3</log4j-api.version>
+		<log4j-core.version>2.24.3</log4j-core.version>
+		<log4j-jul.version>2.24.3</log4j-jul.version>
 		<log4j2-jboss-logmanager.version>1.1.2.Final</log4j2-jboss-logmanager.version>
-		<log4j-layout-template-json.version>2.24.0</log4j-layout-template-json.version>
+		<log4j-layout-template-json.version>2.24.3</log4j-layout-template-json.version>
 		<lz4.version>1.8.0</lz4.version>
 		<microprofile-openapi.version>3.1</microprofile-openapi.version>
 		<mongodb-driver-sync.version>5.0.0</mongodb-driver-sync.version>
