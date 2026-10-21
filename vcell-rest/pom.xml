@@ -171,7 +171,7 @@
         </exclusion>
         <exclusion>
           <groupId>org.apache.logging.log4j</groupId>
-          <artifactId>log4j-1.2-api</artifactId>
+          <artifactId>log4j-jcl</artifactId>
         </exclusion>
         <exclusion>
           <groupId>org.apache.logging.log4j</groupId>
@@ -186,10 +186,6 @@
           <artifactId>itext</artifactId>
         </exclusion>
       </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss.logmanager</groupId>
-      <artifactId>log4j-jboss-logmanager</artifactId>
     </dependency>
     <dependency>
       <groupId>org.jboss.slf4j</groupId>
