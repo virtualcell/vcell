@@ -175,7 +175,7 @@
 		<jung-samples.version>2.1.1</jung-samples.version>
 		<junit-jupiter.version>5.10.1</junit-jupiter.version>
 		<log4j-slf4j2-impl.version>2.24.3</log4j-slf4j2-impl.version>
-		<log4j-1.2-api.version>2.24.3</log4j-1.2-api.version>
+		<log4j-jcl.version>2.24.3</log4j-jcl.version>
 		<log4j-api.version>2.24.3</log4j-api.version>
 		<log4j-core.version>2.24.3</log4j-core.version>
 		<log4j-jul.version>2.24.3</log4j-jul.version>

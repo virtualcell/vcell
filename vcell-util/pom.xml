@@ -106,8 +106,15 @@
 		</dependency>
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
-			<artifactId>log4j-1.2-api</artifactId>
-			<version>${log4j-1.2-api.version}</version>
+			<artifactId>log4j-jcl</artifactId>
+			<version>${log4j-jcl.version}</version>
+			<exclusions>
+				<!-- commons-logging 1.2 comes from commons-configuration2 / commons-beanutils -->
+				<exclusion>
+					<groupId>commons-logging</groupId>
+					<artifactId>commons-logging</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
