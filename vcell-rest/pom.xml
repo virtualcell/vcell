@@ -184,7 +184,19 @@
       </exclusions>
     </dependency>
     <!-- log4j 1.x API bridge: JSBML (SBMLReader) logs through org.apache.log4j at run time.
-         No longer managed by the Quarkus BOM, so the version is pinned here. -->
+         No longer managed by the Quarkus BOM, so the version is pinned here.
+
+         This jar carries Red Hat's patched copy of log4j 1.2, which scanners may flag by package
+         name. It is kept deliberately:
+         - net.SocketNode reads through FilteredObjectInputStream with an allow-list
+           (the CVE-2019-17571 fix), and nothing in vcell-rest starts a log4j socket listener.
+         - The classes behind the other log4j 1.x CVEs (JMSAppender, JMSSink, JDBCAppender,
+           Chainsaw) are not in the jar.
+         - Apache's log4j-1.2-api is not a drop-in replacement here: its org.apache.log4j.Category
+           references log4j-core (LogEvent, Appender), so the first Logger.getLogger call fails
+           with ClassNotFoundException unless log4j-core is added, and that would put a second
+           Log4j 2 backend next to JBoss LogManager.
+         Remove this dependency once JSBML logs through the Log4j 2 API directly. -->
     <dependency>
       <groupId>org.jboss.logmanager</groupId>
       <artifactId>log4j-jboss-logmanager</artifactId>
