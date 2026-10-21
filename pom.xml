@@ -166,7 +166,7 @@
 		<joda-time.version>2.12.2</joda-time.version>
 		<jai-core.version>1.1.3</jai-core.version>
 		<javax-mail.version>1.4</javax-mail.version>
-		<jsbml.version>1.6.1-VCELL-4</jsbml.version>
+		<jsbml.version>1.6.1-VCELL-5</jsbml.version>
 		<jose4j.version>0.9.6</jose4j.version>
 		<json-smart.version>2.4.11</json-smart.version>
 		<jung-api.version>2.1.1</jung-api.version>

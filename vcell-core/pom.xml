@@ -463,7 +463,7 @@
 				</exclusion>
 				<exclusion>
 					<groupId>org.apache.logging.log4j</groupId>
-					<artifactId>log4j-1.2-api</artifactId>
+					<artifactId>log4j-api</artifactId>
 				</exclusion>
 				<exclusion>
 					<groupId>com.thoughtworks.xstream</groupId>
