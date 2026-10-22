@@ -249,14 +249,18 @@ for ((i = 0; i < TOTAL_JOBS; i++)); do
 
     # wait for a finished task before launching a new one if we hit the concurrency limit
     while (( running_jobs >= max_concurrent_jobs )); do
-        # Check watchdog health
-        if ! kill -0 $watchdog_pid 2>/dev/null; then
-            echo "Watchdog died unexpectedly at $(date)" >> "${LOG_FILE}"
+        # Check watchdog health; exit code 0 means it saw all runs at 100% and finished normally
+        if [[ -n "${watchdog_pid}" ]] && ! kill -0 $watchdog_pid 2>/dev/null; then
             wait $watchdog_pid
             watchdog_exit=$?
-            callExitProcessor $watchdog_exit
-            echo "Watchdog failed; exiting $watchdog_exit" | tee -a "${LOG_FILE}"
-            exit $watchdog_exit
+            if [[ $watchdog_exit -ne 0 ]]; then
+                echo "Watchdog died unexpectedly at $(date)" >> "${LOG_FILE}"
+                callExitProcessor $watchdog_exit
+                echo "Watchdog failed; exiting $watchdog_exit" | tee -a "${LOG_FILE}"
+                exit $watchdog_exit
+            fi
+            echo "Watchdog finished normally at $(date)" >> "${LOG_FILE}"
+            watchdog_pid=""          # it's gone, don't check it again
         fi
         for idx in "${!job_pids[@]}"; do
             pid="${job_pids[$idx]}"
@@ -266,7 +270,7 @@ for ((i = 0; i < TOTAL_JOBS; i++)); do
                 exit_code=$?
                 if [[ $exit_code -ne 0 ]]; then
                   callExitProcessor $exit_code
-                  echo "Simulation failed; exiting ${stat}" | tee -a "${LOG_FILE}"
+                  echo "Simulation failed; exiting ${exit_code}" | tee -a "${LOG_FILE}"
                   exit $exit_code
                 fi
                 job_index=${job_pid_map[$pid]:-unknown}  # retrieve original task index
@@ -306,7 +310,7 @@ for pid in "${job_pids[@]}"; do
     exit_code=$?
     if [[ $exit_code -ne 0 ]]; then
       callExitProcessor $exit_code
-      echo "Simulation failed; exiting ${stat}" | tee -a "${LOG_FILE}"
+      echo "Simulation failed; exiting ${exit_code}" | tee -a "${LOG_FILE}"
       exit $exit_code
     fi
     job_index=${job_pid_map[$pid]:-unknown}
@@ -331,8 +335,24 @@ for pid in "${job_pids[@]}"; do
 #    fi
 done
 echo "All simulations finished at $(date)" >> "${LOG_FILE}"
-echo "Waiting one watchdog tick to ensure graceful watchdog exit" >> "$LOG_FILE"
-sleep "$WATCHDOG_TICK_SECONDS"
+# the watchdog exits by itself once it sees all runs at 100%; it may be asleep for up to one adaptive tick
+# (max 120 s), so we wait a bit longer than that, then kill it if it's still alive
+# a non-zero watchdog exit here is only logged: all simulations succeeded, only progress reporting was affected
+WATCHDOG_FINAL_WAIT_SECONDS=150
+if [[ -n "${watchdog_pid}" ]]; then
+    for ((t = 0; t < WATCHDOG_FINAL_WAIT_SECONDS; t++)); do
+        if ! kill -0 $watchdog_pid 2>/dev/null; then break; fi
+        sleep 1
+    done
+    if kill -0 $watchdog_pid 2>/dev/null; then
+        echo "Watchdog still running after ${WATCHDOG_FINAL_WAIT_SECONDS} seconds, killing it" >> "${LOG_FILE}"
+        kill $watchdog_pid 2>/dev/null
+    fi
+    wait $watchdog_pid
+    watchdog_exit=$?
+    echo "Watchdog finished with exit code ${watchdog_exit} at $(date)" >> "${LOG_FILE}"
+    watchdog_pid=""
+fi
 
 # ----------------------------------------------------------------------------------------------
 # postprocess solver invocation (runs after all simulations finish)
@@ -343,16 +363,11 @@ timeout "${JOB_TIMEOUT_SECONDS}s" \
         "${INPUT_DIR}/SimID_${SIM_KEY}_0_.langevinInput" \
         ${TOTAL_JOBS} \
         --output-log="${LOG_DIR}/SimID_${SIM_KEY}_0_P.log"
-#        --output-log="${LOG_DIR}/SimID_${SIM_KEY}_0_P.log" \
-#        --vc-print-status &
-
-last_pid=$!
-wait $last_pid
-exit_code=$?
-echo "Task 'Last' with PID $last_pid finished with exit code $exit_code at $(date)" >> "${LOG_FILE}"
+exit_code=$?        # postprocess runs in the foreground, its exit status is available right away
+echo "Postprocess finished with exit code $exit_code at $(date)" >> "${LOG_FILE}"
 if [[ $exit_code -ne 0 ]]; then
   callExitProcessor $exit_code
-  echo "Postprocessor failed; exiting ${stat}" | tee -a "${LOG_FILE}"
+  echo "Postprocessor failed; exiting ${exit_code}" | tee -a "${LOG_FILE}"
   exit $exit_code
 fi
 timepoint=$(date +%s)
