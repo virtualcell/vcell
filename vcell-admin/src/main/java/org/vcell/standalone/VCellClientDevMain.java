@@ -57,8 +57,8 @@ public class VCellClientDevMain {
 			// the levels here and drop a jsbml.log into the working directory.
 			VCellClientLogging.configure();
 
-			// Screen menu bar and title bar appearance; macOS only reads these before AWT starts
-			VCellLookAndFeel.setMacOSWindowProperties();
+			// Screen menu bar, title bar appearance, Linux font smoothing; the JDK only reads these before AWT starts
+			VCellLookAndFeel.setPlatformProperties();
 
 			ErrorUtils.setDebug(true);
 			PropertyLoader.loadProperties(ArrayUtils.addAll(REQUIRED_CLIENT_PROPERTIES, REQUIRED_LOCAL_PROPERTIES));

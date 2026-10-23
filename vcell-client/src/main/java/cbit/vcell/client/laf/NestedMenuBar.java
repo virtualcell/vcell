@@ -6,7 +6,7 @@ import javax.swing.plaf.MenuBarUI;
 /**
  * A menu bar placed inside a window's content, rather than installed with {@code setJMenuBar}.
  * <p>
- * With {@code apple.laf.useScreenMenuBar} on (see {@link VCellLookAndFeel#setMacOSWindowProperties()}), the JDK gives
+ * With {@code apple.laf.useScreenMenuBar} on (see {@link VCellLookAndFeel#setPlatformProperties()}), the JDK gives
  * every JMenuBar Aqua's MenuBarUI, whatever the look and feel, so that window menu bars can move to the macOS menu
  * bar. A menu bar nested in content is painted in place instead, and Aqua's painter throws a NullPointerException
  * under any other look and feel. This one always takes the current look and feel's own UI.

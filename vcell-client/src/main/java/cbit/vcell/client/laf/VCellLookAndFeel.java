@@ -54,7 +54,7 @@ public class VCellLookAndFeel {
 			Date.class, Icon.class, ImageIcon.class, Boolean.class };
 
 	static {
-		VCellLookAndFeel.setMacOSWindowProperties(); // must precede any UIManager call; installLookAndFeel already starts AWT
+		VCellLookAndFeel.setPlatformProperties(); // must precede any UIManager call; installLookAndFeel already starts AWT
 		boolean osIsDarkTheme = themeDetector.isDark();
 
 		UIManager.installLookAndFeel(FLAT_LIGHT_LAF, com.formdev.flatlaf.FlatLightLaf.class.getName());
@@ -90,10 +90,15 @@ public class VCellLookAndFeel {
 
 
 	/**
-	 * macOS reads these once, when AWT starts, so this must run before any Swing/AWT use.
-	 * The title bar appearance cannot change afterward, even if the look and feel does.
+	 * The JDK reads these once, when AWT starts, so this must run before any Swing/AWT use.
+	 * On macOS the title bar appearance set here holds until a theme switch changes it through AppKit.
 	 */
-	public static void setMacOSWindowProperties() {
+	public static void setPlatformProperties() {
+		// Linux desktops other than GNOME often give Java no font smoothing hints, leaving text unsmoothed;
+		// a -Dawt.useSystemAAFontSettings=... on the command line still wins
+		if (VCellLookAndFeel.osInfo.isLinux() && null == System.getProperty("awt.useSystemAAFontSettings")) {
+			System.setProperty("awt.useSystemAAFontSettings", "on");
+		}
 		if (!VCellLookAndFeel.osInfo.isMac()) return;
 		System.setProperty("apple.laf.useScreenMenuBar", "true");
 		if (VCellLookAndFeel.themeDetector.isDark()) System.setProperty("apple.awt.application.appearance", "NSAppearanceNameDarkAqua");

@@ -93,8 +93,8 @@ public class VCellClientMain implements Callable<Integer> {
         java.security.Security.setProperty("networkaddress.cache.ttl", "30");
         java.security.Security.setProperty("networkaddress.cache.negative.ttl", "0");
 
-        // Screen menu bar and title bar appearance; macOS only reads these before AWT starts
-        VCellLookAndFeel.setMacOSWindowProperties();
+        // Screen menu bar, title bar appearance, Linux font smoothing; the JDK only reads these before AWT starts
+        VCellLookAndFeel.setPlatformProperties();
 
         System.out.println("starting with arguments " + Arrays.asList(args));
         int exitCode = 1;
