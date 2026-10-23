@@ -10,6 +10,7 @@
 
 package cbit.vcell.microscopy.gui.estparamwizard;
 
+import cbit.vcell.client.laf.VCellColors;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -78,7 +79,7 @@ public class EstParams_OneDiffComponentPanel extends JPanel {
 		
 		//set up tabbed pane for two kinds of models.
 		paramPanel=new JPanel(new GridBagLayout());
-		paramPanel.setForeground(new Color(0,0,244));
+		paramPanel.setForeground(VCellColors.getValueForeground());
 		paramPanel.setBorder(new EtchedBorder(Color.gray, Color.lightGray));
 		
 		//pure diffusion panel

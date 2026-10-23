@@ -1,5 +1,7 @@
 package org.vcell.model.bngl.gui;
 
+import cbit.vcell.client.laf.VCellColors;
+import cbit.vcell.client.laf.VCellLookAndFeel;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -48,8 +50,8 @@ public class BNGLDebuggerPanel extends JPanel {
 
 		getBnglPanel().getTextPane().setFont(new Font("monospaced", Font.PLAIN, 12));
 
-		getBnglPanel().getLineNumberPanel().setForeground(java.awt.Color.gray);
-		getBnglPanel().getLineNumberPanel().setBackground(java.awt.Color.white);
+		getBnglPanel().getLineNumberPanel().setForeground(VCellColors.getReadableForeground(java.awt.Color.gray));
+		getBnglPanel().getLineNumberPanel().setBackground(VCellLookAndFeel.getContentBackground());
 		
 		JPanel upperPanel = new JPanel();
 		upperPanel.setLayout(new BorderLayout());

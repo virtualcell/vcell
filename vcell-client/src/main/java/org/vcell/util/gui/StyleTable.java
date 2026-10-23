@@ -10,6 +10,7 @@
 
 package org.vcell.util.gui;
 
+import cbit.vcell.client.laf.VCellColors;
 import java.awt.Color;
 import java.awt.Component;
 
@@ -31,35 +32,33 @@ import javax.swing.table.TableModel;
 @SuppressWarnings("serial")
 public class StyleTable extends JTable {
 
-    public static Color color = new Color(166, 166, 255); // light blue
-
     public StyleTable(TableModel dm) {
         super(dm);
-        setGridColor(color);
-        setBorder(BorderFactory.createLineBorder(color, 2));
+        setGridColor(VCellColors.getLavender());
+        setBorder(BorderFactory.createLineBorder(VCellColors.getLavender(), 2));
         setRowHeight(getRowHeight()+5);
         JTableHeader header = getTableHeader();
-        header.setDefaultRenderer(createPlainTableHeaderRenderer(color));
+        header.setDefaultRenderer(createPlainTableHeaderRenderer());
     }
 
     public StyleTable() {
-        setGridColor(color);
-        setBorder(BorderFactory.createLineBorder(color, 2));
+        setGridColor(VCellColors.getLavender());
+        setBorder(BorderFactory.createLineBorder(VCellColors.getLavender(), 2));
         setRowHeight(getRowHeight()+5);
         JTableHeader header = getTableHeader();
-        header.setDefaultRenderer(createPlainTableHeaderRenderer(color));
+        header.setDefaultRenderer(createPlainTableHeaderRenderer());
 
     }
-    
+
     /**
      * Create plain table header cell renderer
      */
-    public static TableCellRenderer createPlainTableHeaderRenderer(final Color color) {
+    public static TableCellRenderer createPlainTableHeaderRenderer() {
         return new TableCellRenderer() {
             public Component getTableCellRendererComponent(JTable table, Object value,
                                                            boolean isSelected, boolean hasFocus, int row, int column) {
                 JLabel comp = new JLabel(value.toString(), JLabel.LEFT);
-                comp.setBackground(color);
+                comp.setBackground(VCellColors.getLavender());
                 comp.setOpaque(true);
                 comp.setBorder( new EmptyBorder(1, 5, 1, 1));
                 return comp;

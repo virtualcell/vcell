@@ -1,5 +1,6 @@
 package org.vcell.util.gui;
 
+import cbit.vcell.client.laf.VCellLookAndFeel;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dialog;
@@ -51,7 +52,7 @@ public class IndefiniteProgressDialog extends ProgressDialog implements ActionLi
         JPanel graphicPanel = new WorkingPanel(workingPanelTimer);
         Dimension ps = new Dimension(GRAPHIC_SIZE, GRAPHIC_SIZE);
         graphicPanel.setPreferredSize(ps);
-        graphicPanel.setBackground(Color.WHITE);
+        graphicPanel.setBackground(VCellLookAndFeel.getContentBackground());
         getContentPane().add(graphicPanel);                        // left
 
         JPanel rightPanel = new JPanel();
@@ -61,11 +62,11 @@ public class IndefiniteProgressDialog extends ProgressDialog implements ActionLi
         getContentPane().add(rightPanel);
 
         JPanel msgPanel = new JPanel();
-        msgPanel.setBackground(Color.white);
+        msgPanel.setBackground(VCellLookAndFeel.getContentBackground());
         rightPanel.add(msgPanel);
 
         JPanel cancelPanel = new JPanel();
-        cancelPanel.setBackground(Color.white);
+        cancelPanel.setBackground(VCellLookAndFeel.getContentBackground());
         rightPanel.add(cancelPanel);
 
         lblMessage = new JLabel("Message");

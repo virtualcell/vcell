@@ -1,5 +1,6 @@
 package cbit.vcell.solver.ode.gui;
 
+import cbit.vcell.client.laf.VCellColors;
 import java.awt.*;
 import java.math.BigInteger;
 
@@ -637,7 +638,7 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 				numberOfConcurrentJobsInfoLabel = new javax.swing.JLabel();
 				numberOfConcurrentJobsInfoLabel.setName("NumberOfConcurrentJobsInfoLabel");
 				numberOfConcurrentJobsInfoLabel.setText("");
-				numberOfConcurrentJobsInfoLabel.setForeground(Color.blue);
+				numberOfConcurrentJobsInfoLabel.setForeground(VCellColors.getValueForeground());
 				numberOfConcurrentJobsInfoLabel.setToolTipText(SsldUtils.LangevinConcurrentSimulationsToolTip);
 			} catch (java.lang.Throwable ivjExc) {
 				handleException(ivjExc);

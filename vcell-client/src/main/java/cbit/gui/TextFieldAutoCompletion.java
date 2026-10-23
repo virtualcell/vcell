@@ -10,6 +10,7 @@
 
 package cbit.gui;
 
+import cbit.vcell.client.laf.VCellColors;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
@@ -465,7 +466,7 @@ public class TextFieldAutoCompletion extends JTextField {
 //	       			autoCompJList.setSelectedIndex(0);
 //	       		}
 	       		autoCompJList.ensureIndexIsVisible(0);
-	       		autoCompJList.setSelectionBackground(Color.lightGray);				
+	       		autoCompJList.setSelectionBackground(VCellColors.getSubtleBackground());				
 				
 	       		try {
 	       			Rectangle loc = modelToView(getCaretPosition());

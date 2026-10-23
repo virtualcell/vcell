@@ -10,6 +10,7 @@
 
 package cbit.vcell.microscopy.gui.estparamwizard;
 
+import cbit.vcell.client.laf.VCellColors;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
@@ -68,7 +69,7 @@ public class EstParams_ReacBindingPanel extends JPanel {
 				
 		//set up tabbed pane for two kinds of models.
 		paramPanel=new JPanel();
-		paramPanel.setForeground(new Color(0,0,244));
+		paramPanel.setForeground(VCellColors.getValueForeground());
 		paramPanel.setBorder(new EtchedBorder(Color.gray, Color.lightGray));
 		paramPanel.setLayout(new GridBagLayout());
 	

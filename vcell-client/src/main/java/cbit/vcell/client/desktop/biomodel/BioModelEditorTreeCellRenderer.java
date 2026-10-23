@@ -10,6 +10,7 @@
 
 package cbit.vcell.client.desktop.biomodel;
 
+import cbit.vcell.client.laf.VCellColors;
 import java.awt.Component;
 import java.awt.Font;
 
@@ -67,11 +68,11 @@ public class BioModelEditorTreeCellRenderer extends DocumentEditorTreeCellRender
 			String text = ln.getText();
 			String qualifier = ln.getMiriamQualifier().getDescription();
 			if (link != null) {
-				String colorString = (sel)?"white":"blue";
+				String colorString = (sel)?"white":VCellColors.toHtmlColor(VCellColors.getValueForeground());
 				toolTipPrefix = "double-click to open link " + link;
 				labelText = "<html>"+qualifier+"&nbsp;<font color=\""+colorString+"\"><a href=" + link + ">" + text + "</a></font></html>";
 			}else{
-				String colorString = (sel)?"white":"black";
+				String colorString = (sel)?"white":VCellColors.toHtmlColor(getTextNonSelectionColor());
 				labelText = "<html>"+qualifier+"&nbsp;<font color=\""+colorString+"\">" + text + "</font></html>";
 			}
 		} else if (value instanceof BioModelNode) {

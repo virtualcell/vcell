@@ -10,6 +10,8 @@
 
 package cbit.vcell.client.desktop.biomodel;
 
+import cbit.vcell.client.laf.VCellColors;
+import cbit.vcell.client.laf.VCellLookAndFeel;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.MiriamManager;
 import cbit.vcell.biomodel.meta.MiriamManager.DataType;
@@ -291,7 +293,7 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 		gridy++;
 
 		JLabel linkLabel = new JLabel();
-		String s = "<html>" + "Navigate to" + "&nbsp;<font color=\"" + "blue" + "\"><a href=" + mdt.getDataTypeURL() + ">" + mdt.getDataTypeURL() + "</a></font>&nbsp;&nbsp;";
+		String s = "<html>" + "Navigate to" + "&nbsp;<font color=\"" + VCellColors.toHtmlColor(VCellColors.getValueForeground()) + "\"><a href=" + mdt.getDataTypeURL() + ">" + mdt.getDataTypeURL() + "</a></font>&nbsp;&nbsp;";
 		s += "and find the identifier ID, then paste it in the box above." + "</html>";
 		linkLabel.setToolTipText("Double-click to open link");
 		linkLabel.setText(s);
@@ -555,7 +557,7 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 
 			JPanel leftPanel = new JPanel();
 			leftPanel.setLayout(new GridBagLayout());
-			leftPanel.setBackground(Color.white);
+			leftPanel.setBackground(VCellLookAndFeel.getContentBackground());
 
 			int gridy = 0;
 			GridBagConstraints gbc = new java.awt.GridBagConstraints();
@@ -604,7 +606,7 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 
 			JPanel rightPanel = new JPanel();
 			rightPanel.setLayout(new GridBagLayout());
-			rightPanel.setBackground(Color.white);
+			rightPanel.setBackground(VCellLookAndFeel.getContentBackground());
 
 			gridy = 0;
 			gbc = new java.awt.GridBagConstraints();
@@ -739,7 +741,7 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 	private void initialize() {
 		try {
 			setLayout(new GridBagLayout());
-			setBackground(Color.white);
+			setBackground(VCellLookAndFeel.getContentBackground());
 
 			int gridy = 0;
 			GridBagConstraints gbc = new java.awt.GridBagConstraints();

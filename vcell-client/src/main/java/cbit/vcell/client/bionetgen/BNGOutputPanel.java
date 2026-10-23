@@ -9,6 +9,8 @@
  */
 
 package cbit.vcell.client.bionetgen;
+import cbit.vcell.client.laf.VCellColors;
+import cbit.vcell.client.laf.VCellLookAndFeel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -968,9 +970,9 @@ private javax.swing.JButton getHelpButton() {
 			ivjHelpButton = new javax.swing.JButton();
 			ivjHelpButton.setName("HelpButton");
 			ivjHelpButton.setText(DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.VC_BNG_INDEX_URL));
-			ivjHelpButton.setBackground(java.awt.Color.white);
+			ivjHelpButton.setBackground(VCellLookAndFeel.getContentBackground());
 			ivjHelpButton.setMaximumSize(new java.awt.Dimension(429, 27));
-			ivjHelpButton.setForeground(java.awt.Color.blue);
+			ivjHelpButton.setForeground(VCellColors.getValueForeground());
 			ivjHelpButton.setActionCommand(DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.VC_BNG_INDEX_URL));
 			ivjHelpButton.setFont(new java.awt.Font("Arial", 1, 14));
 			ivjHelpButton.setBounds(433, 81, 412, 27);
@@ -1060,8 +1062,8 @@ private javax.swing.JButton getJButtonManual() {
 			ivjJButtonManual = new javax.swing.JButton();
 			ivjJButtonManual.setName("JButtonManual");
 			ivjJButtonManual.setText(DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.VC_BNG_TUTORIAL_URL));
-			ivjJButtonManual.setBackground(java.awt.Color.white);
-			ivjJButtonManual.setForeground(java.awt.Color.blue);
+			ivjJButtonManual.setBackground(VCellLookAndFeel.getContentBackground());
+			ivjJButtonManual.setForeground(VCellColors.getValueForeground());
 			ivjJButtonManual.setActionCommand(DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.VC_BNG_TUTORIAL_URL));
 			ivjJButtonManual.setFont(new java.awt.Font("Arial", 1, 14));
 			ivjJButtonManual.setBounds(428, 218, 417, 25);
@@ -1087,8 +1089,8 @@ private javax.swing.JButton getJButtonManual1() {
 			ivjJButtonManual1 = new javax.swing.JButton();
 			ivjJButtonManual1.setName("JButtonManual1");
 			ivjJButtonManual1.setText(DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.VC_BNG_SAMPLES_URL));
-			ivjJButtonManual1.setBackground(java.awt.Color.white);
-			ivjJButtonManual1.setForeground(java.awt.Color.blue);
+			ivjJButtonManual1.setBackground(VCellLookAndFeel.getContentBackground());
+			ivjJButtonManual1.setForeground(VCellColors.getValueForeground());
 			ivjJButtonManual1.setActionCommand(DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.VC_BNG_SAMPLES_URL));
 			ivjJButtonManual1.setFont(new java.awt.Font("Arial", 1, 14));
 			ivjJButtonManual1.setBounds(430, 354, 417, 25);
@@ -1114,8 +1116,8 @@ private javax.swing.JButton getJButtonManual11() {
 			ivjJButtonManual11 = new javax.swing.JButton();
 			ivjJButtonManual11.setName("JButtonManual11");
 			ivjJButtonManual11.setText(DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.VC_BNG_FAQ_URL));
-			ivjJButtonManual11.setBackground(java.awt.Color.white);
-			ivjJButtonManual11.setForeground(java.awt.Color.blue);
+			ivjJButtonManual11.setBackground(VCellLookAndFeel.getContentBackground());
+			ivjJButtonManual11.setForeground(VCellColors.getValueForeground());
 			ivjJButtonManual11.setActionCommand(DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.VC_BNG_FAQ_URL));
 			ivjJButtonManual11.setFont(new java.awt.Font("Arial", 1, 14));
 			ivjJButtonManual11.setBounds(428, 600, 417, 25);
@@ -1144,7 +1146,7 @@ private javax.swing.JLabel getJLabelAbout() {
 			ivjJLabelAbout.setFont(new java.awt.Font("dialog", 0, 18));
 			ivjJLabelAbout.setText("About BioNetGen@Virtual Cell");
 			ivjJLabelAbout.setBounds(25, 80, 243, 28);
-			ivjJLabelAbout.setForeground(java.awt.Color.blue);
+			ivjJLabelAbout.setForeground(VCellColors.getValueForeground());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1169,7 +1171,7 @@ private javax.swing.JLabel getJLabelHelp() {
 			ivjJLabelHelp.setFont(new java.awt.Font("dialog", 0, 18));
 			ivjJLabelHelp.setText("A tutorial on how to write BioNetGen input file.");
 			ivjJLabelHelp.setBounds(30, 212, 385, 33);
-			ivjJLabelHelp.setForeground(java.awt.Color.blue);
+			ivjJLabelHelp.setForeground(VCellColors.getValueForeground());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1194,7 +1196,7 @@ private javax.swing.JLabel getJLabelHelp1() {
 			ivjJLabelHelp1.setFont(new java.awt.Font("dialog", 0, 18));
 			ivjJLabelHelp1.setText("Sample BioNetGen input files.");
 			ivjJLabelHelp1.setBounds(32, 355, 333, 33);
-			ivjJLabelHelp1.setForeground(java.awt.Color.blue);
+			ivjJLabelHelp1.setForeground(VCellColors.getValueForeground());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1219,7 +1221,7 @@ private javax.swing.JLabel getJLabelHelp11() {
 			ivjJLabelHelp11.setFont(new java.awt.Font("dialog", 0, 18));
 			ivjJLabelHelp11.setText("BioNetGen@VCell FAQ.");
 			ivjJLabelHelp11.setBounds(38, 591, 333, 33);
-			ivjJLabelHelp11.setForeground(java.awt.Color.blue);
+			ivjJLabelHelp11.setForeground(VCellColors.getValueForeground());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1244,7 +1246,6 @@ private javax.swing.JLabel getJLabelStart() {
 			ivjJLabelStart.setFont(new java.awt.Font("serif", 0, 18));
 			ivjJLabelStart.setText("A BioNetGen input file is a plain-text file that specifies a model in the BioNetGen language (BNGL) and");
 			ivjJLabelStart.setBounds(30, 139, 819, 32);
-			ivjJLabelStart.setForeground(java.awt.Color.black);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1269,7 +1270,6 @@ private javax.swing.JLabel getJLabelStart1() {
 			ivjJLabelStart1.setOpaque(false);
 			ivjJLabelStart1.setText("You can select a model to start from the list below, download it to your computer, and modify.");
 			ivjJLabelStart1.setDoubleBuffered(false);
-			ivjJLabelStart1.setForeground(java.awt.Color.black);
 			ivjJLabelStart1.setFont(new java.awt.Font("serif", 0, 18));
 			ivjJLabelStart1.setBounds(32, 280, 826, 28);
 			ivjJLabelStart1.setEnabled(true);
@@ -1297,7 +1297,6 @@ private javax.swing.JLabel getJLabelStart11() {
 			ivjJLabelStart11.setOpaque(false);
 			ivjJLabelStart11.setText("After you modified a model, you can either upload it to BioNetGen, or copy- paste into Rules editor.");
 			ivjJLabelStart11.setDoubleBuffered(false);
-			ivjJLabelStart11.setForeground(java.awt.Color.black);
 			ivjJLabelStart11.setFont(new java.awt.Font("serif", 0, 18));
 			ivjJLabelStart11.setBounds(29, 306, 826, 32);
 			ivjJLabelStart11.setEnabled(true);
@@ -1325,7 +1324,6 @@ private javax.swing.JLabel getJLabelStart12() {
 			ivjJLabelStart12.setOpaque(false);
 			ivjJLabelStart12.setText("To run BioNetGen, you will need to upload a BioNetGen input file or paste one into the Rules Editor window.");
 			ivjJLabelStart12.setDoubleBuffered(false);
-			ivjJLabelStart12.setForeground(java.awt.Color.black);
 			ivjJLabelStart12.setFont(new java.awt.Font("serif", 0, 18));
 			ivjJLabelStart12.setBounds(30, 411, 826, 28);
 			ivjJLabelStart12.setEnabled(true);
@@ -1353,7 +1351,6 @@ private javax.swing.JLabel getJLabelStart121() {
 			ivjJLabelStart121.setOpaque(false);
 			ivjJLabelStart121.setText("Then, you can click on the Run button.  You may need to wait a few minutes for a response.  Error messages");
 			ivjJLabelStart121.setDoubleBuffered(false);
-			ivjJLabelStart121.setForeground(java.awt.Color.black);
 			ivjJLabelStart121.setFont(new java.awt.Font("serif", 0, 18));
 			ivjJLabelStart121.setBounds(29, 440, 826, 28);
 			ivjJLabelStart121.setEnabled(true);
@@ -1381,7 +1378,6 @@ private javax.swing.JLabel getJLabelStart122() {
 			ivjJLabelStart122.setOpaque(false);
 			ivjJLabelStart122.setText("are reported in a pop-up window. If there are no error messages, you will be redirected to the Messages window, ");
 			ivjJLabelStart122.setDoubleBuffered(false);
-			ivjJLabelStart122.setForeground(java.awt.Color.black);
 			ivjJLabelStart122.setFont(new java.awt.Font("serif", 0, 18));
 			ivjJLabelStart122.setBounds(29, 470, 826, 28);
 			ivjJLabelStart122.setEnabled(true);
@@ -1409,7 +1405,6 @@ private javax.swing.JLabel getJLabelStart1221() {
 			ivjJLabelStart1221.setOpaque(false);
 			ivjJLabelStart1221.setText("where you will see a report about the results of processing your input file.  Results themselves are available in ");
 			ivjJLabelStart1221.setDoubleBuffered(false);
-			ivjJLabelStart1221.setForeground(java.awt.Color.black);
 			ivjJLabelStart1221.setFont(new java.awt.Font("serif", 0, 18));
 			ivjJLabelStart1221.setBounds(30, 497, 826, 28);
 			ivjJLabelStart1221.setEnabled(true);
@@ -1437,7 +1432,6 @@ private javax.swing.JLabel getJLabelStart122111() {
 			ivjJLabelStart122111.setOpaque(false);
 			ivjJLabelStart122111.setText("in the Output window.  Please check the FAQ page for help  with error messages. If problem persists, please");
 			ivjJLabelStart122111.setDoubleBuffered(false);
-			ivjJLabelStart122111.setForeground(java.awt.Color.black);
 			ivjJLabelStart122111.setFont(new java.awt.Font("serif", 0, 18));
 			ivjJLabelStart122111.setBounds(31, 522, 826, 28);
 			ivjJLabelStart122111.setEnabled(true);
@@ -1465,7 +1459,6 @@ private javax.swing.JLabel getJLabelStart1221111() {
 			ivjJLabelStart1221111.setOpaque(false);
 			ivjJLabelStart1221111.setText("contact us at blinov@uchc.edu.");
 			ivjJLabelStart1221111.setDoubleBuffered(false);
-			ivjJLabelStart1221111.setForeground(java.awt.Color.black);
 			ivjJLabelStart1221111.setFont(new java.awt.Font("serif", 0, 18));
 			ivjJLabelStart1221111.setBounds(28, 551, 826, 28);
 			ivjJLabelStart1221111.setEnabled(true);
@@ -1493,7 +1486,6 @@ private javax.swing.JLabel getJLabelStart2() {
 			ivjJLabelStart2.setFont(new java.awt.Font("serif", 0, 18));
 			ivjJLabelStart2.setText("instructions for operating on the model specification (e.g. running a simulation).");
 			ivjJLabelStart2.setBounds(30, 165, 819, 32);
-			ivjJLabelStart2.setForeground(java.awt.Color.black);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1519,7 +1511,6 @@ private javax.swing.JLabel getJLabelTitle() {
 			ivjJLabelTitle.setFont(new java.awt.Font("dialog", 0, 24));
 			ivjJLabelTitle.setText("All links will be opened in the same Internet browser window");
 			ivjJLabelTitle.setBounds(105, 16, 671, 33);
-			ivjJLabelTitle.setForeground(java.awt.Color.black);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1894,7 +1885,7 @@ private javax.swing.JLabel getOutputWarningLabel() {
 			ivjOutputWarningLabel.setName("OutputWarningLabel");
 			ivjOutputWarningLabel.setFont(new java.awt.Font("Arial", 1, 12));
 			ivjOutputWarningLabel.setText("<html>WARNING: These files will not be saved in the Virtual Cell repository.  If desired, you should save these files in your home directory.  You might want to save only the .bngl file, because the other files can be generated from it.\n</html>");
-			ivjOutputWarningLabel.setForeground(java.awt.Color.blue);
+			ivjOutputWarningLabel.setForeground(VCellColors.getValueForeground());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {

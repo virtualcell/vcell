@@ -10,6 +10,7 @@
 
 package cbit.vcell.microscopy.gui.estparamwizard;
 
+import cbit.vcell.client.laf.VCellColors;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -90,7 +91,7 @@ public class AnalysisResultsTablePanel extends AdvancedTablePanel implements Act
         
         modelLabel = new JLabel("3 Models");
         modelLabel.setOpaque(true);
-        modelLabel.setBackground(new Color(166, 166, 255));
+        modelLabel.setBackground(VCellColors.getLavender());
         modelLabel.setBorder(BorderFactory.createEmptyBorder(1,5,1,1));
 
         GridBagConstraints gc1 = new GridBagConstraints();
@@ -543,14 +544,14 @@ public class AnalysisResultsTablePanel extends AdvancedTablePanel implements Act
 	    boolean selected, boolean focused, int row, int column) {
 	        JTableHeader header = table.getTableHeader();
 	        if (header != null) {
-	            setForeground(Color.black);
-	            setBackground(new Color(166, 166, 255));
+	            setForeground(table.getForeground());
+	            setBackground(VCellColors.getLavender());
 	            setHorizontalAlignment(SwingConstants.CENTER);
-	            setBorder(new LineBorder(Color.white,1));
+	            setBorder(new LineBorder(table.getBackground(),1));
 	        }
 	        setText(value != null ? value.toString() : " ");
-	        setForeground(Color.black);
-	        setBackground(new Color(166, 166, 255));
+	        setForeground(table.getForeground());
+	        setBackground(VCellColors.getLavender());
 	        return this;
 	    }
 		public GroupableTableCellRenderer() {

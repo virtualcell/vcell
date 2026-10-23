@@ -10,6 +10,8 @@
 
 package cbit.vcell.mapping.gui;
 
+import cbit.vcell.client.laf.VCellColors;
+import cbit.vcell.client.laf.VCellLookAndFeel;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -191,7 +193,7 @@ private void initialize() {
 				shapePanel.setToolTipText("View-Only panel");
 			} 
 		});
-		shapePanel.setBackground(new Color(0xe0e0e0));		
+		shapePanel.setBackground(VCellColors.getViewOnlyShapeCanvasBackground());		
 		shapePanel.setZoomFactor(-2);
 		shapePanel.setEditable(false);
 		shapePanel.setShowMoleculeColor(false);
@@ -250,7 +252,7 @@ private void initialize() {
 
 		setLayout(new BorderLayout());
 		add(splitPaneHorizontal, BorderLayout.CENTER);
-		setBackground(Color.white);
+		setBackground(VCellLookAndFeel.getContentBackground());
 		setName("SpeciesContextSpecPanel");
 		
 	} catch (java.lang.Throwable ivjExc) {

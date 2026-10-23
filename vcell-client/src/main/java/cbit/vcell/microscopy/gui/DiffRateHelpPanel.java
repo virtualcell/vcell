@@ -10,6 +10,7 @@
 
 package cbit.vcell.microscopy.gui;
 
+import cbit.vcell.client.laf.VCellColors;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -103,7 +104,7 @@ public class DiffRateHelpPanel extends JPanel
 		
 		JLabel estimationBasedOnLabel = new JLabel("Estimation based on GFP (Diffusion rate of 15 um2/s,  molecular weight of 27 kD).");
 		estimationBasedOnLabel.setFont(new Font("", Font.ITALIC, 12));
-		estimationBasedOnLabel.setForeground(Color.blue);
+		estimationBasedOnLabel.setForeground(VCellColors.getValueForeground());
 		GridBagConstraints gridBagConstraints = new GridBagConstraints();
 		gridBagConstraints.anchor = GridBagConstraints.WEST;
 		gridBagConstraints.gridwidth = 7;

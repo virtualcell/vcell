@@ -10,6 +10,7 @@
 
 package cbit.vcell.microscopy.gui.estparamwizard;
 
+import cbit.vcell.client.laf.VCellColors;
 import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -69,7 +70,7 @@ public class EstParams_ReactionOffRatePanel extends JPanel
 		new JPanel(new FlowLayout());
 		//set up parameters panel.
 		paramPanel=new JPanel(new GridBagLayout());
-		paramPanel.setForeground(new Color(0,0,244));
+		paramPanel.setForeground(VCellColors.getValueForeground());
 		paramPanel.setBorder(new EtchedBorder(Color.gray, Color.lightGray));
 		
 		JLabel interactiveAnalysisLabel = new JLabel();

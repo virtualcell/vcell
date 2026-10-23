@@ -10,7 +10,7 @@
 
 package cbit.vcell.client.desktop.biomodel;
 
-import java.awt.Color;
+import cbit.vcell.client.laf.VCellLookAndFeel;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -135,7 +135,7 @@ private void initialize() {
 		add(textFieldSearch, gbc);
 		
 		showLinkedEntityCheckBox = new JCheckBox("Show linked pathway entities only");
-		showLinkedEntityCheckBox.setBackground(Color.white);
+		showLinkedEntityCheckBox.setBackground(VCellLookAndFeel.getContentBackground());
 		showLinkedEntityCheckBox.addActionListener(eventHandler);
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 4; 
@@ -145,7 +145,7 @@ private void initialize() {
 		gbc.insets = new Insets(4, 10, 4, 0);
 		add(showLinkedEntityCheckBox, gbc);	
 		
-		setBackground(Color.white);		
+		setBackground(VCellLookAndFeel.getContentBackground());		
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}

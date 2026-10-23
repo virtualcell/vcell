@@ -266,7 +266,7 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 		pointJList.setVisibleRowCount(3);
 		pointJList.setBackground(getBackground());
 		pointJList.setSelectionBackground(getBackground());
-		pointJList.setSelectionForeground(Color.black);
+		pointJList.setSelectionForeground(pointJList.getForeground());
 		
 		plotPane = new PlotPane();
 		double[][] plotDatas = tsJobResultsNoStats.getTimesAndValuesForVariable(varName);

@@ -10,6 +10,7 @@
 
 package cbit.vcell.mapping.gui;
 
+import cbit.vcell.client.laf.VCellColors;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -341,7 +342,7 @@ public class VolumeSurfaceCalculatorPanel extends JPanel {
 						gbc_1.insets = new java.awt.Insets(4, 4, 4, 4);
 						
 						chckbxNewCheckBox = new JCheckBox("Volume/Surface Calculator");
-						chckbxNewCheckBox.setForeground(Color.BLUE);
+						chckbxNewCheckBox.setForeground(VCellColors.getValueForeground());
 						chckbxNewCheckBox.setFont(new Font("Tahoma", Font.PLAIN, 9));
 						chckbxNewCheckBox.addActionListener(new ActionListener() {
 							public void actionPerformed(ActionEvent arg0) {

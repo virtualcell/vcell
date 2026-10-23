@@ -10,6 +10,8 @@
 
 package cbit.vcell.client.desktop.biomodel;
 
+import cbit.vcell.client.laf.VCellColors;
+import cbit.vcell.client.laf.VCellLookAndFeel;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -453,7 +455,7 @@ private void initialize() {
 			}
 		};
 		shapePanel.setBorder(border);
-		shapePanel.setBackground(Color.white);		
+		shapePanel.setBackground(VCellColors.getShapeCanvasBackground());		
 		shapePanel.setZoomFactor(-1);
 		shapePanel.setEditable(true);
 		shapePanel.setShowMoleculeColor(true);
@@ -515,7 +517,7 @@ private void initialize() {
 		GridBagLayout mgr = new GridBagLayout();
 		mgr.rowHeights = new int[] { 100,100 };
 		leftPanel.setLayout(mgr);
-		leftPanel.setBackground(Color.white);
+		leftPanel.setBackground(VCellLookAndFeel.getContentBackground());
 		
 		speciesPropertiesTree = new BioModelNodeEditableTree();
 		speciesPropertiesTreeModel = new SpeciesPropertiesTreeModel(speciesPropertiesTree);
@@ -646,7 +648,7 @@ private void initialize() {
 		
 		setName("SpeciesEditorPanel");
 		setLayout(new BorderLayout());
-		setBackground(Color.white);
+		setBackground(VCellLookAndFeel.getContentBackground());
 		add(leftPanel, BorderLayout.CENTER);
 		
 		initConnections();
@@ -690,7 +692,7 @@ private String listLinkedPathwayObjects(){
 		final BioPaxObject bpObject = relObject.getBioPaxObject();
 		if(bpObject instanceof Entity){
 			JLabel label = new JLabel("<html><u>" + ((Entity)bpObject).getName().get(0) + "</u></html>");
-			label.setForeground(Color.blue);
+			label.setForeground(VCellColors.getValueForeground());
 			label.addMouseListener(new MouseAdapter() {
 				public void mouseClicked(MouseEvent e) {
 					if (e.getClickCount() == 2) {

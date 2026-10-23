@@ -1,5 +1,6 @@
 package org.vcell.model.bngl.gui;
 
+import cbit.vcell.client.laf.VCellColors;
 import java.awt.BorderLayout;
 import java.awt.Button;
 import java.awt.Color;
@@ -108,7 +109,7 @@ public class BNGLDebugger extends JFrame implements KeyListener, ActionListener 
 //        bnglTextArea.setFont(new Font("monospaced", Font.PLAIN, 14));
 
         lineNumberArea = new JTextArea("1");
-		lineNumberArea.setBackground(Color.LIGHT_GRAY);
+		lineNumberArea.setBackground(VCellColors.getSubtleBackground());
 		lineNumberArea.setEditable(false);
 		lineNumberArea.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
 		

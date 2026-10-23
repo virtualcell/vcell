@@ -10,6 +10,8 @@
 
 package cbit.vcell.client.desktop.biomodel;
 
+import cbit.vcell.client.laf.VCellColors;
+import cbit.vcell.client.laf.VCellLookAndFeel;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
@@ -155,9 +157,9 @@ private String getExplanationText(){
 		Feature negFeature = fieldModel.getElectricalTopology().getNegativeFeature(membrane);
 		String posCompName = (posFeature!=null)?posFeature.getName():"inside (+) compartment";
 		String negCompName = (negFeature!=null)?negFeature.getName():"outside (-) compartment";
-		return "<html><b>membrane voltage</i>:</b> <font color=\"blue\">\""+voltageName+"\"</font> = voltage(<font color=\"blue\">"+posCompName+"</font>) - voltage(<font color=\"blue\">"+negCompName+"</font>)</i><br/>"
-		+ "<b>inward currents:</b> from compartment <font color=\"blue\">\""+negCompName+"\"</font> into compartment <font color=\"blue\">\""+posCompName+"\"</font>"
-		+ "<font color=\"red\"><i><br/>Note: VCell reactions and fluxes specify inward currents (- to +) rather than conventional currents (+ to -).</i></font>"
+		return "<html><b>membrane voltage</i>:</b> <font color=\"" + VCellColors.toHtmlColor(VCellColors.getValueForeground()) + "\">\""+voltageName+"\"</font> = voltage(<font color=\"" + VCellColors.toHtmlColor(VCellColors.getValueForeground()) + "\">"+posCompName+"</font>) - voltage(<font color=\"" + VCellColors.toHtmlColor(VCellColors.getValueForeground()) + "\">"+negCompName+"</font>)</i><br/>"
+		+ "<b>inward currents:</b> from compartment <font color=\"" + VCellColors.toHtmlColor(VCellColors.getValueForeground()) + "\">\""+negCompName+"\"</font> into compartment <font color=\"" + VCellColors.toHtmlColor(VCellColors.getValueForeground()) + "\">\""+posCompName+"\"</font>"
+		+ "<font color=\"" + VCellColors.toHtmlColor(VCellColors.getErrorForeground()) + "\"><i><br/>Note: VCell reactions and fluxes specify inward currents (- to +) rather than conventional currents (+ to -).</i></font>"
 		+ "</html>";
 	}else{
 		return "";
@@ -275,7 +277,7 @@ private void initialize() {
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
 		gbc.insets = new Insets(0, 4, 4, 4);
 		gbc.anchor = GridBagConstraints.LINE_START;		
-		voltageTextField.setForeground(Color.blue);
+		voltageTextField.setForeground(VCellColors.getValueForeground());
 		add(voltageTextField, gbc);
 		
 		// positive (feature) voltage
@@ -294,7 +296,7 @@ private void initialize() {
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
 		gbc.insets = new Insets(0, 4, 4, 4);
 		gbc.anchor = GridBagConstraints.LINE_START;	
-		positiveFeatureComboBox.setForeground(Color.blue);
+		positiveFeatureComboBox.setForeground(VCellColors.getValueForeground());
 		add(positiveFeatureComboBox, gbc);
 		
 		// negative (feature) voltage
@@ -314,7 +316,7 @@ private void initialize() {
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
 		gbc.insets = new Insets(0, 4, 4, 4);
 		gbc.anchor = GridBagConstraints.LINE_START;
-		negativeFeatureComboBox.setForeground(Color.blue);
+		negativeFeatureComboBox.setForeground(VCellColors.getValueForeground());
 		add(negativeFeatureComboBox, gbc);
 		
 		// electrophysiology
@@ -368,7 +370,7 @@ private void initialize() {
 		positiveFeatureComboBox.setRenderer(comboBoxListCellRenderer);
 		negativeFeatureComboBox.setRenderer(comboBoxListCellRenderer);
 			
-		setBackground(Color.white);
+		setBackground(VCellLookAndFeel.getContentBackground());
 		initConnections();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);

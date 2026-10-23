@@ -1,5 +1,6 @@
 package org.vcell.chombo.gui;
 
+import cbit.vcell.client.laf.VCellColors;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -428,7 +429,7 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 		  finestInfoPanel.setVisible(false);
 		  
 		  finestSizeTextField = new JTextField(40);
-		  finestSizeTextField.setForeground(Color.blue);
+		  finestSizeTextField.setForeground(VCellColors.getValueForeground());
 		  finestSizeTextField.setBorder(null);
 		  finestSizeTextField.setEditable(false);
 		  

@@ -10,6 +10,8 @@
 
 package cbit.vcell.client.desktop.biomodel;
 
+import cbit.vcell.client.laf.VCellColors;
+import cbit.vcell.client.laf.VCellLookAndFeel;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -108,9 +110,9 @@ public class BioModelsNetPropertiesPanel extends DocumentEditorSubPanel {
 
 
 	private void initialize() {
-		setBackground(Color.white);
+		setBackground(VCellLookAndFeel.getContentBackground());
 		nameLabel = new JLabel();		
-		urlLabel = new JLabel("<html><b><font color=blue><u>" + DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.BMDB_URL) + "</u></font>" +
+		urlLabel = new JLabel("<html><b><font color=" + VCellColors.toHtmlColor(VCellColors.getValueForeground()) + "><u>" + DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.BMDB_URL) + "</u></font>" +
 				", a data resource that allows researchers to" +
 				" store, search and retrieve published mathematical models of biological interest.</b>" +
 				"</html>");
@@ -121,7 +123,7 @@ public class BioModelsNetPropertiesPanel extends DocumentEditorSubPanel {
 //		importButton.setEnabled(true);
 		linkLabel = new JLabel();
 		linkLabel.addMouseListener(eventHandler);
-		linkLabel.setForeground(Color.blue);
+		linkLabel.setForeground(VCellColors.getValueForeground());
 				
 		int gridy = 0;
 		setLayout(new GridBagLayout());

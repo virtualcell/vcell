@@ -10,7 +10,7 @@
 
 package cbit.vcell.client.desktop.biomodel;
 
-import java.awt.Color;
+import cbit.vcell.client.laf.VCellLookAndFeel;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -51,7 +51,7 @@ public class ReactionParticipantPropertiesPanel extends DocumentEditorSubPanel {
 	private void initialize() {
 		stoichiometryTextField.setColumns(10);
 		
-		setBackground(Color.white);
+		setBackground(VCellLookAndFeel.getContentBackground());
 		setLayout(new  GridBagLayout());
 		// 0
 		int gridy = 0;

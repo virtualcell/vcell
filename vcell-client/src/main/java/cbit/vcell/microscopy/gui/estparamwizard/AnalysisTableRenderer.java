@@ -10,6 +10,8 @@
 
 package cbit.vcell.microscopy.gui.estparamwizard;
 
+import cbit.vcell.client.laf.VCellColors;
+import cbit.vcell.client.laf.VCellLookAndFeel;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
@@ -41,7 +43,7 @@ public class AnalysisTableRenderer extends DefaultTableCellRenderer
 		button = new JButton("Plot...");
 		button.setVerticalTextPosition(SwingConstants.CENTER); 
 		button.setHorizontalTextPosition(SwingConstants.LEFT); 
-		button.setBackground(Color.white);
+		button.setBackground(VCellLookAndFeel.getContentBackground());
 	}
 	public Component getTableCellRendererComponent(JTable table, Object value,
             boolean isSelected, boolean hasFocus, int row, int column) 
@@ -54,7 +56,7 @@ public class AnalysisTableRenderer extends DefaultTableCellRenderer
         }
     	if(value == null)
 		{
-			setBackground(new Color(228,228,228)); //light gray
+			setBackground(VCellColors.getThemedBackground(new Color(228,228,228))); //light gray
 		}
     	else
 		{
@@ -63,7 +65,7 @@ public class AnalysisTableRenderer extends DefaultTableCellRenderer
     		} else {
     			setBackground(table.getBackground());
     		}
-			setForeground(Color.black);
+			setForeground(isSelected ? table.getSelectionForeground() : table.getForeground());
 		}
     	
     	if(value != null && (value instanceof Double || value instanceof Float || value instanceof Integer))
@@ -82,7 +84,7 @@ public class AnalysisTableRenderer extends DefaultTableCellRenderer
 		{
 			if(((String)value).equals(AnalysisTableModel.STR_NOT_SIGNIFICANT))
 			{
-				setForeground(Color.red);
+				setForeground(VCellColors.getErrorForeground());
 			}
 		}
 		
@@ -94,8 +96,8 @@ public class AnalysisTableRenderer extends DefaultTableCellRenderer
 			{
 				if(((String)identifyStr).equals(AnalysisTableModel.STR_NOT_SIGNIFICANT))
 				{
-					setForeground(Color.red);
-					setBackground(new Color(255,170,170));
+					setForeground(VCellColors.getErrorForeground());
+					setBackground(VCellColors.getErrorBackground());
 				}
 			}
 		}	
@@ -106,8 +108,8 @@ public class AnalysisTableRenderer extends DefaultTableCellRenderer
 			{
 				if(((String)identifyStr).equals(AnalysisTableModel.STR_NOT_SIGNIFICANT))
 				{
-					setForeground(Color.red);
-					setBackground(new Color(255,170,170));
+					setForeground(VCellColors.getErrorForeground());
+					setBackground(VCellColors.getErrorBackground());
 				}
 			}
 		}	
@@ -118,8 +120,8 @@ public class AnalysisTableRenderer extends DefaultTableCellRenderer
 			{
 				if(((String)identifyStr).equals(AnalysisTableModel.STR_NOT_SIGNIFICANT))
 				{
-					setForeground(Color.red);
-					setBackground(new Color(255,170,170));
+					setForeground(VCellColors.getErrorForeground());
+					setBackground(VCellColors.getErrorBackground());
 				}
 			}
 		}	

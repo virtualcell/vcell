@@ -9,6 +9,7 @@
  */
 
 package cbit.plot.gui;
+import cbit.vcell.client.laf.VCellColors;
 import java.awt.BasicStroke;
 import java.awt.CardLayout;
 import java.awt.Color;
@@ -1336,6 +1337,7 @@ private void updateLegend() {
 		JLabel text = new JLabel();
 		line.setBorder(new EmptyBorder(6,0,0,0));
 		text.setBorder(new EmptyBorder(0,8,6,0));
+		text.setForeground(java.awt.Color.black); // the legend is part of the white plot page in every theme
 		getJPanelPlotLegends().add(line);
 		getJPanelPlotLegends().add(text);
 		text.addMouseListener(ml);
@@ -1381,7 +1383,7 @@ private void updateLegend() {
 		}
 //		shortLabel = "<html>" + shortLabel + "<font color=\"red\">" + " [" + unitSymbol + "] " + "</font></html>";
 		shortLabel = "<html>" + shortLabel + "<font color=\"#8B0000\">" + " [" + unitSymbol + "] " + "</font></html>";
-		tooltipString  = "<html>" + plotLabel + "<font color=\"#0000FF\">" + " " + tooltipString + " " + "</font></html>";
+		tooltipString  = "<html>" + plotLabel + "<font color=\"" + VCellColors.toHtmlColor(VCellColors.getValueForeground()) + "\">" + " " + tooltipString + " " + "</font></html>";
 		
 		((JLabel)legends[2 * i + 1]).setText(shortLabel);
 		((JLabel)legends[2 * i + 1]).setToolTipText(tooltipString);
