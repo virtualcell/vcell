@@ -10,6 +10,7 @@
 
 package cbit.vcell.client.desktop.biomodel;
 
+import cbit.vcell.client.laf.VCellColors;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -550,7 +551,6 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 		});
 		
 		DefaultScrollTableCellRenderer nameTableCellRenderer = new DefaultScrollTableCellRenderer() {
-			final Color lightBlueBackground = new Color(214, 234, 248);
 			int PADDING = 3;
 			
 			@Override
@@ -599,8 +599,8 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 						setIcon(icon);
 						this.setHorizontalTextPosition(SwingConstants.LEFT);
 						if(isSelected) {
-							setBackground(lightBlueBackground);
-							setForeground(Color.BLACK);
+							setBackground(VCellColors.getSoftSelectionBackground());
+							setForeground(table.getForeground());
 						}
 					}
 				}

@@ -9,6 +9,7 @@
  */
 
 package cbit.vcell.microscopy.gui.estparamwizard;
+import cbit.vcell.client.laf.VCellColors;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -58,7 +59,7 @@ public class MSETablePanel extends AdvancedTablePanel
 
         modelLabel = new JLabel("3 Models");
         modelLabel.setOpaque(true);
-        modelLabel.setBackground(new Color(166, 166, 255));
+        modelLabel.setBackground(VCellColors.getLavender());
         modelLabel.setBorder(BorderFactory.createEmptyBorder(1,5,1,1));
 
         GridBagConstraints gc1 = new GridBagConstraints();

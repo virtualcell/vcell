@@ -10,6 +10,7 @@
 
 package cbit.vcell.microscopy.gui;
 
+import cbit.vcell.client.laf.VCellColors;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
@@ -58,8 +59,9 @@ public class NumericTableCellRenderer  extends DefaultTableCellRenderer {
     	
     	if(value == null)
 		{
-			setBackground(new Color(228,228,228)); //light gray
-			setForeground(new Color(228,228,228));
+			Color emptyCell = VCellColors.getThemedBackground(new Color(228,228,228)); //light gray
+			setBackground(emptyCell);
+			setForeground(emptyCell);
 		}
     	else
 		{

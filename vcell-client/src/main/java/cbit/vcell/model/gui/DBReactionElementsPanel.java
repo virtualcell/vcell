@@ -9,6 +9,7 @@
  */
 
 package cbit.vcell.model.gui;
+import cbit.vcell.client.laf.VCellColors;
 import cbit.vcell.model.ReactionDescription;
 /**
  * Insert the type's description here.
@@ -52,7 +53,7 @@ public class DBReactionElementsPanel extends javax.swing.JPanel {
 			this.stoich = argStoich;
 			this.setOpaque(true);//So highlight background works
 			this.setBorder(unhighlightOutline);
-			this.setForeground(UNHIGHLITED_FOREGROUND_COLOR);
+			this.setForeground(javax.swing.UIManager.getColor("Label.foreground"));
 		}
 		public char getType(){
 			return type;
@@ -66,9 +67,9 @@ public class DBReactionElementsPanel extends javax.swing.JPanel {
 		public void setResolved(boolean argResolved){
 			bResolved = argResolved;
 			if(bResolved){
-				this.setForeground(RESOLVED_FOREGROUND_COLOR);
+				this.setForeground(VCellColors.getErrorForeground());
 			}else{
-				this.setForeground(UNHIGHLITED_FOREGROUND_COLOR);
+				this.setForeground(javax.swing.UIManager.getColor("Label.foreground"));
 			}
 		}
 		public boolean getResolved(){
@@ -121,8 +122,6 @@ class IvjEventHandler implements java.awt.event.ContainerListener, java.awt.even
 		};
 	}
 	//
-	public static final java.awt.Color UNHIGHLITED_FOREGROUND_COLOR = java.awt.Color.black;
-	public static final java.awt.Color RESOLVED_FOREGROUND_COLOR = java.awt.Color.red;
 	//
 	private static final javax.swing.border.LineBorder highlightOutline = new javax.swing.border.LineBorder(java.awt.Color.black);
 	private static final javax.swing.border.EmptyBorder unhighlightOutline = new javax.swing.border.EmptyBorder(1,1,1,1);

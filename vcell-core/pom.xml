@@ -242,6 +242,11 @@
 					<groupId>org.jdom</groupId>
 					<artifactId>jdom2</artifactId>
 				</exclusion>
+				<exclusion>
+					<!-- JNA 3.0.9 (Intel-only native lib) shadows modern net.java.dev.jna:jna; breaks on arm64 -->
+					<groupId>com.sun.jna</groupId>
+					<artifactId>jna</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 		<!-- see https://github.com/SemsProject/CombineArchive for more information -->

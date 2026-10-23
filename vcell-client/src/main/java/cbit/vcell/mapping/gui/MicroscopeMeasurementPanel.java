@@ -10,6 +10,8 @@
 
 package cbit.vcell.mapping.gui;
 
+import cbit.vcell.client.laf.VCellColors;
+import cbit.vcell.client.laf.VCellLookAndFeel;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -242,7 +244,7 @@ public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
         label.setHorizontalAlignment(JLabel.CENTER);
         label.setFont(boldFont);
         JPanel p = new JPanel();
-        p.setBackground(ItemBackgroundColor);
+        p.setBackground(VCellColors.getThemedBackground(ItemBackgroundColor));
         p.add(label);
         int gridy = 0;
         GridBagConstraints gbc = new GridBagConstraints();
@@ -365,7 +367,7 @@ public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
             setLayout(new GridBagLayout());
 
             JPanel panel = new JPanel(new GridBagLayout());
-            panel.setBackground(Color.white);
+            panel.setBackground(VCellLookAndFeel.getContentBackground());
             panel.setBorder(GuiConstants.TAB_PANEL_BORDER);
             GridBagConstraints gbc = new GridBagConstraints();
             gbc.gridx = 0;
@@ -378,7 +380,7 @@ public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
             Font boldFont = label.getFont().deriveFont(Font.BOLD);
             label.setFont(boldFont);
             JPanel p = new JPanel();
-            p.setBackground(ItemBackgroundColor);
+            p.setBackground(VCellColors.getThemedBackground(ItemBackgroundColor));
             p.add(label);
             panel.add(p, gbc);
 
@@ -446,7 +448,7 @@ public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
         label.setHorizontalAlignment(JLabel.CENTER);
         label.setFont(boldFont);
         JPanel p = new JPanel();
-        p.setBackground(ItemBackgroundColor);
+        p.setBackground(VCellColors.getThemedBackground(ItemBackgroundColor));
         p.add(label);
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = 0;

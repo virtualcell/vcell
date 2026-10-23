@@ -10,6 +10,7 @@
 
 package org.vcell.model.rbm.gui;
 
+import cbit.vcell.client.laf.VCellColors;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -226,10 +227,10 @@ private void initialize() {
 		String s = "none";
 		TaskCallbackProcessor tcbp = owner.getSimulationContext().getTaskCallbackProcessor();
 		if(tcbp.getPreviousIterationSpecies()>0 && tcbp.getCurrentIterationSpecies()>0 && tcbp.getCurrentIterationSpecies()!=tcbp.getPreviousIterationSpecies()) {
-			s = "<font color=#8C001A>" + SimulationContext.IssueInsufficientIterations + "</font>";
+			s = "<font color=" + VCellColors.toHtmlColor(VCellColors.getWarningForeground()) + ">" + SimulationContext.IssueInsufficientIterations + "</font>";
 		} else if(tcbp.getPreviousIterationSpecies()>0 && tcbp.getCurrentIterationSpecies()>0 && tcbp.getCurrentIterationSpecies()==tcbp.getPreviousIterationSpecies()) {
 			if(tcbp.isNeedAdjustMaxMolecules()) {
-				s = "<font color=#8C001A>" + SimulationContext.IssueInsufficientMolecules + "</font>";
+				s = "<font color=" + VCellColors.toHtmlColor(VCellColors.getWarningForeground()) + ">" + SimulationContext.IssueInsufficientMolecules + "</font>";
 			}
 		}
 		somethingInsufficientLabel.setText("<html>Warning:  " + s + "</html>");

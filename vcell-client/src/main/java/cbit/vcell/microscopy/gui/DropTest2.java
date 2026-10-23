@@ -9,8 +9,8 @@
  */
 
 package cbit.vcell.microscopy.gui;
+import cbit.vcell.client.laf.VCellLookAndFeel;
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.dnd.DnDConstants;
@@ -45,7 +45,7 @@ public class DropTest2 extends JFrame implements DropTargetListener {
 				new JLabel("Drop a list from your file chooser here:"),
 				BorderLayout.NORTH);
 		ta = new JTextArea();
-		ta.setBackground(Color.white);
+		ta.setBackground(VCellLookAndFeel.getContentBackground());
 		getContentPane().add(ta, BorderLayout.CENTER);
 
 		// Set up our text area to recieve drops...

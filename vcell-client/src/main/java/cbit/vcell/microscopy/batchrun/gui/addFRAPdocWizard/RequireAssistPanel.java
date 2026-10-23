@@ -10,6 +10,7 @@
 
 package cbit.vcell.microscopy.batchrun.gui.addFRAPdocWizard;
 
+import cbit.vcell.client.laf.VCellColors;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -36,7 +37,7 @@ public class RequireAssistPanel extends JPanel
 
 		JLabel needAssistLabel = new JLabel();
 		needAssistLabel.setText(" Auto pop-up 'ROI Assist' dialog for creating ROIs ?");
-		needAssistLabel.setForeground(new Color(0, 0, 128));
+		needAssistLabel.setForeground(VCellColors.getTitleForeground());
 		needAssistLabel.setFont(new Font("", Font.BOLD | Font.ITALIC, 15));
 		final GridBagConstraints gridBagConstraints = new GridBagConstraints();
 		gridBagConstraints.anchor = GridBagConstraints.WEST;

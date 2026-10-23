@@ -10,6 +10,7 @@
 
 package cbit.vcell.microscopy.batchrun.gui.addFRAPdocWizard;
 
+import cbit.vcell.client.laf.VCellColors;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -39,7 +40,7 @@ public class SingleFilePanel extends JPanel
 		setLayout(gridBagLayout);
 
 		final JLabel loadFrapDataLabel = new JLabel();
-		loadFrapDataLabel.setForeground(new Color(0, 0, 128));
+		loadFrapDataLabel.setForeground(VCellColors.getTitleForeground());
 		loadFrapDataLabel.setFont(new Font("", Font.BOLD | Font.ITALIC, 16));
 		loadFrapDataLabel.setText("Load FRAP Data ");
 		final GridBagConstraints gridBagConstraints = new GridBagConstraints();

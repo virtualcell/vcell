@@ -10,6 +10,7 @@
 
 package org.vcell.util.gui;
 
+import cbit.vcell.client.laf.VCellColors;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Font;
@@ -32,7 +33,7 @@ import javax.swing.JLabel;
  */
 @SuppressWarnings({ "serial" })
 public class HyperLinkLabel extends JLabel implements MouseListener {
-    private Color color = Color.blue;
+    private Color color = VCellColors.getValueForeground();
     private ActionListener listener;
     private int id;
     private String command;

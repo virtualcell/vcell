@@ -9,6 +9,7 @@
  */
 
 package cbit.vcell.constraints.gui;
+import cbit.vcell.client.laf.VCellColors;
 import cbit.vcell.constraints.ConstraintContainerImpl;
 import cbit.vcell.constraints.ConstraintSolver;
 import cbit.vcell.constraints.GeneralConstraint;
@@ -1154,7 +1155,7 @@ private javax.swing.JLabel getJLabel2() {
 			ivjJLabel2.setName("JLabel2");
 			ivjJLabel2.setFont(new java.awt.Font("Arial", 1, 14));
 			ivjJLabel2.setText("status");
-			ivjJLabel2.setForeground(java.awt.Color.red);
+			ivjJLabel2.setForeground(VCellColors.getErrorForeground());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {

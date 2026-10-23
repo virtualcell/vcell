@@ -10,6 +10,8 @@
 
 package org.vcell.util.gui;
 
+import cbit.vcell.client.laf.VCellColors;
+import cbit.vcell.client.laf.VCellLookAndFeel;
 import java.awt.AWTException;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -47,7 +49,9 @@ import javax.swing.JTable;
 import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.LookAndFeel;
 import javax.swing.UIManager;
+import javax.swing.table.JTableHeader;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
@@ -85,7 +89,6 @@ import cbit.vcell.units.VCUnitDefinition;
 @SuppressWarnings("serial")
 public class ScrollTable extends JTable {
 	private static final Border tableCellHeaderBorder = (UIManager.getBorder("TableHeader.cellBorder"));
-	private static final Color tableHeaderColor = new Color(0xb9c9fe);
 	private static final String javaVersion = System.getProperty("java.version");
 	
 	private JPanel contentPanel = new JPanel();
@@ -155,9 +158,9 @@ public static class ScrollTableBooleanCellRenderer extends JCheckBox implements 
 			setForeground(table.getSelectionForeground());
 		} else {
 			if (table instanceof ScrollTable && ((ScrollTable)table).getHoverRow() == row) {
-				setBackground(DefaultScrollTableCellRenderer.hoverColor);
-			} else { 
-				setBackground(row % 2 == 0 ? table.getBackground() : DefaultScrollTableCellRenderer.everyOtherRowColor);
+				setBackground(DefaultScrollTableCellRenderer.getHoverColor(table.getBackground()));
+			} else {
+				setBackground(row % 2 == 0 ? table.getBackground() : DefaultScrollTableCellRenderer.getEveryOtherRowColor(table.getBackground()));
 			}
 			setForeground(table.getForeground());
 		}
@@ -235,7 +238,7 @@ public static class ScrollTableBooleanCellRenderer extends JCheckBox implements 
 		scrollTableActionManager = new DefaultScrollTableActionManager(this);
 		
 		enclosingScrollPane = new JScrollPane(this);
-		enclosingScrollPane.getViewport().setBackground(Color.WHITE);
+		enclosingScrollPane.getViewport().setBackground(VCellLookAndFeel.getContentBackground());
 		
 		contentPanel = new JPanel(new BorderLayout());
 		contentPanel.add(enclosingScrollPane, BorderLayout.CENTER);
@@ -251,15 +254,21 @@ public static class ScrollTableBooleanCellRenderer extends JCheckBox implements 
 		
 		setDefaultEditor(Boolean.class, new ScrollTableBooleanEditor());
 		
-		final TableCellRenderer defaultTableCellHeaderRenderer = getTableHeader().getDefaultRenderer();
 		TableCellRenderer defaultTableHeaderRenderer = new TableCellRenderer() {
+			// the current theme's own header renderer, fetched again after a theme switch
+			private LookAndFeel themeRendererLookAndFeel = null;
+			private TableCellRenderer themeRenderer = null;
 
 			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-				Component component = defaultTableCellHeaderRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+				if (UIManager.getLookAndFeel() != themeRendererLookAndFeel) {
+					themeRendererLookAndFeel = UIManager.getLookAndFeel();
+					themeRenderer = new JTableHeader().getDefaultRenderer();
+				}
+				Component component = themeRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 				if (component instanceof JLabel){
 					JLabel label = (JLabel)component;
 					label.setHorizontalAlignment(SwingConstants.CENTER);
-					label.setBackground(tableHeaderColor);
+					label.setBackground(VCellColors.getTableHeaderBackground());
 					label.setBorder(BorderFactory.createCompoundBorder(tableCellHeaderBorder, new EmptyBorder(1, 0, 1, 0)));
 				}
 				return component;

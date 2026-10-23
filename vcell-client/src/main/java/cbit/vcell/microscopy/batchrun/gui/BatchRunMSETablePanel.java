@@ -10,6 +10,7 @@
 
 package cbit.vcell.microscopy.batchrun.gui;
 
+import cbit.vcell.client.laf.VCellColors;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -54,7 +55,7 @@ public class BatchRunMSETablePanel extends AdvancedTablePanel
 
         modelLabel = new JLabel("Documents");
         modelLabel.setOpaque(true);
-        modelLabel.setBackground(new Color(166, 166, 255));
+        modelLabel.setBackground(VCellColors.getLavender());
         modelLabel.setBorder(BorderFactory.createEmptyBorder(1,5,1,1));
 
         GridBagConstraints gc1 = new GridBagConstraints();

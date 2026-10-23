@@ -1,5 +1,6 @@
 package org.vcell.model.springsalad.gui;
 
+import cbit.vcell.client.laf.VCellColors;
 import cbit.gui.ScopedExpression;
 import cbit.vcell.client.ChildWindowManager;
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
@@ -391,9 +392,9 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 					}
 					if (unit != null) {
 						setHorizontalTextPosition(JLabel.LEFT);
-						setIcon(new TextIcon("[" + unit.getSymbolUnicode() + "]", DefaultScrollTableCellRenderer.uneditableForeground));
+						setIcon(new TextIcon("[" + unit.getSymbolUnicode() + "]", VCellColors.getUneditableForeground()));
 					}
-					int rgb = 0x00ffffff & DefaultScrollTableCellRenderer.uneditableForeground.getRGB();
+					int rgb = 0x00ffffff & VCellColors.getUneditableForeground().getRGB();
 					defaultToolTipText = "<html>" + StringEscapeUtils.escapeHtml4(getText()) + " <font color=#" + Integer.toHexString(rgb) + "> [" + unit.getSymbolUnicode() + "] </font></html>";
 					setToolTipText(defaultToolTipText);
 					if(unit != null) {
@@ -446,7 +447,6 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		
 		// The Structures combobox cell renderer in the MolecularTypeSpecsTable
 		DefaultScrollTableCellRenderer structuresTableCellRenderer = new DefaultScrollTableCellRenderer() {
-			final Color lightBlueBackground = new Color(214, 234, 248);
 			@Override
 			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
 					int row, int column) {
@@ -527,7 +527,6 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 
 			// The NamedColor combobox cell renderer in the MolecularTypeSpecsTable
 		DefaultScrollTableCellRenderer namedColorTableCellRenderer = new DefaultScrollTableCellRenderer() {
-			final Color lightBlueBackground = new Color(214, 234, 248);
 			@Override
 			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
 														   int row, int column) {
@@ -667,7 +666,6 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		linksPanel.add(linksScrollPane, gbc);
 
 		DefaultScrollTableCellRenderer linkSpecsTableCellRenderer = new DefaultScrollTableCellRenderer() {
-			final Color lightBlueBackground = new Color(214, 234, 248);
 			@Override
 			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
 															   int row, int column) {

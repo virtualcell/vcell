@@ -10,6 +10,8 @@
 
 package cbit.vcell.client.desktop.biomodel;
 
+import cbit.vcell.client.laf.VCellColors;
+import cbit.vcell.client.laf.VCellLookAndFeel;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -619,7 +621,7 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		};
 		shapePanel.setBorder(border);
 		shapePanel.setLayout(null);
-		shapePanel.setBackground(Color.white);
+		shapePanel.setBackground(VCellColors.getShapeCanvasBackground());
 		shapePanel.setEditable(true);
 		shapePanel.setShowMoleculeColor(true);
 		shapePanel.setShowNonTrivialOnly(true);
@@ -751,7 +753,7 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		setName("MolecularTypePropertiesPanel");
 		setLayout(new BorderLayout());
 		add(splitPane, BorderLayout.CENTER);
-		setBackground(Color.white);
+		setBackground(VCellLookAndFeel.getContentBackground());
 
 //		annotationTextArea.addFocusListener(eventHandler);
 //		annotationTextArea.addMouseListener(eventHandler);
@@ -875,7 +877,7 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 			final BioPaxObject bpObject = relObject.getBioPaxObject();
 			if(bpObject instanceof Entity){
 				JLabel label = new JLabel("<html><u>" + ((Entity)bpObject).getName().get(0) + "</u></html>");
-				label.setForeground(Color.blue);
+				label.setForeground(VCellColors.getValueForeground());
 				label.addMouseListener(new MouseAdapter() {
 					public void mouseClicked(MouseEvent e) {
 						if (e.getClickCount() == 2) {

@@ -1,5 +1,7 @@
 package cbit.vcell.client.desktop.biomodel;
 
+import cbit.vcell.client.laf.VCellColors;
+import cbit.vcell.client.laf.VCellLookAndFeel;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -132,7 +134,7 @@ public class ReactionRuleParticipantSignaturePropertiesPanel extends DocumentEdi
 			};
 			
 			shapePanel.setLayout(new GridBagLayout());
-			shapePanel.setBackground(Color.white);
+			shapePanel.setBackground(VCellColors.getShapeCanvasBackground());
 			shapePanel.zoomSmaller();
 			shapePanel.zoomSmaller();
 			shapePanel.zoomSmaller();
@@ -224,7 +226,7 @@ public class ReactionRuleParticipantSignaturePropertiesPanel extends DocumentEdi
 			
 			setLayout(new BorderLayout());
 			add(containerOfScrollPanel, BorderLayout.CENTER);
-			setBackground(Color.white);
+			setBackground(VCellLookAndFeel.getContentBackground());
 			
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);

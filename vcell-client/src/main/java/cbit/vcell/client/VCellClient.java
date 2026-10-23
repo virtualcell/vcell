@@ -12,6 +12,7 @@ package cbit.vcell.client;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.DocumentWindowAboutBox;
+import cbit.vcell.client.laf.VCellLookAndFeel;
 import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
@@ -21,7 +22,6 @@ import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.server.VCellConnectionFactory;
 import com.google.inject.Inject;
 import com.install4j.api.launcher.ApplicationLauncher;
-import org.vcell.api.client.VCellApiClient;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.api.messaging.RemoteProxyVCellConnectionFactory;
 import org.vcell.api.server.ClientServerManager;
@@ -71,6 +71,19 @@ public class VCellClient {
 	    public synchronized void addInvalidComponent(JComponent component) {
 	        checkThreadViolations(component);
 	        super.addInvalidComponent(component);
+	    }
+
+	    // A panel that comes into view after a theme switch must be brought up to date before it is laid out or painted
+	    @Override
+	    public void validateInvalidComponents() {
+	        VCellLookAndFeel.refreshStaleComponentsIfPending();
+	        super.validateInvalidComponents();
+	    }
+
+	    @Override
+	    public void paintDirtyRegions() {
+	        VCellLookAndFeel.refreshStaleComponentsIfPending();
+	        super.paintDirtyRegions();
 	    }
 
 	    public void addDirtyRegion(JComponent component, int x, int y, int w, int h) {
@@ -175,7 +188,7 @@ private void setStatusUpdater(StatusUpdater newStatusUpdater) {
 }
 
 public void startClient(final VCDocument startupDoc, final ClientServerInfo clientServerInfo) {
-	VCellLookAndFeel.setVCellLookAndFeel();
+	VCellLookAndFeel.initializeVCellLookAndFeel();
 
 	Hashtable<String, Object> hash = new Hashtable<String, Object>();	
 	AsynchClientTask task1  = new AsynchClientTask("Starting Virtual Cell", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {

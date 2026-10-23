@@ -10,7 +10,7 @@
 
 package cbit.vcell.microscopy.batchrun.gui;
 
-import java.awt.Color;
+import cbit.vcell.client.laf.VCellLookAndFeel;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 
@@ -32,7 +32,7 @@ public class MessagePanel extends JPanel implements ClientTaskStatusSupport
 	public MessagePanel(String msg, boolean bProgress)
 	{
 		super();
-		setBackground(Color.white);
+		setBackground(VCellLookAndFeel.getContentBackground());
 		setLayout(new FlowLayout(FlowLayout.LEFT));
 		if(msg != null)
 		{

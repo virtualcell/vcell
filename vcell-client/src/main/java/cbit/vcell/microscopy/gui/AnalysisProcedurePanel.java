@@ -10,6 +10,7 @@
 
 package cbit.vcell.microscopy.gui;
 
+import cbit.vcell.client.laf.VCellColors;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
@@ -85,7 +86,7 @@ public class AnalysisProcedurePanel extends JPanel
 		JPanel topPanel = new JPanel();
 		JLabel label = new JLabel("Data Analysis Work Flow");
 		label.setFont(new Font("arial", Font.BOLD+Font.ITALIC, 14));
-		label.setForeground(new Color(0,0,128));
+		label.setForeground(VCellColors.getTitleForeground());
 		topPanel.add(label, BorderLayout.WEST);
 		
 		return topPanel;

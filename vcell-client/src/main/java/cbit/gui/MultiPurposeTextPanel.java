@@ -15,6 +15,7 @@ package cbit.gui;
  * Creation date: (10/9/2006 1:17:05 PM)
  * @author: Fei Gao
  */
+import cbit.vcell.client.laf.VCellColors;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
@@ -926,7 +927,7 @@ public class MultiPurposeTextPanel extends JPanel {
 	       	if (listModel.getSize() > 0) {
 	       		autoCompJList.setVisibleRowCount(Math.min(8, Math.max(3, listModel.getSize())));
 	       		autoCompJList.ensureIndexIsVisible(0);
-	       		autoCompJList.setSelectionBackground(Color.lightGray);				
+	       		autoCompJList.setSelectionBackground(VCellColors.getSubtleBackground());				
 				
 	       		Rectangle loc = null;
 	       		int caretPosition = textPane.getCaretPosition();
@@ -1071,7 +1072,7 @@ public class MultiPurposeTextPanel extends JPanel {
 			}
 			searchPrevNext(true);
 		} else {
-			searchTextField.setBackground(Color.PINK);
+			searchTextField.setBackground(VCellColors.getThemedBackground(Color.PINK));
 			getSearchPrevButton().setEnabled(false);
 			getSearchNextButton().setEnabled(false);
 		}

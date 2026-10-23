@@ -1,5 +1,6 @@
 package cbit.vcell.solver.ode.gui;
 
+import cbit.vcell.client.laf.VCellColors;
 import cbit.plot.gui.Plot2DDataPanel;
 import cbit.plot.gui.Plot2DPanel;
 import cbit.vcell.client.data.ODEDataViewer;
@@ -356,7 +357,6 @@ public class LangevinClustersResultsPanel extends DocumentEditorSubPanel {
             ivjJLabelBottom = new javax.swing.JLabel();
             ivjJLabelBottom.setName("JLabelBottom");
             ivjJLabelBottom.setText("t");
-            ivjJLabelBottom.setForeground(java.awt.Color.black);
             ivjJLabelBottom.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
             ivjJLabelBottom.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         }
@@ -417,7 +417,7 @@ public class LangevinClustersResultsPanel extends DocumentEditorSubPanel {
             bottomLabel = new JLabel();
             bottomLabel.setName("JBottomLabel");
             bottomLabel.setText(" ");
-            bottomLabel.setForeground(Color.blue);
+            bottomLabel.setForeground(VCellColors.getValueForeground());
             bottomLabel.setPreferredSize(new Dimension(44, 20));
             bottomLabel.setFont(new Font("dialog", 0, 12));
             bottomLabel.setMinimumSize(new Dimension(44, 20));

@@ -10,8 +10,8 @@
 
 package cbit.vcell.client.desktop.biomodel;
 
+import cbit.vcell.client.laf.VCellLookAndFeel;
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -79,7 +79,7 @@ private void handleException(java.lang.Throwable exception) {
 private void initialize() {
 	try {		
 		applicationsPanel = new JPanel(new GridBagLayout());
-		applicationsPanel.setBackground(Color.white);
+		applicationsPanel.setBackground(VCellLookAndFeel.getContentBackground());
 		
 		setLayout(new BorderLayout());
 		add(new JScrollPane(applicationsPanel), BorderLayout.CENTER);
