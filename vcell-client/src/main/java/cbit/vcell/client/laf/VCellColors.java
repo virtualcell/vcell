@@ -2,11 +2,12 @@ package cbit.vcell.client.laf;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.function.Supplier;
 
 /**
  * VCell's own UI colors. Light themes get the colors VCell has always used; dark themes get a darker
- * equivalent that keeps the hue. Computed on every call (as plain Colors, not UIResources), so renderers
- * pick up a theme switch on their next paint.
+ * equivalent that keeps the hue. Each theme-dependent color re-evaluates itself when the look and feel
+ * changes, so a component given one when it was built follows later theme switches too.
  */
 public final class VCellColors {
 	private static final Color LIGHT_TABLE_HEADER = new Color(0xB9C9FE);
@@ -24,20 +25,20 @@ public final class VCellColors {
 	private VCellColors() {}
 
 	/** Background of ScrollTable column headers. */
-	public static Color getTableHeaderBackground() { return tint(LIGHT_TABLE_HEADER, 0.25f); }
+	public static Color getTableHeaderBackground() { return themeColor(() -> tint(LIGHT_TABLE_HEADER, 0.25f)); }
 
 	/** VCell's lavender: StyleTable / BoxPanel borders, plain table headers, and model-name labels. */
-	public static Color getLavender() { return tint(LIGHT_LAVENDER, 0.35f); }
+	public static Color getLavender() { return themeColor(() -> tint(LIGHT_LAVENDER, 0.35f)); }
 
 	/** A softer-than-usual selection background some table renderers use for their selected rows. */
-	public static Color getSoftSelectionBackground() { return tint(LIGHT_SOFT_SELECTION, 0.2f); }
+	public static Color getSoftSelectionBackground() { return themeColor(() -> tint(LIGHT_SOFT_SELECTION, 0.2f)); }
 
 	/** Rows that match the current selection in a related table. */
-	public static Color getMatchHighlightBackground() { return tint(Color.yellow, 0.3f); }
+	public static Color getMatchHighlightBackground() { return themeColor(() -> tint(Color.yellow, 0.3f)); }
 
 	/** Text of read-only values. Always a shade of brown, VCell's read-only marker; lighter on dark themes. */
 	public static Color getUneditableForeground() {
-		return isDarkTheme() ? blend(LIGHT_UNEDITABLE, Color.white, 0.35f) : LIGHT_UNEDITABLE;
+		return themeColor(() -> isDarkTheme() ? blend(LIGHT_UNEDITABLE, Color.white, 0.35f) : LIGHT_UNEDITABLE);
 	}
 
 	/**
@@ -53,7 +54,7 @@ public final class VCellColors {
 	public static Color getSubtleBackground() { return getThemedBackground(Color.lightGray); }
 
 	/** {@code lightThemeColor} as-is on light themes; on dark ones, the theme background tinted toward it. */
-	public static Color getThemedBackground(Color lightThemeColor) { return tint(lightThemeColor, 0.15f); }
+	public static Color getThemedBackground(Color lightThemeColor) { return themeColor(() -> tint(lightThemeColor, 0.15f)); }
 
 	/** Blue text for computed values, notes, and link-style labels. */
 	public static Color getValueForeground() { return getReadableForeground(LIGHT_VALUE_TEXT); }
@@ -73,7 +74,7 @@ public final class VCellColors {
 	/** Pink background of cells flagged as bad or out of range. */
 	public static Color getErrorBackground() { return getThemedBackground(LIGHT_ERROR_BACKGROUND); }
 
-	/** {@code color} as "#RRGGBB", for HTML text in labels and renderers. */
+	/** {@code color} as "#RRGGBB", for HTML text in labels and renderers. A snapshot: HTML text keeps it. */
 	public static String toHtmlColor(Color color) {
 		return String.format("#%06X", color.getRGB() & 0xFFFFFF);
 	}
@@ -83,15 +84,7 @@ public final class VCellColors {
 	 * just enough to read against both the panel background and the (often lighter) content background.
 	 */
 	public static Color getReadableForeground(Color lightThemeColor) {
-		Color background = getThemeBackground();
-		if (!isDark(background)) return lightThemeColor;
-		Color contentBackground = UIManager.getColor("List.background");
-		for (int step = 0; step <= 20; step++) {
-			Color candidate = blend(lightThemeColor, Color.white, step / 20f);
-			if (getContrastRatio(candidate, background) >= MIN_TEXT_CONTRAST
-					&& (null == contentBackground || getContrastRatio(candidate, contentBackground) >= MIN_TEXT_CONTRAST)) return candidate;
-		}
-		return Color.white;
+		return themeColor(() -> computeReadableForeground(lightThemeColor));
 	}
 
 	public static boolean isDarkTheme() {
@@ -117,6 +110,27 @@ public final class VCellColors {
 		return (lighter + 0.05) / (darker + 0.05);
 	}
 
+	/**
+	 * A color that re-evaluates {@code supplier} whenever the look and feel changes. It is a plain Color, not a
+	 * UIResource, so a theme switch keeps it on the component (and Synth themes paint it as given), while its
+	 * value follows the new theme.
+	 */
+	static Color themeColor(Supplier<Color> supplier) {
+		return new ThemeColor(supplier);
+	}
+
+	private static Color computeReadableForeground(Color lightThemeColor) {
+		Color background = getThemeBackground();
+		if (!isDark(background)) return lightThemeColor;
+		Color contentBackground = UIManager.getColor("List.background");
+		for (int step = 0; step <= 20; step++) {
+			Color candidate = blend(lightThemeColor, Color.white, step / 20f);
+			if (getContrastRatio(candidate, background) >= MIN_TEXT_CONTRAST
+					&& (null == contentBackground || getContrastRatio(candidate, contentBackground) >= MIN_TEXT_CONTRAST)) return candidate;
+		}
+		return Color.white;
+	}
+
 	private static double getRelativeLuminance(Color color) {
 		return 0.2126 * linearize(color.getRed()) + 0.7152 * linearize(color.getGreen()) + 0.0722 * linearize(color.getBlue());
 	}
@@ -135,5 +149,30 @@ public final class VCellColors {
 	private static Color getThemeBackground() {
 		Color tableBackground = UIManager.getColor("Table.background");
 		return null != tableBackground ? tableBackground : UIManager.getColor("Panel.background");
+	}
+
+	// Color derives getRed/Green/Blue/Alpha, equals, and what Graphics paints from getRGB()
+	@SuppressWarnings("serial")
+	private static final class ThemeColor extends Color {
+		private final transient Supplier<Color> supplier;
+		private transient LookAndFeel evaluatedFor;
+		private transient int rgb;
+
+		ThemeColor(Supplier<Color> supplier) {
+			super(supplier.get().getRGB(), true);
+			this.supplier = supplier;
+			this.evaluatedFor = UIManager.getLookAndFeel();
+			this.rgb = super.getRGB();
+		}
+
+		@Override
+		public int getRGB() {
+			LookAndFeel current = UIManager.getLookAndFeel();
+			if (current != this.evaluatedFor) {
+				this.evaluatedFor = current;
+				this.rgb = this.supplier.get().getRGB();
+			}
+			return this.rgb;
+		}
 	}
 }
