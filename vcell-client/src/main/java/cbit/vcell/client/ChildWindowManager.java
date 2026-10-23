@@ -1,5 +1,6 @@
 package cbit.vcell.client;
 
+import cbit.vcell.client.laf.NestedMenuBar;
 import java.awt.BorderLayout;
 import java.awt.RenderingHints;
 import java.awt.Graphics2D;
@@ -419,7 +420,7 @@ public class ChildWindowManager {
 				// then the way back to it.
 				JMenuBar mb = (detached || modality != LWModality.MODELESS)
 						? LWNamespace.createRightSideIconMenuBar()
-						: new JMenuBar();
+						: new NestedMenuBar();
 				if (modality == LWModality.MODELESS) {
 					mb.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
 					mb.add(createAttachmentMenuItem());

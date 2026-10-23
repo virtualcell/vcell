@@ -1,5 +1,6 @@
 package org.vcell.client.logicalwindow;
 
+import cbit.vcell.client.laf.NestedMenuBar;
 import java.awt.Component;
 import java.awt.ComponentOrientation;
 import java.awt.Container;
@@ -220,7 +221,7 @@ public interface LWNamespace {
      * @return new menu bar
      */
     public static JMenuBar createRightSideIconMenuBar() {
-        JMenuBar mb = new JMenuBar();
+        JMenuBar mb = new NestedMenuBar();
         mb.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
         mb.add(LWTopFrame.createWindowMenu(false));
         return mb;
