@@ -8,7 +8,7 @@ import javax.swing.plaf.nimbus.NimbusLookAndFeel;
 import java.awt.*;
 import java.awt.geom.Path2D;
 
-public class NimbusDarkLookAndFeel extends NimbusLookAndFeel {
+public class DarkNimbusLookAndFeel extends NimbusLookAndFeel {
 	public static final String ID = "NimbusDarkCustom";
 	public static final String NAME = "Nimbus Dark (Custom)";
 	// Colors based on OSX Mojave's dark theme
@@ -22,8 +22,8 @@ public class NimbusDarkLookAndFeel extends NimbusLookAndFeel {
 	private static final Color BORDER = new ColorUIResource(0x48484A);
 	private static final Color SELECTED_TEXT = new ColorUIResource(Color.WHITE);
 
-	@Override public String getName() { return NimbusDarkLookAndFeel.NAME; }
-	@Override public String getID() { return NimbusDarkLookAndFeel.ID; }
+	@Override public String getName() { return DarkNimbusLookAndFeel.NAME; }
+	@Override public String getID() { return DarkNimbusLookAndFeel.ID; }
 	@Override public String getDescription() { return "A version of Nimbus made as a dark theme. Original concept borrowed from `javathinking.com`"; }
 
 	@Override

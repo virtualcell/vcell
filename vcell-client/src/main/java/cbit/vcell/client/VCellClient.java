@@ -73,6 +73,19 @@ public class VCellClient {
 	        super.addInvalidComponent(component);
 	    }
 
+	    // A panel that comes into view after a theme switch must be brought up to date before it is laid out or painted
+	    @Override
+	    public void validateInvalidComponents() {
+	        VCellLookAndFeel.refreshStaleComponentsIfPending();
+	        super.validateInvalidComponents();
+	    }
+
+	    @Override
+	    public void paintDirtyRegions() {
+	        VCellLookAndFeel.refreshStaleComponentsIfPending();
+	        super.paintDirtyRegions();
+	    }
+
 	    public void addDirtyRegion(JComponent component, int x, int y, int w, int h) {
 	    	// thought to be safe to call off the Event Dispatch Thread (EDT) ... actual painting is done on EDT.
 	        super.addDirtyRegion(component, x, y, w, h);
