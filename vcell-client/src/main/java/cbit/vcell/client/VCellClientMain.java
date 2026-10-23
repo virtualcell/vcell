@@ -13,6 +13,7 @@ package cbit.vcell.client;
 import cbit.util.xml.VCLogger;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.client.desktop.NetworkProxyPreferences;
+import cbit.vcell.client.laf.VCellLookAndFeel;
 import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.client.server.DynamicClientProperties;
 import org.vcell.api.messaging.RemoteProxyVCellConnectionFactory;
@@ -91,6 +92,9 @@ public class VCellClientMain implements Callable<Integer> {
         // TTL still gives reasonable cache locality without holding stale entries indefinitely.
         java.security.Security.setProperty("networkaddress.cache.ttl", "30");
         java.security.Security.setProperty("networkaddress.cache.negative.ttl", "0");
+
+        // Screen menu bar and title bar appearance; macOS only reads these before AWT starts
+        VCellLookAndFeel.setMacOSWindowProperties();
 
         System.out.println("starting with arguments " + Arrays.asList(args));
         int exitCode = 1;

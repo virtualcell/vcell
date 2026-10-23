@@ -12,7 +12,7 @@ package org.vcell.standalone;
 
 import cbit.vcell.client.VCellClient;
 import cbit.vcell.client.VCellClientLogging;
-import cbit.vcell.client.VCellLookAndFeel;
+import cbit.vcell.client.laf.VCellLookAndFeel;
 import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.resource.ErrorUtils;
 import cbit.vcell.resource.LibraryLoaderThread;
@@ -22,7 +22,6 @@ import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Singleton;
 import org.apache.commons.lang3.ArrayUtils;
-import org.vcell.dependency.server.VCellServerModule;
 import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.VCDocument;
 
@@ -45,7 +44,7 @@ public class VCellClientDevMain {
 		}
 		ClientServerInfo csInfo = ClientServerInfo.createLocalServerInfo(user);
 		//call in main thread, since it's quick and not necessarily thread safe
-		VCellLookAndFeel.setVCellLookAndFeel();
+		VCellLookAndFeel.initializeVCellLookAndFeel();
 
 		vcellClient.startClient(initialDocument, csInfo);
 	}
@@ -57,6 +56,9 @@ public class VCellClientDevMain {
 			// configuration rather than the one jsbml happens to ship, which would otherwise decide
 			// the levels here and drop a jsbml.log into the working directory.
 			VCellClientLogging.configure();
+
+			// Screen menu bar and title bar appearance; macOS only reads these before AWT starts
+			VCellLookAndFeel.setMacOSWindowProperties();
 
 			ErrorUtils.setDebug(true);
 			PropertyLoader.loadProperties(ArrayUtils.addAll(REQUIRED_CLIENT_PROPERTIES, REQUIRED_LOCAL_PROPERTIES));
