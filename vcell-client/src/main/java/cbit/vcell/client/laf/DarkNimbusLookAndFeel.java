@@ -9,7 +9,7 @@ import java.awt.*;
 import java.awt.geom.Path2D;
 
 public class DarkNimbusLookAndFeel extends NimbusLookAndFeel {
-	public static final String ID = "NimbusDarkCustom";
+	public static final String ID = "Nimbus Stormy";
 	public static final String NAME = "Nimbus Dark (Custom)";
 	// Colors based on OSX Mojave's dark theme
 	private static final Color PRIMARY_BACKGROUND = new ColorUIResource(0x1C1C1E);

@@ -1059,7 +1059,9 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
         lookAndFeelMenu.setName("LookAndFeelMenu");
         lookAndFeelMenu.setText("Set VCell Theme...");
         try {
-            for (UIManager.LookAndFeelInfo lookAndFeelInfo : UIManager.getInstalledLookAndFeels()) {
+            Comparator<UIManager.LookAndFeelInfo> lafiComparator = new VCellLookAndFeel.LookAndFeelComparator();
+            UIManager.LookAndFeelInfo[] installedLookAndFeels = UIManager.getInstalledLookAndFeels();
+            for (UIManager.LookAndFeelInfo lookAndFeelInfo : Arrays.stream(installedLookAndFeels).sorted(lafiComparator).toList()) {
                 this.lookAndFeelInfoMap.put(lookAndFeelInfo.getName(), lookAndFeelInfo);
                 lookAndFeelMenu.add(DocumentWindow.generateLookAndFeelJMenuItem(lookAndFeelInfo));
             }

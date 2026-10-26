@@ -42,12 +42,12 @@ public class VCellLookAndFeel {
 	//TODO: Make/generate cross-platform look and feel for VCell using `SynthLookAndFeel` / Synth Architecture system!
 	private static final String _DEFAULT_SYSTEM = "_Default System";
 	private static final String METAL_BUILT_IN = "MetalLookAndFeel";
+	//private static final String FLAT_LAF_LIGHT = "Flat Simple (Light)";
+	private static final String FLAT_INTELLIJ_LAF_LIGHT = "Flat Modern (Light)";
+	//private static final String FLAT_LAF_DARK = "Flat Simple (Dark)";
+	private static final String FLAT_INTELLIJ_LAF_DARK = "Flat Modern (Dark)";
 	private static final String NIMBUS_BUILT_IN = "Nimbus";
-	private static final String FLAT_LIGHT_LAF = "Flat Light";
-	private static final String FLAT_INTELLIJ_LAF = "Flat IntelliJ";
-	private static final String FLAT_DARK_LAF = "Flat Dark";
-	private static final String FLAT_DARCULA_LAF = "Flat Darcula";
-	private static final String NIMBUS_DARK_CUSTOM_LAF = DarkNimbusLookAndFeel.ID;
+	private static final String NIMBUS_DARK_LAF = DarkNimbusLookAndFeel.ID;
 	private static final String DARK_AQUA_LAF = DarkAquaLookAndFeel.ID;
 	// The classes Synth (Nimbus) swaps default table renderers for
 	private static final Class<?>[] SYNTH_RENDERED_CLASSES = { Object.class, Number.class, Double.class, Float.class,
@@ -57,22 +57,22 @@ public class VCellLookAndFeel {
 		VCellLookAndFeel.setPlatformProperties(); // must precede any UIManager call; installLookAndFeel already starts AWT
 		boolean osIsDarkTheme = themeDetector.isDark();
 
-		UIManager.installLookAndFeel(FLAT_LIGHT_LAF, com.formdev.flatlaf.FlatLightLaf.class.getName());
-		UIManager.installLookAndFeel(FLAT_DARK_LAF, com.formdev.flatlaf.FlatDarkLaf.class.getName());
-		UIManager.installLookAndFeel(FLAT_INTELLIJ_LAF, com.formdev.flatlaf.FlatIntelliJLaf.class.getName());
-		UIManager.installLookAndFeel(FLAT_DARCULA_LAF, com.formdev.flatlaf.FlatDarculaLaf.class.getName());
-		if (VCellLookAndFeel.osInfo.isMac()) UIManager.installLookAndFeel(NIMBUS_DARK_CUSTOM_LAF, DarkNimbusLookAndFeel.class.getName());
+		//UIManager.installLookAndFeel(FLAT_LAF_LIGHT, com.formdev.flatlaf.FlatLightLaf.class.getName());
+		//UIManager.installLookAndFeel(FLAT_LAF_DARK, com.formdev.flatlaf.FlatDarkLaf.class.getName());
+		UIManager.installLookAndFeel(FLAT_INTELLIJ_LAF_LIGHT, com.formdev.flatlaf.FlatIntelliJLaf.class.getName());
+		UIManager.installLookAndFeel(FLAT_INTELLIJ_LAF_DARK, com.formdev.flatlaf.FlatDarculaLaf.class.getName());
+		UIManager.installLookAndFeel(NIMBUS_DARK_LAF, DarkNimbusLookAndFeel.class.getName());
 		if (VCellLookAndFeel.osInfo.isMac()) UIManager.installLookAndFeel(DARK_AQUA_LAF, DarkAquaLookAndFeel.class.getName());
 
 		// Windows
-		String[] windowsLightThemeOrder = new String[]{_DEFAULT_SYSTEM, NIMBUS_BUILT_IN, FLAT_INTELLIJ_LAF, METAL_BUILT_IN};
-		String[] windowsDarkThemeOrder = new String[]{_DEFAULT_SYSTEM, NIMBUS_DARK_CUSTOM_LAF, FLAT_DARK_LAF, METAL_BUILT_IN};
+		String[] windowsLightThemeOrder = new String[]{_DEFAULT_SYSTEM, NIMBUS_BUILT_IN, FLAT_INTELLIJ_LAF_LIGHT, METAL_BUILT_IN};
+		String[] windowsDarkThemeOrder = new String[]{_DEFAULT_SYSTEM, NIMBUS_DARK_LAF, FLAT_INTELLIJ_LAF_DARK, METAL_BUILT_IN};
 		// Mac
-		String[] macLightThemeOrder = new String[]{_DEFAULT_SYSTEM, NIMBUS_BUILT_IN, FLAT_INTELLIJ_LAF, METAL_BUILT_IN};
-		String[] macDarkThemeOrder = new String[]{DARK_AQUA_LAF, NIMBUS_DARK_CUSTOM_LAF, FLAT_DARK_LAF, METAL_BUILT_IN};
+		String[] macLightThemeOrder = new String[]{_DEFAULT_SYSTEM, NIMBUS_BUILT_IN, FLAT_INTELLIJ_LAF_LIGHT, METAL_BUILT_IN};
+		String[] macDarkThemeOrder = new String[]{DARK_AQUA_LAF, NIMBUS_DARK_LAF, FLAT_INTELLIJ_LAF_DARK, METAL_BUILT_IN};
 		// Linux (*don't* use system theme automatically!)
-		String[] linuxLightThemeOrder = new String[]{ FLAT_LIGHT_LAF, NIMBUS_BUILT_IN, METAL_BUILT_IN};
-		String[] linuxDarkThemeOrder = new String[]{ FLAT_DARK_LAF, NIMBUS_DARK_CUSTOM_LAF, METAL_BUILT_IN};
+		String[] linuxLightThemeOrder = new String[]{FLAT_INTELLIJ_LAF_LIGHT, NIMBUS_BUILT_IN, METAL_BUILT_IN};
+		String[] linuxDarkThemeOrder = new String[]{FLAT_INTELLIJ_LAF_DARK, NIMBUS_DARK_LAF, METAL_BUILT_IN};
 
 		VCellLookAndFeel.osLookAndFeelLoadOrder.put(OsType.WINDOWS, osIsDarkTheme ? windowsDarkThemeOrder : windowsLightThemeOrder);
 		VCellLookAndFeel.osLookAndFeelLoadOrder.put(OsType.MAC, osIsDarkTheme ? macDarkThemeOrder : macLightThemeOrder);
@@ -295,5 +295,53 @@ public class VCellLookAndFeel {
 		UIManager.put("TabbedPane.useSmallLayout", Boolean.TRUE);
 		System.getProperties().put("swing.component.sizevariant", "regular");
 		return newFont;
+	}
+
+	public static class LookAndFeelComparator implements Comparator<UIManager.LookAndFeelInfo> {
+
+		/**
+		 * Compares its two arguments for order.  Returns a negative integer,
+		 * zero, or a positive integer as the first argument is less than, equal
+		 * to, or greater than the second.<p>
+		 * <p>
+		 * The implementor must ensure that {@link Integer#signum
+		 * signum}{@code (compare(x, y)) == -signum(compare(y, x))} for
+		 * all {@code x} and {@code y}.  (This implies that {@code
+		 * compare(x, y)} must throw an exception if and only if {@code
+		 * compare(y, x)} throws an exception.)<p>
+		 * <p>
+		 * The implementor must also ensure that the relation is transitive:
+		 * {@code ((compare(x, y)>0) && (compare(y, z)>0))} implies
+		 * {@code compare(x, z)>0}.<p>
+		 * <p>
+		 * Finally, the implementor must ensure that {@code compare(x,
+		 * y)==0} implies that {@code signum(compare(x,
+		 * z))==signum(compare(y, z))} for all {@code z}.
+		 *
+		 * @param o1 the first object to be compared.
+		 * @param o2 the second object to be compared.
+		 * @return a negative integer, zero, or a positive integer as the
+		 * first argument is less than, equal to, or greater than the
+		 * second.
+		 * @throws NullPointerException if an argument is null and this
+		 *                              comparator does not permit null arguments
+		 * @throws ClassCastException   if the arguments' types prevent them from
+		 *                              being compared by this comparator.
+		 * @apiNote It is generally the case, but <i>not</i> strictly required that
+		 * {@code (compare(x, y)==0) == (x.equals(y))}.  Generally speaking,
+		 * any comparator that violates this condition should clearly indicate
+		 * this fact.  The recommended language is "Note: this comparator
+		 * imposes orderings that are inconsistent with equals."
+		 */
+		@Override
+		public int compare(LookAndFeelInfo o1, LookAndFeelInfo o2) {
+			if (null == o1) throw new NullPointerException("first argument is null");
+			if (null == o2) throw new NullPointerException("second argument is null");
+			String s1 = o1.getName();
+			if (null == s1) throw new NullPointerException("firstArgument::getName is null");
+			String s2 = o2.getName();
+			if (null == s2) throw new NullPointerException("secondArgument::getName is null");
+			return s1.compareTo(s2);
+		}
 	}
 }

@@ -2,6 +2,7 @@ package cbit.vcell.client.laf;
 
 import javax.swing.*;
 import javax.swing.plaf.ColorUIResource;
+import javax.swing.plaf.InsetsUIResource;
 import java.awt.*;
 import java.util.Map;
 import java.util.TreeMap;
@@ -14,7 +15,7 @@ import java.util.TreeMap;
  * Aqua cannot be subclassed (its package is not exported), so this wraps an instance of it.
  */
 public class DarkAquaLookAndFeel extends LookAndFeel {
-	public static final String ID = "DarkAqua";
+	public static final String ID = "Mac OSX Dark";
 	public static final String NAME = "Dark Aqua";
 
 	// macOS's dark values, for when AppKit can't be read
@@ -30,6 +31,7 @@ public class DarkAquaLookAndFeel extends LookAndFeel {
 			"unemphasizedSelectedContentBackgroundColor", new Color(0x464646),
 			"selectedTextBackgroundColor", new Color(0x3F638B));
 	private static final Color FALLBACK_SEPARATOR = new Color(255, 255, 255, 26);
+	private static final int TAB_AREA_TOP = 12; // below the content box's top edge, which Aqua draws at 9
 	private static final String CONTENT_COMPONENTS = "(List|Table|Tree|TextField|TextArea|TextPane|EditorPane|FormattedTextField|PasswordField|Viewport|Spinner|ComboBox)";
 	private static final String TEXT_COMPONENTS = "(TextField|TextArea|TextPane|EditorPane|FormattedTextField|PasswordField)";
 
@@ -84,6 +86,11 @@ public class DarkAquaLookAndFeel extends LookAndFeel {
 		defaults.put("TabbedPane.selectedTabTitleNormalColor", new ColorUIResource(label));
 		defaults.put("TabbedPane.nonSelectedTabTitleNormalColor", new ColorUIResource(label));
 		defaults.put("TabbedPane.selectedTabTitleShadowNormalColor", new ColorUIResource(window));
+		// Aqua draws the content box's top edge 9px into the tab area, through the middle of the tabs; macOS draws the
+		// tabs translucent in dark mode, so that edge showed through them. Start the tabs just below it instead.
+		if (defaults.get("TabbedPane.tabAreaInsets") instanceof Insets tabAreaInsets) {
+			defaults.put("TabbedPane.tabAreaInsets", new InsetsUIResource(TAB_AREA_TOP, tabAreaInsets.left, tabAreaInsets.bottom, tabAreaInsets.right));
+		}
 		return defaults;
 	}
 
