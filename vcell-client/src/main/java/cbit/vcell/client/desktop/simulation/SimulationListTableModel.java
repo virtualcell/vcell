@@ -193,18 +193,6 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		} else if (evt.getPropertyName().equals(SimulationWorkspace.PROPERTY_NAME_SIMULATION_STATUS)) {
 			int simIndex = (Integer)evt.getNewValue();
 			int row = simIndex % getMaxRowsPerPage();
-			Simulation simulation = getValueAt(row);
-			if(simulation != null) {
-				SolverTaskDescription std = simulation.getSolverTaskDescription();
-				SolverDescription sd = std.getSolverDescription();
-				SimulationStatus simulationStatus = getSimulationWorkspace().getSimulationStatus(simulation);
-				if (sd.isLangevinSolver() && simulationStatus.isCompleted()) {
-					System.out.println("SimulationListTableModel: simIndex: " + simIndex + ", row: " + row);
-					System.out.println("SimulationListTableModel: status changed: " + simulationStatus.getStatusString());
-					// Langevin post-processing is now being executed server-side, within the solver
-//					getSimulationWorkspace().postProcessLangevinResults(simulation);
-				}
-			}
 			fireTableRowsUpdated(row, row);
 		}
 	} else {
