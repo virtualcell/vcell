@@ -26,6 +26,7 @@ public interface MessageConstants {
 	public static final String SIMULATION_STATUS_TIMEPOINT_PROPERTY = "SimulationStatusTimePoint";
 	public static final String WORKEREVENT_STATUS		= "WorkerEvent_Status";
 	public static final String WORKEREVENT_PROGRESS		= "WorkerEvent_Progress";
+	public static final String WORKEREVENT_ESTIMATEDTIME = "WorkerEvent_EstimatedTime";
 	public static final String WORKEREVENT_TIMEPOINT	= "WorkerEvent_TimePoint";
 	public static final String WORKEREVENT_STATUSMSG	= "WorkerEvent_StatusMsg";
 	
