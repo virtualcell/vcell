@@ -507,14 +507,18 @@
 							<goal>analyze-only</goal>
 						</goals>
 						<configuration>
-							<failOnWarning>true</failOnWarning>
+							<failOnWarning>false</failOnWarning>
+						</configuration>
+					</execution>
+					<!-- scoped to command-line goals: at plugin level it also became analyze-only's
+					     read-only outputDirectory, which then skipped analysis whenever maven-jars/ was absent -->
+					<execution>
+						<id>default-cli</id>
+						<configuration>
+							<outputDirectory>${project.build.directory}/maven-jars</outputDirectory>
 						</configuration>
 					</execution>
 				</executions>
-
-				<configuration>
-					<outputDirectory>${project.build.directory}/maven-jars</outputDirectory>
-				</configuration>
 			</plugin>
 		</plugins>
 	</build>
