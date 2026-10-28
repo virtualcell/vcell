@@ -38,8 +38,7 @@ public class NonSpatialResultsConverter extends ResultsConverter {
         Map<DataGenerator, ValueHolder<LazySBMLNonSpatialDataAccessor>> nonSpatialOrganizedResultsMap = new HashMap<>();
         if (nonSpatialResultsHash.isEmpty()) return nonSpatialOrganizedResultsMap;
 
-        SedML sedML = sedmlContainer.getSedML();
-        for (Output output : ResultsConverter.getValidOutputs(sedmlContainer)){
+	    for (Output output : ResultsConverter.getValidOutputs(sedmlContainer)){
             Set<DataGenerator> dataGeneratorsToProcess;
             if (output instanceof Report report){
                 dataGeneratorsToProcess = new LinkedHashSet<>();
@@ -182,8 +181,7 @@ public class NonSpatialResultsConverter extends ResultsConverter {
         if (dataGen == null) throw new IllegalArgumentException("Provided Data Generator can not be null!");
         Map<Variable, ValueHolder<LazySBMLNonSpatialDataAccessor>> resultsByVariable = new HashMap<>();
 
-        SedML sedml = sedmlContainer.getSedML();
-        // get the list of variables associated with the data reference
+	    // get the list of variables associated with the data reference
         for (Variable var : dataGen.getVariables()) {
             // for each variable we recover the task
             AbstractTask topLevelTask = sedmlContainer.findAbstractTaskById(var.getTaskReference());
