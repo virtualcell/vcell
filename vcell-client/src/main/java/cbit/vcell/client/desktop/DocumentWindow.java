@@ -97,6 +97,7 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
     private JMenuItem ivjSave_VersionMenuItem = null;
     private JMenuItem ivjSaveMenuItem = null;
     private JMenu ivjLookAndFeelMenu = null;
+    private static final String FOLLOW_SYSTEM_THEME = "FollowSystemTheme";
     private final Map<String, UIManager.LookAndFeelInfo> lookAndFeelInfoMap = new HashMap<>();
     private JMenu ivjServerMenu = null;
     private JCheckBoxMenuItem ivjStatusbarMenuItem = null;
@@ -254,6 +255,9 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
 
                 if (e.getSource() instanceof JMenuItem menuItem && DocumentWindow.this.lookAndFeelInfoMap.containsKey(menuItem.getName())){
                     VCellLookAndFeel.changeVCellLookAndFeel(DocumentWindow.this, DocumentWindow.this.lookAndFeelInfoMap.get(menuItem.getName()));
+                }
+                if (e.getSource() instanceof JMenuItem menuItem && FOLLOW_SYSTEM_THEME.equals(menuItem.getName())){
+                    VCellLookAndFeel.followSystemLookAndFeel(DocumentWindow.this);
                 }
             } catch (Throwable throwable) {
                 DocumentWindow.this.handleException(throwable);
@@ -1058,6 +1062,11 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
         JMenu lookAndFeelMenu = new javax.swing.JMenu();
         lookAndFeelMenu.setName("LookAndFeelMenu");
         lookAndFeelMenu.setText("Set VCell Theme...");
+        // forgets the theme picked below, so VCell follows the system's light / dark mode again
+        JMenuItem followSystemMenuItem = new JMenuItem("Follow System");
+        followSystemMenuItem.setName(FOLLOW_SYSTEM_THEME);
+        lookAndFeelMenu.add(followSystemMenuItem);
+        lookAndFeelMenu.addSeparator();
         try {
             Comparator<UIManager.LookAndFeelInfo> lafiComparator = new VCellLookAndFeel.LookAndFeelComparator();
             UIManager.LookAndFeelInfo[] installedLookAndFeels = UIManager.getInstalledLookAndFeels();

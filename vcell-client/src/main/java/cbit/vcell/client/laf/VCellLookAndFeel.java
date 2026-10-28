@@ -26,6 +26,7 @@ import javax.swing.table.TableCellRenderer;
 
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.resource.VCellConfiguration;
 import com.jthemedetecor.OsThemeDetector;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -33,12 +34,18 @@ import org.apache.logging.log4j.Logger;
 import org.vcell.util.OperatingSystemInfo;
 import org.vcell.util.OperatingSystemInfo.OsType;
 
+
 public class VCellLookAndFeel {
 	private static final Logger lg = LogManager.getLogger(VCellLookAndFeel.class);
 	private static final OperatingSystemInfo osInfo = OperatingSystemInfo.getInstance();
 	private static final OsThemeDetector themeDetector = OsThemeDetector.getDetector();
 
-	private static final Map<OsType, String[]> osLookAndFeelLoadOrder = new EnumMap<>(OsType.class);
+	private static final Map<OsType, String[]> osLightLookAndFeelLoadOrder = new EnumMap<>(OsType.class);
+	private static final Map<OsType, String[]> osDarkLookAndFeelLoadOrder = new EnumMap<>(OsType.class);
+	// The theme a user picked from the menu, and whether it is dark, kept in ~/.vcell/vcellconfig.properties;
+	// absent means follow the system's light / dark mode
+	private static final String SAVED_THEME_KEY = "vcell.client.theme";
+	private static final String SAVED_THEME_IS_DARK_KEY = "vcell.client.theme.dark";
 	//TODO: Make/generate cross-platform look and feel for VCell using `SynthLookAndFeel` / Synth Architecture system!
 	private static final String _DEFAULT_SYSTEM = "_Default System";
 	private static final String METAL_BUILT_IN = "MetalLookAndFeel";
@@ -55,7 +62,6 @@ public class VCellLookAndFeel {
 
 	static {
 		VCellLookAndFeel.setPlatformProperties(); // must precede any UIManager call; installLookAndFeel already starts AWT
-		boolean osIsDarkTheme = themeDetector.isDark();
 
 		//UIManager.installLookAndFeel(FLAT_LAF_LIGHT, com.formdev.flatlaf.FlatLightLaf.class.getName());
 		//UIManager.installLookAndFeel(FLAT_LAF_DARK, com.formdev.flatlaf.FlatDarkLaf.class.getName());
@@ -74,9 +80,12 @@ public class VCellLookAndFeel {
 		String[] linuxLightThemeOrder = new String[]{FLAT_INTELLIJ_LAF_LIGHT, NIMBUS_BUILT_IN, METAL_BUILT_IN};
 		String[] linuxDarkThemeOrder = new String[]{FLAT_INTELLIJ_LAF_DARK, NIMBUS_DARK_LAF, METAL_BUILT_IN};
 
-		VCellLookAndFeel.osLookAndFeelLoadOrder.put(OsType.WINDOWS, osIsDarkTheme ? windowsDarkThemeOrder : windowsLightThemeOrder);
-		VCellLookAndFeel.osLookAndFeelLoadOrder.put(OsType.MAC, osIsDarkTheme ? macDarkThemeOrder : macLightThemeOrder);
-		VCellLookAndFeel.osLookAndFeelLoadOrder.put(OsType.LINUX, osIsDarkTheme ? linuxDarkThemeOrder : linuxLightThemeOrder);
+		VCellLookAndFeel.osLightLookAndFeelLoadOrder.put(OsType.WINDOWS, windowsLightThemeOrder);
+		VCellLookAndFeel.osLightLookAndFeelLoadOrder.put(OsType.MAC, macLightThemeOrder);
+		VCellLookAndFeel.osLightLookAndFeelLoadOrder.put(OsType.LINUX, linuxLightThemeOrder);
+		VCellLookAndFeel.osDarkLookAndFeelLoadOrder.put(OsType.WINDOWS, windowsDarkThemeOrder);
+		VCellLookAndFeel.osDarkLookAndFeelLoadOrder.put(OsType.MAC, macDarkThemeOrder);
+		VCellLookAndFeel.osDarkLookAndFeelLoadOrder.put(OsType.LINUX, linuxDarkThemeOrder);
 	}
 
 	public static Font defaultFont = null;
@@ -101,7 +110,32 @@ public class VCellLookAndFeel {
 		}
 		if (!VCellLookAndFeel.osInfo.isMac()) return;
 		System.setProperty("apple.laf.useScreenMenuBar", "true");
-		if (VCellLookAndFeel.themeDetector.isDark()) System.setProperty("apple.awt.application.appearance", "NSAppearanceNameDarkAqua");
+		// matched to the theme VCell is about to start in: a remembered one, or the system's mode
+		System.setProperty("apple.awt.application.appearance", VCellLookAndFeel.isStartingDark() ? "NSAppearanceNameDarkAqua" : "NSAppearanceNameAqua");
+	}
+
+	/** Whether VCell starts in a dark theme: the remembered theme's mode if the user picked one, else the system's. */
+	private static boolean isStartingDark() {
+		String savedIsDark = VCellLookAndFeel.getSavedValue(SAVED_THEME_IS_DARK_KEY);
+		return null != VCellLookAndFeel.getSavedValue(SAVED_THEME_KEY) && null != savedIsDark
+				? Boolean.parseBoolean(savedIsDark) : VCellLookAndFeel.themeDetector.isDark();
+	}
+
+	private static String getSavedValue(String key) {
+		try {
+			return VCellConfiguration.getValue(key, null);
+		} catch (Exception e) {
+			lg.warn("Could not read {} from the VCell configuration", key, e);
+			return null;
+		}
+	}
+
+	private static void saveValue(String key, String value) {
+		try {
+			VCellConfiguration.putValue(key, value); // null removes it
+		} catch (Exception e) {
+			lg.warn("Could not save {} to the VCell configuration", key, e);
+		}
 	}
 
 	public static Color getContentBackground() {
@@ -114,26 +148,47 @@ public class VCellLookAndFeel {
 	public static void initializeVCellLookAndFeel() {
 		lg.info("Operating system:  {}", osInfo.getOsType());
 		lg.info("About to set the look and feel.  Before setting, we're using: {}", UIManager.getLookAndFeel().getName());
-		// first one that installs wins; e.g. Dark Aqua falls back to NimbusDarkCustom if Aqua can't be wrapped
-		for (String lookAndFeelType : VCellLookAndFeel.getLookAndFeelClassNamesToTry()) {
-			try {
-				UIManager.setLookAndFeel(lookAndFeelType);
-				break;
-			} catch (Exception e) {
-				lg.warn("Error while setting look and feel {}, trying the next:", lookAndFeelType, e);
-			}
+		// a remembered theme first, then the usual ones for the mode; e.g. Dark Aqua falls back to NimbusDarkCustom
+		List<String> lookAndFeelTypes = new ArrayList<>();
+		String savedTheme = VCellLookAndFeel.getSavedValue(SAVED_THEME_KEY);
+		LookAndFeelInfo savedInfo = VCellLookAndFeel.getInstalledLookAndFeels().get(savedTheme);
+		if (null != savedInfo) lookAndFeelTypes.add(savedInfo.getClassName());
+		else if (null != savedTheme) lg.info("Remembered theme {} is not available here; following the system", savedTheme);
+		boolean dark = null != savedInfo ? VCellLookAndFeel.isStartingDark() : VCellLookAndFeel.themeDetector.isDark();
+		lookAndFeelTypes.addAll(VCellLookAndFeel.getLookAndFeelClassNamesToTry(dark));
+		VCellLookAndFeel.setFirstAvailableLookAndFeel(lookAndFeelTypes);
+		// The title bar was set from the remembered theme before any theme could be checked; if that one was
+		// missing or failed to load, match it to the theme VCell ended up in
+		boolean endedDark = VCellColors.isDarkTheme();
+		if (VCellLookAndFeel.osInfo.isMac() && endedDark != VCellLookAndFeel.isStartingDark()) {
+			SwingUtilities.invokeLater(() -> MacOSAppearance.setDark(endedDark));
 		}
 		VCellLookAndFeel.defaultFont = calibrateFont(VCellLookAndFeel.defaultFont);
 
 		lg.info("After setting, we're using: {}", UIManager.getLookAndFeel().getName());
 	}
 
+	/** Switches to the theme the user picked, and remembers it for the next start. */
 	public static void changeVCellLookAndFeel(Component requester, LookAndFeelInfo lafInfo) {
 		if (null == lafInfo) return;
+		VCellLookAndFeel.switchLookAndFeel(requester, List.of(lafInfo.getClassName()), lafInfo.getName());
+	}
+
+	/** Forgets any theme the user picked and switches to the usual one for the system's current light / dark mode. */
+	public static void followSystemLookAndFeel(Component requester) {
+		VCellLookAndFeel.switchLookAndFeel(requester, VCellLookAndFeel.getLookAndFeelClassNamesToTry(VCellLookAndFeel.themeDetector.isDark()), null);
+	}
+
+	// themeToRemember null: forget the remembered theme, so later starts follow the system
+	private static void switchLookAndFeel(Component requester, List<String> lookAndFeelTypes, String themeToRemember) {
 		AsynchClientTask changeTask = new AsynchClientTask("Change LookAndFeel", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				UIManager.setLookAndFeel(lafInfo.getClassName());
+				if (!VCellLookAndFeel.setFirstAvailableLookAndFeel(lookAndFeelTypes)) {
+					throw new UnsupportedLookAndFeelException("Could not set the theme: " + lookAndFeelTypes);
+				}
+				VCellLookAndFeel.saveValue(SAVED_THEME_KEY, themeToRemember);
+				VCellLookAndFeel.saveValue(SAVED_THEME_IS_DARK_KEY, null == themeToRemember ? null : Boolean.toString(VCellColors.isDarkTheme()));
 				// title bars, and the controls Aqua has macOS draw, follow the new theme; before the UI update below,
 				// which is what makes those controls pick it up
 				if (VCellLookAndFeel.osInfo.isMac()) performAdditionalMacSetup();
@@ -142,6 +197,7 @@ public class VCellLookAndFeel {
 					updateTreeUI(w);
 					markCurrent(w);
 				}
+				if (VCellLookAndFeel.osInfo.isMac()) MacOSAppearance.setWindowsDark(VCellColors.isDarkTheme());
 			}
 
 			private static void performAdditionalMacSetup(){
@@ -190,12 +246,9 @@ public class VCellLookAndFeel {
 		}
 	}
 
-	/**
-	 * SwingUtilities.updateComponentTreeUI, plus two fixes for gaps in Swing itself: leaving a Synth theme puts back
-	 * the default renderers a table had before Synth was installed, dropping VCell's own; and a JTree measures its
-	 * rows before its renderer has the new font, which cuts its labels short.
-	 */
 	private static void updateTreeUI(Component root) {
+		// This section fixes a bug here where leaving a "Synth" theme puts back the default renderers a table had
+		// (before the Synth theme was installed), thereby dropping VCell's renderer
 		Map<JTable, Map<Class<?>, TableCellRenderer>> ownRenderers = new HashMap<>();
 		VCellLookAndFeel.forEachComponent(root, c -> {
 			if (!(c instanceof JTable table)) return;
@@ -206,6 +259,7 @@ public class VCellLookAndFeel {
 			}
 			ownRenderers.put(table, renderers);
 		});
+		// this fixes a bug where a JTree measures its rows before its renderer has the new font, which cuts its labels short.
 		SwingUtilities.updateComponentTreeUI(root);
 		ownRenderers.forEach((table, renderers) -> renderers.forEach((type, renderer) -> {
 			if (table.getDefaultRenderer(type) != renderer) table.setDefaultRenderer(type, renderer);
@@ -229,17 +283,36 @@ public class VCellLookAndFeel {
 		});
 	}
 
-	/** The installed look and feel classes to try for this OS and light/dark mode, in order of preference. */
-	private static List<String> getLookAndFeelClassNamesToTry() {
-		Map<String, LookAndFeelInfo> lookAndFeels = Arrays.stream(UIManager.getInstalledLookAndFeels())
-				.collect(Collectors.toMap(LookAndFeelInfo::getName, Function.identity()));
+	/** The installed look and feel classes to try for this OS in a light or dark mode, in order of preference. */
+	private static List<String> getLookAndFeelClassNamesToTry(boolean dark) {
+		Map<String, LookAndFeelInfo> lookAndFeels = VCellLookAndFeel.getInstalledLookAndFeels();
+		Map<OsType, String[]> loadOrder = dark ? VCellLookAndFeel.osDarkLookAndFeelLoadOrder : VCellLookAndFeel.osLightLookAndFeelLoadOrder;
 		List<String> classNames = new ArrayList<>();
-		for (String themeToLoad : VCellLookAndFeel.osLookAndFeelLoadOrder.get(VCellLookAndFeel.osInfo.getOsType())) {
+		for (String themeToLoad : loadOrder.get(VCellLookAndFeel.osInfo.getOsType())) {
 			if (_DEFAULT_SYSTEM.equals(themeToLoad)) classNames.add(UIManager.getSystemLookAndFeelClassName());
 			else if (lookAndFeels.containsKey(themeToLoad)) classNames.add(lookAndFeels.get(themeToLoad).getClassName());
 		}
 		classNames.add(UIManager.getCrossPlatformLookAndFeelClassName());
 		return classNames;
+	}
+
+	/** Installed look and feels by the name the theme menu shows (and a remembered theme is saved under). */
+	private static Map<String, LookAndFeelInfo> getInstalledLookAndFeels() {
+		return Arrays.stream(UIManager.getInstalledLookAndFeels())
+				.collect(Collectors.toMap(LookAndFeelInfo::getName, Function.identity(), (first, second) -> first));
+	}
+
+	/** Sets the first of these look and feel classes that installs; false if none does. */
+	private static boolean setFirstAvailableLookAndFeel(List<String> lookAndFeelTypes) {
+		for (String lookAndFeelType : lookAndFeelTypes) {
+			try {
+				UIManager.setLookAndFeel(lookAndFeelType);
+				return true;
+			} catch (Exception e) {
+				lg.warn("Error while setting look and feel {}, trying the next:", lookAndFeelType, e);
+			}
+		}
+		return false;
 	}
 
 	private static Font calibrateFont(Font fontToDeriveFrom){
