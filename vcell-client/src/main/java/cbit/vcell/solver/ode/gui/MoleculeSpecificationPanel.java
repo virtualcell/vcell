@@ -1,5 +1,6 @@
 package cbit.vcell.solver.ode.gui;
 
+import cbit.vcell.client.laf.VCellColors;
 import cbit.vcell.client.data.ODEDataViewer;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.math.ODESolverResultSetColumnDescription;
@@ -123,7 +124,7 @@ public class MoleculeSpecificationPanel extends AbstractSpecificationPanel {
             if (value instanceof ODESolverResultSetColumnDescription cd) {
                 label.setText(cd.getName());
                 if (cd.isTrivial()) {
-                    label.setForeground(Color.GRAY);
+                    label.setForeground(VCellColors.getDimForeground());
                 } else {
                     // restore normal selection / non-selection colors
                     label.setForeground(isSelected
@@ -376,7 +377,7 @@ public class MoleculeSpecificationPanel extends AbstractSpecificationPanel {
 
     private void updateYAxisLabel(DefaultListModel<ColumnDescription> model) {
         int count = (model == null) ? 0 : model.getSize();
-        String text = "<html><b>" + YAxisLabelText + "</b><span style='color:#8B0000;'>(" + count + " entries)</span></html>";
+        String text = "<html><b>" + YAxisLabelText + "</b><span style='color:" + VCellColors.toHtmlColor(VCellColors.getWarningForeground()) + ";'>(" + count + " entries)</span></html>";
         yAxisLabel.setText(text);
     }
 

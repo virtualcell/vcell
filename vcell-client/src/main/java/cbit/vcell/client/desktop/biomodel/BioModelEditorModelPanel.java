@@ -10,6 +10,8 @@
 
 package cbit.vcell.client.desktop.biomodel;
 
+import cbit.vcell.client.laf.VCellColors;
+import cbit.vcell.client.laf.VCellLookAndFeel;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -822,7 +824,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 								tooltip.append("<li>" + ro.getBioPaxObject() + "</li>");
 							}
 							if (!isSelected) {
-								setForeground(Color.blue);
+								setForeground(VCellColors.getValueForeground());
 							}
 							String finalName = null;
 							BioPaxObject bioPaxObject = relationshipSet.iterator().next().getBioPaxObject();
@@ -849,7 +851,6 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		};
 		// Annotations icon column renderer
 		DefaultScrollTableCellRenderer annotationTableCellRenderer = new DefaultScrollTableCellRenderer() {
-			final Color lightBlueBackground = new Color(214, 234, 248);
 			@Override
 			public Component getTableCellRendererComponent(JTable table,
 					Object value, boolean isSelected, boolean hasFocus,
@@ -870,7 +871,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 					}
 					if (entity != null) {
 						if(isSelected) {
-							setBackground(lightBlueBackground);
+							setBackground(VCellColors.getSoftSelectionBackground());
 						}
 						Identifiable identifiable = AnnotationsPanel.getIdentifiable(entity);
 						String freeText = bioModel.getVCMetaData().getFreeTextAnnotation(identifiable);
@@ -2246,7 +2247,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 				}
 				
 			});
-			setBackground(Color.white);
+			setBackground(VCellLookAndFeel.getContentBackground());
 		}
 
 		void setModel(Model model) {			

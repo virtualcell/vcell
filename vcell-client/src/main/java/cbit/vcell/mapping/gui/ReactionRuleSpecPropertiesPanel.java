@@ -10,6 +10,8 @@
 
 package cbit.vcell.mapping.gui;
 
+import cbit.vcell.client.laf.VCellColors;
+import cbit.vcell.client.laf.VCellLookAndFeel;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -131,9 +133,9 @@ private void initialize() {
 				shapePanel.setToolTipText("View-Only panel.");
 			} 
 		});
-		shapePanel.setBackground(new Color(0xe0e0e0));		
+		shapePanel.setBackground(VCellColors.getViewOnlyShapeCanvasBackground());		
 		shapePanel.setZoomFactor(-3);
-		shapePanel.setEditable(false);	// colored with a shade of brown, close to DefaultScrollTableCellRenderer.uneditableForeground
+		shapePanel.setEditable(false);	// colored with a shade of brown, close to VCellColors.getUneditableForeground()
 		shapePanel.setViewSingleRow(true);
 		shapePanel.setShowMoleculeColor(false);
 		shapePanel.setShowNonTrivialOnly(true);
@@ -144,7 +146,7 @@ private void initialize() {
 		
 		upperPanel.setName("ReactionRuleSpecKineticsPanel");
 		upperPanel.setLayout(new GridBagLayout());
-		upperPanel.setBackground(Color.white);
+		upperPanel.setBackground(VCellLookAndFeel.getContentBackground());
 
 		int gridy = 0;
 
@@ -245,7 +247,7 @@ private void initialize() {
 
 		setLayout(new BorderLayout());
 		add(splitPaneHorizontal, BorderLayout.CENTER);
-		setBackground(Color.white);
+		setBackground(VCellLookAndFeel.getContentBackground());
 		setName("ReactionRuleSpecPropertiesPanel");
 		
         initConnections();

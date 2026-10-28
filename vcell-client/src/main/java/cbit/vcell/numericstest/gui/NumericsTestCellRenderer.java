@@ -10,6 +10,7 @@
 
 package cbit.vcell.numericstest.gui;
 
+import cbit.vcell.client.laf.VCellColors;
 import javax.swing.JLabel;
 
 import cbit.vcell.desktop.BioModelNode;
@@ -154,10 +155,10 @@ public java.awt.Component getTreeCellRendererComponent(javax.swing.JTree tree, O
 					testCriteria.getSimInfo().getVersion().getName()+(extraText != null?" ("+extraText+")":""));
 				component.setToolTipText(" Test Criteria info");
 				if(extraText != null){
-					component.setForeground(java.awt.Color.magenta);
+					component.setForeground(VCellColors.getReadableForeground(java.awt.Color.magenta));
 				}
 				if(testCriteria.getReportStatus().equals(TestCriteriaNew.TCRIT_STATUS_FAILEDVARS)){
-					component.setForeground(java.awt.Color.red);
+					component.setForeground(VCellColors.getErrorForeground());
 				}
 					
 				////TestCaseNew tcn = null;
@@ -192,10 +193,8 @@ public java.awt.Component getTreeCellRendererComponent(javax.swing.JTree tree, O
 			}else if(node.getRenderHint(cbit.vcell.client.desktop.testingframework.TestingFrmwkTreeModel.FAILED_VARIABLE_MAE_MRE) instanceof Boolean){
 				Boolean fv_MAE_MRE = (Boolean)node.getRenderHint(cbit.vcell.client.desktop.testingframework.TestingFrmwkTreeModel.FAILED_VARIABLE_MAE_MRE);
 				if(fv_MAE_MRE.booleanValue()){
-					component.setForeground(java.awt.Color.red);
-				}else{
-					component.setForeground(java.awt.Color.black);
-				} 
+					component.setForeground(VCellColors.getErrorForeground());
+				}
 			}
 			
 		}
@@ -225,11 +224,11 @@ private void setComponentProperties(
     boolean isSimNotRunFailOrDone) {
 
   	if(hasFailures || hasNoData || hasNoRefRegr || hasReportErrors || isSimRunning || isSimFailed || needsReport || isSimNotRunFailOrDone){
-	  	component.setForeground(java.awt.Color.magenta);
+	  	component.setForeground(VCellColors.getReadableForeground(java.awt.Color.magenta));
   	}
   	
   	if(hasFailures && !hasNoData && !hasNoRefRegr && !hasReportErrors && !isSimRunning && !isSimFailed && !needsReport && !isSimNotRunFailOrDone){
-	  	component.setForeground(java.awt.Color.red);
+	  	component.setForeground(VCellColors.getErrorForeground());
   	}
  	
     String info = "";

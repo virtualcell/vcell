@@ -10,6 +10,7 @@
 
 package cbit.gui;
 
+import cbit.vcell.client.laf.VCellColors;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -331,7 +332,7 @@ public class ImageResizePanel extends JPanel {
 	}
 	private void updateCurrentISize(ISize newISize){
 		if(!newISize.compareEqual(origImageSizeInfo.getiSize())){
-			changedSizeLabel.setText("<html><font color=red>"+CHNG_LABEL_STR+"</font></html>");
+			changedSizeLabel.setText("<html><font color=" + VCellColors.toHtmlColor(VCellColors.getErrorForeground()) + ">"+CHNG_LABEL_STR+"</font></html>");
 		}else{
 			changedSizeLabel.setText(CHNG_LABEL_STR);
 		}

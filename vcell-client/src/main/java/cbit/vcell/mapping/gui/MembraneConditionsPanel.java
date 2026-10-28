@@ -9,6 +9,7 @@
  */
 
 package cbit.vcell.mapping.gui;
+import cbit.vcell.client.laf.VCellColors;
 import java.awt.BorderLayout;
 
 import javax.swing.JTable;
@@ -133,9 +134,9 @@ private void initialize() {
 					}
 					if (unit != null) {
 						setHorizontalTextPosition(JLabel.LEFT);
-						setIcon(new TextIcon("[" + unit.getSymbolUnicode() + "]", DefaultScrollTableCellRenderer.uneditableForeground));
+						setIcon(new TextIcon("[" + unit.getSymbolUnicode() + "]", VCellColors.getUneditableForeground()));
 					}
-					int rgb = 0x00ffffff & DefaultScrollTableCellRenderer.uneditableForeground.getRGB();
+					int rgb = 0x00ffffff & VCellColors.getUneditableForeground().getRGB();
 					defaultToolTipText = "<html>" + StringEscapeUtils.escapeHtml4(getText()) + " <font color=#" + Integer.toHexString(rgb) + "> [" + unit.getSymbolUnicode() + "] </font></html>";
 					setToolTipText(defaultToolTipText);
 				}

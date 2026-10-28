@@ -1,5 +1,6 @@
 package cbit.vcell.client.desktop.biomodel.annotations;
 
+import cbit.vcell.client.laf.VCellColors;
 import cbit.vcell.biomodel.meta.VCMetaDataMiriamManager;
 import cbit.vcell.client.desktop.biomodel.AnnotationsPanel;
 import org.vcell.client.logicalwindow.LWChildDialog;
@@ -180,7 +181,7 @@ public class AddAnnotationsPanel extends LWChildDialog implements ActionListener
         topPanel.add(new JLabel("<html><b>" + mdt.getDataTypeName() + "</b></html>"), sGbc);
 
         JLabel linkLabel = new JLabel();
-        String s = "<html>" + "URL : " + "&nbsp;<font color=\"" + "blue" + "\"><a href=" + mdt.getDataTypeURL() + ">" + mdt.getDataTypeURL() + "</a></font>&nbsp;&nbsp;" + "</html>";
+        String s = "<html>" + "URL : " + "&nbsp;<font color=\"" + VCellColors.toHtmlColor(VCellColors.getValueForeground()) + "\"><a href=" + mdt.getDataTypeURL() + ">" + mdt.getDataTypeURL() + "</a></font>&nbsp;&nbsp;" + "</html>";
         linkLabel.setToolTipText("Double-click to open link");
         linkLabel.setText(s);
         linkLabel.addMouseListener(new MouseAdapter() {

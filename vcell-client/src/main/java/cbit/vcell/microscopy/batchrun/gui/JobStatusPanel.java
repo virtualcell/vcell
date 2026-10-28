@@ -10,8 +10,8 @@
 
 package cbit.vcell.microscopy.batchrun.gui;
 
+import cbit.vcell.client.laf.VCellLookAndFeel;
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
@@ -94,7 +94,7 @@ public class JobStatusPanel extends JPanel implements ActionListener
     	{
     		statusPanel=new JPanel();
     		statusPanel.setLayout(new BoxLayout(statusPanel, BoxLayout.Y_AXIS));
-    		statusPanel.setBackground(Color.white);
+    		statusPanel.setBackground(VCellLookAndFeel.getContentBackground());
             statusPane=new JScrollPane(statusPanel);
     	}
     	return statusPane;

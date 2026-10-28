@@ -1,5 +1,7 @@
 package cbit.vcell.mapping.gui;
 
+import cbit.vcell.client.laf.VCellColors;
+import cbit.vcell.client.laf.VCellLookAndFeel;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.graph.ReactionCartoon;
@@ -254,7 +256,7 @@ public class MolecularStructuresPropertiesPanel extends DocumentEditorSubPanel {
             });
 
             shapePanel.setPreferredSize(new Dimension(2000, 800));
-            shapePanel.setBackground(new Color(0xe0e0e0));
+            shapePanel.setBackground(VCellColors.getViewOnlyShapeCanvasBackground());
             shapePanel.setZoomFactor(-2);
             shapePanel.setEditable(false);
 
@@ -301,7 +303,7 @@ public class MolecularStructuresPropertiesPanel extends DocumentEditorSubPanel {
 
             setLayout(new BorderLayout());
             add(containerOfScrollPanel, BorderLayout.CENTER);
-            setBackground(Color.white);
+            setBackground(VCellLookAndFeel.getContentBackground());
             setName("MolecularStructuresPropertiesPanel");
         } catch (java.lang.Throwable ivjExc) {
             handleException(ivjExc);

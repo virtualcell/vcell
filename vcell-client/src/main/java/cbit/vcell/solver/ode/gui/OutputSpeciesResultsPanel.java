@@ -10,8 +10,8 @@
 
 package cbit.vcell.solver.ode.gui;
 
+import cbit.vcell.client.laf.VCellColors;
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -555,7 +555,7 @@ private void initialize() {
 		};
 		Border loweredBevelBorder = BorderFactory.createLoweredBevelBorder();
 		shapePanel.setLayout(new GridBagLayout());
-		shapePanel.setBackground(Color.white);
+		shapePanel.setBackground(VCellColors.getShapeCanvasBackground());
 		shapePanel.setEditable(true);			// not really editable but we don't want the brown contours here
 		shapePanel.setShowMoleculeColor(false);	// we work with a "fake" model and cannot show proper molecule color
 		shapePanel.setShowNonTrivialOnly(false);

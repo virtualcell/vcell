@@ -1,5 +1,6 @@
 package cbit.plot.gui;
 
+import cbit.vcell.client.laf.VCellColors;
 import cbit.vcell.client.data.ODEDataViewer;
 import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.math.ReservedVariable;
@@ -81,12 +82,12 @@ public class MoleculeDataPanel extends AbstractDataPanel {
             Object id = table.getColumnModel().getColumn(column).getIdentifier();
             if (!(id instanceof MoleculeColumnInfo)) {      // time column w. unit in dark red
                 lbl.setText("<html><center>" +"time" +"<br/><font size='2'>" +
-                            "<font color='#8B0000'> [seconds]</font></font>" + "</center></html>");
+                            "<font color='" + VCellColors.toHtmlColor(VCellColors.getWarningForeground()) + "'> [seconds]</font></font>" + "</center></html>");
                 return lbl;
             }
             MoleculeColumnInfo info = (MoleculeColumnInfo) id;
             String statLabel = "<b>" + info.subStatistic.uiLabel + "</b>";  // Statistic label (bold)
-            String unit = "<font color=\"#8B0000\"> [molecules]</font>";    // Unit in dark red
+            String unit = "<font color=\"" + VCellColors.toHtmlColor(VCellColors.getWarningForeground()) + "\"> [molecules]</font>";    // Unit in dark red
             lbl.setText("<html><center>" + info.entityName + "<br/>" +
                         "<font size='2'>" + statLabel + unit + "</font></center></html>"
             );

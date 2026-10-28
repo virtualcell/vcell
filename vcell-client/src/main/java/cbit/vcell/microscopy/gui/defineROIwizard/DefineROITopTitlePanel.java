@@ -10,6 +10,7 @@
 
 package cbit.vcell.microscopy.gui.defineROIwizard;
 
+import cbit.vcell.client.laf.VCellColors;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -40,7 +41,7 @@ public class DefineROITopTitlePanel extends JPanel
 		setLayout(gridBagLayout);
 
 		cropLabel = new JLabel();
-		cropLabel.setForeground(new Color(0, 0, 128));
+		cropLabel.setForeground(VCellColors.getTitleForeground());
 		cropLabel.setFont(new Font("", Font.BOLD, 14));
 		cropLabel.setText("Crop Image");
 		final GridBagConstraints gridBagConstraints = new GridBagConstraints();
@@ -55,7 +56,7 @@ public class DefineROITopTitlePanel extends JPanel
 		add(arrowLabel1, gridBagConstraints_1);
 
 		cellRoiLabel = new JLabel();
-		cellRoiLabel.setForeground(new Color(0, 0, 128));
+		cellRoiLabel.setForeground(VCellColors.getTitleForeground());
 		cellRoiLabel.setFont(new Font("", Font.BOLD, 14));
 		cellRoiLabel.setText("Cell ROI");
 		final GridBagConstraints gridBagConstraints_2 = new GridBagConstraints();
@@ -70,7 +71,7 @@ public class DefineROITopTitlePanel extends JPanel
 		add(arrowLabel2, gridBagConstraints_3);
 
 		bleachedRoiLabel = new JLabel();
-		bleachedRoiLabel.setForeground(new Color(0, 0, 128));
+		bleachedRoiLabel.setForeground(VCellColors.getTitleForeground());
 		bleachedRoiLabel.setFont(new Font("", Font.BOLD, 14));
 		bleachedRoiLabel.setText("Bleached ROI");
 		final GridBagConstraints gridBagConstraints_4 = new GridBagConstraints();
@@ -85,7 +86,7 @@ public class DefineROITopTitlePanel extends JPanel
 		add(arrowLabel3, gridBagConstraints_5);
 
 		backgroundLabel = new JLabel();
-		backgroundLabel.setForeground(new Color(0, 0, 128));
+		backgroundLabel.setForeground(VCellColors.getTitleForeground());
 		backgroundLabel.setFont(new Font("", Font.BOLD, 14));
 		backgroundLabel.setText("Representative Background");
 		final GridBagConstraints gridBagConstraints_6 = new GridBagConstraints();

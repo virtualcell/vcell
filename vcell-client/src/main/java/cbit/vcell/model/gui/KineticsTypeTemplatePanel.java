@@ -10,7 +10,7 @@
 
 package cbit.vcell.model.gui;
 
-import java.awt.Color;
+import cbit.vcell.client.laf.VCellLookAndFeel;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -187,7 +187,7 @@ private void initialize() {
 	try {
 		setName("KineticsTypeTemplatePanel");
 		setLayout(new java.awt.GridBagLayout());
-		setBackground(Color.white);
+		setBackground(VCellLookAndFeel.getContentBackground());
 
 		int gridy = 0;
 		

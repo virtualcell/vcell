@@ -10,6 +10,8 @@
 
 package org.vcell.optimization.gui;
 
+import cbit.vcell.client.laf.VCellColors;
+import cbit.vcell.client.laf.VCellLookAndFeel;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -116,7 +118,7 @@ public class CopasiOptimizationMethodsHelpPanel extends JPanel
 		if(contentPanel == null)
 		{
 			contentPanel = new JPanel(new GridBagLayout());
-			contentPanel.setBackground(Color.white);
+			contentPanel.setBackground(VCellLookAndFeel.getContentBackground());
 			int gridy = 0;
 			GridBagConstraints gbc = new GridBagConstraints();
 			gbc.gridx = 0; 
@@ -235,11 +237,11 @@ public class CopasiOptimizationMethodsHelpPanel extends JPanel
 		{
 			if(methodStr.equals(methods[i].getDisplayName()))
 			{
-				methodLabels[i].setColor(Color.red);
+				methodLabels[i].setColor(VCellColors.getErrorForeground());
 			}
 			else
 			{
-				methodLabels[i].setColor(Color.blue);
+				methodLabels[i].setColor(VCellColors.getValueForeground());
 			}
 		}
 	}

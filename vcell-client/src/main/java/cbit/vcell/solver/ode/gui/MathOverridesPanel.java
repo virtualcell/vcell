@@ -10,6 +10,7 @@
 
 package cbit.vcell.solver.ode.gui;
 
+import cbit.vcell.client.laf.VCellColors;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
@@ -356,7 +357,7 @@ public class MathOverridesPanel extends JPanel {
 			gridBagConstraints.gridx = 0;
 			gridBagConstraints.gridy = 2;
 			this.removeUnusedButton = new JButton();
-			this.removeUnusedButton.setForeground(Color.red);
+			this.removeUnusedButton.setForeground(VCellColors.getErrorForeground());
 			this.removeUnusedButton.setText("remove unused parameter overrides");
 			this.removeUnusedButton.addActionListener(e -> {
 				MathOverrides mathOverrides = this.getMathOverrides();

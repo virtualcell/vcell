@@ -10,9 +10,9 @@
 
 package cbit.vcell.client.desktop.biomodel;
 
+import cbit.vcell.client.laf.VCellLookAndFeel;
 import java.awt.AWTEvent;
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Frame;
 import java.awt.GridBagConstraints;
@@ -531,7 +531,7 @@ private void initialize() {
 		rightSplitPane.setOneTouchExpandable(true);
 		
 		rightBottomEmptyPanel = new JPanel(new GridBagLayout());
-		rightBottomEmptyPanel.setBackground(Color.white);
+		rightBottomEmptyPanel.setBackground(VCellLookAndFeel.getContentBackground());
 		rightBottomEmptyPanel.setName("ObjectProperties");
 		treeNodeDescriptionLabel = new JLabel(generalTreeNodeDescription);
 		GridBagConstraints gbc = new GridBagConstraints();
@@ -545,7 +545,7 @@ private void initialize() {
 		rightBottomEmptyPanel.add(treeNodeDescriptionLabel, gbc);
 
 		rightBottomEmptyAnnotationsPanel = new JPanel(new GridBagLayout());
-		rightBottomEmptyAnnotationsPanel.setBackground(Color.white);
+		rightBottomEmptyAnnotationsPanel.setBackground(VCellLookAndFeel.getContentBackground());
 		rightBottomEmptyAnnotationsPanel.setName("Annotations");
 		treeNodeDescriptionLabel2 = new JLabel(generalTreeNodeDescription2);
 		gbc = new GridBagConstraints();

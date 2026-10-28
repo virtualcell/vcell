@@ -10,7 +10,7 @@
 
 package cbit.vcell.client.desktop.biomodel;
 
-import java.awt.Color;
+import cbit.vcell.client.laf.VCellLookAndFeel;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -152,7 +152,7 @@ private void initialize() {
 		expressionTextField.addFocusListener(eventHandler);
 		unitTextField.addFocusListener(eventHandler);
 				
-		setBackground(Color.white);
+		setBackground(VCellLookAndFeel.getContentBackground());
 		setLayout(new GridBagLayout());
 		int gridy = 0;
 		GridBagConstraints gbc = new java.awt.GridBagConstraints();

@@ -1,5 +1,6 @@
 package cbit.vcell.client.configuration;
 
+import cbit.vcell.client.laf.VCellColors;
 import java.awt.BorderLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -43,8 +44,8 @@ public class GeneralConfigurationPanel extends JPanel {
 		jpanel.setBorder(new CompoundBorder(margin, panelBorder));
 		add(jpanel,BorderLayout.CENTER);
 		
-		String redhome = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=\"#880000\">(home)</font>";
-		String redinstall = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=\"#880000\">(install)</font>";
+		String redhome = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=\"" + VCellColors.toHtmlColor(VCellColors.getWarningForeground()) + "\">(home)</font>";
+		String redinstall = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=\"" + VCellColors.toHtmlColor(VCellColors.getWarningForeground()) + "\">(install)</font>";
 
 		jpanel.setLayout(new GridBagLayout());
 		GridBagConstraints gbc = new GridBagConstraints();
