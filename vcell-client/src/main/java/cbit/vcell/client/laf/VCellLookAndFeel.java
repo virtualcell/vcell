@@ -62,6 +62,7 @@ public class VCellLookAndFeel {
 
 	static {
 		VCellLookAndFeel.setPlatformProperties(); // must precede any UIManager call; installLookAndFeel already starts AWT
+		VCellFonts.followThemes();
 
 		//UIManager.installLookAndFeel(FLAT_LAF_LIGHT, com.formdev.flatlaf.FlatLightLaf.class.getName());
 		//UIManager.installLookAndFeel(FLAT_LAF_DARK, com.formdev.flatlaf.FlatDarkLaf.class.getName());
@@ -87,8 +88,6 @@ public class VCellLookAndFeel {
 		VCellLookAndFeel.osDarkLookAndFeelLoadOrder.put(OsType.MAC, macDarkThemeOrder);
 		VCellLookAndFeel.osDarkLookAndFeelLoadOrder.put(OsType.LINUX, linuxDarkThemeOrder);
 	}
-
-	public static Font defaultFont = null;
 
 	// VCell keeps editor panels and swaps them in and out of its windows, so a theme switch (which updates only
 	// what is in a window at the time) misses the ones out of view. Each switch is numbered; a component that
@@ -163,7 +162,6 @@ public class VCellLookAndFeel {
 		if (VCellLookAndFeel.osInfo.isMac() && endedDark != VCellLookAndFeel.isStartingDark()) {
 			SwingUtilities.invokeLater(() -> MacOSAppearance.setDark(endedDark));
 		}
-		VCellLookAndFeel.defaultFont = calibrateFont(VCellLookAndFeel.defaultFont);
 
 		lg.info("After setting, we're using: {}", UIManager.getLookAndFeel().getName());
 	}
@@ -192,11 +190,7 @@ public class VCellLookAndFeel {
 				// title bars, and the controls Aqua has macOS draw, follow the new theme; before the UI update below,
 				// which is what makes those controls pick it up
 				if (VCellLookAndFeel.osInfo.isMac()) performAdditionalMacSetup();
-				if (0 == VCellLookAndFeel.lookAndFeelGeneration++) Toolkit.getDefaultToolkit().addAWTEventListener(VCellLookAndFeel::refreshIfStale, AWTEvent.HIERARCHY_EVENT_MASK);
-				for (Window w : Window.getWindows()) {
-					updateTreeUI(w);
-					markCurrent(w);
-				}
+				VCellLookAndFeel.refreshAllWindows();
 				if (VCellLookAndFeel.osInfo.isMac()) MacOSAppearance.setWindowsDark(VCellColors.isDarkTheme());
 			}
 
@@ -214,6 +208,21 @@ public class VCellLookAndFeel {
 		};
 		ClientTaskDispatcher.dispatch(requester, new Hashtable<>(), new AsynchClientTask[] {changeTask});
 	}
+	/** Installs a fresh copy of the current theme, which reads the current font size as it is installed. */
+	static void reinstallLookAndFeel() {
+		String current = UIManager.getLookAndFeel().getClass().getName();
+		if (!VCellLookAndFeel.setFirstAvailableLookAndFeel(List.of(current))) lg.warn("Could not reinstall {} for a font size change", current);
+	}
+
+	/** Brings every window up to the current theme and font size; panels out of view catch up when next shown. */
+	static void refreshAllWindows() {
+		if (0 == VCellLookAndFeel.lookAndFeelGeneration++) Toolkit.getDefaultToolkit().addAWTEventListener(VCellLookAndFeel::refreshIfStale, AWTEvent.HIERARCHY_EVENT_MASK);
+		for (Window w : Window.getWindows()) {
+			updateTreeUI(w);
+			markCurrent(w);
+		}
+	}
+
 	private static void refreshIfStale(AWTEvent event) {
 		if (VCellLookAndFeel.refreshPending || !(event instanceof HierarchyEvent hierarchyEvent)) return;
 		if ((hierarchyEvent.getChangeFlags() & HierarchyEvent.SHOWING_CHANGED) == 0) return;
@@ -265,9 +274,10 @@ public class VCellLookAndFeel {
 			if (table.getDefaultRenderer(type) != renderer) table.setDefaultRenderer(type, renderer);
 		}));
 		VCellLookAndFeel.forEachComponent(root, c -> { if (c instanceof JTree tree) tree.updateUI(); });
+		VCellFonts.refresh(root);
 	}
 
-	private static void forEachComponent(Component component, Consumer<Component> action) {
+	static void forEachComponent(Component component, Consumer<Component> action) {
 		action.accept(component);
 		if (!(component instanceof Container container)) return;
 		for (Component child : container.getComponents()) VCellLookAndFeel.forEachComponent(child, action);
@@ -313,61 +323,6 @@ public class VCellLookAndFeel {
 			}
 		}
 		return false;
-	}
-
-	private static Font calibrateFont(Font fontToDeriveFrom){
-		if (null != fontToDeriveFrom) return fontToDeriveFrom;
-		Font labelFont = UIManager.getFont("Label.font");
-		Font newFont = osInfo.isMac() ? labelFont.deriveFont(labelFont.getSize2D() - 2) : labelFont;
-		if (!osInfo.isMac()) return newFont;
-		UIManager.put("Button.font",newFont);
-		UIManager.put("CheckBox.font",newFont);
-		UIManager.put("CheckBoxMenuItem.font",newFont);
-		UIManager.put("ColorChooser.font",newFont);
-		UIManager.put("ComboBox.font",newFont);
-		UIManager.put("DesktopIcon.font",newFont);
-		UIManager.put("EditorPane.font",newFont);
-		UIManager.put("FileChooser.font", newFont);
-		UIManager.put("FormattedTextField.font", newFont);
-		UIManager.put("Label.font",newFont);
-		UIManager.put("List.font",newFont);
-		UIManager.put("Menu.font", newFont);
-		UIManager.put("MenuBar.font", newFont);
-		UIManager.put("MenuItem.font", newFont);
-		UIManager.put("OptionPane.font",newFont);
-		UIManager.put("Panel.font",newFont);
-		UIManager.put("PasswordField.font",newFont);
-		UIManager.put("PopupMenu.font",newFont);
-		UIManager.put("ProgressBar.font",newFont);
-		UIManager.put("RadioButton.font",newFont);
-		UIManager.put("RadioButtonMenuItem.font",newFont);
-		UIManager.put("TabbedPane.font",newFont);
-		UIManager.put("Table.font",newFont);
-		UIManager.put("TableHeader.font", newFont);
-		UIManager.put("TextArea.font",newFont);
-		UIManager.put("TextField.font",newFont);
-		UIManager.put("TextPane.font",newFont);
-		UIManager.put("TitledBorder.font",newFont);
-		UIManager.put("ToggleButton.font",newFont);
-		UIManager.put("ToolBar.font", newFont);
-		UIManager.put("ToolTip.font", newFont);
-		UIManager.put("Tree.font", newFont);
-		UIManager.put("Slider.font", newFont);
-		UIManager.put("ScrollPane.font", newFont);
-		UIManager.put("Viewport.font", newFont);
-
-		UIManager.put("CheckBoxMenuItem.acceleratorFont", newFont);
-		UIManager.put("InternalFrame.optionDialogTitleFont", newFont);
-		UIManager.put("InternalFrame.paletteTitleFont", newFont);
-		UIManager.put("InternalFrame.titleFont", newFont);
-		UIManager.put("Menu.acceleratorFont", newFont);
-		UIManager.put("MenuItem.acceleratorFont", newFont);
-		UIManager.put("OptionPane.buttonFont", newFont);
-		UIManager.put("OptionPane.messageFont", newFont);
-		UIManager.put("RadioButtonMenuItem.acceleratorFont", newFont);
-		UIManager.put("TabbedPane.useSmallLayout", Boolean.TRUE);
-		System.getProperties().put("swing.component.sizevariant", "regular");
-		return newFont;
 	}
 
 	public static class LookAndFeelComparator implements Comparator<UIManager.LookAndFeelInfo> {
