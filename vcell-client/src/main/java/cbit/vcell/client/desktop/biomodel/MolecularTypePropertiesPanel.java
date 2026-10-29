@@ -10,6 +10,7 @@
 
 package cbit.vcell.client.desktop.biomodel;
 
+import cbit.vcell.client.laf.VCellFonts;
 import cbit.vcell.client.laf.VCellColors;
 import cbit.vcell.client.laf.VCellLookAndFeel;
 import java.awt.BorderLayout;
@@ -489,11 +490,7 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		molecularTypeTree.setCellRenderer(new RbmMolecularTypeTreeCellRenderer(molecularTypeTree, issueManager));
 		molecularTypeTree.setCellEditor(new RbmMolecularTypeTreeCellEditor(molecularTypeTree));
 		
-		int rowHeight = molecularTypeTree.getRowHeight();
-		if(rowHeight < 10) { 
-			rowHeight = 20; 
-		}
-		molecularTypeTree.setRowHeight(rowHeight + 2);
+		VCellFonts.setRowPadding(molecularTypeTree, 2);
 		molecularTypeTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 		ToolTipManager.sharedInstance().registerComponent(molecularTypeTree);
 		molecularTypeTree.addTreeSelectionListener(eventHandler);

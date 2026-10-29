@@ -10,6 +10,7 @@
 
 package org.vcell.util.gui;
 
+import cbit.vcell.client.laf.VCellFonts;
 import cbit.vcell.client.laf.VCellColors;
 import java.awt.Color;
 import java.awt.Component;
@@ -36,7 +37,7 @@ public class StyleTable extends JTable {
         super(dm);
         setGridColor(VCellColors.getLavender());
         setBorder(BorderFactory.createLineBorder(VCellColors.getLavender(), 2));
-        setRowHeight(getRowHeight()+5);
+        VCellFonts.setRowPadding(this, 5);
         JTableHeader header = getTableHeader();
         header.setDefaultRenderer(createPlainTableHeaderRenderer());
     }
@@ -44,7 +45,7 @@ public class StyleTable extends JTable {
     public StyleTable() {
         setGridColor(VCellColors.getLavender());
         setBorder(BorderFactory.createLineBorder(VCellColors.getLavender(), 2));
-        setRowHeight(getRowHeight()+5);
+        VCellFonts.setRowPadding(this, 5);
         JTableHeader header = getTableHeader();
         header.setDefaultRenderer(createPlainTableHeaderRenderer());
 

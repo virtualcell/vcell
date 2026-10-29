@@ -10,6 +10,7 @@
 
 package cbit.vcell.client.desktop.biomodel;
 
+import cbit.vcell.client.laf.VCellFonts;
 import cbit.vcell.client.laf.VCellLookAndFeel;
 import java.awt.AWTEvent;
 import java.awt.BorderLayout;
@@ -501,11 +502,7 @@ private void initialize() {
 		documentEditorTree.setCellEditor(documentEditorTreeCellEditor);
 		documentEditorTree.setName("bioModelEditorTree");
 		ToolTipManager.sharedInstance().registerComponent(documentEditorTree);
-		int rowHeight = documentEditorTree.getRowHeight();
-		if(rowHeight < 10) { 
-			rowHeight = 20; 
-		}
-		documentEditorTree.setRowHeight(rowHeight + 2);
+		VCellFonts.setRowPadding(documentEditorTree, 2);
 		documentEditorTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 		
 		JSplitPane leftSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
