@@ -16,6 +16,7 @@ import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.*;
 import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.client.data.ExportedDataViewer;
+import cbit.vcell.client.laf.VCellFonts;
 import cbit.vcell.client.laf.VCellLookAndFeel;
 import cbit.vcell.client.server.*;
 import cbit.vcell.client.task.AsynchClientTask;
@@ -97,6 +98,7 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
     private JMenuItem ivjSave_VersionMenuItem = null;
     private JMenuItem ivjSaveMenuItem = null;
     private JMenu ivjLookAndFeelMenu = null;
+    private JMenu textSizeMenu = null;
     private static final String FOLLOW_SYSTEM_THEME = "FollowSystemTheme";
     private final Map<String, UIManager.LookAndFeelInfo> lookAndFeelInfoMap = new HashMap<>();
     private JMenu ivjServerMenu = null;
@@ -539,7 +541,8 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
                 this.ivjDocumentWindowJMenuBar.setName("DocumentWindowJMenuBar");
                 this.ivjDocumentWindowJMenuBar.add(this.getFileMenu());
                 this.ivjDocumentWindowJMenuBar.add(this.getServerMenu());
-                this.ivjDocumentWindowJMenuBar.add(createWindowMenu(true));
+                // VCell-wide display settings, under the open windows
+                this.ivjDocumentWindowJMenuBar.add(createWindowMenu(true, List.of(this.getLookAndFeelMenu(), this.getTextSizeMenu())));
                 this.ivjDocumentWindowJMenuBar.add(this.getToolMenu());
                 this.ivjDocumentWindowJMenuBar.add(this.getHelpMenu());
                 this.ivjDocumentWindowJMenuBar.add(Box.createHorizontalGlue());
@@ -589,8 +592,6 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
                 this.ivjFileMenu.add(new JSeparator());
                 this.ivjFileMenu.add(this.getJMenuItemImport());
                 this.ivjFileMenu.add(this.getJMenuItemExport());
-                this.ivjFileMenu.add(new JSeparator());
-                this.ivjFileMenu.add(this.getLookAndFeelMenu());
                 this.ivjFileMenu.add(new JSeparator());
                 this.ivjFileMenu.add(this.getExitMenuItem());
             } catch (java.lang.Throwable ivjExc) {
@@ -1061,7 +1062,7 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
         if (null != this.ivjLookAndFeelMenu) return this.ivjLookAndFeelMenu;
         JMenu lookAndFeelMenu = new javax.swing.JMenu();
         lookAndFeelMenu.setName("LookAndFeelMenu");
-        lookAndFeelMenu.setText("Set VCell Theme...");
+        lookAndFeelMenu.setText("Set VCell Theme");
         // forgets the theme picked below, so VCell follows the system's light / dark mode again
         JMenuItem followSystemMenuItem = new JMenuItem("Follow System");
         followSystemMenuItem.setName(FOLLOW_SYSTEM_THEME);
@@ -1078,6 +1079,33 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
             this.handleException(exception);
         }
         return (this.ivjLookAndFeelMenu = lookAndFeelMenu);
+    }
+
+    /** The size of VCell's text, from a list of sizes; marks the current one each time it opens. */
+    private JMenu getTextSizeMenu() {
+        if (null != this.textSizeMenu) return this.textSizeMenu;
+        JMenu menu = new JMenu("Set Font Size");
+        menu.setName("TextSizeMenu");
+        ButtonGroup sizes = new ButtonGroup();
+        for (float size : VCellFonts.SIZE_CHOICES) {
+            String label = Math.round(size) + " pt" + (size == VCellFonts.DEFAULT_SIZE ? " (Default)" : "");
+            JRadioButtonMenuItem item = new JRadioButtonMenuItem(label);
+            item.setName("TextSize" + Math.round(size));
+            item.addActionListener(e -> VCellFonts.chooseSize(size));
+            sizes.add(item);
+            menu.add(item);
+        }
+        menu.addMenuListener(new MenuListener() {
+            @Override
+            public void menuSelected(MenuEvent e) {
+                for (Component item : menu.getMenuComponents()) {
+                    if (item instanceof JRadioButtonMenuItem sizeItem) sizeItem.setSelected(sizeItem.getName().equals("TextSize" + Math.round(VCellFonts.getSize())));
+                }
+            }
+            @Override public void menuDeselected(MenuEvent e) {}
+            @Override public void menuCanceled(MenuEvent e) {}
+        });
+        return (this.textSizeMenu = menu);
     }
 
     private List<JMenuItem> getLookAndFeelJMenuItems() {

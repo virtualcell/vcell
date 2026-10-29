@@ -12,6 +12,7 @@ import java.awt.font.FontRenderContext;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -28,6 +29,12 @@ public final class VCellFonts {
 
 	/** The smallest and largest size {@link #setSize} accepts, in points. */
 	public static final float MIN_SIZE = 9, MAX_SIZE = 28;
+	/** The size VCell starts at until the user picks another, in points. */
+	public static final float DEFAULT_SIZE = 13;
+	/** The sizes the text size menu offers, in points. */
+	public static final List<Float> SIZE_CHOICES = List.of(11f, 12f, 13f, 14f, 16f, 18f, 20f, 24f);
+	// The size a user picked, kept in ~/.vcell/vcellconfig.properties
+	private static final String SAVED_SIZE_KEY = "vcell.client.fontSize";
 
 	/** What a piece of text is for. Each has a size relative to {@link Category#BODY} and a style. */
 	public enum Category {
@@ -98,6 +105,26 @@ public final class VCellFonts {
 		if (UIManager.getLookAndFeel() instanceof SynthLookAndFeel) VCellLookAndFeel.reinstallLookAndFeel();
 		else VCellFonts.applySize();
 		if (Window.getWindows().length > 0) VCellLookAndFeel.refreshAllWindows();
+	}
+
+	/** Starts VCell at the size the user last picked, or {@link #DEFAULT_SIZE}. Call before the theme is installed. */
+	public static void restoreSize() {
+		String saved = VCellLookAndFeel.getSavedValue(SAVED_SIZE_KEY);
+		float points = VCellFonts.DEFAULT_SIZE;
+		if (null != saved) {
+			try {
+				points = Float.parseFloat(saved);
+			} catch (NumberFormatException e) {
+				lg.warn("Ignoring the saved font size {}: not a number", saved);
+			}
+		}
+		VCellFonts.setSize(points);
+	}
+
+	/** Changes the size to one the user picked, and remembers it for the next start. Call on the Swing event thread. */
+	public static void chooseSize(float points) {
+		VCellFonts.setSize(points);
+		VCellLookAndFeel.saveValue(SAVED_SIZE_KEY, Float.toString(VCellFonts.getSize()));
 	}
 
 	/** The current font for this kind of text. */
