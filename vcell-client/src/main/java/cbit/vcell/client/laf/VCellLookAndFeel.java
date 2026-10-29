@@ -120,7 +120,7 @@ public class VCellLookAndFeel {
 				? Boolean.parseBoolean(savedIsDark) : VCellLookAndFeel.themeDetector.isDark();
 	}
 
-	private static String getSavedValue(String key) {
+	static String getSavedValue(String key) {
 		try {
 			return VCellConfiguration.getValue(key, null);
 		} catch (Exception e) {
@@ -129,7 +129,7 @@ public class VCellLookAndFeel {
 		}
 	}
 
-	private static void saveValue(String key, String value) {
+	static void saveValue(String key, String value) {
 		try {
 			VCellConfiguration.putValue(key, value); // null removes it
 		} catch (Exception e) {

@@ -96,7 +96,7 @@ public class VCellClientMain implements Callable<Integer> {
 
         // Screen menu bar, title bar appearance, Linux font smoothing; the JDK only reads these before AWT starts
         VCellLookAndFeel.setPlatformProperties();
-        VCellFonts.setSize(13); // points; to become a user setting
+        VCellFonts.restoreSize();
 
         System.out.println("starting with arguments " + Arrays.asList(args));
         int exitCode = 1;
