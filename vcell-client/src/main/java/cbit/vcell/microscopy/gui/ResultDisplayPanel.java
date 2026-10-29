@@ -298,7 +298,7 @@ public class ResultDisplayPanel extends AdvancedTablePanel
 		if(table == null)
 		{
 			table = new JTable();
-			VCellFonts.setRowPadding(table, 0);
+			VCellFonts.followRowHeight(table);
 			//set table model
 			tableModel = getBestParameterTableModel(); 
 			table.setModel(tableModel);//set table model

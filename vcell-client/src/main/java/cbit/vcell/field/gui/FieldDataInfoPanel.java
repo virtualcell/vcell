@@ -1497,7 +1497,7 @@ public class FieldDataInfoPanel extends JPanel {
                     };
                     tableMode.setDataVector(rows, colNames);
                     JTable table = new JTable(tableMode);
-                    VCellFonts.setRowPadding(table, 0);
+                    VCellFonts.followRowHeight(table);
 
 
                     table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);

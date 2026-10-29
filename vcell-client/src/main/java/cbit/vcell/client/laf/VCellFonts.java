@@ -55,11 +55,12 @@ public final class VCellFonts {
 
 	private static final float FALLBACK_THEME_SIZE = 13;
 	private static final int FALLBACK_TABLE_ROW_HEIGHT = 16; // JTable's own
-	private static final int FALLBACK_TREE_ROW_HEIGHT = 20; // what VCell's trees have used where the theme sizes rows to fit
+	// Table and tree rows are this many lines of ordinary text tall (or the theme's own height, if taller): room for
+	// the text plus enough space between rows to read them easily, at any size
+	private static final float ROW_SPACING = 1.4f;
 	private static final String CATEGORY = "VCellFonts.category";
 	private static final String STYLE = "VCellFonts.style";
-	private static final String ROW_PADDING = "VCellFonts.rowPadding";
-	private static final String ROW_HEIGHT = "VCellFonts.rowHeight"; // the height set from the padding, to tell if other code changed it since
+	private static final String ROW_HEIGHT = "VCellFonts.rowHeight"; // the height last set, to tell if other code changed it since
 	private static final FontRenderContext RENDER_CONTEXT = new FontRenderContext(null, true, true);
 
 	private static Float size = null; // null: the theme's own size
@@ -73,7 +74,7 @@ public final class VCellFonts {
 	// What the size gives the current theme
 	private static final Map<Category, Font> categoryFonts = new EnumMap<>(Category.class);
 	private static int tableRowHeight = FALLBACK_TABLE_ROW_HEIGHT;
-	private static int treeRowHeight = FALLBACK_TREE_ROW_HEIGHT;
+	private static int treeRowHeight = FALLBACK_TABLE_ROW_HEIGHT;
 
 	private VCellFonts() {}
 
@@ -135,28 +136,14 @@ public final class VCellFonts {
 		component.setFont(new FontUIResource(component.getFont().deriveFont(style)));
 	}
 
-	/** Row height of a table at the current size, before any padding of its own. */
-	public static int getTableRowHeight() { return VCellFonts.tableRowHeight; }
-
-	/** Row height of a tree at the current size, before any padding of its own. */
-	public static int getTreeRowHeight() { return VCellFonts.treeRowHeight; }
-
-	/**
-	 * Keeps the table's rows {@code padding} pixels taller than the current size gives them, until other code sets
-	 * the table's row height itself.
-	 */
-	public static void setRowPadding(JTable table, int padding) {
-		table.putClientProperty(ROW_PADDING, padding);
-		VCellFonts.setRowHeight(table, VCellFonts.tableRowHeight + padding);
+	/** Sizes the table's rows to the current text, and keeps them sized to it until other code sets their height. */
+	public static void followRowHeight(JTable table) {
+		VCellFonts.setRowHeight(table, VCellFonts.tableRowHeight);
 	}
 
-	/**
-	 * Keeps the tree's rows {@code padding} pixels taller than the current size gives them, until other code sets the
-	 * tree's row height itself.
-	 */
-	public static void setRowPadding(JTree tree, int padding) {
-		tree.putClientProperty(ROW_PADDING, padding);
-		VCellFonts.setRowHeight(tree, VCellFonts.treeRowHeight + padding);
+	/** Sizes the tree's rows to the current text, and keeps them sized to it until other code sets their height. */
+	public static void followRowHeight(JTree tree) {
+		VCellFonts.setRowHeight(tree, VCellFonts.treeRowHeight);
 	}
 
 	/**
@@ -199,13 +186,13 @@ public final class VCellFonts {
 			} else if (component.getClientProperty(STYLE) instanceof Integer style) {
 				component.setFont(new FontUIResource(component.getFont().deriveFont(style)));
 			}
-			if (!(component.getClientProperty(ROW_PADDING) instanceof Integer padding)) return;
+			if (!(component.getClientProperty(ROW_HEIGHT) instanceof Integer lastSet)) return;
 			int rowHeight = component instanceof JTable table ? table.getRowHeight() : component instanceof JTree tree ? tree.getRowHeight() : -1;
-			if (!Integer.valueOf(rowHeight).equals(component.getClientProperty(ROW_HEIGHT))) {
-				component.putClientProperty(ROW_PADDING, null); // other code set its own row height; leave it be
+			if (rowHeight != lastSet) {
+				component.putClientProperty(ROW_HEIGHT, null); // other code set its own row height; leave it be
 				return;
 			}
-			VCellFonts.setRowHeight(component, (component instanceof JTable ? VCellFonts.tableRowHeight : VCellFonts.treeRowHeight) + padding);
+			VCellFonts.setRowHeight(component, component instanceof JTable ? VCellFonts.tableRowHeight : VCellFonts.treeRowHeight);
 		});
 	}
 
@@ -233,11 +220,10 @@ public final class VCellFonts {
 			VCellFonts.categoryFonts.put(category, font);
 		}
 
-		// rows at least as tall as a line of ordinary text
-		int lineHeight = (int) Math.ceil(VCellFonts.categoryFonts.get(Category.BODY).getLineMetrics("Xg", RENDER_CONTEXT).getHeight()) + 2;
-		VCellFonts.tableRowHeight = Math.max(lineHeight, Math.round(VCellFonts.themeTableRowHeight * scale));
-		int treeBase = VCellFonts.themeTreeRowHeight >= 10 ? VCellFonts.themeTreeRowHeight : FALLBACK_TREE_ROW_HEIGHT;
-		VCellFonts.treeRowHeight = Math.max(lineHeight, Math.round(treeBase * scale));
+		float lineHeight = VCellFonts.categoryFonts.get(Category.BODY).getLineMetrics("Xg", RENDER_CONTEXT).getHeight();
+		int rowHeight = Math.round(lineHeight * ROW_SPACING);
+		VCellFonts.tableRowHeight = Math.max(rowHeight, Math.round(VCellFonts.themeTableRowHeight * scale));
+		VCellFonts.treeRowHeight = Math.max(rowHeight, Math.round(VCellFonts.themeTreeRowHeight * scale));
 		if (UIManager.getLookAndFeel() instanceof FlatLaf) return; // FlatLaf scales its own row heights with its font
 		defaults.put("Table.rowHeight", VCellFonts.tableRowHeight);
 		if (VCellFonts.themeTreeRowHeight > 0) defaults.put("Tree.rowHeight", VCellFonts.treeRowHeight);

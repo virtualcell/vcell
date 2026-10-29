@@ -72,7 +72,7 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
         tableModel = new ExportedDataTableModel(editorScrollTable);
 
         editorScrollTable.setModel(tableModel);
-        VCellFonts.setRowPadding(editorScrollTable, 9); // 25px at 13pt
+        VCellFonts.followRowHeight(editorScrollTable);
 
         JScrollPane tableScrollPane = new JScrollPane(editorScrollTable);
         tableScrollPane.setSize(tableWidth, tableHeight);
