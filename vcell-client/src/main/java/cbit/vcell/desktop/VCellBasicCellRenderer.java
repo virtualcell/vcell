@@ -393,8 +393,8 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 			
 		}
 		
-		if (selectedFont==null && component.getFont()!=null) { selectedFont = component.getFont().deriveFont(Font.BOLD); }
-		if (unselectedFont==null && component.getFont()!=null) { unselectedFont = component.getFont().deriveFont(Font.PLAIN); }
+		selectedFont = tree.getFont().deriveFont(Font.BOLD); // from the tree, whose font follows size changes
+		unselectedFont = tree.getFont().deriveFont(Font.PLAIN);
 		
 		if (bLoaded){
 			component.setFont(selectedFont);

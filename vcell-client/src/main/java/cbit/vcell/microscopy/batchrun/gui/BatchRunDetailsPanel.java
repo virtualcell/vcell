@@ -10,6 +10,7 @@
 
 package cbit.vcell.microscopy.batchrun.gui;
 
+import cbit.vcell.client.laf.VCellFonts;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -192,7 +193,7 @@ public class BatchRunDetailsPanel extends JPanel implements ActionListener, Prop
 			botPanel = new JPanel();
 		    botPanel.setLayout(new BorderLayout());
 		    botPanel.add(getParameterScrollPanel(),BorderLayout.CENTER);
-		    TitledBorder tb=new TitledBorder(new EtchedBorder(),"Parameters:", TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION, new Font("Tahoma", Font.PLAIN, 11));
+		    TitledBorder tb=new TitledBorder(new EtchedBorder(),"Parameters:", TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION);
 		    botPanel.setBorder(tb);
 		}
 		return botPanel;
@@ -203,7 +204,7 @@ public class BatchRunDetailsPanel extends JPanel implements ActionListener, Prop
 		if(tascrollPane == null)
 		{
 		    parameterTa= new JTextArea();
-		    parameterTa.setFont(new Font("Tahoma", Font.PLAIN, 11));
+		    VCellFonts.setCategory(parameterTa, VCellFonts.Category.BODY);
 		    tascrollPane=new JScrollPane(parameterTa);
 		}
 		return tascrollPane;
