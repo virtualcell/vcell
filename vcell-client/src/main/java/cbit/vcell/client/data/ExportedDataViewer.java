@@ -1,5 +1,6 @@
 package cbit.vcell.client.data;
 
+import cbit.vcell.client.laf.VCellFonts;
 import cbit.vcell.client.ClientRequestManager;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.export.server.ExportFormat;
@@ -71,7 +72,7 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
         tableModel = new ExportedDataTableModel(editorScrollTable);
 
         editorScrollTable.setModel(tableModel);
-        editorScrollTable.setRowHeight(25);
+        VCellFonts.setRowPadding(editorScrollTable, 9); // 25px at 13pt
 
         JScrollPane tableScrollPane = new JScrollPane(editorScrollTable);
         tableScrollPane.setSize(tableWidth, tableHeight);

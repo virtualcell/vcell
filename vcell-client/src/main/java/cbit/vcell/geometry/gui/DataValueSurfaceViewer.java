@@ -9,6 +9,7 @@
  */
 
 package cbit.vcell.geometry.gui;
+import cbit.vcell.client.laf.VCellFonts;
 import cbit.vcell.client.laf.VCellColors;
 import java.awt.Color;
 import java.awt.GridBagConstraints;
@@ -747,7 +748,7 @@ private javax.swing.JLabel getJLabelDirections() {
 			ivjJLabelDirections.setName("JLabelDirections");
 			ivjJLabelDirections.setText(DIRECTIONS_INFO_TEXT);
 			ivjJLabelDirections.setForeground(VCellColors.getValueForeground());
-			ivjJLabelDirections.setFont(ivjJLabelDirections.getFont().deriveFont(ivjJLabelDirections.getFont().getSize2D() - 1));
+			VCellFonts.setCategory(ivjJLabelDirections, VCellFonts.Category.CAPTION);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -836,6 +837,7 @@ private javax.swing.JTable getScrollPaneTable() {
 	if (ivjScrollPaneTable == null) {
 		try {
 			ivjScrollPaneTable = new javax.swing.JTable();
+			VCellFonts.setRowPadding(ivjScrollPaneTable, 0);
 			ivjScrollPaneTable.setName("ScrollPaneTable");
 			getJScrollPane1().setColumnHeaderView(ivjScrollPaneTable.getTableHeader());
 //			getJScrollPane1().getViewport().setBackingStoreEnabled(true);
