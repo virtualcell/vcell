@@ -491,7 +491,7 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		molecularTypeTree.setCellRenderer(new RbmMolecularTypeTreeCellRenderer(molecularTypeTree, issueManager));
 		molecularTypeTree.setCellEditor(new RbmMolecularTypeTreeCellEditor(molecularTypeTree));
 		
-		VCellFonts.setRowPadding(molecularTypeTree, 2);
+		VCellFonts.followRowHeight(molecularTypeTree);
 		molecularTypeTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 		ToolTipManager.sharedInstance().registerComponent(molecularTypeTree);
 		molecularTypeTree.addTreeSelectionListener(eventHandler);

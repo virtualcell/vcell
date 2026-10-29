@@ -164,7 +164,7 @@ public class FRAPEstimationPanel_NotUsed extends JPanel {
 		panel.add(scrollPane, gridBagConstraints_4);
 
 		table = new JTable();
-		VCellFonts.setRowPadding(table, 0);
+		VCellFonts.followRowHeight(table);
 		table.getTableHeader().setReorderingAllowed(false);
 		scrollPane.setViewportView(table);
 

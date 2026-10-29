@@ -150,7 +150,7 @@ public class VCellCopyPasteHelper {
 
 	private static <T> JTable createTableContainer(PasteOperationTableModel<T> tableModel){
 		JTable tableContainer = new JTable(tableModel, tableModel.getTableColumnModel());
-		VCellFonts.setRowPadding(tableContainer, 0);
+		VCellFonts.followRowHeight(tableContainer);
 		tableContainer.setRowSelectionAllowed(false);
 		tableContainer.setColumnSelectionAllowed(false);
 		tableContainer.setCellSelectionEnabled(false);

@@ -266,7 +266,7 @@ private void initialize() throws DataAccessException {
 			};
 			ScanChoicesTableModel tm = new ScanChoicesTableModel(values, new String[] {scanParams[i]});
 			final JTable table = new JTable(tm);
-			VCellFonts.setRowPadding(table, 0);
+			VCellFonts.followRowHeight(table);
 			choicesHash.put(scanParams[i], table);
 			table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 			table.getSelectionModel().setSelectionInterval(0,0);

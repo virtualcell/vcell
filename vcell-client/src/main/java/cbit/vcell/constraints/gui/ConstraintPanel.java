@@ -887,7 +887,7 @@ private javax.swing.JTable getBoundsTable() {
 	if (ivjBoundsTable == null) {
 		try {
 			ivjBoundsTable = new javax.swing.JTable();
-			VCellFonts.setRowPadding(ivjBoundsTable, 0);
+			VCellFonts.followRowHeight(ivjBoundsTable);
 			ivjBoundsTable.setName("BoundsTable");
 			getJScrollPane2().setColumnHeaderView(ivjBoundsTable.getTableHeader());
 			ivjBoundsTable.setModel(new cbit.vcell.constraints.gui.ConstraintSolverTableModel());
@@ -957,7 +957,7 @@ private javax.swing.JTable getConstraintTable() {
 	if (ivjConstraintTable == null) {
 		try {
 			ivjConstraintTable = new javax.swing.JTable();
-			VCellFonts.setRowPadding(ivjConstraintTable, 0);
+			VCellFonts.followRowHeight(ivjConstraintTable);
 			ivjConstraintTable.setName("ConstraintTable");
 			getJScrollPane1().setColumnHeaderView(ivjConstraintTable.getTableHeader());
 			ivjConstraintTable.setModel(new GeneralConstraintsTableModel(ivjConstraintTable));
@@ -1460,7 +1460,7 @@ private javax.swing.JTable getScrollPaneTable() {
 	if (ivjScrollPaneTable == null) {
 		try {
 			ivjScrollPaneTable = new javax.swing.JTable();
-			VCellFonts.setRowPadding(ivjScrollPaneTable, 0);
+			VCellFonts.followRowHeight(ivjScrollPaneTable);
 			ivjScrollPaneTable.setName("ScrollPaneTable");
 			getJScrollPane3().setColumnHeaderView(ivjScrollPaneTable.getTableHeader());
 			ivjScrollPaneTable.setModel(new SimpleBoundsTableModel(ivjScrollPaneTable));

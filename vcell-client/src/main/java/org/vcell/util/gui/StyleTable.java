@@ -37,7 +37,7 @@ public class StyleTable extends JTable {
         super(dm);
         setGridColor(VCellColors.getLavender());
         setBorder(BorderFactory.createLineBorder(VCellColors.getLavender(), 2));
-        VCellFonts.setRowPadding(this, 5);
+        VCellFonts.followRowHeight(this);
         JTableHeader header = getTableHeader();
         header.setDefaultRenderer(createPlainTableHeaderRenderer());
     }
@@ -45,7 +45,7 @@ public class StyleTable extends JTable {
     public StyleTable() {
         setGridColor(VCellColors.getLavender());
         setBorder(BorderFactory.createLineBorder(VCellColors.getLavender(), 2));
-        VCellFonts.setRowPadding(this, 5);
+        VCellFonts.followRowHeight(this);
         JTableHeader header = getTableHeader();
         header.setDefaultRenderer(createPlainTableHeaderRenderer());
 

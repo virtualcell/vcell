@@ -283,7 +283,7 @@ public class FRAPReacDiffEstimationGuidePanel extends JPanel {
 		
 		//bottom panel----the table panel
 		paramTable.setModel(paramTableModel);//set table model
-		VCellFonts.setRowPadding(paramTable, 0);
+		VCellFonts.followRowHeight(paramTable);
 		final EstimatedParameterTableRenderer renderer = new EstimatedParameterTableRenderer(8); //set table renderer
 		for(int i=0; i<paramTable.getModel().getColumnCount(); i++)
 		{

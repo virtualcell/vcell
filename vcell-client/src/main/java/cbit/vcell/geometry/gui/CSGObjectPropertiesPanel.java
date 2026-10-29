@@ -289,7 +289,7 @@ public class CSGObjectPropertiesPanel extends DocumentEditorSubPanel {
 		csgObjectTreeCellEditor = new CSGObjectTreeCellEditor(csgObjectTree);
 		csgObjectTree.setCellEditor(csgObjectTreeCellEditor);
 		csgObjectTree.addMouseListener(eventHandler);
-		VCellFonts.setRowPadding(csgObjectTree, 2);
+		VCellFonts.followRowHeight(csgObjectTree);
 		csgObjectTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 		ToolTipManager.sharedInstance().registerComponent(csgObjectTree);
 		csgObjectTree.addTreeSelectionListener(eventHandler);

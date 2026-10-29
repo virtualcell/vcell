@@ -502,7 +502,7 @@ private void initialize() {
 		documentEditorTree.setCellEditor(documentEditorTreeCellEditor);
 		documentEditorTree.setName("bioModelEditorTree");
 		ToolTipManager.sharedInstance().registerComponent(documentEditorTree);
-		VCellFonts.setRowPadding(documentEditorTree, 2);
+		VCellFonts.followRowHeight(documentEditorTree);
 		documentEditorTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 		
 		JSplitPane leftSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);

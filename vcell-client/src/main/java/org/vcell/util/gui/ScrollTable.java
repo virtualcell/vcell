@@ -232,7 +232,7 @@ public static class ScrollTableBooleanCellRenderer extends JCheckBox implements 
 	
 	private void initialize() {
 		autoResizeMode = AUTO_RESIZE_OFF;
-		VCellFonts.setRowPadding(this, 4);
+		VCellFonts.followRowHeight(this);
 		putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
 		putClientProperty("JTable.autoStartsEdit", Boolean.FALSE);
 		scrollTableActionManager = new DefaultScrollTableActionManager(this);

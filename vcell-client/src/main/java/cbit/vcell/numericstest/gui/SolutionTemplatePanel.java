@@ -245,7 +245,7 @@ private javax.swing.JTable getSolutionTemplateTable() {
 	if (ivjSolutionTemplateTable == null) {
 		try {
 			ivjSolutionTemplateTable = new javax.swing.JTable();
-			VCellFonts.setRowPadding(ivjSolutionTemplateTable, 0);
+			VCellFonts.followRowHeight(ivjSolutionTemplateTable);
 			ivjSolutionTemplateTable.setName("SolutionTemplateTable");
 			getSolutionTemplateScrollPane().setColumnHeaderView(ivjSolutionTemplateTable.getTableHeader());
 			getSolutionTemplateScrollPane().getViewport().setBackingStoreEnabled(true);

@@ -902,7 +902,7 @@ public class VFrap_ROIAssistPanel extends JPanel {
         };
         tableModel.setDataVector(rowData, columnNames);
         final JTable table = new JTable(tableModel);
-        VCellFonts.setRowPadding(table, 0);
+        VCellFonts.followRowHeight(table);
         table.setSelectionMode(listSelectionModel_SelectMode);
         JScrollPane scrollPane = new JScrollPane(table);
         table.setPreferredScrollableViewportSize(new Dimension(500, 250));

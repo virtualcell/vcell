@@ -837,7 +837,7 @@ private javax.swing.JTable getScrollPaneTable() {
 	if (ivjScrollPaneTable == null) {
 		try {
 			ivjScrollPaneTable = new javax.swing.JTable();
-			VCellFonts.setRowPadding(ivjScrollPaneTable, 0);
+			VCellFonts.followRowHeight(ivjScrollPaneTable);
 			ivjScrollPaneTable.setName("ScrollPaneTable");
 			getJScrollPane1().setColumnHeaderView(ivjScrollPaneTable.getTableHeader());
 //			getJScrollPane1().getViewport().setBackingStoreEnabled(true);
