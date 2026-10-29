@@ -10,6 +10,7 @@
 
 package cbit.vcell.simdata.gui;
 
+import cbit.vcell.client.laf.VCellFonts;
 import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -202,10 +203,9 @@ public class PDEPlotControlPanel extends JPanel {
                 }
             }
 
-            java.awt.Font italicFont = getFont().deriveFont(Font.BOLD, 11);
             JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
             JLabel nameLabel = new JLabel(func.getDisplayName() + " = ");
-            nameLabel.setFont(italicFont);
+            VCellFonts.setCategory(nameLabel, VCellFonts.Category.HEADING);
             panel.add(nameLabel);
             JLabel label = new JLabel();
             ExpressionPrintFormatter epf = new ExpressionPrintFormatter(newexp);
@@ -215,8 +215,7 @@ public class PDEPlotControlPanel extends JPanel {
             java.awt.image.BufferedImage bi = new java.awt.image.BufferedImage(dim.width, dim.height, java.awt.image.BufferedImage.TYPE_INT_RGB);
             java.awt.Graphics2D g2d = bi.createGraphics();
             g2d.setClip(0, 0, dim.width, dim.height);
-            italicFont = getFont().deriveFont(Font.BOLD + Font.ITALIC, 11);
-            g2d.setFont(italicFont);
+            g2d.setFont(VCellFonts.getFont(VCellFonts.Category.HEADING, Font.BOLD | Font.ITALIC));
             g2d.setBackground(getBackground());
             g2d.setColor(getForeground());
 

@@ -1,5 +1,6 @@
 package cbit.vcell.model.gui;
 
+import cbit.vcell.client.laf.VCellFonts;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -316,7 +317,7 @@ public class RXParticipantResolverPanel extends JPanel implements ActionListener
 	try {
 		LineBorderBean ivjLocalBorder10 = new LineBorderBean();
 		TitledBorderBean ivjLocalBorder9 = new TitledBorderBean();
-		ivjLocalBorder9.setTitleFont(getFont().deriveFont(Font.BOLD));
+		ivjLocalBorder9.setTitleCategory(VCellFonts.Category.HEADING);
 		ivjLocalBorder9.setBorder(ivjLocalBorder10);
 		ivjLocalBorder9.setTitle("Resolve Reaction Participants with Model");
 //		ivjResolverJPanel = new javax.swing.JPanel();
@@ -413,7 +414,7 @@ public class RXParticipantResolverPanel extends JPanel implements ActionListener
 			try {
 				LineBorderBean ivjLocalBorder12 = new LineBorderBean();
 				TitledBorderBean ivjLocalBorder11 = new TitledBorderBean();
-				ivjLocalBorder11.setTitleFont(getFont().deriveFont(Font.BOLD));
+				ivjLocalBorder11.setTitleCategory(VCellFonts.Category.HEADING);
 				ivjLocalBorder11.setBorder(ivjLocalBorder12);
 				ivjLocalBorder11.setTitle("Reaction Stoichiometry");
 				ivjReactionCanvas1 = new ReactionCanvas() {
@@ -476,7 +477,7 @@ public class RXParticipantResolverPanel extends JPanel implements ActionListener
 				LineBorderBean ivjLocalBorder14 = new LineBorderBean();
 //				ivjLocalBorder14.setThickness(2);
 				TitledBorderBean ivjLocalBorder13 = new TitledBorderBean();
-				ivjLocalBorder13.setTitleFont(getFont().deriveFont(Font.BOLD));
+				ivjLocalBorder13.setTitleCategory(VCellFonts.Category.HEADING);
 				ivjLocalBorder13.setBorder(ivjLocalBorder14);
 				ivjLocalBorder13.setTitle("Assign Reaction Participants To Model");
 				ivjRXParticipantsJPanel = new javax.swing.JPanel();

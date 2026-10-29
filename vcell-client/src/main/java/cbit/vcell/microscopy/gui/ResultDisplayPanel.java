@@ -10,6 +10,7 @@
 
 package cbit.vcell.microscopy.gui;
 
+import cbit.vcell.client.laf.VCellFonts;
 import cbit.vcell.client.laf.VCellColors;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -110,7 +111,7 @@ public class ResultDisplayPanel extends AdvancedTablePanel
 		{
 			titlePanel = new JPanel();
 			JLabel titleLabel = new JLabel("Data Analysis Results");
-			titleLabel.setFont(new Font("arial", Font.BOLD+Font.ITALIC, 14));
+			VCellFonts.setCategory(titleLabel, VCellFonts.Category.HEADING, Font.BOLD | Font.ITALIC);
 			titleLabel.setForeground(VCellColors.getTitleForeground());
 			titlePanel.add(titleLabel, BorderLayout.WEST);
 		}
@@ -155,7 +156,7 @@ public class ResultDisplayPanel extends AdvancedTablePanel
 		if(oneDiffComponentLabel == null)
 		{
 			oneDiffComponentLabel = new JLabel(" \u25CF  "+FRAPModel.MODEL_TYPE_ARRAY[FRAPModel.IDX_MODEL_DIFF_ONE_COMPONENT]);
-			oneDiffComponentLabel.setFont(new Font("arial", Font.PLAIN, 12));
+			VCellFonts.setCategory(oneDiffComponentLabel, VCellFonts.Category.BODY);
 		}
 		return oneDiffComponentLabel;
 	}
@@ -165,7 +166,7 @@ public class ResultDisplayPanel extends AdvancedTablePanel
 		if(twoDiffComponentLabel == null)
 		{
 			twoDiffComponentLabel = new JLabel(" \u25CF  "+FRAPModel.MODEL_TYPE_ARRAY[FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS]);
-			twoDiffComponentLabel.setFont(new Font("arial", Font.PLAIN, 12));
+			VCellFonts.setCategory(twoDiffComponentLabel, VCellFonts.Category.BODY);
 		}
 		return twoDiffComponentLabel;
 	}
@@ -175,7 +176,7 @@ public class ResultDisplayPanel extends AdvancedTablePanel
 		if(reactionOffRateLabel == null)
 		{
 			reactionOffRateLabel = new JLabel(" \u25CF  "+FRAPModel.MODEL_TYPE_ARRAY[FRAPModel.IDX_MODEL_REACTION_OFF_RATE]);
-			reactionOffRateLabel.setFont(new Font("arial", Font.PLAIN, 12));
+			VCellFonts.setCategory(reactionOffRateLabel, VCellFonts.Category.BODY);
 		}
 		return reactionOffRateLabel;
 	}
@@ -297,6 +298,7 @@ public class ResultDisplayPanel extends AdvancedTablePanel
 		if(table == null)
 		{
 			table = new JTable();
+			VCellFonts.setRowPadding(table, 0);
 			//set table model
 			tableModel = getBestParameterTableModel(); 
 			table.setModel(tableModel);//set table model

@@ -10,6 +10,7 @@
 
 package cbit.vcell.solver.ode.gui;
 
+import cbit.vcell.client.laf.VCellFonts;
 import cbit.vcell.client.laf.VCellColors;
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -812,7 +813,7 @@ private javax.swing.JPanel getSpeciesFileLocationPanel() {
 			speciesFileLocationTextField.setEnabled(true);
 			speciesFileLocationTextField.setHorizontalAlignment(SwingConstants.LEFT);
 			speciesFileLocationTextField.setBorder(null);
-			speciesFileLocationTextField.setFont(locationLabel.getFont().deriveFont(Font.BOLD));
+			VCellFonts.setCategory(speciesFileLocationTextField, VCellFonts.Category.HEADING);
 			
 			JPopupMenu popup = new JPopupMenu();	// adding the Copy popup menu to the JTextField
 			JMenuItem item = new JMenuItem(new DefaultEditorKit.CopyAction());

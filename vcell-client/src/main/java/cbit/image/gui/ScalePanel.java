@@ -9,6 +9,7 @@
  */
 
 package cbit.image.gui;
+import cbit.vcell.client.laf.VCellFonts;
 import java.awt.Frame;
 
 import org.vcell.util.Range;
@@ -645,7 +646,7 @@ private javax.swing.JLabel getJLabel() {
 		try {
 			ivjJLabel = new javax.swing.JLabel();
 			ivjJLabel.setName("JLabel");
-			ivjJLabel.setFont(new java.awt.Font("dialog", 0, 12));
+			VCellFonts.setCategory(ivjJLabel, VCellFonts.Category.BODY);
 			ivjJLabel.setText("Min:");
 			ivjJLabel.setEnabled(true);
 			// user code begin {1}
@@ -669,7 +670,7 @@ private javax.swing.JLabel getJLabel1() {
 		try {
 			ivjJLabel1 = new javax.swing.JLabel();
 			ivjJLabel1.setName("JLabel1");
-			ivjJLabel1.setFont(new java.awt.Font("dialog", 0, 12));
+			VCellFonts.setCategory(ivjJLabel1, VCellFonts.Category.BODY);
 			ivjJLabel1.setText("Max:");
 			ivjJLabel1.setEnabled(true);
 			// user code begin {1}
@@ -739,7 +740,7 @@ private javax.swing.JLabel getLabelMax() {
 		try {
 			ivjLabelMax = new javax.swing.JLabel();
 			ivjLabelMax.setName("LabelMax");
-			ivjLabelMax.setFont(new java.awt.Font("dialog", 0, 12));
+			VCellFonts.setCategory(ivjLabelMax, VCellFonts.Category.BODY);
 			ivjLabelMax.setText("Max:");
 			ivjLabelMax.setEnabled(true);
 			// user code begin {1}
@@ -763,7 +764,7 @@ private javax.swing.JLabel getLabelMin() {
 		try {
 			ivjLabelMin = new javax.swing.JLabel();
 			ivjLabelMin.setName("LabelMin");
-			ivjLabelMin.setFont(new java.awt.Font("dialog", 0, 12));
+			VCellFonts.setCategory(ivjLabelMin, VCellFonts.Category.BODY);
 			ivjLabelMin.setText("Min:");
 			ivjLabelMin.setEnabled(true);
 			// user code begin {1}
@@ -790,7 +791,7 @@ private javax.swing.JLabel getLabelRealMax() {
 			ivjLabelRealMax.setText(" ");
 			ivjLabelRealMax.setMaximumSize(new java.awt.Dimension(3, 19));
 			ivjLabelRealMax.setPreferredSize(new java.awt.Dimension(3, 19));
-			ivjLabelRealMax.setFont(new java.awt.Font("dialog", 0, 12));
+			VCellFonts.setCategory(ivjLabelRealMax, VCellFonts.Category.BODY);
 			ivjLabelRealMax.setEnabled(true);
 			ivjLabelRealMax.setMinimumSize(new java.awt.Dimension(3, 19));
 			// user code begin {1}
@@ -826,7 +827,7 @@ private javax.swing.JLabel getLabelRealMin() {
 			ivjLabelRealMin.setText(" ");
 			ivjLabelRealMin.setMaximumSize(new java.awt.Dimension(3, 19));
 			ivjLabelRealMin.setPreferredSize(new java.awt.Dimension(3, 19));
-			ivjLabelRealMin.setFont(new java.awt.Font("dialog", 0, 12));
+			VCellFonts.setCategory(ivjLabelRealMin, VCellFonts.Category.BODY);
 			ivjLabelRealMin.setEnabled(true);
 			ivjLabelRealMin.setMinimumSize(new java.awt.Dimension(3, 19));
 			// user code begin {1}

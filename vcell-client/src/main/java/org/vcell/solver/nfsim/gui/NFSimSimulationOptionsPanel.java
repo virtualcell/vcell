@@ -10,6 +10,7 @@
 
 package org.vcell.solver.nfsim.gui;
 
+import cbit.vcell.client.laf.VCellFonts;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -302,54 +303,53 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 	private void initialize() {
 		
 		randomSeedHelpButton = new JButton(" ? ");
-		Font font = randomSeedHelpButton.getFont().deriveFont(Font.BOLD);
 		Border border = BorderFactory.createEmptyBorder(1, 1, 1, 1);
 
 		observableComputationCheckBox = new JCheckBox("Compute observables at output times only.");
 		observableComputationTextField = new JTextField();
 		observableComputationHelpButton = new JButton(" ? ");
-		observableComputationHelpButton.setFont(font);
+		VCellFonts.setCategory(observableComputationHelpButton, VCellFonts.Category.HEADING);
 		observableComputationHelpButton.setBorder(border);
 		
 		moleculeDistanceCheckBox = new JCheckBox("Set distance to molecules that may be updated:");
 		moleculeDistanceTextField = new JTextField(NFsimSimulationOptions.DefaultDistanceToMolecules+"");
 		moleculeDistanceHelpButton = new JButton(" ? ");
-		moleculeDistanceHelpButton.setFont(font);
+		VCellFonts.setCategory(moleculeDistanceHelpButton, VCellFonts.Category.HEADING);
 		moleculeDistanceHelpButton.setBorder(border);
 		
 		aggregateBookkeepingCheckBox = new JCheckBox("Turn on aggregate bookkeeping.");
 		aggregateBookkeepingTextField = new JTextField();
 		aggregateBookkeepingHelpButton = new JButton(" ? ");
-		aggregateBookkeepingHelpButton.setFont(font);
+		VCellFonts.setCategory(aggregateBookkeepingHelpButton, VCellFonts.Category.HEADING);
 		aggregateBookkeepingHelpButton.setBorder(border);
 		
 		maxMoleculesPerTypeCheckBox = new JCheckBox("Set the max. number of Molecules per Type.");
 		maxMoleculesPerTypeTextField = new JTextField();
 		maxMoleculesPerTypeHelpButton = new JButton(" ? ");
-		maxMoleculesPerTypeHelpButton.setFont(font);
+		VCellFonts.setCategory(maxMoleculesPerTypeHelpButton, VCellFonts.Category.HEADING);
 		maxMoleculesPerTypeHelpButton.setBorder(border);
 		
 		equilibrateTimeCheckBox = new JCheckBox("Equilibrate for a set time.");
 		equilibrateTimeTextField = new JTextField();
 		equilibrateTimeHelpButton = new JButton(" ? ");
-		equilibrateTimeHelpButton.setFont(font);
+		VCellFonts.setCategory(equilibrateTimeHelpButton, VCellFonts.Category.HEADING);
 		equilibrateTimeHelpButton.setBorder(border);
 		
 		randomSeedCheckBox = new JCheckBox("Set a seed to NFsim random number generator.");
 		randomSeedTextField = new JTextField();
-		randomSeedHelpButton.setFont(font);
+		VCellFonts.setCategory(randomSeedHelpButton, VCellFonts.Category.HEADING);
 		randomSeedHelpButton.setBorder(border);
 		
 		preventIntraBondsCheckBox = new JCheckBox("Prevent intra-molecular bonds from forming.");
 		preventIntraBondsTextField = new JTextField();
 		preventIntraBondsHelpButton = new JButton(" ? ");
-		preventIntraBondsHelpButton.setFont(font);
+		VCellFonts.setCategory(preventIntraBondsHelpButton, VCellFonts.Category.HEADING);
 		preventIntraBondsHelpButton.setBorder(border);
 		
 		matchComplexesCheckBox = new JCheckBox("Match generated complexes to products.");
 		matchComplexesTextField = new JTextField();
 		matchComplexesHelpButton = new JButton(" ? ");
-		matchComplexesHelpButton.setFont(font);
+		VCellFonts.setCategory(matchComplexesHelpButton, VCellFonts.Category.HEADING);
 		matchComplexesHelpButton.setBorder(border);
 
 		getContentPanel().setLayout(new GridBagLayout());		

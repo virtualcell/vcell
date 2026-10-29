@@ -9,6 +9,7 @@
  */
 
 package cbit.plot.gui;
+import cbit.vcell.client.laf.VCellFonts;
 import cbit.vcell.client.laf.VCellColors;
 import java.awt.BasicStroke;
 import java.awt.CardLayout;
@@ -635,7 +636,7 @@ private javax.swing.JLabel getJLabel5() {
 			ivjJLabel5.setText(" ");
 			ivjJLabel5.setForeground(java.awt.Color.blue);
 			ivjJLabel5.setPreferredSize(new java.awt.Dimension(44, 20));
-			ivjJLabel5.setFont(new java.awt.Font("dialog", 0, 12));
+			VCellFonts.setCategory(ivjJLabel5, VCellFonts.Category.BODY);
 			ivjJLabel5.setMinimumSize(new java.awt.Dimension(44, 20));
 			// user code begin {1}
 			// user code end
@@ -762,7 +763,7 @@ private javax.swing.JLabel getJLabelTitle() {
 			ivjJLabelTitle = new javax.swing.JLabel();
 			ivjJLabelTitle.setName("JLabelTitle");
 			ivjJLabelTitle.setText("Title");
-			ivjJLabelTitle.setFont(ivjJLabelTitle.getFont().deriveFont(Font.BOLD));
+			VCellFonts.setCategory(ivjJLabelTitle, VCellFonts.Category.HEADING);
 			ivjJLabelTitle.setBorder(BorderFactory.createEmptyBorder(5, 0, 0, 0));
 			ivjJLabelTitle.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
 			// user code begin {1}

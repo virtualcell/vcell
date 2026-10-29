@@ -280,7 +280,9 @@ public class VCellLookAndFeel {
 	static void forEachComponent(Component component, Consumer<Component> action) {
 		action.accept(component);
 		if (!(component instanceof Container container)) return;
-		for (Component child : container.getComponents()) VCellLookAndFeel.forEachComponent(child, action);
+		// a menu's items are in its popup, outside the window's component tree
+		Component[] children = container instanceof JMenu menu ? menu.getMenuComponents() : container.getComponents();
+		for (Component child : children) VCellLookAndFeel.forEachComponent(child, action);
 	}
 
 	private static boolean isStale(JComponent component) {

@@ -10,6 +10,7 @@
 
 package cbit.vcell.client.desktop.biomodel;
 
+import cbit.vcell.client.laf.VCellFonts;
 import cbit.vcell.client.laf.VCellColors;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -666,7 +667,7 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 			gbc.insets = new Insets(4,4,4,4);
 			gbc.anchor = GridBagConstraints.LINE_END;
 			JLabel label = new JLabel("Defined In:");
-			label.setFont(label.getFont().deriveFont(Font.BOLD));
+			VCellFonts.setCategory(label, VCellFonts.Category.HEADING);
 			parametersFunctionsPanel.add(label, gbc);
 			
 			gbc = new GridBagConstraints();
@@ -710,7 +711,7 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 			gbc.anchor = GridBagConstraints.LINE_END;
 			label = new JLabel("Type:");
 			label.setHorizontalAlignment(SwingConstants.RIGHT);
-			label.setFont(label.getFont().deriveFont(Font.BOLD));
+			VCellFonts.setCategory(label, VCellFonts.Category.HEADING);
 			parametersFunctionsPanel.add(label, gbc);
 			
 			gbc = new GridBagConstraints();

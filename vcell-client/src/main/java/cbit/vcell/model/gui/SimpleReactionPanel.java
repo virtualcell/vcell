@@ -9,6 +9,7 @@
  */
 
 package cbit.vcell.model.gui;
+import cbit.vcell.client.laf.VCellFonts;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.event.FocusEvent;
@@ -247,7 +248,7 @@ private javax.swing.JLabel getNameLabel() {
 		try {
 			ivjNameLabel = new javax.swing.JLabel();
 			ivjNameLabel.setName("NameLabel");
-			ivjNameLabel.setFont(ivjNameLabel.getFont().deriveFont(Font.BOLD));
+			VCellFonts.setCategory(ivjNameLabel, VCellFonts.Category.HEADING);
 //			ivjNameLabel.setFont(new java.awt.Font("Arial", 1, 12));
 			ivjNameLabel.setText("Name");
 			ivjNameLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
@@ -368,7 +369,7 @@ private javax.swing.JLabel getStoichiometryLabel() {
 		try {
 			ivjStoichiometryLabel = new javax.swing.JLabel();
 			ivjStoichiometryLabel.setName("StoichiometryLabel");
-			ivjStoichiometryLabel.setFont(ivjStoichiometryLabel.getFont().deriveFont(Font.BOLD));
+			VCellFonts.setCategory(ivjStoichiometryLabel, VCellFonts.Category.HEADING);
 			ivjStoichiometryLabel.setText("Stoichiometry");
 			// user code begin {1}
 			// user code end
@@ -483,7 +484,7 @@ private void initialize() {
 			gbc.anchor = GridBagConstraints.NORTHEAST;
 			JLabel label = new JLabel("Annotation");
 			label.setHorizontalAlignment(SwingConstants.RIGHT);
-			label.setFont(label.getFont().deriveFont(Font.BOLD));
+			VCellFonts.setCategory(label, VCellFonts.Category.HEADING);
 			add(label, gbc);
 			
 			annotationTextArea = new javax.swing.JTextArea();

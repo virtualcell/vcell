@@ -9,6 +9,7 @@
  */
 
 package cbit.vcell.graph.gui;
+import cbit.vcell.client.laf.VCellFonts;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -630,7 +631,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 				floatRequestButton = createToolBarButton();
 				floatRequestButton.setText("\u21b1");
 				floatRequestButton.setName("FloatingButton");
-				floatRequestButton.setFont(floatRequestButton.getFont().deriveFont(Font.BOLD));
+				VCellFonts.setCategory(floatRequestButton, VCellFonts.Category.HEADING);
 				floatRequestButton.setToolTipText("\u21b1 Float");
 			} catch (Throwable ivjExc) {
 				handleException(ivjExc);

@@ -10,6 +10,7 @@
 
 package cbit.vcell.mapping.gui;
 
+import cbit.vcell.client.laf.VCellFonts;
 import cbit.vcell.client.laf.VCellColors;
 import cbit.vcell.client.laf.VCellLookAndFeel;
 import java.awt.Color;
@@ -240,9 +241,8 @@ public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
         JPanel panel = new JPanel(new GridBagLayout());
 
         JLabel label = new JLabel("Point Spread Function");
-        Font boldFont = label.getFont().deriveFont(Font.BOLD);
         label.setHorizontalAlignment(JLabel.CENTER);
-        label.setFont(boldFont);
+        VCellFonts.setCategory(label, VCellFonts.Category.HEADING);
         JPanel p = new JPanel();
         p.setBackground(VCellColors.getThemedBackground(ItemBackgroundColor));
         p.add(label);
@@ -377,8 +377,7 @@ public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
             gbc.weighty = 1.0;
             gbc.fill = GridBagConstraints.HORIZONTAL;
             JLabel label = new JLabel("Fluorescence Function Name");
-            Font boldFont = label.getFont().deriveFont(Font.BOLD);
-            label.setFont(boldFont);
+            VCellFonts.setCategory(label, VCellFonts.Category.HEADING);
             JPanel p = new JPanel();
             p.setBackground(VCellColors.getThemedBackground(ItemBackgroundColor));
             p.add(label);
@@ -444,9 +443,8 @@ public class MicroscopeMeasurementPanel extends javax.swing.JPanel {
         int gridy = 0;
 
         JLabel label = new JLabel("Choose Fluorescent Species");
-        Font boldFont = label.getFont().deriveFont(Font.BOLD);
         label.setHorizontalAlignment(JLabel.CENTER);
-        label.setFont(boldFont);
+        VCellFonts.setCategory(label, VCellFonts.Category.HEADING);
         JPanel p = new JPanel();
         p.setBackground(VCellColors.getThemedBackground(ItemBackgroundColor));
         p.add(label);

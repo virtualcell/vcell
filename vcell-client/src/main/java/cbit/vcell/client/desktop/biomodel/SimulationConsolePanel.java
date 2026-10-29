@@ -1,5 +1,6 @@
 package cbit.vcell.client.desktop.biomodel;
 
+import cbit.vcell.client.laf.VCellFonts;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -93,7 +94,7 @@ public class SimulationConsolePanel extends JPanel {
 		gbc.insets = new Insets(20, 4, 4, 10);
 		add(netGenConsoleScrollPane, gbc);
 		
-		netGenConsoleText.setFont(new Font("monospaced", Font.PLAIN, 11));
+		VCellFonts.setCategory(netGenConsoleText, VCellFonts.Category.MONOSPACED);
 		netGenConsoleText.setEditable(false);
 	}
 	
