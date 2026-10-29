@@ -57,6 +57,7 @@ public final class VCellFonts {
 	private static final int FALLBACK_TABLE_ROW_HEIGHT = 16; // JTable's own
 	private static final int FALLBACK_TREE_ROW_HEIGHT = 20; // what VCell's trees have used where the theme sizes rows to fit
 	private static final String CATEGORY = "VCellFonts.category";
+	private static final String STYLE = "VCellFonts.style";
 	private static final String ROW_PADDING = "VCellFonts.rowPadding";
 	private static final String ROW_HEIGHT = "VCellFonts.rowHeight"; // the height set from the padding, to tell if other code changed it since
 	private static final FontRenderContext RENDER_CONTEXT = new FontRenderContext(null, true, true);
@@ -105,10 +106,33 @@ public final class VCellFonts {
 		return null == font ? new JLabel().getFont() : new Font(font.getAttributes());
 	}
 
+	/** The current font for this kind of text, in another style (Font.PLAIN, BOLD, ITALIC, or BOLD | ITALIC). */
+	public static Font getFont(Category category, int style) {
+		Font font = VCellFonts.getFont(category);
+		return font.getStyle() == style ? font : font.deriveFont(style);
+	}
+
 	/** Gives the component the font for this kind of text, and keeps it current as the size or theme changes. */
 	public static void setCategory(JComponent component, Category category) {
+		VCellFonts.setCategory(component, category, VCellFonts.getFont(category).getStyle());
+	}
+
+	/** As {@link #setCategory(JComponent, Category)}, in another style (e.g. an italic title). */
+	public static void setCategory(JComponent component, Category category, int style) {
 		component.putClientProperty(CATEGORY, category);
-		component.setFont(VCellFonts.getFont(category));
+		component.putClientProperty(STYLE, style);
+		component.setFont(VCellFonts.getFont(category, style));
+	}
+
+	/**
+	 * Gives the component its theme's own font in this style (a bold menu item, say), and keeps it that way as the
+	 * size or theme changes. For text that is the component's usual kind, just emphasized; otherwise use a category.
+	 */
+	public static void setStyle(JComponent component, int style) {
+		component.putClientProperty(CATEGORY, null);
+		component.putClientProperty(STYLE, style);
+		// a UIResource, so a theme update replaces it with the theme's new font, which refresh styles again
+		component.setFont(new FontUIResource(component.getFont().deriveFont(style)));
 	}
 
 	/** Row height of a table at the current size, before any padding of its own. */
@@ -170,7 +194,11 @@ public final class VCellFonts {
 	static void refresh(Component root) {
 		VCellLookAndFeel.forEachComponent(root, c -> {
 			if (!(c instanceof JComponent component)) return;
-			if (component.getClientProperty(CATEGORY) instanceof Category category) component.setFont(VCellFonts.getFont(category));
+			if (component.getClientProperty(CATEGORY) instanceof Category category) {
+				component.setFont(component.getClientProperty(STYLE) instanceof Integer style ? VCellFonts.getFont(category, style) : VCellFonts.getFont(category));
+			} else if (component.getClientProperty(STYLE) instanceof Integer style) {
+				component.setFont(new FontUIResource(component.getFont().deriveFont(style)));
+			}
 			if (!(component.getClientProperty(ROW_PADDING) instanceof Integer padding)) return;
 			int rowHeight = component instanceof JTable table ? table.getRowHeight() : component instanceof JTree tree ? tree.getRowHeight() : -1;
 			if (!Integer.valueOf(rowHeight).equals(component.getClientProperty(ROW_HEIGHT))) {

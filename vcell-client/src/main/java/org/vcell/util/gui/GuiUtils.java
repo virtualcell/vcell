@@ -10,6 +10,7 @@
 
 package org.vcell.util.gui;
 
+import cbit.vcell.client.laf.VCellFonts;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dialog;
@@ -139,7 +140,7 @@ public class GuiUtils {
 
     public static JLabel createBoldJLabel(String text){
         JLabel label = new JLabel(text);
-        label.setFont(label.getFont().deriveFont(Font.BOLD));
+        VCellFonts.setCategory(label, VCellFonts.Category.HEADING);
         return label;
     }
 

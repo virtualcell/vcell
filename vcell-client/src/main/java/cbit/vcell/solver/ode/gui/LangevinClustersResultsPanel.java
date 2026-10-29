@@ -1,5 +1,6 @@
 package cbit.vcell.solver.ode.gui;
 
+import cbit.vcell.client.laf.VCellFonts;
 import cbit.vcell.client.laf.VCellColors;
 import cbit.plot.gui.Plot2DDataPanel;
 import cbit.plot.gui.Plot2DPanel;
@@ -419,7 +420,7 @@ public class LangevinClustersResultsPanel extends DocumentEditorSubPanel {
             bottomLabel.setText(" ");
             bottomLabel.setForeground(VCellColors.getValueForeground());
             bottomLabel.setPreferredSize(new Dimension(44, 20));
-            bottomLabel.setFont(new Font("dialog", 0, 12));
+            VCellFonts.setCategory(bottomLabel, VCellFonts.Category.BODY);
             bottomLabel.setMinimumSize(new Dimension(44, 20));
         }
         return bottomLabel;

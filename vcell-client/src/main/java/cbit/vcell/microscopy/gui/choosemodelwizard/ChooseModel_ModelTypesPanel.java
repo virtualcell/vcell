@@ -10,6 +10,7 @@
 
 package cbit.vcell.microscopy.gui.choosemodelwizard;
 
+import cbit.vcell.client.laf.VCellFonts;
 import cbit.vcell.client.laf.VCellColors;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -42,7 +43,7 @@ public class ChooseModel_ModelTypesPanel extends JPanel
 		setLayout(gridBagLayout);
 
 		final JLabel choosePossibleModelLabel = new JLabel();
-		choosePossibleModelLabel.setFont(new Font("", Font.BOLD | Font.ITALIC, 16));
+		VCellFonts.setCategory(choosePossibleModelLabel, VCellFonts.Category.TITLE, Font.BOLD | Font.ITALIC);
 		choosePossibleModelLabel.setForeground(VCellColors.getTitleForeground());
 		choosePossibleModelLabel.setText("Choose Possible Models");
 		final GridBagConstraints gridBagConstraints = new GridBagConstraints();
@@ -85,7 +86,7 @@ public class ChooseModel_ModelTypesPanel extends JPanel
 		add(separator, gridBagConstraints_8);
 		
 		JLabel diffustionOnlyLabel = new JLabel("Diffusion Dominant Models :");
-		diffustionOnlyLabel.setFont(new Font("", Font.BOLD, 12));
+		VCellFonts.setCategory(diffustionOnlyLabel, VCellFonts.Category.HEADING);
 		diffustionOnlyLabel.setForeground(VCellColors.getTitleForeground());
 		GridBagConstraints gridBagConstraints_7 = new GridBagConstraints();
 		gridBagConstraints_7.anchor = GridBagConstraints.WEST;
@@ -111,7 +112,7 @@ public class ChooseModel_ModelTypesPanel extends JPanel
 		add(diffTwoCheckBox, gridBagConstraints_6);
 		
 		JLabel reactionOnlyLabel = new JLabel("Reaction Dominant Models :");
-		reactionOnlyLabel.setFont(new Font("", Font.BOLD, 12));
+		VCellFonts.setCategory(reactionOnlyLabel, VCellFonts.Category.HEADING);
 		reactionOnlyLabel.setForeground(VCellColors.getTitleForeground());
 		GridBagConstraints gridBagConstraints_9 = new GridBagConstraints();
 		gridBagConstraints_9.anchor = GridBagConstraints.WEST;

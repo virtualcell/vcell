@@ -10,6 +10,7 @@
 
 package cbit.vcell.microscopy.batchrun.gui;
 
+import cbit.vcell.client.laf.VCellFonts;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
@@ -34,7 +35,7 @@ public class ResultsParamTableRenderer extends DefaultTableCellRenderer
 		button.setVerticalTextPosition(SwingConstants.CENTER); 
 		button.setHorizontalTextPosition(SwingConstants.LEFT);
 //		button.setBorderPainted(false);
-        setFont(new Font("Arial", Font.PLAIN, 11));
+        VCellFonts.setCategory(this, VCellFonts.Category.BODY);
 	}
 	public Component getTableCellRendererComponent(JTable table, Object value,
             boolean isSelected, boolean hasFocus, int row, int column) 

@@ -10,6 +10,7 @@
 
 package cbit.vcell.microscopy.gui.estparamwizard;
 
+import cbit.vcell.client.laf.VCellFonts;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -329,7 +330,7 @@ public class FRAPReacOffRateParametersPanel extends JPanel
 		JPanel buttonPanel = new JPanel();
 		JButton optimalButton = new JButton();
 		optimalButton.setText("Estimate Parameters");
-		optimalButton.setFont(new Font("", Font.PLAIN, 11));
+		VCellFonts.setCategory(optimalButton, VCellFonts.Category.BODY);
 		optimalButton.setToolTipText("Set best parameters through optimization with experimental data");
 		optimalButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) 
@@ -345,7 +346,7 @@ public class FRAPReacOffRateParametersPanel extends JPanel
 		});
 		JButton evaluationButton = new JButton();
 		evaluationButton.setText("Show Confidence Intervals");
-		evaluationButton.setFont(new Font("", Font.PLAIN, 11));
+		VCellFonts.setCategory(evaluationButton, VCellFonts.Category.BODY);
 		evaluationButton.setToolTipText("Get confidence intervals for each parameter based on confidence level");
 		evaluationButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {

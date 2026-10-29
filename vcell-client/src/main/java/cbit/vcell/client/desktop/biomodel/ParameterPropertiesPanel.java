@@ -10,6 +10,7 @@
 
 package cbit.vcell.client.desktop.biomodel;
 
+import cbit.vcell.client.laf.VCellFonts;
 import cbit.vcell.client.laf.VCellLookAndFeel;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -163,7 +164,7 @@ private void initialize() {
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		pathLabel= new JLabel("");
 		pathLabel.setHorizontalAlignment(SwingConstants.CENTER);
-		pathLabel.setFont(pathLabel.getFont().deriveFont(Font.BOLD));
+		VCellFonts.setCategory(pathLabel, VCellFonts.Category.HEADING);
 		add(pathLabel, gbc);
 		
 		gridy ++;

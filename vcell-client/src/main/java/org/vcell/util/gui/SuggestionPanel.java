@@ -1,5 +1,6 @@
 package org.vcell.util.gui;
 
+import cbit.vcell.client.laf.VCellFonts;
 import java.awt.BorderLayout;
 import java.awt.Font;
 import java.util.Collection;
@@ -20,7 +21,7 @@ public class SuggestionPanel extends JPanel {
 	public SuggestionPanel() {
 		setLayout(new BorderLayout(0, 0));
 		solutionsText = new JTextPane();
-		solutionsText.setFont(new Font("Tahoma", Font.PLAIN, 13));
+		VCellFonts.setCategory(solutionsText, VCellFonts.Category.BODY);
 		solutionsText.setContentType("text/html");
 		add(solutionsText);
 		
@@ -28,7 +29,7 @@ public class SuggestionPanel extends JPanel {
 		add(panel, BorderLayout.NORTH);
 		
 		JLabel lblNewLabel = new JLabel("Possible Solutions(s):");
-		lblNewLabel.setFont(new Font("Tahoma", Font.BOLD | Font.ITALIC, 16));
+		VCellFonts.setCategory(lblNewLabel, VCellFonts.Category.TITLE, Font.BOLD | Font.ITALIC);
 		panel.add(lblNewLabel);
 	}
 	

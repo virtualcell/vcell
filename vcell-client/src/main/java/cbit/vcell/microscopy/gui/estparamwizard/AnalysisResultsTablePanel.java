@@ -10,6 +10,7 @@
 
 package cbit.vcell.microscopy.gui.estparamwizard;
 
+import cbit.vcell.client.laf.VCellFonts;
 import cbit.vcell.client.laf.VCellColors;
 import java.awt.Color;
 import java.awt.Component;
@@ -85,7 +86,7 @@ public class AnalysisResultsTablePanel extends AdvancedTablePanel implements Act
         setBorder(new EmptyBorder(5, 0, 10, 0));
 
         JLabel lblConfHeading = new JLabel("Models");
-        lblConfHeading.setFont(new Font("Tahoma", Font.BOLD, 11));
+        VCellFonts.setCategory(lblConfHeading, VCellFonts.Category.HEADING);
         hypDetail = new HyperLinkLabel("Less Details", new HyperLinkListener(), 0);
         hypDetail.setHorizontalAlignment(JLabel.RIGHT);
         

@@ -1,5 +1,6 @@
 package org.vcell.util.gui;
 
+import cbit.vcell.client.laf.VCellFonts;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -118,7 +119,7 @@ public class MessagePanelFactory {
 		textArea.setText(message);
 		textArea.setCaretPosition(0);
 		textArea.setEditable(false);
-		textArea.setFont(textArea.getFont().deriveFont(Font.BOLD));
+		VCellFonts.setCategory(textArea, VCellFonts.Category.HEADING);
 		textArea.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
 
 		//

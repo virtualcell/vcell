@@ -10,6 +10,7 @@
 
 package org.vcell.util.gui;
 
+import cbit.vcell.client.laf.VCellFonts;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
@@ -132,7 +133,7 @@ public class CollapsiblePanel extends JPanel {
 		this.bExpanded = expanded;
 		borderLabel  = new JLabel(borderTitle, getExpansionIcon(bExpanded), SwingConstants.LEFT);
 		borderLabel.setForeground(borderTitleColor);
-		borderLabel.setFont(borderLabel.getFont().deriveFont(Font.PLAIN));
+		VCellFonts.setCategory(borderLabel, VCellFonts.Category.BODY);
 		Dimension size = new Dimension(borderLabel.getPreferredSize().width + 5, borderLabel.getPreferredSize().height);
 		borderLabel.setPreferredSize(size);
 		setBorder(new ComponentTitledBorder(borderLabel, this, border));
@@ -157,7 +158,7 @@ public class CollapsiblePanel extends JPanel {
 		this.bExpanded = expanded;
 		borderLabel  = new JLabel(borderTitle, getExpansionIcon(bExpanded), SwingConstants.LEFT);
 		borderLabel.setForeground(borderTitleColor);
-		borderLabel.setFont(borderLabel.getFont().deriveFont(Font.BOLD));
+		VCellFonts.setCategory(borderLabel, VCellFonts.Category.HEADING);
 		Dimension size = new Dimension(borderLabel.getPreferredSize().width + 5, borderLabel.getPreferredSize().height);
 		borderLabel.setPreferredSize(size);
 		setBorder(new ComponentTitledBorder(borderLabel, this, BorderFactory.createEtchedBorder()));

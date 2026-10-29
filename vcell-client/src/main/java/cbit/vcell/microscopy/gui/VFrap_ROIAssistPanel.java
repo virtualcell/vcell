@@ -10,6 +10,7 @@
 
 package cbit.vcell.microscopy.gui;
 
+import cbit.vcell.client.laf.VCellFonts;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -141,7 +142,7 @@ public class VFrap_ROIAssistPanel extends JPanel {
         setLayout(gridBagLayout);
 
         final JLabel roiSourceLabel = new JLabel();
-        roiSourceLabel.setFont(new Font("", Font.PLAIN, 12));
+        VCellFonts.setCategory(roiSourceLabel, VCellFonts.Category.BODY);
         roiSourceLabel.setText("ROI Threshold Source");
         final GridBagConstraints gridBagConstraints_1 = new GridBagConstraints();
         gridBagConstraints_1.insets = new Insets(10, 4, 0, 4);
@@ -151,7 +152,7 @@ public class VFrap_ROIAssistPanel extends JPanel {
         add(roiSourceLabel, gridBagConstraints_1);
 
         final JLabel spatialEnahnceLabel = new JLabel();
-        spatialEnahnceLabel.setFont(new Font("", Font.PLAIN, 12));
+        VCellFonts.setCategory(spatialEnahnceLabel, VCellFonts.Category.BODY);
         spatialEnahnceLabel.setText("Spatial Enhance Threshold");
         final GridBagConstraints gridBagConstraints_3 = new GridBagConstraints();
         gridBagConstraints_3.insets = new Insets(10, 4, 0, 4);
@@ -198,7 +199,7 @@ public class VFrap_ROIAssistPanel extends JPanel {
         add(thresholdSlider, gridBagConstraints_5);
 
         final JLabel thresholdForRoiLabel = new JLabel();
-        thresholdForRoiLabel.setFont(new Font("", Font.PLAIN, 12));
+        VCellFonts.setCategory(thresholdForRoiLabel, VCellFonts.Category.BODY);
         thresholdForRoiLabel.setText("Threshold Adjust ROI");
         final GridBagConstraints gridBagConstraints_7 = new GridBagConstraints();
         gridBagConstraints_7.gridwidth = 2;
@@ -207,7 +208,7 @@ public class VFrap_ROIAssistPanel extends JPanel {
         add(thresholdForRoiLabel, gridBagConstraints_7);
 
         final JLabel lowerLabel = new JLabel();
-        lowerLabel.setFont(new Font("", Font.PLAIN, 12));
+        VCellFonts.setCategory(lowerLabel, VCellFonts.Category.BODY);
         lowerLabel.setText("ROI Shrink");
         final GridBagConstraints gridBagConstraints_8 = new GridBagConstraints();
         gridBagConstraints_8.insets = new Insets(0, 4, 0, 0);
@@ -217,7 +218,7 @@ public class VFrap_ROIAssistPanel extends JPanel {
         add(lowerLabel, gridBagConstraints_8);
 
         final JLabel higherLabel = new JLabel();
-        higherLabel.setFont(new Font("", Font.PLAIN, 12));
+        VCellFonts.setCategory(higherLabel, VCellFonts.Category.BODY);
         higherLabel.setText("ROI Grow");
         final GridBagConstraints gridBagConstraints_9 = new GridBagConstraints();
         gridBagConstraints_9.insets = new Insets(0, 0, 0, 4);
@@ -901,6 +902,7 @@ public class VFrap_ROIAssistPanel extends JPanel {
         };
         tableModel.setDataVector(rowData, columnNames);
         final JTable table = new JTable(tableModel);
+        VCellFonts.setRowPadding(table, 0);
         table.setSelectionMode(listSelectionModel_SelectMode);
         JScrollPane scrollPane = new JScrollPane(table);
         table.setPreferredScrollableViewportSize(new Dimension(500, 250));

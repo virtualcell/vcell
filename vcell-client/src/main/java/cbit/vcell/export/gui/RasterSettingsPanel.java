@@ -10,6 +10,7 @@
 
 package cbit.vcell.export.gui;
 
+import cbit.vcell.client.laf.VCellFonts;
 import cbit.vcell.export.server.ExportEnums;
 import cbit.vcell.export.server.RasterSpecs;
 /**
@@ -239,7 +240,7 @@ private javax.swing.JButton getJButtonOK() {
 			ivjJButtonOK = new javax.swing.JButton();
 			ivjJButtonOK.setName("JButtonOK");
 			ivjJButtonOK.setPreferredSize(new java.awt.Dimension(51, 25));
-			ivjJButtonOK.setFont(new java.awt.Font("dialog", 1, 12));
+			VCellFonts.setCategory(ivjJButtonOK, VCellFonts.Category.HEADING);
 			ivjJButtonOK.setText("OK");
 			ivjJButtonOK.setMaximumSize(new java.awt.Dimension(100, 50));
 			// user code begin {1}

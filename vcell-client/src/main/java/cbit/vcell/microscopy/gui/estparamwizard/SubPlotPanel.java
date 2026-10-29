@@ -10,6 +10,7 @@
 
 package cbit.vcell.microscopy.gui.estparamwizard;
 
+import cbit.vcell.client.laf.VCellFonts;
 import cbit.vcell.client.laf.VCellColors;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -50,7 +51,7 @@ public class SubPlotPanel extends JPanel
         setBorder(new EmptyBorder(5, 0, 10, 0));
 
         JLabel headingLabel = new JLabel("Plots under Selected ROIs");
-        headingLabel.setFont(new Font("Tahoma", Font.BOLD, 11));
+        VCellFonts.setCategory(headingLabel, VCellFonts.Category.HEADING);
         hypDetail = new HyperLinkLabel("Details", new HyperLinkListener(), 0);
         hypDetail.setHorizontalAlignment(JLabel.RIGHT);
 

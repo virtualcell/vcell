@@ -10,6 +10,7 @@
 
 package cbit.vcell.client.desktop.biomodel;
 
+import cbit.vcell.client.laf.VCellFonts;
 import cbit.vcell.client.laf.VCellColors;
 import cbit.vcell.client.laf.VCellLookAndFeel;
 import java.awt.Color;
@@ -134,7 +135,7 @@ public class BioModelsNetPropertiesPanel extends DocumentEditorSubPanel {
 		gbc.weightx = 0.2;
 		gbc.anchor = GridBagConstraints.FIRST_LINE_END;
 		JLabel label = new JLabel(BioModelsNetPanel.BIO_MODELS_NET + ":");
-		label.setFont(label.getFont().deriveFont(Font.BOLD));
+		VCellFonts.setCategory(label, VCellFonts.Category.HEADING);
 		add(label, gbc);
 		
 		gbc = new GridBagConstraints();

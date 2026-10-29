@@ -10,6 +10,7 @@
 
 package cbit.vcell.solver.ode.gui;
 
+import cbit.vcell.client.laf.VCellFonts;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -585,11 +586,10 @@ public class StochSimOptionsPanel extends CollapsiblePanel {
 		if (multiRunHelpButton == null) {
 			try {
 				multiRunHelpButton = new javax.swing.JButton();
-				Font font = multiRunHelpButton.getFont().deriveFont(Font.BOLD);
 				Border border = BorderFactory.createEmptyBorder(1, 1, 1, 1);
 				multiRunHelpButton.setName("MultiRunHelp");
 				multiRunHelpButton.setText("  ?  ");
-				multiRunHelpButton.setFont(font);
+				VCellFonts.setCategory(multiRunHelpButton, VCellFonts.Category.HEADING);
 				multiRunHelpButton.setBorder(border);
 				multiRunHelpButton.setEnabled(true);
 			} catch (java.lang.Throwable ivjExc) {
