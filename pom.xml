@@ -157,11 +157,10 @@
 		<jetty.version>9.4.29.v20200521</jetty.version>
 		<jfreechart.version>1.5.0</jfreechart.version>
 		<jgrapht.version>1.3.0</jgrapht.version>
-		<!-- Pinned fork build carrying incremental and streaming chunk writing, contributed upstream as
-		     jamesmudd/jhdf#865 (issue jhdf#654). Same arrangement as the JSBML fork above: a tagged fork
-		     under the virtualcell org, built by JitPack. Revert to io.jhdf:jhdf once released upstream.
-		     See issue #1964. -->
-		<jhdf.version>0.13.0-VCELL-1</jhdf.version>
+		<!-- Upstream jhdf pinned to a master commit, built by JitPack: incremental and streaming chunk
+		     writing (jamesmudd/jhdf#865, #891) are merged but not yet released. Switch to io.jhdf:jhdf
+		     at the first release that carries them. See issue #1964. -->
+		<jhdf.version>f95507c711</jhdf.version>
 		<jmatio.version>1.0</jmatio.version>
 		<joda-time.version>2.12.2</joda-time.version>
 		<jai-core.version>1.1.3</jai-core.version>
