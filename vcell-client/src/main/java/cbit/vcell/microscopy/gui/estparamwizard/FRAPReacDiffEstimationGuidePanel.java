@@ -10,6 +10,7 @@
 
 package cbit.vcell.microscopy.gui.estparamwizard;
 
+import cbit.vcell.client.laf.VCellFonts;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -128,7 +129,7 @@ public class FRAPReacDiffEstimationGuidePanel extends JPanel {
 		gridBagLayout_2.rowHeights = new int[] {0,7,7,7,7};
 		gridBagLayout_2.columnWidths = new int[] {7,7,7,7};
 		diffTypePanel = new JPanel(gridBagLayout_2);
-		TitledBorder tb=new TitledBorder(new LineBorder(Color.gray, 1, false),"Available parameters", TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION, new Font("Tahoma", Font.PLAIN, 11));
+		TitledBorder tb=new TitledBorder(new LineBorder(Color.gray, 1, false),"Available parameters", TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION);
 		diffTypePanel.setBorder(tb);
 
 		final JLabel totalConcentrationLabel = new JLabel();
@@ -168,7 +169,7 @@ public class FRAPReacDiffEstimationGuidePanel extends JPanel {
 		gridBagLayout_1.rowHeights = new int[] {7,7,7};
 		gridBagLayout_1.columnWidths = new int[] {0,7,7,0,0,7,0,7,7,7,0,7};
 		JPanel buttonPanel = new JPanel(gridBagLayout_1);
-		TitledBorder tb1=new TitledBorder(new LineBorder(Color.gray, 1, false),"Input requried parameters to estimate", TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION, new Font("Tahoma", Font.PLAIN, 11));
+		TitledBorder tb1=new TitledBorder(new LineBorder(Color.gray, 1, false),"Input requried parameters to estimate", TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION);
 		buttonPanel.setBorder(tb1);
 
 		final JLabel koffUnitLabel = new JLabel();
@@ -282,6 +283,7 @@ public class FRAPReacDiffEstimationGuidePanel extends JPanel {
 		
 		//bottom panel----the table panel
 		paramTable.setModel(paramTableModel);//set table model
+		VCellFonts.setRowPadding(paramTable, 0);
 		final EstimatedParameterTableRenderer renderer = new EstimatedParameterTableRenderer(8); //set table renderer
 		for(int i=0; i<paramTable.getModel().getColumnCount(); i++)
 		{

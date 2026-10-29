@@ -11,7 +11,7 @@
 package org.vcell.util.gui;
 
 import javax.swing.border.Border;
-import javax.swing.border.TitledBorder;
+import cbit.vcell.client.laf.CategoryTitledBorder;
 /**
  * Dummy subclass of TitledBorder that has a no-parameter constructor so it can
  * be recognized by VAJava as a bean implementing the border interface.
@@ -19,7 +19,7 @@ import javax.swing.border.TitledBorder;
  * @author: Ion Moraru
  */
 @SuppressWarnings("serial")
-public class TitledBorderBean extends TitledBorder implements Border {
+public class TitledBorderBean extends CategoryTitledBorder implements Border {
 /**
  * Insert the method's description here.
  * Creation date: (2/11/2001 10:01:11 PM)

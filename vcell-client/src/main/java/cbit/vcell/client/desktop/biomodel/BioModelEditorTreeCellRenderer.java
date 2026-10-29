@@ -53,10 +53,9 @@ public class BioModelEditorTreeCellRenderer extends DocumentEditorTreeCellRender
                         int row,
                         boolean hasFocus) {
 		super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
-		if (regularFont == null) {
-			regularFont = getFont();
-			boldFont = regularFont.deriveFont(Font.BOLD);
-		}
+		// from the tree, whose font follows size changes
+		regularFont = tree.getFont().deriveFont(Font.PLAIN);
+		boldFont = tree.getFont().deriveFont(Font.BOLD);
 		Font font = regularFont;
 		Icon icon = null;
     	String labelText = null;
