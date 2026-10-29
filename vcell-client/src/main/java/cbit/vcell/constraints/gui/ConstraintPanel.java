@@ -9,6 +9,7 @@
  */
 
 package cbit.vcell.constraints.gui;
+import cbit.vcell.client.laf.VCellFonts;
 import cbit.vcell.client.laf.VCellColors;
 import cbit.vcell.constraints.ConstraintContainerImpl;
 import cbit.vcell.constraints.ConstraintSolver;
@@ -886,6 +887,7 @@ private javax.swing.JTable getBoundsTable() {
 	if (ivjBoundsTable == null) {
 		try {
 			ivjBoundsTable = new javax.swing.JTable();
+			VCellFonts.setRowPadding(ivjBoundsTable, 0);
 			ivjBoundsTable.setName("BoundsTable");
 			getJScrollPane2().setColumnHeaderView(ivjBoundsTable.getTableHeader());
 			ivjBoundsTable.setModel(new cbit.vcell.constraints.gui.ConstraintSolverTableModel());
@@ -955,6 +957,7 @@ private javax.swing.JTable getConstraintTable() {
 	if (ivjConstraintTable == null) {
 		try {
 			ivjConstraintTable = new javax.swing.JTable();
+			VCellFonts.setRowPadding(ivjConstraintTable, 0);
 			ivjConstraintTable.setName("ConstraintTable");
 			getJScrollPane1().setColumnHeaderView(ivjConstraintTable.getTableHeader());
 			ivjConstraintTable.setModel(new GeneralConstraintsTableModel(ivjConstraintTable));
@@ -1153,7 +1156,7 @@ private javax.swing.JLabel getJLabel2() {
 		try {
 			ivjJLabel2 = new javax.swing.JLabel();
 			ivjJLabel2.setName("JLabel2");
-			ivjJLabel2.setFont(new java.awt.Font("Arial", 1, 14));
+			VCellFonts.setCategory(ivjJLabel2, VCellFonts.Category.HEADING);
 			ivjJLabel2.setText("status");
 			ivjJLabel2.setForeground(VCellColors.getErrorForeground());
 			// user code begin {1}
@@ -1457,6 +1460,7 @@ private javax.swing.JTable getScrollPaneTable() {
 	if (ivjScrollPaneTable == null) {
 		try {
 			ivjScrollPaneTable = new javax.swing.JTable();
+			VCellFonts.setRowPadding(ivjScrollPaneTable, 0);
 			ivjScrollPaneTable.setName("ScrollPaneTable");
 			getJScrollPane3().setColumnHeaderView(ivjScrollPaneTable.getTableHeader());
 			ivjScrollPaneTable.setModel(new SimpleBoundsTableModel(ivjScrollPaneTable));

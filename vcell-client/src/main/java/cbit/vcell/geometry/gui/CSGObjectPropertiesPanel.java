@@ -308,7 +308,7 @@ public class CSGObjectPropertiesPanel extends DocumentEditorSubPanel {
 		gbc.weightx = 1.0;
 		gbc.insets = new Insets(4,4,4,4);
 		titleLabel = new JLabel("Construct Solid Geometry");
-		titleLabel.setFont(titleLabel.getFont().deriveFont(Font.BOLD));
+		VCellFonts.setCategory(titleLabel, VCellFonts.Category.HEADING);
 		add(titleLabel, gbc);
 		
 		gridy ++;
