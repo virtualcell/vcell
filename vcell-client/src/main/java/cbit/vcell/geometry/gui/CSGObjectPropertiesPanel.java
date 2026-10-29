@@ -10,6 +10,7 @@
 
 package cbit.vcell.geometry.gui;
 
+import cbit.vcell.client.laf.VCellFonts;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -288,11 +289,7 @@ public class CSGObjectPropertiesPanel extends DocumentEditorSubPanel {
 		csgObjectTreeCellEditor = new CSGObjectTreeCellEditor(csgObjectTree);
 		csgObjectTree.setCellEditor(csgObjectTreeCellEditor);
 		csgObjectTree.addMouseListener(eventHandler);
-		int rowHeight = csgObjectTree.getRowHeight();
-		if(rowHeight < 10) { 
-			rowHeight = 20; 
-		}
-		csgObjectTree.setRowHeight(rowHeight + 2);
+		VCellFonts.setRowPadding(csgObjectTree, 2);
 		csgObjectTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 		ToolTipManager.sharedInstance().registerComponent(csgObjectTree);
 		csgObjectTree.addTreeSelectionListener(eventHandler);
