@@ -40,6 +40,7 @@ import cbit.vcell.mapping.spatial.SpatialObject.SpatialQuantity;
 import cbit.vcell.mapping.spatial.processes.SpatialProcess;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.*;
+import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.model.*;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Kinetics.KineticsParameter;
@@ -1178,7 +1179,10 @@ private void addSpecies() throws XMLStreamException, SbmlException {
 		if (initialConcentrationParameter.getExpression() == null) {
 			try {
 				getSelectedSimContext().convertSpeciesIniCondition(true);
-			} catch (MappingException | PropertyVetoException e) {
+				// a stochastic application with initial counts must now also say it uses concentrations, or math
+				// generated from this context (the round-trip validation) looks for the counts just cleared
+				getSelectedSimContext().setUsingConcentration(true, false);
+			} catch (MappingException | PropertyVetoException | MatrixException | ModelException | MathException | ExpressionException e) {
 				// TODO Auto-generated catch block
 				throw new RuntimeException(e.getMessage(), e);
 			}
