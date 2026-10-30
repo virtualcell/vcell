@@ -515,6 +515,7 @@ private javax.swing.JPanel getSolverPanel() {
 			constraintsSolverComboBox.gridx = 1; constraintsSolverComboBox.gridy = 0;
 			constraintsSolverComboBox.fill = java.awt.GridBagConstraints.HORIZONTAL;
 			constraintsSolverComboBox.anchor = java.awt.GridBagConstraints.EAST;
+			constraintsSolverComboBox.weightx = 1; // takes the spare width, and gives it up first
 			constraintsSolverComboBox.insets = new java.awt.Insets(4, 4, 4, 4);
 			ivjSolverPanel.add(getSolverComboBox(), constraintsSolverComboBox);
 
@@ -539,7 +540,14 @@ private javax.swing.JPanel getSolverPanel() {
 private javax.swing.JComboBox getSolverComboBox() {
 	if (ivjSolverComboBox == null) {
 		try {
-			ivjSolverComboBox = new javax.swing.JComboBox();
+			// solver names are long; let the list narrow (truncating the shown name) rather than crowd out its label
+			// and help button when the panel is narrower than the longest name
+			ivjSolverComboBox = new javax.swing.JComboBox() {
+				@Override
+				public java.awt.Dimension getMinimumSize() {
+					return new java.awt.Dimension(0, super.getMinimumSize().height);
+				}
+			};
 			ivjSolverComboBox.setName("SolverComboBox");
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);

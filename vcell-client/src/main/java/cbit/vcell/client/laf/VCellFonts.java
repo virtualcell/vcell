@@ -98,13 +98,17 @@ public final class VCellFonts {
 	public static void setSize(float points) {
 		float clamped = Math.max(MIN_SIZE, Math.min(MAX_SIZE, points));
 		if (clamped != points) lg.warn("Font size {} is outside {}..{}; using {}", points, MIN_SIZE, MAX_SIZE, clamped);
+		boolean windowsOpen = VCellFonts.themeRead && Window.getWindows().length > 0;
+		Runnable resizeWindows = windowsOpen ? LayoutScaler.prepareWindowsForScaleChange() : null;
 		VCellFonts.size = clamped;
 		if (!VCellFonts.themeRead) return; // the theme picks it up when installed
 		// Nimbus-family themes keep the fonts they have handed out and don't see later changes; a fresh copy of the
 		// theme, which reads the new size as it is installed, does
 		if (UIManager.getLookAndFeel() instanceof SynthLookAndFeel) VCellLookAndFeel.reinstallLookAndFeel();
 		else VCellFonts.applySize();
-		if (Window.getWindows().length > 0) VCellLookAndFeel.refreshAllWindows();
+		if (!windowsOpen) return;
+		VCellLookAndFeel.refreshAllWindows();
+		resizeWindows.run();
 	}
 
 	/** Starts VCell at the size the user last picked, or {@link #DEFAULT_SIZE}. Call before the theme is installed. */
@@ -163,6 +167,14 @@ public final class VCellFonts {
 		component.setFont(new FontUIResource(component.getFont().deriveFont(style)));
 	}
 
+	/**
+	 * Leaves the sizes code sets on this component as they are, rather than scaling them with the text: for sizes
+	 * already worked out from its text, or that must stay exact pixels (an image shown pixel for pixel, say).
+	 */
+	public static void keepSize(JComponent component) {
+		LayoutScaler.keepSize(component);
+	}
+
 	/** Sizes the table's rows to the current text, and keeps them sized to it until other code sets their height. */
 	public static void followRowHeight(JTable table) {
 		VCellFonts.setRowHeight(table, VCellFonts.tableRowHeight);
@@ -181,6 +193,7 @@ public final class VCellFonts {
 	static void followThemes() {
 		if (VCellFonts.followingThemes) return;
 		VCellFonts.followingThemes = true;
+		LayoutScaler.install();
 		UIManager.addPropertyChangeListener(event -> {
 			if ("lookAndFeel".equals(event.getPropertyName())) VCellFonts.themeChanged();
 		});
@@ -207,6 +220,7 @@ public final class VCellFonts {
 	/** Brings fonts and row heights that VCell set on components under {@code root} up to the current size. */
 	static void refresh(Component root) {
 		VCellLookAndFeel.forEachComponent(root, c -> {
+			LayoutScaler.scaleComponent(c);
 			if (!(c instanceof JComponent component)) return;
 			if (component.getClientProperty(CATEGORY) instanceof Category category) {
 				component.setFont(component.getClientProperty(STYLE) instanceof Integer style ? VCellFonts.getFont(category, style) : VCellFonts.getFont(category));
