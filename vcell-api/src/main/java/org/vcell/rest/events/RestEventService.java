@@ -129,6 +129,7 @@ public class RestEventService {
 		}else if (event instanceof SimulationJobStatusEvent) {
 			SimulationJobStatusEvent simJobEvent = (SimulationJobStatusEvent)event;
 			try {
+				// convert the SimulationJobStatusEvent into a SimulationJobStatusEventRepresentation
 				SimulationJobStatusEventRepresentation simJobEventRep = DTOModelTransformerV0.simulationJobStatusEventToJsonRep(simJobEvent);
 				SimulationJobStatusEvent event2 = DTOModelTransformerV0.simulationJobStatusEventFromJsonRep(this, simJobEventRep);
 				if (!Compare.isEqual(event2.getJobStatus(),simJobEvent.getJobStatus())) {
@@ -140,8 +141,45 @@ public class RestEventService {
 				if (!Compare.isEqual(event2.getEstimatedTime(),simJobEvent.getEstimatedTime())) {
 					throw new RuntimeException("SimulationJobStatus <ESTIMATED TIME> event round-trip failed");
 				}
+				/*
+				- example of one event from gson.toJson(simJobEventRep):
+				  a Langevin batch job that is 42% done with an ETA of 2 days
+				- the values are illustrative and borrowed from a test (SimID_999999999, user danv, server TEST2)
+				- null fields are left out entirely. That's why there's no simexe_endDate (the job isn't finished)
+				- for Langevin, hasData is false while running, no results until postprocessing finishes
+				- estimatedTime is the total job duration in seconds (not remaining time); for all other solvers
+				  it's null, so the key is absent
+				{
+				  "jobStatus": {
+				    "vcellServerID": "TEST2",
+				    "timeDateStamp": "Oct 30, 2026, 3:14:15 PM",
+				    "simulationKey": "999999999",
+				    "taskID": 0,
+				    "jobIndex": 0,
+				    "submitDate": "Oct 30, 2026, 9:02:41 AM",
+				    "owner_userid": "danv",
+				    "onwer_userkey": "26766043",
+				    "schedulerStatus": "RUNNING",
+				    "detailedState": "WORKEREVENT_PROGRESS",
+				    "detailedStateMessage": "0.42",
+				    "htcJobNumber": 1200725,
+				    "htcBatchSystemType": "SLURM",
+				    "queuePriority": 5,
+				    "queueDate": "Oct 30, 2026, 9:02:41 AM",
+				    "queueId": "QUEUE_ID_NULL",
+				    "simexe_startDate": "Oct 30, 2026, 9:03:10 AM",
+				    "simexe_latestUpdateDate": "Oct 30, 2026, 3:14:15 PM",
+				    "computeHost": "mantis-043",
+				    "hasData": false
+				  },
+				  "progress": 0.42,
+				  "estimatedTime": 172800,
+				  "timePoint": 0.00168,
+				  "username": "danv"
+				}
+				 */
 				String eventJSON = gson.toJson(simJobEventRep);
-				insert(simJobEventRep.username, EventWrapper.EventType.SimJob,eventJSON);
+				insert(simJobEventRep.username, EventWrapper.EventType.SimJob,eventJSON);	// queue it for the user
 			}catch (Exception e) {
 				lg.error(e.getMessage(), e);
 			}
