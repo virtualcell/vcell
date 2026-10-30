@@ -270,3 +270,5 @@ active_users*.csv
 
 # backlog tooling output
 obsolescence-sweep.json
+
+.venv/
