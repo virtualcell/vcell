@@ -60,7 +60,7 @@ public class VCellClientDevMain {
 
 			// Screen menu bar, title bar appearance, Linux font smoothing; the JDK only reads these before AWT starts
 			VCellLookAndFeel.setPlatformProperties();
-			VCellFonts.restoreSize();
+			VCellFonts.restore();
 
 			ErrorUtils.setDebug(true);
 			PropertyLoader.loadProperties(ArrayUtils.addAll(REQUIRED_CLIENT_PROPERTIES, REQUIRED_LOCAL_PROPERTIES));
