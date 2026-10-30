@@ -104,6 +104,8 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
     private JMenu ivjServerMenu = null;
     private JCheckBoxMenuItem ivjStatusbarMenuItem = null;
     private JPanel ivjStatusBarPane = null;
+    private long usedMemoryBytes = 0, totalMemoryBytes = 0;
+    private boolean showMemoryAmounts = false; // while the pointer is over the memory bar
     //--------------------------------------
     private JSeparator ivjJSeparator6 = null;
     private JMenuItem ivjJMenuItemNewBioModel = null;
@@ -873,6 +875,9 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
                 this.ivjJProgressBarConnection.setName("JProgressBarConnection");
                 this.ivjJProgressBarConnection.setString("NOT CONNECTED");
                 this.ivjJProgressBarConnection.setStringPainted(true);
+                // a progress bar only repaints when its text changes; re-measure it, or a longer status (the user
+                // name, once connected) is cut off until something else lays the status bar out again
+                this.ivjJProgressBarConnection.addPropertyChangeListener("string", e -> this.ivjJProgressBarConnection.revalidate());
             } catch (java.lang.Throwable ivjExc) {
                 this.handleException(ivjExc);
             }
@@ -883,11 +888,37 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
     private javax.swing.JProgressBar getJProgressBarMemory() {
         if (this.ivjJProgressBarMemory == null) {
             try {
-                this.ivjJProgressBarMemory = new javax.swing.JProgressBar();
+                this.ivjJProgressBarMemory = new javax.swing.JProgressBar() {
+                    // Wide enough for either text at its largest, so switching between them (on hover) or a growing
+                    // number doesn't resize the bar
+                    @Override
+                    public Dimension getPreferredSize() {
+                        Dimension size = super.getPreferredSize();
+                        long maxBytes = Runtime.getRuntime().maxMemory();
+                        java.awt.FontMetrics metrics = this.getFontMetrics(this.getFont());
+                        int textWidth = Math.max(metrics.stringWidth(DocumentWindow.memoryPercent(100)), metrics.stringWidth(DocumentWindow.memoryFraction(maxBytes, maxBytes)));
+                        Insets insets = this.getInsets();
+                        return new Dimension(Math.max(size.width, metrics.stringWidth("  ") + textWidth + insets.left + insets.right), size.height);
+                    }
+                };
                 this.ivjJProgressBarMemory.setName("JProgressBarMemory");
                 this.ivjJProgressBarMemory.setMinimum(0);
                 this.ivjJProgressBarMemory.setStringPainted(true);
-                this.ivjJProgressBarMemory.setToolTipText("Java Memory Usage");
+                this.ivjJProgressBarMemory.setToolTipText("Java memory in use");
+                // a percentage; the amounts while the pointer is over it
+                this.ivjJProgressBarMemory.addMouseListener(new java.awt.event.MouseAdapter() {
+                    @Override
+                    public void mouseEntered(java.awt.event.MouseEvent e) {
+                        DocumentWindow.this.showMemoryAmounts = true;
+                        DocumentWindow.this.showMemoryStatus();
+                    }
+
+                    @Override
+                    public void mouseExited(java.awt.event.MouseEvent e) {
+                        DocumentWindow.this.showMemoryAmounts = false;
+                        DocumentWindow.this.showMemoryStatus();
+                    }
+                });
             } catch (java.lang.Throwable ivjExc) {
                 this.handleException(ivjExc);
             }
@@ -1959,12 +1990,26 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
      * Creation date: (5/7/2004 11:51:20 AM)
      */
     public void updateMemoryStatus(long freeBytes, long totalBytes) {
+        this.usedMemoryBytes = totalBytes - freeBytes;
+        this.totalMemoryBytes = totalBytes;
+        this.showMemoryStatus();
+    }
+
+    private void showMemoryStatus() {
+        if (this.totalMemoryBytes <= 0) return;
+        int percent = (int) (100 * this.usedMemoryBytes / this.totalMemoryBytes);
+        this.getJProgressBarMemory().setValue(percent);
+        this.getJProgressBarMemory().setString(this.showMemoryAmounts ? DocumentWindow.memoryFraction(this.usedMemoryBytes, this.totalMemoryBytes) : DocumentWindow.memoryPercent(percent));
+    }
+
+    private static String memoryPercent(int percent) {
+        return "Memory Usage: " + percent + "%";
+    }
+
+    private static String memoryFraction(long usedBytes, long totalBytes) {
         DecimalFormat df = (DecimalFormat) DecimalFormat.getInstance();
         df.setMaximumFractionDigits(1);
-        String usedMB = df.format((totalBytes - freeBytes) / 1000000.0);
-        String totalMB = df.format(totalBytes / 1000000.0);
-        this.getJProgressBarMemory().setValue((int) (100 * (totalBytes - freeBytes) / totalBytes));
-        this.getJProgressBarMemory().setString(usedMB + "MB / " + totalMB + "MB");
+        return df.format(usedBytes / 1000000.0) + "MB / " + df.format(totalBytes / 1000000.0) + "MB";
     }
 
 
