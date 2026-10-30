@@ -16,6 +16,7 @@ import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.*;
 import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.client.data.ExportedDataViewer;
+import cbit.vcell.client.laf.FontChooser;
 import cbit.vcell.client.laf.VCellFonts;
 import cbit.vcell.client.laf.VCellLookAndFeel;
 import cbit.vcell.client.server.*;
@@ -99,6 +100,7 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
     private JMenuItem ivjSaveMenuItem = null;
     private JMenu ivjLookAndFeelMenu = null;
     private JMenu textSizeMenu = null;
+    private JMenuItem fontMenuItem = null;
     private static final String FOLLOW_SYSTEM_THEME = "FollowSystemTheme";
     private final Map<String, UIManager.LookAndFeelInfo> lookAndFeelInfoMap = new HashMap<>();
     private JMenu ivjServerMenu = null;
@@ -544,7 +546,7 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
                 this.ivjDocumentWindowJMenuBar.add(this.getFileMenu());
                 this.ivjDocumentWindowJMenuBar.add(this.getServerMenu());
                 // VCell-wide display settings, under the open windows
-                this.ivjDocumentWindowJMenuBar.add(createWindowMenu(true, List.of(this.getLookAndFeelMenu(), this.getTextSizeMenu())));
+                this.ivjDocumentWindowJMenuBar.add(createWindowMenu(true, List.of(this.getLookAndFeelMenu(), this.getTextSizeMenu(), this.getFontMenuItem())));
                 this.ivjDocumentWindowJMenuBar.add(this.getToolMenu());
                 this.ivjDocumentWindowJMenuBar.add(this.getHelpMenu());
                 this.ivjDocumentWindowJMenuBar.add(Box.createHorizontalGlue());
@@ -1112,13 +1114,13 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
         return (this.ivjLookAndFeelMenu = lookAndFeelMenu);
     }
 
-    /** The size of VCell's text, from a list of sizes; marks the current one each time it opens. */
+    /** The size of VCell's text, in the same steps the font dialog offers; marks the current one each time it opens. */
     private JMenu getTextSizeMenu() {
         if (null != this.textSizeMenu) return this.textSizeMenu;
         JMenu menu = new JMenu("Set Font Size");
         menu.setName("TextSizeMenu");
         ButtonGroup sizes = new ButtonGroup();
-        for (float size : VCellFonts.SIZE_CHOICES) {
+        for (float size : VCellFonts.getSizeChoices()) {
             String label = Math.round(size) + " pt" + (size == VCellFonts.DEFAULT_SIZE ? " (Default)" : "");
             JRadioButtonMenuItem item = new JRadioButtonMenuItem(label);
             item.setName("TextSize" + Math.round(size));
@@ -1137,6 +1139,15 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
             @Override public void menuCanceled(MenuEvent e) {}
         });
         return (this.textSizeMenu = menu);
+    }
+
+    /** Opens the font dialog: family and size, with a sample. */
+    private JMenuItem getFontMenuItem() {
+        if (null != this.fontMenuItem) return this.fontMenuItem;
+        this.fontMenuItem = new JMenuItem("Font...");
+        this.fontMenuItem.setName("FontMenuItem");
+        this.fontMenuItem.addActionListener(e -> FontChooser.show(this));
+        return this.fontMenuItem;
     }
 
     private List<JMenuItem> getLookAndFeelJMenuItems() {
