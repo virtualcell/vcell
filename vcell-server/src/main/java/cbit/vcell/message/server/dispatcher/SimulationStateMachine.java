@@ -367,7 +367,8 @@ public class SimulationStateMachine {
                     runningStateInfo = new RunningStateInfo(progress,timepoint);
                 }
                 simulationDatabase.updateSimulationJobStatus(newJobStatus,runningStateInfo);
-                StatusMessage msgForClient = new StatusMessage(newJobStatus, userName, progress, timepoint);
+                // estimated time (total job duration) is only sent by the langevin watchdog, null for all other solvers
+                StatusMessage msgForClient = new StatusMessage(newJobStatus, userName, progress, workerEvent.getEstimatedTime(), timepoint);
 
                 msgForClient.sendToClient(session);
                 if (lg.isTraceEnabled()) lg.trace("Send status to client: " + msgForClient);
@@ -385,7 +386,8 @@ public class SimulationStateMachine {
                 runningStateInfo = new RunningStateInfo(progress,timepoint);
             }
             simulationDatabase.updateSimulationJobStatus(oldSimulationJobStatus,runningStateInfo);
-            StatusMessage msgForClient = new StatusMessage(oldSimulationJobStatus, userName, progress, timepoint);
+            // estimated time (total job duration) is only sent by the langevin watchdog, null for all other solvers
+            StatusMessage msgForClient = new StatusMessage(oldSimulationJobStatus, userName, progress, workerEvent.getEstimatedTime(), timepoint);
             // TODO: Implement messaging to client
             msgForClient.sendToClient(session);
             if (lg.isTraceEnabled()) lg.trace("Send status to client: " + msgForClient);

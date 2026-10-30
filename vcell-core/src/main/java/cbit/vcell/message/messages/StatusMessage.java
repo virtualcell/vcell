@@ -23,14 +23,20 @@ public class StatusMessage {
 	private SimulationJobStatus jobStatus = null;
 	private Double timePoint = null;
 	private Double progress = null;
+	private Integer estimatedTime = null;	// estimated total duration of the job in seconds, from the langevin watchdog; null or 0 = unknown
 
 	private java.lang.String userName = null;
 
-public StatusMessage(SimulationJobStatus jobStatus0, String userName0, Double progress0, Double timepoint0) {
+public StatusMessage(SimulationJobStatus jobStatus0, String userName0, Double progress0, Integer estimatedTime0, Double timepoint0) {
 	jobStatus = jobStatus0;
 	userName = userName0;
 	progress = progress0;
+	estimatedTime = estimatedTime0;
 	timePoint = timepoint0;
+}
+
+public StatusMessage(SimulationJobStatus jobStatus0, String userName0, Double progress0, Double timepoint0) {
+	this(jobStatus0, userName0, progress0, null, timepoint0);
 }
 
 public StatusMessage(VCMessage message) {
@@ -51,6 +57,10 @@ public SimulationJobStatus getSimulationJobStatus() {
 
 public java.lang.Double getTimePoint() {
 	return timePoint;
+}
+
+public Integer getEstimatedTime() {
+	return estimatedTime;
 }
 
 public java.lang.String getUserName() {
@@ -88,7 +98,11 @@ private void parseMessage(VCMessage message) {
 	if (message.propertyExists(MessageConstants.SIMULATION_STATUS_TIMEPOINT_PROPERTY)){
 		timePoint = message.getDoubleProperty(MessageConstants.SIMULATION_STATUS_TIMEPOINT_PROPERTY);
 	}
-	
+
+	if (message.propertyExists(MessageConstants.SIMULATION_STATUS_ESTIMATEDTIME_PROPERTY)){
+		estimatedTime = message.getIntProperty(MessageConstants.SIMULATION_STATUS_ESTIMATEDTIME_PROPERTY);
+	}
+
 }
 
 public void sendToClient(VCMessageSession session) throws VCMessagingException {
@@ -106,11 +120,14 @@ private VCMessage toMessage(VCMessageSession session) {
 	if (timePoint != null) {
 		message.setDoubleProperty(MessageConstants.SIMULATION_STATUS_TIMEPOINT_PROPERTY, timePoint.doubleValue());
 	}
+	if (estimatedTime != null) {
+		message.setIntProperty(MessageConstants.SIMULATION_STATUS_ESTIMATEDTIME_PROPERTY, estimatedTime.intValue());
+	}
 
 	return message;
 }
 
 public String toString() {
-	return "StatusMessage [" + jobStatus.getSimulationMessage().getDisplayMessage() + "," + progress + "," + timePoint + "]";
+	return "StatusMessage [" + jobStatus.getSimulationMessage().getDisplayMessage() + "," + progress + "," + estimatedTime + "," + timePoint + "]";
 }
 }

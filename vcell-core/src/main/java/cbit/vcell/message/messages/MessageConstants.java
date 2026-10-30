@@ -24,6 +24,7 @@ public interface MessageConstants {
 	public static final String HTCJOBID_PROPERTY 		= "HtcJobID";
 	public static final String SIMULATION_STATUS_PROGRESS_PROPERTY	= "SimulationStatusProgress";
 	public static final String SIMULATION_STATUS_TIMEPOINT_PROPERTY = "SimulationStatusTimePoint";
+	public static final String SIMULATION_STATUS_ESTIMATEDTIME_PROPERTY = "SimulationStatusEstimatedTime";
 	public static final String WORKEREVENT_STATUS		= "WorkerEvent_Status";
 	public static final String WORKEREVENT_PROGRESS		= "WorkerEvent_Progress";
 	public static final String WORKEREVENT_ESTIMATEDTIME = "WorkerEvent_EstimatedTime";
