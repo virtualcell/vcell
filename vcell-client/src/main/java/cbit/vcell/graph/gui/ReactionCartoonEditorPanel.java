@@ -87,6 +87,9 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 	private JButton relaxerLayoutButton = null;
 	private JButton zoomInButton = null;
 	private JButton zoomOutButton = null;
+	private JButton zoomToFitButton = null;
+	private JButton resetZoomButton = null;
+	private JButton controlsHelpButton = null;
 	private JButton glgLayoutJButton = null;
 	private JButton shrinkCanvasButton = null;
 	private JButton expandCanvasButton = null;
@@ -145,30 +148,8 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 				getReactionCartoonTool().layout(GraphLayoutManager.OldLayouts.RELAXER);
 			else if (source == getLevellerLayoutButton())
 				getReactionCartoonTool().layout(GraphLayoutManager.OldLayouts.LEVELLER);
-			else if (source == getZoomInButton()) {			
-				viewPortStabilizer.saveViewPortPosition();
-				reactionCartoonFull.getResizeManager().zoomIn();	// we zoom all cartoons simultaneously
-				reactionCartoonMolecule.getResizeManager().zoomIn();
-//				reactionCartoonRule.getResizeManager().zoomIn();
-//				reactionCartoon.getResizeManager().zoomIn();		// we zoom only the current cartoon
-				SwingUtilities.invokeLater(new Runnable() {
-					public void run() {
-						viewPortStabilizer.restoreViewPortPosition();						
-					}
-				});
-			}
-			else if (source == getZoomOutButton()) {
-				viewPortStabilizer.saveViewPortPosition();
-				reactionCartoonFull.getResizeManager().zoomOut();				
-				reactionCartoonMolecule.getResizeManager().zoomOut();				
-//				reactionCartoonRule.getResizeManager().zoomOut();				
-//				reactionCartoon.getResizeManager().zoomOut();				
-				SwingUtilities.invokeLater(new Runnable() {
-					public void run() {
-						viewPortStabilizer.restoreViewPortPosition();						
-					}
-				});
-			}
+
+
 			else if (source == getGlgLayoutJButton())
 //				System.out.println("GLG Layout has been removed");
 				getReactionCartoonTool().layout(GenericLogicGraphLayouter.LAYOUT_NAME);
@@ -291,6 +272,15 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 				graphPane = new GraphPane();
 				graphPane.setName("GraphPane");
 				graphPane.setBounds(0, 0, 372, 364);
+				// both cartoons (shown in turn) zoom together, so switching between them keeps the zoom
+				graphPane.setZoomApplier(zoomPercent -> {
+					try {
+						reactionCartoonFull.getResizeManager().setZoomPercent(zoomPercent);
+						reactionCartoonMolecule.getResizeManager().setZoomPercent(zoomPercent);
+					} catch (Exception e) {
+						handleException(e);
+					}
+				});
 			} catch (Throwable throwable) {
 				handleException(throwable);
 			}
@@ -336,6 +326,8 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 				toolBar.addSeparator(TOOL_BAR_SEPARATOR_SIZE);
 				toolBar.add(getZoomInButton(), getZoomInButton().getName());
 				toolBar.add(getZoomOutButton(), getZoomOutButton().getName());
+				toolBar.add(getZoomToFitButton(), getZoomToFitButton().getName());
+				toolBar.add(getResetZoomButton(), getResetZoomButton().getName());
 				toolBar.add(getExpandCanvasButton(), getExpandCanvasButton().getName());
 				toolBar.add(getShrinkCanvasButton(), getShrinkCanvasButton().getName());
 				toolBar.addSeparator(TOOL_BAR_SEPARATOR_SIZE);
@@ -359,6 +351,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 				toolBar.add(getSizeByLengthButton(), getSizeByLengthButton().getName());
 
 				toolBar.add(Box.createHorizontalGlue());
+				toolBar.add(getControlsHelpButton(), getControlsHelpButton().getName());
 				toolBar.add(getFloatRequestButton());
 			} catch (Throwable throwable) {
 				handleException(throwable);
@@ -599,32 +592,30 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 //	}
 
 	private JButton getZoomInButton() {
-		if (zoomInButton == null) {
-			try {
-				zoomInButton = createToolBarButton();
-				zoomInButton.setName("ZoomInButton");
-				ZoomShapeIcon.setZoomToolbarMod(zoomInButton, ZoomShapeIcon.Sign.plus);
-				zoomInButton.setActionCommand("ZoomIn");
-			} catch (Throwable throwable) {
-				handleException(throwable);
-			}
-		}
+		if (zoomInButton == null) zoomInButton = getGraphPane().createZoomButton(GraphPane.ZoomButton.ZOOM_IN, TOOL_BAR_BUTTON_SIZE);
 		return zoomInButton;
 	}
+
 	private JButton getZoomOutButton() {
-		if (zoomOutButton == null) {
-			try {
-				zoomOutButton = createToolBarButton();
-				zoomOutButton.setName("ZoomOutButton");
-				ZoomShapeIcon.setZoomToolbarMod(zoomOutButton, ZoomShapeIcon.Sign.minus);
-				zoomOutButton.setActionCommand("ZoomOut");
-			} catch (Throwable throwable) {
-				handleException(throwable);
-			}
-		}
+		if (zoomOutButton == null) zoomOutButton = getGraphPane().createZoomButton(GraphPane.ZoomButton.ZOOM_OUT, TOOL_BAR_BUTTON_SIZE);
 		return zoomOutButton;
 	}
-	
+
+	private JButton getZoomToFitButton() {
+		if (zoomToFitButton == null) zoomToFitButton = getGraphPane().createZoomButton(GraphPane.ZoomButton.FIT, TOOL_BAR_BUTTON_SIZE);
+		return zoomToFitButton;
+	}
+
+	private JButton getResetZoomButton() {
+		if (resetZoomButton == null) resetZoomButton = getGraphPane().createZoomButton(GraphPane.ZoomButton.ACTUAL_SIZE, TOOL_BAR_BUTTON_SIZE);
+		return resetZoomButton;
+	}
+
+	private JButton getControlsHelpButton() {
+		if (controlsHelpButton == null) controlsHelpButton = GraphPane.createControlsHelpButton(TOOL_BAR_BUTTON_SIZE);
+		return controlsHelpButton;
+	}
+
 	private JButton getFloatRequestButton() {
 		if (floatRequestButton == null) {
 			try {
@@ -723,8 +714,6 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 		getCircleLayoutButton().addActionListener(this);
 		getRelaxerLayoutButton().addActionListener(this);
 		getLevellerLayoutButton().addActionListener(this);
-		getZoomInButton().addActionListener(this);
-		getZoomOutButton().addActionListener(this);
 		getGlgLayoutJButton().addActionListener(this);
 		getShrinkCanvasButton().addActionListener(this);
 		getExpandCanvasButton().addActionListener(this);
