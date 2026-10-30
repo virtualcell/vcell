@@ -56,6 +56,20 @@ public final class FenicsBundle {
 	public record Segment(int index, double t0, int count, String motion, String prefix) {
 	}
 
+	/**
+	 * A membrane's adjacent compartments and its point maps onto them (vcell-fenics ADR 010 §3, "Membrane
+	 * adjacency"; optional, absent from bundles written before it): {@code compartments} are the two compartments
+	 * the membrane separates, and {@code maps} gives, for each of them that is a domain of the bundle, the
+	 * segment-relative path of an int32 {@code (n_points,)} array -- membrane point {@code i} is point
+	 * {@code map[i]} of that compartment's mesh in the same segment (the same vertex), or -1. Which compartment
+	 * is the membrane's "inside" is the VCell math's, not the bundle's.
+	 */
+	public record Adjacency(int version, List<String> compartments, Map<String, String> maps) {
+	}
+
+	/** the newest membrane-adjacency version this reader understands */
+	public static final int SUPPORTED_ADJACENT_VERSION = 1;
+
 	/** a particle species' arrays (see the class comment): positions {@code (T, cap, 3)}, counts {@code (T, 1)} */
 	public record ParticleSpecies(String name, String xyz, String count) {
 	}
@@ -72,6 +86,7 @@ public final class FenicsBundle {
 	private final double progress;
 	private final List<Double> times;
 	private final Map<String, Domain> domains;
+	private final Map<String, Adjacency> adjacency;
 	private final List<Variable> variables;
 	private final List<Segment> segments;
 	private final List<String> statsColumns;
@@ -97,13 +112,33 @@ public final class FenicsBundle {
 		this.times = Collections.unmodifiableList(t);
 
 		Map<String, Domain> d = new LinkedHashMap<>();
+		Map<String, Adjacency> adj = new LinkedHashMap<>();
 		JsonObject domainsJson = manifest.getAsJsonObject("domains");
 		for (Map.Entry<String, JsonElement> e : domainsJson.entrySet()) {
 			JsonObject o = e.getValue().getAsJsonObject();
 			d.put(e.getKey(), new Domain(e.getKey(), string(o, "kind", "volume"), o.get("dim").getAsInt(), o.get("gdim").getAsInt(),
 					o.get("mesh").getAsString(), o.get("n_points").getAsInt(), o.get("n_cells").getAsInt(), o.get("cell_type").getAsInt()));
+			JsonElement a = o.get("adjacent");
+			if (a != null && a.isJsonObject()) {
+				JsonObject ao = a.getAsJsonObject();
+				int version = ao.has("version") && !ao.get("version").isJsonNull() ? ao.get("version").getAsInt() : 1;
+				if (version <= SUPPORTED_ADJACENT_VERSION) { // a newer extension is ignored: the fields stay viewable
+					List<String> compartments = new ArrayList<>();
+					for (JsonElement c : array(ao, "compartments")) {
+						compartments.add(c.getAsString());
+					}
+					Map<String, String> maps = new LinkedHashMap<>();
+					if (ao.has("maps") && ao.get("maps").isJsonObject()) {
+						for (Map.Entry<String, JsonElement> m : ao.getAsJsonObject("maps").entrySet()) {
+							maps.put(m.getKey(), m.getValue().getAsString());
+						}
+					}
+					adj.put(e.getKey(), new Adjacency(version, Collections.unmodifiableList(compartments), Collections.unmodifiableMap(maps)));
+				}
+			}
 		}
 		this.domains = Collections.unmodifiableMap(d);
+		this.adjacency = Collections.unmodifiableMap(adj);
 
 		List<Variable> v = new ArrayList<>();
 		for (JsonElement e : array(manifest, "variables")) {
@@ -186,6 +221,52 @@ public final class FenicsBundle {
 	public List<String> getStatsColumns() { return statsColumns; }
 	/** the particle species recorded in the bundle, in file order; empty for a run without particles */
 	public Map<String, ParticleSpecies> getParticleSpecies() { return particleSpecies; }
+
+	/**
+	 * The membrane's adjacent compartments and point maps, or null when the bundle records none (a volume, or a
+	 * bundle from a vcell-fenics older than the maps).
+	 */
+	public Adjacency adjacency(String membrane) {
+		return adjacency.get(membrane);
+	}
+
+	/**
+	 * The membrane's point map onto {@code compartment} in the segment holding {@code row}: membrane point
+	 * {@code i} is point {@code map[i]} of the compartment's mesh in that segment, or -1 where it has none.
+	 *
+	 * @throws IllegalArgumentException if the bundle records no such map
+	 */
+	public int[] adjacentPoints(String membrane, String compartment, int row) throws IOException {
+		Adjacency a = adjacency.get(membrane);
+		String path = a == null ? null : a.maps().get(compartment);
+		if (path == null) {
+			throw new IllegalArgumentException("no map from membrane '" + membrane + "' onto '" + compartment + "' in " + root);
+		}
+		String prefix = times.isEmpty() ? segments.get(0).prefix() : segmentOf(row).segment().prefix();
+		String arrayPath = prefix + path;
+		JsonObject meta = arrayMeta(arrayPath);
+		int[] shape = ints(meta.getAsJsonArray("shape"));
+		int[] chunks = ints(meta.getAsJsonArray("chunks"));
+		if (shape.length != 1 || chunks.length != 1 || chunks[0] != shape[0] || !"<i4".equals(meta.get("dtype").getAsString())
+				|| (meta.has("filters") && !meta.get("filters").isJsonNull())) {
+			throw new IOException(root + "/" + arrayPath + ": unsupported point map layout (expected <i4, one chunk, no filters)");
+		}
+		int n = shape[0];
+		if (n != domain(membrane).numPoints() && segments.size() == 1) {
+			throw new IOException(root + "/" + arrayPath + ": " + n + " entries for " + domain(membrane).numPoints() + " membrane points");
+		}
+		String chunk = arrayPath + "/0";
+		byte[] raw = store.read(chunk);
+		if (raw == null) {
+			throw new FileNotFoundException(root + ": no point map chunk " + chunk);
+		}
+		ByteBuffer buf = ByteBuffer.wrap(decompress(meta, raw, n * Integer.BYTES, chunk)).order(ByteOrder.LITTLE_ENDIAN);
+		int[] map = new int[n];
+		for (int i = 0; i < n; i++) {
+			map[i] = buf.getInt();
+		}
+		return map;
+	}
 
 	public Domain domain(String name) {
 		Domain d = domains.get(name);
