@@ -10,6 +10,7 @@
 
 package cbit.vcell.solver.ode.gui;
 
+import cbit.vcell.client.laf.VCellFonts;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -139,9 +140,8 @@ public class SundialsPdeSolverOptionsPanel extends CollapsiblePanel {
 		if (maxOrderHelpButton == null) {
 			try {
 				maxOrderHelpButton = new JButton(" ? ");
-				Font font = maxOrderHelpButton.getFont().deriveFont(Font.BOLD);
 				Border border = BorderFactory.createEmptyBorder(1, 1, 1, 1);
-				maxOrderHelpButton.setFont(font);
+				VCellFonts.setCategory(maxOrderHelpButton, VCellFonts.Category.HEADING);
 				maxOrderHelpButton.setBorder(border);
 				maxOrderHelpButton.addActionListener(ivjEventHandler);
 			} catch (java.lang.Throwable ivjExc) {

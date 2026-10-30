@@ -10,6 +10,7 @@
 
 package cbit.vcell.mapping.gui;
 
+import cbit.vcell.client.laf.VCellFonts;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -649,7 +650,7 @@ private javax.swing.JPanel getJPanel1() {
 			ivjJPanel1.setLayout(new BoxLayout(ivjJPanel1, BoxLayout.X_AXIS));
 			JLabel label = new javax.swing.JLabel();
 			label.setText("Electrical Stimulus:");
-			label.setFont(label.getFont().deriveFont(Font.BOLD));
+			VCellFonts.setCategory(label, VCellFonts.Category.HEADING);
 			
 			ivjJPanel1.add(label);
 			clampComboBox = new JComboBox();

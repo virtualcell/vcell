@@ -10,6 +10,7 @@
 
 package cbit.vcell.microscopy.batchrun.gui;
 
+import cbit.vcell.client.laf.VCellFonts;
 import cbit.vcell.client.laf.VCellColors;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -54,7 +55,7 @@ public class BatchRunResultsPanel extends JPanel
 		{
 			modelTypeLabel = new JLabel(MODEL_TYPE_PREFIX); 
 			modelTypeLabel.setBorder(new EmptyBorder(2, 0, 4, 0));
-			modelTypeLabel.setFont(new Font("Tahoma", Font.BOLD, 11));
+			VCellFonts.setCategory(modelTypeLabel, VCellFonts.Category.HEADING);
 			modelTypeLabel.setForeground(VCellColors.getReadableForeground(new Color(100, 100, 255)));
 		}
 		return modelTypeLabel;

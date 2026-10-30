@@ -1,5 +1,6 @@
 package org.vcell.model.bngl.gui;
 
+import cbit.vcell.client.laf.VCellFonts;
 import cbit.vcell.client.laf.VCellColors;
 import java.awt.BorderLayout;
 import java.awt.Button;
@@ -165,7 +166,7 @@ public class BNGLDebugger extends JFrame implements KeyListener, ActionListener 
 		JScrollPane exceptionPanel = new JScrollPane();
 		exceptionTextArea = new JTextArea();
 		exceptionTextArea.setBorder(BorderFactory.createEmptyBorder(2,2,2,2));
-		exceptionTextArea.setFont(new Font("monospaced", Font.PLAIN, 14));
+		VCellFonts.setCategory(exceptionTextArea, VCellFonts.Category.MONOSPACED);
 
 		exceptionPanel.getViewport().add(exceptionTextArea);
 		exceptionPanel.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);

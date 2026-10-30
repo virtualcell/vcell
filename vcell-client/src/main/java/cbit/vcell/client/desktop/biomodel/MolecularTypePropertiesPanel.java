@@ -10,6 +10,8 @@
 
 package cbit.vcell.client.desktop.biomodel;
 
+import cbit.vcell.client.laf.CategoryTitledBorder;
+import cbit.vcell.client.laf.VCellFonts;
 import cbit.vcell.client.laf.VCellColors;
 import cbit.vcell.client.laf.VCellLookAndFeel;
 import java.awt.BorderLayout;
@@ -489,11 +491,7 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		molecularTypeTree.setCellRenderer(new RbmMolecularTypeTreeCellRenderer(molecularTypeTree, issueManager));
 		molecularTypeTree.setCellEditor(new RbmMolecularTypeTreeCellEditor(molecularTypeTree));
 		
-		int rowHeight = molecularTypeTree.getRowHeight();
-		if(rowHeight < 10) { 
-			rowHeight = 20; 
-		}
-		molecularTypeTree.setRowHeight(rowHeight + 2);
+		VCellFonts.followRowHeight(molecularTypeTree);
 		molecularTypeTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 		ToolTipManager.sharedInstance().registerComponent(molecularTypeTree);
 		molecularTypeTree.addTreeSelectionListener(eventHandler);
@@ -511,7 +509,7 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		gbc.weightx = 1.0;
 		gbc.insets = new Insets(4,4,4,4);
 		titleLabel = new JLabel("Construct Solid Geometry");
-		titleLabel.setFont(titleLabel.getFont().deriveFont(Font.BOLD));
+		VCellFonts.setCategory(titleLabel, VCellFonts.Category.HEADING);
 		leftPanel.add(titleLabel, gbc);
 		
 		ButtonGroup bg = new ButtonGroup();
@@ -554,10 +552,9 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		Border loweredEtchedBorder = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
 		Border loweredBevelBorder = BorderFactory.createLoweredBevelBorder();
 
-		TitledBorder annotationBorder = BorderFactory.createTitledBorder(loweredEtchedBorder, " Pathway Links ");
+		TitledBorder annotationBorder = new CategoryTitledBorder(loweredEtchedBorder, " Pathway Links ", VCellFonts.Category.HEADING);
 		annotationBorder.setTitleJustification(TitledBorder.LEFT);
 		annotationBorder.setTitlePosition(TitledBorder.TOP);
-		annotationBorder.setTitleFont(getFont().deriveFont(Font.BOLD));
 
 		shapePanel = new LargeShapePanel() {
 			@Override

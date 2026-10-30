@@ -9,6 +9,7 @@
  */
 
 package cbit.vcell.client.desktop.simulation;
+import cbit.vcell.client.laf.VCellFonts;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.util.Objects;
@@ -245,7 +246,7 @@ public static void main(java.lang.String[] args) {
  * Comment
  */
 private void makeBoldTitle() {
-	getJTabbedPane1().setFont(getJTabbedPane1().getFont().deriveFont(java.awt.Font.BOLD));
+	VCellFonts.setCategory(getJTabbedPane1(), VCellFonts.Category.HEADING);
 }
 
 

@@ -10,6 +10,7 @@
 
 package cbit.vcell.model.gui;
 
+import cbit.vcell.client.laf.VCellFonts;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -96,7 +97,6 @@ public class ScopedExpressionTableCellRenderer implements javax.swing.table.Tabl
 	
 	private DefaultScrollTableCellRenderer templateJLabel = new DefaultScrollTableCellRenderer();//Template componet
 	private javax.swing.border.Border BORDER = new javax.swing.border.EmptyBorder(2,2,2,2);//Template border
-	private java.awt.Font italicFont = new java.awt.Font("SansSerif", java.awt.Font.ITALIC, 11);
 	private java.awt.image.BufferedImage graphicsContextProvider = new java.awt.image.BufferedImage(10,10,java.awt.image.BufferedImage.TYPE_BYTE_GRAY);
 
 /**
@@ -272,6 +272,7 @@ public java.awt.Component getTableCellRendererComponent(javax.swing.JTable table
 				//theTable may have a null GC and epf needs a non-null GC
 				//
 				java.awt.Graphics2D tempG2D = (java.awt.Graphics2D)graphicsContextProvider.getGraphics();
+				java.awt.Font italicFont = VCellFonts.getFont(VCellFonts.Category.BODY, java.awt.Font.ITALIC);
 				tempG2D.setFont(italicFont);//Must set here before epf.getSize is called
 				//Determine how big the expression image will be
 				java.awt.Dimension dim = epf.getSize(tempG2D);

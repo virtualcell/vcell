@@ -10,6 +10,7 @@
 
 package cbit.vcell.desktop.copypaste;
 
+import cbit.vcell.client.laf.VCellFonts;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
@@ -39,7 +40,6 @@ import org.vcell.util.gui.ShortcutsWizard;
 
 public class VCellCopyPasteHelper {
 	private static final Logger lg = LogManager.getLogger(VCellCopyPasteHelper.class);
-	private static final java.awt.Font monoFont = new java.awt.Font("Monospaced", java.awt.Font.PLAIN, 12);
 
 	public VCellCopyPasteHelper() {
 		super();
@@ -150,6 +150,7 @@ public class VCellCopyPasteHelper {
 
 	private static <T> JTable createTableContainer(PasteOperationTableModel<T> tableModel){
 		JTable tableContainer = new JTable(tableModel, tableModel.getTableColumnModel());
+		VCellFonts.followRowHeight(tableContainer);
 		tableContainer.setRowSelectionAllowed(false);
 		tableContainer.setColumnSelectionAllowed(false);
 		tableContainer.setCellSelectionEnabled(false);

@@ -10,6 +10,7 @@
 
 package cbit.vcell.client.desktop.biomodel;
 
+import cbit.vcell.client.laf.VCellFonts;
 import java.awt.AWTEventMulticaster;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
@@ -104,7 +105,7 @@ public class MathematicsPanel extends JPanel {
 			ivjButtonsPanel.setName("ButtonsPanel");
 			ivjButtonsPanel.setLayout(new BoxLayout(ivjButtonsPanel, BoxLayout.X_AXIS));
 			JLabel label = new JLabel("Choose View:");
-			label.setFont(label.getFont().deriveFont(Font.BOLD));
+			VCellFonts.setCategory(label, VCellFonts.Category.HEADING);
 			ivjButtonsPanel.add(label);
 			ivjButtonsPanel.add(getViewEqunsRadioButton());
 			ivjButtonsPanel.add(getViewVCMDLRadioButton());

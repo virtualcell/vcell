@@ -98,6 +98,7 @@ fi
 # JVM options mirrored from the install4j launcher vmOptions.
 vmopts=(
   --add-exports java.desktop/sun.awt.image=ALL-UNNAMED
+  --add-exports java.desktop/sun.font=ALL-UNNAMED   # font fallback for a chosen font family (VCellFonts)
   "-Dvcell.installDir=$PWD"
   -Dvcell.autoflushlog=true
   -Dvcell.thirdPartyLicense=thirdpartylicenses.txt

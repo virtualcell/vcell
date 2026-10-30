@@ -1,5 +1,6 @@
 package org.vcell.client.logicalwindow;
 
+import cbit.vcell.client.laf.VCellFonts;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -67,7 +68,7 @@ public class LWOkCancelDialog extends LWDialog {
 		textArea.setText(message);
 		textArea.setCaretPosition(0);
 		textArea.setEditable(false);
-		textArea.setFont(textArea.getFont().deriveFont(Font.BOLD));
+		VCellFonts.setCategory(textArea, VCellFonts.Category.HEADING);
 		textArea.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
 
 		//

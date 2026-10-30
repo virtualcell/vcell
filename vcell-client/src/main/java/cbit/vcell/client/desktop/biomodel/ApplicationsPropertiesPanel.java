@@ -10,6 +10,7 @@
 
 package cbit.vcell.client.desktop.biomodel;
 
+import cbit.vcell.client.laf.VCellFonts;
 import cbit.vcell.client.laf.VCellLookAndFeel;
 import java.awt.BorderLayout;
 import java.awt.Font;
@@ -128,7 +129,7 @@ private void updateInterface() {
 		for (int i = 0; i < simulationContexts.length; i ++) {
 			SimulationContext simContext = simulationContexts[i];
 			JLabel label = new JLabel(simContext.getName());
-			label.setFont(label.getFont().deriveFont(Font.BOLD));
+			VCellFonts.setCategory(label, VCellFonts.Category.HEADING);
 			label.setIcon(simulationContextIcon);
 			
 			GridBagConstraints gbc = new java.awt.GridBagConstraints();

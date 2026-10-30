@@ -12,6 +12,7 @@ package org.vcell.standalone;
 
 import cbit.vcell.client.VCellClient;
 import cbit.vcell.client.VCellClientLogging;
+import cbit.vcell.client.laf.VCellFonts;
 import cbit.vcell.client.laf.VCellLookAndFeel;
 import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.resource.ErrorUtils;
@@ -59,6 +60,7 @@ public class VCellClientDevMain {
 
 			// Screen menu bar, title bar appearance, Linux font smoothing; the JDK only reads these before AWT starts
 			VCellLookAndFeel.setPlatformProperties();
+			VCellFonts.restore();
 
 			ErrorUtils.setDebug(true);
 			PropertyLoader.loadProperties(ArrayUtils.addAll(REQUIRED_CLIENT_PROPERTIES, REQUIRED_LOCAL_PROPERTIES));

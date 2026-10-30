@@ -10,6 +10,7 @@
 
 package org.vcell.util.gui;
 
+import cbit.vcell.client.laf.VCellFonts;
 import cbit.vcell.client.laf.VCellColors;
 import cbit.vcell.client.laf.VCellLookAndFeel;
 import java.awt.AWTException;
@@ -231,8 +232,7 @@ public static class ScrollTableBooleanCellRenderer extends JCheckBox implements 
 	
 	private void initialize() {
 		autoResizeMode = AUTO_RESIZE_OFF;
-		// make it bigger on Mac
-		setRowHeight(getRowHeight() + 4);
+		VCellFonts.followRowHeight(this);
 		putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
 		putClientProperty("JTable.autoStartsEdit", Boolean.FALSE);
 		scrollTableActionManager = new DefaultScrollTableActionManager(this);

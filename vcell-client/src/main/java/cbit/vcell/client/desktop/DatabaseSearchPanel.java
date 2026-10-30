@@ -10,6 +10,7 @@
 
 package cbit.vcell.client.desktop;
 
+import cbit.vcell.client.laf.VCellFonts;
 import cbit.vcell.client.laf.VCellColors;
 import java.awt.Color;
 import java.awt.GridBagConstraints;
@@ -341,7 +342,7 @@ public class DatabaseSearchPanel extends CollapsiblePanel {
 		textFieldAutoComSet.add(nameSearchTextField);
 		
 		advancedButton = new JLabel("<html><u>Advanced &gt;&gt;</u></html>");
-		advancedButton.setFont(advancedButton.getFont().deriveFont(advancedButton.getFont().getSize2D() - 1));
+		VCellFonts.setCategory(advancedButton, VCellFonts.Category.CAPTION);
 		advancedButton.setForeground(VCellColors.getValueForeground());
 		advancedButton.setVerticalAlignment(SwingConstants.BOTTOM);
 		

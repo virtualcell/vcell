@@ -10,6 +10,7 @@
 
 package cbit.vcell.client.desktop.biomodel;
 
+import cbit.vcell.client.laf.VCellFonts;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -218,7 +219,7 @@ public class ParameterEstimationPanel extends ApplicationSubPanel {
 						
 			taskTablePanel.setLayout(new FlowLayout());
 			JLabel label = new JLabel("Select a Task: ");
-			label.setFont(label.getFont().deriveFont(Font.BOLD));
+			VCellFonts.setCategory(label, VCellFonts.Category.HEADING);
 			taskTablePanel.add(label);
 			getAnalysisTaskComboBox().setPreferredSize(new Dimension(200, (int)getAnalysisTaskComboBox().getPreferredSize().getHeight()));
 			taskTablePanel.add(getAnalysisTaskComboBox());

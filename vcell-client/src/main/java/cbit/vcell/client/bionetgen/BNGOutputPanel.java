@@ -9,6 +9,7 @@
  */
 
 package cbit.vcell.client.bionetgen;
+import cbit.vcell.client.laf.VCellFonts;
 import cbit.vcell.client.laf.VCellColors;
 import cbit.vcell.client.laf.VCellLookAndFeel;
 import java.awt.event.ActionEvent;
@@ -213,7 +214,7 @@ private void bngHelpSamples() {
  * Comment
  */
 public void bNGOutputPanel_Initialize() {
-	getBNGLInputPanel().setTextFont(new java.awt.Font("dialog", 0, 14));
+	getBNGLInputPanel().setTextCategory(VCellFonts.Category.BODY);
 	getBNGLInputPanel().setText("## BNGL simple model -- demonstrate core BNG features\n" +
 			"## OUTPUT files for ODE simulation (analogous file created for SSA simulation):\n" +
 			"  ## simple.net         : species reaction network file.\n" +
@@ -888,7 +889,7 @@ private javax.swing.JTextArea getConsoleTextArea() {
 		try {
 			ivjConsoleTextArea = new javax.swing.JTextArea();
 			ivjConsoleTextArea.setName("ConsoleTextArea");
-			ivjConsoleTextArea.setFont(new java.awt.Font("dialog", 0, 14));
+			VCellFonts.setCategory(ivjConsoleTextArea, VCellFonts.Category.BODY);
 			ivjConsoleTextArea.setBounds(0, 0, 685, 501);
 			// user code begin {1}
 			// user code end
@@ -974,7 +975,7 @@ private javax.swing.JButton getHelpButton() {
 			ivjHelpButton.setMaximumSize(new java.awt.Dimension(429, 27));
 			ivjHelpButton.setForeground(VCellColors.getValueForeground());
 			ivjHelpButton.setActionCommand(DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.VC_BNG_INDEX_URL));
-			ivjHelpButton.setFont(new java.awt.Font("Arial", 1, 14));
+			VCellFonts.setCategory(ivjHelpButton, VCellFonts.Category.HEADING);
 			ivjHelpButton.setBounds(433, 81, 412, 27);
 			ivjHelpButton.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
 			// user code begin {1}
@@ -1065,7 +1066,7 @@ private javax.swing.JButton getJButtonManual() {
 			ivjJButtonManual.setBackground(VCellLookAndFeel.getContentBackground());
 			ivjJButtonManual.setForeground(VCellColors.getValueForeground());
 			ivjJButtonManual.setActionCommand(DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.VC_BNG_TUTORIAL_URL));
-			ivjJButtonManual.setFont(new java.awt.Font("Arial", 1, 14));
+			VCellFonts.setCategory(ivjJButtonManual, VCellFonts.Category.HEADING);
 			ivjJButtonManual.setBounds(428, 218, 417, 25);
 			// user code begin {1}
 			// user code end
@@ -1092,7 +1093,7 @@ private javax.swing.JButton getJButtonManual1() {
 			ivjJButtonManual1.setBackground(VCellLookAndFeel.getContentBackground());
 			ivjJButtonManual1.setForeground(VCellColors.getValueForeground());
 			ivjJButtonManual1.setActionCommand(DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.VC_BNG_SAMPLES_URL));
-			ivjJButtonManual1.setFont(new java.awt.Font("Arial", 1, 14));
+			VCellFonts.setCategory(ivjJButtonManual1, VCellFonts.Category.HEADING);
 			ivjJButtonManual1.setBounds(430, 354, 417, 25);
 			// user code begin {1}
 			// user code end
@@ -1119,7 +1120,7 @@ private javax.swing.JButton getJButtonManual11() {
 			ivjJButtonManual11.setBackground(VCellLookAndFeel.getContentBackground());
 			ivjJButtonManual11.setForeground(VCellColors.getValueForeground());
 			ivjJButtonManual11.setActionCommand(DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.VC_BNG_FAQ_URL));
-			ivjJButtonManual11.setFont(new java.awt.Font("Arial", 1, 14));
+			VCellFonts.setCategory(ivjJButtonManual11, VCellFonts.Category.HEADING);
 			ivjJButtonManual11.setBounds(428, 600, 417, 25);
 			// user code begin {1}
 			// user code end
@@ -1143,7 +1144,7 @@ private javax.swing.JLabel getJLabelAbout() {
 		try {
 			ivjJLabelAbout = new javax.swing.JLabel();
 			ivjJLabelAbout.setName("JLabelAbout");
-			ivjJLabelAbout.setFont(new java.awt.Font("dialog", 0, 18));
+			VCellFonts.setCategory(ivjJLabelAbout, VCellFonts.Category.TITLE, java.awt.Font.PLAIN);
 			ivjJLabelAbout.setText("About BioNetGen@Virtual Cell");
 			ivjJLabelAbout.setBounds(25, 80, 243, 28);
 			ivjJLabelAbout.setForeground(VCellColors.getValueForeground());
@@ -1168,7 +1169,7 @@ private javax.swing.JLabel getJLabelHelp() {
 		try {
 			ivjJLabelHelp = new javax.swing.JLabel();
 			ivjJLabelHelp.setName("JLabelHelp");
-			ivjJLabelHelp.setFont(new java.awt.Font("dialog", 0, 18));
+			VCellFonts.setCategory(ivjJLabelHelp, VCellFonts.Category.TITLE, java.awt.Font.PLAIN);
 			ivjJLabelHelp.setText("A tutorial on how to write BioNetGen input file.");
 			ivjJLabelHelp.setBounds(30, 212, 385, 33);
 			ivjJLabelHelp.setForeground(VCellColors.getValueForeground());
@@ -1193,7 +1194,7 @@ private javax.swing.JLabel getJLabelHelp1() {
 		try {
 			ivjJLabelHelp1 = new javax.swing.JLabel();
 			ivjJLabelHelp1.setName("JLabelHelp1");
-			ivjJLabelHelp1.setFont(new java.awt.Font("dialog", 0, 18));
+			VCellFonts.setCategory(ivjJLabelHelp1, VCellFonts.Category.TITLE, java.awt.Font.PLAIN);
 			ivjJLabelHelp1.setText("Sample BioNetGen input files.");
 			ivjJLabelHelp1.setBounds(32, 355, 333, 33);
 			ivjJLabelHelp1.setForeground(VCellColors.getValueForeground());
@@ -1218,7 +1219,7 @@ private javax.swing.JLabel getJLabelHelp11() {
 		try {
 			ivjJLabelHelp11 = new javax.swing.JLabel();
 			ivjJLabelHelp11.setName("JLabelHelp11");
-			ivjJLabelHelp11.setFont(new java.awt.Font("dialog", 0, 18));
+			VCellFonts.setCategory(ivjJLabelHelp11, VCellFonts.Category.TITLE, java.awt.Font.PLAIN);
 			ivjJLabelHelp11.setText("BioNetGen@VCell FAQ.");
 			ivjJLabelHelp11.setBounds(38, 591, 333, 33);
 			ivjJLabelHelp11.setForeground(VCellColors.getValueForeground());
@@ -1243,7 +1244,7 @@ private javax.swing.JLabel getJLabelStart() {
 		try {
 			ivjJLabelStart = new javax.swing.JLabel();
 			ivjJLabelStart.setName("JLabelStart");
-			ivjJLabelStart.setFont(new java.awt.Font("serif", 0, 18));
+			VCellFonts.setCategory(ivjJLabelStart, VCellFonts.Category.TITLE, java.awt.Font.PLAIN);
 			ivjJLabelStart.setText("A BioNetGen input file is a plain-text file that specifies a model in the BioNetGen language (BNGL) and");
 			ivjJLabelStart.setBounds(30, 139, 819, 32);
 			// user code begin {1}
@@ -1270,7 +1271,7 @@ private javax.swing.JLabel getJLabelStart1() {
 			ivjJLabelStart1.setOpaque(false);
 			ivjJLabelStart1.setText("You can select a model to start from the list below, download it to your computer, and modify.");
 			ivjJLabelStart1.setDoubleBuffered(false);
-			ivjJLabelStart1.setFont(new java.awt.Font("serif", 0, 18));
+			VCellFonts.setCategory(ivjJLabelStart1, VCellFonts.Category.TITLE, java.awt.Font.PLAIN);
 			ivjJLabelStart1.setBounds(32, 280, 826, 28);
 			ivjJLabelStart1.setEnabled(true);
 			// user code begin {1}
@@ -1297,7 +1298,7 @@ private javax.swing.JLabel getJLabelStart11() {
 			ivjJLabelStart11.setOpaque(false);
 			ivjJLabelStart11.setText("After you modified a model, you can either upload it to BioNetGen, or copy- paste into Rules editor.");
 			ivjJLabelStart11.setDoubleBuffered(false);
-			ivjJLabelStart11.setFont(new java.awt.Font("serif", 0, 18));
+			VCellFonts.setCategory(ivjJLabelStart11, VCellFonts.Category.TITLE, java.awt.Font.PLAIN);
 			ivjJLabelStart11.setBounds(29, 306, 826, 32);
 			ivjJLabelStart11.setEnabled(true);
 			// user code begin {1}
@@ -1324,7 +1325,7 @@ private javax.swing.JLabel getJLabelStart12() {
 			ivjJLabelStart12.setOpaque(false);
 			ivjJLabelStart12.setText("To run BioNetGen, you will need to upload a BioNetGen input file or paste one into the Rules Editor window.");
 			ivjJLabelStart12.setDoubleBuffered(false);
-			ivjJLabelStart12.setFont(new java.awt.Font("serif", 0, 18));
+			VCellFonts.setCategory(ivjJLabelStart12, VCellFonts.Category.TITLE, java.awt.Font.PLAIN);
 			ivjJLabelStart12.setBounds(30, 411, 826, 28);
 			ivjJLabelStart12.setEnabled(true);
 			// user code begin {1}
@@ -1351,7 +1352,7 @@ private javax.swing.JLabel getJLabelStart121() {
 			ivjJLabelStart121.setOpaque(false);
 			ivjJLabelStart121.setText("Then, you can click on the Run button.  You may need to wait a few minutes for a response.  Error messages");
 			ivjJLabelStart121.setDoubleBuffered(false);
-			ivjJLabelStart121.setFont(new java.awt.Font("serif", 0, 18));
+			VCellFonts.setCategory(ivjJLabelStart121, VCellFonts.Category.TITLE, java.awt.Font.PLAIN);
 			ivjJLabelStart121.setBounds(29, 440, 826, 28);
 			ivjJLabelStart121.setEnabled(true);
 			// user code begin {1}
@@ -1378,7 +1379,7 @@ private javax.swing.JLabel getJLabelStart122() {
 			ivjJLabelStart122.setOpaque(false);
 			ivjJLabelStart122.setText("are reported in a pop-up window. If there are no error messages, you will be redirected to the Messages window, ");
 			ivjJLabelStart122.setDoubleBuffered(false);
-			ivjJLabelStart122.setFont(new java.awt.Font("serif", 0, 18));
+			VCellFonts.setCategory(ivjJLabelStart122, VCellFonts.Category.TITLE, java.awt.Font.PLAIN);
 			ivjJLabelStart122.setBounds(29, 470, 826, 28);
 			ivjJLabelStart122.setEnabled(true);
 			// user code begin {1}
@@ -1405,7 +1406,7 @@ private javax.swing.JLabel getJLabelStart1221() {
 			ivjJLabelStart1221.setOpaque(false);
 			ivjJLabelStart1221.setText("where you will see a report about the results of processing your input file.  Results themselves are available in ");
 			ivjJLabelStart1221.setDoubleBuffered(false);
-			ivjJLabelStart1221.setFont(new java.awt.Font("serif", 0, 18));
+			VCellFonts.setCategory(ivjJLabelStart1221, VCellFonts.Category.TITLE, java.awt.Font.PLAIN);
 			ivjJLabelStart1221.setBounds(30, 497, 826, 28);
 			ivjJLabelStart1221.setEnabled(true);
 			// user code begin {1}
@@ -1432,7 +1433,7 @@ private javax.swing.JLabel getJLabelStart122111() {
 			ivjJLabelStart122111.setOpaque(false);
 			ivjJLabelStart122111.setText("in the Output window.  Please check the FAQ page for help  with error messages. If problem persists, please");
 			ivjJLabelStart122111.setDoubleBuffered(false);
-			ivjJLabelStart122111.setFont(new java.awt.Font("serif", 0, 18));
+			VCellFonts.setCategory(ivjJLabelStart122111, VCellFonts.Category.TITLE, java.awt.Font.PLAIN);
 			ivjJLabelStart122111.setBounds(31, 522, 826, 28);
 			ivjJLabelStart122111.setEnabled(true);
 			// user code begin {1}
@@ -1459,7 +1460,7 @@ private javax.swing.JLabel getJLabelStart1221111() {
 			ivjJLabelStart1221111.setOpaque(false);
 			ivjJLabelStart1221111.setText("contact us at blinov@uchc.edu.");
 			ivjJLabelStart1221111.setDoubleBuffered(false);
-			ivjJLabelStart1221111.setFont(new java.awt.Font("serif", 0, 18));
+			VCellFonts.setCategory(ivjJLabelStart1221111, VCellFonts.Category.TITLE, java.awt.Font.PLAIN);
 			ivjJLabelStart1221111.setBounds(28, 551, 826, 28);
 			ivjJLabelStart1221111.setEnabled(true);
 			// user code begin {1}
@@ -1483,7 +1484,7 @@ private javax.swing.JLabel getJLabelStart2() {
 		try {
 			ivjJLabelStart2 = new javax.swing.JLabel();
 			ivjJLabelStart2.setName("JLabelStart2");
-			ivjJLabelStart2.setFont(new java.awt.Font("serif", 0, 18));
+			VCellFonts.setCategory(ivjJLabelStart2, VCellFonts.Category.TITLE, java.awt.Font.PLAIN);
 			ivjJLabelStart2.setText("instructions for operating on the model specification (e.g. running a simulation).");
 			ivjJLabelStart2.setBounds(30, 165, 819, 32);
 			// user code begin {1}
@@ -1508,7 +1509,7 @@ private javax.swing.JLabel getJLabelTitle() {
 		try {
 			ivjJLabelTitle = new javax.swing.JLabel();
 			ivjJLabelTitle.setName("JLabelTitle");
-			ivjJLabelTitle.setFont(new java.awt.Font("dialog", 0, 24));
+			VCellFonts.setCategory(ivjJLabelTitle, VCellFonts.Category.TITLE, java.awt.Font.PLAIN);
 			ivjJLabelTitle.setText("All links will be opened in the same Internet browser window");
 			ivjJLabelTitle.setBounds(105, 16, 671, 33);
 			// user code begin {1}
@@ -1695,7 +1696,7 @@ private javax.swing.JList getOutputFormatsList() {
 		try {
 			ivjOutputFormatsList = new javax.swing.JList();
 			ivjOutputFormatsList.setName("OutputFormatsList");
-			ivjOutputFormatsList.setFont(new java.awt.Font("dialog", 0, 14));
+			VCellFonts.setCategory(ivjOutputFormatsList, VCellFonts.Category.BODY);
 			ivjOutputFormatsList.setBounds(0, 0, 772, 200);
 			ivjOutputFormatsList.setSelectedIndex(0);
 			ivjOutputFormatsList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
@@ -1720,7 +1721,7 @@ private javax.swing.JLabel getOutputLabel() {
 		try {
 			ivjOutputLabel = new javax.swing.JLabel();
 			ivjOutputLabel.setName("OutputLabel");
-			ivjOutputLabel.setFont(new java.awt.Font("Arial", 1, 14));
+			VCellFonts.setCategory(ivjOutputLabel, VCellFonts.Category.HEADING);
 			ivjOutputLabel.setText(" ");
 			// user code begin {1}
 			// user code end
@@ -1837,7 +1838,7 @@ private javax.swing.JTextArea getOutputTextArea() {
 		try {
 			ivjOutputTextArea = new javax.swing.JTextArea();
 			ivjOutputTextArea.setName("OutputTextArea");
-			ivjOutputTextArea.setFont(new java.awt.Font("dialog", 0, 14));
+			VCellFonts.setCategory(ivjOutputTextArea, VCellFonts.Category.BODY);
 			ivjOutputTextArea.setBounds(0, 0, 160, 120);
 			// user code begin {1}
 			// user code end
@@ -1883,7 +1884,7 @@ private javax.swing.JLabel getOutputWarningLabel() {
 		try {
 			ivjOutputWarningLabel = new javax.swing.JLabel();
 			ivjOutputWarningLabel.setName("OutputWarningLabel");
-			ivjOutputWarningLabel.setFont(new java.awt.Font("Arial", 1, 12));
+			VCellFonts.setCategory(ivjOutputWarningLabel, VCellFonts.Category.HEADING);
 			ivjOutputWarningLabel.setText("<html>WARNING: These files will not be saved in the Virtual Cell repository.  If desired, you should save these files in your home directory.  You might want to save only the .bngl file, because the other files can be generated from it.\n</html>");
 			ivjOutputWarningLabel.setForeground(VCellColors.getValueForeground());
 			// user code begin {1}
@@ -1980,7 +1981,7 @@ private javax.swing.JButton getSaveButton() {
 		try {
 			ivjSaveButton = new javax.swing.JButton();
 			ivjSaveButton.setName("SaveButton");
-			ivjSaveButton.setFont(new java.awt.Font("Arial", 1, 12));
+			VCellFonts.setCategory(ivjSaveButton, VCellFonts.Category.HEADING);
 			ivjSaveButton.setText("Save Output as text file");
 			enableSaveOutputButton();
 			// user code begin {1}
