@@ -22,8 +22,10 @@ import org.vcell.util.document.User;
  * @author: Fei Gao
  */
 public class SimulationJobStatusEvent extends MessageEvent {
+	private static final long serialVersionUID = 8277471485289795784L;  // value before estimatedTime was added; keeps old/new builds compatible
 	private SimulationJobStatus jobStatus = null;
 	private Double progress = null;
+	private Integer estimatedTime = null;	// estimated total duration of the job in seconds, from the langevin watchdog; null or 0 = unknown
 	private Double timePoint = null;
 	private String username = null;
 /**
@@ -32,12 +34,17 @@ public class SimulationJobStatusEvent extends MessageEvent {
  * @param messageSource cbit.rmi.event.MessageSource
  * @param messageData cbit.rmi.event.MessageData
  */
-public SimulationJobStatusEvent(Object source, String simID, SimulationJobStatus jobStatus0, Double progress0, Double timePoint0, String username) {
+public SimulationJobStatusEvent(Object source, String simID, SimulationJobStatus jobStatus0, Double progress0, Integer estimatedTime0, Double timePoint0, String username) {
 	super(source, new MessageSource(source, simID), new MessageData(new Double[] { progress0, timePoint0 }));
 	jobStatus = jobStatus0;
 	progress = progress0;
+	estimatedTime = estimatedTime0;
 	timePoint = timePoint0;
 	this.username = username;
+}
+
+public SimulationJobStatusEvent(Object source, String simID, SimulationJobStatus jobStatus0, Double progress0, Double timePoint0, String username) {
+	this(source, simID, jobStatus0, progress0, null, timePoint0, username);
 }
 /**
  * Insert the method's description here.
@@ -82,6 +89,10 @@ public SimulationMessage getSimulationMessage() {
  */
 public Double getTimepoint() {
 	return timePoint;
+}
+
+public Integer getEstimatedTime() {
+	return estimatedTime;
 }
 /**
  * Insert the method's description here.

@@ -27,24 +27,24 @@ public class RestEventService {
 	 *
 	 * <p>JSON has no representation for Infinity or NaN, so a stock {@link Gson}
 	 * throws {@code IllegalArgumentException} on one. That used to be caught, logged
-	 * and the event dropped — but the message was then redelivered, failed again, and
+	 * and the event dropped - but the message was then redelivered, failed again, and
 	 * kept failing: a single export whose {@code progress} came out Infinity produced
 	 * roughly 4,900 error lines a minute on production, and because the consumer loop
 	 * creates a JMS connection and temporary queue per message, each redelivery cost
 	 * one of each.
 	 *
-	 * <p>A non-finite value is written as {@code null} instead — a last-resort net so
+	 * <p>A non-finite value is written as {@code null} instead - a last-resort net so
 	 * serialization can never throw. Clients tolerate a missing value here: the Python
 	 * client declares {@code Optional[float] = None}, the TypeScript client
 	 * {@code progress?: number}, and the desktop client null-checks sim-job progress
 	 * ({@code SimulationListPanel}).
 	 *
 	 * <p><b>Export progress is the exception</b> and is clamped before it reaches this
-	 * net — see {@link #withFiniteProgress}. The desktop client dereferences it without
+	 * net - see {@link #withFiniteProgress}. The desktop client dereferences it without
 	 * a null check for EXPORT_PROGRESS events, so emitting null there would swap a
 	 * server-side serialization failure for a client-side NPE.
 	 *
-	 * <p>Neither excuses producing a non-finite progress — the WARN below names the
+	 * <p>Neither excuses producing a non-finite progress - the WARN below names the
 	 * value so the upstream division stays findable.
 	 */
 	private final static Gson gson = new GsonBuilder()
@@ -71,7 +71,7 @@ public class RestEventService {
 	 * <p>Clamped into [0,1] rather than nulled because the desktop client does
 	 * {@code event.getProgress().doubleValue() * 100} inside {@code case EXPORT_PROGRESS}
 	 * ({@code ExportMonitorTableModel}) and compares two progress values by auto-unboxing
-	 * in {@code ExportEvent.isSupercededBy} — a null in either place is an NPE. A wrong
+	 * in {@code ExportEvent.isSupercededBy} - a null in either place is an NPE. A wrong
 	 * but finite progress bar is a far better failure than a crashed client.
 	 */
 	private static ExportEventRepresentation withFiniteProgress(ExportEventRepresentation rep) {
@@ -136,6 +136,9 @@ public class RestEventService {
 				}
 				if (!Compare.isEqual(event2.getProgress(),simJobEvent.getProgress())) {
 					throw new RuntimeException("SimulationJobStatus <PROGRESS> event round-trip failed");
+				}
+				if (!Compare.isEqual(event2.getEstimatedTime(),simJobEvent.getEstimatedTime())) {
+					throw new RuntimeException("SimulationJobStatus <ESTIMATED TIME> event round-trip failed");
 				}
 				String eventJSON = gson.toJson(simJobEventRep);
 				insert(simJobEventRep.username, EventWrapper.EventType.SimJob,eventJSON);

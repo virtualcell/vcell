@@ -171,9 +171,10 @@ public class DTOModelTransformerV0 {
                 simMessage,simQueueStatus,simExeStatus);
 
         Double progress = eventRep.progress;
+        Integer estimatedTime = eventRep.estimatedTime;     // null when the server doesn't send it (older server, or not langevin)
         Double timepoint = eventRep.timePoint;
         String username = eventRep.username;
-        SimulationJobStatusEvent event = new SimulationJobStatusEvent(eventSource, simid, jobStatus, progress, timepoint, username);
+        SimulationJobStatusEvent event = new SimulationJobStatusEvent(eventSource, simid, jobStatus, progress, estimatedTime, timepoint, username);
         return event;
     }
 
@@ -236,7 +237,7 @@ public class DTOModelTransformerV0 {
                 queuePriority, queueDate, queueId,
                 simexe_startDate, simexe_latestUpdateDate, simexe_endDate, computeHost, hasData);
         SimulationJobStatusEventRepresentation eventRep = new SimulationJobStatusEventRepresentation(jobStatus, event.getProgress(),
-                event.getTimepoint(), event.getUsername());
+                event.getEstimatedTime(), event.getTimepoint(), event.getUsername());
         return eventRep;
     }
 
