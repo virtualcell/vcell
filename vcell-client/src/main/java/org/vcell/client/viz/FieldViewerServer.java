@@ -33,6 +33,7 @@ import org.vcell.vis.vcell.SubdomainInfo;
 import org.vcell.vis.vismesh.thrift.VisMesh;
 import org.vcell.vis.vismesh.thrift.VisPoint;
 import org.vcell.vis.vismesh.thrift.VisVoxel;
+import org.vcell.vis.vtk.VtuGridParser;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
