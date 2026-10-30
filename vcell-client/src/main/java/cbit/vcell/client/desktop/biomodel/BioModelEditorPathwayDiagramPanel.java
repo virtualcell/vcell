@@ -10,6 +10,7 @@
 
 package cbit.vcell.client.desktop.biomodel;
 
+import javax.swing.Box;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -49,7 +50,6 @@ import javax.swing.JToolBar;
 import javax.swing.JTree;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -94,7 +94,6 @@ import org.vcell.util.gui.sorttable.JSortTable;
 
 import cbit.gui.graph.GraphLayoutManager;
 import cbit.gui.graph.GraphModel;
-import cbit.gui.graph.GraphResizeManager.ZoomRangeException;
 import cbit.gui.graph.actions.GraphLayoutTasks;
 import cbit.gui.graph.gui.GraphPane;
 import cbit.vcell.biomodel.BioModel;
@@ -734,6 +733,15 @@ implements PathwayEditor, ActionBuilder.Generator {
 		sourceTextArea = new JTextArea();
 		
 		graphPane =  new GraphPane();
+		// right after its own zoom out button
+		int afterZoomOut = layoutToolBar.getComponentCount();
+		for (int i = 0; i < layoutToolBar.getComponentCount(); i++) {
+			if (layoutToolBar.getComponent(i) instanceof JButton button && button.getIcon() == VCellIcons.pathwayZoomOutIcon) afterZoomOut = i + 1;
+		}
+		layoutToolBar.add(graphPane.createZoomButton(GraphPane.ZoomButton.FIT, TOOLBAR_BUTTON_SIZE), afterZoomOut);
+		layoutToolBar.add(graphPane.createZoomButton(GraphPane.ZoomButton.ACTUAL_SIZE, TOOLBAR_BUTTON_SIZE), afterZoomOut + 1);
+		layoutToolBar.add(Box.createHorizontalGlue());
+		layoutToolBar.add(GraphPane.createControlsHelpButton(TOOLBAR_BUTTON_SIZE));
 		pathwayGraphModel = new PathwayGraphModel();
 		pathwayGraphModel.addPropertyChangeListener(eventHandler);
 		graphPane.setGraphModel(pathwayGraphModel);
@@ -1095,16 +1103,9 @@ implements PathwayEditor, ActionBuilder.Generator {
 				return new AbstractAction() {
 					public void actionPerformed(ActionEvent arg0) {
 						try {
-							viewPortStabilizer.saveViewPortPosition();
-							getCartoonTool().getGraphModel().getResizeManager().zoomIn();
-							SwingUtilities.invokeLater(new Runnable() {
-								public void run() {
-									viewPortStabilizer.restoreViewPortPosition();						
-								}
-							});
+							graphPane.zoomIn(); // keeps the middle of the view in place
 						} 
-						catch (ZoomRangeException e) { e.printStackTrace(); }
-						catch (GraphModel.NotReadyException e) { e.printStackTrace(); }
+						catch (Exception e) { e.printStackTrace(); }
 					}
 				};
 			}
@@ -1112,16 +1113,9 @@ implements PathwayEditor, ActionBuilder.Generator {
 				return new AbstractAction() {
 					public void actionPerformed(ActionEvent arg0) {
 						try {
-							viewPortStabilizer.saveViewPortPosition();
-							getCartoonTool().getGraphModel().getResizeManager().zoomOut();
-							SwingUtilities.invokeLater(new Runnable() {
-								public void run() {
-									viewPortStabilizer.restoreViewPortPosition();						
-								}
-							});
+							graphPane.zoomOut(); // keeps the middle of the view in place
 						} 
-						catch (ZoomRangeException e) { e.printStackTrace(); }
-						catch (GraphModel.NotReadyException e) { e.printStackTrace(); }
+						catch (Exception e) { e.printStackTrace(); }
 					}
 				};
 			}

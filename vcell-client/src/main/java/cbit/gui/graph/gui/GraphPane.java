@@ -9,22 +9,41 @@
  */
 
 package cbit.gui.graph.gui;
+import org.vcell.util.gui.VCellIcons;
+import cbit.vcell.client.laf.VCellFonts;
+import java.awt.AWTEvent;
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.FocusEvent;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.MouseWheelEvent;
+import java.util.function.IntConsumer;
 
+import javax.swing.AbstractAction;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JViewport;
 import javax.swing.Scrollable;
+import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 
 import cbit.gui.graph.GraphContainerLayout;
@@ -32,6 +51,7 @@ import cbit.gui.graph.GraphEvent;
 import cbit.gui.graph.GraphListener;
 import cbit.gui.graph.GraphModel;
 import cbit.gui.graph.GraphModel.NotReadyException;
+import cbit.gui.graph.GraphResizeManager;
 import cbit.gui.graph.Shape;
 import cbit.vcell.graph.ReactionContainerShape;
 
@@ -40,13 +60,24 @@ public class GraphPane extends JPanel implements GraphListener, MouseListener, S
 
 	private GraphModel graphModel = null;
 	protected boolean needsLayout = true;
-	
+
+	// Camera: zoom (around the cursor with Cmd/Ctrl + scroll) and pan (middle-button drag, or Space + drag)
+	private static final double WHEEL_ZOOM_FACTOR = 1.1; // per notch of scrolling
+	private static final int MIN_ZOOM_PERCENT = 5, MAX_ZOOM_PERCENT = 1000, MAX_FIT_ZOOM_PERCENT = 200;
+	private IntConsumer zoomApplier = null;
+	private double fractionalZoom = Double.NaN; // smooth zooming between whole percents
+	private boolean spaceDown = false;
+	private Point panStartOnScreen = null, panStartView = null;
+	private Cursor cursorBeforePan = null;
+
 	public GraphPane() {
 		super();
 		initialize();
 		addMouseListener(this);
 //		setToolTipText("Graph Panel");
 		ToolTipManager.sharedInstance().registerComponent(this);
+		enableEvents(AWTEvent.MOUSE_WHEEL_EVENT_MASK);
+		installZoomKeys();
 	}
 
 	public void clear(java.awt.Graphics g) {
@@ -194,7 +225,8 @@ public class GraphPane extends JPanel implements GraphListener, MouseListener, S
 	 * @see JScrollBar#setUnitIncrement
 	 */
 	public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
-		return 1;
+		// a scroll-wheel notch (3 units) moves a tenth of the view, whatever its size
+		return Math.max(1, (SwingConstants.VERTICAL == orientation ? visibleRect.height : visibleRect.width) / 30);
 	}
 
 
@@ -318,6 +350,270 @@ public class GraphPane extends JPanel implements GraphListener, MouseListener, S
 		}			
 	}
 	
+	/**
+	 * How a zoom change is applied; by default to this pane's diagram. A panel that shows several diagrams in turn
+	 * here can apply it to all of them, so they stay alike.
+	 */
+	public void setZoomApplier(IntConsumer zoomApplier) {
+		this.zoomApplier = zoomApplier;
+	}
+
+	/** The zoom buttons a diagram's toolbar can show. */
+	public enum ZoomButton { ZOOM_IN, ZOOM_OUT, FIT, ACTUAL_SIZE }
+
+	/** A toolbar button, the given size, that zooms this diagram. */
+	public JButton createZoomButton(ZoomButton kind, Dimension size) {
+		JButton button = GraphPane.createToolBarButton(size);
+		String shortcut = KeyEvent.getModifiersExText(Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx());
+		switch (kind) {
+			case ZOOM_IN -> {
+				button.setName("ZoomInButton");
+				button.setIcon(VCellIcons.pathwayZoomInIcon);
+				button.setToolTipText("Zoom in (" + shortcut + "+)");
+				button.addActionListener(e -> zoomIn());
+			}
+			case ZOOM_OUT -> {
+				button.setName("ZoomOutButton");
+				button.setIcon(VCellIcons.pathwayZoomOutIcon);
+				button.setToolTipText("Zoom out (" + shortcut + "-)");
+				button.addActionListener(e -> zoomOut());
+			}
+			case FIT -> {
+				button.setName("ZoomToFitButton");
+				button.setText("Fit");
+				VCellFonts.setCategory(button, VCellFonts.Category.CAPTION);
+				button.setToolTipText("Zoom to fit the whole diagram");
+				button.addActionListener(e -> zoomToFit());
+			}
+			case ACTUAL_SIZE -> {
+				button.setName("ResetZoomButton");
+				button.setText("1:1");
+				VCellFonts.setCategory(button, VCellFonts.Category.CAPTION);
+				button.setToolTipText("Zoom to 100% (" + shortcut + "+0)");
+				button.addActionListener(e -> resetZoom());
+			}
+		}
+		return button;
+	}
+
+	/** A "?" button, the given size, that shows how to zoom and pan a diagram; for a diagram's toolbar. */
+	public static JButton createControlsHelpButton(Dimension size) {
+		JButton button = GraphPane.createToolBarButton(size);
+		button.setName("DiagramControlsHelpButton");
+		button.setText("?");
+		VCellFonts.setCategory(button, VCellFonts.Category.HEADING);
+		button.setToolTipText("How to zoom and pan the diagram");
+		button.addActionListener(e -> GraphPane.showControlsHelp(button));
+		return button;
+	}
+
+	private static JButton createToolBarButton(Dimension size) {
+		JButton button = new JButton();
+		button.setPreferredSize(size);
+		button.setMinimumSize(size);
+		button.setMaximumSize(size);
+		button.setMargin(new Insets(2, 2, 2, 2));
+		return button;
+	}
+
+	/** Shows how to zoom and pan a diagram, in a pop-up below {@code invoker} (a help button, say). */
+	public static void showControlsHelp(Component invoker) {
+		String key = KeyEvent.getModifiersExText(Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx());
+		String[][] controls = {
+				{"Zoom in or out", key + " + scroll wheel (zooms around the pointer)"},
+				{"Pan", "Drag with the middle mouse button, or hold Space and drag"},
+				{"Scroll", "Scroll wheel; Shift + scroll wheel scrolls sideways"},
+				{"Zoom in, out, to 100%", key + " +&nbsp;&nbsp;/&nbsp;&nbsp;" + key + " &minus;&nbsp;&nbsp;/&nbsp;&nbsp;" + key + " 0 &nbsp;(click the diagram first)"},
+				{"Fit the whole diagram", "The Fit button"},
+				{"Back to 100%", "The 1:1 button"},
+		};
+		StringBuilder html = new StringBuilder("<html><b>Diagram controls</b><table cellpadding='3'>");
+		for (String[] control : controls) html.append("<tr><td><b>").append(control[0]).append("</b></td><td>").append(control[1]).append("</td></tr>");
+		JLabel label = new JLabel(html.append("</table></html>").toString());
+		label.setBorder(BorderFactory.createEmptyBorder(8, 10, 8, 10));
+		JPopupMenu popup = new JPopupMenu();
+		popup.add(label);
+		popup.show(invoker, 0, invoker.getHeight());
+	}
+
+	/** Zooms in one step, keeping the middle of the view in place. */
+	public void zoomIn() {
+		try {
+			zoomTo(GraphResizeManager.getNextHigherZoomPercent(getZoomPercent()), getViewCenter());
+		} catch (GraphResizeManager.ZoomRangeException e) {
+			// as far in as it goes
+		}
+	}
+
+	/** Zooms out one step, keeping the middle of the view in place. */
+	public void zoomOut() {
+		try {
+			zoomTo(Math.max(MIN_ZOOM_PERCENT, GraphResizeManager.getNextLowerZoomPercent(getZoomPercent())), getViewCenter());
+		} catch (GraphResizeManager.ZoomRangeException e) {
+			// as far out as it goes
+		}
+	}
+
+	/** Back to 100%, keeping the middle of the view in place. */
+	public void resetZoom() {
+		zoomTo(100, getViewCenter());
+	}
+
+	/** Zooms so the whole diagram fits in the view (zooming in no further than 200%). */
+	public void zoomToFit() {
+		JViewport viewport = getViewport();
+		if (graphModel == null || viewport == null || !(getGraphics() instanceof Graphics2D g)) return;
+		try {
+			Dimension diagram = graphModel.getResizeManager().unzoom(graphModel.getPreferedCanvasSize(g));
+			Dimension view = viewport.getExtentSize();
+			if (diagram.width <= 0 || diagram.height <= 0 || view.width <= 0 || view.height <= 0) return;
+			double fit = Math.min(view.width / (double) diagram.width, view.height / (double) diagram.height);
+			zoomTo((int) Math.floor(100 * fit), new Point(0, 0));
+			viewport.setViewPosition(new Point(0, 0));
+		} catch (NotReadyException e) {
+			// nothing drawn yet
+		}
+	}
+
+	private int getZoomPercent() {
+		return graphModel == null ? 100 : graphModel.getResizeManager().getZoomPercent();
+	}
+
+	// Sets the zoom so the diagram point at anchor (in this pane) stays where it is in the view
+	private void zoomTo(int zoomPercent, Point anchor) {
+		int oldZoom = getZoomPercent();
+		int newZoom = Math.max(MIN_ZOOM_PERCENT, Math.min(MAX_ZOOM_PERCENT, zoomPercent));
+		if (graphModel == null || newZoom == oldZoom) return;
+		JViewport viewport = getViewport();
+		Point anchorInView = viewport == null ? anchor : new Point(anchor.x - viewport.getViewPosition().x, anchor.y - viewport.getViewPosition().y);
+		double scale = newZoom / (double) oldZoom;
+		try {
+			if (zoomApplier != null) zoomApplier.accept(newZoom);
+			else graphModel.getResizeManager().setZoomPercent(newZoom);
+		} catch (GraphResizeManager.ZoomRangeException | NotReadyException e) {
+			return;
+		}
+		if (viewport == null) return;
+		// size the pane for the new zoom now, rather than at the queued revalidation, so the view can be placed on it
+		getJScrollPaneParent().validate();
+		setViewPosition(new Point((int) Math.round(anchor.x * scale) - anchorInView.x, (int) Math.round(anchor.y * scale) - anchorInView.y));
+	}
+
+	private JViewport getViewport() {
+		return getParent() instanceof JViewport viewport ? viewport : null;
+	}
+
+	private Point getViewCenter() {
+		JViewport viewport = getViewport();
+		if (viewport == null) return new Point(getWidth() / 2, getHeight() / 2);
+		Rectangle view = viewport.getViewRect();
+		return new Point(view.x + view.width / 2, view.y + view.height / 2);
+	}
+
+	private void setViewPosition(Point position) {
+		JViewport viewport = getViewport();
+		Dimension view = viewport.getExtentSize();
+		int x = Math.max(0, Math.min(position.x, getWidth() - view.width));
+		int y = Math.max(0, Math.min(position.y, getHeight() - view.height));
+		viewport.setViewPosition(new Point(x, y));
+	}
+
+	private void installZoomKeys() {
+		int shortcut = Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
+		bindZoomKey("GraphPane.zoomIn", this::zoomIn, shortcut, KeyEvent.VK_EQUALS, KeyEvent.VK_PLUS, KeyEvent.VK_ADD);
+		bindZoomKey("GraphPane.zoomOut", this::zoomOut, shortcut, KeyEvent.VK_MINUS, KeyEvent.VK_SUBTRACT);
+		bindZoomKey("GraphPane.resetZoom", this::resetZoom, shortcut, KeyEvent.VK_0, KeyEvent.VK_NUMPAD0);
+	}
+
+	private void bindZoomKey(String name, Runnable zoom, int modifiers, int... keyCodes) {
+		for (int keyCode : keyCodes) getInputMap(WHEN_FOCUSED).put(KeyStroke.getKeyStroke(keyCode, modifiers), name);
+		getActionMap().put(name, new AbstractAction() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				zoom.run();
+			}
+		});
+	}
+
+	// Cmd/Ctrl + scroll zooms around the cursor; any other scrolling goes to the scroll pane, as it would without this
+	@Override
+	protected void processMouseWheelEvent(MouseWheelEvent e) {
+		int zoomModifiers = InputEvent.META_DOWN_MASK | InputEvent.CTRL_DOWN_MASK;
+		if (graphModel != null && (e.getModifiersEx() & zoomModifiers) != 0) {
+			int zoom = getZoomPercent();
+			double from = !Double.isNaN(fractionalZoom) && Math.round(fractionalZoom) == zoom ? fractionalZoom : zoom;
+			fractionalZoom = Math.max(MIN_ZOOM_PERCENT, Math.min(MAX_ZOOM_PERCENT, from * Math.pow(WHEEL_ZOOM_FACTOR, -e.getPreciseWheelRotation())));
+			zoomTo((int) Math.round(fractionalZoom), e.getPoint());
+			e.consume();
+			return;
+		}
+		JScrollPane scrollPane = getJScrollPaneParent();
+		if (scrollPane != null) scrollPane.dispatchEvent(SwingUtilities.convertMouseEvent(this, e, scrollPane));
+		else super.processMouseWheelEvent(e);
+	}
+
+	// A pan (middle-button drag, or Space + drag) is handled here, and never reaches the diagram's editing tools
+	@Override
+	protected void processMouseEvent(MouseEvent e) {
+		if (e.getID() == MouseEvent.MOUSE_PRESSED && getViewport() != null
+				&& (SwingUtilities.isMiddleMouseButton(e) || (spaceDown && SwingUtilities.isLeftMouseButton(e)))) {
+			requestFocus();
+			panStartOnScreen = e.getLocationOnScreen();
+			panStartView = getViewport().getViewPosition();
+			cursorBeforePan = spaceDown ? cursorBeforePan : getCursor();
+			setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
+			return;
+		}
+		if (panStartOnScreen != null) {
+			if (e.getID() == MouseEvent.MOUSE_RELEASED) {
+				panStartOnScreen = null;
+				setCursor(spaceDown ? Cursor.getPredefinedCursor(Cursor.HAND_CURSOR) : cursorBeforePan);
+			}
+			return;
+		}
+		super.processMouseEvent(e);
+	}
+
+	@Override
+	protected void processMouseMotionEvent(MouseEvent e) {
+		if (panStartOnScreen == null) {
+			super.processMouseMotionEvent(e);
+			return;
+		}
+		if (e.getID() != MouseEvent.MOUSE_DRAGGED) return;
+		Point now = e.getLocationOnScreen();
+		setViewPosition(new Point(panStartView.x - (now.x - panStartOnScreen.x), panStartView.y - (now.y - panStartOnScreen.y)));
+	}
+
+	@Override
+	protected void processKeyEvent(KeyEvent e) {
+		if (e.getKeyCode() == KeyEvent.VK_SPACE && e.getID() != KeyEvent.KEY_TYPED) {
+			boolean down = e.getID() == KeyEvent.KEY_PRESSED;
+			if (down != spaceDown) setSpaceDown(down);
+			e.consume();
+			return;
+		}
+		super.processKeyEvent(e);
+	}
+
+	@Override
+	protected void processFocusEvent(FocusEvent e) {
+		if (e.getID() == FocusEvent.FOCUS_LOST && spaceDown) setSpaceDown(false); // a Space release elsewhere is never seen
+		super.processFocusEvent(e);
+	}
+
+	// While Space is held the cursor shows that dragging pans
+	private void setSpaceDown(boolean down) {
+		spaceDown = down;
+		if (panStartOnScreen != null) return;
+		if (down) {
+			cursorBeforePan = getCursor();
+			setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		} else {
+			setCursor(cursorBeforePan);
+		}
+	}
+
 	@Override
 	public String getToolTipText() {
 		return "Graph";
