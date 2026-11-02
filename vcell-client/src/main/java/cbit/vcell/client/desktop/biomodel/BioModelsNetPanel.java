@@ -59,7 +59,7 @@ import org.vcell.util.gui.CollapsiblePanel;
 import org.vcell.util.gui.VCellIcons;
 
 import cbit.vcell.biomodel.meta.VCMetaDataMiriamManager;
-import cbit.vcell.client.DocumentWindowManager;
+import cbit.vcell.client.TopLevelWindowManager;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.BioModelNode;
@@ -189,7 +189,7 @@ public class BioModelsNetPanel extends DocumentEditorSubPanel {
 		}
 	}
 	
-	private DocumentWindowManager documentWindowManager = null;
+	private TopLevelWindowManager documentWindowManager = null; // the window a model is imported from: a model window, or the welcome window
 	private JTextField searchTextField;
 	private JButton searchButton = null;
 	private JButton showAllButton = null;
@@ -516,7 +516,7 @@ TODO:
 		add(importButton, gbc);
 	}
 
-	public void setDocumentWindowManager(DocumentWindowManager newValue) {
+	public void setDocumentWindowManager(TopLevelWindowManager newValue) {
 		this.documentWindowManager = newValue;
 	}
 	

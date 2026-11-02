@@ -43,6 +43,9 @@ import org.vcell.util.gui.GlassPane;
 import org.vcell.util.gui.VCellIcons;
 
 import cbit.vcell.client.desktop.DocumentWindow;
+import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.client.desktop.WelcomePanel;
+import cbit.vcell.client.desktop.WelcomeWindow;
 import cbit.vcell.client.desktop.DocumentWindowAboutBox;
 import cbit.vcell.client.desktop.TestingFrameworkWindow;
 import cbit.vcell.client.desktop.TestingFrameworkWindowPanel;
@@ -63,6 +66,7 @@ public class ClientMDIManager implements MDIManager {
 	public final static String TESTING_FRAMEWORK_WINDOW_ID = "TestingFrameworkWindow";
 //	public final static String BIONETGEN_WINDOW_ID = "BioNetGenWindow";
 	public final static String FIELDDATA_WINDOW_ID = "FieldDataWindow";
+	public final static String WELCOME_WINDOW_ID = "WelcomeWindow";
 	private static interface Creator {
 		void create( );
 	}
@@ -247,12 +251,51 @@ public DocumentWindow createNewDocumentWindow(final DocumentWindowManager window
 	getRequestManager().updateStatusNow(); // initialize status bar with current status (also syncs all other windows)
 	// done
 	documentWindow.setVisible(true);
+	// a model opened or created from the welcome window takes its place, unless the user keeps it open
+	if (isWelcomeWindowShowing() && !WelcomeWindowManager.isKeptOpen()) hideWelcomeWindowWhenTasksAreDone();
 	// the work area is only inside a realized window now, which is what any child
 	// window of this document needs in order to attach itself
 	windowManager.documentWindowShown();
 	return documentWindow;
 }
 
+
+/** Shows the welcome window, making it the first time. */
+public void showWelcomeWindow() {
+	if (!getWindowsHash().containsKey(WELCOME_WINDOW_ID)) {
+		WelcomeWindowManager welcomeWindowManager = new WelcomeWindowManager(getRequestManager());
+		WelcomeWindow welcomeWindow = new WelcomeWindow(welcomeWindowManager);
+		getWindowsHash().put(WELCOME_WINDOW_ID, welcomeWindow);
+		getManagersHash().put(WELCOME_WINDOW_ID, welcomeWindowManager);
+		welcomeWindow.addWindowListener(windowListener); // closing goes to the request manager
+		welcomeWindowManager.updateConnectionStatus(getRequestManager().getConnectionStatus());
+		// as tall as it needs, and centered as it is once logged in; it packs again as the model tabs come and go
+		((WelcomePanel) welcomeWindowManager.getComponent()).packAndCenter();
+	}
+	showWindow(WELCOME_WINDOW_ID);
+	((Window) getWindowsHash().get(WELCOME_WINDOW_ID)).toFront();
+}
+
+// Once the tasks that opened the model are done and their progress dialog has closed: it belongs to the welcome window,
+// and hidden with it rather than closed, it would come back with it later, frozen
+private void hideWelcomeWindowWhenTasksAreDone() {
+	Window welcome = (Window) getWindowsHash().get(WELCOME_WINDOW_ID);
+	javax.swing.Timer timer = new javax.swing.Timer(200, null);
+	timer.addActionListener(e -> {
+		if (ClientTaskDispatcher.hasOutstandingTasks()) return;
+		for (Window owned : welcome.getOwnedWindows()) {
+			if (owned.isVisible()) return;
+		}
+		timer.stop();
+		if (welcome.isShowing() && !WelcomeWindowManager.isKeptOpen()) welcome.setVisible(false);
+	});
+	timer.start();
+}
+
+public boolean isWelcomeWindowShowing() {
+	TopLevelWindow welcome = getWindowsHash().get(WELCOME_WINDOW_ID);
+	return welcome instanceof Window window && window.isShowing();
+}
 
 /**
  * Insert the method's description here.
