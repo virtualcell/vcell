@@ -270,3 +270,10 @@ active_users*.csv
 
 # backlog tooling output
 obsolescence-sweep.json
+
+# Agentic Tooling
+.agents/
+.freebuff/
+.kilo/
+.perch/
+.claude/
