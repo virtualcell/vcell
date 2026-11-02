@@ -138,6 +138,7 @@ public class ClientRequestManager
 
 	private boolean bOpening = false;
 	private boolean bExiting = false;
+	private boolean bClosingAllWindows = false; // see afterDocumentWindowClosed
 
 	private static final Logger lg = LogManager.getLogger(ClientRequestManager.class);
 
@@ -429,14 +430,33 @@ public class ClientRequestManager
 		// create copy to avoid ConcurrentModification exception caused by closing
 		// window
 		ArrayList<TopLevelWindowManager> modificationSafeCopy = new ArrayList<>(getMdiManager().getWindowManagers());
-		for (TopLevelWindowManager windowManager : modificationSafeCopy) {
-			boolean closed = closeWindow(windowManager.getManagerID(), duringExit);
-			if (!closed) {
-				// user canceled, don't keep going...
-				return false;
+		bClosingAllWindows = true; // no bringing back the welcome window as the last model window closes
+		try {
+			for (TopLevelWindowManager windowManager : modificationSafeCopy) {
+				boolean closed = closeWindow(windowManager.getManagerID(), duringExit);
+				if (!closed) {
+					// user canceled, don't keep going...
+					return false;
+				}
 			}
+			return true;
+		} finally {
+			bClosingAllWindows = false;
 		}
-		return true;
+	}
+
+	// After a model window closes: with none left, back to the welcome window rather than quitting (unless every window
+	// is being closed, to quit or log out)
+	private void afterDocumentWindowClosed(long openWindows, boolean exitIfLast) {
+		if (openWindows > 0) return;
+		if (!bClosingAllWindows) {
+			((ClientMDIManager) getMdiManager()).showWelcomeWindow();
+			return;
+		}
+		if (exitIfLast) {
+			setBExiting(true);
+			exitApplication();
+		}
 	}
 
 	public boolean closeWindow(final java.lang.String windowID, final boolean exitIfLast) {
@@ -463,10 +483,7 @@ public class ClientRequestManager
 							getMdiManager().showWindow(windowID);
 						} else {
 							long openWindows = getMdiManager().closeWindow(windowManager.getManagerID());
-							if (exitIfLast && (openWindows == 0)) {
-								setBExiting(true);
-								exitApplication();
-							}
+							afterDocumentWindowClosed(openWindows, exitIfLast);
 						}
 					}
 
@@ -492,12 +509,17 @@ public class ClientRequestManager
 				return true;
 			} else {
 				long openWindows = getMdiManager().closeWindow(windowID);
-				if (exitIfLast && (openWindows == 0)) {
-					setBExiting(true);
-					exitApplication();
-				}
+				afterDocumentWindowClosed(openWindows, exitIfLast);
 				return true;
 			}
+		} else if (windowManager instanceof WelcomeWindowManager) {
+			// it only hides; with no model window open either, VCell quits
+			long openWindows = getMdiManager().closeWindow(windowID);
+			if (exitIfLast && (openWindows == 0)) {
+				setBExiting(true);
+				exitApplication();
+			}
+			return true;
 		} else if (windowManager instanceof DatabaseWindowManager) {
 			// nothing to check here, just close it
 			long openWindows = getMdiManager().closeWindow(windowID);
@@ -657,18 +679,27 @@ public class ClientRequestManager
 	}
 
 
+	/** Logs in when no one is, through the browser or as the guest user: the steps VCell starts with, without asking how. */
+	public void logIn(final TopLevelWindowManager requester, boolean guest) {
+		Auth0ConnectionUtils auth0ConnectionUtils = getClientServerManager().auth0ConnectionUtils;
+		Hashtable<String, Object> hash = new Hashtable<>();
+		hash.put("currWindowManager", requester);
+		hash.put("login", true);
+		hash.put("guest", guest);
+		ClientTaskDispatcher.dispatch(requester.getComponent(), hash, new AsynchClientTask[] {
+				ClientLogin.loginWithAuth0(auth0ConnectionUtils), ClientLogin.connectToServer(auth0ConnectionUtils, getClientServerInfo()) });
+	}
+
 	public void logOut(final TopLevelWindowManager requester){
 		StringBuilder dialogMessage = new StringBuilder();
 		dialogMessage.append("You are about to log out of the VCell client.\n\n");
-		if (requester instanceof DocumentWindowManager documentWindowManager){
-			if(!User.isGuest(documentWindowManager.getUser().getName())){
-				dialogMessage.append("""
-                        Because VCell uses a browser-based login,
-                        you'll be redirected to a logout page to
-                        complete the logout process there.
-                        
-                        """);
-			}
+		if(!User.isGuest(getClientServerInfo().getUsername())){
+			dialogMessage.append("""
+                    Because VCell uses a browser-based login,
+                    you'll be redirected to a logout page to
+                    complete the logout process there.
+                    
+                    """);
 		}
 		dialogMessage.append("Do you wish to continue?");
 
@@ -677,8 +708,9 @@ public class ClientRequestManager
 				new String[] { "Continue", "Cancel" }, "Continue");
 		if ("Continue".equals(confirm))  {
 			closeAllWindows(false);
-			getClientServerManager().cleanup(); //set VCell connection to null
+			// polling first: a poll that finds the connection gone reconnects, logging the user back in
 			getClientServerManager().getAsynchMessageManager().stopPolling();
+			getClientServerManager().cleanup(); //set VCell connection to null
 
 			Hashtable<String, Object> hash = new Hashtable<String, Object>();
 
@@ -714,8 +746,16 @@ public class ClientRequestManager
 			};
 
 
-			AsynchClientTask[] newTasks = newDocument(requester,
-					new VCDocument.DocumentCreationInfo(VCDocumentType.BIOMODEL_DOC, 0));
+			// back to the welcome window, which offers the ways to log in again
+			AsynchClientTask showWelcome = new AsynchClientTask("showing the welcome window", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+				@Override
+				public void run(Hashtable<String, Object> hashTable) throws Exception {
+					ClientMDIManager mdiManager = (ClientMDIManager) getMdiManager();
+					mdiManager.showWelcomeWindow();
+					hashTable.put("currWindowManager", mdiManager.getWindowManager(ClientMDIManager.WELCOME_WINDOW_ID));
+				}
+			};
+			AsynchClientTask[] newTasks = { showWelcome };
 			AsynchClientTask task0 = new AsynchClientTask("preparing", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 				@Override
 				public void run(Hashtable<String, Object> hashTable) throws Exception {
@@ -727,10 +767,6 @@ public class ClientRequestManager
 					}
 				}
 			};
-
-			AsynchClientTask task1 = ClientLogin.popupLogin();
-			AsynchClientTask task2 = ClientLogin.loginWithAuth0(auth0ConnectionUtils);
-			AsynchClientTask task3 = ClientLogin.connectToServer(auth0ConnectionUtils, getClientServerInfo());
 
 			AsynchClientTask refresh = new AsynchClientTask("Refresh", AsynchClientTask.TASKTYPE_SWING_BLOCKING, false,
 					false) {
@@ -749,9 +785,6 @@ public class ClientRequestManager
             ArrayList<AsynchClientTask> tasks = new ArrayList<>(Arrays.stream(newTasks).toList());
 			tasks.add(0, waitTask);
 			tasks.add(task0);
-			tasks.add(task1);
-			tasks.add(task2);
-			tasks.add(task3);
 			tasks.add(refresh);
 
 			ClientTaskDispatcher.dispatch(null, hash, tasks.toArray(new AsynchClientTask[0]));
