@@ -82,6 +82,11 @@
     "protractor": "~7.0.0",
     "typescript": "~5.2.2"
   },
+  "overrides": {
+    "@angular-devkit/build-angular": {
+      "piscina": "^4.9.4"
+    }
+  },
   "prettier": {
     "singleQuote": true
   }
