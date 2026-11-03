@@ -215,14 +215,14 @@ public class CommentStringTokenizer {
 						this.currCol += nextToken.length();
 						continue;
 					}
-					if (nextToken.startsWith(Commented.BEFORE_COMMENT)) {
+					if (nextToken.startsWith(Commented.AFTER_COMMENT)) {
 						if (firstToken != null) {
-							String comment = nextLine.substring(this.currCol + Commented.BEFORE_COMMENT.length());
+							String comment = nextLine.substring(this.currCol + Commented.AFTER_COMMENT.length());
 							firstToken.setAfterComment(comment);
 						}
 						break;
 					}
-					if (nextToken.startsWith(Commented.AFTER_COMMENT)) {
+					if (nextToken.startsWith(Commented.BEFORE_COMMENT)) {
 						lineTokenizer = this.parseAndConsumeBeforeComment(nextLine);
 						continue;
 					}
@@ -271,12 +271,12 @@ public class CommentStringTokenizer {
 	 * @return new StringTokenizer for remaining part of file
 	 */
 	private StringTokenizer parseAndConsumeBeforeComment(String nextLine) {
-		String restOfLine = nextLine.substring(this.currCol + Commented.AFTER_COMMENT.length());
+		String restOfLine = nextLine.substring(this.currCol + Commented.BEFORE_COMMENT.length());
 		int endMark = restOfLine.indexOf(Commented.END_BEFORE_COMMENT);
 		if (endMark != Commented.CHAR_NOT_FOUND) {
 			this.beforeComment = this.removeLeadingSpace(restOfLine.substring(0, endMark));
 			String remainingLine = restOfLine.substring(endMark + Commented.END_BEFORE_COMMENT.length());
-			this.currCol += Commented.AFTER_COMMENT.length() + this.beforeComment.length() + Commented.END_BEFORE_COMMENT.length();
+			this.currCol += Commented.BEFORE_COMMENT.length() + this.beforeComment.length() + Commented.END_BEFORE_COMMENT.length();
 			return new StringTokenizer(remainingLine, DELIMITERS, true);
 		}
 		assert !restOfLine.contains(Commented.END_BEFORE_COMMENT);
@@ -293,6 +293,7 @@ public class CommentStringTokenizer {
 				e.printStackTrace();
 				throw new NoSuchElementException(e.getMessage());
 			}
+			if (line == null) throw new NoSuchElementException("Unterminated comment: \"" + Commented.BEFORE_COMMENT + "\" with no closing \"" + Commented.END_BEFORE_COMMENT + "\"");
 			int mark = line.indexOf(Commented.END_BEFORE_COMMENT);
 			if (mark == Commented.CHAR_NOT_FOUND) {
 				sb.append(line);
