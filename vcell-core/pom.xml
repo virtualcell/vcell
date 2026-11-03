@@ -417,6 +417,12 @@
 		    <version>${commons-pool2.version}</version>
 		</dependency>
 		<dependency>
+			<!-- One of the two array backends behind org.vcell.data.array.DoubleArrayND, kept while they are compared -->
+			<groupId>org.tensorflow</groupId>
+			<artifactId>ndarray</artifactId>
+			<version>${java-ndarray.version}</version>
+		</dependency>
+		<dependency>
 			<!-- Upstream master commit built by JitPack, see jhdf.version in the parent pom -->
 			<groupId>com.github.jamesmudd</groupId>
 			<artifactId>jhdf</artifactId>
