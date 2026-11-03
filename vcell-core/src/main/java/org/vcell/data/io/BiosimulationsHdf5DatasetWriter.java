@@ -28,7 +28,8 @@ import java.util.Set;
  * /&lt;dir&gt;/&lt;doc&gt;.sedml/&lt;id&gt;     one HDF5 dataset per report, shaped
  *                              [data set, (scan parameter, [sub-task])..., point...]
  * </pre>
- * Each report dataset carries the attributes {@code _type}, {@code sedmlDataSetDataTypes}, {@code sedmlDataSetIds},
+ * Ids are written without VCell's prefixes (see {@link SedmlReports#dataSetIdWithoutVCellPrefixes}). Each report dataset
+ * carries the attributes {@code _type}, {@code sedmlDataSetDataTypes}, {@code sedmlDataSetIds},
  * {@code sedmlDataSetNames}, {@code sedmlDataSetLabels}, {@code sedmlDataSetShapes}, {@code sedmlRepeatedTaskValues}
  * and {@code sedmlRepeatedTaskParameterNames} (for scans only), {@code sedmlId}, {@code sedmlName} and {@code uri}.
  * <p>
@@ -122,20 +123,23 @@ public final class BiosimulationsHdf5DatasetWriter implements DatasetCollectionW
 		int perDataSet = Math.toIntExact(jobs * points);
 		double[] buffer = new double[Math.multiplyExact(perDataSet, dataSets.size())];
 		for (int i = 0; i < dataSets.size(); i++) report.values(dataSets.get(i).name()).copyTo(buffer, i * perDataSet);
-		WritableDataset written = documentGroup.putDataset(report.name(),
+		String id = SedmlReports.reportIdWithoutVCellPrefixes(report.name());
+		WritableDataset written = documentGroup.putDataset(id,
 				JhdfUtils.createMultidimensionalArray(shape.stream().mapToLong(Long::longValue).toArray(), buffer));
 
 		List<String> ids = new ArrayList<>(), names = new ArrayList<>(), labels = new ArrayList<>(), shapes = new ArrayList<>();
 		for (Variable dataSet : dataSets) {
-			ids.add(dataSet.name());
+			ids.add(SedmlReports.dataSetIdWithoutVCellPrefixes(dataSet.name(), report.name()));
 			names.add(dataSet.attributes().getOrDefault(SedmlReports.DATA_SET_NAME, ""));
 			labels.add(dataSet.attributes().getOrDefault(SedmlReports.DATA_SET_LABEL, ""));
 			// One entry per data set per job, each the flat size of one job's data. This is how the VCell CLI has always
 			// written it, not one shape per data set; it stays until the change is made deliberately, so outputs match.
 			for (long job = 0; job < jobs; job++) shapes.add(Long.toString(points));
 		}
-		written.putAttribute("_type", SedmlReports.outputType(report).sedmlName());
-		written.putAttribute("sedmlDataSetDataTypes", ids.stream().map(id -> "float64").toArray(String[]::new));
+		// The CLI has always typed an output by VCell's plot prefix, so a plot from another tool's SED-ML is typed as a
+		// report; kept so outputs match (https://github.com/virtualcell/vcell/issues/2192).
+		written.putAttribute("_type", (report.name().startsWith(SedmlReports.PLOT_PREFIX) ? SedmlReports.OutputType.PLOT_2D : SedmlReports.OutputType.REPORT).sedmlName());
+		written.putAttribute("sedmlDataSetDataTypes", ids.stream().map(dataSetId -> "float64").toArray(String[]::new));
 		written.putAttribute("sedmlDataSetIds", ids.toArray(new String[0]));
 		written.putAttribute("sedmlDataSetNames", names.toArray(new String[0]));
 		written.putAttribute("sedmlDataSetLabels", labels.toArray(new String[0]));
@@ -144,8 +148,8 @@ public final class BiosimulationsHdf5DatasetWriter implements DatasetCollectionW
 			written.putAttribute("sedmlRepeatedTaskValues", scans.stream().map(scan -> Arrays.toString(scan.values())).toArray(String[]::new));
 			written.putAttribute("sedmlRepeatedTaskParameterNames", scans.stream().map(Dimension::name).toArray(String[]::new));
 		}
-		written.putAttribute("sedmlId", report.name());
-		written.putAttribute("sedmlName", report.attributes().getOrDefault(SedmlReports.NAME, report.name()));
-		written.putAttribute("uri", SedmlReports.document(report) + "/" + report.name());
+		written.putAttribute("sedmlId", id);
+		written.putAttribute("sedmlName", report.attributes().getOrDefault(SedmlReports.NAME, id));
+		written.putAttribute("uri", SedmlReports.document(report) + "/" + id);
 	}
 }

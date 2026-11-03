@@ -33,7 +33,8 @@ import java.util.Set;
  * ({@code Hdf5DataPreparer} and the {@code Hdf5Sedml*} holders): what used to be assembled for one file format is now a
  * dataset any writer can take.
  * <p>
- * Values stay lazy: a data set's values are only computed when a writer reads them.
+ * Ids are kept as the SED-ML has them; writers decide how to present them. Values stay lazy: a data set's values are
+ * only computed when a writer reads them.
  */
 public final class SedmlReportDatasets {
     private SedmlReportDatasets() { }
@@ -54,36 +55,46 @@ public final class SedmlReportDatasets {
         if (results.isEmpty()) return reports;
 
         List<Report> outputs = new ArrayList<>(sedml.getSedML().getOutputs().stream().filter(Report.class::isInstance).map(Report.class::cast).toList());
+        int numberOfReports = outputs.size(); // any further outputs are plots, reported as if they were reports
         if (includePlots) {
             Map<DataGenerator, ValueHolder<LazySBMLDataAccessor>> generalized = new LinkedHashMap<>();
             for (var entry : results.entrySet()) generalized.put(entry.getKey(), new ValueHolder<>(entry.getValue()));
             ResultsConverter.add2DPlotsAsReports(sedml, generalized, outputs);
         }
 
-        for (Report report : outputs) {
-            Map<DataSet, ValueHolder<LazySBMLNonSpatialDataAccessor>> dataSetValues = new LinkedHashMap<>();
+        for (int i = 0; i < outputs.size(); i++) {
+            Report report = outputs.get(i);
+            Map<DataSet, DataGenerator> dataGenerators = new LinkedHashMap<>();
+            List<String> omitted = new ArrayList<>();
             for (DataSet dataSet : report.getDataSets()) {
                 DataGenerator dataGenerator = sedml.findDataGeneratorById(dataSet.getDataReference());
                 if (dataGenerator == null || !results.containsKey(dataGenerator)) {
-                    if (dataGenerator != null && allValidDataGenerators.contains(dataGenerator)) continue;
+                    if (dataGenerator != null && allValidDataGenerators.contains(dataGenerator)) {
+                        omitted.add(dataSet.getIdAsString());
+                        continue;
+                    }
                     throw new RuntimeException("No data for Data Generator `" + dataSet.getDataReference() + "` can be found!");
                 }
-                dataSetValues.put(dataSet, results.get(dataGenerator));
+                dataGenerators.put(dataSet, dataGenerator);
             }
+            Map<DataSet, ValueHolder<LazySBMLNonSpatialDataAccessor>> dataSetValues = new LinkedHashMap<>();
+            for (var entry : dataGenerators.entrySet()) dataSetValues.put(entry.getKey(), results.get(entry.getValue()));
             if (dataSetValues.isEmpty()) {
                 logger.warn("Report `{}` has no nonspatial data sets to report", report.getIdAsString());
                 continue;
             }
             if (dataSetValues.values().iterator().next().isEmpty()) continue;
-            reports.add(SedmlReportDatasets.reportDataset(report, dataSetValues, document));
+            SedmlReports.OutputType type = i < numberOfReports ? SedmlReports.OutputType.REPORT : SedmlReports.OutputType.PLOT_2D;
+            reports.add(SedmlReportDatasets.reportDataset(report, type, dataGenerators, dataSetValues, omitted, document));
         }
         return reports;
     }
 
-    private static Dataset reportDataset(Report report, Map<DataSet, ValueHolder<LazySBMLNonSpatialDataAccessor>> dataSetValues, String document) {
+    private static Dataset reportDataset(Report report, SedmlReports.OutputType type, Map<DataSet, DataGenerator> dataGenerators,
+                                         Map<DataSet, ValueHolder<LazySBMLNonSpatialDataAccessor>> dataSetValues, List<String> omitted, String document) {
         String prefixedId = report.getIdAsString();
-        String id = ResultsConverter.removeVCellPrefixes(prefixedId, prefixedId);
-        Dataset.Builder builder = SedmlReports.report(document, id, report.getName(), SedmlReports.OutputType.fromSedmlName(ResultsConverter.getKind(prefixedId)));
+        Dataset.Builder builder = SedmlReports.report(document, prefixedId, report.getName(), type);
+        if (!omitted.isEmpty()) builder.attribute(SedmlReports.OMITTED_DATA_SETS, String.join(",", omitted));
 
         ValueHolder<LazySBMLNonSpatialDataAccessor> first = dataSetValues.values().iterator().next();
         List<Dimension.Numeric> scans = SedmlReportDatasets.scanDimensions(first.getSimulation().getMathOverrides());
@@ -115,8 +126,9 @@ public final class SedmlReportDatasets {
         shape[shape.length - 1] = points;
         for (var entry : dataSetValues.entrySet()) {
             DataSet dataSet = entry.getKey();
-            String dataSetId = ResultsConverter.removeVCellPrefixes(dataSet.getIdAsString(), id);
-            builder.variable(SedmlReports.dataSet(dataSetId, dataSet.getLabel(), dataSet.getName(), dimensions),
+            DataGenerator dataGenerator = dataGenerators.get(dataSet);
+            builder.variable(SedmlReports.dataSet(dataSet.getIdAsString(), dataSet.getLabel(), dataSet.getName(),
+                            dataGenerator.getIdAsString(), dataGenerator.getName(), dimensions),
                     SedmlReportDatasets.jobsSource(entry.getValue().listOfResultSets, points, shape));
         }
         return builder.build();
