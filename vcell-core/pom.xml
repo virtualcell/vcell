@@ -423,6 +423,19 @@
 			<version>${java-ndarray.version}</version>
 		</dependency>
 		<dependency>
+			<!-- Microbenchmarks (org.vcell.data.array.ArrayBackendBenchmark); test scope only -->
+			<groupId>org.openjdk.jmh</groupId>
+			<artifactId>jmh-core</artifactId>
+			<version>${jmh.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.openjdk.jmh</groupId>
+			<artifactId>jmh-generator-annprocess</artifactId>
+			<version>${jmh.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<!-- Upstream master commit built by JitPack, see jhdf.version in the parent pom -->
 			<groupId>com.github.jamesmudd</groupId>
 			<artifactId>jhdf</artifactId>
@@ -707,6 +720,26 @@
 			</plugins>
 		</pluginManagement>
 		<plugins>
+			<plugin>
+				<!-- Generates the JMH harness for test-scope benchmarks. Since JDK 23, javac no longer discovers
+				     annotation processors on the classpath, so the processor is named explicitly; test sources only. -->
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>default-testCompile</id>
+						<configuration>
+							<annotationProcessorPaths>
+								<path>
+									<groupId>org.openjdk.jmh</groupId>
+									<artifactId>jmh-generator-annprocess</artifactId>
+									<version>${jmh.version}</version>
+								</path>
+							</annotationProcessorPaths>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 			<!-- Native solvers for every platform, on every build OS: one execution per solver repo and
 			     platform, each pinned to a release tag and checked against its sha256 (both in the root
 			     pom.xml). Each repo unpacks into its own directory, localsolvers/<os>/<repo>/, with the
