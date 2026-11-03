@@ -12,6 +12,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.vcell.cli.messaging.CLIRecorder;
 import org.vcell.cli.run.ExecuteImpl;
 import org.vcell.cli.run.ExecutionJob;
+import org.vcell.cli.run.UnifiedReportsComparison;
 import org.vcell.util.VCellUtilityHub;
 
 import java.io.File;
@@ -26,8 +27,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Golden comparison: executes OMEX archives through the CLI with {@link ExecutionJob#UNIFIED_REPORTS_PROPERTY} set, so
- * each run writes its reports twice, once through the legacy {@link BiosimulationsHdf5Writer} and once through the new
- * data system, and requires both files to hold exactly the same content.
+ * each run writes its reports twice, once through the legacy code ({@link BiosimulationsHdf5Writer} and the report
+ * CSVs) and once through the new data system, and requires both to be the same (see {@link UnifiedReportsComparison}).
  * <p>
  * The archives cover parameter scans, several SED-ML documents in one archive, and 2D plots, in both BioSimulators mode
  * (sub-task dimensions, plots reported) and plain mode. BSTSBasedOmexExecTest makes the same comparison over the whole
@@ -80,11 +81,10 @@ public class BiosimulationsHdf5GoldenTest {
         Path output = Files.createDirectory(run.resolve("out"));
         ExecuteImpl.singleMode(omex.toFile(), output.toFile(), new CLIRecorder(output.toFile(), false, false), bioSimMode);
 
-        Path legacy = output.resolve("reports.h5"), unified = output.resolve(ExecutionJob.UNIFIED_REPORTS_FILE);
+        Path legacy = output.resolve("reports.h5");
         assertTrue(Files.exists(legacy), "the legacy writer produced no reports for " + archive);
-        assertTrue(Files.exists(unified), "the new writer produced no reports for " + archive);
         assertFalse(Hdf5Comparison.datasetShapes(legacy).isEmpty(), "no reports to compare in " + archive);
-        List<String> differences = Hdf5Comparison.differences(legacy, unified);
+        List<String> differences = UnifiedReportsComparison.differences(output);
         assertTrue(differences.isEmpty(), String.join("\n", differences));
     }
 }

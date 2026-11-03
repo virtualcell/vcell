@@ -9,12 +9,16 @@ import org.vcell.cli.exceptions.PreProcessingException;
 import org.vcell.cli.run.hdf5.BiosimulationsHdf5Writer;
 import org.vcell.cli.run.hdf5.BiosimulationsHdfWriterException;
 import org.vcell.cli.run.hdf5.HDF5ExecutionResults;
+import org.vcell.data.Dataset;
 import org.vcell.data.io.BiosimulationsHdf5DatasetWriter;
+import org.vcell.data.io.SedmlReportCsvWriter;
+import org.vcell.data.sedml.SedmlReports;
 import org.vcell.sedml.log.BiosimulationLog;
 import org.vcell.util.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -27,11 +31,14 @@ public class ExecutionJob {
     private final static Logger logger = LogManager.getLogger(ExecutionJob.class);
 
     /**
-     * System property that, when "true", also writes the reports through the new data system (org.vcell.data) to
-     * {@link #UNIFIED_REPORTS_FILE}, next to the legacy reports.h5, so the two can be compared. Nonspatial reports only.
+     * System property that, when "true", also writes the reports through the new data system (org.vcell.data), so they
+     * can be compared with the legacy ones: the HDF5 to {@link #UNIFIED_REPORTS_FILE}, next to the legacy reports.h5,
+     * and each report's CSV to {@link #UNIFIED_REPORTS_DIRECTORY}/&lt;SED-ML document&gt;/&lt;report id&gt;.csv, mirroring
+     * the legacy &lt;SED-ML document&gt;/&lt;report id&gt;.csv. Nonspatial reports only.
      */
     public static final String UNIFIED_REPORTS_PROPERTY = "vcell.cli.unifiedReports";
     public static final String UNIFIED_REPORTS_FILE = "reports.unified.h5";
+    public static final String UNIFIED_REPORTS_DIRECTORY = "reports.unified";
 
     private long startTime_ms, endTime_ms;
     private boolean bExactMatchOnly, bSmallMeshOverride, bKeepTempFiles;
@@ -144,12 +151,24 @@ public class ExecutionJob {
             }
             if (this.anySedmlDocumentHasSucceeded) BiosimulationsHdf5Writer.writeHdf5(cumulativeHdf5Results, new File(this.outputDir));
             if (this.anySedmlDocumentHasSucceeded && cumulativeHdf5Results.reportDatasets != null)
-                new BiosimulationsHdf5DatasetWriter(cumulativeHdf5Results.isBioSimHdf5)
-                        .write(cumulativeHdf5Results.reportDatasets, Paths.get(this.outputDir, UNIFIED_REPORTS_FILE));
+                this.writeUnifiedReports(cumulativeHdf5Results.reportDatasets, cumulativeHdf5Results.isBioSimHdf5);
 
         } catch (IOException e){
             logger.error("System IO encountered a fatal error");
             throw new ExecutionException(e);
+        }
+    }
+
+    // written once every document has run, so the legacy per-document reports.zip never picks these up
+    private void writeUnifiedReports(List<Dataset> reports, boolean isBioSimMode) throws IOException {
+        new BiosimulationsHdf5DatasetWriter(isBioSimMode).write(reports, Paths.get(this.outputDir, UNIFIED_REPORTS_FILE));
+        SedmlReportCsvWriter csvWriter = new SedmlReportCsvWriter();
+        for (Dataset report : reports) {
+            // CSVs are for reports alone, and only for those whose data sets are all here
+            if (SedmlReports.outputType(report) != SedmlReports.OutputType.REPORT || !SedmlReports.isComplete(report)) continue;
+            Path directory = Paths.get(this.outputDir, UNIFIED_REPORTS_DIRECTORY, SedmlReports.document(report)).normalize();
+            Files.createDirectories(directory);
+            csvWriter.write(report, directory.resolve(report.name() + "." + csvWriter.extension()));
         }
     }
 
