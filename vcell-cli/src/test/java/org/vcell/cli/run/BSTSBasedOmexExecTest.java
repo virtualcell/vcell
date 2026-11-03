@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.vcell.cli.messaging.CLIRecordable;
+import org.vcell.cli.run.hdf5.Hdf5Comparison;
 import org.vcell.sedml.testsupport.FailureType;
 import org.vcell.sedml.testsupport.OmexTestCase;
 import org.vcell.sedml.testsupport.OmexTestingDatabase;
@@ -40,12 +41,15 @@ public class BSTSBasedOmexExecTest {
 
 		PropertyLoader.setProperty(PropertyLoader.cliWorkingDir, new File("../vcell-cli-utils").getAbsolutePath());
 		VCMongoMessage.enabled = false;
+		// write every run's reports through the new data system as well, and compare (see testBSTSBasedOmex)
+		System.setProperty(ExecutionJob.UNIFIED_REPORTS_PROPERTY, "true");
 
 		omexTestCases = OmexTestingDatabase.loadOmexTestCases();
 	}
 
 	@AfterAll
 	public static void teardown() throws Exception {
+		System.clearProperty(ExecutionJob.UNIFIED_REPORTS_PROPERTY);
 		VCellUtilityHub.shutdown();
 	}
 
@@ -113,6 +117,11 @@ public class BSTSBasedOmexExecTest {
 			}
 			if (knownFault != null) {
 				throw new RuntimeException("Expected error " + knownFault.name() + " but found no error");
+			}
+			Path legacyReports = outdirPath.resolve("reports.h5");
+			if (Files.exists(legacyReports)) {
+				List<String> differences = Hdf5Comparison.differences(legacyReports, outdirPath.resolve(ExecutionJob.UNIFIED_REPORTS_FILE));
+				if (!differences.isEmpty()) fail("New report writer differs from the legacy one:\n" + String.join("\n", differences));
 			}
 		} catch (Exception e){
 			System.err.println("========== Begin Tracer report ==========");

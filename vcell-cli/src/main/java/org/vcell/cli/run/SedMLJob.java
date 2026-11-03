@@ -45,8 +45,10 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Class that deals with the processing quest of a sedml file.
@@ -390,6 +392,14 @@ public class SedMLJob {
 
         Hdf5DataContainer partialHdf5File = hdf5Extractor.extractHdf5RelevantData(organizedNonSpatialResults, organizedSpatialResults, masterHdf5File.isBioSimHdf5);
         masterHdf5File.addResults(this.sedml, partialHdf5File);
+
+        if (masterHdf5File.reportDatasets != null) {
+            Set<DataGenerator> allValidDataGenerators = new HashSet<>(organizedNonSpatialResults.keySet());
+            allValidDataGenerators.addAll(organizedSpatialResults.keySet());
+            String document = Paths.get(this.sedml.getPathForURI(), this.sedml.getFileName()).toString();
+            masterHdf5File.reportDatasets.addAll(SedmlReportDatasets.fromNonSpatialResults(
+                    this.sedml, organizedNonSpatialResults, allValidDataGenerators, document, masterHdf5File.isBioSimHdf5));
+        }
     }
 
     // This method is a bit weird; it uses a temp file as a reference to compare against while getting the file straight from the archive.

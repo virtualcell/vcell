@@ -9,6 +9,7 @@ import org.vcell.cli.exceptions.PreProcessingException;
 import org.vcell.cli.run.hdf5.BiosimulationsHdf5Writer;
 import org.vcell.cli.run.hdf5.BiosimulationsHdfWriterException;
 import org.vcell.cli.run.hdf5.HDF5ExecutionResults;
+import org.vcell.data.io.BiosimulationsHdf5DatasetWriter;
 import org.vcell.sedml.log.BiosimulationLog;
 import org.vcell.util.FileUtils;
 
@@ -24,6 +25,13 @@ import java.util.List;
 public class ExecutionJob {
 
     private final static Logger logger = LogManager.getLogger(ExecutionJob.class);
+
+    /**
+     * System property that, when "true", also writes the reports through the new data system (org.vcell.data) to
+     * {@link #UNIFIED_REPORTS_FILE}, next to the legacy reports.h5, so the two can be compared. Nonspatial reports only.
+     */
+    public static final String UNIFIED_REPORTS_PROPERTY = "vcell.cli.unifiedReports";
+    public static final String UNIFIED_REPORTS_FILE = "reports.unified.h5";
 
     private long startTime_ms, endTime_ms;
     private boolean bExactMatchOnly, bSmallMeshOverride, bKeepTempFiles;
@@ -119,7 +127,7 @@ public class ExecutionJob {
      * @throws ExecutionException if an execution specific error occurs
      */
     public void executeArchive(boolean isBioSimSedml) throws BiosimulationsHdfWriterException, ExecutionException {
-        HDF5ExecutionResults cumulativeHdf5Results = new HDF5ExecutionResults(isBioSimSedml);
+        HDF5ExecutionResults cumulativeHdf5Results = new HDF5ExecutionResults(isBioSimSedml, Boolean.getBoolean(UNIFIED_REPORTS_PROPERTY));
 
         try {
             for (String sedmlLocation : this.sedmlLocations) {
@@ -135,6 +143,9 @@ public class ExecutionJob {
                 }
             }
             if (this.anySedmlDocumentHasSucceeded) BiosimulationsHdf5Writer.writeHdf5(cumulativeHdf5Results, new File(this.outputDir));
+            if (this.anySedmlDocumentHasSucceeded && cumulativeHdf5Results.reportDatasets != null)
+                new BiosimulationsHdf5DatasetWriter(cumulativeHdf5Results.isBioSimHdf5)
+                        .write(cumulativeHdf5Results.reportDatasets, Paths.get(this.outputDir, UNIFIED_REPORTS_FILE));
 
         } catch (IOException e){
             logger.error("System IO encountered a fatal error");
