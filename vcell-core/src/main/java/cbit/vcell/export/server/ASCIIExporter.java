@@ -984,7 +984,7 @@ public class ASCIIExporter {
                     distance += coord.distanceTo(prevCoord);
                 }
                 fileDataContainerManager.append(fileDataContainerID, "," + distance);
-                for(int t = 0; t < variableValues[t].length; t++){
+                for(int t = 0; t < variableValues[i + 1].length; t++){
                     fileDataContainerManager.append(fileDataContainerID, "," + variableValues[i + 1][t]);
                     curveValues.add(variableValues[i + 1][t]);
                 }
