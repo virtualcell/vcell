@@ -106,6 +106,12 @@ Config: `vcell-rest/src/main/resources/application.properties`
 - **OpenAPI:** SmallRye OpenAPI at `/openapi`, Swagger UI at `/q/swagger-ui/`
 - **Tests:** `@QuarkusTest` with Keycloak + PostgreSQL testcontainers
 
+## Issues
+
+**Filing a GitHub issue? Read [docs/ISSUES.md](docs/ISSUES.md) first.** Every issue must be added to the
+"vcell development" project with Issue type, Status, Simplicity, Importance and Priority set; Priority is
+Importance + the Simplicity number, and new issues default to Pool.
+
 ## Messaging
 
 **Full picture: [docs/MESSAGING.md](docs/MESSAGING.md).** Read it before changing anything under
