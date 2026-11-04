@@ -47,7 +47,6 @@ public class PlottingDataExtractor {
      */
     public Map<Results2DLinePlot, Pair<String, SId>> extractPlotRelevantData(Map<DataGenerator, ValueHolder<LazySBMLNonSpatialDataAccessor>> organizedNonSpatialResults) {
         Map<Results2DLinePlot, Pair<String, SId>> plots = new LinkedHashMap<>();
-        Set<String> xLabelNames = new LinkedHashSet<>();
         if (organizedNonSpatialResults.isEmpty()) return plots;
 
         SedML sedML = this.sedml.getSedML();
@@ -55,6 +54,7 @@ public class PlottingDataExtractor {
             BiosimulationLog.instance().updatePlotStatusYml(this.sedmlName, requestedPlot.getIdAsString(), BiosimulationLog.Status.RUNNING);
             Results2DLinePlot plot = new Results2DLinePlot();
             plot.setTitle(requestedPlot.getName());
+            Set<String> xLabelNames = new LinkedHashSet<>(); // this plot's alone: they make its x axis title
 
             for (AbstractCurve abstractCurve: requestedPlot.getCurves()){
                 logger.debug("Processing Abstract curve: {}", abstractCurve);
