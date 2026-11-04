@@ -18,7 +18,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 @Tag("Fast")
-public class SedmlReportDatasetsTest {
+public class SedmlDataGeneratorsTest {
 
     /** A simulation scanning kOn over 3 values and Ka over 2: sorted, Ka (2 values) is outermost. */
     private static Simulation twoParameterScan() throws Exception {
@@ -37,7 +37,7 @@ public class SedmlReportDatasetsTest {
     @Test
     public void scanDimensionsFollowJobOrder() throws Exception {
         MathOverrides overrides = twoParameterScan().getMathOverrides();
-        List<Dimension.Numeric> scans = SedmlReportDatasets.scanDimensions(overrides);
+        List<Dimension.Numeric> scans = SedmlDataGenerators.scanDimensions(overrides);
         assertEquals(List.of(new Dimension.Numeric("Ka", new double[]{0.5, 5}), new Dimension.Numeric("kOn", new double[]{10, 20, 30})), scans,
                 "sorted constant names, each with its own values");
 

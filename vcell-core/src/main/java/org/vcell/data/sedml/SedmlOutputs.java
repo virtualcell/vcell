@@ -24,12 +24,22 @@ import java.util.Map;
  * Where the report sits (its SED-ML document), what kind of output it came from and which of its data sets could not
  * be included are dataset attributes; a data set's label, name and data generator are variable attributes.
  * <p>
+ * One 2D plot is one dataset too, over the same dimensions:
+ * <ul>
+ *     <li>each data generator a curve takes its x values from is a {@link Variable.Role#COORDINATE} variable, named by
+ *     the data generator's id, once however many curves share it;</li>
+ *     <li>each curve is a variable named by its id, holding its y values, with {@link #X_DATA} naming its x variable;</li>
+ *     <li>the plot's x axis, when the SED-ML gives one, is in dataset attributes.</li>
+ * </ul>
+ * Data generators that are a single SED-ML symbol (time, say) record it in {@link #DATA_GENERATOR_SYMBOL}, so a writer
+ * can label them as such.
+ * <p>
  * Ids are kept exactly as the SED-ML has them, VCell's own prefixes included ({@link #PLOT_PREFIX},
  * {@link #RESERVED_DATA_SET_PREFIX}). How an id is presented, like everything else about the file, is the writer's
  * business, and different formats have long presented them differently.
  */
-public final class SedmlReports {
-	private SedmlReports() { }
+public final class SedmlOutputs {
+	private SedmlOutputs() { }
 
 	/** Dataset attribute: path of the SED-ML document within its archive, e.g. {@code simulation.sedml} or {@code dir/sim.sedml}. */
 	public static final String DOCUMENT = "sedml.document";
@@ -51,6 +61,18 @@ public final class SedmlReports {
 	/** Variable attribute: name of the data generator the data set reports, when it has one. */
 	public static final String DATA_GENERATOR_NAME = "sedml.dataGeneratorName";
 
+	/** Variable attribute: the SED-ML symbol a data generator stands for, when it is just one symbol. */
+	public static final String DATA_GENERATOR_SYMBOL = "sedml.dataGeneratorSymbol";
+	/** Variable attribute, on a plot's curve: the name of the variable holding the curve's x values. */
+	public static final String X_DATA = "sedml.xData";
+	/** Dataset attribute, on a plot: the x axis's name, when it has one. */
+	public static final String X_AXIS_NAME = "sedml.xAxisName";
+	/** Dataset attribute, on a plot: the x axis's id, when it has one. */
+	public static final String X_AXIS_ID = "sedml.xAxisId";
+
+	/** The SED-ML symbol for simulation time. */
+	public static final String TIME_SYMBOL = "urn:sedml:symbol:time";
+
 	/** Prefix VCell's SED-ML export gives the ids of outputs it made from plots. */
 	public static final String PLOT_PREFIX = "__plot__";
 	/** Prefix VCell's SED-ML export gives the ids of data sets it adds itself. */
@@ -58,7 +80,6 @@ public final class SedmlReports {
 
 	public enum OutputType {
 		REPORT("SedReport"),
-		/** A 2D plot whose curves' data generators are reported as if the plot were a report. */
 		PLOT_2D("SedPlot2D");
 
 		private final String sedmlName;
@@ -95,6 +116,24 @@ public final class SedmlReports {
 		return new Variable(id, dimensions, null, Variable.Role.DATA, null, null, attributes);
 	}
 
+	/** @return a plot's variable holding the x values of one or more curves: a data generator's values */
+	public static Variable xData(String dataGenerator, String dataGeneratorName, String symbol, List<String> dimensions) {
+		Map<String, String> attributes = new HashMap<>();
+		if (dataGeneratorName != null) attributes.put(DATA_GENERATOR_NAME, dataGeneratorName);
+		if (symbol != null) attributes.put(DATA_GENERATOR_SYMBOL, symbol);
+		return new Variable(dataGenerator, dimensions, null, Variable.Role.COORDINATE, null, null, attributes);
+	}
+
+	/** @return a plot's variable for one curve, holding its y values */
+	public static Variable curve(String id, String name, String xData, String yDataGenerator, String yDataGeneratorName, List<String> dimensions) {
+		Map<String, String> attributes = new HashMap<>();
+		if (name != null) attributes.put(NAME, name);
+		attributes.put(X_DATA, xData);
+		attributes.put(DATA_GENERATOR, yDataGenerator);
+		if (yDataGeneratorName != null) attributes.put(DATA_GENERATOR_NAME, yDataGeneratorName);
+		return new Variable(id, dimensions, null, Variable.Role.DATA, null, null, attributes);
+	}
+
 	/** @return whether every data set of the report is a variable of the dataset */
 	public static boolean isComplete(Dataset report) {
 		return !report.attributes().containsKey(OMITTED_DATA_SETS);
@@ -113,7 +152,7 @@ public final class SedmlReports {
 
 	/** @return a report's id without VCell's {@link #PLOT_PREFIX} */
 	public static String reportIdWithoutVCellPrefixes(String reportId) {
-		return SedmlReports.withoutVCellPrefixes(reportId, reportId);
+		return SedmlOutputs.withoutVCellPrefixes(reportId, reportId);
 	}
 
 	/**
@@ -121,7 +160,7 @@ public final class SedmlReports {
 	 * its report's (unprefixed) id in front
 	 */
 	public static String dataSetIdWithoutVCellPrefixes(String dataSetId, String reportId) {
-		return SedmlReports.withoutVCellPrefixes(dataSetId, SedmlReports.reportIdWithoutVCellPrefixes(reportId));
+		return SedmlOutputs.withoutVCellPrefixes(dataSetId, SedmlOutputs.reportIdWithoutVCellPrefixes(reportId));
 	}
 
 	// as the CLI has always done it, so ids written by either system match

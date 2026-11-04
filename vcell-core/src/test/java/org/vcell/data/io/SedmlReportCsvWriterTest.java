@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.vcell.data.Dataset;
 import org.vcell.data.Dimension;
 import org.vcell.data.array.ArrayBackend;
-import org.vcell.data.sedml.SedmlReports;
+import org.vcell.data.sedml.SedmlOutputs;
 
 import java.util.List;
 
@@ -19,11 +19,11 @@ public class SedmlReportCsvWriterTest {
 
 	@Test
 	public void rowPerDataSetPerJob() {
-		Dataset report = SedmlReports.report("sim.sedml", "report1", null, SedmlReports.OutputType.REPORT)
+		Dataset report = SedmlOutputs.report("sim.sedml", "report1", null, SedmlOutputs.OutputType.REPORT)
 				.dimension(new Dimension.Numeric("k1", new double[]{0.5, 2.0}))
 				.dimension(new Dimension.Indexed(Dimension.TIME, 2))
-				.variable(SedmlReports.dataSet("time_tsk", "Time", null, "dg_time", "time", SCAN_THEN_TIME), BACKEND.wrap(new double[]{0, 1, 0, 1}, 2, 2))
-				.variable(SedmlReports.dataSet(SedmlReports.RESERVED_DATA_SET_PREFIX + "S1", "S1, free", null, "dg_s1", null, SCAN_THEN_TIME),
+				.variable(SedmlOutputs.dataSet("time_tsk", "Time", null, "dg_time", "time", SCAN_THEN_TIME), BACKEND.wrap(new double[]{0, 1, 0, 1}, 2, 2))
+				.variable(SedmlOutputs.dataSet(SedmlOutputs.RESERVED_DATA_SET_PREFIX + "S1", "S1, free", null, "dg_s1", null, SCAN_THEN_TIME),
 						BACKEND.wrap(new double[]{5, 4, 6, Double.NaN}, 2, 2))
 				.build();
 		assertEquals("""
@@ -36,9 +36,9 @@ public class SedmlReportCsvWriterTest {
 
 	@Test
 	public void unscannedReportIsJobZero() {
-		Dataset report = SedmlReports.report("sim.sedml", "r", null, SedmlReports.OutputType.REPORT)
+		Dataset report = SedmlOutputs.report("sim.sedml", "r", null, SedmlOutputs.OutputType.REPORT)
 				.dimension(new Dimension.Indexed(Dimension.TIME, 1))
-				.variable(SedmlReports.dataSet("x", "x", null, "dg", "", List.of(Dimension.TIME)), BACKEND.wrap(new double[]{3}, 1))
+				.variable(SedmlOutputs.dataSet("x", "x", null, "dg", "", List.of(Dimension.TIME)), BACKEND.wrap(new double[]{3}, 1))
 				.build();
 		assertEquals("x_0_,x(0),dg(0),3.0\n", new SedmlReportCsvWriter().toCsv(report), "an empty generator name falls back to its id");
 	}

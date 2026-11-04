@@ -16,19 +16,19 @@ public class HDF5ExecutionResults implements Iterable<SedMLDataContainer>{
     private final Map<SedMLDataContainer, Hdf5DataContainer> executionResultsMapping;
     public boolean isBioSimHdf5;
     /**
-     * The same reports as the new system's datasets, collected alongside the legacy containers so both can be written
-     * and compared; null when not collecting. See {@link org.vcell.cli.run.ExecutionJob#UNIFIED_REPORTS_PROPERTY}.
+     * The same outputs (reports and plots) as the new system's datasets, collected alongside the legacy containers so
+     * both can be written and compared; null when not collecting. See {@link org.vcell.cli.run.ExecutionJob#UNIFIED_REPORTS_PROPERTY}.
      */
-    public final List<Dataset> reportDatasets;
+    public final List<Dataset> outputDatasets;
 
     public HDF5ExecutionResults(boolean isBioSimHdf5){
         this(isBioSimHdf5, false);
     }
 
-    public HDF5ExecutionResults(boolean isBioSimHdf5, boolean collectReportDatasets){
+    public HDF5ExecutionResults(boolean isBioSimHdf5, boolean collectOutputDatasets){
         this.executionResultsMapping = new HashMap<>();
         this.isBioSimHdf5 = isBioSimHdf5;
-        this.reportDatasets = collectReportDatasets ? new ArrayList<>() : null;
+        this.outputDatasets = collectOutputDatasets ? new ArrayList<>() : null;
     }
 
     public void addResults(SedMLDataContainer sedml, Hdf5DataContainer dataContainer){

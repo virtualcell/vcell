@@ -3,14 +3,14 @@ package org.vcell.data.io;
 import org.vcell.data.Dataset;
 import org.vcell.data.Dimension;
 import org.vcell.data.Variable;
-import org.vcell.data.sedml.SedmlReports;
+import org.vcell.data.sedml.SedmlOutputs;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
- * Writes one SED-ML report (a dataset shaped as {@link SedmlReports} describes) as the CSV the VCell CLI has long
+ * Writes one SED-ML report (a dataset shaped as {@link SedmlOutputs} describes) as the CSV the VCell CLI has long
  * produced for it: a row per data set per job, each row
  * <pre>
  * &lt;data set id&gt;_&lt;job&gt;_,&lt;label&gt;(&lt;job&gt;),&lt;data generator name or id&gt;(&lt;job&gt;),value,value,...
@@ -47,11 +47,11 @@ public final class SedmlReportCsvWriter implements DatasetWriter {
 				throw new IllegalArgumentException("Data set '" + dataSet.name() + "' of report '" + report.name() + "' must end with its " + Dimension.TIME + " dimension");
 			double[] values = report.values(dataSet.name()).toArray();
 
-			String id = dataSet.name().startsWith(SedmlReports.RESERVED_DATA_SET_PREFIX)
-					? "VCell::" + dataSet.name().substring(SedmlReports.RESERVED_DATA_SET_PREFIX.length()) : dataSet.name();
-			String label = dataSet.attributes().getOrDefault(SedmlReports.DATA_SET_LABEL, "");
-			String dataGenerator = dataSet.attributes().getOrDefault(SedmlReports.DATA_GENERATOR_NAME, "");
-			if (dataGenerator.isEmpty()) dataGenerator = dataSet.attributes().getOrDefault(SedmlReports.DATA_GENERATOR, "");
+			String id = dataSet.name().startsWith(SedmlOutputs.RESERVED_DATA_SET_PREFIX)
+					? "VCell::" + dataSet.name().substring(SedmlOutputs.RESERVED_DATA_SET_PREFIX.length()) : dataSet.name();
+			String label = dataSet.attributes().getOrDefault(SedmlOutputs.DATA_SET_LABEL, "");
+			String dataGenerator = dataSet.attributes().getOrDefault(SedmlOutputs.DATA_GENERATOR_NAME, "");
+			if (dataGenerator.isEmpty()) dataGenerator = dataSet.attributes().getOrDefault(SedmlOutputs.DATA_GENERATOR, "");
 			int rows = dataSet.name().contains("time_") ? Math.min(1, jobs) : jobs;
 			for (int job = 0; job < rows; job++) {
 				csv.append(SedmlReportCsvWriter.quoted(id)).append('_').append(job).append("_,");

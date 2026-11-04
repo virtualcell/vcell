@@ -12,7 +12,9 @@ import org.vcell.cli.run.hdf5.HDF5ExecutionResults;
 import org.vcell.data.Dataset;
 import org.vcell.data.io.BiosimulationsHdf5DatasetWriter;
 import org.vcell.data.io.SedmlReportCsvWriter;
-import org.vcell.data.sedml.SedmlReports;
+import org.vcell.cli.run.plotting.SedmlPlotWriter;
+import org.vcell.util.OperatingSystemInfo;
+import org.vcell.data.sedml.SedmlOutputs;
 import org.vcell.sedml.log.BiosimulationLog;
 import org.vcell.util.FileUtils;
 
@@ -31,10 +33,10 @@ public class ExecutionJob {
     private final static Logger logger = LogManager.getLogger(ExecutionJob.class);
 
     /**
-     * System property that, when "true", also writes the reports through the new data system (org.vcell.data), so they
+     * System property that, when "true", also writes the outputs through the new data system (org.vcell.data), so they
      * can be compared with the legacy ones: the HDF5 to {@link #UNIFIED_REPORTS_FILE}, next to the legacy reports.h5,
-     * and each report's CSV to {@link #UNIFIED_REPORTS_DIRECTORY}/&lt;SED-ML document&gt;/&lt;report id&gt;.csv, mirroring
-     * the legacy &lt;SED-ML document&gt;/&lt;report id&gt;.csv. Nonspatial reports only.
+     * and each report's CSV and each plot's PNG and PDF to {@link #UNIFIED_REPORTS_DIRECTORY}/&lt;SED-ML document&gt;/,
+     * mirroring the legacy &lt;SED-ML document&gt;/. Nonspatial outputs only.
      */
     public static final String UNIFIED_REPORTS_PROPERTY = "vcell.cli.unifiedReports";
     public static final String UNIFIED_REPORTS_FILE = "reports.unified.h5";
@@ -150,8 +152,8 @@ public class ExecutionJob {
                 }
             }
             if (this.anySedmlDocumentHasSucceeded) BiosimulationsHdf5Writer.writeHdf5(cumulativeHdf5Results, new File(this.outputDir));
-            if (this.anySedmlDocumentHasSucceeded && cumulativeHdf5Results.reportDatasets != null)
-                this.writeUnifiedReports(cumulativeHdf5Results.reportDatasets, cumulativeHdf5Results.isBioSimHdf5);
+            if (this.anySedmlDocumentHasSucceeded && cumulativeHdf5Results.outputDatasets != null)
+                this.writeUnifiedOutputs(cumulativeHdf5Results.outputDatasets, cumulativeHdf5Results.isBioSimHdf5);
 
         } catch (IOException e){
             logger.error("System IO encountered a fatal error");
@@ -159,17 +161,36 @@ public class ExecutionJob {
         }
     }
 
-    // written once every document has run, so the legacy per-document reports.zip never picks these up
-    private void writeUnifiedReports(List<Dataset> reports, boolean isBioSimMode) throws IOException {
-        new BiosimulationsHdf5DatasetWriter(isBioSimMode).write(reports, Paths.get(this.outputDir, UNIFIED_REPORTS_FILE));
+    // written once every document has run, so the legacy per-document reports.zip and plots.zip never pick these up
+    private void writeUnifiedOutputs(List<Dataset> outputs, boolean isBioSimMode) throws IOException {
+        List<Dataset> reports = outputs.stream().filter(o -> SedmlOutputs.outputType(o) == SedmlOutputs.OutputType.REPORT).toList();
+        List<Dataset> plots = outputs.stream().filter(o -> SedmlOutputs.outputType(o) == SedmlOutputs.OutputType.PLOT_2D).toList();
+        // BioSimulators wants plots in the HDF5 too, laid out as reports
+        List<Dataset> hdf5Outputs = isBioSimMode ? outputs : reports;
+        new BiosimulationsHdf5DatasetWriter(isBioSimMode).write(hdf5Outputs, Paths.get(this.outputDir, UNIFIED_REPORTS_FILE));
+
         SedmlReportCsvWriter csvWriter = new SedmlReportCsvWriter();
         for (Dataset report : reports) {
-            // CSVs are for reports alone, and only for those whose data sets are all here
-            if (SedmlReports.outputType(report) != SedmlReports.OutputType.REPORT || !SedmlReports.isComplete(report)) continue;
-            Path directory = Paths.get(this.outputDir, UNIFIED_REPORTS_DIRECTORY, SedmlReports.document(report)).normalize();
-            Files.createDirectories(directory);
-            csvWriter.write(report, directory.resolve(report.name() + "." + csvWriter.extension()));
+            if (!SedmlOutputs.isComplete(report)) continue; // a CSV only for a report whose data sets are all here
+            csvWriter.write(report, this.unifiedOutputDirectory(report).resolve(report.name() + "." + csvWriter.extension()));
         }
+        for (SedmlPlotWriter.Format format : SedmlPlotWriter.Format.values()) {
+            SedmlPlotWriter plotWriter = new SedmlPlotWriter(format);
+            for (Dataset plot : plots)
+                plotWriter.write(plot, this.unifiedOutputDirectory(plot).resolve(ExecutionJob.plotFileName(plot) + "." + plotWriter.extension()));
+        }
+    }
+
+    private Path unifiedOutputDirectory(Dataset output) throws IOException {
+        return Files.createDirectories(Paths.get(this.outputDir, UNIFIED_REPORTS_DIRECTORY, SedmlOutputs.document(output)).normalize());
+    }
+
+    /** @return the plot's name, unless it is missing or cannot be a file name here; then its id */
+    private static String plotFileName(Dataset plot) {
+        String illegalCharacters = OperatingSystemInfo.getInstance().isWindows() ? "<>:\"/\\|?*" : "/";
+        String name = plot.attributes().get(SedmlOutputs.NAME);
+        boolean unusable = name == null || name.isBlank() || name.matches(".*[" + illegalCharacters + "].*");
+        return unusable ? plot.name() : name;
     }
 
     private void executeSedmlDocument(String sedmlLocation, HDF5ExecutionResults cumulativeHdf5Results) throws IOException, PreProcessingException, ExecutionException {

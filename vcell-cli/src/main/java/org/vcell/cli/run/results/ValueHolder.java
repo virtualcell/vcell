@@ -24,10 +24,6 @@ public class ValueHolder <T extends LazySBMLDataAccessor> {
         this.listOfResultSets = new ArrayList<>(other.listOfResultSets);
     }
 
-    public Simulation getSimulation() {
-        return this.vcSimulation;
-    }
-
     public boolean isEmpty() {
         return this.listOfResultSets.isEmpty();
     }

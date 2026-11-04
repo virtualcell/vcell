@@ -7,20 +7,22 @@ import io.jhdf.api.WritableDataset;
 import io.jhdf.api.WritableGroup;
 import org.vcell.data.Dataset;
 import org.vcell.data.Dimension;
+import org.vcell.data.Selections;
 import org.vcell.data.Variable;
-import org.vcell.data.sedml.SedmlReports;
+import org.vcell.data.sedml.SedmlOutputs;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 /**
- * Writes SED-ML reports (datasets shaped as {@link SedmlReports} describes) to the HDF5 layout BioSimulators expects
+ * Writes SED-ML reports (datasets shaped as {@link SedmlOutputs} describes) to the HDF5 layout BioSimulators expects
  * of a simulator, as the VCell CLI has long produced it:
  * <pre>
  * /&lt;dir&gt;/&lt;doc&gt;.sedml          a group per path segment of each SED-ML document;
@@ -28,10 +30,13 @@ import java.util.Set;
  * /&lt;dir&gt;/&lt;doc&gt;.sedml/&lt;id&gt;     one HDF5 dataset per report, shaped
  *                              [data set, (scan parameter, [sub-task])..., point...]
  * </pre>
- * Ids are written without VCell's prefixes (see {@link SedmlReports#dataSetIdWithoutVCellPrefixes}). Each report dataset
+ * Ids are written without VCell's prefixes (see {@link SedmlOutputs#dataSetIdWithoutVCellPrefixes}). Each report dataset
  * carries the attributes {@code _type}, {@code sedmlDataSetDataTypes}, {@code sedmlDataSetIds},
  * {@code sedmlDataSetNames}, {@code sedmlDataSetLabels}, {@code sedmlDataSetShapes}, {@code sedmlRepeatedTaskValues}
  * and {@code sedmlRepeatedTaskParameterNames} (for scans only), {@code sedmlId}, {@code sedmlName} and {@code uri}.
+ * <p>
+ * A 2D plot is written as a report of the data generators its curves use, as BioSimulators expects; whether plots
+ * are written at all is the caller's choice.
  * <p>
  * The data sets of a report are stacked along the leading HDF5 dimension, so every one of them must run over the same
  * dimensions. Dimensions that are neither {@link Dimension#TIME} nor spatial are scan parameters and must be numeric.
@@ -62,9 +67,43 @@ public final class BiosimulationsHdf5DatasetWriter implements DatasetCollectionW
 	public void write(List<Dataset> reports, Path destination) throws IOException {
 		try (WritableHdfFile file = HdfFile.write(destination)) {
 			Map<String, WritableGroup> documentGroups = new HashMap<>();
-			for (Dataset report : reports)
-				this.writeReport(BiosimulationsHdf5DatasetWriter.documentGroup(file, documentGroups, SedmlReports.document(report)), report);
+			for (Dataset output : reports) {
+				Dataset report = SedmlOutputs.outputType(output) == SedmlOutputs.OutputType.PLOT_2D ? BiosimulationsHdf5DatasetWriter.plotAsReport(output) : output;
+				this.writeReport(BiosimulationsHdf5DatasetWriter.documentGroup(file, documentGroups, SedmlOutputs.document(report)), report);
+			}
 		}
+	}
+
+	/**
+	 * @return a plot laid out as a report: one data set per data generator its curves use, x before y, each once, in
+	 * curve order. Each is labelled {@code <plot id>.<curve id>::X} after the first curve using it, for x and y alike, as
+	 * the CLI always has (https://github.com/virtualcell/vcell/issues/2192).
+	 */
+	private static Dataset plotAsReport(Dataset plot) {
+		Dataset.Builder report = Dataset.builder(plot.name()).topology(plot.topology()).attributes(plot.attributes());
+		for (Dimension dimension : plot.dimensions()) report.dimension(dimension);
+		Map<String, Variable> dataGenerators = new LinkedHashMap<>(); // by data generator id
+		Map<String, String> sources = new HashMap<>(); // data generator id -> plot variable holding its values
+		for (Variable curve : plot.variables(Variable.Role.DATA)) {
+			String label = plot.name() + "." + curve.name() + "::X";
+			Variable x = plot.variable(curve.attributes().get(SedmlOutputs.X_DATA));
+			String yDataGenerator = curve.attributes().get(SedmlOutputs.DATA_GENERATOR);
+			if (!dataGenerators.containsKey(x.name())) {
+				dataGenerators.put(x.name(), SedmlOutputs.dataSet(x.name(), label, x.attributes().get(SedmlOutputs.DATA_GENERATOR_NAME), x.name(),
+						x.attributes().get(SedmlOutputs.DATA_GENERATOR_NAME), x.dimensions()));
+				sources.put(x.name(), x.name());
+			}
+			if (!dataGenerators.containsKey(yDataGenerator)) {
+				dataGenerators.put(yDataGenerator, SedmlOutputs.dataSet(yDataGenerator, label, curve.attributes().get(SedmlOutputs.DATA_GENERATOR_NAME),
+						yDataGenerator, curve.attributes().get(SedmlOutputs.DATA_GENERATOR_NAME), curve.dimensions()));
+				sources.put(yDataGenerator, curve.name());
+			}
+		}
+		for (Variable dataSet : dataGenerators.values()) {
+			String source = sources.get(dataSet.name());
+			report.variable(dataSet, (dimensions, selection) -> Selections.apply(plot.values(source), dimensions, selection));
+		}
+		return report.build();
 	}
 
 	/** @return the group for a SED-ML document, creating it and any missing parent groups */
@@ -123,22 +162,22 @@ public final class BiosimulationsHdf5DatasetWriter implements DatasetCollectionW
 		int perDataSet = Math.toIntExact(jobs * points);
 		double[] buffer = new double[Math.multiplyExact(perDataSet, dataSets.size())];
 		for (int i = 0; i < dataSets.size(); i++) report.values(dataSets.get(i).name()).copyTo(buffer, i * perDataSet);
-		String id = SedmlReports.reportIdWithoutVCellPrefixes(report.name());
+		String id = SedmlOutputs.reportIdWithoutVCellPrefixes(report.name());
 		WritableDataset written = documentGroup.putDataset(id,
 				JhdfUtils.createMultidimensionalArray(shape.stream().mapToLong(Long::longValue).toArray(), buffer));
 
 		List<String> ids = new ArrayList<>(), names = new ArrayList<>(), labels = new ArrayList<>(), shapes = new ArrayList<>();
 		for (Variable dataSet : dataSets) {
-			ids.add(SedmlReports.dataSetIdWithoutVCellPrefixes(dataSet.name(), report.name()));
-			names.add(dataSet.attributes().getOrDefault(SedmlReports.DATA_SET_NAME, ""));
-			labels.add(dataSet.attributes().getOrDefault(SedmlReports.DATA_SET_LABEL, ""));
+			ids.add(SedmlOutputs.dataSetIdWithoutVCellPrefixes(dataSet.name(), report.name()));
+			names.add(dataSet.attributes().getOrDefault(SedmlOutputs.DATA_SET_NAME, ""));
+			labels.add(dataSet.attributes().getOrDefault(SedmlOutputs.DATA_SET_LABEL, ""));
 			// One entry per data set per job, each the flat size of one job's data. This is how the VCell CLI has always
 			// written it, not one shape per data set; it stays until the change is made deliberately, so outputs match.
 			for (long job = 0; job < jobs; job++) shapes.add(Long.toString(points));
 		}
 		// The CLI has always typed an output by VCell's plot prefix, so a plot from another tool's SED-ML is typed as a
 		// report; kept so outputs match (https://github.com/virtualcell/vcell/issues/2192).
-		written.putAttribute("_type", (report.name().startsWith(SedmlReports.PLOT_PREFIX) ? SedmlReports.OutputType.PLOT_2D : SedmlReports.OutputType.REPORT).sedmlName());
+		written.putAttribute("_type", (report.name().startsWith(SedmlOutputs.PLOT_PREFIX) ? SedmlOutputs.OutputType.PLOT_2D : SedmlOutputs.OutputType.REPORT).sedmlName());
 		written.putAttribute("sedmlDataSetDataTypes", ids.stream().map(dataSetId -> "float64").toArray(String[]::new));
 		written.putAttribute("sedmlDataSetIds", ids.toArray(new String[0]));
 		written.putAttribute("sedmlDataSetNames", names.toArray(new String[0]));
@@ -149,7 +188,7 @@ public final class BiosimulationsHdf5DatasetWriter implements DatasetCollectionW
 			written.putAttribute("sedmlRepeatedTaskParameterNames", scans.stream().map(Dimension::name).toArray(String[]::new));
 		}
 		written.putAttribute("sedmlId", id);
-		written.putAttribute("sedmlName", report.attributes().getOrDefault(SedmlReports.NAME, id));
-		written.putAttribute("uri", SedmlReports.document(report) + "/" + id);
+		written.putAttribute("sedmlName", report.attributes().getOrDefault(SedmlOutputs.NAME, id));
+		written.putAttribute("uri", SedmlOutputs.document(report) + "/" + id);
 	}
 }
