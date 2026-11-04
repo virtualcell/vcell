@@ -22,6 +22,7 @@ import json
 from typing import Any, ClassVar, Dict, List, Optional
 from pydantic import BaseModel, StrictInt
 from pydantic import Field
+from vcell_client.models.axis import Axis
 from vcell_client.models.geometry_mode import GeometryMode
 from vcell_client.models.spatial_selection import SpatialSelection
 try:
@@ -34,7 +35,7 @@ class GeometrySpecDTO(BaseModel):
     GeometrySpecDTO
     """ # noqa: E501
     selections: Optional[List[SpatialSelection]] = None
-    axis: Optional[StrictInt] = None
+    axis: Optional[Axis] = None
     slice_number: Optional[StrictInt] = Field(default=None, alias="sliceNumber")
     geometry_mode: Optional[GeometryMode] = Field(default=None, alias="geometryMode")
     __properties: ClassVar[List[str]] = ["selections", "axis", "sliceNumber", "geometryMode"]

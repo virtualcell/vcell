@@ -502,7 +502,7 @@ public class DtoModelTransforms {
         GeometrySpecDTO dto = new GeometrySpecDTO();
         dto.selections(geometrySpec.getSelections() == null ? null : Arrays.stream(geometrySpec.getSelections())
                 .map(DtoModelTransforms::spacialSelectionToDTO).collect(Collectors.toList()));
-        dto.axis(geometrySpec.getAxis());
+        dto.axis(org.vcell.restclient.model.Axis.fromValue(geometrySpec.getAxis().name()));
         dto.geometryMode(org.vcell.restclient.model.GeometryMode.fromValue(geometrySpec.getMode().name()));
         dto.sliceNumber(geometrySpec.getSliceNumber());
         return dto;

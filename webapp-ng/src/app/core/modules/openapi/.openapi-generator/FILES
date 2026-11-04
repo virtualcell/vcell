@@ -38,6 +38,7 @@ model/acces-token-representation-record.ts
 model/analytic-curve.ts
 model/annotated-function-dto.ts
 model/application-info.ts
+model/axis.ts
 model/batch-system-type.ts
 model/bio-model-child-summary.ts
 model/bio-model-summary.ts

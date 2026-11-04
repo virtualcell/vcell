@@ -10,12 +10,13 @@
  * Do not edit the class manually.
  */
 import { SpatialSelection } from './spatial-selection';
+import { Axis } from './axis';
 import { GeometryMode } from './geometry-mode';
 
 
 export interface GeometrySpecDTO { 
     selections?: Array<SpatialSelection>;
-    axis?: number;
+    axis?: Axis;
     sliceNumber?: number;
     geometryMode?: GeometryMode;
 }

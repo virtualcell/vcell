@@ -6,6 +6,7 @@ docs/AdminResourceApi.md
 docs/AnalyticCurve.md
 docs/AnnotatedFunctionDTO.md
 docs/ApplicationInfo.md
+docs/Axis.md
 docs/BatchSystemType.md
 docs/BioModel.md
 docs/BioModelChildSummary.md
@@ -114,6 +115,7 @@ docs/Vcellopt.md
 docs/VcelloptStatus.md
 docs/VersionRep.md
 test/__init__.py
+test/test_axis.py
 tox.ini
 vcell_client/__init__.py
 vcell_client/api/__init__.py
@@ -140,6 +142,7 @@ vcell_client/models/acces_token_representation_record.py
 vcell_client/models/analytic_curve.py
 vcell_client/models/annotated_function_dto.py
 vcell_client/models/application_info.py
+vcell_client/models/axis.py
 vcell_client/models/batch_system_type.py
 vcell_client/models/bio_model.py
 vcell_client/models/bio_model_child_summary.py
