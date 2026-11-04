@@ -5,7 +5,7 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **selections** | [**List[SpatialSelection]**](SpatialSelection.md) |  | [optional] 
-**axis** | **int** |  | [optional] 
+**axis** | [**Axis**](Axis.md) |  | [optional] 
 **slice_number** | **int** |  | [optional] 
 **geometry_mode** | [**GeometryMode**](GeometryMode.md) |  | [optional] 
 

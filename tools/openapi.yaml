@@ -2385,6 +2385,12 @@ components:
           type: integer
         geometryName:
           type: string
+    Axis:
+      enum:
+      - X
+      - "Y"
+      - Z
+      type: string
     BatchSystemType:
       enum:
       - PBS
@@ -2968,8 +2974,7 @@ components:
           items:
             $ref: '#/components/schemas/SpatialSelection'
         axis:
-          format: int32
-          type: integer
+          $ref: '#/components/schemas/Axis'
         sliceNumber:
           format: int32
           type: integer

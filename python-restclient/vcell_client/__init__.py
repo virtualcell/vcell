@@ -49,6 +49,7 @@ from vcell_client.models.acces_token_representation_record import AccesTokenRepr
 from vcell_client.models.analytic_curve import AnalyticCurve
 from vcell_client.models.annotated_function_dto import AnnotatedFunctionDTO
 from vcell_client.models.application_info import ApplicationInfo
+from vcell_client.models.axis import Axis
 from vcell_client.models.batch_system_type import BatchSystemType
 from vcell_client.models.bio_model import BioModel
 from vcell_client.models.bio_model_child_summary import BioModelChildSummary

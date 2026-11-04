@@ -6,6 +6,7 @@ docs/AdminResourceApi.md
 docs/AnalyticCurve.md
 docs/AnnotatedFunctionDTO.md
 docs/ApplicationInfo.md
+docs/Axis.md
 docs/BatchSystemType.md
 docs/BioModel.md
 docs/BioModelChildSummary.md
@@ -142,6 +143,7 @@ src/main/java/org/vcell/restclient/model/AccesTokenRepresentationRecord.java
 src/main/java/org/vcell/restclient/model/AnalyticCurve.java
 src/main/java/org/vcell/restclient/model/AnnotatedFunctionDTO.java
 src/main/java/org/vcell/restclient/model/ApplicationInfo.java
+src/main/java/org/vcell/restclient/model/Axis.java
 src/main/java/org/vcell/restclient/model/BatchSystemType.java
 src/main/java/org/vcell/restclient/model/BioModel.java
 src/main/java/org/vcell/restclient/model/BioModelChildSummary.java
@@ -236,3 +238,4 @@ src/main/java/org/vcell/restclient/model/VariableType.java
 src/main/java/org/vcell/restclient/model/Vcellopt.java
 src/main/java/org/vcell/restclient/model/VcelloptStatus.java
 src/main/java/org/vcell/restclient/model/VersionRep.java
+src/test/java/org/vcell/restclient/model/AxisTest.java

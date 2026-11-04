@@ -2,6 +2,7 @@ export * from './acces-token-representation-record';
 export * from './analytic-curve';
 export * from './annotated-function-dto';
 export * from './application-info';
+export * from './axis';
 export * from './batch-system-type';
 export * from './bio-model';
 export * from './bio-model-child-summary';

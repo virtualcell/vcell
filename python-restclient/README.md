@@ -157,6 +157,7 @@ Class | Method | HTTP request | Description
  - [AnalyticCurve](docs/AnalyticCurve.md)
  - [AnnotatedFunctionDTO](docs/AnnotatedFunctionDTO.md)
  - [ApplicationInfo](docs/ApplicationInfo.md)
+ - [Axis](docs/Axis.md)
  - [BatchSystemType](docs/BatchSystemType.md)
  - [BioModel](docs/BioModel.md)
  - [BioModelChildSummary](docs/BioModelChildSummary.md)
