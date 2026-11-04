@@ -10,6 +10,7 @@
 
 package cbit.vcell.client.desktop.biomodel;
 
+import cbit.vcell.client.laf.VCellFonts;
 import cbit.vcell.client.laf.VCellColors;
 import cbit.vcell.client.laf.VCellLookAndFeel;
 import java.awt.BorderLayout;
@@ -172,7 +173,7 @@ private void initialize() {
 		gbc.insets = new Insets(10, 4, 4, 4);
 		JLabel label = new JLabel("Saved BioModel Info");
 		label.setHorizontalAlignment(SwingConstants.CENTER);
-		label.setFont(label.getFont().deriveFont(Font.BOLD));
+		VCellFonts.setCategory(label, VCellFonts.Category.HEADING);
 		mainPanel.add(label, gbc);
 		
 		gridy ++;

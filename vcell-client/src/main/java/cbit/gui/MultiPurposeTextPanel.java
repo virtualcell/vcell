@@ -15,6 +15,7 @@ package cbit.gui;
  * Creation date: (10/9/2006 1:17:05 PM)
  * @author: Fei Gao
  */
+import cbit.vcell.client.laf.VCellFonts;
 import cbit.vcell.client.laf.VCellColors;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -551,7 +552,7 @@ public class MultiPurposeTextPanel extends JPanel {
 
 		JPanel panel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 		JLabel label = new JLabel("Search");
-		label.setFont(label.getFont().deriveFont(Font.BOLD));
+		VCellFonts.setCategory(label, VCellFonts.Category.HEADING);
 		panel.add(label);
 		panel.add(getSearchTextField());
 		panel.add(getSearchPrevButton());
@@ -576,8 +577,7 @@ public class MultiPurposeTextPanel extends JPanel {
 			
 			JPanel panel1 = new JPanel();
 			JLabel infoLabel1 = new JLabel("\u2191\u2193 to move; 'Esc' to cancel; 'Enter' to accept;");
-			Font font = getFont();
-			infoLabel1.setFont(font.deriveFont(AffineTransform.getScaleInstance(0.9, 0.9)));
+			VCellFonts.setCategory(infoLabel1, VCellFonts.Category.CAPTION);
 			panel1.add(infoLabel1);
 			panel.add(panel1);
 			autoCompJPopupMenu.add(panel);
@@ -852,6 +852,11 @@ public class MultiPurposeTextPanel extends JPanel {
 	 */
 	public void setTextFont(java.awt.Font f) {
 		textPane.setFont(f);
+	}
+
+	/** Text in this kind of font, following size and theme changes. */
+	public void setTextCategory(VCellFonts.Category category) {
+		VCellFonts.setCategory(textPane, category);
 	}
 	
 	private ArrayList<String> createAutoCompletionList(CurrentWord currentWord) {

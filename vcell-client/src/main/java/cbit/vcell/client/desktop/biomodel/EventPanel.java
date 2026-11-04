@@ -10,6 +10,7 @@
 
 package cbit.vcell.client.desktop.biomodel;
 
+import cbit.vcell.client.laf.VCellFonts;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -240,7 +241,7 @@ public class EventPanel extends DocumentEditorSubPanel {
 				try {
 					eventAssgnLabel = new javax.swing.JLabel();
 					eventAssgnLabel.setName("EventAssgnLabel");
-					eventAssgnLabel.setFont(eventAssgnLabel.getFont().deriveFont(Font.BOLD));
+					VCellFonts.setCategory(eventAssgnLabel, VCellFonts.Category.HEADING);
 					eventAssgnLabel.setText("  Event Actions: ");
 				} catch (java.lang.Throwable e) {
 					e.printStackTrace(System.out);
@@ -254,7 +255,7 @@ public class EventPanel extends DocumentEditorSubPanel {
 				try {
 					triggerLabel = new javax.swing.JLabel();
 					triggerLabel.setName("TriggerLabel");
-					triggerLabel.setFont(triggerLabel.getFont().deriveFont(Font.BOLD));
+					VCellFonts.setCategory(triggerLabel, VCellFonts.Category.HEADING);
 					triggerLabel.setText("Trigger:");
 				} catch (java.lang.Throwable e) {
 					e.printStackTrace(System.out);
@@ -287,7 +288,7 @@ public class EventPanel extends DocumentEditorSubPanel {
 				try {
 					delayLabel = new javax.swing.JLabel();
 					delayLabel.setName("DelayLabel");
-					delayLabel.setFont(delayLabel.getFont().deriveFont(Font.BOLD));
+					VCellFonts.setCategory(delayLabel, VCellFonts.Category.HEADING);
 					delayLabel.setText("Action Delay (sec):");
 				} catch (java.lang.Throwable e) {
 					e.printStackTrace(System.out);

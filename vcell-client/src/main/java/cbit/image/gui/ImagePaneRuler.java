@@ -10,6 +10,7 @@
 
 package cbit.image.gui;
 
+import cbit.vcell.client.laf.VCellFonts;
 import org.vcell.util.NumberUtils;
 
 import cbit.image.ImagePlaneManager;
@@ -53,17 +54,6 @@ public ImagePaneRuler(String argOrientation) {
 	super();
 	setOrientation(argOrientation);
 	decimalFormat.applyPattern("#.###E0");
-
-	java.awt.geom.AffineTransform at = new java.awt.geom.AffineTransform();
-	at.scale(1.5,1.0);
-	//if(argOrientation.equals(ORIENT_VERTICAL)){
-		titleFont = getFont().deriveFont(at);
-	//}else{
-		//titleFont = getFont();
-	//}
-	titleFont = titleFont.deriveFont(java.awt.Font.BOLD,12.0f);
-
-	lastSmallFont = getFont().deriveFont(10f);
 }
 
 
@@ -165,6 +155,9 @@ protected void paintComponent(java.awt.Graphics g) {
 		//lastBigFont = g.getFont();
 		//lastSmallFont = lastBigFont.deriveFont(10f);
 	//}
+	// from the current text size, which can change while the ruler is shown
+	titleFont = VCellFonts.getFont(VCellFonts.Category.HEADING).deriveFont(java.awt.geom.AffineTransform.getScaleInstance(1.5, 1.0));
+	lastSmallFont = VCellFonts.getFont(VCellFonts.Category.CAPTION);
 	((java.awt.Graphics2D)g).setFont(lastSmallFont);
 	//
 	int elementLength = getSingleElementLengthInPixels();

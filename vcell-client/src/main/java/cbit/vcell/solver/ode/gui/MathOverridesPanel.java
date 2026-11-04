@@ -10,6 +10,7 @@
 
 package cbit.vcell.solver.ode.gui;
 
+import cbit.vcell.client.laf.VCellFonts;
 import cbit.vcell.client.laf.VCellColors;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -193,7 +194,7 @@ public class MathOverridesPanel extends JPanel {
 			this.titleLabel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
 			this.titleLabel.setText("Specify non-default parameter values or scan over a range of values:");
 			this.titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
-			this.titleLabel.setFont(this.titleLabel.getFont().deriveFont(Font.BOLD));
+			VCellFonts.setCategory(this.titleLabel, VCellFonts.Category.HEADING);
 		} catch (Exception exception) {
 			this.logException(exception);
 		}

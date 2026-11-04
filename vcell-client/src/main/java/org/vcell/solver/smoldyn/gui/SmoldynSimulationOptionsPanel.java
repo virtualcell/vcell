@@ -10,6 +10,7 @@
 
 package org.vcell.solver.smoldyn.gui;
 
+import cbit.vcell.client.laf.VCellFonts;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -154,15 +155,14 @@ public class SmoldynSimulationOptionsPanel extends CollapsiblePanel {
 		accuracyHelpButton = new JButton(" ? ");
 		smoldynStepMultiplierHelpButton = new JButton(" ? ");
 		gaussianTableSizeHelpButton = new JButton(" ? ");
-		Font font = randomSeedHelpButton.getFont().deriveFont(Font.BOLD);
 		Border border = BorderFactory.createEmptyBorder(1, 1, 1, 1);
-		randomSeedHelpButton.setFont(font);
+		VCellFonts.setCategory(randomSeedHelpButton, VCellFonts.Category.HEADING);
 		randomSeedHelpButton.setBorder(border);
-		accuracyHelpButton.setFont(font);
+		VCellFonts.setCategory(accuracyHelpButton, VCellFonts.Category.HEADING);
 		accuracyHelpButton.setBorder(border);
-		smoldynStepMultiplierHelpButton.setFont(font);
+		VCellFonts.setCategory(smoldynStepMultiplierHelpButton, VCellFonts.Category.HEADING);
 		smoldynStepMultiplierHelpButton.setBorder(border);
-		gaussianTableSizeHelpButton.setFont(font);
+		VCellFonts.setCategory(gaussianTableSizeHelpButton, VCellFonts.Category.HEADING);
 		gaussianTableSizeHelpButton.setBorder(border);
 		
 		getContentPanel().setLayout(new GridBagLayout());		

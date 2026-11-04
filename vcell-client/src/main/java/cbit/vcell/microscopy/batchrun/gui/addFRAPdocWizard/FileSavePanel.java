@@ -10,6 +10,7 @@
 
 package cbit.vcell.microscopy.batchrun.gui.addFRAPdocWizard;
 
+import cbit.vcell.client.laf.VCellFonts;
 import cbit.vcell.client.laf.VCellColors;
 import java.awt.Color;
 import java.awt.Font;
@@ -41,7 +42,7 @@ public class FileSavePanel extends JPanel
 
 		final JLabel saveFrapDataLabel = new JLabel();
 		saveFrapDataLabel.setForeground(VCellColors.getTitleForeground());
-		saveFrapDataLabel.setFont(new Font("", Font.BOLD | Font.ITALIC, 16));
+		VCellFonts.setCategory(saveFrapDataLabel, VCellFonts.Category.TITLE, Font.BOLD | Font.ITALIC);
 		saveFrapDataLabel.setText("Save to FRAP Document ");
 		final GridBagConstraints gridBagConstraints = new GridBagConstraints();
 		gridBagConstraints.gridy = 0;

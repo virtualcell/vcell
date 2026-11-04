@@ -10,6 +10,7 @@
 
 package cbit.vcell.microscopy.gui.defineROIwizard;
 
+import cbit.vcell.client.laf.VCellFonts;
 import cbit.vcell.client.laf.VCellColors;
 import java.awt.Color;
 import java.awt.Font;
@@ -38,7 +39,7 @@ public class DefineROI_RequireAssistPanel extends JPanel
 		JLabel needAssistLabel = new JLabel();
 		needAssistLabel.setText(" Auto pop-up 'ROI Assist' dialog for creating ROIs ?");
 		needAssistLabel.setForeground(VCellColors.getTitleForeground());
-		needAssistLabel.setFont(new Font("", Font.BOLD | Font.ITALIC, 15));
+		VCellFonts.setCategory(needAssistLabel, VCellFonts.Category.TITLE, Font.BOLD | Font.ITALIC);
 		final GridBagConstraints gridBagConstraints = new GridBagConstraints();
 		gridBagConstraints.anchor = GridBagConstraints.WEST;
 		gridBagConstraints.gridy = 0;

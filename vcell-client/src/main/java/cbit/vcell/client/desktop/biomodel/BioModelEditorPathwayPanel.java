@@ -10,6 +10,7 @@
 
 package cbit.vcell.client.desktop.biomodel;
 
+import cbit.vcell.client.laf.VCellFonts;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -211,7 +212,7 @@ public class BioModelEditorPathwayPanel extends DocumentEditorSubPanel {
 		gbc.gridwidth = 6;
 		gbc.fill = GridBagConstraints.BOTH;
 		pathwayTitleLabel = new JLabel();
-		pathwayTitleLabel.setFont(pathwayTitleLabel.getFont().deriveFont(Font.BOLD));
+		VCellFonts.setCategory(pathwayTitleLabel, VCellFonts.Category.HEADING);
 		pathwayTitleLabel.setHorizontalAlignment(JLabel.CENTER);
 		add(pathwayTitleLabel, gbc);
 		

@@ -9,6 +9,7 @@
  */
 
 package cbit.image.gui;
+import cbit.vcell.client.laf.VCellFonts;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemListener;
 import java.util.Vector;
@@ -736,7 +737,7 @@ private javax.swing.JButton getButton1() {
 			ivjButton1.setName("Button1");
 			ivjButton1.setText("+1");
 			ivjButton1.setPreferredSize(new java.awt.Dimension(31, 25));
-			ivjButton1.setFont(new java.awt.Font("dialog", 1, 12));
+			VCellFonts.setCategory(ivjButton1, VCellFonts.Category.HEADING);
 			ivjButton1.setMinimumSize(new java.awt.Dimension(31, 25));
 			ivjButton1.setMargin(new java.awt.Insets(2, 5, 2, 5));
 			// user code begin {1}

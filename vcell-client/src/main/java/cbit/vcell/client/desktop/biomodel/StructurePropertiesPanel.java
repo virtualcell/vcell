@@ -10,6 +10,7 @@
 
 package cbit.vcell.client.desktop.biomodel;
 
+import cbit.vcell.client.laf.VCellFonts;
 import cbit.vcell.client.laf.VCellColors;
 import cbit.vcell.client.laf.VCellLookAndFeel;
 import java.awt.Color;
@@ -208,7 +209,7 @@ private void initialize() {
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		JLabel label = new JLabel("<html><u>Select only one structure to edit properties</u></html>");
 		label.setHorizontalAlignment(SwingConstants.CENTER);
-		label.setFont(label.getFont().deriveFont(Font.BOLD));
+		VCellFonts.setCategory(label, VCellFonts.Category.HEADING);
 		add(label, gbc);
 		
 		// name
@@ -258,7 +259,7 @@ private void initialize() {
 		gbc.insets = new java.awt.Insets(0, 4, 0, 4);
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		electrophysiologyLabel.setHorizontalAlignment(SwingConstants.CENTER);
-		electrophysiologyLabel.setFont(label.getFont().deriveFont(Font.BOLD));
+		VCellFonts.setCategory(electrophysiologyLabel, VCellFonts.Category.HEADING);
 		add(electrophysiologyLabel, gbc);
 
 		// voltage

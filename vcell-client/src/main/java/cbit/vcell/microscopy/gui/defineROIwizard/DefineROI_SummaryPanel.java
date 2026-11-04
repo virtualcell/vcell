@@ -10,6 +10,7 @@
 
 package cbit.vcell.microscopy.gui.defineROIwizard;
 
+import cbit.vcell.client.laf.VCellFonts;
 import cbit.vcell.client.laf.VCellColors;
 import java.awt.Color;
 import java.awt.Font;
@@ -59,7 +60,7 @@ public class DefineROI_SummaryPanel extends JPanel {
 
         roiInfo = new JLabel();
         roiInfo.setForeground(VCellColors.getTitleForeground());
-        roiInfo.setFont(new Font("", Font.BOLD | Font.ITALIC, 15));
+        VCellFonts.setCategory(roiInfo, VCellFonts.Category.TITLE, Font.BOLD | Font.ITALIC);
         roiInfo.setText("ROIs have been saved.  Please varify the following information.");
         GridBagConstraints gridBagConstraints1 = new GridBagConstraints();
         gridBagConstraints1.gridy = 0;

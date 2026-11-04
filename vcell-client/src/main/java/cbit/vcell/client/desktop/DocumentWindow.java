@@ -16,6 +16,8 @@ import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.*;
 import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.client.data.ExportedDataViewer;
+import cbit.vcell.client.laf.FontChooser;
+import cbit.vcell.client.laf.VCellFonts;
 import cbit.vcell.client.laf.VCellLookAndFeel;
 import cbit.vcell.client.server.*;
 import cbit.vcell.client.task.AsynchClientTask;
@@ -97,11 +99,15 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
     private JMenuItem ivjSave_VersionMenuItem = null;
     private JMenuItem ivjSaveMenuItem = null;
     private JMenu ivjLookAndFeelMenu = null;
+    private JMenu textSizeMenu = null;
+    private JMenuItem fontMenuItem = null;
     private static final String FOLLOW_SYSTEM_THEME = "FollowSystemTheme";
     private final Map<String, UIManager.LookAndFeelInfo> lookAndFeelInfoMap = new HashMap<>();
     private JMenu ivjServerMenu = null;
     private JCheckBoxMenuItem ivjStatusbarMenuItem = null;
     private JPanel ivjStatusBarPane = null;
+    private long usedMemoryBytes = 0, totalMemoryBytes = 0;
+    private boolean showMemoryAmounts = false; // while the pointer is over the memory bar
     //--------------------------------------
     private JSeparator ivjJSeparator6 = null;
     private JMenuItem ivjJMenuItemNewBioModel = null;
@@ -539,7 +545,8 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
                 this.ivjDocumentWindowJMenuBar.setName("DocumentWindowJMenuBar");
                 this.ivjDocumentWindowJMenuBar.add(this.getFileMenu());
                 this.ivjDocumentWindowJMenuBar.add(this.getServerMenu());
-                this.ivjDocumentWindowJMenuBar.add(createWindowMenu(true));
+                // VCell-wide display settings, under the open windows
+                this.ivjDocumentWindowJMenuBar.add(createWindowMenu(true, List.of(this.getLookAndFeelMenu(), this.getTextSizeMenu(), this.getFontMenuItem())));
                 this.ivjDocumentWindowJMenuBar.add(this.getToolMenu());
                 this.ivjDocumentWindowJMenuBar.add(this.getHelpMenu());
                 this.ivjDocumentWindowJMenuBar.add(Box.createHorizontalGlue());
@@ -589,8 +596,6 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
                 this.ivjFileMenu.add(new JSeparator());
                 this.ivjFileMenu.add(this.getJMenuItemImport());
                 this.ivjFileMenu.add(this.getJMenuItemExport());
-                this.ivjFileMenu.add(new JSeparator());
-                this.ivjFileMenu.add(this.getLookAndFeelMenu());
                 this.ivjFileMenu.add(new JSeparator());
                 this.ivjFileMenu.add(this.getExitMenuItem());
             } catch (java.lang.Throwable ivjExc) {
@@ -872,6 +877,9 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
                 this.ivjJProgressBarConnection.setName("JProgressBarConnection");
                 this.ivjJProgressBarConnection.setString("NOT CONNECTED");
                 this.ivjJProgressBarConnection.setStringPainted(true);
+                // a progress bar only repaints when its text changes; re-measure it, or a longer status (the user
+                // name, once connected) is cut off until something else lays the status bar out again
+                this.ivjJProgressBarConnection.addPropertyChangeListener("string", e -> this.ivjJProgressBarConnection.revalidate());
             } catch (java.lang.Throwable ivjExc) {
                 this.handleException(ivjExc);
             }
@@ -882,11 +890,37 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
     private javax.swing.JProgressBar getJProgressBarMemory() {
         if (this.ivjJProgressBarMemory == null) {
             try {
-                this.ivjJProgressBarMemory = new javax.swing.JProgressBar();
+                this.ivjJProgressBarMemory = new javax.swing.JProgressBar() {
+                    // Wide enough for either text at its largest, so switching between them (on hover) or a growing
+                    // number doesn't resize the bar
+                    @Override
+                    public Dimension getPreferredSize() {
+                        Dimension size = super.getPreferredSize();
+                        long maxBytes = Runtime.getRuntime().maxMemory();
+                        java.awt.FontMetrics metrics = this.getFontMetrics(this.getFont());
+                        int textWidth = Math.max(metrics.stringWidth(DocumentWindow.memoryPercent(100)), metrics.stringWidth(DocumentWindow.memoryFraction(maxBytes, maxBytes)));
+                        Insets insets = this.getInsets();
+                        return new Dimension(Math.max(size.width, metrics.stringWidth("  ") + textWidth + insets.left + insets.right), size.height);
+                    }
+                };
                 this.ivjJProgressBarMemory.setName("JProgressBarMemory");
                 this.ivjJProgressBarMemory.setMinimum(0);
                 this.ivjJProgressBarMemory.setStringPainted(true);
-                this.ivjJProgressBarMemory.setToolTipText("Java Memory Usage");
+                this.ivjJProgressBarMemory.setToolTipText("Java memory in use");
+                // a percentage; the amounts while the pointer is over it
+                this.ivjJProgressBarMemory.addMouseListener(new java.awt.event.MouseAdapter() {
+                    @Override
+                    public void mouseEntered(java.awt.event.MouseEvent e) {
+                        DocumentWindow.this.showMemoryAmounts = true;
+                        DocumentWindow.this.showMemoryStatus();
+                    }
+
+                    @Override
+                    public void mouseExited(java.awt.event.MouseEvent e) {
+                        DocumentWindow.this.showMemoryAmounts = false;
+                        DocumentWindow.this.showMemoryStatus();
+                    }
+                });
             } catch (java.lang.Throwable ivjExc) {
                 this.handleException(ivjExc);
             }
@@ -1061,7 +1095,7 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
         if (null != this.ivjLookAndFeelMenu) return this.ivjLookAndFeelMenu;
         JMenu lookAndFeelMenu = new javax.swing.JMenu();
         lookAndFeelMenu.setName("LookAndFeelMenu");
-        lookAndFeelMenu.setText("Set VCell Theme...");
+        lookAndFeelMenu.setText("Set VCell Theme");
         // forgets the theme picked below, so VCell follows the system's light / dark mode again
         JMenuItem followSystemMenuItem = new JMenuItem("Follow System");
         followSystemMenuItem.setName(FOLLOW_SYSTEM_THEME);
@@ -1078,6 +1112,42 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
             this.handleException(exception);
         }
         return (this.ivjLookAndFeelMenu = lookAndFeelMenu);
+    }
+
+    /** The size of VCell's text, in the same steps the font dialog offers; marks the current one each time it opens. */
+    private JMenu getTextSizeMenu() {
+        if (null != this.textSizeMenu) return this.textSizeMenu;
+        JMenu menu = new JMenu("Set Font Size");
+        menu.setName("TextSizeMenu");
+        ButtonGroup sizes = new ButtonGroup();
+        for (float size : VCellFonts.getSizeChoices()) {
+            String label = Math.round(size) + " pt" + (size == VCellFonts.DEFAULT_SIZE ? " (Default)" : "");
+            JRadioButtonMenuItem item = new JRadioButtonMenuItem(label);
+            item.setName("TextSize" + Math.round(size));
+            item.addActionListener(e -> VCellFonts.chooseSize(size));
+            sizes.add(item);
+            menu.add(item);
+        }
+        menu.addMenuListener(new MenuListener() {
+            @Override
+            public void menuSelected(MenuEvent e) {
+                for (Component item : menu.getMenuComponents()) {
+                    if (item instanceof JRadioButtonMenuItem sizeItem) sizeItem.setSelected(sizeItem.getName().equals("TextSize" + Math.round(VCellFonts.getSize())));
+                }
+            }
+            @Override public void menuDeselected(MenuEvent e) {}
+            @Override public void menuCanceled(MenuEvent e) {}
+        });
+        return (this.textSizeMenu = menu);
+    }
+
+    /** Opens the font dialog: family and size, with a sample. */
+    private JMenuItem getFontMenuItem() {
+        if (null != this.fontMenuItem) return this.fontMenuItem;
+        this.fontMenuItem = new JMenuItem("Font...");
+        this.fontMenuItem.setName("FontMenuItem");
+        this.fontMenuItem.addActionListener(e -> FontChooser.show(this));
+        return this.fontMenuItem;
     }
 
     private List<JMenuItem> getLookAndFeelJMenuItems() {
@@ -1931,12 +2001,26 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
      * Creation date: (5/7/2004 11:51:20 AM)
      */
     public void updateMemoryStatus(long freeBytes, long totalBytes) {
+        this.usedMemoryBytes = totalBytes - freeBytes;
+        this.totalMemoryBytes = totalBytes;
+        this.showMemoryStatus();
+    }
+
+    private void showMemoryStatus() {
+        if (this.totalMemoryBytes <= 0) return;
+        int percent = (int) (100 * this.usedMemoryBytes / this.totalMemoryBytes);
+        this.getJProgressBarMemory().setValue(percent);
+        this.getJProgressBarMemory().setString(this.showMemoryAmounts ? DocumentWindow.memoryFraction(this.usedMemoryBytes, this.totalMemoryBytes) : DocumentWindow.memoryPercent(percent));
+    }
+
+    private static String memoryPercent(int percent) {
+        return "Memory Usage: " + percent + "%";
+    }
+
+    private static String memoryFraction(long usedBytes, long totalBytes) {
         DecimalFormat df = (DecimalFormat) DecimalFormat.getInstance();
         df.setMaximumFractionDigits(1);
-        String usedMB = df.format((totalBytes - freeBytes) / 1000000.0);
-        String totalMB = df.format(totalBytes / 1000000.0);
-        this.getJProgressBarMemory().setValue((int) (100 * (totalBytes - freeBytes) / totalBytes));
-        this.getJProgressBarMemory().setString(usedMB + "MB / " + totalMB + "MB");
+        return df.format(usedBytes / 1000000.0) + "MB / " + df.format(totalBytes / 1000000.0) + "MB";
     }
 
 

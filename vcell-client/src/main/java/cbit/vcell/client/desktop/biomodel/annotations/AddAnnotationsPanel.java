@@ -1,5 +1,6 @@
 package cbit.vcell.client.desktop.biomodel.annotations;
 
+import cbit.vcell.client.laf.VCellFonts;
 import cbit.vcell.client.laf.VCellColors;
 import cbit.vcell.biomodel.meta.VCMetaDataMiriamManager;
 import cbit.vcell.client.desktop.biomodel.AnnotationsPanel;
@@ -546,12 +547,12 @@ public class AddAnnotationsPanel extends LWChildDialog implements ActionListener
 
         if (!SearchElements.isEmpty()) {
             list.setEnabled(true);
-            list.setFont(new Font("TimesRoman",Font.PLAIN,14));
+            VCellFonts.setCategory(list, VCellFonts.Category.BODY);
             for (SearchElement element: SearchElements) {
                 dlm.addElement(element.getEntityName());
             }
         } else {
-            list.setFont(new Font("Arial", Font.BOLD, 16));
+            VCellFonts.setCategory(list, VCellFonts.Category.TITLE);
             dlm.addElement("No matches found");
             list.setEnabled(false);
         }

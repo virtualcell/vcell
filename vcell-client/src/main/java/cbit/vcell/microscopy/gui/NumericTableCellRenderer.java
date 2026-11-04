@@ -10,6 +10,7 @@
 
 package cbit.vcell.microscopy.gui;
 
+import cbit.vcell.client.laf.VCellFonts;
 import cbit.vcell.client.laf.VCellColors;
 import java.awt.Color;
 import java.awt.Component;
@@ -36,7 +37,7 @@ public class NumericTableCellRenderer  extends DefaultTableCellRenderer {
 	}
     public NumericTableCellRenderer(int precision) {
         super();
-        setFont(new Font("Arial", Font.PLAIN, 11));
+        VCellFonts.setCategory(this, VCellFonts.Category.BODY);
         //set double precision
         format = NumberFormat.getNumberInstance();
         format.setMaximumFractionDigits(precision);

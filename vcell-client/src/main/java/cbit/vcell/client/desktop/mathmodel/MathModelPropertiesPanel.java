@@ -10,6 +10,7 @@
 
 package cbit.vcell.client.desktop.mathmodel;
 
+import cbit.vcell.client.laf.VCellFonts;
 import cbit.vcell.client.laf.VCellLookAndFeel;
 import java.awt.BorderLayout;
 import java.awt.Desktop;
@@ -147,7 +148,7 @@ private void initialize() {
 		gbc.insets = new Insets(10, 4, 4, 4);
 		JLabel label = new JLabel("Saved MathModel Info");
 		label.setHorizontalAlignment(SwingConstants.CENTER);
-		label.setFont(label.getFont().deriveFont(Font.BOLD));
+		VCellFonts.setCategory(label, VCellFonts.Category.HEADING);
 		add(label, gbc);
 
 		gridy ++;

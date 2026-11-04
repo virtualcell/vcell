@@ -9,6 +9,7 @@
  */
 package cbit.vcell.solver.ode.gui;
 
+import cbit.vcell.client.laf.VCellFonts;
 import cbit.vcell.simdata.SpringSaladTrajectory;
 import cbit.vcell.solver.ode.gui.SpringSaladSpeciesLegend.SiteType;
 
@@ -25,7 +26,6 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Font;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -60,7 +60,7 @@ public class SpringSaladSpeciesPanel extends JPanel {
 		setBorder(BorderFactory.createEmptyBorder(4, 6, 4, 4));
 
 		JLabel title = new JLabel("Species");
-		title.setFont(title.getFont().deriveFont(Font.BOLD));
+		VCellFonts.setCategory(title, VCellFonts.Category.HEADING);
 		title.setBorder(BorderFactory.createEmptyBorder(0, 0, 4, 0));
 		add(title, BorderLayout.NORTH);
 
@@ -113,7 +113,7 @@ public class SpringSaladSpeciesPanel extends JPanel {
 		JCheckBox box = new JCheckBox(speciesName, true);
 		// Named per species, so a script can address one species rather than a row index
 		box.setName("SpringSaladSpeciesHeader_" + speciesName);
-		box.setFont(box.getFont().deriveFont(Font.BOLD));
+		VCellFonts.setCategory(box, VCellFonts.Category.HEADING);
 		box.setAlignmentX(LEFT_ALIGNMENT);
 		box.addActionListener(e -> {
 			for (SiteType siteType : members) {

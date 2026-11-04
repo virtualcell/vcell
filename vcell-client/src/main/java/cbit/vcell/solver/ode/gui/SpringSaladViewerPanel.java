@@ -9,6 +9,7 @@
  */
 package cbit.vcell.solver.ode.gui;
 
+import cbit.vcell.client.laf.VCellFonts;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
@@ -31,7 +32,6 @@ import javax.swing.Timer;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Font;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -83,7 +83,7 @@ public class SpringSaladViewerPanel extends JPanel {
 		sceneToggles.setLayout(new BoxLayout(sceneToggles, BoxLayout.Y_AXIS));
 		sceneToggles.setBorder(BorderFactory.createEmptyBorder(4, 6, 6, 4));
 		JLabel sceneTitle = new JLabel("Scene");
-		sceneTitle.setFont(sceneTitle.getFont().deriveFont(Font.BOLD));
+		VCellFonts.setCategory(sceneTitle, VCellFonts.Category.HEADING);
 		sceneTitle.setAlignmentX(LEFT_ALIGNMENT);
 		sceneToggles.add(sceneTitle);
 		sceneToggles.add(sceneToggle("Links", true, canvas::setShowLinks));

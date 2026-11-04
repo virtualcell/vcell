@@ -10,6 +10,7 @@
 
 package cbit.vcell.mapping.gui;
 
+import cbit.vcell.client.laf.VCellFonts;
 import cbit.vcell.client.laf.VCellColors;
 import cbit.vcell.client.laf.VCellLookAndFeel;
 import java.awt.BorderLayout;
@@ -158,7 +159,7 @@ private void initialize() {
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		JLabel label = new JLabel("<html><u>View only. Edit properties in Physiology</u></html>");
 		label.setHorizontalAlignment(SwingConstants.CENTER);
-		label.setFont(label.getFont().deriveFont(Font.BOLD));
+		VCellFonts.setCategory(label, VCellFonts.Category.HEADING);
 		upperPanel.add(label, gbc);
 		
 		isReversibleCheckBox = new JCheckBox("Reversible");

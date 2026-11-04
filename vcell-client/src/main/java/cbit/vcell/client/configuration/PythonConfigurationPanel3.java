@@ -1,5 +1,7 @@
 package cbit.vcell.client.configuration;
 
+import cbit.vcell.client.laf.CategoryTitledBorder;
+import cbit.vcell.client.laf.VCellFonts;
 import java.awt.BorderLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -46,10 +48,9 @@ public class PythonConfigurationPanel3 extends JPanel {
 		
 		Border margin = new EmptyBorder(5,3,1,1);
 		Border loweredEtchedBorder = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
-		TitledBorder panelBorder = BorderFactory.createTitledBorder(loweredEtchedBorder, " Python Properties ");
+		TitledBorder panelBorder = new CategoryTitledBorder(loweredEtchedBorder, " Python Properties ", VCellFonts.Category.HEADING);
 		panelBorder.setTitleJustification(TitledBorder.LEFT);
 		panelBorder.setTitlePosition(TitledBorder.TOP);
-		panelBorder.setTitleFont(getFont().deriveFont(Font.BOLD));
 		
 		JPanel jpanel = new JPanel();
 		jpanel.setBorder(new CompoundBorder(margin, panelBorder));

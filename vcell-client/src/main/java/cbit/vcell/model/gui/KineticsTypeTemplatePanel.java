@@ -10,6 +10,7 @@
 
 package cbit.vcell.model.gui;
 
+import cbit.vcell.client.laf.VCellFonts;
 import cbit.vcell.client.laf.VCellLookAndFeel;
 import java.awt.Component;
 import java.awt.Font;
@@ -200,7 +201,7 @@ private void initialize() {
 			gbc.fill = GridBagConstraints.HORIZONTAL;
 			JLabel label = new JLabel("<html><u>View only. Edit properties in Physiology</u></html>");
 			label.setHorizontalAlignment(SwingConstants.CENTER);
-			label.setFont(label.getFont().deriveFont(Font.BOLD));
+			VCellFonts.setCategory(label, VCellFonts.Category.HEADING);
 			add(label, gbc);
 		}
 		

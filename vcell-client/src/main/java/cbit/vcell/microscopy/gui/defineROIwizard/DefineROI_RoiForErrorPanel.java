@@ -10,6 +10,7 @@
 
 package cbit.vcell.microscopy.gui.defineROIwizard;
 
+import cbit.vcell.client.laf.VCellFonts;
 import cbit.vcell.client.laf.VCellColors;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -85,7 +86,7 @@ public class DefineROI_RoiForErrorPanel extends JPanel implements ActionListener
 		
 		JLabel selectRoisForLabel = new JLabel();
 		selectRoisForLabel.setForeground(VCellColors.getTitleForeground());
-		selectRoisForLabel.setFont(new Font("", Font.BOLD | Font.ITALIC, 16));
+		VCellFonts.setCategory(selectRoisForLabel, VCellFonts.Category.TITLE, Font.BOLD | Font.ITALIC);
 		selectRoisForLabel.setText("Select ROIs for Error Calculation");
 		add(selectRoisForLabel, BorderLayout.NORTH);
 
@@ -98,7 +99,7 @@ public class DefineROI_RoiForErrorPanel extends JPanel implements ActionListener
 
 		final JLabel selectTheRegionsLabel = new JLabel();
 		selectTheRegionsLabel.setForeground(VCellColors.getTitleForeground());
-		selectTheRegionsLabel.setFont(new Font("", Font.BOLD, 12));
+		VCellFonts.setCategory(selectTheRegionsLabel, VCellFonts.Category.HEADING);
 		selectTheRegionsLabel.setText("Select the regions that you want to use for computing the errors in optimization");
 		final GridBagConstraints gridBagConstraints = new GridBagConstraints();
 		gridBagConstraints.gridwidth = 5;

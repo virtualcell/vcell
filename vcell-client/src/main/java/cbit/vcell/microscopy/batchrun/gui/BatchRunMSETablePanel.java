@@ -10,6 +10,7 @@
 
 package cbit.vcell.microscopy.batchrun.gui;
 
+import cbit.vcell.client.laf.VCellFonts;
 import cbit.vcell.client.laf.VCellColors;
 import java.awt.Color;
 import java.awt.Font;
@@ -49,7 +50,7 @@ public class BatchRunMSETablePanel extends AdvancedTablePanel
         setBorder(new EmptyBorder(5, 0, 10, 0));
 
         JLabel headingLabel = new JLabel("Documents under Selected ROIs");
-        headingLabel.setFont(new Font("Tahoma", Font.BOLD, 11));
+        VCellFonts.setCategory(headingLabel, VCellFonts.Category.HEADING);
         hypDetail = new HyperLinkLabel("Less Details", new HyperLinkListener(), 0);
         hypDetail.setHorizontalAlignment(JLabel.RIGHT);
 

@@ -13,6 +13,7 @@ package cbit.vcell.client;
 import cbit.util.xml.VCLogger;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.client.desktop.NetworkProxyPreferences;
+import cbit.vcell.client.laf.VCellFonts;
 import cbit.vcell.client.laf.VCellLookAndFeel;
 import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.client.server.DynamicClientProperties;
@@ -95,6 +96,7 @@ public class VCellClientMain implements Callable<Integer> {
 
         // Screen menu bar, title bar appearance, Linux font smoothing; the JDK only reads these before AWT starts
         VCellLookAndFeel.setPlatformProperties();
+        VCellFonts.restore();
 
         System.out.println("starting with arguments " + Arrays.asList(args));
         int exitCode = 1;

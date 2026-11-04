@@ -10,6 +10,7 @@
 
 package cbit.vcell.client.data;
 
+import cbit.vcell.client.laf.VCellFonts;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
@@ -1571,7 +1572,7 @@ private javax.swing.JPanel getJPanelLoctionLabels() {
 			localSimLogFilePathTextField.setEnabled(true);
 			localSimLogFilePathTextField.setHorizontalAlignment(SwingConstants.CENTER);
 			localSimLogFilePathTextField.setBorder(null);
-			localSimLogFilePathTextField.setFont(locationLabel.getFont().deriveFont(Font.BOLD));
+			VCellFonts.setCategory(localSimLogFilePathTextField, VCellFonts.Category.HEADING);
 			locationLabelsPanel.add(localSimLogFilePathTextField);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);

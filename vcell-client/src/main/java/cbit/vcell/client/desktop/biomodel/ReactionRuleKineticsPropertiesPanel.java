@@ -1,5 +1,7 @@
 package cbit.vcell.client.desktop.biomodel;
 
+import cbit.vcell.client.laf.CategoryTitledBorder;
+import cbit.vcell.client.laf.VCellFonts;
 import cbit.vcell.client.laf.VCellColors;
 import cbit.vcell.client.laf.VCellLookAndFeel;
 import java.awt.Color;
@@ -188,10 +190,9 @@ public class ReactionRuleKineticsPropertiesPanel extends DocumentEditorSubPanel 
 			Border loweredEtchedBorder = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
 			Border loweredBevelBorder = BorderFactory.createLoweredBevelBorder();
 
-			TitledBorder annotationBorder = BorderFactory.createTitledBorder(loweredEtchedBorder, " Annotation and Pathway Links ");
+			TitledBorder annotationBorder = new CategoryTitledBorder(loweredEtchedBorder, " Annotation and Pathway Links ", VCellFonts.Category.HEADING);
 			annotationBorder.setTitleJustification(TitledBorder.LEFT);
 			annotationBorder.setTitlePosition(TitledBorder.TOP);
-			annotationBorder.setTitleFont(getFont().deriveFont(Font.BOLD));
 			
 			nameTextField = new JTextField();
 			nameTextField.setEditable(false);

@@ -10,6 +10,7 @@
 
 package cbit.vcell.microscopy.gui;
 
+import cbit.vcell.client.laf.VCellFonts;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -121,7 +122,7 @@ public class FRAPEstimationPanel_NotUsed extends JPanel {
 		add(panel, gridBagConstraints);
 
 		final JLabel frapModelParameterLabel_1 = new JLabel();
-		frapModelParameterLabel_1.setFont(new Font("", Font.BOLD, 12));
+		VCellFonts.setCategory(frapModelParameterLabel_1, VCellFonts.Category.HEADING);
 		frapModelParameterLabel_1.setText("FRAP Model Parameter Estimates");
 		final GridBagConstraints gridBagConstraints_3 = new GridBagConstraints();
 		gridBagConstraints_3.gridwidth = 2;
@@ -163,6 +164,7 @@ public class FRAPEstimationPanel_NotUsed extends JPanel {
 		panel.add(scrollPane, gridBagConstraints_4);
 
 		table = new JTable();
+		VCellFonts.followRowHeight(table);
 		table.getTableHeader().setReorderingAllowed(false);
 		scrollPane.setViewportView(table);
 
@@ -287,7 +289,7 @@ public class FRAPEstimationPanel_NotUsed extends JPanel {
 		panel_1.add(expressionCanvas, gridBagConstraints_26);
 
 		plotOfAverageLabel = new JLabel();
-		plotOfAverageLabel.setFont(new Font("", Font.BOLD, 12));
+		VCellFonts.setCategory(plotOfAverageLabel, VCellFonts.Category.HEADING);
 		plotOfAverageLabel.setText("Plot -  'Bleach' ROI average (Experiment and Estimated) vs. Time");
 		final GridBagConstraints gridBagConstraints_29 = new GridBagConstraints();
 		gridBagConstraints_29.insets = new Insets(20, 4, 4, 4);

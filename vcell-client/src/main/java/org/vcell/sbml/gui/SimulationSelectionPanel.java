@@ -10,6 +10,7 @@
 
 package org.vcell.sbml.gui;
 
+import cbit.vcell.client.laf.VCellFonts;
 import java.awt.Color;
 
 import javax.swing.JButton;
@@ -319,7 +320,7 @@ private javax.swing.JPanel getSimulationsListPanel() {
 			ivjLocalBorder1.setThickness(2);
 			org.vcell.util.gui.TitledBorderBean ivjLocalBorder;
 			ivjLocalBorder = new org.vcell.util.gui.TitledBorderBean();
-			ivjLocalBorder.setTitleFont(new java.awt.Font("Arial", 1, 12));
+			ivjLocalBorder.setTitleCategory(VCellFonts.Category.HEADING);
 			ivjLocalBorder.setBorder(ivjLocalBorder1);
 			ivjLocalBorder.setTitleColor(new java.awt.Color(0,0,0));
 //			ivjLocalBorder.setTitle("Select Simulation to Export");
@@ -357,7 +358,7 @@ private javax.swing.JPanel getSimulationSummaryPanel() {
 			ivjLocalBorder3.setThickness(2);
 			org.vcell.util.gui.TitledBorderBean ivjLocalBorder2;
 			ivjLocalBorder2 = new org.vcell.util.gui.TitledBorderBean();
-			ivjLocalBorder2.setTitleFont(new java.awt.Font("Arial", 1, 12));
+			ivjLocalBorder2.setTitleCategory(VCellFonts.Category.HEADING);
 			ivjLocalBorder2.setBorder(ivjLocalBorder3);
 			ivjLocalBorder2.setTitleColor(new java.awt.Color(0,0,0));
 			ivjLocalBorder2.setTitle("");

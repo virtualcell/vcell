@@ -9,6 +9,7 @@
  */
 
 package cbit.vcell.geometry.gui;
+import cbit.vcell.client.laf.VCellFonts;
 import java.awt.AWTEventMulticaster;
 import java.awt.Font;
 import java.awt.Frame;
@@ -450,7 +451,7 @@ private void initialize() {
 		constraintsJLabel1.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		constraintsJLabel1.insets = new Insets(0, 2, 0, 5);
 		JLabel label = new javax.swing.JLabel("Domain:");
-		label.setFont(label.getFont().deriveFont(Font.BOLD));
+		VCellFonts.setCategory(label, VCellFonts.Category.HEADING);
 		topHeader.add(label, constraintsJLabel1);
 
 		java.awt.GridBagConstraints constraintsSizeLabel = new java.awt.GridBagConstraints();

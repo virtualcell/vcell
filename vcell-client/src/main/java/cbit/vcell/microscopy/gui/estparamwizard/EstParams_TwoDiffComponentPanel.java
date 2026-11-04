@@ -10,6 +10,7 @@
 
 package cbit.vcell.microscopy.gui.estparamwizard;
 
+import cbit.vcell.client.laf.VCellFonts;
 import cbit.vcell.client.laf.VCellColors;
 import java.awt.Color;
 import java.awt.Font;
@@ -90,7 +91,7 @@ public class EstParams_TwoDiffComponentPanel extends JPanel {
 		gridBagConstraints_8.gridy = 0;
 		gridBagConstraints_8.gridx = 0;
 		paramPanel.add(interactiveAnalysisLabel, gridBagConstraints_8);
-		interactiveAnalysisLabel.setFont(new Font("", Font.PLAIN, 14));
+		VCellFonts.setCategory(interactiveAnalysisLabel, VCellFonts.Category.BODY);
 		interactiveAnalysisLabel.setText("Interactive Analysis on 'Diffusion with Two Diffusing Components' Model using FRAP Simulation Results");
 
 		diffTwoPanel = new FRAPDiffTwoParamPanel();
@@ -141,7 +142,7 @@ public class EstParams_TwoDiffComponentPanel extends JPanel {
 		gridBagConstraints_4.gridy = 0;
 		gridBagConstraints_4.insets = new Insets(2, 2, 2, 5);
 		panel_3.add(standardErrorRoiLabel, gridBagConstraints_4);
-		standardErrorRoiLabel.setFont(new Font("", Font.BOLD, 12));
+		VCellFonts.setCategory(standardErrorRoiLabel, VCellFonts.Category.HEADING);
 		standardErrorRoiLabel.setText("Plot -  ROI Average Normalized (using Pre-Bleach Average) vs. Time          ");
 
 		final JButton showRoisButton = new JButton();
@@ -157,7 +158,7 @@ public class EstParams_TwoDiffComponentPanel extends JPanel {
 				DialogUtils.showInfoDialog(EstParams_TwoDiffComponentPanel.this, getROIPanel(), "");
 			}
 		});
-		showRoisButton.setFont(new Font("Tahoma", Font.PLAIN, 11));
+		VCellFonts.setCategory(showRoisButton, VCellFonts.Category.BODY);
 		showRoisButton.setMargin(new Insets(0, 8, 0, 8));
 		showRoisButton.setText("Show ROIs");
 		GridBagConstraints gbc_showRoisButton = new GridBagConstraints();

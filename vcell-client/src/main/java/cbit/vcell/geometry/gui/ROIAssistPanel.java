@@ -10,6 +10,7 @@
 
 package cbit.vcell.geometry.gui;
 
+import cbit.vcell.client.laf.VCellFonts;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.GridBagConstraints;
@@ -184,7 +185,7 @@ public class ROIAssistPanel extends JPanel {
 		add(thresholdForRoiJPanel, gridBagConstraints_7);
 		
 		lblAdjustRoiThreshold = new JLabel("Adjust ROI Threshold");
-		lblAdjustRoiThreshold.setFont(new Font("Dialog", Font.BOLD, 14));
+		VCellFonts.setCategory(lblAdjustRoiThreshold, VCellFonts.Category.HEADING);
 		thresholdForRoiJPanel.add(lblAdjustRoiThreshold);
 		
 		chckbxInvert = new JCheckBox("Invert");
@@ -195,7 +196,7 @@ public class ROIAssistPanel extends JPanel {
 				thresholdSlider.setValue(thresholdSlider.getMaximum()-thresholdSlider.getValue());
 			}
 		});
-		chckbxInvert.setFont(new Font("Dialog", Font.BOLD, 12));
+		VCellFonts.setCategory(chckbxInvert, VCellFonts.Category.HEADING);
 		thresholdForRoiJPanel.add(chckbxInvert);
 
 		final JLabel lowerLabel = new JLabel();

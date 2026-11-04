@@ -10,6 +10,7 @@
 
 package org.vcell.util.gui;
 
+import cbit.vcell.client.laf.VCellFonts;
 import cbit.vcell.client.laf.VCellColors;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -47,7 +48,7 @@ public abstract class BoxPanel extends JPanel {
         gluePanel.setLayout(new BoxLayout(gluePanel, BoxLayout.X_AXIS));
         gluePanel.add(Box.createHorizontalGlue());
         JLabel lblTitle = new JLabel(title);
-        lblTitle.setFont(new Font("Tahoma", Font.BOLD, 13));
+        VCellFonts.setCategory(lblTitle, VCellFonts.Category.HEADING);
 
         JPanel linePanel = new LinePanel();
 
