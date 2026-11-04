@@ -869,7 +869,7 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
                     Map<LinkNode, SiteAttributesSpec> merged = getAllSiteAttributes();
                     Coordinate minc = SiteAttributesSpec.getMinCoordinate(merged);
                     Coordinate maxc = SiteAttributesSpec.getMaxCoordinate(merged);
-                    Coordinate coordinate = new Coordinate(minc.getX(), minc.getY(), maxc.getZ() + INITIAL_YZ_SITE_OFFSET);
+                    Coordinate coordinate = new Coordinate(minc.x(), minc.y(), maxc.z() + INITIAL_YZ_SITE_OFFSET);
                     sas.setCoordinate(coordinate);
                     NamedColor nextColor = Colors.COLORARRAY[merged.size() % Colors.COLORARRAY.length];
                     sas.setColor(nextColor);
@@ -1571,14 +1571,14 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
                         // sites at the 'right' of the anchor (site z > anchor z) must be located in 'Intracellular'
                         boolean foundSomething = false;
                         SiteAttributesSpec sasAnchor = getSiteAttributesMap().get(mcpAnchor);
-                        double zAnchor = sasAnchor.getCoordinate().getZ();
+                        double zAnchor = sasAnchor.getCoordinate().z();
                         for(MolecularComponentPattern mcp : mcpList) {
                             MolecularComponent mc = mcp.getMolecularComponent();
                             SiteAttributesSpec sasCandidate = getSiteAttributesMap().get(mcp);
                             if(sasCandidate.getLocation() instanceof Membrane) {
                                 continue;       // we skip self
                             }
-                            double zCandidate = sasCandidate.getCoordinate().getZ();
+                            double zCandidate = sasCandidate.getCoordinate().z();
                             if(sasCandidate.getLocation().getName().equals(Structure.SpringStructureEnum.Extracellular.columnName)) {
                                 if(!(zCandidate < zAnchor)) {
                                     String tip = "Sites located in the 'Extracellular' structure must have their z-coordinate smaller that the one of the 'Anchor' site";

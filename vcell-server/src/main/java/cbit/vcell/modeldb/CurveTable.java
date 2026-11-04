@@ -89,7 +89,7 @@ public static String encodeCurve(cbit.vcell.geometry.Curve curve) {
 		encodedVals.append(cpc.getControlPointCount()+" ");//ControlPointCount
 		for (int c = 0; c < cpc.getControlPointCount(); c += 1) {
 			Coordinate cpcCoord = cpc.getControlPoint(c);
-			encodedVals.append(cpcCoord.getX() + " " + cpcCoord.getY() + " "+cpcCoord.getZ()+" ");
+			encodedVals.append(cpcCoord.x() + " " + cpcCoord.y() + " "+cpcCoord.z()+" ");
 		}
 	} else{
 		throw new RuntimeException("Can't encode curvetype "+curve.getClass().getName());

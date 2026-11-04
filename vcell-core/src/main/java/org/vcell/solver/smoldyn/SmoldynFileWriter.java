@@ -1602,40 +1602,40 @@ public class SmoldynFileWriter extends SolverFileWriter {
             compartSubDomain0 = (CompartmentSubDomain) subDomain0;
             // x
             if(compartSubDomain0.getBoundaryConditionXm().isPERIODIC()){
-                printWriter.println(SmoldynVCellMapper.SmoldynKeyword.boundaries + " 0 " + lowWall.getX() + " " + highWall.getX() + " " + SmoldynVCellMapper.SmoldynKeyword.p);
+                printWriter.println(SmoldynVCellMapper.SmoldynKeyword.boundaries + " 0 " + lowWall.x() + " " + highWall.x() + " " + SmoldynVCellMapper.SmoldynKeyword.p);
             } else {
-                printWriter.println(SmoldynVCellMapper.SmoldynKeyword.low_wall + " 0 " + lowWall.getX() + " " + (compartSubDomain0.getBoundaryConditionXm().isNEUMANN() ? SmoldynVCellMapper.SmoldynKeyword.r : SmoldynVCellMapper.SmoldynKeyword.a));
-                printWriter.println(SmoldynVCellMapper.SmoldynKeyword.high_wall + " 0 " + highWall.getX() + " " + (compartSubDomain0.getBoundaryConditionXp().isNEUMANN() ? SmoldynVCellMapper.SmoldynKeyword.r : SmoldynVCellMapper.SmoldynKeyword.a));
+                printWriter.println(SmoldynVCellMapper.SmoldynKeyword.low_wall + " 0 " + lowWall.x() + " " + (compartSubDomain0.getBoundaryConditionXm().isNEUMANN() ? SmoldynVCellMapper.SmoldynKeyword.r : SmoldynVCellMapper.SmoldynKeyword.a));
+                printWriter.println(SmoldynVCellMapper.SmoldynKeyword.high_wall + " 0 " + highWall.x() + " " + (compartSubDomain0.getBoundaryConditionXp().isNEUMANN() ? SmoldynVCellMapper.SmoldynKeyword.r : SmoldynVCellMapper.SmoldynKeyword.a));
             }
             if(dimension > 1){
                 // y
                 if(compartSubDomain0.getBoundaryConditionYm().isPERIODIC()){
-                    printWriter.println(SmoldynVCellMapper.SmoldynKeyword.boundaries + " 1 " + lowWall.getY() + " " + highWall.getY() + " " + SmoldynVCellMapper.SmoldynKeyword.p);
+                    printWriter.println(SmoldynVCellMapper.SmoldynKeyword.boundaries + " 1 " + lowWall.y() + " " + highWall.y() + " " + SmoldynVCellMapper.SmoldynKeyword.p);
                 } else {
-                    printWriter.println(SmoldynVCellMapper.SmoldynKeyword.low_wall + " 1 " + lowWall.getY() + " " + (compartSubDomain0.getBoundaryConditionYm().isNEUMANN() ? SmoldynVCellMapper.SmoldynKeyword.r : SmoldynVCellMapper.SmoldynKeyword.a));
-                    printWriter.println(SmoldynVCellMapper.SmoldynKeyword.high_wall + " 1 " + highWall.getY() + " " + (compartSubDomain0.getBoundaryConditionYp().isNEUMANN() ? SmoldynVCellMapper.SmoldynKeyword.r : SmoldynVCellMapper.SmoldynKeyword.a));
+                    printWriter.println(SmoldynVCellMapper.SmoldynKeyword.low_wall + " 1 " + lowWall.y() + " " + (compartSubDomain0.getBoundaryConditionYm().isNEUMANN() ? SmoldynVCellMapper.SmoldynKeyword.r : SmoldynVCellMapper.SmoldynKeyword.a));
+                    printWriter.println(SmoldynVCellMapper.SmoldynKeyword.high_wall + " 1 " + highWall.y() + " " + (compartSubDomain0.getBoundaryConditionYp().isNEUMANN() ? SmoldynVCellMapper.SmoldynKeyword.r : SmoldynVCellMapper.SmoldynKeyword.a));
                 }
 
                 if(dimension > 2){
                     // z
                     if(compartSubDomain0.getBoundaryConditionZm().isPERIODIC()){
-                        printWriter.println(SmoldynVCellMapper.SmoldynKeyword.boundaries + " 2 " + lowWall.getZ() + " " + highWall.getZ() + " " + SmoldynVCellMapper.SmoldynKeyword.p);
+                        printWriter.println(SmoldynVCellMapper.SmoldynKeyword.boundaries + " 2 " + lowWall.z() + " " + highWall.z() + " " + SmoldynVCellMapper.SmoldynKeyword.p);
                     } else {
-                        printWriter.println(SmoldynVCellMapper.SmoldynKeyword.low_wall + " 2 " + lowWall.getZ() + " " + (compartSubDomain0.getBoundaryConditionZm().isNEUMANN() ? SmoldynVCellMapper.SmoldynKeyword.r : SmoldynVCellMapper.SmoldynKeyword.a));
-                        printWriter.println(SmoldynVCellMapper.SmoldynKeyword.high_wall + " 2 " + highWall.getZ() + " " + (compartSubDomain0.getBoundaryConditionZp().isNEUMANN() ? SmoldynVCellMapper.SmoldynKeyword.r : SmoldynVCellMapper.SmoldynKeyword.a));
+                        printWriter.println(SmoldynVCellMapper.SmoldynKeyword.low_wall + " 2 " + lowWall.z() + " " + (compartSubDomain0.getBoundaryConditionZm().isNEUMANN() ? SmoldynVCellMapper.SmoldynKeyword.r : SmoldynVCellMapper.SmoldynKeyword.a));
+                        printWriter.println(SmoldynVCellMapper.SmoldynKeyword.high_wall + " 2 " + highWall.z() + " " + (compartSubDomain0.getBoundaryConditionZp().isNEUMANN() ? SmoldynVCellMapper.SmoldynKeyword.r : SmoldynVCellMapper.SmoldynKeyword.a));
                     }
                 }
             }
             printWriter.println();
         } else {
             // x
-            printWriter.println(SmoldynVCellMapper.SmoldynKeyword.boundaries + " 0 " + lowWall.getX() + " " + highWall.getX());
+            printWriter.println(SmoldynVCellMapper.SmoldynKeyword.boundaries + " 0 " + lowWall.x() + " " + highWall.x());
             if(dimension > 1){
                 // y
-                printWriter.println(SmoldynVCellMapper.SmoldynKeyword.boundaries + " 1 " + lowWall.getY() + " " + highWall.getY());
+                printWriter.println(SmoldynVCellMapper.SmoldynKeyword.boundaries + " 1 " + lowWall.y() + " " + highWall.y());
                 if(dimension > 2){
                     // z
-                    printWriter.println(SmoldynVCellMapper.SmoldynKeyword.boundaries + " 2 " + lowWall.getZ() + " " + highWall.getZ());
+                    printWriter.println(SmoldynVCellMapper.SmoldynKeyword.boundaries + " 2 " + lowWall.z() + " " + highWall.z());
                 }
             }
             printWriter.println();
@@ -1770,16 +1770,16 @@ public class SmoldynFileWriter extends SolverFileWriter {
             // yz walls
             switch(dimension){
                 case 1:
-                    printWriter.println(SmoldynVCellMapper.SmoldynKeyword.panel + " " + SmoldynVCellMapper.SmoldynKeyword.rect + " +0 " + lowWall.getX());
-                    printWriter.println(SmoldynVCellMapper.SmoldynKeyword.panel + " " + SmoldynVCellMapper.SmoldynKeyword.rect + " -0 " + highWall.getX());
+                    printWriter.println(SmoldynVCellMapper.SmoldynKeyword.panel + " " + SmoldynVCellMapper.SmoldynKeyword.rect + " +0 " + lowWall.x());
+                    printWriter.println(SmoldynVCellMapper.SmoldynKeyword.panel + " " + SmoldynVCellMapper.SmoldynKeyword.rect + " -0 " + highWall.x());
                     break;
                 case 2:
-                    printWriter.println(SmoldynVCellMapper.SmoldynKeyword.panel + " " + SmoldynVCellMapper.SmoldynKeyword.rect + " +0 " + lowWall.getX() + " " + lowWall.getY() + " " + extent.getY());
-                    printWriter.println(SmoldynVCellMapper.SmoldynKeyword.panel + " " + SmoldynVCellMapper.SmoldynKeyword.rect + " -0 " + highWall.getX() + " " + lowWall.getY() + " " + extent.getY());
+                    printWriter.println(SmoldynVCellMapper.SmoldynKeyword.panel + " " + SmoldynVCellMapper.SmoldynKeyword.rect + " +0 " + lowWall.x() + " " + lowWall.y() + " " + extent.getY());
+                    printWriter.println(SmoldynVCellMapper.SmoldynKeyword.panel + " " + SmoldynVCellMapper.SmoldynKeyword.rect + " -0 " + highWall.x() + " " + lowWall.y() + " " + extent.getY());
                     break;
                 case 3:
-                    printWriter.println(SmoldynVCellMapper.SmoldynKeyword.panel + " " + SmoldynVCellMapper.SmoldynKeyword.rect + " +0 " + lowWall.getX() + " " + lowWall.getY() + " " + lowWall.getZ() + " " + extent.getY() + " " + extent.getZ());
-                    printWriter.println(SmoldynVCellMapper.SmoldynKeyword.panel + " " + SmoldynVCellMapper.SmoldynKeyword.rect + " -0 " + highWall.getX() + " " + lowWall.getY() + " " + lowWall.getZ() + " " + extent.getY() + " " + extent.getZ());
+                    printWriter.println(SmoldynVCellMapper.SmoldynKeyword.panel + " " + SmoldynVCellMapper.SmoldynKeyword.rect + " +0 " + lowWall.x() + " " + lowWall.y() + " " + lowWall.z() + " " + extent.getY() + " " + extent.getZ());
+                    printWriter.println(SmoldynVCellMapper.SmoldynKeyword.panel + " " + SmoldynVCellMapper.SmoldynKeyword.rect + " -0 " + highWall.x() + " " + lowWall.y() + " " + lowWall.z() + " " + extent.getY() + " " + extent.getZ());
                     break;
             }
             printWriter.println(SmoldynVCellMapper.SmoldynKeyword.end_surface);
@@ -1797,12 +1797,12 @@ public class SmoldynFileWriter extends SolverFileWriter {
                 // xz walls
                 switch(dimension){
                     case 2:
-                        printWriter.println(SmoldynVCellMapper.SmoldynKeyword.panel + " " + SmoldynVCellMapper.SmoldynKeyword.rect + " +1 " + lowWall.getX() + " " + lowWall.getY() + " " + extent.getX());
-                        printWriter.println(SmoldynVCellMapper.SmoldynKeyword.panel + " " + SmoldynVCellMapper.SmoldynKeyword.rect + " -1 " + lowWall.getX() + " " + highWall.getY() + " " + extent.getX());
+                        printWriter.println(SmoldynVCellMapper.SmoldynKeyword.panel + " " + SmoldynVCellMapper.SmoldynKeyword.rect + " +1 " + lowWall.x() + " " + lowWall.y() + " " + extent.getX());
+                        printWriter.println(SmoldynVCellMapper.SmoldynKeyword.panel + " " + SmoldynVCellMapper.SmoldynKeyword.rect + " -1 " + lowWall.x() + " " + highWall.y() + " " + extent.getX());
                         break;
                     case 3:
-                        printWriter.println(SmoldynVCellMapper.SmoldynKeyword.panel + " " + SmoldynVCellMapper.SmoldynKeyword.rect + " +1 " + lowWall.getX() + " " + lowWall.getY() + " " + lowWall.getZ() + " " + extent.getX() + " " + extent.getZ());
-                        printWriter.println(SmoldynVCellMapper.SmoldynKeyword.panel + " " + SmoldynVCellMapper.SmoldynKeyword.rect + " -1 " + lowWall.getX() + " " + highWall.getY() + " " + lowWall.getZ() + " " + extent.getX() + " " + extent.getZ());
+                        printWriter.println(SmoldynVCellMapper.SmoldynKeyword.panel + " " + SmoldynVCellMapper.SmoldynKeyword.rect + " +1 " + lowWall.x() + " " + lowWall.y() + " " + lowWall.z() + " " + extent.getX() + " " + extent.getZ());
+                        printWriter.println(SmoldynVCellMapper.SmoldynKeyword.panel + " " + SmoldynVCellMapper.SmoldynKeyword.rect + " -1 " + lowWall.x() + " " + highWall.y() + " " + lowWall.z() + " " + extent.getX() + " " + extent.getZ());
                         break;
                 }
                 printWriter.println(SmoldynVCellMapper.SmoldynKeyword.end_surface);
@@ -1818,8 +1818,8 @@ public class SmoldynFileWriter extends SolverFileWriter {
                     printWriter.println(SmoldynVCellMapper.SmoldynKeyword.polygon + " " + SmoldynVCellMapper.SmoldynKeyword.both + " " + SmoldynVCellMapper.SmoldynKeyword.edge);
                     printWriter.println(SmoldynVCellMapper.SmoldynKeyword.max_panels + " " + SmoldynVCellMapper.SmoldynKeyword.rect + " 2");
                     // xy walls
-                    printWriter.println(SmoldynVCellMapper.SmoldynKeyword.panel + " " + SmoldynVCellMapper.SmoldynKeyword.rect + " +2 " + lowWall.getX() + " " + lowWall.getY() + " " + lowWall.getZ() + " " + extent.getX() + " " + extent.getY());
-                    printWriter.println(SmoldynVCellMapper.SmoldynKeyword.panel + " " + SmoldynVCellMapper.SmoldynKeyword.rect + " -2 " + lowWall.getX() + " " + lowWall.getY() + " " + highWall.getZ() + " " + extent.getX() + " " + extent.getY());
+                    printWriter.println(SmoldynVCellMapper.SmoldynKeyword.panel + " " + SmoldynVCellMapper.SmoldynKeyword.rect + " +2 " + lowWall.x() + " " + lowWall.y() + " " + lowWall.z() + " " + extent.getX() + " " + extent.getY());
+                    printWriter.println(SmoldynVCellMapper.SmoldynKeyword.panel + " " + SmoldynVCellMapper.SmoldynKeyword.rect + " -2 " + lowWall.x() + " " + lowWall.y() + " " + highWall.z() + " " + extent.getX() + " " + extent.getY());
                     printWriter.println(SmoldynVCellMapper.SmoldynKeyword.end_surface);
                     printWriter.println();
                 }

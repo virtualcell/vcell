@@ -25,6 +25,7 @@ import org.jlibsedml.components.output.Report;
 import org.jlibsedml.components.simulation.UniformTimeCourse;
 import org.vcell.cli.run.results.ValueHolder;
 import org.vcell.sbml.vcell.lazy.LazySBMLNonSpatialDataAccessor;
+import org.vcell.util.Coordinate;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.GenericExtensionFilter;
 import org.vcell.util.document.User;
@@ -452,7 +453,7 @@ public class RunUtils {
 
         double[] dataSetTimes = dsControllerImpl.getDataSetTimes(vcId);
         TimeSpecs timeSpecs = new TimeSpecs(0,dataSetTimes.length-1, dataSetTimes, ExportEnums.TimeMode.TIME_RANGE);
-        GeometrySpecs geometrySpecs = new GeometrySpecs(null, 2, 0, ExportEnums.GeometryMode.GEOMETRY_FULL);
+        GeometrySpecs geometrySpecs = new GeometrySpecs(null, Coordinate.Axis.Z, 0, ExportEnums.GeometryMode.GEOMETRY_FULL);
 
         // String simulationName,VCSimulationIdentifier vcSimulationIdentifier,ExportParamScanInfo exportParamScanInfo
         ExportParamScanInfo exportParamScanInfo = ExportParamScanInfo.getParamScanInfo(vcellSim,jobIndex);

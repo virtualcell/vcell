@@ -155,7 +155,7 @@ private static class NRRDHelper {
 				"raw",
 				NrrdInfo.createXYZTVMap()
 			);
-			nrrdInfo.setSpacings(new double[] {getSpacing().getX(),getSpacing().getY(),getSpacing().getZ(),
+			nrrdInfo.setSpacings(new double[] {getSpacing().x(),getSpacing().y(),getSpacing().z(),
 				Double.NaN,	// timepoints can have irregular intervals
 				Double.NaN  // not meaningful for variables
 			});
@@ -194,7 +194,7 @@ private static class NRRDHelper {
 
 		nrrdInfo.setContent(nrrdInfo.getDimensionDescription()+" VCData from " + simID);
 		nrrdInfo.setCenters(new String[] {"cell", "cell", "cell","???"});
-		nrrdInfo.setSpacings(new double[] {getSpacing().getX(),getSpacing().getY(),getSpacing().getZ(),
+		nrrdInfo.setSpacings(new double[] {getSpacing().x(),getSpacing().y(),getSpacing().z(),
 			Double.NaN  // not meaningful for variables
 		});
 		nrrdInfo.setSeparateHeader(rasterSpecs.isSeparateHeader());
@@ -216,7 +216,7 @@ private static class NRRDHelper {
 
 		nrrdInfo.setContent(nrrdInfo.getDimensionDescription()+" VCData from " + simID);
 		nrrdInfo.setCenters(new String[] {"cell", "cell", "cell", "cell"});
-		nrrdInfo.setSpacings(new double[] {getSpacing().getX(),getSpacing().getY(),getSpacing().getZ(),
+		nrrdInfo.setSpacings(new double[] {getSpacing().x(),getSpacing().y(),getSpacing().z(),
 			Double.NaN,	// timepoints can have irregular intervals
 		});
 		nrrdInfo.setSeparateHeader(rasterSpecs.isSeparateHeader());
@@ -776,8 +776,8 @@ public static PolyTexHelper writeStanfordPolygonTex(RegionImage regionImage,Writ
 }
 private static class NAHelper{
 	public Coordinate middle;
-	public int normalAxis;
-	public NAHelper(Coordinate middle, int normalAxis) {
+	public Coordinate.Axis normalAxis;
+	public NAHelper(Coordinate middle, Coordinate.Axis normalAxis) {
 		super();
 		this.middle = middle;
 		this.normalAxis = normalAxis;
@@ -799,7 +799,7 @@ private static NAHelper calcNAHelper(Quadrilateral quad){
 		nz = nz && (zd<ulp);
 	}
 	Coordinate cm = new Coordinate(cx/quad.getNodeCount(), cy/quad.getNodeCount(), cz/quad.getNodeCount());
-	int normalAxis = (nx?Coordinate.X_AXIS:(ny?Coordinate.Y_AXIS:Coordinate.Z_AXIS));
+	Coordinate.Axis normalAxis = (nx?Coordinate.Axis.X:(ny?Coordinate.Axis.Y:Coordinate.Axis.Z));
 	return new NAHelper(cm, normalAxis);
 }
 

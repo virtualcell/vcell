@@ -1510,7 +1510,7 @@ public abstract class ITextWriter {
                 electTable.addCell(createCell("N/A", getFont()));
             } else {
                 Coordinate c = electrode.getPosition();
-                String location = c.getX() + ", " + c.getY() + ", " + c.getZ();
+                String location = c.x() + ", " + c.y() + ", " + c.z();
                 String featureName = electrode.getFeature().getName();
                 electTable.addCell(createCell("(" + location + ") in " + featureName, getFont()));
             }

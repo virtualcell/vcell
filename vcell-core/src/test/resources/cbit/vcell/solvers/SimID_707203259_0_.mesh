@@ -1,0 +1,28 @@
+Version 1.2
+CartesianMesh {
+	//              X          Y          Z
+	Size           20          1          1
+	Extent         10          1          1
+	Origin          0          0          0
+
+	VolumeRegionsMapSubvolume {
+	1
+	//VolRegID   SubvolID     Volume
+	         0          0 10.000000000000002 //subdomain0
+	}
+
+	MembraneRegionsMapVolumeRegion {
+	0
+	//MemRegID    VolReg1    VolReg2    Surface
+	}
+
+	VolumeElementsMapVolumeRegion {
+	20 Compressed
+	789C6360200E000000280001
+	}
+
+	MembraneElements {
+	0
+	//Indx Vol1 Vol2 Conn0 Conn1 Conn2 Conn3 MemRegID
+	}
+}

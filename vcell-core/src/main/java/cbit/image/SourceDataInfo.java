@@ -190,9 +190,9 @@ public org.vcell.util.CoordinateIndex getDataIndexFromUnitized(double unitizedX,
  */
 public org.vcell.util.CoordinateIndex getDataIndexFromWorldCoordinate(Coordinate worldCoordinate) {
 	
-	double unitizedX = (worldCoordinate.getX()-origin.getX())/extent.getX();
-	double unitizedY = (worldCoordinate.getY()-origin.getY())/extent.getY();
-	double unitizedZ = (worldCoordinate.getZ()-origin.getZ())/extent.getZ();
+	double unitizedX = (worldCoordinate.x()-origin.getX())/extent.getX();
+	double unitizedY = (worldCoordinate.y()-origin.getY())/extent.getY();
+	double unitizedZ = (worldCoordinate.z()-origin.getZ())/extent.getZ();
 	
 	if(unitizedX < 0){unitizedX = 0;}
 	if(unitizedX > 1){unitizedX = 1;}
@@ -308,16 +308,16 @@ public Coordinate getWorldCoordinateFromIndex(CoordinateIndex ci) {
 	}
 }
 private Coordinate getVCellWorldCoordinateFromIndex(CoordinateIndex ci) {
-	double x = (getXSize()==1)?Coordinate.coordComponentFromSinglePlanePolicy(origin,extent,Coordinate.X_AXIS):(((double)ci.x/(double)(getXSize()-1))*extent.getX() + origin.getX());
-	double y = (getYSize()==1)?Coordinate.coordComponentFromSinglePlanePolicy(origin,extent,Coordinate.Y_AXIS):(((double)ci.y/(double)(getYSize()-1))*extent.getY() + origin.getY());
-	double z = (getZSize()==1)?Coordinate.coordComponentFromSinglePlanePolicy(origin,extent,Coordinate.Z_AXIS):(((double)ci.z/(double)(getZSize()-1))*extent.getZ() + origin.getZ());
+	double x = (getXSize()==1)?Coordinate.coordComponentFromSinglePlanePolicy(origin,extent,Coordinate.Axis.X):(((double)ci.x/(double)(getXSize()-1))*extent.getX() + origin.getX());
+	double y = (getYSize()==1)?Coordinate.coordComponentFromSinglePlanePolicy(origin,extent,Coordinate.Axis.Y):(((double)ci.y/(double)(getYSize()-1))*extent.getY() + origin.getY());
+	double z = (getZSize()==1)?Coordinate.coordComponentFromSinglePlanePolicy(origin,extent,Coordinate.Axis.Z):(((double)ci.z/(double)(getZSize()-1))*extent.getZ() + origin.getZ());
 	return new Coordinate(x, y, z);
 }
 private Coordinate getChomboWorldCoordinateFromIndex(CoordinateIndex ci) {
-	double x = (getXSize()==1?Coordinate.coordComponentFromSinglePlanePolicy(origin,extent,Coordinate.X_AXIS):(extent.getX()/getXSize())*(ci.x+.5) + origin.getX());
-	double y = (getYSize()==1?Coordinate.coordComponentFromSinglePlanePolicy(origin,extent,Coordinate.Y_AXIS):(extent.getY()/getYSize())*(ci.y+.5) + origin.getY());
+	double x = (getXSize()==1?Coordinate.coordComponentFromSinglePlanePolicy(origin,extent,Coordinate.Axis.X):(extent.getX()/getXSize())*(ci.x+.5) + origin.getX());
+	double y = (getYSize()==1?Coordinate.coordComponentFromSinglePlanePolicy(origin,extent,Coordinate.Axis.Y):(extent.getY()/getYSize())*(ci.y+.5) + origin.getY());
 	double z = getZSize() == 0 ? 0 :
-		(getZSize()==1?Coordinate.coordComponentFromSinglePlanePolicy(origin,extent,Coordinate.Z_AXIS):(extent.getZ()/getZSize())*(ci.z+.5) + origin.getZ());
+		(getZSize()==1?Coordinate.coordComponentFromSinglePlanePolicy(origin,extent,Coordinate.Axis.Z):(extent.getZ()/getZSize())*(ci.z+.5) + origin.getZ());
 	return new Coordinate(x, y, z);
 }
 
@@ -332,9 +332,9 @@ public Coordinate getWorldCoordinateFromUnitized(double unitizedX, double unitiz
 private Coordinate getVCellWorldCoordinateFromUnitized(double unitizedX, double unitizedY, double unitizedZ) {
 
 	//return new Coordinate(origin.getX() + (unitizedX * extent.getX()), origin.getY() + (unitizedY * extent.getY()), origin.getZ() + (unitizedZ * extent.getZ()));
-	double x = (getXSize()==1?Coordinate.coordComponentFromSinglePlanePolicy(origin,extent,Coordinate.X_AXIS):origin.getX() + (unitizedX * extent.getX()));
-	double y = (getYSize()==1?Coordinate.coordComponentFromSinglePlanePolicy(origin,extent,Coordinate.Y_AXIS):origin.getY() + (unitizedY * extent.getY()));
-	double z = (getZSize()==1?Coordinate.coordComponentFromSinglePlanePolicy(origin,extent,Coordinate.Z_AXIS):origin.getZ() + (unitizedZ * extent.getZ()));
+	double x = (getXSize()==1?Coordinate.coordComponentFromSinglePlanePolicy(origin,extent,Coordinate.Axis.X):origin.getX() + (unitizedX * extent.getX()));
+	double y = (getYSize()==1?Coordinate.coordComponentFromSinglePlanePolicy(origin,extent,Coordinate.Axis.Y):origin.getY() + (unitizedY * extent.getY()));
+	double z = (getZSize()==1?Coordinate.coordComponentFromSinglePlanePolicy(origin,extent,Coordinate.Axis.Z):origin.getZ() + (unitizedZ * extent.getZ()));
 	return new Coordinate(x,y,z);
 }
 private Coordinate getChomboWorldCoordinateFromUnitized(double unitizedX, double unitizedY, double unitizedZ) 

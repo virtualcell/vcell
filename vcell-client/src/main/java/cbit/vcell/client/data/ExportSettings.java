@@ -19,6 +19,7 @@ import javax.swing.JPanel;
 import cbit.vcell.export.gui.*;
 import cbit.vcell.export.server.*;
 import org.vcell.client.logicalwindow.transition.LWJDialogDecorator;
+import org.vcell.util.Coordinate;
 import org.vcell.util.gui.GeneralGuiUtils;
 import org.vcell.util.VCAssert;
 
@@ -585,7 +586,7 @@ public void setSliceCount(int sliceCount){
 public void setTimeSpecs(TimeSpecs timeSpecs){
 	getMediaSettingsPanel1().setTimeSpecs(timeSpecs);
 }
-public void setImageSizeCalculationInfo(CartesianMesh mesh,int normalAxis){
+public void setImageSizeCalculationInfo(CartesianMesh mesh, Coordinate.Axis normalAxis){
 	getMediaSettingsPanel1().setImageSizeCalculationInfo(mesh, normalAxis);
 }
 public void setIsSmoldyn(boolean isSmoldyn){

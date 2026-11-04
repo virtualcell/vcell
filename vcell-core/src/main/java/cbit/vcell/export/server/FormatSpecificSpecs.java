@@ -125,20 +125,20 @@ public abstract class FormatSpecificSpecs implements Serializable {
 		return new VideoMediaSampleJPEG(width, height,sampleDuration, byteArrayOutputStream.toByteArray(), bitsPerPixel, isGrayscale);
 	}
 	
-		public static int getSliceCount(boolean bAllSlices,int normalAxis,CartesianMesh mesh){
+		public static int getSliceCount(boolean bAllSlices,Coordinate.Axis normalAxis,CartesianMesh mesh){
 		if (!bAllSlices){
 			return 1;
 		}
 		switch (normalAxis){
-			case Coordinate.X_AXIS:{
+			case X:{
 				// YZ plane
 				return mesh.getSizeX();
 			}
-			case Coordinate.Y_AXIS:{
+			case Y:{
 				// ZX plane
 				return mesh.getSizeY();
 			}
-			case Coordinate.Z_AXIS:{
+			case Z:{
 				// XY plane
 				return mesh.getSizeZ();
 
@@ -155,21 +155,21 @@ public abstract class FormatSpecificSpecs implements Serializable {
 		 * @return java.awt.Dimension
 		 */
 		@JsonIgnore
-		public static Dimension getMeshDimensionUnscaled(int normalAxis,CartesianMesh mesh) {
+		public static Dimension getMeshDimensionUnscaled(Coordinate.Axis normalAxis, CartesianMesh mesh) {
 			switch (normalAxis){
-				case Coordinate.X_AXIS:{
+				case X:{
 					//
 					// YZ plane
 					//
 					return new Dimension(mesh.getSizeY(),mesh.getSizeZ());
 				}
-				case Coordinate.Y_AXIS:{
+				case Y:{
 					//
 					// XZ plane
 					//
 					return new Dimension(mesh.getSizeX(),mesh.getSizeZ());
 				}
-				case Coordinate.Z_AXIS:{
+				case Z:{
 					//
 					// XY plane
 					//
@@ -183,7 +183,7 @@ public abstract class FormatSpecificSpecs implements Serializable {
 		}
 
 		@JsonIgnore
-		public static Dimension getImageDimension(int meshMode,int imageScale,CartesianMesh mesh,int normalAxis) {
+		public static Dimension getImageDimension(int meshMode,int imageScale,CartesianMesh mesh,Coordinate.Axis normalAxis) {
 			ImagePaneModel imagePaneModel = new ImagePaneModel();
 			imagePaneModel.setMode(meshMode);
 			imagePaneModel.setZoom(imageScale);

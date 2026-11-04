@@ -89,9 +89,9 @@ public Coordinate coordinateFromNormalizedU(double normalizedU) {
 			}
 			p0 = getControlPoint(i);
 			p1 = getControlPoint((i + 1) % controlPointCount);
-			double uX = p0.getX() + ((p1.getX() - p0.getX()) * segmentU);
-			double uY = p0.getY() + ((p1.getY() - p0.getY()) * segmentU);
-			double uZ = p0.getZ() + ((p1.getZ() - p0.getZ()) * segmentU);
+			double uX = p0.x() + ((p1.x() - p0.x()) * segmentU);
+			double uY = p0.y() + ((p1.y() - p0.y()) * segmentU);
+			double uZ = p0.z() + ((p1.z() - p0.z()) * segmentU);
 			result = new Coordinate(uX,uY,uZ);
 		}
 	}
@@ -108,7 +108,6 @@ protected SampledCurve createSampledCurve(int numSamples) {
  * Insert the method's description here.
  * Creation date: (10/9/2004 6:55:12 PM)
  * @return cbit.vcell.geometry.Coordinate[]
- * @param sgementIndex int
  */
 public Coordinate[] getControlPointsForSegment(int segmentIndex) {
 	
@@ -205,7 +204,7 @@ public double getSpatialLength() {
  * @param u double
  */
 public double getX(double u) {
-	return coordinateFromNormalizedU(u).getX();
+	return coordinateFromNormalizedU(u).x();
 }
 /**
  * This method was created in VisualAge.
@@ -213,7 +212,7 @@ public double getX(double u) {
  * @param u double
  */
 public double getY(double u) {
-	return coordinateFromNormalizedU(u).getY();
+	return coordinateFromNormalizedU(u).y();
 }
 /**
  * This method was created in VisualAge.
@@ -221,7 +220,7 @@ public double getY(double u) {
  * @param u double
  */
 public double getZ(double u) {
-	return coordinateFromNormalizedU(u).getZ();
+	return coordinateFromNormalizedU(u).z();
 }
 /**
  * Insert the method's description here.
@@ -281,9 +280,9 @@ protected double pickUSampledCurve(Coordinate pickCoord, double minPickDistance)
         p1 = getControlPoint((i + 1) % controlPointCount);
         double u = calculateUOfV1AlongV2(p0, pickCoord, p1);
         if (u >= 0.0 && u <= 1.0) {
-            double uX = p0.getX() + ((p1.getX() - p0.getX()) * u);
-            double uY = p0.getY() + ((p1.getY() - p0.getY()) * u);
-            double uZ = p0.getZ() + ((p1.getZ() - p0.getZ()) * u);
+            double uX = p0.x() + ((p1.x() - p0.x()) * u);
+            double uY = p0.y() + ((p1.y() - p0.y()) * u);
+            double uZ = p0.z() + ((p1.z() - p0.z()) * u);
             double distance = pickCoord.distanceTo(uX, uY, uZ);
             if (distance <= minPickDistance && distance < shortestDistance) {
                 shortestDistance = distance;

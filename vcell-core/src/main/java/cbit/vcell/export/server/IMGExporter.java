@@ -89,7 +89,7 @@ public static void main(String [] args) throws Exception{
 	double[] allTimes = dataSetControllerImpl.getDataSetTimes(vcdID);
 	TimeSpecs timeSpecs = new TimeSpecs(beginTimeIndex, endTimeIndex, allTimes, ExportEnums.TimeMode.TIME_RANGE);
 	VariableSpecs variableSpecs = new VariableSpecs(varNames, ExportEnums.VariableMode.VARIABLE_MULTI);
-	GeometrySpecs geometrySpecs = new GeometrySpecs(null, 0, 0, ExportEnums.GeometryMode.GEOMETRY_SLICE);
+	GeometrySpecs geometrySpecs = new GeometrySpecs(null, Coordinate.Axis.X, 0, ExportEnums.GeometryMode.GEOMETRY_SLICE);
 	DisplayPreferences displayPreferences =
 		new DisplayPreferences(DisplayAdapterService.BLUERED, new Range(0,1), DisplayAdapterService.createBlueRedSpecialColors(),true,false);
 	MovieSpecs movieSpecs = new MovieSpecs(
@@ -625,13 +625,13 @@ private static String create3DigitNumber(int number){
 	return (number<100?"0":"")+(number<10?"0":"") + number;
 }
 private static String createDataID(ExportSpecs exportSpecs,int sliceNumber,String varName,int timeIndex){
-	int sliceNormalAxis = exportSpecs.getGeometrySpecs().getAxis();
+	Coordinate.Axis sliceNormalAxis = exportSpecs.getGeometrySpecs().getAxis();
 	if(exportSpecs.getFormat() == ExportFormat.ANIMATED_GIF){
-		return "_" + Coordinate.getNormalAxisPlaneName(sliceNormalAxis) + "_" + create3DigitNumber(sliceNumber) + "_" + varName + "_animated";
+		return "_" + sliceNormalAxis.getNormalPlaneName() + "_" + create3DigitNumber(sliceNumber) + "_" + varName + "_animated";
 	}else if (exportSpecs.getFormat() == ExportFormat.QUICKTIME){
-		return "_" + Coordinate.getNormalAxisPlaneName(sliceNormalAxis) + "_" + create3DigitNumber(sliceNumber) + "_" + varName;
+		return "_" + sliceNormalAxis.getNormalPlaneName() + "_" + create3DigitNumber(sliceNumber) + "_" + varName;
 	}else{
-		return "_" + Coordinate.getNormalAxisPlaneName(sliceNormalAxis) + "_" + create3DigitNumber(sliceNumber) + "_" + varName +"_" + create4DigitNumber(timeIndex);		
+		return "_" + sliceNormalAxis.getNormalPlaneName() + "_" + create3DigitNumber(sliceNumber) + "_" + varName +"_" + create4DigitNumber(timeIndex);
 	}
 
 }

@@ -2528,6 +2528,12 @@ components:
         geometryName:
           type: string
       type: object
+    Axis:
+      enum:
+      - X
+      - "Y"
+      - Z
+      type: string
     BatchSystemType:
       enum:
       - PBS
@@ -3633,17 +3639,16 @@ components:
             crossing: true
             fieldU: 1.2315135367772556
             fieldSegmentExtended: 6
-        sliceNumber: 4
+        sliceNumber: 1
         geometryMode: null
-        axis: 1
+        axis: null
       properties:
         selections:
           items:
             $ref: '#/components/schemas/SpatialSelection'
           type: array
         axis:
-          format: int32
-          type: integer
+          $ref: '#/components/schemas/Axis'
         sliceNumber:
           format: int32
           type: integer
@@ -4133,9 +4138,9 @@ components:
                 crossing: true
                 fieldU: 1.2315135367772556
                 fieldSegmentExtended: 6
-            sliceNumber: 4
+            sliceNumber: 1
             geometryMode: null
-            axis: 1
+            axis: null
           outputContext:
           - functionName: functionName
             domain:
@@ -4172,11 +4177,11 @@ components:
           simulationJob: 6
           timeSpecs:
             mode: null
-            endTimeIndex: 9
-            beginTimeIndex: 5
+            endTimeIndex: 5
+            beginTimeIndex: 4
             allTimes:
-            - 9.369310271410669
-            - 9.369310271410669
+            - 9.965781217890562
+            - 9.965781217890562
       properties:
         standardExportInformation:
           $ref: '#/components/schemas/StandardExportInfo'
@@ -5087,9 +5092,9 @@ components:
               crossing: true
               fieldU: 1.2315135367772556
               fieldSegmentExtended: 6
-          sliceNumber: 4
+          sliceNumber: 1
           geometryMode: null
-          axis: 1
+          axis: null
         outputContext:
         - functionName: functionName
           domain:
@@ -5126,11 +5131,11 @@ components:
         simulationJob: 6
         timeSpecs:
           mode: null
-          endTimeIndex: 9
-          beginTimeIndex: 5
+          endTimeIndex: 5
+          beginTimeIndex: 4
           allTimes:
-          - 9.369310271410669
-          - 9.369310271410669
+          - 9.965781217890562
+          - 9.965781217890562
       properties:
         outputContext:
           items:
@@ -5230,11 +5235,11 @@ components:
     TimeSpecs:
       example:
         mode: null
-        endTimeIndex: 9
-        beginTimeIndex: 5
+        endTimeIndex: 5
+        beginTimeIndex: 4
         allTimes:
-        - 9.369310271410669
-        - 9.369310271410669
+        - 9.965781217890562
+        - 9.965781217890562
       properties:
         beginTimeIndex:
           format: int32

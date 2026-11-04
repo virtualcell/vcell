@@ -40,6 +40,7 @@ import javax.swing.JTextField;
 
 import cbit.vcell.export.server.*;
 import org.vcell.util.BeanUtils;
+import org.vcell.util.Coordinate;
 import org.vcell.util.Range;
 import org.vcell.util.gui.DialogUtils;
 
@@ -566,9 +567,9 @@ public class MediaSettingsPanel extends JPanel {
 		compressionSlider.setMaximum(10);
 		compressionSlider.setPaintTicks(true);
 		Hashtable<Integer, JLabel> compressionSliderLabelTable = new Hashtable<Integer, JLabel>();
-		compressionSliderLabelTable.put( new Integer( 0 ), new JLabel("high") );
-		compressionSliderLabelTable.put( new Integer( compressionSlider.getMaximum()/2 ), new JLabel("medium") );
-		compressionSliderLabelTable.put( new Integer( compressionSlider.getMaximum() ), new JLabel("lossless") );
+		compressionSliderLabelTable.put(0, new JLabel("high") );
+		compressionSliderLabelTable.put(compressionSlider.getMaximum()/2, new JLabel("medium") );
+		compressionSliderLabelTable.put(compressionSlider.getMaximum(), new JLabel("lossless") );
 		compressionSlider.setLabelTable( compressionSliderLabelTable );
 		compressionSlider.setPaintLabels(true);
 
@@ -577,9 +578,9 @@ public class MediaSettingsPanel extends JPanel {
 		volVarMembrOutlineThicknessSlider.setMaximum(20);
 		volVarMembrOutlineThicknessSlider.setPaintTicks(true);
 		Hashtable<Integer, JLabel> volVarOutlineLabelTable = new Hashtable<Integer, JLabel>();
-		volVarOutlineLabelTable.put( new Integer( 0 ), new JLabel("Hide") );
+		volVarOutlineLabelTable.put(0, new JLabel("Hide") );
 		for (int i = 2; i <= 20; i+= 2) {
-			volVarOutlineLabelTable.put( new Integer( i ), new JLabel(i+"") );
+			volVarOutlineLabelTable.put(i, new JLabel(i+"") );
 		}
 		volVarMembrOutlineThicknessSlider.setLabelTable( volVarOutlineLabelTable );
 		volVarMembrOutlineThicknessSlider.setPaintLabels(true);
@@ -615,7 +616,7 @@ public class MediaSettingsPanel extends JPanel {
 	private JLabel volvarMembrOutlineLabel;
 	public double getDuration() {
 		String typed = movieDurationTextField.getText();
-		double seconds = new Double(typed).doubleValue();
+		double seconds = Double.parseDouble(typed);
 		if (seconds < MOVIE_DURATION_MIN_SECONDS) seconds = MOVIE_DURATION_MIN_SECONDS;
 		if (seconds > MOVIE_DURATION_MAX_SECONDS) seconds = MOVIE_DURATION_MAX_SECONDS;
 		int milliseconds = (int)(seconds * 1000);
@@ -733,10 +734,10 @@ public class MediaSettingsPanel extends JPanel {
 	}
 	
 	private CartesianMesh mesh;
-	private int normalAxis;
+	private Coordinate.Axis normalAxis;
 	private JSlider volVarMembrOutlineThicknessSlider;
 	private JSlider membrVarThicknessSlider;
-	public void setImageSizeCalculationInfo(CartesianMesh mesh,int normalAxis){
+	public void setImageSizeCalculationInfo(CartesianMesh mesh, Coordinate.Axis normalAxis){
 		this.mesh = mesh;
 		this.normalAxis = normalAxis;
 	}

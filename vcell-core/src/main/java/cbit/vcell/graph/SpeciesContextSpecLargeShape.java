@@ -138,8 +138,8 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
                 membraneRadius = merged.get(ln).getRadius();
             }
             Coordinate coordinate = sas.getCoordinate();
-            double x = coordinate.getZ();
-            double y = coordinate.getY();
+            double x = coordinate.z();
+            double y = coordinate.y();
             if(counter == 0) {
                 minX = x;
                 minY = y;
@@ -180,7 +180,7 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
             SiteAttributesSpec sas = e.getValue();
             Coordinate coordinate = sas.getCoordinate();
             // to be planar in YZ, the X coordinates of all sites must be equal
-            double x = coordinate.getX();   // here x means x
+            double x = coordinate.x();   // here x means x
             if(i==0) {
                 oldX = x;   // first pass
             }
@@ -468,10 +468,10 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
             Pair<LinkNode, LinkNode> link = mils.getLink();
             SiteAttributesSpec sas1 = merged.get(link.one);
             SiteAttributesSpec sas2 = merged.get(link.two);
-            double x1 = x_offset + sas1.getCoordinate().getZ();
-            double x2 = x_offset + sas2.getCoordinate().getZ();
-            double y1 = y_offset + sas1.getCoordinate().getY();
-            double y2 = y_offset + sas2.getCoordinate().getY();
+            double x1 = x_offset + sas1.getCoordinate().z();
+            double x2 = x_offset + sas2.getCoordinate().z();
+            double y1 = y_offset + sas1.getCoordinate().y();
+            double y2 = y_offset + sas2.getCoordinate().y();
             CustomLine2D line = drawLink(g, x1, y1, x2, y2, false);
             lineToMilsMap.put(line, mils);
             milsToLineMap.put(mils, line);
@@ -481,8 +481,8 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
             Coordinate coord = sas.getCoordinate();
             double radius = sas.getRadius();
             NamedColor color = sas.getColor();
-            double x = x_offset + coord.getZ();
-            double y = y_offset + coord.getY();
+            double x = x_offset + coord.z();
+            double y = y_offset + coord.y();
             Ellipse2D oval = drawCenteredCircle(g, color, x, y, radius, false);
             ellipseToSasMap.put(oval, sas);
             sasToEllipseMap.put(sas, oval);
@@ -494,8 +494,8 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
             Coordinate coord = sas.getCoordinate();
             double radius = sas.getRadius();
             NamedColor color = sas.getColor();
-            double x = x_offset + coord.getZ();
-            double y = y_offset + coord.getY();
+            double x = x_offset + coord.z();
+            double y = y_offset + coord.y();
             Ellipse2D newOval = drawCenteredCircle(g, color, x, y, radius, true);
             Ellipse2D oldOval = sasToEllipseMap.get(sas);
             sasToEllipseMap.put(sas, newOval);
@@ -506,10 +506,10 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
             Pair<LinkNode, LinkNode> link = milsSelected.getLink();
             SiteAttributesSpec sas1 = merged.get(link.one);
             SiteAttributesSpec sas2 = merged.get(link.two);
-            double x1 = x_offset + sas1.getCoordinate().getZ();
-            double x2 = x_offset + sas2.getCoordinate().getZ();
-            double y1 = y_offset + sas1.getCoordinate().getY();
-            double y2 = y_offset + sas2.getCoordinate().getY();
+            double x1 = x_offset + sas1.getCoordinate().z();
+            double x2 = x_offset + sas2.getCoordinate().z();
+            double y1 = y_offset + sas1.getCoordinate().y();
+            double y2 = y_offset + sas2.getCoordinate().y();
             CustomLine2D newLine = drawLink(g, x1, y1, x2, y2, true);
             // we need to extract the mils from the lineToMilsMap, because the line we just drew is not the same
             // as the one we drew in the first loop (and that is the one in the map)
@@ -530,8 +530,8 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
                 Coordinate coord = sas.getCoordinate();
                 double radius = sas.getRadius();
                 NamedColor color = sas.getColor();
-                double x = x_offset + coord.getZ();
-                double y = y_offset + coord.getY();
+                double x = x_offset + coord.z();
+                double y = y_offset + coord.y();
                 Ellipse2D newOval = drawCenteredCircle(g, color, x, y, radius, true);
                 Ellipse2D oldOval = sasToEllipseMap.get(sas);
                 sasToEllipseMap.put(sas, newOval);
@@ -542,10 +542,10 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
                 Pair<LinkNode, LinkNode> link = mils.getLink();
                 SiteAttributesSpec sas1 = merged.get(link.one);
                 SiteAttributesSpec sas2 = merged.get(link.two);
-                double x1 = x_offset + sas1.getCoordinate().getZ();
-                double x2 = x_offset + sas2.getCoordinate().getZ();
-                double y1 = y_offset + sas1.getCoordinate().getY();
-                double y2 = y_offset + sas2.getCoordinate().getY();
+                double x1 = x_offset + sas1.getCoordinate().z();
+                double x2 = x_offset + sas2.getCoordinate().z();
+                double y1 = y_offset + sas1.getCoordinate().y();
+                double y2 = y_offset + sas2.getCoordinate().y();
                 CustomLine2D newLine = drawLink(g, x1, y1, x2, y2, true);
                 CustomLine2D oldLine = milsToLineMap.get(mils);
                 milsToLineMap.put(mils, newLine);

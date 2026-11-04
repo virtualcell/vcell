@@ -10,6 +10,7 @@
 
 package cbit.image.gui;
 
+import org.vcell.util.Coordinate;
 import org.vcell.util.NumberUtils;
 
 import cbit.image.ImagePlaneManager;
@@ -223,7 +224,7 @@ protected void paintComponent(java.awt.Graphics g) {
 						}
 						String val = "";
 						if(coord != null){
-							double doubleVal = org.vcell.util.Coordinate.convertAxisFromStandardXYZToNormal(coord,org.vcell.util.Coordinate.X_AXIS,getImagePlaneManager().getNormalAxis());
+							double doubleVal = org.vcell.util.Coordinate.convertAxisFromStandardXYZToNormal(coord, Coordinate.Axis.X, getImagePlaneManager().getNormalAxis());
 							val = org.vcell.util.NumberUtils.formatNumber(doubleVal);
 						}
 						java.awt.geom.Rectangle2D r2d = getFont().getStringBounds(val,0,val.length(),((java.awt.Graphics2D)g).getFontRenderContext());
@@ -296,7 +297,7 @@ protected void paintComponent(java.awt.Graphics g) {
 						}
 						String val = "";
 						if(coord != null){
-							double doubleVal = org.vcell.util.Coordinate.convertAxisFromStandardXYZToNormal(coord,org.vcell.util.Coordinate.Y_AXIS,getImagePlaneManager().getNormalAxis());
+							double doubleVal = org.vcell.util.Coordinate.convertAxisFromStandardXYZToNormal(coord,Coordinate.Axis.Y,getImagePlaneManager().getNormalAxis());
 							val = doubleVal+"";
 							val = (val.length() <= VERT_TEXT_CHAR_LIMIT?val:NumberUtils.formatNumber(doubleVal,VERT_TEXT_CHAR_LIMIT));
 						}

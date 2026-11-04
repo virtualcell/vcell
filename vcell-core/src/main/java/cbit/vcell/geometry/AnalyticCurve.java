@@ -59,9 +59,9 @@ public AnalyticCurve(Expression x, Expression y, Expression z) throws Expression
  */
 protected void addOffsetPrivate(Coordinate offset) {
     this.offset = new Coordinate(
-		this.offset.getX() + offset.getX(),
-		this.offset.getY() + offset.getY(),
-		this.offset.getZ() + offset.getZ());
+		this.offset.x() + offset.x(),
+		this.offset.y() + offset.y(),
+		this.offset.z() + offset.z());
 }
 /**
  * Insert the method's description here.
@@ -73,7 +73,7 @@ public Object clone() {
     ac.expX = expX;
     ac.expY = expY;
     ac.expZ = expZ;
-    ac.offset = new Coordinate(offset.getX(), offset.getY(), offset.getZ());
+    ac.offset = new Coordinate(offset.x(), offset.y(), offset.z());
     return ac;
 }
 /**
@@ -158,7 +158,7 @@ private double getX(double values[]) {
     } catch (ExpressionException r) {
         throw (new RuntimeException(r.getMessage()));
     }
-    return (returnValue + offset.getX());
+    return (returnValue + offset.x());
 }
 /**
  * This method was created in VisualAge.
@@ -181,7 +181,7 @@ private double getY(double values[]) {
     } catch (ExpressionException r) {
         throw (new RuntimeException(r.getMessage()));
     }
-    return (returnValue + offset.getY());
+    return (returnValue + offset.y());
 }
 /**
  * This method was created in VisualAge.
@@ -204,7 +204,7 @@ private double getZ(double values[]) {
     } catch (ExpressionException r) {
         throw (new RuntimeException(r.getMessage()));
     }
-    return (returnValue + offset.getZ());
+    return (returnValue + offset.z());
 }
 /**
  * This method was created in VisualAge.

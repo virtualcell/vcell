@@ -322,9 +322,9 @@ public class DataSetControllerImpl implements SimDataConstants,DataJobListenerHo
 		}
 		public double evaluateFunction(double time,double[] argValues) throws ExpressionException{
 			functionArgs[0] = time; // time
-			functionArgs[1] = xyz.getX(); // x
-			functionArgs[2] = xyz.getY(); // y
-			functionArgs[3] = xyz.getZ(); // z
+			functionArgs[1] = xyz.x(); // x
+			functionArgs[2] = xyz.y(); // y
+			functionArgs[3] = xyz.z(); // z
 			for(int i=0;i<funcVarNames.length;i+= 1){
 				functionArgs[i+TXYZ_OFFSET] = argValues[i];
 				if(inside_near_far_indexes != null && inside_near_far_indexes[i] != null && inside_near_far_indexes[i].volIndexFar != -1){
@@ -806,9 +806,9 @@ static DataProcessingOutputDataValues evaluatePostProcessFunction(
 			}else{
 				coord = cartesianMesh.getCoordinateFromVolumeIndex(dataIndexHelper.getDataIndexes()[i]);
 			}
-			args[1] = coord.getX();
-			args[2] = coord.getY();
-			args[3] = coord.getZ();
+			args[1] = coord.x();
+			args[2] = coord.y();
+			args[3] = coord.z();
 			for (int j = 0; j < postProcessSymbols.length; j++) {
 				args[TXYZ_OFFSET+j] = postProcessData[j][t][i];
 			}
@@ -1049,9 +1049,9 @@ private SimDataBlock evaluateFunction(
 		//
 		if (variableType.equals(VariableType.VOLUME) || variableType.equals(VariableType.POSTPROCESSING)){
 			Coordinate coord = mesh.getCoordinateFromVolumeIndex(i);
-			args[1] = coord.getX();
-			args[2] = coord.getY();
-			args[3] = coord.getZ();
+			args[1] = coord.x();
+			args[2] = coord.y();
+			args[3] = coord.z();
 			for (int j = 0; j < varIndex - TXYZ_OFFSET; j++) {
 				SimDataHolder simDataHolder = dataSetList.elementAt(j);
 				if (simDataHolder.getVariableType().equals(VariableType.VOLUME) || simDataHolder.getVariableType().equals(VariableType.POSTPROCESSING)){
@@ -1077,9 +1077,9 @@ private SimDataBlock evaluateFunction(
 			}
 		}else if (variableType.equals(VariableType.MEMBRANE)){
 			Coordinate coord = mesh.getCoordinateFromMembraneIndex(i);
-			args[1] = coord.getX();
-			args[2] = coord.getY();
-			args[3] = coord.getZ();
+			args[1] = coord.x();
+			args[2] = coord.y();
+			args[3] = coord.z();
 			for (int j = 0; j < varIndex - TXYZ_OFFSET; j++) {
 				DataSetIdentifier dsi = (DataSetIdentifier)dependencyList.elementAt(j);
 				SimDataHolder simDataHolder = dataSetList.elementAt(j);
@@ -2771,11 +2771,11 @@ private double[] getSpatialNeighborData(CartesianMesh mesh,int volumeIndex,int n
 					int neighborVolumeIndex = mesh.getVolumeIndex(ci);
 					int neighborRegionIndex = mesh.getVolumeRegionIndex(neighborVolumeIndex);
 					if(neighborRegionIndex == regionIndex){
-						spatialNeighborData[argCount] = coord.getX();
+						spatialNeighborData[argCount] = coord.x();
 						argCount+= 1;
-						spatialNeighborData[argCount] = coord.getY();
+						spatialNeighborData[argCount] = coord.y();
 						argCount+= 1;
-						spatialNeighborData[argCount] = coord.getZ();
+						spatialNeighborData[argCount] = coord.z();
 						argCount+= 1;
 						for (int j = 0; j < numArgs - TXYZ_OFFSET; j++) {
 							SimDataHolder simDataHolder = dataSetList.elementAt(j);
