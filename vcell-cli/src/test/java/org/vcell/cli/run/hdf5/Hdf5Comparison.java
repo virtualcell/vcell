@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.TreeSet;
+import java.util.function.BiFunction;
 
 /**
  * Compares two HDF5 files by content: the same groups and datasets at the same paths, the same dataset shapes and
@@ -24,9 +25,18 @@ public final class Hdf5Comparison {
 
     /** @return a description of every difference, empty when the files hold the same content */
     public static List<String> differences(Path expected, Path actual) {
+        return Hdf5Comparison.differences(expected, actual, (name, value) -> value);
+    }
+
+    /**
+     * @param expectedAttributes applied to each expected attribute's (name, value) before comparing, for known
+     *                           differences the comparison should look past
+     * @return a description of every difference, empty when the files hold the same content
+     */
+    public static List<String> differences(Path expected, Path actual, BiFunction<String, Object, Object> expectedAttributes) {
         List<String> differences = new ArrayList<>();
         try (HdfFile expectedFile = new HdfFile(expected); HdfFile actualFile = new HdfFile(actual)) {
-            Hdf5Comparison.compareNodes(expectedFile, actualFile, differences);
+            Hdf5Comparison.compareNodes(expectedFile, actualFile, expectedAttributes, differences);
         }
         return differences;
     }
@@ -45,9 +55,9 @@ public final class Hdf5Comparison {
         else if (node instanceof Group group) for (Node child : group.getChildren().values()) Hdf5Comparison.collectShapes(child, shapes);
     }
 
-    private static void compareNodes(Node expected, Node actual, List<String> differences) {
+    private static void compareNodes(Node expected, Node actual, BiFunction<String, Object, Object> expectedAttributes, List<String> differences) {
         String path = expected.getPath();
-        Hdf5Comparison.compareAttributes(path, expected.getAttributes(), actual.getAttributes(), differences);
+        Hdf5Comparison.compareAttributes(path, expected.getAttributes(), actual.getAttributes(), expectedAttributes, differences);
         if (expected instanceof Group expectedGroup) {
             if (!(actual instanceof Group actualGroup)) {
                 differences.add(path + ": expected a group");
@@ -60,7 +70,7 @@ public final class Hdf5Comparison {
                 Node expectedChild = expectedChildren.get(name), actualChild = actualChildren.get(name);
                 if (expectedChild == null) differences.add(path + name + ": unexpected");
                 else if (actualChild == null) differences.add(path + name + ": missing");
-                else Hdf5Comparison.compareNodes(expectedChild, actualChild, differences);
+                else Hdf5Comparison.compareNodes(expectedChild, actualChild, expectedAttributes, differences);
             }
         } else if (expected instanceof Dataset expectedDataset) {
             if (!(actual instanceof Dataset actualDataset)) {
@@ -74,15 +84,19 @@ public final class Hdf5Comparison {
         }
     }
 
-    private static void compareAttributes(String path, Map<String, Attribute> expected, Map<String, Attribute> actual, List<String> differences) {
+    private static void compareAttributes(String path, Map<String, Attribute> expected, Map<String, Attribute> actual,
+                                          BiFunction<String, Object, Object> expectedAttributes, List<String> differences) {
         TreeSet<String> names = new TreeSet<>(expected.keySet());
         names.addAll(actual.keySet());
         for (String name : names) {
             Attribute expectedAttribute = expected.get(name), actualAttribute = actual.get(name);
             if (expectedAttribute == null) differences.add(path + "@" + name + ": unexpected");
             else if (actualAttribute == null) differences.add(path + "@" + name + ": missing");
-            else if (!Objects.deepEquals(expectedAttribute.getData(), actualAttribute.getData()))
-                differences.add(path + "@" + name + ": " + Hdf5Comparison.describe(actualAttribute.getData()) + ", expected " + Hdf5Comparison.describe(expectedAttribute.getData()));
+            else {
+                Object expectedValue = expectedAttributes.apply(name, expectedAttribute.getData());
+                if (!Objects.deepEquals(expectedValue, actualAttribute.getData()))
+                    differences.add(path + "@" + name + ": " + Hdf5Comparison.describe(actualAttribute.getData()) + ", expected " + Hdf5Comparison.describe(expectedValue));
+            }
         }
     }
 
