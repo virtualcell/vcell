@@ -59,6 +59,7 @@ public class RecentModelsPanelTest {
 		RecentModelsPanel panel = this.panelFor();
 		assertEquals("No saved models yet", panel.getMessageShown());
 		assertFalse(panel.isShowMoreOffered());
+		assertFalse(this.get(panel::hasModels)); // a new user: the welcome window starts at the database's models
 	}
 
 	@Test
@@ -74,6 +75,7 @@ public class RecentModelsPanelTest {
 		RecentModelsPanel panel = this.panelFor();
 		assertNull(panel.getMessageShown());
 		assertEquals(List.of(signallingLatest, diffusion), this.shown(panel));
+		assertTrue(this.get(panel::hasModels));
 	}
 
 	@Test
@@ -147,9 +149,25 @@ public class RecentModelsPanelTest {
 		this.onEdt(() -> {
 			panel.setOpener(opened::add);
 			panel.getList().setSelectedIndex(0);
-			panel.getList().getActionMap().get("openRecentModel").actionPerformed(null); // Enter
+			panel.getList().getActionMap().get("openModel").actionPerformed(null); // Enter
 		});
 		assertEquals(List.of(newer), opened);
+	}
+
+	@Test
+	public void searchingListsOnlyTheModelsWhoseNameMatches() throws Exception {
+		BioModelInfo calcium = this.bioModel("Calcium Waves", ME, 1, 10);
+		this.bioModels.add(calcium);
+		this.bioModels.add(this.bioModel("Ran Transport", ME, 2, 20));
+		RecentModelsPanel panel = this.panelFor();
+
+		this.onEdt(() -> panel.setSearchText("CALCIUM")); // ignoring case
+		assertEquals(List.of(calcium), this.shown(panel));
+		this.onEdt(() -> panel.setSearchText("glycolysis"));
+		assertEquals("No recent models match \u201Cglycolysis\u201D", panel.getMessageShown());
+		assertTrue(this.get(panel::hasModels)); // the user has models, whatever the search
+		this.onEdt(() -> panel.setSearchText(""));
+		assertEquals(2, panel.getShownCount());
 	}
 
 	@Test
@@ -171,7 +189,7 @@ public class RecentModelsPanelTest {
 	@Test
 	public void breaksLongAnnotationsIntoLinesForTheirToolTip() {
 		String annotation = "word ".repeat(40) + "\nA <b> & c";
-		String toolTip = RecentModelsPanel.wrapForToolTip(annotation);
+		String toolTip = ModelListRenderer.wrapForToolTip(annotation);
 		assertTrue(toolTip.startsWith("<html>") && toolTip.endsWith("</html>"));
 		String[] lines = toolTip.substring("<html>".length(), toolTip.length() - "</html>".length()).split("<br>");
 		assertEquals(4, lines.length); // 200 characters in lines of at most 70, then the annotation's own second line
