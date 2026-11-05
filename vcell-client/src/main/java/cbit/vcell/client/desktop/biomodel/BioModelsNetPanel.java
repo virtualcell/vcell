@@ -191,6 +191,7 @@ public class BioModelsNetPanel extends DocumentEditorSubPanel {
 	
 	private TopLevelWindowManager documentWindowManager = null; // the window a model is imported from: a model window, or the welcome window
 	private JTextField searchTextField;
+	private CollapsiblePanel searchPanel;
 	private JButton searchButton = null;
 	private JButton showAllButton = null;
 	private JButton importButton = null;
@@ -464,7 +465,7 @@ TODO:
 		         }
 		     }
 		 });
-		CollapsiblePanel searchPanel = new CollapsiblePanel("Search", false);
+		searchPanel = new CollapsiblePanel("Search", false);
 		searchPanel.getContentPanel().setLayout(new GridBagLayout());
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.gridx = 0;
@@ -514,6 +515,16 @@ TODO:
 		gbc.weightx = 1.0;
 		gbc.insets = new Insets(4,0,4,0);
 		add(importButton, gbc);
+	}
+
+	/** Shows only the models whose ID, name or link contains the text (all of them, for none), as its own search does. */
+	public void setSearchText(String searchText) {
+		treeModel.setSearchText(null == searchText || searchText.isBlank() ? null : searchText.strip());
+	}
+
+	/** Leaves out its own search, for a window whose one search covers this panel and others. */
+	public void hideSearch() {
+		searchPanel.setVisible(false);
 	}
 
 	public void setDocumentWindowManager(TopLevelWindowManager newValue) {
