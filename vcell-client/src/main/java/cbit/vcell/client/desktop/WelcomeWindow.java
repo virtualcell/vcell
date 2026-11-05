@@ -21,7 +21,7 @@ public class WelcomeWindow extends LWTopFrame implements TopLevelWindow {
 		super();
 		this.manager = manager;
 		this.setName("WelcomeWindow");
-		this.setTitle("Welcome to Virtual Cell");
+		this.setTitle("Welcome to Virtual Cell \u2014 Version " + DocumentWindowAboutBox.getVERSION_NO() + " (build " + DocumentWindowAboutBox.getBUILD_NO() + ")");
 		this.setIconImage(VCellIcons.getJFrameImageIcon());
 		// closing goes to the request manager, which hides it, or quits VCell if no model window is open
 		this.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
