@@ -1,7 +1,6 @@
 package cbit.vcell.client;
 
 import cbit.vcell.client.desktop.WelcomePanel;
-import cbit.vcell.client.desktop.biomodel.BioModelEditorPathwayCommonsPanel.PathwayData;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.resource.VCellConfiguration;
@@ -15,7 +14,6 @@ import org.vcell.util.document.VCDocumentInfo;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.Arrays;
 import java.util.Hashtable;
 
 /**
@@ -100,27 +98,6 @@ public class WelcomeWindowManager extends TopLevelWindowManager {
 	}
 
 	/** Logs in through the browser, or as the guest user. */
-	/**
-	 * Opens a pathway from Pathway Commons in a new BioModel, showing it there as a BioModel window shows a pathway
-	 * found from within it, ready to import.
-	 */
-	public void newModelFromPathway(PathwayData pathway) {
-		AsynchClientTask[] create = this.newDocument(new VCDocument.DocumentCreationInfo(VCDocumentType.BIOMODEL_DOC, VCDocument.BIO_OPTION_DEFAULT));
-		AsynchClientTask showPathway = new AsynchClientTask("Showing the pathway", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-			@Override
-			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				BioModelWindowManager windowManager = (BioModelWindowManager) hashTable.get("windowManager");
-				windowManager.getDocumentEditor().getSelectionManager().setSelectedObjects(new Object[] {pathway});
-			}
-		};
-		AsynchClientTask[] tasks = Arrays.copyOf(create, create.length + 1);
-		tasks[create.length] = showPathway;
-		Hashtable<String, Object> hash = new Hashtable<>();
-		hash.put(ClientRequestManager.GUI_PARENT, this.panel);
-		hash.put("requestManager", this.getRequestManager());
-		ClientTaskDispatcher.dispatch(this.panel, hash, tasks, false);
-	}
-
 	public void logIn(boolean guest) {
 		((ClientRequestManager) this.getRequestManager()).logIn(this, guest);
 	}
