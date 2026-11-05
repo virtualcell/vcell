@@ -3897,6 +3897,22 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 		throw new RuntimeException("Unknown VCDocument type " + doc);
 	}
 
+	/**
+	 * Opens a model from a file the user picks (VCML, SBML, OMEX, SED-ML, BNGL, ...), in a window of its own: File > Import
+	 * for a window that isn't a model's, such as the welcome window.
+	 */
+	public void importDocument(TopLevelWindowManager requester) {
+		try {
+			VCDocumentInfo documentInfo = getMdiManager().getDatabaseWindowManager().selectDocument(VCDocumentType.EXTERNALFILE_DOC, requester);
+			openDocument(documentInfo, requester, true);
+		} catch (UserCancelException uexc) {
+			return;
+		} catch (Exception exc) {
+			exc.printStackTrace(System.out);
+			PopupGenerator.showErrorDialog(requester, "Open document failed\n" + exc.getMessage(), exc);
+		}
+	}
+
 	public void openDocument(VCDocumentType documentType, DocumentWindowManager requester) {
 		/* trying to open from database; called by DocumentWindow */
 		// get an info first

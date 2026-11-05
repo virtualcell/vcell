@@ -83,6 +83,11 @@ public class WelcomeWindowManager extends TopLevelWindowManager {
 		this.getRequestManager().openDocument(documentInfo, this, true);
 	}
 
+	/** Opens a model from a file the user picks, in a window of its own. */
+	public void importModel() {
+		((ClientRequestManager) this.getRequestManager()).importDocument(this);
+	}
+
 	/** Creates a new model of this kind, in a window of its own. */
 	public void newModel(NewModel kind) {
 		AsynchClientTask[] tasks = this.newDocument(new VCDocument.DocumentCreationInfo(kind.documentType, kind.option));
