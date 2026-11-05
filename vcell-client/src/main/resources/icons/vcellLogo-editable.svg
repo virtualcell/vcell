@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- VCell logo, the tiled cube, with "VCell" as editable text: it needs the Source Sans 3 font (free, SIL Open Font
+     License) to show as designed. vcellLogo.svg is the same with the text turned into shapes, needing no font. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <title>VCell logo</title>
+  <defs>
+    <style>
+      .grid{fill:none;stroke:#ffffff;stroke-width:1.5;stroke-linecap:round}
+      .edge{fill:none;stroke:#ffffff;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+      .name{font-family:'Source Sans 3', sans-serif;font-size:34.21px;font-style:italic;fill:#ffffff;stroke:#2a2b2c;stroke-width:0.692;stroke-miterlimit:10;text-anchor:middle}
+    </style>
+    <!-- one gentle gradient per face, lit from the upper left: top lightest, then left, right darkest -->
+    <linearGradient id="top" x1="12" y1="34" x2="116" y2="34" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#6fdcff"/><stop offset="1" stop-color="#1db0e5"/></linearGradient>
+    <linearGradient id="left" x1="12" y1="40" x2="64" y2="120" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#22aee3"/><stop offset="1" stop-color="#0a83c2"/></linearGradient>
+    <linearGradient id="right" x1="64" y1="64" x2="116" y2="100" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#0277b6"/><stop offset="1" stop-color="#2f3f80"/></linearGradient>
+  </defs>
+  <g id="cube">
+    <polygon id="top-face" points="12.038,34.000 64.000,4.000 115.962,34.000 64.000,64.000" fill="url(#top)"/>
+    <polygon id="left-face" points="12.038,34.000 64.000,64.000 64.000,124.000 12.038,94.000" fill="url(#left)"/>
+    <polygon id="right-face" points="64.000,64.000 115.962,34.000 115.962,94.000 64.000,124.000" fill="url(#right)"/>
+    <!-- the tiles: each face split 4 by 4 -->
+    <g class="grid">
+      <line x1="25.029" y1="26.500" x2="76.990" y2="56.500"/>
+      <line x1="25.029" y1="41.500" x2="76.990" y2="11.500"/>
+      <line x1="38.019" y1="19.000" x2="89.981" y2="49.000"/>
+      <line x1="38.019" y1="49.000" x2="89.981" y2="19.000"/>
+      <line x1="51.010" y1="11.500" x2="102.972" y2="41.500"/>
+      <line x1="51.010" y1="56.500" x2="102.972" y2="26.500"/>
+      <line x1="25.029" y1="41.500" x2="25.029" y2="101.500"/>
+      <line x1="12.038" y1="49.000" x2="64.000" y2="79.000"/>
+      <line x1="38.019" y1="49.000" x2="38.019" y2="109.000"/>
+      <line x1="12.038" y1="64.000" x2="64.000" y2="94.000"/>
+      <line x1="51.010" y1="56.500" x2="51.010" y2="116.500"/>
+      <line x1="12.038" y1="79.000" x2="64.000" y2="109.000"/>
+      <line x1="76.990" y1="56.500" x2="76.990" y2="116.500"/>
+      <line x1="64.000" y1="79.000" x2="115.962" y2="49.000"/>
+      <line x1="89.981" y1="49.000" x2="89.981" y2="109.000"/>
+      <line x1="64.000" y1="94.000" x2="115.962" y2="64.000"/>
+      <line x1="102.972" y1="41.500" x2="102.972" y2="101.500"/>
+      <line x1="64.000" y1="109.000" x2="115.962" y2="79.000"/>
+    </g>
+    <g class="edge">
+      <polygon points="64.000,4.000 115.962,34.000 115.962,94.000 64.000,124.000 12.038,94.000 12.038,34.000"/>
+      <polyline points="12.038,34.000 64.000,64.000 115.962,34.000"/>
+      <line x1="64" y1="64" x2="64" y2="124"/>
+    </g>
+  </g>
+  <text transform="matrix(1.468 0 0 1.478 -2 -7.881)" x="44.265" y="34.21" class="name">VCell</text>
+</svg>
