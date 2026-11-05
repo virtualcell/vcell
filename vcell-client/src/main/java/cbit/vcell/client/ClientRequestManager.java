@@ -691,8 +691,22 @@ public class ClientRequestManager
 	}
 
 	public void logOut(final TopLevelWindowManager requester){
+		logOut(requester, false);
+	}
+
+	/**
+	 * Ends a guest session, as logging out does, then signs up in the browser (Auth0's sign-up screen) and logs in with
+	 * the new account.
+	 */
+	public void signUpFromGuest(final TopLevelWindowManager requester){
+		logOut(requester, true);
+	}
+
+	// Logs out (from the browser too, unless a guest), back to the welcome window; then, if signing up, signs up and logs in
+	private void logOut(final TopLevelWindowManager requester, boolean thenSignUp){
 		StringBuilder dialogMessage = new StringBuilder();
-		dialogMessage.append("You are about to log out of the VCell client.\n\n");
+		dialogMessage.append(thenSignUp ? "Signing up ends your guest session; any open models will close.\n\n"
+				: "You are about to log out of the VCell client.\n\n");
 		if(!User.isGuest(getClientServerInfo().getUsername())){
 			dialogMessage.append("""
                     Because VCell uses a browser-based login,
@@ -704,7 +718,7 @@ public class ClientRequestManager
 		dialogMessage.append("Do you wish to continue?");
 
 		// logical-window-owned confirm dialog instead of a throw-away always-on-top JDialog
-		String confirm = DialogUtils.showWarningDialog(requester.getComponent(), "Logout", dialogMessage.toString(),
+		String confirm = DialogUtils.showWarningDialog(requester.getComponent(), thenSignUp ? "Sign Up" : "Logout", dialogMessage.toString(),
 				new String[] { "Continue", "Cancel" }, "Continue");
 		if ("Continue".equals(confirm))  {
 			closeAllWindows(false);
@@ -786,6 +800,13 @@ public class ClientRequestManager
 			tasks.add(0, waitTask);
 			tasks.add(task0);
 			tasks.add(refresh);
+			if (thenSignUp) { // the welcome window, now showing, is the one logging in
+				hash.put("login", true);
+				hash.put("guest", false);
+				hash.put("signUp", true);
+				tasks.add(ClientLogin.loginWithAuth0(auth0ConnectionUtils));
+				tasks.add(ClientLogin.connectToServer(auth0ConnectionUtils, getClientServerInfo()));
+			}
 
 			ClientTaskDispatcher.dispatch(null, hash, tasks.toArray(new AsynchClientTask[0]));
 		}

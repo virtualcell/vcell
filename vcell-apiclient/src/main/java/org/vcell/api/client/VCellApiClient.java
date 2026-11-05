@@ -229,8 +229,13 @@ public class VCellApiClient implements AutoCloseable {
 	}
 
 	public void authenticate(boolean ignoreSSLCertProblems) throws URISyntaxException, IOException, ParseException, ApiException {
+		this.authenticate(ignoreSSLCertProblems, false);
+	}
+
+	/** As {@link #authenticate(boolean)}, but opening the browser on the sign-up screen if {@code signUp}. */
+	public void authenticate(boolean ignoreSSLCertProblems, boolean signUp) throws URISyntaxException, IOException, ParseException, ApiException {
 		apiClient = InteractiveLogin.login(new URI(InteractiveLogin.authDomain + "/authorize"),
-				this.quarkusURL.toURI(), ignoreSSLCertProblems);
+				this.quarkusURL.toURI(), ignoreSSLCertProblems, signUp);
 		apiClient.setScheme(this.quarkusURL.getProtocol());
 	}
 
