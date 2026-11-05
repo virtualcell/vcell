@@ -55,6 +55,32 @@ sat:
 The application tab strip is the concrete reason for the last one: a spatial application
 shows four tabs and a non-spatial one five, so index 3 is a different tab in each.
 
+## Keyboard checks: run `focusorder` on every screen
+
+```bash
+tools/debug-bridge/bridge.sh focusorder WelcomeWindow     # tab order + audit, one call
+tools/debug-bridge/bridge.sh key name=WelcomeSearch ESCAPE   # a key, inside the client
+```
+
+`focusorder` lists every stop Tab makes in the window, in order, and audits it in the same
+answer — `summary` reads `"12 stops, 0 issues"` when all is well. The issues it reports:
+
+| kind | what it means | usual fix |
+|---|---|---|
+| `unreachable` | a showing, enabled control Tab never reaches | `setFocusable(true)`, or it's inside a container that isn't |
+| `out-of-order` | Tab jumps back up, or leftwards on the same line | Swing orders by **position**: line columns up (`GridBagConstraints.FIRST_LINE_START`), or give the container a focus traversal policy |
+| `hidden` | Tab stops on something not showing | hide the component rather than covering it |
+| `unnamed` | nothing for a screen reader to read | `setText`, `getAccessibleContext().setAccessibleName(...)`, or a `JLabel` with `setLabelFor(field)` |
+
+It works out the order from the window's `FocusTraversalPolicy`, so it needs no OS focus and
+works on a client behind other windows. Run it in **every state** a screen has (logged in and
+out, each tab, a panel open and closed): each state has its own order.
+
+`key` dispatches events inside the client, never real keystrokes, so it can't type into
+whatever else is in front. It runs key bindings exactly as a real key would — so **Enter
+presses the window's default button**: don't send it where that button starts something real
+(a browser login, a save, a purchase).
+
 ## Editing values
 
 ```bash

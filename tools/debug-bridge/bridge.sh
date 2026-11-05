@@ -21,13 +21,19 @@
 #                                         carry one model value per column, so a script that
 #                                         names a column by index breaks on a reorder
 #   shot [window]               log [lines]      (shot takes ?scale/name/dir via replay)
+#   focusorder [window]         the window's TAB ORDER, audited in one call: controls Tab
+#                                 never reaches, steps out of reading order, stops on hidden
+#                                 or nameless components. Run it on every screen you test.
 # Act:
 #   click <selector>            rclick <selector>
 #   settext <selector> <text> [--enter]
+#   key <selector|focus> <KEY>  send a key inside the client (never a real keystroke):
+#                                 ENTER, ESCAPE, SPACE, DOWN, "shift TAB", "ctrl F" ...
 #   combo   <selector> <item>     choose a drop-down item by its LABEL, not its index
 #   slider  <selector> <value>  move a slider - an integer, or min/max, or -1 for the
 #                                 end, the same convention readcell uses for last row
-#   list    <selector> <a,b,c>   select list items by LABEL (comma-separated = multi-select)
+#   list    <selector> <a,b,c>   select list items by LABEL (comma-separated = multi-select);
+#                                 an item drawn in parts (name over details) matches on one part
 #   choosefile <selector> <path>  answer a file dialog through the chooser's own model
 #   trows <selector> <lo-hi>    select a range of table rows - what ctrl+A means,
 #                                 said as a range (open-ended as <lo->)
@@ -168,6 +174,8 @@ case "$cmd" in
     # a numeric arg is an index, anything else is the tab's title (preferred: durable)
     if [ "${2:-}" -eq "${2:-}" ] 2>/dev/null; then k=index; else k=title; fi
     get selectTab --data-urlencode "path=$1" --data-urlencode "$k=$2" | pretty ;;
+  focusorder) get focusOrder ${1:+--data-urlencode "window=$1"} | pretty ;;
+  key)       get key --data-urlencode "path=$1" --data-urlencode "key=$2" | pretty ;;
   row)       get selectTreeRow --data-urlencode "path=$1" --data-urlencode "row=$2" | pretty ;;
   expand)    get expandTreeRow --data-urlencode "path=$1" --data-urlencode "row=$2" \
                --data-urlencode "expand=${3:-true}" | pretty ;;
