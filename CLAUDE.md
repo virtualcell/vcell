@@ -180,6 +180,7 @@ After major changes (especially removing/renaming user-facing features):
 
 - [ ] Check `vcell-client/UserDocumentation/` for references to changed features. This is an ad-hoc XML format compiled into JavaHelp (in-app help) and HTML published at https://vcell.org/webstart/VCell_Tutorials/VCell_Help/index.html. Update documentation to stay consistent with code.
 - [ ] After regenerating OpenAPI clients (`tools/openapi-clients.sh`), compile downstream: `mvn compile test-compile -pl vcell-rest -am`
+- [ ] After changing a desktop client screen, audit its keyboard use in each of its states: `tools/debug-bridge/bridge.sh focusorder <window>` should report `0 issues` (tab order, unreachable or nameless controls). See the `swing-debug` skill.
 
 ## Conventions
 
