@@ -120,6 +120,11 @@ public class WelcomeWindowManager extends TopLevelWindowManager {
 		((ClientRequestManager) this.getRequestManager()).logIn(this, guest);
 	}
 
+	/** Ends a guest session and signs up in the browser, logging in with the new account. */
+	public void signUp() {
+		((ClientRequestManager) this.getRequestManager()).signUpFromGuest(this);
+	}
+
 	public void logOut() {
 		this.getRequestManager().logOut(this);
 	}

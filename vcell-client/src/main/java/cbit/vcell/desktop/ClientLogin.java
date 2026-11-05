@@ -105,7 +105,8 @@ public class ClientLogin {
             public void run(Hashtable<String, Object> hashTable) throws Exception {
                 if ((boolean)hashTable.get("login")) {
                     boolean isGuest = (boolean)hashTable.get("guest");
-                    auth0ConnectionUtils.auth0SignIn(isGuest);
+                    // a sign-up (from a guest session, say) opens the browser on the sign-up screen, then logs in
+                    auth0ConnectionUtils.auth0SignIn(isGuest, Boolean.TRUE.equals(hashTable.get("signUp")));
                 }
             }
         };
