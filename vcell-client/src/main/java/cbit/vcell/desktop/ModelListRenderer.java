@@ -3,10 +3,15 @@ package cbit.vcell.desktop;
 import cbit.vcell.client.laf.VCellColors;
 import cbit.vcell.client.laf.VCellFonts;
 import org.vcell.util.document.BioModelInfo;
+import org.vcell.util.document.GroupAccess;
+import org.vcell.util.document.GroupAccessSome;
 import org.vcell.util.document.MathModelInfo;
+import org.vcell.util.document.PublicationInfo;
+import org.vcell.util.document.User;
 import org.vcell.util.document.VCDocument.VCDocumentType;
 import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.document.Version;
+import org.vcell.util.document.VersionFlag;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.VCellIcons;
 
@@ -15,6 +20,7 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -22,12 +28,13 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.StringJoiner;
 import java.util.function.Predicate;
 
 /**
  * Each model in a list of models on two lines: its icon and name, then what it is, whose (if asked for), and when it
  * was saved; a model shared with the user, in a list of the user's own, says so, with the icon VCell's trees give other
- * users. While searching, a model found only by its description says so. Its annotation is the tooltip. Every other entry is striped, as VCell's tables are. Shared by the lists of
+ * users. While searching, a model found only by its description says so. Its tooltip is its Database File Info, then its description. Every other entry is striped, as VCell's tables are. Shared by the lists of
  * models the welcome window shows.
  */
 @SuppressWarnings("serial")
@@ -88,8 +95,7 @@ final class ModelListRenderer extends JPanel implements ListCellRenderer<VCDocum
 		this.setBackground(selected ? list.getSelectionBackground() : background);
 		this.name.setForeground(selected ? list.getSelectionForeground() : list.getForeground());
 		this.details.setForeground(selected ? list.getSelectionForeground() : VCellColors.getDimForeground());
-		String annotation = version.getAnnot();
-		this.setToolTipText(null == annotation || annotation.isBlank() ? null : ModelListRenderer.wrapForToolTip(annotation));
+		this.setToolTipText(ModelListRenderer.toolTipFor(info));
 		return this;
 	}
 
@@ -132,6 +138,51 @@ final class ModelListRenderer extends JPanel implements ListCellRenderer<VCDocum
 		if (day.equals(today)) return "Today, " + time;
 		if (day.equals(today.minusDays(1))) return "Yesterday, " + time;
 		return DateFormat.getDateInstance(DateFormat.MEDIUM).format(date);
+	}
+
+	/**
+	 * The model's Database File Info, as VCell's database trees give it (its name, owner, when it was saved, its
+	 * permissions and VCell ID), then its description, if it has one: an HTML tooltip.
+	 */
+	static String toolTipFor(VCDocumentInfo info) {
+		Version version = info.getVersion();
+		StringBuilder html = new StringBuilder("<html><b>").append(ModelListRenderer.escape(version.getName())).append("</b>");
+		if (null != version.getOwner()) html.append("<br>Owner: ").append(ModelListRenderer.escape(version.getOwner().getName()));
+		if (null != version.getDate()) {
+			html.append("<br>Saved: ").append(DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT).format(version.getDate()));
+		}
+		html.append("<br>Permissions: ").append(ModelListRenderer.escape(ModelListRenderer.permissionsOf(info)));
+		if (null != version.getVersionKey()) html.append("<br>VCell ID: ").append(ModelListRenderer.escape(version.getVersionKey().toString()));
+		String annotation = version.getAnnot();
+		if (null != annotation && !annotation.isBlank()) html.append("<br><br>").append(ModelListRenderer.wrapLines(annotation));
+		return html.append("</html>").toString();
+	}
+
+	/**
+	 * Who may see the model, as the Database File Info says it: Public, Private, or who it's shared with; Published or
+	 * Curated instead, if it has a publication; Archived as well, if it's archived.
+	 */
+	static String permissionsOf(VCDocumentInfo info) {
+		Version version = info.getVersion();
+		GroupAccess groupAccess = version.getGroupAccess();
+		BigDecimal groupId = null == groupAccess ? GroupAccess.GROUPACCESS_NONE : groupAccess.getGroupid();
+		boolean archived = null != version.getFlag() && version.getFlag().compareEqual(VersionFlag.Archived);
+		PublicationInfo[] publications = info.getPublicationInfos();
+		if (null != publications && publications.length > 0) {
+			return null != version.getFlag() && version.getFlag().compareEqual(VersionFlag.Published) ? "Published" : "Curated";
+		}
+		String permissions = GroupAccess.GROUPACCESS_ALL.equals(groupId) ? "Public"
+				: GroupAccess.GROUPACCESS_NONE.equals(groupId) ? "Private" : ModelListRenderer.sharedWith(groupAccess);
+		return archived ? permissions + ", Archived" : permissions;
+	}
+
+	// "Shared with ann, bob": the members the owner can see (a hidden member isn't named)
+	private static String sharedWith(GroupAccess groupAccess) {
+		if (!(groupAccess instanceof GroupAccessSome some) || null == some.getNormalGroupMembers()) return "Shared";
+		StringJoiner names = new StringJoiner(", ", "Shared with ", "");
+		names.setEmptyValue("Shared");
+		for (User member : some.getNormalGroupMembers()) names.add(member.getName());
+		return names.toString();
 	}
 
 	/** The text as an HTML tooltip, its lines broken between words so none is longer than about 70 characters. */
