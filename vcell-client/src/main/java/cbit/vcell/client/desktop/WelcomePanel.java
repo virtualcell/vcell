@@ -32,7 +32,6 @@ import java.awt.*;
  */
 public class WelcomePanel extends JPanel {
 	private static final String LOGIN_OPTIONS = "options", ACCOUNT_STATUS = "status";
-	private static final float START_SHARE = 0.35f; // of the window's width, for the new model buttons, whatever the account takes
 
 	private final WelcomeWindowManager manager;
 	private final RecentModelsPanel recentModels = new RecentModelsPanel();
@@ -47,8 +46,8 @@ public class WelcomePanel extends JPanel {
 	private final JPanel headerArea = new JPanel(new BorderLayout()); // the header, or the search options while they show
 	private JComponent headerSection = null; // the logo, account and new model buttons, and any version mismatch
 	private int optionsGrowth = 0, optionsRise = 0; // how much taller the window grew, and how far up it moved, for the search options
-	private JComponent startSection = null; // the new model buttons, beside the account; once the user has chosen how to log in, or not to
-	private final JPanel besideLogo = new JPanel(new GridBagLayout()); // the account, and after the login choice the new model buttons
+	private JComponent startSection = null; // the new model buttons, in a row under the logo and account; once the user has chosen how to log in, or not to
+	private final JPanel besideLogo = new JPanel(new GridBagLayout()); // the account: centered while choosing; after, any version mismatch, then the account at the right
 	private JComponent accountSection = null;
 	private String accountCard = LOGIN_OPTIONS; // the one showing
 	private final CardLayout accountCards = new CardLayout();
@@ -68,6 +67,9 @@ public class WelcomePanel extends JPanel {
 	private final JButton accountButton = new JButton(); // Log Out; Go Back, to the login choices, for a guest or offline
 	private final JButton signUpButton = new JButton("Sign Up"); // for a guest
 	private final Component signUpGap = Box.createHorizontalStrut(6);
+	private final HelpButton accountHelp = new HelpButton("WelcomeAccountHelp", "About logging in"); // beside the heading, or who is logged in
+	private final JPanel headingRow = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0)); // over the login choices: a prompt to pick one
+	private final JPanel statusRow = new JPanel(new FlowLayout(FlowLayout.TRAILING, 0, 0)); // who is logged in
 	private final JCheckBox keepOpen = new JCheckBox("Keep this window open after opening a model");
 	private DocumentManager documentManager = null;
 	private int state = ConnectionStatus.NOT_CONNECTED;
@@ -82,8 +84,6 @@ public class WelcomePanel extends JPanel {
 	private final FlowLayout versionMismatchLayout = new FlowLayout(FlowLayout.CENTER, 0, 0);
 	private final JPanel versionMismatchBelow = new JPanel(this.versionMismatchLayout); // below the login choices, or the account
 	private final JLabel logo = new JLabel(new ImageIcon(VCellIcons.getJFrameImageIcon()), SwingConstants.CENTER);
-	private final FlowLayout headingLayout = new FlowLayout(FlowLayout.LEADING, 0, 0); // the heading, centered over the login choices
-	private final JLabel headingLabel = WelcomePanel.heading("Welcome to VCell"); // or, over the login choices, a prompt to pick one
 	private final JPanel titleRow = new JPanel(new FlowLayout(FlowLayout.CENTER, 12, 0)); // over the login choices: the logo and a welcome
 	private int fittedWidth = -1; // the window's width as last fitted here: a different one, its user gave it
 	private Boolean arrangedForChoosing = null; // how the header is laid out: for the login choices, or after them
@@ -99,9 +99,11 @@ public class WelcomePanel extends JPanel {
 		this.startSection = this.createNewModels();
 		this.versionMismatchBelow.setOpaque(false);
 		this.versionMismatchBelow.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
+		this.startSection.setBorder(BorderFactory.createEmptyBorder(12, 0, 0, 0));
 		JPanel belowHeader = new JPanel(new BorderLayout());
 		belowHeader.setOpaque(false);
 		belowHeader.add(this.versionMismatchBelow, BorderLayout.NORTH);
+		belowHeader.add(this.startSection, BorderLayout.CENTER);
 		JPanel top = new JPanel(new BorderLayout());
 		top.setOpaque(false);
 		top.add(this.createHeader(), BorderLayout.NORTH);
@@ -232,11 +234,11 @@ public class WelcomePanel extends JPanel {
 		if (overBottom > 0) window.setLocation(window.getX(), Math.max(screen.y, window.getY() - overBottom));
 	}
 
-	// The logo; beside it, the account, and any version mismatch
+	// The logo; beside it, the account (and below them both, any version mismatch)
 	private JComponent createHeader() {
 		this.besideLogo.setOpaque(false);
 		this.accountSection = this.createAccount();
-		this.besideLogo.add(this.accountSection, WelcomePanel.besideLogo(0, true));
+		this.besideLogo.add(this.accountSection, WelcomePanel.accountBesideLogo(true));
 
 		this.versionNotice.setName("WelcomeVersionNotice");
 		this.versionNotice.setIconTextGap(6);
@@ -245,7 +247,6 @@ public class WelcomePanel extends JPanel {
 		this.versionMismatchPanel.add(this.versionNotice);
 		this.versionMismatchPanel.add(this.versionHelp);
 		this.versionMismatchPanel.setVisible(false);
-		this.versionMismatchBelow.add(this.versionMismatchPanel);
 
 		JLabel welcome = new JLabel("Welcome to Virtual Cell");
 		VCellFonts.setCategory(welcome, VCellFonts.Category.TITLE);
@@ -363,17 +364,21 @@ public class WelcomePanel extends JPanel {
 		this.signUpButton.addActionListener(e -> this.manager.signUp());
 		this.signUpButton.setVisible(false);
 		this.signUpGap.setVisible(false);
-		// the buttons below the name, their own widths, so the account takes little of the header's width
+		// who is logged in (with what logging in does, on a help icon beside it), and the buttons below, their own
+		// widths, all at the right
+		this.accountHelp.setHelp("<html>You stay logged in, even when VCell restarts, until you log out.</html>");
+		this.statusRow.setOpaque(false);
+		this.statusRow.add(this.accountStatus);
 		JPanel accountButtonHolder = new JPanel();
 		accountButtonHolder.setLayout(new BoxLayout(accountButtonHolder, BoxLayout.X_AXIS));
 		accountButtonHolder.setOpaque(false);
+		accountButtonHolder.add(Box.createHorizontalGlue());
 		accountButtonHolder.add(this.accountButton);
 		accountButtonHolder.add(this.signUpGap);
 		accountButtonHolder.add(this.signUpButton);
-		accountButtonHolder.add(Box.createHorizontalGlue());
 		JPanel status = new JPanel(new BorderLayout(0, 4));
 		status.setOpaque(false);
-		status.add(this.accountStatus, BorderLayout.CENTER);
+		status.add(this.statusRow, BorderLayout.NORTH);
 		status.add(accountButtonHolder, BorderLayout.SOUTH);
 
 		this.account.setName("WelcomeAccount");
@@ -383,19 +388,11 @@ public class WelcomePanel extends JPanel {
 		centeredOptions.add(options);
 		this.account.add(centeredOptions, LOGIN_OPTIONS);
 		this.account.add(status, ACCOUNT_STATUS);
-		// what logging in does, on a help icon beside the heading
-		HelpButton help = new HelpButton("WelcomeAccountHelp", "About logging in");
-		help.setHelp("""
-				<html>Log In / Sign Up opens your browser to log in to VCell,<br>
-				or sign up, securely with Auth0. You stay logged in,<br>
-				even when VCell restarts, until you log out.</html>""");
-		JPanel heading = new JPanel(this.headingLayout); // no gap before the heading, lined up with the others
-		heading.setOpaque(false);
-		heading.add(this.headingLabel);
-		heading.add(help);
+		this.headingRow.setOpaque(false);
+		this.headingRow.add(WelcomePanel.heading("Please select a login option"));
 		JPanel section = new JPanel(new BorderLayout(0, 6));
 		section.setOpaque(false);
-		section.add(heading, BorderLayout.NORTH);
+		section.add(this.headingRow, BorderLayout.NORTH);
 		section.add(this.account, BorderLayout.CENTER);
 		return section;
 	}
@@ -483,14 +480,17 @@ public class WelcomePanel extends JPanel {
 	}
 
 	// Before the login choice: the logo and a welcome centered on their own line, a prompt to pick a way to log in and the
-	// choices centered under them, and a version mismatch centered below those. After it: the logo at the left, the
-	// account beside it, the new model buttons at the right, and a mismatch below them all. Says whether anything moved.
+	// choices centered under them, and a version mismatch centered below those. After it: the logo at the top left, who is
+	// logged in at the top right, a mismatch between them, and the new model buttons in a row below. Says whether anything
+	// moved.
 	private boolean arrangeForAccountCard() {
 		boolean choosing = LOGIN_OPTIONS.equals(this.accountCard);
-		this.versionMismatchBelow.setVisible(this.versionMismatchPanel.isVisible());
+		this.versionMismatchBelow.setVisible(choosing && this.versionMismatchPanel.isVisible());
 		this.suggestNextStep();
 		if (Boolean.valueOf(choosing).equals(this.arrangedForChoosing)) return false;
 		this.arrangedForChoosing = choosing;
+		if (choosing) this.versionMismatchBelow.add(this.versionMismatchPanel);
+		else this.besideLogo.add(this.versionMismatchPanel, WelcomePanel.mismatchBesideLogo());
 		if (choosing) {
 			this.titleRow.add(this.logo, 0);
 			this.header.add(this.titleRow, BorderLayout.NORTH);
@@ -498,11 +498,10 @@ public class WelcomePanel extends JPanel {
 			this.header.remove(this.titleRow);
 			this.header.add(this.logo, BorderLayout.WEST);
 		}
-		this.headingLabel.setText(choosing ? "Please select a login option" : "Welcome to VCell");
-		this.headingLayout.setAlignment(choosing ? FlowLayout.CENTER : FlowLayout.LEADING);
-		// the account takes the width the new model buttons leave it (all of it, choosing, with the choices centered in it)
-		if (choosing) this.besideLogo.remove(this.startSection);
-		else this.besideLogo.add(this.startSection, WelcomePanel.besideLogo(1, false));
+		this.headingRow.setVisible(choosing);
+		(choosing ? this.headingRow : this.statusRow).add(this.accountHelp); // beside the prompt, or who is logged in
+		// choosing, the account takes the whole width, the choices centered in it; after, its own width, at the right
+		((GridBagLayout) this.besideLogo.getLayout()).setConstraints(this.accountSection, WelcomePanel.accountBesideLogo(choosing));
 		this.versionMismatchLayout.setAlignment(choosing ? FlowLayout.CENTER : FlowLayout.LEADING);
 		this.revalidate();
 		return true;
@@ -523,24 +522,37 @@ public class WelcomePanel extends JPanel {
 		this.suggestNextStep();
 	}
 
-	// A column beside the logo, its top level with the others' (their headings in line, and Tab reading them left to
-	// right: Swing orders by position, so a column centered lower would come after its taller neighbor); any width left
-	// over, if it is to take that
-	private static GridBagConstraints besideLogo(int column, boolean takeTheRest) {
+	// The account beside the logo, its top level with the logo's: the whole width, while choosing; otherwise its own,
+	// at the right
+	private static GridBagConstraints accountBesideLogo(boolean wholeWidth) {
 		GridBagConstraints constraints = new GridBagConstraints();
-		constraints.gridx = column;
-		constraints.anchor = GridBagConstraints.FIRST_LINE_START;
-		constraints.fill = GridBagConstraints.HORIZONTAL;
-		constraints.weightx = takeTheRest ? 1 : 0;
-		constraints.insets = new Insets(0, column > 0 ? 14 : 0, 0, 0);
+		constraints.gridx = 1;
+		constraints.anchor = wholeWidth ? GridBagConstraints.FIRST_LINE_START : GridBagConstraints.FIRST_LINE_END;
+		constraints.fill = wholeWidth ? GridBagConstraints.HORIZONTAL : GridBagConstraints.NONE;
+		// after, the room a version mismatch leaves (it takes nearly all of it, to be centered in it); all of it without one,
+		// to stay at the right (a grid with no weight centers what it holds)
+		constraints.weightx = wholeWidth ? 1 : 0.001;
 		return constraints;
 	}
 
-	// New BioModel, New MathModel with a menu of its kinds (as File > New > MathModel has), and Import from File, one
-	// above the other
+	// A version mismatch, after the login choice: centered in the room between the logo and the account, its top level
+	// with theirs (so Tab reaches its "?" before the account's, reading the row left to right)
+	private static GridBagConstraints mismatchBesideLogo() {
+		GridBagConstraints constraints = new GridBagConstraints();
+		constraints.gridx = 0;
+		constraints.anchor = GridBagConstraints.PAGE_START;
+		constraints.weightx = 1;
+		constraints.insets = new Insets(0, 8, 0, 8);
+		return constraints;
+	}
+
+	// New BioModel, New MathModel with a menu of its kinds (as File > New > MathModel has), and Import from File, side by
+	// side
 	private JComponent createNewModels() {
-		JButton newBioModel = new JButton(NewModel.BIOMODEL.label, VCellIcons.makeIcon("/icons/biomodel.png"));
+		// short labels, under the section's heading, to keep the row narrow; the tooltips say the rest
+		JButton newBioModel = new JButton("BioModel", VCellIcons.makeIcon("/icons/biomodel.png"));
 		newBioModel.setName("Welcome" + NewModel.BIOMODEL.name());
+		newBioModel.setToolTipText(NewModel.BIOMODEL.label);
 		newBioModel.addActionListener(e -> this.manager.newModel(NewModel.BIOMODEL));
 
 		JPopupMenu mathModels = new JPopupMenu();
@@ -551,34 +563,27 @@ public class WelcomePanel extends JPanel {
 			item.addActionListener(e -> this.manager.newModel(kind));
 			mathModels.add(item);
 		}
-		JButton newMathModel = new JButton("New MathModel \u25BE", VCellIcons.makeIcon("/icons/mathModel.png"));
+		JButton newMathModel = new JButton("MathModel \u25BE", VCellIcons.makeIcon("/icons/mathModel.png"));
 		newMathModel.setName("WelcomeNewMathModel");
+		newMathModel.setToolTipText("New MathModel: choose its kind");
 		newMathModel.addActionListener(e -> mathModels.show(newMathModel, 0, newMathModel.getHeight()));
 
-		JButton importModel = new JButton("Import from File...", VCellIcons.makeIcon("/icons/File.gif"));
+		JButton importModel = new JButton("Import File", VCellIcons.makeIcon("/icons/File.gif"));
 		importModel.setName("WelcomeImport");
 		importModel.setToolTipText("""
 				<html>Opens a model from a file: VCML (.vcml), SBML (.sbml, .xml), COMBINE archive (.omex),<br>
 				SED-ML (.sedml), BioNetGen (.bngl), Virtual FRAP (.vfrap) or SpringSaLaD (.ssld)</html>""");
 		importModel.addActionListener(e -> this.manager.importModel());
 
-		JPanel buttons = new JPanel(new GridLayout(0, 1, 0, 6)); // one above the other
+		JPanel buttons = new JPanel(new GridLayout(1, 0, 6, 0)); // side by side, each as wide as the widest
 		buttons.setOpaque(false);
 		buttons.add(newBioModel);
 		buttons.add(newMathModel);
 		buttons.add(importModel);
-		// a set share of the window's width (that of the model tabs, which set it), the same whoever is logged in
-		JPanel column = new JPanel(new BorderLayout()) {
-			@Override
-			public Dimension getPreferredSize() {
-				Dimension size = super.getPreferredSize();
-				size.width = Math.max(size.width, Math.round(START_SHARE * WelcomePanel.this.modelTabs.getPreferredSize().width));
-				return size;
-			}
-		};
-		column.setOpaque(false);
-		column.add(WelcomePanel.section("Start a new Model", buttons), BorderLayout.CENTER);
-		return column;
+		JPanel row = new JPanel(new BorderLayout());
+		row.setOpaque(false);
+		row.add(WelcomePanel.section("Start a new Model", buttons), BorderLayout.CENTER);
+		return row;
 	}
 
 	// The models the user saved recently, the VCell database's (in tabs as its tree's folders sort them), and the
@@ -622,7 +627,7 @@ public class WelcomePanel extends JPanel {
 		searchRow.add(this.filtersButton, BorderLayout.EAST);
 
 		this.modelsArea.setOpaque(false);
-		this.modelsArea.add(searchRow, BorderLayout.NORTH);
+		this.modelsArea.add(WelcomePanel.section("Open existing Model", searchRow), BorderLayout.NORTH); // headed as Start is
 		this.modelsArea.add(this.modelTabs, BorderLayout.CENTER);
 		this.modelsArea.setVisible(false); // until someone logs in
 		return this.modelsArea;

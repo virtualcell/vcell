@@ -566,6 +566,7 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
                 this.ivjFileMenu.add(this.getNewMenuItem());
                 this.ivjFileMenu.add(this.getOpenMenuItem());
                 this.ivjFileMenu.add(this.getCloseMenuItem());
+                this.ivjFileMenu.add(this.getWelcomeWindowMenuItem());
                 this.ivjFileMenu.add(new JSeparator());
                 this.ivjFileMenu.add(this.getSaveMenuItem());
                 this.ivjFileMenu.add(this.getSave_VersionMenuItem());
@@ -589,6 +590,16 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
             }
         }
         return this.ivjFileMenu;
+    }
+
+    // The welcome window, brought to the front, or opened again if it was closed
+    private JMenuItem getWelcomeWindowMenuItem() {
+        JMenuItem item = new JMenuItem("Welcome Window");
+        item.setName("WelcomeWindowMenuItem");
+        item.addActionListener(e -> {
+            if (this.getWindowManager().getRequestManager() instanceof ClientRequestManager requestManager) requestManager.showWelcomeWindow();
+        });
+        return item;
     }
 
     private JMenuItem getExportedDataViewer() {
