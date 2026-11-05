@@ -3897,6 +3897,11 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 		throw new RuntimeException("Unknown VCDocument type " + doc);
 	}
 
+	/** Brings the welcome window to the front, opening it again if it was closed. */
+	public void showWelcomeWindow() {
+		((ClientMDIManager) getMdiManager()).showWelcomeWindow();
+	}
+
 	/**
 	 * Opens a model from a file the user picks (VCML, SBML, OMEX, SED-ML, BNGL, ...), in a window of its own: File > Import
 	 * for a window that isn't a model's, such as the welcome window.
