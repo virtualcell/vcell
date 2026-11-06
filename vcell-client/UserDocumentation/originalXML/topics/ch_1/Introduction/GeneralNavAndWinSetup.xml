@@ -9,7 +9,7 @@
 	<operations>
 	<para>
 	A <link target="TopMenu">top-level menu</link> allows the user to perform various operations on the VCell document, such as save or export a model or share a model for collaborative viewing.
-	Four panels within the document window present the user with a canvas to browse, create and maintain a model.
+	Three panels within the document window present the user with a canvas to browse, create and maintain a model.
 	</para>
 	<para>
 		Top left is a <bold>Navigation panel (Panel A)</bold> that allows navigation of the currently open model.  Within the tree structure are links to the components of the BioModel Physiology, including:
@@ -52,17 +52,14 @@
 			<item><bold>Object Properties</bold> displays the properties of any entity (<link target="PP_Species">species</link>, <link target="PP_Reactions">reaction</link>, <link target="PP_Structures">structure</link>, <link target="PP_Molecules">molecule</link>) selected in any of the tabs in the "View" panel.</item>
 			<item><link target="PP_Annotations">Annotations</link> displays annotations for any entity (species, reaction, structure, molecule) selected in the "View" panel, or the overall Model if selected in the Navigation Panel </item>
 			<item><link target="PP_Problems">Problems</link> lists the errors and warnings in the model that has been created. The user is not allowed to save the model if there are any errors. However, the model can be exported as a <link target="Export">VCML file</link> should the user need to exit before fixing an error.</item>
-			<item><link target ="PP_VCellDatabaseInfo">Database File Info</link> provides a brief database summary of the selected model in the "Database" panel.</item>
+			<item><link target ="PP_VCellDatabaseInfo">Database File Info</link> provides a database summary of the open model when it is selected at the top of the Navigation panel.</item>
 		</list></para>
 
-		<para>A <bold>Database panel (Panel D)</bold> in the bottom left allows the viewer to view/select models from different database sources.
-		<list>
-		<item><bold>VCell Database</bold> lists models stored in the VCell database and includes 3 subtabs (<bold>BioModels</bold>, <bold>MathModels</bold>, <bold>Geometries</bold>),
-		which each display the different VCell document types stored in the VCell database. Refer to the section on <link target="VCellDatabase">VCell Database</link> for further information.</item>
-		<item><bold>BMBD</bold> lists models from the <link target="http://www.ebi.ac.uk/biomodels/">Biomodels database</link>, a database of annotated published models in SBML, that can be imported into the Virtual Cell.</item>
-		Pathways from the <bold>Pathway Commons</bold> database are searched from <bold>Pathway Lookup</bold>, under <bold>Pathway</bold> in the Navigation Panel.
+		<para>Models stored in the <link target="VCellDatabase">VCell Database</link> and the <link target="BioModelsNet">BioModels Database</link>
+		are browsed, searched and opened from the <bold>Welcome window</bold> (<bold>File &gt; Welcome Window</bold>), rather than from a panel of the document window.
+		Pathways from the <bold>Pathway Commons</bold> database are searched from <bold>Pathway Lookup</bold>, under <bold>Pathway</bold> in the Navigation panel.
 		Please refer to sections <link target="PathwayCommonsPanel">Pathway Commons Database</link> and <link target="PathwayOverview">Biological Pathways</link>.
-		</list></para>
+		</para>
 
 
 	</operations>

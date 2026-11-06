@@ -29,8 +29,6 @@ import cbit.vcell.mapping.gui.*;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.pathway.BioPaxObject;
-import org.vcell.util.document.BioModelInfo;
-import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocument.VCDocumentType;
@@ -42,7 +40,6 @@ import cbit.vcell.biomodel.meta.MiriamManager.MiriamResource;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.BioModelWindowManager;
 import cbit.vcell.client.ClientTaskManager;
-import cbit.vcell.client.DatabaseWindowManager;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.constants.ApplicationActionCommand;
@@ -58,7 +55,6 @@ import cbit.vcell.data.DataSymbol;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.desktop.OpenBioModelDatabaseInfoPanel;
 import cbit.vcell.geometry.CSGObject;
-import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.geometry.gui.CSGObjectPropertiesPanel;
 import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
@@ -103,8 +99,6 @@ public class BioModelEditor extends DocumentEditor {
 	private final OpenBioModelDatabaseInfoPanel openBioModelDatabaseInfoPanel = new OpenBioModelDatabaseInfoPanel(); // the open model's own Database File Info, shown when its root is selected
 	private BioModelEditorApplicationsPanel bioModelEditorApplicationsPanel = null;
 	
-	private BioModelsNetPanel bioModelsNetPanel = null;
-	private BioModelsNetPropertiesPanel bioModelsNetPropertiesPanel = null;
 	private BioModelEditorPathwayPanel bioModelEditorPathwayPanel = null;
 //	private BioModelEditorSabioPanel bioModelEditorSabioPanel;
 	private BioModelEditorPathwayDiagramPanel bioModelEditorPathwayDiagramPanel = null;
@@ -438,13 +432,6 @@ private BioModelEditorPathwayPanel getBioModelEditorPathwayPanel() {
 	return bioModelEditorPathwayPanel;
 }
 
-private BioModelsNetPropertiesPanel getBioModelsNetPropertiesPanel() {
-	if (bioModelsNetPropertiesPanel == null) {
-		bioModelsNetPropertiesPanel = new BioModelsNetPropertiesPanel();
-	}
-	return bioModelsNetPropertiesPanel;
-}
-
 /**
  * Called whenever the part throws an exception.
  * @param exception java.lang.Throwable
@@ -646,12 +633,6 @@ private void initialize() {
 		bioModelEditorModelPanel = new BioModelEditorModelPanel();
 		bioModelEditorModelPanel.setMinimumSize(new java.awt.Dimension(198, 148));
 		
-		bioModelsNetPanel = new BioModelsNetPanel();
-		leftBottomTabbedPane.addTab(BioModelsNetPanel.BIO_MODELS_NET, bioModelsNetPanel);
-//		bioModelEditorSabioPanel = new BioModelEditorSabioPanel();
-//		leftBottomTabbedPane.addTab("Sabio", bioModelEditorSabioPanel);
-//		int index = leftBottomTabbedPane.getTabCount() - 1;
-//		leftBottomTabbedPane.setEnabledAt(index, false);
 		rightSplitPane.setTopComponent(bioModelEditorModelPanel);
 		
 		bioModelEditorTreeModel = new BioModelEditorTreeModel(documentEditorTree);
@@ -681,7 +662,6 @@ private void initialize() {
 		bioModelEditorTreeModel.setSelectionManager(selectionManager);		
 		bioModelEditorModelPanel.setSelectionManager(selectionManager);
 		bioModelEditorModelPanel.setIssueManager(issueManager);
-		getBioModelsNetPropertiesPanel().setSelectionManager(selectionManager);
 		getBioModelEditorApplicationsPanel().setSelectionManager(selectionManager);
 		getReactionRulePropertiesPanel().setSelectionManager(selectionManager);
 		getReactionPropertiesPanel().setSelectionManager(selectionManager);
@@ -696,9 +676,7 @@ private void initialize() {
 		getDataSymbolsSpecPanel().setSelectionManager(selectionManager);
 		getBioModelEditorPathwayPanel().setSelectionManager(selectionManager);
 		getBioModelEditorPathwayDiagramPanel().setSelectionManager(selectionManager);
-		bioModelsNetPanel.setSelectionManager(selectionManager);
 //		bioModelEditorSabioPanel.setSelectionManager(selectionManager);
-		getBioModelsNetPropertiesPanel().setSelectionManager(selectionManager);
 		getApplicationPropertiesPanel().setSelectionManager(selectionManager);
 		getStructurePropertiesPanel().setSelectionManager(selectionManager);
 		getSpeciesPropertiesPanel().setSelectionManager(selectionManager);
@@ -735,7 +713,6 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 	JComponent annotationComponent = rightBottomEmptyAnnotationsPanel;
 	int destComponentIndex = DocumentEditorTabID.object_properties.ordinal();	// properties panel
 	int annComponentIndex = DocumentEditorTabID.annotations.ordinal();			// annotations panel
-	boolean bShowInDatabaseProperties = false;
 	boolean bShowPathway = false;
 	if (selections.length == 1) {
 		annotationComponent = getAnnotationsPanel();
@@ -761,18 +738,6 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 			bottomComponent = parameterEstimationTaskPropertiesPanel;
 		} else if (singleSelection instanceof Product || singleSelection instanceof Reactant) {
 			bottomComponent = getReactionParticipantPropertiesPanel();
-		} else if(singleSelection instanceof BioModelNode.PublicationInfoNode) {
-			bShowInDatabaseProperties = true;
-			bottomComponent = bioModelMetaDataPanel;
-		} else if (singleSelection instanceof BioModelInfo) {
-			bShowInDatabaseProperties = true;
-			bottomComponent = bioModelMetaDataPanel;
-		} else if (singleSelection instanceof MathModelInfo) {
-			bShowInDatabaseProperties = true;
-			bottomComponent = mathModelMetaDataPanel;
-		} else if (singleSelection instanceof GeometryInfo) {
-			bShowInDatabaseProperties = true;
-			bottomComponent = geometryMetaDataPanel;
 		} else if (singleSelection instanceof SpeciesContextSpec) {
 			SpeciesContextSpec scs = (SpeciesContextSpec)singleSelection;
 			switch(scs.provenance) {
@@ -791,9 +756,6 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 			bottomComponent = getKineticsTypeTemplatePanel();
 		} else if (singleSelection instanceof ReactionRuleSpec) {		// 
 			bottomComponent = getReactionRuleSpecPropertiesPanel();
-		} else if (singleSelection instanceof BioModelsNetModelInfo) {
-			bShowInDatabaseProperties = true;
-			bottomComponent = getBioModelsNetPropertiesPanel();
 		} else if (singleSelection instanceof Simulation) {
 			bottomComponent = getSimulationSummaryPanel();
 		} else if (singleSelection instanceof DataSymbol) {
@@ -868,13 +830,6 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 		if (rightBottomTabbedPane.getTabCount() == destComponentIndex) {
 			rightBottomTabbedPane.addTab(tabTitle, new TabCloseIcon(), bottomComponent);
 		}
-	} else if (bShowInDatabaseProperties) {
-		destComponentIndex = this.findDatabaseInfoTab();
-		if (destComponentIndex < 0) {
-			rightBottomTabbedPane.addTab(DATABASE_PROPERTIES_TAB_TITLE, new TabCloseIcon(), bottomComponent);
-			destComponentIndex = rightBottomTabbedPane.getTabCount() - 1;
-		}
-		rightBottomTabbedPane.setTitleAt(destComponentIndex, DATABASE_PROPERTIES_TAB_TITLE); // a browsed model's info replaces any "not saved" title
 	}
 	if (selections.length == 1 && selections[0] instanceof BioModel) {
 		this.showOpenBioModelDatabaseInfo();
@@ -909,35 +864,18 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
  */
 private void showOpenBioModelDatabaseInfo() {
 	this.openBioModelDatabaseInfoPanel.setBioModel(this.bioModel);
-	int tabIndex = this.findDatabaseInfoTab();
+	int tabIndex = this.rightBottomTabbedPane.indexOfComponent(this.openBioModelDatabaseInfoPanel);
 	if (tabIndex < 0) {
 		this.rightBottomTabbedPane.addTab(DATABASE_PROPERTIES_TAB_TITLE, new TabCloseIcon(), this.openBioModelDatabaseInfoPanel);
 		tabIndex = this.rightBottomTabbedPane.getTabCount() - 1;
-	} else if (this.rightBottomTabbedPane.getComponentAt(tabIndex) != this.openBioModelDatabaseInfoPanel) {
-		this.rightBottomTabbedPane.setComponentAt(tabIndex, this.openBioModelDatabaseInfoPanel);
 	}
 	this.openBioModelDatabaseInfoPanel.setBorder(GuiConstants.TAB_PANEL_BORDER);
 	String title = DATABASE_PROPERTIES_TAB_TITLE;
 	if (this.openBioModelDatabaseInfoPanel.isUnsaved()) {
 		// bold, in the tab's own color: a colored title can't be read on the selected tab's background in every theme
-		title = "<html><b>" + DATABASE_PROPERTIES_TAB_TITLE + " — NOT SAVED</b></html>";
+		title = "<html><b>" + DATABASE_PROPERTIES_TAB_TITLE + " \u2014 NOT SAVED</b></html>";
 	}
 	this.rightBottomTabbedPane.setTitleAt(tabIndex, title);
-}
-
-/** The index of the bottom right tab holding any Database File Info, or -1 if it's closed. */
-private int findDatabaseInfoTab() {
-	for (int tabIndex = 0; tabIndex < this.rightBottomTabbedPane.getTabCount(); tabIndex++) {
-		Component tabComponent = this.rightBottomTabbedPane.getComponentAt(tabIndex);
-		if (tabComponent == this.openBioModelDatabaseInfoPanel
-				|| tabComponent == bioModelMetaDataPanel
-				|| tabComponent == mathModelMetaDataPanel
-				|| tabComponent == geometryMetaDataPanel
-				|| tabComponent == this.getBioModelsNetPropertiesPanel()) {
-			return tabIndex;
-		}
-	}
-	return -1;
 }
 
 @Override
@@ -1090,19 +1028,12 @@ public void setBioModelWindowManager(BioModelWindowManager bioModelWindowManager
 		return;
 	}
 	this.bioModelWindowManager = bioModelWindowManager;
-	bioModelsNetPanel.setDocumentWindowManager(bioModelWindowManager);
-	getBioModelsNetPropertiesPanel().setDocumentWindowManager(bioModelWindowManager);
 	bioModelPropertiesPanel.setBioModelWindowManager(bioModelWindowManager);
 	bioModelParametersPanel.setBioModelWindowManager(bioModelWindowManager);
 	
-	DatabaseWindowManager dbWindowManager = new DatabaseWindowManager(databaseWindowPanel, bioModelWindowManager.getRequestManager());
-	databaseWindowPanel.setDatabaseWindowManager(dbWindowManager);
 	DocumentManager documentManager = bioModelWindowManager.getRequestManager().getDocumentManager();
-	databaseWindowPanel.setDocumentManager(documentManager);
 	bioModelEditorModelPanel.setDocumentManager(documentManager);
 	this.openBioModelDatabaseInfoPanel.setDocumentManager(documentManager);
-
-	geometryMetaDataPanel.setDocumentManager(documentManager);
 	
 	bioModelEditorApplicationPanel.setBioModelWindowManager(bioModelWindowManager);
 }

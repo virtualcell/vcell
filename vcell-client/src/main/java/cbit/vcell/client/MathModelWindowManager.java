@@ -412,7 +412,7 @@ public final SimulationWorkspace getSimulationWorkspace() {
 
 @Override
 public void updateConnectionStatus(ConnectionStatus connStatus) {
-	mathModelEditor.updateConnectionStatus(connStatus);	
+	// nothing in the window depends on the connection since its database browser moved to the welcome window
 }
 
 

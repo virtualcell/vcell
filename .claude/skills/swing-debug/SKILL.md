@@ -157,10 +157,11 @@ bridge.sh list name=TUTORIALModelsList Tutorial_FRAP      # PUBLISHED/CURATED/UN
 bridge.sh key name=TUTORIALModelsList ENTER
 ```
 
-**Open a database document from a model window's tree**: `tab name=DatabaseTabbedPane <n>` →
-`expand name=JTree1 <row>` → `drow name=JTree1 <row>`. VCell's database trees open
-documents from the raw `MouseEvent` (`MOUSE_PRESSED` + `clickCount==2`), so a real
-synthetic double-click is required.
+Model windows no longer have a database browser of their own (the old bottom-left pane);
+open database documents from the welcome window, as above (`File > Welcome Window` brings
+it back). Where a database tree does appear (e.g. a document chooser), it opens documents
+from the raw `MouseEvent` (`MOUSE_PRESSED` + `clickCount==2`), so use `drow`, a real
+synthetic double-click.
 
 ## Housekeeping
 

@@ -14,7 +14,8 @@
 	
 	<operations>
 	<para>
-	The Virtual Cell Database can be accessed from 'Database' panel on the lower left corner of any VCell document window. The first tab in this panel is the <bold>VCell Database</bold> tab.
+	The Virtual Cell Database is browsed from the <bold>VCell Database</bold> tab of the <bold>Welcome window</bold> (<bold>File &gt; Welcome Window</bold>).
+	Document windows no longer have a database panel of their own, so parts of the description below, written for that panel, may differ from what the Welcome window shows.
 	Choosing this tab displays another set of 3 tabs - <bold>BioModels</bold>, <bold>MathModels</bold>, and <bold>Geometry</bold> that display the accessible models of that document type.
 	</para>
 	<para></para>

@@ -37,7 +37,7 @@ public class WelcomePanel extends JPanel {
 	private final WelcomeWindowManager manager;
 	private final RecentModelsPanel recentModels = new RecentModelsPanel();
 	private final DatabaseModelsPanel databaseModels = new DatabaseModelsPanel(); // the database's models, as its tree's folders sort them
-	private final BioModelsNetPanel bioModelsNetPanel = new BioModelsNetPanel(); // as a BioModel window's "BMDB" tab
+	private final BioModelsNetPanel bioModelsNetPanel = new BioModelsNetPanel(); // the BioModels Database browser, which model windows no longer carry
 	private final JTabbedPane modelTabs = new JTabbedPane(); // recent models, VCell's database and the BioModels Database
 	private final JPanel modelsArea = new JPanel(new BorderLayout(0, 8)); // one search, over all the tabs, and the tabs; only when logged in
 	private final SearchField searchField = new SearchField("Search models");

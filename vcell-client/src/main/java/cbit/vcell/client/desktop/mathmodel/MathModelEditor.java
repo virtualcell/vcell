@@ -16,23 +16,17 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.UIManager;
 
-import org.vcell.util.document.BioModelInfo;
-import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.gui.DialogUtils;
 
-import cbit.vcell.client.DatabaseWindowManager;
 import cbit.vcell.client.MathModelWindowManager;
 import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.client.desktop.biomodel.DocumentEditor;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderNode;
-import cbit.vcell.client.desktop.biomodel.TabCloseIcon;
 import cbit.vcell.client.desktop.simulation.OutputFunctionsPanel;
 import cbit.vcell.client.desktop.simulation.SimulationListPanel;
-import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.geometry.CSGObject;
-import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.geometry.gui.CSGObjectPropertiesPanel;
 import cbit.vcell.geometry.gui.GeometryViewer;
 import cbit.vcell.mathmodel.MathModel;
@@ -134,7 +128,6 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 	}
 	JComponent bottomComponent = rightBottomEmptyPanel;
 	int destComponentIndex = DocumentEditorTabID.object_properties.ordinal();
-	boolean bShowInDatabaseProperties = false;
 	if (selections != null && selections.length == 1) {
 		Object singleSelection = selections[0];
 		if (singleSelection == mathModel) {
@@ -146,33 +139,11 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 			} else if (folderNode.getFolderClass() == DocumentEditorTreeFolderClass.MATH_SIMULATIONS_NODE) {
 				bottomComponent = simulationSummaryPanel;			
 			}
-		} else if (singleSelection instanceof BioModelInfo) {
-			bShowInDatabaseProperties = true;
-			bottomComponent = bioModelMetaDataPanel;
-		} else if (singleSelection instanceof MathModelInfo) {
-			bShowInDatabaseProperties = true;
-			bottomComponent = mathModelMetaDataPanel;
-		} else if (singleSelection instanceof GeometryInfo) {
-			bShowInDatabaseProperties = true;
-			bottomComponent = geometryMetaDataPanel;
 		} else if (singleSelection instanceof Simulation) {
 			bottomComponent = simulationSummaryPanel;
 		} else if (singleSelection instanceof CSGObject) {
 			bottomComponent = csgObjectPropertiesPanel;
 			csgObjectPropertiesPanel.setSimulationContext(getSelectedSimulationContext());
-		}
-	}
-	if (bShowInDatabaseProperties) {
-		for (destComponentIndex = 0; destComponentIndex < rightBottomTabbedPane.getTabCount(); destComponentIndex ++) {
-			Component c = rightBottomTabbedPane.getComponentAt(destComponentIndex);
-			if (c == bioModelMetaDataPanel
-				|| c == mathModelMetaDataPanel
-				|| c == geometryMetaDataPanel) {
-				break;
-			}
-		}
-		if (rightBottomTabbedPane.getTabCount() == destComponentIndex) {
-			rightBottomTabbedPane.addTab(DATABASE_PROPERTIES_TAB_TITLE, new TabCloseIcon(), bottomComponent);
 		}
 	}
 	if (rightSplitPane.getBottomComponent() != rightBottomTabbedPane) {	
@@ -261,13 +232,6 @@ public void setMathModelWindowManager(MathModelWindowManager newValue) {
 	geometryViewer.addActionListener(mathModelWindowManager);
 	mathModelPropertiesPanel.setMathModelWindowManager(mathModelWindowManager);
 	simulationListPanel.setSimulationWorkspace(mathModelWindowManager.getSimulationWorkspace());
-	
-	DatabaseWindowManager dbWindowManager = new DatabaseWindowManager(databaseWindowPanel, mathModelWindowManager.getRequestManager());
-	databaseWindowPanel.setDatabaseWindowManager(dbWindowManager);
-	DocumentManager documentManager = mathModelWindowManager.getRequestManager().getDocumentManager();
-	databaseWindowPanel.setDocumentManager(documentManager);
-	
-	geometryMetaDataPanel.setDocumentManager(documentManager);
 	updateGeometryViewerOwner();
 }
 
