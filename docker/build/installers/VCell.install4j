@@ -155,7 +155,9 @@ java.desktop/sun.font=ALL-UNNAMED
      &lt;dict&gt;
           &lt;key&gt;DYLD_FALLBACK_LIBRARY_PATH&lt;/key&gt;
           &lt;string&gt;./nativelibs/mac64/&lt;/string&gt;
-     &lt;/dict&gt;</infoPlist>
+     &lt;/dict&gt;
+&lt;key&gt;NSRequiresAquaSystemAppearance&lt;/key&gt;
+&lt;false/&gt;</infoPlist>
       <iconImageFiles>
         <file path="icons/vcell_64x64.gif" />
       </iconImageFiles>

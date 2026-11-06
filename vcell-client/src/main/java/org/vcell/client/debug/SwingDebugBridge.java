@@ -150,6 +150,8 @@ public final class SwingDebugBridge {
 			s.createContext("/selectTableRange", wrap(SwingDebugBridge::handleSelectTableRange));
 			s.createContext("/iconify", wrap(SwingDebugBridge::handleIconify));
 			s.createContext("/windowBounds", wrap(SwingDebugBridge::handleWindowBounds));
+			s.createContext("/focusOrder", wrap(SwingDebugBridge::handleFocusOrder));
+			s.createContext("/key", wrap(SwingDebugBridge::handleKey));
 			s.createContext("/log", ex -> {
 				try {
 					respond(ex, 200, "text/plain; charset=utf-8", handleLog(ex).getBytes(StandardCharsets.UTF_8));
@@ -199,6 +201,20 @@ public final class SwingDebugBridge {
 				respond(ex, 500, "application/json", ("{\"error\":\"" + jsonEscape(msg) + "\"}").getBytes(StandardCharsets.UTF_8));
 			}
 		};
+	}
+
+	/** A window's tab order, audited: see {@link FocusInspector#focusOrderJson(String)}. */
+	private static String handleFocusOrder(HttpExchange ex) {
+		return FocusInspector.focusOrderJson(emptyToNull(query(ex).get("window")));
+	}
+
+	/** A key sent to a component (or the focus owner) inside the client: see {@link FocusInspector#sendKeyJson}. */
+	private static String handleKey(HttpExchange ex) {
+		Map<String, String> q = query(ex);
+		if (!q.containsKey("key")) {
+			return "{\"error\":\"missing 'key' query parameter, e.g. ENTER, shift TAB, ctrl F\"}";
+		}
+		return FocusInspector.sendKeyJson(emptyToNull(q.get("path")), q.get("key"));
 	}
 
 	private static String handleWindows(HttpExchange ex) {

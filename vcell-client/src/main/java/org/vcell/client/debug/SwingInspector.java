@@ -1887,6 +1887,34 @@ public final class SwingInspector {
 		return (value == null) ? null : String.valueOf(value);
 	}
 
+	/** Each piece of text a list item's renderer draws (for one drawn in parts: a name over its details, say). */
+	static List<String> listItemParts(JList<?> list, int index) {
+		List<String> parts = new ArrayList<>();
+		ListCellRenderer<? super Object> renderer = castListRenderer(list);
+		if (renderer == null || index < 0 || index >= list.getModel().getSize()) {
+			return parts;
+		}
+		try {
+			collectRenderedParts(renderer.getListCellRendererComponent(castList(list), list.getModel().getElementAt(index), index, false, false), parts);
+		} catch (RuntimeException e) {
+			// a renderer that can't draw it offscreen: no parts to match on
+		}
+		return parts;
+	}
+
+	private static void collectRenderedParts(Component c, List<String> parts) {
+		String text = c instanceof JLabel ? ((JLabel) c).getText()
+				: c instanceof AbstractButton ? ((AbstractButton) c).getText()
+				: c instanceof JTextComponent ? ((JTextComponent) c).getText() : null;
+		if (text != null && !text.isBlank()) {
+			parts.add(stripHtml(text).strip());
+		} else if (c instanceof Container) {
+			for (Component kid : ((Container) c).getComponents()) {
+				collectRenderedParts(kid, parts);
+			}
+		}
+	}
+
 	@SuppressWarnings("unchecked")
 	private static ListCellRenderer<? super Object> castListRenderer(JList<?> l) {
 		return (ListCellRenderer<? super Object>) l.getCellRenderer();
@@ -1936,6 +1964,13 @@ public final class SwingInspector {
 					if (label != null && label.equalsIgnoreCase(wanted[w])) {
 						indices[w] = i;
 						break;
+					}
+				}
+				// an item drawn in parts (a name over details, say) also matches on any one part: the name alone
+				for (int i = 0; indices[w] < 0 && i < list.getModel().getSize(); i++) {
+					String wantedItem = wanted[w];
+					if (listItemParts(list, i).stream().anyMatch(part -> part.equalsIgnoreCase(wantedItem))) {
+						indices[w] = i;
 					}
 				}
 				if (indices[w] < 0) {

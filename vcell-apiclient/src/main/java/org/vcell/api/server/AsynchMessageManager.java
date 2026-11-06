@@ -134,6 +134,7 @@ private void poll( )  {
 		    begin = System.currentTimeMillis();
     	}
 	    synchronized (this) {
+	    	if (!bPoll.get()) return; // stopped since this poll began
 	    	if (!clientServerManager.isStatusConnected()) {
 	    		clientServerManager.attemptReconnect( );
 	    		return;
@@ -174,8 +175,8 @@ private void poll( )  {
 	    System.out.println(">> polling failure << " + exc.getMessage());
 	    pollTime = ATTEMPT_POLL_SECONDS;
 	    failureCount ++;
-	    if (failureCount % 3 == 0) {
-	    	bPoll.set(false);
+	    // unless polling was stopped meanwhile (a logout, say), which wants no reconnecting
+	    if (failureCount % 3 == 0 && bPoll.getAndSet(false)) {
 	    	clientServerManager.setDisconnected();
 	    }
     }
