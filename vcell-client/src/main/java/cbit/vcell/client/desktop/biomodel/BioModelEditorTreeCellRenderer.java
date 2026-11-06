@@ -251,6 +251,9 @@ public class BioModelEditorTreeCellRenderer extends DocumentEditorTreeCellRender
 	    		case BIOPAX_TREE_NODE:
 	    			icon = VCellIcons.tableIcon;
 	    			break;
+	    		case PATHWAY_LOOKUP_NODE:
+	    			icon = VCellIcons.pathwayLookupIcon;
+	    			break;
 	    		}
 	    	}
 		}
