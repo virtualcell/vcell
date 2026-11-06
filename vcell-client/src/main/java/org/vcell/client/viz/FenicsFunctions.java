@@ -13,8 +13,12 @@ import org.apache.logging.log4j.Logger;
 import org.vcell.solver.fenics.FenicsBundle;
 
 import cbit.vcell.math.Constant;
+import cbit.vcell.math.InsideVariable;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MembraneRegionVariable;
+import cbit.vcell.math.MembraneSubDomain;
+import cbit.vcell.math.OutsideVariable;
+import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VolumeRegionVariable;
 import cbit.vcell.parser.ASTFuncNode.FunctionType;
@@ -43,9 +47,16 @@ import cbit.vcell.solver.SimulationSymbolTable;
  * with the 3D view, and the finite-volume rule of evaluating at the solver's data points.)
  * <p>
  * Supported: a function on one domain of the bundle (volume or membrane) of that domain's stored variables, x,
- * y, z and t. Refused, with a message: functions of another domain's variables (on a membrane: the adjacent
- * volume values, deferred), membrane normals, region sizes, field data and gradients, region variables, and
- * anything else the bundle cannot supply.
+ * y, z and t; and on a membrane, the <b>adjacent volume values</b> -- a volume variable of either compartment the
+ * membrane separates, as VCell's finite-volume evaluation resolves it: {@code c_INSIDE} / {@code c_OUTSIDE} are
+ * {@code c} in the membrane's inside / outside compartment (the math's {@link MembraneSubDomain}), and a plain
+ * {@code c} is {@code c} in whichever adjacent compartment holds it. At a membrane vertex such a value is the
+ * compartment's own P1 value at that same vertex (the bundle's membrane-to-volume point map, vcell-fenics ADR 010
+ * §3): exact on a body-fitted mesh, where the finite-volume solver extrapolates from the neighbouring elements.
+ * <p>
+ * Refused, with a message: a volume function of another domain's variables, adjacent values from a bundle
+ * without the point map (written by vcell-fenics {@value #ADJACENT_MAPS_AFTER} or older), membrane normals,
+ * region sizes, field data and gradients, region variables, and anything else the bundle cannot supply.
  */
 final class FenicsFunctions {
 
@@ -54,18 +65,32 @@ final class FenicsFunctions {
 	/** No functions: a run registered without its simulation. */
 	static final FenicsFunctions NONE = new FenicsFunctions(List.of(), Set.of());
 
+	/** the last vcell-fenics release whose bundles have no membrane-to-volume point maps */
+	static final String ADJACENT_MAPS_AFTER = "0.1.1";
+
 	/** One function: its flattened expression (constants substituted), its declared domain (null: any) and kind. */
 	record Definition(String name, Expression expression, String domain, boolean membrane, String error) {
 	}
 
+	/** A membrane's compartments in the VCell math: {@code X_INSIDE} is X in {@code inside}, {@code X_OUTSIDE} in {@code outside}. */
+	record Sides(String inside, String outside) {
+	}
+
 	private final Map<String, Definition> definitions = new LinkedHashMap<>();
 	private final Set<String> regionVariables;
+	private final Map<String, Sides> membranes;
 
 	FenicsFunctions(List<Definition> definitions, Set<String> regionVariables) {
+		this(definitions, regionVariables, Map.of());
+	}
+
+	/** @param membranes each membrane's inside and outside compartments, from the math */
+	FenicsFunctions(List<Definition> definitions, Set<String> regionVariables, Map<String, Sides> membranes) {
 		for (Definition d : definitions) {
 			this.definitions.put(d.name(), d);
 		}
 		this.regionVariables = Collections.unmodifiableSet(new LinkedHashSet<>(regionVariables));
+		this.membranes = Collections.unmodifiableMap(new LinkedHashMap<>(membranes));
 	}
 
 	/**
@@ -96,7 +121,13 @@ final class FenicsFunctions {
 				Expression exp = f.getExpression() == null ? null : substituteConstants(new Expression(f.getExpression()), symbols);
 				list.add(new Definition(f.getName(), exp, f.getDomain() == null ? null : f.getDomain().getName(), membrane, error));
 			}
-			return new FenicsFunctions(list, regionVariables);
+			Map<String, Sides> membranes = new LinkedHashMap<>();
+			for (SubDomain sd : math.getSubDomainCollection()) {
+				if (sd instanceof MembraneSubDomain m && m.getInsideCompartment() != null && m.getOutsideCompartment() != null) {
+					membranes.put(m.getName(), new Sides(m.getInsideCompartment().getName(), m.getOutsideCompartment().getName()));
+				}
+			}
+			return new FenicsFunctions(list, regionVariables, membranes);
 		} catch (Exception e) {
 			LG.warn("could not derive the functions of " + simulation.getName() + " for the field viewer: " + e.getMessage(), e);
 			return NONE;
@@ -149,6 +180,11 @@ final class FenicsFunctions {
 		}
 		if (d.domain() != null && bundle.getDomains().containsKey(d.domain())) {
 			return d.domain();
+		}
+		if (d.domain() != null && d.membrane() && d.error() == null) {
+			throw new IllegalArgumentException("function '" + name + "' is defined on the membrane '" + d.domain()
+					+ "', which this run's results do not include (a membrane without species is written by vcell-fenics newer than "
+					+ ADJACENT_MAPS_AFTER + "; re-run the simulation to draw it)");
 		}
 		IllegalArgumentException why = null;
 		for (String domain : bundle.getDomains().keySet()) {
@@ -210,11 +246,17 @@ final class FenicsFunctions {
 			}
 		}
 		Set<String> onDomain = new LinkedHashSet<>();
-		Set<String> elsewhere = new LinkedHashSet<>();
+		Map<String, List<String>> elsewhere = new LinkedHashMap<>(); // variable -> the domains holding it
 		for (FenicsBundle.Variable v : bundle.getVariables()) {
-			(v.domain().equals(domain) ? onDomain : elsewhere).add(v.name());
+			if (v.domain().equals(domain)) {
+				onDomain.add(v.name());
+			} else {
+				elsewhere.computeIfAbsent(v.name(), k -> new ArrayList<>()).add(v.domain());
+			}
 		}
-		List<String> variables = new ArrayList<>();
+		List<String> symbolsUsed = new ArrayList<>(); // as the expression names them (c, c_INSIDE)
+		List<String> variables = new ArrayList<>(); // the stored variable each is read from
+		List<String> domains = new ArrayList<>(); // and the domain holding it
 		String[] symbols = exp.getSymbols();
 		if (symbols != null) {
 			for (String s : symbols) {
@@ -222,44 +264,117 @@ final class FenicsFunctions {
 					continue;
 				}
 				if (onDomain.contains(s)) {
+					symbolsUsed.add(s);
 					variables.add(s);
+					domains.add(domain);
 					continue;
 				}
-				if (regionVariables.contains(s)) {
+				if (regionVariables.contains(s) || regionVariables.contains(base(s))) {
 					throw new IllegalArgumentException(what + " uses the region variable '" + s + "', which FEniCSx results do not hold");
 				}
-				if (elsewhere.contains(s) || s.endsWith("_INSIDE") || s.endsWith("_OUTSIDE")) {
-					throw new IllegalArgumentException(what + " uses '" + s + "' of another domain"
-							+ (target.isMembrane() ? " (the adjacent volume's values on a membrane are not supported for FEniCSx runs yet)" : ""));
+				boolean sided = !s.equals(base(s));
+				if (elsewhere.containsKey(s) || (sided && elsewhere.containsKey(base(s)))) {
+					if (!target.isMembrane()) {
+						throw new IllegalArgumentException(what + " uses '" + s + "' of another domain");
+					}
+					String compartment = adjacentCompartment(bundle, domain, what, s, elsewhere);
+					symbolsUsed.add(s);
+					variables.add(base(s));
+					domains.add(compartment);
+					continue;
 				}
 				if (definitions.containsKey(s)) {
 					throw new IllegalArgumentException(what + " uses the function '" + s + "' unflattened");
 				}
-				throw new IllegalArgumentException(what + " uses '" + s + "', which is not a variable of '" + domain + "'");
+				throw new IllegalArgumentException(what + " uses '" + s + "', which is not a variable of '" + domain + "'"
+						+ (target.isMembrane() ? " or of a compartment beside it" : ""));
 			}
 		}
-		return new Compiled(name, exp, variables.toArray(new String[0]));
+		return new Compiled(name, exp, symbolsUsed.toArray(new String[0]), variables.toArray(new String[0]), domains.toArray(new String[0]));
+	}
+
+	/** {@code c} for {@code c_INSIDE} / {@code c_OUTSIDE}; else the name itself */
+	private static String base(String symbol) {
+		for (String suffix : new String[] { InsideVariable.INSIDE_VARIABLE_SUFFIX, OutsideVariable.OUTSIDE_VARIABLE_SUFFIX }) {
+			if (symbol.endsWith(suffix) && symbol.length() > suffix.length()) {
+				return symbol.substring(0, symbol.length() - suffix.length());
+			}
+		}
+		return symbol;
+	}
+
+	/**
+	 * The compartment beside {@code membrane} whose value of {@code symbol} a membrane function reads, as VCell's
+	 * finite-volume evaluation resolves it: {@code c_INSIDE} / {@code c_OUTSIDE} name a side of the math's
+	 * MembraneSubDomain; a plain {@code c} is the adjacent compartment holding it. Refused when the bundle has no
+	 * point map onto that compartment (an older vcell-fenics), the variable is in no adjacent compartment, or a
+	 * plain name is in both.
+	 */
+	private String adjacentCompartment(FenicsBundle bundle, String membrane, String what, String symbol,
+			Map<String, List<String>> elsewhere) {
+		FenicsBundle.Adjacency adjacency = bundle.adjacency(membrane);
+		if (adjacency == null) {
+			throw new IllegalArgumentException(what + " uses '" + symbol + "', a value of the compartment beside the membrane '"
+					+ membrane + "'; these results carry no membrane-to-volume point map: re-run the simulation with vcell-fenics newer than "
+					+ ADJACENT_MAPS_AFTER);
+		}
+		Sides sides = membranes.get(membrane);
+		String variable = base(symbol);
+		String compartment;
+		if (!variable.equals(symbol)) {
+			if (sides == null) {
+				throw new IllegalArgumentException(what + " uses '" + symbol + "', but the inside and outside of '" + membrane
+						+ "' are not known (the simulation's math was not given)");
+			}
+			compartment = symbol.endsWith(InsideVariable.INSIDE_VARIABLE_SUFFIX) ? sides.inside() : sides.outside();
+			if (!elsewhere.getOrDefault(variable, List.of()).contains(compartment)) {
+				throw new IllegalArgumentException(what + " uses '" + symbol + "', but '" + variable + "' is not a variable of '"
+						+ compartment + "', the " + (compartment.equals(sides.inside()) ? "inside" : "outside") + " of '" + membrane + "'");
+			}
+		} else {
+			List<String> beside = new ArrayList<>(sides != null ? List.of(sides.inside(), sides.outside()) : adjacency.compartments());
+			beside.retainAll(elsewhere.getOrDefault(variable, List.of()));
+			if (beside.isEmpty()) {
+				throw new IllegalArgumentException(what + " uses '" + symbol + "' of " + elsewhere.get(variable)
+						+ ", which is not beside the membrane '" + membrane + "' " + adjacency.compartments());
+			}
+			if (beside.size() > 1) {
+				throw new IllegalArgumentException(what + " uses '" + symbol + "', which is a variable of both sides of '" + membrane
+						+ "' " + beside + "; name a side with '" + symbol + InsideVariable.INSIDE_VARIABLE_SUFFIX + "' or '" + symbol
+						+ OutsideVariable.OUTSIDE_VARIABLE_SUFFIX + "'");
+			}
+			compartment = beside.get(0);
+		}
+		if (!adjacency.maps().containsKey(compartment)) {
+			throw new IllegalArgumentException(what + " uses '" + symbol + "' of '" + compartment + "', onto which these results have no point map from '"
+					+ membrane + "'");
+		}
+		return compartment;
 	}
 
 	/**
 	 * A function bound to its arguments: {@code t, x, y, z} and the stored variables {@link #variables}, in that
-	 * order, evaluated one vertex at a time.
+	 * order, evaluated one vertex at a time. Argument {@code k} is {@link #variables}{@code [k]} read on
+	 * {@link #domains}{@code [k]}: the function's own domain, or on a membrane an adjacent compartment, whose values
+	 * are carried to the membrane's vertices through the bundle's point map before evaluation.
 	 */
 	static final class Compiled {
 		final String name;
 		final String[] variables;
+		final String[] domains;
 		private final Expression bound;
 		private final double[] args;
 
-		private Compiled(String name, Expression exp, String[] variables) {
+		private Compiled(String name, Expression exp, String[] symbols, String[] variables, String[] domains) {
 			this.name = name;
 			this.variables = variables;
-			String[] names = new String[4 + variables.length];
+			this.domains = domains;
+			String[] names = new String[4 + symbols.length];
 			names[0] = "t";
 			names[1] = "x";
 			names[2] = "y";
 			names[3] = "z";
-			System.arraycopy(variables, 0, names, 4, variables.length);
+			System.arraycopy(symbols, 0, names, 4, symbols.length);
 			try {
 				this.bound = new Expression(exp);
 				this.bound.bindExpression(new SimpleSymbolTable(names));
