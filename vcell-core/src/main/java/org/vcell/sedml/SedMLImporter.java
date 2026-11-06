@@ -6,6 +6,8 @@ import cbit.util.xml.VCLogger;
 import cbit.util.xml.VCLoggerException;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.biomodel.ModelUnitConverter;
+import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.geometry.GeometryException;
 import cbit.vcell.mapping.*;
 import cbit.vcell.mapping.SimulationContext.Application;
@@ -165,6 +167,7 @@ public class SedMLImporter {
 			// NB: We don't know how many BioModels we'll end up with,
 			// 		as some model changes may be translatable as simulations with overrides
 			bioModelMap = this.createBioModels(matchingSedml.getModels());
+			this.unifyUnitSystems(bioModelMap);
 			Set<BioModel> uniqueBioModels = new HashSet<>(bioModelMap.values());
 
             // First, process tasks (a.k.a "base tasks", "actual tasks", "basic tasks", etc. NOT repeated tasks)
@@ -374,6 +377,42 @@ public class SedMLImporter {
         }
         return true;
     }
+
+	/**
+	 * SBMLImporter converts a spatial stochastic model to VCell's default units (its math is only consistent there),
+	 * while every other model keeps the units of its SBML. When a document mixes the two, convert the other
+	 * SBML-imported models to the default units as well, so that models exported from one VCell BioModel can still be
+	 * merged back into one (see mergeBioModels). This must happen before any Simulation is created: the conversion
+	 * does not carry math overrides.
+	 */
+	private void unifyUnitSystems(Map<SId, BioModel> bioModelMap) {
+		ModelUnitSystem vcellUnitSystem = ModelUnitSystem.createDefaultVCModelUnitSystem();
+		Set<BioModel> sbmlBioModels = new LinkedHashSet<>();
+		for (BioModel bioModel : bioModelMap.values()) {
+			if (this.contextToSBMLImporter.containsKey(bioModel.getSimulationContext(0))) sbmlBioModels.add(bioModel);
+		}
+		boolean anyInVCellUnits = sbmlBioModels.stream().anyMatch(bm -> bm.getModel().getUnitSystem().compareEqual(vcellUnitSystem));
+		boolean anyInOtherUnits = sbmlBioModels.stream().anyMatch(bm -> !bm.getModel().getUnitSystem().compareEqual(vcellUnitSystem));
+		if (!anyInVCellUnits || !anyInOtherUnits) return;
+
+		for (BioModel bioModel : sbmlBioModels) {
+			if (bioModel.getModel().getUnitSystem().compareEqual(vcellUnitSystem)) continue;
+			BioModel convertedBioModel;
+			try {
+				convertedBioModel = ModelUnitConverter.createBioModelWithNewUnitSystem(bioModel, vcellUnitSystem);
+				convertedBioModel.updateAll(false);
+			} catch (Exception e) {
+				throw new RuntimeException("failed to convert model '" + bioModel.getName() + "' to VCell units: " + e.getMessage(), e);
+			}
+			for (SimulationContext simContext : bioModel.getSimulationContexts()) {
+				SBMLImporter sbmlImporter = this.contextToSBMLImporter.remove(simContext);
+				if (sbmlImporter != null) {
+					this.contextToSBMLImporter.put(convertedBioModel.getSimulationContext(simContext.getName()), sbmlImporter);
+				}
+			}
+			bioModelMap.replaceAll((id, bm) -> bm == bioModel ? convertedBioModel : bm);
+		}
+	}
 
 	private Set<BioModel> mergeBioModels(Set<BioModel> bioModelSet) {
 		if (bioModelSet.size() <= 1) return bioModelSet;

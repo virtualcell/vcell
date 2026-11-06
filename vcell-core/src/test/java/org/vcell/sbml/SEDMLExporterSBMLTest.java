@@ -168,11 +168,9 @@ public class SEDMLExporterSBMLTest extends SEDMLExporterCommon {
 		faults.put("biomodel_81284732.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_82250339.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_83446023.vcml", SEDML_FAULT.MATH_OVERRIDE_NAMES_DIFFERENT); // can't find math override for Kf_dimerization
-		faults.put("biomodel_83462243.vcml", SEDML_FAULT.SIMCONTEXT_NOT_FOUND_BY_NAME); // round-tripped simulationContext not found with name 'spatial-hybrid'
 		faults.put("biomodel_83651737.vcml", SEDML_FAULT.SIMCONTEXT_NOT_FOUND_BY_NAME);
 		faults.put("biomodel_84982474.vcml", SEDML_FAULT.DIFF_NUMBER_OF_BIOMODELS); // not supported non-spatial histogram
 		faults.put("biomodel_9254662.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
-		faults.put("biomodel_92705462.vcml", SEDML_FAULT.SIMCONTEXT_NOT_FOUND_BY_NAME);  // round-tripped simulationContext not found with name 'stoch'
 		faults.put("biomodel_97075423.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_97705317.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_97786619.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
@@ -182,7 +180,6 @@ public class SEDMLExporterSBMLTest extends SEDMLExporterCommon {
 		faults.put("biomodel_98150237.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX); // new
 		faults.put("biomodel_98174143.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_98296160.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
-		faults.put("biomodel_98730962.vcml", SEDML_FAULT.SIMCONTEXT_NOT_FOUND_BY_NAME); // round-tripped simulationContext not found with name 'Application0'
 		faults.put("biomodel_165181964.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 
 
@@ -324,7 +321,6 @@ public class SEDMLExporterSBMLTest extends SEDMLExporterCommon {
 		unsupportedApplications.add(new UnsupportedApplication("biomodel_60227051.vcml","2Dprova3D","Reaction 'NOAC' has electric current defined, SBML Export is not supported"));
 		unsupportedApplications.add(new UnsupportedApplication("biomodel_60227051.vcml","3DclustBCh","Reaction 'NOAC' has electric current defined, SBML Export is not supported"));
 		unsupportedApplications.add(new UnsupportedApplication("biomodel_63307133.vcml","Kir2.1-1","Reaction 'flux0' has electric current defined, SBML Export is not supported"));
-		unsupportedApplications.add(new UnsupportedApplication("biomodel_65311813.vcml","Spatial Stochastic","Application 'Spatial Stochastic' is a spatial stochastic application, SBML Export is not supported"));
 		unsupportedApplications.add(new UnsupportedApplication("biomodel_66265579.vcml","compartmental - IC4","Reaction 'PP1a bind ICt' has electric current defined, SBML Export is not supported"));
 		unsupportedApplications.add(new UnsupportedApplication("biomodel_77305266.vcml","VSP activation","Reaction 'KCNQ2/3' has electric current defined, SBML Export is not supported"));
 		unsupportedApplications.add(new UnsupportedApplication("biomodel_77305266.vcml","M1R activation, manuscript 2","Reaction 'KCNQ2/3' has electric current defined, SBML Export is not supported"));
@@ -334,17 +330,12 @@ public class SEDMLExporterSBMLTest extends SEDMLExporterCommon {
 		unsupportedApplications.add(new UnsupportedApplication("biomodel_81284732.vcml","modelinOct2010","Reaction 'KCNQ2/3' has electric current defined, SBML Export is not supported"));
 		unsupportedApplications.add(new UnsupportedApplication("biomodel_82250339.vcml","compartment","Membrane 'plasma membrane has membrane potential enabled, SBML Export is not supported"));
 		unsupportedApplications.add(new UnsupportedApplication("biomodel_9254662.vcml","FastBuffExpReceptor","Membrane 'PM has membrane potential enabled, SBML Export is not supported"));
-		unsupportedApplications.add(new UnsupportedApplication("biomodel_92705462.vcml","stoch","Application 'stoch' is a spatial stochastic application, SBML Export is not supported"));
 		unsupportedApplications.add(new UnsupportedApplication("biomodel_98147638.vcml","compartmental - IC4","Reaction 'PP1a bind ICt' has electric current defined, SBML Export is not supported"));
 		unsupportedApplications.add(new UnsupportedApplication("biomodel_98150237.vcml","current injection at soma","Membrane 'IO3smM has membrane potential enabled, SBML Export is not supported"));
 		unsupportedApplications.add(new UnsupportedApplication("biomodel_98174143.vcml","modelinOct2010","Reaction 'KCNQ2/3' has electric current defined, SBML Export is not supported"));
 		unsupportedApplications.add(new UnsupportedApplication("biomodel_98296160.vcml","simulations","Reaction 'KCNQ2/3' has electric current defined, SBML Export is not supported"));
 		unsupportedApplications.add(new UnsupportedApplication("biomodel_165181964.vcml","Application0","Spatial processes 'sproc_0' (for cell kinematics) defined in spatial application, SBML Export is not supported"));
-		unsupportedApplications.add(new UnsupportedApplication("biomodel_83462243.vcml","spatial-hybrid","Application 'spatial-hybrid' is a spatial stochastic application, SBML Export is not supported"));
-		unsupportedApplications.add(new UnsupportedApplication("biomodel_83462243.vcml","spatial-stoch","Application 'spatial-stoch' is a spatial stochastic application, SBML Export is not supported"));
 		unsupportedApplications.add(new UnsupportedApplication("biomodel_83651737.vcml","pde","MicroscopyMeasurement 'fluor' defined involving convolution with kernel (point spread function), SBML Export is not supported"));
-		unsupportedApplications.add(new UnsupportedApplication("biomodel_83651737.vcml","hybrid","Application 'hybrid' is a spatial stochastic application, SBML Export is not supported"));
-		unsupportedApplications.add(new UnsupportedApplication("biomodel_83651737.vcml","particle","Application 'particle' is a spatial stochastic application, SBML Export is not supported"));
 		unsupportedApplications.add(new UnsupportedApplication("biomodel_97075423.vcml","Application0","Application 'Application0' has reaction rules, SBML Export is not supported"));
 		unsupportedApplications.add(new UnsupportedApplication("biomodel_97075423.vcml","NFSim","Application 'NFSim' has reaction rules, SBML Export is not supported"));
 		unsupportedApplications.add(new UnsupportedApplication("biomodel_97705317.vcml","NFSim app","Application 'NFSim app' has reaction rules, SBML Export is not supported"));
@@ -352,12 +343,7 @@ public class SEDMLExporterSBMLTest extends SEDMLExporterCommon {
 		unsupportedApplications.add(new UnsupportedApplication("biomodel_97786619.vcml","BioNetGen app","Application 'BioNetGen app' has reaction rules, SBML Export is not supported"));
 		unsupportedApplications.add(new UnsupportedApplication("biomodel_97786619.vcml","NFSim app","Application 'NFSim app' has reaction rules, SBML Export is not supported"));
 		unsupportedApplications.add(new UnsupportedApplication("biomodel_97786886.vcml","pde","MicroscopyMeasurement 'fluor' defined involving convolution with kernel (point spread function), SBML Export is not supported"));
-		unsupportedApplications.add(new UnsupportedApplication("biomodel_97786886.vcml","hybrid","Application 'hybrid' is a spatial stochastic application, SBML Export is not supported"));
-		unsupportedApplications.add(new UnsupportedApplication("biomodel_97786886.vcml","particle","Application 'particle' is a spatial stochastic application, SBML Export is not supported"));
-		unsupportedApplications.add(new UnsupportedApplication("biomodel_97787114.vcml","hybrid","Application 'hybrid' is a spatial stochastic application, SBML Export is not supported"));
-		unsupportedApplications.add(new UnsupportedApplication("biomodel_97787114.vcml","particle","Application 'particle' is a spatial stochastic application, SBML Export is not supported"));
 		unsupportedApplications.add(new UnsupportedApplication("biomodel_97787114.vcml","pde","MicroscopyMeasurement 'fluor' defined involving convolution with kernel (point spread function), SBML Export is not supported"));
-		unsupportedApplications.add(new UnsupportedApplication("biomodel_98730962.vcml","Application0","Application 'Application0' is a spatial stochastic application, SBML Export is not supported"));
 		return unsupportedApplications;
 	}
 
