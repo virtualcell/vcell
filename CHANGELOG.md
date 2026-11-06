@@ -14,7 +14,168 @@ followed by flat Keep-a-Changelog categories. API consumers should scan
 
 ## [Unreleased]
 
-_(Release-manager scratchpad. Populated at release-cut time.)_
+**Highlights.** A SED-ML/OMEX archive exported from a BioModel with a spatial stochastic or hybrid
+application imports back as one BioModel again, and the nightly SBML/SED-ML regression suite is green
+for the first time since 8.2.1.01 made those applications exportable.
+
+### Fixed
+- SBML export of a stochastic application whose species are given as initial counts: the export copy is
+  marked as using concentrations once the counts are converted, so the export's validation no longer
+  fails with "initialCount not defined for speciesContext". (#2188)
+- SED-ML/OMEX import of a document that mixes a spatial stochastic (or hybrid) model with other SBML
+  models: all of its SBML models are converted to VCell's default unit system before they are merged, so
+  the applications exported from one BioModel come back as one BioModel instead of several. In such a
+  document the deterministic applications therefore now import in VCell's units rather than the SBML's.
+  (#2188)
+- Help: the Langevin application page showed its geometry expressions literally as `z &lt; 0.09`
+  (double-escaped since #2198). (#2207)
+
+### Changed
+- Help: SpringSaLaD Application and Introduction to SpringSaLaD Modeling pages revised: what the Anchor
+  site does and its 2D diffusion, binding reactions may have a zero reverse rate, the 50-job cap on
+  concurrent Multiple Runs, new screenshot. (#2198)
+- Help: File → Import, File → Export and Window pages brought up to date: spatial and stochastic
+  applications export to SBML and which applications are refused; SBML models keep their unit system on
+  import (and the two exceptions); SED-ML/OMEX import; the theme, font size and font settings. (#2207)
+- Developer docs: how to file an issue for the project board (`docs/ISSUES.md`). (#2196)
+- Test suite: `SEDMLExporterSBMLTest` no longer declares spatial stochastic applications as unsupported
+  for SBML export, and three `SIMCONTEXT_NOT_FOUND_BY_NAME` known faults from 2023 are gone. (#2188)
+
+## [8.3.1.01] - 2026-11-05
+
+_Tagged from the branch of PR #2189, which was still open when this build was cut; deployed to the dev
+site. Contains everything in 8.3.0.03._
+
+**Highlights.** VCell opens to a welcome window instead of an empty BioModel: log in, sign up or work
+offline, start a new model, and open recent, personal, community or tutorial models from one place.
+
+### Added
+- Welcome window at start-up: Log In / Sign Up, Try as Guest and Use Offline; New BioModel, New
+  MathModel (all four kinds) and Import from File...; Recent Models; and the database's Community
+  (Published / Curated / Uncurated), Personal and Tutorial models with a search box and filters (field,
+  kind, approach, access, date, order), with each model's database info on hover. Closing the last model
+  window returns to it rather than quitting; "Keep this window open after opening a model" is remembered.
+  (#2189)
+- Sign-up from a guest session: ends the guest session, opens Auth0's sign-up screen and logs in with
+  the new account. (#2189)
+
+### Changed
+- A client/server version mismatch is shown in the welcome window (caution icon with details) instead of
+  a warning dialog at every login. (#2189)
+- At start-up a saved session is resumed silently; the login dialog no longer appears unprompted. After
+  logout the client returns to the welcome window. (#2189)
+- macOS: the application's `Info.plist` sets `NSRequiresAquaSystemAppearance=false`, so title bars follow
+  the system's dark mode. (#2189)
+
+## [8.3.0.03] - 2026-10-30
+
+_8.3.0.01 and 8.3.0.02 were tagged from the same branch earlier the same day and superseded by this
+build (8.3.0.02 was on the dev site briefly). Contains everything in 8.2.2.02._
+
+**Highlights.** The size of VCell's text is now a setting: pick a font size (or a font family) from the
+Window menu and the whole client, panels, tables, dividers and windows included, scales with it. Reaction
+and pathway diagrams zoom around the pointer and pan with the mouse.
+
+### Added
+- Desktop client: a font size (9 to 28 pt) and font family for the whole client, under **Window → Set
+  Font Size** and **Window → Font...**, next to **Set VCell Theme**. Both are remembered across sessions
+  (`~/.vcell/vcellconfig.properties`). The layout follows the size: sizes set in code, table column widths
+  and split-pane dividers are scaled, and open windows resize in place. (#2187)
+- Reaction, pathway and rule diagrams: zoom around the pointer with Ctrl/Cmd + scroll wheel, pan with a
+  middle-button drag or Space + drag, Ctrl/Cmd +/−/0 keys, and Fit, 1:1 and controls-help toolbar
+  buttons. (#2187)
+- Web app: `robots.txt` disallows `/api/` and `/n5Data/`. Those paths are machine interfaces, and a
+  crawler walking `/api/v0/biomodel/{id}/simulation/{id}` links exhausted the heap of two api pods on
+  2026-08-22. The web application itself stays crawlable. (#2030)
+
+### Changed
+- Default text is 13 pt on every platform; macOS previously used the system label font minus 2 pt, so
+  text there is noticeably larger by default. (#2187)
+- **Set VCell Theme** moved from the File menu to the Window menu. (#2187)
+- Status bar memory gauge shows a percentage; the MB amounts appear while the pointer is over it. (#2187)
+- Launchers (install4j, `vcell.sh`, the debug bridge) pass `--add-exports java.desktop/sun.font=ALL-UNNAMED`,
+  needed for font fallback when a custom family is chosen. (#2187)
+- Build: HDF5 is read and written through upstream jhdf at commit `f95507c711` (JitPack coordinate
+  `com.github.jamesmudd:jhdf`), which now carries VCell's incremental and streaming chunk writing, instead
+  of the `virtualcell/vcell-jhdf` fork. No behaviour change; the fork can be archived once a jhdf release
+  replaces the commit pin. (#2186)
+
+## [8.2.2.02] - 2026-10-28
+
+**Highlights.** CLI and BioSimulators results of a non-spatial simulation whose output starts at a
+nonzero time are no longer shifted by one point. Completes the theming work begun in 8.2.2.01.
+
+### Fixed
+- CLI / BioSimulators reports: when a SED-ML output starts at a nonzero time, the values written were
+  offset by one point (`NonSpatialSBMLSimResults` started the copied window one element too early).
+  (#2185)
+- Theme choice is now persisted; the two commits of #2183 that 8.2.2.01 was cut without (persisting the
+  theme, visual tweaks). (#2183)
+
+### Changed
+- Build: the dependency plugin's `maven-jars/` output directory is scoped to the command-line goal, so
+  `analyze-only` no longer silently skips when `maven-jars/` is absent; `failOnWarning` is off. (#2185)
+
+## [8.2.2.01] - 2026-10-23
+
+_Tagged partway through PR #2183's branch; the remaining two commits are in 8.2.2.02._
+
+**Highlights.** VCell follows the operating system's light or dark mode, and a theme menu switches themes
+while it runs. On macOS the menus are in the menu bar at the top of the screen; on Linux text is smoothed
+and a Flat theme is the default.
+
+### Added
+- Dark mode: VCell starts in a dark theme when the operating system is in dark mode (Dark Aqua on
+  macOS, Dark Nimbus, Flat Modern Dark), and **File → Set VCell Theme...** switches between the
+  installed themes, light and dark, without a restart. (#2183)
+
+### Changed
+- macOS: VCell's menus appear in the system menu bar; the window appearance (light or dark title bars)
+  matches the theme VCell starts in. (#2183)
+- Linux: the Flat theme is the default rather than the system theme, and font smoothing is on unless
+  `-Dawt.useSystemAAFontSettings` is given. (#2183)
+- Panels that did not suit a dark theme were fixed; `VCellLookAndFeel` moved to `cbit.vcell.client.laf`.
+  (#2183)
+
+## [8.2.1.01] - 2026-10-16
+
+**Highlights.** Spatial stochastic models — Smoldyn particle models and PDE/particle hybrids, where some
+species are individual molecules and others are concentrations — can be exported to SBML Spatial and
+imported back. Until now VCell refused to export them. Copying simulation results into a stochastic
+application's initial conditions or Math Overrides also works again: these pastes often found no target
+and changed nothing.
+
+### Added
+- SBML Spatial: export and import of spatial stochastic applications. Whether each species is a particle
+  or a concentration is recorded in VCell's species annotation
+  (`<vcell:SpeciesContextSpecSettings vcell:representation="particle"/>`). A species without the
+  annotation is a concentration, so plain SBML Spatial models still import as deterministic PDE models.
+  On import, a clamped species marked as particles is reported and kept as a concentration, since VCell
+  requires clamped species to be continuous. Rule-based and SpringSaLaD applications are still refused,
+  and SED-ML export still skips spatial stochastic applications. (#2175)
+
+### Fixed
+- SBML import of a spatial stochastic model converts it, geometry included, to VCell's default units
+  (µm, µM, s). VCell's spatial stochastic math is only consistent in those units: a hybrid imported in
+  VCell's SBML units (dm, µmol, l) gave Smoldyn a world measured in dm while particle creation stayed per
+  µm³, so it created about 10⁻¹⁵ of the expected molecules. (#2175)
+- Pasting initial conditions between stochastic (molecule count) and deterministic (concentration)
+  applications works in both directions, in Specifications → Initial Conditions and in a simulation's
+  Math Overrides. The value to replace is now found by following the model's math to the constant that
+  sets each variable's starting value, rather than by guessing from its name (`<var>_init_…`), which
+  missed particle, count and membrane variables. Each pasted value goes to its own row. (#2180)
+
+### Changed
+- Plot2D data panel (the table behind a plot): clearer layout and labels. (#2180)
+- Math Overrides keep a fixed order instead of hash order. (#2180)
+- Java API, for code built against VCell: in `MathOverrides`, `ScanIndex` is now a record (`.index` →
+  `.index()`) and `getOverridesHashKeys()` is now `getOverrideKeys()`. `Compare.nullState` is now
+  `Compare.Nullness.determineNullState`, and `MathOverridesPanel.setMathOverrides` is now `setMath`,
+  which also takes the `MathSymbolMapping`. New: `cbit.vcell.mapping.MathRelationMappings`, which finds
+  the constant that initializes a math variable. (#2180)
+- Developer builds: `SlurmProxyTest` passes on Windows (25 of 25; before, 18 failures and 1 skipped).
+  Generated Slurm scripts use Unix paths and line endings whatever the developer's OS; nothing changes on
+  the Linux servers. (#2182)
 
 ## [8.2.0.16] - 2026-10-07
 

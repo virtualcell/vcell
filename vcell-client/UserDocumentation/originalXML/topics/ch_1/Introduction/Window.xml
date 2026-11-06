@@ -3,7 +3,17 @@
 <page title="Window">
 
 	<introduction>
+	<para>
 	The <bold>Window</bold> menu bar option allows the user to switch among currently open VCell documents.
+	</para>
+	<para>
+	It also holds VCell's appearance settings, which are remembered between sessions:
+	</para>
+	<list>
+		<item><bold>Set VCell Theme</bold> chooses the look of the whole application from the themes installed, including a dark theme.</item>
+		<item><bold>Set Font Size</bold> chooses the size of VCell's text, in points. The layout follows the text: panels, dividers, table columns and windows are scaled with it, so larger text does not get clipped.</item>
+		<item><bold>Font...</bold> opens a dialog to choose both the font family and the size, with a sample of the result.</item>
+	</list>
 	</introduction>
 	
 	<appearance>
