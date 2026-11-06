@@ -15,6 +15,7 @@ import org.vcell.documentation.VcellHelpViewer;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDocument.VCDocumentType;
 import org.vcell.util.gui.GuiUtils;
+import org.vcell.util.gui.LoadingWheel;
 import org.vcell.util.gui.VCellIcons;
 
 import javax.swing.*;
@@ -83,7 +84,10 @@ public class WelcomePanel extends JPanel {
 	private final JPanel header = new JPanel(new BorderLayout(14, 0));
 	private final FlowLayout versionMismatchLayout = new FlowLayout(FlowLayout.CENTER, 0, 0);
 	private final JPanel versionMismatchBelow = new JPanel(this.versionMismatchLayout); // below the login choices, or the account
-	private final JLabel logo = new JLabel(new ImageIcon(VCellIcons.getJFrameImageIcon()), SwingConstants.CENTER);
+	private final Icon logoIcon = new ImageIcon(VCellIcons.getJFrameImageIcon());
+	private final JLabel logo = new JLabel(this.logoIcon, SwingConstants.CENTER);
+	private final LoadingWheel loadingWheel = new LoadingWheel(this.logoIcon.getIconWidth()); // in the logo's place while logging in
+	private final Timer loadingWheelTurns = this.loadingWheel.animate(this.logo);
 	private final JPanel titleRow = new JPanel(new FlowLayout(FlowLayout.CENTER, 12, 0)); // over the login choices: the logo and a welcome
 	private int fittedWidth = -1; // the window's width as last fitted here: a different one, its user gave it
 	private Boolean arrangedForChoosing = null; // how the header is laid out: for the login choices, or after them
@@ -95,6 +99,8 @@ public class WelcomePanel extends JPanel {
 		this.databaseModels.setOpener(manager::openModel);
 		this.bioModelsNetPanel.setDocumentWindowManager(manager);
 		this.setName("WelcomePanel");
+		this.logo.setName("WelcomeLogo");
+		this.logo.getAccessibleContext().setAccessibleName("VCell");
 		this.setBorder(BorderFactory.createEmptyBorder(18, 22, 16, 22));
 		this.startSection = this.createNewModels();
 		this.versionMismatchBelow.setOpaque(false);
@@ -152,6 +158,7 @@ public class WelcomePanel extends JPanel {
 		if (this.loggedOut) this.guest = false;
 		this.accountButton.setText(this.loggedOut || this.guest ? "Go Back" : "Log Out");
 		this.accountButton.setEnabled(ConnectionStatus.INITIALIZING != state);
+		this.showLoading(ConnectionStatus.INITIALIZING == state);
 		this.signUpButton.setVisible(this.guest && !this.loggedOut);
 		this.signUpGap.setVisible(this.signUpButton.isVisible());
 		this.showAccountCard(this.loggedOut && !this.loginOptionsDismissed ? LOGIN_OPTIONS : ACCOUNT_STATUS);
@@ -167,6 +174,15 @@ public class WelcomePanel extends JPanel {
 			this.modelsArea.setVisible(null != current);
 			this.packWindow();
 		}
+	}
+
+	// While logging in (or reconnecting), the loading wheel turns in the logo's place
+	private void showLoading(boolean loading) {
+		if (loading == (this.logo.getIcon() == this.loadingWheel)) return;
+		this.logo.setIcon(loading ? this.loadingWheel : this.logoIcon);
+		this.logo.getAccessibleContext().setAccessibleName(loading ? "Logging in" : "VCell");
+		if (loading) this.loadingWheelTurns.start();
+		else this.loadingWheelTurns.stop();
 	}
 
 	// On logging in: Recent Models, but not for a guest (guests can't save models); and the tab to start at, the
