@@ -39,7 +39,7 @@ public class SbmlTestSuiteFiles {
     }
 
     public static InputStream getSbmlTestCase(int testCaseNumber) {
-        int[] testCases = getSbmlTestSuiteCases();
+        int[] testCases = allTestCases;
         if (!Arrays.stream(testCases).anyMatch(i -> i == testCaseNumber)) {
             throw new RuntimeException("file not found for SBML Test Suite test "+testCaseNumber);
         }
@@ -67,7 +67,7 @@ public class SbmlTestSuiteFiles {
     }
 
     private static String getFileContentsAsString(int testCaseNumber, String filePattern) throws FileNotFoundException {
-        int[] testCases = getSbmlTestSuiteCases();
+        int[] testCases = allTestCases;
         if (!Arrays.stream(testCases).anyMatch(i -> i == testCaseNumber)) {
             throw new RuntimeException("test case not found for SBML Test Suite test "+testCaseNumber);
         }
@@ -77,7 +77,20 @@ public class SbmlTestSuiteFiles {
         return textContent;
     }
 
+    /**
+     * A case file from the bundled copy of the suite, or, when {@code -Dsbml.suite.dir} names an unpacked release's
+     * {@code cases/semantic} directory ({@code <dir>/01234/01234-sbml-l3v2.xml}), from there: the bundled copy lacks
+     * some cases of later releases.
+     */
     private static InputStream getFileFromResourceAsStream(String fileName) throws FileNotFoundException {
+        String suiteDir = System.getProperty("sbml.suite.dir");
+        if (suiteDir != null && !suiteDir.isBlank()) {
+            String name = fileName.substring(fileName.lastIndexOf('/') + 1);
+            java.io.File file = new java.io.File(new java.io.File(suiteDir, name.substring(0, 5)), name);
+            if (file.isFile()) {
+                return new java.io.FileInputStream(file);
+            }
+        }
         InputStream inputStream = SbmlTestSuiteFiles.class.getResourceAsStream(fileName);
         if (inputStream == null) {
             throw new FileNotFoundException("file not found! " + fileName);
