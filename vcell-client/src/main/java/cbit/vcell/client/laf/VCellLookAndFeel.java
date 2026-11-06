@@ -155,12 +155,15 @@ public class VCellLookAndFeel {
 		else if (null != savedTheme) lg.info("Remembered theme {} is not available here; following the system", savedTheme);
 		boolean dark = null != savedInfo ? VCellLookAndFeel.isStartingDark() : VCellLookAndFeel.themeDetector.isDark();
 		lookAndFeelTypes.addAll(VCellLookAndFeel.getLookAndFeelClassNamesToTry(dark));
+		// macOS's appearance first, through AppKit as a theme switch does: the apple.awt.application.appearance property
+		// set in setPlatformProperties() is ignored when AWT started before VCell did (install4j's splash screen)
+		if (VCellLookAndFeel.osInfo.isMac()) MacOSAppearance.setDarkOnEventThread(dark);
 		VCellLookAndFeel.setFirstAvailableLookAndFeel(lookAndFeelTypes);
-		// The title bar was set from the remembered theme before any theme could be checked; if that one was
-		// missing or failed to load, match it to the theme VCell ended up in
+		// If the theme picked was missing or failed to load, match macOS's appearance to the theme VCell ended up in
 		boolean endedDark = VCellColors.isDarkTheme();
-		if (VCellLookAndFeel.osInfo.isMac() && endedDark != VCellLookAndFeel.isStartingDark()) {
-			SwingUtilities.invokeLater(() -> MacOSAppearance.setDark(endedDark));
+		if (VCellLookAndFeel.osInfo.isMac()) {
+			if (endedDark != dark) MacOSAppearance.setDarkOnEventThread(endedDark);
+			VCellLookAndFeel.matchAquaTabTitles(endedDark);
 		}
 
 		lg.info("After setting, we're using: {}", UIManager.getLookAndFeel().getName());
@@ -197,17 +200,21 @@ public class VCellLookAndFeel {
 			private static void performAdditionalMacSetup(){
 				boolean dark = VCellColors.isDarkTheme();
 				MacOSAppearance.setDark(dark);
-				if (!"Aqua".equals(UIManager.getLookAndFeel().getID())) return;
-				// Aqua reads its selected-tab title color from macOS once, for the appearance VCell started in,
-				// while the tab itself is drawn by macOS in the current one
-				Color tabTitle = new ColorUIResource(dark ? Color.white : Color.black);
-				UIDefaults uiDefaults = UIManager.getLookAndFeelDefaults();
-				uiDefaults.put("TabbedPane.selectedTabTitleNormalColor", tabTitle);
-				uiDefaults.put("TabbedPane.focus", tabTitle);
+				VCellLookAndFeel.matchAquaTabTitles(dark);
 			}
 		};
 		ClientTaskDispatcher.dispatch(requester, new Hashtable<>(), new AsynchClientTask[] {changeTask});
 	}
+	// Aqua reads its selected-tab title color from macOS once, for the appearance AWT started in, while the tab itself is
+	// drawn by macOS in the current one
+	private static void matchAquaTabTitles(boolean dark) {
+		if (!"Aqua".equals(UIManager.getLookAndFeel().getID())) return;
+		Color tabTitle = new ColorUIResource(dark ? Color.white : Color.black);
+		UIDefaults uiDefaults = UIManager.getLookAndFeelDefaults();
+		uiDefaults.put("TabbedPane.selectedTabTitleNormalColor", tabTitle);
+		uiDefaults.put("TabbedPane.focus", tabTitle);
+	}
+
 	/** Installs a fresh copy of the current theme, which reads the current font size as it is installed. */
 	static void reinstallLookAndFeel() {
 		String current = UIManager.getLookAndFeel().getClass().getName();
