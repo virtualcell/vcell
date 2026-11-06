@@ -133,6 +133,51 @@ public class BioModelTransforms {
     public static void repairLegacyProblems(BioModel bioModel){
         reconcileLegacyAbsRelSizes(bioModel);
         fixLegacyMassAction(bioModel); // no susbstrate and non-zero kf or no products - capture original intent of model.
+        fixDuplicateMembraneVoltageNames(bioModel);
+    }
+
+    /**
+     * Older VCell let two membranes share one voltage name: only a rename from the GUI resets a membrane's voltage
+     * name to its default, so a membrane renamed or copied otherwise kept the name it had. Current VCell rejects such a
+     * model ("model symbol ... is used within ... and ..."), so its math can no longer be generated. The first membrane
+     * (model order) keeps the name -- an expression bound by name resolves to it -- and each later membrane sharing it
+     * gets its default name ({@link Membrane#getDefaultMembraneVoltageName}), made unique among the model's symbols.
+     */
+    private static void fixDuplicateMembraneVoltageNames(BioModel bioModel) {
+        Model model = bioModel.getModel();
+        if (model == null) {
+            return;
+        }
+        Set<SymbolTableEntry> entries = new HashSet<>();
+        model.gatherLocalEntries(entries);
+        Set<String> taken = new HashSet<>();
+        for (SymbolTableEntry entry : entries) {
+            taken.add(entry.getName());
+        }
+        Set<String> voltageNames = new HashSet<>();
+        for (Structure structure : model.getStructures()) {
+            if (!(structure instanceof Membrane membrane)) {
+                continue;
+            }
+            Membrane.MembraneVoltage voltage = membrane.getMembraneVoltage();
+            if (voltageNames.add(voltage.getName())) {
+                continue;
+            }
+            String base = Membrane.getDefaultMembraneVoltageName(membrane.getName());
+            String name = base;
+            for (int i = 1; taken.contains(name); i++) {
+                name = base + "_" + i;
+            }
+            try {
+                lg.warn("membrane '" + membrane.getName() + "' shared voltage name '" + voltage.getName()
+                        + "' with another membrane; renamed to '" + name + "'");
+                voltage.setName(name);
+                taken.add(name);
+                voltageNames.add(name);
+            } catch (PropertyVetoException e) {
+                lg.error("failed to rename the duplicate voltage of membrane '" + membrane.getName() + "'", e);
+            }
+        }
     }
 
     private static void fixLegacyMassAction(BioModel bioModel) {
