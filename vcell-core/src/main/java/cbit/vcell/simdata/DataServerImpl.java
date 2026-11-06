@@ -217,6 +217,17 @@ public cbit.vcell.solver.ode.ODESimData getODEData(User user, VCDataIdentifier v
 		}
 	}
 
+	/** points located in a moving bundle mesh, with values there, in one RPC; see {@link DataSetControllerImpl#getFenicsBundleLocatedSamples} */
+	public org.vcell.solver.fenics.FenicsLocatedSamples getFenicsBundleLocatedSamples(User user, VCDataIdentifier vcdID, String meshPath, String coordsPath, String[] arrayPaths, double[] points, boolean snap, int[] rows) throws DataAccessException {
+		checkReadAccess(user, vcdID);
+		try {
+			return dataSetControllerImpl.getFenicsBundleLocatedSamples(vcdID, meshPath, coordsPath, arrayPaths, points, snap, rows);
+		}catch (Throwable e){
+			lg.error(e.getMessage(), e);
+			throw new DataAccessException(e.getMessage());
+		}
+	}
+
 	/** some values of some bundle arrays in one RPC; see {@link DataSetControllerImpl#getFenicsBundleSamples} */
 	public org.vcell.solver.fenics.FenicsSamples getFenicsBundleSamples(User user, VCDataIdentifier vcdID, String[] arrayPaths, int[] indices, int[] rows) throws DataAccessException {
 		checkReadAccess(user, vcdID);

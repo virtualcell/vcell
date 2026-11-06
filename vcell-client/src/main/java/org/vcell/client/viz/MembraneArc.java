@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.PriorityQueue;
+import org.vcell.vis.vtk.VtuGridParser;
 
 /**
  * A curve along a 2D membrane: a line mesh ({@code VTK_LINE} cells, a FEniCSx membrane domain of a 2D model),
