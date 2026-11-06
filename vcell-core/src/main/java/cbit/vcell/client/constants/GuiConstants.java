@@ -42,6 +42,7 @@ public class GuiConstants {
 	public final static String DOCUMENT_EDITOR_FOLDERNAME_PATHWAYOBJECTS = "Pathway Objects";
 	public final static String DOCUMENT_EDITOR_FOLDERNAME_BIOPAXSUMMARY = "BioPAX Summary";
 	public final static String DOCUMENT_EDITOR_FOLDERNAME_BIOPAXTREE = "BioPAX Tree";
+	public final static String DOCUMENT_EDITOR_FOLDERNAME_PATHWAYLOOKUP = "Pathway Lookup";
 	public final static String DOCUMENT_EDITOR_FOLDERNAME_GEOMETRY = "Geometry";
 	public final static String DOCUMENT_EDITOR_FOLDERNAME_SPECIFICATIONS = "Specifications";
 	public final static String DOCUMENT_EDITOR_FOLDERNAME_PROTOCOLS = "Protocols";

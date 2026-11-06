@@ -526,12 +526,16 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 		searchTextField.setName("PathwayCommonsSearchTextField");
 		searchTextField.addActionListener(eventHandler);
 		searchTextField.putClientProperty("JTextField.variant", "search");
+		searchTextField.getAccessibleContext().setAccessibleName("Search Pathway Commons");
+		searchTextField.setToolTipText("Search Pathway Commons for pathways, e.g. insulin");
 
 		filterTextField = new TextFieldAutoCompletion();
 		filterTextField.setName("PathwayCommonsFilterTextField");
 		filterTextField.addActionListener(eventHandler);
 		filterTextField.addKeyListener(eventHandler);
 		filterTextField.putClientProperty("JTextField.variant", "filter");
+		filterTextField.getAccessibleContext().setAccessibleName("Filter search results");
+		filterTextField.setToolTipText("Show only the results whose name, organism or source contains this text");
 
 		searchButton = new JButton("Search");
 		searchButton.setName("PathwayCommonsSearchButton");

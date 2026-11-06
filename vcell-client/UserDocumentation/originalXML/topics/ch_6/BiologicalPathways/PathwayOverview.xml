@@ -14,7 +14,8 @@ a biomodel and, more important, as a way of annotating vCell entities.
 <para>
 The process begins with a 
 <link target = "PathwayCommonsPanel"> keyword search</link> 
-in the Pathway Commons Database - which will result in a list of pathways. 
+in the Pathway Commons Database, from <bold>Pathway Lookup</bold> under <bold>Pathway</bold> in the
+Navigation Panel - which will result in a list of pathways. 
 </para>
 <para>
 The chosen pathway can be  

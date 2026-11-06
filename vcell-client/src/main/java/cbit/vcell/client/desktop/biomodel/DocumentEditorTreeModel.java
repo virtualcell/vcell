@@ -80,6 +80,7 @@ public abstract class DocumentEditorTreeModel extends DefaultTreeModel
 		PATHWAY_OBJECTS_NODE(		cbit.vcell.client.constants.GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_PATHWAYOBJECTS),
 		BIOPAX_SUMMARY_NODE(		cbit.vcell.client.constants.GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_BIOPAXSUMMARY),
 		BIOPAX_TREE_NODE(			cbit.vcell.client.constants.GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_BIOPAXTREE),
+		PATHWAY_LOOKUP_NODE(		cbit.vcell.client.constants.GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_PATHWAYLOOKUP),
 		
 		GEOMETRY_NODE(				cbit.vcell.client.constants.GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_GEOMETRY),
 		SPECIFICATIONS_NODE(		cbit.vcell.client.constants.GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_SPECIFICATIONS),

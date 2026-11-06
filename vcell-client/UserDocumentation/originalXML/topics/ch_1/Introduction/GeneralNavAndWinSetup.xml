@@ -60,7 +60,7 @@
 		<item><bold>VCell Database</bold> lists models stored in the VCell database and includes 3 subtabs (<bold>BioModels</bold>, <bold>MathModels</bold>, <bold>Geometries</bold>),
 		which each display the different VCell document types stored in the VCell database. Refer to the section on <link target="VCellDatabase">VCell Database</link> for further information.</item>
 		<item><bold>BMBD</bold> lists models from the <link target="http://www.ebi.ac.uk/biomodels/">Biomodels database</link>, a database of annotated published models in SBML, that can be imported into the Virtual Cell.</item>
-		<bold>Pathway Commons</bold> lists pathways that can be mined from the <bold>Pathway Commons</bold> database.
+		Pathways from the <bold>Pathway Commons</bold> database are searched from <bold>Pathway Lookup</bold>, under <bold>Pathway</bold> in the Navigation Panel.
 		Please refer to sections <link target="PathwayCommonsPanel">Pathway Commons Database</link> and <link target="PathwayOverview">Biological Pathways</link>.
 		</list></para>
 

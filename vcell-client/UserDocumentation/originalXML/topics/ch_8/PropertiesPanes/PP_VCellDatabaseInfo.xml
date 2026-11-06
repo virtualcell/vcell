@@ -6,6 +6,12 @@
 	Selecting a BioModel or MathModel from the tree list under the <bold>VCell DB tab</bold> (<bold>lower left</bold> of VCell document window) 
 	will display basic information about the selected model in the <bold>Database File Info tab</bold> (<bold>lower right</bold> of VCell document window).  
 	The summary displays information about some of the internal contents of a model.
+	<para>
+	Selecting the open BioModel itself (the top node of the tree in the <bold>upper left</bold>) shows the same tab for that model.
+	It reflects the model's <bold>last saved version</bold>, as a notice at the top of the tab points out, so changes made since then do not appear.
+	A model that has never been saved to the VCell Database has no database record; the tab is then titled <bold>Database File Info &#8212; NOT SAVED</bold>
+	and asks you to save the model.
+	</para>
 	</introduction>
 	
 	<appearance>
