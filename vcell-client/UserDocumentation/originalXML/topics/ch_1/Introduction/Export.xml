@@ -41,16 +41,18 @@
 	
 	<para> <bold>Exporting to SBML</bold> </para>
 	<para>
-	SBML export is available only for BioModels. Exporting MathModels to SBML will be provided in future versions of VCell. SBML only supports non-spatial, deterministic modeling. 
+	SBML export is available only for BioModels. Exporting MathModels to SBML will be provided in future versions of VCell. 
+	Deterministic and stochastic applications can be exported, both non-spatial and spatial; a spatial application is written with the SBML spatial package, and a spatial stochastic or hybrid application records in a VCell annotation which species are particles.
+	Applications that cannot be exported, with the reason reported: rule-based applications (reaction rules), SpringSaLaD applications, a membrane with membrane potential enabled, a reaction with an electric current, a species whose initial condition is field data, a microscope measurement with a point spread function, and a lumped reaction in a spatial application.
 	Also, since there is no formal representation for electrophysiological models in SBML, if the BioModel to be exported is electrophysiology based, it is simply not exported and an error message is displayed.
 	</para>
 	
 	<list>
 		<item>
-		<para><bold>Multiple non-spatial applications</bold></para>
+		<para><bold>Multiple applications</bold></para>
 		<imgReference target = "ExportAppSelect.gif"/>
 		<para>
-		When a VCell BioModel has multiple applications, a list of the non-spatial, deterministic applications is presented. Select the application to export to SBML. 
+		When a VCell BioModel has multiple applications, a list of the applications that can be exported is presented. Select the application to export to SBML. 
 		If the compartment sizes for the selected application are not already set, the user is asked to provide the size for any one compartment in the BioModel.
 		</para>
 		</item>
