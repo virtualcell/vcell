@@ -2104,6 +2104,9 @@ public class SBMLImporter {
      */
     static List<String> treatZeroDimensionalCompartmentsAsVolumes(org.sbml.jsbml.Model sbmlModel){
         List<String> converted = new ArrayList<>();
+        if(sbmlModel == null){
+            return converted; // no model: the import reports it
+        }
         for(int i = 0; i < sbmlModel.getNumCompartments(); i++){
             Compartment compartment = sbmlModel.getCompartment(i);
             if(compartment.isSetSpatialDimensions() && compartment.getSpatialDimensions() == 0){
@@ -2127,6 +2130,9 @@ public class SBMLImporter {
      */
     static List<String> removeElementsWithoutMath(org.sbml.jsbml.Model sbmlModel){
         List<String> removed = new ArrayList<>();
+        if(sbmlModel == null){
+            return removed;
+        }
         for(int i = sbmlModel.getNumRules() - 1; i >= 0; i--){
             Rule rule = sbmlModel.getRule(i);
             if(!rule.isSetMath()){
@@ -2183,6 +2189,9 @@ public class SBMLImporter {
      */
     static List<String> replaceRateOf(org.sbml.jsbml.Model sbmlModel){
         List<String> replaced = new ArrayList<>();
+        if(sbmlModel == null){
+            return replaced;
+        }
         List<MathContainer> containers = new ArrayList<>();
         for(int i = 0; i < sbmlModel.getNumRules(); i++) containers.add(sbmlModel.getRule(i));
         for(int i = 0; i < sbmlModel.getNumInitialAssignments(); i++) containers.add(sbmlModel.getInitialAssignment(i));
