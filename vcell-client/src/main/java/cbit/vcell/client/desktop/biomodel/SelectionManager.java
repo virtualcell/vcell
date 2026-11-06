@@ -27,6 +27,7 @@ public class SelectionManager {
 		
 		parameters_functions,
 		predefined_symbols,
+		model_unit_system,
 		
 		data,	
 		applications,	

@@ -928,7 +928,10 @@ private void setRightTopPanel(Object selectedObject, SimulationContext simulatio
 		} else if (folderClass == DocumentEditorTreeFolderClass.PATHWAY_NODE) {
 			newTopPanel = getBioModelEditorPathwayDiagramPanel();
 			getBioModelEditorPathwayDiagramPanel().setBioModel(bioModel);
-		} else if (folderClass == DocumentEditorTreeFolderClass.BIOMODEL_PARAMETERS_NODE) {
+		} else if (folderClass == DocumentEditorTreeFolderClass.BIOMODEL_PARAMETERS_NODE
+				|| folderClass == DocumentEditorTreeFolderClass.PARAMETERS_FUNCTIONS_NODE
+				|| folderClass == DocumentEditorTreeFolderClass.PREDEFINED_SYMBOLS_NODE
+				|| folderClass == DocumentEditorTreeFolderClass.MODEL_UNIT_SYSTEM_NODE) {
 			newTopPanel = bioModelParametersPanel;
 		} else if (folderClass == DocumentEditorTreeFolderClass.APPLICATIONS_NODE) {
 			newTopPanel = bioModelEditorApplicationsPanel;

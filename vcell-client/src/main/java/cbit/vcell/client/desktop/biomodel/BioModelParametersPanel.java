@@ -318,13 +318,18 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 	private JPanel modelUnitSystemPanel = null;
 	
 	private enum ParametersPanelTabID {
-		parameters_functions("Parameters and Functions"),
-		predefined("Predefined Constants and Math Functions"),
-		modelUnitSystem("Model Unit System");
+		// each tab is also a node under Mathematics & Units in the navigation tree, by the same name
+		parameters_functions(GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_PARAMETERS_FUNCTIONS, DocumentEditorTreeFolderClass.PARAMETERS_FUNCTIONS_NODE, ActiveViewID.parameters_functions),
+		predefined(GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_PREDEFINED_SYMBOLS, DocumentEditorTreeFolderClass.PREDEFINED_SYMBOLS_NODE, ActiveViewID.predefined_symbols),
+		modelUnitSystem(GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_MODEL_UNIT_SYSTEM, DocumentEditorTreeFolderClass.MODEL_UNIT_SYSTEM_NODE, ActiveViewID.model_unit_system);
 		
-		String title = null;
-		ParametersPanelTabID(String name) {
+		final String title;
+		final DocumentEditorTreeFolderClass treeFolderClass;
+		final ActiveViewID activeViewID;
+		ParametersPanelTabID(String name, DocumentEditorTreeFolderClass treeFolderClass, ActiveViewID activeViewID) {
 			this.title = name;
+			this.treeFolderClass = treeFolderClass;
+			this.activeViewID = activeViewID;
 		}
 	}
 	
@@ -899,15 +904,8 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 			return;
 		}
 
-		ActiveView activeView = null;
-		if (selectedIndex == ParametersPanelTabID.parameters_functions.ordinal()) {
-			activeView = new ActiveView(null, DocumentEditorTreeFolderClass.BIOMODEL_PARAMETERS_NODE, ActiveViewID.parameters_functions);
-		} else if (selectedIndex == ParametersPanelTabID.predefined.ordinal()) {
-			activeView = new ActiveView(null, DocumentEditorTreeFolderClass.BIOMODEL_PARAMETERS_NODE, ActiveViewID.predefined_symbols);
-		}
-		if (activeView != null) {
-			setActiveView(activeView);
-		}
+		ParametersPanelTabID selectedTab = ParametersPanelTabID.values()[selectedIndex];
+		setActiveView(new ActiveView(null, selectedTab.treeFolderClass, selectedTab.activeViewID)); // selects the tab's node in the tree
 		
 		if (selectedIndex == ParametersPanelTabID.parameters_functions.ordinal()) {
 			addNewButton.setVisible(true);
@@ -944,6 +942,11 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 	@Override
 	protected void onActiveViewChange(ActiveView activeView) {
 		super.onActiveViewChange(activeView);
+		for (ParametersPanelTabID tab : ParametersPanelTabID.values()) { // a tab's node selected in the tree
+			if (tab.treeFolderClass != activeView.getDocumentEditorTreeFolderClass()) continue;
+			tabbedPane.setSelectedIndex(tab.ordinal());
+			return;
+		}
 		if (DocumentEditorTreeFolderClass.BIOMODEL_PARAMETERS_NODE == activeView.getDocumentEditorTreeFolderClass()) {
 			if (activeView.getActiveViewID() != null) {
 				if (activeView.getActiveViewID().equals(ActiveViewID.parameter_estimation)) {

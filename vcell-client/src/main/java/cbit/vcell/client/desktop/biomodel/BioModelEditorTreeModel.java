@@ -53,15 +53,25 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel implements 
 		};
 	private BioModelNode modelNode = new BioModelNode(bioModelChildFolderNodes[0], true);
 	private BioModelNode applicationsNode = new BioModelNode(bioModelChildFolderNodes[1], true);	
-	private BioModelNode bioModelParametersNode = new BioModelNode(bioModelChildFolderNodes[2], false);
+	private BioModelNode bioModelParametersNode = new BioModelNode(bioModelChildFolderNodes[2], true);
 	private BioModelNode pathwayNode = new BioModelNode(bioModelChildFolderNodes[3], true);
 //	private BioModelNode dataNode = new BioModelNode(bioModelChildFolderNodes[4], false);
-	private BioModelNode  bioModelChildNodes[] = {
+	private BioModelNode  bioModelChildNodes[] = { // in the order they're listed under the model
+			bioModelParametersNode,
 			modelNode,
 			applicationsNode,
-			bioModelParametersNode,
 			pathwayNode,
 //			dataNode,
+	};
+
+	// Mathematics & Units: one node per tab of its panel
+	private BioModelNode parametersFunctionsNode = new BioModelNode(new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.PARAMETERS_FUNCTIONS_NODE, true), false);
+	private BioModelNode predefinedSymbolsNode = new BioModelNode(new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.PREDEFINED_SYMBOLS_NODE, true), false);
+	private BioModelNode modelUnitSystemNode = new BioModelNode(new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.MODEL_UNIT_SYSTEM_NODE, true), false);
+	private BioModelNode mathematicsChildNodes[] = {
+			parametersFunctionsNode,
+			predefinedSymbolsNode,
+			modelUnitSystemNode,
 	};
 	@Deprecated
 	List<BioModelNode> annotationNodes = new ArrayList<BioModelNode>();
@@ -125,6 +135,9 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel implements 
 		}
 		for (BioModelNode bioModeNode : pathwayChildNodes) {
 			pathwayNode.add(bioModeNode);
+		}
+		for (BioModelNode mathematicsChildNode : this.mathematicsChildNodes) {
+			this.bioModelParametersNode.add(mathematicsChildNode);
 		}
 	}
 	
