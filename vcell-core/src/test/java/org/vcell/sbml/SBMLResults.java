@@ -65,6 +65,20 @@ public class SBMLResults {
         return new SBMLResults(columnNames, values);
     }
 
+    private static Double constantValue(Variable mathVar, SymbolTableEntry ste) {
+        try {
+            if (mathVar instanceof cbit.vcell.math.Constant) {
+                return ((cbit.vcell.math.Constant) mathVar).getExpression().evaluateConstant();
+            }
+            if (mathVar == null && ste != null && ste.getExpression() != null) {
+                return ste.getExpression().evaluateConstant();
+            }
+        } catch (ExpressionException e) {
+            return null;
+        }
+        return null;
+    }
+
     public static SBMLResults fromOdeSolverResultSet(
             ODESolverResultSet odeSolverResultSet,
             SBMLSimulationSpec sbmlSimulationSpec,
@@ -90,7 +104,15 @@ public class SBMLResults {
                     varIndex = odeSolverResultSet.findColumn(mathVar.getName());
                 }
                 if (varIndex<0) {
-                    throw new RuntimeException("couldn't find var '" + var + "' in vcell sim results");
+                    // a constant (a fixed compartment size or parameter) is not a column of the results: report its value
+                    Double constant = constantValue(mathVar, ste);
+                    if (constant == null) {
+                        throw new RuntimeException("couldn't find var '" + var + "' in vcell sim results");
+                    }
+                    double[] column = new double[values.get(0).length];
+                    Arrays.fill(column, constant);
+                    values.add(column);
+                    continue;
                 }
             }
             double[] rawSolution = odeSolverResultSet.extractColumn(varIndex);
