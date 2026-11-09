@@ -558,6 +558,8 @@ public class XMLTags {
 //	public static final String ParamRoleTotalRateTag = "totalRate";
 	public static final String DefaultReactionRateSymbol = "J";
 	public static final String VelocityTag = "Velocity";
+	// MembraneSubDomain: its species are carried by and dilute with its velocity (vcell-fenics ADR 014)
+	public static final String DilutionAttrTag = "Dilution";
 	public static final String PositionXTag = "PositionX";
 	public static final String PositionYTag = "PositionY";
 	public static final String PositionZTag = "PositionZ";

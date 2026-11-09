@@ -962,6 +962,20 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 							+ getMathDescription().getGeometry().getDimension() + "D.",
 					"Choose the FEniCSx solver for a 3D moving boundary.", Issue.Severity.ERROR));
 		}
+		if (getSolverTaskDescription().getSolverDescription() == SolverDescription.MovingBoundary
+				&& getMathDescription() != null) {
+			// the Moving Boundary solver has no membrane state: its input writer drops a membrane species' equation
+			// and every jump condition, so a moving membrane's species would silently vanish (vcell-mbsolver#35)
+			for (cbit.vcell.math.SubDomain subDomain : java.util.Collections.list(getMathDescription().getSubDomains())) {
+				if (subDomain instanceof cbit.vcell.math.MembraneSubDomain membrane && membrane.isMoving()
+						&& !membrane.getEquationCollection().isEmpty()) {
+					issueList.add(new Issue(this, issueContext, IssueCategory.MovingBoundary_MembraneSpecies_NotSupported,
+							"The Moving Boundary solver does not solve species on the moving membrane ('" + membrane.getName()
+									+ "'); it would drop them and their membrane fluxes.",
+							"Choose the FEniCSx solver, or remove the species from the moving membrane.", Issue.Severity.ERROR));
+				}
+			}
+		}
 		if (getSolverTaskDescription().getSolverDescription() == SolverDescription.Langevin) {
 			int[] nPart = getSolverTaskDescription().getLangevinSimulationOptions().getNPart();
 			if(getMathDescription() != null && getMathDescription().getGeometry() != null && simulationOwner instanceof SimulationContext) {
