@@ -4230,6 +4230,7 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
 
         MembraneSubDomain subDomain = new MembraneSubDomain(insideRef, outsideRef, surfaceClass.getName());
         transcribeComments(param, subDomain);
+        subDomain.setDilution(Boolean.parseBoolean(param.getAttributeValue(XMLTags.DilutionAttrTag)));
 
         //Process BoundaryConditions
         Iterator<Element> iterator = param.getChildren(XMLTags.BoundaryTypeTag, vcNamespace).iterator();

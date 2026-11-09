@@ -63,6 +63,14 @@ public class MembraneSubDomain extends SubDomain implements SubDomain.DomainWith
 	 * membrane, not advection (3D moving boundaries)
 	 */
 	private Expression velocityZ = null;
+	/**
+	 * Whether this membrane's species are densities carried by its velocity: for a PDE
+	 * d(rho)/dt + div_Gamma(rho v) = div_Gamma(D grad_Gamma rho) + rate (the dilution rho div_Gamma(v) and the
+	 * tangential carry), for an ODE d(rho)/dt + rho div_Gamma(v) = rate along the membrane's material points;
+	 * a membrane PDE's own velocity is its drift relative to the membrane. Written by the math generator for
+	 * a moving membrane that carries species (vcell-fenics ADR 014); meaningless without a velocity.
+	 */
+	private boolean dilution = false;
 	
 	
 /**
@@ -320,6 +328,10 @@ protected void parse(MathDescription mathDesc, String tokenString,
 		velocityZ = parseAndBind(mathDesc, tokens);
 		return;
 	}
+	if (tokenString.equalsIgnoreCase(VCML.Dilution)){
+		dilution = Boolean.parseBoolean(tokens.nextToken());
+		return;
+	}
 	if (FUTURE_VCML_SYMBOLS.containsKey(tokenString)) {
 		final int numberAdditionalTokensToSkip = FUTURE_VCML_SYMBOLS.get(tokenString);
 		for (int i = 0; i < numberAdditionalTokensToSkip; i++) { 
@@ -377,6 +389,9 @@ public boolean compareEqual(Matchable object) {
 	//
 	MembraneSubDomain msd = (MembraneSubDomain)object;
 	if (!Compare.isEqual(jumpConditionList,msd.jumpConditionList)){
+		return false;
+	}
+	if (dilution != msd.dilution){ // a primitive: Compare.hasNonEqualFields compares Matchable fields only
 		return false;
 	}
 	return true;
@@ -460,6 +475,14 @@ public Expression getVelocityZ() {
 
 public void setVelocityZ(Expression velocityZ) {
 	this.velocityZ = velocityZ;
+}
+
+public boolean isDilution() {
+	return dilution;
+}
+
+public void setDilution(boolean dilution) {
+	this.dilution = dilution;
 }
 
 public boolean isMoving( ) {
@@ -587,6 +610,9 @@ public String getVCML(int spatialDimension) {
 		buffer.append("\t"+VCML.BoundaryZm+"\t "+boundaryConditionTypeZm.boundaryTypeStringValue()+"\n");
 		buffer.append("\t"+VCML.BoundaryZp+"\t "+boundaryConditionTypeZp.boundaryTypeStringValue()+"\n");
 		addExpression(buffer, VCML.VelocityZ,velocityZ);
+	}
+	if (dilution){ // written only when set, so a membrane without it reads in VCell versions that predate it
+		buffer.append("\t"+VCML.Dilution+"\t true\n");
 	}
 	Enumeration<Equation> enum1 = getEquations();
 	while (enum1.hasMoreElements()){

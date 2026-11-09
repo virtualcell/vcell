@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--This biomodel was generated in VCML Version Rel_Version_7.7.0_build_15-->
+<vcml xmlns="http://sourceforge.net/projects/vcell/vcml" Version="Rel_Version_7.7.0_build_15">
+  <BioModel Name="A+X-&gt;B">
+    <Model Name="model">
+      <Compound Name="s1" />
+      <Compound Name="s2" />
+      <Compound Name="s0" />
+      <Feature Name="Cyt" KeyValue="294046904" />
+      <Feature Name="EC" KeyValue="294046906" />
+      <Membrane MembraneVoltage="Voltage_PM" Name="PM" KeyValue="294046908" />
+      <LocalizedCompound Name="X" CompoundRef="s1" Structure="PM" OverrideName="true" KeyValue="294046910" />
+      <LocalizedCompound Name="B" CompoundRef="s2" Structure="PM" OverrideName="true" KeyValue="294046911" />
+      <LocalizedCompound Name="A" CompoundRef="s0" Structure="EC" OverrideName="true" KeyValue="294046912" />
+      <SimpleReaction Structure="PM" Name="r0" Reversible="true" FluxOption="MolecularOnly" KeyValue="294046913">
+        <Reactant LocalizedCompoundRef="X" Stoichiometry="1" KeyValue="294046914" />
+        <Reactant LocalizedCompoundRef="A" Stoichiometry="1" KeyValue="294046915" />
+        <Product LocalizedCompoundRef="B" Stoichiometry="1" KeyValue="294046916" />
+        <Kinetics KineticsType="MassAction">
+          <Parameter Name="J" Role="reaction rate" Unit="molecules.um-2.s-1">(((Kf * X) * A) - (Kr * B))</Parameter>
+          <Parameter Name="I" Role="inward current density" Unit="pA.um-2">0.0</Parameter>
+          <Parameter Name="netValence" Role="net charge valence" Unit="1">1.0</Parameter>
+          <Parameter Name="Kf" Role="forward rate constant" Unit="s-1.uM-1">1.5</Parameter>
+          <Parameter Name="Kr" Role="reverse rate constant" Unit="s-1">1.0</Parameter>
+        </Kinetics>
+      </SimpleReaction>
+      <Diagram Name="c1" Structure="EC">
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="C" LocationX="34" LocationY="194" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="r0" LocationX="16" LocationY="103" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="Y" LocationX="20" LocationY="131" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="B" LocationX="41" LocationY="132" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="X" LocationX="39" LocationY="63" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="r1" LocationX="86" LocationY="163" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="A" LocationX="156" LocationY="80" />
+      </Diagram>
+      <Diagram Name="m0" Structure="PM">
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="C" LocationX="34" LocationY="194" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="r0" LocationX="16" LocationY="103" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="Y" LocationX="20" LocationY="131" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="B" LocationX="41" LocationY="132" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="X" LocationX="39" LocationY="63" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="r1" LocationX="86" LocationY="163" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="A" LocationX="156" LocationY="80" />
+      </Diagram>
+      <Diagram Name="c0" Structure="Cyt">
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="C" LocationX="34" LocationY="194" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="r0" LocationX="16" LocationY="103" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="Y" LocationX="20" LocationY="131" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="B" LocationX="41" LocationY="132" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="X" LocationX="39" LocationY="63" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="r1" LocationX="86" LocationY="163" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="A" LocationX="156" LocationY="80" />
+      </Diagram>
+      <Version Name="model" KeyValue="294046899" BranchId="292916950" Archived="0" Date="01-Aug-2025 20:34:51" FromVersionable="false">
+        <Owner Name="meichelman" Identifier="291225146" />
+        <GroupAccess Type="1" />
+      </Version>
+      <ModelUnitSystem VolumeSubstanceUnit="uM.um3" MembraneSubstanceUnit="molecules" LumpedReactionSubstanceUnit="molecules" VolumeUnit="um3" AreaUnit="um2" LengthUnit="um" TimeUnit="s" />
+    </Model>
+    <SimulationSpec Name="moving_bleb" Stochastic="false" UseConcentration="true" SpringSaLaD="false" RuleBased="false" MassConservationModelReduction="false" InsufficientIterations="false" InsufficientMaxMolecules="false" CharacteristicSize="0.02570694087403599">
+      <NetworkConstraints RbmMaxIteration="1" RbmMaxMoleculesPerSpecies="10" RbmSpeciesLimit="800" RbmReactionsLimit="2500" />
+      <Annotation />
+      <Geometry Name="geom_20250806_150425" Dimension="2">
+        <Annotation>/Users/meichelman/OneDrive/UMN/Rotations/Driscoll/Phase_map_drawings/A_04.tif</Annotation>
+        <Extent X="10.0" Y="10.0" Z="9.0E-7" />
+        <Origin X="0.0" Y="0.0" Z="0.0" />
+        <Image Name="img_20250806_150425">
+          <Annotation>/Users/meichelman/OneDrive/UMN/Rotations/Driscoll/Phase_map_drawings/A_04.tif</Annotation>
+          <ImageData X="389" Y="389" Z="1" CompressedSize="1561">789CEDD9DB4E234B100551FCFF3F7D2423CDE99BDB9595991506623DCD8B87AAD85683E1EB4B9224499224499224499224499224499224499224499224499224499224499224499224499224E9D7786CD187F99B1E47F481FE9ED304CEB0DAE504CEB0D4CB0D5C61999B0D5C6191DB0D5C6189371BB8C2026F3770857E8EC01BD8C015BA39026F680357E8E508BCC10D5CA193237C0047F8008EF0011C0170ECE908EB1D830E6FE008758E49A74670929C43D3F10D8EB35117F80DE64738BE82BBC34FF4EA5BC0576C83C7E13F602EF3335D3E4BE6EC5F0FDEE9C7D927CB8D709C4463F6CD521B1C27D1A87DB58E115CE4ADCAEC972B1C26D185E6118E93E842E3068FD30FBCBAD639C2C3115EDB26691D61BF883676551C01B1EFE2088875D91DE12547F800D408DBEF4170021E38C2F6DF7F1B36C2161D8146F77FA223D0E8FE4F7404C4E6E670FE6F6C0DC4EEEE60FAFFD1450074F233BA08804E7E461701D0C9CFE822003AF9195D0440273FDB1E0B8EB30ADAFBD2F658709C55D0DEEFD17916A133DFA3EBAC4277BE45C75985EE7C8B8EB30ADDF9161DA713DD7614DDA913DD76181DAA13DD76181DAA13DD7614DDA9151D7714DDA9151D7714DDA9175D378C0ED6816E1A47176B40279D4027AB47179D4137AB47170DA38375A09B86D1C13AD04DC3E8601DE8A66174B03274C80CBA5D15BA6306DDAE0C1D32836E57860E9940A7AB43974CA0D315A253CEA3CB15A25326D1F98AD019F3E88205E88415E8867974C10A74C3343A6005BA61013A611A1DB002DD308BEE974607AC4037CCA0DB55A13B66D0EDCAD02113E87465E8901974BB3274C8043A5D193A6406DDAE0C1D32858E5785EE9842C72B44A74CA0D355A25BCEA3CB15A3734EA2B315A373CEA1AB15A3734EA2B3D5A26B4EA2B3D5A26B4EA1A315A373CEA09B55A37B4EA093D5A38BC6D1C5EAD145E3E862F5E8A27174B17A74D10974B27274D01974B37274D01974B37274D01974B30674D20974B20E74D30974B20E74D338BA580B3A6A181DAC051D358C0ED6816E1A4607EB40370DA38375A09B06D1B97AD05543E8584DE8AC1174AB2674D6103A560FBA6A0C5DAB075D3588CED5828E1A45F7EA41570DA273F5A0AB46D1BD7AD055C3E8601DE8A67174B11674D428BA57133A6B109DAB099D358AEED5828E1A46076B41470DA273F5A0AB06D1B95AD05163E85A3DE8AA3174AD1E74D518BA560FBA6A0C5DAB075D3586AED5828E1A45F76A40278DA38B75A09B86D1C15AD051C3E8602DE8A86174B01E74D5303A580B3A6A1C5DAC019D74029DAC1E5D7406DDAC1E5D7406DDAC1C1D74029DAC1E5D348E2ED6804E1A46076B40278DA38BD5A38B86D1C1EAD145E3E862C5E89C73E86AB5E89A93E86CB5E89A93E86CC5E89C73E86AD5E89E93E86CB5E89AD3E870A5E8981974BB3A74C9143A5E193A6406DDAE0C1D32836E57860E9941B72B43874CA0D3D5A14BCEA3CBD5A14BCEA3CBD5A14B26D0E96AD01573E87A05E8846974C00A74C3343A6005BA611A1DB0041D318D0E58816E984717AC4037AC42774CA1E315A25326D0E9EAD02513E87475E8920974BA3A74C9043A5D193A64029DAE0E5D721E5DAE109D721A1DAE109D328E2ED6804E1A46076B40278DA38B35A093C6D1C51AD04927D0C91AD049E3E8622DE8A86174B05674DC5174A75674DC5174A75674DC5174A74E74DB6174A84E74DB6174A84E74DB5174A75674DC5B749C45E8CCF7E83A8BD099EFD17516A133BF41E75983AEFC069D670DBAF21B749E45B6F7056BBF40D701D0C9CFE822003AF9195D0440273FA38B00E8E4677411009DFC69770EBA08802BBFB13D0B5A0302E7FF4647A0D1FD9FE80834BAFF131D81B6EDE008986D0547F8008EF0011CE1032CCDEE08D7968EF0EFEBA157FE3C8B37F8FE8ADC753F13310277DB0FB50BB564049DEC323902641BC911289B44D5D91D6146ED067E3098B2CF981F61FFEB420DD957AC18E10FFFF56CD6BE61CD087E3288DA370C57BF1E4141BB8487CAA7EAE777BE1BD4781C9FE7976FF4D387BBC32B8083FF5687C6378F9FC34B98E3FE522FDEE7B78F1F37287648FCF2F1031DEF8F38BFCB0FD11D61BD73723700D85C92244992244992244992244992244992244992244992244992244992244992244992244992244992244992244992A4A5FE03D20D8FB7</ImageData>
+          <PixelClass Name="background" ImagePixelValue="0" KeyValue="294276455" />
+          <PixelClass Name="roi_255" ImagePixelValue="1" KeyValue="294276456" />
+          <Version Name="img_20250806_150425" KeyValue="294276449" BranchId="294276450" Archived="0" Date="06-Aug-2025 20:46:42" FromVersionable="false">
+            <Owner Name="meichelman" Identifier="291225146" />
+            <GroupAccess Type="1" />
+            <Annotation>/Users/meichelman/OneDrive/UMN/Rotations/Driscoll/Phase_map_drawings/A_04.tif</Annotation>
+          </Version>
+        </Image>
+        <SubVolume Name="EC" Handle="0" Type="Image" ImagePixelValue="0" KeyValue="294276460" />
+        <SubVolume Name="Cyt" Handle="1" Type="Image" ImagePixelValue="1" KeyValue="294276461" />
+        <SurfaceClass Name="Cyt_EC_membrane" SubVolume1Ref="Cyt" SubVolume2Ref="EC" KeyValue="294276462" />
+        <SurfaceDescription NumSamplesX="389" NumSamplesY="389" NumSamplesZ="1" CutoffFrequency="0.3">
+          <VolumeRegion Name="EC0" RegionID="0" SubVolume="EC" Size="75.56196195132318" Unit="um2" />
+          <VolumeRegion Name="Cyt1" RegionID="1" SubVolume="Cyt" Size="24.438038048676795" Unit="um2" />
+          <MembraneRegion Name="membrane_EC0_Cyt1" VolumeRegion1="Cyt1" VolumeRegion2="EC0" Size="24.485629989580076" Unit="um" />
+        </SurfaceDescription>
+        <Version Name="geom_20250806_150425" KeyValue="294276457" BranchId="294276458" Archived="0" Date="06-Aug-2025 20:46:42" FromVersionable="false">
+          <Owner Name="meichelman" Identifier="291225146" />
+          <GroupAccess Type="1" />
+          <Annotation>/Users/meichelman/OneDrive/UMN/Rotations/Driscoll/Phase_map_drawings/A_04.tif</Annotation>
+        </Version>
+      </Geometry>
+      <GeometryContext>
+        <FeatureMapping Feature="Cyt" GeometryClass="Cyt" SubVolume="Cyt" Size="50000.0" VolumePerUnitVolume="1.0">
+          <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+        </FeatureMapping>
+        <FeatureMapping Feature="EC" GeometryClass="EC" SubVolume="EC" Size="50000.0" VolumePerUnitVolume="1.0">
+          <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+        </FeatureMapping>
+        <MembraneMapping Membrane="PM" Size="6563.0" AreaPerUnitArea="1.0" CalculateVoltage="false" SpecificCapacitance="1.0" InitialVoltage="0.0" GeometryClass="Cyt_EC_membrane">
+          <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+        </MembraneMapping>
+      </GeometryContext>
+      <ReactionContext>
+        <LocalizedCompoundSpec LocalizedCompoundRef="A" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>(10.0 * (y &lt; 2.2))</InitialConcentration>
+          <Diffusion>10.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="X" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>100.0</InitialConcentration>
+          <Diffusion>0.1</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="B" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>1.0E-5</InitialConcentration>
+          <Diffusion>0.1</Diffusion>
+        </LocalizedCompoundSpec>
+        <ReactionSpec ReactionStepRef="r0" ReactionMapping="included" />
+      </ReactionContext>
+      <MathDescription Name="Application0_generated">
+        <Constant Name="_F_">96485.3321</Constant>
+        <Constant Name="_F_nmol_">9.64853321E-5</Constant>
+        <Constant Name="_K_GHK_">1.0E-9</Constant>
+        <Constant Name="_N_pmol_">6.02214179E11</Constant>
+        <Constant Name="_PI_">3.141592653589793</Constant>
+        <Constant Name="_R_">8314.46261815</Constant>
+        <Constant Name="_T_">300.0</Constant>
+        <Constant Name="A_diffusionRate">10.0</Constant>
+        <Constant Name="AreaPerUnitArea_PM">1.0</Constant>
+        <Constant Name="B_diffusionRate">0.1</Constant>
+        <Constant Name="B_init_molecules_um_2">1.0E-5</Constant>
+        <Constant Name="K_millivolts_per_volt">1000.0</Constant>
+        <Constant Name="Kf">1.5</Constant>
+        <Constant Name="KMOLE">0.001660538783162726</Constant>
+        <Constant Name="Kr">1.0</Constant>
+        <Constant Name="netValence">1.0</Constant>
+        <Constant Name="UnitFactor_uM_um3_molecules_neg_1">(1.0 * pow(KMOLE,1.0))</Constant>
+        <Constant Name="Voltage_PM">0.0</Constant>
+        <Constant Name="VolumePerUnitVolume_Cyt">1.0</Constant>
+        <Constant Name="VolumePerUnitVolume_EC">1.0</Constant>
+        <Constant Name="vproc_1.velocityX">0.0</Constant>
+        <Constant Name="vproc_1.velocityY">0.0</Constant>
+        <Constant Name="X_diffusionRate">0.1</Constant>
+        <Constant Name="X_init_molecules_um_2">100.0</Constant>
+        <VolumeVariable Name="A" Domain="EC" />
+        <MembraneVariable Name="B" Domain="Cyt_EC_membrane" />
+        <MembraneVariable Name="X" Domain="Cyt_EC_membrane" />
+        <Function Name="A_init_uM" Domain="EC">(10.0 * (y &lt; 2.2))</Function>
+        <Function Name="J_r0" Domain="Cyt_EC_membrane">(((Kf * X) * A) - (Kr * B))</Function>
+        <Function Name="KFlux_PM_EC" Domain="Cyt_EC_membrane">(AreaPerUnitArea_PM / VolumePerUnitVolume_EC)</Function>
+        <Function Name="Size_Cyt" Domain="Cyt">(VolumePerUnitVolume_Cyt * vcRegionVolume('Cyt'))</Function>
+        <Function Name="Size_EC" Domain="EC">(VolumePerUnitVolume_EC * vcRegionVolume('EC'))</Function>
+        <Function Name="Size_PM" Domain="Cyt_EC_membrane">(AreaPerUnitArea_PM * vcRegionArea('Cyt_EC_membrane'))</Function>
+        <Function Name="sobj_Cyt1_EC0_normalX" Domain="Cyt_EC_membrane">normalX()</Function>
+        <Function Name="sobj_Cyt1_EC0_normalY" Domain="Cyt_EC_membrane">normalY()</Function>
+        <Function Name="sobj_Cyt1_EC0_size" Domain="Cyt_EC_membrane">vcRegionArea('Cyt_EC_membrane')</Function>
+        <Function Name="sobj_Cyt1_EC0_velX" Domain="Cyt_EC_membrane">sproc_0.velocityX</Function>
+        <Function Name="sobj_Cyt1_EC0_velY" Domain="Cyt_EC_membrane">sproc_0.velocityY</Function>
+        <Function Name="sproc_0.velocityX" Domain="Cyt_EC_membrane">(0.05 * sobj_Cyt1_EC0_normalX * sin(t))</Function>
+        <Function Name="sproc_0.velocityY" Domain="Cyt_EC_membrane">(0.05 * sobj_Cyt1_EC0_normalY * sin(t))</Function>
+        <Function Name="vobj_Cyt1_size" Domain="Cyt">vcRegionVolume('Cyt')</Function>
+        <Function Name="vobj_Cyt1_velX" Domain="Cyt">vproc_1.velocityX</Function>
+        <Function Name="vobj_Cyt1_velY" Domain="Cyt">vproc_1.velocityY</Function>
+        <Function Name="vobj_EC0_size" Domain="EC">vcRegionVolume('EC')</Function>
+        <CompartmentSubDomain Name="EC">
+          <BoundaryType Boundary="Xm" Type="Flux" />
+          <BoundaryType Boundary="Xp" Type="Flux" />
+          <BoundaryType Boundary="Ym" Type="Flux" />
+          <BoundaryType Boundary="Yp" Type="Flux" />
+          <BoundaryType Boundary="Zm" Type="Value" />
+          <BoundaryType Boundary="Zp" Type="Value" />
+          <PdeEquation Name="A" SolutionType="Unknown">
+            <Rate>0.0</Rate>
+            <Diffusion>A_diffusionRate</Diffusion>
+            <Initial>A_init_uM</Initial>
+          </PdeEquation>
+        </CompartmentSubDomain>
+        <CompartmentSubDomain Name="Cyt">
+          <BoundaryType Boundary="Xm" Type="Flux" />
+          <BoundaryType Boundary="Xp" Type="Flux" />
+          <BoundaryType Boundary="Ym" Type="Flux" />
+          <BoundaryType Boundary="Yp" Type="Flux" />
+          <BoundaryType Boundary="Zm" Type="Value" />
+          <BoundaryType Boundary="Zp" Type="Value" />
+        </CompartmentSubDomain>
+        <MembraneSubDomain Name="Cyt_EC_membrane" InsideCompartment="Cyt" OutsideCompartment="EC">
+          <BoundaryType Boundary="Xm" Type="Value" />
+          <BoundaryType Boundary="Xp" Type="Value" />
+          <BoundaryType Boundary="Ym" Type="Value" />
+          <BoundaryType Boundary="Yp" Type="Value" />
+          <BoundaryType Boundary="Zm" Type="Value" />
+          <BoundaryType Boundary="Zp" Type="Value" />
+          <PdeEquation Name="X" SolutionType="Unknown">
+            <Rate>- J_r0</Rate>
+            <Diffusion>X_diffusionRate</Diffusion>
+            <Initial>X_init_molecules_um_2</Initial>
+          </PdeEquation>
+          <PdeEquation Name="B" SolutionType="Unknown">
+            <Rate>J_r0</Rate>
+            <Diffusion>B_diffusionRate</Diffusion>
+            <Initial>B_init_molecules_um_2</Initial>
+          </PdeEquation>
+          <JumpCondition Name="A">
+            <InFlux>0.0</InFlux>
+            <OutFlux>( - 1.0 * KFlux_PM_EC * UnitFactor_uM_um3_molecules_neg_1 * J_r0)</OutFlux>
+          </JumpCondition>
+          <Velocity>
+            <X>sobj_Cyt1_EC0_velX</X>
+            <Y>sobj_Cyt1_EC0_velY</Y>
+          </Velocity>
+        </MembraneSubDomain>
+        <Version Name="Application0_generated" KeyValue="294599452" BranchId="292916947" Archived="0" Date="13-Aug-2025 21:25:53" FromVersionable="false">
+          <Owner Name="meichelman" Identifier="291225146" />
+          <GroupAccess Type="1" />
+        </Version>
+      </MathDescription>
+      <Simulation Name="Simulation0">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="MovingB">
+          <TimeBound StartTime="0.0" EndTime="5.0" />
+          <TimeStep DefaultTime="0.05" MinTime="0.0" MaxTime="0.005" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-7" />
+          <OutputOptions OutputTimeStep="0.1" />
+          <MovingBoundarySolverOptions>
+            <FrontToNodeRatio>1.0</FrontToNodeRatio>
+            <RedistributionMode>FULL_REDIST</RedistributionMode>
+            <RedistributionVersion>EQUI_BOND_REDISTRIBUTE</RedistributionVersion>
+            <RedistributionFrequency>5</RedistributionFrequency>
+            <ExtrapolationMethod>NEAREST_NEIGHBOR</ExtrapolationMethod>
+          </MovingBoundarySolverOptions>
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides />
+        <MeshSpecification>
+          <Size X="250" Y="250" Z="1" />
+        </MeshSpecification>
+        <Version Name="Simulation0" KeyValue="294599463" BranchId="292916982" Archived="0" Date="13-Aug-2025 21:25:53" FromVersionable="false">
+          <Owner Name="meichelman" Identifier="291225146" />
+          <GroupAccess Type="1" />
+        </Version>
+      </Simulation>
+      <SpatialObjects>
+        <SpatialObject Name="vobj_EC0" Type="Volume" subVolume="EC" regionId="0">
+          <QuantityCategoryList>
+            <QuantityCategory Name="VolumeCentroid" Enabled="false" />
+            <QuantityCategory Name="InteriorVelocity" Enabled="false" />
+            <QuantityCategory Name="VolumeRegionSize" Enabled="true" />
+          </QuantityCategoryList>
+        </SpatialObject>
+        <SpatialObject Name="vobj_Cyt1" Type="Volume" subVolume="Cyt" regionId="1">
+          <QuantityCategoryList>
+            <QuantityCategory Name="VolumeCentroid" Enabled="false" />
+            <QuantityCategory Name="InteriorVelocity" Enabled="true" />
+            <QuantityCategory Name="VolumeRegionSize" Enabled="true" />
+          </QuantityCategoryList>
+        </SpatialObject>
+        <SpatialObject Name="sobj_Cyt1_EC0" Type="Surface" subVolumeInside="Cyt" regionIdInside="1" subVolumeOutside="EC" regionIdOutside="0">
+          <QuantityCategoryList>
+            <QuantityCategory Name="SurfaceNormal" Enabled="true" />
+            <QuantityCategory Name="SurfaceVelocity" Enabled="true" />
+            <QuantityCategory Name="DistanceToSurface" Enabled="false" />
+            <QuantityCategory Name="DirectionToSurface" Enabled="false" />
+            <QuantityCategory Name="SurfaceSize" Enabled="true" />
+          </QuantityCategoryList>
+        </SpatialObject>
+      </SpatialObjects>
+      <SpatialProcesses>
+        <SpatialProcess Name="sproc_0" Type="SurfaceKinematics" SurfaceObject="sobj_Cyt1_EC0">
+          <Parameter Name="velocityX" Role="SurfaceVelocityX" Unit="um.s-1">(0.05 * sobj_Cyt1_EC0_normalX * sin(t))</Parameter>
+          <Parameter Name="velocityY" Role="SurfaceVelocityY" Unit="um.s-1">(0.05 * sobj_Cyt1_EC0_normalY * sin(t))</Parameter>
+          <Parameter Name="velocityZ" Role="SurfaceVelocityZ" Unit="um.s-1">0.0</Parameter>
+        </SpatialProcess>
+        <SpatialProcess Name="vproc_1" Type="VolumeKinematics" VolumeObject="vobj_Cyt1">
+          <Parameter Name="velocityX" Role="InternalVelocityX" Unit="um.s-1">0.0</Parameter>
+          <Parameter Name="velocityY" Role="InternalVelocityY" Unit="um.s-1">0.0</Parameter>
+          <Parameter Name="velocityZ" Role="InternalVelocityZ" Unit="um.s-1">0.0</Parameter>
+        </SpatialProcess>
+      </SpatialProcesses>
+      <Version Name="moving_bleb" KeyValue="294599454" BranchId="294276470" Archived="0" Date="13-Aug-2025 21:25:53" FromVersionable="false">
+        <Owner Name="meichelman" Identifier="291225146" />
+        <GroupAccess Type="1" />
+      </Version>
+      <MicroscopeMeasurement Name="fluor">
+        <ConvolutionKernel Type="ProjectionZKernel" />
+      </MicroscopeMeasurement>
+    </SimulationSpec>
+    <Version Name="A+X-&gt;B" KeyValue="294599465" BranchId="292916985" Archived="0" Date="13-Aug-2025 21:25:53" FromVersionable="false">
+      <Owner Name="meichelman" Identifier="291225146" />
+      <GroupAccess Type="35925224" Hash="1053451139">
+        <User Name="VCellSupport" KeyValue="34380116" IsHidden="false" />
+      </GroupAccess>
+    </Version>
+    <pathwayModel>
+      <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bp="http://www.biopax.org/release/biopax-level3.owl#" version="3.0" />
+    </pathwayModel>
+    <relationshipModel>
+      <RMNS version="3.0" />
+    </relationshipModel>
+    <vcmetadata>
+      <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" />
+      <nonrdfAnnotationList />
+      <uriBindingList />
+    </vcmetadata>
+  </BioModel>
+</vcml>
+
