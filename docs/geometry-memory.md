@@ -656,6 +656,13 @@ whether rows referenced by geometries can be repointed and collapsed.
 
 ### 5.9 Operational levers
 
+> **Status 2026-11-09:** `robots.txt` (#2030, disallowing `/api/` and `/n5Data/`) is **deployed to prod**
+> (webapp image 8.3.0.03, vcell-fluxcd#69). It stops well-behaved crawlers only. On 2026-11-07/08 PetalBot
+> (Huawei range 114.119.x.x, Android browser UA) and ElevenLabs' crawler drove the prod `api` pods into an
+> OOM crash loop on biomodels 101963252 and 95094548 for 16 h, and the resulting nginx error flood starved the
+> ingress node for 18.5 h. The ingress controller now has a 2Gi memory limit; the api remains crashable by one
+> anonymous request until §5.4 and the heap question below are settled.
+
 Independent of all the above, and cheap:
 
 - **Crawler traffic.** `/api/v0/biomodel/{id}/simulation/{id}` is being walked by PetalBot. A
@@ -665,6 +672,9 @@ Independent of all the above, and cheap:
   whether one request should need 680 MB.
 
 ### 5.10 Fix the duplicate image inserts directly
+
+> **Status 2026-11-09: implemented in #2212**, with the testcontainer harness described below (Quarkus
+> Postgres, real schema, fast lane). Fixture: biomodel 31584491, three applications over `10spines`.
 
 Salvaged from §5.1, on its own merits rather than as a side effect.
 
