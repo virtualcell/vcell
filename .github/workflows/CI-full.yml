@@ -129,19 +129,8 @@ jobs:
             needs_maven: true
             needs_secrets: false
             pre_build: "mvn --batch-mode clean install dependency:copy-dependencies -DskipTests -Dvcell.exporter=true"
-          - name: webapp-dev
-            dockerfile: webapp-ng/Dockerfile-webapp
-            context: webapp-ng
-            needs_maven: false
-            needs_secrets: false
-            build_args: "BUILD_COMMAND=build_dev"
-          - name: webapp-stage
-            dockerfile: webapp-ng/Dockerfile-webapp
-            context: webapp-ng
-            needs_maven: false
-            needs_secrets: false
-            build_args: "BUILD_COMMAND=build_stage"
-          - name: webapp-prod
+          # one webapp image for every site: it reads the site's origin from the page (webapp-ng/src/app/site-origin.ts)
+          - name: webapp
             dockerfile: webapp-ng/Dockerfile-webapp
             context: webapp-ng
             needs_maven: false
@@ -269,7 +258,7 @@ jobs:
         REPO="${{ needs.setup.outputs.vcell_repo_namespace }}"
         TAG="${{ needs.setup.outputs.vcell_tag }}"
         FRIENDLY="${{ needs.setup.outputs.friendly_tag }}"
-        CONTAINERS="vcell-service vcell-exporter vcell-rest vcell-webapp-prod vcell-webapp-dev vcell-webapp-stage vcell-batch vcell-opt vcell-clientgen vcell-admin"
+        CONTAINERS="vcell-service vcell-exporter vcell-rest vcell-webapp vcell-batch vcell-opt vcell-clientgen vcell-admin"
         # GHCR applies a secondary rate limit, and this job pushes three tags for every
         # image in one burst. Exceeding it returns 403 permission_denied, whose body says
         # "You have exceeded a secondary rate limit" -- indistinguishable at a glance from a
