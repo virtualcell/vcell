@@ -27,7 +27,7 @@
 		<link target="ParametersAndFunctions">Parameters and Functions</link> - that displays the parameters in the model and allows the user to define other parameters. 
 		</item>
 		<item>
-		<link target="PredefinedConstAndMathFns">Predefined Constants and Math Functions</link> - that displays the predefined constants and math functions that are used in the Virtual Cell. 
+		<link target="PredefinedConstAndMathFns">Predefined Expressions</link> - that displays the predefined constants and math functions that are used in the Virtual Cell. 
 		</item>
 		<item>
 		<link target="ModelUnits">Model Unit System</link> - that displays the system of units that are used in the Virtual Cell. 

@@ -2064,6 +2064,9 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 			return;
 		}		
 		switch (folderClass) {
+		case MODEL_NODE: // Physiology has no diagram node: it opens on the diagram
+			selectTab(ModelPanelTabID.reaction_diagram);
+			break;
 		case REACTIONS_NODE:
 			selectTab(ModelPanelTabID.reaction_table);
 			break;

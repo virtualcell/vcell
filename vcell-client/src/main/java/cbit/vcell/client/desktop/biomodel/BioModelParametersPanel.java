@@ -441,7 +441,11 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 		textFieldSearch = new JTextField(10);
 		textFieldSearch.getDocument().addDocumentListener(eventHandler);
 		textFieldSearch.putClientProperty("JTextField.variant", "search");
+		textFieldSearch.setName("ParametersSearchTextField");
+		textFieldSearch.setToolTipText("Search the table showing by name, expression or description");
 		parametersFunctionsTable = new EditorScrollTable();
+		parametersFunctionsTable.setName("ParametersFunctionsTable");
+		parametersFunctionsTable.getAccessibleContext().setAccessibleName("Parameters and Functions");
 		parametersFunctionsTableModel = new BioModelParametersTableModel(parametersFunctionsTable);
 		parametersFunctionsTable.setModel(parametersFunctionsTableModel);
 			
@@ -459,6 +463,8 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 		applicationComboBox.addActionListener(eventHandler);
 		applicationComboBox.setModel(applicationComboBoxModel);
 		applicationComboBox.setRenderer(new ApplicationComboBoxRenderer());
+		applicationComboBox.setName("ParametersApplicationComboBox");
+		applicationComboBox.setToolTipText("Which applications' parameters to list");
 		
 		constantsCheckBox = new JCheckBox("Parameters");
 		constantsCheckBox.setSelected(true);
@@ -467,10 +473,14 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 		functionsCheckBox.setSelected(true);
 		functionsCheckBox.addActionListener(eventHandler);
 		predefinedSymbolsTable = new EditorScrollTable();
+		predefinedSymbolsTable.setName("PredefinedSymbolsTable");
+		predefinedSymbolsTable.getAccessibleContext().setAccessibleName("Predefined Expressions");
 		predefinedSymbolsTableModel = new PredefinedSymbolsTableModel(predefinedSymbolsTable);
 		predefinedSymbolsTable.setModel(predefinedSymbolsTableModel);
 		GuiUtils.flexResizeTableColumns(predefinedSymbolsTable);
 		modelUnitSystemTable = new EditorScrollTable();
+		modelUnitSystemTable.setName("ModelUnitSystemTable");
+		modelUnitSystemTable.getAccessibleContext().setAccessibleName("Model Unit System");
 		modelUnitSystemTableModel = new ModelUnitSystemTableModel(modelUnitSystemTable);
 		modelUnitSystemTable.setModel(modelUnitSystemTableModel);
 		GuiUtils.flexResizeTableColumns(modelUnitSystemTable);

@@ -778,6 +778,7 @@ implements PathwayEditor, ActionBuilder.Generator {
 		searchTextField = new JTextField();
 		searchTextField.setName("PathwayObjectsSearchTextField");
 		searchTextField.putClientProperty("JTextField.variant", "search");
+		searchTextField.setToolTipText("Search the pathway's objects by name");
 		searchTextField.getDocument().addDocumentListener(eventHandler);
 		groupButton = new JButton("Group", new DownArrowIcon());
 		groupButton.setHorizontalTextPosition(SwingConstants.LEFT);
@@ -1407,6 +1408,7 @@ implements PathwayEditor, ActionBuilder.Generator {
 			return;
 		}		
 		switch (folderClass) {
+		case PATHWAY_NODE: // Pathway has no diagram node: it opens on the diagram
 		case PATHWAY_DIAGRAM_NODE:
 			tabbedPane.setSelectedIndex(PathwayPanelTabID.pathway_diagram.ordinal());
 			break;

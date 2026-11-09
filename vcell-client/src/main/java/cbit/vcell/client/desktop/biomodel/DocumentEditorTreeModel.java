@@ -105,7 +105,18 @@ public abstract class DocumentEditorTreeModel extends DefaultTreeModel
 		public final String getTitle() {
 			return title;
 		}
-		
+
+		/**
+		 * The tree node that shows this view. The diagrams have no node of their own: their parent's node (Physiology,
+		 * Pathway) opens on them, so they're found there.
+		 */
+		public final DocumentEditorTreeFolderClass getTreeNodeClass() {
+			return switch (this) {
+				case REACTION_DIAGRAM_NODE -> MODEL_NODE;
+				case PATHWAY_DIAGRAM_NODE -> PATHWAY_NODE;
+				default -> this;
+			};
+		}
 	}
 	
 	protected boolean bPopulatingRoot = false;
@@ -234,7 +245,8 @@ public abstract class DocumentEditorTreeModel extends DefaultTreeModel
 		return findNodeByFolderClass(startNode, folderClass);
 	}
 	
-	private BioModelNode findNodeByFolderClass(BioModelNode startNode, DocumentEditorTreeFolderClass folderClass) {
+	private BioModelNode findNodeByFolderClass(BioModelNode startNode, DocumentEditorTreeFolderClass viewClass) {
+		DocumentEditorTreeFolderClass folderClass = viewClass.getTreeNodeClass();
 		Object userObject = startNode.getUserObject();
 		if (userObject instanceof DocumentEditorTreeFolderNode && folderClass.equals(((DocumentEditorTreeFolderNode)userObject).getFolderClass())) {
 			return startNode;
