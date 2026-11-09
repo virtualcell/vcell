@@ -1,11 +1,5 @@
-export const environment = {
+// `npm run start_ide`: `ng serve` against a local minikube island deployment.
+export const environment: { production: boolean; siteOrigin?: string } = {
   production: false,
-  auth: {
-    authorizationParams: {
-      audience: `https://minikube.island`,
-    },
-  },
-  httpInterceptor: {
-    allowedList: [ 'https://minikube.island/api/*' ],
-  },
+  siteOrigin: 'https://minikube.island',
 };

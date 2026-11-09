@@ -1,14 +1,8 @@
-
-export const environment = {
+// Used by `ng serve` (npm start). The page is served from localhost, so name the VCell site whose API and
+// Auth0 audience to use; deployed builds (environment.prod.ts) use the page's own origin instead.
+export const environment: { production: boolean; siteOrigin?: string } = {
   production: false,
-  auth: {
-    authorizationParams: {
-      audience: `https://vcell.cam.uchc.edu`,
-    },
-  },
-  httpInterceptor: {
-    allowedList: [ 'https://vcell-stage.cam.uchc.edu/api/*' ],
-  },
+  siteOrigin: 'https://vcell-stage.cam.uchc.edu',
 };
 
 /*
