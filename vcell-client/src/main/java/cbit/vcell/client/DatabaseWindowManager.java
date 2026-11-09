@@ -32,6 +32,8 @@ import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.UserCancelException;
+import cbit.vcell.client.desktop.DocumentNameDialog;
+import java.util.Collection;
 import org.vcell.util.document.*;
 import org.vcell.util.document.VCDocument.DocumentCreationInfo;
 import org.vcell.util.document.VCDocument.VCDocumentType;
@@ -41,7 +43,6 @@ import org.vcell.util.gui.GeneralGuiUtils;
 import org.vcell.util.gui.VCFileChooser;
 import org.vcell.util.gui.exporter.FileFilters;
 
-import javax.swing.Timer;
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.tree.TreePath;
@@ -1458,53 +1459,23 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
      * Insert the method's description here.
      * Creation date: (5/14/2004 6:11:35 PM)
      */
-    public String showSaveDialog(final VCDocumentType documentType, final Component requester, final String oldName) throws Exception {
-        JOptionPane saveDialog = new JOptionPane(null, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[]{"Save", "Cancel"});
-        saveDialog.setWantsInput(true);
-        saveDialog.setInitialSelectionValue(oldName);
-        JPanel panel = new JPanel(new BorderLayout());
-        JComponent tree = null;
-        switch (documentType) {
-            case BIOMODEL_DOC: {
-                tree = getBioModelDbTreePanel();
-                break;
-            }
-            case MATHMODEL_DOC: {
-                tree = getMathModelDbTreePanel();
-                break;
-            }
-            case GEOMETRY_DOC: {
-                tree = getGeometryTreePanel();
-                break;
-            }
-            default: {
-                throw new RuntimeException("DatabaseWindowManager.showSaveDialog() - unknown document type");
-            }
-        }
-        tree.setPreferredSize(new java.awt.Dimension(405, 600));
-        panel.add(tree, BorderLayout.CENTER);
-        panel.add(new JLabel("Please type a new name:"), BorderLayout.SOUTH);
-        saveDialog.setMessage("");
-        saveDialog.setMessage(panel);
-        JDialog d = saveDialog.createDialog(requester, "Save document:");
-        d.setResizable(true);
-        d.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-        final JOptionPane finalSaveDialog = saveDialog;
-        ActionListener al = new ActionListener() {
-            public void actionPerformed(ActionEvent ae) {
-                finalSaveDialog.selectInitialValue();
-            }
+    /**
+     * Asks for the name to save a new document under: it starts with <code>oldName</code>, offers the user's own names
+     * to build on, and won't accept an empty name or one in <code>takenNames</code>.
+     * @param takenNames the names of the user's own documents of this type
+     * @return the chosen name
+     * @throws UserCancelException if the user cancels
+     */
+    public String showSaveDialog(final VCDocumentType documentType, final Component requester, final String oldName, final Collection<String> takenNames) throws Exception {
+        String documentTypeName = switch (documentType) {
+            case BIOMODEL_DOC -> "BioModel";
+            case MATHMODEL_DOC -> "MathModel";
+            case GEOMETRY_DOC -> "Geometry";
+            default -> throw new RuntimeException("DatabaseWindowManager.showSaveDialog() - unknown document type");
         };
-        final Timer getFocus = new Timer(100, al);
-        getFocus.setRepeats(false);
-        getFocus.start();
-        DialogUtils.showModalJDialogOnTop(d, requester);
-        if ("Save".equals(saveDialog.getValue())) {
-            return saveDialog.getInputValue() == null ? null : saveDialog.getInputValue().toString();
-        } else {
-            // user cancelled
-            throw UserCancelException.CANCEL_NEW_NAME;
-        }
+        String chosenName = DocumentNameDialog.ask(requester, documentTypeName, oldName, takenNames);
+        if (chosenName == null) throw UserCancelException.CANCEL_NEW_NAME;
+        return chosenName;
     }
 
     public void reconnect() {

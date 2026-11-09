@@ -3116,11 +3116,17 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				getClientTaskStatusSupport().setMessage("Getting new Geometry name...");
 				String newGeometryName = null;
+				java.util.Set<String> takenGeometryNames = new java.util.HashSet<>(); // the dialog won't accept these; the check below stays as a backstop
+				for (GeometryInfo geometryInfo : ClientRequestManager.this.getDocumentManager().getGeometryInfos()) {
+					if (!geometryInfo.getVersion().getOwner().equals(ClientRequestManager.this.getDocumentManager().getUser())) continue;
+					takenGeometryNames.add(geometryInfo.getVersion().getName());
+				}
 				while (true) {
 					newGeometryName = ClientRequestManager.this.getMdiManager().getDatabaseWindowManager()
 							.showSaveDialog(((Geometry) hashTable.get("doc")).getDocumentType(),
 									(Component) hashTable.get(ClientRequestManager.GUI_PARENT),
-									(newGeometryName == null ? "NewGeometry" : newGeometryName));
+									(newGeometryName == null ? "NewGeometry" : newGeometryName),
+									takenGeometryNames);
 					if (newGeometryName == null || newGeometryName.trim().length() == 0) {
 						newGeometryName = null;
 						DialogUtils.showWarningDialog((Component) hashTable.get(ClientRequestManager.GUI_PARENT),
