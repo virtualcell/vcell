@@ -28,10 +28,11 @@ public class GuiConstants {
 	public final static String PARAMETER_ESTIMATION_TAB_RUNTASK = "Run Task";
 	
 	public final static String DOCUMENT_EDITOR_FOLDERNAME_PATHWAY = "Pathway";
+	public final static String DOCUMENT_EDITOR_FOLDERNAME_BIOCHEMISTRY = "Biochemistry";
 	public final static String DOCUMENT_EDITOR_FOLDERNAME_MODEL = "Physiology";
 	public final static String DOCUMENT_EDITOR_FOLDERNAME_DATA = "Experimental Data";
 	public final static String DOCUMENT_EDITOR_FOLDERNAME_APPLICATIONS = "Applications";
-	public final static String DOCUMENT_EDITOR_FOLDERNAME_BIOMODEL_PARAMETERS = "Mathematics & Units";
+	public final static String DOCUMENT_EDITOR_FOLDERNAME_BIOMODEL_PARAMETERS = "Mathematics & Units"; // the subject, not "doing the math"
 	public final static String DOCUMENT_EDITOR_FOLDERNAME_PARAMETERS_FUNCTIONS = "Parameters and Functions";
 	public final static String DOCUMENT_EDITOR_FOLDERNAME_PREDEFINED_SYMBOLS = "Predefined Constants and Math Functions";
 	public final static String DOCUMENT_EDITOR_FOLDERNAME_MODEL_UNIT_SYSTEM = "Model Unit System";

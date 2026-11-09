@@ -63,6 +63,7 @@ public abstract class DocumentEditorTreeModel extends DefaultTreeModel
 	}
 	
 	public enum DocumentEditorTreeFolderClass {
+		BIOCHEMISTRY_NODE(			cbit.vcell.client.constants.GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_BIOCHEMISTRY),
 		PATHWAY_NODE(				cbit.vcell.client.constants.GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_PATHWAY),
 		MODEL_NODE(					cbit.vcell.client.constants.GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_MODEL),	
 		DATA_NODE(					cbit.vcell.client.constants.GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_DATA),	

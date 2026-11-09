@@ -318,10 +318,10 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 	private JPanel modelUnitSystemPanel = null;
 	
 	private enum ParametersPanelTabID {
-		// each tab is also a node under Mathematics & Units in the navigation tree, by the same name
-		parameters_functions(GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_PARAMETERS_FUNCTIONS, DocumentEditorTreeFolderClass.PARAMETERS_FUNCTIONS_NODE, ActiveViewID.parameters_functions),
+		// each tab is also a node under Mathematics & Units in the navigation tree, by the same name and in this order
+		modelUnitSystem(GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_MODEL_UNIT_SYSTEM, DocumentEditorTreeFolderClass.MODEL_UNIT_SYSTEM_NODE, ActiveViewID.model_unit_system),
 		predefined(GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_PREDEFINED_SYMBOLS, DocumentEditorTreeFolderClass.PREDEFINED_SYMBOLS_NODE, ActiveViewID.predefined_symbols),
-		modelUnitSystem(GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_MODEL_UNIT_SYSTEM, DocumentEditorTreeFolderClass.MODEL_UNIT_SYSTEM_NODE, ActiveViewID.model_unit_system);
+		parameters_functions(GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_PARAMETERS_FUNCTIONS, DocumentEditorTreeFolderClass.PARAMETERS_FUNCTIONS_NODE, ActiveViewID.parameters_functions);
 		
 		final String title;
 		final DocumentEditorTreeFolderClass treeFolderClass;

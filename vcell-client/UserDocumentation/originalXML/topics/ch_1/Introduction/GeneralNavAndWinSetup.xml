@@ -12,7 +12,9 @@
 	Three panels within the document window present the user with a canvas to browse, create and maintain a model.
 	</para>
 	<para>
-		Top left is a <bold>Navigation panel (Panel A)</bold> that allows navigation of the currently open model.  Within the tree structure are links to the components of the BioModel Physiology, including:
+		Top left is a <bold>Navigation panel (Panel A)</bold> that allows navigation of the currently open model. Its top item is the model itself (its saved information and annotations);
+		under it, <bold>Biochemistry</bold> groups Mathematics &amp; Units, Physiology and Pathway, followed by the model's <bold>Applications</bold>.
+		Physiology links to the components of the BioModel, including:
 		<list>
 		<item>A <link target="ReactDiagView">Reaction Diagram</link> view</item>
 		<item><link target="ReactTabView">Reactions</link> in a tabular view</item>
@@ -24,9 +26,9 @@
 		<para>
 		The Tree Structure also provides links to
 		<list>
-		<item><link target="ParametersAndFunctionsOverview">Mathematics &amp; Units</link> (listed first): Parameters and Functions, Predefined Constants and Math Functions, and the Model Unit System</item>
+		<item><link target="ParametersAndFunctionsOverview">Mathematics &amp; Units</link> (under Biochemistry): the Model Unit System, Predefined Constants and Math Functions, and Parameters and Functions</item>
+		<item><link target="PathwayOverview">Pathway</link> related information (under Biochemistry)</item>
 		<item><link target="ApplicationOverview">Applications</link></item>
-		<item><link target="PathwayOverview">Pathway</link> related information</item>
 		</list>
 
 		<bold>View items</bold> in the View Panel (panel B, top right panel) by selecting the item in the tree. For example, choosing the "Reaction" item under "Physiology" in the navigator tree will open the table of reactions in the model in the 'View' panel.

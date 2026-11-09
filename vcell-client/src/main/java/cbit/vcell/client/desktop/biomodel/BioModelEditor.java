@@ -908,7 +908,8 @@ private void setRightTopPanel(Object selectedObject, SimulationContext simulatio
 	} else if (selectedObject instanceof DocumentEditorTreeFolderNode) {
 		DocumentEditorTreeFolderNode folderNode = (DocumentEditorTreeFolderNode) selectedObject;
 		DocumentEditorTreeFolderClass folderClass = folderNode.getFolderClass();
-		if (folderClass == DocumentEditorTreeFolderClass.MODEL_NODE) {
+		if (folderClass == DocumentEditorTreeFolderClass.MODEL_NODE
+				|| folderClass == DocumentEditorTreeFolderClass.BIOCHEMISTRY_NODE) { // a grouping: shows Physiology, its core
 			newTopPanel = bioModelEditorModelPanel;
 		} else if (folderClass == DocumentEditorTreeFolderClass.STRUCTURES_NODE
 				|| folderClass == DocumentEditorTreeFolderClass.SPECIES_NODE

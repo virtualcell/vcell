@@ -17,8 +17,8 @@
 	<operations>
 	<bold>Viewing/Editing Parameters and Functions</bold>
 	<list>
-	<item><bold>Activate</bold> by clicking <bold>Parameters and Functions</bold> under <bold>Mathematics &amp; Units</bold> in the tree list of the <bold>Navigation panel</bold> (window upper left), which will
-	display the 'Parameters and Functions' tab (window right panel). Its other tabs, <bold>Predefined Constants and Math Functions</bold> and <bold>Model Unit System</bold>, are listed beside it in the tree.
+	<item><bold>Activate</bold> by clicking <bold>Parameters and Functions</bold> under <bold>Biochemistry &gt; Mathematics &amp; Units</bold> in the tree list of the <bold>Navigation panel</bold> (window upper left), which will
+	display the 'Parameters and Functions' tab (window right panel). Its other tabs are listed beside it in the tree, in the same order as the tabs: <bold>Model Unit System</bold>, then <bold>Predefined Constants and Math Functions</bold>, then Parameters and Functions.
 	</item>
 	<item><bold>View</bold> by clicking the <bold>Parameters and Functions</bold> tab.  
 	A table of information including 'Defined In' (where the parameter/function is defined), Name, Description (type of parameter/function), Expression (value of parameter/function), Units.  
