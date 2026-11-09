@@ -516,7 +516,7 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
                 this.ivjCloseMenuItem = new javax.swing.JMenuItem();
                 this.ivjCloseMenuItem.setName("CloseMenuItem");
                 this.ivjCloseMenuItem.setText("Close");
-                this.ivjCloseMenuItem.setAccelerator(GeneralGuiUtils.CLOSE_WINDOW_KEY_STROKE);
+                this.ivjCloseMenuItem.setAccelerator(ShortcutsWizard.keyStrokeFor(ShortcutsWizard.Shortcut.CLOSE_WINDOW));
             } catch (java.lang.Throwable ivjExc) {
                 this.handleException(ivjExc);
             }
@@ -1032,6 +1032,7 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
                 this.ivjSave_AsMenuItem = new javax.swing.JMenuItem();
                 this.ivjSave_AsMenuItem.setName("Save_AsMenuItem");
                 this.ivjSave_AsMenuItem.setText("Save As...");
+                this.ivjSave_AsMenuItem.setAccelerator(ShortcutsWizard.keyStrokeFor(ShortcutsWizard.Shortcut.SAVE_AS)); // how a never-saved model is saved
                 this.ivjSave_AsMenuItem.setEnabled(true);
             } catch (java.lang.Throwable ivjExc) {
                 this.handleException(ivjExc);
@@ -1080,6 +1081,7 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
                 this.ivjSaveMenuItem = new javax.swing.JMenuItem();
                 this.ivjSaveMenuItem.setName("SaveMenuItem");
                 this.ivjSaveMenuItem.setText("Save");
+                this.ivjSaveMenuItem.setAccelerator(ShortcutsWizard.keyStrokeFor(ShortcutsWizard.Shortcut.SAVE)); // fires only while Save is enabled
                 this.ivjSaveMenuItem.setEnabled(false);
             } catch (java.lang.Throwable ivjExc) {
                 this.handleException(ivjExc);

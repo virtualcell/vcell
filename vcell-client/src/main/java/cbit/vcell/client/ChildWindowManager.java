@@ -39,7 +39,7 @@ import org.vcell.client.logicalwindow.LWNamespace;
 import org.vcell.client.logicalwindow.LWTitledDialog;
 import org.vcell.client.logicalwindow.LWTraits;
 import org.vcell.client.logicalwindow.LWTraits.InitialPosition;
-import org.vcell.util.gui.GeneralGuiUtils;
+import org.vcell.util.gui.ShortcutsWizard;
 import org.vcell.util.ProgrammingException;
 import org.vcell.util.gui.GuiUtils;
 
@@ -582,7 +582,7 @@ public class ChildWindowManager {
 	public ChildWindowManager(JFrame parent){
 		this.parent = parent;
 		owner = LWNamespace.findLWOwner(parent);
-		GeneralGuiUtils.addCloseWindowKeyboardAction(this.parent.getRootPane());
+		ShortcutsWizard.addCloseWindowShortcut(this.parent.getRootPane());
 	}
 	
 	public ChildWindow addChildWindow(Container contentPane, Object contextObject, String title){

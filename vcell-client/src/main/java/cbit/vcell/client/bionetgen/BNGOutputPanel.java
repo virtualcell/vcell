@@ -23,7 +23,7 @@ import java.util.Vector;
 import javax.swing.JButton;
 
 import cbit.vcell.client.server.DynamicClientProperties;
-import org.vcell.util.gui.GeneralGuiUtils;
+import org.vcell.util.gui.ShortcutsWizard;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.gui.MultiPurposeTextPanel;
@@ -2053,7 +2053,7 @@ private void initialize() {
 		initConnections();
 		connEtoC5();
 		connEtoC14();
-		GeneralGuiUtils.addCloseWindowKeyboardAction(this);
+		ShortcutsWizard.addCloseWindowShortcut(this);
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
