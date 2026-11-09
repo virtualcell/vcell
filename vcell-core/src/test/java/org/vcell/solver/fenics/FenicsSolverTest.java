@@ -186,6 +186,13 @@ public class FenicsSolverTest {
 		SimulationTask moving = fenicsSimTask(MOVING);
 		assertTrue(moving.getSimulation().getMathDescription().isMovingMembrane());
 		assertEquals(List.of(), FenicsSolver.unsupportedReasons(moving.getSimulation()));
+
+		// the native Moving Boundary solver's input writer accepts it too: no pre-run refusal
+		moving.getSimulation().getSolverTaskDescription().setSolverDescription(SolverDescription.MovingBoundary);
+		List<org.vcell.util.Issue> issues = new java.util.ArrayList<>();
+		moving.getSimulation().gatherIssues(new org.vcell.util.IssueContext(), issues);
+		assertTrue(issues.stream().noneMatch(i -> i.getCategory() == org.vcell.util.Issue.IssueCategory.MovingBoundary_Geometry_NotSupported),
+				issues.toString());
 	}
 
 	@Test

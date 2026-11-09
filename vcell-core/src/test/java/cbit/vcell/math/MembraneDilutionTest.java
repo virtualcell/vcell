@@ -107,5 +107,8 @@ public class MembraneDilutionTest {
 		simulation.gatherIssues(new IssueContext(), issues);
 		assertTrue(issues.stream().anyMatch(i -> i.getCategory() == Issue.IssueCategory.MovingBoundary_MembraneSpecies_NotSupported
 				&& i.getSeverity() == Issue.Severity.ERROR), issues.toString());
+		// and its image geometry, which the solver's input writer refuses, is an issue before the run too
+		assertTrue(issues.stream().anyMatch(i -> i.getCategory() == Issue.IssueCategory.MovingBoundary_Geometry_NotSupported
+				&& i.getMessage().contains("image-based") && i.getSeverity() == Issue.Severity.ERROR), issues.toString());
 	}
 }
