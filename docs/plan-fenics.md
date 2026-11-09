@@ -238,6 +238,12 @@ M5 is here.
   mbsolver.
 - Membrane species on a moving front come in a later pass.
 
+**Second pass** (vcell-fenics 0.2.0, ADRs 013 and 014): 2D and 3D; diffusing species on the moving
+membrane, which dilute with it (the math states `MembraneSubDomain` `Dilution`, vcell#2211), and in
+any compartment, each at rest while the mesh follows the membrane. `FenicsSolver` still refuses
+non-diffusing species, image geometries, more than one moving membrane, and membrane species whose
+math does not state `Dilution`.
+
 **vcell-fenics**
 - **M1 — bridge.** Read `MembraneSubDomain/<Velocity>` from the SimulationTask. pyvcell drops it; it
   is e.g. `sobj_cell1_ec0_velX` → `sproc_0.velocityX` → `sin(t)`. Attach it as prescribed motion on
