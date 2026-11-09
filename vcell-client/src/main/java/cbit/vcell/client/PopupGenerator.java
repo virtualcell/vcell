@@ -48,6 +48,13 @@ public static void showErrorDialog(TopLevelWindowManager requester, String messa
  * @param ex may be null
  */
 public static void showErrorDialog(TopLevelWindowManager requester, String message, Throwable ex) {
+	showErrorDialog(requester, message, ex, null);
+}
+
+/**
+ * As above, plus an action offered under the message (see DialogUtils.ErrorAction); may be null.
+ */
+public static void showErrorDialog(TopLevelWindowManager requester, String message, Throwable ex, DialogUtils.ErrorAction errorAction) {
 	DialogUtils.ErrorContext errorContext = null;
 	if (requester instanceof DocumentWindowManager) {
 		DocumentWindowManager dwm = (DocumentWindowManager) requester;
@@ -59,7 +66,7 @@ public static void showErrorDialog(TopLevelWindowManager requester, String messa
 		}
 		errorContext = new DialogUtils.ErrorContext(contextString, requester.getUserPreferences()); 
 	}
-	showErrorDialog(requester.getComponent(), message, ex, errorContext);
+	showErrorDialog(requester.getComponent(), message, ex, errorContext, errorAction);
 }
 
 public static void showInfoDialog(TopLevelWindowManager requester, String message) {

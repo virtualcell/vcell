@@ -55,6 +55,14 @@ public class UserMessage {
 
 	public final static UserMessage warn_close = new UserMessage("Your model may have changed, do you want to save?",
 			new String[] {OPTION_YES, OPTION_NO, OPTION_CANCEL},						OPTION_YES,			-1); // UserPreferences.WARN_FOR_CLOSE_WITHOUT_SAVE
+
+	public final static String OPTION_SAVE_THEN_EXPORT = "Save, then Export";
+	public final static String OPTION_EXPORT_WITHOUT_SAVING = "Export Without Saving";
+	// asked before Export / Save to File when the model has changes not in the database; the file includes them either way
+	public final static UserMessage warn_exportUnsavedChanges = new UserMessage(
+			"This model has changes that aren't saved to the VCell database.\n"
+			+ "The file will include them either way. Save to the database first?",
+			new String[] {OPTION_SAVE_THEN_EXPORT, OPTION_EXPORT_WITHOUT_SAVING, OPTION_CANCEL},	OPTION_SAVE_THEN_EXPORT,	-1);
 	
 	public final static UserMessage warn_UnchangedDocument = new UserMessage("Document has not changed - do you want to save it as a new document?",
 				new String[] {OPTION_CANCEL, OPTION_SAVE_AS_NEW},				OPTION_CANCEL,		UserPreferences.WARN_SAVE_UNCHANGED_DOCUMENT);

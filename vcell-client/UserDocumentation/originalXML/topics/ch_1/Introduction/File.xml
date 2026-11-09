@@ -42,9 +42,6 @@
 		<link target = "SaveAs">Save As...</link> (<bold>Cmd+Shift+S</bold> on macOS, <bold>Ctrl+Shift+S</bold> on Windows and Linux) - saves copy of document to database with new name.
 	  </item>
 	  <item>		
-		<bold>Save As Local...</bold> - saves copy of current document to users local computer (see <link target = "Export">Export...</link>).
-	  </item>
-	  <item>		
 		<link target = "RevertToSaved">Revert To Saved</link>
 	  </item>
 	  <item>
@@ -61,7 +58,8 @@
 		<link target = "Import">Import...</link>
 	  </item>
 	  <item>
-		<link target = "Export">Export...</link>
+		<link target = "Export">Export / Save to File...</link> - saves a copy of the document as a file on your computer, as VCML (selected to begin with) or in another format. This replaces the former <bold>Save As Local...</bold>.
+		If the model has changes not yet saved to the database, VCell first offers to save them there too; the file includes them either way.
 	  </item>
 	  <item>		
 		<bold>Exit</bold> - exits the Virtual Cell, closing all open documents and prompting user to save any unsaved document(s).

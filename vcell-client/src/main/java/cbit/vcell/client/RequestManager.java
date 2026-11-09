@@ -120,6 +120,9 @@ void exitApplication();
  */
 void exportDocument(TopLevelWindowManager manager,FileFilter forceFileFilter);
 
+/** Export / Save to File from a model's window, first offering to save unsaved changes to the database. */
+void exportDocumentOfferingSave(DocumentWindowManager manager);
+
 /**
  * Insert the method's description here.
  * Creation date: (6/9/2004 3:20:26 PM)

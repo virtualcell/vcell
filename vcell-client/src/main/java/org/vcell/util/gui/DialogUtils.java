@@ -722,7 +722,40 @@ public class DialogUtils {
         }
     }
 
+    /**
+     * Something the user can do about an error, offered in its dialog under the message: a sentence saying what and
+     * why, and a button that closes the dialog, then runs <code>action</code> once it has gone.
+     */
+    public record ErrorAction(String explanation, String buttonLabel, Runnable action) {}
+
+    // the error's own panel, with the action's explanation and button in a row under it
+    private static JComponent withErrorAction(JComponent messagePanel, ErrorAction errorAction, Runnable onChosen) {
+        JLabel explanation = new JLabel("<html>" + errorAction.explanation() + "</html>"); // wraps to the dialog's width
+        JButton actionButton = new JButton(errorAction.buttonLabel());
+        actionButton.setName("ErrorActionButton");
+        actionButton.getAccessibleContext().setAccessibleDescription(errorAction.explanation());
+        actionButton.addActionListener(e -> onChosen.run());
+        JPanel actionRow = new JPanel(new BorderLayout(12, 0));
+        actionRow.setOpaque(false);
+        actionRow.setBorder(BorderFactory.createEmptyBorder(12, 0, 0, 0));
+        actionRow.add(explanation, BorderLayout.CENTER);
+        actionRow.add(actionButton, BorderLayout.EAST);
+        JPanel withAction = new JPanel(new BorderLayout());
+        withAction.setOpaque(false);
+        withAction.add(messagePanel, BorderLayout.CENTER);
+        withAction.add(actionRow, BorderLayout.SOUTH);
+        return withAction;
+    }
+
     public static void showErrorDialog(final Component requester, final String message, final Throwable exception, final ErrorContext errorContext){
+        showErrorDialog(requester, message, exception, errorContext, null);
+    }
+
+    /**
+     * As the other <code>showErrorDialog</code>s, plus an optional action offered under the message; its own buttons
+     * (including sending an error report, where offered) are unchanged.
+     */
+    public static void showErrorDialog(final Component requester, final String message, final Throwable exception, final ErrorContext errorContext, final ErrorAction errorAction){
         checkForNull(requester);
         // An error dialog must not be the one window the user cannot find. Without an
         // owner AWT downgrades DOCUMENT_MODAL to modeless, so the dialog would neither
@@ -760,11 +793,25 @@ public class DialogUtils {
                 dialogMessagePanel.add(sp, BorderLayout.NORTH);
             }
 
-            JOptionPane pane = new JOptionPane(dialogMessagePanel, JOptionPane.ERROR_MESSAGE, dialogMessagePanel.optionType());
+            boolean[] actionChosen = { false };
+            JComponent paneMessage = dialogMessagePanel;
+            JOptionPane pane = new JOptionPane(null, JOptionPane.ERROR_MESSAGE, dialogMessagePanel.optionType());
+            if (errorAction != null) {
+                paneMessage = DialogUtils.withErrorAction(dialogMessagePanel, errorAction, () -> {
+                    actionChosen[0] = true;
+                    pane.setValue(JOptionPane.CLOSED_OPTION); // closes the dialog, as its own buttons do
+                });
+            }
+            pane.setMessage(paneMessage);
             JDialog dialog = new LWTitledOptionPaneDialog(lwParent, "Error", pane);
             dialog.setResizable(true);
             try {
                 dialog.setVisible(true);
+                if (actionChosen[0]) {
+                    dialog.dispose();
+                    errorAction.action().run(); // once the dialog has gone, before this call returns
+                    return;
+                }
                 if(goingToEmail){
                     Object ro = pane.getValue();
                     Integer reply = CastingUtils.downcast(Integer.class, ro);
