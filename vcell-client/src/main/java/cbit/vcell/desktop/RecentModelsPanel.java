@@ -14,6 +14,7 @@ import java.awt.*;
 import java.util.*;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * The models the user most recently saved to the VCell database, newest first: the latest version of each, of the
@@ -57,6 +58,7 @@ public class RecentModelsPanel extends JPanel {
 	};
 	private DocumentManager documentManager = null;
 	private Consumer<VCDocumentInfo> opener = info -> {};
+	private Function<VCDocumentInfo, JPopupMenu> menuMaker = null; // a listed model's right-click menu, if any
 
 	/**
 	 * A panel listing recently saved documents of these types; BioModels and MathModels if none are given (geometries
@@ -72,6 +74,7 @@ public class RecentModelsPanel extends JPanel {
 		this.list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		this.list.setCellRenderer(this.renderer);
 		ModelListRenderer.openOnDoubleClickOrEnter(this.list, this::openSelected);
+		ModelListRenderer.showMenuOnRightClick(this.list, () -> this.menuMaker);
 		this.message.setForeground(VCellColors.getDimForeground());
 		this.cardPanel.add(this.listScroller, LIST);
 		this.cardPanel.add(this.message, MESSAGE);
@@ -102,6 +105,16 @@ public class RecentModelsPanel extends JPanel {
 	/** What to do with a model the user opens from the list. */
 	public void setOpener(Consumer<VCDocumentInfo> opener) {
 		this.opener = Objects.requireNonNull(opener);
+	}
+
+	/** What a listed model's right-click menu holds (null for none); it opens the menu for whichever model was clicked. */
+	public void setMenuMaker(Function<VCDocumentInfo, JPopupMenu> menuMaker) {
+		this.menuMaker = menuMaker;
+	}
+
+	/** Called whenever the list's selection changes. */
+	public void addSelectionListener(Runnable listener) {
+		this.list.addListSelectionListener(e -> listener.run());
 	}
 
 	/** The model selected in the list, or null. */

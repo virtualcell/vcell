@@ -124,6 +124,45 @@ final class ModelListRenderer extends JPanel implements ListCellRenderer<VCDocum
 		});
 	}
 
+	/**
+	 * Shows a model's menu on a right-click (selecting the model under the mouse first), or from the keyboard with
+	 * Shift+F10 or the context-menu key (for the selected model). <code>menuMaker</code> gives the current menu maker,
+	 * which may be null for none.
+	 */
+	static void showMenuOnRightClick(JList<VCDocumentInfo> list, java.util.function.Supplier<java.util.function.Function<VCDocumentInfo, JPopupMenu>> menuMaker) {
+		list.addMouseListener(new MouseAdapter() {
+			@Override public void mousePressed(MouseEvent e) { this.maybeShow(e); }
+			@Override public void mouseReleased(MouseEvent e) { this.maybeShow(e); } // the popup trigger is on release on Windows
+
+			private void maybeShow(MouseEvent e) {
+				if (!e.isPopupTrigger()) return;
+				int index = list.locationToIndex(e.getPoint());
+				if (index < 0 || !list.getCellBounds(index, index).contains(e.getPoint())) return;
+				list.setSelectedIndex(index);
+				ModelListRenderer.showMenu(list, menuMaker, e.getX(), e.getY());
+			}
+		});
+		AbstractAction showForSelected = new AbstractAction() {
+			@Override
+			public void actionPerformed(java.awt.event.ActionEvent e) {
+				int index = list.getSelectedIndex();
+				if (index < 0) return;
+				Rectangle cell = list.getCellBounds(index, index);
+				ModelListRenderer.showMenu(list, menuMaker, cell.x + 12, cell.y + cell.height / 2);
+			}
+		};
+		list.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_F10, java.awt.event.InputEvent.SHIFT_DOWN_MASK), "showModelMenu");
+		list.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_CONTEXT_MENU, 0), "showModelMenu");
+		list.getActionMap().put("showModelMenu", showForSelected);
+	}
+
+	private static void showMenu(JList<VCDocumentInfo> list, java.util.function.Supplier<java.util.function.Function<VCDocumentInfo, JPopupMenu>> menuMaker, int x, int y) {
+		java.util.function.Function<VCDocumentInfo, JPopupMenu> maker = menuMaker.get();
+		VCDocumentInfo selected = list.getSelectedValue();
+		if (maker == null || selected == null) return;
+		maker.apply(selected).show(list, x, y);
+	}
+
 	static VCDocumentType getDocumentType(VCDocumentInfo info) {
 		if (info instanceof BioModelInfo) return VCDocumentType.BIOMODEL_DOC;
 		if (info instanceof MathModelInfo) return VCDocumentType.MATHMODEL_DOC;

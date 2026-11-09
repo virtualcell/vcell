@@ -46,6 +46,7 @@ public class WelcomeWindowManager extends TopLevelWindowManager {
 	}
 
 	private final WelcomePanel panel;
+	private ListedModelActions listedModelActions = null; // the lists' right-click menus, made on first use
 
 	public WelcomeWindowManager(RequestManager requestManager) {
 		super(requestManager);
@@ -74,6 +75,12 @@ public class WelcomeWindowManager extends TopLevelWindowManager {
 	@Override
 	public boolean isRecyclable() {
 		return true;
+	}
+
+	/** A listed model's right-click menu: open, export, compare, copy its name or ID number, and its owner's actions. */
+	public JPopupMenu createModelMenu(VCDocumentInfo documentInfo) {
+		if (this.listedModelActions == null) this.listedModelActions = new ListedModelActions(this);
+		return this.listedModelActions.createMenu(documentInfo, () -> this.openModel(documentInfo));
 	}
 
 	/** Opens a saved model, in a window of its own. */

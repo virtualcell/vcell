@@ -16,8 +16,11 @@ import java.awt.*;
 import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.util.*;
+
+import org.vcell.util.document.VCDocument.VCDocumentType;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * The VCell database's BioModels and MathModels, together, in tabs as the database tree's folders sort them:
@@ -61,13 +64,22 @@ public class DatabaseModelsPanel extends JPanel {
 	};
 	private DocumentManager documentManager = null;
 	private Consumer<VCDocumentInfo> opener = info -> {};
+	private Function<VCDocumentInfo, JPopupMenu> menuMaker = null; // a listed model's right-click menu, if any
 	private Map<ModelList, List<VCDocumentInfo>> allModels = new EnumMap<>(ModelList.class); // each list's, whatever the search
 	private String searchText = "";
 	private SearchOptions searchOptions = SearchOptions.defaults();
 	private boolean counted = false; // someone is logged in, so the tabs say how many
+	private final Set<VCDocumentType> documentTypes;
 
+	/** BioModels and MathModels, as the welcome window lists. */
 	public DatabaseModelsPanel() {
+		this(VCDocumentType.BIOMODEL_DOC, VCDocumentType.MATHMODEL_DOC);
+	}
+
+	/** Only documents of these types (e.g. geometries, for choosing one). */
+	public DatabaseModelsPanel(VCDocumentType... documentTypes) {
 		super(new BorderLayout());
+		this.documentTypes = EnumSet.copyOf(Arrays.asList(documentTypes));
 		this.setName("DatabaseModelsPanel");
 		for (ModelList modelList : ModelList.values()) {
 			this.views.put(modelList, new ModelListView(modelList));
@@ -97,13 +109,35 @@ public class DatabaseModelsPanel extends JPanel {
 		this.opener = Objects.requireNonNull(opener);
 	}
 
+	/** What a listed model's right-click menu holds (null for none); it opens the menu for whichever model was clicked. */
+	public void setMenuMaker(Function<VCDocumentInfo, JPopupMenu> menuMaker) {
+		this.menuMaker = menuMaker;
+	}
+
+	/** The model selected in the list showing now, or null. */
+	public VCDocumentInfo getSelectedModel() {
+		Component current = this.tabs.getSelectedComponent();
+		if (current == this.communityTabs) current = this.communityTabs.getSelectedComponent(); // the list chosen within Community
+		return current instanceof ModelListView view ? view.list.getSelectedValue() : null;
+	}
+
+	/** Called whenever a list's selection, or the list showing, changes. */
+	public void addSelectionListener(Runnable listener) {
+		for (ModelListView view : this.views.values()) {
+			view.list.addListSelectionListener(e -> listener.run());
+		}
+		this.tabs.addChangeListener(e -> listener.run());
+		this.communityTabs.addChangeListener(e -> listener.run());
+	}
+
 	/** Lists the models again, from what the document manager knows now. */
 	public void refresh() {
 		User user = null == this.documentManager ? null : this.documentManager.getUser();
 		List<VCDocumentInfo> infos = new ArrayList<>();
 		if (null != user) {
-			infos.addAll(Arrays.asList(this.documentManager.getBioModelInfos()));
-			infos.addAll(Arrays.asList(this.documentManager.getMathModelInfos()));
+			if (this.documentTypes.contains(VCDocumentType.BIOMODEL_DOC)) infos.addAll(Arrays.asList(this.documentManager.getBioModelInfos()));
+			if (this.documentTypes.contains(VCDocumentType.MATHMODEL_DOC)) infos.addAll(Arrays.asList(this.documentManager.getMathModelInfos()));
+			if (this.documentTypes.contains(VCDocumentType.GEOMETRY_DOC)) infos.addAll(Arrays.asList(this.documentManager.getGeometryInfos()));
 		}
 		this.allModels = null == user ? new EnumMap<>(ModelList.class) : DatabaseModelsPanel.sortIntoLists(infos, user);
 		this.counted = null != user;
@@ -281,6 +315,7 @@ public class DatabaseModelsPanel extends JPanel {
 			this.list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 			this.list.setCellRenderer(this.renderer);
 			ModelListRenderer.openOnDoubleClickOrEnter(this.list, () -> DatabaseModelsPanel.this.openSelected(this.list));
+			ModelListRenderer.showMenuOnRightClick(this.list, () -> DatabaseModelsPanel.this.menuMaker);
 			// every entry the same height, measured in the current font: quick to lay out, however long the list
 			this.list.addPropertyChangeListener("font", e -> SwingUtilities.invokeLater(this::fixCellHeight));
 			// always with its scroll bar, as Recent Models has: the same width however many match

@@ -30,6 +30,7 @@ import cbit.vcell.client.desktop.biomodel.DocumentEditor;
 import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.client.task.*;
+import cbit.vcell.client.desktop.ModelPickerDialog;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.desktop.ClientLogin;
 import cbit.vcell.desktop.ImageDbTreePanel;
@@ -2167,10 +2168,8 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 						@Override
 						public void run(Hashtable<String, Object> hashTable) throws Exception {
 							// spatial or non-spatial
-							BioModelInfo bioModelInfo = (BioModelInfo) DialogUtils.getDBTreePanelSelection(
-									requester.getComponent(),
-									getMdiManager().getDatabaseWindowManager().getBioModelDbTreePanel(), "Open",
-									"Select BioModel");
+							BioModelInfo bioModelInfo = (BioModelInfo) getMdiManager().getDatabaseWindowManager().selectDocument(
+									VCDocumentType.BIOMODEL_DOC, requester, "New MathModel From a BioModel Application", "Select");
 							if (bioModelInfo != null) { // may throw UserCancelException
 								hashTable.put("bioModelInfo", bioModelInfo);
 							}
@@ -3929,7 +3928,8 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 		// get an info first
 		VCDocumentInfo documentInfo = null;
 		try {
-			documentInfo = getMdiManager().getDatabaseWindowManager().selectDocument(documentType, requester);
+			documentInfo = getMdiManager().getDatabaseWindowManager().selectDocument(documentType, requester,
+					"Open " + ModelPickerDialog.typeName(documentType), "Open");
 			// check whether request comes from a blank, unchanged document window; if so,
 			// open in same window, otherwise in a new window
 			boolean inNewWindow = isDifferentFromBlank(documentType, requester.getVCDocument());

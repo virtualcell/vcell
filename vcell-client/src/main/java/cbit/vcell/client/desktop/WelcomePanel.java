@@ -97,6 +97,7 @@ public class WelcomePanel extends JPanel {
 		super(new BorderLayout(0, 14));
 		this.manager = manager;
 		this.databaseModels.setOpener(manager::openModel);
+		this.databaseModels.setMenuMaker(manager::createModelMenu);
 		this.bioModelsNetPanel.setDocumentWindowManager(manager);
 		this.setName("WelcomePanel");
 		this.logo.setName("WelcomeLogo");
@@ -121,6 +122,7 @@ public class WelcomePanel extends JPanel {
 		this.add(this.createModelTabs(), BorderLayout.CENTER);
 		this.add(this.createFooter(), BorderLayout.SOUTH);
 		this.recentModels.setOpener(manager::openModel);
+		this.recentModels.setMenuMaker(manager::createModelMenu);
 		this.updateConnectionStatus(null, null);
 	}
 
@@ -695,7 +697,7 @@ public class WelcomePanel extends JPanel {
 	}
 
 	/** A text field that says what it searches while it's empty. */
-	private static final class SearchField extends JTextField {
+	static final class SearchField extends JTextField { // also the model picker's
 		private final String hint;
 
 		SearchField(String hint) {
