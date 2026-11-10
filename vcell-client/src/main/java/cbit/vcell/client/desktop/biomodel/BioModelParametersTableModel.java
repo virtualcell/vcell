@@ -116,26 +116,11 @@ protected List<EditableSymbolTableEntry> computeData() {
 		return null;
 	}
 	if (bGlobal) {
-		Map<String, SymbolTableEntry> entryMap = new HashMap<String, SymbolTableEntry>();
-		bioModel.getModel().getEntries(entryMap);
-		for (SymbolTableEntry ste : entryMap.values()){
-			if (ste instanceof EditableSymbolTableEntry && !(ste instanceof ReservedSymbol)){
-				allEditableSymbolTableEntryList.add((EditableSymbolTableEntry)ste);
-			}
-		}
+		allEditableSymbolTableEntryList.addAll(BioModelParametersTableModel.getGlobalEntries(bioModel));
 	}
 	if (bReactions) {
-		for (ReactionStep reactionStep : bioModel.getModel().getReactionSteps()) {
-			allEditableSymbolTableEntryList.addAll(Arrays.asList(reactionStep.getKinetics().getUnresolvedParameters()));
-			allEditableSymbolTableEntryList.addAll(Arrays.asList(reactionStep.getKinetics().getKineticsParameters()));		
-		}
-		if(!bioModel.getModel().getRbmModelContainer().isEmpty()) {
-			for(ReactionRule reactionRule : bioModel.getModel().getRbmModelContainer().getReactionRuleList()) {
-				allEditableSymbolTableEntryList.addAll(Arrays.asList(reactionRule.getKineticLaw().getLocalParameters()));
-				allEditableSymbolTableEntryList.addAll(Arrays.asList(reactionRule.getKineticLaw().getProxyParameters()));
-				allEditableSymbolTableEntryList.addAll(Arrays.asList(reactionRule.getKineticLaw().getUnresolvedParameters()));
-			}
-		}
+		allEditableSymbolTableEntryList.addAll(BioModelParametersTableModel.getReactionEntries(bioModel, true));
+		allEditableSymbolTableEntryList.addAll(BioModelParametersTableModel.getReactionEntries(bioModel, false));
 	}
 	if (bApplications) {
 		for (SimulationContext simContext : bioModel.getSimulationContexts()) {
@@ -148,7 +133,7 @@ protected List<EditableSymbolTableEntry> computeData() {
 	String lowerCaseSearchText = bSearchInactive ? null : searchText.toLowerCase();
 	ArrayList<EditableSymbolTableEntry> parameterList = new ArrayList<EditableSymbolTableEntry>();
 	for (EditableSymbolTableEntry parameter : allEditableSymbolTableEntryList) {
-		boolean bNumeric = parameter.getExpression() == null || parameter.getExpression().isNumeric();
+		boolean bNumeric = !BioModelParametersTableModel.isFunction(parameter);
 		if (bConstants && bNumeric || bFunctions && !bNumeric) {
 			if (bSearchInactive
 					|| parameter.getNameScope().getPathDescription().toLowerCase().contains(lowerCaseSearchText)
@@ -162,7 +147,50 @@ protected List<EditableSymbolTableEntry> computeData() {
 	return parameterList;
 }
 
-private List<EditableSymbolTableEntry> getApplicationEditableSymbolTableEntryList(SimulationContext simulationContext) {	
+/** What the table lists as Global: the model's own symbols (its parameters, species, structure sizes and voltages). */
+static List<EditableSymbolTableEntry> getGlobalEntries(BioModel bioModel) {
+	List<EditableSymbolTableEntry> entries = new ArrayList<EditableSymbolTableEntry>();
+	Map<String, SymbolTableEntry> entryMap = new HashMap<String, SymbolTableEntry>();
+	bioModel.getModel().getEntries(entryMap);
+	for (SymbolTableEntry ste : entryMap.values()){
+		if (ste instanceof EditableSymbolTableEntry && !(ste instanceof ReservedSymbol)){
+			entries.add((EditableSymbolTableEntry)ste);
+		}
+	}
+	return entries;
+}
+
+/** What the table lists as Reactions and Rules: the reactions' kinetic parameters, or the reaction rules' (rule-based models). */
+static List<EditableSymbolTableEntry> getReactionEntries(BioModel bioModel, boolean reactionSteps) {
+	List<EditableSymbolTableEntry> entries = new ArrayList<EditableSymbolTableEntry>();
+	if (reactionSteps) {
+		for (ReactionStep reactionStep : bioModel.getModel().getReactionSteps()) {
+			entries.addAll(Arrays.asList(reactionStep.getKinetics().getUnresolvedParameters()));
+			entries.addAll(Arrays.asList(reactionStep.getKinetics().getKineticsParameters()));		
+		}
+		return entries;
+	}
+	if(!bioModel.getModel().getRbmModelContainer().isEmpty()) {
+		for(ReactionRule reactionRule : bioModel.getModel().getRbmModelContainer().getReactionRuleList()) {
+			entries.addAll(Arrays.asList(reactionRule.getKineticLaw().getLocalParameters()));
+			entries.addAll(Arrays.asList(reactionRule.getKineticLaw().getProxyParameters()));
+			entries.addAll(Arrays.asList(reactionRule.getKineticLaw().getUnresolvedParameters()));
+		}
+	}
+	return entries;
+}
+
+/** A function, as the table's Type filter has it: an expression of other symbols, not just a number. */
+static boolean isFunction(EditableSymbolTableEntry entry) {
+	return entry.getExpression() != null && !entry.getExpression().isNumeric();
+}
+
+/** What the table lists for one application. */
+static List<EditableSymbolTableEntry> getApplicationEntries(SimulationContext simulationContext) {
+	return BioModelParametersTableModel.getApplicationEditableSymbolTableEntryList(simulationContext);
+}
+
+private static List<EditableSymbolTableEntry> getApplicationEditableSymbolTableEntryList(SimulationContext simulationContext) {	
 	ArrayList<EditableSymbolTableEntry> parameterList = new ArrayList<EditableSymbolTableEntry>();	
 	Map<String, SymbolTableEntry> entryMap = new HashMap<String, SymbolTableEntry>();
 	simulationContext.getEntries(entryMap);

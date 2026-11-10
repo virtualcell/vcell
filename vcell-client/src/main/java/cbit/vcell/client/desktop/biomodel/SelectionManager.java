@@ -25,6 +25,7 @@ public class SelectionManager {
 		pathway,
 		model,	
 		
+		mathematics_summary,
 		parameters_functions,
 		predefined_symbols,
 		model_unit_system,

@@ -103,6 +103,8 @@ public class IssuePanel extends DocumentEditorSubPanel {
 				issueTableModel.setShowWarning(showWarningCheckBox.isSelected());
 		});
 		issueTable = new JSortTable();
+		issueTable.setName("IssueTable");
+		issueTable.getAccessibleContext().setAccessibleName("Problems");
 		issueTableModel = new IssueTableModel(issueTable);
 		issueTable.setModel(issueTableModel);
 		issueTable.addMouseListener(new MouseAdapter() {
