@@ -33,6 +33,7 @@ final class FenicsBundleViews {
 		/** the run's VCell functions (from its simulation), evaluated on the bundle's variables */
 		final FenicsFunctions functions;
 		private final Map<String, VtuGridParser.VtuGrid> grids = new ConcurrentHashMap<>();
+		private final Map<String, int[]> pointMaps = new ConcurrentHashMap<>();
 
 		BundleSource(String simId, int jobIndex, BundleStore store, String simName) {
 			this(simId, jobIndex, store, simName, FenicsFunctions.NONE);
@@ -65,6 +66,20 @@ final class FenicsBundleViews {
 				measures.put(grid, m);
 			}
 			return m;
+		}
+
+		/**
+		 * The membrane's point map onto an adjacent {@code compartment} in the segment holding {@code row}
+		 * ({@link FenicsBundle#adjacentPoints}), read once per segment.
+		 */
+		int[] pointMap(FenicsBundle bundle, String membrane, String compartment, int row) throws IOException {
+			String key = bundle.segmentOf(row).segment().index() + "/" + membrane + "/" + compartment;
+			int[] map = pointMaps.get(key);
+			if (map == null) {
+				map = bundle.adjacentPoints(membrane, compartment, row);
+				pointMaps.put(key, map);
+			}
+			return map;
 		}
 
 		/**
@@ -175,12 +190,17 @@ final class FenicsBundleViews {
 	 * own values, or the function evaluated AT each vertex (its variables there, the vertex's x, y, z in that
 	 * row's mesh, the row's t). The interpolation then reads the same numbers in the same order as from a whole
 	 * row, and a function's values are exactly those {@code /field} draws: bit-identical either way.
+	 * <p>
+	 * A membrane function of the adjacent volume values reads those from each compartment at the compartment
+	 * vertices the membrane's vertices map to (the bundle's point map): one sampled call per domain read, per
+	 * segment, since a sampled call reads arrays of one domain.
 	 */
 	static final class SampledRows implements PointSeries.Rows {
 		private final BundleSource source;
 		private final FenicsBundle bundle;
 		private final String domain;
 		private final String[] reads; // the stored variables read: the variable itself, or the function's arguments
+		private final String[] readDomains; // the domain each is read on: this one, or a compartment beside a membrane
 		private final FenicsFunctions.Compiled function; // null for a stored variable
 		private final double[] times;
 		private final int[] rows;
@@ -202,11 +222,12 @@ final class FenicsBundleViews {
 			this.function = source.functions.has(varName) && !isStored(bundle, domain, varName)
 					? source.functions.compile(bundle, domain, varName) : null;
 			this.reads = function != null ? function.variables : new String[] { varName };
+			this.readDomains = function != null ? function.domains : new String[] { domain };
 			this.times = times(bundle);
 			this.rows = rows;
 			this.wholeRows = new RowPrefetcher[reads.length];
 			for (int k = 0; k < reads.length; k++) {
-				wholeRows[k] = fieldPrefetcher(bundle, domain, reads[k], rows);
+				wholeRows[k] = fieldPrefetcher(bundle, readDomains[k], reads[k], rows);
 			}
 			this.coords = coordsPrefetcher(bundle, domain, rows);
 			this.sampling = !bundle.isMoving() && reads.length > 0;
@@ -254,7 +275,7 @@ final class FenicsBundleViews {
 			}
 			int segment = bundle.segmentOf(row).segment().index();
 			int[] segmentRows = Arrays.stream(rows).filter(r -> bundle.segmentOf(r).segment().index() == segment).toArray();
-			double[][][] got = bundle.sampleFields(domain, reads, segmentRows, vertices);
+			double[][][] got = sampleByDomain(segmentRows);
 			if (got == null) {
 				sampling = false; // the store reads whole rows: so does this, from here on
 				return;
@@ -266,6 +287,48 @@ final class FenicsBundleViews {
 				}
 				sampled.put(segmentRows[r], perRead);
 			}
+		}
+
+		/**
+		 * {@code [read][row][i]}: each read's value at {@link #vertices}{@code [i]} of this domain -- for a read on
+		 * an adjacent compartment, at the compartment vertex it maps to. One sampled call per domain read; null if
+		 * the store does not sample.
+		 */
+		private double[][][] sampleByDomain(int[] segmentRows) throws Exception {
+			double[][][] got = new double[reads.length][][];
+			for (String on : new LinkedHashSet<>(Arrays.asList(readDomains))) {
+				List<Integer> ks = new ArrayList<>();
+				for (int k = 0; k < reads.length; k++) {
+					if (readDomains[k].equals(on)) {
+						ks.add(k);
+					}
+				}
+				String[] names = ks.stream().map(k -> reads[k]).toArray(String[]::new);
+				int[] at = vertices; // where each of this domain's vertices is, in the indices asked for
+				int[] indices = vertices;
+				if (!on.equals(domain)) {
+					int[] map = source.pointMap(bundle, domain, on, segmentRows[0]);
+					indices = Arrays.stream(vertices).map(v -> map[v]).filter(m -> m >= 0).sorted().distinct().toArray();
+					at = new int[vertices.length];
+					for (int i = 0; i < vertices.length; i++) {
+						at[i] = map[vertices[i]] < 0 ? -1 : Arrays.binarySearch(indices, map[vertices[i]]);
+					}
+				}
+				double[][][] part = bundle.sampleFields(on, names, segmentRows, indices);
+				if (part == null) {
+					return null;
+				}
+				for (int j = 0; j < ks.size(); j++) {
+					double[][] perRow = new double[segmentRows.length][vertices.length];
+					for (int r = 0; r < segmentRows.length; r++) {
+						for (int i = 0; i < vertices.length; i++) {
+							perRow[r][i] = on.equals(domain) ? part[j][r][i] : at[i] < 0 ? Double.NaN : part[j][r][at[i]];
+						}
+					}
+					got[ks.get(j)] = perRow;
+				}
+			}
+			return got;
 		}
 
 		@Override
@@ -293,7 +356,7 @@ final class FenicsBundleViews {
 				args = new double[reads.length][];
 				for (int k = 0; k < reads.length; k++) {
 					wholeRows[k].before(row);
-					args[k] = bundle.field(domain, reads[k], row);
+					args[k] = argumentRow(source, bundle, domain, readDomains[k], reads[k], row);
 				}
 			}
 			double[] points = gridOf(row).points;
@@ -322,7 +385,7 @@ final class FenicsBundleViews {
 		FenicsFunctions.Compiled f = source.functions.compile(bundle, domain, name);
 		double[][] args = new double[f.variables.length][];
 		for (int k = 0; k < args.length; k++) {
-			args[k] = bundle.field(domain, f.variables[k], row);
+			args[k] = argumentRow(source, bundle, domain, f.domains[k], f.variables[k], row);
 		}
 		VtuGridParser.VtuGrid grid = source.grid(bundle, domain, row);
 		double t = bundle.getTimes().get(row);
@@ -331,6 +394,25 @@ final class FenicsBundleViews {
 			values[v] = f.at(t, grid.points, v, args);
 		}
 		return values;
+	}
+
+	/**
+	 * A function argument's whole row at {@code domain}'s vertices: {@code variable} on {@code domain} itself, or
+	 * -- on a membrane -- on the adjacent compartment {@code on}, carried to the membrane's vertices through the
+	 * bundle's point map (NaN at a vertex the map leaves out).
+	 */
+	static double[] argumentRow(BundleSource source, FenicsBundle bundle, String domain, String on, String variable, int row)
+			throws Exception {
+		double[] values = bundle.field(on, variable, row);
+		if (on.equals(domain)) {
+			return values;
+		}
+		int[] map = source.pointMap(bundle, domain, on, row);
+		double[] atMembrane = new double[map.length];
+		for (int v = 0; v < map.length; v++) {
+			atMembrane[v] = map[v] >= 0 ? values[map[v]] : Double.NaN;
+		}
+		return atMembrane;
 	}
 
 	/** a prefetcher for a moving domain's recorded point positions over {@code rows}; null if nothing moves */
