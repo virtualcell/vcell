@@ -80,7 +80,7 @@ public class FenicsSolverTest {
 		assertTrue(sd.isFenicsSolver());
 		assertTrue(sd.isSpatial());
 		assertNull(sd.getSolverExecutable(), "runs in a container, no native executable");
-		assertTrue(sd.supports(SolverDescription.SolverFeature.Feature_Moving), "2D and 3D moving boundaries, species inside the front");
+		assertTrue(sd.supports(SolverDescription.SolverFeature.Feature_Moving), "2D and 3D moving boundaries");
 		assertFalse(sd.supports(SolverDescription.SolverFeature.Feature_FastSystem));
 		assertFalse(sd.supports(SolverDescription.SolverFeature.Feature_PeriodicBoundaryCondition));
 	}
@@ -195,23 +195,65 @@ public class FenicsSolverTest {
 				issues.toString());
 	}
 
-	@Test
-	public void testMovingBoundarySpeciesOutsideTheFrontAreAnIssue() throws Exception {
-		// the same model with a species in the exterior compartment, which the moving path does not solve yet
-		String xml = resourceText(MOVING)
+	private static String withExteriorSpecies(String equation) throws Exception {
+		// the moving fixture with a species in the exterior compartment, which the front sweeps
+		return resourceText(MOVING)
 				.replace("<VolumeVariable Name=\"C_cyt\" Domain=\"cell\" />",
 						"<VolumeVariable Name=\"C_cyt\" Domain=\"cell\" /><VolumeVariable Name=\"E_ec\" Domain=\"ec\" />")
 				.replace("    </CompartmentSubDomain>\n    <MembraneSubDomain",
-						"      <PdeEquation Name=\"E_ec\" SolutionType=\"Unknown\"><Rate>0.0</Rate><Diffusion>1.0</Diffusion><Initial>1.0</Initial></PdeEquation>\n"
-								+ "    </CompartmentSubDomain>\n    <MembraneSubDomain")
-				.replace("<JumpCondition Name=\"C_cyt\">",
-						"<JumpCondition Name=\"E_ec\"><InFlux>0.0</InFlux><OutFlux>0.0</OutFlux></JumpCondition><JumpCondition Name=\"C_cyt\">");
+						"      " + equation + "\n    </CompartmentSubDomain>\n    <MembraneSubDomain")
+				.replace("<JumpCondition Name=\"C_cyt\">", (equation.startsWith("<PdeEquation")
+						? "<JumpCondition Name=\"E_ec\"><InFlux>0.0</InFlux><OutFlux>0.0</OutFlux></JumpCondition>" : "")
+						+ "<JumpCondition Name=\"C_cyt\">");
+	}
+
+	private static SimulationTask fenicsSimTaskFromXml(String xml) throws Exception {
 		SimulationTask simTask = XmlHelper.XMLToSimTask(xml);
 		simTask.getSimulation().getSolverTaskDescription().setSolverDescription(SolverDescription.FEniCSx);
+		return simTask;
+	}
+
+	@Test
+	public void testMovingBoundarySpeciesOutsideTheFrontAreOffered() throws Exception {
+		// vcell-fenics 0.2.0 moves the whole partition with the membrane (ADR 014): a diffusing exterior species runs
+		SimulationTask simTask = fenicsSimTaskFromXml(withExteriorSpecies(
+				"<PdeEquation Name=\"E_ec\" SolutionType=\"Unknown\"><Rate>0.0</Rate><Diffusion>1.0</Diffusion><Initial>1.0</Initial></PdeEquation>"));
+		assertEquals(List.of(), FenicsSolver.unsupportedReasons(simTask.getSimulation()));
+		assertTrue(fenicsIssues(simTask).isEmpty());
+	}
+
+	@Test
+	public void testMovingBoundaryNonDiffusingSpeciesAreAnIssue() throws Exception {
+		// pure advection by the front needs stabilization, which the moving path does not have (vcell-fenics' own refusal)
+		SimulationTask simTask = fenicsSimTaskFromXml(withExteriorSpecies(
+				"<OdeEquation Name=\"E_ec\" SolutionType=\"Unknown\"><Rate>0.0</Rate><Initial>1.0</Initial></OdeEquation>"));
 		List<String> reasons = FenicsSolver.unsupportedReasons(simTask.getSimulation());
 		assertEquals(1, reasons.size(), reasons.toString());
-		assertTrue(reasons.get(0).contains("inside the moving front ('cell') only") && reasons.get(0).contains("'ec'"), reasons.get(0));
+		assertTrue(reasons.get(0).contains("'ec' has non-diffusing E_ec"), reasons.get(0));
 		assertEquals(1, fenicsIssues(simTask).size());
+	}
+
+	@Test
+	public void testMovingMembraneSpeciesNeedTheirMathToStateDilution() throws Exception {
+		// BioModel 294599465 ("moving_bleb"): species on the moving membrane, which dilute with it (vcell-fenics ADR 014)
+		String vcml = resourceText("/cbit/vcell/math/moving_bleb_biomodel_294599465.vcml");
+		cbit.vcell.biomodel.BioModel bioModel = XmlHelper.XMLToBioModel(new cbit.vcell.xml.XMLSource(vcml));
+		cbit.vcell.mapping.SimulationContext application = bioModel.getSimulationContext("moving_bleb");
+		cbit.vcell.math.MathDescription math = application.createNewMathMapping().getMathDescription();
+		cbit.vcell.solver.Simulation simulation = new cbit.vcell.solver.Simulation(math, application);
+		simulation.getSolverTaskDescription().setSolverDescription(SolverDescription.FEniCSx);
+		// its geometry is image-based, which the moving path refuses on its own; the species raise nothing more
+		java.util.function.Predicate<String> image = r -> r.contains("moving-boundary simulations on image-based geometries");
+		List<String> imageOnly = FenicsSolver.unsupportedReasons(simulation);
+		assertTrue(!imageOnly.isEmpty() && imageOnly.stream().allMatch(image), imageOnly.toString());
+
+		// math that predates the construct (the stored math, or a math model without it) is refused, not run undiluted
+		java.util.Collections.list(math.getSubDomains()).stream()
+				.filter(sd -> sd instanceof cbit.vcell.math.MembraneSubDomain m && m.isDilution())
+				.forEach(sd -> ((cbit.vcell.math.MembraneSubDomain) sd).setDilution(false));
+		List<String> reasons = FenicsSolver.unsupportedReasons(simulation).stream().filter(image.negate()).toList();
+		assertEquals(1, reasons.size(), reasons.toString());
+		assertTrue(reasons.get(0).contains("does not state Dilution"), reasons.get(0));
 	}
 
 	private static final String MOVING_3D = "moving3d_furrow_SimID_516481304_0__0.simtask.xml";
