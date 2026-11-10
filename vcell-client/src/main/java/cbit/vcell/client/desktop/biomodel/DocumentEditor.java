@@ -44,6 +44,7 @@ import javax.swing.ToolTipManager;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
@@ -484,15 +485,24 @@ private void initialize() {
 				Object object = path.getLastPathComponent();
 				return (object instanceof BioModelNode) && (((BioModelNode)object).getUserObject() instanceof SimulationContext);
 			}
+
+			@Override
+			public void updateUI() { // the navigation column's rows, again whenever the theme changes
+				super.updateUI();
+				NavigationTreeStyle.install(this);
+			}
+
+			@Override
+			public void setCellRenderer(TreeCellRenderer renderer) { // each window's renderer, drawn in a row's rectangle
+				super.setCellRenderer(NavigationTreeStyle.wrap(renderer));
+			}
 			
 		};
 		documentEditorTree.setEditable(true);
-		documentEditorTree.setLargeModel(true);
 		documentEditorTreeCellEditor = new DocumentEditorTreeCellEditor(documentEditorTree);
 		documentEditorTree.setCellEditor(documentEditorTreeCellEditor);
 		documentEditorTree.setName("bioModelEditorTree");
 		ToolTipManager.sharedInstance().registerComponent(documentEditorTree);
-		VCellFonts.followRowHeight(documentEditorTree);
 		documentEditorTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 		
 		JScrollPane treePanel = new javax.swing.JScrollPane(documentEditorTree); // the whole left column: databases are browsed from the welcome window
