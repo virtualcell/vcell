@@ -195,7 +195,7 @@ public class BioModelEditorPathwayPanel extends DocumentEditorSubPanel {
 		tableModel = new PathwayTableModel(table);
 		table.setModel(tableModel);
 		table.disableUneditableForeground();
-		importButton = new JButton("Import", new DownArrowIcon());
+		importButton = DownArrowIcon.keepPushButtonLook(new JButton("Import", new DownArrowIcon()));
 		importButton.setName("PathwayPreviewImportButton");
 		importButton.setHorizontalTextPosition(SwingConstants.LEFT);
 		importButton.setEnabled(false);

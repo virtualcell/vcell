@@ -130,6 +130,7 @@ private javax.swing.JButton getJButtonReplace() {
 			ivjJButtonReplace.setName("JButton1");
 			ivjJButtonReplace.setText(REPLACE_GEOMETRY_SPATIAL_LABEL);
 			ivjJButtonReplace.setIcon(new DownArrowIcon());
+			DownArrowIcon.keepPushButtonLook(ivjJButtonReplace);
 			ivjJButtonReplace.setHorizontalTextPosition(SwingConstants.LEFT);
 			// user code begin {1}
 			// user code end

@@ -780,12 +780,12 @@ implements PathwayEditor, ActionBuilder.Generator {
 		searchTextField.putClientProperty("JTextField.variant", "search");
 		searchTextField.setToolTipText("Search the pathway's objects by name");
 		searchTextField.getDocument().addDocumentListener(eventHandler);
-		groupButton = new JButton("Group", new DownArrowIcon());
+		groupButton = DownArrowIcon.keepPushButtonLook(new JButton("Group", new DownArrowIcon()));
 		groupButton.setHorizontalTextPosition(SwingConstants.LEFT);
 		groupButton.addActionListener(eventHandler);
 		deleteButton = new JButton("Delete");
 		deleteButton.addActionListener(eventHandler);
-		physiologyLinkButton = new JButton("Physiology Links", new DownArrowIcon());
+		physiologyLinkButton = DownArrowIcon.keepPushButtonLook(new JButton("Physiology Links", new DownArrowIcon()));
 		physiologyLinkButton.setName("PhysiologyLinksButton");
 		physiologyLinkButton.setHorizontalTextPosition(SwingConstants.LEFT);
 		physiologyLinkButton.addActionListener(eventHandler);

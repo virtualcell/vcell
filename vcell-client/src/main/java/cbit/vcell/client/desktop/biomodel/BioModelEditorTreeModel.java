@@ -76,8 +76,8 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel implements 
 	private BioModelNode modelUnitSystemNode = new BioModelNode(new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.MODEL_UNIT_SYSTEM_NODE, true), false);
 	private BioModelNode mathematicsChildNodes[] = {
 			modelUnitSystemNode,
-			predefinedSymbolsNode,
 			parametersFunctionsNode,
+			predefinedSymbolsNode,
 	};
 	@Deprecated
 	List<BioModelNode> annotationNodes = new ArrayList<BioModelNode>();

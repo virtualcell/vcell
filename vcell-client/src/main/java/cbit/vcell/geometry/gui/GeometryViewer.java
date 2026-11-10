@@ -705,6 +705,7 @@ private javax.swing.JButton getJButtonReplace() {
 		try {
 			ivjJButtonReplace = new javax.swing.JButton(REPLACE_GEOMETRY_SPATIAL_LABEL);
 			ivjJButtonReplace.setIcon(new DownArrowIcon());
+			DownArrowIcon.keepPushButtonLook(ivjJButtonReplace);
 			ivjJButtonReplace.setHorizontalTextPosition(SwingConstants.LEFT);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);

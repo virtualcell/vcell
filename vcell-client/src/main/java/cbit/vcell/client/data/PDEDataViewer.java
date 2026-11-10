@@ -1687,6 +1687,7 @@ private JButton getPlotButton() {
 			plotButton = new JButton("Plot");
 			plotButton.setHorizontalTextPosition(SwingConstants.LEFT);
 			plotButton.setIcon(new DownArrowIcon());
+			DownArrowIcon.keepPushButtonLook(plotButton);
 			plotButton.addActionListener(ivjEventHandler);
 			plotButton.setEnabled(false);
 		} catch (java.lang.Throwable ivjExc) {
@@ -1702,6 +1703,7 @@ private JButton getROIButton() {
 			roiButton = new JButton("ROI");
 			roiButton.setHorizontalTextPosition(SwingConstants.LEFT);
 			roiButton.setIcon(new DownArrowIcon());
+			DownArrowIcon.keepPushButtonLook(roiButton);
 			roiButton.addActionListener(ivjEventHandler);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);

@@ -26,7 +26,7 @@
 		<para>
 		The Tree Structure also provides links to
 		<list>
-		<item><link target="ParametersAndFunctionsOverview">Mathematics &amp; Units</link>: the Model Unit System, Predefined Expressions (VCell's built-in constants and math functions), and Parameters and Functions</item>
+		<item><link target="ParametersAndFunctionsOverview">Mathematics &amp; Units</link>: the Model Unit System, Parameters and Functions, and Predefined Expressions (VCell's built-in constants and math functions)</item>
 		<item><link target="PathwayOverview">Pathway</link> related information (under Biochemistry)</item>
 		<item><link target="ApplicationOverview">Applications</link></item>
 		</list>

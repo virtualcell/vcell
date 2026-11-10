@@ -38,8 +38,23 @@
 	</appearance>
 	
 	<operations>
-	Change model units by clicking "Change Unit System".  A dialog will appear allowing you to change unit definitions.
-	<imgReference target = "modelUnitChange.png"/>
+	<para>
+	Choose the model's units with the <bold>Unit System</bold> list beside the table, under <bold>Mathematics &amp; Units &gt; Model Unit System</bold>.
+	Choosing a different unit system converts the model's values to its units. The list starts with VCell's own:
+	<list>
+	<item><bold>VCell Default</bold>: the units VCell models start with (um, s, uM.um3 for volume species, molecules for membrane species).</item>
+	<item><bold>SBML Compatible</bold>: one substance unit for all species (umol, with l and dm), as SBML expects.</item>
+	</list>
+	If a model's units match neither, nor one of yours, the list shows them as <bold>Custom (this model's own)</bold>.
+	</para>
+	<para>
+	Beneath the list:
+	<list>
+	<item><bold>Add...</bold> makes a unit system of your own: give it a name and its units, starting from the chosen system's (a model's own units included, to keep them under a name). A unit system doesn't change once added. Problems, such as a unit VCell can't read or a length unit that isn't a length, are shown as you type. The model is then converted to it.</item>
+	<item><bold>Delete...</bold> removes a unit system you added. Models keep their units; VCell Default and SBML Compatible can't be deleted.</item>
+	</list>
+	Your unit systems are kept on this computer and listed in every model window.
+	</para>
 	</operations>
 	
 </page>
