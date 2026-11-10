@@ -1047,6 +1047,11 @@ implements PathwayEditor, ActionBuilder.Generator {
 		}
 	}
 
+	/** The Pathway Diagram's graph, whose layout (never saved with the model) the Biochemistry Summary's copy follows. */
+	PathwayGraphModel getPathwayGraphModel() {
+		return pathwayGraphModel;
+	}
+
 	public void setBioModel(BioModel bioModel) {
 		if (this.bioModel == bioModel) {
 			return;

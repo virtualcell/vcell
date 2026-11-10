@@ -14,6 +14,7 @@
 	<para>
 		Top left is a <bold>Navigation panel (Panel A)</bold> that allows navigation of the currently open model. Its top item is the model itself (its saved information and annotations);
 		under it come <bold>Mathematics &amp; Units</bold>, which covers the whole model, then <bold>Biochemistry</bold>, which groups Physiology and Pathway, and the model's <bold>Applications</bold>.
+		Clicking Biochemistry itself shows its summary: small copies of the Reaction Diagram and Pathway Diagram (click one, or its <bold>Open</bold> button, to open it), and counts of the structures, species, molecules, observables, reactions and reaction rules, and of the pathway's objects and their links to the physiology (double-click a count to open its tab).
 		Physiology opens on the Reaction Diagram and links to the components of the BioModel, including:
 		<list>
 		<item>A <link target="ReactDiagView">Reaction Diagram</link> view</item>
