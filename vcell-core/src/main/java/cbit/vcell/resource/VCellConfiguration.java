@@ -31,7 +31,14 @@ public class VCellConfiguration {
 					lg.error(e);
 				}
 			}
-			FileBasedBuilderParameters thing = params.fileBased().setFile(propertiesFile);
+			// by URL, so Commons Configuration finds the file at once: given a File, it first tries its folder's bare path
+			// as a URL, which throws (and catches) a MalformedURLException that debuggers stop on at every start
+			FileBasedBuilderParameters thing;
+			try {
+				thing = params.fileBased().setURL(propertiesFile.toURI().toURL());
+			} catch (java.net.MalformedURLException e) {
+				thing = params.fileBased().setFile(propertiesFile); // a file's own URI is always a URL; kept as before if not
+			}
 			configurationBuilder = new FileBasedConfigurationBuilder<PropertiesConfiguration>(PropertiesConfiguration.class).configure(thing);
 			configurationBuilder.setAutoSave(true);
 			try {
