@@ -21,12 +21,7 @@
 	<item><bold>Search button: </bold> Press to begin search using the text fragment entered in search textfield.</item>
 	<item><bold>Show All button: </bold> Press to clear search and show all available models.</item>
 	<item><bold>Model Names list: </bold> Displays available models from repository matching search criteria.  
-	Selecting a name from the list will display information for that model in the Database File Info tab.  
 	The selected model will be downloaded from the repository when the Import button is pressed.
-	</item>
-	<item><bold>Database File Info tab: </bold> 
-	When a model is selected from the list, some basic information about the model, such as name, entry ID in 'BioModels Database', a hyperlink to the model on the 'BioModels Database' web site is displayed 
-	in the 'Database File Info' tab of the 'Properties' panel of the open VCell document. Double-clicking the hyperlinks in this tab will display a web page from the external repository site.
 	</item>
 	<item><bold>Import button: </bold> Starts process to download the selected model from the repository, 
 	convert the file to VCell format and open a new BioModel document window containing the imported model.</item>

@@ -1,8 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <vcelldoc>
-<page title="File -> Export">
+<page title="File -> Export / Save to File">
 	
 	<introduction> 
+	<para>
+	<bold>File -> Export / Save to File...</bold> saves a copy of the open document as a file on your computer. Its file dialog starts with <bold>VCML</bold> selected,
+	which keeps everything in the model; choose another format there to export instead. (This one menu item replaces the former <bold>Save As Local...</bold>, which saved VCML only.)
+	</para>
+	<para>
+	The file always includes the model as it is in the window, unsaved changes and all. If the model has changes that aren't saved to the VCell database
+	(and you're logged in), VCell first asks whether to save them there too: <bold>Save, then Export</bold>, <bold>Export Without Saving</bold>, or <bold>Cancel</bold>.
+	</para>
+	<para>
+	If saving a model to the VCell database fails, its error message offers <bold>Save to File...</bold>, which saves the model as a VCML file so your work isn't lost.
+	VCML files are saved even when the model has errors, so you can open the file again later to fix it, or send it to the VCell team for help.
+	</para>
 	<para>
 	<bold>VCML</bold> is the <bold>V</bold>irtual <bold>C</bold>ell <bold>M</bold>arkup <bold>L</bold>anguage and the native Virtual Cell format. 
 	The Virtual Cell supports interoperability with other standard representations for biological systems modeling. 
@@ -35,7 +47,7 @@
 	<operations>
 	
 	<para>
-	To export a model, open the BioModel or MathModel document to be export and choose the <bold>File -> Export </bold> menu option.
+	To export a model, open the BioModel or MathModel document to be export and choose the <bold>File -> Export / Save to File...</bold> menu option.
 	This opens a "Choose File" dialog. Navigate to the folder where the model has to be saved on your local drive, select the desired export format from the "Files of Type" combobox and press <bold>Save</bold>.
 	</para>
 	

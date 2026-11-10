@@ -21,9 +21,6 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -37,10 +34,10 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingUtilities;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
@@ -55,7 +52,6 @@ import javax.swing.event.ListDataListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import org.vcell.util.VCAssert;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.DownArrowIcon;
@@ -299,7 +295,14 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 	private InternalEventHandler eventHandler = new InternalEventHandler();
 	private JTabbedPane tabbedPane;
 
-	private JButton changeUnitsButton = null;
+	private final UnitSystemChooserPanel unitSystemChooserPanel = new UnitSystemChooserPanel(UnitSystemLibrary.getShared(), this::convertUnits);
+	private final MathematicsSummaryPanel summaryPanel = new MathematicsSummaryPanel(
+			() -> this.unitSystemChooserPanel.getChosen() == null ? null : this.unitSystemChooserPanel.getChosen().name(),
+			() -> this.tabbedPane.setSelectedIndex(ParametersPanelTabID.modelUnitSystem.ordinal()),
+			this::showParametersOf,
+			() -> this.tabbedPane.setSelectedIndex(ParametersPanelTabID.predefined.ordinal()));
+	private boolean summaryRefreshQueued = false;
+	private JPanel buttonPanel = null;
 	private BioModelWindowManager bioModelWindowManager = null;
 	
 	private JButton addNewButton = null;
@@ -318,13 +321,20 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 	private JPanel modelUnitSystemPanel = null;
 	
 	private enum ParametersPanelTabID {
-		parameters_functions("Parameters and Functions"),
-		predefined("Predefined Constants and Math Functions"),
-		modelUnitSystem("Model Unit System");
+		// each tab is also a node under Mathematics & Units in the navigation tree, by the same name and in this order
+		// the Summary is Mathematics & Units' own node, as a diagram is Physiology's and Pathway's
+		summary("Summary", DocumentEditorTreeFolderClass.BIOMODEL_PARAMETERS_NODE, ActiveViewID.mathematics_summary),
+		modelUnitSystem(GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_MODEL_UNIT_SYSTEM, DocumentEditorTreeFolderClass.MODEL_UNIT_SYSTEM_NODE, ActiveViewID.model_unit_system),
+		parameters_functions(GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_PARAMETERS_FUNCTIONS, DocumentEditorTreeFolderClass.PARAMETERS_FUNCTIONS_NODE, ActiveViewID.parameters_functions),
+		predefined(GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_PREDEFINED_SYMBOLS, DocumentEditorTreeFolderClass.PREDEFINED_SYMBOLS_NODE, ActiveViewID.predefined_symbols);
 		
-		String title = null;
-		ParametersPanelTabID(String name) {
+		final String title;
+		final DocumentEditorTreeFolderClass treeFolderClass;
+		final ActiveViewID activeViewID;
+		ParametersPanelTabID(String name, DocumentEditorTreeFolderClass treeFolderClass, ActiveViewID activeViewID) {
 			this.title = name;
+			this.treeFolderClass = treeFolderClass;
+			this.activeViewID = activeViewID;
 		}
 	}
 	
@@ -348,8 +358,6 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 				newApplicationButtonPressed();
 			} else if (e.getSource() == deleteButton) {
 				deleteButtonPressed();
-			} else if (e.getSource() == changeUnitsButton) {
-				changeUnitsButtonPressed();
 			} else if (e.getSource() == globalParametersCheckBox) {
 				parametersFunctionsTableModel.setIncludeGlobal(globalParametersCheckBox.isSelected());
 			} else if (e.getSource() == applicationsCheckBox) {
@@ -400,22 +408,16 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 		initialize();
 	}
 
-	public void changeUnitsButtonPressed() {
-		UnitSystemSelectionPanel unitSystemSelectionPanel = new UnitSystemSelectionPanel();
-		unitSystemSelectionPanel.initialize(bioModel.getModel().getUnitSystem());
-		int retcode = DialogUtils.showComponentOKCancelDialog(this, unitSystemSelectionPanel, "select new unit system");
-		while (retcode == JOptionPane.OK_OPTION){
-			ModelUnitSystem forcedModelUnitSystem;
-			try {
-				forcedModelUnitSystem = unitSystemSelectionPanel.createModelUnitSystem();
-				BioModel newBioModel = ModelUnitConverter.createBioModelWithNewUnitSystem(bioModel, forcedModelUnitSystem);
-				this.bioModelWindowManager.resetDocument(newBioModel);
-				break;
-			} catch (Exception e) {
-				e.printStackTrace(System.out);
-				DialogUtils.showErrorDialog(this, e.getMessage(), e);
-				retcode = DialogUtils.showComponentOKCancelDialog(this, unitSystemSelectionPanel, "select new unit system");
-			}
+	// the unit system chooser's conversion: the model, rescaled to these units, replaces the one open
+	private boolean convertUnits(ModelUnitSystem units) {
+		try {
+			BioModel newBioModel = ModelUnitConverter.createBioModelWithNewUnitSystem(bioModel, units);
+			this.bioModelWindowManager.resetDocument(newBioModel);
+			return true;
+		} catch (Exception e) {
+			e.printStackTrace(System.out);
+			DialogUtils.showErrorDialog(this, "This model couldn't be converted to those units: " + e.getMessage(), e);
+			return false;
 		}
 	}
 	
@@ -425,18 +427,20 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 		addNewButton2 = new JButton("New Application Parameter");
 //		addNewButton2.setIcon(downArrow);
 		addNewButton2.setHorizontalTextPosition(SwingConstants.LEFT);
+		DownArrowIcon.keepPushButtonLook(addNewButton2); // it gets the menu arrow when there are several applications
 		addNewButton2.addActionListener(eventHandler);
 		deleteButton = new JButton("Delete");
 		deleteButton.setEnabled(false);
 		deleteButton.addActionListener(eventHandler);
 
-		changeUnitsButton = new JButton("Change Unit System");
-		changeUnitsButton.addActionListener(eventHandler);
-		
 		textFieldSearch = new JTextField(10);
 		textFieldSearch.getDocument().addDocumentListener(eventHandler);
 		textFieldSearch.putClientProperty("JTextField.variant", "search");
+		textFieldSearch.setName("ParametersSearchTextField");
+		textFieldSearch.setToolTipText("Search the table showing by name, expression or description");
 		parametersFunctionsTable = new EditorScrollTable();
+		parametersFunctionsTable.setName("ParametersFunctionsTable");
+		parametersFunctionsTable.getAccessibleContext().setAccessibleName("Parameters and Functions");
 		parametersFunctionsTableModel = new BioModelParametersTableModel(parametersFunctionsTable);
 		parametersFunctionsTable.setModel(parametersFunctionsTableModel);
 			
@@ -454,6 +458,8 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 		applicationComboBox.addActionListener(eventHandler);
 		applicationComboBox.setModel(applicationComboBoxModel);
 		applicationComboBox.setRenderer(new ApplicationComboBoxRenderer());
+		applicationComboBox.setName("ParametersApplicationComboBox");
+		applicationComboBox.setToolTipText("Which applications' parameters to list");
 		
 		constantsCheckBox = new JCheckBox("Parameters");
 		constantsCheckBox.setSelected(true);
@@ -462,10 +468,14 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 		functionsCheckBox.setSelected(true);
 		functionsCheckBox.addActionListener(eventHandler);
 		predefinedSymbolsTable = new EditorScrollTable();
+		predefinedSymbolsTable.setName("PredefinedSymbolsTable");
+		predefinedSymbolsTable.getAccessibleContext().setAccessibleName("Predefined Expressions");
 		predefinedSymbolsTableModel = new PredefinedSymbolsTableModel(predefinedSymbolsTable);
 		predefinedSymbolsTable.setModel(predefinedSymbolsTableModel);
 		GuiUtils.flexResizeTableColumns(predefinedSymbolsTable);
 		modelUnitSystemTable = new EditorScrollTable();
+		modelUnitSystemTable.setName("ModelUnitSystemTable");
+		modelUnitSystemTable.getAccessibleContext().setAccessibleName("Model Unit System");
 		modelUnitSystemTableModel = new ModelUnitSystemTableModel(modelUnitSystemTable);
 		modelUnitSystemTable.setModel(modelUnitSystemTableModel);
 		GuiUtils.flexResizeTableColumns(modelUnitSystemTable);
@@ -474,6 +484,7 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 		tabbedPane.addChangeListener(eventHandler);
 		
 		ParametersPanelTab parametersPanelTabs[] = new ParametersPanelTab[ParametersPanelTabID.values().length]; 
+		parametersPanelTabs[ParametersPanelTabID.summary.ordinal()] = new ParametersPanelTab(ParametersPanelTabID.summary, summaryPanel, null);
 		parametersPanelTabs[ParametersPanelTabID.parameters_functions.ordinal()] = new ParametersPanelTab(ParametersPanelTabID.parameters_functions, getParametersFunctionsPanel(), null);
 		parametersPanelTabs[ParametersPanelTabID.predefined.ordinal()] = new ParametersPanelTab(ParametersPanelTabID.predefined, getPredefinedSymbolsPanel(), null);
 		parametersPanelTabs[ParametersPanelTabID.modelUnitSystem.ordinal()] = new ParametersPanelTab(ParametersPanelTabID.modelUnitSystem, getModelUnitSystemPanel(), null);
@@ -483,7 +494,7 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 			tabbedPane.addTab(tab.id.title, tab.icon, tab.component);
 		}
 				
-		JPanel buttonPanel = new JPanel(new GridBagLayout());
+		buttonPanel = new JPanel(new GridBagLayout());
 		int gridy = 0;
 		GridBagConstraints  gbc = new GridBagConstraints();
 		gbc.gridx = 0;
@@ -508,13 +519,6 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 				
 		gbc = new GridBagConstraints();
 		gbc.gridx = GridBagConstraints.RELATIVE;
-		gbc.insets = new Insets(4,4,4,4);
-		gbc.gridy = gridy;
-		gbc.anchor = GridBagConstraints.LINE_END;
-		buttonPanel.add(changeUnitsButton, gbc);
-		
-		gbc = new GridBagConstraints();
-		gbc.gridx = GridBagConstraints.RELATIVE;
 		gbc.gridy = gridy;
 		gbc.anchor = GridBagConstraints.LINE_END;
 		gbc.insets = new Insets(4,50,4,4);
@@ -533,8 +537,10 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 		setLayout(new BorderLayout());
 		add(tabbedPane, BorderLayout.CENTER);
 		add(buttonPanel, BorderLayout.SOUTH);
+		buttonPanel.setVisible(tabbedPane.getSelectedIndex() != ParametersPanelTabID.summary.ordinal()); // made after the tabs, which first chose one
 
 		parametersFunctionsTable.getSelectionModel().addListSelectionListener(eventHandler);
+		parametersFunctionsTableModel.addTableModelListener(e -> queueSummaryRefresh()); // the model's parameters changed
 		parametersFunctionsTable.setDefaultRenderer(NameScope.class, new DefaultScrollTableCellRenderer() {
 
 			@Override
@@ -616,22 +622,6 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 			}
 		};
 		parametersFunctionsTable.getColumnModel().getColumn(BioModelParametersTableModel.COLUMN_NAME).setCellRenderer(nameTableCellRenderer);
-
-		{ //make double click on units panel bring up editing box
-			JPanel p = getModelUnitSystemPanel();
-			VCAssert.assertValid(p);
-			EditorScrollTable est = GuiUtils.findFirstChild(p, EditorScrollTable.class);
-			VCAssert.assertValid(est);
-			MouseListener ml = new MouseAdapter() {
-				@Override
-				public void mouseClicked(MouseEvent e) {
-					if (e.getClickCount() == 2) {
-						changeUnitsButtonPressed();
-					}
-				}
-			};
-			est.addMouseListener(ml);
-		}
 	}
 	
 	private JPanel getModelUnitSystemPanel() {
@@ -639,6 +629,7 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 			modelUnitSystemPanel = new JPanel();
 			modelUnitSystemPanel.setLayout(new BorderLayout());
 			
+			modelUnitSystemPanel.add(unitSystemChooserPanel, BorderLayout.WEST); // choosing the units, beside the table of them
 			modelUnitSystemPanel.add(modelUnitSystemTable.getEnclosingScrollPane(), BorderLayout.CENTER);
 		}
 		return modelUnitSystemPanel;
@@ -885,9 +876,51 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 	private void searchTable() {		
 		String text = textFieldSearch.getText();
 		computeCurrentSelectedTable();
-		currentSelectedTableModel.setSearchText(text);
+		if (currentSelectedTableModel != null) currentSelectedTableModel.setSearchText(text); // the Summary has none
 	}
 	
+	// the Summary recounts once things settle, not at each of a burst of changes
+	private void queueSummaryRefresh() {
+		if (summaryRefreshQueued) return;
+		summaryRefreshQueued = true;
+		SwingUtilities.invokeLater(() -> {
+			summaryRefreshQueued = false;
+			refreshSummary();
+		});
+	}
+
+	private void refreshSummary() {
+		summaryPanel.refresh(bioModel);
+	}
+
+	// the Summary's group, alone in the Parameters and Functions table: both types, no search
+	private void showParametersOf(MathematicsSummary.Group group) {
+		boolean global = group.where() == MathematicsSummary.Where.GLOBAL;
+		boolean reactions = group.where() == MathematicsSummary.Where.REACTIONS;
+		boolean applications = group.where() == MathematicsSummary.Where.APPLICATION;
+		globalParametersCheckBox.setSelected(global);
+		parametersFunctionsTableModel.setIncludeGlobal(global);
+		reactionsCheckBox.setSelected(reactions);
+		parametersFunctionsTableModel.setIncludeReactions(reactions);
+		applicationsCheckBox.setSelected(applications);
+		parametersFunctionsTableModel.setIncludeApplications(applications);
+		applicationComboBox.setEnabled(applications);
+		if (applications) { // one application, or (its heading) all of them
+			for (int i = 0; i < applicationComboBox.getItemCount(); i++) {
+				ApplicationSelection item = applicationComboBox.getItemAt(i);
+				if (group.application() == null ? !item.isAll() : item.getSimulationContext() != group.application()) continue;
+				applicationComboBox.setSelectedItem(item); // its listener filters the table
+				break;
+			}
+		}
+		constantsCheckBox.setSelected(true);
+		parametersFunctionsTableModel.setIncludeConstants(true);
+		functionsCheckBox.setSelected(true);
+		parametersFunctionsTableModel.setIncludeFunctions(true);
+		textFieldSearch.setText(null);
+		tabbedPane.setSelectedIndex(ParametersPanelTabID.parameters_functions.ordinal());
+	}
+
 	@Override
 	protected void onSelectedObjectsChange(Object[] selectedObjects) {
 		setTableSelections(selectedObjects, parametersFunctionsTable, parametersFunctionsTableModel);
@@ -899,28 +932,15 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 			return;
 		}
 
-		ActiveView activeView = null;
-		if (selectedIndex == ParametersPanelTabID.parameters_functions.ordinal()) {
-			activeView = new ActiveView(null, DocumentEditorTreeFolderClass.BIOMODEL_PARAMETERS_NODE, ActiveViewID.parameters_functions);
-		} else if (selectedIndex == ParametersPanelTabID.predefined.ordinal()) {
-			activeView = new ActiveView(null, DocumentEditorTreeFolderClass.BIOMODEL_PARAMETERS_NODE, ActiveViewID.predefined_symbols);
-		}
-		if (activeView != null) {
-			setActiveView(activeView);
-		}
+		ParametersPanelTabID selectedTab = ParametersPanelTabID.values()[selectedIndex];
+		setActiveView(new ActiveView(null, selectedTab.treeFolderClass, selectedTab.activeViewID)); // selects the tab's node in the tree
 		
-		if (selectedIndex == ParametersPanelTabID.parameters_functions.ordinal()) {
-			addNewButton.setVisible(true);
-			deleteButton.setVisible(true);
-		} else {
-			addNewButton.setVisible(false);
-			deleteButton.setVisible(false);			
-		}
-		if (selectedIndex == ParametersPanelTabID.modelUnitSystem.ordinal()) {
-			changeUnitsButton.setVisible(true);
-		} else {
-			changeUnitsButton.setVisible(false);
-		}
+		boolean parametersTab = selectedIndex == ParametersPanelTabID.parameters_functions.ordinal(); // the only tab they add to
+		if (buttonPanel != null) buttonPanel.setVisible(selectedIndex != ParametersPanelTabID.summary.ordinal()); // the Summary has no table to add to or search
+		if (selectedIndex == ParametersPanelTabID.summary.ordinal()) refreshSummary();
+		addNewButton.setVisible(parametersTab);
+		addNewButton2.setVisible(parametersTab);
+		deleteButton.setVisible(parametersTab);
 	}
 	
 	public void setBioModel(BioModel newValue) {
@@ -932,6 +952,8 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 		predefinedSymbolsTableModel.setBioModel(bioModel);
 		modelUnitSystemTableModel.setBioModel(bioModel);
 		applicationComboBoxModel.setBioModel(bioModel);
+		unitSystemChooserPanel.setModelUnits(bioModel == null ? null : bioModel.getModel().getUnitSystem());
+		refreshSummary();
 	}
 	
 	@Override
@@ -944,12 +966,15 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 	@Override
 	protected void onActiveViewChange(ActiveView activeView) {
 		super.onActiveViewChange(activeView);
-		if (DocumentEditorTreeFolderClass.BIOMODEL_PARAMETERS_NODE == activeView.getDocumentEditorTreeFolderClass()) {
-			if (activeView.getActiveViewID() != null) {
-				if (activeView.getActiveViewID().equals(ActiveViewID.parameter_estimation)) {
-					tabbedPane.setSelectedIndex(ParametersPanelTabID.parameters_functions.ordinal());
-				}
-			}
+		if (DocumentEditorTreeFolderClass.BIOMODEL_PARAMETERS_NODE == activeView.getDocumentEditorTreeFolderClass()
+				&& ActiveViewID.parameter_estimation.equals(activeView.getActiveViewID())) { // parameter estimation's link to a parameter
+			tabbedPane.setSelectedIndex(ParametersPanelTabID.parameters_functions.ordinal());
+			return;
+		}
+		for (ParametersPanelTabID tab : ParametersPanelTabID.values()) { // a tab's node selected in the tree
+			if (tab.treeFolderClass != activeView.getDocumentEditorTreeFolderClass()) continue;
+			tabbedPane.setSelectedIndex(tab.ordinal());
+			return;
 		}
 	}
 	

@@ -192,6 +192,11 @@ public class BioModelEditorTreeCellRenderer extends DocumentEditorTreeCellRender
 	    		case REACTION_DIAGRAM_NODE:
 	    			icon = VCellIcons.diagramIcon;
 	    			break;
+	    		case PARAMETERS_FUNCTIONS_NODE:
+	    		case PREDEFINED_SYMBOLS_NODE:
+	    		case MODEL_UNIT_SYSTEM_NODE:
+	    			icon = VCellIcons.tableIcon;
+	    			break;
 //	    		case STRUCTURE_DIAGRAM_NODE:
 //	    			icon = VCellIcons.structureIcon;
 //	    			break;
@@ -250,6 +255,9 @@ public class BioModelEditorTreeCellRenderer extends DocumentEditorTreeCellRender
 	    			break;
 	    		case BIOPAX_TREE_NODE:
 	    			icon = VCellIcons.tableIcon;
+	    			break;
+	    		case PATHWAY_LOOKUP_NODE:
+	    			icon = VCellIcons.pathwayLookupIcon;
 	    			break;
 	    		}
 	    	}

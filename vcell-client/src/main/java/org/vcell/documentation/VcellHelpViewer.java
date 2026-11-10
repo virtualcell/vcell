@@ -27,6 +27,7 @@ import javax.swing.JPanel;
 
 import org.vcell.client.logicalwindow.LWTopFrame;
 import org.vcell.util.gui.GeneralGuiUtils;
+import org.vcell.util.gui.ShortcutsWizard;
 import org.vcell.util.document.VCellSoftwareVersion;
 
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
@@ -114,7 +115,7 @@ public class VcellHelpViewer extends JPanel {
             }
             this.setLayout(new BorderLayout());
             this.add(jhelp);
-            GeneralGuiUtils.addCloseWindowKeyboardAction(this);
+            ShortcutsWizard.addCloseWindowShortcut(this);
         } catch (Exception e) {
             e.printStackTrace();
             return;

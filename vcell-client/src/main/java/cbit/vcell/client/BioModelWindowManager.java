@@ -642,7 +642,7 @@ public boolean hasBlankDocument() {
 
 @Override
 public void updateConnectionStatus(ConnectionStatus connStatus) {
-	bioModelEditor.updateConnectionStatus(connStatus);	
+	// nothing in the window depends on the connection since its database browser moved to the welcome window
 }
 
 public DataImporter getPathwayImporter() { return pathwayImporter; }

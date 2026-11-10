@@ -125,7 +125,8 @@ implements PathwayEditor, ActionBuilder.Generator {
 		pathway_diagram("Pathway Diagram"),
 		pathway_objects("Pathway Objects"),
 		biopax_summary("BioPAX Summary"),
-		biopax_tree("BioPAX Tree");
+		biopax_tree("BioPAX Tree"),
+		pathway_lookup("Pathway Lookup");
 		
 		private String name = null;
 		PathwayPanelTabID(String name) {
@@ -170,6 +171,8 @@ implements PathwayEditor, ActionBuilder.Generator {
 	private JTabbedPane tabbedPane;
 	private JPanel graphTabPanel;
 	private JPanel sourceTabPanel;
+	private final BioModelEditorPathwayCommonsPanel pathwayLookupPanel = new BioModelEditorPathwayCommonsPanel(); // searches Pathway Commons; its results open in the bottom right for import
+	private JPanel bottomPanel; // the diagram and object tools, which mean nothing on the lookup tab
 	private JPanel treeTabPanel = new JPanel(new BorderLayout());
 	private PathwayGraphModel pathwayGraphModel;
 	protected JScrollPane graphScrollPane;
@@ -775,18 +778,19 @@ implements PathwayEditor, ActionBuilder.Generator {
 		searchTextField = new JTextField();
 		searchTextField.setName("PathwayObjectsSearchTextField");
 		searchTextField.putClientProperty("JTextField.variant", "search");
+		searchTextField.setToolTipText("Search the pathway's objects by name");
 		searchTextField.getDocument().addDocumentListener(eventHandler);
-		groupButton = new JButton("Group", new DownArrowIcon());
+		groupButton = DownArrowIcon.keepPushButtonLook(new JButton("Group", new DownArrowIcon()));
 		groupButton.setHorizontalTextPosition(SwingConstants.LEFT);
 		groupButton.addActionListener(eventHandler);
 		deleteButton = new JButton("Delete");
 		deleteButton.addActionListener(eventHandler);
-		physiologyLinkButton = new JButton("Physiology Links", new DownArrowIcon());
+		physiologyLinkButton = DownArrowIcon.keepPushButtonLook(new JButton("Physiology Links", new DownArrowIcon()));
 		physiologyLinkButton.setName("PhysiologyLinksButton");
 		physiologyLinkButton.setHorizontalTextPosition(SwingConstants.LEFT);
 		physiologyLinkButton.addActionListener(eventHandler);
 		
-		JPanel bottomPanel = new JPanel();
+		bottomPanel = new JPanel();
 		bottomPanel.setLayout(new GridBagLayout());	
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.gridx = 0;
@@ -828,6 +832,7 @@ implements PathwayEditor, ActionBuilder.Generator {
 		pathwayPanelTabs[PathwayPanelTabID.pathway_objects.ordinal()] = new PathwayPanelTab(PathwayPanelTabID.pathway_objects, pathwayModelTable.getEnclosingScrollPane(), VCellIcons.tableIcon);
 		pathwayPanelTabs[PathwayPanelTabID.biopax_summary.ordinal()] = new PathwayPanelTab(PathwayPanelTabID.biopax_summary, sourceTabPanel, VCellIcons.textNotesIcon);
 		pathwayPanelTabs[PathwayPanelTabID.biopax_tree.ordinal()] = new PathwayPanelTab(PathwayPanelTabID.biopax_tree, treeTabPanel, VCellIcons.tableIcon);
+		pathwayPanelTabs[PathwayPanelTabID.pathway_lookup.ordinal()] = new PathwayPanelTab(PathwayPanelTabID.pathway_lookup, this.pathwayLookupPanel, VCellIcons.pathwayLookupIcon);
 		tabbedPane.addChangeListener(eventHandler);
 		tabbedPane.addChangeListener(eventHandler);
 		
@@ -1040,6 +1045,11 @@ implements PathwayEditor, ActionBuilder.Generator {
 				DialogUtils.showErrorDialog(this, ex.getMessage());
 			}
 		}
+	}
+
+	/** The Pathway Diagram's graph, whose layout (never saved with the model) the Biochemistry Summary's copy follows. */
+	PathwayGraphModel getPathwayGraphModel() {
+		return pathwayGraphModel;
 	}
 
 	public void setBioModel(BioModel bioModel) {
@@ -1364,9 +1374,16 @@ implements PathwayEditor, ActionBuilder.Generator {
 		}
 	}
 	
+	@Override
+	public void setSelectionManager(SelectionManager selectionManager) {
+		super.setSelectionManager(selectionManager);
+		this.pathwayLookupPanel.setSelectionManager(selectionManager); // a pathway it fetches is published as a selection, opening the import preview
+	}
+
 	public void tabbedPaneSelectionChanged() {
 		searchTextField.setText(null);
 		searchTextField.setEditable(tabbedPane.getSelectedComponent() != sourceTabPanel);
+		this.bottomPanel.setVisible(tabbedPane.getSelectedComponent() != this.pathwayLookupPanel); // the lookup has its own search
 		refreshButtons();
 
 		int selectedIndex = tabbedPane.getSelectedIndex();
@@ -1379,6 +1396,8 @@ implements PathwayEditor, ActionBuilder.Generator {
 			activeView = new ActiveView(null, DocumentEditorTreeFolderClass.BIOPAX_SUMMARY_NODE, ActiveViewID.biopax_summary);
 		} else if (selectedIndex == PathwayPanelTabID.biopax_tree.ordinal()) {
 			activeView = new ActiveView(null, DocumentEditorTreeFolderClass.BIOPAX_TREE_NODE, ActiveViewID.biopax_tree);
+		} else if (selectedIndex == PathwayPanelTabID.pathway_lookup.ordinal()) {
+			activeView = new ActiveView(null, DocumentEditorTreeFolderClass.PATHWAY_LOOKUP_NODE, ActiveViewID.pathway_lookup);
 		}
 		if (activeView != null) {
 			setActiveView(activeView);
@@ -1394,6 +1413,7 @@ implements PathwayEditor, ActionBuilder.Generator {
 			return;
 		}		
 		switch (folderClass) {
+		case PATHWAY_NODE: // Pathway has no diagram node: it opens on the diagram
 		case PATHWAY_DIAGRAM_NODE:
 			tabbedPane.setSelectedIndex(PathwayPanelTabID.pathway_diagram.ordinal());
 			break;
@@ -1405,6 +1425,9 @@ implements PathwayEditor, ActionBuilder.Generator {
 			break;
 		case BIOPAX_TREE_NODE:
 			tabbedPane.setSelectedIndex(PathwayPanelTabID.biopax_tree.ordinal());
+			break;
+		case PATHWAY_LOOKUP_NODE:
+			tabbedPane.setSelectedIndex(PathwayPanelTabID.pathway_lookup.ordinal());
 			break;
 		}
 	}

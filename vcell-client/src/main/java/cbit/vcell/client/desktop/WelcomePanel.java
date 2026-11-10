@@ -37,7 +37,7 @@ public class WelcomePanel extends JPanel {
 	private final WelcomeWindowManager manager;
 	private final RecentModelsPanel recentModels = new RecentModelsPanel();
 	private final DatabaseModelsPanel databaseModels = new DatabaseModelsPanel(); // the database's models, as its tree's folders sort them
-	private final BioModelsNetPanel bioModelsNetPanel = new BioModelsNetPanel(); // as a BioModel window's "BMDB" tab
+	private final BioModelsNetPanel bioModelsNetPanel = new BioModelsNetPanel(); // the BioModels Database browser, which model windows no longer carry
 	private final JTabbedPane modelTabs = new JTabbedPane(); // recent models, VCell's database and the BioModels Database
 	private final JPanel modelsArea = new JPanel(new BorderLayout(0, 8)); // one search, over all the tabs, and the tabs; only when logged in
 	private final SearchField searchField = new SearchField("Search models");
@@ -97,6 +97,7 @@ public class WelcomePanel extends JPanel {
 		super(new BorderLayout(0, 14));
 		this.manager = manager;
 		this.databaseModels.setOpener(manager::openModel);
+		this.databaseModels.setMenuMaker(manager::createModelMenu);
 		this.bioModelsNetPanel.setDocumentWindowManager(manager);
 		this.setName("WelcomePanel");
 		this.logo.setName("WelcomeLogo");
@@ -121,6 +122,7 @@ public class WelcomePanel extends JPanel {
 		this.add(this.createModelTabs(), BorderLayout.CENTER);
 		this.add(this.createFooter(), BorderLayout.SOUTH);
 		this.recentModels.setOpener(manager::openModel);
+		this.recentModels.setMenuMaker(manager::createModelMenu);
 		this.updateConnectionStatus(null, null);
 	}
 
@@ -695,7 +697,7 @@ public class WelcomePanel extends JPanel {
 	}
 
 	/** A text field that says what it searches while it's empty. */
-	private static final class SearchField extends JTextField {
+	static final class SearchField extends JTextField { // also the model picker's
 		private final String hint;
 
 		SearchField(String hint) {

@@ -77,6 +77,7 @@ public class SpatialProcessDisplayPanel extends BioModelEditorApplicationRightSi
 		gbc.anchor = GridBagConstraints.LINE_END;
 		add(addNewButton, gbc);
 		addNewButton.setIcon(new DownArrowIcon());
+		DownArrowIcon.keepPushButtonLook(addNewButton);
 		addNewButton.setHorizontalTextPosition(SwingConstants.LEFT);
 		addNewButton.addMouseListener(new MouseAdapter() {
 			public void mousePressed(MouseEvent e) {

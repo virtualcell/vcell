@@ -44,6 +44,7 @@ import javax.swing.ToolTipManager;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
@@ -61,18 +62,13 @@ import org.vcell.util.gui.VCellIcons;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.constants.GuiConstants;
-import cbit.vcell.client.desktop.DatabaseWindowPanel;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderNode;
 import cbit.vcell.client.desktop.biomodel.IssueManager.IssueEvent;
 import cbit.vcell.client.desktop.biomodel.IssueManager.IssueEventListener;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
 import cbit.vcell.client.desktop.mathmodel.MathModelEditor;
-import org.vcell.api.server.ConnectionStatus;
-import cbit.vcell.desktop.BioModelMetaDataPanel;
 import cbit.vcell.desktop.BioModelNode;
-import cbit.vcell.desktop.GeometryMetaDataPanel;
-import cbit.vcell.desktop.MathModelMetaDataPanel;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.resource.PropertyLoader;
@@ -131,12 +127,7 @@ public abstract class DocumentEditor extends JPanel {
 	private JMenuItem deleteMenuItem;
 	private JMenuItem copyNameMenuItem;
 	
-	protected DatabaseWindowPanel databaseWindowPanel = null;
-	protected JTabbedPane leftBottomTabbedPane = null;
 	protected JSplitPane rightSplitPane = null;
-	protected BioModelMetaDataPanel bioModelMetaDataPanel = null;
-	protected MathModelMetaDataPanel mathModelMetaDataPanel = null;
-	protected GeometryMetaDataPanel geometryMetaDataPanel = null;
 	
 	protected JTabbedPane rightBottomTabbedPane = null;
 	protected JPanel rightBottomEmptyPanel = null;
@@ -494,32 +485,27 @@ private void initialize() {
 				Object object = path.getLastPathComponent();
 				return (object instanceof BioModelNode) && (((BioModelNode)object).getUserObject() instanceof SimulationContext);
 			}
+
+			@Override
+			public void updateUI() { // the navigation column's rows, again whenever the theme changes
+				super.updateUI();
+				NavigationTreeStyle.install(this);
+			}
+
+			@Override
+			public void setCellRenderer(TreeCellRenderer renderer) { // each window's renderer, drawn in a row's rectangle
+				super.setCellRenderer(NavigationTreeStyle.wrap(renderer));
+			}
 			
 		};
 		documentEditorTree.setEditable(true);
-		documentEditorTree.setLargeModel(true);
 		documentEditorTreeCellEditor = new DocumentEditorTreeCellEditor(documentEditorTree);
 		documentEditorTree.setCellEditor(documentEditorTreeCellEditor);
 		documentEditorTree.setName("bioModelEditorTree");
 		ToolTipManager.sharedInstance().registerComponent(documentEditorTree);
-		VCellFonts.followRowHeight(documentEditorTree);
 		documentEditorTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 		
-		JSplitPane leftSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-		databaseWindowPanel = new DatabaseWindowPanel(false, false);
-		leftBottomTabbedPane  = new JTabbedPaneEnhanced();
-		leftBottomTabbedPane.setName("LeftBottomTabbedPane");
-		leftBottomTabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
-		leftBottomTabbedPane.addTab("VCell DB", databaseWindowPanel);
-		
-		JScrollPane treePanel = new javax.swing.JScrollPane(documentEditorTree);	
-		leftSplitPane.setTopComponent(treePanel);
-		leftBottomTabbedPane.setMinimumSize(new java.awt.Dimension(198, 148));
-		leftSplitPane.setBottomComponent(leftBottomTabbedPane);
-		leftSplitPane.setResizeWeight(0.5);
-		leftSplitPane.setDividerLocation(300);
-		leftSplitPane.setDividerSize(8);
-		leftSplitPane.setOneTouchExpandable(true);
+		JScrollPane treePanel = new javax.swing.JScrollPane(documentEditorTree); // the whole left column: databases are browsed from the welcome window
 
 		rightSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
 		rightSplitPane.setResizeWeight(0.7);
@@ -573,7 +559,7 @@ private void initialize() {
 		splitPane.setOneTouchExpandable(true);
 		splitPane.setResizeWeight(0.3);
 		splitPane.setDividerSize(8);
-		splitPane.setLeftComponent(leftSplitPane);
+		splitPane.setLeftComponent(treePanel);
 		splitPane.setRightComponent(rightSplitPane);
 		
 		add(splitPane, BorderLayout.CENTER);
@@ -581,16 +567,9 @@ private void initialize() {
 		issueManager.addIssueEventListener(eventHandler);
 		selectionManager.addPropertyChangeListener(eventHandler);
 		
-		databaseWindowPanel.setSelectionManager(selectionManager);
 		documentEditorTree.addTreeSelectionListener(eventHandler);
 		documentEditorTree.addMouseListener(eventHandler);
 		
-		bioModelMetaDataPanel = new BioModelMetaDataPanel();
-		bioModelMetaDataPanel.setSelectionManager(selectionManager);
-		mathModelMetaDataPanel = new MathModelMetaDataPanel();
-		mathModelMetaDataPanel.setSelectionManager(selectionManager);
-		geometryMetaDataPanel = new GeometryMetaDataPanel();
-		geometryMetaDataPanel.setSelectionManager(selectionManager);
 		issuePanel.setSelectionManager(selectionManager);
 		issuePanel.setIssueManager(issueManager);
 	} catch (java.lang.Throwable ivjExc) {
@@ -888,18 +867,6 @@ private JPopupMenu getPopupMenu() {
 	return popupMenu;
 }
 
-private ConnectionStatus connectionStatus = null;
-public void updateConnectionStatus(ConnectionStatus newValue) {
-	if (connectionStatus == newValue 
-			|| connectionStatus != null && connectionStatus.equals(newValue)) {
-		return;
-	}
-	connectionStatus = newValue;
-	databaseWindowPanel.updateConnectionStatus(connectionStatus);
-	if (connectionStatus.getStatus() == ConnectionStatus.CONNECTED) {
-		databaseWindowPanel.getDatabaseWindowManager().initializeAll();
-	}
-}
 public SelectionManager getSelectionManager() { return selectionManager; }
 
 public final JTabbedPane getRightBottomTabbedPane() {

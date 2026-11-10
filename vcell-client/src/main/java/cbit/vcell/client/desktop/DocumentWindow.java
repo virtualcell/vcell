@@ -41,7 +41,6 @@ import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocument.VCDocumentType;
 import org.vcell.util.document.VersionFlag;
 import org.vcell.util.gui.*;
-import org.vcell.util.gui.exporter.FileFilters;
 import org.vcell.util.importer.PathwayImportPanel.PathwayImportOption;
 
 import javax.swing.*;
@@ -92,7 +91,6 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
     private JMenuItem ivjReconnectMenuItem = null;
     //	private JMenuItem ivjImageJServiceMenuItem = null;
     private JMenuItem ivjSave_AsMenuItem = null;
-    private JMenuItem ivjSave_AsLocalMenuItem = null;
     private JMenuItem ivjSave_VersionMenuItem = null;
     private JMenuItem ivjSaveMenuItem = null;
     private JMenu ivjServerMenu = null;
@@ -166,8 +164,6 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
                     DocumentWindow.this.saveDocument(true);
                 if (e.getSource() == DocumentWindow.this.getSave_AsMenuItem())
                     DocumentWindow.this.getWindowManager().saveDocumentAsNew();
-                if (e.getSource() == DocumentWindow.this.getSave_AsLocalMenuItem())
-                    DocumentWindow.this.saveAsLocal();
                 try {
                     if (e.getSource() == DocumentWindow.this.getJMenuItemImport())
                         DocumentWindow.this.importExternalDocument();
@@ -199,7 +195,7 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
                 if (e.getSource() == DocumentWindow.this.getSpatialCreateNewMenuItem())
                     DocumentWindow.this.newDocument(e);
                 if (e.getSource() == DocumentWindow.this.getJMenuItemExport())
-                    DocumentWindow.this.getWindowManager().exportDocument(null);
+                    DocumentWindow.this.getWindowManager().getRequestManager().exportDocumentOfferingSave(DocumentWindow.this.getWindowManager());
                 if (e.getSource() == DocumentWindow.this.getTestingFrameworkMenuItem())
                     DocumentWindow.this.showTestingFrameworkWindow();
                 if (e.getSource() == DocumentWindow.this.getJMenuItemOnlineHelp())
@@ -516,7 +512,7 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
                 this.ivjCloseMenuItem = new javax.swing.JMenuItem();
                 this.ivjCloseMenuItem.setName("CloseMenuItem");
                 this.ivjCloseMenuItem.setText("Close");
-                this.ivjCloseMenuItem.setAccelerator(GeneralGuiUtils.CLOSE_WINDOW_KEY_STROKE);
+                this.ivjCloseMenuItem.setAccelerator(ShortcutsWizard.keyStrokeFor(ShortcutsWizard.Shortcut.CLOSE_WINDOW));
             } catch (java.lang.Throwable ivjExc) {
                 this.handleException(ivjExc);
             }
@@ -571,7 +567,6 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
                 this.ivjFileMenu.add(this.getSaveMenuItem());
                 this.ivjFileMenu.add(this.getSave_VersionMenuItem());
                 this.ivjFileMenu.add(this.getSave_AsMenuItem());
-                this.ivjFileMenu.add(this.getSave_AsLocalMenuItem());
                 this.ivjFileMenu.add(new JSeparator());
                 this.ivjFileMenu.add(this.getJMenuItemRevert());
                 this.ivjFileMenu.add(this.getJMenuItemCompare());
@@ -673,7 +668,7 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
             try {
                 this.ivjJMenuItemExport = new javax.swing.JMenuItem();
                 this.ivjJMenuItemExport.setName("JMenuItemExport");
-                this.ivjJMenuItemExport.setText("Export...");
+                this.ivjJMenuItemExport.setText("Export / Save to File..."); // also what "Save As Local..." did: VCML is preselected
                 this.ivjJMenuItemExport.setActionCommand(GuiConstants.ACTIONCMD_EXPORT);
             } catch (java.lang.Throwable ivjExc) {
                 this.handleException(ivjExc);
@@ -1032,26 +1027,13 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
                 this.ivjSave_AsMenuItem = new javax.swing.JMenuItem();
                 this.ivjSave_AsMenuItem.setName("Save_AsMenuItem");
                 this.ivjSave_AsMenuItem.setText("Save As...");
+                this.ivjSave_AsMenuItem.setAccelerator(ShortcutsWizard.keyStrokeFor(ShortcutsWizard.Shortcut.SAVE_AS)); // how a never-saved model is saved
                 this.ivjSave_AsMenuItem.setEnabled(true);
             } catch (java.lang.Throwable ivjExc) {
                 this.handleException(ivjExc);
             }
         }
         return this.ivjSave_AsMenuItem;
-    }
-
-    private javax.swing.JMenuItem getSave_AsLocalMenuItem() {
-        if (this.ivjSave_AsLocalMenuItem == null) {
-            try {
-                this.ivjSave_AsLocalMenuItem = new javax.swing.JMenuItem();
-                this.ivjSave_AsLocalMenuItem.setName("Save_AsLocalMenuItem");
-                this.ivjSave_AsLocalMenuItem.setText("Save As Local...");
-                this.ivjSave_AsLocalMenuItem.setEnabled(true);
-            } catch (java.lang.Throwable ivjExc) {
-                this.handleException(ivjExc);
-            }
-        }
-        return this.ivjSave_AsLocalMenuItem;
     }
 
     private javax.swing.JMenuItem getSave_VersionMenuItem() {
@@ -1080,6 +1062,7 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
                 this.ivjSaveMenuItem = new javax.swing.JMenuItem();
                 this.ivjSaveMenuItem.setName("SaveMenuItem");
                 this.ivjSaveMenuItem.setText("Save");
+                this.ivjSaveMenuItem.setAccelerator(ShortcutsWizard.keyStrokeFor(ShortcutsWizard.Shortcut.SAVE)); // fires only while Save is enabled
                 this.ivjSaveMenuItem.setEnabled(false);
             } catch (java.lang.Throwable ivjExc) {
                 this.handleException(ivjExc);
@@ -1502,7 +1485,6 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
         this.getJMenuItemOpenLocal().addActionListener(this.ivjEventHandler);
         this.getSaveMenuItem().addActionListener(this.ivjEventHandler);
         this.getSave_AsMenuItem().addActionListener(this.ivjEventHandler);
-        this.getSave_AsLocalMenuItem().addActionListener(this.ivjEventHandler);
         this.getJMenuItemImport().addActionListener(this.ivjEventHandler);
         this.getSave_VersionMenuItem().addActionListener(this.ivjEventHandler);
         this.getManageUserMenuItem().addActionListener(this.ivjEventHandler);
@@ -1673,10 +1655,6 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
     }
 
 
-    private void saveAsLocal() {
-        this.getWindowManager().exportDocument(FileFilters.FILE_FILTER_VCML);
-    }
-
     /**
      * Sets the windowManager property (cbit.vcell.client.desktop.DocumentWindowManager) value.
      *
@@ -1794,7 +1772,6 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
 
                 this.getSaveMenuItem().setEnabled(false);
                 this.getSave_AsMenuItem().setEnabled(false);
-                this.getSave_AsLocalMenuItem().setEnabled(true);
                 this.getSave_VersionMenuItem().setEnabled(false);
                 this.getJMenuItemRevert().setEnabled(false);
                 this.getJMenuItemCompare().setEnabled(false);
@@ -1829,7 +1806,6 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
                         )
                 );
                 this.getSave_AsMenuItem().setEnabled(true);
-                this.getSave_AsLocalMenuItem().setEnabled(true);
                 this.getSave_VersionMenuItem().setEnabled(bVersionedDocument);
                 this.getJMenuItemRevert().setEnabled(bVersionedDocument);
                 this.getJMenuItemCompare().setEnabled(bVersionedDocument);
@@ -1855,10 +1831,8 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
                 this.getLogOutMenuItem().setEnabled(false);
                 this.getReconnectUserMenuItem().setEnabled(false);
                 this.enableOpenMenuItems(false);
-                this.getSave_AsLocalMenuItem().setEnabled(true);
                 this.getSaveMenuItem().setEnabled(false);
                 this.getSave_AsMenuItem().setEnabled(false);
-                this.getSave_AsLocalMenuItem().setEnabled(true);
                 this.getSave_VersionMenuItem().setEnabled(false);
                 this.getJMenuItemRevert().setEnabled(false);
                 this.getJMenuItemCompare().setEnabled(false);
@@ -1882,7 +1856,6 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
                 this.getLogOutMenuItem().setEnabled(false);
                 this.getReconnectUserMenuItem().setEnabled(true);
                 this.enableOpenMenuItems(false);
-                this.getSave_AsLocalMenuItem().setEnabled(true);
                 this.getSaveMenuItem().setEnabled(false);
                 this.getSave_AsMenuItem().setEnabled(false);
                 this.getSave_VersionMenuItem().setEnabled(false);

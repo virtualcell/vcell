@@ -615,17 +615,17 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 	}
 	
 	private void initialize(){
-		newButton = new JButton("New");
+		newButton = DownArrowIcon.keepPushButtonLook(new JButton("New")); // gets the menu arrow when there's more than one structure
 		newButton.setName("ModelNewButton");
-		newButton2 = new JButton("New Rule");
+		newButton2 = DownArrowIcon.keepPushButtonLook(new JButton("New Rule")); // gets the menu arrow when there's more than one structure
 		newButton2.setName("ModelNewRuleButton");
 		newMemButton = new JButton("New Membrane");
 		newMemButton.setName("ModelNewMembraneButton");
 		deleteButton = new JButton("Delete");
 		deleteButton.setName("ModelDeleteButton");
-		duplicateButton = new JButton("Duplicate");
+		duplicateButton = DownArrowIcon.keepPushButtonLook(new JButton("Duplicate")); // gets the menu arrow when there's more than one structure
 		duplicateButton.setName("ModelDuplicateButton");
-		pathwayButton = new JButton("Pathway Links", new DownArrowIcon());
+		pathwayButton = DownArrowIcon.keepPushButtonLook(new JButton("Pathway Links", new DownArrowIcon()));
 		pathwayButton.setName("ModelPathwayLinksButton");
 		pathwayButton.setHorizontalTextPosition(SwingConstants.LEFT);
 		textFieldSearch = new JTextField();
@@ -2064,6 +2064,9 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 			return;
 		}		
 		switch (folderClass) {
+		case MODEL_NODE: // Physiology has no diagram node: it opens on the diagram
+			selectTab(ModelPanelTabID.reaction_diagram);
+			break;
 		case REACTIONS_NODE:
 			selectTab(ModelPanelTabID.reaction_table);
 			break;

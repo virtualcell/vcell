@@ -1398,7 +1398,7 @@ private void stopSimulations() {
 	private javax.swing.JButton getMoreActionsButton() {
 		if (moreActionsButton == null) {
 			try {
-				moreActionsButton = new JButton("More Actions", new DownArrowIcon());
+				moreActionsButton = DownArrowIcon.keepPushButtonLook(new JButton("More Actions", new DownArrowIcon()));
 				moreActionsButton.setHorizontalTextPosition(SwingConstants.LEFT);
 				moreActionsButton.setName("MoreActionsButton");
 			} catch (java.lang.Throwable ivjExc) {

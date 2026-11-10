@@ -30,6 +30,7 @@ import cbit.vcell.client.desktop.biomodel.DocumentEditor;
 import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.client.task.*;
+import cbit.vcell.client.desktop.ModelPickerDialog;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.desktop.ClientLogin;
 import cbit.vcell.desktop.ImageDbTreePanel;
@@ -2167,10 +2168,8 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 						@Override
 						public void run(Hashtable<String, Object> hashTable) throws Exception {
 							// spatial or non-spatial
-							BioModelInfo bioModelInfo = (BioModelInfo) DialogUtils.getDBTreePanelSelection(
-									requester.getComponent(),
-									getMdiManager().getDatabaseWindowManager().getBioModelDbTreePanel(), "Open",
-									"Select BioModel");
+							BioModelInfo bioModelInfo = (BioModelInfo) getMdiManager().getDatabaseWindowManager().selectDocument(
+									VCDocumentType.BIOMODEL_DOC, requester, "New MathModel From a BioModel Application", "Select");
 							if (bioModelInfo != null) { // may throw UserCancelException
 								hashTable.put("bioModelInfo", bioModelInfo);
 							}
@@ -3116,11 +3115,17 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				getClientTaskStatusSupport().setMessage("Getting new Geometry name...");
 				String newGeometryName = null;
+				java.util.Set<String> takenGeometryNames = new java.util.HashSet<>(); // the dialog won't accept these; the check below stays as a backstop
+				for (GeometryInfo geometryInfo : ClientRequestManager.this.getDocumentManager().getGeometryInfos()) {
+					if (!geometryInfo.getVersion().getOwner().equals(ClientRequestManager.this.getDocumentManager().getUser())) continue;
+					takenGeometryNames.add(geometryInfo.getVersion().getName());
+				}
 				while (true) {
 					newGeometryName = ClientRequestManager.this.getMdiManager().getDatabaseWindowManager()
 							.showSaveDialog(((Geometry) hashTable.get("doc")).getDocumentType(),
 									(Component) hashTable.get(ClientRequestManager.GUI_PARENT),
-									(newGeometryName == null ? "NewGeometry" : newGeometryName));
+									(newGeometryName == null ? "NewGeometry" : newGeometryName),
+									takenGeometryNames);
 					if (newGeometryName == null || newGeometryName.trim().length() == 0) {
 						newGeometryName = null;
 						DialogUtils.showWarningDialog((Component) hashTable.get(ClientRequestManager.GUI_PARENT),
@@ -3923,7 +3928,8 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 		// get an info first
 		VCDocumentInfo documentInfo = null;
 		try {
-			documentInfo = getMdiManager().getDatabaseWindowManager().selectDocument(documentType, requester);
+			documentInfo = getMdiManager().getDatabaseWindowManager().selectDocument(documentType, requester,
+					"Open " + ModelPickerDialog.typeName(documentType), "Open");
 			// check whether request comes from a blank, unchanged document window; if so,
 			// open in same window, otherwise in a new window
 			boolean inNewWindow = isDifferentFromBlank(documentType, requester.getVCDocument());
@@ -4264,6 +4270,14 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 
 	public void saveDocument(final DocumentWindowManager documentWindowManager, boolean replace,
 							 AsynchClientTask closeWindowTask) {
+		saveDocument(documentWindowManager, replace, closeWindowTask, null);
+	}
+
+	/**
+	 * @param afterSaveTask runs only once the save has succeeded (e.g. {@link ExportAfterSave}); may be null
+	 */
+	public void saveDocument(final DocumentWindowManager documentWindowManager, boolean replace,
+							 AsynchClientTask closeWindowTask, AsynchClientTask afterSaveTask) {
 		if (documentWindowManager.getUser() == null || User.isGuest(documentWindowManager.getUser().getName())) {
 			DialogUtils.showErrorDialog(documentWindowManager.getComponent(),
 					User.createGuestErrorMessage("saveDocument"));
@@ -4279,7 +4293,7 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 			// creation)
 			System.out.println(
 					"\nIGNORED ERROR: should not have been able to use save/save edition on doc with no version key\n");
-			saveDocumentAsNew(documentWindowManager, closeWindowTask);
+			saveDocumentAsNew(documentWindowManager, closeWindowTask, afterSaveTask);
 			return;
 		}
 		if (!documentWindowManager.getVCDocument().getVersion().getOwner()
@@ -4292,7 +4306,7 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 					UserMessage.warn_SaveNotOwner, null);
 			if (choice.equals(UserMessage.OPTION_SAVE_AS_NEW)) {
 				// user chose to Save As
-				saveDocumentAsNew(documentWindowManager, closeWindowTask);
+				saveDocumentAsNew(documentWindowManager, closeWindowTask, afterSaveTask);
 				return;
 			} else {
 				if (closeWindowTask == null) {
@@ -4349,6 +4363,7 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 			// replace finishSave
 			tasks[tasks.length - 1] = closeWindowTask;
 		}
+		tasks = ClientRequestManager.withSaveFollowUps(tasks, afterSaveTask);
 		/* run tasks */
 		ClientTaskDispatcher.dispatch(currentDocumentWindow, hash, tasks, false);
 	}
@@ -4357,7 +4372,77 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 		saveDocumentAsNew(documentWindowManager, null);
 	}
 
+	// a save's own tasks, then afterSaveTask (which runs only if the save succeeded), then the step that offers to save
+	// the model to a file instead if the save failed (#1451)
+	private static AsynchClientTask[] withSaveFollowUps(AsynchClientTask[] saveTasks, AsynchClientTask afterSaveTask) {
+		List<AsynchClientTask> tasks = new ArrayList<>(Arrays.asList(saveTasks));
+		if (afterSaveTask != null) tasks.add(afterSaveTask);
+		tasks.add(new OfferFileSaveOnSaveFailure());
+		return tasks.toArray(new AsynchClientTask[0]);
+	}
+
+	/**
+	 * Export / Save to File, from a model's window. If the model has changes that aren't in the VCell database, and
+	 * it could be saved there, first offers to save it: the exported file includes the changes either way, so this only
+	 * keeps the database copy up to date. Then shows the usual export dialog.
+	 */
+	public void exportDocumentOfferingSave(DocumentWindowManager documentWindowManager) {
+		if (!this.canSaveToDatabase(documentWindowManager) || !this.hasUnsavedChanges(documentWindowManager)) {
+			this.exportDocument(documentWindowManager, null);
+			return;
+		}
+		String choice = PopupGenerator.showWarningDialog(documentWindowManager, this.getUserPreferences(),
+				UserMessage.warn_exportUnsavedChanges, null);
+		if (UserMessage.OPTION_EXPORT_WITHOUT_SAVING.equals(choice)) {
+			this.exportDocument(documentWindowManager, null);
+			return;
+		}
+		if (!UserMessage.OPTION_SAVE_THEN_EXPORT.equals(choice)) return; // Cancel, or the dialog was closed
+
+		if (this.canSaveInPlace(documentWindowManager)) {
+			this.saveDocument(documentWindowManager, true, null, new ExportAfterSave());
+			return;
+		}
+		this.saveDocumentAsNew(documentWindowManager, null, new ExportAfterSave()); // never saved, someone else's, or archived/published
+	}
+
+	// a logged-in, non-guest user, connected to the server
+	private boolean canSaveToDatabase(DocumentWindowManager documentWindowManager) {
+		User user = documentWindowManager.getUser();
+		if (user == null || User.isGuest(user.getName())) return false;
+		ConnectionStatus connectionStatus = this.getConnectionStatus();
+		return connectionStatus != null && connectionStatus.getStatus() == ConnectionStatus.CONNECTED;
+	}
+
+	// as when closing a window: a never-saved model counts once it differs from a blank one; if the comparison with the
+	// saved version fails, don't ask (exporting goes ahead, as it did before)
+	private boolean hasUnsavedChanges(DocumentWindowManager documentWindowManager) {
+		VCDocument vcDocument = documentWindowManager.getVCDocument();
+		if (vcDocument.getVersion() == null) return this.isDifferentFromBlank(vcDocument.getDocumentType(), vcDocument);
+		try {
+			return this.getDocumentManager().isChanged(vcDocument);
+		} catch (Exception exception) {
+			lg.warn("Couldn't compare the model with its saved version before exporting", exception);
+			return false;
+		}
+	}
+
+	// whether File > Save would save over the stored version: the user's own, still editable model
+	private boolean canSaveInPlace(DocumentWindowManager documentWindowManager) {
+		Version version = documentWindowManager.getVCDocument().getVersion();
+		if (version == null) return false;
+		if (!version.getOwner().compareEqual(this.getDocumentManager().getUser())) return false;
+		return !version.getFlag().compareEqual(VersionFlag.Archived) && !version.getFlag().compareEqual(VersionFlag.Published);
+	}
+
 	public void saveDocumentAsNew(DocumentWindowManager documentWindowManager, AsynchClientTask closeWindowTask) {
+		saveDocumentAsNew(documentWindowManager, closeWindowTask, null);
+	}
+
+	/**
+	 * @param afterSaveTask runs only once the save has succeeded (e.g. {@link ExportAfterSave}); may be null
+	 */
+	public void saveDocumentAsNew(DocumentWindowManager documentWindowManager, AsynchClientTask closeWindowTask, AsynchClientTask afterSaveTask) {
 		if (documentWindowManager.getUser() == null || User.isGuest(documentWindowManager.getUser().getName())) {
 			DialogUtils.showErrorDialog(documentWindowManager.getComponent(),
 					User.createGuestErrorMessage("saveDocument"));
@@ -4394,6 +4479,7 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 			// replace finishSave
 			tasks[tasks.length - 1] = closeWindowTask;
 		}
+		tasks = ClientRequestManager.withSaveFollowUps(tasks, afterSaveTask);
 		/* run tasks */
 		ClientTaskDispatcher.dispatch(currentDocumentWindow, hash, tasks, false);
 	}

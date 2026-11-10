@@ -128,7 +128,7 @@
         </tocitem>
         <tocitem target="ParametersAndFunctionsOverview" text="Parameters and Functions">
    	   		<tocitem target="ParametersAndFunctions" text="Parameters And Functions"/>
-   	   		<tocitem target="PredefinedConstAndMathFns" text="Predefined Constants and Math Functions"/>
+   	   		<tocitem target="PredefinedConstAndMathFns" text="Predefined Expressions"/>
    	   		<tocitem target="ModelUnits" text="Model Unit System"/>
    		</tocitem>
     	<tocitem target="PathwayOverview" text="Biological Pathways">
