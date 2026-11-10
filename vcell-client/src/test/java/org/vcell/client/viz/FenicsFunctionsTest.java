@@ -13,6 +13,7 @@ import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.api.parallel.ResourceLock;
 import org.vcell.solver.fenics.BundleStore;
 import org.vcell.solver.fenics.FenicsBundle;
+import org.vcell.vis.vtk.VtuGridParser;
 
 import cbit.vcell.parser.Expression;
 

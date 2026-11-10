@@ -17,6 +17,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import org.vcell.vis.vtk.VtuGridParser;
 
 /**
  * Membrane curves on a 2D FEniCSx membrane (docs/plan-plotting.md P7): {@code /kymograph} on a line-mesh domain

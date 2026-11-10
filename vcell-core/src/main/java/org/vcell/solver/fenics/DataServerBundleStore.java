@@ -36,12 +36,19 @@ public final class DataServerBundleStore implements BundleStore {
 		default FenicsSamples samples(String[] arrayPaths, int[] indices, int[] rows) throws DataAccessException {
 			throw new DataAccessException("No such method: getFenicsBundleSamples");
 		}
+
+		/** a data server that predates located reads answers like this */
+		default FenicsLocatedSamples located(String meshPath, String coordsPath, String[] arrayPaths, double[] points, boolean snap,
+				int[] rows) throws DataAccessException {
+			throw new DataAccessException("No such method: getFenicsBundleLocatedSamples");
+		}
 	}
 
 	private final Server server;
 	private final String id;
 	private volatile boolean batchUnsupported = false;
 	private volatile boolean samplesUnsupported = false;
+	private volatile boolean locateUnsupported = false;
 
 	public DataServerBundleStore(VCDataManager dataManager, VCDataIdentifier vcdID) {
 		this(new Server() {
@@ -58,6 +65,12 @@ public final class DataServerBundleStore implements BundleStore {
 			@Override
 			public FenicsSamples samples(String[] arrayPaths, int[] indices, int[] rows) throws DataAccessException {
 				return dataManager.getFenicsBundleSamples(vcdID, arrayPaths, indices, rows);
+			}
+
+			@Override
+			public FenicsLocatedSamples located(String meshPath, String coordsPath, String[] arrayPaths, double[] points, boolean snap,
+					int[] rows) throws DataAccessException {
+				return dataManager.getFenicsBundleLocatedSamples(vcdID, meshPath, coordsPath, arrayPaths, points, snap, rows);
 			}
 		}, vcdID.getID());
 	}
@@ -173,6 +186,94 @@ public final class DataServerBundleStore implements BundleStore {
 			next += got.rows.length;
 		}
 		return new FenicsSamples(rows.clone(), values, written);
+	}
+
+	/**
+	 * Located reads ({@link cbit.vcell.server.DataSetController#getFenicsBundleLocatedSamples}), in calls of at most
+	 * {@link FenicsBundle#MAX_SAMPLE_ROWS} rows, each answering a prefix of its rows. Null -- read whole rows
+	 * instead -- when the data server predates the call (remembered: it is not asked again), when a call fails or
+	 * answers something unusable, or when the request is beyond what one call may carry.
+	 */
+	@Override
+	public FenicsLocatedSamples locateRows(String meshPath, String coordsPath, String[] arrayPaths, double[] points, boolean snap,
+			int[] rows) throws IOException {
+		if (locateUnsupported || arrayPaths.length > FenicsBundle.MAX_SAMPLE_ARRAYS || points.length % 3 != 0
+				|| points.length / 3 > FenicsBundle.MAX_LOCATE_POINTS) {
+			return null;
+		}
+		BundleStore.checkRelativePath(meshPath);
+		BundleStore.checkRelativePath(coordsPath);
+		for (String path : arrayPaths) {
+			BundleStore.checkRelativePath(path);
+		}
+		int nPoints = points.length / 3;
+		int[][] cells = new int[rows.length][];
+		int[][][] cellVertices = new int[rows.length][][];
+		int[][] cellTypes = new int[rows.length][];
+		double[][] snapped = new double[rows.length][];
+		int[][] vertices = new int[rows.length][];
+		double[][] coords = new double[rows.length][];
+		boolean[] coordsWritten = new boolean[rows.length];
+		double[][][] values = new double[arrayPaths.length][rows.length][];
+		boolean[][] written = new boolean[arrayPaths.length][rows.length];
+		int next = 0;
+		while (next < rows.length) {
+			int[] ask = java.util.Arrays.copyOfRange(rows, next, Math.min(rows.length, next + FenicsBundle.MAX_SAMPLE_ROWS));
+			FenicsLocatedSamples got;
+			try {
+				got = server.located(meshPath, coordsPath, arrayPaths, points, snap, ask);
+			} catch (Exception e) {
+				String message = String.valueOf(e.getMessage());
+				if (message.contains("No such method")) {
+					lg.info("the data server does not locate points in FEniCSx bundles; reading whole rows");
+					locateUnsupported = true;
+				} else {
+					lg.warn("located read of " + describe() + " failed; reading whole rows: " + message, e);
+				}
+				return null;
+			}
+			int answered = got == null || got.rows == null ? 0 : got.rows.length;
+			if (answered == 0 || answered > ask.length || got.values.length != arrayPaths.length || got.cells.length != answered
+					|| got.cellVertices == null || got.cellVertices.length != answered || got.cellTypes == null || got.cellTypes.length != answered
+					|| got.snapped.length != answered || got.vertices.length != answered || got.coords.length != answered
+					|| got.coordsWritten.length != answered) {
+				lg.warn("located read of " + describe() + " answered no usable rows; reading whole rows");
+				return null;
+			}
+			for (int r = 0; r < answered; r++) {
+				int nv = got.vertices[r].length;
+				boolean usable = got.rows[r] == ask[r] && got.cells[r].length == nPoints && got.cellVertices[r].length == nPoints
+						&& got.cellTypes[r].length == nPoints && got.coords[r].length == 3 * nv
+						&& (got.snapped[r] == null || got.snapped[r].length == 3 * nPoints);
+				for (int a = 0; a < arrayPaths.length && usable; a++) {
+					usable = got.values[a][r].length == nv;
+				}
+				if (!usable) {
+					lg.warn("located read of " + describe() + " answered a malformed row; reading whole rows");
+					return null;
+				}
+				for (int p = 0; p < nPoints && usable; p++) {
+					usable = got.cells[r][p] < 0 || got.cellVertices[r][p] != null;
+				}
+				if (!usable) {
+					lg.warn("located read of " + describe() + " answered a cell without its vertices; reading whole rows");
+					return null;
+				}
+				cells[next + r] = got.cells[r];
+				cellVertices[next + r] = got.cellVertices[r];
+				cellTypes[next + r] = got.cellTypes[r];
+				snapped[next + r] = got.snapped[r];
+				vertices[next + r] = got.vertices[r];
+				coords[next + r] = got.coords[r];
+				coordsWritten[next + r] = got.coordsWritten[r];
+				for (int a = 0; a < arrayPaths.length; a++) {
+					values[a][next + r] = got.values[a][r];
+					written[a][next + r] = got.written[a][r];
+				}
+			}
+			next += answered;
+		}
+		return new FenicsLocatedSamples(rows.clone(), cells, cellVertices, cellTypes, snapped, vertices, coords, coordsWritten, values, written);
 	}
 
 	@Override
