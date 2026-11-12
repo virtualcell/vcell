@@ -14,9 +14,100 @@ followed by flat Keep-a-Changelog categories. API consumers should scan
 
 ## [Unreleased]
 
-**Highlights.** A SED-ML/OMEX archive exported from a BioModel with a spatial stochastic or hybrid
-application imports back as one BioModel again, and the nightly SBML/SED-ML regression suite is green
-for the first time since 8.2.1.01 made those applications exportable.
+### Fixed
+- Help: the Langevin application page showed its geometry expressions literally as `z &lt; 0.09`
+  (double-escaped since #2198). (#2207)
+
+### Changed
+- Help: File → Import, File → Export and Window pages brought up to date: spatial and stochastic
+  applications export to SBML and which applications are refused; SBML models keep their unit system on
+  import (and the two exceptions); SED-ML/OMEX import; the theme, font size and font settings. (#2207)
+
+## [8.3.2.01] - 2026-11-10
+
+_Tagged from `master` at the merge of #2215; deployed to the dev site. Contains everything in 8.3.1.01
+(#2189 was merged after more work, listed below) and 8.3.0.03._
+
+**Highlights.** A model's window is reorganized around a new navigation column: the model at the top,
+then Mathematics & Units, Biochemistry and Applications, each with a summary page, and the databases are
+browsed from the welcome window instead of a panel under the tree. Every "choose a model from the
+database" dialog now works the way the welcome window does, a failed save offers to keep the work as a
+file, and Save / Save As have keyboard shortcuts. Beyond the desktop client: the SBML importer handles
+L3V2 features found by the SBML Test Suite and refuses what it would have imported wrong, older models
+that current VCell refused or mis-read (shared membrane voltage names, zero flux stoichiometries) load
+and run as they used to, and FEniCSx runs species on a moving membrane.
+
+### Added
+- Navigation column: rows drawn as full-width rounded rectangles whose size and weight show their level,
+  instead of an indented tree with carets; a section with subsections has a chevron, and clicking an open
+  section folds it. Keyboard navigation is unchanged. (#2215)
+- Mathematics & Units (formerly "Parameters, Functions, Units, etc."), now first under the model, with a
+  Summary page and one node per tab: Model Unit System, Parameters and Functions, Predefined Expressions.
+  (#2215)
+- Model Unit System: choose the model's units from a named list (VCell Default, SBML Compatible, and unit
+  systems the user adds, kept in this computer's Java preferences); choosing one converts the model. Add
+  makes a new system from typed units, checked as they are typed; Delete removes a user's own. (#2215)
+- Biochemistry node grouping Physiology and Pathway, with a Summary page: counts of structures, species,
+  molecules, observables, reactions and rules, and pathway objects, each opening its own tab, plus
+  diagram previews. (#2215)
+- Database File Info for the open model, shown when its root node is selected; the tab title reads
+  "NOT SAVED" while the model has never been saved. (#2215)
+- After a database save fails, the error dialog offers to save the model as a VCML file on this computer
+  (issue #1451); VCML export skips the checks a save makes, so this works even when the model's own
+  errors stopped the save. (#2215)
+- Export / Save to File, on a model with changes not in the database, first asks "Save, then Export" or
+  "Export Without Saving". (#2215)
+- Keyboard shortcuts: Save (Cmd+S on macOS, Ctrl+S elsewhere) and Save As (Cmd/Ctrl+Shift+S); all of
+  VCell's shortcuts are now defined in one place. (#2215)
+- File → Welcome Window brings the welcome window back, reopening it if it was closed. (#2189)
+- SBML import: elements with no math (which L3V2 says have no effect), the `rateOf` csymbol,
+  0-dimensional compartments (as volumes of their size, 1 when unset), L3V2 MathML `quotient`, `rem`,
+  `implies`, n-ary `xor`/`max`/`min` and nullary `plus`/`times`/`and`/`or`, and models with no ODEs (a
+  placeholder state variable lets the solver step time and evaluate rules and events). (#2206)
+- FEniCSx (vcell-fenics 0.2.0): diffusing species on a moving membrane (whose math states `Dilution`) and
+  in any compartment are offered; non-diffusing species and membrane species without Dilution are
+  refused before the run. (#2216)
+- Math: a membrane that moves and carries species states `Dilution true` (VCML) / `Dilution="true"` on
+  `<MembraneSubDomain>` (XML), so its species are carried by its velocity. Written only for such
+  membranes; every other model's math is unchanged. (#2211)
+
+### Changed
+- Model window layout: the tree fills the left column. The VCell DB, BioModels.net and Pathway Commons
+  tabs that sat under it are gone: databases and BioModels.net are browsed from the welcome window, and
+  Pathway Commons search is Pathway → Pathway Lookup. Physiology and Pathway open on their diagrams, so
+  the separate Reaction Diagram and Pathway Diagram nodes are gone. (#2215)
+- Choosing a model from the database (File → Open, Compare With Another Model, choosing a geometry's
+  model, New MathModel from a BioModel application, …) uses one picker with the welcome window's search,
+  recent, Community, Personal and Tutorial lists, replacing the database-tree dialogs. (#2215)
+- Save As asks for the name in a dialog that suggests the user's existing names as they type, without a
+  file browser, and refuses an empty or taken name. (#2215)
+- File → Export... is now **Export / Save to File...**, which also replaces **Save As Local...** (VCML is
+  preselected). (#2215)
+- Help: SpringSaLaD Application and Introduction to SpringSaLaD Modeling pages revised: what the Anchor
+  site does and its 2D diffusion, binding reactions may have a zero reverse rate, the 50-job cap on
+  concurrent Multiple Runs, new screenshot. (#2198)
+- Help: Save As, File menu, navigation and Parameters and Functions pages updated for the above. (#2215)
+- Model loading repairs two problems older VCell allowed, so those models' math can be generated again:
+  two membranes sharing one voltage name (the later ones get their default `Voltage_<membrane>`; 136
+  public documents were refused for this), and flux steps stored with stoichiometry 0 whose stored math
+  still transports the species by the flux (restored to 1; 15 of 22 such steps in the public corpus).
+  (#2205, #2209)
+- SBML import refuses, with a message, documents declaring the `comp`, `multi`, `arrays` or `distrib`
+  package (their elements were silently dropped) and models using conversion factors (which were
+  ignored). (#2206)
+- Moving Boundary: an image geometry, more than one membrane, or other than one compartment with PDEs is
+  an error before the run (`MovingBoundary_Geometry_NotSupported`) instead of a run-time failure reported
+  as "Can't open input file ..._mb.xml"; the Moving Boundary solver is also kept off a moving membrane
+  that carries species. (#2217, #2211)
+- Deployment: one `vcell-webapp` image for every site, which reads the site's origin from the page,
+  replaces the per-site `vcell-webapp-prod`, `-dev` and `-stage` images. vcell-fluxcd's deploy uses it
+  when a release has it. (#2213)
+- Developer docs: how to file an issue for the project board (`docs/ISSUES.md`). (#2196)
+- Build: `.gitattributes` patterns fixed so its line-ending rules apply (new text files stored LF, shell
+  scripts LF); files already committed CRLF are unchanged. (#2208)
+- Test suite: `SEDMLExporterSBMLTest` no longer declares spatial stochastic applications as unsupported
+  for SBML export, and three `SIMCONTEXT_NOT_FOUND_BY_NAME` known faults from 2023 are gone. The SBML Test
+  Suite runs end to end in `SBMLTestSuiteCaseTest` (SBML_IT). (#2188, #2206)
 
 ### Fixed
 - SBML export of a stochastic application whose species are given as initial counts: the export copy is
@@ -27,19 +118,13 @@ for the first time since 8.2.1.01 made those applications exportable.
   the applications exported from one BioModel come back as one BioModel instead of several. In such a
   document the deterministic applications therefore now import in VCell's units rather than the SBML's.
   (#2188)
-- Help: the Langevin application page showed its geometry expressions literally as `z &lt; 0.09`
-  (double-escaped since #2198). (#2207)
-
-### Changed
-- Help: SpringSaLaD Application and Introduction to SpringSaLaD Modeling pages revised: what the Anchor
-  site does and its 2D diffusion, binding reactions may have a zero reverse rate, the 50-job cap on
-  concurrent Multiple Runs, new screenshot. (#2198)
-- Help: File → Import, File → Export and Window pages brought up to date: spatial and stochastic
-  applications export to SBML and which applications are refused; SBML models keep their unit system on
-  import (and the two exceptions); SED-ML/OMEX import; the theme, font size and font settings. (#2207)
-- Developer docs: how to file an issue for the project board (`docs/ISSUES.md`). (#2196)
-- Test suite: `SEDMLExporterSBMLTest` no longer declares spatial stochastic applications as unsupported
-  for SBML export, and three `SIMCONTEXT_NOT_FOUND_BY_NAME` known faults from 2023 are gone. (#2188)
+- SBML import of a document with no readable model reports the import failure instead of a
+  NullPointerException. (#2206)
+- macOS installed builds: the dark theme's buttons, text fields and title bar now follow the theme; the
+  installer's splash screen started AWT before VCell set its appearance property, so VCell now sets it
+  through AppKit (issue #2204, open until an Alpha build confirms it). (#2189)
+- Welcome window: the loading indicator is transparent and follows the theme; startup no longer throws
+  and catches a MalformedURLException reading `vcellconfig.properties`. (#2189)
 
 ## [8.3.1.01] - 2026-11-05
 
