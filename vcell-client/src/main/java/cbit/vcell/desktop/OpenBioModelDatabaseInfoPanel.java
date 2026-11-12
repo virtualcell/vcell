@@ -34,8 +34,8 @@ import cbit.vcell.clientdb.DocumentManager;
 
 /**
  * The Database File Info of the BioModel open in an editor: the same contents tree the database browsers show,
- * under a notice that can't be missed, saying either that the model has never been saved to the database, or
- * that what's shown is its last saved version, not the edits made since.
+ * under a notice that can't be missed when it matters: that the model has never been saved to the database, or that
+ * it has been changed since its last save, whose record is what's shown. A model as it was saved shows no notice.
  */
 @SuppressWarnings("serial")
 public class OpenBioModelDatabaseInfoPanel extends JPanel {
@@ -49,12 +49,18 @@ public class OpenBioModelDatabaseInfoPanel extends JPanel {
 	private BioModel bioModel = null;
 	private DocumentManager documentManager = null;
 	private int lookupGeneration = 0; // a lookup still running when the model changes doesn't overwrite the newer one
+	private int changeCheckGeneration = 0; // likewise for the check for changes since the last save
 
 	public OpenBioModelDatabaseInfoPanel() {
 		super(new BorderLayout(0, 6));
 		this.setName("OpenBioModelDatabaseInfoPanel");
 		this.add(this.notice, BorderLayout.NORTH);
 		this.add(this.contentsPanel, BorderLayout.CENTER);
+		// edits can be made while this is open: whether there are changes since the save is checked again as it's shown
+		this.addHierarchyListener(e -> {
+			if ((e.getChangeFlags() & java.awt.event.HierarchyEvent.SHOWING_CHANGED) == 0 || !this.isShowing()) return;
+			if (!this.isUnsaved()) this.checkForChanges(this.bioModel.getVersion());
+		});
 	}
 
 	public void setDocumentManager(DocumentManager documentManager) {
@@ -79,9 +85,46 @@ public class OpenBioModelDatabaseInfoPanel extends JPanel {
 			return;
 		}
 		Version version = this.bioModel.getVersion();
-		this.notice.display(NoticeLevel.CAUTION, "Showing the last saved version (saved " + OpenBioModelDatabaseInfoPanel.describeSave(version) + ")",
-				"Changes made since that save are not reflected here. Save the model to update this information.");
+		this.notice.setVisible(false); // until the check says whether there are changes this record doesn't show
 		this.lookUpBioModelInfo(version);
+		this.checkForChanges(version);
+	}
+
+	// the record is the last save's: say so only when the model has changed since, as found by comparing it with that save
+	// (the same comparison as when closing its window); comparing can mean reading the save back, so it's off the EDT
+	private void checkForChanges(Version version) {
+		if (this.documentManager == null) return;
+		final int generation = ++this.changeCheckGeneration;
+		final DocumentManager manager = this.documentManager;
+		final BioModel model = this.bioModel;
+		new SwingWorker<Boolean, Void>() {
+			@Override
+			protected Boolean doInBackground() throws Exception {
+				return manager.isChanged(model);
+			}
+
+			@Override
+			protected void done() {
+				if (generation != OpenBioModelDatabaseInfoPanel.this.changeCheckGeneration || model != OpenBioModelDatabaseInfoPanel.this.bioModel) return;
+				boolean changed;
+				try {
+					changed = this.get();
+				} catch (InterruptedException | ExecutionException e) {
+					OpenBioModelDatabaseInfoPanel.lg.warn("Couldn't compare the open model with its last save", e);
+					changed = true; // unknown: the caution is the safe side
+				}
+				OpenBioModelDatabaseInfoPanel.this.showChanged(changed, version);
+			}
+		}.execute();
+	}
+
+	private void showChanged(boolean changed, Version version) {
+		if (!changed) {
+			this.notice.setVisible(false);
+			return;
+		}
+		this.notice.display(NoticeLevel.CAUTION, "Changed since its last save (saved " + OpenBioModelDatabaseInfoPanel.describeSave(version) + ")",
+				"This is the record of that save: the changes made since aren't reflected here. Save the model to update it.");
 	}
 
 	private static String describeSave(Version version) {
@@ -154,6 +197,7 @@ public class OpenBioModelDatabaseInfoPanel extends JPanel {
 			this.detailLabel.setText("<html>" + detail + "</html>"); // wraps to the panel's width
 			this.getAccessibleContext().setAccessibleName(headline + ". " + detail);
 			this.applyColors();
+			this.setVisible(true); // a notice displayed is seen, whatever was shown (or hidden) before
 		}
 
 		@Override

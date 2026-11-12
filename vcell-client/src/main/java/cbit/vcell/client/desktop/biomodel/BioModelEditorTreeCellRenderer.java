@@ -121,6 +121,9 @@ public class BioModelEditorTreeCellRenderer extends DocumentEditorTreeCellRender
 	    		}
 	    		DocumentEditorTreeFolderClass folderClass = folder.getFolderClass();
 	    		switch(folderClass) {
+	    		case MODEL_NODE: // Physiology opens on the Reaction Diagram, which has no node of its own: its icon says where it went
+	    			icon = VCellIcons.diagramIcon;
+	    			break;
 //	    		case PATHWAY_NODE:
 //	    			if (bioModel == null) {
 //	    				labelText = folder.getName() + "(00000)";

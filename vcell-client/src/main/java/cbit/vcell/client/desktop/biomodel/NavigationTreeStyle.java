@@ -34,7 +34,7 @@ import javax.swing.tree.TreePath;
 /**
  * The navigation column's look: each row a rounded rectangle the column's full width, rather than a tree line with
  * carets. A row's level shows in its height and type instead of an indent: the model tallest and bold, its sections
- * tall and bold, theirs medium and plain, and theirs short and italic, set in by a small tab. A section with subsections has a chevron on the right; clicking the section opens it (and its subsections drop down beneath),
+ * tall and bold, theirs medium and plain, and theirs short and italic; each level below the sections set in slightly. A section with subsections has a chevron on the right; clicking the section opens it (and its subsections drop down beneath),
  * clicking it again once it's open folds them away, and clicking the chevron only folds or unfolds. It stays a JTree,
  * so its keyboard use (arrows, Left and Right to fold) and everything that follows its selection are unchanged.
  */
@@ -335,9 +335,9 @@ public final class NavigationTreeStyle {
 		};
 	}
 
-	/** A level's tab before its rectangle: only the deepest rows (level 3 on) start a little in. */
+	/** A level's tab before its rectangle: each level below the model's sections starts slightly further in. */
 	static int insetFor(int level) {
-		return level >= 3 ? 14 : 0;
+		return Math.max(0, level - 1) * 6; // just enough to see: a section's rows 6 pixels in, theirs 12
 	}
 
 	/** A level's space above and below its text, so rows shorten as they go deeper. */

@@ -16,13 +16,10 @@ italics, set in a little). Clicking a section with a chevron on its right opens 
 subsections drop down beneath; clicking it again folds them away, and clicking the chevron itself
 folds or unfolds without opening the section. The arrow keys move through the rows, and Left and
 Right fold and unfold. Its top item is the model itself (its saved information and annotations);
-under it come **Mathematics & Units**, which covers the whole model, then **Biochemistry**, which
-holds the Physiology, and the model's **Applications**. The pathway's views are in a window of their
-own: **Tools > Pathway Tools...**. Clicking Biochemistry itself shows its summary: small copies of the Reaction Diagram and Pathway Diagram (click one, or its **Open**
-button, to open it), and counts of the structures, species, molecules, observables, reactions and
-reaction rules, and of the pathway's objects and their links to the physiology (double-click a count
-to open its tab). Physiology opens on the Reaction Diagram and links to the components of the
-BioModel, including:
+under it come **Mathematics & Units**, which covers the whole model, then the **Physiology**, and
+the model's **Applications**. The pathway's views are in a window of their own: **Tools > Pathway
+Tools...**. Physiology opens on the Reaction Diagram (it has the diagram's icon) and links to the
+components of the BioModel, including:
 
 - A [Reaction Diagram](../Physiology/ReactDiagView.md) view
 - [Reactions](../Physiology/ReactTabView.md) in a tabular view
@@ -33,9 +30,9 @@ BioModel, including:
 
 The Tree Structure also provides links to
 
-- [Mathematics & Units](../ParametersAndFunctions/ParametersAndFunctionsOverview.md): a Summary,
-  then the Model Unit System, Parameters and Functions, and Predefined Expressions (VCell's built-in
-  constants and math functions)
+- [Mathematics & Units](../ParametersAndFunctions/ParametersAndFunctionsOverview.md): the model's
+  parameters and functions (VCell's built-in constants and math functions among them), with its
+  Model Unit System a button away
 - [Applications](../BioModelApplications/ApplicationOverview.md)
 
 **View items** in the View Panel (panel B, top right panel) by selecting the item in the tree. For

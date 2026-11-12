@@ -5,10 +5,10 @@ that can be used in expressions and computations.
 
 ![](../../images/ConstsAndMathFns.GIF)
 
-Clicking **Predefined Expressions** under **Mathematics & Units** in the 'Navigation' panel on the
-left of a VCell document, or its tab in the 'View' panel on the right, displays a list of the
-allowed VCell constants and math functions in a table. This table is not editable. The list of
-symbols, constants and functions are classified as follows:
+VCell's predefined constants and math functions are listed in the
+[Parameters and Functions](ParametersAndFunctions.md) table (click **Mathematics & Units** in the
+'Navigation' panel), defined in 'Predefined': choose **Preexisting** under **Origin** in its
+**Filters** to show them. They can't be edited. The list of symbols, constants and functions are classified as follows:
 
 **Reserved Symbols**
 

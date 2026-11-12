@@ -557,7 +557,7 @@ private void initialize() {
 		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 		splitPane.setDividerLocation(270);
 		splitPane.setOneTouchExpandable(true);
-		splitPane.setResizeWeight(0.3);
+		splitPane.setResizeWeight(0); // the navigation column keeps its width: the window's resizing is the right side's
 		splitPane.setDividerSize(8);
 		splitPane.setLeftComponent(treePanel);
 		splitPane.setRightComponent(rightSplitPane);

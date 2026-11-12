@@ -53,31 +53,20 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel implements 
 		};
 	private BioModelNode modelNode = new BioModelNode(bioModelChildFolderNodes[0], true);
 	private BioModelNode applicationsNode = new BioModelNode(bioModelChildFolderNodes[1], true);	
-	private BioModelNode bioModelParametersNode = new BioModelNode(bioModelChildFolderNodes[2], true);
+	private BioModelNode bioModelParametersNode = new BioModelNode(bioModelChildFolderNodes[2], false); // one panel: no children, so no chevron
 //	private BioModelNode dataNode = new BioModelNode(bioModelChildFolderNodes[4], false);
-	// the model's own node is the root; under it, Mathematics & Units (model-wide: its parameters span Biochemistry and the
-	// Applications), Biochemistry, which groups what the model is made of, then its Applications
-	private BioModelNode biochemistryNode = new BioModelNode(new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.BIOCHEMISTRY_NODE, true), true);
+	// the model's own node is the root; under it, Mathematics & Units (model-wide: its parameters span the Physiology and
+	// the Applications), the Physiology, then its Applications. The pathway has no node: its views are in the Pathway
+	// Tools window (Tools > Pathway Tools)
 	private BioModelNode  bioModelChildNodes[] = { // in the order they're listed under the model
 			bioModelParametersNode,
-			biochemistryNode,
+			modelNode,
 			applicationsNode,
 //			dataNode,
 	};
-	private BioModelNode biochemistryChildNodes[] = {
-			modelNode,
-			// the pathway has no node here: its views are in the Pathway Tools window (Tools > Pathway Tools)
-	};
 
-	// Mathematics & Units: one node per tab of its panel, in its tabs' order
-	private BioModelNode parametersFunctionsNode = new BioModelNode(new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.PARAMETERS_FUNCTIONS_NODE, true), false);
-	private BioModelNode predefinedSymbolsNode = new BioModelNode(new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.PREDEFINED_SYMBOLS_NODE, true), false);
-	private BioModelNode modelUnitSystemNode = new BioModelNode(new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.MODEL_UNIT_SYSTEM_NODE, true), false);
-	private BioModelNode mathematicsChildNodes[] = {
-			modelUnitSystemNode,
-			parametersFunctionsNode,
-			predefinedSymbolsNode,
-	};
+	// Mathematics & Units has no children: one panel, its parameters and functions (VCell's predefined ones among them)
+
 	@Deprecated
 	List<BioModelNode> annotationNodes = new ArrayList<BioModelNode>();
 	List<BioModelNode> childApplicationsNodeList = new ArrayList<BioModelNode>();
@@ -114,14 +103,8 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel implements 
 		for (BioModelNode bioModeNode : bioModelChildNodes) {
 			rootNode.add(bioModeNode);
 		}
-		for (BioModelNode biochemistryChildNode : this.biochemistryChildNodes) {
-			this.biochemistryNode.add(biochemistryChildNode);
-		}
 		for (BioModelNode bioModeNode : modelChildNodes) {
 			modelNode.add(bioModeNode);
-		}
-		for (BioModelNode mathematicsChildNode : this.mathematicsChildNodes) {
-			this.bioModelParametersNode.add(mathematicsChildNode);
 		}
 	}
 	

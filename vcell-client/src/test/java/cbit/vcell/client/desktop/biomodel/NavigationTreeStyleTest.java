@@ -143,8 +143,11 @@ public class NavigationTreeStyleTest {
 		assertTrue(NavigationTreeStyle.fontFor(base, 2).isPlain());
 		assertTrue(NavigationTreeStyle.fontFor(base, 3).isItalic());
 		assertTrue(NavigationTreeStyle.paddingFor(1) > NavigationTreeStyle.paddingFor(2));
-		assertEquals(0, NavigationTreeStyle.insetFor(2));
-		assertTrue(NavigationTreeStyle.insetFor(3) > 0, "the deepest rows start a little in");
+		assertEquals(0, NavigationTreeStyle.insetFor(0));
+		assertEquals(0, NavigationTreeStyle.insetFor(1), "the model's sections span the column");
+		assertTrue(NavigationTreeStyle.insetFor(2) > 0, "their rows start a little in");
+		assertTrue(NavigationTreeStyle.insetFor(3) > NavigationTreeStyle.insetFor(2), "and theirs a little further");
+		assertTrue(NavigationTreeStyle.insetFor(2) <= 8, "just enough to see");
 	}
 
 	@Test

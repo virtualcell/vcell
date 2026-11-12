@@ -28,15 +28,12 @@ import java.util.ArrayList;
 import javax.swing.ComboBoxModel;
 import javax.swing.Icon;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
 import javax.swing.JTable;
 import javax.swing.JTextField;
@@ -57,7 +54,6 @@ import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.DownArrowIcon;
 import org.vcell.util.gui.EditorScrollTable;
 import org.vcell.util.gui.GuiUtils;
-import org.vcell.util.gui.JTabbedPaneEnhanced;
 import org.vcell.util.gui.VCellIcons;
 
 import cbit.vcell.biomodel.BioModel;
@@ -65,6 +61,8 @@ import cbit.vcell.biomodel.ModelUnitConverter;
 import cbit.vcell.client.BioModelWindowManager;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
+import cbit.vcell.client.ChildWindowManager;
+import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
@@ -210,6 +208,7 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 				if (selectedApplicationSelection == null || !applicationSelectionList.contains(selectedApplicationSelection)){
 					selectedApplicationSelection = applicationSelectionList.get(0);
 				}
+				filterButton.setApplications(java.util.Arrays.asList(bioModel.getSimulationContexts())); // to choose among in Filters
 			}
 			ListDataEvent e = new ListDataEvent(applicationComboBox,ListDataEvent.CONTENTS_CHANGED,0,Math.max(0,applicationSelectionList.size()-1));
 			for (ListDataListener l : listeners){
@@ -285,23 +284,18 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 		
 	}
 	
-	private JCheckBox globalParametersCheckBox = null;
-	private JCheckBox applicationsCheckBox = null;
-	private JCheckBox reactionsCheckBox = null;
-	private JCheckBox constantsCheckBox = null;
-	private JCheckBox functionsCheckBox = null;
-	private JComboBox<ApplicationSelection> applicationComboBox = null;
+	// what the table lists, chosen from a drop-down (the checkboxes it replaced crowded the panel)
+	private final ParametersFilterButton filterButton = new ParametersFilterButton(this::applyFilter);
+	private final JLabel shownLabel = new JLabel();
+	private final javax.swing.JToggleButton columnsButton = new javax.swing.JToggleButton("Columns \u25B8"); // opens the column arrangement beside the table
+	private org.vcell.util.gui.TableColumnsPanel columnsPanel = null;
+	private JComboBox<ApplicationSelection> applicationComboBox = null; // not shown: its model tracks the applications
 	private ApplicationComboBoxModel applicationComboBoxModel = new ApplicationComboBoxModel();
 	private InternalEventHandler eventHandler = new InternalEventHandler();
-	private JTabbedPane tabbedPane;
 
 	private final UnitSystemChooserPanel unitSystemChooserPanel = new UnitSystemChooserPanel(UnitSystemLibrary.getShared(), this::convertUnits);
-	private final MathematicsSummaryPanel summaryPanel = new MathematicsSummaryPanel(
-			() -> this.unitSystemChooserPanel.getChosen() == null ? null : this.unitSystemChooserPanel.getChosen().name(),
-			() -> this.tabbedPane.setSelectedIndex(ParametersPanelTabID.modelUnitSystem.ordinal()),
-			this::showParametersOf,
-			() -> this.tabbedPane.setSelectedIndex(ParametersPanelTabID.predefined.ordinal()));
-	private boolean summaryRefreshQueued = false;
+	private JButton unitSystemButton = null; // opens the Model Unit System window
+	private static final String UNIT_SYSTEM_WINDOW = "ModelUnitSystemWindow"; // its window, among the model window's children
 	private JPanel buttonPanel = null;
 	private BioModelWindowManager bioModelWindowManager = null;
 	
@@ -313,41 +307,9 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 	private BioModel bioModel;
 	private JTextField textFieldSearch = null;
 	private JPanel parametersFunctionsPanel = null;
-	private EditorScrollTable predefinedSymbolsTable;
-	private PredefinedSymbolsTableModel predefinedSymbolsTableModel = null;
-	private JPanel predefinedSymbolsPanel = null;
 	private EditorScrollTable modelUnitSystemTable;
 	private ModelUnitSystemTableModel modelUnitSystemTableModel = null;
 	private JPanel modelUnitSystemPanel = null;
-	
-	private enum ParametersPanelTabID {
-		// each tab is also a node under Mathematics & Units in the navigation tree, by the same name and in this order
-		// the Summary is Mathematics & Units' own node, as a diagram is Physiology's and Pathway's
-		summary("Summary", DocumentEditorTreeFolderClass.BIOMODEL_PARAMETERS_NODE, ActiveViewID.mathematics_summary),
-		modelUnitSystem(GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_MODEL_UNIT_SYSTEM, DocumentEditorTreeFolderClass.MODEL_UNIT_SYSTEM_NODE, ActiveViewID.model_unit_system),
-		parameters_functions(GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_PARAMETERS_FUNCTIONS, DocumentEditorTreeFolderClass.PARAMETERS_FUNCTIONS_NODE, ActiveViewID.parameters_functions),
-		predefined(GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_PREDEFINED_SYMBOLS, DocumentEditorTreeFolderClass.PREDEFINED_SYMBOLS_NODE, ActiveViewID.predefined_symbols);
-		
-		final String title;
-		final DocumentEditorTreeFolderClass treeFolderClass;
-		final ActiveViewID activeViewID;
-		ParametersPanelTabID(String name, DocumentEditorTreeFolderClass treeFolderClass, ActiveViewID activeViewID) {
-			this.title = name;
-			this.treeFolderClass = treeFolderClass;
-			this.activeViewID = activeViewID;
-		}
-	}
-	
-	private class ParametersPanelTab {
-		ParametersPanelTabID id;
-		JComponent component = null;
-		Icon icon = null;
-		ParametersPanelTab(ParametersPanelTabID id, JComponent component, Icon icon) {
-			this.id = id;
-			this.component = component;
-			this.icon = icon;
-		}		
-	}
 	
 	private class InternalEventHandler implements ActionListener, ChangeListener, ListSelectionListener, DocumentListener {		
 				
@@ -358,27 +320,12 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 				newApplicationButtonPressed();
 			} else if (e.getSource() == deleteButton) {
 				deleteButtonPressed();
-			} else if (e.getSource() == globalParametersCheckBox) {
-				parametersFunctionsTableModel.setIncludeGlobal(globalParametersCheckBox.isSelected());
-			} else if (e.getSource() == applicationsCheckBox) {
-				parametersFunctionsTableModel.setIncludeApplications(applicationsCheckBox.isSelected());
-				applicationComboBox.setEnabled(applicationsCheckBox.isSelected());
-			} else if (e.getSource() == applicationComboBox) {
-				ApplicationSelection as = (ApplicationSelection)applicationComboBox.getSelectedItem();
-				parametersFunctionsTableModel.setApplicationSelection(as);
-			} else if (e.getSource() == reactionsCheckBox) {
-				parametersFunctionsTableModel.setIncludeReactions(reactionsCheckBox.isSelected());
-			} else if (e.getSource() == constantsCheckBox) {
-				parametersFunctionsTableModel.setIncludeConstants(constantsCheckBox.isSelected());
-			} else if (e.getSource() == functionsCheckBox) {
-				parametersFunctionsTableModel.setIncludeFunctions(functionsCheckBox.isSelected());
+			} else if (e.getSource() == unitSystemButton) {
+				showModelUnitSystem();
 			}
 		}
 
 		public void stateChanged(ChangeEvent e) {
-			if (e.getSource() == tabbedPane) {
-				tabbedPaneSelectionChanged();
-			}			
 		}
 		
 		public void valueChanged(ListSelectionEvent e) {
@@ -412,7 +359,8 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 	private boolean convertUnits(ModelUnitSystem units) {
 		try {
 			BioModel newBioModel = ModelUnitConverter.createBioModelWithNewUnitSystem(bioModel, units);
-			this.bioModelWindowManager.resetDocument(newBioModel);
+			this.bioModelWindowManager.resetDocument(newBioModel); // closes the model window's children, this one's among them
+			SwingUtilities.invokeLater(this::showModelUnitSystem); // so it's opened again, on the converted model
 			return true;
 		} catch (Exception e) {
 			e.printStackTrace(System.out);
@@ -444,15 +392,6 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 		parametersFunctionsTableModel = new BioModelParametersTableModel(parametersFunctionsTable);
 		parametersFunctionsTable.setModel(parametersFunctionsTableModel);
 			
-		globalParametersCheckBox = new JCheckBox("Global");
-		globalParametersCheckBox.setSelected(true);
-		globalParametersCheckBox.addActionListener(eventHandler);
-		reactionsCheckBox = new JCheckBox("Reactions and Rules");
-		reactionsCheckBox.setSelected(true);
-		reactionsCheckBox.addActionListener(eventHandler);
-		applicationsCheckBox = new JCheckBox("Applications");
-		applicationsCheckBox.setSelected(true);
-		applicationsCheckBox.addActionListener(eventHandler);
 		applicationComboBox = new JComboBox<ApplicationSelection>();
 		applicationComboBox.setSelectedItem("All");
 		applicationComboBox.addActionListener(eventHandler);
@@ -461,18 +400,6 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 		applicationComboBox.setName("ParametersApplicationComboBox");
 		applicationComboBox.setToolTipText("Which applications' parameters to list");
 		
-		constantsCheckBox = new JCheckBox("Parameters");
-		constantsCheckBox.setSelected(true);
-		constantsCheckBox.addActionListener(eventHandler);
-		functionsCheckBox = new JCheckBox("Functions");
-		functionsCheckBox.setSelected(true);
-		functionsCheckBox.addActionListener(eventHandler);
-		predefinedSymbolsTable = new EditorScrollTable();
-		predefinedSymbolsTable.setName("PredefinedSymbolsTable");
-		predefinedSymbolsTable.getAccessibleContext().setAccessibleName("Predefined Expressions");
-		predefinedSymbolsTableModel = new PredefinedSymbolsTableModel(predefinedSymbolsTable);
-		predefinedSymbolsTable.setModel(predefinedSymbolsTableModel);
-		GuiUtils.flexResizeTableColumns(predefinedSymbolsTable);
 		modelUnitSystemTable = new EditorScrollTable();
 		modelUnitSystemTable.setName("ModelUnitSystemTable");
 		modelUnitSystemTable.getAccessibleContext().setAccessibleName("Model Unit System");
@@ -480,67 +407,22 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 		modelUnitSystemTable.setModel(modelUnitSystemTableModel);
 		GuiUtils.flexResizeTableColumns(modelUnitSystemTable);
 
-		tabbedPane = new JTabbedPaneEnhanced();
-		tabbedPane.addChangeListener(eventHandler);
-		
-		ParametersPanelTab parametersPanelTabs[] = new ParametersPanelTab[ParametersPanelTabID.values().length]; 
-		parametersPanelTabs[ParametersPanelTabID.summary.ordinal()] = new ParametersPanelTab(ParametersPanelTabID.summary, summaryPanel, null);
-		parametersPanelTabs[ParametersPanelTabID.parameters_functions.ordinal()] = new ParametersPanelTab(ParametersPanelTabID.parameters_functions, getParametersFunctionsPanel(), null);
-		parametersPanelTabs[ParametersPanelTabID.predefined.ordinal()] = new ParametersPanelTab(ParametersPanelTabID.predefined, getPredefinedSymbolsPanel(), null);
-		parametersPanelTabs[ParametersPanelTabID.modelUnitSystem.ordinal()] = new ParametersPanelTab(ParametersPanelTabID.modelUnitSystem, getModelUnitSystemPanel(), null);
-		
-		for (ParametersPanelTab tab : parametersPanelTabs) {
-			tab.component.setBorder(GuiConstants.TAB_PANEL_BORDER);
-			tabbedPane.addTab(tab.id.title, tab.icon, tab.component);
-		}
-				
-		buttonPanel = new JPanel(new GridBagLayout());
-		int gridy = 0;
-		GridBagConstraints  gbc = new GridBagConstraints();
-		gbc.gridx = 0;
-		gbc.gridy = gridy;
-		gbc.insets = new Insets(4,4,4,4);
-		gbc.anchor = GridBagConstraints.LINE_END;
-		buttonPanel.add(addNewButton, gbc);
-		
-		gbc = new GridBagConstraints();
-		gbc.gridx = GridBagConstraints.RELATIVE;
-		gbc.insets = new Insets(4,4,4,4);
-		gbc.gridy = gridy;
-		gbc.anchor = GridBagConstraints.LINE_END;
-		buttonPanel.add(addNewButton2, gbc);
-				
-		gbc = new GridBagConstraints();
-		gbc.gridx = GridBagConstraints.RELATIVE;
-		gbc.insets = new Insets(4,4,4,4);
-		gbc.gridy = gridy;
-		gbc.anchor = GridBagConstraints.LINE_END;
-		buttonPanel.add(deleteButton, gbc);
-				
-		gbc = new GridBagConstraints();
-		gbc.gridx = GridBagConstraints.RELATIVE;
-		gbc.gridy = gridy;
-		gbc.anchor = GridBagConstraints.LINE_END;
-		gbc.insets = new Insets(4,50,4,4);
-		buttonPanel.add(new JLabel("Search"), gbc);
-		
-		gbc = new GridBagConstraints();
-		gbc.gridx = GridBagConstraints.RELATIVE;
-		gbc.gridy = gridy;
-		gbc.weightx = 1.0;
-		gbc.gridwidth = 2;
-		gbc.anchor = GridBagConstraints.LINE_START;
-		gbc.fill = GridBagConstraints.HORIZONTAL;
-		gbc.insets = new Insets(4,4,4,4);
-		buttonPanel.add(textFieldSearch, gbc);
+		unitSystemButton = new JButton("Model Unit System...");
+		unitSystemButton.setName("ModelUnitSystemButton");
+		unitSystemButton.setToolTipText("The model's units: see them, or choose another unit system");
+		unitSystemButton.addActionListener(eventHandler);
+		shownLabel.setName("ParametersShownLabel");
+
+		// a row that wraps rather than insisting on its width, which would squeeze the navigation column beside it
+		buttonPanel = org.vcell.util.gui.ButtonRowLayout.withSearch(java.util.List.of(addNewButton, addNewButton2, deleteButton, unitSystemButton), textFieldSearch);
 		
 		setLayout(new BorderLayout());
-		add(tabbedPane, BorderLayout.CENTER);
+		add(getParametersFunctionsPanel(), BorderLayout.CENTER);
 		add(buttonPanel, BorderLayout.SOUTH);
-		buttonPanel.setVisible(tabbedPane.getSelectedIndex() != ParametersPanelTabID.summary.ordinal()); // made after the tabs, which first chose one
+		applyFilter(filterButton.getFilter());
 
 		parametersFunctionsTable.getSelectionModel().addListSelectionListener(eventHandler);
-		parametersFunctionsTableModel.addTableModelListener(e -> queueSummaryRefresh()); // the model's parameters changed
+		parametersFunctionsTableModel.addTableModelListener(e -> updateShownLabel());
 		parametersFunctionsTable.setDefaultRenderer(NameScope.class, new DefaultScrollTableCellRenderer() {
 
 			@Override
@@ -622,6 +504,14 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 			}
 		};
 		parametersFunctionsTable.getColumnModel().getColumn(BioModelParametersTableModel.COLUMN_NAME).setCellRenderer(nameTableCellRenderer);
+
+		// what's looked for first leads: the name and its value, then where it's defined, what it is, and its units
+		columnsPanel = new org.vcell.util.gui.TableColumnsPanel(parametersFunctionsTable, java.util.List.of(
+				BioModelParametersTableModel.COLUMN_NAME, BioModelParametersTableModel.COLUMN_EXPRESSION, BioModelParametersTableModel.COLUMN_PATH,
+				BioModelParametersTableModel.COLUMN_DESCRIPTION, BioModelParametersTableModel.COLUMN_UNIT));
+		columnsPanel.setName("ParametersColumnsPanel");
+		columnsPanel.setVisible(false);
+		getParametersFunctionsPanel().add(columnsPanel, BorderLayout.EAST);
 	}
 	
 	private JPanel getModelUnitSystemPanel() {
@@ -635,107 +525,62 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 		return modelUnitSystemPanel;
 	}
 
-	private JPanel getPredefinedSymbolsPanel() {
-		if (predefinedSymbolsPanel == null) {
-			predefinedSymbolsPanel = new JPanel();
-			predefinedSymbolsPanel.setLayout(new BorderLayout());
-			
-			predefinedSymbolsPanel.add(predefinedSymbolsTable.getEnclosingScrollPane(), BorderLayout.CENTER);
-		}
-		return predefinedSymbolsPanel;
-	}
-
 	private JPanel getParametersFunctionsPanel() {
 		if (parametersFunctionsPanel == null) {
-			parametersFunctionsPanel = new JPanel();
-			parametersFunctionsPanel.setLayout(new GridBagLayout());
-			
-			int gridy = 0;
-			GridBagConstraints gbc = new GridBagConstraints();
-			gbc.gridx = 0;
-			gbc.gridy = gridy;
-			gbc.fill = GridBagConstraints.BOTH;
-			gbc.insets = new Insets(4,4,4,4);
-			gbc.anchor = GridBagConstraints.LINE_END;
-			JLabel label = new JLabel("Defined In:");
-			VCellFonts.setCategory(label, VCellFonts.Category.HEADING);
-			parametersFunctionsPanel.add(label, gbc);
-			
-			gbc = new GridBagConstraints();
-			gbc.gridx = 1;
-			gbc.gridy = gridy;
-			gbc.fill = GridBagConstraints.BOTH;
-			gbc.insets = new Insets(4,4,4,4);
-			gbc.anchor = GridBagConstraints.LINE_END;
-			parametersFunctionsPanel.add(globalParametersCheckBox, gbc);
-			
-			gbc = new GridBagConstraints();
-			gbc.gridx = 2;
-			gbc.gridy = gridy;
-			gbc.fill = GridBagConstraints.BOTH;
-			gbc.insets = new Insets(4,4,4,4);
-			gbc.anchor = GridBagConstraints.LINE_END;
-			parametersFunctionsPanel.add(reactionsCheckBox, gbc);
-			
-			gbc = new GridBagConstraints();
-			gbc.gridx = 3;
-			gbc.gridy = gridy;
-			gbc.fill = GridBagConstraints.BOTH;
-			gbc.insets = new Insets(4,4,4,4);
-			gbc.anchor = GridBagConstraints.LINE_END;
-			parametersFunctionsPanel.add(applicationsCheckBox, gbc);
-			
-			gbc = new GridBagConstraints();
-			gbc.gridx = 4;
-			gbc.gridy = gridy;
-			gbc.fill = GridBagConstraints.BOTH;
-			gbc.insets = new Insets(4,4,4,4);
-			gbc.anchor = GridBagConstraints.LINE_END;
-			parametersFunctionsPanel.add(applicationComboBox, gbc);
-			
-			gbc = new GridBagConstraints();
-			gbc.gridx = 5;
-			gbc.gridy = gridy;
-			gbc.weightx = 1.0;
-			gbc.fill = GridBagConstraints.BOTH;
-			gbc.insets = new Insets(4,4,4,4);
-			gbc.anchor = GridBagConstraints.LINE_END;
-			label = new JLabel("Type:");
-			label.setHorizontalAlignment(SwingConstants.RIGHT);
-			VCellFonts.setCategory(label, VCellFonts.Category.HEADING);
-			parametersFunctionsPanel.add(label, gbc);
-			
-			gbc = new GridBagConstraints();
-			gbc.gridx = 6;
-			gbc.gridy = gridy;
-			gbc.fill = GridBagConstraints.BOTH;
-			gbc.insets = new Insets(4,4,4,4);
-			gbc.anchor = GridBagConstraints.LINE_END;
-			parametersFunctionsPanel.add(constantsCheckBox, gbc);
-			
-			gbc = new GridBagConstraints();
-			gbc.gridx = 7;
-			gbc.gridy = gridy;
-			gbc.fill = GridBagConstraints.BOTH;
-			gbc.insets = new Insets(4,4,4,4);
-			gbc.anchor = GridBagConstraints.LINE_END;
-			parametersFunctionsPanel.add(functionsCheckBox, gbc);
-			
-			gridy ++;
-			gbc = new GridBagConstraints();
-			gbc.gridx = 0;
-			gbc.gridy = gridy;
-			gbc.weightx = 1.0;
-			gbc.weighty = 1.0;
-			gbc.gridwidth = 8;
-			gbc.fill = GridBagConstraints.BOTH;
-			gbc.insets = new Insets(4,4,4,4);
-			gbc.anchor = GridBagConstraints.LINE_END;
-			parametersFunctionsPanel.add(parametersFunctionsTable.getEnclosingScrollPane(), gbc);
+			parametersFunctionsPanel = new JPanel(new BorderLayout(0, 4));
+			JPanel filterRow = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEADING, 8, 0));
+			filterRow.add(filterButton);
+			columnsButton.setName("ParametersColumnsButton");
+			columnsButton.setToolTipText("Choose which columns show, and their order");
+			columnsButton.addActionListener(e -> {
+				columnsPanel.setVisible(columnsButton.isSelected());
+				columnsButton.setText("Columns " + (columnsButton.isSelected() ? "\u25BE" : "\u25B8"));
+				parametersFunctionsPanel.revalidate();
+			});
+			filterRow.add(columnsButton);
+			filterRow.add(shownLabel);
+			parametersFunctionsPanel.add(filterRow, BorderLayout.NORTH);
+			parametersFunctionsPanel.add(parametersFunctionsTable.getEnclosingScrollPane(), BorderLayout.CENTER);
+			parametersFunctionsPanel.setBorder(GuiConstants.TAB_PANEL_BORDER);
 		}
 		return parametersFunctionsPanel;
 	}
-	
+
+	// the filter chosen, applied to the table
+	private void applyFilter(ParametersFilterButton.Filter filter) {
+		if (parametersFunctionsTableModel == null) {
+			return; // the button announces its first filter before the table exists; it's applied once it does
+		}
+		parametersFunctionsTableModel.setIncludeGlobal(filter.global());
+		parametersFunctionsTableModel.setIncludeReactions(filter.reactions());
+		parametersFunctionsTableModel.setIncludeApplications(filter.applications());
+		parametersFunctionsTableModel.setApplicationSelection(filter.application() == null ? ApplicationSelection.All : new ApplicationSelection(filter.application()));
+		parametersFunctionsTableModel.setIncludeConstants(filter.parameters());
+		parametersFunctionsTableModel.setIncludeFunctions(filter.functions());
+		parametersFunctionsTableModel.setIncludedOrigins(filter.userDeclared(), filter.autoGenerated(), filter.preexisting());
+		updateShownLabel();
+	}
+
+	private void updateShownLabel() {
+		int rows = parametersFunctionsTableModel == null ? 0 : parametersFunctionsTableModel.getRowCount();
+		shownLabel.setText("Showing " + rows + (rows == 1 ? " entry" : " entries"));
+	}
+
+	/** The Model Unit System window: the model's units, and the unit system chooser. Made once, brought forward after. */
+	public void showModelUnitSystem() {
+		ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(this);
+		if (childWindowManager == null) {
+			return;
+		}
+		ChildWindow window = childWindowManager.getChildWindowFromContext(UNIT_SYSTEM_WINDOW);
+		if (window == null) {
+			window = childWindowManager.addChildWindow(getModelUnitSystemPanel(), UNIT_SYSTEM_WINDOW, "Model Unit System", true);
+			window.setSize(860, 480);
+			window.setIsCenteredOnParent();
+		}
+		window.show();
+	}
+
 	protected void tableSelectionChanged() {
 		setSelectedObjectsFromTable(parametersFunctionsTable, parametersFunctionsTableModel);
 		int[] rows = parametersFunctionsTable.getSelectedRows();
@@ -860,87 +705,13 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 		}		
 	}
 	
-	private BioModelEditorRightSideTableModel<?> currentSelectedTableModel = null;
-	private void computeCurrentSelectedTable() {
-		currentSelectedTableModel = null;
-		int selectedIndex = tabbedPane.getSelectedIndex();
-		if (selectedIndex == ParametersPanelTabID.parameters_functions.ordinal()) {
-			currentSelectedTableModel = parametersFunctionsTableModel;
-		} else if (selectedIndex == ParametersPanelTabID.predefined.ordinal()) {
-			currentSelectedTableModel = predefinedSymbolsTableModel;			
-		} else if (selectedIndex == ParametersPanelTabID.modelUnitSystem.ordinal()) {
-			currentSelectedTableModel = modelUnitSystemTableModel;			
-		}
-	}
-
-	private void searchTable() {		
-		String text = textFieldSearch.getText();
-		computeCurrentSelectedTable();
-		if (currentSelectedTableModel != null) currentSelectedTableModel.setSearchText(text); // the Summary has none
-	}
-	
-	// the Summary recounts once things settle, not at each of a burst of changes
-	private void queueSummaryRefresh() {
-		if (summaryRefreshQueued) return;
-		summaryRefreshQueued = true;
-		SwingUtilities.invokeLater(() -> {
-			summaryRefreshQueued = false;
-			refreshSummary();
-		});
-	}
-
-	private void refreshSummary() {
-		summaryPanel.refresh(bioModel);
-	}
-
-	// the Summary's group, alone in the Parameters and Functions table: both types, no search
-	private void showParametersOf(MathematicsSummary.Group group) {
-		boolean global = group.where() == MathematicsSummary.Where.GLOBAL;
-		boolean reactions = group.where() == MathematicsSummary.Where.REACTIONS;
-		boolean applications = group.where() == MathematicsSummary.Where.APPLICATION;
-		globalParametersCheckBox.setSelected(global);
-		parametersFunctionsTableModel.setIncludeGlobal(global);
-		reactionsCheckBox.setSelected(reactions);
-		parametersFunctionsTableModel.setIncludeReactions(reactions);
-		applicationsCheckBox.setSelected(applications);
-		parametersFunctionsTableModel.setIncludeApplications(applications);
-		applicationComboBox.setEnabled(applications);
-		if (applications) { // one application, or (its heading) all of them
-			for (int i = 0; i < applicationComboBox.getItemCount(); i++) {
-				ApplicationSelection item = applicationComboBox.getItemAt(i);
-				if (group.application() == null ? !item.isAll() : item.getSimulationContext() != group.application()) continue;
-				applicationComboBox.setSelectedItem(item); // its listener filters the table
-				break;
-			}
-		}
-		constantsCheckBox.setSelected(true);
-		parametersFunctionsTableModel.setIncludeConstants(true);
-		functionsCheckBox.setSelected(true);
-		parametersFunctionsTableModel.setIncludeFunctions(true);
-		textFieldSearch.setText(null);
-		tabbedPane.setSelectedIndex(ParametersPanelTabID.parameters_functions.ordinal());
+	private void searchTable() {
+		parametersFunctionsTableModel.setSearchText(textFieldSearch.getText());
 	}
 
 	@Override
 	protected void onSelectedObjectsChange(Object[] selectedObjects) {
 		setTableSelections(selectedObjects, parametersFunctionsTable, parametersFunctionsTableModel);
-	}
-	
-	public void tabbedPaneSelectionChanged() {
-		int selectedIndex = tabbedPane.getSelectedIndex();
-		if (selectedIndex < 0) {
-			return;
-		}
-
-		ParametersPanelTabID selectedTab = ParametersPanelTabID.values()[selectedIndex];
-		setActiveView(new ActiveView(null, selectedTab.treeFolderClass, selectedTab.activeViewID)); // selects the tab's node in the tree
-		
-		boolean parametersTab = selectedIndex == ParametersPanelTabID.parameters_functions.ordinal(); // the only tab they add to
-		if (buttonPanel != null) buttonPanel.setVisible(selectedIndex != ParametersPanelTabID.summary.ordinal()); // the Summary has no table to add to or search
-		if (selectedIndex == ParametersPanelTabID.summary.ordinal()) refreshSummary();
-		addNewButton.setVisible(parametersTab);
-		addNewButton2.setVisible(parametersTab);
-		deleteButton.setVisible(parametersTab);
 	}
 	
 	public void setBioModel(BioModel newValue) {
@@ -949,11 +720,10 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 		}
 		bioModel = newValue;		
 		parametersFunctionsTableModel.setBioModel(bioModel);
-		predefinedSymbolsTableModel.setBioModel(bioModel);
 		modelUnitSystemTableModel.setBioModel(bioModel);
 		applicationComboBoxModel.setBioModel(bioModel);
 		unitSystemChooserPanel.setModelUnits(bioModel == null ? null : bioModel.getModel().getUnitSystem());
-		refreshSummary();
+		applyFilter(filterButton.getFilter());
 	}
 	
 	@Override
@@ -966,18 +736,18 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 	@Override
 	protected void onActiveViewChange(ActiveView activeView) {
 		super.onActiveViewChange(activeView);
-		if (DocumentEditorTreeFolderClass.BIOMODEL_PARAMETERS_NODE == activeView.getDocumentEditorTreeFolderClass()
-				&& ActiveViewID.parameter_estimation.equals(activeView.getActiveViewID())) { // parameter estimation's link to a parameter
-			tabbedPane.setSelectedIndex(ParametersPanelTabID.parameters_functions.ordinal());
+		DocumentEditorTreeFolderClass folderClass = activeView.getDocumentEditorTreeFolderClass();
+		if (activeView.getSimulationContext() != null || folderClass == null) {
 			return;
 		}
-		for (ParametersPanelTabID tab : ParametersPanelTabID.values()) { // a tab's node selected in the tree
-			if (tab.treeFolderClass != activeView.getDocumentEditorTreeFolderClass()) continue;
-			tabbedPane.setSelectedIndex(tab.ordinal());
-			return;
+		if (folderClass == DocumentEditorTreeFolderClass.MODEL_UNIT_SYSTEM_NODE) { // its own window now
+			showModelUnitSystem();
+		} else if (folderClass == DocumentEditorTreeFolderClass.PREDEFINED_SYMBOLS_NODE && !filterButton.getFilter().preexisting()) {
+			ParametersFilterButton.Filter f = filterButton.getFilter(); // VCell's own symbols, now rows of this table
+			filterButton.setFilter(new ParametersFilterButton.Filter(f.global(), f.reactions(), f.applications(), f.application(), f.parameters(), f.functions(), f.userDeclared(), f.autoGenerated(), true));
 		}
 	}
-	
+
 	@Override
 	public void setIssueManager(IssueManager issueManager) {
 		super.setIssueManager(issueManager);

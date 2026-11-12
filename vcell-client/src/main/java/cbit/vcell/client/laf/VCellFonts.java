@@ -288,6 +288,19 @@ public final class VCellFonts {
 		LayoutScaler.keepSize(component);
 	}
 
+	/**
+	 * The size a window was designed at, before the text-size scaling: what a replacement window should be given, with
+	 * {@link #carryDesignSize}, so it isn't scaled again. Null if the window isn't scaled.
+	 */
+	public static java.awt.Dimension designSize(java.awt.Window window) {
+		return LayoutScaler.designSize(window);
+	}
+
+	/** Gives a window, about to be shown in another's place at its size, that one's design size: it isn't scaled again. */
+	public static void carryDesignSize(java.awt.Dimension design, java.awt.Window window) {
+		LayoutScaler.carryDesignSize(design, window);
+	}
+
 	/** Sizes the table's rows to the current text, and keeps them sized to it until other code sets their height. */
 	public static void followRowHeight(JTable table) {
 		VCellFonts.setRowHeight(table, VCellFonts.tableRowHeight);

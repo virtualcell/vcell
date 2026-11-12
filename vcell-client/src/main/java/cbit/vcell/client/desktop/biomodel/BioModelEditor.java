@@ -132,7 +132,6 @@ public class BioModelEditor extends DocumentEditor {
 	private BioModelEditorApplicationPanel bioModelEditorApplicationPanel = null;
 	private ApplicationsPropertiesPanel applicationsPropertiesPanel;
 	private BioModelParametersPanel bioModelParametersPanel;
-	private BiochemistrySummaryPanel biochemistrySummaryPanel;
 //	private DataSymbolsPanel dataSymbolsPanel = null;
 	private BioPaxObjectPropertiesPanel bioPaxObjectPropertiesPanel = null;
 	private PathwayToolsPanel pathwayToolsPanel = null; // the Pathway Tools window's content
@@ -670,8 +669,6 @@ private void initialize() {
 		bioModelParametersPanel = new BioModelParametersPanel();
 		bioModelParametersPanel.setSelectionManager(selectionManager);
 		bioModelParametersPanel.setIssueManager(issueManager);
-		biochemistrySummaryPanel = new BiochemistrySummaryPanel(() -> getBioModelEditorPathwayDiagramPanel().getPathwayGraphModel());
-		biochemistrySummaryPanel.setSelectionManager(selectionManager);
 		
 		bioModelEditorApplicationPanel = new BioModelEditorApplicationPanel();
 		bioModelEditorApplicationPanel.setSelectionManager(selectionManager);
@@ -947,9 +944,7 @@ private void setRightTopPanel(Object selectedObject, SimulationContext simulatio
 	} else if (selectedObject instanceof DocumentEditorTreeFolderNode) {
 		DocumentEditorTreeFolderNode folderNode = (DocumentEditorTreeFolderNode) selectedObject;
 		DocumentEditorTreeFolderClass folderClass = folderNode.getFolderClass();
-		if (folderClass == DocumentEditorTreeFolderClass.BIOCHEMISTRY_NODE) { // its diagrams and what it holds
-			newTopPanel = biochemistrySummaryPanel;
-		} else if (folderClass == DocumentEditorTreeFolderClass.MODEL_NODE) {
+		if (folderClass == DocumentEditorTreeFolderClass.MODEL_NODE) {
 			newTopPanel = bioModelEditorModelPanel;
 		} else if (folderClass == DocumentEditorTreeFolderClass.STRUCTURES_NODE
 				|| folderClass == DocumentEditorTreeFolderClass.SPECIES_NODE
@@ -1038,7 +1033,6 @@ public void setBioModel(BioModel bioModel) {
 	bioModelEditorTreeModel.setBioModel(bioModel);
 	bioModelEditorAnnotationPanel.setBioModel(bioModel);
 	bioModelParametersPanel.setBioModel(bioModel);
-	biochemistrySummaryPanel.setBioModel(bioModel);
 	issueManager.setVCDocument(bioModel);
 	
 	bioModelEditorTreeCellRenderer.setBioModel(bioModel);

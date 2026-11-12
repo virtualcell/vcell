@@ -27,6 +27,5 @@ The pathway's views are in the **Pathway Tools** window, beside the model's wind
 stay open while working on other topics: its tabs are the **Pathway Diagram**, **Pathway Objects**,
 **BioPAX Summary**, **BioPAX Tree** and **Pathway Lookup**, and beneath them are the **Object
 Properties** of the chosen pathway object and the **Pathway Preview** of a chosen Lookup result.
-Open it from **Tools > Pathway Tools...**, from the pathway diagram on the
-[Biochemistry](../Introduction/GeneralNavAndWinSetup.md) summary, or by following a link to a
-pathway object from a species or reaction.
+Open it from **Tools > Pathway Tools...**, or by following a link to a pathway object from a
+species or reaction.

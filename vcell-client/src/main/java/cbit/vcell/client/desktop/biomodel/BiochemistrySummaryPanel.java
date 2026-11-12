@@ -50,6 +50,8 @@ import cbit.vcell.graph.structures.AllStructureSuite;
 /**
  * The Summary of Biochemistry: on the left, view-only copies of its Reaction Diagram and Pathway Diagram; on the
  * right, what its physiology and pathway hold. A diagram opens itself when clicked, and a count its tab.
+ * <p><b>Currently unused</b> (since the Biochemistry node was removed, Physiology being top-level): nothing opens the
+ * Biochemistry Summary. Kept for its parts, which may be reused elsewhere.</p>
  */
 @SuppressWarnings("serial")
 public class BiochemistrySummaryPanel extends DocumentEditorSubPanel {

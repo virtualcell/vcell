@@ -29,6 +29,8 @@ import cbit.gui.graph.gui.GraphPane;
 /**
  * A titled, view-only copy of a diagram, shrunk to fit: its own graph model on the same document, with no tool to edit
  * it. Clicking it, or its Open button, opens the diagram itself.
+ * <p><b>Currently unused</b>: it was made for the Biochemistry Summary, which nothing opens since the Biochemistry node
+ * was removed. Kept for reuse: any diagram can be previewed this way.</p>
  */
 @SuppressWarnings("serial")
 public class DiagramPreview extends JPanel {
