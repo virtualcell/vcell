@@ -14,8 +14,8 @@ a biomodel and, more important, as a way of annotating vCell entities.
 <para>
 The process begins with a 
 <link target = "PathwayCommonsPanel"> keyword search</link> 
-in the Pathway Commons Database, from <bold>Pathway Lookup</bold> under <bold>Pathway</bold> in the
-Navigation Panel - which will result in a list of pathways. 
+in the Pathway Commons Database, from the <bold>Pathway Lookup</bold> tab of the <bold>Pathway Tools</bold> window
+(<bold>Tools &gt; Pathway Tools...</bold> in a BioModel window) - which will result in a list of pathways. 
 </para>
 <para>
 The chosen pathway can be  
@@ -36,13 +36,13 @@ through a
 <link target = "GroupOperationsPanel">  linking process</link>. 
 </para>
 <para>
-While working on other topics, click at any time on the Pathway tree item or on its 
-children in the 
-<link target = "GeneralNavAndWinSetup"> Navigation Panel</link>  
-to return to displaying pathway entities.
+The pathway's views are in the <bold>Pathway Tools</bold> window, beside the model's window, so they can stay open while
+working on other topics: its tabs are the <bold>Pathway Diagram</bold>, <bold>Pathway Objects</bold>, <bold>BioPAX Summary</bold>,
+<bold>BioPAX Tree</bold> and <bold>Pathway Lookup</bold>, and beneath them are the <bold>Object Properties</bold> of the
+chosen pathway object and the <bold>Pathway Preview</bold> of a chosen Lookup result. Open it from <bold>Tools &gt; Pathway Tools...</bold>,
+from the pathway diagram on the <link target = "GeneralNavAndWinSetup">Biochemistry</link> summary, or by following a link to a
+pathway object from a species or reaction.
 </para>
-		<imgReference target = "PathwayNavigationPanel.png">
-		</imgReference>
 
 	</introduction>
 	

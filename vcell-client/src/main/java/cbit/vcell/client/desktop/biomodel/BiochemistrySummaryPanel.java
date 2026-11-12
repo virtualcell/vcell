@@ -126,7 +126,7 @@ public class BiochemistrySummaryPanel extends DocumentEditorSubPanel {
 			pathway.setPathwayModel(bioModel.getPathwayModel());
 			this.pathwayPreview = new DiagramPreview("PathwayDiagramPreview", "Pathway Diagram", pathway,
 					() -> this.open(DocumentEditorTreeFolderClass.PATHWAY_NODE),
-					"No pathway imported yet: find one with Pathway Lookup",
+					"No pathway imported yet: find one with Tools \u203a Pathway Tools \u203a Pathway Lookup",
 					() -> bioModel.getPathwayModel().getBiopaxObjects().isEmpty());
 			this.diagrams.add(this.reactionPreview);
 			this.diagrams.add(this.pathwayPreview);

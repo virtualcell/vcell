@@ -138,6 +138,7 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
     private JDialog viewSpeciesDialog = null;
 
     private JMenuItem exportedDataViewer = null;
+    private JMenuItem pathwayToolsItem = null;
 
     private final JMenuItem menuItemImportPathwayWebLocation = null;
     private final JMenuItem menuItemImportPathwayFile = null;
@@ -245,6 +246,10 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
                 }
                 if (e.getSource() == DocumentWindow.this.getExportedDataViewer()) {
                     DocumentWindow.this.showViewExportedDataDialog();
+                }
+                if (e.getSource() == DocumentWindow.this.getPathwayToolsItem()
+                        && DocumentWindow.this.getWindowManager() instanceof BioModelWindowManager bioModelWindowManager) {
+                    bioModelWindowManager.showPathwayTools();
                 }
 
             } catch (Throwable throwable) {
@@ -403,6 +408,8 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
                     @Override
                     public void menuSelected(MenuEvent e) {
 //					getImageJServiceMenuItem().setText(createImageJServiceMenuText());
+                        // a BioModel's pathway, so only in a BioModel's window
+                        DocumentWindow.this.getPathwayToolsItem().setVisible(DocumentWindow.this.getWindowManager() instanceof BioModelWindowManager);
                     }
 
                     @Override
@@ -416,6 +423,7 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
 
                 this.toolMenu.setName("ToolMenu");
                 this.toolMenu.setText("Tools");
+                this.toolMenu.add(this.getPathwayToolsItem());
                 this.toolMenu.add(this.getRunVFrapItem());
                 this.toolMenu.add(this.getExportedDataViewer());
                 this.toolMenu.add(new JSeparator());
@@ -595,6 +603,17 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
             if (this.getWindowManager().getRequestManager() instanceof ClientRequestManager requestManager) requestManager.showWelcomeWindow();
         });
         return item;
+    }
+
+    // the pathway's diagram, objects, BioPAX views and Lookup, in a window of their own
+    private JMenuItem getPathwayToolsItem() {
+        if (this.pathwayToolsItem == null) {
+            this.pathwayToolsItem = new JMenuItem("Pathway Tools...");
+            this.pathwayToolsItem.setName("PathwayToolsMenuItem");
+            this.pathwayToolsItem.setToolTipText("The pathway's diagram and objects, its BioPAX, and Pathway Lookup to find and import one");
+            this.pathwayToolsItem.addActionListener(this.ivjEventHandler);
+        }
+        return this.pathwayToolsItem;
     }
 
     private JMenuItem getExportedDataViewer() {

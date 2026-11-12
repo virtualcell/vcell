@@ -54,7 +54,6 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel implements 
 	private BioModelNode modelNode = new BioModelNode(bioModelChildFolderNodes[0], true);
 	private BioModelNode applicationsNode = new BioModelNode(bioModelChildFolderNodes[1], true);	
 	private BioModelNode bioModelParametersNode = new BioModelNode(bioModelChildFolderNodes[2], true);
-	private BioModelNode pathwayNode = new BioModelNode(bioModelChildFolderNodes[3], true);
 //	private BioModelNode dataNode = new BioModelNode(bioModelChildFolderNodes[4], false);
 	// the model's own node is the root; under it, Mathematics & Units (model-wide: its parameters span Biochemistry and the
 	// Applications), Biochemistry, which groups what the model is made of, then its Applications
@@ -67,7 +66,7 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel implements 
 	};
 	private BioModelNode biochemistryChildNodes[] = {
 			modelNode,
-			pathwayNode,
+			// the pathway has no node here: its views are in the Pathway Tools window (Tools > Pathway Tools)
 	};
 
 	// Mathematics & Units: one node per tab of its panel, in its tabs' order
@@ -108,23 +107,6 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel implements 
 			observablesNode,
 	};
 	
-	// Pathway	
-	private DocumentEditorTreeFolderNode pathwayChildFolderNodes[] = {			
-			// no Pathway Diagram node: Pathway itself opens on the diagram
-			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.PATHWAY_OBJECTS_NODE, true),
-			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.BIOPAX_SUMMARY_NODE, true),			
-			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.BIOPAX_TREE_NODE, true),			
-			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.PATHWAY_LOOKUP_NODE, true),
-		};	
-	private BioModelNode pathwayObjectsNode = new BioModelNode(pathwayChildFolderNodes[0], false); 
-	private BioModelNode biopaxSummaryNode = new BioModelNode(pathwayChildFolderNodes[1], false); 
-	private BioModelNode pathwayLookupNode = new BioModelNode(pathwayChildFolderNodes[3], false); // searches Pathway Commons for pathways to import
-	private BioModelNode pathwayChildNodes[] = new BioModelNode[] {
-			pathwayObjectsNode,
-			biopaxSummaryNode,
-			pathwayLookupNode,
-	};
-
 	private BioModelNode defaultSelectModelNode = modelNode; // Physiology, which opens on the reaction diagram
 		
 	public BioModelEditorTreeModel(JTree tree) {
@@ -137,9 +119,6 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel implements 
 		}
 		for (BioModelNode bioModeNode : modelChildNodes) {
 			modelNode.add(bioModeNode);
-		}
-		for (BioModelNode bioModeNode : pathwayChildNodes) {
-			pathwayNode.add(bioModeNode);
 		}
 		for (BioModelNode mathematicsChildNode : this.mathematicsChildNodes) {
 			this.bioModelParametersNode.add(mathematicsChildNode);
