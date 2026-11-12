@@ -722,7 +722,7 @@
   <BioModelInfo ID="BIOMD0000000692" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Phillips2003 - The Mechanism of Ras GTPase Activation by Neurofibromin" />
   <BioModelInfo ID="BIOMD0000000693" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Wang2008 - Mimicking the inhibitory effect of riluzole on membrane conductance in skeletal fibres" />
   <BioModelInfo ID="BIOMD0000000695" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="FelixGarza2017 - Blue Light Treatment of Psoriasis (simplified)" />
-  <BioModelInfo ID="BIOMD0000000696" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Boada2016 - Incoherent type 1 feed-forward loop (I1-FFL)" exception="MATHML_PARSING" />
+  <BioModelInfo ID="BIOMD0000000696" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Boada2016 - Incoherent type 1 feed-forward loop (I1-FFL)" exception="MATHML_PARSING" />
   <BioModelInfo ID="BIOMD0000000697" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Ciliberto2003 - CyclinE / Cdk2 timer in the cell cycle of Xenopus laevis embryo" />
   <BioModelInfo ID="BIOMD0000000698" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Reed2004 - Methionine Cycle" />
   <BioModelInfo ID="BIOMD0000000699" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Caydasi2012 - Regulation of Tem1 by the GAP complex in spindle position cell cycle checkpoint - Ubiquitous association model" />
@@ -801,7 +801,7 @@
   <BioModelInfo ID="BIOMD0000000772" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Wang2019 - A mathematical model of oncolytic virotherapy with time delay" />
   <BioModelInfo ID="BIOMD0000000773" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Wodarz2018/2 - model with transit amplifying cells" />
   <BioModelInfo ID="BIOMD0000000774" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Wodarz2018/1 - simple model" />
-  <BioModelInfo ID="BIOMD0000000775" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Iarosz2015 - brain tumor" exception="MATHML_PARSING" />
+  <BioModelInfo ID="BIOMD0000000775" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Iarosz2015 - brain tumor" exception="MATHML_PARSING" />
   <BioModelInfo ID="BIOMD0000000776" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Monro2008 - chemotherapy resistance" />
   <BioModelInfo ID="BIOMD0000000777" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Chakrabarty2010 - A control theory approach to cancer remission aided by an optimal therapy" />
   <BioModelInfo ID="BIOMD0000000778" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Wei2017 - tumor, T cell and cytokine interaction" />
@@ -982,7 +982,7 @@
   <BioModelInfo ID="BIOMD0000000953" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Queralt2006 - Initiation of mitotic exit by downregulation of PP2A in budding yeast" />
   <BioModelInfo ID="BIOMD0000000954" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Pandey2018-reversible transition between quiescence and proliferation" />
   <BioModelInfo ID="BIOMD0000000955" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Giordano2020 - SIDARTHE model of COVID-19 spread in Italy" />
-  <BioModelInfo ID="BIOMD0000000956" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Bertozzi2020 - SIR model of scenarios of COVID-19 spread in CA and NY" exception="MATHML_PARSING" />
+  <BioModelInfo ID="BIOMD0000000956" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Bertozzi2020 - SIR model of scenarios of COVID-19 spread in CA and NY" exception="MATHML_PARSING" />
   <BioModelInfo ID="BIOMD0000000957" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Roda2020 - SIR model of COVID-19 spread in Wuhan" />
   <BioModelInfo ID="BIOMD0000000958" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Ndairou2020 - early-stage transmission dynamics of COVID-19 in Wuhan" />
   <BioModelInfo ID="BIOMD0000000959" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Kok2020 - IFNalpha-induced signaling in Huh7.5 cells" />
