@@ -324,6 +324,11 @@ private BioModelEditor getBioModelEditor() {
 	return bioModelEditor;
 }
 
+/** Opens the Pathway Tools window: the pathway's diagram, objects, BioPAX views and Lookup (Tools > Pathway Tools). */
+public void showPathwayTools() {
+	getBioModelEditor().showPathwayTools();
+}
+
 
 /**
  * Insert the method's description here.

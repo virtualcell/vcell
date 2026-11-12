@@ -44,6 +44,8 @@ import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.constants.ApplicationActionCommand;
 import cbit.vcell.client.constants.GuiConstants;
+import cbit.vcell.client.ChildWindowManager;
+import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.desktop.biomodel.BioModelEditorPathwayCommonsPanel.PathwayData;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderNode;
@@ -133,6 +135,8 @@ public class BioModelEditor extends DocumentEditor {
 	private BiochemistrySummaryPanel biochemistrySummaryPanel;
 //	private DataSymbolsPanel dataSymbolsPanel = null;
 	private BioPaxObjectPropertiesPanel bioPaxObjectPropertiesPanel = null;
+	private PathwayToolsPanel pathwayToolsPanel = null; // the Pathway Tools window's content
+	private static final String PATHWAY_TOOLS_WINDOW = "PathwayToolsWindow"; // its window, among the model window's children
 	private ParameterEstimationTaskPropertiesPanel parameterEstimationTaskPropertiesPanel = null;
 	
 	private CSGObjectPropertiesPanel csgObjectPropertiesPanel;
@@ -426,6 +430,27 @@ private BioModelEditorPathwayDiagramPanel getBioModelEditorPathwayDiagramPanel()
 	return bioModelEditorPathwayDiagramPanel;
 }
 
+/**
+ * Shows the Pathway Tools window, a child of this model's window: the pathway's diagram, objects, BioPAX views and
+ * Lookup, with what's chosen in them beneath. It's made the first time and brought forward after that.
+ */
+public void showPathwayTools() {
+	ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(this);
+	if (childWindowManager == null) return;
+	ChildWindow window = childWindowManager.getChildWindowFromContext(PATHWAY_TOOLS_WINDOW);
+	if (window == null) {
+		if (pathwayToolsPanel == null) {
+			pathwayToolsPanel = new PathwayToolsPanel(getBioModelEditorPathwayDiagramPanel(), bioPaxObjectPropertiesPanel, getBioModelEditorPathwayPanel());
+			pathwayToolsPanel.setSelectionManager(selectionManager);
+		}
+		getBioModelEditorPathwayDiagramPanel().setBioModel(bioModel);
+		window = childWindowManager.addChildWindow(pathwayToolsPanel, PATHWAY_TOOLS_WINDOW, "Pathway Tools", true);
+		window.setSize(1000, 760);
+		window.setIsCenteredOnParent();
+	}
+	window.show();
+}
+
 private BioModelEditorPathwayPanel getBioModelEditorPathwayPanel() {
 	if (bioModelEditorPathwayPanel == null) {
 		bioModelEditorPathwayPanel = new BioModelEditorPathwayPanel();		
@@ -679,6 +704,14 @@ private void initialize() {
 		getDataSymbolsSpecPanel().setSelectionManager(selectionManager);
 		getBioModelEditorPathwayPanel().setSelectionManager(selectionManager);
 		getBioModelEditorPathwayDiagramPanel().setSelectionManager(selectionManager);
+		// the pathway's views are in their own window (Tools > Pathway Tools); asking for one, from a link or a summary, opens it
+		selectionManager.addPropertyChangeListener(evt -> {
+			if (!evt.getPropertyName().startsWith(SelectionManager.PROPERTY_NAME_ACTIVE_VIEW)) return;
+			ActiveView activeView = selectionManager.getActiveView();
+			if (activeView != null && activeView.getSimulationContext() == null && PathwayToolsPanel.isPathwayView(activeView.getDocumentEditorTreeFolderClass())) {
+				showPathwayTools();
+			}
+		});
 //		bioModelEditorSabioPanel.setSelectionManager(selectionManager);
 		getApplicationPropertiesPanel().setSelectionManager(selectionManager);
 		getStructurePropertiesPanel().setSelectionManager(selectionManager);
@@ -717,6 +750,9 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 	int destComponentIndex = DocumentEditorTabID.object_properties.ordinal();	// properties panel
 	int annComponentIndex = DocumentEditorTabID.annotations.ordinal();			// annotations panel
 	boolean bShowPathway = false;
+	if (selections.length == 1 && (selections[0] instanceof BioPaxObject || selections[0] instanceof PathwayData)) {
+		return; // shown beneath the pathway's tabs, in the Pathway Tools window: this window keeps what it shows
+	}
 	if (selections.length == 1) {
 		annotationComponent = getAnnotationsPanel();
 		Object singleSelection = selections[0];
@@ -924,15 +960,6 @@ private void setRightTopPanel(Object selectedObject, SimulationContext simulatio
 //				|| folderClass == DocumentEditorTreeFolderClass.STRUCTURE_DIAGRAM_NODE
 				) {
 			newTopPanel = bioModelEditorModelPanel;
-		} else if (folderClass == DocumentEditorTreeFolderClass.PATHWAY_DIAGRAM_NODE
-				|| folderClass == DocumentEditorTreeFolderClass.PATHWAY_OBJECTS_NODE
-				|| folderClass == DocumentEditorTreeFolderClass.BIOPAX_SUMMARY_NODE
-				|| folderClass == DocumentEditorTreeFolderClass.BIOPAX_TREE_NODE
-				|| folderClass == DocumentEditorTreeFolderClass.PATHWAY_LOOKUP_NODE) {
-			newTopPanel = bioModelEditorPathwayDiagramPanel;
-		} else if (folderClass == DocumentEditorTreeFolderClass.PATHWAY_NODE) {
-			newTopPanel = getBioModelEditorPathwayDiagramPanel();
-			getBioModelEditorPathwayDiagramPanel().setBioModel(bioModel);
 		} else if (folderClass == DocumentEditorTreeFolderClass.BIOMODEL_PARAMETERS_NODE
 				|| folderClass == DocumentEditorTreeFolderClass.PARAMETERS_FUNCTIONS_NODE
 				|| folderClass == DocumentEditorTreeFolderClass.PREDEFINED_SYMBOLS_NODE

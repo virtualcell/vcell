@@ -17,8 +17,8 @@ subsections drop down beneath; clicking it again folds them away, and clicking t
 folds or unfolds without opening the section. The arrow keys move through the rows, and Left and
 Right fold and unfold. Its top item is the model itself (its saved information and annotations);
 under it come **Mathematics & Units**, which covers the whole model, then **Biochemistry**, which
-groups Physiology and Pathway, and the model's **Applications**. Clicking Biochemistry itself shows
-its summary: small copies of the Reaction Diagram and Pathway Diagram (click one, or its **Open**
+holds the Physiology, and the model's **Applications**. The pathway's views are in a window of their
+own: **Tools > Pathway Tools...**. Clicking Biochemistry itself shows its summary: small copies of the Reaction Diagram and Pathway Diagram (click one, or its **Open**
 button, to open it), and counts of the structures, species, molecules, observables, reactions and
 reaction rules, and of the pathway's objects and their links to the physiology (double-click a count
 to open its tab). Physiology opens on the Reaction Diagram and links to the components of the
@@ -36,7 +36,6 @@ The Tree Structure also provides links to
 - [Mathematics & Units](../ParametersAndFunctions/ParametersAndFunctionsOverview.md): a Summary,
   then the Model Unit System, Parameters and Functions, and Predefined Expressions (VCell's built-in
   constants and math functions)
-- [Pathway](../BiologicalPathways/PathwayOverview.md) related information (under Biochemistry)
 - [Applications](../BioModelApplications/ApplicationOverview.md)
 
 **View items** in the View Panel (panel B, top right panel) by selecting the item in the tree. For
@@ -86,7 +85,7 @@ depending on the tab selected.
 Models stored in the [VCell Database](../DatabaseSources/VCellDatabase.md) and the
 [BioModels Database](../DatabaseSources/BioModelsNet.md) are browsed, searched and opened from the
 **Welcome window** (**File > Welcome Window**), rather than from a panel of the document window.
-Pathways from the **Pathway Commons** database are searched from **Pathway Lookup**, under
-**Pathway** in the Navigation panel. Please refer to sections
+Pathways from the **Pathway Commons** database are searched from the **Pathway Lookup** tab of the
+Pathway Tools window (**Tools > Pathway Tools...**). Please refer to sections
 [Pathway Commons Database](../DatabaseSources/PathwayCommonsPanel.md) and
 [Biological Pathways](../BiologicalPathways/PathwayOverview.md).
