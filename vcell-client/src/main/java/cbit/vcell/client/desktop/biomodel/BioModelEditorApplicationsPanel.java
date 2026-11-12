@@ -179,6 +179,11 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 		getNewAppPopupMenu().show(addNewButton, 0, addNewButton.getHeight());
 	}
 
+	/** The New Application menu (which kind: deterministic, stochastic...), shown at this point of the invoker. */
+	public void showNewApplicationMenu(java.awt.Component invoker, int x, int y) {
+		getNewAppPopupMenu().show(invoker, x, y);
+	}
+
 	private void moreActionsButtonPressed() {
 		int[] rows = table.getSelectedRows();
 		if (rows != null && rows.length == 1) {					

@@ -44,6 +44,40 @@ public final class NavigationTreeStyle {
 	private static final String HOVER_ROW = "NavigationTreeStyle.hoverRow";
 	private static final Color CLEAR = new Color(0, 0, 0, 0);
 	static final int CHEVRON_WIDTH = 22; // the strip at a row's right end that folds without choosing
+	static final int ACTION_WIDTH = 22; // just left of it: a row's action (e.g. Applications' "+"), when it has one
+	private static final String ROW_ACTION = "NavigationTreeStyle.rowAction";
+
+	/**
+	 * A row's own button, drawn in the row just left of its chevron: "+" on Applications, to add one, say.
+	 * @param appliesTo which rows (by their tree node) have it
+	 * @param perform what it does, given the row's path and its bounds in the tree (to show a menu under it)
+	 */
+	public record RowAction(java.util.function.Predicate<Object> appliesTo, String tooltip,
+			java.util.function.BiConsumer<TreePath, Rectangle> perform) {}
+
+	/** Gives the tree's rows this action, in place of any it had. */
+	public static void setRowAction(JTree tree, RowAction action) {
+		tree.putClientProperty(NavigationTreeStyle.ROW_ACTION, new java.util.ArrayList<>(java.util.List.of(action)));
+		tree.repaint();
+	}
+
+	/** Adds a row action: a row takes the first one, in the order added, that applies to it. */
+	@SuppressWarnings("unchecked")
+	public static void addRowAction(JTree tree, RowAction action) {
+		java.util.List<RowAction> actions = tree.getClientProperty(NavigationTreeStyle.ROW_ACTION) instanceof java.util.List<?> list
+				? (java.util.List<RowAction>) list : new java.util.ArrayList<>();
+		actions.add(action);
+		tree.putClientProperty(NavigationTreeStyle.ROW_ACTION, actions);
+		tree.repaint();
+	}
+
+	static RowAction rowAction(JTree tree, Object node) {
+		if (!(tree.getClientProperty(NavigationTreeStyle.ROW_ACTION) instanceof java.util.List<?> actions)) return null;
+		for (Object action : actions) {
+			if (action instanceof RowAction rowAction && rowAction.appliesTo().test(node)) return rowAction;
+		}
+		return null;
+	}
 
 	/** Gives the tree this look; call from its updateUI (after super's), so it survives theme changes. */
 	public static void install(JTree tree) {
@@ -158,6 +192,11 @@ public final class NavigationTreeStyle {
 		 */
 		@Override
 		protected void selectPathForEvent(TreePath path, MouseEvent event) {
+			RowAction action = SwingUtilities.isLeftMouseButton(event) && event.getClickCount() == 1 ? NavigationTreeStyle.rowAction(this.tree, path.getLastPathComponent()) : null;
+			if (action != null && this.onAction(path, event.getX())) { // the row's own button: does its thing, and only that
+				action.perform().accept(path, this.tree.getPathBounds(path));
+				return;
+			}
 			boolean section = SwingUtilities.isLeftMouseButton(event) && event.getClickCount() == 1 && NavigationTreeStyle.folds(this.tree, path);
 			if (section && this.onChevron(path, event.getX())) {
 				this.toggle(path);
@@ -168,6 +207,13 @@ public final class NavigationTreeStyle {
 			if (!section || event.isShiftDown() || event.isControlDown() || event.isMetaDown()) return;
 			if (wasChosen) this.toggle(path);
 			else this.tree.expandPath(path);
+		}
+
+		private boolean onAction(TreePath path, int x) {
+			Rectangle bounds = this.tree.getPathBounds(path);
+			if (bounds == null) return false;
+			int right = bounds.x + bounds.width - NavigationTreeStyle.CHEVRON_WIDTH;
+			return x >= right - NavigationTreeStyle.ACTION_WIDTH && x < right;
 		}
 
 		private boolean onChevron(TreePath path, int x) {
@@ -205,6 +251,10 @@ public final class NavigationTreeStyle {
 	static final class RowRenderer extends JPanel implements TreeCellRenderer {
 		private final TreeCellRenderer delegate;
 		private final JLabel chevron = new JLabel();
+		private final JLabel action = new JLabel(); // the row's own button, when it has one
+		private final JPanel trailing = new JPanel(new BorderLayout(0, 0)); // the action, then the chevron
+		private JTree tree = null; // the tree drawn for, to tell where in a row a tooltip was asked for
+		private String actionTooltip = null;
 		private boolean chosen = false;
 		private boolean hovered = false;
 		private boolean focused = false;
@@ -217,7 +267,12 @@ public final class NavigationTreeStyle {
 			this.setOpaque(false);
 			if (delegate instanceof Component component) this.add(component, BorderLayout.CENTER); // themed with the row
 			this.chevron.setPreferredSize(new java.awt.Dimension(NavigationTreeStyle.CHEVRON_WIDTH - 8, 1));
-			this.add(this.chevron, BorderLayout.EAST);
+			this.action.setPreferredSize(new java.awt.Dimension(NavigationTreeStyle.ACTION_WIDTH, 1));
+			this.action.setHorizontalAlignment(JLabel.CENTER);
+			this.trailing.setOpaque(false);
+			this.trailing.add(this.action, BorderLayout.WEST);
+			this.trailing.add(this.chevron, BorderLayout.EAST);
+			this.add(this.trailing, BorderLayout.EAST);
 		}
 
 		@Override
@@ -227,7 +282,7 @@ public final class NavigationTreeStyle {
 			if (content.getParent() != this) {
 				this.removeAll();
 				this.add(content, BorderLayout.CENTER);
-				this.add(this.chevron, BorderLayout.EAST);
+				this.add(this.trailing, BorderLayout.EAST);
 			}
 			if (content instanceof JComponent component) component.setOpaque(false);
 			if (content instanceof DefaultTreeCellRenderer label) { // it would fill its own box inside the rectangle
@@ -251,6 +306,10 @@ public final class NavigationTreeStyle {
 			boolean folds = path != null ? NavigationTreeStyle.folds(tree, path) : !leaf && row > 0;
 			this.chevron.setIcon(folds ? new ChevronIcon(expanded, text) : null);
 			this.chevron.setToolTipText(null);
+			RowAction rowAction = NavigationTreeStyle.rowAction(tree, value);
+			this.action.setIcon(rowAction == null ? null : new PlusIcon(text));
+			this.actionTooltip = rowAction == null ? null : rowAction.tooltip();
+			this.tree = tree; // (not its row bounds: asking for them while measuring the row would ask this again)
 			String name = content instanceof JLabel label ? label.getText() : String.valueOf(value);
 			this.getAccessibleContext().setAccessibleName(name);
 			return this;
@@ -280,7 +339,36 @@ public final class NavigationTreeStyle {
 
 		@Override
 		public String getToolTipText(MouseEvent event) {
+			// over the row's own button, what it does; elsewhere, the row's own tooltip
+			// rows aren't indented and span the column, less 4 pixels, as the tree's UI lays them out
+			int columnWidth = this.tree == null ? 0 : this.tree.getParent() instanceof JViewport viewport ? viewport.getExtentSize().width : this.tree.getWidth();
+			int right = columnWidth - 4 - NavigationTreeStyle.CHEVRON_WIDTH;
+			if (this.actionTooltip != null && event != null && event.getX() >= right - NavigationTreeStyle.ACTION_WIDTH && event.getX() < right) {
+				return this.actionTooltip;
+			}
 			return this.delegate instanceof JComponent component ? component.getToolTipText() : null;
+		}
+	}
+
+	/** A small plus, in a rounded square: a row's button that adds something. */
+	private record PlusIcon(Color color) implements Icon {
+		@Override public int getIconWidth() { return 14; }
+		@Override public int getIconHeight() { return 14; }
+
+		@Override
+		public void paintIcon(Component c, Graphics graphics, int x, int y) {
+			Graphics2D g = (Graphics2D) graphics.create();
+			try {
+				g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+				g.setColor(this.color);
+				g.setStroke(new BasicStroke(1.2f));
+				g.drawRoundRect(x, y, 13, 13, 4, 4);
+				g.setStroke(new BasicStroke(1.6f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+				g.drawLine(x + 7, y + 4, x + 7, y + 10);
+				g.drawLine(x + 4, y + 7, x + 10, y + 7);
+			} finally {
+				g.dispose();
+			}
 		}
 	}
 
