@@ -17,6 +17,8 @@ import cbit.vcell.parser.ExpressionException;
 /**
  * What a BioModel's Mathematics &amp; Units holds, counted by where it's defined: the same entries, grouped the same
  * way, as the Parameters and Functions table lists them, so a group's numbers are what that table shows for it.
+ * <p><b>Currently unused</b> (since Mathematics &amp; Units became a single panel, without tabs): nothing opens the
+ * Mathematics &amp; Units Summary. Kept for its parts, which may be reused elsewhere.</p>
  */
 public final class MathematicsSummary {
 	private MathematicsSummary() {}

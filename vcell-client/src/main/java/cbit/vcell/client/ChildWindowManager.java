@@ -1,6 +1,7 @@
 package cbit.vcell.client;
 
 import cbit.vcell.client.laf.NestedMenuBar;
+import cbit.vcell.client.laf.VCellFonts;
 import java.awt.BorderLayout;
 import java.awt.RenderingHints;
 import java.awt.Graphics2D;
@@ -277,6 +278,7 @@ public class ChildWindowManager {
 		private boolean detached = false;
 		/** bounds carried across a detach/reattach, which must rebuild the window */
 		private Rectangle rememberedBounds = null;
+		private java.awt.Dimension rememberedDesignSize = null; // the remembered window's size before text-size scaling
 		private LWModality shownModality = null;
 		
 		
@@ -451,7 +453,9 @@ public class ChildWindowManager {
 				// coming back from a detach/reattach: keep the window exactly where the user
 				// had it rather than re-centring it on the parent.
 				impl.self().setBounds(rememberedBounds);
+				VCellFonts.carryDesignSize(rememberedDesignSize, impl.self()); // its size is already scaled
 				rememberedBounds = null;
+				rememberedDesignSize = null;
 			} else if (isCenteredOnParent != null) {
 				impl.setLocationRelativeTo(impl.getParent());
 			}
@@ -509,6 +513,7 @@ public class ChildWindowManager {
 			}
 			boolean wasVisible = impl.isVisible();
 			rememberedBounds = impl.self().getBounds();
+			rememberedDesignSize = VCellFonts.designSize(impl.self()); // so the new window isn't scaled to the text size again
 			// take the content pane back BEFORE disposing, so it is never disposed with the window
 			impl.getContentPane().remove(contentPane);
 			dispose();

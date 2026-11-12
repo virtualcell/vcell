@@ -133,53 +133,19 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 		gbc.weightx = 1.0;
 		gbc.gridwidth = 7;
 		gbc.fill = GridBagConstraints.BOTH;
+		table.setName("ApplicationsTable");
+		table.getAccessibleContext().setAccessibleName("Applications");
 		add(table.getEnclosingScrollPane(), gbc);
 		
+		// the buttons and search: a row that wraps rather than insisting on its width, which would squeeze the navigation column
 		gridy ++;
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
-		gbc.insets = new Insets(4,4,4,4);
-		gbc.anchor = GridBagConstraints.LINE_END;
-		add(addNewButton, gbc);
-		
-		gbc = new GridBagConstraints();
-		gbc.gridx = 1;
-		gbc.insets = new Insets(4,4,4,4);
-		gbc.gridy = gridy;
-		gbc.anchor = GridBagConstraints.LINE_END;
-		add(deleteButton, gbc);
-		
-		gbc = new GridBagConstraints();
-		gbc.gridx = 2;
-		gbc.insets = new Insets(4,4,4,20);
-		gbc.gridy = gridy;
-		gbc.anchor = GridBagConstraints.LINE_END;
-		add(moreActionsButton, gbc);
-		
-		gbc = new GridBagConstraints();
-		gbc.gridx = 3;
-		gbc.insets = new Insets(4,4,4,20);
-		gbc.gridy = gridy;
-		gbc.anchor = GridBagConstraints.LINE_END;
-		add(compareButton, gbc);
-		
-		gbc = new GridBagConstraints();
-		gbc.gridx = 4;
-		gbc.gridy = gridy;
-		gbc.anchor = GridBagConstraints.LINE_END;
-		gbc.insets = new Insets(4,4,4,4);
-		add(new JLabel("Search "), gbc);
-		
-		gbc = new GridBagConstraints();
-		gbc.gridx = 5;
-		gbc.gridy = gridy;
 		gbc.weightx = 1.0;
-		gbc.gridwidth = 2;
-		gbc.anchor = GridBagConstraints.LINE_START;
+		gbc.gridwidth = 7;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
-		gbc.insets = new Insets(4,4,4,4);
-		add(textFieldSearch, gbc);
+		add(org.vcell.util.gui.ButtonRowLayout.withSearch(java.util.List.of(addNewButton, deleteButton, moreActionsButton, compareButton), textFieldSearch), gbc);
 						
 		compareButton.setEnabled(false);
 		compareButton.addActionListener(eventHandler);		

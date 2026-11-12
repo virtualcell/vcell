@@ -39,7 +39,7 @@
 	
 	<operations>
 	<para>
-	Choose the model's units with the <bold>Unit System</bold> list beside the table, under <bold>Mathematics &amp; Units &gt; Model Unit System</bold>.
+	Choose the model's units with the <bold>Unit System</bold> list beside the table, in the <bold>Model Unit System</bold> window: open it with the <bold>Model Unit System...</bold> button below the Parameters and Functions table (click <bold>Mathematics &amp; Units</bold> in the Navigation panel).
 	Choosing a different unit system converts the model's values to its units. The list starts with VCell's own:
 	<list>
 	<item><bold>VCell Default</bold>: the units VCell models start with (um, s, uM.um3 for volume species, molecules for membrane species).</item>

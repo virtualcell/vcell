@@ -17,20 +17,26 @@
 	<operations>
 	<bold>Viewing/Editing Parameters and Functions</bold>
 	<list>
-	<item><bold>Activate</bold> by clicking <bold>Parameters and Functions</bold> under <bold>Mathematics &amp; Units</bold> in the tree list of the <bold>Navigation panel</bold> (window upper left), which will
-	display the 'Parameters and Functions' tab (window right panel). Its other tabs are listed beside it in the tree, in the same order as the tabs: <bold>Model Unit System</bold>, then Parameters and Functions, then <bold>Predefined Expressions</bold>.
+	<item><bold>Activate</bold> by clicking <bold>Mathematics &amp; Units</bold> in the tree list of the <bold>Navigation panel</bold> (window upper left), which will
+	display the Parameters and Functions (window right panel).
 	</item>
-	<item><bold>View</bold> by clicking the <bold>Parameters and Functions</bold> tab.  
-	A table of information including 'Defined In' (where the parameter/function is defined), Name, Description (type of parameter/function), Expression (value of parameter/function), Units.  
+	<item><bold>View</bold> its table: 
+	A table of information including Name, Expression (value of parameter/function), 'Defined In' (where the parameter/function is defined), Description (type of parameter/function) and Units.
+	<bold>Columns</bold>, beside Filters, opens a list of the columns at the table's right: untick one to hide it, and move it left or right with its arrows (or drag its header in the table); <bold>Reset</bold> brings back every column in this order.  
 	<bold>Defined In</bold> can be 'Global', 
 	'Model/Reaction' (created in <link target = "PP_Reactions">reactions add/edit</link>) and 
-	'App' (varies in application, e.g. initial conditions, compartment size, diffusion, boundary condition, etc... See <link target = "SpecificationsOverview">application specifications</link>).</item>
-	<item><bold>Filter</bold> displayed items by clicking any of the <bold>'Defined In:'</bold> check-boxes.  
-	'Global' displays global model parameters that were created with the 'New global Parameter' button.  
-	'Reactions and Rules' displays reactions and any parameters and constants defined within reactions and rules.  
-	'Applications' displays application related items such as diffusion, initial concentration, boundary condition, etc...  
-	The <bold>'Type:'</bold> check-boxes further restrict the display to 'parameters' (named numerical values) or 'functions' (expressions that may contain parameters).
-	''</item>
+	'App' (varies in application, e.g. initial conditions, compartment size, diffusion, boundary condition, etc... See <link target = "SpecificationsOverview">application specifications</link>),
+	or 'Predefined' (VCell's own constants and math functions, see <link target="PredefinedConstAndMathFns">Predefined Expressions</link>).</item>
+	<item><bold>Filter</bold> displayed items with the <bold>Filters</bold> button above the table; it says how many choices narrow the table (e.g. 'Filters (2)'), and 'Showing ... entries' beside it says how many rows there are.
+	Under <bold>Defined In</bold>, 'Global' displays global model parameters (those created with the 'New Global Parameter' button, and the model's species and structure sizes);
+	'Reactions and Rules' displays the parameters and constants defined within reactions and rules;
+	'Applications' displays application related items such as diffusion, initial concentration, boundary condition, etc..., in all applications or, when there are several, just one.
+	Under <bold>Type</bold>, 'Parameters' (named numerical values) and 'Functions' (expressions that may contain parameters).
+	Under <bold>Origin</bold>, 'User declared' (parameters you created: global and application parameters, and those you added to a kinetic law),
+	'Auto-generated' (made with something else: a species, a structure's size, a kinetic law's parameters, an application's initial conditions) and
+	'Preexisting' (VCell's own constants and functions, there before any model; not shown until chosen).
+	'Reset Filters' shows everything but the preexisting again.</item>
+	<item><bold>Model Unit System...</bold>, beside the buttons below the table, opens the <link target="ModelUnits">Model Unit System</link> window.</item>
 	<item><bold>Search</bold> table rows by entering text in the <bold>Search</bold> text-box.  
 	The table will be updated to display only rows that have matching text in one or more of the columns.</item>
 	<item><bold>Edit Parameter/Function</bold> a parameter or function by selecting a row from the displayed table.  

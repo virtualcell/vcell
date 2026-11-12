@@ -115,6 +115,11 @@ public ScopedExpressionTableCellRenderer() {
 	 * This fine grain notification tells listeners the exact range
 	 * of cells, rows, or columns that changed.
 	 */
+/**
+ * Unused: {@link org.vcell.util.gui.ScrollTable} sizes its own columns and rows now. This measured every cell of every
+ * row, on every data change and every resize, and could set off another resize. Kept for reference.
+ */
+@Deprecated
 public static void formatTableCellSizes(final javax.swing.JTable targetTable) {
 	if (targetTable.getTableHeader() == null) {
 		return;

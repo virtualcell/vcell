@@ -76,8 +76,11 @@ import cbit.vcell.units.VCUnitDefinition;
  * for {@link ScopedExpression} is {@link ScopedExpressionTableCellRenderer} and the cell editor for {@link ScopedExpression}
  * is {@link TableCellEditorAutoCompletion}.
  * 
- * The default auto resize mode is AUTO_RESIZE_OFF because most of tables have expression columns. The expression 
- * columns will be formatted nicely automatically. You need to set auto resize mode if you don't want AUTO_RESIZE_OFF.
+ * Columns fill the table's width and shrink with it (AUTO_RESIZE_SUBSEQUENT_COLUMNS), down to a readable minimum each
+ * (about its header's width); narrower than that, the table scrolls sideways instead. Each column starts as wide as its
+ * header and a sample of its rows need, measured once, when it first has rows; a column the user resizes keeps its
+ * width. Rows are as tall as their expressions need, worked out when the data changes. Nothing is measured when the
+ * table is resized: measuring renders expressions, and doing it on every resize let a resize set off another.
  * 
  * By default, when editing an expression, it will automatically try to bind expression to find errors. However, 
  * there are exceptions like in Kinetics Editor, new parameter will be added it is not already defined. Here you 
@@ -97,7 +100,6 @@ public class ScrollTable extends JTable {
 	private JLabel pageLabel = null;
 	private JButton firstPageButton, previousPageButton, nextPageButton, lastPageButton; 
 	private JScrollPane enclosingScrollPane = null;
-	private ComponentAdapter componentListener = null;
 	protected int hoverRow = -1, hoverColumn = -1;
 	private DefaultScrollTableCellRenderer defaultTableCellRenderer = null;
 	private ScrollTableActionManager scrollTableActionManager = null;
@@ -231,7 +233,7 @@ public static class ScrollTableBooleanCellRenderer extends JCheckBox implements 
 	}
 	
 	private void initialize() {
-		autoResizeMode = AUTO_RESIZE_OFF;
+		autoResizeMode = AUTO_RESIZE_SUBSEQUENT_COLUMNS;
 		VCellFonts.followRowHeight(this);
 		putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
 		putClientProperty("JTable.autoStartsEdit", Boolean.FALSE);
@@ -369,39 +371,18 @@ public static class ScrollTableBooleanCellRenderer extends JCheckBox implements 
 		enclosingScrollPane.setVisible(aFlag);
 	}
 
-	@Override
-	public void setAutoResizeMode(int mode) {
-		super.setAutoResizeMode(mode);
-		if (autoResizeMode == AUTO_RESIZE_OFF) {
-			setDefaultRenderer(ScopedExpression.class, new ScopedExpressionTableCellRenderer());
-			setDefaultRenderer(VCUnitDefinition.class, new DefaultScrollTableCellRenderer(){
-				public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-					super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-					if (value instanceof VCUnitDefinition){
-						setText(((VCUnitDefinition)value).getSymbolUnicode());
-					}
-					return this;
+	// expressions drawn as math, and units by their symbols, in a table that has expression columns
+	private void installExpressionRenderers() {
+		setDefaultRenderer(ScopedExpression.class, new ScopedExpressionTableCellRenderer());
+		setDefaultRenderer(VCUnitDefinition.class, new DefaultScrollTableCellRenderer(){
+			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+				super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+				if (value instanceof VCUnitDefinition){
+					setText(((VCUnitDefinition)value).getSymbolUnicode());
 				}
-			});
-			
-			if (componentListener == null) {
-				componentListener  = new ComponentAdapter() {
-					public void componentResized(ComponentEvent e) {
-						SwingUtilities.invokeLater(new Runnable() {
-							public void run() {
-								ScopedExpressionTableCellRenderer.formatTableCellSizes(ScrollTable.this);
-							}
-						});	
-					}
-				};
+				return this;
 			}
-			enclosingScrollPane.removeComponentListener(componentListener);
-			enclosingScrollPane.addComponentListener(componentListener);
-		} else {
-			if (componentListener != null) {
-				enclosingScrollPane.removeComponentListener(componentListener);
-			}
-		}
+		});
 	}
 
 	@Override
@@ -424,25 +405,126 @@ public static class ScrollTableBooleanCellRenderer extends JCheckBox implements 
 		}
 		if (bHasScopedExpressionColumn) {
 			installCellEditors();
-			setAutoResizeMode(autoResizeMode);
-		} else {
-			if (autoResizeMode == AUTO_RESIZE_OFF) {
-				autoResizeMode = AUTO_RESIZE_SUBSEQUENT_COLUMNS;
-			}
-			setAutoResizeMode(autoResizeMode);
+			installExpressionRenderers();
 		}
+		this.forgetColumnSizes();
+		this.queueFit();
+	}
+
+	// ---- sizing: columns fill the width down to a minimum each; widths measured once, rows when the data changes ----
+
+	static final int SAMPLED_ROWS = 200; // a column's starting width is measured on its first rows, not all of them
+	static final int MAX_MEASURED_WIDTH = 400; // so one long value doesn't take the table
+	static final int MAX_MEASURED_EXPRESSION_WIDTH = 600;
+	static final int MIN_COLUMN_WIDTH = 40;
+	static final int MAX_MIN_COLUMN_WIDTH = 160; // a long header doesn't make its column's minimum unreasonable
+	private java.util.Set<Integer> userSizedColumns = new java.util.HashSet<>(); // by model index
+	private java.util.Set<Integer> measuredColumns = new java.util.HashSet<>();
+	private boolean fitQueued = false;
+
+	/** A column's starting width: what its header and sampled cells need, capped. */
+	static int measuredWidth(int needed, boolean expression) {
+		return Math.min(needed, expression ? MAX_MEASURED_EXPRESSION_WIDTH : MAX_MEASURED_WIDTH);
+	}
+
+	/** A column's least width: about its header's, within limits. */
+	static int minimumWidth(int headerWidth) {
+		return Math.max(MIN_COLUMN_WIDTH, Math.min(headerWidth, MAX_MIN_COLUMN_WIDTH));
+	}
+
+	// the table's columns made anew, or another model: measure them again
+	private void forgetColumnSizes() {
+		if (this.userSizedColumns == null) return; // during JTable's own construction, before these exist
+		this.userSizedColumns.clear();
+		this.measuredColumns.clear();
+	}
+
+	// once the current changes settle, not at each of a burst
+	private void queueFit() {
+		if (this.userSizedColumns == null || this.fitQueued) return;
+		this.fitQueued = true;
+		SwingUtilities.invokeLater(() -> {
+			this.fitQueued = false;
+			this.fitColumnsAndRows();
+		});
+	}
+
+	/** Sets each column's minimum, its starting width (once it has rows), and each row's height. */
+	void fitColumnsAndRows() {
+		if (getTableHeader() == null) return;
+		javax.swing.table.TableColumnModel columnModel = getColumnModel();
+		int rowCount = getRowCount();
+		int sampled = Math.min(rowCount, SAMPLED_ROWS);
+		java.util.List<Integer> expressionColumns = new java.util.ArrayList<>();
+		for (int viewColumn = 0; viewColumn < columnModel.getColumnCount(); viewColumn++) {
+			javax.swing.table.TableColumn column = columnModel.getColumn(viewColumn);
+			Class<?> columnClass = getColumnClass(viewColumn);
+			boolean expression = columnClass.equals(ScopedExpression.class) || columnClass.equals(ModelProcessEquation.class);
+			if (expression) expressionColumns.add(viewColumn);
+			int header = this.headerWidth(column, viewColumn);
+			column.setMinWidth(ScrollTable.minimumWidth(header));
+			int modelIndex = column.getModelIndex();
+			if (rowCount == 0 || this.userSizedColumns.contains(modelIndex) || this.measuredColumns.contains(modelIndex)) continue;
+			int needed = header;
+			for (int row = 0; row < sampled; row++) needed = Math.max(needed, this.cellWidth(row, viewColumn));
+			column.setPreferredWidth(ScrollTable.measuredWidth(needed + columnModel.getColumnMargin() + 8, expression));
+			this.measuredColumns.add(modelIndex);
+		}
+		// rows as tall as their expressions (a fraction is taller than a line), or the usual height
+		if (expressionColumns.isEmpty()) return;
+		int usual = getRowHeight();
+		for (int row = 0; row < rowCount; row++) {
+			int height = usual;
+			for (int viewColumn : expressionColumns) height = Math.max(height, this.cellHeight(row, viewColumn));
+			if (getRowHeight(row) != height) setRowHeight(row, height);
+		}
+	}
+
+	private int headerWidth(javax.swing.table.TableColumn column, int viewColumn) {
+		TableCellRenderer renderer = column.getHeaderRenderer() != null ? column.getHeaderRenderer() : getTableHeader().getDefaultRenderer();
+		if (renderer == null) return MIN_COLUMN_WIDTH;
+		return renderer.getTableCellRendererComponent(this, column.getHeaderValue(), false, false, -1, viewColumn).getPreferredSize().width + 8;
+	}
+
+	private int cellWidth(int row, int viewColumn) {
+		TableCellRenderer renderer = getCellRenderer(row, viewColumn);
+		return renderer == null ? 0 : prepareRenderer(renderer, row, viewColumn).getPreferredSize().width;
+	}
+
+	private int cellHeight(int row, int viewColumn) {
+		TableCellRenderer renderer = getCellRenderer(row, viewColumn);
+		return renderer == null ? 0 : prepareRenderer(renderer, row, viewColumn).getPreferredSize().height;
+	}
+
+	// a column whose edge the user drags keeps the width they give it
+	@Override
+	public void columnMarginChanged(javax.swing.event.ChangeEvent e) {
+		super.columnMarginChanged(e);
+		JTableHeader header = getTableHeader();
+		if (this.userSizedColumns != null && header != null && header.getResizingColumn() != null) {
+			this.userSizedColumns.add(header.getResizingColumn().getModelIndex());
+		}
+	}
+
+	// fill the width, unless that would squeeze a column under its minimum: then scroll sideways instead
+	@Override
+	public boolean getScrollableTracksViewportWidth() {
+		if (getAutoResizeMode() == AUTO_RESIZE_OFF || !(getParent() instanceof javax.swing.JViewport viewport)) {
+			return super.getScrollableTracksViewportWidth();
+		}
+		int minimum = 0;
+		javax.swing.table.TableColumnModel columnModel = getColumnModel();
+		for (int i = 0; i < columnModel.getColumnCount(); i++) minimum += columnModel.getColumn(i).getMinWidth();
+		return viewport.getWidth() >= minimum;
 	}
 
 	@Override
 	public void tableChanged(TableModelEvent e) {		
 		super.tableChanged(e);
-		if (autoResizeMode == JTable.AUTO_RESIZE_OFF) {
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					ScopedExpressionTableCellRenderer.formatTableCellSizes(ScrollTable.this);
-				}
-			});
+		if (e == null || e.getFirstRow() == TableModelEvent.HEADER_ROW) {
+			this.forgetColumnSizes(); // the columns were made anew
 		}
+		this.queueFit();
 		if (vcellSortTableModel != null) {
 			if (vcellSortTableModel.getNumPages() == 1) {
 				if (pageToolBar != null && getPageToolBar().getParent() != null) {

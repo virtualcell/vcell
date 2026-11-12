@@ -114,6 +114,8 @@ public abstract class DocumentEditorTreeModel extends DefaultTreeModel
 			return switch (this) {
 				case REACTION_DIAGRAM_NODE -> MODEL_NODE;
 				case PATHWAY_DIAGRAM_NODE -> PATHWAY_NODE;
+				// Mathematics & Units is one panel now: its former tabs' views are its own node's
+				case PARAMETERS_FUNCTIONS_NODE, PREDEFINED_SYMBOLS_NODE, MODEL_UNIT_SYSTEM_NODE -> BIOMODEL_PARAMETERS_NODE;
 				default -> this;
 			};
 		}
