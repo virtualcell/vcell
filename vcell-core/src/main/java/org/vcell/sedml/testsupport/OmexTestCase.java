@@ -39,7 +39,8 @@ public class OmexTestCase {
          * <p>Two different situations currently share this value, and the distinction lives
          * only in {@link #known_failure_desc}:
          * <ul>
-         *   <li><b>excluded from the run</b> -- too slow. The 11 SYSBIO_BIOMD models here are
+         *   <li><b>excluded from the run</b> -- too slow, or a result that varies from run to
+         *       run (547, 613, 1065; see #2077). The 14 SYSBIO_BIOMD models here are
          *       excluded by a hard-coded id list in {@code NightlyBMDB_CLI.yml}, not by
          *       anything in this file, so check that list before believing a
          *       "stopped running" signal.</li>
