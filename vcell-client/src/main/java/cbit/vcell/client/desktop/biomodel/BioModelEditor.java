@@ -450,6 +450,12 @@ public void showPathwayTools() {
 	window.show();
 }
 
+// whether a navigation tree node is this folder (Applications, Reactions...)
+private static boolean isFolder(Object node, DocumentEditorTreeFolderClass folderClass) {
+	return node instanceof BioModelNode bioModelNode && bioModelNode.getUserObject() instanceof DocumentEditorTreeFolderNode folder
+			&& folder.getFolderClass() == folderClass;
+}
+
 private BioModelEditorPathwayPanel getBioModelEditorPathwayPanel() {
 	if (bioModelEditorPathwayPanel == null) {
 		bioModelEditorPathwayPanel = new BioModelEditorPathwayPanel();		
@@ -688,6 +694,34 @@ private void initialize() {
 		bioModelEditorModelPanel.setSelectionManager(selectionManager);
 		bioModelEditorModelPanel.setIssueManager(issueManager);
 		getBioModelEditorApplicationsPanel().setSelectionManager(selectionManager);
+		// Applications' row has a "+": it opens Applications and its New Application menu (which kind), under the row
+		NavigationTreeStyle.addRowAction(documentEditorTree, new NavigationTreeStyle.RowAction(
+				node -> BioModelEditor.isFolder(node, DocumentEditorTreeFolderClass.APPLICATIONS_NODE),
+				"New Application...",
+				(path, bounds) -> {
+					documentEditorTree.setSelectionPath(path); // the Applications panel, which makes it
+					int x = bounds.x + bounds.width - NavigationTreeStyle.CHEVRON_WIDTH - NavigationTreeStyle.ACTION_WIDTH;
+					getBioModelEditorApplicationsPanel().showNewApplicationMenu(documentEditorTree, x, bounds.y + bounds.height);
+				}));
+		// and each of Physiology's tables: its own New (Structures offers a compartment or a membrane), under the row
+		Object[][] physiologyNews = {
+				{ DocumentEditorTreeFolderClass.REACTIONS_NODE, "New Reaction..." },
+				{ DocumentEditorTreeFolderClass.STRUCTURES_NODE, "New Compartment or Membrane..." },
+				{ DocumentEditorTreeFolderClass.SPECIES_NODE, "New Species..." },
+				{ DocumentEditorTreeFolderClass.MOLECULAR_TYPES_NODE, "New Molecule..." },
+				{ DocumentEditorTreeFolderClass.OBSERVABLES_NODE, "New Observable..." },
+		};
+		for (Object[] news : physiologyNews) {
+			DocumentEditorTreeFolderClass folderClass = (DocumentEditorTreeFolderClass) news[0];
+			NavigationTreeStyle.addRowAction(documentEditorTree, new NavigationTreeStyle.RowAction(
+					node -> BioModelEditor.isFolder(node, folderClass),
+					(String) news[1],
+					(path, bounds) -> {
+						documentEditorTree.setSelectionPath(path); // its tab, whose New this is
+						int x = bounds.x + bounds.width - NavigationTreeStyle.CHEVRON_WIDTH - NavigationTreeStyle.ACTION_WIDTH;
+						bioModelEditorModelPanel.showNewMenu(documentEditorTree, x, bounds.y + bounds.height);
+					}));
+		}
 		getReactionRulePropertiesPanel().setSelectionManager(selectionManager);
 		getReactionPropertiesPanel().setSelectionManager(selectionManager);
 		getSpeciesContextSpecPanel().setSelectionManager(selectionManager);

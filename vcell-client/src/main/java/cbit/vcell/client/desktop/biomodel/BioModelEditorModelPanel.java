@@ -1387,6 +1387,62 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 	}
 	
 	Object newObject;
+	// where a New's own choices (which compartment, say) drop down: under the button, or where a "+" asked from
+	private java.awt.Component newMenuInvoker = null;
+	private java.awt.Point newMenuAt = null;
+
+	private void showChoiceMenu(JPopupMenu menu, JButton button) {
+		if (newMenuInvoker != null && newMenuAt != null) {
+			menu.show(newMenuInvoker, newMenuAt.x, newMenuAt.y);
+		} else {
+			menu.show(button, 0, button.getHeight());
+		}
+	}
+
+	/**
+	 * The current tab's New, asked for from elsewhere (the navigation tree's "+" on its row): run at once when there's
+	 * one (a new species, say), offered as a choice when there are several (a compartment or a membrane). Any choice of
+	 * its own (which compartment) drops down at the same place.
+	 */
+	public void showNewMenu(java.awt.Component invoker, int x, int y) {
+		List<JButton> choices = new ArrayList<>();
+		for (JButton button : new JButton[] { newButton, newMemButton, newButton2 }) {
+			if (button.isVisible() && button.isEnabled()) choices.add(button);
+		}
+		if (choices.isEmpty()) { // e.g. species, before there's a compartment to put them in
+			JPopupMenu none = new JPopupMenu();
+			JMenuItem item = new JMenuItem("Add a compartment first, in Structures");
+			item.setEnabled(false);
+			none.add(item);
+			none.show(invoker, x, y);
+			return;
+		}
+		if (choices.size() == 1) {
+			runNew(choices.get(0), invoker, x, y);
+			return;
+		}
+		JPopupMenu menu = new JPopupMenu();
+		menu.setName("NewChoiceMenu");
+		for (JButton button : choices) {
+			JMenuItem item = new JMenuItem(button.getText());
+			item.setName("NewChoice_" + button.getText().replaceAll("[^A-Za-z]", ""));
+			item.addActionListener(e -> runNew(button, invoker, x, y));
+			menu.add(item);
+		}
+		menu.show(invoker, x, y);
+	}
+
+	private void runNew(JButton button, java.awt.Component invoker, int x, int y) {
+		newMenuInvoker = invoker;
+		newMenuAt = new java.awt.Point(x, y);
+		try {
+			button.doClick(0); // as the button would: its own choices drop down where asked
+		} finally {
+			newMenuInvoker = null;
+			newMenuAt = null;
+		}
+	}
+
 	private void newButtonPressed() throws ModelException, PropertyVetoException {
 		newObject = null;
 		computeCurrentSelectedTable();
@@ -1407,7 +1463,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 						}
 					});
 				}
-				menu.show(newButton, 0, newButton.getHeight());
+				showChoiceMenu(menu, newButton);
 			}
 		} else if (currentSelectedTable == molecularTypeTable) {
 			if(bioModel.getModel().getRbmModelContainer() != null) {
@@ -1459,7 +1515,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 							}
 						});
 					}
-					menu.show(newButton, 0, newButton.getHeight());
+					showChoiceMenu(menu, newButton);
 				}
 			}
 		} else if (currentSelectedTable == structuresTable) {
@@ -1527,7 +1583,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 						}
 					});
 				}
-				menu.show(newButton2, 0, newButton2.getHeight());
+				showChoiceMenu(menu, newButton2);
 			}
 		}
 	}
