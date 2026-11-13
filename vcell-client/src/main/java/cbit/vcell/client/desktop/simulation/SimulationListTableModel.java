@@ -26,6 +26,8 @@ import cbit.vcell.client.ClientTaskManager;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.server.SimulationJobStatus;
 import cbit.vcell.server.SimulationStatus;
 
 /**
@@ -45,6 +47,7 @@ public class SimulationListTableModel extends VCellSortTableModel<Simulation> im
 		OUTPUT("Output Option"),
 		SOLVER("Solver"),
 		STATUS("Running Status"),
+		DURATION("Duration"),	// SpringSaLaD applications only
 		RESULTS("Results");
 
 		public final String label;
@@ -52,6 +55,11 @@ public class SimulationListTableModel extends VCellSortTableModel<Simulation> im
 		ColumnType(String label) {
 			this.label = label;
 		}
+	}
+
+	// value of the Duration column: the rough duration shown in the cell and a tooltip saying what kind it is
+	// (estimate while running, actual once completed); SimulationListPanel has the renderer for it
+	record DurationDisplay(String text, String toolTip) {
 	}
 
 	private final List<ColumnType> columns = new ArrayList<>();	// the columns currently shown, in display order
@@ -68,7 +76,7 @@ public SimulationListTableModel(ScrollTable table) {
 }
 
 
-// builds the list of columns to show; for now always the same ones
+// builds the list of columns to show, which depends on the application type of the workspace
 private void refreshColumns() {
 	columns.clear();
 	columns.add(ColumnType.NAME);
@@ -76,6 +84,12 @@ private void refreshColumns() {
 	columns.add(ColumnType.OUTPUT);
 	columns.add(ColumnType.SOLVER);
 	columns.add(ColumnType.STATUS);
+	// SpringSaLaD applications (all their simulations are langevin) also show the estimated duration of a batch run
+	// while it runs, and the actual duration once completed; other applications have no ETA, so no column
+	if (simulationWorkspace != null && simulationWorkspace.getSimulationOwner() instanceof SimulationContext simContext
+			&& simContext.getApplicationType() == SimulationContext.Application.SPRINGSALAD) {
+		columns.add(ColumnType.DURATION);
+	}
 	columns.add(ColumnType.RESULTS);
 }
 
@@ -150,6 +164,49 @@ public Object getValueAt(int row, int column) {
 				case STATUS: {
 					return getSimulationWorkspace().getSimulationStatus(simulation);
 				}
+				case DURATION: {
+					// a langevin batch is one VCell job (job 0)
+					SimulationStatus simStatus = getSimulationWorkspace().getSimulationStatus(simulation);
+					Integer seconds = null;
+					String toolTip = null;
+					if (simStatus.isRunning()) {
+						if (simulation.getSolverTaskDescription().getLangevinSimulationOptions().getTotalNumberOfJobs() == 1) {
+							// a single run has no watchdog, so it sends no ETA -> blank cell
+							return new DurationDisplay("", "Estimate not available for single runs");
+						}
+						// estimated TOTAL duration of the batch run (not remaining time), from the langevin watchdog;
+						// null = no ETA yet (the first one comes seconds after run #1 starts) -> blank, never "0 min"
+						seconds = simStatus.getEstimatedTimeAt(0);
+						if (seconds == null) {
+							return new DurationDisplay("", "Estimate not available yet");
+						}
+						toolTip = "Estimate";
+					} else if (simStatus.isCompleted()) {
+						// actual duration, from the hand-off to slurm until completion: it includes the time waiting
+						// in the slurm queue, preprocessing and postprocessing, which the ETA doesn't
+						SimulationJobStatus jobStatus = simStatus.getJobStatus(0);
+						if (jobStatus != null && jobStatus.getStartDate() != null && jobStatus.getEndDate() != null) {
+							seconds = (int)((jobStatus.getEndDate().getTime() - jobStatus.getStartDate().getTime()) / 1000);
+							toolTip = "Actual";
+						}
+					}
+					// failed, stopped, never ran, ... -> blank, no tooltip
+					if (seconds == null) {
+						return null;
+					}
+					// deliberately rough, easy to read: "3 days", "17 hours", "23 min"
+					String text;
+					if (seconds >= 2 * 24 * 3600) {
+						text = Math.round(seconds / (24 * 3600.0)) + " days";
+					} else if (seconds >= 2 * 3600) {
+						text = Math.round(seconds / 3600.0) + " hours";
+					} else if (seconds >= 60) {
+						text = Math.round(seconds / 60.0) + " min";
+					} else {
+						text = "< 1 min";
+					}
+					return new DurationDisplay(text, toolTip);
+				}
 				case RESULTS: {
 					return getSimulationWorkspace().getSimulationStatus(simulation).getHasData() ? "yes" : "no";
 				} 
@@ -207,6 +264,12 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 				simulation.addPropertyChangeListener(this);
 				simulation.getSolverTaskDescription().addPropertyChangeListener(this);
 			}
+		}
+		// the columns depend on the application type of the new workspace
+		int oldColumnCount = getColumnCount();
+		refreshColumns();
+		if (getColumnCount() != oldColumnCount) {
+			fireTableStructureChanged();
 		}
 		refreshData();
 	} else if (evt.getSource() == getSimulationWorkspace()) {
@@ -371,6 +434,8 @@ public Class<?> getColumnClass(int columnIndex) {
 		return OutputTimeSpec.class;
 	case SOLVER:
 		return SolverDescription.class;
+	case DURATION:
+		return DurationDisplay.class;
 	default:
 		return String.class;
 	}

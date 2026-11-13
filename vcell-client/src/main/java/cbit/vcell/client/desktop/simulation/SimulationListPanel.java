@@ -983,6 +983,23 @@ private void initConnections() throws java.lang.Exception {
 	getScrollPaneTable().setDefaultRenderer(String.class, renderer);
 	getScrollPaneTable().setDefaultRenderer(SolverDescription.class, renderer);
 	getScrollPaneTable().setDefaultEditor(OutputTimeSpec.class, new DefaultCellEditor(new JTextField()));
+	// Duration column (SpringSaLaD applications only): rough duration, tooltip says whether it is an estimate or actual
+	getScrollPaneTable().setDefaultRenderer(SimulationListTableModel.DurationDisplay.class, new DefaultScrollTableCellRenderer() {
+		@Override
+		public Component getTableCellRendererComponent(JTable table,
+				Object value, boolean isSelected, boolean hasFocus, int row,
+				int column) {
+			super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+			if (value instanceof SimulationListTableModel.DurationDisplay durationDisplay) {
+				setText(durationDisplay.text());
+				setToolTipText(durationDisplay.toolTip());
+			} else {
+				setText("");
+				setToolTipText(null);	// the renderer is reused for every cell: don't keep another row's tooltip
+			}
+			return this;
+		}
+	});
 	getScrollPaneTable().setDefaultRenderer(SimulationStatus.class, new DefaultScrollTableCellRenderer() {
 		@Override
 		public Component getTableCellRendererComponent(JTable table,
