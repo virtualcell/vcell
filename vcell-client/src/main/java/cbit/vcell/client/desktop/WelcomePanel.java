@@ -38,7 +38,21 @@ public class WelcomePanel extends JPanel {
 	private final RecentModelsPanel recentModels = new RecentModelsPanel();
 	private final DatabaseModelsPanel databaseModels = new DatabaseModelsPanel(); // the database's models, as its tree's folders sort them
 	private final BioModelsNetPanel bioModelsNetPanel = new BioModelsNetPanel(); // the BioModels Database browser, which model windows no longer carry
-	private final JTabbedPane modelTabs = new JTabbedPane(); // recent models, VCell's database and the BioModels Database
+	// recent models, VCell's database, the BioModels Database and tutorials; wide enough for the database's own row of tabs
+	private final JTabbedPane modelTabs = new JTabbedPane() {
+		@Override
+		public Dimension getPreferredSize() {
+			Dimension size = super.getPreferredSize(); // a copy
+			if (null == WelcomePanel.this.databaseModels) return size; // still being made
+			size.width = Math.max(size.width, WelcomePanel.this.databaseModels.getTabRowWidth() + NESTED_TABS_MARGIN);
+			return size;
+		}
+	};
+	// the outer tabs' border and the database panel's around its tabs, and about 7px to spare with three-digit counts on
+	// every tab (DatabaseModelsPanel.getTabRowWidth); measured on Aqua, whose tabs overflow (an arrow in place of the
+	// last) with any less
+	private static final int NESTED_TABS_MARGIN = 26;
+	private String tutorialsTabTitle = "Tutorials"; // with its count, once logged in
 	private final JPanel modelsArea = new JPanel(new BorderLayout(0, 8)); // one search, over all the tabs, and the tabs; only when logged in
 	private final SearchField searchField = new SearchField("Search models");
 	private final Timer searchPause = new Timer(150, e -> this.search()); // searching once typing pauses, not at each key
@@ -127,13 +141,13 @@ public class WelcomePanel extends JPanel {
 	}
 
 	/**
-	 * Once the user has picked how to log in, as wide as when logged in even while the model tabs are hidden (using VCell
-	 * offline), so the window keeps one width whichever was picked.
+	 * As wide as when logged in even while the model tabs are hidden (choosing how to log in, or using VCell offline),
+	 * so the window keeps one width throughout.
 	 */
 	@Override
 	public Dimension getPreferredSize() {
 		Dimension size = super.getPreferredSize();
-		if (null == this.startSection || !this.startSection.isVisible() || this.modelsArea.isVisible()) return size;
+		if (null == this.modelsArea || this.modelsArea.isVisible()) return size;
 		Insets insets = this.getInsets();
 		size.width = Math.max(size.width, this.modelTabs.getPreferredSize().width + insets.left + insets.right);
 		return size;
@@ -604,14 +618,25 @@ public class WelcomePanel extends JPanel {
 		return row;
 	}
 
-	// The models the user saved recently, the VCell database's (in tabs as its tree's folders sort them), and the
-	// BioModels Database (EBI's) as a BioModel window's "BMDB" tab has it; takes whatever height is left
+	// The models the user saved recently, the VCell database's (in tabs as its tree's folders sort them), the BioModels
+	// Database (EBI's, "BMDB" as a BioModel window's tab has it), and the tutorials' models, out of the database's tabs so
+	// there are only two rows of tabs; takes whatever height is left
 	private JComponent createModelTabs() {
 		this.recentModels.setBorder(BorderFactory.createEmptyBorder(6, 6, 6, 6));
 		this.modelTabs.setName("WelcomeModelTabs");
 		this.modelTabs.addTab("Recent Models", this.recentModels);
 		this.modelTabs.addTab("VCell Database", this.databaseModels);
-		this.modelTabs.addTab("BioModels Database", this.bioModelsNetPanel);
+		this.modelTabs.addTab("BMDB", null, this.bioModelsNetPanel, "The BioModels Database: EBI's curated models, to import");
+		JComponent tutorials = this.databaseModels.detachTutorials(title -> {
+			int index = this.modelTabs.indexOfTab(this.tutorialsTabTitle);
+			this.tutorialsTabTitle = title;
+			if (index >= 0) this.modelTabs.setTitleAt(index, title);
+		});
+		this.modelTabs.addTab(this.tutorialsTabTitle, null, tutorials, "Models that VCell's tutorials use");
+		// the filters as the tab showing takes them: BMDB has only the search text to go by
+		this.searchOptions.setResetBelow(true); // by the Filters button: the options open upward from it
+		this.modelTabs.addChangeListener(e -> this.showFiltersForTab());
+		this.showFiltersForTab();
 		this.modelTabs.setPreferredSize(new Dimension(420, 380));
 
 		// one search for every tab, rather than one in each; typing searches once it pauses, Escape clears it
@@ -639,13 +664,29 @@ public class WelcomePanel extends JPanel {
 		this.filtersButton.setToolTipText("More ways to search: where to look, which models, and their order");
 		this.filtersButton.addActionListener(e -> this.showSearchOptions(this.filtersButton.isSelected()));
 		this.showFiltersChanged(SearchOptions.defaults());
+		JButton explore = new JButton("Open Model Database Explorer");
+		explore.setName("WelcomeModelExplorer");
+		explore.setToolTipText("Opens the Model Explorer: the database's models in folders, with each one's details");
+		explore.addActionListener(e -> this.manager.showModelExplorer(null));
 		JPanel searchRow = new JPanel(new BorderLayout(6, 0));
 		searchRow.setOpaque(false);
 		searchRow.add(this.searchField, BorderLayout.CENTER);
 		searchRow.add(this.filtersButton, BorderLayout.EAST);
 
 		this.modelsArea.setOpaque(false);
-		this.modelsArea.add(WelcomePanel.section("Open existing Model", searchRow), BorderLayout.NORTH); // headed as Start is
+		// headed as Start is; the Model Explorer at the heading's right, keeping the search its width
+		JPanel headingRow = new JPanel(new BorderLayout(6, 0));
+		headingRow.setOpaque(false);
+		JPanel headingAt = new JPanel(new GridBagLayout()); // the heading level with the button's middle
+		headingAt.setOpaque(false);
+		headingAt.add(WelcomePanel.heading("Open existing Model"));
+		headingRow.add(headingAt, BorderLayout.WEST);
+		headingRow.add(explore, BorderLayout.EAST);
+		JPanel openSection = new JPanel(new BorderLayout(0, 6));
+		openSection.setOpaque(false);
+		openSection.add(headingRow, BorderLayout.NORTH);
+		openSection.add(searchRow, BorderLayout.CENTER);
+		this.modelsArea.add(openSection, BorderLayout.NORTH);
 		this.modelsArea.add(this.modelTabs, BorderLayout.CENTER);
 		this.modelsArea.setVisible(false); // until someone logs in
 		return this.modelsArea;
@@ -658,8 +699,15 @@ public class WelcomePanel extends JPanel {
 		SearchOptions options = this.searchOptions.getOptions();
 		this.recentModels.setSearch(text, options);
 		this.databaseModels.setSearch(text, options);
-		this.bioModelsNetPanel.setSearchText(text);
+		this.bioModelsNetPanel.setSearchText(text); // by name and ID only: none of the filters apply to it
 		this.showFiltersChanged(options);
+	}
+
+	// On the BMDB tab, the note on how it's searched, and the filters (none of which apply to it) disabled
+	private void showFiltersForTab() {
+		boolean bioModelsDatabase = this.modelTabs.getSelectedComponent() == this.bioModelsNetPanel;
+		this.searchOptions.setNoteShown(bioModelsDatabase);
+		this.searchOptions.setNoneApply(bioModelsDatabase ? "Not for BMDB, which is searched by its models' names and IDs only" : null);
 	}
 
 	// The search options in the header's place, or the header back. They're taller than the header: the window grows by

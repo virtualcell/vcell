@@ -14,7 +14,7 @@
 	
 	<operations>
 	<para>
-	Clicking <bold>Predefined Expressions</bold> under <bold>Mathematics &amp; Units</bold> in the 'Navigation' panel on the left of a VCell document, or its tab in the 'View' panel on the right, displays a list of the allowed VCell constants and math functions in a table. This table is not editable. 
+	VCell's predefined constants and math functions are listed in the <link target="ParametersAndFunctions">Parameters and Functions</link> table (click <bold>Mathematics &amp; Units</bold> in the 'Navigation' panel), defined in 'Predefined': choose <bold>Preexisting</bold> under <bold>Origin</bold> in its <bold>Filters</bold> to show them. They can't be edited. 
 	The list of symbols, constants and functions are classified as follows: 
 	</para>
 	

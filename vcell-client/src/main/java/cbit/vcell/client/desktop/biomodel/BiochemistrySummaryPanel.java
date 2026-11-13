@@ -50,6 +50,8 @@ import cbit.vcell.graph.structures.AllStructureSuite;
 /**
  * The Summary of Biochemistry: on the left, view-only copies of its Reaction Diagram and Pathway Diagram; on the
  * right, what its physiology and pathway hold. A diagram opens itself when clicked, and a count its tab.
+ * <p><b>Currently unused</b> (since the Biochemistry node was removed, Physiology being top-level): nothing opens the
+ * Biochemistry Summary. Kept for its parts, which may be reused elsewhere.</p>
  */
 @SuppressWarnings("serial")
 public class BiochemistrySummaryPanel extends DocumentEditorSubPanel {
@@ -126,7 +128,7 @@ public class BiochemistrySummaryPanel extends DocumentEditorSubPanel {
 			pathway.setPathwayModel(bioModel.getPathwayModel());
 			this.pathwayPreview = new DiagramPreview("PathwayDiagramPreview", "Pathway Diagram", pathway,
 					() -> this.open(DocumentEditorTreeFolderClass.PATHWAY_NODE),
-					"No pathway imported yet: find one with Pathway Lookup",
+					"No pathway imported yet: find one with Tools \u203a Pathway Tools \u203a Pathway Lookup",
 					() -> bioModel.getPathwayModel().getBiopaxObjects().isEmpty());
 			this.diagrams.add(this.reactionPreview);
 			this.diagrams.add(this.pathwayPreview);

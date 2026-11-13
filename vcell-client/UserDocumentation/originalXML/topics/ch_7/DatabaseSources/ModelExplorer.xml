@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vcelldoc>
+<page title="Model Explorer" target="ModelExplorer">
+
+	<introduction>
+	The <bold>Model Explorer</bold> is a window for browsing every model you can open: the <link target="VCellDatabase">VCell database</link>'s
+	BioModels, MathModels and geometries, and the <link target="BioModelsNet">BioModels Database</link>. Its tree has the folders VCell's
+	database tree has always had; selecting anything in it shows its details beside it.
+	</introduction>
+
+	<appearance>
+	<para>Along the top are a <bold>Search</bold> field, a <bold>Filters</bold> button that shows the search options under it
+	(where to look for the search text, the kind of model, its modeling approach, permissions, owner, when it was saved, and the order),
+	and <bold>Refresh</bold>, which reads the database's lists again. Beside them, how many models and geometries are listed, and
+	<bold>Tree</bold> and <bold>Table</bold>, which switch between the two views of them.</para>
+	<para>At the left, the tree. BioModels and MathModels are listed together, each marked by its icon. Each folder is arranged its own way:</para>
+	<list>
+		<item><bold>My Models</bold>: your models, by name.</item>
+		<item><bold>Shared With Me</bold>: models others have shared with you, by owner.</item>
+		<item><bold>Public Models</bold>:
+			<list>
+			<item><bold>Published</bold>: models published with a paper, by publication, newest first (named by first author, year and title).</item>
+			<item><bold>Curated</bold>: curated models, by publication, newest first; then <bold>Model Bricks</bold>, small curated models made to be reused as parts of others.</item>
+			<item><bold>Uncurated</bold>: other public models, by owner.</item>
+			</list></item>
+		<item><bold>Tutorials</bold>: the models VCell's tutorials use.</item>
+		<item><bold>Geometries</bold>: <bold>My Geometries</bold>, and those <bold>Shared With Me</bold> and <bold>Public Geometries</bold> by owner.</item>
+		<item><bold>BioModels Database</bold>: EBI's models, by name. Only the models VCell can import are listed, and they are found by their names and IDs only.</item>
+	</list>
+	<para>A model saved more than once has its versions listed under it, newest first, with when each was saved and its permissions; the model itself stands for its latest version.
+	Each folder and owner says how many models it holds. <bold>Published</bold> and <bold>Curated</bold>, and each publication, count
+	published (or curated) versions instead, as VCell's database tree always has: a model published twice counts twice.
+	<bold>Public Models</bold> adds up its three folders.</para>
+	<para>The <bold>Table</bold> view lists the same models without the folders' hierarchy, one row each, with columns for its
+	<bold>Name</bold>, <bold>Type</bold>, the <bold>Folders</bold> the tree lists it in, <bold>Owner</bold>, when it was <bold>Saved</bold>,
+	how many <bold>Versions</bold> it has, its <bold>Permissions</bold>, its <bold>Publication</bold> and its <bold>VCell ID</bold>.
+	Click a column's heading to sort by it, and again to reverse the order. The search and filters narrow the table as they do the tree
+	(the BioModels Database's models are in the tree only). What's selected stays selected when you switch between the views;
+	opening, the right-click menu and comparing work the same in both.</para>
+	<para>At the right, the details of what's selected:</para>
+	<list>
+		<item>A model or version: its <bold>Document</bold> information (owner, when saved, permissions, VCell ID, versions, the VCell version it was saved with, and its description);
+		its <bold>BioModel</bold> (applications and their types), <bold>MathModel</bold> (its kind, geometry and simulations) or <bold>Geometry</bold> (dimension, size, origin, and whether it's analytic or image-based);
+		and its <bold>Publications</bold>, with authors, citation, date, and links to its DOI, PubMed entry and web page.</item>
+		<item>A publication: its details, and the models published with it; click one to select it in the tree, or double-click to open it.</item>
+		<item>A folder or owner: how many models it holds, and what the folder is for.</item>
+		<item>A BioModels Database model: its ID, web page, and whether VCell can import it.</item>
+	</list>
+	</appearance>
+
+	<operations>
+	<para><bold>Open</bold> the Model Explorer from <bold>File &gt; Model Explorer...</bold> or the <bold>Model Explorer</bold> button under a model window's navigation tree
+	(both select that model in it, if it's saved), or from the <bold>Model Explorer</bold> button of the Welcome window. Right-click a model in the Welcome window's lists
+	and choose <bold>Show in Model Explorer</bold> to open it at that model.</para>
+	<para><bold>Open a model</bold> by double-clicking it (or one of its versions), by pressing <bold>Enter</bold>, or with the <bold>Open</bold> button in its details.
+	A BioModels Database model is imported, as a new BioModel, the same ways (its button is <bold>Import</bold>).</para>
+	<para><bold>Right-click</bold> a model for the menu the Welcome window's lists have: Open, Export / Save to File, Compare With, Copy Name and ID, and, for your own models,
+	Permissions, Archive, Publish and Delete.</para>
+	<para><bold>Compare two models</bold>: select both (Cmd-click on macOS, Ctrl-click elsewhere); a bar above the tree names them, with a <bold>Compare</bold> button,
+	and right-clicking either offers <bold>Compare</bold>. Two BioModels, two MathModels or two geometries can be compared, including two versions of one model;
+	the older saved is the baseline. The comparison opens in VCell's <bold>Compare Models</bold> window.</para>
+	<para><bold>Compare With &gt; Another Model...</bold> (from a model's right-click menu here or in the Welcome window) marks that model in the tree as
+	<bold>comparing</bold>, and the bar above the tree asks for the model to compare it with. Select it and press <bold>Compare</bold>, or double-click it
+	(or press <bold>Enter</bold>); <bold>Cancel</bold> or <bold>Escape</bold> stops.</para>
+	<para><bold>Search</bold>: typing lists only the matching models, opening every folder down to them when there aren't too many; <bold>Escape</bold> clears it.
+	A model selected from elsewhere that the search or filters hide clears them, to show it.</para>
+	<para>Closing the Model Explorer only hides it; it comes back as it was.</para>
+	</operations>
+
+</page>
+</vcelldoc>

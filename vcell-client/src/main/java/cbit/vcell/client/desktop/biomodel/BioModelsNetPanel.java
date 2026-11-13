@@ -161,8 +161,9 @@ public class BioModelsNetPanel extends DocumentEditorSubPanel {
 				});
 				rootNode.removeAllChildren();
 				for (BioModelsNetModelInfo bioModelsNetInfo : infoList) {
-					boolean bAddNode = true;
-					if (searchText != null) {
+					// only the models VCell can import: the others could only be listed greyed out
+					boolean bAddNode = bioModelsNetInfo.isSupported();
+					if (bAddNode && searchText != null) {
 						String lowerCaseSearchText = searchText.toLowerCase();
 						if (lowerCaseSearchText.length() > 0) {
 							bAddNode = bioModelsNetInfo.getId().toLowerCase().contains(lowerCaseSearchText) 
@@ -242,7 +243,32 @@ public class BioModelsNetPanel extends DocumentEditorSubPanel {
 		initialize();
 	}
 	
-	private ExternalDocInfo download(String name, String id) throws Exception {
+	/**
+	 * Downloads a BioModels Database model's SBML and opens it, as a new BioModel in a window of its own; for the Model
+	 * Explorer, as this panel's Import does.
+	 */
+	public static void importModel(BioModelsNetModelInfo info, TopLevelWindowManager requester) {
+		String name = info.getName();
+		String id = info.getId();
+		AsynchClientTask download = new AsynchClientTask("Importing " + name, AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				ExternalDocInfo externalDocInfo = BioModelsNetPanel.download(name, id);
+				if (externalDocInfo != null) hashTable.put("externalDocInfo", externalDocInfo);
+			}
+		};
+		AsynchClientTask open = new AsynchClientTask("Opening", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				ExternalDocInfo externalDocInfo = (ExternalDocInfo) hashTable.get("externalDocInfo");
+				if (externalDocInfo == null) return;
+				requester.getRequestManager().openDocument(externalDocInfo, requester, true);
+			}
+		};
+		ClientTaskDispatcher.dispatch(requester.getComponent(), new Hashtable<String, Object>(), new AsynchClientTask[] {download, open}, false);
+	}
+
+	private static ExternalDocInfo download(String name, String id) throws Exception {
 		String simDataDir = ResourceUtil.getLocalRootDir().getAbsolutePath();		// C:\Users\vasilescu\.vcell\simdata
 		String tempDir = simDataDir + File.separator + "temp";
 		String destDirectory = tempDir + File.separator + id;
@@ -531,7 +557,12 @@ TODO:
 		this.documentWindowManager = newValue;
 	}
 	
-	private List<BioModelsNetModelInfo> readVCellCompatibleBioModels_ID_Name_Hash() throws IOException, DataConversionException {
+	/** The BioModels Database's models, as VCell lists them (with whether VCell can import each). */
+	public static List<BioModelsNetModelInfo> readModels() throws IOException, DataConversionException {
+		return BioModelsNetPanel.readVCellCompatibleBioModels_ID_Name_Hash();
+	}
+
+	private static List<BioModelsNetModelInfo> readVCellCompatibleBioModels_ID_Name_Hash() throws IOException, DataConversionException {
 		List<BioModelsNetModelInfo> vcellCompatibleBioModelsList = new ArrayList<BioModelsNetModelInfo>();
 
 		final String BIOMODELSNET_INFO_FILENAME_ALT = "/bioModelsNetInfo.xml";
@@ -547,7 +578,7 @@ TODO:
 //		if (tableInputStream==null){
 //			tableInputStream = getClass().getResourceAsStream(BIOMODELSNET_INFO_FILENAME_ALT);
 //		}
-		InputStream tableInputStream = getClass().getResourceAsStream(BIOMODELSNET_INFO_FILENAME_ALT);
+		InputStream tableInputStream = BioModelsNetPanel.class.getResourceAsStream(BIOMODELSNET_INFO_FILENAME_ALT);
 		if (tableInputStream==null){
 			throw new FileNotFoundException(BIOMODELSNET_INFO_FILENAME_ALT + " not found");
 		}

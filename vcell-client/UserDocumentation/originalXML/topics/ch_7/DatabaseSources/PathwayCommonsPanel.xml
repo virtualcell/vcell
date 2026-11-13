@@ -10,9 +10,9 @@
 	Downloaded pathways can be used to build and annotate models based on the pathways and their links to terminologies and databases
 	about proteins, small molecules, genes, anatomical features, organisms and publications.
 	<para>
-	To open it, select <bold>Pathway Lookup</bold> under <bold>Pathway</bold> in the tree at the <bold>upper left</bold> of a BioModel window;
-	it is also the <bold>Pathway Lookup</bold> tab beside the Pathway Diagram. A previewed pathway opens in the <bold>Pathway Preview</bold>
-	tab at the lower right, from which it can be imported into the model.
+	To open it, choose <bold>Tools &gt; Pathway Tools...</bold> in a BioModel window and click the <bold>Pathway Lookup</bold> tab,
+	beside the Pathway Diagram. A previewed pathway opens in the <bold>Pathway Preview</bold> tab beneath, from which it can be
+	imported into the model.
 	</para>
 	</introduction>
 	

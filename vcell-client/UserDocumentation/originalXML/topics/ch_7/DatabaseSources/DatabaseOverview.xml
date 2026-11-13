@@ -13,8 +13,9 @@
 	
 	<operations>
 	<para>
-	Model repositories accessible through VCell are browsed from the <bold>Welcome window</bold> (<bold>File &gt; Welcome Window</bold>);
-	pathways from Pathway Commons are searched from <bold>Pathway &gt; Pathway Lookup</bold> in a BioModel's Navigation panel:
+	Model repositories accessible through VCell are browsed from the <link target="ModelExplorer">Model Explorer</link> (<bold>File &gt; Model Explorer...</bold>),
+	which lists them all in one tree with each model's details, and from the <bold>Welcome window</bold> (<bold>File &gt; Welcome Window</bold>);
+	pathways from Pathway Commons are searched from the <bold>Pathway Lookup</bold> tab of a BioModel's Pathway Tools window (<bold>Tools &gt; Pathway Tools...</bold>):
 	</para>
 	<list>
 		<item> <link target="VCellDatabase">VCell database (internal)</link> </item>

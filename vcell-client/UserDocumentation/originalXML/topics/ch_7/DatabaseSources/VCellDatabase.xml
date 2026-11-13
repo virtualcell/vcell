@@ -14,14 +14,20 @@
 	
 	<operations>
 	<para>
-	The Virtual Cell Database is browsed from the <bold>VCell Database</bold> tab of the <bold>Welcome window</bold> (<bold>File &gt; Welcome Window</bold>).
-	Document windows no longer have a database panel of their own, so parts of the description below, written for that panel, may differ from what the Welcome window shows.
+	The Virtual Cell Database is browsed from the <link target="ModelExplorer">Model Explorer</link> (<bold>File &gt; Model Explorer...</bold>), whose tree has the folders described below,
+	and from the <bold>VCell Database</bold> tab of the <bold>Welcome window</bold> (<bold>File &gt; Welcome Window</bold>), whose own tabs are
+	<bold>Personal</bold>, <bold>Published</bold>, <bold>Curated</bold> and <bold>Uncurated</bold>; the tutorials' models have a <bold>Tutorials</bold> tab beside it,
+	and the BioModels Database a <bold>BMDB</bold> tab. The search field above the tabs searches them all; its <bold>Filters</bold> narrow the search
+	(<bold>Reset</bold> puts them back). BMDB lists only the models VCell can import, and is searched by their names and IDs only, so on its tab the filters are greyed out.
+	Document windows no longer have a database panel of their own, so parts of the description below, written for that panel, may differ from what these windows show.
 	</para>
 	<para>
-	Right-click a model in the Welcome window's <bold>Recent Models</bold> or <bold>VCell Database</bold> lists (or select it and press <bold>Shift+F10</bold>) for its menu:
+	Right-click a model in the Welcome window's <bold>Recent Models</bold> or <bold>VCell Database</bold> lists (or select it and press <bold>Shift+F10</bold>), or in the Model Explorer's tree, for its menu:
 	<list>
 		<item><bold>Open</bold>, and <bold>Export / Save to File...</bold> without opening it.</item>
-		<item><bold>Compare With</bold> its previous or latest edition, another edition, or another model.</item>
+		<item><bold>Show in Model Explorer</bold> (in the Welcome window), which opens the Model Explorer with that model selected.</item>
+		<item><bold>Compare With</bold> its previous or latest edition, another edition, or another model. <bold>Another Model...</bold> opens the
+		<link target="ModelExplorer">Model Explorer</link> at the model, to pick the one to compare it with there.</item>
 		<item><bold>Copy Name</bold>, and <bold>Copy BioModel ID Number</bold> (or MathModel), which copies just the number in its ID, such as 233648465 for biomodel-233648465.</item>
 		<item>For your own models: <bold>Permissions...</bold>, <bold>Archive</bold>, <bold>Publish</bold> and <bold>Delete...</bold> (which asks first). Items that don't apply to a model are greyed out, and their tooltip says why.</item>
 	</list>
