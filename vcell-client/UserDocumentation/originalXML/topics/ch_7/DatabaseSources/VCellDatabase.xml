@@ -15,7 +15,10 @@
 	<operations>
 	<para>
 	The Virtual Cell Database is browsed from the <link target="ModelExplorer">Model Explorer</link> (<bold>File &gt; Model Explorer...</bold>), whose tree has the folders described below,
-	and from the <bold>VCell Database</bold> tab of the <bold>Welcome window</bold> (<bold>File &gt; Welcome Window</bold>).
+	and from the <bold>VCell Database</bold> tab of the <bold>Welcome window</bold> (<bold>File &gt; Welcome Window</bold>), whose own tabs are
+	<bold>Personal</bold>, <bold>Published</bold>, <bold>Curated</bold> and <bold>Uncurated</bold>; the tutorials' models have a <bold>Tutorials</bold> tab beside it,
+	and the BioModels Database a <bold>BMDB</bold> tab. The search field above the tabs searches them all; its <bold>Filters</bold> narrow the search
+	(<bold>Reset</bold> puts them back). BMDB lists only the models VCell can import, and is searched by their names and IDs only, so on its tab the filters are greyed out.
 	Document windows no longer have a database panel of their own, so parts of the description below, written for that panel, may differ from what these windows show.
 	</para>
 	<para>

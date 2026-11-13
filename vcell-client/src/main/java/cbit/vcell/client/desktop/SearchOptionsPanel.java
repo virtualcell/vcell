@@ -39,8 +39,13 @@ public class SearchOptionsPanel extends JPanel {
 	private final JComboBox<Order> order = SearchOptionsPanel.choices(Order.values());
 	private final List<List<JCheckBox>> groups = new ArrayList<>(); // each needs one of its boxes checked
 	private final Runnable onChange;
-	private final JLabel note = new JLabel("The BioModels Database tab searches its models' names and IDs only.");
+	private final JLabel note = new JLabel(" ");
+	private String noteText = "BMDB is searched by name and ID only; these options don't apply to it.";
 	private boolean resetting = false; // the controls being put back, one by one: report the change once, at the end
+	private final JButton reset = new JButton("Reset");
+	private final JPanel heading = new JPanel(new BorderLayout()); // the title, and Reset at its right (unless below)
+	private final JPanel bottom = new JPanel(new BorderLayout(8, 0)); // the note, and Reset at its right (if below)
+	private String noneApply = null; // why none of the options apply (a search of the BioModels Database); null: they all do
 
 	/** A panel of the options, at their defaults; {@code onChange} runs whenever the user changes one. */
 	public SearchOptionsPanel(Runnable onChange) {
@@ -49,13 +54,11 @@ public class SearchOptionsPanel extends JPanel {
 		this.setName("SearchOptionsPanel");
 		this.setOpaque(false);
 
-		JButton reset = new JButton("Reset");
-		reset.setName("SearchOptionsReset");
-		reset.addActionListener(e -> this.reset());
-		JPanel heading = new JPanel(new BorderLayout());
-		heading.setOpaque(false);
-		heading.add(GuiUtils.createBoldJLabel("Search options"), BorderLayout.WEST);
-		heading.add(reset, BorderLayout.EAST);
+		this.reset.setName("SearchOptionsReset");
+		this.reset.addActionListener(e -> this.reset());
+		this.heading.setOpaque(false);
+		this.heading.add(GuiUtils.createBoldJLabel("Search options"), BorderLayout.WEST);
+		this.heading.add(this.reset, BorderLayout.EAST);
 
 		for (Field field : Field.values()) this.fields.put(field, this.checkBox(field.label, "In" + field.name()));
 		for (Approach approach : Approach.values()) this.approaches.put(approach, this.checkBox(approach.label, "Approach" + approach.name()));
@@ -90,15 +93,49 @@ public class SearchOptionsPanel extends JPanel {
 		VCellFonts.setCategory(this.note, VCellFonts.Category.CAPTION);
 		this.note.setForeground(VCellColors.getDimForeground());
 
-		this.add(heading, BorderLayout.NORTH);
+		this.setNoteShown(true);
+		this.bottom.setOpaque(false);
+		this.bottom.add(this.note, BorderLayout.CENTER);
+		this.add(this.heading, BorderLayout.NORTH);
 		this.add(rows, BorderLayout.CENTER);
-		this.add(this.note, BorderLayout.SOUTH);
+		this.add(this.bottom, BorderLayout.SOUTH);
 		this.setControlsToDefaults(); // not reported: nothing has changed yet
+	}
+
+	/**
+	 * Reset at the bottom right, rather than the top: next to the Filters button, where the options open upward from it
+	 * (the welcome window's).
+	 */
+	public void setResetBelow(boolean below) {
+		(below ? this.bottom : this.heading).add(this.reset, BorderLayout.EAST);
+		this.revalidate();
+	}
+
+	/** Whether the note under the options shows; hidden, it keeps its line, so the options keep their height. */
+	public void setNoteShown(boolean shown) {
+		this.noteShown = shown;
+		this.note.setText(shown ? this.noteText : " ");
+	}
+
+	private boolean noteShown = true;
+
+	/**
+	 * None of the options apply (a search of the BioModels Database, which has nothing to narrow by but the search text):
+	 * they're disabled, their tooltip saying why ({@code why}); null, they all apply again. Reset stays, for the others.
+	 */
+	public void setNoneApply(String why) {
+		this.noneApply = why;
+		for (JComponent control : List.of(this.owner, this.saved, this.order)) {
+			control.setEnabled(null == why);
+			control.setToolTipText(why);
+		}
+		this.lockLastChecked();
 	}
 
 	/** The note under the options, on what the BioModels Database's search looks at. */
 	public void setNote(String text) {
-		this.note.setText(text);
+		this.noteText = text;
+		this.setNoteShown(this.noteShown);
 	}
 
 	/** A Filters button's tooltip: what the options are for, then what's changed from the defaults, if anything. */
@@ -156,11 +193,12 @@ public class SearchOptionsPanel extends JPanel {
 	// another of its category is checked
 	private void lockLastChecked() {
 		for (List<JCheckBox> group : this.groups) {
+			boolean applies = null == this.noneApply;
 			long checked = group.stream().filter(JCheckBox::isSelected).count();
 			for (JCheckBox box : group) {
 				boolean locked = 1 == checked && box.isSelected();
-				box.setEnabled(!locked);
-				box.setToolTipText(locked ? "At least one must stay checked" : null);
+				box.setEnabled(applies && !locked);
+				box.setToolTipText(!applies ? this.noneApply : locked ? "At least one must stay checked" : null);
 			}
 		}
 	}

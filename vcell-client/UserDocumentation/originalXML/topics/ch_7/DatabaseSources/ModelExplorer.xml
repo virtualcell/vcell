@@ -25,10 +25,12 @@
 			</list></item>
 		<item><bold>Tutorials</bold>: the models VCell's tutorials use.</item>
 		<item><bold>Geometries</bold>: <bold>My Geometries</bold>, and those <bold>Shared With Me</bold> and <bold>Public Geometries</bold> by owner.</item>
-		<item><bold>BioModels Database</bold>: EBI's models, by name. They are found by their names and IDs only; those VCell can't import are greyed out.</item>
+		<item><bold>BioModels Database</bold>: EBI's models, by name. Only the models VCell can import are listed, and they are found by their names and IDs only.</item>
 	</list>
 	<para>A model saved more than once has its versions listed under it, newest first, with when each was saved and its permissions; the model itself stands for its latest version.
-	Each folder, owner and publication says how many models it holds.</para>
+	Each folder and owner says how many models it holds. <bold>Published</bold> and <bold>Curated</bold>, and each publication, count
+	published (or curated) versions instead, as VCell's database tree always has: a model published twice counts twice.
+	<bold>Public Models</bold> adds up its three folders.</para>
 	<para>The <bold>Table</bold> view lists the same models without the folders' hierarchy, one row each, with columns for its
 	<bold>Name</bold>, <bold>Type</bold>, the <bold>Folders</bold> the tree lists it in, <bold>Owner</bold>, when it was <bold>Saved</bold>,
 	how many <bold>Versions</bold> it has, its <bold>Permissions</bold>, its <bold>Publication</bold> and its <bold>VCell ID</bold>.

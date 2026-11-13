@@ -23,9 +23,10 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
- * The VCell database's BioModels and MathModels, together, in tabs as the database tree's folders sort them:
- * Community (its own tabs: Published, Curated, Uncurated), Personal (the user's own, and those shared with the user,
- * marked as shared; not for a guest, who can't save models), and Tutorial. Each lists the latest version of each model that belongs there, by name, as
+ * The VCell database's BioModels and MathModels, together, in a row of tabs as the database tree's folders sort them:
+ * Personal (the user's own, and those shared with the user, marked as shared; not for a guest, who can't save models),
+ * Published, Curated, Uncurated, and Tutorials (which whatever shows the panel may show beside it instead: see
+ * detachTutorials). Each lists the latest version of each model that belongs there, by name, as
  * Recent Models lists the user's; each tab's name says how many it has. Opening one (double-click, or Enter) hands it
  * to whatever shows the panel.
  */
@@ -37,7 +38,7 @@ public class DatabaseModelsPanel extends JPanel {
 		CURATED("Curated", "No curated models"),
 		UNCURATED("Uncurated", "No uncurated models"),
 		MINE("Personal", "You have no saved models, and none are shared with you"), // and those shared with the user
-		TUTORIAL("Tutorial", "No tutorial models");
+		TUTORIAL("Tutorials", "No tutorial models");
 
 		final String title;
 		final String emptyMessage;
@@ -48,14 +49,13 @@ public class DatabaseModelsPanel extends JPanel {
 		}
 	}
 
-	private static final List<ModelList> COMMUNITY = List.of(ModelList.PUBLISHED, ModelList.CURATED, ModelList.UNCURATED);
-	private static final List<ModelList> BESIDE_COMMUNITY = List.of(ModelList.MINE, ModelList.TUTORIAL);
+	private static final List<ModelList> TABS = List.of(ModelList.MINE, ModelList.PUBLISHED, ModelList.CURATED, ModelList.UNCURATED, ModelList.TUTORIAL);
 	private static final Set<String> TUTORIAL_OWNERS = Set.of(
 			VCDocumentDbTreeModel.USER_tutorial, VCDocumentDbTreeModel.USER_tutorial610, VCDocumentDbTreeModel.USER_tutorial611);
 
 	private final Map<ModelList, ModelListView> views = new EnumMap<>(ModelList.class);
 	private final JTabbedPane tabs = new JTabbedPane();
-	private final JTabbedPane communityTabs = new JTabbedPane();
+	private Consumer<String> tutorialsTitle = null; // set once Tutorials is shown elsewhere: its name, with its count
 	private final DatabaseListener databaseListener = new DatabaseListener() {
 		@Override public void databaseDelete(DatabaseEvent event) { DatabaseModelsPanel.this.refreshLater(); }
 		@Override public void databaseInsert(DatabaseEvent event) { DatabaseModelsPanel.this.refreshLater(); }
@@ -84,16 +84,24 @@ public class DatabaseModelsPanel extends JPanel {
 		for (ModelList modelList : ModelList.values()) {
 			this.views.put(modelList, new ModelListView(modelList));
 		}
-		this.communityTabs.setName("CommunityModelsTabs");
-		for (ModelList modelList : COMMUNITY) {
-			this.communityTabs.addTab(modelList.title, this.views.get(modelList));
-		}
 		this.tabs.setName("DatabaseModelsTabs");
-		this.tabs.addTab("Community", this.communityTabs);
-		for (ModelList modelList : BESIDE_COMMUNITY) {
+		for (ModelList modelList : TABS) {
 			this.tabs.addTab(modelList.title, this.views.get(modelList));
 		}
 		this.add(this.tabs, BorderLayout.CENTER);
+	}
+
+	/**
+	 * Takes the Tutorials list out of these tabs, for whatever shows the panel to show elsewhere (the welcome window, as
+	 * a tab of its own); the panel still searches and counts it, and gives its name, with its count, to {@code titled}.
+	 */
+	public JComponent detachTutorials(Consumer<String> titled) {
+		ModelListView tutorials = this.views.get(ModelList.TUTORIAL);
+		int index = this.tabs.indexOfComponent(tutorials);
+		if (index >= 0) this.tabs.removeTabAt(index);
+		this.tutorialsTitle = Objects.requireNonNull(titled);
+		this.showCounts(this.counted);
+		return tutorials;
 	}
 
 	/** The document manager whose models it lists (null when no one is logged in); it follows that manager's changes. */
@@ -117,7 +125,6 @@ public class DatabaseModelsPanel extends JPanel {
 	/** The model selected in the list showing now, or null. */
 	public VCDocumentInfo getSelectedModel() {
 		Component current = this.tabs.getSelectedComponent();
-		if (current == this.communityTabs) current = this.communityTabs.getSelectedComponent(); // the list chosen within Community
 		return current instanceof ModelListView view ? view.list.getSelectedValue() : null;
 	}
 
@@ -127,7 +134,6 @@ public class DatabaseModelsPanel extends JPanel {
 			view.list.addListSelectionListener(e -> listener.run());
 		}
 		this.tabs.addChangeListener(e -> listener.run());
-		this.communityTabs.addChangeListener(e -> listener.run());
 	}
 
 	/** Lists the models again, from what the document manager knows now. */
@@ -177,22 +183,17 @@ public class DatabaseModelsPanel extends JPanel {
 	private void showPersonalTab(boolean shown) {
 		ModelListView personal = this.views.get(ModelList.MINE);
 		int index = this.tabs.indexOfComponent(personal);
-		if (shown && index < 0) this.tabs.insertTab(ModelList.MINE.title, null, personal, null, 1); // after Community
+		if (shown && index < 0) this.tabs.insertTab(ModelList.MINE.title, null, personal, null, 0); // first
 		if (!shown && index >= 0) this.tabs.removeTabAt(index);
 	}
 
-	// Each tab's name with how many models it has (logged in); Community's counts a model in more than one of its lists once
+	// Each tab's name with how many models it has (logged in)
 	private void showCounts(boolean counted) {
-		Set<String> communityModels = new HashSet<>();
-		for (int index = 0; index < COMMUNITY.size(); index++) {
-			List<VCDocumentInfo> models = this.views.get(COMMUNITY.get(index)).getModels();
-			models.forEach(info -> communityModels.add(DatabaseModelsPanel.modelKey(info)));
-			this.communityTabs.setTitleAt(index, DatabaseModelsPanel.withCount(COMMUNITY.get(index).title, models.size(), counted));
-		}
-		this.tabs.setTitleAt(0, DatabaseModelsPanel.withCount("Community", communityModels.size(), counted));
-		for (ModelList modelList : BESIDE_COMMUNITY) {
+		for (ModelList modelList : TABS) {
+			String title = DatabaseModelsPanel.withCount(modelList.title, this.views.get(modelList).getModels().size(), counted);
 			int index = this.tabs.indexOfComponent(this.views.get(modelList)); // Personal is left out for a guest
-			if (index >= 0) this.tabs.setTitleAt(index, DatabaseModelsPanel.withCount(modelList.title, this.views.get(modelList).getModels().size(), counted));
+			if (index >= 0) this.tabs.setTitleAt(index, title);
+			else if (ModelList.TUTORIAL == modelList && null != this.tutorialsTitle) this.tutorialsTitle.accept(title);
 		}
 	}
 
@@ -200,10 +201,27 @@ public class DatabaseModelsPanel extends JPanel {
 		return counted ? title + " (" + NumberFormat.getIntegerInstance().format(count) + ")" : title;
 	}
 
-	/** The tabs' names, as shown: Community's own tabs, then the top row's. */
+	/**
+	 * How wide its row of tabs needs to be to show every tab's name with its count, in one row: room for a three-digit
+	 * count at least (more only once a list has more models than that, whatever the search), so it's the same whether
+	 * or not anyone is logged in, and whatever is searched for, and whoever shows the panel can keep one width.
+	 */
+	public int getTabRowWidth() {
+		java.awt.FontMetrics metrics = this.tabs.getFontMetrics(this.tabs.getFont());
+		int width = 0;
+		for (ModelList modelList : TABS) {
+			if (ModelList.TUTORIAL == modelList && null != this.tutorialsTitle) continue; // shown elsewhere
+			int count = Math.max(999, this.allModels.getOrDefault(modelList, List.of()).size());
+			width += metrics.stringWidth(DatabaseModelsPanel.withCount(modelList.title, count, true)) + TAB_PADDING;
+		}
+		return width;
+	}
+
+	private static final int TAB_PADDING = 18; // a tab's width beyond its name's, as Aqua's segmented tabs have it
+
+	/** The tabs' names, as shown. */
 	List<String> getTabTitles() {
 		List<String> titles = new ArrayList<>();
-		for (int index = 0; index < this.communityTabs.getTabCount(); index++) titles.add(this.communityTabs.getTitleAt(index));
 		for (int index = 0; index < this.tabs.getTabCount(); index++) titles.add(this.tabs.getTitleAt(index));
 		return titles;
 	}
