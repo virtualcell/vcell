@@ -1980,6 +1980,17 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
 
     }
 
+    /**
+     * Makes a button open the simulation jobs dialog, as Account > View Simulation Jobs does, and be enabled when that
+     * is: while connected to the server.
+     */
+    public void bindToViewJobs(AbstractButton button) {
+        JMenuItem item = this.getViewJobsMenuItem();
+        button.setEnabled(item.isEnabled());
+        item.addPropertyChangeListener("enabled", e -> button.setEnabled(item.isEnabled()));
+        button.addActionListener(e -> this.showViewJobsDialog());
+    }
+
     public void showViewExportedDataDialog() {
         DocumentWindowManager dwm = this.getWindowManager();
         ExportedDataViewer exportedDataViewer = new ExportedDataViewer();

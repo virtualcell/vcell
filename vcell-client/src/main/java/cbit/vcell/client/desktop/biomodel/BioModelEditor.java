@@ -450,6 +450,25 @@ public void showPathwayTools() {
 	window.show();
 }
 
+// the run queue, given each saved simulation's last server run: read in the background (a server round trip each),
+// whenever the model or its window manager is set, so runs from before this window opened are listed too
+private void seedRunQueue() {
+	if (bioModel == null || bioModelWindowManager == null) return;
+	final cbit.vcell.client.SimulationRunQueue queue = bioModelWindowManager.getSimulationRunQueue();
+	final cbit.vcell.client.RequestManager requestManager = bioModelWindowManager.getRequestManager();
+	final Simulation[] simulations = bioModel.getSimulations();
+	queue.forgetServerRuns();
+	Thread seeding = new Thread(() -> {
+		for (Simulation simulation : simulations) {
+			if (simulation.getSimulationInfo() == null) continue; // never saved: never ran on the server
+			cbit.vcell.server.SimulationStatus status = requestManager.getServerSimulationStatus(simulation.getSimulationInfo());
+			queue.serverStatus(simulation, status);
+		}
+	}, "Run queue: reading server runs");
+	seeding.setDaemon(true);
+	seeding.start();
+}
+
 // whether a navigation tree node is this folder (Applications, Reactions...)
 private static boolean isFolder(Object node, DocumentEditorTreeFolderClass folderClass) {
 	return node instanceof BioModelNode bioModelNode && bioModelNode.getUserObject() instanceof DocumentEditorTreeFolderNode folder
@@ -1054,6 +1073,7 @@ public void setBioModel(BioModel bioModel) {
 		return;
 	}
 	this.bioModel = bioModel;
+	this.seedRunQueue(); // the new model's server runs
 	if (this.rightBottomTabbedPane.indexOfComponent(this.openBioModelDatabaseInfoPanel) >= 0) {
 		this.showOpenBioModelDatabaseInfo(); // after a save the open model is replaced; keep its tab current
 	}
@@ -1094,6 +1114,8 @@ public void setBioModelWindowManager(BioModelWindowManager bioModelWindowManager
 	this.bioModelWindowManager = bioModelWindowManager;
 	bioModelPropertiesPanel.setBioModelWindowManager(bioModelWindowManager);
 	bioModelParametersPanel.setBioModelWindowManager(bioModelWindowManager);
+	getBioModelEditorApplicationsPanel().setSimulationRunQueue(bioModelWindowManager == null ? null : bioModelWindowManager.getSimulationRunQueue());
+	seedRunQueue();
 	
 	DocumentManager documentManager = bioModelWindowManager.getRequestManager().getDocumentManager();
 	bioModelEditorModelPanel.setDocumentManager(documentManager);
