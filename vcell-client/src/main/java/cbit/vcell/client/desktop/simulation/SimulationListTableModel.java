@@ -10,6 +10,7 @@
 
 package cbit.vcell.client.desktop.simulation;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -35,14 +36,25 @@ import cbit.vcell.server.SimulationStatus;
 @SuppressWarnings("serial")
 public class SimulationListTableModel extends VCellSortTableModel<Simulation> implements PropertyChangeListener {
 	private static final String PROPERTY_NAME_SIMULATION_WORKSPACE = "simulationWorkspace";
-	private final static int COLUMN_NAME = 0;
-	private final static int COLUMN_ENDTIME = 1;
-	private final static int COLUMN_OUTPUT = 2;
-	private final static int COLUMN_SOLVER = 3;
-	private final static int COLUMN_STATUS = 4;
-	private final static int COLUMN_RESULTS = 5;
-	
-	private static final String[] columnNames = new String[] {"Name", "End Time", "Output Option", "Solver", "Running Status", "Results"};
+
+	// the columns the table can show; refreshColumns() decides which ones are shown and in what order
+	// (same approach as SpeciesContextSpecTableModel: no hardcoded column indexes)
+	private enum ColumnType {
+		NAME("Name"),
+		END_TIME("End Time"),
+		OUTPUT("Output Option"),
+		SOLVER("Solver"),
+		STATUS("Running Status"),
+		RESULTS("Results");
+
+		public final String label;
+
+		ColumnType(String label) {
+			this.label = label;
+		}
+	}
+
+	private final List<ColumnType> columns = new ArrayList<>();	// the columns currently shown, in display order
 	private SimulationWorkspace simulationWorkspace = null;
 
 
@@ -50,8 +62,33 @@ public class SimulationListTableModel extends VCellSortTableModel<Simulation> im
  * SimulationListTableModel constructor comment.
  */
 public SimulationListTableModel(ScrollTable table) {
-	super(table, columnNames);
+	super(table);
+	refreshColumns();
 	addPropertyChangeListener(this);
+}
+
+
+// builds the list of columns to show; for now always the same ones
+private void refreshColumns() {
+	columns.clear();
+	columns.add(ColumnType.NAME);
+	columns.add(ColumnType.END_TIME);
+	columns.add(ColumnType.OUTPUT);
+	columns.add(ColumnType.SOLVER);
+	columns.add(ColumnType.STATUS);
+	columns.add(ColumnType.RESULTS);
+}
+
+
+@Override
+public int getColumnCount() {
+	return columns.size();
+}
+
+
+@Override
+public String getColumnName(int column) {
+	return columns.get(column).label;
 }
 
 
@@ -84,18 +121,18 @@ public Object getValueAt(int row, int column) {
 	try{
 		if (row >= 0 && row < getRowCount()) {
 			Simulation simulation = getValueAt(row);
-			switch (column) {
-				case COLUMN_NAME: {
+			switch (columns.get(column)) {
+				case NAME: {
 					return simulation.getName();
-				} 
-				case COLUMN_ENDTIME: {
+				}
+				case END_TIME: {
 					if (simulation.getSolverTaskDescription().getSolverDescription().isChomboSolver())
 					{
 						return simulation.getSolverTaskDescription().getChomboSolverSpec().getEndingTime();
 					}
 					return simulation.getSolverTaskDescription().getTimeBounds().getEndingTime();
 				} 
-				case COLUMN_OUTPUT: {
+				case OUTPUT: {
 					if (simulation.getSolverTaskDescription().getSolverDescription().isChomboSolver())
 					{
 						String text = "Variable";
@@ -107,13 +144,13 @@ public Object getValueAt(int row, int column) {
 					}
 					return simulation.getSolverTaskDescription().getOutputTimeSpec();
 				} 
-				case COLUMN_SOLVER: {
+				case SOLVER: {
 					return simulation.getSolverTaskDescription().getSolverDescription();
-				} 
-				case COLUMN_STATUS: {
+				}
+				case STATUS: {
 					return getSimulationWorkspace().getSimulationStatus(simulation);
-				} 
-				case COLUMN_RESULTS: {
+				}
+				case RESULTS: {
 					return getSimulationWorkspace().getSimulationStatus(simulation).getHasData() ? "yes" : "no";
 				} 
 			}
@@ -134,12 +171,12 @@ public Object getValueAt(int row, int column) {
  */
 public boolean isCellEditable(int rowIndex, int columnIndex) {
 	Simulation simulation = getValueAt(rowIndex);
-	switch (columnIndex){
-		case COLUMN_NAME: 
+	switch (columns.get(columnIndex)){
+		case NAME:
 			return true;
-		case COLUMN_ENDTIME:
+		case END_TIME:
 			return !simulation.getSolverTaskDescription().getSolverDescription().isChomboSolver();
-		case COLUMN_OUTPUT:
+		case OUTPUT:
 			return true;
 		default: {
 			return false;
@@ -227,8 +264,8 @@ public void setSimulationWorkspace(SimulationWorkspace newSimulationWorkspace) {
 public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 	Simulation simulation = getValueAt(rowIndex);
 	try {		
-		switch (columnIndex){
-			case COLUMN_NAME:
+		switch (columns.get(columnIndex)){
+			case NAME:
 				if (aValue instanceof String){
 					String newName = (String)aValue;
 					if (!simulation.getName().equals(newName)){
@@ -236,7 +273,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 					}
 				}
 				break;
-			case COLUMN_ENDTIME:
+			case END_TIME:
 				if(aValue instanceof String) {
 					aValue = Double.parseDouble((String)aValue);
 				}
@@ -249,7 +286,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 					}
 				}
 				break;
-			case COLUMN_OUTPUT:
+			case OUTPUT:
 				if (aValue instanceof String){
 					SolverTaskDescription solverTaskDescription = simulation.getSolverTaskDescription();
 					OutputTimeSpec ots = solverTaskDescription.getOutputTimeSpec();
@@ -325,14 +362,14 @@ public boolean isSortable(int col) {
 
 @Override
 public Class<?> getColumnClass(int columnIndex) {
-	switch (columnIndex) {
-	case COLUMN_STATUS:
+	switch (columns.get(columnIndex)) {
+	case STATUS:
 		return SimulationStatus.class;
-	case COLUMN_ENDTIME:
+	case END_TIME:
 		return Double.class;
-	case COLUMN_OUTPUT:
+	case OUTPUT:
 		return OutputTimeSpec.class;
-	case COLUMN_SOLVER:
+	case SOLVER:
 		return SolverDescription.class;
 	default:
 		return String.class;
