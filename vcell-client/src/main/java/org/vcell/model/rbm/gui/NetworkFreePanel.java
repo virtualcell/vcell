@@ -1,5 +1,6 @@
 package org.vcell.model.rbm.gui;
 
+import cbit.vcell.client.laf.VCellColors;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.GridBagConstraints;
@@ -632,7 +633,7 @@ public class NetworkFreePanel extends JPanel implements ApplicationSpecification
         futureObservablesLabel.setText((o1 + s2) + "");
 
 //		if(s1 > 0) {
-        rateWarningLabel.setText("<html><font color=#8C001A>" + SimulationContext.rateWarning + "</font></html>");
+        rateWarningLabel.setText("<html><font color=" + VCellColors.toHtmlColor(VCellColors.getWarningForeground()) + ">" + SimulationContext.rateWarning + "</font></html>");
 //		} else {
 //			rateWarningLabel.setText("");
 //		}

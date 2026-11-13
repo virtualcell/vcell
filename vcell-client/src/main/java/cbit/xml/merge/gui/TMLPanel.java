@@ -9,6 +9,7 @@
  */
 
 package cbit.xml.merge.gui;
+import cbit.vcell.client.laf.VCellLookAndFeel;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -1469,14 +1470,14 @@ private void resetTextFieldAttributes() {
 		getBaselineEditorPane().setBackground(getBackground());
 	}else{
 		getBaselineEditorPane().setEnabled(true);
-		getBaselineEditorPane().setBackground(java.awt.Color.white);
+		getBaselineEditorPane().setBackground(VCellLookAndFeel.getContentBackground());
 	}
 	if (getCurrentModifiedText() == null || getCurrentModifiedText().length()==0){
 		getModifiedEditorPane().setEnabled(false);
 		getModifiedEditorPane().setBackground(getBackground());
 	}else{
 		getModifiedEditorPane().setEnabled(true);
-		getModifiedEditorPane().setBackground(java.awt.Color.white);
+		getModifiedEditorPane().setBackground(VCellLookAndFeel.getContentBackground());
 	}
 }
 

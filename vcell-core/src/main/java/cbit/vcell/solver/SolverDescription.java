@@ -159,8 +159,9 @@ public enum SolverDescription {
 	   // Offered unless vcell.fenics.enabled=false - see docs/plan-fenics.md.
 	   FEniCSx(TimeStep.CONSTANT, ErrorTol.NO, TimeSpecCreated.UNIFORM, "FEniCSx", "FEniCSx Finite Element (Experimental)", "FEniCSx",
 	      SolverLongDesc.FENICSX, 1, SupportedTimeSpec.DEFAULT_EXPLICIT_UNIFORM,
-	      // Feature_Moving: it also runs VCell moving-boundary math (2D, species inside the moving front), as an
-	      // ALE mesh with VCell's lab-frame (Eulerian) species semantics — see docs/plan-fenics.md M1-M5.
+	      // Feature_Moving: it also runs VCell moving-boundary math (2D and 3D, one moving membrane; diffusing
+	      // species in any compartment and on that membrane, which dilute with it) on a mesh that follows the
+	      // membrane - see docs/plan-fenics.md M1-M5 and vcell-fenics ADR 013/014.
 	      new SolverFeature[]{SolverFeature.Feature_Spatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_Moving},
 	      null, "KISAO", false),
 

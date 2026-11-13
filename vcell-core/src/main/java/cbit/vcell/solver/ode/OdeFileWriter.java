@@ -53,6 +53,8 @@ import cbit.vcell.solver.server.SolverFileWriter;
 public abstract class OdeFileWriter extends SolverFileWriter {
 	private Vector<StateVariable> fieldStateVariables = new Vector<StateVariable>();
 	protected String ROOT_VARIABLE_PREFIX = "__D_B_";
+	/** The state variable written for math with no ODEs (see createStateVariables); always 0. */
+	public static final String NO_ODE_PLACEHOLDER = "__vcell_no_ode__";
 	private transient RateSensitivity rateSensitivity = null;
 	private transient Jacobian jacobian = null;
 	protected VariableSymbolTable varsSymbolTable = null;
@@ -158,6 +160,14 @@ private void createStateVariables() throws Exception {
 		} else {
 			throw new MathException("encountered non-ode equation, unsupported");
 		}
+	}
+	// The Sundials solvers need at least one equation to step time; a model whose values are all rules, constants
+	// or event assignments (SBML Test Suite 01152, for one) has none. Give it a placeholder that stays 0, so its
+	// functions are still evaluated at every output time.
+	if (fieldStateVariables.isEmpty()) {
+		VolVariable placeholder = new VolVariable(NO_ODE_PLACEHOLDER, null);
+		fieldStateVariables.addElement(new ODEStateVariable(
+				new OdeEquation(placeholder, new Expression(0.0), new Expression(0.0)), simSymbolTable));
 	}
 
 	//  Get sensitivity variables

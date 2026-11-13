@@ -133,6 +133,121 @@ public class BioModelTransforms {
     public static void repairLegacyProblems(BioModel bioModel){
         reconcileLegacyAbsRelSizes(bioModel);
         fixLegacyMassAction(bioModel); // no susbstrate and non-zero kf or no products - capture original intent of model.
+        fixLegacyFluxStoichiometry(bioModel);
+        fixDuplicateMembraneVoltageNames(bioModel);
+    }
+
+    /**
+     * Older VCell let two membranes share one voltage name: only a rename from the GUI resets a membrane's voltage
+     * name to its default, so a membrane renamed or copied otherwise kept the name it had. Current VCell rejects such a
+     * model ("model symbol ... is used within ... and ..."), so its math can no longer be generated. The first membrane
+     * (model order) keeps the name -- an expression bound by name resolves to it -- and each later membrane sharing it
+     * gets its default name ({@link Membrane#getDefaultMembraneVoltageName}), made unique among the model's symbols.
+     */
+    private static void fixDuplicateMembraneVoltageNames(BioModel bioModel) {
+        Model model = bioModel.getModel();
+        if (model == null) {
+            return;
+        }
+        Set<SymbolTableEntry> entries = new HashSet<>();
+        model.gatherLocalEntries(entries);
+        Set<String> taken = new HashSet<>();
+        for (SymbolTableEntry entry : entries) {
+            taken.add(entry.getName());
+        }
+        Set<String> voltageNames = new HashSet<>();
+        for (Structure structure : model.getStructures()) {
+            if (!(structure instanceof Membrane membrane)) {
+                continue;
+            }
+            Membrane.MembraneVoltage voltage = membrane.getMembraneVoltage();
+            if (voltageNames.add(voltage.getName())) {
+                continue;
+            }
+            String base = Membrane.getDefaultMembraneVoltageName(membrane.getName());
+            String name = base;
+            for (int i = 1; taken.contains(name); i++) {
+                name = base + "_" + i;
+            }
+            try {
+                lg.warn("membrane '" + membrane.getName() + "' shared voltage name '" + voltage.getName()
+                        + "' with another membrane; renamed to '" + name + "'");
+                voltage.setName(name);
+                taken.add(name);
+                voltageNames.add(name);
+            } catch (PropertyVetoException e) {
+                lg.error("failed to rename the duplicate voltage of membrane '" + membrane.getName() + "'", e);
+            }
+        }
+    }
+
+    /**
+     * Older VCell wrote the reactant and product of some flux steps with {@code Stoichiometry="0"}
+     * while still transporting the species: their stored math moves the species by the flux
+     * ({@code J_<flux>} appears in an equation). Current VCell reads the stoichiometry literally, so
+     * the flux moves nothing. Where any application's stored math uses the flux in an equation (an ODE
+     * or PDE rate, or a membrane jump condition), its zero stoichiometries are restored to 1 --
+     * capturing the original intent, as fixLegacyMassAction does for zero-order mass action;
+     * otherwise they are left as read (the flux then carries no species, as the math generated with it).
+     */
+    private static void fixLegacyFluxStoichiometry(BioModel bioModel) {
+        List<FluxReaction> zeroStoichiometry = new ArrayList<>();
+        for (ReactionStep rs : bioModel.getModel().getReactionSteps()) {
+            if (!(rs instanceof FluxReaction fluxReaction)) {
+                continue;
+            }
+            for (ReactionParticipant rp : fluxReaction.getReactionParticipants()) {
+                if ((rp instanceof Reactant || rp instanceof Product) && rp.getStoichiometry() == 0) {
+                    zeroStoichiometry.add(fluxReaction);
+                    break;
+                }
+            }
+        }
+        if (zeroStoichiometry.isEmpty()) {
+            return;
+        }
+        Set<String> referenced = new HashSet<>();
+        for (SimulationContext simulationContext : bioModel.getSimulationContexts()) {
+            MathDescription math = simulationContext.getMathDescription();
+            if (math == null) {
+                continue;
+            }
+            List<Expression> expressions = new ArrayList<>();
+            for (SubDomain subDomain : Collections.list(math.getSubDomains())) {
+                for (Equation equation : Collections.list(subDomain.getEquations())) {
+                    if (equation.getRateExpression() != null) {
+                        expressions.add(equation.getRateExpression());
+                    }
+                }
+                if (subDomain instanceof MembraneSubDomain membraneSubDomain) {
+                    for (JumpCondition jump : Collections.list(membraneSubDomain.getJumpConditions())) {
+                        if (jump.getInFluxExpression() != null) {
+                            expressions.add(jump.getInFluxExpression());
+                        }
+                        if (jump.getOutFluxExpression() != null) {
+                            expressions.add(jump.getOutFluxExpression());
+                        }
+                    }
+                }
+            }
+            for (Expression expression : expressions) {
+                String[] symbols = expression.getSymbols();
+                if (symbols != null) {
+                    referenced.addAll(Arrays.asList(symbols));
+                }
+            }
+        }
+        for (FluxReaction fluxReaction : zeroStoichiometry) {
+            if (!referenced.contains("J_" + TokenMangler.fixTokenStrict(fluxReaction.getName()))) {
+                continue;
+            }
+            for (ReactionParticipant rp : fluxReaction.getReactionParticipants()) {
+                if ((rp instanceof Reactant || rp instanceof Product) && rp.getStoichiometry() == 0) {
+                    rp.setStoichiometry(1);
+                }
+            }
+            lg.warn("flux '" + fluxReaction.getName() + "' had zero stoichiometries its stored math transported; restored to 1");
+        }
     }
 
     private static void fixLegacyMassAction(BioModel bioModel) {

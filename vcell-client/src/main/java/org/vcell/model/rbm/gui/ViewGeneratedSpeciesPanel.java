@@ -10,8 +10,8 @@
 
 package org.vcell.model.rbm.gui;
 
+import cbit.vcell.client.laf.VCellColors;
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -221,7 +221,7 @@ private void initialize() {
 		};
 		Border loweredBevelBorder = BorderFactory.createLoweredBevelBorder();
 		shapePanel.setLayout(new GridBagLayout());
-		shapePanel.setBackground(Color.white);
+		shapePanel.setBackground(VCellColors.getShapeCanvasBackground());
 		shapePanel.setEditable(true);		// not really editable but we don't want the brown contours here
 		shapePanel.setShowMoleculeColor(true);
 		shapePanel.setShowNonTrivialOnly(true);

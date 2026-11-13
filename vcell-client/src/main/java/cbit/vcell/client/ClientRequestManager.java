@@ -30,6 +30,7 @@ import cbit.vcell.client.desktop.biomodel.DocumentEditor;
 import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.client.task.*;
+import cbit.vcell.client.desktop.ModelPickerDialog;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.desktop.ClientLogin;
 import cbit.vcell.desktop.ImageDbTreePanel;
@@ -138,6 +139,7 @@ public class ClientRequestManager
 
 	private boolean bOpening = false;
 	private boolean bExiting = false;
+	private boolean bClosingAllWindows = false; // see afterDocumentWindowClosed
 
 	private static final Logger lg = LogManager.getLogger(ClientRequestManager.class);
 
@@ -429,14 +431,33 @@ public class ClientRequestManager
 		// create copy to avoid ConcurrentModification exception caused by closing
 		// window
 		ArrayList<TopLevelWindowManager> modificationSafeCopy = new ArrayList<>(getMdiManager().getWindowManagers());
-		for (TopLevelWindowManager windowManager : modificationSafeCopy) {
-			boolean closed = closeWindow(windowManager.getManagerID(), duringExit);
-			if (!closed) {
-				// user canceled, don't keep going...
-				return false;
+		bClosingAllWindows = true; // no bringing back the welcome window as the last model window closes
+		try {
+			for (TopLevelWindowManager windowManager : modificationSafeCopy) {
+				boolean closed = closeWindow(windowManager.getManagerID(), duringExit);
+				if (!closed) {
+					// user canceled, don't keep going...
+					return false;
+				}
 			}
+			return true;
+		} finally {
+			bClosingAllWindows = false;
 		}
-		return true;
+	}
+
+	// After a model window closes: with none left, back to the welcome window rather than quitting (unless every window
+	// is being closed, to quit or log out)
+	private void afterDocumentWindowClosed(long openWindows, boolean exitIfLast) {
+		if (openWindows > 0) return;
+		if (!bClosingAllWindows) {
+			((ClientMDIManager) getMdiManager()).showWelcomeWindow();
+			return;
+		}
+		if (exitIfLast) {
+			setBExiting(true);
+			exitApplication();
+		}
 	}
 
 	public boolean closeWindow(final java.lang.String windowID, final boolean exitIfLast) {
@@ -463,10 +484,7 @@ public class ClientRequestManager
 							getMdiManager().showWindow(windowID);
 						} else {
 							long openWindows = getMdiManager().closeWindow(windowManager.getManagerID());
-							if (exitIfLast && (openWindows == 0)) {
-								setBExiting(true);
-								exitApplication();
-							}
+							afterDocumentWindowClosed(openWindows, exitIfLast);
 						}
 					}
 
@@ -492,12 +510,17 @@ public class ClientRequestManager
 				return true;
 			} else {
 				long openWindows = getMdiManager().closeWindow(windowID);
-				if (exitIfLast && (openWindows == 0)) {
-					setBExiting(true);
-					exitApplication();
-				}
+				afterDocumentWindowClosed(openWindows, exitIfLast);
 				return true;
 			}
+		} else if (windowManager instanceof WelcomeWindowManager) {
+			// it only hides; with no model window open either, VCell quits
+			long openWindows = getMdiManager().closeWindow(windowID);
+			if (exitIfLast && (openWindows == 0)) {
+				setBExiting(true);
+				exitApplication();
+			}
+			return true;
 		} else if (windowManager instanceof DatabaseWindowManager) {
 			// nothing to check here, just close it
 			long openWindows = getMdiManager().closeWindow(windowID);
@@ -657,28 +680,52 @@ public class ClientRequestManager
 	}
 
 
+	/** Logs in when no one is, through the browser or as the guest user: the steps VCell starts with, without asking how. */
+	public void logIn(final TopLevelWindowManager requester, boolean guest) {
+		Auth0ConnectionUtils auth0ConnectionUtils = getClientServerManager().auth0ConnectionUtils;
+		Hashtable<String, Object> hash = new Hashtable<>();
+		hash.put("currWindowManager", requester);
+		hash.put("login", true);
+		hash.put("guest", guest);
+		ClientTaskDispatcher.dispatch(requester.getComponent(), hash, new AsynchClientTask[] {
+				ClientLogin.loginWithAuth0(auth0ConnectionUtils), ClientLogin.connectToServer(auth0ConnectionUtils, getClientServerInfo()) });
+	}
+
 	public void logOut(final TopLevelWindowManager requester){
+		logOut(requester, false);
+	}
+
+	/**
+	 * Ends a guest session, as logging out does, then signs up in the browser (Auth0's sign-up screen) and logs in with
+	 * the new account.
+	 */
+	public void signUpFromGuest(final TopLevelWindowManager requester){
+		logOut(requester, true);
+	}
+
+	// Logs out (from the browser too, unless a guest), back to the welcome window; then, if signing up, signs up and logs in
+	private void logOut(final TopLevelWindowManager requester, boolean thenSignUp){
 		StringBuilder dialogMessage = new StringBuilder();
-		dialogMessage.append("You are about to log out of the VCell client.\n\n");
-		if (requester instanceof DocumentWindowManager documentWindowManager){
-			if(!User.isGuest(documentWindowManager.getUser().getName())){
-				dialogMessage.append("""
-                        Because VCell uses a browser-based login,
-                        you'll be redirected to a logout page to
-                        complete the logout process there.
-                        
-                        """);
-			}
+		dialogMessage.append(thenSignUp ? "Signing up ends your guest session; any open models will close.\n\n"
+				: "You are about to log out of the VCell client.\n\n");
+		if(!User.isGuest(getClientServerInfo().getUsername())){
+			dialogMessage.append("""
+                    Because VCell uses a browser-based login,
+                    you'll be redirected to a logout page to
+                    complete the logout process there.
+                    
+                    """);
 		}
 		dialogMessage.append("Do you wish to continue?");
 
 		// logical-window-owned confirm dialog instead of a throw-away always-on-top JDialog
-		String confirm = DialogUtils.showWarningDialog(requester.getComponent(), "Logout", dialogMessage.toString(),
+		String confirm = DialogUtils.showWarningDialog(requester.getComponent(), thenSignUp ? "Sign Up" : "Logout", dialogMessage.toString(),
 				new String[] { "Continue", "Cancel" }, "Continue");
 		if ("Continue".equals(confirm))  {
 			closeAllWindows(false);
-			getClientServerManager().cleanup(); //set VCell connection to null
+			// polling first: a poll that finds the connection gone reconnects, logging the user back in
 			getClientServerManager().getAsynchMessageManager().stopPolling();
+			getClientServerManager().cleanup(); //set VCell connection to null
 
 			Hashtable<String, Object> hash = new Hashtable<String, Object>();
 
@@ -714,8 +761,16 @@ public class ClientRequestManager
 			};
 
 
-			AsynchClientTask[] newTasks = newDocument(requester,
-					new VCDocument.DocumentCreationInfo(VCDocumentType.BIOMODEL_DOC, 0));
+			// back to the welcome window, which offers the ways to log in again
+			AsynchClientTask showWelcome = new AsynchClientTask("showing the welcome window", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+				@Override
+				public void run(Hashtable<String, Object> hashTable) throws Exception {
+					ClientMDIManager mdiManager = (ClientMDIManager) getMdiManager();
+					mdiManager.showWelcomeWindow();
+					hashTable.put("currWindowManager", mdiManager.getWindowManager(ClientMDIManager.WELCOME_WINDOW_ID));
+				}
+			};
+			AsynchClientTask[] newTasks = { showWelcome };
 			AsynchClientTask task0 = new AsynchClientTask("preparing", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 				@Override
 				public void run(Hashtable<String, Object> hashTable) throws Exception {
@@ -727,10 +782,6 @@ public class ClientRequestManager
 					}
 				}
 			};
-
-			AsynchClientTask task1 = ClientLogin.popupLogin();
-			AsynchClientTask task2 = ClientLogin.loginWithAuth0(auth0ConnectionUtils);
-			AsynchClientTask task3 = ClientLogin.connectToServer(auth0ConnectionUtils, getClientServerInfo());
 
 			AsynchClientTask refresh = new AsynchClientTask("Refresh", AsynchClientTask.TASKTYPE_SWING_BLOCKING, false,
 					false) {
@@ -749,10 +800,14 @@ public class ClientRequestManager
             ArrayList<AsynchClientTask> tasks = new ArrayList<>(Arrays.stream(newTasks).toList());
 			tasks.add(0, waitTask);
 			tasks.add(task0);
-			tasks.add(task1);
-			tasks.add(task2);
-			tasks.add(task3);
 			tasks.add(refresh);
+			if (thenSignUp) { // the welcome window, now showing, is the one logging in
+				hash.put("login", true);
+				hash.put("guest", false);
+				hash.put("signUp", true);
+				tasks.add(ClientLogin.loginWithAuth0(auth0ConnectionUtils));
+				tasks.add(ClientLogin.connectToServer(auth0ConnectionUtils, getClientServerInfo()));
+			}
 
 			ClientTaskDispatcher.dispatch(null, hash, tasks.toArray(new AsynchClientTask[0]));
 		}
@@ -2113,10 +2168,8 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 						@Override
 						public void run(Hashtable<String, Object> hashTable) throws Exception {
 							// spatial or non-spatial
-							BioModelInfo bioModelInfo = (BioModelInfo) DialogUtils.getDBTreePanelSelection(
-									requester.getComponent(),
-									getMdiManager().getDatabaseWindowManager().getBioModelDbTreePanel(), "Open",
-									"Select BioModel");
+							BioModelInfo bioModelInfo = (BioModelInfo) getMdiManager().getDatabaseWindowManager().selectDocument(
+									VCDocumentType.BIOMODEL_DOC, requester, "New MathModel From a BioModel Application", "Select");
 							if (bioModelInfo != null) { // may throw UserCancelException
 								hashTable.put("bioModelInfo", bioModelInfo);
 							}
@@ -3062,11 +3115,17 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				getClientTaskStatusSupport().setMessage("Getting new Geometry name...");
 				String newGeometryName = null;
+				java.util.Set<String> takenGeometryNames = new java.util.HashSet<>(); // the dialog won't accept these; the check below stays as a backstop
+				for (GeometryInfo geometryInfo : ClientRequestManager.this.getDocumentManager().getGeometryInfos()) {
+					if (!geometryInfo.getVersion().getOwner().equals(ClientRequestManager.this.getDocumentManager().getUser())) continue;
+					takenGeometryNames.add(geometryInfo.getVersion().getName());
+				}
 				while (true) {
 					newGeometryName = ClientRequestManager.this.getMdiManager().getDatabaseWindowManager()
 							.showSaveDialog(((Geometry) hashTable.get("doc")).getDocumentType(),
 									(Component) hashTable.get(ClientRequestManager.GUI_PARENT),
-									(newGeometryName == null ? "NewGeometry" : newGeometryName));
+									(newGeometryName == null ? "NewGeometry" : newGeometryName),
+									takenGeometryNames);
 					if (newGeometryName == null || newGeometryName.trim().length() == 0) {
 						newGeometryName = null;
 						DialogUtils.showWarningDialog((Component) hashTable.get(ClientRequestManager.GUI_PARENT),
@@ -3843,12 +3902,34 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 		throw new RuntimeException("Unknown VCDocument type " + doc);
 	}
 
+	/** Brings the welcome window to the front, opening it again if it was closed. */
+	public void showWelcomeWindow() {
+		((ClientMDIManager) getMdiManager()).showWelcomeWindow();
+	}
+
+	/**
+	 * Opens a model from a file the user picks (VCML, SBML, OMEX, SED-ML, BNGL, ...), in a window of its own: File > Import
+	 * for a window that isn't a model's, such as the welcome window.
+	 */
+	public void importDocument(TopLevelWindowManager requester) {
+		try {
+			VCDocumentInfo documentInfo = getMdiManager().getDatabaseWindowManager().selectDocument(VCDocumentType.EXTERNALFILE_DOC, requester);
+			openDocument(documentInfo, requester, true);
+		} catch (UserCancelException uexc) {
+			return;
+		} catch (Exception exc) {
+			exc.printStackTrace(System.out);
+			PopupGenerator.showErrorDialog(requester, "Open document failed\n" + exc.getMessage(), exc);
+		}
+	}
+
 	public void openDocument(VCDocumentType documentType, DocumentWindowManager requester) {
 		/* trying to open from database; called by DocumentWindow */
 		// get an info first
 		VCDocumentInfo documentInfo = null;
 		try {
-			documentInfo = getMdiManager().getDatabaseWindowManager().selectDocument(documentType, requester);
+			documentInfo = getMdiManager().getDatabaseWindowManager().selectDocument(documentType, requester,
+					"Open " + ModelPickerDialog.typeName(documentType), "Open");
 			// check whether request comes from a blank, unchanged document window; if so,
 			// open in same window, otherwise in a new window
 			boolean inNewWindow = isDifferentFromBlank(documentType, requester.getVCDocument());
@@ -4189,6 +4270,14 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 
 	public void saveDocument(final DocumentWindowManager documentWindowManager, boolean replace,
 							 AsynchClientTask closeWindowTask) {
+		saveDocument(documentWindowManager, replace, closeWindowTask, null);
+	}
+
+	/**
+	 * @param afterSaveTask runs only once the save has succeeded (e.g. {@link ExportAfterSave}); may be null
+	 */
+	public void saveDocument(final DocumentWindowManager documentWindowManager, boolean replace,
+							 AsynchClientTask closeWindowTask, AsynchClientTask afterSaveTask) {
 		if (documentWindowManager.getUser() == null || User.isGuest(documentWindowManager.getUser().getName())) {
 			DialogUtils.showErrorDialog(documentWindowManager.getComponent(),
 					User.createGuestErrorMessage("saveDocument"));
@@ -4204,7 +4293,7 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 			// creation)
 			System.out.println(
 					"\nIGNORED ERROR: should not have been able to use save/save edition on doc with no version key\n");
-			saveDocumentAsNew(documentWindowManager, closeWindowTask);
+			saveDocumentAsNew(documentWindowManager, closeWindowTask, afterSaveTask);
 			return;
 		}
 		if (!documentWindowManager.getVCDocument().getVersion().getOwner()
@@ -4217,7 +4306,7 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 					UserMessage.warn_SaveNotOwner, null);
 			if (choice.equals(UserMessage.OPTION_SAVE_AS_NEW)) {
 				// user chose to Save As
-				saveDocumentAsNew(documentWindowManager, closeWindowTask);
+				saveDocumentAsNew(documentWindowManager, closeWindowTask, afterSaveTask);
 				return;
 			} else {
 				if (closeWindowTask == null) {
@@ -4274,6 +4363,7 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 			// replace finishSave
 			tasks[tasks.length - 1] = closeWindowTask;
 		}
+		tasks = ClientRequestManager.withSaveFollowUps(tasks, afterSaveTask);
 		/* run tasks */
 		ClientTaskDispatcher.dispatch(currentDocumentWindow, hash, tasks, false);
 	}
@@ -4282,7 +4372,77 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 		saveDocumentAsNew(documentWindowManager, null);
 	}
 
+	// a save's own tasks, then afterSaveTask (which runs only if the save succeeded), then the step that offers to save
+	// the model to a file instead if the save failed (#1451)
+	private static AsynchClientTask[] withSaveFollowUps(AsynchClientTask[] saveTasks, AsynchClientTask afterSaveTask) {
+		List<AsynchClientTask> tasks = new ArrayList<>(Arrays.asList(saveTasks));
+		if (afterSaveTask != null) tasks.add(afterSaveTask);
+		tasks.add(new OfferFileSaveOnSaveFailure());
+		return tasks.toArray(new AsynchClientTask[0]);
+	}
+
+	/**
+	 * Export / Save to File, from a model's window. If the model has changes that aren't in the VCell database, and
+	 * it could be saved there, first offers to save it: the exported file includes the changes either way, so this only
+	 * keeps the database copy up to date. Then shows the usual export dialog.
+	 */
+	public void exportDocumentOfferingSave(DocumentWindowManager documentWindowManager) {
+		if (!this.canSaveToDatabase(documentWindowManager) || !this.hasUnsavedChanges(documentWindowManager)) {
+			this.exportDocument(documentWindowManager, null);
+			return;
+		}
+		String choice = PopupGenerator.showWarningDialog(documentWindowManager, this.getUserPreferences(),
+				UserMessage.warn_exportUnsavedChanges, null);
+		if (UserMessage.OPTION_EXPORT_WITHOUT_SAVING.equals(choice)) {
+			this.exportDocument(documentWindowManager, null);
+			return;
+		}
+		if (!UserMessage.OPTION_SAVE_THEN_EXPORT.equals(choice)) return; // Cancel, or the dialog was closed
+
+		if (this.canSaveInPlace(documentWindowManager)) {
+			this.saveDocument(documentWindowManager, true, null, new ExportAfterSave());
+			return;
+		}
+		this.saveDocumentAsNew(documentWindowManager, null, new ExportAfterSave()); // never saved, someone else's, or archived/published
+	}
+
+	// a logged-in, non-guest user, connected to the server
+	private boolean canSaveToDatabase(DocumentWindowManager documentWindowManager) {
+		User user = documentWindowManager.getUser();
+		if (user == null || User.isGuest(user.getName())) return false;
+		ConnectionStatus connectionStatus = this.getConnectionStatus();
+		return connectionStatus != null && connectionStatus.getStatus() == ConnectionStatus.CONNECTED;
+	}
+
+	// as when closing a window: a never-saved model counts once it differs from a blank one; if the comparison with the
+	// saved version fails, don't ask (exporting goes ahead, as it did before)
+	private boolean hasUnsavedChanges(DocumentWindowManager documentWindowManager) {
+		VCDocument vcDocument = documentWindowManager.getVCDocument();
+		if (vcDocument.getVersion() == null) return this.isDifferentFromBlank(vcDocument.getDocumentType(), vcDocument);
+		try {
+			return this.getDocumentManager().isChanged(vcDocument);
+		} catch (Exception exception) {
+			lg.warn("Couldn't compare the model with its saved version before exporting", exception);
+			return false;
+		}
+	}
+
+	// whether File > Save would save over the stored version: the user's own, still editable model
+	private boolean canSaveInPlace(DocumentWindowManager documentWindowManager) {
+		Version version = documentWindowManager.getVCDocument().getVersion();
+		if (version == null) return false;
+		if (!version.getOwner().compareEqual(this.getDocumentManager().getUser())) return false;
+		return !version.getFlag().compareEqual(VersionFlag.Archived) && !version.getFlag().compareEqual(VersionFlag.Published);
+	}
+
 	public void saveDocumentAsNew(DocumentWindowManager documentWindowManager, AsynchClientTask closeWindowTask) {
+		saveDocumentAsNew(documentWindowManager, closeWindowTask, null);
+	}
+
+	/**
+	 * @param afterSaveTask runs only once the save has succeeded (e.g. {@link ExportAfterSave}); may be null
+	 */
+	public void saveDocumentAsNew(DocumentWindowManager documentWindowManager, AsynchClientTask closeWindowTask, AsynchClientTask afterSaveTask) {
 		if (documentWindowManager.getUser() == null || User.isGuest(documentWindowManager.getUser().getName())) {
 			DialogUtils.showErrorDialog(documentWindowManager.getComponent(),
 					User.createGuestErrorMessage("saveDocument"));
@@ -4319,6 +4479,7 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 			// replace finishSave
 			tasks[tasks.length - 1] = closeWindowTask;
 		}
+		tasks = ClientRequestManager.withSaveFollowUps(tasks, afterSaveTask);
 		/* run tasks */
 		ClientTaskDispatcher.dispatch(currentDocumentWindow, hash, tasks, false);
 	}

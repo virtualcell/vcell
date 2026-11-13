@@ -31,6 +31,29 @@ tools/debug-bridge/bridge.sh wait --type JDialog --contains Error --timeout 5000
 `launch-client.sh` runs from `target/classes`, so a compile is enough — no
 packaging step. It defaults to vcell-dev; override with `VCELL_API_HOST`.
 
+## Keyboard: audit the tab order on every screen you touch
+
+**Every GUI check includes `bridge.sh focusorder <window>`, in every state of the screen you
+tested** (logged in/out, each tab, panels open and closed): one call gives the tab order and
+an audit — `unreachable`, `out-of-order`, `hidden`, `unnamed` — and `summary` says
+`"N stops, 0 issues"` when it's clean. Report the stops and any issues with the rest of the
+check, and fix what it finds in the change you're making; a screen that only works with a
+mouse is not finished. See `tools/debug-bridge/README.md` for what each issue means and its
+usual fix.
+
+Judgment calls that have already cost time:
+
+- **Swing orders Tab by position.** A column centered lower than its neighbor comes
+  *after* it, however the layout reads. Top-align columns (`FIRST_LINE_START`) before
+  reaching for a custom focus traversal policy.
+- **A text field or drop-down needs a label linked to it** (`label.setLabelFor(field)`);
+  its developer `setName` is never read out. The audit flags it as `unnamed`.
+- **`key` is real input to the client.** Enter presses the window's default button: never
+  send it where that button logs in, saves, or sends something — it opened a browser login
+  once. Escape, arrows, Space on a checkbox and Tab are the usual safe probes.
+- **Tab only moves real focus while the window has it**, which a background client doesn't;
+  `focusorder` gives the order regardless, so prefer it to stepping with `key TAB`.
+
 ## Selectors: prefer `name=`
 
 `name=SearchButton` survives layout changes; `c42` (registry id) is stable within
@@ -123,10 +146,22 @@ afterwards — `exampleModels/` is tracked by git.**
 `ApplicationLauncher.launchApplication` throws `FileNotFoundException` on
 `i4jparams.conf` in ~150ms, so failure branches are easy to reach.
 
-**Open a database document**: `tab name=DatabaseTabbedPane <n>` →
-`expand name=JTree1 <row>` → `drow name=JTree1 <row>`. VCell's database trees open
-documents from the raw `MouseEvent` (`MOUSE_PRESSED` + `clickCount==2`), so a real
-synthetic double-click is required.
+**Open a database model from the welcome window** (simplest): search, pick it by name,
+press Enter — the same code a double-click runs:
+
+```bash
+bridge.sh tab name=WelcomeModelTabs "VCell Database"
+bridge.sh tab name=DatabaseModelsTabs Tutorial            # or Community / Personal
+bridge.sh settext name=WelcomeSearch Tutorial_FRAP        # narrows every list
+bridge.sh list name=TUTORIALModelsList Tutorial_FRAP      # PUBLISHED/CURATED/UNCURATED/MINE/TUTORIAL
+bridge.sh key name=TUTORIALModelsList ENTER
+```
+
+Model windows no longer have a database browser of their own (the old bottom-left pane);
+open database documents from the welcome window, as above (`File > Welcome Window` brings
+it back). Where a database tree does appear (e.g. a document chooser), it opens documents
+from the raw `MouseEvent` (`MOUSE_PRESSED` + `clickCount==2`), so use `drow`, a real
+synthetic double-click.
 
 ## Housekeeping
 

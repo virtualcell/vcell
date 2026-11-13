@@ -10,6 +10,7 @@
 
 package cbit.vcell.client.data;
 
+import cbit.vcell.client.laf.VCellFonts;
 import cbit.rmi.event.DataJobEvent;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.task.AsynchClientTask;
@@ -265,6 +266,7 @@ private void initialize() throws DataAccessException {
 			};
 			ScanChoicesTableModel tm = new ScanChoicesTableModel(values, new String[] {scanParams[i]});
 			final JTable table = new JTable(tm);
+			VCellFonts.followRowHeight(table);
 			choicesHash.put(scanParams[i], table);
 			table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 			table.getSelectionModel().setSelectionInterval(0,0);

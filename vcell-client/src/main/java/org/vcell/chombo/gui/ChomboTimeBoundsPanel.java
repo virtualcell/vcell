@@ -1,5 +1,6 @@
 package org.vcell.chombo.gui;
 
+import cbit.vcell.client.laf.VCellColors;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -23,7 +24,6 @@ import org.vcell.chombo.TimeInterval;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.Severity;
 import org.vcell.util.gui.CollapsiblePanel;
-import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.EditorScrollTable;
 import org.vcell.util.gui.ScrollTable;
@@ -240,7 +240,7 @@ public class ChomboTimeBoundsPanel extends CollapsiblePanel {
 				if (c instanceof JLabel && column == TimeIntervalTableModel.COLUMN_Starting && !isSelected)
 				{
 					// not editable
-					c.setForeground(DefaultScrollTableCellRenderer.uneditableForeground);
+					c.setForeground(VCellColors.getUneditableForeground());
 				}
 				return c;
 			}

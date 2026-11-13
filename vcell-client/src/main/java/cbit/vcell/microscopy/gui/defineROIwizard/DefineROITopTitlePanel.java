@@ -10,6 +10,8 @@
 
 package cbit.vcell.microscopy.gui.defineROIwizard;
 
+import cbit.vcell.client.laf.VCellFonts;
+import cbit.vcell.client.laf.VCellColors;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -40,8 +42,8 @@ public class DefineROITopTitlePanel extends JPanel
 		setLayout(gridBagLayout);
 
 		cropLabel = new JLabel();
-		cropLabel.setForeground(new Color(0, 0, 128));
-		cropLabel.setFont(new Font("", Font.BOLD, 14));
+		cropLabel.setForeground(VCellColors.getTitleForeground());
+		VCellFonts.setCategory(cropLabel, VCellFonts.Category.HEADING);
 		cropLabel.setText("Crop Image");
 		final GridBagConstraints gridBagConstraints = new GridBagConstraints();
 		gridBagConstraints.gridy = 0;
@@ -55,8 +57,8 @@ public class DefineROITopTitlePanel extends JPanel
 		add(arrowLabel1, gridBagConstraints_1);
 
 		cellRoiLabel = new JLabel();
-		cellRoiLabel.setForeground(new Color(0, 0, 128));
-		cellRoiLabel.setFont(new Font("", Font.BOLD, 14));
+		cellRoiLabel.setForeground(VCellColors.getTitleForeground());
+		VCellFonts.setCategory(cellRoiLabel, VCellFonts.Category.HEADING);
 		cellRoiLabel.setText("Cell ROI");
 		final GridBagConstraints gridBagConstraints_2 = new GridBagConstraints();
 		gridBagConstraints_2.gridy = 0;
@@ -70,8 +72,8 @@ public class DefineROITopTitlePanel extends JPanel
 		add(arrowLabel2, gridBagConstraints_3);
 
 		bleachedRoiLabel = new JLabel();
-		bleachedRoiLabel.setForeground(new Color(0, 0, 128));
-		bleachedRoiLabel.setFont(new Font("", Font.BOLD, 14));
+		bleachedRoiLabel.setForeground(VCellColors.getTitleForeground());
+		VCellFonts.setCategory(bleachedRoiLabel, VCellFonts.Category.HEADING);
 		bleachedRoiLabel.setText("Bleached ROI");
 		final GridBagConstraints gridBagConstraints_4 = new GridBagConstraints();
 		gridBagConstraints_4.gridy = 0;
@@ -85,8 +87,8 @@ public class DefineROITopTitlePanel extends JPanel
 		add(arrowLabel3, gridBagConstraints_5);
 
 		backgroundLabel = new JLabel();
-		backgroundLabel.setForeground(new Color(0, 0, 128));
-		backgroundLabel.setFont(new Font("", Font.BOLD, 14));
+		backgroundLabel.setForeground(VCellColors.getTitleForeground());
+		VCellFonts.setCategory(backgroundLabel, VCellFonts.Category.HEADING);
 		backgroundLabel.setText("Representative Background");
 		final GridBagConstraints gridBagConstraints_6 = new GridBagConstraints();
 		gridBagConstraints_6.gridy = 0;

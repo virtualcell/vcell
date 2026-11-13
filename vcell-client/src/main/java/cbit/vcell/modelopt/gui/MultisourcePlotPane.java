@@ -258,7 +258,7 @@ private javax.swing.JList<DataReference> getJList1() {
 								comp.setForeground(getJList1().getSelectionForeground());
 							} else {
 								Boolean evenMatch = isEvenMatchedSet(index);
-								comp.setBackground(evenMatch == null || evenMatch ? getJList1().getBackground() : DefaultScrollTableCellRenderer.everyOtherRowColor);
+								comp.setBackground(evenMatch == null || evenMatch ? getJList1().getBackground() : DefaultScrollTableCellRenderer.getEveryOtherRowColor(getJList1().getBackground()));
 								comp.setForeground(getJList1().getForeground());
 							}
 						}

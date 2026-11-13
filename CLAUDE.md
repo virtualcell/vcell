@@ -106,6 +106,12 @@ Config: `vcell-rest/src/main/resources/application.properties`
 - **OpenAPI:** SmallRye OpenAPI at `/openapi`, Swagger UI at `/q/swagger-ui/`
 - **Tests:** `@QuarkusTest` with Keycloak + PostgreSQL testcontainers
 
+## Issues
+
+**Filing a GitHub issue? Read [docs/ISSUES.md](docs/ISSUES.md) first.** Every issue must be added to the
+"vcell development" project with Issue type, Status, Simplicity, Importance and Priority set; Priority is
+Importance + the Simplicity number, and new issues default to Pool.
+
 ## Messaging
 
 **Full picture: [docs/MESSAGING.md](docs/MESSAGING.md).** Read it before changing anything under
@@ -180,6 +186,7 @@ After major changes (especially removing/renaming user-facing features):
 
 - [ ] Check `vcell-client/UserDocumentation/` for references to changed features. This is an ad-hoc XML format compiled into JavaHelp (in-app help) and HTML published at https://vcell.org/webstart/VCell_Tutorials/VCell_Help/index.html. Update documentation to stay consistent with code.
 - [ ] After regenerating OpenAPI clients (`tools/openapi-clients.sh`), compile downstream: `mvn compile test-compile -pl vcell-rest -am`
+- [ ] After changing a desktop client screen, audit its keyboard use in each of its states: `tools/debug-bridge/bridge.sh focusorder <window>` should report `0 issues` (tab order, unreachable or nameless controls). See the `swing-debug` skill.
 
 ## Conventions
 

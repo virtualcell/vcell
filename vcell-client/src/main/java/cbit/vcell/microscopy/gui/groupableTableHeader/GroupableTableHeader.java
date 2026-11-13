@@ -10,6 +10,7 @@
 
 package cbit.vcell.microscopy.gui.groupableTableHeader;
 
+import cbit.vcell.client.laf.VCellColors;
 import java.awt.Color;
 import java.awt.Component;
 import java.util.Iterator;
@@ -35,7 +36,6 @@ public class GroupableTableHeader extends JTableHeader {
      * Identifies the UI class which draws the header.
      */    
 //    private static final String uiClassID = "GroupableTableHeaderUI";
-    public static Color color = new Color(166, 166, 255); // light blue
     /**
      * Constructs a GroupableTableHeader which is initialized with cm as the
      * column model. If cm is null this method will initialize the table header
@@ -46,7 +46,7 @@ public class GroupableTableHeader extends JTableHeader {
         super(model);
         setUI(new GroupableTableHeaderUI());
         setReorderingAllowed(false);
-        setDefaultRenderer(createPlainTableHeaderRenderer(color));
+        setDefaultRenderer(createPlainTableHeaderRenderer());
     }
     
     
@@ -64,15 +64,15 @@ public class GroupableTableHeader extends JTableHeader {
     }
     
     
-    public static TableCellRenderer createPlainTableHeaderRenderer(final Color color) {
+    public static TableCellRenderer createPlainTableHeaderRenderer() {
         return new TableCellRenderer() {
             public Component getTableCellRendererComponent(JTable table, Object value,
                                                            boolean isSelected, boolean hasFocus, int row, int column) {
                 JLabel comp = new JLabel(value.toString(), JLabel.LEFT);
-                comp.setForeground(Color.black);
-                comp.setBackground(color);
+                comp.setBackground(VCellColors.getLavender());
                 comp.setOpaque(true);
-                comp.setBorder(new LineBorder(Color.WHITE, 1));
+                // separator lines in the table's background color (white on light themes, as before)
+                comp.setBorder(new LineBorder(null == table ? Color.WHITE : table.getBackground(), 1));
                 comp.setFont(VirtualFrapLoader.defaultFont);
                 comp.setHorizontalAlignment(SwingConstants.CENTER);
                 return comp;

@@ -13,15 +13,25 @@
 	
 	<operations>
 	<para>
-	Clicking on <bold>File->Save As</bold> opens the <bold>Save document</bold> dialog. 
-	This dialog displays a list of models of that document type (e.g., while saving BioModels, all BioModels are displayed) that are accessible to the current user, i.e., those that belong to the user and those that are shared with the user by other users and public models.
-	The dialog has a <bold>Search</bold> section that allows the user to search for models by name and/or by date modified. The lower part of the dialog displays a summary of the model that has been selected from the list. 
-	A text field at the bottom of the panel allows the user to key in a name for the model to be saved.  
+	Clicking on <bold>File->Save As</bold> (<bold>Cmd+Shift+S</bold> on macOS, <bold>Ctrl+Shift+S</bold> on Windows and Linux) opens the <bold>Save As</bold> dialog.
+	Its <bold>Name</bold> field starts with the model's current name, selected, so typing replaces it.
 	</para>
 	<para>
-	After entering a name, when the user clicks the <bold>Save</bold> button, the model is saved in the VCell database. 
-	If a model that has the same name that the user provided already exists in the user's account, a warning message is displayed asking the user to choose a different name and the 'Save Document' dialog is opened again.
-	If the <bold>Cancel</bold> button is clicked, the save operation is canceled. 
+	Below the field, <bold>Similarly named BioModels</bold> (or MathModels, or Geometries) lists your own models of that type whose names are related to what you've typed:
+	names containing it, and names it contains (typing "FRAP model 2" lists "FRAP model"). Before you type, it lists them all.
+	Click a name, or select it and press <bold>Enter</bold>, to copy it into the field and build on it (e.g., adding "_v2"). The <bold>Down</bold> arrow moves from the field into the list.
+	</para>
+	<para>
+	The name is checked as you type. While it can't be used, the <bold>Save</bold> button is disabled and a message under the field says why. A name can't be used if it
+	<list>
+	<item>is empty;</item>
+	<item>contains line breaks, tabs, or other invisible characters;</item>
+	<item>contains &lt; or &gt;;</item>
+	<item>starts or ends with a space;</item>
+	<item>is too long to store (255 characters, where a ' counts as 6 and accented letters as 2 or more);</item>
+	<item>exactly matches (including capitalization) the name of one of your own models of the same type.</item>
+	</list> When the name is new, <bold>Save</bold> (or <bold>Enter</bold>) saves the model in the VCell database.
+	<bold>Cancel</bold> (or <bold>Esc</bold>) cancels the save operation.
 	</para>
 	</operations>
 	<comments>  </comments>

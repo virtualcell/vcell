@@ -10,6 +10,8 @@
 
 package cbit.vcell.numericstest.gui;
 
+import cbit.vcell.client.laf.VCellFonts;
+
 /**
  * Insert the type's description here.
  * Creation date: (5/12/2003 3:39:18 PM)
@@ -243,6 +245,7 @@ private javax.swing.JTable getSolutionTemplateTable() {
 	if (ivjSolutionTemplateTable == null) {
 		try {
 			ivjSolutionTemplateTable = new javax.swing.JTable();
+			VCellFonts.followRowHeight(ivjSolutionTemplateTable);
 			ivjSolutionTemplateTable.setName("SolutionTemplateTable");
 			getSolutionTemplateScrollPane().setColumnHeaderView(ivjSolutionTemplateTable.getTableHeader());
 			getSolutionTemplateScrollPane().getViewport().setBackingStoreEnabled(true);

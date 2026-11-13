@@ -38,11 +38,11 @@ import cbit.vcell.util.ColumnDescription;
  */
 @SuppressWarnings("serial")
 public class RowColumnResultSet implements java.io.Serializable {
-    private Vector<ColumnDescription> fieldDataColumnDescriptions = new Vector<>();
-    private Vector<FunctionColumnDescription> fieldFunctionColumnDescriptions = new Vector<>();
-    private ArrayList<double[]> fieldValues = new ArrayList<>();  // vector of rows (each row is a double[])
+    private Vector<ColumnDescription> dataColumnDescriptions = new Vector<>();
+    private Vector<FunctionColumnDescription> functionColumnDescriptions = new Vector<>();
+    private ArrayList<double[]> values = new ArrayList<>();  // vector of rows (each row is a double[])
     protected transient java.beans.PropertyChangeSupport propertyChange;
-    private ColumnDescription[] fieldColumnDescriptions = null;
+    private ColumnDescription[] columnDescriptions = null;
 
     private transient VariableSymbolTable resultSetSymbolTableWithFunction = null;
     private transient VariableSymbolTable resultSetSymbolTableWithoutFunction = null;
@@ -55,9 +55,9 @@ public class RowColumnResultSet implements java.io.Serializable {
     }
 
     public RowColumnResultSet(RowColumnResultSet copyThisRowColumnResultSet){
-        this.fieldDataColumnDescriptions = new Vector<>(copyThisRowColumnResultSet.fieldDataColumnDescriptions);
-        this.fieldFunctionColumnDescriptions = new Vector<>(copyThisRowColumnResultSet.fieldFunctionColumnDescriptions);
-        this.fieldValues = new ArrayList<>(copyThisRowColumnResultSet.fieldValues);
+        this.dataColumnDescriptions = new Vector<>(copyThisRowColumnResultSet.dataColumnDescriptions);
+        this.functionColumnDescriptions = new Vector<>(copyThisRowColumnResultSet.functionColumnDescriptions);
+        this.values = new ArrayList<>(copyThisRowColumnResultSet.values);
     }
 
     public enum DuplicateMode {
@@ -66,15 +66,15 @@ public class RowColumnResultSet implements java.io.Serializable {
     }
     public static RowColumnResultSet deepCopy(RowColumnResultSet original, DuplicateMode mode) {
         RowColumnResultSet copy = new RowColumnResultSet();
-        copy.fieldDataColumnDescriptions = new Vector<>(original.fieldDataColumnDescriptions);
-        copy.fieldFunctionColumnDescriptions = new Vector<>(original.fieldFunctionColumnDescriptions);
-        copy.fieldValues = new ArrayList<>();
-        for (double[] originalRow : original.fieldValues) {
+        copy.dataColumnDescriptions = new Vector<>(original.dataColumnDescriptions);
+        copy.functionColumnDescriptions = new Vector<>(original.functionColumnDescriptions);
+        copy.values = new ArrayList<>();
+        for (double[] originalRow : original.values) {
             double[] copyRow = new double[originalRow.length];
             if(mode == DuplicateMode.CopyValues) {
                 System.arraycopy(originalRow, 0, copyRow, 0, originalRow.length);
             }
-            copy.fieldValues.add(copyRow);
+            copy.values.add(copyRow);
         }
 
 
@@ -100,10 +100,10 @@ public class RowColumnResultSet implements java.io.Serializable {
      */
     public final void addDataColumn(ColumnDescription columnDescription){
         // cbit.util.Assertion.assert(getRowCount() == 0);
-        ColumnDescription[] oldValue = fieldColumnDescriptions;
-        fieldDataColumnDescriptions.addElement(columnDescription);
+        ColumnDescription[] oldValue = columnDescriptions;
+        dataColumnDescriptions.addElement(columnDescription);
 
-        fieldColumnDescriptions = null;
+        columnDescriptions = null;
         resultSetSymbolTableWithFunction = null;
         resultSetSymbolTableWithoutFunction = null;
 
@@ -118,7 +118,7 @@ public class RowColumnResultSet implements java.io.Serializable {
      *  WILL BE SPECIFIED AT CONSTRUCTION TIME!
      */
     public final void addFunctionColumn(FunctionColumnDescription functionColumnDescription) throws ExpressionException{
-        ColumnDescription[] oldValue = fieldColumnDescriptions;
+        ColumnDescription[] oldValue = columnDescriptions;
         addFunctionColumnInternal(functionColumnDescription);
         if(getPropertyChange().getPropertyChangeListeners().length > 0){
             firePropertyChange("columnDescriptions", oldValue, getColumnDescriptions());
@@ -141,14 +141,14 @@ public class RowColumnResultSet implements java.io.Serializable {
         //
         // didn't throw a binding exception, add to result set.
         //
-        fieldFunctionColumnDescriptions.addElement(functionColumnDescription);
+        functionColumnDescriptions.addElement(functionColumnDescription);
 
         Domain domain = null; //TODO domain
         Function func = new Function(functionColumnDescription.getName(), new Expression(functionColumnDescription.getExpression()), domain);
         getResultSetSymbolTableWithFunction().addVar(func);
         func.setIndex(getColumnDescriptionsCount() - 1);
 
-        fieldColumnDescriptions = null;
+        columnDescriptions = null;
     }
 
     /**
@@ -169,7 +169,7 @@ public class RowColumnResultSet implements java.io.Serializable {
             throw new RuntimeException("number of values in row is not equal to number of columns");
         }
         System.arraycopy(values, 0, v, 0, dataColumnCount);
-        fieldValues.add(v);
+        this.values.add(v);
     }
 
 
@@ -338,25 +338,25 @@ public class RowColumnResultSet implements java.io.Serializable {
 
 
     public final ColumnDescription[] getColumnDescriptions(){
-        if(fieldColumnDescriptions == null){
-            fieldColumnDescriptions = new ColumnDescription[getDataColumnCount() + getFunctionColumnCount()];
+        if(columnDescriptions == null){
+            columnDescriptions = new ColumnDescription[getDataColumnCount() + getFunctionColumnCount()];
             int index = 0;
-            for(int i = 0; i < fieldDataColumnDescriptions.size(); i++){
-                fieldColumnDescriptions[index++] = fieldDataColumnDescriptions.elementAt(i);
+            for(int i = 0; i < dataColumnDescriptions.size(); i++){
+                columnDescriptions[index++] = dataColumnDescriptions.elementAt(i);
             }
-            for(int i = 0; i < fieldFunctionColumnDescriptions.size(); i++){
-                fieldColumnDescriptions[index++] = fieldFunctionColumnDescriptions.elementAt(i);
+            for(int i = 0; i < functionColumnDescriptions.size(); i++){
+                columnDescriptions[index++] = functionColumnDescriptions.elementAt(i);
             }
         }
-        return fieldColumnDescriptions;
+        return columnDescriptions;
     }
 
 
     public ColumnDescription getColumnDescriptions(int index){
-        if(index < fieldDataColumnDescriptions.size()){
-            return fieldDataColumnDescriptions.get(index);
+        if(index < dataColumnDescriptions.size()){
+            return dataColumnDescriptions.get(index);
         } else if(index < getColumnDescriptionsCount()){
-            return fieldFunctionColumnDescriptions.get(index - fieldDataColumnDescriptions.size());
+            return functionColumnDescriptions.get(index - dataColumnDescriptions.size());
         } else {
             throw new ArrayIndexOutOfBoundsException("RowColumnResultSet:getColumnDescriptions(int index), index=" + index + " total count=" + getColumnDescriptionsCount());
         }
@@ -369,7 +369,7 @@ public class RowColumnResultSet implements java.io.Serializable {
      * @return int
      */
     public int getColumnDescriptionsCount(){
-        return fieldDataColumnDescriptions.size() + fieldFunctionColumnDescriptions.size();
+        return dataColumnDescriptions.size() + functionColumnDescriptions.size();
     }
 
 
@@ -379,7 +379,7 @@ public class RowColumnResultSet implements java.io.Serializable {
      * @return int
      */
     public int getDataColumnCount(){
-        return fieldDataColumnDescriptions.size();
+        return dataColumnDescriptions.size();
     }
 
 
@@ -387,7 +387,7 @@ public class RowColumnResultSet implements java.io.Serializable {
      * getVariableNames method comment.
      */
     public ColumnDescription[] getDataColumnDescriptions(){
-        return this.fieldDataColumnDescriptions.toArray(ColumnDescription[]::new);
+        return this.dataColumnDescriptions.toArray(ColumnDescription[]::new);
     }
 
 
@@ -397,7 +397,7 @@ public class RowColumnResultSet implements java.io.Serializable {
      * @return int
      */
     public int getFunctionColumnCount(){
-        return this.fieldFunctionColumnDescriptions.size();
+        return this.functionColumnDescriptions.size();
     }
 
 
@@ -405,7 +405,7 @@ public class RowColumnResultSet implements java.io.Serializable {
      * getVariableNames method comment.
      */
     public FunctionColumnDescription[] getFunctionColumnDescriptions(){
-        return this.fieldFunctionColumnDescriptions.toArray(FunctionColumnDescription[]::new);
+        return this.functionColumnDescriptions.toArray(FunctionColumnDescription[]::new);
     }
 
 
@@ -428,11 +428,11 @@ public class RowColumnResultSet implements java.io.Serializable {
      * @param row int
      */
     public double[] getRow(int row){
-        return fieldValues.get(row);
+        return values.get(row);
     }
 
     public List<double[]> getRows(){
-        return Collections.unmodifiableList(this.fieldValues);
+        return Collections.unmodifiableList(this.values);
     }
 
 
@@ -440,7 +440,7 @@ public class RowColumnResultSet implements java.io.Serializable {
      * getVariableNames method comment.
      */
     public int getRowCount(){
-        return (fieldValues.size());
+        return (values.size());
     }
 
 
@@ -488,7 +488,7 @@ public class RowColumnResultSet implements java.io.Serializable {
      * getVariableNames method comment.
      */
     public void removeAllRows(){
-        fieldValues.clear();
+        values.clear();
     }
 
 
@@ -505,11 +505,11 @@ public class RowColumnResultSet implements java.io.Serializable {
         // column descriptions array.
         //
 
-        ColumnDescription[] oldValue = fieldColumnDescriptions;
+        ColumnDescription[] oldValue = columnDescriptions;
 
-        fieldFunctionColumnDescriptions.removeElement(functionColumnDescription);
+        functionColumnDescriptions.removeElement(functionColumnDescription);
 
-        fieldColumnDescriptions = null;
+        columnDescriptions = null;
         resultSetSymbolTableWithFunction = null;
 
         if(getPropertyChange().getPropertyChangeListeners().length > 0){
@@ -537,7 +537,7 @@ public class RowColumnResultSet implements java.io.Serializable {
      * getData method comment.
      */
     public void setValue(int r, int c, double value){
-        double[] values = fieldValues.get(r);
+        double[] values = this.values.get(r);
         values[c] = value;
     }
 
@@ -566,7 +566,7 @@ public class RowColumnResultSet implements java.io.Serializable {
             max[i] = -Double.MAX_VALUE;
         }
         for(int i = 0; i < getRowCount() - 2; i++){
-            double values[] = fieldValues.get(i);
+            double values[] = this.values.get(i);
             for(int j = 0; j < getDataColumnCount(); j++){
                 min[j] = Math.min(min[j], values[j]);
                 max[j] = Math.max(max[j], values[j]);
@@ -587,7 +587,7 @@ public class RowColumnResultSet implements java.io.Serializable {
         int t = findColumn("t");
         final boolean haveT = t >= 0;
         double TOLERANCE = 0.1;
-        LinkedList<double[]> linkedList = new LinkedList<double[]>(fieldValues);
+        LinkedList<double[]> linkedList = new LinkedList<double[]>(values);
         while (maxRowCount < linkedList.size() && threshold < TOLERANCE) {
             ListIterator<double[]> iter = linkedList.listIterator(0);
             double a[] = iter.next();
@@ -625,20 +625,20 @@ public class RowColumnResultSet implements java.io.Serializable {
         lg.trace("final tolerance=" + TOLERANCE + " final threshold=" + threshold + ", " + linkedList.size() + " remaining (keepAtMost=" + maxRowCount + ")");
         ArrayList<double[]> values = new ArrayList<double[]>();
         if(linkedList.size() > maxRowCount){//just sample list evenly in this case
-            values.add(fieldValues.get(0));//Add first value
+            values.add(this.values.get(0));//Add first value
             if(maxRowCount > 2){//Add values between first and last
                 for(int i = 1; i < (maxRowCount - 1); i++){
-                    values.add(fieldValues.get((int) (i * fieldValues.size() / (maxRowCount - 1))));
+                    values.add(this.values.get((int) (i * this.values.size() / (maxRowCount - 1))));
                 }
             }
             if(maxRowCount > 1){//Add last value
-                values.add(fieldValues.get(fieldValues.size() - 1));
+                values.add(this.values.get(this.values.size() - 1));
             }
 //		throw new RuntimeException("sample tolerance "+TOLERANCE+" exceeded while removing time points, "+linkedList.size()+" remaining (keepAtMost="+maxRowCount+")");
         } else {
             values.addAll(linkedList);
         }
-        fieldValues = values;
+        this.values = values;
     }
 
 

@@ -3,9 +3,15 @@
 <page title="VCell Database Info Panel" target="PP_VCellDatabaseInfo">
 
 	<introduction>
-	Selecting a BioModel or MathModel from the tree list under the <bold>VCell DB tab</bold> (<bold>lower left</bold> of VCell document window) 
-	will display basic information about the selected model in the <bold>Database File Info tab</bold> (<bold>lower right</bold> of VCell document window).  
-	The summary displays information about some of the internal contents of a model.
+	The <bold>Database File Info tab</bold> (<bold>lower right</bold> of a BioModel document window) displays basic information about a model
+	as it is stored in the VCell Database. The summary displays information about some of the internal contents of a model.
+	In the Welcome window, the same information is shown when you hover over a model in the <bold>VCell Database</bold> lists.
+	<para>
+	The tab appears when you select the open BioModel itself (the top node of the tree in the <bold>upper left</bold>).
+	It reflects the model's <bold>last saved version</bold>, as a notice at the top of the tab points out, so changes made since then do not appear.
+	A model that has never been saved to the VCell Database has no database record; the tab is then titled <bold>Database File Info &#8212; NOT SAVED</bold>
+	and asks you to save the model.
+	</para>
 	</introduction>
 	
 	<appearance>
@@ -30,11 +36,7 @@
 	Information about Published Models is displayed in a different, publication-centric format.
 	</para>
 	<imgReference target = "VCPublicationInfo.png"/>
-	
-	<para></para>
-	Information about the models in the <link target="http://www.ebi.ac.uk/biomodels/">BioModels Database</link> is also provided in this panel.
-	<imgReference target = "BiomodelsNetDB.png"/>
-	
+
 	</operations>	
 
 </page>

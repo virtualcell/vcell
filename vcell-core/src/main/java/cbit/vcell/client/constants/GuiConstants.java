@@ -28,10 +28,14 @@ public class GuiConstants {
 	public final static String PARAMETER_ESTIMATION_TAB_RUNTASK = "Run Task";
 	
 	public final static String DOCUMENT_EDITOR_FOLDERNAME_PATHWAY = "Pathway";
+	public final static String DOCUMENT_EDITOR_FOLDERNAME_BIOCHEMISTRY = "Biochemistry";
 	public final static String DOCUMENT_EDITOR_FOLDERNAME_MODEL = "Physiology";
 	public final static String DOCUMENT_EDITOR_FOLDERNAME_DATA = "Experimental Data";
 	public final static String DOCUMENT_EDITOR_FOLDERNAME_APPLICATIONS = "Applications";
-	public final static String DOCUMENT_EDITOR_FOLDERNAME_BIOMODEL_PARAMETERS = "Parameters, Functions, Units, etc.";
+	public final static String DOCUMENT_EDITOR_FOLDERNAME_BIOMODEL_PARAMETERS = "Mathematics & Units"; // the subject, not "doing the math"
+	public final static String DOCUMENT_EDITOR_FOLDERNAME_PARAMETERS_FUNCTIONS = "Parameters and Functions";
+	public final static String DOCUMENT_EDITOR_FOLDERNAME_PREDEFINED_SYMBOLS = "Predefined Expressions";
+	public final static String DOCUMENT_EDITOR_FOLDERNAME_MODEL_UNIT_SYSTEM = "Model Unit System";
 	public final static String DOCUMENT_EDITOR_FOLDERNAME_REACTIONS = "Reactions";
 	public final static String DOCUMENT_EDITOR_FOLDERNAME_DIAGRAM = "Reaction Diagram";
 	public final static String DOCUMENT_EDITOR_FOLDERNAME_STRUCTURES = "Structures";
@@ -42,6 +46,7 @@ public class GuiConstants {
 	public final static String DOCUMENT_EDITOR_FOLDERNAME_PATHWAYOBJECTS = "Pathway Objects";
 	public final static String DOCUMENT_EDITOR_FOLDERNAME_BIOPAXSUMMARY = "BioPAX Summary";
 	public final static String DOCUMENT_EDITOR_FOLDERNAME_BIOPAXTREE = "BioPAX Tree";
+	public final static String DOCUMENT_EDITOR_FOLDERNAME_PATHWAYLOOKUP = "Pathway Lookup";
 	public final static String DOCUMENT_EDITOR_FOLDERNAME_GEOMETRY = "Geometry";
 	public final static String DOCUMENT_EDITOR_FOLDERNAME_SPECIFICATIONS = "Specifications";
 	public final static String DOCUMENT_EDITOR_FOLDERNAME_PROTOCOLS = "Protocols";

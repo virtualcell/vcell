@@ -59,6 +59,7 @@ import org.vcell.util.document.LocalVCDataIdentifier;
 import org.vcell.util.document.User;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.GeneralGuiUtils;
+import org.vcell.util.gui.ShortcutsWizard;
 
 import java.awt.*;
 import java.awt.event.WindowAdapter;
@@ -669,7 +670,7 @@ private AsynchClientTask[] showSimulationResults0(final boolean isLocal, final V
 						viewer.setDataViewerManager(documentWindowManager);
 						
 						SimulationWindow newWindow = new SimulationWindow(vcSimulationIdentifier, sim, getSimWorkspace().getSimulationOwner(), viewer);						
-						GeneralGuiUtils.addCloseWindowKeyboardAction(newWindow.getDataViewer());
+						ShortcutsWizard.addCloseWindowShortcut(newWindow.getDataViewer());
 						documentWindowManager.addResultsFrame(newWindow);
 						setFinalWindow(hashTable, viewer); 
 						newWindow.setLocalState(localState);

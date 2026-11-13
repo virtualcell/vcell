@@ -10,7 +10,7 @@
 
 package cbit.vcell.client.desktop.mathmodel;
 
-import java.awt.Color;
+import cbit.vcell.client.laf.VCellLookAndFeel;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -76,7 +76,7 @@ private void initialize() {
 		annotationTextArea.setWrapStyleWord(true);
 		
 		setLayout(new GridBagLayout());
-		setBackground(Color.white);
+		setBackground(VCellLookAndFeel.getContentBackground());
 		int gridy = 0;
 		GridBagConstraints gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 0; 

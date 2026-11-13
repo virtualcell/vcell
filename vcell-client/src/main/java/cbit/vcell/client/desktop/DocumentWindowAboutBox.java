@@ -10,6 +10,7 @@
 
 package cbit.vcell.client.desktop;
 
+import cbit.vcell.client.laf.VCellColors;
 import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -119,7 +120,7 @@ public class DocumentWindowAboutBox extends JPanel {
 				appName = new JLabel();
 				appName.setName("AppName");
 				appName.setText("<html><u>Virtual Cell</u></html>");
-				appName.setForeground(Color.blue);
+				appName.setForeground(VCellColors.getValueForeground());
 				appName.addMouseListener(new MouseAdapter() {
 					public void mouseClicked(MouseEvent e) {
 						DialogUtils.browserLauncher(DocumentWindowAboutBox.this, DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.VCELL_URL), "Failed to open VCell web page (" + System.getProperty(PropertyLoader.VCELL_URL) + ")");
@@ -186,7 +187,7 @@ public class DocumentWindowAboutBox extends JPanel {
 			try {
 
 				copasiText.setName("COPASI");
-				copasiText.setText("<html>Featuring <font color=blue><u>COPASI</u></font> parameter estimation technology&nbsp;&nbsp;</html>");
+				copasiText.setText("<html>Featuring <font color=" + VCellColors.toHtmlColor(VCellColors.getValueForeground()) + "><u>COPASI</u></font> parameter estimation technology&nbsp;&nbsp;</html>");
 				copasiText.addMouseListener(new MouseAdapter() {
 					public void mouseClicked(MouseEvent e) {
 						DialogUtils.browserLauncher(DocumentWindowAboutBox.this, DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.COPASI_WEB_URL), "Failed to open COPASI webpage ("+System.getProperty(PropertyLoader.COPASI_WEB_URL)+")");
@@ -204,7 +205,7 @@ public class DocumentWindowAboutBox extends JPanel {
 			try {
 
 				smoldynText.setName("SMOLDYN");
-				smoldynText.setText("<html>Featuring spatial stochastic simulation powered by <font color=blue><u>SMOLDYN</u></font></html>");
+				smoldynText.setText("<html>Featuring spatial stochastic simulation powered by <font color=" + VCellColors.toHtmlColor(VCellColors.getValueForeground()) + "><u>SMOLDYN</u></font></html>");
 				smoldynText.addMouseListener(new MouseAdapter() {
 					public void mouseClicked(MouseEvent e) {
 						DialogUtils.browserLauncher(DocumentWindowAboutBox.this, DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.SMOLDYN_WEB_URL), "Failed to open SMOLDYN webpage ("+System.getProperty(PropertyLoader.SMOLDYN_WEB_URL)+")");
@@ -223,7 +224,7 @@ public class DocumentWindowAboutBox extends JPanel {
 			try {
 
 				bioNetGenText.setName("BioNetGen");
-				bioNetGenText.setText("<html>Featuring rule-based simulation powered by <font color=blue><u>BioNetGen</u></font></html>");
+				bioNetGenText.setText("<html>Featuring rule-based simulation powered by <font color=" + VCellColors.toHtmlColor(VCellColors.getValueForeground()) + "><u>BioNetGen</u></font></html>");
 				bioNetGenText.addMouseListener(new MouseAdapter() {
 					public void mouseClicked(MouseEvent e) {
 						DialogUtils.browserLauncher(DocumentWindowAboutBox.this, DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.BIONETGEN_WEB_URL), "Failed to open BioNetGen webpage ("+System.getProperty(PropertyLoader.BIONETGEN_WEB_URL)+")");
@@ -241,7 +242,7 @@ public class DocumentWindowAboutBox extends JPanel {
 			try {
 
 				bioNetGenText.setName("NFsim");
-				bioNetGenText.setText("<html>Featuring network free stochastic simulation powered by <font color=blue><u>NFsim</u></font></html>");
+				bioNetGenText.setText("<html>Featuring network free stochastic simulation powered by <font color=" + VCellColors.toHtmlColor(VCellColors.getValueForeground()) + "><u>NFsim</u></font></html>");
 				bioNetGenText.addMouseListener(new MouseAdapter() {
 					public void mouseClicked(MouseEvent e) {
 						DialogUtils.browserLauncher(DocumentWindowAboutBox.this, DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.NFSIM_WEB_URL), "Failed to open NFsim webpage ("+System.getProperty(PropertyLoader.NFSIM_WEB_URL)+")");
@@ -258,7 +259,7 @@ public class DocumentWindowAboutBox extends JPanel {
 			try {
 
 				ackPubJlabel.setName("AcknowledgePub");
-				ackPubJlabel.setText("<html>Use <font color=blue><u>this link</u></font> for details on how to acknowledge Virtual Cell in your publication<br>and how to share your published research through the VCell database. </html>");
+				ackPubJlabel.setText("<html>Use <font color=" + VCellColors.toHtmlColor(VCellColors.getValueForeground()) + "><u>this link</u></font> for details on how to acknowledge Virtual Cell in your publication<br>and how to share your published research through the VCell database. </html>");
 				ackPubJlabel.addMouseListener(new MouseAdapter() {
 					public void mouseClicked(MouseEvent e) {
 						DialogUtils.browserLauncher(DocumentWindowAboutBox.this, DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.ACKNOWLEGE_PUB__WEB_URL), "Failed to open Acknowlege webpage ("+System.getProperty(PropertyLoader.ACKNOWLEGE_PUB__WEB_URL)+")");

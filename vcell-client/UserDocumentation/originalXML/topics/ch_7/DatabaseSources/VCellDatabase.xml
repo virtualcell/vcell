@@ -14,7 +14,17 @@
 	
 	<operations>
 	<para>
-	The Virtual Cell Database can be accessed from 'Database' panel on the lower left corner of any VCell document window. The first tab in this panel is the <bold>VCell Database</bold> tab.
+	The Virtual Cell Database is browsed from the <bold>VCell Database</bold> tab of the <bold>Welcome window</bold> (<bold>File &gt; Welcome Window</bold>).
+	Document windows no longer have a database panel of their own, so parts of the description below, written for that panel, may differ from what the Welcome window shows.
+	</para>
+	<para>
+	Right-click a model in the Welcome window's <bold>Recent Models</bold> or <bold>VCell Database</bold> lists (or select it and press <bold>Shift+F10</bold>) for its menu:
+	<list>
+		<item><bold>Open</bold>, and <bold>Export / Save to File...</bold> without opening it.</item>
+		<item><bold>Compare With</bold> its previous or latest edition, another edition, or another model.</item>
+		<item><bold>Copy Name</bold>, and <bold>Copy BioModel ID Number</bold> (or MathModel), which copies just the number in its ID, such as 233648465 for biomodel-233648465.</item>
+		<item>For your own models: <bold>Permissions...</bold>, <bold>Archive</bold>, <bold>Publish</bold> and <bold>Delete...</bold> (which asks first). Items that don't apply to a model are greyed out, and their tooltip says why.</item>
+	</list>
 	Choosing this tab displays another set of 3 tabs - <bold>BioModels</bold>, <bold>MathModels</bold>, and <bold>Geometry</bold> that display the accessible models of that document type.
 	</para>
 	<para></para>

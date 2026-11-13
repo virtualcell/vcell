@@ -206,6 +206,14 @@ public class ClientServerManager implements ClientServerInterface {
 	 */
 	private Reconnector reconnector = null;
 
+	/** The property fired as the client's and server's versions stop or start matching; its value is a {@link VersionMismatch}, or null. */
+	public static final String PROPERTY_VERSION_MISMATCH = "versionMismatch";
+
+	/** The client's and server's VCell versions, when they differ in MAJOR, MINOR or PATCH. */
+	public record VersionMismatch(VCellSoftwareVersion client, VCellSoftwareVersion server) {}
+
+	private VersionMismatch versionMismatch = null;
+
 /**
  * The addPropertyChangeListener method was generated to support the propertyChange field.
  */
@@ -263,6 +271,8 @@ private void changeConnection(InteractiveClientServerContext requester, VCellCon
  * @return int
  */
 public void cleanup() {
+	// logged out: no reconnecting, which would log the user back in
+	if (reconnector != null) reconnector.stop();
 	setVcellConnection(null);
 	setConnectionStatus(new ClientConnectionStatus(null, null, null, ConnectionStatus.NOT_CONNECTED));
 }
@@ -313,21 +323,44 @@ private void checkClientServerSoftwareVersion(InteractiveClientServerContext req
 			if (clientVersion.getMajorVersion()!=serverVersion.getMajorVersion() ||
 				clientVersion.getMinorVersion()!=serverVersion.getMinorVersion() ||
 				clientVersion.getPatchVersion()!=serverVersion.getPatchVersion()) {
-				if (when == VersionCheck.AFTER_SERVER_CHANGED) {
+				VersionMismatch previous = this.versionMismatch;
+				setVersionMismatch(new VersionMismatch(clientVersion, serverVersion));
+				//
+				// The welcome window shows the mismatch (see PROPERTY_VERSION_MISMATCH) rather than a dialog at
+				// every login and reconnect. A dialog is kept for a server updated underneath a running client,
+				// which may have unsaved work: only when the server's version is new since the last check, not at
+				// each automatic reconnect to the same mismatched server.
+				//
+				boolean serverChanged = previous == null
+						|| !previous.server().getSoftwareVersionString().equals(serverVersion.getSoftwareVersionString());
+				if (when == VersionCheck.AFTER_SERVER_CHANGED && serverChanged) {
 					requester.showWarningDialog("The VCell server was updated while you were working:\n"
 						+ "client VCell version : " + clientSoftwareVersion + "\n"
 						+ "server VCell version : " + serverSoftwareVersion + "\n"
 						+ "\nThis client no longer matches the server."
 						+ "\nPlease save your work, then exit and restart VCell to install the matching version.");
-				} else {
-					requester.showWarningDialog("software version mismatch between client and server:\n"
-						+ "client VCell version : " + clientSoftwareVersion + "\n"
-						+ "server VCell version : " + serverSoftwareVersion + "\n"
-						+ "\nPlease exit VCell and download the latest client from VCell Software page (http://vcell.org).");
 				}
+				return;
 			}
 		}
+		setVersionMismatch(null);
 	}
+}
+
+/** The client's and server's versions, if the last check found them not matching; otherwise null. */
+public VersionMismatch getVersionMismatch() {
+	return versionMismatch;
+}
+
+private void setVersionMismatch(VersionMismatch newValue) {
+	VersionMismatch oldValue = versionMismatch;
+	if (oldValue != null && newValue != null // the same versions, checked again: nothing new to tell
+			&& oldValue.client().getSoftwareVersionString().equals(newValue.client().getSoftwareVersionString())
+			&& oldValue.server().getSoftwareVersionString().equals(newValue.server().getSoftwareVersionString())) {
+		return;
+	}
+	versionMismatch = newValue;
+	getPropertyChange().firePropertyChange(PROPERTY_VERSION_MISMATCH, oldValue, newValue);
 }
 
 

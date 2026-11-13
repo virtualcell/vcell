@@ -9,6 +9,7 @@
  */
 
 package cbit.vcell.client.desktop.simulation;
+import cbit.vcell.client.laf.VCellFonts;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
@@ -574,9 +575,8 @@ private JButton getMassConservationModelReductionHelpButton() {
 	if(massConservationModelReductionHelpButton == null) {
 		massConservationModelReductionHelpButton = new JButton("  ?  ");
 		massConservationModelReductionHelpButton.setVisible(true);
-		Font font = massConservationModelReductionHelpButton.getFont().deriveFont(Font.BOLD);
 		Border border = BorderFactory.createEmptyBorder(1, 1, 1, 1);
-		massConservationModelReductionHelpButton.setFont(font);
+		VCellFonts.setCategory(massConservationModelReductionHelpButton, VCellFonts.Category.HEADING);
 		massConservationModelReductionHelpButton.setBorder(border);
 		massConservationModelReductionHelpButton.setFocusPainted(false);
 		massConservationModelReductionHelpButton.setFocusable(false);
@@ -1398,7 +1398,7 @@ private void stopSimulations() {
 	private javax.swing.JButton getMoreActionsButton() {
 		if (moreActionsButton == null) {
 			try {
-				moreActionsButton = new JButton("More Actions", new DownArrowIcon());
+				moreActionsButton = DownArrowIcon.keepPushButtonLook(new JButton("More Actions", new DownArrowIcon()));
 				moreActionsButton.setHorizontalTextPosition(SwingConstants.LEFT);
 				moreActionsButton.setName("MoreActionsButton");
 			} catch (java.lang.Throwable ivjExc) {

@@ -1,6 +1,6 @@
 package cbit.vcell.geometry.gui;
 
-import java.awt.Color;
+import cbit.vcell.client.laf.VCellLookAndFeel;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -98,7 +98,7 @@ public class CSGObjectTreeCellEditor extends DefaultTreeCellEditor {
 			if (rotationPanel == null) {
 				rotationPanel = new JPanel();
 				rotationPanel.setPreferredSize(new Dimension(300, 50));
-				rotationPanel.setBackground(Color.white);
+				rotationPanel.setBackground(VCellLookAndFeel.getContentBackground());
 				rotationPanel.setLayout(new GridBagLayout());
 				
 				GridBagConstraints gbc = new GridBagConstraints();

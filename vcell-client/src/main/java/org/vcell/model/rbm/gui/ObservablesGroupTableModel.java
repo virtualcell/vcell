@@ -10,6 +10,7 @@
 
 package org.vcell.model.rbm.gui;
 
+import cbit.vcell.client.laf.VCellColors;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
@@ -131,7 +132,7 @@ public class ObservablesGroupTableModel extends VCellSortTableModel<ObservablesG
 				String exp;
 				BNGSpecies[] speciesList = observablesTableRow.getObservableGroupObject().getListofSpecies();
 				if(speciesList == null || speciesList.length == 0) {
-					exp = "<html><font color=\"red\">No generated species</html>";
+					exp = "<html><font color=\"" + VCellColors.toHtmlColor(VCellColors.getErrorForeground()) + "\">No generated species</html>";
 				} else {
 					exp = getExpressionAsString(observablesTableRow.getObservableGroupObject());
 				}

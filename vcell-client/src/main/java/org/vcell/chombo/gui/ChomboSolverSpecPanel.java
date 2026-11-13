@@ -1,5 +1,7 @@
 package org.vcell.chombo.gui;
 
+import cbit.vcell.client.laf.VCellFonts;
+import cbit.vcell.client.laf.VCellColors;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -248,7 +250,7 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 			toolbar.setFloatable(false);
 			JLabel label = new JLabel("ROIs");
 			toolbar.add(label);
-			label.setFont(label.getFont().deriveFont(Font.BOLD));
+			VCellFonts.setCategory(label, VCellFonts.Category.HEADING);
 			toolbar.add(Box.createHorizontalStrut(10));
 			toolbar.add(getAddLevelButton());
 			toolbar.add(getDeleteLevelButton());
@@ -256,7 +258,7 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 			if (roiType == RoiType.Membrane)
 			{
 				label = new JLabel("(Set ROI to \"1.0\" to refine all membrane elements.)");
-				label.setFont(label.getFont().deriveFont(Font.BOLDITALIC, label.getFont().getSize() - 1));
+				VCellFonts.setCategory(label, VCellFonts.Category.CAPTION, java.awt.Font.BOLD | java.awt.Font.ITALIC);
 				toolbar.add(label);
 				toolbar.add(Box.createHorizontalStrut(10));
 			}
@@ -428,7 +430,7 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 		  finestInfoPanel.setVisible(false);
 		  
 		  finestSizeTextField = new JTextField(40);
-		  finestSizeTextField.setForeground(Color.blue);
+		  finestSizeTextField.setForeground(VCellColors.getValueForeground());
 		  finestSizeTextField.setBorder(null);
 		  finestSizeTextField.setEditable(false);
 		  
@@ -438,7 +440,7 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 		  gbc.gridy = 0;
 		  gbc.insets = new Insets(1, 5, 1, 2);
 		  JLabel label = new JLabel("Finest Mesh");
-		  label.setFont(label.getFont().deriveFont(Font.BOLD));
+		  VCellFonts.setCategory(label, VCellFonts.Category.HEADING);
 			finestInfoPanel.add(label, gbc);
 		  
 			++ gridx;
@@ -460,7 +462,7 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 		  gbc.anchor = GridBagConstraints.EAST;
 		  label = new JLabel("(Refinement ratio is 2 per level.)");
 		  label.setHorizontalAlignment(SwingConstants.RIGHT);
-			label.setFont(label.getFont().deriveFont(Font.BOLDITALIC, label.getFont().getSize() - 1));
+			VCellFonts.setCategory(label, VCellFonts.Category.CAPTION, java.awt.Font.BOLD | java.awt.Font.ITALIC);
 			finestInfoPanel.add(label, gbc);
 		}
 		return finestInfoPanel;
@@ -638,7 +640,7 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 			gbc.gridy = 2;
 			gbc.anchor = GridBagConstraints.EAST;
 			JLabel lbl = new JLabel("View Level");
-			lbl.setFont(lbl.getFont().deriveFont(Font.BOLD));
+			VCellFonts.setCategory(lbl, VCellFonts.Category.HEADING);
 			refinementPanel.add(lbl, gbc);
 			
 			gbc = new GridBagConstraints();

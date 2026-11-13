@@ -10,6 +10,7 @@
 
 package cbit.vcell.client.desktop.biomodel;
 
+import cbit.vcell.client.laf.VCellColors;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -292,8 +293,8 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 					if(dbName.contains("Interaction Database")) {
 						dbName = dbName.replace("Interaction Database", "Db");
 					}
-					labelText = "<html>" + pathway.name() + "  [<font color=\"#007700\">" + dbName + "</font>, " + 
-										"<font color=\"#770000\">" + pathway.getOrganism().speciesName() + "</font>]</html>";
+					labelText = "<html>" + pathway.name() + "  [<font color=\"" + VCellColors.toHtmlColor(VCellColors.getReadableForeground(new java.awt.Color(0x007700))) + "\">" + dbName + "</font>, " + 
+										"<font color=\"" + VCellColors.toHtmlColor(VCellColors.getWarningForeground()) + "\">" + pathway.getOrganism().speciesName() + "</font>]</html>";
 					setToolTipText("Double-click to import pathway");
 				} else if (userObject instanceof DataSource){
 					DataSource dataSource = (DataSource)userObject;
@@ -525,12 +526,16 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 		searchTextField.setName("PathwayCommonsSearchTextField");
 		searchTextField.addActionListener(eventHandler);
 		searchTextField.putClientProperty("JTextField.variant", "search");
+		searchTextField.getAccessibleContext().setAccessibleName("Search Pathway Commons");
+		searchTextField.setToolTipText("Search Pathway Commons for pathways, e.g. insulin");
 
 		filterTextField = new TextFieldAutoCompletion();
 		filterTextField.setName("PathwayCommonsFilterTextField");
 		filterTextField.addActionListener(eventHandler);
 		filterTextField.addKeyListener(eventHandler);
 		filterTextField.putClientProperty("JTextField.variant", "filter");
+		filterTextField.getAccessibleContext().setAccessibleName("Filter search results");
+		filterTextField.setToolTipText("Show only the results whose name, organism or source contains this text");
 
 		searchButton = new JButton("Search");
 		searchButton.setName("PathwayCommonsSearchButton");

@@ -10,6 +10,7 @@
 
 package cbit.vcell.field.gui;
 
+import cbit.vcell.client.laf.VCellFonts;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -212,7 +213,7 @@ public class FieldDataInfoPanel extends JPanel {
             try {
                 ivjJLabel = new javax.swing.JLabel();
                 ivjJLabel.setName("JLabel");
-                ivjJLabel.setFont(new Font("Dialog", Font.BOLD, 14));
+                VCellFonts.setCategory(ivjJLabel, VCellFonts.Category.HEADING);
                 ivjJLabel.setText("X:");
                 // user code begin {1}
                 // user code end
@@ -237,7 +238,7 @@ public class FieldDataInfoPanel extends JPanel {
             try {
                 ivjJLabel1 = new javax.swing.JLabel();
                 ivjJLabel1.setName("JLabel1");
-                ivjJLabel1.setFont(new Font("Dialog", Font.BOLD, 14));
+                VCellFonts.setCategory(ivjJLabel1, VCellFonts.Category.HEADING);
                 ivjJLabel1.setText("Y:");
                 // user code begin {1}
                 // user code end
@@ -262,7 +263,7 @@ public class FieldDataInfoPanel extends JPanel {
             try {
                 ivjJLabel2 = new javax.swing.JLabel();
                 ivjJLabel2.setName("JLabel2");
-                ivjJLabel2.setFont(new Font("Dialog", Font.BOLD, 14));
+                VCellFonts.setCategory(ivjJLabel2, VCellFonts.Category.HEADING);
                 ivjJLabel2.setText("Z:");
                 // user code begin {1}
                 // user code end
@@ -287,7 +288,7 @@ public class FieldDataInfoPanel extends JPanel {
             try {
                 ivjJLabel3 = new javax.swing.JLabel();
                 ivjJLabel3.setName("JLabel3");
-                ivjJLabel3.setFont(new Font("Dialog", Font.PLAIN, 14));
+                VCellFonts.setCategory(ivjJLabel3, VCellFonts.Category.BODY);
                 ivjJLabel3.setText("Field name:");
                 // user code begin {1}
                 // user code end
@@ -312,7 +313,7 @@ public class FieldDataInfoPanel extends JPanel {
             try {
                 ivjJLabel4 = new javax.swing.JLabel();
                 ivjJLabel4.setName("JLabel4");
-                ivjJLabel4.setFont(new Font("Dialog", Font.PLAIN, 14));
+                VCellFonts.setCategory(ivjJLabel4, VCellFonts.Category.BODY);
                 ivjJLabel4.setText("Variable names:");
                 // user code begin {1}
                 // user code end
@@ -384,7 +385,7 @@ public class FieldDataInfoPanel extends JPanel {
                 gridBagConstraints.gridy = 2;
                 jLabel1Time = new JLabel();
                 jLabel1Time.setText("Times:");
-                jLabel1Time.setFont(new Font("Dialog", Font.PLAIN, 14));
+                VCellFonts.setCategory(jLabel1Time, VCellFonts.Category.BODY);
                 ivjJPanel = new javax.swing.JPanel();
                 ivjJPanel.setName("JPanel");
                 ivjJPanel.setLayout(new java.awt.GridBagLayout());
@@ -720,7 +721,7 @@ public class FieldDataInfoPanel extends JPanel {
                 ivjJTextFieldFieldName = new javax.swing.JTextField();
                 ivjJTextFieldFieldName.setName("JTextFieldFieldName");
                 ivjJTextFieldFieldName.setToolTipText("Microns for whole X axis");
-                ivjJTextFieldFieldName.setFont(new Font("Dialog", Font.PLAIN, 14));
+                VCellFonts.setCategory(ivjJTextFieldFieldName, VCellFonts.Category.BODY);
                 ivjJTextFieldFieldName.setText("NewFieldName");
                 // user code begin {1}
                 // user code end
@@ -745,7 +746,7 @@ public class FieldDataInfoPanel extends JPanel {
             try {
                 ivjMicronJLabel = new javax.swing.JLabel();
                 ivjMicronJLabel.setName("MicronJLabel");
-                ivjMicronJLabel.setFont(new Font("Dialog", Font.PLAIN, 14));
+                VCellFonts.setCategory(ivjMicronJLabel, VCellFonts.Category.BODY);
                 ivjMicronJLabel.setText("Size (microns):");
                 // user code begin {1}
                 // user code end
@@ -770,7 +771,7 @@ public class FieldDataInfoPanel extends JPanel {
             try {
                 ivjMicronJLabel1 = new javax.swing.JLabel();
                 ivjMicronJLabel1.setName("MicronJLabel1");
-                ivjMicronJLabel1.setFont(new Font("Dialog", Font.PLAIN, 14));
+                VCellFonts.setCategory(ivjMicronJLabel1, VCellFonts.Category.BODY);
                 ivjMicronJLabel1.setText("Origin:");
                 // user code begin {1}
                 // user code end
@@ -804,7 +805,7 @@ public class FieldDataInfoPanel extends JPanel {
             try {
                 ivjPixelSizeJLabel = new javax.swing.JLabel();
                 ivjPixelSizeJLabel.setName("PixelSizeJLabel");
-                ivjPixelSizeJLabel.setFont(new Font("Dialog", Font.PLAIN, 14));
+                VCellFonts.setCategory(ivjPixelSizeJLabel, VCellFonts.Category.BODY);
                 ivjPixelSizeJLabel.setText("Pixel Size:");
                 // user code begin {1}
                 // user code end
@@ -829,7 +830,7 @@ public class FieldDataInfoPanel extends JPanel {
             try {
                 ivjPixelSizeXJLabel = new javax.swing.JLabel();
                 ivjPixelSizeXJLabel.setName("PixelSizeXJLabel");
-                ivjPixelSizeXJLabel.setFont(new Font("Dialog", Font.BOLD, 14));
+                VCellFonts.setCategory(ivjPixelSizeXJLabel, VCellFonts.Category.HEADING);
                 ivjPixelSizeXJLabel.setText("Pixel X");
                 // user code begin {1}
                 // user code end
@@ -854,7 +855,7 @@ public class FieldDataInfoPanel extends JPanel {
             try {
                 ivjPixelSizeYJLabel = new javax.swing.JLabel();
                 ivjPixelSizeYJLabel.setName("PixelSizeYJLabel");
-                ivjPixelSizeYJLabel.setFont(new Font("Dialog", Font.BOLD, 14));
+                VCellFonts.setCategory(ivjPixelSizeYJLabel, VCellFonts.Category.HEADING);
                 ivjPixelSizeYJLabel.setText("Pixel Y");
                 // user code begin {1}
                 // user code end
@@ -879,7 +880,7 @@ public class FieldDataInfoPanel extends JPanel {
             try {
                 ivjPixelSizeZJLabel = new javax.swing.JLabel();
                 ivjPixelSizeZJLabel.setName("PixelSizeZJLabel");
-                ivjPixelSizeZJLabel.setFont(new Font("Dialog", Font.BOLD, 14));
+                VCellFonts.setCategory(ivjPixelSizeZJLabel, VCellFonts.Category.HEADING);
                 ivjPixelSizeZJLabel.setText("Pixel Z");
                 // user code begin {1}
                 // user code end
@@ -956,7 +957,7 @@ public class FieldDataInfoPanel extends JPanel {
                 ivjXMicronJTextField = new javax.swing.JTextField();
                 ivjXMicronJTextField.setName("XMicronJTextField");
                 ivjXMicronJTextField.setToolTipText("Microns for whole X axis");
-                ivjXMicronJTextField.setFont(new Font("Dialog", Font.PLAIN, 14));
+                VCellFonts.setCategory(ivjXMicronJTextField, VCellFonts.Category.BODY);
                 ivjXMicronJTextField.setText("1.0");
                 // user code begin {1}
                 // user code end
@@ -982,7 +983,7 @@ public class FieldDataInfoPanel extends JPanel {
                 ivjXOriginJTextField1 = new javax.swing.JTextField();
                 ivjXOriginJTextField1.setName("XOriginJTextField1");
                 ivjXOriginJTextField1.setToolTipText("Microns for whole X axis");
-                ivjXOriginJTextField1.setFont(new Font("Dialog", Font.PLAIN, 14));
+                VCellFonts.setCategory(ivjXOriginJTextField1, VCellFonts.Category.BODY);
                 ivjXOriginJTextField1.setText("0");
                 // user code begin {1}
                 // user code end
@@ -1055,7 +1056,7 @@ public class FieldDataInfoPanel extends JPanel {
                 ivjYMicronJTextField = new javax.swing.JTextField();
                 ivjYMicronJTextField.setName("YMicronJTextField");
                 ivjYMicronJTextField.setToolTipText("Microns for Whole Y axis");
-                ivjYMicronJTextField.setFont(new Font("Dialog", Font.PLAIN, 14));
+                VCellFonts.setCategory(ivjYMicronJTextField, VCellFonts.Category.BODY);
                 ivjYMicronJTextField.setText("1.0");
                 // user code begin {1}
                 // user code end
@@ -1081,7 +1082,7 @@ public class FieldDataInfoPanel extends JPanel {
                 ivjYOriginJTextField1 = new javax.swing.JTextField();
                 ivjYOriginJTextField1.setName("YOriginJTextField1");
                 ivjYOriginJTextField1.setToolTipText("Microns for Whole Y axis");
-                ivjYOriginJTextField1.setFont(new Font("Dialog", Font.PLAIN, 14));
+                VCellFonts.setCategory(ivjYOriginJTextField1, VCellFonts.Category.BODY);
                 ivjYOriginJTextField1.setText("0");
                 // user code begin {1}
                 // user code end
@@ -1154,7 +1155,7 @@ public class FieldDataInfoPanel extends JPanel {
                 ivjZMicronJTextField = new javax.swing.JTextField();
                 ivjZMicronJTextField.setName("ZMicronJTextField");
                 ivjZMicronJTextField.setToolTipText("Microns for Whole Z axis");
-                ivjZMicronJTextField.setFont(new Font("Dialog", Font.PLAIN, 14));
+                VCellFonts.setCategory(ivjZMicronJTextField, VCellFonts.Category.BODY);
                 ivjZMicronJTextField.setText("1.0");
                 // user code begin {1}
                 // user code end
@@ -1180,7 +1181,7 @@ public class FieldDataInfoPanel extends JPanel {
                 ivjZOriginJTextField1 = new javax.swing.JTextField();
                 ivjZOriginJTextField1.setName("ZOriginJTextField1");
                 ivjZOriginJTextField1.setToolTipText("Microns for Whole Z axis");
-                ivjZOriginJTextField1.setFont(new Font("Dialog", Font.PLAIN, 14));
+                VCellFonts.setCategory(ivjZOriginJTextField1, VCellFonts.Category.BODY);
                 ivjZOriginJTextField1.setText("0");
                 // user code begin {1}
                 // user code end
@@ -1329,14 +1330,14 @@ public class FieldDataInfoPanel extends JPanel {
             gridBagConstraints6.gridy = 0;
             jLabelTimeEnd = new JLabel();
             jLabelTimeEnd.setText("JLabel");
-            jLabelTimeEnd.setFont(new Font("Dialog", Font.BOLD, 14));
+            VCellFonts.setCategory(jLabelTimeEnd, VCellFonts.Category.HEADING);
             GridBagConstraints gridBagConstraints5 = new GridBagConstraints();
             gridBagConstraints5.gridx = 4;
             gridBagConstraints5.insets = new Insets(4, 20, 4, 4);
             gridBagConstraints5.gridy = 0;
             jLabel23 = new JLabel();
             jLabel23.setText("End:");
-            jLabel23.setFont(new Font("Dialog", Font.BOLD, 14));
+            VCellFonts.setCategory(jLabel23, VCellFonts.Category.HEADING);
             GridBagConstraints gridBagConstraints4 = new GridBagConstraints();
             gridBagConstraints4.gridx = 3;
             gridBagConstraints4.weightx = 0.0;
@@ -1344,7 +1345,7 @@ public class FieldDataInfoPanel extends JPanel {
             gridBagConstraints4.gridy = 0;
             jLabeTimeBeg = new JLabel();
             jLabeTimeBeg.setText("JLabel");
-            jLabeTimeBeg.setFont(new Font("Dialog", Font.BOLD, 14));
+            VCellFonts.setCategory(jLabeTimeBeg, VCellFonts.Category.HEADING);
             GridBagConstraints gridBagConstraints3 = new GridBagConstraints();
             gridBagConstraints3.gridx = 2;
             gridBagConstraints3.insets = new Insets(4, 20, 4, 4);
@@ -1352,7 +1353,7 @@ public class FieldDataInfoPanel extends JPanel {
             gridBagConstraints3.gridy = 0;
             jLabel21 = new JLabel();
             jLabel21.setText("Begin:");
-            jLabel21.setFont(new Font("Dialog", Font.BOLD, 14));
+            VCellFonts.setCategory(jLabel21, VCellFonts.Category.HEADING);
             GridBagConstraints gridBagConstraints2 = new GridBagConstraints();
             gridBagConstraints2.gridx = 1;
             gridBagConstraints2.weightx = 0.0;
@@ -1360,14 +1361,14 @@ public class FieldDataInfoPanel extends JPanel {
             gridBagConstraints2.gridy = 0;
             jLabelTimeCount = new JLabel();
             jLabelTimeCount.setText("JLabel");
-            jLabelTimeCount.setFont(new Font("Dialog", Font.BOLD, 14));
+            VCellFonts.setCategory(jLabelTimeCount, VCellFonts.Category.HEADING);
             GridBagConstraints gridBagConstraints1 = new GridBagConstraints();
             gridBagConstraints1.gridx = 0;
             gridBagConstraints1.insets = new Insets(4, 4, 4, 4);
             gridBagConstraints1.gridy = 0;
             jLabel1 = new JLabel();
             jLabel1.setText("Total:");
-            jLabel1.setFont(new Font("Dialog", Font.BOLD, 14));
+            VCellFonts.setCategory(jLabel1, VCellFonts.Category.HEADING);
             jPanel = new JPanel();
             jPanel.setLayout(new GridBagLayout());
             jPanel.setBorder(BorderFactory.createLineBorder(Color.black, 2));
@@ -1496,6 +1497,7 @@ public class FieldDataInfoPanel extends JPanel {
                     };
                     tableMode.setDataVector(rows, colNames);
                     JTable table = new JTable(tableMode);
+                    VCellFonts.followRowHeight(table);
 
 
                     table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);

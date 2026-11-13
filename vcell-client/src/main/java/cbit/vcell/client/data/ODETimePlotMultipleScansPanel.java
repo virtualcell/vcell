@@ -10,6 +10,7 @@
 
 package cbit.vcell.client.data;
 
+import cbit.vcell.client.laf.VCellFonts;
 import java.awt.BorderLayout;
 import java.awt.geom.Point2D;
 import java.util.Arrays;
@@ -152,6 +153,7 @@ private void initialize()  {
 	System.out.println("HDF5frm"+scanParams+" "+values);
 	ScanChoicesTableModel tm = new ScanChoicesTableModel(values, scanParams);
 	scanChoiceTable = new JTable(tm);
+	VCellFonts.followRowHeight(scanChoiceTable);
 	
 	scanChoiceTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 	JScrollPane scr = new JScrollPane(scanChoiceTable, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);

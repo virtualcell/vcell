@@ -9,6 +9,7 @@
  */
 
 package cbit.vcell.desktop;
+import cbit.vcell.client.laf.VCellColors;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
@@ -50,10 +51,10 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 			String label = (String)node.getUserObject();
 			String qualifier = "";
 			if (sessionUser != null && sessionUser.getName().contentEquals(label)) {
-				String colorString = (sel)?"white":"#8B0000";
+				String colorString = (sel)?"white":VCellColors.toHtmlColor(VCellColors.getWarningForeground());
 				qualifier = "<font color=\""+colorString+"\"><b>" + label + "</b></font>"; 
 			} else {
-				String colorString = (sel)?"white":"black";
+				String colorString = (sel)?"white":VCellColors.toHtmlColor(getTextNonSelectionColor());
 				qualifier = "<font color=\""+colorString+"\">" + label + "</font>"; 
 			}
 			component.setToolTipText(label);
@@ -77,7 +78,7 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 				label2 = label2.substring(0, maxLen) + "...";
 			}
 			if(node.getChildCount() > 1) {
-				String prefix = sel ? "" : "<span style=\"color:#8B0000\">";
+				String prefix = sel ? "" : "<span style=\"color:" + VCellColors.toHtmlColor(VCellColors.getWarningForeground()) + "\">";
 				String suffix = sel ? "" : "</span>";
 				label += prefix + " (" + node.getChildCount() + ")" + suffix;
 				label2 += prefix + " (" + node.getChildCount() + ")" + suffix;
@@ -132,7 +133,7 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 								&& str.equalsIgnoreCase(sessionUser.getName())) {
 							str = (String)((BioModelNode)pNode).getUserObject();
 							if(str.equals(VCDocumentDbTreeModel.Other_MathModels)) {
-								String prefix = sel ? "" : "<span style=\"color:#808080\">";	// GRAY
+								String prefix = sel ? "" : "<span style=\"color:" + VCellColors.toHtmlColor(VCellColors.getDimForeground()) + "\">";	// GRAY
 								String suffix = sel ? "" : "</span>";
 								String str1 = prefix + component.getText() + suffix;
 								setText("<html>" + str1 + "</html>"); 
@@ -167,29 +168,29 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 							if(str.equals(VCDocumentDbTreeModel.Published_MathModels) 
 									|| str.equals(VCDocumentDbTreeModel.Curated_MathModels)
 									/*|| str.equals(VCDocumentDbTreeModel.Other_MathModels)*/) {
-								String prefix = sel ? "" : "<span style=\"color:#8B0000\">";
+								String prefix = sel ? "" : "<span style=\"color:" + VCellColors.toHtmlColor(VCellColors.getWarningForeground()) + "\">";
 								String suffix = sel ? "" : "</span>";
 								setText("<html><b>" + prefix + nodeUser.getName() + suffix + "</b>  : " + modelName + "</html>");
 							} else {
 								// in the Other folder / owner folder
-								String prefix = sel ? "" : "<span style=\"color:#808080\">";	// GRAY
+								String prefix = sel ? "" : "<span style=\"color:" + VCellColors.toHtmlColor(VCellColors.getDimForeground()) + "\">";	// GRAY
 								String suffix = sel ? "" : "</span>";
 								String str1 = prefix + modelName + suffix;
 								if(node.getChildCount() > 1) {
-									prefix = sel ? "" : "<span style=\"color:#8B0000\">";
+									prefix = sel ? "" : "<span style=\"color:" + VCellColors.toHtmlColor(VCellColors.getWarningForeground()) + "\">";
 									suffix = sel ? "" : "</span>";
 									str1 += prefix + " (" + node.getChildCount() + ")" + suffix;
 								}
 								setText("<html>" + str1 + "</html>");	// the name of the model container - which holds the versions 
 							}
 						} else if(parent.getUserObject() instanceof PublicationInfo) {
-							String prefix = sel ? "" : "<span style=\"color:#8B0000\">";
+							String prefix = sel ? "" : "<span style=\"color:" + VCellColors.toHtmlColor(VCellColors.getWarningForeground()) + "\">";
 							String suffix = sel ? "" : "</span>";
 							setText("<html><b>" + prefix + nodeUser.getName() + suffix + "</b>  : " + modelName + "</html>");
 						} else {
 							String str = modelName;
 							if(node.getChildCount() > 1) {
-								String prefix = sel ? "" : "<span style=\"color:#8B0000\">";
+								String prefix = sel ? "" : "<span style=\"color:" + VCellColors.toHtmlColor(VCellColors.getWarningForeground()) + "\">";
 								String suffix = sel ? "" : "</span>";
 								str += prefix + " (" + node.getChildCount() + ")" + suffix;
 							}
@@ -203,7 +204,7 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 					if(pNode instanceof UserNameNode) {		// if we are inside an UserName folder (like Shared or Uncurated public),
 						String str = modelName;				// don't prefix again the model with the user name
 						if(node.getChildCount() > 1) {
-							String prefix = sel ? "" : "<span style=\"color:#8B0000\">";
+							String prefix = sel ? "" : "<span style=\"color:" + VCellColors.toHtmlColor(VCellColors.getWarningForeground()) + "\">";
 							String suffix = sel ? "" : "</span>";
 							str += prefix + " (" + node.getChildCount() + ")" + suffix;
 						}

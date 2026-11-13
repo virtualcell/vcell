@@ -10,6 +10,8 @@
 
 package cbit.vcell.solver.ode.gui;
 
+import cbit.vcell.client.laf.VCellFonts;
+import cbit.vcell.client.laf.VCellColors;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
@@ -192,7 +194,7 @@ public class MathOverridesPanel extends JPanel {
 			this.titleLabel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
 			this.titleLabel.setText("Specify non-default parameter values or scan over a range of values:");
 			this.titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
-			this.titleLabel.setFont(this.titleLabel.getFont().deriveFont(Font.BOLD));
+			VCellFonts.setCategory(this.titleLabel, VCellFonts.Category.HEADING);
 		} catch (Exception exception) {
 			this.logException(exception);
 		}
@@ -356,7 +358,7 @@ public class MathOverridesPanel extends JPanel {
 			gridBagConstraints.gridx = 0;
 			gridBagConstraints.gridy = 2;
 			this.removeUnusedButton = new JButton();
-			this.removeUnusedButton.setForeground(Color.red);
+			this.removeUnusedButton.setForeground(VCellColors.getErrorForeground());
 			this.removeUnusedButton.setText("remove unused parameter overrides");
 			this.removeUnusedButton.addActionListener(e -> {
 				MathOverrides mathOverrides = this.getMathOverrides();

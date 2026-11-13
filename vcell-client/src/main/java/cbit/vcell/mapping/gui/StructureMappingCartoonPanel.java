@@ -623,6 +623,13 @@ public class StructureMappingCartoonPanel extends DocumentEditorSubPanel impleme
 				ivjJToolBar1.setOrientation(javax.swing.SwingConstants.VERTICAL);
 				ivjJToolBar1.add(getSelectButton(), getSelectButton().getName());
 				ivjJToolBar1.add(getLineButton(), getLineButton().getName());
+				ivjJToolBar1.addSeparator();
+				java.awt.Dimension buttonSize = new java.awt.Dimension(28, 28);
+				for (GraphPane.ZoomButton zoomButton : GraphPane.ZoomButton.values()) {
+					ivjJToolBar1.add(getStructureGraphPane().createZoomButton(zoomButton, buttonSize));
+				}
+				ivjJToolBar1.add(javax.swing.Box.createVerticalGlue());
+				ivjJToolBar1.add(GraphPane.createControlsHelpButton(buttonSize));
 				// user code begin {1}
 				// user code end
 			} catch (java.lang.Throwable ivjExc) {

@@ -9,6 +9,7 @@
  */
 
 package cbit.vcell.math.gui;
+import cbit.vcell.client.laf.VCellFonts;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Dimension;
@@ -233,7 +234,7 @@ private javax.swing.JPanel getButtonsPanel() {
 		gbc.insets = new Insets(8, 5, 0, 2);
 		gbc.anchor = GridBagConstraints.NORTHWEST;
 		JLabel label = new JLabel("Choose View:");
-		label.setFont(label.getFont().deriveFont(Font.BOLD));
+		VCellFonts.setCategory(label, VCellFonts.Category.HEADING);
 		ivjButtonsPanel.add(label, gbc);
 		
 		gridx++;

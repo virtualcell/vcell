@@ -10,6 +10,8 @@
 
 package cbit.vcell.microscopy.gui.estparamwizard;
 
+import cbit.vcell.client.laf.VCellFonts;
+import cbit.vcell.client.laf.VCellColors;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
@@ -68,7 +70,7 @@ public class EstParams_ReacBindingPanel extends JPanel {
 				
 		//set up tabbed pane for two kinds of models.
 		paramPanel=new JPanel();
-		paramPanel.setForeground(new Color(0,0,244));
+		paramPanel.setForeground(VCellColors.getValueForeground());
 		paramPanel.setBorder(new EtchedBorder(Color.gray, Color.lightGray));
 		paramPanel.setLayout(new GridBagLayout());
 	
@@ -78,7 +80,7 @@ public class EstParams_ReacBindingPanel extends JPanel {
 		gridBagConstraints_rdl.gridy = 0;
 		gridBagConstraints_rdl.gridx = 0;
 		paramPanel.add(reactionDiffPanelLabel, gridBagConstraints_rdl);
-		reactionDiffPanelLabel.setFont(new Font("", Font.PLAIN, 14));
+		VCellFonts.setCategory(reactionDiffPanelLabel, VCellFonts.Category.BODY);
 		reactionDiffPanelLabel.setText("Analysis on Reaction Diffusion Model using FRAP Simulation Results");
 		
 		reactionDiffusionPanel = new FRAPReactionDiffusionParamPanel();
@@ -130,11 +132,11 @@ public class EstParams_ReacBindingPanel extends JPanel {
 		gridBagConstraints_4.gridy = 0;
 		gridBagConstraints_4.insets = new Insets(2, 2, 2, 2);
 		panel_3.add(standardErrorRoiLabel, gridBagConstraints_4);
-		standardErrorRoiLabel.setFont(new Font("", Font.BOLD, 12));
+		VCellFonts.setCategory(standardErrorRoiLabel, VCellFonts.Category.HEADING);
 		standardErrorRoiLabel.setText("Plot -  ROI Average Normalized (using Pre-Bleach Average) vs. Time          ");
 
 		final JButton showRoisButton = new JButton();
-		showRoisButton.setFont(new Font("", Font.PLAIN, 11));
+		VCellFonts.setCategory(showRoisButton, VCellFonts.Category.BODY);
 		showRoisButton.setMargin(new Insets(0, 8, 0, 8));
 		showRoisButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {

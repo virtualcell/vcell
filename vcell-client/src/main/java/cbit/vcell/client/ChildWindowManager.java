@@ -1,5 +1,6 @@
 package cbit.vcell.client;
 
+import cbit.vcell.client.laf.NestedMenuBar;
 import java.awt.BorderLayout;
 import java.awt.RenderingHints;
 import java.awt.Graphics2D;
@@ -38,7 +39,7 @@ import org.vcell.client.logicalwindow.LWNamespace;
 import org.vcell.client.logicalwindow.LWTitledDialog;
 import org.vcell.client.logicalwindow.LWTraits;
 import org.vcell.client.logicalwindow.LWTraits.InitialPosition;
-import org.vcell.util.gui.GeneralGuiUtils;
+import org.vcell.util.gui.ShortcutsWizard;
 import org.vcell.util.ProgrammingException;
 import org.vcell.util.gui.GuiUtils;
 
@@ -419,7 +420,7 @@ public class ChildWindowManager {
 				// then the way back to it.
 				JMenuBar mb = (detached || modality != LWModality.MODELESS)
 						? LWNamespace.createRightSideIconMenuBar()
-						: new JMenuBar();
+						: new NestedMenuBar();
 				if (modality == LWModality.MODELESS) {
 					mb.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
 					mb.add(createAttachmentMenuItem());
@@ -581,7 +582,7 @@ public class ChildWindowManager {
 	public ChildWindowManager(JFrame parent){
 		this.parent = parent;
 		owner = LWNamespace.findLWOwner(parent);
-		GeneralGuiUtils.addCloseWindowKeyboardAction(this.parent.getRootPane());
+		ShortcutsWizard.addCloseWindowShortcut(this.parent.getRootPane());
 	}
 	
 	public ChildWindow addChildWindow(Container contentPane, Object contextObject, String title){

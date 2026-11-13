@@ -10,7 +10,7 @@
 
 package cbit.vcell.client.desktop.biomodel;
 
-import java.awt.Color;
+import cbit.vcell.client.laf.VCellLookAndFeel;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -141,7 +141,7 @@ private void initialize() {
 		addSubunits = new JCheckBox("Add Subunits");
 		addSubunits.setHorizontalTextPosition(SwingConstants.LEFT);
 		addSubunits.setSelected(false);
-		addSubunits.setBackground(Color.white);
+		addSubunits.setBackground(VCellLookAndFeel.getContentBackground());
 		
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 7; 
@@ -150,7 +150,7 @@ private void initialize() {
 		gbc.insets = new Insets(4, 4, 4, 4);
 		add(addSubunits, gbc);
 		
-		setBackground(Color.white);		
+		setBackground(VCellLookAndFeel.getContentBackground());		
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}

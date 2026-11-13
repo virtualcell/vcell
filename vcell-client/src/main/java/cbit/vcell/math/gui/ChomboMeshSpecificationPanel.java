@@ -10,6 +10,7 @@
 
 package cbit.vcell.math.gui;
 
+import cbit.vcell.client.laf.VCellColors;
 import java.awt.GridBagConstraints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -86,7 +87,7 @@ public class ChomboMeshSpecificationPanel extends CollapsiblePanel {
 			try {
 				geometrySizeTextField = new javax.swing.JTextField();
 				geometrySizeTextField.setName("GeometrySizeTextField");
-				geometrySizeTextField.setForeground(java.awt.Color.blue);
+				geometrySizeTextField.setForeground(VCellColors.getValueForeground());
 				geometrySizeTextField.setEditable(false);
 				// user code begin {1}
 				// user code end

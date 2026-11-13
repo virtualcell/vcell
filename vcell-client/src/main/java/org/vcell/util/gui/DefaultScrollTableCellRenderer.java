@@ -32,6 +32,7 @@ import org.vcell.util.NumberUtils;
 import org.vcell.util.gui.sorttable.SortTableModel;
 
 import cbit.gui.ModelProcessEquation;
+import cbit.vcell.client.laf.VCellColors;
 import cbit.vcell.client.desktop.biomodel.BioModelEditorApplicationsTableModel;
 import cbit.vcell.client.desktop.biomodel.BioModelEditorRightSideTableModel;
 import cbit.vcell.client.desktop.biomodel.SelectionManager;
@@ -52,12 +53,11 @@ import cbit.vcell.mapping.spatial.processes.SurfaceKinematics;
 @SuppressWarnings("serial")
 public class DefaultScrollTableCellRenderer extends DefaultTableCellRenderer {
 	private static final int LEFT_ICON_MARGIN = 1;
-	public static final Color hoverColor = new Color(0xFDFCDC);
+	private static final Color LIGHT_THEME_HOVER_COLOR = new Color(0xFDFCDC);
 	public static final Border DEFAULT_GAP = BorderFactory.createEmptyBorder(1,LEFT_ICON_MARGIN,1,1);
 	static final Border focusHighlightBorder = UIManager.getBorder("Table.focusCellHighlightBorder");
-	public static final Color uneditableForeground = new Color(0x964B00/*0x967117*/)/*UIManager.getColor("TextField.inactiveForeground")*/;
 	static final Border noFocusBorder = new EmptyBorder(1, 1, 1, 1);
-	public static final Color everyOtherRowColor = new Color(0xe8edff);
+	private static final Color LIGHT_THEME_EVERY_OTHER_ROW_COLOR = new Color(0xe8edff);
 	private boolean bEnableUneditableForeground = true;
 	public String defaultToolTipText = null;
 	/**
@@ -70,6 +70,23 @@ public class DefaultScrollTableCellRenderer extends DefaultTableCellRenderer {
 	
 	public void disableUneditableForeground() {
 		bEnableUneditableForeground = false;
+	}
+
+	/**
+	 * Stripe for odd rows: VCell's lavender on a light row background, the theme's alternate row color
+	 * (or a slightly lighter shade) on a dark one.
+	 */
+	public static Color getEveryOtherRowColor(Color rowBackground) {
+		if (!VCellColors.isDark(rowBackground)) return LIGHT_THEME_EVERY_OTHER_ROW_COLOR;
+		Color themeAlternate = UIManager.getColor("Table.alternateRowColor");
+		// plain Color rather than the theme's UIResource, so Synth renderers don't swap in their own
+		if (null != themeAlternate && VCellColors.isDark(themeAlternate) && themeAlternate.getRGB() != rowBackground.getRGB()) return new Color(themeAlternate.getRGB());
+		return VCellColors.blend(rowBackground, Color.white, 0.05f);
+	}
+
+	/** Hovered row: VCell's pale yellow on a light row background, a lighter shade of it on a dark one. */
+	public static Color getHoverColor(Color rowBackground) {
+		return VCellColors.isDark(rowBackground) ? VCellColors.blend(rowBackground, Color.white, 0.12f) : LIGHT_THEME_HOVER_COLOR;
 	}
 	
 	/**
@@ -94,20 +111,20 @@ public class DefaultScrollTableCellRenderer extends DefaultTableCellRenderer {
 			setForeground(table.getSelectionForeground());
 		} else {
 			if (table instanceof ScrollTable && ((ScrollTable)table).getHoverRow() == row) {
-				setBackground(hoverColor);
+				setBackground(getHoverColor(table.getBackground()));
 			} else {
-				setBackground(row % 2 == 0 ? table.getBackground() : everyOtherRowColor);				
+				setBackground(row % 2 == 0 ? table.getBackground() : getEveryOtherRowColor(table.getBackground()));
 			}
 			
 			if(table.getModel() instanceof SpatialProcessTableModel /* && column == SpatialProcessTableModel.COLUMN_SpatialProcess_SPATIALOBJECTS */) {
 				boolean found = isMatchWithSelectedObject(table, row);
 				if(found == true) {
-					setBackground(Color.yellow);
+					setBackground(VCellColors.getMatchHighlightBackground());
 				}
 			} else if(table.getModel() instanceof SpatialObjectTableModel /* && column == SpatialObjectTableModel.COLUMN_SpatialObject_NAME */) {
 				boolean found = isMatchWithSelectedProcess(table, row);
 				if(found == true) {
-					setBackground(Color.yellow);
+					setBackground(VCellColors.getMatchHighlightBackground());
 				}
 			}
 			setForeground(table.getForeground());
@@ -116,14 +133,14 @@ public class DefaultScrollTableCellRenderer extends DefaultTableCellRenderer {
 		TableModel tableModel = table.getModel();
 		if (bEnableUneditableForeground && (!table.isEnabled() || !tableModel.isCellEditable(row, column))) {
 			if (!isSelected) {
-				setForeground(uneditableForeground);
+				setForeground(VCellColors.getUneditableForeground());
 				if(tableModel instanceof NetworkConstraintsTableModel && column == NetworkConstraintsTableModel.iColValue) {
 					NetworkConstraintsTableModel tm = (NetworkConstraintsTableModel)tableModel;
 					String def = (String) tm.getValueAt(row, NetworkConstraintsTableModel.iColDefault);
 					String val = (String)value;
 					if(!val.equals(def)){
 						value = "<html><b>" + value + "</b></html>";
-						setForeground(Color.red);
+						setForeground(VCellColors.getErrorForeground());
 					}
 				}
 			}

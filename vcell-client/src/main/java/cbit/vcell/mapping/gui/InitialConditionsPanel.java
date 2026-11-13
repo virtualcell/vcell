@@ -10,6 +10,7 @@
 
 package cbit.vcell.mapping.gui;
 
+import cbit.vcell.client.laf.VCellColors;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.*;
@@ -494,8 +495,8 @@ public class InitialConditionsPanel extends DocumentEditorSubPanel implements Ap
 
 				String symbolUnicode = null == unit ? "1" : unit.getSymbolUnicode();
 	            this.setHorizontalTextPosition(JLabel.LEFT);
-	            this.setIcon(new TextIcon("[" + symbolUnicode + "]", DefaultScrollTableCellRenderer.uneditableForeground));
-                int rgb = 0x00ffffff & DefaultScrollTableCellRenderer.uneditableForeground.getRGB();
+	            this.setIcon(new TextIcon("[" + symbolUnicode + "]", VCellColors.getUneditableForeground()));
+                int rgb = 0x00ffffff & VCellColors.getUneditableForeground().getRGB();
                 return "<html>" + StringEscapeUtils.escapeHtml4(this.getText()) + " <font color=#" + Integer.toHexString(rgb) + "> [" + symbolUnicode + "] </font></html>";
             } else {
                 lg.warn("Unexpected value type provided; unable to correctly process");
@@ -540,7 +541,6 @@ public class InitialConditionsPanel extends DocumentEditorSubPanel implements Ap
     }
 
     protected class RulesTableCellRenderer extends DefaultScrollTableCellRenderer {
-        final Color lightBlueBackground = new Color(214, 234, 248);
 
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
@@ -559,7 +559,7 @@ public class InitialConditionsPanel extends DocumentEditorSubPanel implements Ap
                 return this;
             }
 
-	        if (isSelected) this.setBackground(this.lightBlueBackground);
+	        if (isSelected) this.setBackground(VCellColors.getSoftSelectionBackground());
 
 			String speciesContextName = scs.getSpeciesContext().getName();
 			// Combine both rate rules and assignment rules into a single data structure to look through.

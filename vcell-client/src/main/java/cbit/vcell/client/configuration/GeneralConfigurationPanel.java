@@ -1,5 +1,8 @@
 package cbit.vcell.client.configuration;
 
+import cbit.vcell.client.laf.CategoryTitledBorder;
+import cbit.vcell.client.laf.VCellFonts;
+import cbit.vcell.client.laf.VCellColors;
 import java.awt.BorderLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -30,10 +33,9 @@ public class GeneralConfigurationPanel extends JPanel {
 		
 		Border margin = new EmptyBorder(5,3,1,1);
 		Border loweredEtchedBorder = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
-		TitledBorder panelBorder = BorderFactory.createTitledBorder(loweredEtchedBorder, " General Properties ");
+		TitledBorder panelBorder = new CategoryTitledBorder(loweredEtchedBorder, " General Properties ", VCellFonts.Category.HEADING);
 		panelBorder.setTitleJustification(TitledBorder.LEFT);
 		panelBorder.setTitlePosition(TitledBorder.TOP);
-		panelBorder.setTitleFont(getFont().deriveFont(Font.BOLD));
 		
 		String s = ResourceUtil.getJavaVersion().toString();					// EIGHT
 		String s6 = ResourceUtil.getUserHomeDir().getAbsolutePath();			// C:\Users\vasilescu
@@ -43,8 +45,8 @@ public class GeneralConfigurationPanel extends JPanel {
 		jpanel.setBorder(new CompoundBorder(margin, panelBorder));
 		add(jpanel,BorderLayout.CENTER);
 		
-		String redhome = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=\"#880000\">(home)</font>";
-		String redinstall = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=\"#880000\">(install)</font>";
+		String redhome = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=\"" + VCellColors.toHtmlColor(VCellColors.getWarningForeground()) + "\">(home)</font>";
+		String redinstall = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=\"" + VCellColors.toHtmlColor(VCellColors.getWarningForeground()) + "\">(install)</font>";
 
 		jpanel.setLayout(new GridBagLayout());
 		GridBagConstraints gbc = new GridBagConstraints();

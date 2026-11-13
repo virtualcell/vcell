@@ -10,6 +10,7 @@
 
 package org.vcell.util.gui;
 
+import cbit.vcell.client.laf.VCellFonts;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
@@ -119,8 +120,6 @@ public class CollapsiblePanel extends JPanel {
 		}
 	}
 	
-	public static Icon expandedIcon = UIManager.getIcon("Tree.expandedIcon");
-	public static Icon collapsedIcon = UIManager.getIcon("Tree.collapsedIcon");
 	public static final Color borderTitleColor = UIManager.getColor("TitledBorder.titleColor");
 	private JLabel borderLabel = null;
 	private boolean bExpanded = true;
@@ -132,9 +131,9 @@ public class CollapsiblePanel extends JPanel {
 	public CollapsiblePanel(String borderTitle, boolean expanded, Border border) {
 		super();
 		this.bExpanded = expanded;
-		borderLabel  = new JLabel(borderTitle, bExpanded ? expandedIcon : collapsedIcon, SwingConstants.LEFT);
+		borderLabel  = new JLabel(borderTitle, getExpansionIcon(bExpanded), SwingConstants.LEFT);
 		borderLabel.setForeground(borderTitleColor);
-		borderLabel.setFont(borderLabel.getFont().deriveFont(Font.PLAIN));
+		VCellFonts.setCategory(borderLabel, VCellFonts.Category.BODY);
 		Dimension size = new Dimension(borderLabel.getPreferredSize().width + 5, borderLabel.getPreferredSize().height);
 		borderLabel.setPreferredSize(size);
 		setBorder(new ComponentTitledBorder(borderLabel, this, border));
@@ -157,9 +156,9 @@ public class CollapsiblePanel extends JPanel {
 	public CollapsiblePanel(String borderTitle, boolean expanded) {
 		super();
 		this.bExpanded = expanded;
-		borderLabel  = new JLabel(borderTitle, bExpanded ? expandedIcon : collapsedIcon, SwingConstants.LEFT);
+		borderLabel  = new JLabel(borderTitle, getExpansionIcon(bExpanded), SwingConstants.LEFT);
 		borderLabel.setForeground(borderTitleColor);
-		borderLabel.setFont(borderLabel.getFont().deriveFont(Font.BOLD));
+		VCellFonts.setCategory(borderLabel, VCellFonts.Category.HEADING);
 		Dimension size = new Dimension(borderLabel.getPreferredSize().width + 5, borderLabel.getPreferredSize().height);
 		borderLabel.setPreferredSize(size);
 		setBorder(new ComponentTitledBorder(borderLabel, this, BorderFactory.createEtchedBorder()));
@@ -184,10 +183,15 @@ public class CollapsiblePanel extends JPanel {
 		if (!isVisible()) {
 			return;
 		}
-		borderLabel.setIcon(bExpanded ? expandedIcon : collapsedIcon);
+		borderLabel.setIcon(getExpansionIcon(bExpanded));
 		contentPanel.setVisible(bExpanded);
 		revalidate();
 		firePropertyChange(SEARCHPPANEL_EXPANDED, !bExpanded, bExpanded);
+	}
+
+	// Looked up on use rather than once at class load, so the arrows follow the current theme
+	private static Icon getExpansionIcon(boolean expanded) {
+		return UIManager.getIcon(expanded ? "Tree.expandedIcon" : "Tree.collapsedIcon");
 	}
 	
 	public JPanel getContentPanel() {

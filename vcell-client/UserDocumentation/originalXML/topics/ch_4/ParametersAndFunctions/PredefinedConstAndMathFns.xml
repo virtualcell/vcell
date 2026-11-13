@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <vcelldoc>
-<page title="Predefined Constants and Math Functions">
+<page title="Predefined Expressions">
 
 	
 	<introduction>
@@ -14,8 +14,7 @@
 	
 	<operations>
 	<para>
-	Clicking the 'Parameters and Functions' item in the 'Navigation' panel on the left of a VCell document displays the Parameters and Functions in the 'View' panel on the right. 
-	This view has 2 tabs. Clicking on the <bold>Predefined Constants and Math Functions</bold> tab displays a list of the allowed VCell constants and math functions in a table. This table is not editable. 
+	Clicking <bold>Predefined Expressions</bold> under <bold>Mathematics &amp; Units</bold> in the 'Navigation' panel on the left of a VCell document, or its tab in the 'View' panel on the right, displays a list of the allowed VCell constants and math functions in a table. This table is not editable. 
 	The list of symbols, constants and functions are classified as follows: 
 	</para>
 	

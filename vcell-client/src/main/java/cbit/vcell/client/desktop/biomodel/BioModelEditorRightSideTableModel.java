@@ -10,6 +10,7 @@
 
 package cbit.vcell.client.desktop.biomodel;
 
+import cbit.vcell.client.laf.VCellColors;
 import java.beans.PropertyChangeListener;
 import java.util.List;
 
@@ -50,9 +51,9 @@ public abstract class BioModelEditorRightSideTableModel<T> extends VCellSortTabl
 	public static final String ADD_NEW_HERE_TEXT = "(add new here)";
 	public static final String ADD_NEW_HERE_HTML = "<html><i>(add new here)</i></html>";
 	public static final String ADD_NEW_HERE_REACTION_TEXT = ModelProcessEquation.REACTION_GOESTO;
-	public static final String ADD_NEW_HERE_REACTION_HTML = "<html><i>(add new here, e.g. <font color=blue><b>a+b" + ModelProcessEquation.REACTION_GOESTO + "c</b></font>)</i></html>";
+	public static final String ADD_NEW_HERE_REACTION_HTML = "<html><i>(add new here, e.g. <font color=" + VCellColors.toHtmlColor(VCellColors.getValueForeground()) + "><b>a+b" + ModelProcessEquation.REACTION_GOESTO + "c</b></font>)</i></html>";
 	public static final String ADD_NEW_REACTION_OR_RULE_HTML = "<html><i>Press the "
-			+ "<font color=blue><b>New... </b></font>"
+			+ "<font color=" + VCellColors.toHtmlColor(VCellColors.getValueForeground()) + "><b>New... </b></font>"
 //			+ "or the "
 //			+ "<font color=blue><b>New Rule </b></font>)"
 //			+ "buttons below for new entry."

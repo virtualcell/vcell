@@ -32,6 +32,9 @@ import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.UserCancelException;
+import cbit.vcell.client.desktop.ModelPickerDialog;
+import cbit.vcell.client.desktop.DocumentNameDialog;
+import java.util.Collection;
 import org.vcell.util.document.*;
 import org.vcell.util.document.VCDocument.DocumentCreationInfo;
 import org.vcell.util.document.VCDocument.VCDocumentType;
@@ -41,7 +44,6 @@ import org.vcell.util.gui.GeneralGuiUtils;
 import org.vcell.util.gui.VCFileChooser;
 import org.vcell.util.gui.exporter.FileFilters;
 
-import javax.swing.Timer;
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.tree.TreePath;
@@ -355,7 +357,8 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
         // Choose the other documentInfo. Bring up the appropriate dbTreePanel depending on the type of thisDocumentInfo
         VCDocumentInfo otherDocumentInfo = null;
         try {
-            otherDocumentInfo = selectDocument(thisDocumentInfo.getVCDocumentType(), this);
+            VCDocumentType documentType = thisDocumentInfo.getVCDocumentType();
+            otherDocumentInfo = selectDocument(documentType, this, "Compare \u201C" + thisDocumentInfo.getVersion().getName() + "\u201D With Another " + ModelPickerDialog.typeName(documentType), "Compare");
         } catch (Exception e) {
             if (!(e instanceof UserCancelException)) {
                 e.printStackTrace();
@@ -1263,106 +1266,38 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
 //
 //	}
 //}
+    /**
+     * Chooses a BioModel or MathModel whose application geometry is to be used; the caller then lists that model's
+     * geometries to choose from. (This was the database tree with geometry nodes, for picking a geometry directly.)
+     */
     public Object selectDocument2(VCDocumentType documentType, TopLevelWindowManager requester) throws Exception {
-        VCDocumentDbTreePanel myDBTreePanel = null;
-        DocumentManager documentManager = null;
-        String title = null;
-        switch (documentType) {
-            case BIOMODEL_DOC:
-                documentManager = getBioModelDbTreePanel().getDocumentManager();
-                myDBTreePanel = new BioModelDbTreePanel();
-                title = "Select BioModel:Geometry";
-                break;
-            case MATHMODEL_DOC:
-                documentManager = getMathModelDbTreePanel().getDocumentManager();
-                myDBTreePanel = new MathModelDbTreePanel();
-                title = "Select MathModel:Geometry";
-                break;
-            default:
-                throw new RuntimeException("ERROR: Unknown document type: " + documentType);
-        }
-//	switch (documentType) {
-//	case BIOMODEL_DOC: //{
-//		//JCheckBox chkboxHasSpatial = getBioModelDbTreePanel().getDatabaseSearchPanel().getChckbxHasSpatial();
-//		//boolean isSelected = chkboxHasSpatial.isSelected();
-////		try {
-//			documentManager = getBioModelDbTreePanel().getDocumentManager();
-//			myDBTreePanel = new BioModelDbTreePanel();
-////			myDBTreePanel.setDocumentManager(documentManager);
-////			ToolTipManager.sharedInstance().unregisterComponent(myDBTreePanel.getJTree1());
-////			selectGeomHover = new SelectGeomHover(myDBTreePanel);
-////			myDBTreePanel.getJTree1().addMouseMotionListener(selectGeomHover);
-////			//chkboxHasSpatial.setSelected(true);
-////			VersionInfo vInfo = DialogUtils.getDBTreePanelSelection(requester.getComponent(),myDBTreePanel,"Open","Select BioModel:Geometry");
-////			selection = (selectGeomHover.getSelection() != null?selectGeomHover.getSelection():vInfo);
-////		}finally {
-////			if(myDBTreePanel!= null){
-////				myDBTreePanel.getJTree1().removeMouseMotionListener(selectGeomHover);
-////				ToolTipManager.sharedInstance().registerComponent(myDBTreePanel.getJTree1());
-////				//chkboxHasSpatial.setSelected(isSelected);				
-////			}
-////		}
-//	//}
-//	break;
-//	case MATHMODEL_DOC: //{
-////		try {
-//			documentManager = getMathModelDbTreePanel().getDocumentManager();
-//			myDBTreePanel = new MathModelDbTreePanel();
-////			myDBTreePanel.setDocumentManager(documentManager);
-////			ToolTipManager.sharedInstance().unregisterComponent(myDBTreePanel.getJTree1());
-////			selectGeomHover = new SelectGeomHover(myDBTreePanel);
-////			myDBTreePanel.getJTree1().addMouseMotionListener(selectGeomHover);
-////			//chkboxHasSpatial.setSelected(true);
-////			VersionInfo vInfo = DialogUtils.getDBTreePanelSelection(requester.getComponent(),myDBTreePanel,"Open","Select BioModel:Geometry");
-////			return (selectGeomHover.getSelection() != null?selectGeomHover.getSelection():vInfo);
-////		}finally {
-////			if(myDBTreePanel!= null){
-////				myDBTreePanel.getJTree1().removeMouseMotionListener(selectGeomHover);
-////				ToolTipManager.sharedInstance().registerComponent(myDBTreePanel.getJTree1());
-////				//chkboxHasSpatial.setSelected(isSelected);				
-////			}
-////		}
-//	//}
-//	break;
-//	default: //{
-//		throw new RuntimeException("ERROR: Unknown document type: " + documentType);
-//	//}
-
-        SelectGeomHover selectGeomHover = null;
-        try {
-            myDBTreePanel.setDocumentManager(documentManager);
-            myDBTreePanel.setSpatialGeomMode(true);
-            ToolTipManager.sharedInstance().unregisterComponent(myDBTreePanel.getJTree1());
-            selectGeomHover = new SelectGeomHover(myDBTreePanel);
-            myDBTreePanel.getJTree1().addMouseMotionListener(selectGeomHover);
-            VersionInfo vInfo = DialogUtils.getDBTreePanelSelection(requester.getComponent(), myDBTreePanel, "Open", title);
-            return (selectGeomHover.getSelection() != null ? selectGeomHover.getSelection() : vInfo);
-        } finally {
-            if (myDBTreePanel != null && selectGeomHover != null) {
-                myDBTreePanel.getJTree1().removeMouseMotionListener(selectGeomHover);
-                ToolTipManager.sharedInstance().registerComponent(myDBTreePanel.getJTree1());
-            }
-        }
+        return this.selectDocument(documentType, requester, "Choose the " + (documentType == VCDocumentType.MATHMODEL_DOC ? "MathModel" : "BioModel") + " Whose Geometry to Use", "Select");
     }
 
     /**
      * Insert the method's description here.
      * Creation date: (5/14/2004 5:35:55 PM)
      */
+    /**
+     * Chooses a saved BioModel, MathModel or Geometry from the database, as the welcome window lists them.
+     * @param title what it's chosen for, e.g. "Open BioModel"
+     * @param selectLabel the choosing button's text, e.g. "Open"
+     * @throws UserCancelException if the user cancels
+     */
+    public VCDocumentInfo selectDocument(VCDocumentType documentType, TopLevelWindowManager requester, String title, String selectLabel) throws UserCancelException {
+        return ModelPickerDialog.pick(requester.getComponent(), title, selectLabel, getRequestManager().getDocumentManager(), documentType);
+    }
+
     public VCDocumentInfo selectDocument(VCDocumentType documentType, TopLevelWindowManager requester) throws Exception {
 
         // Set doubleClickValue to null.
         // if doubleClickValue is not null when dialog returns, use doubleClickValue value
         // otherwise use dialog return value
         switch (documentType) {
-            case BIOMODEL_DOC: {
-                return (BioModelInfo) DialogUtils.getDBTreePanelSelection(requester.getComponent(), getBioModelDbTreePanel(), "Open", "Select BioModel");
-            }
-            case MATHMODEL_DOC: {
-                return (MathModelInfo) DialogUtils.getDBTreePanelSelection(requester.getComponent(), getMathModelDbTreePanel(), "Open", "Select MathModel");
-            }
+            case BIOMODEL_DOC:
+            case MATHMODEL_DOC:
             case GEOMETRY_DOC: {
-                return (GeometryInfo) DialogUtils.getDBTreePanelSelection(requester.getComponent(), getGeometryTreePanel(), "Open", "Select Geometry");
+                return this.selectDocument(documentType, requester, "Select " + ModelPickerDialog.typeName(documentType), "Select");
             }
             case EXTERNALFILE_DOC: {
                 // Get XML FIle, read the chars into a stringBuffer and create new XMLInfo.
@@ -1458,53 +1393,23 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
      * Insert the method's description here.
      * Creation date: (5/14/2004 6:11:35 PM)
      */
-    public String showSaveDialog(final VCDocumentType documentType, final Component requester, final String oldName) throws Exception {
-        JOptionPane saveDialog = new JOptionPane(null, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[]{"Save", "Cancel"});
-        saveDialog.setWantsInput(true);
-        saveDialog.setInitialSelectionValue(oldName);
-        JPanel panel = new JPanel(new BorderLayout());
-        JComponent tree = null;
-        switch (documentType) {
-            case BIOMODEL_DOC: {
-                tree = getBioModelDbTreePanel();
-                break;
-            }
-            case MATHMODEL_DOC: {
-                tree = getMathModelDbTreePanel();
-                break;
-            }
-            case GEOMETRY_DOC: {
-                tree = getGeometryTreePanel();
-                break;
-            }
-            default: {
-                throw new RuntimeException("DatabaseWindowManager.showSaveDialog() - unknown document type");
-            }
-        }
-        tree.setPreferredSize(new java.awt.Dimension(405, 600));
-        panel.add(tree, BorderLayout.CENTER);
-        panel.add(new JLabel("Please type a new name:"), BorderLayout.SOUTH);
-        saveDialog.setMessage("");
-        saveDialog.setMessage(panel);
-        JDialog d = saveDialog.createDialog(requester, "Save document:");
-        d.setResizable(true);
-        d.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-        final JOptionPane finalSaveDialog = saveDialog;
-        ActionListener al = new ActionListener() {
-            public void actionPerformed(ActionEvent ae) {
-                finalSaveDialog.selectInitialValue();
-            }
+    /**
+     * Asks for the name to save a new document under: it starts with <code>oldName</code>, offers the user's own names
+     * to build on, and won't accept an empty name or one in <code>takenNames</code>.
+     * @param takenNames the names of the user's own documents of this type
+     * @return the chosen name
+     * @throws UserCancelException if the user cancels
+     */
+    public String showSaveDialog(final VCDocumentType documentType, final Component requester, final String oldName, final Collection<String> takenNames) throws Exception {
+        String documentTypeName = switch (documentType) {
+            case BIOMODEL_DOC -> "BioModel";
+            case MATHMODEL_DOC -> "MathModel";
+            case GEOMETRY_DOC -> "Geometry";
+            default -> throw new RuntimeException("DatabaseWindowManager.showSaveDialog() - unknown document type");
         };
-        final Timer getFocus = new Timer(100, al);
-        getFocus.setRepeats(false);
-        getFocus.start();
-        DialogUtils.showModalJDialogOnTop(d, requester);
-        if ("Save".equals(saveDialog.getValue())) {
-            return saveDialog.getInputValue() == null ? null : saveDialog.getInputValue().toString();
-        } else {
-            // user cancelled
-            throw UserCancelException.CANCEL_NEW_NAME;
-        }
+        String chosenName = DocumentNameDialog.ask(requester, documentTypeName, oldName, takenNames);
+        if (chosenName == null) throw UserCancelException.CANCEL_NEW_NAME;
+        return chosenName;
     }
 
     public void reconnect() {

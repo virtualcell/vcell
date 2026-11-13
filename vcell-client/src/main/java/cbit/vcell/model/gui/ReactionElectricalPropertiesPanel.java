@@ -10,7 +10,7 @@
 
 package cbit.vcell.model.gui;
 
-import java.awt.Color;
+import cbit.vcell.client.laf.VCellLookAndFeel;
 import java.awt.Insets;
 
 import cbit.vcell.model.Feature;
@@ -437,9 +437,9 @@ private void initialize() {
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
 		add(getCurrentCheckbox(), gbc);
 		
-		setBackground(Color.white);
-		getMolecularCheckbox().setBackground(Color.white);
-		getCurrentCheckbox().setBackground(Color.white);
+		setBackground(VCellLookAndFeel.getContentBackground());
+		getMolecularCheckbox().setBackground(VCellLookAndFeel.getContentBackground());
+		getCurrentCheckbox().setBackground(VCellLookAndFeel.getContentBackground());
 		initConnections();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);

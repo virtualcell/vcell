@@ -10,6 +10,7 @@
 
 package cbit.vcell.client.data;
 
+import cbit.vcell.client.laf.VCellFonts;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
@@ -1571,7 +1572,7 @@ private javax.swing.JPanel getJPanelLoctionLabels() {
 			localSimLogFilePathTextField.setEnabled(true);
 			localSimLogFilePathTextField.setHorizontalAlignment(SwingConstants.CENTER);
 			localSimLogFilePathTextField.setBorder(null);
-			localSimLogFilePathTextField.setFont(locationLabel.getFont().deriveFont(Font.BOLD));
+			VCellFonts.setCategory(localSimLogFilePathTextField, VCellFonts.Category.HEADING);
 			locationLabelsPanel.add(localSimLogFilePathTextField);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
@@ -1686,6 +1687,7 @@ private JButton getPlotButton() {
 			plotButton = new JButton("Plot");
 			plotButton.setHorizontalTextPosition(SwingConstants.LEFT);
 			plotButton.setIcon(new DownArrowIcon());
+			DownArrowIcon.keepPushButtonLook(plotButton);
 			plotButton.addActionListener(ivjEventHandler);
 			plotButton.setEnabled(false);
 		} catch (java.lang.Throwable ivjExc) {
@@ -1701,6 +1703,7 @@ private JButton getROIButton() {
 			roiButton = new JButton("ROI");
 			roiButton.setHorizontalTextPosition(SwingConstants.LEFT);
 			roiButton.setIcon(new DownArrowIcon());
+			DownArrowIcon.keepPushButtonLook(roiButton);
 			roiButton.addActionListener(ivjEventHandler);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);

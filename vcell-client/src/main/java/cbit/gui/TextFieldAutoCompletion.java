@@ -10,6 +10,8 @@
 
 package cbit.gui;
 
+import cbit.vcell.client.laf.VCellFonts;
+import cbit.vcell.client.laf.VCellColors;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
@@ -200,8 +202,7 @@ public class TextFieldAutoCompletion extends JTextField {
 		
 		JPanel panel1 = new JPanel();
 		JLabel infoLabel1 = new JLabel("\u2191\u2193 to move; 'Esc' to cancel; 'Enter' to accept;");
-		Font font = getFont();
-		infoLabel1.setFont(font.deriveFont(AffineTransform.getScaleInstance(0.9, 0.9)));
+		VCellFonts.setCategory(infoLabel1, VCellFonts.Category.CAPTION);
 		panel1.add(infoLabel1);
 		panel.add(panel1);
 		autoCompJPopupMenu.add(panel);
@@ -465,7 +466,7 @@ public class TextFieldAutoCompletion extends JTextField {
 //	       			autoCompJList.setSelectedIndex(0);
 //	       		}
 	       		autoCompJList.ensureIndexIsVisible(0);
-	       		autoCompJList.setSelectionBackground(Color.lightGray);				
+	       		autoCompJList.setSelectionBackground(VCellColors.getSubtleBackground());				
 				
 	       		try {
 	       			Rectangle loc = modelToView(getCaretPosition());

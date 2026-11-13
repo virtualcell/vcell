@@ -10,6 +10,8 @@
 
 package cbit.vcell.microscopy.batchrun.gui.addFRAPdocWizard;
 
+import cbit.vcell.client.laf.VCellFonts;
+import cbit.vcell.client.laf.VCellColors;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
@@ -83,8 +85,8 @@ public class RoiForErrorPanel extends JPanel implements ActionListener
 		allROIColors = getAllROIColors();
 		
 		JLabel selectRoisForLabel = new JLabel();
-		selectRoisForLabel.setForeground(new Color(0, 0, 128));
-		selectRoisForLabel.setFont(new Font("", Font.BOLD | Font.ITALIC, 16));
+		selectRoisForLabel.setForeground(VCellColors.getTitleForeground());
+		VCellFonts.setCategory(selectRoisForLabel, VCellFonts.Category.TITLE, Font.BOLD | Font.ITALIC);
 		selectRoisForLabel.setText("Select ROIs for Error Calculation");
 		add(selectRoisForLabel, BorderLayout.NORTH);
 
@@ -96,8 +98,8 @@ public class RoiForErrorPanel extends JPanel implements ActionListener
 		centerPanel.setLayout(gridBagLayout);
 
 		final JLabel selectTheRegionsLabel = new JLabel();
-		selectTheRegionsLabel.setForeground(new Color(0, 0, 128));
-		selectTheRegionsLabel.setFont(new Font("", Font.BOLD, 12));
+		selectTheRegionsLabel.setForeground(VCellColors.getTitleForeground());
+		VCellFonts.setCategory(selectTheRegionsLabel, VCellFonts.Category.HEADING);
 		selectTheRegionsLabel.setText("Select the regions that you want to use for computing the errors in optimization");
 		final GridBagConstraints gridBagConstraints = new GridBagConstraints();
 		gridBagConstraints.gridwidth = 5;

@@ -1,5 +1,6 @@
 package org.vcell.model.rbm.gui;
 
+import cbit.vcell.client.laf.VCellColors;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -497,9 +498,9 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
                 text6 = fieldSimulationContext.getMostRecentlyCreatedOutputSpec().getBNGReactions().length + "";
             }
             if (fieldSimulationContext.isInsufficientIterations()) {
-                text7 = "<font color=#8C001A>" + SimulationContext.IssueInsufficientIterations + "</font>";
+                text7 = "<font color=" + VCellColors.toHtmlColor(VCellColors.getWarningForeground()) + ">" + SimulationContext.IssueInsufficientIterations + "</font>";
             } else if (fieldSimulationContext.isInsufficientMaxMolecules()) {
-                text7 = "<font color=#8C001A>" + SimulationContext.IssueInsufficientMolecules + "</font>";
+                text7 = "<font color=" + VCellColors.toHtmlColor(VCellColors.getWarningForeground()) + ">" + SimulationContext.IssueInsufficientMolecules + "</font>";
             }
 
         } else {

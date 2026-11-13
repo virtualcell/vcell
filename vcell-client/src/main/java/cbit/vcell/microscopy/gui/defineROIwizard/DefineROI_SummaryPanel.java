@@ -10,6 +10,8 @@
 
 package cbit.vcell.microscopy.gui.defineROIwizard;
 
+import cbit.vcell.client.laf.VCellFonts;
+import cbit.vcell.client.laf.VCellColors;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -57,8 +59,8 @@ public class DefineROI_SummaryPanel extends JPanel {
         setLayout(gridBagLayout);
 
         roiInfo = new JLabel();
-        roiInfo.setForeground(new Color(0, 0, 128));
-        roiInfo.setFont(new Font("", Font.BOLD | Font.ITALIC, 15));
+        roiInfo.setForeground(VCellColors.getTitleForeground());
+        VCellFonts.setCategory(roiInfo, VCellFonts.Category.TITLE, Font.BOLD | Font.ITALIC);
         roiInfo.setText("ROIs have been saved.  Please varify the following information.");
         GridBagConstraints gridBagConstraints1 = new GridBagConstraints();
         gridBagConstraints1.gridy = 0;
@@ -237,7 +239,7 @@ public class DefineROI_SummaryPanel extends JPanel {
 
             startIndexAvaliableLabel = new JLabel();
             startIndexAvaliableLabel.setText("");
-            startIndexAvaliableLabel.setForeground(Color.red);
+            startIndexAvaliableLabel.setForeground(VCellColors.getErrorForeground());
             final GridBagConstraints gridBagConstraints_1 = new GridBagConstraints();
             gridBagConstraints_1.gridwidth = 4;
             gridBagConstraints_1.gridy = 1;

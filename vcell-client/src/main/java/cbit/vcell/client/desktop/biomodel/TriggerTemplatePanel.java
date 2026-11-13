@@ -1,5 +1,6 @@
 package cbit.vcell.client.desktop.biomodel;
 
+import cbit.vcell.client.laf.VCellFonts;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
@@ -112,7 +113,7 @@ public class TriggerTemplatePanel extends JPanel {
 		// Trigger Label
 		//
 		JLabel lblNewLabel_1 = new JLabel("Pre-Defined Trigger conditions");
-		lblNewLabel_1.setFont(new Font("Tahoma", Font.BOLD, 11));
+		VCellFonts.setCategory(lblNewLabel_1, VCellFonts.Category.HEADING);
 		GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
 		gbc_lblNewLabel_1.gridwidth = 2;
 		gbc_lblNewLabel_1.insets = new Insets(4, 4, 5, 4);

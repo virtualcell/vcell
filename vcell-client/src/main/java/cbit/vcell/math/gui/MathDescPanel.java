@@ -9,6 +9,7 @@
  */
 
 package cbit.vcell.math.gui;
+import cbit.vcell.client.laf.VCellColors;
 import java.util.Enumeration;
 import java.util.Vector;
 
@@ -472,7 +473,7 @@ private javax.swing.JScrollPane getJScrollPane1() {
 			ivjJScrollPane1.setName("JScrollPane1");
 			ivjJScrollPane1.setPreferredSize(new java.awt.Dimension(700, 400));
 			ivjJScrollPane1.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.RAISED));
-			ivjJScrollPane1.setBackground(java.awt.Color.lightGray);
+			ivjJScrollPane1.setBackground(VCellColors.getSubtleBackground());
 			ivjJScrollPane1.setMinimumSize(new java.awt.Dimension(22, 22));
 			getJScrollPane1().setViewportView(getExpressionCanvas1());
 			// user code begin {1}

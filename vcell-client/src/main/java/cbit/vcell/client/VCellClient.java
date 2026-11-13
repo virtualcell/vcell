@@ -12,6 +12,7 @@ package cbit.vcell.client;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.DocumentWindowAboutBox;
+import cbit.vcell.client.laf.VCellLookAndFeel;
 import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
@@ -21,7 +22,6 @@ import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.server.VCellConnectionFactory;
 import com.google.inject.Inject;
 import com.install4j.api.launcher.ApplicationLauncher;
-import org.vcell.api.client.VCellApiClient;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.api.messaging.RemoteProxyVCellConnectionFactory;
 import org.vcell.api.server.ClientServerManager;
@@ -29,7 +29,6 @@ import org.vcell.api.server.ClientServerManager.InteractiveContextDefaultProvide
 import org.vcell.api.utils.Auth0ConnectionUtils;
 import org.vcell.util.VCellThreadChecker;
 import org.vcell.util.document.VCDocument;
-import org.vcell.util.document.VCDocument.VCDocumentType;
 
 import javax.swing.*;
 import java.util.Hashtable;
@@ -71,6 +70,19 @@ public class VCellClient {
 	    public synchronized void addInvalidComponent(JComponent component) {
 	        checkThreadViolations(component);
 	        super.addInvalidComponent(component);
+	    }
+
+	    // A panel that comes into view after a theme switch must be brought up to date before it is laid out or painted
+	    @Override
+	    public void validateInvalidComponents() {
+	        VCellLookAndFeel.refreshStaleComponentsIfPending();
+	        super.validateInvalidComponents();
+	    }
+
+	    @Override
+	    public void paintDirtyRegions() {
+	        VCellLookAndFeel.refreshStaleComponentsIfPending();
+	        super.paintDirtyRegions();
 	    }
 
 	    public void addDirtyRegion(JComponent component, int x, int y, int w, int h) {
@@ -139,6 +151,14 @@ private DocumentWindowManager createAndShowGUI(VCDocument startupDoc) {
 	return windowManager;
 }
 
+// Starts at the welcome window, with the database window and the others made ready as for a model
+private TopLevelWindowManager createAndShowWelcome() {
+	ClientMDIManager mdiManager = (ClientMDIManager) getMdiManager();
+	mdiManager.showWelcomeWindow();
+	mdiManager.createRecyclableWindows();
+	return mdiManager.getWindowManager(ClientMDIManager.WELCOME_WINDOW_ID);
+}
+
 public ClientServerManager getClientServerManager() {
 	return clientServerManager;
 }
@@ -175,7 +195,7 @@ private void setStatusUpdater(StatusUpdater newStatusUpdater) {
 }
 
 public void startClient(final VCDocument startupDoc, final ClientServerInfo clientServerInfo) {
-	VCellLookAndFeel.setVCellLookAndFeel();
+	VCellLookAndFeel.initializeVCellLookAndFeel();
 
 	Hashtable<String, Object> hash = new Hashtable<String, Object>();	
 	AsynchClientTask task1  = new AsynchClientTask("Starting Virtual Cell", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
@@ -188,12 +208,9 @@ public void startClient(final VCDocument startupDoc, final ClientServerInfo clie
 			VCellClient.setInstance(VCellClient.this);
 			// start auxilliary stuff
 			VCellClient.this.startStatusThreads();
-			// make sure we have at least a blank document to start with
+			// a model to open at startup; without one, VCell starts at the welcome window
 			if (startupDoc != null) {
 				hashTable.put("startupDoc",startupDoc);
-			} else {
-				VCDocument newStartupDoc = ((ClientRequestManager)VCellClient.this.getRequestManager()).createDefaultDocument(VCDocumentType.BIOMODEL_DOC);
-				hashTable.put("startupDoc",newStartupDoc);
 			}
 			DocumentWindowAboutBox.parseVCellVersion();
 		}
@@ -206,7 +223,7 @@ public void startClient(final VCDocument startupDoc, final ClientServerInfo clie
 			// needs to be set first, else throw away dirty/needs paint information stored in previous instance.
 			RepaintManager.setCurrentManager(new VCellClient.CheckThreadViolationRepaintManager());
 
-			DocumentWindowManager currWindowManager = VCellClient.this.createAndShowGUI(startupDoc);
+			TopLevelWindowManager currWindowManager = startupDoc != null ? VCellClient.this.createAndShowGUI(startupDoc) : VCellClient.this.createAndShowWelcome();
 		    if (currWindowManager != null) {
 		    	hashTable.put("currWindowManager", currWindowManager);
 		    }
@@ -260,7 +277,9 @@ public void startClient(final VCDocument startupDoc, final ClientServerInfo clie
 
 	};
 
-	AsynchClientTask task3a = ClientLogin.popupLogin();
+	// Started at the welcome window, the user picks how to log in there; still logged in from last time (not having
+	// logged out), they are logged in again without asking. With a model to open, the login dialog asks.
+	AsynchClientTask task3a = startupDoc != null ? ClientLogin.popupLogin() : ClientLogin.loginIfStillLoggedIn();
 
 	AsynchClientTask task3b = ClientLogin.loginWithAuth0(auth0ConnectionUtils);
 	

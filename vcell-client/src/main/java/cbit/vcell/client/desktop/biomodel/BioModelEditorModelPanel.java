@@ -10,6 +10,8 @@
 
 package cbit.vcell.client.desktop.biomodel;
 
+import cbit.vcell.client.laf.VCellColors;
+import cbit.vcell.client.laf.VCellLookAndFeel;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -613,17 +615,17 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 	}
 	
 	private void initialize(){
-		newButton = new JButton("New");
+		newButton = DownArrowIcon.keepPushButtonLook(new JButton("New")); // gets the menu arrow when there's more than one structure
 		newButton.setName("ModelNewButton");
-		newButton2 = new JButton("New Rule");
+		newButton2 = DownArrowIcon.keepPushButtonLook(new JButton("New Rule")); // gets the menu arrow when there's more than one structure
 		newButton2.setName("ModelNewRuleButton");
 		newMemButton = new JButton("New Membrane");
 		newMemButton.setName("ModelNewMembraneButton");
 		deleteButton = new JButton("Delete");
 		deleteButton.setName("ModelDeleteButton");
-		duplicateButton = new JButton("Duplicate");
+		duplicateButton = DownArrowIcon.keepPushButtonLook(new JButton("Duplicate")); // gets the menu arrow when there's more than one structure
 		duplicateButton.setName("ModelDuplicateButton");
-		pathwayButton = new JButton("Pathway Links", new DownArrowIcon());
+		pathwayButton = DownArrowIcon.keepPushButtonLook(new JButton("Pathway Links", new DownArrowIcon()));
 		pathwayButton.setName("ModelPathwayLinksButton");
 		pathwayButton.setHorizontalTextPosition(SwingConstants.LEFT);
 		textFieldSearch = new JTextField();
@@ -822,7 +824,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 								tooltip.append("<li>" + ro.getBioPaxObject() + "</li>");
 							}
 							if (!isSelected) {
-								setForeground(Color.blue);
+								setForeground(VCellColors.getValueForeground());
 							}
 							String finalName = null;
 							BioPaxObject bioPaxObject = relationshipSet.iterator().next().getBioPaxObject();
@@ -849,7 +851,6 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		};
 		// Annotations icon column renderer
 		DefaultScrollTableCellRenderer annotationTableCellRenderer = new DefaultScrollTableCellRenderer() {
-			final Color lightBlueBackground = new Color(214, 234, 248);
 			@Override
 			public Component getTableCellRendererComponent(JTable table,
 					Object value, boolean isSelected, boolean hasFocus,
@@ -870,7 +871,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 					}
 					if (entity != null) {
 						if(isSelected) {
-							setBackground(lightBlueBackground);
+							setBackground(VCellColors.getSoftSelectionBackground());
 						}
 						Identifiable identifiable = AnnotationsPanel.getIdentifiable(entity);
 						String freeText = bioModel.getVCMetaData().getFreeTextAnnotation(identifiable);
@@ -2063,6 +2064,9 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 			return;
 		}		
 		switch (folderClass) {
+		case MODEL_NODE: // Physiology has no diagram node: it opens on the diagram
+			selectTab(ModelPanelTabID.reaction_diagram);
+			break;
 		case REACTIONS_NODE:
 			selectTab(ModelPanelTabID.reaction_table);
 			break;
@@ -2246,7 +2250,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 				}
 				
 			});
-			setBackground(Color.white);
+			setBackground(VCellLookAndFeel.getContentBackground());
 		}
 
 		void setModel(Model model) {			

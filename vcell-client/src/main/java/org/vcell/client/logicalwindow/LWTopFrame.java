@@ -76,6 +76,15 @@ public abstract class LWTopFrame extends JFrame implements LWContainerHandle {
 	 * @return Window menu for adding a JMenuBar
 	 */
 	public static JMenu createWindowMenu(boolean bTextMenu ) {
+		return createWindowMenu(bTextMenu, List.of());
+	}
+
+	/**
+	 * @param bTextMenu if true, make top menu item text; if false, use icon
+	 * @param extraItems items listed after the open windows, below a separator
+	 * @return Window menu for adding a JMenuBar
+	 */
+	public static JMenu createWindowMenu(boolean bTextMenu, List<JMenuItem> extraItems) {
 		JMenu mnWindow = new JMenu( );
 		if (bTextMenu) {
 			mnWindow.setName("WindowMenu");
@@ -87,7 +96,7 @@ public abstract class LWTopFrame extends JFrame implements LWContainerHandle {
 			mnWindow.setIcon(LWButton.SHOW_WINDOW_MENU_ICON);
 			mnWindow.setToolTipText("Show open windows");
 		}
-		mnWindow.addMenuListener(new Activator());
+		mnWindow.addMenuListener(new Activator(extraItems));
 		return mnWindow;
 	}
 
@@ -214,11 +223,22 @@ public abstract class LWTopFrame extends JFrame implements LWContainerHandle {
 	 * rebuilds menu with actively visible windows
 	 */
 	private static class Activator implements MenuListener {
+		private final List<JMenuItem> extraItems;
+
+		Activator(List<JMenuItem> extraItems) {
+			this.extraItems = extraItems;
+		}
+
 		@Override
 		public void menuSelected(MenuEvent e) {
 			JMenu menu = (JMenu) e.getSource();
 			menu.removeAll();
 			for (JMenuItem mi : activeMenuItems()) {
+				menu.add(mi);
+			}
+			if (extraItems.isEmpty()) return;
+			if (menu.getMenuComponentCount() > 0) menu.addSeparator();
+			for (JMenuItem mi : extraItems) {
 				menu.add(mi);
 			}
 		}

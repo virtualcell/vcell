@@ -10,7 +10,7 @@
 
 package cbit.vcell.client.desktop.biomodel;
 
-import java.awt.Color;
+import cbit.vcell.client.laf.VCellLookAndFeel;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -88,7 +88,7 @@ private void initialize() {
 		annotationTextArea.setEditable(false);
 		
 		setLayout(new GridBagLayout());
-		setBackground(Color.white);
+		setBackground(VCellLookAndFeel.getContentBackground());
 		GridBagConstraints gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 0; 
 		gbc.gridy = 0;

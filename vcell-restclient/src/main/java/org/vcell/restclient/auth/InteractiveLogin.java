@@ -69,6 +69,11 @@ public class InteractiveLogin {
      */
 
     public static AuthApiClient login(URI authServerUri, URI apiBaseUri, boolean ignoreSSLCertProblems) throws URISyntaxException, IOException, ParseException {
+        return login(authServerUri, apiBaseUri, ignoreSSLCertProblems, false);
+    }
+
+    /** As {@link #login(URI, URI, boolean)}, but opening the authorization server's sign-up screen if {@code signUp}. */
+    public static AuthApiClient login(URI authServerUri, URI apiBaseUri, boolean ignoreSSLCertProblems, boolean signUp) throws URISyntaxException, IOException, ParseException {
         URI successRedirectURI = new URI(apiBaseUri+( apiBaseUri.getHost().equals("localhost")?  "" : "/login_success"));
 
         // Retrieve OpenID Provider Metadata
@@ -106,7 +111,7 @@ public class InteractiveLogin {
         Scope scope = new Scope("openid", "email", "profile", "offline_access"); //, "email"); //, "profile", "offline_access");
 
         CodeVerifier codeVerifier = new CodeVerifier();
-        URI authRequestURI = getAuthRequestURI(oidcProviderMetadata, redirectURI, new ClientID(authClientID), scope, state, codeVerifier, apiBaseUri);
+        URI authRequestURI = getAuthRequestURI(oidcProviderMetadata, redirectURI, new ClientID(authClientID), scope, state, codeVerifier, apiBaseUri, signUp);
 
         final AuthorizationResponse authorizationResponse;
         if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
@@ -302,7 +307,7 @@ public class InteractiveLogin {
      * @throws ParseException
      */
     private static URI getAuthRequestURI(OIDCProviderMetadata oidcProviderMetadata, URI redirectURI, ClientID clientID,
-                                         Scope scope, State state, CodeVerifier codeVerifier, URI audience) throws URISyntaxException, IOException, ParseException {
+                                         Scope scope, State state, CodeVerifier codeVerifier, URI audience, boolean signUp) throws URISyntaxException, IOException, ParseException {
         // Create the authorization request
         URI authorizationEndpoint = oidcProviderMetadata.getAuthorizationEndpointURI();
 
@@ -314,10 +319,10 @@ public class InteractiveLogin {
                 .customParameter("prompt", "select_account")
                 .state(state)
                 .scope(scope) // Add any other required scopes
-                .codeChallenge(codeVerifier, CodeChallengeMethod.S256)
-                .build();
-
-        return authorizationRequest.toURI();
+                .codeChallenge(codeVerifier, CodeChallengeMethod.S256);
+        // Auth0's hosted login opens on its sign-up screen rather than its log-in screen
+        if (signUp) authorizationRequest.customParameter("screen_hint", "signup");
+        return authorizationRequest.build().toURI();
     }
 
     /**

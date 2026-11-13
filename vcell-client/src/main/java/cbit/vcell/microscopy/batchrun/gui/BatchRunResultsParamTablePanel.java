@@ -10,6 +10,8 @@
 
 package cbit.vcell.microscopy.batchrun.gui;
 
+import cbit.vcell.client.laf.VCellFonts;
+import cbit.vcell.client.laf.VCellColors;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -70,13 +72,13 @@ public class BatchRunResultsParamTablePanel extends JPanel implements PropertyCh
         setBorder(new EmptyBorder(5, 0, 10, 0));
 
         JLabel lblConfHeading = new JLabel("Documents");
-        lblConfHeading.setFont(new Font("Tahoma", Font.BOLD, 11));
+        VCellFonts.setCategory(lblConfHeading, VCellFonts.Category.HEADING);
         hypDetail = new HyperLinkLabel("Less Details", new HyperLinkListener(), 0);
         hypDetail.setHorizontalAlignment(JLabel.RIGHT);
         
         modelLabel = new JLabel("Many VFRAP Docs");
         modelLabel.setOpaque(true);
-        modelLabel.setBackground(new Color(166, 166, 255));
+        modelLabel.setBackground(VCellColors.getLavender());
         modelLabel.setBorder(BorderFactory.createEmptyBorder(1,5,1,1));
 
         GridBagConstraints gc1 = new GridBagConstraints();

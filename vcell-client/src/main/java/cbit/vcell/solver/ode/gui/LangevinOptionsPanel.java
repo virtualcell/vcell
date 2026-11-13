@@ -1,5 +1,7 @@
 package cbit.vcell.solver.ode.gui;
 
+import cbit.vcell.client.laf.VCellFonts;
+import cbit.vcell.client.laf.VCellColors;
 import java.awt.*;
 import java.math.BigInteger;
 
@@ -533,10 +535,9 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 		if(randomSeedHelpButton == null) {
 			Border border = BorderFactory.createEmptyBorder(1, 1, 1, 1);
 			randomSeedHelpButton = new JButton();
-			Font font = randomSeedHelpButton.getFont().deriveFont(Font.BOLD);
 			randomSeedHelpButton.setName("RandomSeedHelpButton");
 			randomSeedHelpButton.setBorder(border);
-			randomSeedHelpButton.setFont(font);
+			VCellFonts.setCategory(randomSeedHelpButton, VCellFonts.Category.HEADING);
 			randomSeedHelpButton.setText("<html><b>&nbsp;&nbsp;?&nbsp;&nbsp;</b></html>");
 		}
 		return randomSeedHelpButton;
@@ -637,7 +638,7 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 				numberOfConcurrentJobsInfoLabel = new javax.swing.JLabel();
 				numberOfConcurrentJobsInfoLabel.setName("NumberOfConcurrentJobsInfoLabel");
 				numberOfConcurrentJobsInfoLabel.setText("");
-				numberOfConcurrentJobsInfoLabel.setForeground(Color.blue);
+				numberOfConcurrentJobsInfoLabel.setForeground(VCellColors.getValueForeground());
 				numberOfConcurrentJobsInfoLabel.setToolTipText(SsldUtils.LangevinConcurrentSimulationsToolTip);
 			} catch (java.lang.Throwable ivjExc) {
 				handleException(ivjExc);

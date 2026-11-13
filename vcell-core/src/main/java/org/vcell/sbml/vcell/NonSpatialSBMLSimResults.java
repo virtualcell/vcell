@@ -192,9 +192,9 @@ public class NonSpatialSBMLSimResults {
         if (outputStartTime == 0) return data;
 
         double[] adjData = new double[outputNumberOfPoints];
-        int statingPosition = Math.max(0, data.length - outputNumberOfPoints - 1);
+        int startingPosition = Math.max(0, data.length - outputNumberOfPoints);
         if (outputNumberOfPoints > data.length) Arrays.fill(adjData, Double.NaN);
-        System.arraycopy(data, statingPosition, adjData, 0, Math.min(outputNumberOfPoints, data.length));
+        System.arraycopy(data, startingPosition, adjData, 0, Math.min(outputNumberOfPoints, data.length));
         return adjData;
     }
 

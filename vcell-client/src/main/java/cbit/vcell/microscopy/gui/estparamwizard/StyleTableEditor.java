@@ -12,6 +12,7 @@ package cbit.vcell.microscopy.gui.estparamwizard;
 
 
 
+import cbit.vcell.client.laf.VCellColors;
 import java.awt.Color;
 import java.awt.Component;
 
@@ -31,9 +32,9 @@ public class StyleTableEditor extends JTextField {
                 Object value, int index, boolean isSelected, boolean cellHasFocus) {
         setText(value.toString());
         if (isSelected)
-            setBackground(Color.lightGray);
+            setBackground(VCellColors.getSubtleBackground());
         else
-            setBackground(Color.white);
+            setBackground(list.getBackground());
         return this;
     }
 

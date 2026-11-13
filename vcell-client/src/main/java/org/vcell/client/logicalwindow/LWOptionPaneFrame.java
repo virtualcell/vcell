@@ -1,5 +1,6 @@
 package org.vcell.client.logicalwindow;
 
+import cbit.vcell.client.laf.NestedMenuBar;
 import java.awt.BorderLayout;
 import java.awt.ComponentOrientation;
 import java.util.Objects;
@@ -24,7 +25,7 @@ public abstract class LWOptionPaneFrame extends LWChildFrame {
 		super(parent, title);
 		Objects.requireNonNull(optionPane);
 		JPanel contentPane = new JPanel(new BorderLayout());
-		JMenuBar mb = new JMenuBar();
+		JMenuBar mb = new NestedMenuBar();
 		mb.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
 		mb.add( LWTopFrame.createWindowMenu(false) );
 		contentPane.add(mb, BorderLayout.NORTH);

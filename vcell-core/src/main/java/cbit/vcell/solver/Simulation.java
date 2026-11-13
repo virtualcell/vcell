@@ -939,6 +939,36 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 				&& getSolverTaskDescription().getSolverDescription().hasCellCenteredMesh();
 	}
 
+	/**
+	 * What the Moving Boundary solver's input writer ({@code MovingBoundaryFileWriter}) refuses, so that it is an issue
+	 * before the run instead of "Can't write the input file" after it.
+	 */
+	static List<String> movingBoundaryWriterRefusals(cbit.vcell.math.MathDescription math) {
+		List<String> reasons = new java.util.ArrayList<>();
+		if (math.getGeometry() != null && math.getGeometry().getGeometrySpec().hasImage()) {
+			reasons.add("The Moving Boundary solver does not run image-based geometries; '" + math.getGeometry().getName()
+					+ "' is image-based.");
+		}
+		int membranes = 0;
+		int compartmentsWithPdes = 0;
+		for (cbit.vcell.math.SubDomain subDomain : java.util.Collections.list(math.getSubDomains())) {
+			if (subDomain instanceof cbit.vcell.math.MembraneSubDomain) {
+				membranes++;
+			} else if (subDomain instanceof cbit.vcell.math.CompartmentSubDomain
+					&& subDomain.getEquationCollection().stream().anyMatch(e -> e instanceof cbit.vcell.math.PdeEquation)) {
+				compartmentsWithPdes++;
+			}
+		}
+		if (membranes != 1) {
+			reasons.add("The Moving Boundary solver runs exactly one membrane; this model has " + membranes + ".");
+		}
+		if (compartmentsWithPdes != 1) {
+			reasons.add("The Moving Boundary solver runs diffusing species in exactly one compartment; this model has them in "
+					+ compartmentsWithPdes + ".");
+		}
+		return reasons;
+	}
+
 	public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 		
 		MathOverrides mo = getMathOverrides();
@@ -961,6 +991,30 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 					"The Moving Boundary solver runs 2D geometries only; this one is "
 							+ getMathDescription().getGeometry().getDimension() + "D.",
 					"Choose the FEniCSx solver for a 3D moving boundary.", Issue.Severity.ERROR));
+		}
+		if (getSolverTaskDescription().getSolverDescription() == SolverDescription.MovingBoundary
+				&& getMathDescription() != null) {
+			// the Moving Boundary solver has no membrane state: its input writer drops a membrane species' equation
+			// and every jump condition, so a moving membrane's species would silently vanish (vcell-mbsolver#35)
+			for (cbit.vcell.math.SubDomain subDomain : java.util.Collections.list(getMathDescription().getSubDomains())) {
+				if (subDomain instanceof cbit.vcell.math.MembraneSubDomain membrane && membrane.isMoving()
+						&& !membrane.getEquationCollection().isEmpty()) {
+					issueList.add(new Issue(this, issueContext, IssueCategory.MovingBoundary_MembraneSpecies_NotSupported,
+							"The Moving Boundary solver does not solve species on the moving membrane ('" + membrane.getName()
+									+ "'); it would drop them and their membrane fluxes.",
+							"Choose the FEniCSx solver, or remove the species from the moving membrane.", Issue.Severity.ERROR));
+				}
+			}
+		}
+		if (getSolverTaskDescription().getSolverDescription() == SolverDescription.MovingBoundary
+				&& getMathDescription() != null) {
+			// what its input writer (MovingBoundaryFileWriter) refuses, stated before the run rather than as a
+			// failure to write the input file: an image geometry (it needs an analytic level function), more than one
+			// membrane, and anything but exactly one compartment with PDEs
+			for (String reason : movingBoundaryWriterRefusals(getMathDescription())) {
+				issueList.add(new Issue(this, issueContext, IssueCategory.MovingBoundary_Geometry_NotSupported, reason,
+						"Choose the FEniCSx solver.", Issue.Severity.ERROR));
+			}
 		}
 		if (getSolverTaskDescription().getSolverDescription() == SolverDescription.Langevin) {
 			int[] nPart = getSolverTaskDescription().getLangevinSimulationOptions().getNPart();

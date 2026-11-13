@@ -74,12 +74,18 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 		vcDocumentInfos = documentManager.getGeometryInfos();
 	}
 	String newDocumentName = (oldName==null?"New"+documentTypeDescription:oldName);
+	java.util.Set<String> takenNames = new java.util.HashSet<>(); // the dialog won't accept these; the check below stays as a backstop
+	for (VCDocumentInfo vcDocumentInfo : vcDocumentInfos) {
+		if (!vcDocumentInfo.getVersion().getOwner().compareEqual(user)) continue;
+		takenNames.add(vcDocumentInfo.getVersion().getName());
+	}
 	while(true){
 		newDocumentName =
 			mdiManager.getDatabaseWindowManager().showSaveDialog(
 					document.getDocumentType(),
 					(Component)hashTable.get("currentDocumentWindow"),
-					newDocumentName);
+					newDocumentName,
+					takenNames);
 			if (newDocumentName == null || newDocumentName.trim().length()==0){
 				newDocumentName = null;
 				DialogUtils.showWarningDialog(

@@ -10,6 +10,8 @@
 
 package cbit.vcell.client.desktop.biomodel;
 
+import cbit.vcell.client.laf.VCellColors;
+import cbit.vcell.client.laf.VCellLookAndFeel;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -250,7 +252,7 @@ public class ReactionPropertiesPanel extends DocumentEditorSubPanel {
 			// A bare checkbox with no text: its label is a separate JLabel, so there is
 			// nothing to address it by.
 			isReversibleCheckBox.setName("ReactionReversibleCheckBox");
-			isReversibleCheckBox.setBackground(Color.white);
+			isReversibleCheckBox.setBackground(VCellLookAndFeel.getContentBackground());
 	//		isReversibleCheckBox.setHorizontalTextPosition(SwingConstants.LEFT);
 
 			electricalPropertiesLabel = new JLabel("Electrical Properties");
@@ -274,7 +276,7 @@ public class ReactionPropertiesPanel extends DocumentEditorSubPanel {
 
 			JPanel jp = new JPanel();
 			jp.setLayout(new java.awt.GridBagLayout());
-			jp.setBackground(Color.white);
+			jp.setBackground(VCellLookAndFeel.getContentBackground());
 
 			GridBagConstraints gb = new java.awt.GridBagConstraints();
 			gb.gridx = 0;
@@ -338,7 +340,7 @@ public class ReactionPropertiesPanel extends DocumentEditorSubPanel {
 			gridy ++;	// ----------------------------- next row (usually second) -----------------
 			JPanel p = new JPanel();
 			p.setLayout(new GridBagLayout());
-			p.setBackground(Color.white);
+			p.setBackground(VCellLookAndFeel.getContentBackground());
 			gbc = new java.awt.GridBagConstraints();
 			gbc.gridx = 0;
 			gbc.gridy = 0;
@@ -399,7 +401,7 @@ public class ReactionPropertiesPanel extends DocumentEditorSubPanel {
 
 			JPanel jp1 = new JPanel();
 			jp1.setLayout(new GridBagLayout());
-			jp1.setBackground(Color.white);
+			jp1.setBackground(VCellLookAndFeel.getContentBackground());
 
 			gbc = new GridBagConstraints();
 			gbc.gridx = 0;
@@ -430,7 +432,7 @@ public class ReactionPropertiesPanel extends DocumentEditorSubPanel {
 			gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
 			add(jp1, gbc);
 
-			setBackground(Color.white);
+			setBackground(VCellLookAndFeel.getContentBackground());
 
 			getKineticsTypeComboBox().setEnabled(false);
 			initKineticChoices();
@@ -680,7 +682,7 @@ public class ReactionPropertiesPanel extends DocumentEditorSubPanel {
 					name = name.substring(name.indexOf("#")+1);
 				}
 				JLabel label = new JLabel("<html><u>" + name + "</u></html>");
-				label.setForeground(Color.blue);
+				label.setForeground(VCellColors.getValueForeground());
 				label.addMouseListener(new MouseAdapter() {
 					public void mouseClicked(MouseEvent e) {
 						if (e.getClickCount() == 2) {

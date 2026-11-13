@@ -1,5 +1,6 @@
 package cbit.vcell.client.desktop.biomodel;
 
+import cbit.vcell.client.laf.VCellColors;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -177,9 +178,9 @@ public class BioModelEditorSabioPanel extends DocumentEditorSubPanel {
 							if(name.contains("rate law")) {
 								name = name.substring(0, name.indexOf("rate law"));
 							}
-							sDetails += "<font color=\"#006600\">" + name + "</font>" + " " +
-								"<font color=\"#DD0000\">" + inferred + "</font>" +
-								"<font color=\"#660000\"> [" + str1 + "] </font>";
+							sDetails += "<font color=\"" + VCellColors.toHtmlColor(VCellColors.getReadableForeground(new java.awt.Color(0x006600))) + "\">" + name + "</font>" + " " +
+								"<font color=\"" + VCellColors.toHtmlColor(VCellColors.getErrorForeground()) + "\">" + inferred + "</font>" +
+								"<font color=\"" + VCellColors.toHtmlColor(VCellColors.getWarningForeground()) + "\"> [" + str1 + "] </font>";
 							//sDetails += "<br>";
 						}
 						labelText = "<html>" + labelText + " " + sDetails + "</html>";
