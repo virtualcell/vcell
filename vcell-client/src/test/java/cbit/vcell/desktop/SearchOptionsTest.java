@@ -39,6 +39,15 @@ public class SearchOptionsTest {
 	}
 
 	@Test
+	public void describesWhatChangedFromTheDefaults() {
+		assertEquals(List.of(), SearchOptions.defaults().describeChanges());
+		SearchOptions changed = this.options(EnumSet.of(Field.NAME), Set.of(VCDocumentType.BIOMODEL_DOC), "bor", Saved.PAST_WEEK,
+				EnumSet.allOf(Approach.class), EnumSet.of(Access.PRIVATE, Access.CURATED), Order.NEWEST);
+		assertEquals(List.of("Search in: −Owner, −Description", "Model type: −MathModels", "Owner: contains “bor”",
+				"Saved: Past week", "Permissions: −Shared, −Public, −Published", "Order: Newest"), changed.describeChanges());
+	}
+
+	@Test
 	public void narrowsByKindOwnerAndWhenSaved() {
 		BioModelInfo recent = this.bioModel("Recent", JESSICA, 3, new GroupAccessNone(), MathType.Deterministic);
 		MathModelInfo old = this.mathModel("Old", BORIS, 400, MathType.Stochastic);

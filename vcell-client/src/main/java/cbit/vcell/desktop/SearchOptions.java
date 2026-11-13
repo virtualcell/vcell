@@ -13,12 +13,15 @@ import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionFlag;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
 /**
  * The advanced search's options: where the search text is looked for, and which models are listed at all (their kind,
@@ -157,6 +160,35 @@ public final class SearchOptions {
 		if (!this.access.equals(DEFAULTS.access)) changed++;
 		if (this.order != DEFAULTS.order) changed++;
 		return changed;
+	}
+
+	/**
+	 * What differs from the defaults, one line an option: "Model type: −MathModels" for a box unchecked (+ for one
+	 * checked), and the new value for the rest. Empty for the defaults.
+	 */
+	public List<String> describeChanges() {
+		List<String> changes = new ArrayList<>();
+		SearchOptions.addChange(changes, "Search in", DEFAULTS.fields, this.fields, field -> field.label);
+		SearchOptions.addChange(changes, "Model type", DEFAULTS.types, this.types, SearchOptions::typeLabel);
+		if (!this.owner.isEmpty()) changes.add("Owner: contains “" + this.owner + "”");
+		if (this.saved != DEFAULTS.saved) changes.add("Saved: " + this.saved.label);
+		SearchOptions.addChange(changes, "Approach", DEFAULTS.approaches, this.approaches, approach -> approach.label);
+		SearchOptions.addChange(changes, "Permissions", DEFAULTS.access, this.access, permission -> permission.label);
+		if (this.order != DEFAULTS.order) changes.add("Order: " + this.order.label);
+		return changes;
+	}
+
+	// "Category: +Added, −Removed", in the options' own order, if anything was added or removed
+	private static <E> void addChange(List<String> changes, String category, Set<E> defaults, Set<E> chosen, Function<E, String> label) {
+		List<String> differences = new ArrayList<>();
+		for (E value : defaults) if (!chosen.contains(value)) differences.add("−" + label.apply(value));
+		for (E value : chosen) if (!defaults.contains(value)) differences.add("+" + label.apply(value));
+		if (differences.isEmpty()) return;
+		changes.add(category + ": " + String.join(", ", differences));
+	}
+
+	private static String typeLabel(VCDocumentType type) {
+		return VCDocumentType.BIOMODEL_DOC == type ? "BioModels" : VCDocumentType.MATHMODEL_DOC == type ? "MathModels" : type.name();
 	}
 
 	/** Whether the model passes every option narrowed from the defaults (whatever the search text). */
