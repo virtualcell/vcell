@@ -132,6 +132,7 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
     //Added Oct. 17th, 2007. To put a tool menu in
     private JMenu toolMenu = null;
     private JMenuItem viewJobsMenuItem = null;
+    private JButton modelExplorerButton = null;
     private JMenuItem jMenuItemPermissions = null;
     private JLabel warningText = null;
     private JLabel iconText = null;
@@ -571,6 +572,7 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
                 this.ivjFileMenu.add(this.getOpenMenuItem());
                 this.ivjFileMenu.add(this.getCloseMenuItem());
                 this.ivjFileMenu.add(this.getWelcomeWindowMenuItem());
+                this.ivjFileMenu.add(this.getModelExplorerMenuItem());
                 this.ivjFileMenu.add(new JSeparator());
                 this.ivjFileMenu.add(this.getSaveMenuItem());
                 this.ivjFileMenu.add(this.getSave_VersionMenuItem());
@@ -603,6 +605,52 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
             if (this.getWindowManager().getRequestManager() instanceof ClientRequestManager requestManager) requestManager.showWelcomeWindow();
         });
         return item;
+    }
+
+    // The Model Explorer, with this window's model selected in it (if it's saved)
+    private JMenuItem getModelExplorerMenuItem() {
+        JMenuItem item = new JMenuItem("Model Explorer...");
+        item.setName("ModelExplorerMenuItem");
+        item.setToolTipText("Browse the VCell database's models, geometries and the BioModels Database");
+        item.addActionListener(e -> this.showModelExplorer());
+        return item;
+    }
+
+    // The Model Explorer, opened to this window's model: under the navigation tree (see setWorkArea), or at the status
+    // bar's left in a window without one
+    private JButton getModelExplorerButton() {
+        if (this.modelExplorerButton == null) {
+            this.modelExplorerButton = new JButton("Open Model Database Explorer", VCellIcons.makeIcon("/icons/database.png"));
+            this.modelExplorerButton.setName("ModelExplorerButton");
+            this.modelExplorerButton.setToolTipText("Shows this model in the Model Explorer, among the VCell database's models");
+            this.modelExplorerButton.putClientProperty("JButton.buttonType", "text"); // Aqua: a plain button, not a toggle-styled one
+            this.modelExplorerButton.addActionListener(e -> this.showModelExplorer());
+        }
+        return this.modelExplorerButton;
+    }
+
+    private void showModelExplorer() {
+        if (this.getWindowManager().getRequestManager() instanceof ClientRequestManager requestManager) requestManager.showModelExplorer(this.savedModelInfo());
+    }
+
+    // This window's model as the database lists it (its saved version); null if it isn't saved
+    private org.vcell.util.document.VCDocumentInfo savedModelInfo() {
+        VCDocument document = this.getWindowManager().getVCDocument();
+        if (document == null || document.getVersion() == null || document.getVersion().getVersionKey() == null) return null;
+        org.vcell.util.document.KeyValue key = document.getVersion().getVersionKey();
+        cbit.vcell.clientdb.DocumentManager documentManager = this.getWindowManager().getRequestManager().getDocumentManager();
+        if (documentManager == null) return null;
+        try {
+            return switch (document.getDocumentType()) {
+                case BIOMODEL_DOC -> documentManager.getBioModelInfo(key);
+                case MATHMODEL_DOC -> documentManager.getMathModelInfo(key);
+                case GEOMETRY_DOC -> documentManager.getGeometryInfo(key);
+                default -> null;
+            };
+        } catch (Exception e) {
+            org.apache.logging.log4j.LogManager.getLogger(DocumentWindow.class).warn("Could not find this model among the database's", e);
+            return null;
+        }
     }
 
     // the pathway's diagram, objects, BioPAX views and Lookup, in a window of their own
@@ -1214,6 +1262,13 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
                 GridBagConstraints gbc = new GridBagConstraints();
                 gbc.gridx = gridx;
                 gbc.gridy = 0;
+                gbc.insets = new Insets(2, 4, 2, 2);
+                this.ivjStatusBarPane.add(this.getModelExplorerButton(), gbc);
+
+                gridx++;
+                gbc = new GridBagConstraints();
+                gbc.gridx = gridx;
+                gbc.gridy = 0;
                 gbc.weighty = 1;
                 gbc.fill = GridBagConstraints.VERTICAL;
                 gbc.insets = new Insets(4, 4, 4, 4);
@@ -1693,6 +1748,22 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
 
     public void setWorkArea(Component c) {
         this.getContentPane().add(c, BorderLayout.CENTER);
+        // the Model Explorer button, under the model's navigation tree (out of the status bar), if it has one
+        cbit.vcell.client.desktop.biomodel.DocumentEditor editor = DocumentWindow.findDocumentEditor(c);
+        if (editor == null) return;
+        editor.setTreeFooter(this.getModelExplorerButton());
+        this.getStatusBarPane().revalidate();
+        this.getStatusBarPane().repaint();
+    }
+
+    private static cbit.vcell.client.desktop.biomodel.DocumentEditor findDocumentEditor(Component component) {
+        if (component instanceof cbit.vcell.client.desktop.biomodel.DocumentEditor editor) return editor;
+        if (!(component instanceof java.awt.Container container)) return null;
+        for (Component child : container.getComponents()) {
+            cbit.vcell.client.desktop.biomodel.DocumentEditor editor = DocumentWindow.findDocumentEditor(child);
+            if (editor != null) return editor;
+        }
+        return null;
     }
 
 

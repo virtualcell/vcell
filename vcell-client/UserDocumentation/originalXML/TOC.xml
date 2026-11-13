@@ -142,6 +142,7 @@
    			<tocitem target="GroupOperationsPanel" text="Operations on Pathway Entities"/>		
    		</tocitem>
     	<tocitem target="DatabaseOverview" text="Database Sources">
+   	   		<tocitem target="ModelExplorer" text="Model Explorer"/>
    	   		<tocitem target="VCellDatabase" text="VCell Database"/>
    	   		<tocitem target="BioModelsNet" text="BioModels Database"/>
    	   		<tocitem target="PathwayCommonsPanel" text="Pathway Commons Database"/>

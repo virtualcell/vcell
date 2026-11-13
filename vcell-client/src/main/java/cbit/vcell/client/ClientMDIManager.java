@@ -67,6 +67,8 @@ public class ClientMDIManager implements MDIManager {
 //	public final static String BIONETGEN_WINDOW_ID = "BioNetGenWindow";
 	public final static String FIELDDATA_WINDOW_ID = "FieldDataWindow";
 	public final static String WELCOME_WINDOW_ID = "WelcomeWindow";
+	public final static String MODEL_EXPLORER_WINDOW_ID = "ModelExplorerWindow";
+	private cbit.vcell.client.desktop.ModelExplorerWindow modelExplorerWindow = null; // made the first time it is asked for
 	private static interface Creator {
 		void create( );
 	}
@@ -146,10 +148,11 @@ public long closeWindow(String windowID) {
 }
 
 /**
- * @return number of top level windows
+ * @return number of top level windows, other than the Model Explorer (closing the last model window brings back the
+ * welcome window, even with the Model Explorer open)
  */
 private long numberOfWindowsShowing( ) {
-	return LWTopFrame.liveWindows().count();
+	return LWTopFrame.liveWindows().filter(window -> !(window.get() instanceof cbit.vcell.client.desktop.ModelExplorerWindow)).count();
 }
 
 /**
@@ -290,6 +293,24 @@ private void hideWelcomeWindowWhenTasksAreDone() {
 		if (welcome.isShowing() && !WelcomeWindowManager.isKeptOpen()) welcome.setVisible(false);
 	});
 	timer.start();
+}
+
+/**
+ * Shows the Model Explorer, making it the first time, and selects this model in it (if given one: a model window's, or one
+ * right-clicked in the welcome window).
+ * @return the Model Explorer's manager
+ */
+public ModelExplorerWindowManager showModelExplorer(org.vcell.util.document.VCDocumentInfo model) {
+	if (modelExplorerWindow == null) {
+		ModelExplorerWindowManager manager = new ModelExplorerWindowManager(getRequestManager());
+		modelExplorerWindow = new cbit.vcell.client.desktop.ModelExplorerWindow(manager);
+		manager.updateConnectionStatus(getRequestManager().getConnectionStatus());
+	}
+	modelExplorerWindow.setState(Frame.NORMAL);
+	modelExplorerWindow.setVisible(true);
+	modelExplorerWindow.toFront();
+	modelExplorerWindow.getManager().showModel(model);
+	return modelExplorerWindow.getManager();
 }
 
 public boolean isWelcomeWindowShowing() {
@@ -657,6 +678,7 @@ public void updateConnectionStatus(ConnectionStatus connectionStatus) {
 	for (TopLevelWindow window : windowsHash.values()) {
 		window.updateConnectionStatus(connectionStatus);
 	}
+	if (modelExplorerWindow != null) modelExplorerWindow.getManager().updateConnectionStatus(connectionStatus);
 
 	for (TopLevelWindowManager topLevelWindowManager : managersHash.values()) {
 		if (topLevelWindowManager instanceof DocumentWindowManager) {

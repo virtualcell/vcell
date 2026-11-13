@@ -59,7 +59,9 @@
 		</list></para>
 
 		<para>Models stored in the <link target="VCellDatabase">VCell Database</link> and the <link target="BioModelsNet">BioModels Database</link>
-		are browsed, searched and opened from the <bold>Welcome window</bold> (<bold>File &gt; Welcome Window</bold>), rather than from a panel of the document window.
+		are browsed, searched and opened from the <link target="ModelExplorer">Model Explorer</link> (<bold>File &gt; Model Explorer...</bold>, or the
+		<bold>Model Explorer</bold> button under the document window's navigation tree, which opens it at the open model) and from the
+		<bold>Welcome window</bold> (<bold>File &gt; Welcome Window</bold>), rather than from a panel of the document window.
 		Pathways from the <bold>Pathway Commons</bold> database are searched from the <bold>Pathway Lookup</bold> tab of the Pathway Tools window (<bold>Tools &gt; Pathway Tools...</bold>).
 		Please refer to sections <link target="PathwayCommonsPanel">Pathway Commons Database</link> and <link target="PathwayOverview">Biological Pathways</link>.
 		</para>

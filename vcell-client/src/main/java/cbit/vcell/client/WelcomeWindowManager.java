@@ -79,8 +79,18 @@ public class WelcomeWindowManager extends TopLevelWindowManager {
 
 	/** A listed model's right-click menu: open, export, compare, copy its name or ID number, and its owner's actions. */
 	public JPopupMenu createModelMenu(VCDocumentInfo documentInfo) {
-		if (this.listedModelActions == null) this.listedModelActions = new ListedModelActions(this);
-		return this.listedModelActions.createMenu(documentInfo, () -> this.openModel(documentInfo));
+		if (this.listedModelActions == null) this.listedModelActions = new ListedModelActions(this, this::compareInModelExplorer);
+		return this.listedModelActions.createMenu(documentInfo, () -> this.openModel(documentInfo), () -> this.showModelExplorer(documentInfo));
+	}
+
+	/** Shows the Model Explorer at this model, to pick the model to compare it with there. */
+	public void compareInModelExplorer(VCDocumentInfo documentInfo) {
+		((ClientRequestManager) this.getRequestManager()).compareInModelExplorer(documentInfo);
+	}
+
+	/** Shows the Model Explorer, with this model selected in it (if not null). */
+	public void showModelExplorer(VCDocumentInfo documentInfo) {
+		((ClientRequestManager) this.getRequestManager()).showModelExplorer(documentInfo);
 	}
 
 	/** Opens a saved model, in a window of its own. */
