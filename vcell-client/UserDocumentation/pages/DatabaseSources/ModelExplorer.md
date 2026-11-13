@@ -25,12 +25,14 @@ folder is arranged its own way:
 - **Tutorials**: the models VCell's tutorials use.
 - **Geometries**: **My Geometries**, and those **Shared With Me** and **Public Geometries** by
   owner.
-- **BioModels Database**: EBI's models, by name. They are found by their names and IDs only; those
-  VCell can't import are greyed out.
+- **BioModels Database**: EBI's models, by name. Only the models VCell can import are listed, and
+  they are found by their names and IDs only.
 
 A model saved more than once has its versions listed under it, newest first, with when each was
-saved and its permissions; the model itself stands for its latest version. Each folder, owner and
-publication says how many models it holds.
+saved and its permissions; the model itself stands for its latest version. Each folder and owner
+says how many models it holds. **Published** and **Curated**, and each publication, count published
+(or curated) versions instead, as VCell's database tree always has: a model published twice counts
+twice. **Public Models** adds up its three folders.
 
 The **Table** view lists the same models without the folders' hierarchy, one row each, with columns
 for its **Name**, **Type**, the **Folders** the tree lists it in, **Owner**, when it was **Saved**,

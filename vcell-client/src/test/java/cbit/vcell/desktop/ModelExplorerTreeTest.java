@@ -106,6 +106,26 @@ public class ModelExplorerTreeTest {
 	}
 
 	@Test
+	public void publishedCountsVersionsAsTheDatabaseTreeDid() {
+		PublicationInfo paper = this.publication("A paper", "Smith J", 2019);
+		PublicationInfo later = this.publication("A later paper", "Smith J", 2021);
+		BioModelInfo first = this.bioModel("Twice", BOB, new GroupAccessAll(), VersionFlag.Published, paper, 8, 1);
+		BioModelInfo second = this.bioModel("Twice", BOB, new GroupAccessAll(), VersionFlag.Published, paper, 8, 2); // same model, published again
+		BioModelInfo both = this.bioModel("Both", ANN, new GroupAccessAll(), VersionFlag.Published, paper, 9, 1);
+		both.addPublicationInfo(later); // one version, two publications
+
+		DefaultMutableTreeNode root = this.build(List.of(first, second, both), "");
+		DefaultMutableTreeNode publishedFolder = this.folder(this.folder(root, Section.PUBLIC), Section.PUBLISHED);
+
+		assertEquals(3, ((Folder) publishedFolder.getUserObject()).getCount()); // Twice's two versions, and Both once
+		assertEquals(List.of("A later paper", "A paper"), java.util.stream.IntStream.range(0, publishedFolder.getChildCount())
+				.mapToObj(i -> ((Publication) ((DefaultMutableTreeNode) publishedFolder.getChildAt(i)).getUserObject()).info().getTitle()).toList());
+		assertEquals(1, ((Publication) ((DefaultMutableTreeNode) publishedFolder.getChildAt(0)).getUserObject()).count());
+		assertEquals(3, ((Publication) ((DefaultMutableTreeNode) publishedFolder.getChildAt(1)).getUserObject()).count());
+		assertEquals(2, ModelExplorerTree.modelsUnder(publishedFolder).size()); // two models, as the status line counts them
+	}
+
+	@Test
 	public void theTableListsEachModelOnceWithItsFolders() {
 		BioModelInfo mineOld = this.bioModel("Mine", ME, new GroupAccessAll(), VersionFlag.Current, null, 7, 1);
 		BioModelInfo mineNew = this.bioModel("Mine", ME, new GroupAccessAll(), VersionFlag.Current, null, 7, 3); // public: also uncurated
@@ -152,9 +172,9 @@ public class ModelExplorerTreeTest {
 		DefaultMutableTreeNode uncurated = this.folder(this.folder(root, Section.PUBLIC), Section.UNCURATED);
 		assertEquals(1, ((Folder) uncurated.getUserObject()).getCount());
 		assertEquals(List.of("Calcium waves"), ModelExplorerTreeTest.names((DefaultMutableTreeNode) uncurated.getChildAt(0)));
-		// the BioModels Database is searched by name or ID
+		// the BioModels Database is searched by name or ID, and lists only the models VCell can import
 		DefaultMutableTreeNode database = this.folder(root, Section.BIOMODELS_DATABASE);
-		assertEquals(1, database.getChildCount());
+		assertEquals(1, database.getChildCount()); // not BIOMD3, which matches but can't be imported
 		assertEquals("BIOMD1", ((BioModelsNetModelInfo) ((DefaultMutableTreeNode) database.getChildAt(0)).getUserObject()).getId());
 	}
 
@@ -196,7 +216,8 @@ public class ModelExplorerTreeTest {
 
 	private DefaultMutableTreeNode build(List<VCDocumentInfo> models, String search) {
 		List<BioModelsNetModelInfo> database = List.of(new BioModelsNetModelInfo("BIOMD1", "Calcium model", "link", true),
-				new BioModelsNetModelInfo("BIOMD2", "Glycolysis", "link", true));
+				new BioModelsNetModelInfo("BIOMD2", "Glycolysis", "link", true),
+				new BioModelsNetModelInfo("BIOMD3", "Calcium, unsupported", "link", false)); // VCell can't import it
 		return ModelExplorerTree.build(new ModelExplorerTree.Input(models, List.of(), ME, search, SearchOptions.defaults(), database, NOW));
 	}
 

@@ -46,7 +46,8 @@ import cbit.vcell.client.desktop.biomodel.BioModelsNetModelInfo;
  * </ul>
  * A model's versions are listed under it only when it has more than one to show; its node stands for its latest. Only the
  * versions the search and its options let through are listed, and only the models with any; folders say how many
- * models they hold. Built off the event thread, as a plain tree of nodes whose user objects are the types below.
+ * models they hold, but Published and Curated (and each publication) how many published or curated versions, as VCell's
+ * database tree always has, and Public Models the three added up. Built off the event thread, as a plain tree of nodes whose user objects are the types below.
  */
 public final class ModelExplorerTree {
 
@@ -156,7 +157,7 @@ public final class ModelExplorerTree {
 		}
 		publicModels.add(curatedFolder);
 		publicModels.add(ModelExplorerTree.byOwnerFolder(Section.UNCURATED, uncurated, input));
-		ModelExplorerTree.countModels(publicModels, List.of(published, curated, bricks, uncurated));
+		ModelExplorerTree.countSubfolders(publicModels); // as VCell's database tree has: Published, Curated and Uncurated added up
 		root.add(publicModels);
 
 		root.add(ModelExplorerTree.modelsFolder(Section.TUTORIALS, found.stream()
@@ -287,17 +288,18 @@ public final class ModelExplorerTree {
 		List<String> order = new ArrayList<>(publications.keySet());
 		order.sort(Comparator.comparing((String key) -> publications.get(key).getPubDate(), Comparator.nullsLast(Comparator.reverseOrder()))
 				.thenComparing(key -> ModelExplorerTree.firstAuthor(publications.get(key)), String.CASE_INSENSITIVE_ORDER));
+		// counted as VCell's database tree always has: published (or curated) versions, not models, so a model with two
+		// published versions counts twice; a version under two publications, though, counts once in the folder
+		// TODO revisit before merging: versions, models, or a model per publication (see the Model Explorer's PR)
 		java.util.Set<String> counted = new java.util.HashSet<>();
 		for (String key : order) {
-			List<Model> models = ModelExplorerTree.models(byPublication.get(key), input);
-			DefaultMutableTreeNode publication = new DefaultMutableTreeNode(new Publication(publications.get(key), models.size()));
-			for (Model model : models) {
-				publication.add(ModelExplorerTree.modelNode(model));
-				counted.add(ModelExplorerTree.modelKey(model.latest()));
-			}
+			List<VCDocumentInfo> publicationVersions = byPublication.get(key).stream().distinct().toList();
+			DefaultMutableTreeNode publication = new DefaultMutableTreeNode(new Publication(publications.get(key), publicationVersions.size()));
+			for (Model model : ModelExplorerTree.models(publicationVersions, input)) publication.add(ModelExplorerTree.modelNode(model));
+			for (VCDocumentInfo version : publicationVersions) counted.add(ModelExplorerTree.versionKey(version));
 			folder.add(publication);
 		}
-		((Folder) folder.getUserObject()).count = counted.size(); // a model under two publications counts once
+		((Folder) folder.getUserObject()).count = counted.size();
 		return folder;
 	}
 
@@ -312,6 +314,7 @@ public final class ModelExplorerTree {
 		String text = null == input.searchText() ? "" : input.searchText().strip().toLowerCase(Locale.ROOT);
 		boolean narrowed = !input.options().getTypes().contains(VCDocumentType.BIOMODEL_DOC);
 		List<BioModelsNetModelInfo> models = narrowed ? List.of() : input.bioModelsDatabase().stream()
+				.filter(BioModelsNetModelInfo::isSupported) // only those VCell can import, as the welcome window's BMDB tab lists
 				.filter(info -> text.isEmpty() || ModelExplorerTree.lower(info.getName()).contains(text) || ModelExplorerTree.lower(info.getId()).contains(text))
 				.sorted(Comparator.comparing(BioModelsNetModelInfo::getName, String.CASE_INSENSITIVE_ORDER))
 				.toList();
@@ -325,6 +328,19 @@ public final class ModelExplorerTree {
 		java.util.Set<String> models = new java.util.HashSet<>();
 		for (List<VCDocumentInfo> list : lists) for (VCDocumentInfo info : list) models.add(ModelExplorerTree.modelKey(info));
 		((Folder) folder.getUserObject()).count = models.size();
+	}
+
+	private static void countSubfolders(DefaultMutableTreeNode folder) {
+		int count = 0;
+		for (int i = 0; i < folder.getChildCount(); i++) {
+			if (((DefaultMutableTreeNode) folder.getChildAt(i)).getUserObject() instanceof Folder subfolder) count += subfolder.count;
+		}
+		((Folder) folder.getUserObject()).count = count;
+	}
+
+	// A version, as the same one wherever it's listed
+	private static String versionKey(VCDocumentInfo info) {
+		return ModelListRenderer.getDocumentType(info) + ":" + info.getVersion().getVersionKey();
 	}
 
 	// The versions as models (their versions share a branch), each's versions newest first, in the options' order

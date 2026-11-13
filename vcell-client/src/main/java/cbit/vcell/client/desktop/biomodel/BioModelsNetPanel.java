@@ -161,8 +161,9 @@ public class BioModelsNetPanel extends DocumentEditorSubPanel {
 				});
 				rootNode.removeAllChildren();
 				for (BioModelsNetModelInfo bioModelsNetInfo : infoList) {
-					boolean bAddNode = true;
-					if (searchText != null) {
+					// only the models VCell can import: the others could only be listed greyed out
+					boolean bAddNode = bioModelsNetInfo.isSupported();
+					if (bAddNode && searchText != null) {
 						String lowerCaseSearchText = searchText.toLowerCase();
 						if (lowerCaseSearchText.length() > 0) {
 							bAddNode = bioModelsNetInfo.getId().toLowerCase().contains(lowerCaseSearchText) 
