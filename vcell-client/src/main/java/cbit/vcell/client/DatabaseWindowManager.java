@@ -505,15 +505,22 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
 
     //Processes the model comparison,
     private void compareWithOther(final VCDocumentInfo docInfo1, final VCDocumentInfo docInfo2) {
+        DatabaseWindowManager.compare(this, docInfo1, docInfo2);
+    }
 
-        final MDIManager mdiManager = new ClientMDIManager(getRequestManager());
-        mdiManager.blockWindow(getManagerID());
+    /**
+     * Compares two saved documents of the same kind, in the background, then shows VCell's comparison of them over the
+     * requester's window: <code>docInfo1</code> is the baseline, <code>docInfo2</code> the modified one.
+     */
+    public static void compare(final TopLevelWindowManager requester, final VCDocumentInfo docInfo1, final VCDocumentInfo docInfo2) {
+        final MDIManager mdiManager = new ClientMDIManager(requester.getRequestManager());
+        mdiManager.blockWindow(requester.getManagerID());
         String taskName = "Comparing " + docInfo1.getVersion().getName() + " with " + docInfo2.getVersion().getName();
         AsynchClientTask task1 = new AsynchClientTask(taskName, AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 
             @Override
             public void run(Hashtable<String, Object> hashTable) throws Exception {
-                XmlTreeDiff xmlTreeDiff = getRequestManager().compareWithOther(docInfo1, docInfo2);
+                XmlTreeDiff xmlTreeDiff = requester.getRequestManager().compareWithOther(docInfo1, docInfo2);
                 hashTable.put("xmlTreeDiff", xmlTreeDiff);
             }
         };
@@ -526,14 +533,14 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
                         XmlTreeDiff xmlTreeDiff = (XmlTreeDiff) hashTable.get("xmlTreeDiff");
                         String baselineDesc = docInfo1.getVersion().getName() + ", " + docInfo1.getVersion().getDate();
                         String modifiedDesc = docInfo2.getVersion().getName() + ", " + docInfo2.getVersion().getDate();
-                        getRequestManager().showComparisonResults(DatabaseWindowManager.this, xmlTreeDiff, baselineDesc, modifiedDesc);
+                        requester.getRequestManager().showComparisonResults(requester, xmlTreeDiff, baselineDesc, modifiedDesc);
                     }
                 } finally {
-                    mdiManager.unBlockWindow(getManagerID());
+                    mdiManager.unBlockWindow(requester.getManagerID());
                 }
             }
         };
-        ClientTaskDispatcher.dispatch(getComponent(), new Hashtable<String, Object>(), new AsynchClientTask[]{task1, task2}, false);
+        ClientTaskDispatcher.dispatch(requester.getComponent(), new Hashtable<String, Object>(), new AsynchClientTask[]{task1, task2}, false);
     }
 
     /**

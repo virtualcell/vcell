@@ -3907,6 +3907,16 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 		((ClientMDIManager) getMdiManager()).showWelcomeWindow();
 	}
 
+	/** Shows the Model Explorer, with this model selected in it (if not null). */
+	public void showModelExplorer(VCDocumentInfo model) {
+		((ClientMDIManager) getMdiManager()).showModelExplorer(model);
+	}
+
+	/** Shows the Model Explorer at this model, to pick the model to compare it with there. */
+	public void compareInModelExplorer(VCDocumentInfo model) {
+		((ClientMDIManager) getMdiManager()).showModelExplorer(model).startComparison(model);
+	}
+
 	/**
 	 * Opens a model from a file the user picks (VCML, SBML, OMEX, SED-ML, BNGL, ...), in a window of its own: File > Import
 	 * for a window that isn't a model's, such as the welcome window.

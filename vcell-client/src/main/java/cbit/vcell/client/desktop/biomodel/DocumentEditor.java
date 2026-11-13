@@ -109,6 +109,7 @@ public abstract class DocumentEditor extends JPanel {
 	protected IvjEventHandler eventHandler = new IvjEventHandler();
 	
 	protected JTree documentEditorTree = null;
+	private final JPanel treeFooter = new JPanel(new BorderLayout()); // under the tree, across its width
 	protected SelectionManager selectionManager = new SelectionManager();
 	protected IssueManager issueManager = new IssueManager();
 
@@ -455,6 +456,22 @@ private void documentEditor_eventDispatched(AWTEvent event) {
 /**
  * Initialize the class.
  */
+/**
+ * Puts this under the navigation tree, as wide as the tree (the model window's button to the Model Explorer); null for
+ * nothing there.
+ */
+public void setTreeFooter(javax.swing.JComponent footer) {
+	treeFooter.removeAll();
+	treeFooter.setVisible(null != footer);
+	if (null != footer) {
+		treeFooter.setBorder(javax.swing.BorderFactory.createCompoundBorder(
+				javax.swing.BorderFactory.createMatteBorder(1, 0, 0, 0, javax.swing.UIManager.getColor("Separator.foreground")),
+				javax.swing.BorderFactory.createEmptyBorder(4, 4, 4, 4)));
+		treeFooter.add(footer, BorderLayout.CENTER);
+	}
+	treeFooter.revalidate();
+}
+
 private void initialize() {
 	try {
 		setLayout(new BorderLayout());
@@ -505,7 +522,12 @@ private void initialize() {
 		ToolTipManager.sharedInstance().registerComponent(documentEditorTree);
 		documentEditorTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 		
-		JScrollPane treePanel = new javax.swing.JScrollPane(documentEditorTree); // the whole left column: databases are browsed from the welcome window
+		JScrollPane treePanel = new javax.swing.JScrollPane(documentEditorTree); // databases are browsed from the welcome window and Model Explorer
+		JPanel leftColumn = new JPanel(new BorderLayout()); // the tree, and under it what the window puts there (see setTreeFooter)
+		leftColumn.add(treePanel, BorderLayout.CENTER);
+		treeFooter.setName("DocumentEditorTreeFooter");
+		treeFooter.setVisible(false);
+		leftColumn.add(treeFooter, BorderLayout.SOUTH);
 
 		rightSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
 		rightSplitPane.setResizeWeight(0.7);
@@ -559,7 +581,7 @@ private void initialize() {
 		splitPane.setOneTouchExpandable(true);
 		splitPane.setResizeWeight(0); // the navigation column keeps its width: the window's resizing is the right side's
 		splitPane.setDividerSize(8);
-		splitPane.setLeftComponent(treePanel);
+		splitPane.setLeftComponent(leftColumn);
 		splitPane.setRightComponent(rightSplitPane);
 		
 		add(splitPane, BorderLayout.CENTER);

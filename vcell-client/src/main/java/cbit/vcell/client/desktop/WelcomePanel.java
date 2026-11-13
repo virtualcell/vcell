@@ -639,13 +639,29 @@ public class WelcomePanel extends JPanel {
 		this.filtersButton.setToolTipText("More ways to search: where to look, which models, and their order");
 		this.filtersButton.addActionListener(e -> this.showSearchOptions(this.filtersButton.isSelected()));
 		this.showFiltersChanged(SearchOptions.defaults());
+		JButton explore = new JButton("Open Model Database Explorer");
+		explore.setName("WelcomeModelExplorer");
+		explore.setToolTipText("Opens the Model Explorer: the database's models in folders, with each one's details");
+		explore.addActionListener(e -> this.manager.showModelExplorer(null));
 		JPanel searchRow = new JPanel(new BorderLayout(6, 0));
 		searchRow.setOpaque(false);
 		searchRow.add(this.searchField, BorderLayout.CENTER);
 		searchRow.add(this.filtersButton, BorderLayout.EAST);
 
 		this.modelsArea.setOpaque(false);
-		this.modelsArea.add(WelcomePanel.section("Open existing Model", searchRow), BorderLayout.NORTH); // headed as Start is
+		// headed as Start is; the Model Explorer at the heading's right, keeping the search its width
+		JPanel headingRow = new JPanel(new BorderLayout(6, 0));
+		headingRow.setOpaque(false);
+		JPanel headingAt = new JPanel(new GridBagLayout()); // the heading level with the button's middle
+		headingAt.setOpaque(false);
+		headingAt.add(WelcomePanel.heading("Open existing Model"));
+		headingRow.add(headingAt, BorderLayout.WEST);
+		headingRow.add(explore, BorderLayout.EAST);
+		JPanel openSection = new JPanel(new BorderLayout(0, 6));
+		openSection.setOpaque(false);
+		openSection.add(headingRow, BorderLayout.NORTH);
+		openSection.add(searchRow, BorderLayout.CENTER);
+		this.modelsArea.add(openSection, BorderLayout.NORTH);
 		this.modelsArea.add(this.modelTabs, BorderLayout.CENTER);
 		this.modelsArea.setVisible(false); // until someone logs in
 		return this.modelsArea;

@@ -163,6 +163,16 @@ final class ModelListRenderer extends JPanel implements ListCellRenderer<VCDocum
 		maker.apply(selected).show(list, x, y);
 	}
 
+	/** The icon VCell gives a kind of document. */
+	static Icon iconFor(VCDocumentType type) {
+		return ModelListRenderer.TYPE_ICONS.get(type);
+	}
+
+	/** "BioModel", "MathModel" or "Geometry". */
+	static String typeName(VCDocumentType type) {
+		return ModelListRenderer.TYPE_NAMES.get(type);
+	}
+
 	static VCDocumentType getDocumentType(VCDocumentInfo info) {
 		if (info instanceof BioModelInfo) return VCDocumentType.BIOMODEL_DOC;
 		if (info instanceof MathModelInfo) return VCDocumentType.MATHMODEL_DOC;
