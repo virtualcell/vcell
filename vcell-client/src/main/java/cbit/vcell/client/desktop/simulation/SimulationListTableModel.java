@@ -10,6 +10,7 @@
 
 package cbit.vcell.client.desktop.simulation;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -25,6 +26,8 @@ import cbit.vcell.client.ClientTaskManager;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.server.SimulationJobStatus;
 import cbit.vcell.server.SimulationStatus;
 
 /**
@@ -35,14 +38,31 @@ import cbit.vcell.server.SimulationStatus;
 @SuppressWarnings("serial")
 public class SimulationListTableModel extends VCellSortTableModel<Simulation> implements PropertyChangeListener {
 	private static final String PROPERTY_NAME_SIMULATION_WORKSPACE = "simulationWorkspace";
-	private final static int COLUMN_NAME = 0;
-	private final static int COLUMN_ENDTIME = 1;
-	private final static int COLUMN_OUTPUT = 2;
-	private final static int COLUMN_SOLVER = 3;
-	private final static int COLUMN_STATUS = 4;
-	private final static int COLUMN_RESULTS = 5;
-	
-	private static final String[] columnNames = new String[] {"Name", "End Time", "Output Option", "Solver", "Running Status", "Results"};
+
+	// the columns the table can show; refreshColumns() decides which ones are shown and in what order
+	// (same approach as SpeciesContextSpecTableModel: no hardcoded column indexes)
+	private enum ColumnType {
+		NAME("Name"),
+		END_TIME("End Time"),
+		OUTPUT("Output Option"),
+		SOLVER("Solver"),
+		STATUS("Running Status"),
+		DURATION("Duration"),	// SpringSaLaD applications only
+		RESULTS("Results");
+
+		public final String label;
+
+		ColumnType(String label) {
+			this.label = label;
+		}
+	}
+
+	// value of the Duration column: the rough duration shown in the cell and a tooltip saying what kind it is
+	// (estimate while running, actual once completed); SimulationListPanel has the renderer for it
+	record DurationDisplay(String text, String toolTip) {
+	}
+
+	private final List<ColumnType> columns = new ArrayList<>();	// the columns currently shown, in display order
 	private SimulationWorkspace simulationWorkspace = null;
 
 
@@ -50,8 +70,39 @@ public class SimulationListTableModel extends VCellSortTableModel<Simulation> im
  * SimulationListTableModel constructor comment.
  */
 public SimulationListTableModel(ScrollTable table) {
-	super(table, columnNames);
+	super(table);
+	refreshColumns();
 	addPropertyChangeListener(this);
+}
+
+
+// builds the list of columns to show, which depends on the application type of the workspace
+private void refreshColumns() {
+	columns.clear();
+	columns.add(ColumnType.NAME);
+	columns.add(ColumnType.END_TIME);
+	columns.add(ColumnType.OUTPUT);
+	columns.add(ColumnType.SOLVER);
+	columns.add(ColumnType.STATUS);
+	// SpringSaLaD applications (all their simulations are langevin) also show the estimated duration of a batch run
+	// while it runs, and the actual duration once completed; other applications have no ETA, so no column
+	if (simulationWorkspace != null && simulationWorkspace.getSimulationOwner() instanceof SimulationContext simContext
+			&& simContext.getApplicationType() == SimulationContext.Application.SPRINGSALAD) {
+		columns.add(ColumnType.DURATION);
+	}
+	columns.add(ColumnType.RESULTS);
+}
+
+
+@Override
+public int getColumnCount() {
+	return columns.size();
+}
+
+
+@Override
+public String getColumnName(int column) {
+	return columns.get(column).label;
 }
 
 
@@ -84,18 +135,18 @@ public Object getValueAt(int row, int column) {
 	try{
 		if (row >= 0 && row < getRowCount()) {
 			Simulation simulation = getValueAt(row);
-			switch (column) {
-				case COLUMN_NAME: {
+			switch (columns.get(column)) {
+				case NAME: {
 					return simulation.getName();
-				} 
-				case COLUMN_ENDTIME: {
+				}
+				case END_TIME: {
 					if (simulation.getSolverTaskDescription().getSolverDescription().isChomboSolver())
 					{
 						return simulation.getSolverTaskDescription().getChomboSolverSpec().getEndingTime();
 					}
 					return simulation.getSolverTaskDescription().getTimeBounds().getEndingTime();
 				} 
-				case COLUMN_OUTPUT: {
+				case OUTPUT: {
 					if (simulation.getSolverTaskDescription().getSolverDescription().isChomboSolver())
 					{
 						String text = "Variable";
@@ -107,13 +158,56 @@ public Object getValueAt(int row, int column) {
 					}
 					return simulation.getSolverTaskDescription().getOutputTimeSpec();
 				} 
-				case COLUMN_SOLVER: {
+				case SOLVER: {
 					return simulation.getSolverTaskDescription().getSolverDescription();
-				} 
-				case COLUMN_STATUS: {
+				}
+				case STATUS: {
 					return getSimulationWorkspace().getSimulationStatus(simulation);
-				} 
-				case COLUMN_RESULTS: {
+				}
+				case DURATION: {
+					// a langevin batch is one VCell job (job 0)
+					SimulationStatus simStatus = getSimulationWorkspace().getSimulationStatus(simulation);
+					Integer seconds = null;
+					String toolTip = null;
+					if (simStatus.isRunning()) {
+						if (simulation.getSolverTaskDescription().getLangevinSimulationOptions().getTotalNumberOfJobs() == 1) {
+							// a single run has no watchdog, so it sends no ETA -> blank cell
+							return new DurationDisplay("", "Estimate not available for single runs");
+						}
+						// estimated TOTAL duration of the batch run (not remaining time), from the langevin watchdog;
+						// null = no ETA yet (the first one comes seconds after run #1 starts) -> blank, never "0 min"
+						seconds = simStatus.getEstimatedTimeAt(0);
+						if (seconds == null) {
+							return new DurationDisplay("", "Estimate not available yet");
+						}
+						toolTip = "Estimate";
+					} else if (simStatus.isCompleted()) {
+						// actual duration, from the hand-off to slurm until completion: it includes the time waiting
+						// in the slurm queue, preprocessing and postprocessing, which the ETA doesn't
+						SimulationJobStatus jobStatus = simStatus.getJobStatus(0);
+						if (jobStatus != null && jobStatus.getStartDate() != null && jobStatus.getEndDate() != null) {
+							seconds = (int)((jobStatus.getEndDate().getTime() - jobStatus.getStartDate().getTime()) / 1000);
+							toolTip = "Actual";
+						}
+					}
+					// failed, stopped, never ran, ... -> blank, no tooltip
+					if (seconds == null) {
+						return null;
+					}
+					// deliberately rough, easy to read: "3 days", "17 hours", "23 min"
+					String text;
+					if (seconds >= 2 * 24 * 3600) {
+						text = Math.round(seconds / (24 * 3600.0)) + " days";
+					} else if (seconds >= 2 * 3600) {
+						text = Math.round(seconds / 3600.0) + " hours";
+					} else if (seconds >= 60) {
+						text = Math.round(seconds / 60.0) + " min";
+					} else {
+						text = "< 1 min";
+					}
+					return new DurationDisplay(text, toolTip);
+				}
+				case RESULTS: {
 					return getSimulationWorkspace().getSimulationStatus(simulation).getHasData() ? "yes" : "no";
 				} 
 			}
@@ -134,12 +228,12 @@ public Object getValueAt(int row, int column) {
  */
 public boolean isCellEditable(int rowIndex, int columnIndex) {
 	Simulation simulation = getValueAt(rowIndex);
-	switch (columnIndex){
-		case COLUMN_NAME: 
+	switch (columns.get(columnIndex)){
+		case NAME:
 			return true;
-		case COLUMN_ENDTIME:
+		case END_TIME:
 			return !simulation.getSolverTaskDescription().getSolverDescription().isChomboSolver();
-		case COLUMN_OUTPUT:
+		case OUTPUT:
 			return true;
 		default: {
 			return false;
@@ -171,6 +265,12 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 				simulation.getSolverTaskDescription().addPropertyChangeListener(this);
 			}
 		}
+		// the columns depend on the application type of the new workspace
+		int oldColumnCount = getColumnCount();
+		refreshColumns();
+		if (getColumnCount() != oldColumnCount) {
+			fireTableStructureChanged();
+		}
 		refreshData();
 	} else if (evt.getSource() == getSimulationWorkspace()) {
 		if (evt.getPropertyName().equals(PropertyConstants.PROPERTY_NAME_SIMULATIONS)) {
@@ -193,18 +293,6 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		} else if (evt.getPropertyName().equals(SimulationWorkspace.PROPERTY_NAME_SIMULATION_STATUS)) {
 			int simIndex = (Integer)evt.getNewValue();
 			int row = simIndex % getMaxRowsPerPage();
-			Simulation simulation = getValueAt(row);
-			if(simulation != null) {
-				SolverTaskDescription std = simulation.getSolverTaskDescription();
-				SolverDescription sd = std.getSolverDescription();
-				SimulationStatus simulationStatus = getSimulationWorkspace().getSimulationStatus(simulation);
-				if (sd.isLangevinSolver() && simulationStatus.isCompleted()) {
-					System.out.println("SimulationListTableModel: simIndex: " + simIndex + ", row: " + row);
-					System.out.println("SimulationListTableModel: status changed: " + simulationStatus.getStatusString());
-					// Langevin post-processing is now being executed server-side, within the solver
-//					getSimulationWorkspace().postProcessLangevinResults(simulation);
-				}
-			}
 			fireTableRowsUpdated(row, row);
 		}
 	} else {
@@ -239,8 +327,8 @@ public void setSimulationWorkspace(SimulationWorkspace newSimulationWorkspace) {
 public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 	Simulation simulation = getValueAt(rowIndex);
 	try {		
-		switch (columnIndex){
-			case COLUMN_NAME:
+		switch (columns.get(columnIndex)){
+			case NAME:
 				if (aValue instanceof String){
 					String newName = (String)aValue;
 					if (!simulation.getName().equals(newName)){
@@ -248,7 +336,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 					}
 				}
 				break;
-			case COLUMN_ENDTIME:
+			case END_TIME:
 				if(aValue instanceof String) {
 					aValue = Double.parseDouble((String)aValue);
 				}
@@ -261,7 +349,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 					}
 				}
 				break;
-			case COLUMN_OUTPUT:
+			case OUTPUT:
 				if (aValue instanceof String){
 					SolverTaskDescription solverTaskDescription = simulation.getSolverTaskDescription();
 					OutputTimeSpec ots = solverTaskDescription.getOutputTimeSpec();
@@ -337,15 +425,17 @@ public boolean isSortable(int col) {
 
 @Override
 public Class<?> getColumnClass(int columnIndex) {
-	switch (columnIndex) {
-	case COLUMN_STATUS:
+	switch (columns.get(columnIndex)) {
+	case STATUS:
 		return SimulationStatus.class;
-	case COLUMN_ENDTIME:
+	case END_TIME:
 		return Double.class;
-	case COLUMN_OUTPUT:
+	case OUTPUT:
 		return OutputTimeSpec.class;
-	case COLUMN_SOLVER:
+	case SOLVER:
 		return SolverDescription.class;
+	case DURATION:
+		return DurationDisplay.class;
 	default:
 		return String.class;
 	}

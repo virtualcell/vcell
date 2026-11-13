@@ -27,7 +27,9 @@ import java.util.ArrayList;
  * @author: Fei Gao
  */
 public class WorkerEvent extends MessageEvent {
-	
+
+	private static final long serialVersionUID = -1561655122070882711L;  // value before estimatedTime was added; keeps old/new builds compatible
+
 	public static final int JOB_ACCEPTED = 998;
 	public static final int JOB_STARTING = 999;
 	public static final int JOB_DATA = 1000;
@@ -48,11 +50,12 @@ public class WorkerEvent extends MessageEvent {
 	private int taskID = -1;	
 	private int eventType = -1;
 	private Double progress = null;
+	private Integer estimatedTime = null;	// estimated total duration of the job in seconds, sent by the langevin watchdog; null or 0 = unknown
 	private Double timePoint = null;
 	private SimulationMessage eventMessage = null;
 	private HtcJobID htcJobID = null;
 
-public WorkerEvent(int eventType0, Object source, VCSimulationIdentifier simId0, int jobIndex0, String hostName0, int taskID0, Double progress0, Double timePoint0, SimulationMessage arg_eventMessage) {
+public WorkerEvent(int eventType0, Object source, VCSimulationIdentifier simId0, int jobIndex0, String hostName0, int taskID0, Double progress0, Integer estimatedTime0, Double timePoint0, SimulationMessage arg_eventMessage) {
 	super(source, new MessageSource(source, Simulation.createSimulationID(simId0.getSimulationKey())), new MessageData(new Double[] {progress0, timePoint0}));
 	if (arg_eventMessage == null) {
 		throw new RuntimeException("WorkerEvent : SimulationMessage should not be null");
@@ -63,6 +66,7 @@ public WorkerEvent(int eventType0, Object source, VCSimulationIdentifier simId0,
 	taskID = taskID0;
 	hostName = hostName0;
 	progress = progress0;
+	estimatedTime = estimatedTime0;
 	timePoint = timePoint0;
 	eventMessage = arg_eventMessage;
 }
@@ -75,6 +79,9 @@ public WorkerEvent(int eventType0, Object source, VCSimulationIdentifier simId0,
 //	this(eventType0, source, simJob.getVCDataIdentifier().getVcSimID(), simJob.getJobIndex(), hostName0, 0, progress0, timePoint0, message);
 //}
 //
+public WorkerEvent(int eventType0, Object source, VCSimulationIdentifier simId0, int jobIndex0, String hostName0, int taskID0, Double progress0, Double timePoint0, SimulationMessage arg_eventMessage) {
+	this(eventType0, source, simId0, jobIndex0, hostName0, taskID0, progress0, null, timePoint0, arg_eventMessage);
+}
 public WorkerEvent(int eventType0, Object source, SimulationTask simTask, String hostName0, Double progress0, Double timePoint0, SimulationMessage message) {
 	this(eventType0, source, simTask.getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), simTask.getSimulationJob().getJobIndex(), hostName0, simTask.getTaskID(), progress0, timePoint0, message);
 }
@@ -83,94 +90,37 @@ public WorkerEvent(int eventType0, Object source, SimulationTask simTask, String
 	this(eventType0, source, simTask.getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), simTask.getSimulationJob().getJobIndex(), hostName0, simTask.getTaskID(), null, null, message);
 }
 
-/**
- * Insert the method's description here.
- * Creation date: (2/9/2004 8:37:47 AM)
- * @return java.lang.String
- */
-
 public SimulationMessage getSimulationMessage() {
 	return eventMessage;
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (3/11/2004 9:33:30 AM)
- * @return int
- */
 public int getEventTypeID() {
 	return eventType;
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (12/31/2003 12:59:27 PM)
- * @return java.lang.String
- */
 public String getHostName() {
 	return hostName;
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (10/4/2005 1:34:00 PM)
- * @return int
- */
 public int getJobIndex() {
 	return jobIndex;
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (2/9/2004 8:36:42 AM)
- * @return double
- */
 public Double getProgress() {
 	return progress;
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (12/31/2003 12:58:18 PM)
- * @return double
- */
 public int getTaskID() {
 	return taskID;
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (2/9/2004 8:37:04 AM)
- * @return double
- */
 public Double getTimePoint() {
 	return timePoint;
 }
-
+public Integer getEstimatedTime() {
+	return estimatedTime;
+}
 public HtcJobID getHtcJobID(){
 	return htcJobID;
 }
-/**
- * Insert the method's description here.
- * Creation date: (3/11/2004 9:33:30 AM)
- * @return cbit.vcell.server.User
- */
+
 public User getUser() {
 	return vcSimulationIdentifier.getOwner();
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (12/31/2003 12:59:27 PM)
- * @return java.lang.String
- */
 public String getUserName() {
 	return getUser().getName();
 }

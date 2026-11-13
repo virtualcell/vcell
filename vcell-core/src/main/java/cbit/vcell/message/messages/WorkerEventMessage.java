@@ -44,7 +44,6 @@ public class WorkerEventMessage {
 /**
  * Insert the method's description here.
  * Creation date: (12/31/2003 12:53:34 PM)
- * @param param javax.jms.Message
  */
 public WorkerEventMessage(WorkerEvent event) {
 	workerEvent = event;
@@ -54,8 +53,7 @@ public WorkerEventMessage(WorkerEvent event) {
 /**
  * Insert the method's description here.
  * Creation date: (12/31/2003 12:53:34 PM)
- * @param param javax.jms.Message
- * @throws SQLException 
+ * @throws SQLException
  * @throws DataAccessException 
  */
 public WorkerEventMessage(UserResolver userResolver, VCMessage message0) throws DataAccessException, SQLException {
@@ -132,6 +130,7 @@ private void parseMessage(UserResolver userResolver, VCMessage message) throws D
 		
 		String statusMessage = null;
 		Double progress = null;
+		Integer estimatedTime = null;
 		Double timepoint = null;
 		
 		if (message.propertyExists(MessageConstants.WORKEREVENT_STATUSMSG)){
@@ -140,6 +139,9 @@ private void parseMessage(UserResolver userResolver, VCMessage message) throws D
 
 		if (message.propertyExists(MessageConstants.WORKEREVENT_PROGRESS)){
 			progress = message.getDoubleProperty(MessageConstants.WORKEREVENT_PROGRESS);
+		}
+		if (message.propertyExists(MessageConstants.WORKEREVENT_ESTIMATEDTIME)){
+			estimatedTime = message.getIntProperty(MessageConstants.WORKEREVENT_ESTIMATEDTIME);
 		}
 		if (message.propertyExists(MessageConstants.WORKEREVENT_TIMEPOINT)){
 			timepoint = message.getDoubleProperty(MessageConstants.WORKEREVENT_TIMEPOINT);
@@ -186,7 +188,7 @@ private void parseMessage(UserResolver userResolver, VCMessage message) throws D
 		}
 
 		ServiceName serviceName = VCMongoMessage.getServiceName();
-		workerEvent = new WorkerEvent(status, serviceName, vcSimID, jobIndex, hostname, taskID, progress, timepoint, simulationMessage);		
+		workerEvent = new WorkerEvent(status, serviceName, vcSimID, jobIndex, hostname, taskID, progress, estimatedTime, timepoint, simulationMessage);
 	}
 }
 
@@ -194,8 +196,7 @@ private void parseMessage(UserResolver userResolver, VCMessage message) throws D
 /**
  * Insert the method's description here.
  * Creation date: (12/31/2003 12:53:34 PM)
- * @param param javax.jms.Message
- * @throws VCMessagingException 
+ * @throws VCMessagingException
  */
 public static WorkerEventMessage sendAccepted(VCMessageSession session, Object source, SimulationTask simTask, String hostName, HtcJobID htcJobID) throws VCMessagingException {
 	WorkerEvent workerEvent = new WorkerEvent(WorkerEvent.JOB_ACCEPTED, source, simTask, hostName, SimulationMessage.MESSAGE_JOB_ACCEPTED);
@@ -210,17 +211,16 @@ public static WorkerEventMessage sendAccepted(VCMessageSession session, Object s
 /**
  * Insert the method's description here.
  * Creation date: (12/31/2003 12:53:34 PM)
- * @param param javax.jms.Message
  */
 public static WorkerEventMessage sendCompleted(VCMessageSession session, Object source, SimulationTask simTask, String hostName, double progress, double timePoint, SimulationMessage simulationMessage) throws VCMessagingException {
-	WorkerEvent workerEvent = new WorkerEvent(WorkerEvent.JOB_COMPLETED, source, simTask, hostName, new Double(progress), new Double(timePoint), simulationMessage);		
+	WorkerEvent workerEvent = new WorkerEvent(WorkerEvent.JOB_COMPLETED, source, simTask, hostName, progress, timePoint, simulationMessage);
 	WorkerEventMessage workerEventMessage = new WorkerEventMessage(workerEvent);
 	workerEventMessage.sendWorkerEvent(session);
 
 	return workerEventMessage;
 }
 public static WorkerEventMessage sendAlternateCompleted(VCMessageSession session, Object source, VCSimulationIdentifier vcSimID, String hostName,int jobIndex,int taskID) throws VCMessagingException {
-	WorkerEvent workerEvent = new WorkerEvent(WorkerEvent.JOB_COMPLETED, source, vcSimID,jobIndex, hostName,taskID, null,null, SimulationMessage.MESSAGE_JOB_COMPLETED);
+	WorkerEvent workerEvent = new WorkerEvent(WorkerEvent.JOB_COMPLETED, source, vcSimID,jobIndex, hostName,taskID, null, null, SimulationMessage.MESSAGE_JOB_COMPLETED);
 	WorkerEventMessage workerEventMessage = new WorkerEventMessage(workerEvent);
 	workerEventMessage.sendWorkerEvent(session);
 
@@ -230,7 +230,6 @@ public static WorkerEventMessage sendAlternateCompleted(VCMessageSession session
 /**
  * Insert the method's description here.
  * Creation date: (12/31/2003 12:53:34 PM)
- * @param param javax.jms.Message
  */
 public static WorkerEventMessage sendFailed(VCMessageSession session, Object source, SimulationTask simTask, String hostName, SimulationMessage failMessage) throws VCMessagingException {
 	WorkerEvent workerEvent = new WorkerEvent(WorkerEvent.JOB_FAILURE, source, simTask,	hostName, failMessage);
@@ -244,10 +243,9 @@ public static WorkerEventMessage sendFailed(VCMessageSession session, Object sou
 /**
  * Insert the method's description here.
  * Creation date: (12/31/2003 12:53:34 PM)
- * @param param javax.jms.Message
  */
 public static WorkerEventMessage sendNewData(VCMessageSession session, Object source, SimulationTask simTask, String hostName, double progress, double timePoint, SimulationMessage simulationMessage) throws VCMessagingException {
-	WorkerEvent workerEvent = new WorkerEvent(WorkerEvent.JOB_DATA, source, simTask, hostName, new Double(progress), new Double(timePoint), simulationMessage);		
+	WorkerEvent workerEvent = new WorkerEvent(WorkerEvent.JOB_DATA, source, simTask, hostName, progress, timePoint, simulationMessage);
 	WorkerEventMessage workerEventMessage = new WorkerEventMessage(workerEvent);
 	workerEventMessage.sendWorkerEvent(session);
 
@@ -258,10 +256,9 @@ public static WorkerEventMessage sendNewData(VCMessageSession session, Object so
 /**
  * Insert the method's description here.
  * Creation date: (12/31/2003 12:53:34 PM)
- * @param param javax.jms.Message
  */
 public static WorkerEventMessage sendProgress(VCMessageSession session, Object source, SimulationTask simTask, String hostName, double progress, double timePoint, SimulationMessage simulationMessage) throws VCMessagingException {
-	WorkerEvent workerEvent = new WorkerEvent(WorkerEvent.JOB_PROGRESS, source, simTask, hostName, new Double(progress), new Double(timePoint), simulationMessage);		
+	WorkerEvent workerEvent = new WorkerEvent(WorkerEvent.JOB_PROGRESS, source, simTask, hostName, progress, timePoint, simulationMessage);
 	WorkerEventMessage workerEventMessage = new WorkerEventMessage(workerEvent);
 	workerEventMessage.sendWorkerEvent(session);
 
@@ -272,7 +269,6 @@ public static WorkerEventMessage sendProgress(VCMessageSession session, Object s
 /**
  * Insert the method's description here.
  * Creation date: (12/31/2003 12:53:34 PM)
- * @param param javax.jms.Message
  */
 public static WorkerEventMessage sendStarting(VCMessageSession session, Object source, SimulationTask simTask, String hostName, SimulationMessage startMessage) throws VCMessagingException {
 	WorkerEvent workerEvent = new WorkerEvent(WorkerEvent.JOB_STARTING, source, simTask, hostName, startMessage);
@@ -286,7 +282,6 @@ public static WorkerEventMessage sendStarting(VCMessageSession session, Object s
 /**
  * Insert the method's description here.
  * Creation date: (12/31/2003 12:53:34 PM)
- * @param param javax.jms.Message
  */
 public static WorkerEventMessage sendWorkerAlive(VCMessageSession session, Object source, SimulationTask simTask, String hostName, SimulationMessage simulationMessage) throws VCMessagingException {
 	WorkerEvent workerEvent = new WorkerEvent(WorkerEvent.JOB_WORKER_ALIVE, source, simTask, hostName, simulationMessage);
@@ -320,7 +315,7 @@ private VCMessage toMessage(VCMessageSession session) {
 
 
 public static WorkerEventMessage sendWorkerExitNormal(VCMessageSession session, Object source, String hostName, VCSimulationIdentifier vcSimID, int jobIndex, int taskID, int solverExitCode) throws VCMessagingException {
-	WorkerEvent workerEvent = new WorkerEvent(WorkerEvent.JOB_WORKER_EXIT_NORMAL,source,vcSimID,jobIndex,hostName,taskID,null,null,SimulationMessage.WorkerExited(solverExitCode));
+	WorkerEvent workerEvent = new WorkerEvent(WorkerEvent.JOB_WORKER_EXIT_NORMAL,source,vcSimID,jobIndex,hostName,taskID,null, null,SimulationMessage.WorkerExited(solverExitCode));
 	WorkerEventMessage workerEventMessage = new WorkerEventMessage(workerEvent);
 	workerEventMessage.sendWorkerEvent(session);
 

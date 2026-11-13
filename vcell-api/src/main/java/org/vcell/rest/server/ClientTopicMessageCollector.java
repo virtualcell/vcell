@@ -175,9 +175,10 @@ public void onTopicMessage(VCMessage message, VCMessageSession session) {
 			
 			VCSimulationIdentifier vcSimID = newJobStatus.getVCSimulationIdentifier();
 			Double progress = statusMessage.getProgress();
+			Integer estimatedTime = statusMessage.getEstimatedTime();	// langevin only, null for other solvers
 			Double timePoint = statusMessage.getTimePoint();
-			
-			fireSimulationJobStatusEvent(new SimulationJobStatusEvent(this, vcSimID.getID(), newJobStatus, progress, timePoint, messageUserName));		
+
+			fireSimulationJobStatusEvent(new SimulationJobStatusEvent(this, vcSimID.getID(), newJobStatus, progress, estimatedTime, timePoint, messageUserName));
 		} else if(msgType.equals(MessageConstants.MESSAGE_TYPE_EXPORT_EVENT_VALUE)) {	
 			String messageUserName = message.getStringProperty(VCMessagingConstants.USERNAME_PROPERTY);
 			ExportEvent event = (ExportEvent)message.getObjectContent();

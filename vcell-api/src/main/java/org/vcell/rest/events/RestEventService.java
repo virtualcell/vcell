@@ -27,24 +27,24 @@ public class RestEventService {
 	 *
 	 * <p>JSON has no representation for Infinity or NaN, so a stock {@link Gson}
 	 * throws {@code IllegalArgumentException} on one. That used to be caught, logged
-	 * and the event dropped — but the message was then redelivered, failed again, and
+	 * and the event dropped - but the message was then redelivered, failed again, and
 	 * kept failing: a single export whose {@code progress} came out Infinity produced
 	 * roughly 4,900 error lines a minute on production, and because the consumer loop
 	 * creates a JMS connection and temporary queue per message, each redelivery cost
 	 * one of each.
 	 *
-	 * <p>A non-finite value is written as {@code null} instead — a last-resort net so
+	 * <p>A non-finite value is written as {@code null} instead - a last-resort net so
 	 * serialization can never throw. Clients tolerate a missing value here: the Python
 	 * client declares {@code Optional[float] = None}, the TypeScript client
 	 * {@code progress?: number}, and the desktop client null-checks sim-job progress
 	 * ({@code SimulationListPanel}).
 	 *
 	 * <p><b>Export progress is the exception</b> and is clamped before it reaches this
-	 * net — see {@link #withFiniteProgress}. The desktop client dereferences it without
+	 * net - see {@link #withFiniteProgress}. The desktop client dereferences it without
 	 * a null check for EXPORT_PROGRESS events, so emitting null there would swap a
 	 * server-side serialization failure for a client-side NPE.
 	 *
-	 * <p>Neither excuses producing a non-finite progress — the WARN below names the
+	 * <p>Neither excuses producing a non-finite progress - the WARN below names the
 	 * value so the upstream division stays findable.
 	 */
 	private final static Gson gson = new GsonBuilder()
@@ -71,7 +71,7 @@ public class RestEventService {
 	 * <p>Clamped into [0,1] rather than nulled because the desktop client does
 	 * {@code event.getProgress().doubleValue() * 100} inside {@code case EXPORT_PROGRESS}
 	 * ({@code ExportMonitorTableModel}) and compares two progress values by auto-unboxing
-	 * in {@code ExportEvent.isSupercededBy} — a null in either place is an NPE. A wrong
+	 * in {@code ExportEvent.isSupercededBy} - a null in either place is an NPE. A wrong
 	 * but finite progress bar is a far better failure than a crashed client.
 	 */
 	private static ExportEventRepresentation withFiniteProgress(ExportEventRepresentation rep) {
@@ -129,6 +129,7 @@ public class RestEventService {
 		}else if (event instanceof SimulationJobStatusEvent) {
 			SimulationJobStatusEvent simJobEvent = (SimulationJobStatusEvent)event;
 			try {
+				// convert the SimulationJobStatusEvent into a SimulationJobStatusEventRepresentation
 				SimulationJobStatusEventRepresentation simJobEventRep = DTOModelTransformerV0.simulationJobStatusEventToJsonRep(simJobEvent);
 				SimulationJobStatusEvent event2 = DTOModelTransformerV0.simulationJobStatusEventFromJsonRep(this, simJobEventRep);
 				if (!Compare.isEqual(event2.getJobStatus(),simJobEvent.getJobStatus())) {
@@ -137,8 +138,48 @@ public class RestEventService {
 				if (!Compare.isEqual(event2.getProgress(),simJobEvent.getProgress())) {
 					throw new RuntimeException("SimulationJobStatus <PROGRESS> event round-trip failed");
 				}
+				if (!Compare.isEqual(event2.getEstimatedTime(),simJobEvent.getEstimatedTime())) {
+					throw new RuntimeException("SimulationJobStatus <ESTIMATED TIME> event round-trip failed");
+				}
+				/*
+				- example of one event from gson.toJson(simJobEventRep):
+				  a Langevin batch job that is 42% done with an ETA of 2 days
+				- the values are illustrative and borrowed from a test (SimID_999999999, user danv, server TEST2)
+				- null fields are left out entirely. That's why there's no simexe_endDate (the job isn't finished)
+				- for Langevin, hasData is false while running, no results until postprocessing finishes
+				- estimatedTime is the total job duration in seconds (not remaining time); for all other solvers
+				  it's null, so the key is absent
+				{
+				  "jobStatus": {
+				    "vcellServerID": "TEST2",
+				    "timeDateStamp": "Oct 30, 2026, 3:14:15 PM",
+				    "simulationKey": "999999999",
+				    "taskID": 0,
+				    "jobIndex": 0,
+				    "submitDate": "Oct 30, 2026, 9:02:41 AM",
+				    "owner_userid": "danv",
+				    "onwer_userkey": "26766043",
+				    "schedulerStatus": "RUNNING",
+				    "detailedState": "WORKEREVENT_PROGRESS",
+				    "detailedStateMessage": "0.42",
+				    "htcJobNumber": 1200725,
+				    "htcBatchSystemType": "SLURM",
+				    "queuePriority": 5,
+				    "queueDate": "Oct 30, 2026, 9:02:41 AM",
+				    "queueId": "QUEUE_ID_NULL",
+				    "simexe_startDate": "Oct 30, 2026, 9:03:10 AM",
+				    "simexe_latestUpdateDate": "Oct 30, 2026, 3:14:15 PM",
+				    "computeHost": "mantis-043",
+				    "hasData": false
+				  },
+				  "progress": 0.42,
+				  "estimatedTime": 172800,
+				  "timePoint": 0.00168,
+				  "username": "danv"
+				}
+				 */
 				String eventJSON = gson.toJson(simJobEventRep);
-				insert(simJobEventRep.username, EventWrapper.EventType.SimJob,eventJSON);
+				insert(simJobEventRep.username, EventWrapper.EventType.SimJob,eventJSON);	// queue it for the user
 			}catch (Exception e) {
 				lg.error(e.getMessage(), e);
 			}
