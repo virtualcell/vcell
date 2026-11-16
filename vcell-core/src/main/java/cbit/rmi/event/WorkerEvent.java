@@ -55,39 +55,32 @@ public class WorkerEvent extends MessageEvent {
 	private SimulationMessage eventMessage = null;
 	private HtcJobID htcJobID = null;
 
-public WorkerEvent(int eventType0, Object source, VCSimulationIdentifier simId0, int jobIndex0, String hostName0, int taskID0, Double progress0, Integer estimatedTime0, Double timePoint0, SimulationMessage arg_eventMessage) {
-	super(source, new MessageSource(source, Simulation.createSimulationID(simId0.getSimulationKey())), new MessageData(new Double[] {progress0, timePoint0}));
-	if (arg_eventMessage == null) {
+public WorkerEvent(int eventType, Object source, VCSimulationIdentifier vcSimulationIdentifier, int jobIndex, String hostName, int taskID, Double progress, Integer estimatedTime, Double timePoint, SimulationMessage eventMessage) {
+	super(source, new MessageSource(source, Simulation.createSimulationID(vcSimulationIdentifier.getSimulationKey())), new MessageData(new Double[] {progress, timePoint}));
+	if (eventMessage == null) {
 		throw new RuntimeException("WorkerEvent : SimulationMessage should not be null");
-	}	
-	eventType = eventType0;
-	vcSimulationIdentifier = simId0;
-	jobIndex = jobIndex0;
-	taskID = taskID0;
-	hostName = hostName0;
-	progress = progress0;
-	estimatedTime = estimatedTime0;
-	timePoint = timePoint0;
-	eventMessage = arg_eventMessage;
+	}
+	this.eventType = eventType;
+	this.vcSimulationIdentifier = vcSimulationIdentifier;
+	this.jobIndex = jobIndex;
+	this.taskID = taskID;
+	this.hostName = hostName;
+	this.progress = progress;
+	this.estimatedTime = estimatedTime;
+	this.timePoint = timePoint;
+	this.eventMessage = eventMessage;
 }
 
-//public WorkerEvent(int eventType0, Object source, SimulationJob simJob, String hostName0, SimulationMessage message) {
-//	this(eventType0, source, simJob.getVCDataIdentifier().getVcSimID(), simJob.getJobIndex(), hostName0, 0, null, null, message);
-//}
-//
-//public WorkerEvent(int eventType0, Object source, SimulationJob simJob, String hostName0, Double progress0, Double timePoint0, SimulationMessage message) {
-//	this(eventType0, source, simJob.getVCDataIdentifier().getVcSimID(), simJob.getJobIndex(), hostName0, 0, progress0, timePoint0, message);
-//}
-//
-public WorkerEvent(int eventType0, Object source, VCSimulationIdentifier simId0, int jobIndex0, String hostName0, int taskID0, Double progress0, Double timePoint0, SimulationMessage arg_eventMessage) {
-	this(eventType0, source, simId0, jobIndex0, hostName0, taskID0, progress0, null, timePoint0, arg_eventMessage);
-}
-public WorkerEvent(int eventType0, Object source, SimulationTask simTask, String hostName0, Double progress0, Double timePoint0, SimulationMessage message) {
-	this(eventType0, source, simTask.getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), simTask.getSimulationJob().getJobIndex(), hostName0, simTask.getTaskID(), progress0, timePoint0, message);
+public WorkerEvent(int eventType, Object source, VCSimulationIdentifier vcSimulationIdentifier, int jobIndex, String hostName, int taskID, Double progress, Double timePoint, SimulationMessage eventMessage) {
+	this(eventType, source, vcSimulationIdentifier, jobIndex, hostName, taskID, progress, null, timePoint, eventMessage);
 }
 
-public WorkerEvent(int eventType0, Object source, SimulationTask simTask, String hostName0, SimulationMessage message) {
-	this(eventType0, source, simTask.getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), simTask.getSimulationJob().getJobIndex(), hostName0, simTask.getTaskID(), null, null, message);
+public WorkerEvent(int eventType, Object source, SimulationTask simTask, String hostName, Double progress, Double timePoint, SimulationMessage eventMessage) {
+	this(eventType, source, simTask.getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), simTask.getSimulationJob().getJobIndex(), hostName, simTask.getTaskID(), progress, timePoint, eventMessage);
+}
+
+public WorkerEvent(int eventType, Object source, SimulationTask simTask, String hostName, SimulationMessage eventMessage) {
+	this(eventType, source, simTask.getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), simTask.getSimulationJob().getJobIndex(), hostName, simTask.getTaskID(), null, null, eventMessage);
 }
 
 public SimulationMessage getSimulationMessage() {
@@ -133,41 +126,21 @@ public boolean isIntendedFor(User user){
 	return user.equals(getUser());
 }
 
-/**
- * Insert the method's description here.
- * Creation date: (12/31/2003 12:56:45 PM)
- * @return cbit.vcell.solver.SimulationInfo
- */
 public VCSimulationDataIdentifier getVCSimulationDataIdentifier() {
 	return new VCSimulationDataIdentifier(vcSimulationIdentifier, jobIndex);
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (2/9/2004 8:17:57 AM)
- * @return boolean
- */
 public boolean isAcceptedEvent() {
 	return eventType == JOB_ACCEPTED;
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (2/9/2004 8:17:57 AM)
- * @return boolean
- */
 public boolean isCompletedEvent() {
 	return eventType == JOB_COMPLETED;
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (3/11/2004 9:33:30 AM)
- * @return boolean
- */
 @Override
 public boolean isSupercededBy(MessageEvent messageEvent) {
 	if (messageEvent instanceof WorkerEvent){
@@ -190,51 +163,26 @@ public boolean isSupercededBy(MessageEvent messageEvent) {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (2/9/2004 8:17:57 AM)
- * @return boolean
- */
 public boolean isFailedEvent() {
 	return eventType == JOB_FAILURE;
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (2/9/2004 8:17:57 AM)
- * @return boolean
- */
 public boolean isNewDataEvent() {
 	return eventType == JOB_DATA;
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (2/9/2004 8:17:57 AM)
- * @return boolean
- */
 public boolean isProgressEvent() {
 	return eventType == JOB_PROGRESS;
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (2/9/2004 8:17:57 AM)
- * @return boolean
- */
 public boolean isStartingEvent() {
 	return eventType == JOB_STARTING;
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (2/9/2004 8:17:57 AM)
- * @return boolean
- */
 public boolean isWorkerAliveEvent() {
 	return eventType == JOB_WORKER_ALIVE;
 }
@@ -252,7 +200,7 @@ public void setHtcJobID(HtcJobID htcJobID) {
 }
 
 public String show(){
-	return "WorkerEvent(type="+eventType+",simID="+this.vcSimulationIdentifier+",job="+jobIndex+",task="+taskID+",progress="+progress+",timepoint="+timePoint+",msg="+eventMessage.toSerialization();
+	return "WorkerEvent(type="+eventType+",simID="+this.vcSimulationIdentifier+",job="+jobIndex+",task="+taskID+",progress="+progress+",estimatedTime="+estimatedTime+",timepoint="+timePoint+",msg="+eventMessage.toSerialization();
 }
 
 }
