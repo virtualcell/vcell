@@ -34,7 +34,7 @@ import org.vcell.api.messaging.RemoteProxyVCellConnectionFactory;
 import org.vcell.api.server.ConnectionStatus;
 import org.vcell.api.server.Reconnector;
 import org.vcell.client.logicalwindow.LWTopFrame;
-import org.vcell.documentation.VcellHelpViewer;
+import org.vcell.documentation.HelpViewer;
 import org.vcell.util.UtilCancelException;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDocument;
@@ -69,8 +69,6 @@ import java.util.*;
 @SuppressWarnings("serial")
 public class DocumentWindow extends LWTopFrame implements TopLevelWindow, ReconnectListener {
 
-    @SuppressWarnings("unused") //PENDING Window Manager redesign
-    private final static String HelpViewerContextObject = "HelpViewerWindow";  // this object instance is the context for the help ChildWindow
     private static final String notificationsUrl = "https://vcell.org/webstart/VCell_alert/VCell_Alert.html";
     private final ChildWindowManager childWindowManager;
 
@@ -323,38 +321,7 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
 
 
     private void showVCellHelpWindow() {
-        VcellHelpViewer.showStandaloneViewer();
-        //PENDING Window Manager redesign
-
-//	ChildWindow helpWindow = childWindowManager.getChildWindowFromContext(HelpViewerContextObject);
-//	if (helpWindow!=null){
-//		helpWindow.show();
-//	}else{
-//		VcellHelpViewer vcellHelpViewer = new VcellHelpViewer(VcellHelpViewer.VCELL_DOC_URL);
-//		showHierarchy("create",vcellHelpViewer);
-//		String title = "Virtual Cell Help" + " -- VCell " + DocumentWindowAboutBox.getVERSION_NO() + " (build " + DocumentWindowAboutBox.getBUILD_NO() + ")";
-//		helpWindow = childWindowManager.addChildWindow(vcellHelpViewer, HelpViewerContextObject, title);
-//		showHierarchy("acw",vcellHelpViewer);
-//		vcellHelpViewer.setCloseMyParent(helpWindow);
-//		helpWindow.setPreferredSize(new Dimension(VcellHelpViewer.DEFAULT_HELP_DIALOG_WIDTH,VcellHelpViewer.DEFAULT_HELP_DIALOG_HEIGHT));
-//		helpWindow.pack();
-//		helpWindow.setIsCenteredOnParent();
-//		showHierarchy("bshow",vcellHelpViewer);
-//		helpWindow.show();
-//		showHierarchy("shown",vcellHelpViewer);
-//	}
-    }
-
-    @SuppressWarnings("unused") //Pending Window Manager redesign
-    private void showHierarchy(String when, VcellHelpViewer vcellHelpViewer) {
-	/*
-		System.out.println(when);
-		Container ctn = vcellHelpViewer.getParent();
-		while (ctn != null) {
-			System.out.println(ctn + ": " + ctn.getName() + " : " + ctn.getClass().getName());
-			ctn = ctn.getParent();
-		}
-	*/
+        HelpViewer.showHelp();
     }
 
     private void emailSupport(java.awt.event.ActionEvent arg1) {

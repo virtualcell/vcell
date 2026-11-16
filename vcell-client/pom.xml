@@ -165,14 +165,6 @@
 			<artifactId>jmf</artifactId>
 			<version>2.1.1e</version>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/javax.help/javahelp -->
-
-		<dependency>
-			<groupId>javax.help</groupId>
-			<artifactId>javahelp</artifactId>
-			<version>2.0.05</version>
-		</dependency>
-
 		<dependency>
 			<groupId>com.vladsch.flexmark</groupId>
 			<artifactId>flexmark</artifactId>
@@ -276,13 +268,8 @@
     </dependencies>
 	<profiles>
 		<profile>
-			<id>build-documentation</id>
-			<activation>
-				<activeByDefault>false</activeByDefault>
-				<file>
-					<missing>target/classes/vcellDoc</missing>
-				</file>
-			</activation>
+			<!-- Static HTML help for vcell.org: mvn -pl vcell-client -am install -DskipTests -Pweb-help -->
+			<id>web-help</id>
 			<build>
 				<plugins>
 					<plugin>
@@ -291,20 +278,19 @@
 						<version>3.1.0</version>
 						<executions>
 							<execution>
-								<id>build-user-help</id>
+								<id>export-web-help</id>
 								<phase>process-classes</phase>
 								<goals>
 									<goal>java</goal>
 								</goals>
 								<configuration>
-									<mainClass>org.vcell.documentation.DocumentCompiler</mainClass>
+									<mainClass>org.vcell.documentation.HelpSiteExporter</mainClass>
 									<arguments>
-										<argument>${project.basedir}/UserDocumentation/originalXML</argument>
-										<argument>${project.basedir}/target/classes/vcellDoc</argument>
+										<argument>${project.basedir}/UserDocumentation</argument>
+										<argument>${project.build.directory}/webhelp</argument>
 									</arguments>
 								</configuration>
 							</execution>
-
 						</executions>
 					</plugin>
 				</plugins>

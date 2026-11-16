@@ -45,7 +45,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
 import org.vcell.client.logicalwindow.LWTopFrame;
-import org.vcell.documentation.VcellHelpViewer;
+import org.vcell.documentation.HelpIds;
+import org.vcell.documentation.HelpViewer;
 import org.vcell.optimization.ProfileData;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DialogUtils;
@@ -122,7 +123,6 @@ public class VirtualFrapBatchRunFrame extends LWTopFrame implements DropTargetLi
 	public static JMenuBar mb = null;
 	private static StatusBar statusBarNew = new StatusBar();
 	public static ToolBar toolBar = null;
-	private VcellHelpViewer hviewer = null;
 	  
 	//for opening batch run file, may be changed later
 	ArrayList<String> frapFileList = null;
@@ -202,14 +202,7 @@ public class VirtualFrapBatchRunFrame extends LWTopFrame implements DropTargetLi
 				// Help menu
 				else if(arg.equals(HELPTOPICS_ACTION_COMMAND))
 				{
-					if(hviewer == null)
-					{
-						hviewer = new VcellHelpViewer(VcellHelpViewer.VFRAP_DOC_URL);
-					}
-					else
-					{
-						hviewer.setVisible(true);
-					}
+					HelpViewer.showHelp(HelpIds.VIRTUAL_FRAP);
 				}
 				else if(arg.equals(ABOUT_ACTION_COMMAND))
 				{
