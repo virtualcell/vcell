@@ -9,7 +9,7 @@ so getting a live, drivable client takes one command instead of a rediscovered r
 | `bridge.sh` | CLI over the bridge's HTTP endpoints: `tree`, `find`, `menu`, `wait`, `assert`, `shot`, `log`, … URL-encodes arguments, pretty-prints via `jq` when available; `wait`/`assert` exit non-zero on failure so scenarios are plain shell. |
 | `replay.py` | Replay a recorded script (`bridge.sh replay`). Issues each step through the endpoint that already implements that verb, retries a step until it takes, and waits for a window a step opened rather than sleeping. `--from`/`--to` play a slice; `--speed`/`--max-delay` re-time it. |
 | `scenarios/` | Reusable end-to-end scripts built on `bridge.sh` — `smoke.sh` checks bridge, main frame, menus, EDT and screenshots using only semantic selectors; `detach-window.sh` and its recorded twin `detach-window-recorded.sh` drive the modeless-child-window round trip. |
-| `doc-scaffold.py` | Turn a recording plus its captures into a VCell help-page skeleton (`<vcelldoc>` XML for `UserDocumentation/originalXML`). Writes the mechanical parts — ordered steps, image references — and leaves the prose to a person. |
+| `doc-scaffold.py` | Turn a recording plus its captures into a VCell help-page skeleton (a Markdown page for `UserDocumentation/pages`). Writes the mechanical parts — ordered steps, image references — and leaves the prose to a person. |
 | `scenarios/recordings/` | Captured UI scripts. JSON, hand-editable, replayed by `replay.py`. |
 | `scenarios/tutorials/` | The vcell.org tutorial PDFs, as storylines and as scripts that rebuild them. See its [README](scenarios/tutorials/README.md). |
 
@@ -151,20 +151,19 @@ bridge.sh record stop
 
 bridge.sh replay scenarios/recordings/my-feature.json --shots /tmp/shots --shot-scale 0.5
 doc-scaffold.py scenarios/recordings/my-feature.json --shots /tmp/shots \
-                --target MyFeature --title "My Feature" --out page.xml
+                --target MyFeature --title "My Feature" --out MyFeature.md
 ```
 
-Then a person copies the captures worth keeping into
-`vcell-client/UserDocumentation/originalXML/topics/image/` under names that mean something,
-updates the `imgReference` targets, writes the prose, and adds a `<tocitem>` to `TOC.xml`.
+Then a person saves the page under `vcell-client/UserDocumentation/pages/<Section>/`, copies
+the captures worth keeping into `vcell-client/UserDocumentation/images/` under names that mean
+something, updates the image links, writes the prose, and adds a line to `toc.md`. See
+`vcell-client/UserDocumentation/README.md`.
 
 Three things this pipeline learned the hard way:
 
 - **`--shot-delay` matters.** `/idle` drains the EDT, but VCell fills many panels from
   background tasks, so an idle EDT does not mean the pixels are final. Captured too early,
   two different steps produce byte-identical images and the page documents the wrong screen.
-- **Scale the captures.** `DocumentCompiler` rejects any image over 500,000 bytes. At
-  `--shot-scale 0.5` a full window lands around 30KB; at full size it will not.
-- **The help build is skipped when it looks done.** The `build-documentation` profile
-  activates only when `target/classes/vcellDoc` is *missing*, so a plain rebuild silently
-  leaves doc changes untested. Remove that directory, or run `DocumentCompiler` directly.
+- **Scale the captures.** Help images should stay under 500,000 bytes (`HelpBookTest`
+  reports larger ones; they all ship in the client jar). At `--shot-scale 0.5` a full window
+  lands around 30KB; at full size it will not.

@@ -25,7 +25,6 @@ ziptool
 .vagrant
 /update/
 /.checksums
-vcell-client/UserDocumentation/originalXML/helpSearchConfig.txt
 *.iml
 .metadata/
 .jython_cache
@@ -218,7 +217,6 @@ run_sim.sh
 
 remove_temp.sh
 
-vcell-client/UserDocumentation/originalXML/helpSearchConfig.txt
 .vscode/launch.json
 .vscode/settings.json
 

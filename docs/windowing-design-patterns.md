@@ -157,7 +157,7 @@ demo). Line numbers are as of the audit date — re-grep (§5) before fixing.
 
 | # | Site | Problem | Fix |
 |---|------|---------|-----|
-| 1 | `org/vcell/documentation/VcellHelpViewer.java:118` | User **Help window** is a null-owner `JFrame`, made visible, not LW-tracked → hides behind desktop | make `VcellHelpViewer` an `LWChildFrame` (or `ChildWindowManager.addChildWindow`) |
+| 1 | ~~`org/vcell/documentation/VcellHelpViewer.java:118`~~ | User **Help window** is a null-owner `JFrame`, made visible, not LW-tracked → hides behind desktop | done: the help window (`HelpViewer.HelpWindow`) is an `LWTopFrame` |
 | 2 | `cbit/vcell/client/VCellGuiInteractiveContext.java:20` | error dialog: throw-away `new JDialog()` + `setAlwaysOnTop(true)` as `JOptionPane` owner | `DialogUtils.showErrorDialog(topLevelWindowManager.getComponent(), msg)` |
 | 3 | `cbit/vcell/client/VCellGuiInteractiveContext.java:27` | warning dialog, same pattern (sibling `showConnectWarning:42` already does it right) | `DialogUtils.showWarningDialog(topLevelWindowManager.getComponent(), msg)` |
 | 4 | `cbit/vcell/client/ClientRequestManager.java:358` | close/save option dialog, orphan `JDialog` + alwaysOnTop | `DialogUtils.showOKCancelWarningDialog(windowManager.getComponent(), …)` |

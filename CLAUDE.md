@@ -184,7 +184,7 @@ Normal team merges go through the queue and gate on regression automatically —
 
 After major changes (especially removing/renaming user-facing features):
 
-- [ ] Check `vcell-client/UserDocumentation/` for references to changed features. This is an ad-hoc XML format compiled into JavaHelp (in-app help) and HTML published at https://vcell.org/webstart/VCell_Tutorials/VCell_Help/index.html. Update documentation to stay consistent with code.
+- [ ] Check `vcell-client/UserDocumentation/` for references to changed features. The help is Markdown (see its `README.md`), shown in-app by `org.vcell.documentation.HelpViewer` and exported as HTML to https://vcell.org/webstart/VCell_Tutorials/VCell_Help/index.html. Update documentation to stay consistent with code; `HelpBookTest` (Fast) checks links, images and `HelpIds`.
 - [ ] After regenerating OpenAPI clients (`tools/openapi-clients.sh`), compile downstream: `mvn compile test-compile -pl vcell-rest -am`
 - [ ] After changing a desktop client screen, audit its keyboard use in each of its states: `tools/debug-bridge/bridge.sh focusorder <window>` should report `0 issues` (tab order, unreachable or nameless controls). See the `swing-debug` skill.
 
