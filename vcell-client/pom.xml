@@ -84,6 +84,21 @@
 		</repository>
 	</repositories>
 	<build>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+			</resource>
+			<!-- In-app help: Markdown pages rendered by org.vcell.documentation.HelpViewer at run time -->
+			<resource>
+				<directory>UserDocumentation</directory>
+				<targetPath>vcellHelp</targetPath>
+				<includes>
+					<include>toc.md</include>
+					<include>pages/**/*.md</include>
+					<include>images/**</include>
+				</includes>
+			</resource>
+		</resources>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -156,6 +171,30 @@
 			<groupId>javax.help</groupId>
 			<artifactId>javahelp</artifactId>
 			<version>2.0.05</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.vladsch.flexmark</groupId>
+			<artifactId>flexmark</artifactId>
+			<version>${flexmark.version}</version>
+			<exclusions>
+				<!-- compile-time annotations only; vcell-util supplies a newer version -->
+				<exclusion>
+					<groupId>org.jetbrains</groupId>
+					<artifactId>annotations</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>com.vladsch.flexmark</groupId>
+			<artifactId>flexmark-ext-tables</artifactId>
+			<version>${flexmark.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.jetbrains</groupId>
+					<artifactId>annotations</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<dependency>
