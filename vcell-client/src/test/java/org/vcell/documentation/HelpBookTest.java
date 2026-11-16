@@ -20,6 +20,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -36,6 +37,8 @@ public class HelpBookTest {
 	private static final File HELP_ROOT = new File("UserDocumentation");
 	/** Images above this make the client jar heavy; DocumentCompiler used the same limit. */
 	private static final long PREFERRED_MAX_IMAGE_BYTES = 500_000;
+	/** A page's file name is its id, used in code and in web addresses; Obsidian writes spaces as %20. */
+	private static final Pattern SAFE_FILE_NAME = Pattern.compile("[A-Za-z0-9_-]+\\.[A-Za-z0-9]+");
 
 	private static HelpBook book;
 
@@ -62,6 +65,29 @@ public class HelpBookTest {
 					.forEach(orphans::add);
 		}
 		assertEquals(List.of(), orphans, "pages nothing links to; add them to toc.md or link them from a page");
+	}
+
+	@Test
+	public void fileNamesAreSafe() throws IOException {
+		List<String> unsafe = new ArrayList<>();
+		for (String folder : List.of("pages", "images")) {
+			try (Stream<Path> files = Files.walk(HELP_ROOT.toPath().resolve(folder))) {
+				files.filter(Files::isRegularFile)
+						.filter(path -> !SAFE_FILE_NAME.matcher(path.getFileName().toString()).matches())
+						.map(path -> HELP_ROOT.toPath().relativize(path).toString())
+						.forEach(unsafe::add);
+			}
+		}
+		assertEquals(List.of(), unsafe, "rename these using only letters, digits, '_' and '-' (no spaces)");
+	}
+
+	@Test
+	public void headingLinksWorkInGitHubAndObsidianForm() {
+		HelpPage definitions = HelpBookTest.book.findPage("Definitions");
+		assertEquals("reaction-rules", HelpBookTest.book.resolveHeadingId(definitions, "reaction-rules"));
+		assertEquals("reaction-rules", HelpBookTest.book.resolveHeadingId(definitions, "Reaction%20Rules"));
+		assertEquals("reaction-rules", HelpBookTest.book.resolveHeadingId(definitions, "reaction rules"));
+		assertEquals(null, HelpBookTest.book.resolveHeadingId(definitions, "No%20Such%20Heading"));
 	}
 
 	@Test
@@ -183,7 +209,7 @@ public class HelpBookTest {
 		String fragment = HelpBook.fragmentOf(href);
 		if (fragment == null || !targetPath.endsWith(".md")) return;
 		HelpPage targetPage = HelpBookTest.book.getPageByPath(targetPath);
-		if (targetPage == null || !HelpBook.headingIds(targetPage).contains(fragment)) {
+		if (targetPage == null || HelpBookTest.book.resolveHeadingId(targetPage, fragment) == null) {
 			broken.add(page.path() + ": link '" + href + "' names no heading in " + targetPath);
 		}
 	}

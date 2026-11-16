@@ -391,7 +391,8 @@ public final class HelpViewer extends JPanel {
 			LG.warn("help link '" + href + "' on " + this.currentPage.path() + " does not resolve");
 			return;
 		}
-		this.openPage(target, fragment, List.of());
+		String headingId = this.book.resolveHeadingId(target, fragment);
+		this.openPage(target, headingId != null ? headingId : fragment, List.of());
 	}
 
 	private void openSelectedContentsEntry() {

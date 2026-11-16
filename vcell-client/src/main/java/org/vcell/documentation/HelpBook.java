@@ -32,6 +32,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -77,6 +78,7 @@ public final class HelpBook {
 	private final Map<String, HelpPage> pagesById = new HashMap<>();
 	private final Map<String, List<String>> tocTrailsByPath = new HashMap<>();
 	private final Map<String, Dimension> imageSizes = new ConcurrentHashMap<>();
+	private final Map<String, Map<String, String>> headingTextsByPath = new ConcurrentHashMap<>();
 	private final List<String> problems = new ArrayList<>();
 
 	/**
@@ -166,16 +168,40 @@ public final class HelpBook {
 		return HelpBook.textOf(page.document());
 	}
 
-	/** The anchor ids of a page's headings, as the renderer writes them. */
-	public static Set<String> headingIds(HelpPage page) {
+	/**
+	 * The anchor id of the heading a link's "#fragment" names, or null if it names none.
+	 *
+	 * <p>Accepts the id the renderer writes ("reaction-rules", as GitHub and VS Code link
+	 * headings) and the heading's own text ("Reaction%20Rules", as Obsidian links them), so pages
+	 * can be edited in either tool.
+	 */
+	public String resolveHeadingId(HelpPage page, String fragment) {
+		if (fragment == null || fragment.isEmpty()) return null;
+		Map<String, String> headingTextsById = this.headingTextsByPath.computeIfAbsent(page.path(), path -> HelpBook.headingTexts(page));
+		if (headingTextsById.containsKey(fragment)) return fragment;
+		String decoded = HelpBook.percentDecode(fragment).trim();
+		for (Map.Entry<String, String> heading : headingTextsById.entrySet()) {
+			if (heading.getValue().equalsIgnoreCase(decoded)) return heading.getKey();
+		}
+		// Obsidian drops some punctuation from heading links; compare letters and digits only
+		String wanted = HelpBook.lettersAndDigits(decoded);
+		if (wanted.isEmpty()) return null;
+		for (Map.Entry<String, String> heading : headingTextsById.entrySet()) {
+			if (HelpBook.lettersAndDigits(heading.getValue()).equals(wanted)) return heading.getKey();
+		}
+		return null;
+	}
+
+	/** Heading anchor id to heading text, in page order, as the renderer generates the ids. */
+	private static Map<String, String> headingTexts(HelpPage page) {
 		HeaderIdGenerator idGenerator = new HeaderIdGenerator(MARKDOWN_OPTIONS);
 		idGenerator.generateIds(page.document());
-		Set<String> ids = new HashSet<>();
+		Map<String, String> texts = new LinkedHashMap<>();
 		for (Node node : page.document().getDescendants()) {
 			if (!(node instanceof Heading heading)) continue;
-			ids.add(heading.getAnchorRefId());
+			texts.putIfAbsent(heading.getAnchorRefId(), HelpBook.textOf(heading));
 		}
-		return ids;
+		return texts;
 	}
 
 	/**
@@ -195,6 +221,21 @@ public final class HelpBook {
 			}
 		}
 		return text.toString().replaceAll("\\s+", " ").trim();
+	}
+
+	private static String percentDecode(String text) {
+		try {
+			// keep '+' literal: URLDecoder would turn it into a space
+			return URLDecoder.decode(text.replace("+", "%2B"), StandardCharsets.UTF_8);
+		} catch (IllegalArgumentException e) {
+			return text;
+		}
+	}
+
+	private static String lettersAndDigits(String text) {
+		StringBuilder kept = new StringBuilder();
+		text.codePoints().filter(Character::isLetterOrDigit).map(Character::toLowerCase).forEach(kept::appendCodePoint);
+		return kept.toString();
 	}
 
 	/** Pixel size of an image in the help, or null when it is missing or unreadable. */

@@ -70,8 +70,19 @@ public final class HelpRenderer {
 		if (node instanceof Link link && this.target == Target.WEB) {
 			String href = link.getUrl().toString();
 			if (HelpBook.isExternal(href)) return;
-			attributes.replaceValue("href", HelpRenderer.toHtmlHref(href));
+			attributes.replaceValue("href", HelpRenderer.toHtmlHref(this.withHeadingId(page, href)));
 		}
+	}
+
+	/** A browser only follows "#id", so turn an Obsidian-style "#Heading%20Text" into the heading's id. */
+	private String withHeadingId(HelpPage page, String href) {
+		String fragment = HelpBook.fragmentOf(href);
+		if (fragment == null) return href;
+		String targetPath = HelpBook.resolvePath(page.path(), href);
+		HelpPage targetPage = targetPath == null ? null : this.book.getPageByPath(targetPath);
+		String headingId = targetPage == null ? null : this.book.resolveHeadingId(targetPage, fragment);
+		if (headingId == null) return href;
+		return href.substring(0, href.indexOf('#') + 1) + headingId;
 	}
 
 	private void sizeImage(HelpPage page, String src, MutableAttributes attributes) {

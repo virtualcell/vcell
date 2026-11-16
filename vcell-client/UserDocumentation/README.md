@@ -17,13 +17,16 @@ UserDocumentation/
 - **A page's id is its file name** without `.md` (`pages/Introduction/FieldData.md` is
   `FieldData`). Ids must be unique across all sections. Code opens a page by id, through a
   constant in `org.vcell.documentation.HelpIds`, so rename a page and its constant together.
+- **Name files with letters, digits, `_` and `-` only**, with no spaces. This applies to pages
+  and images: the name becomes an id in code and part of a web address.
 - **The first line is the title**: `# Field Data`.
 - Write ordinary [CommonMark](https://commonmark.org/help/): paragraphs, `**bold**`, `*italic*`,
   lists, `## headings`, tables, and links.
 - **Link to another page with its relative path**, the way GitHub would follow it:
   `[Geometry](../BioModelApplications/Geometry/GeometryOverview.md)`. To link to a heading, add
   its anchor: `[reaction rules](../Appendix/Definitions.md#reaction-rules)`. An anchor is the
-  heading text, lower-cased, with spaces turned into dashes.
+  heading text, lower-cased, with spaces turned into dashes. The heading's own text, as
+  Obsidian writes it (`Definitions.md#Reaction%20Rules`), works too.
 - **Glossary terms** live on `pages/Appendix/Definitions.md`, one `##` heading each.
 - **Images** go in `images/` and are linked relatively: `![](../../images/FieldDataManager.png)`.
   An image inside a sentence stays inline (good for toolbar icons); on its own line it is a
@@ -35,6 +38,24 @@ UserDocumentation/
 `toc.md` is a nested list of links. Indent two spaces per level. The first entry is the home
 page (`HelpIds.HOME`). A page can appear more than once. A page that is not in the contents
 must be linked from a page that is, or the test below fails.
+
+## Editing in Obsidian
+
+[Obsidian](https://obsidian.md) (free) gives you a graph of how pages link, backlinks, and link
+updates when you rename or move a page. Use **Open folder as vault** on this
+`UserDocumentation` folder, not a new vault inside it. The vault's settings are committed in
+`.obsidian/app.json`: standard Markdown links (not `[[wikilinks]]`), relative paths, links
+updated on rename, and pasted images saved to `images/`. Your own layout and plugins stay out of
+git.
+
+- **Graph (⌘G / Ctrl+G):** every page hangs off `toc.md`. Type `-file:toc` in the graph's filter
+  to see how the pages themselves link.
+- **Backlinks:** almost every page links to the glossary, so `Definitions` has dozens. Type in
+  the backlinks panel's search box to narrow them.
+- **Renaming a page** updates the links to it. It does not change link text, such as the label
+  in `toc.md`, and it changes the page's id, so check `HelpIds`.
+- **Pasted images** get names like `Pasted image 2026….png`. Rename them to something
+  meaningful, with no spaces, before committing.
 
 ## Checking your change
 

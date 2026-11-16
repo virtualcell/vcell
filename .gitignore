@@ -268,3 +268,8 @@ active_users*.csv
 
 # backlog tooling output
 obsolescence-sweep.json
+
+# Obsidian, used to edit the in-app help: share the vault's link settings, not each person's layout
+vcell-client/UserDocumentation/.obsidian/*
+!vcell-client/UserDocumentation/.obsidian/app.json
+vcell-client/UserDocumentation/.trash/
