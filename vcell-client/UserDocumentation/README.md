@@ -54,6 +54,11 @@ git.
   the backlinks panel's search box to narrow them.
 - **Renaming a page** updates the links to it. It does not change link text, such as the label
   in `toc.md`, and it changes the page's id, so check `HelpIds`.
+- **Stick to standard Markdown.** Obsidian also reads its own syntax: `[[wikilinks]]`,
+  `![[embeds]]`, `> [!note]` callouts, `==highlights==`, `%%comments%%` and `^block` references.
+  VCell shows all of these as literal text, so `HelpBookTest` rejects them. Picking a page or
+  heading from the `[[` suggestions is fine: with this vault's settings Obsidian inserts a
+  standard link.
 - **Pasted images** get names like `Pasted image 2026….png`. Rename them to something
   meaningful, with no spaces, before committing.
 
@@ -61,7 +66,7 @@ git.
 
 `HelpBookTest` (in the Fast group) fails on a broken link, anchor or image, an image name whose
 case differs from the file (macOS forgives that, but the client jar does not), a page nothing
-links to, a duplicate id, or a `HelpIds` constant with no page:
+links to, a duplicate id, Obsidian-only syntax, or a `HelpIds` constant with no page:
 
 ```bash
 mvn test -pl vcell-client -Dtest=HelpBookTest

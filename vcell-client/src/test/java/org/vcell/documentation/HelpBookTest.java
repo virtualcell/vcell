@@ -1,17 +1,21 @@
 package org.vcell.documentation;
 
+import com.vladsch.flexmark.ast.BlockQuote;
 import com.vladsch.flexmark.ast.Heading;
 import com.vladsch.flexmark.ast.Image;
 import com.vladsch.flexmark.ast.Link;
+import com.vladsch.flexmark.ast.Paragraph;
 import com.vladsch.flexmark.util.ast.Node;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -40,6 +44,18 @@ public class HelpBookTest {
 	/** A page's file name is its id, used in code and in web addresses; Obsidian writes spaces as %20. */
 	private static final Pattern SAFE_FILE_NAME = Pattern.compile("[A-Za-z0-9_-]+\\.[A-Za-z0-9]+");
 
+	/**
+	 * Obsidian syntax that standard Markdown, and so the VCell help viewer, shows as literal text.
+	 * Escaped characters (\\[\\[) and inline code are left alone.
+	 */
+	private record ObsidianSyntax(Pattern pattern, String instead) {}
+	private static final List<ObsidianSyntax> OBSIDIAN_ONLY_SYNTAX = List.of(
+			new ObsidianSyntax(Pattern.compile("(?<!\\\\)!?\\[\\["), "a [[wikilink]] or ![[embed]]: use [text](page.md) or ![](../../images/name.png)"),
+			new ObsidianSyntax(Pattern.compile("(?<![\\\\=])==(?=\\S)[^=\\n]*\\S=="), "an ==highlight==: use **bold**"),
+			new ObsidianSyntax(Pattern.compile("(?<!\\\\)%%"), "a %%comment%%: use <!-- comment -->"),
+			new ObsidianSyntax(Pattern.compile("(?m)\\s\\^[A-Za-z0-9-]+$"), "a ^block-reference: link to a heading instead"));
+	private static final Pattern INLINE_CODE = Pattern.compile("(`+).*?\\1", Pattern.DOTALL);
+
 	private static HelpBook book;
 
 	@BeforeAll
@@ -65,6 +81,30 @@ public class HelpBookTest {
 					.forEach(orphans::add);
 		}
 		assertEquals(List.of(), orphans, "pages nothing links to; add them to toc.md or link them from a page");
+	}
+
+	@Test
+	public void noObsidianOnlySyntax() {
+		List<String> found = new ArrayList<>();
+		for (HelpPage page : HelpBookTest.book.getPages()) found.addAll(HelpBookTest.obsidianOnlySyntax(page));
+		assertEquals(List.of(), found, "Obsidian-only syntax, which VCell's help shows as plain text");
+	}
+
+	@Test
+	public void detectsObsidianOnlySyntax(@TempDir Path helpRoot) throws IOException {
+		Files.writeString(helpRoot.resolve("toc.md"), "# Help\n\n- [Page](pages/Page.md)\n", StandardCharsets.UTF_8);
+		Files.createDirectories(helpRoot.resolve("pages"));
+		Files.writeString(helpRoot.resolve("pages/Page.md"), String.join("\n",
+				"# Page", "",
+				"See [[Other Page]] and ![[picture.png]].", "",
+				"This is ==important== text. %% a note %%", "",
+				"A paragraph to point at. ^my-block", "",
+				"> [!note]", "> A callout.", "",
+				"Fine: `[[in code]]`, \\[\\[escaped\\]\\], a == b, x^2 and > [plain quote].", ""), StandardCharsets.UTF_8);
+		HelpPage page = HelpBook.fromDirectory(helpRoot.toFile()).findPage("Page");
+		List<String> found = HelpBookTest.obsidianOnlySyntax(page);
+		assertEquals(5, found.size(), String.join("\n", found));
+		assertTrue(found.get(0).startsWith("pages/Page.md:3: "), found.get(0));
 	}
 
 	@Test
@@ -186,6 +226,23 @@ public class HelpBookTest {
 		// informational, as DocumentCompiler's were: removing images is a content decision
 		if (!unused.isEmpty()) System.out.println("Help images no page uses (" + unused.size() + "): " + unused);
 		if (!large.isEmpty()) System.out.println("Help images over " + PREFERRED_MAX_IMAGE_BYTES + " bytes: " + large);
+	}
+
+	/** One "path:line: what was found" entry per Obsidian-only construct on the page. */
+	private static List<String> obsidianOnlySyntax(HelpPage page) {
+		List<String> found = new ArrayList<>();
+		for (Node node : page.document().getDescendants()) {
+			if (!(node instanceof Paragraph) && !(node instanceof Heading)) continue;
+			String where = page.path() + ":" + (node.getLineNumber() + 1) + ": ";
+			String text = INLINE_CODE.matcher(node.getChars().toString()).replaceAll("");
+			if (node.getParent() instanceof BlockQuote quote && quote.getFirstChild() == node && text.startsWith("[!")) {
+				found.add(where + "a > [!callout]: use a plain > quote or **Note:**");
+			}
+			for (ObsidianSyntax syntax : OBSIDIAN_ONLY_SYNTAX) {
+				if (syntax.pattern().matcher(text).find()) found.add(where + syntax.instead());
+			}
+		}
+		return found;
 	}
 
 	private static void checkImage(HelpPage page, String src, List<String> broken) {
