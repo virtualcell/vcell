@@ -1,5 +1,6 @@
 package org.vcell.documentation;
 
+import com.vladsch.flexmark.ast.Heading;
 import com.vladsch.flexmark.ast.Image;
 import com.vladsch.flexmark.ast.Link;
 import com.vladsch.flexmark.util.ast.Node;
@@ -67,7 +68,14 @@ public class HelpBookTest {
 	public void everyPageHasATitle() {
 		List<String> untitled = new ArrayList<>();
 		for (HelpPage page : HelpBookTest.book.getPages()) {
-			if (page.title().equals(page.id())) untitled.add(page.path());
+			boolean hasTitle = false;
+			for (Node node : page.document().getDescendants()) {
+				if (node instanceof Heading heading && heading.getLevel() == 1) {
+					hasTitle = true;
+					break;
+				}
+			}
+			if (!hasTitle) untitled.add(page.path());
 		}
 		assertEquals(List.of(), untitled, "pages without a '# Title' first heading");
 	}

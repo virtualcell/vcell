@@ -1,18 +1,23 @@
 package org.vcell.documentation;
 
 import com.vladsch.flexmark.ast.BulletList;
+import com.vladsch.flexmark.ast.Code;
+import com.vladsch.flexmark.ast.HardLineBreak;
 import com.vladsch.flexmark.ast.Heading;
 import com.vladsch.flexmark.ast.Link;
 import com.vladsch.flexmark.ast.ListItem;
 import com.vladsch.flexmark.ast.Paragraph;
+import com.vladsch.flexmark.ast.SoftLineBreak;
+import com.vladsch.flexmark.ast.Text;
 import com.vladsch.flexmark.ext.tables.TablesExtension;
 import com.vladsch.flexmark.html.renderer.HeaderIdGenerator;
 import com.vladsch.flexmark.parser.Parser;
 import com.vladsch.flexmark.util.ast.Document;
+import com.vladsch.flexmark.util.ast.Block;
 import com.vladsch.flexmark.util.ast.Node;
-import com.vladsch.flexmark.util.ast.TextCollectingVisitor;
 import com.vladsch.flexmark.util.data.DataHolder;
 import com.vladsch.flexmark.util.data.MutableDataSet;
+import com.vladsch.flexmark.util.sequence.Escaping;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -158,7 +163,7 @@ public final class HelpBook {
 
 	/** Plain text of a page, for search. */
 	public static String plainText(HelpPage page) {
-		return new TextCollectingVisitor().collectAndGetText(page.document());
+		return HelpBook.textOf(page.document());
 	}
 
 	/** The anchor ids of a page's headings, as the renderer writes them. */
@@ -171,6 +176,25 @@ public final class HelpBook {
 			ids.add(heading.getAnchorRefId());
 		}
 		return ids;
+	}
+
+	/**
+	 * The words a node shows: text and inline code, without markup, links' targets or HTML
+	 * comments, one space between words and blocks. (flexmark's TextCollectingVisitor fails an
+	 * internal length assertion on some of our pages, so this does not use it.)
+	 */
+	static String textOf(Node root) {
+		StringBuilder text = new StringBuilder();
+		for (Node node : root.getDescendants()) {
+			if (node instanceof Code code) {
+				text.append(code.getText());
+			} else if (node instanceof Text && !(node.getParent() instanceof Code)) {
+				text.append(Escaping.unescapeString(node.getChars()));
+			} else if (node instanceof SoftLineBreak || node instanceof HardLineBreak || node instanceof Block) {
+				text.append(' ');
+			}
+		}
+		return text.toString().replaceAll("\\s+", " ").trim();
 	}
 
 	/** Pixel size of an image in the help, or null when it is missing or unreadable. */
@@ -241,7 +265,7 @@ public final class HelpBook {
 			List<HelpTocEntry> children = List.of();
 			for (Node part : listItem.getChildren()) {
 				if (part instanceof Paragraph paragraph) {
-					entryTitle = new TextCollectingVisitor().collectAndGetText(paragraph).trim();
+					entryTitle = HelpBook.textOf(paragraph);
 					Link link = HelpBook.firstLink(paragraph);
 					if (link == null) continue;
 					pagePath = HelpBook.resolvePath(TOC_PATH, link.getUrl().toString());
@@ -332,7 +356,7 @@ public final class HelpBook {
 	private static String firstHeadingText(Document document, String fallback) {
 		for (Node node : document.getDescendants()) {
 			if (!(node instanceof Heading heading) || heading.getLevel() != 1) continue;
-			return new TextCollectingVisitor().collectAndGetText(heading).trim();
+			return HelpBook.textOf(heading);
 		}
 		return fallback;
 	}
