@@ -132,6 +132,7 @@ public class RemoteProxyVCellConnectionFactory implements VCellConnectionFactory
 					break;
 				}
 				case SimJob:{
+					// see example below of EventWrapper with the JSON inside, as string
 					SimulationJobStatusEventRepresentation simJobStatusEventRep =
 							gson.fromJson(eventWrapper.eventJSON, SimulationJobStatusEventRepresentation.class);
 					SimulationJobStatusEvent simJobStatusEvent = DTOModelTransformerV0.simulationJobStatusEventFromJsonRep(this, simJobStatusEventRep);
@@ -227,3 +228,14 @@ public VCellApiClient getVCellApiClient() {
 	return vcellApiClient;
 }
 }
+
+/*
+					 EventWrapper example with the JSON inside, as string
+					 {
+					   "id": 4711,
+					   "timestamp": 1792610055123,
+					   "userid": "danv",
+					   "eventType": "SimJob",
+					   "eventJSON": "{\"jobStatus\":{...},\"progress\":0.42,\"estimatedTime\":172800,\"timePoint\":0.00168,\"username\":\"danv\"}"
+					 }
+*/
