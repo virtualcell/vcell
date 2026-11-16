@@ -13,7 +13,8 @@
 	<bold>Note:</bold> 
 	<list>
 		<item>Presently, models can be imported into the Virtual Cell only as BioModels.</item>
-		<item>Each SBML model is imported as one BioModel with one non-spatial application</item>
+		<item>Each SBML model is imported as one BioModel with one application. A model that uses the SBML spatial package becomes a spatial application (deterministic, stochastic, or a PDE/particle hybrid, as the SBML describes); any other model becomes a non-spatial application.</item>
+		<item>A SED-ML document, or an archive containing one (.sedx, .omex), is imported as one BioModel per model it describes, with the simulations and output functions the SED-ML defines. Models that were exported from one VCell BioModel are merged back into one.</item>
 	</list>
 	</para>
 	</introduction>
@@ -32,7 +33,9 @@
 	<bold>Unit conversions from SBML</bold>
 	</para>
 	<para>
-	While importing an SBML model into the Virtual Cell, the units are converted into Virtual Cell default units. 
+	An imported SBML model keeps the unit system declared in the SBML file, which becomes the BioModel's unit system.
+	There are two exceptions. A spatial stochastic or hybrid model is converted to the Virtual Cell default units (micrometers, seconds, micromolar), because its particle simulation is only consistent in those units.
+	And when a SED-ML document mixes such a model with other SBML models, those are converted to the default units as well, so that they can be merged back into one BioModel.
 	Note that species in SBML can be represented in terms of substance units or concentration units, whereas Virtual Cell represents species only in terms of concentration. 
 	An SBML species which is defined in substance units is converted to concentration units in the Virtual Cell by dividing the quantity in substance units by the size of the compartment in which the species is located. 
 	Also, reaction rates in SBML are defined in terms of substance/time, which are converted to concentration/time while importing into the Virtual Cell.

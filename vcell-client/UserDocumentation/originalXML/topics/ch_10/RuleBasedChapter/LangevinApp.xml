@@ -34,16 +34,16 @@
 			<para><bold>The geometry it builds.</bold> A 100 nm cube with the membrane 90 nm up, written as two
 				expressions on the Geometry Definition tab:</para>
 			<list>
-				<item><bold>Intracellular</bold> = <bold>(z &amp;lt; 0.09)</bold> - everything below the membrane. The value is
+				<item><bold>Intracellular</bold> = <bold>(z &lt; 0.09)</bold> - everything below the membrane. The value is
 					in microns, and the form matters: the solver input writer parses this expression and needs it to be
-					exactly "z &amp;lt; number".</item>
+					exactly "z &lt; number".</item>
 				<item><bold>Extracellular</bold> = <bold>1.0</bold> - everything else.</item>
 			</list>
 
 			<para>To change the size of the box, press <bold>Edit Domain...</bold> and set the extent, then move the
 				membrane by editing the Intracellular expression to match. The two are independent: the extent says how tall
 				the box is, the expression says where inside it the membrane sits. A box where the domain is set to z=0.4 um with Intracellular
-				= (z &amp;lt; 0.2) gives 200 nm of Intracellular and 200 nm Extracellular.</para>
+				= (z &lt; 0.2) gives 200 nm of Intracellular and 200 nm Extracellular.</para>
 
 			<para><bold>Specifications.</bold> Three tabs, of which two are specific to a SpringSaLaD Application:</para>
 			<list>
