@@ -1,13 +1,19 @@
 package org.vcell.documentation;
 
+import com.vladsch.flexmark.ast.Image;
+import com.vladsch.flexmark.ast.ImageRef;
+import com.vladsch.flexmark.ast.Reference;
+import com.vladsch.flexmark.parser.Parser;
+import com.vladsch.flexmark.util.ast.Node;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.util.List;
-import java.util.stream.Stream;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Writes the help as static HTML for the web (index.html, pages/, images/, help.css), as published
@@ -49,8 +55,9 @@ public final class HelpSiteExporter {
 
 	public static void export(File sourceDirectory, Path outputDirectory) throws IOException {
 		HelpBook book = HelpBook.fromDirectory(sourceDirectory);
-		if (!book.getProblems().isEmpty()) {
-			throw new IOException("help source has problems: " + book.getProblems());
+		List<HelpProblem> problems = HelpChecks.check(book);
+		if (!problems.isEmpty()) {
+			throw new IOException("help source has problems:\n" + problems.stream().map(HelpProblem::toString).collect(java.util.stream.Collectors.joining("\n")));
 		}
 		HelpRenderer renderer = new HelpRenderer(book, HelpRenderer.Target.WEB, MAX_IMAGE_WIDTH);
 		Files.createDirectories(outputDirectory);
@@ -62,8 +69,8 @@ public final class HelpSiteExporter {
 			String toRoot = "../".repeat((int) page.path().chars().filter(c -> c == '/').count());
 			Files.writeString(pageFile, HelpSiteExporter.pageHtml(page.title(), toRoot, renderer.renderBody(page)), StandardCharsets.UTF_8);
 		}
-		HelpSiteExporter.copyDirectory(sourceDirectory.toPath().resolve("images"), outputDirectory.resolve("images"));
-		System.out.println("wrote " + book.getPages().size() + " help pages to " + outputDirectory);
+		int images = HelpSiteExporter.copyImages(book, outputDirectory);
+		System.out.println("wrote " + book.getPages().size() + " help pages and " + images + " images to " + outputDirectory);
 	}
 
 	private static String pageHtml(String title, String toRoot, String body) {
@@ -99,17 +106,32 @@ public final class HelpSiteExporter {
 		html.append("</ul>\n");
 	}
 
-	private static void copyDirectory(Path from, Path to) throws IOException {
-		try (Stream<Path> files = Files.walk(from)) {
-			for (Path source : (Iterable<Path>) files::iterator) {
-				Path target = to.resolve(from.relativize(source).toString());
-				if (Files.isDirectory(source)) {
-					Files.createDirectories(target);
-					continue;
+	/**
+	 * Copy the images the pages show, read through the book's source, so the site holds only
+	 * plain files from inside the help folder (no links, nothing unused).
+	 */
+	private static int copyImages(HelpBook book, Path outputDirectory) throws IOException {
+		Set<String> imagePaths = new TreeSet<>();
+		for (HelpPage page : book.getPages()) {
+			for (Node node : page.document().getDescendants()) {
+				String src = null;
+				if (node instanceof Image image) {
+					src = image.getUrl().unescape();
+				} else if (node instanceof ImageRef imageRef && imageRef.isDefined()) {
+					Reference reference = imageRef.getReferenceNode(Parser.REFERENCES.get(imageRef.getDocument()));
+					if (reference != null) src = reference.getUrl().unescape();
 				}
-				Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
+				if (src == null) continue;
+				String imagePath = HelpBook.resolvePath(page.path(), src);
+				if (imagePath != null && book.getImageSize(imagePath) != null) imagePaths.add(imagePath);
 			}
 		}
+		for (String imagePath : imagePaths) {
+			Path target = outputDirectory.resolve(imagePath);
+			Files.createDirectories(target.getParent());
+			Files.write(target, book.getSource().read(imagePath, HelpSource.MAX_IMAGE_BYTES));
+		}
+		return imagePaths.size();
 	}
 
 	private static String escape(String text) {

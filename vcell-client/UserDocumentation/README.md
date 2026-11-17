@@ -64,16 +64,32 @@ git.
 
 ## Checking your change
 
-`HelpBookTest` (in the Fast group) fails on a broken link, anchor or image, an image name whose
-case differs from the file (macOS forgives that, but the client jar does not), a page nothing
-links to, a duplicate id, Obsidian-only syntax, or a `HelpIds` constant with no page:
+**In VCell, without building anything:** open the help, choose **Advanced > Show Help from a
+Source Folder...** and pick this `UserDocumentation` folder. The help then shows your copy, as
+VCell will show it, and reloads a second or two after you save a file. A banner names the folder,
+and its **problems** button lists everything below, each with its file and line; click one to open
+the page. **Use Built-in Help** goes back. VCell remembers the folder until you do.
+
+The same checks run in `HelpBookTest` (in the Fast group), and in CI. They report a broken link,
+anchor or image, an image name whose case differs from the file (macOS forgives that, but the
+client jar does not), a page nothing links to, a file name with spaces or other characters, a link
+(shortcut) in the folder, raw HTML, a link that is not http, https or mailto, an image that is too
+large, Obsidian-only syntax, and a `HelpIds` constant with no page:
 
 ```bash
-mvn test -pl vcell-client -Dtest=HelpBookTest
+mvn test -pl vcell-client -Dtest='HelpBookTest,HelpSecurityTest'
 ```
 
-To see the result, open the client's help. `tools/debug-bridge/doc-scaffold.py` drafts a page
-from a recorded UI session.
+`tools/debug-bridge/doc-scaffold.py` drafts a page from a recorded UI session.
+
+## What the help will not show
+
+A help folder can come from anywhere, so the help treats its content as untrusted, the built-in
+copy included. It shows only Markdown: **raw HTML is dropped** (comments stay as author notes),
+links open only for `https://`, `http://` and `mailto:`, and images come only from plain files in
+this folder (PNG, JPEG or GIF, at most 8 MB and 10,000 pixels a side). Files must have plain
+names, and links (symlinks or shortcuts) are not followed. A page larger than 256 KB is not read.
+Anything else is shown as its text, and listed as a problem.
 
 ## The web copy
 
