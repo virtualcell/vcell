@@ -25,6 +25,8 @@ Applications can be
 - [Network-free](../Appendix/Definitions.md#rule-based), a special stochastic
   [network-free application](../RuleBasedChapter/NFSimApp.md) that does not require generating a
   network to simulate.
+- [SpringSaLaD Langevin Dynamics](../Appendix/Definitions.md#springsalad), a spatial application
+  using Langevin dynamics to simulate diffusion and reactions of molecular domains.
 
 ![](../../images/ApplicationTypes.png)
 
