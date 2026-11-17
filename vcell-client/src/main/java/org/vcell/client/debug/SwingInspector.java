@@ -2562,8 +2562,8 @@ public final class SwingInspector {
 	/**
 	 * As above, but scaled and named.
 	 *
-	 * <p>Scaling belongs here rather than in a caller because the help system caps images at
-	 * {@code DocumentCompiler.MAX_IMG_FILE_SIZE} (500KB), and a full-size capture of a
+	 * <p>Scaling belongs here rather than in a caller because the help system wants images under
+	 * 500KB ({@code HelpBookTest.PREFERRED_MAX_IMAGE_BYTES}), and a full-size capture of a
 	 * maximised window blows past that. Doing it in Java keeps documentation capture free of
 	 * platform image tools.
 	 *

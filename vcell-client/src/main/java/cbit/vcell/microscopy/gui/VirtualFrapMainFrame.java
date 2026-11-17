@@ -49,12 +49,12 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.undo.UndoableEdit;
 
 import org.vcell.client.logicalwindow.LWTopFrame;
-import org.vcell.documentation.VcellHelpViewer;
+import org.vcell.documentation.HelpIds;
+import org.vcell.documentation.HelpViewer;
 import org.vcell.util.gui.ShortcutsWizard;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.ChildWindowManager;
-import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.TopLevelWindowManager;
 import cbit.vcell.client.UserMessage;
@@ -84,8 +84,6 @@ import cbit.vcell.resource.VCellConfiguration;
 @SuppressWarnings("serial")
 public class VirtualFrapMainFrame extends LWTopFrame implements DropTargetListener, TopLevelWindow {
     private final ChildWindowManager childWindowManager;
-
-    private final static String HELP_VIEWER_CONTEXT_OBJECT = "Help Viewer Context Object";
 
     //the application has one local workspace and one FRAP workspace
     private LocalWorkspace localWorkspace = null;
@@ -296,19 +294,7 @@ public class VirtualFrapMainFrame extends LWTopFrame implements DropTargetListen
                         }
                     }
                 } else if (arg.equals(HELPTOPICS_ACTION_COMMAND)) {
-                    ChildWindow helpViewerWindow = childWindowManager.getChildWindowFromContext(HELP_VIEWER_CONTEXT_OBJECT);
-                    if (helpViewerWindow == null) {
-                        VcellHelpViewer hviewer = new VcellHelpViewer(VcellHelpViewer.VFRAP_DOC_URL);
-                        helpViewerWindow = getChildWindowManager().addChildWindow(hviewer, HELP_VIEWER_CONTEXT_OBJECT, "Virtual FRAP Help", false);
-                        ShortcutsWizard.addCloseWindowShortcut(hviewer);
-                        helpViewerWindow.setIsCenteredOnParent();
-                        helpViewerWindow.setPreferredSize(new Dimension(VcellHelpViewer.DEFAULT_HELP_DIALOG_WIDTH, VcellHelpViewer.DEFAULT_HELP_DIALOG_HEIGHT));
-                        helpViewerWindow.pack();
-                        helpViewerWindow.show();
-                    } else {
-                        helpViewerWindow.show();
-                    }
-
+                    HelpViewer.showHelp(HelpIds.VIRTUAL_FRAP);
                 } else if (arg.equals(ABOUT_ACTION_COMMAND)) {
                     DocumentWindow.showAboutBox(VirtualFrapMainFrame.this);
                 } else if (arg.equals(UNDO_ACTION_COMMAND)) {
