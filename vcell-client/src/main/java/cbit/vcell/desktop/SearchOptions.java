@@ -60,6 +60,17 @@ public final class SearchOptions {
 		}
 	}
 
+	/** Whether a model is spatial: has a geometry of one dimension or more (a BioModel: any of its applications). */
+	public enum Space {
+		SPATIAL("Spatial"), NON_SPATIAL("Non-spatial");
+
+		public final String label;
+
+		Space(String label) {
+			this.label = label;
+		}
+	}
+
 	/** Who may see a model, and whether it was published with a paper (Published) or curated. */
 	public enum Access {
 		PRIVATE("Private"), SHARED("Shared"), PUBLIC("Public"), PUBLISHED("Published"), CURATED("Curated");
@@ -112,6 +123,7 @@ public final class SearchOptions {
 	private final Saved saved;
 	private final LocalDate savedFrom, savedTo; // Between's dates, both included; either null for no limit that way
 	private final EnumSet<Approach> approaches;
+	private final EnumSet<Space> spaces;
 	private final EnumSet<Access> access;
 	private final Order order;
 
@@ -127,6 +139,13 @@ public final class SearchOptions {
 	/** As above; for Saved Between, the first and last days a model may have been saved on (null: no limit that way). */
 	public SearchOptions(Set<Field> fields, Set<VCDocumentType> types, String owner, Saved saved, LocalDate savedFrom, LocalDate savedTo,
 			Set<Approach> approaches, Set<Access> access, Order order) {
+		this(fields, types, owner, saved, savedFrom, savedTo, approaches, EnumSet.allOf(Space.class), access, order);
+	}
+
+	/** As above, with whether models are to be spatial, non-spatial or either. */
+	public SearchOptions(Set<Field> fields, Set<VCDocumentType> types, String owner, Saved saved, LocalDate savedFrom, LocalDate savedTo,
+			Set<Approach> approaches, Set<Space> spaces, Set<Access> access, Order order) {
+		this.spaces = spaces.isEmpty() ? EnumSet.noneOf(Space.class) : EnumSet.copyOf(spaces);
 		boolean between = Saved.BETWEEN == saved;
 		boolean backwards = null != savedFrom && null != savedTo && savedFrom.isAfter(savedTo); // the later typed first: the same range
 		this.savedFrom = !between ? null : backwards ? savedTo : savedFrom; // only Between has dates
@@ -152,6 +171,7 @@ public final class SearchOptions {
 	public LocalDate getSavedFrom() { return this.savedFrom; }
 	public LocalDate getSavedTo() { return this.savedTo; }
 	public Set<Approach> getApproaches() { return EnumSet.copyOf(this.approaches); }
+	public Set<Space> getSpaces() { return this.spaces.isEmpty() ? EnumSet.noneOf(Space.class) : EnumSet.copyOf(this.spaces); }
 	public Set<Access> getAccess() { return EnumSet.copyOf(this.access); }
 	public Order getOrder() { return this.order; }
 
@@ -159,13 +179,13 @@ public final class SearchOptions {
 	public boolean equals(Object other) {
 		return other instanceof SearchOptions that && this.fields.equals(that.fields) && this.types.equals(that.types)
 				&& this.owner.equals(that.owner) && this.saved == that.saved && Objects.equals(this.savedFrom, that.savedFrom)
-				&& Objects.equals(this.savedTo, that.savedTo) && this.approaches.equals(that.approaches)
+				&& Objects.equals(this.savedTo, that.savedTo) && this.approaches.equals(that.approaches) && this.spaces.equals(that.spaces)
 				&& this.access.equals(that.access) && this.order == that.order;
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(this.fields, this.types, this.owner, this.saved, this.savedFrom, this.savedTo, this.approaches, this.access, this.order);
+		return Objects.hash(this.fields, this.types, this.owner, this.saved, this.savedFrom, this.savedTo, this.approaches, this.spaces, this.access, this.order);
 	}
 
 	/** How many of the options are narrowed (or reordered) from the defaults. */
@@ -176,6 +196,7 @@ public final class SearchOptions {
 		if (!this.owner.isEmpty()) changed++;
 		if (this.saved != DEFAULTS.saved) changed++;
 		if (!this.approaches.equals(DEFAULTS.approaches)) changed++;
+		if (!this.spaces.equals(DEFAULTS.spaces)) changed++;
 		if (!this.access.equals(DEFAULTS.access)) changed++;
 		if (this.order != DEFAULTS.order) changed++;
 		return changed;
@@ -192,6 +213,7 @@ public final class SearchOptions {
 		if (!this.owner.isEmpty()) changes.add("Owner: contains “" + this.owner + "”");
 		if (this.saved != DEFAULTS.saved) changes.add("Saved: " + this.describeSaved());
 		SearchOptions.addChange(changes, "Approach", DEFAULTS.approaches, this.approaches, approach -> approach.label);
+		SearchOptions.addChange(changes, "Geometry", DEFAULTS.spaces, this.spaces, space -> space.label);
 		SearchOptions.addChange(changes, "Permissions", DEFAULTS.access, this.access, permission -> permission.label);
 		if (this.order != DEFAULTS.order) changes.add("Order: " + this.order.label);
 		return changes;
@@ -236,6 +258,7 @@ public final class SearchOptions {
 			if (null == version.getDate() || version.getDate().getTime() < since) return false;
 		}
 		if (!this.approaches.equals(DEFAULTS.approaches) && !this.approachesOf(info)) return false;
+		if (!this.spaces.equals(DEFAULTS.spaces) && SearchOptions.spacesOf(info).stream().noneMatch(this.spaces::contains)) return false;
 		return this.access.equals(DEFAULTS.access) || SearchOptions.accessOf(info).stream().anyMatch(this.access::contains);
 	}
 
@@ -260,6 +283,25 @@ public final class SearchOptions {
 			if (null != summary.getModelType()) mathTypes.add(summary.getModelType());
 		}
 		return this.approaches.stream().anyMatch(approach -> mathTypes.contains(approach.mathType));
+	}
+
+	/**
+	 * Whether a model is spatial, non-spatial or (a BioModel with both kinds of application) both: by its geometries'
+	 * dimensions, 0 being none. A BioModel with no applications has no geometry: non-spatial.
+	 */
+	static Set<Space> spacesOf(VCDocumentInfo info) {
+		Set<Space> spaces = EnumSet.noneOf(Space.class);
+		if (info instanceof BioModelInfo bioModel) {
+			BioModelChildSummary summary = bioModel.getBioModelChildSummary();
+			int[] dimensions = null == summary ? null : summary.getGeometryDimensions();
+			if (null != dimensions) for (int dimension : dimensions) spaces.add(dimension > 0 ? Space.SPATIAL : Space.NON_SPATIAL);
+		} else if (info instanceof MathModelInfo mathModel && null != mathModel.getMathModelChildSummary()) {
+			spaces.add(mathModel.getMathModelChildSummary().getGeometryDimension() > 0 ? Space.SPATIAL : Space.NON_SPATIAL);
+		} else if (info instanceof cbit.vcell.geometry.GeometryInfo geometry) {
+			spaces.add(geometry.getDimension() > 0 ? Space.SPATIAL : Space.NON_SPATIAL);
+		}
+		if (spaces.isEmpty()) spaces.add(Space.NON_SPATIAL);
+		return spaces;
 	}
 
 	/** Which permission groups the model is in: private, shared or public; and published or curated, if so. */

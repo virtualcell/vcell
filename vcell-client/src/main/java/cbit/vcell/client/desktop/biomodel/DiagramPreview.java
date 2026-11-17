@@ -48,6 +48,12 @@ public class DiagramPreview extends JPanel {
 	private final CardLayout cards = new CardLayout();
 	private final JPanel body = new JPanel(this.cards);
 	private boolean fitQueued = false;
+	private final JPanel titleRow = new JPanel(new BorderLayout(8, 0)); // its title, and Open
+
+	/** Whether its title row (its title, and Open) shows: not where whatever holds it titles it, with its own way to open. */
+	public void setTitleShown(boolean shown) {
+		this.titleRow.setVisible(shown);
+	}
 
 	/**
 	 * @param title the diagram's name, above it
@@ -65,10 +71,9 @@ public class DiagramPreview extends JPanel {
 		openButton.setName(name + "OpenButton");
 		openButton.setToolTipText("Open the " + title);
 		openButton.addActionListener(e -> open.run());
-		JPanel titleRow = new JPanel(new BorderLayout(8, 0));
-		titleRow.add(GuiUtils.createBoldJLabel(title), BorderLayout.WEST);
-		titleRow.add(openButton, BorderLayout.EAST);
-		this.add(titleRow, BorderLayout.NORTH);
+		this.titleRow.add(GuiUtils.createBoldJLabel(title), BorderLayout.WEST);
+		this.titleRow.add(openButton, BorderLayout.EAST);
+		this.add(this.titleRow, BorderLayout.NORTH);
 
 		this.graphPane.setName(name + "Pane");
 		this.graphPane.setGraphModel(graphModel);

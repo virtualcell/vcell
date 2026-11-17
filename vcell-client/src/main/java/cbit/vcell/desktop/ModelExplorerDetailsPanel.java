@@ -35,6 +35,7 @@ import javax.swing.UIManager;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 import org.vcell.util.document.BioModelChildSummary;
+import org.vcell.util.document.BioModelChildSummary.MathType;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.MathModelChildSummary;
 import org.vcell.util.document.MathModelInfo;
@@ -43,6 +44,7 @@ import org.vcell.util.document.VCDocument.VCDocumentType;
 import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.document.Version;
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.GuiUtils;
 import org.vcell.util.gui.ShortcutsWizard;
 import org.vcell.util.gui.VCellIcons;
 
@@ -83,6 +85,13 @@ public class ModelExplorerDetailsPanel extends JPanel {
 	private Object shown = null;
 	private DefaultMutableTreeNode shownNode = null;
 	private boolean allSelected = false; // Select All: every value, link and note is copied
+	// the shown BioModel's reaction diagram: loaded once the selection settles, the loading wheel turning meanwhile
+	private static final int DIAGRAM_HEIGHT = 300;
+	private static final int LOADING_HEIGHT = DIAGRAM_HEIGHT / 3; // the wheel's room, until the diagram needs the rest
+	private ModelLoader modelLoader = null;
+	private BioModelInfo diagramFor = null; // the model whose diagram is wanted now; a load for another is dropped
+	private javax.swing.Timer diagramPause = null; // the wait before loading, so stepping through the tree loads nothing
+	private javax.swing.Timer wheelTurning = null;
 
 	public ModelExplorerDetailsPanel() {
 		super(new BorderLayout());
@@ -289,6 +298,17 @@ public class ModelExplorerDetailsPanel extends JPanel {
 		}
 	}
 
+	/**
+	 * Loads a saved BioModel, whole (not just its summary), for its reaction diagram: off the event thread, then
+	 * {@code done} or {@code failed} (with why) on it.
+	 */
+	public interface ModelLoader {
+		void load(BioModelInfo info, Consumer<cbit.vcell.biomodel.BioModel> done, Consumer<String> failed);
+	}
+
+	/** How a BioModel's reaction diagram is loaded (none: no Reaction Diagram section). */
+	public void setModelLoader(ModelLoader modelLoader) { this.modelLoader = modelLoader; }
+
 	/** What Open does with a model. */
 	public void setOpener(Consumer<VCDocumentInfo> opener) { this.opener = opener; }
 
@@ -309,6 +329,7 @@ public class ModelExplorerDetailsPanel extends JPanel {
 		this.shown = object;
 		this.shownNode = node;
 		this.allSelected = false;
+		this.stopDiagramLoading();
 		this.content.removeAll();
 		if (object instanceof Model model) this.showDocument(model.latest(), model.versions());
 		else if (object instanceof VCDocumentInfo info) this.showDocument(info, null);
@@ -319,7 +340,8 @@ public class ModelExplorerDetailsPanel extends JPanel {
 		else this.showNothing();
 		this.content.revalidate();
 		this.content.repaint();
-		this.content.scrollRectToVisible(new Rectangle(0, 0, 1, 1));
+		// from the top, once laid out (asked before then, a taller model's details could open part-way down)
+		SwingUtilities.invokeLater(() -> this.scroll.getViewport().setViewPosition(new java.awt.Point(0, 0)));
 	}
 
 	// ---- what each shows
@@ -345,7 +367,11 @@ public class ModelExplorerDetailsPanel extends JPanel {
 		open.setToolTipText("Opens this " + typeName + (null != versions && versions.size() > 1 ? " (its latest version)" : "") + " in a window of its own");
 		open.addActionListener(e -> this.opener.accept(info));
 		String subtitle = typeName + (null != version.getDate() ? ", saved " + ModelListRenderer.describeDate(version.getDate()) : "");
-		this.content.add(this.header(ModelListRenderer.iconFor(type), version.getName(), subtitle, open));
+		// a BioModel's reaction diagram first, under its name: what the model is, at a glance; Open sits over it, in its
+		// title row, rather than a second Open there and one in the header
+		boolean diagram = info instanceof BioModelInfo && null != this.modelLoader;
+		this.content.add(this.header(ModelListRenderer.iconFor(type), version.getName(), subtitle, diagram ? null : open));
+		if (diagram) this.content.add(this.reactionDiagram((BioModelInfo) info, open));
 
 		Rows document = this.section("Document");
 		document.add("Owner", null == version.getOwner() ? "" : version.getOwner().getName());
@@ -382,18 +408,48 @@ public class ModelExplorerDetailsPanel extends JPanel {
 			return;
 		}
 		rows.add("Applications", String.valueOf(applications.length));
-		// every application has a named geometry: none named means the list didn't carry geometries and simulations
-		boolean partial = ModelExplorerDetailsPanel.blank(summary.getGeometryNames());
-		for (int i = 0; i < applications.length; i++) {
-			List<String> about = new ArrayList<>();
-			if (null != summary.getAppTypes() && i < summary.getAppTypes().length && null != summary.getAppTypes()[i]) about.add(summary.getAppTypes()[i].name());
-			if (!partial) {
-				about.add(ModelExplorerDetailsPanel.geometry(summary.getGeometryNames()[i], null == summary.getGeometryDimensions() ? -1 : summary.getGeometryDimensions()[i]));
-				about.add(ModelExplorerDetailsPanel.simulations(summary.getSimulationNames(applications[i])));
-			}
-			rows.addText(applications[i], about.isEmpty() ? null : String.join("\n", about));
+		// every application has a named geometry: none named means the list didn't carry geometries
+		boolean geometriesKnown = !ModelExplorerDetailsPanel.blank(summary.getGeometryNames());
+		int[] dimensions = summary.getGeometryDimensions();
+		// the server's list has the simulations' keys, but not their names, nor which application each is in
+		boolean simulationsKnown = false;
+		for (String application : applications) {
+			String[] names = summary.getSimulationNames(application);
+			simulationsKnown |= null != names && names.length > 0;
 		}
-		if (partial) rows.addNote("Open this model to see its geometries and simulations");
+		String[] simulationKeys = null == summary.getSimKeys() ? new String[0] : summary.getSimKeys();
+		for (int i = 0; i < applications.length; i++) {
+			MathType type = null != summary.getAppTypes() && i < summary.getAppTypes().length ? summary.getAppTypes()[i] : null;
+			int dimension = geometriesKnown && null != dimensions && i < dimensions.length ? dimensions[i] : -1;
+			List<String> about = new ArrayList<>();
+			if (null != type) about.add(type.name() + (dimension < 0 ? "" : dimension > 0 ? ", spatial" : ", non-spatial"));
+			if (geometriesKnown) about.add(ModelExplorerDetailsPanel.geometry(summary.getGeometryNames()[i], dimension));
+			if (simulationsKnown || 0 == simulationKeys.length) about.add(ModelExplorerDetailsPanel.simulations(summary.getSimulationNames(applications[i])));
+			rows.addText(applications[i], about.isEmpty() ? null : String.join("\n", about), ModelExplorerDetailsPanel.applicationIcon(type, dimension));
+		}
+		if (!simulationsKnown && simulationKeys.length > 0) {
+			rows.add("Simulations", String.valueOf(simulationKeys.length));
+			rows.addNote(geometriesKnown ? "Open this model to see its simulations' names and applications"
+					: "Open this model to see its geometries, and its simulations' names and applications");
+		} else if (!geometriesKnown) {
+			rows.addNote("Open this model to see its geometries");
+		}
+	}
+
+	/**
+	 * An application's icon, as VCell's database tree has always drawn it: its modeling approach, spatial (a geometry of
+	 * one dimension or more) or not; null if neither is known.
+	 */
+	static Icon applicationIcon(MathType type, int dimension) {
+		if (null == type) return null;
+		boolean spatial = dimension > 0;
+		return switch (type) {
+			case RuleBased -> VCellIcons.appRbmNonspIcon;
+			case SpringSaLaD -> VCellIcons.appSpringSaLaDSpatialIcon;
+			case Stochastic -> dimension < 0 ? null : spatial ? VCellIcons.appStoSpatialIcon : VCellIcons.appStoNonspIcon;
+			case Deterministic -> dimension < 0 ? null : spatial ? VCellIcons.appDetSpatialIcon : VCellIcons.appDetNonspIcon;
+			default -> null;
+		};
 	}
 
 	private void describe(MathModelInfo info, Rows rows) {
@@ -520,6 +576,93 @@ public class ModelExplorerDetailsPanel extends JPanel {
 	// ---- building blocks
 
 	// The name in the title font, with its icon, what it is under it, and a button at the right
+	// ---- the reaction diagram
+
+	// A section of its own, a fixed height: the loading wheel until the model is loaded, then its reaction diagram
+	private JComponent reactionDiagram(BioModelInfo info, JButton open) {
+		JPanel section = new JPanel(new BorderLayout());
+		section.setName("ModelExplorerReactionDiagram");
+		section.setOpaque(false);
+		section.setBorder(BorderFactory.createEmptyBorder(4, 0, 0, 0)); // close under the model's name
+		section.setAlignmentX(Component.LEFT_ALIGNMENT);
+		ModelExplorerDetailsPanel.setSectionHeight(section, LOADING_HEIGHT);
+
+		org.vcell.util.gui.LoadingWheel wheel = new org.vcell.util.gui.LoadingWheel(40);
+		JLabel loading = new JLabel("Loading the model's reaction diagram", wheel, SwingConstants.CENTER);
+		loading.setName("ModelExplorerReactionDiagramLoading");
+		loading.setHorizontalTextPosition(SwingConstants.CENTER);
+		loading.setVerticalTextPosition(SwingConstants.BOTTOM);
+		loading.setForeground(VCellColors.getDimForeground());
+		JPanel titleRow = new JPanel(new BorderLayout());
+		titleRow.setOpaque(false);
+		titleRow.add(GuiUtils.createBoldJLabel("Reaction Diagram"), BorderLayout.WEST);
+		titleRow.add(open, BorderLayout.EAST); // the model's Open: at the top of the diagram, which opening shows
+		section.add(titleRow, BorderLayout.NORTH);
+		section.add(loading, BorderLayout.CENTER);
+		this.wheelTurning = wheel.animate(loading);
+		this.wheelTurning.start();
+
+		this.diagramFor = info;
+		this.diagramPause = new javax.swing.Timer(350, e -> this.modelLoader.load(info,
+				model -> this.showReactionDiagram(section, info, model),
+				why -> this.showDiagramProblem(section, info, why)));
+		this.diagramPause.setRepeats(false);
+		this.diagramPause.start();
+		return section;
+	}
+
+	// The loaded model's reaction diagram in the section, if it's still the model shown
+	private void showReactionDiagram(JPanel section, BioModelInfo info, cbit.vcell.biomodel.BioModel bioModel) {
+		if (info != this.diagramFor || !SwingUtilities.isDescendingFrom(section, this)) return; // moved on meanwhile
+		this.stopDiagramLoading();
+		// as the model window's Reaction Diagram first shows a model: grouped by molecule when it has reaction rules
+		boolean rules = !bioModel.getModel().getRbmModelContainer().getReactionRuleList().isEmpty();
+		cbit.vcell.graph.ReactionCartoon reactions = rules ? new cbit.vcell.graph.ReactionCartoonMolecule() : new cbit.vcell.graph.ReactionCartoonFull();
+		reactions.setStructureSuite(new cbit.vcell.graph.structures.AllStructureSuite(bioModel::getModel));
+		reactions.setModel(bioModel.getModel());
+		cbit.vcell.client.desktop.biomodel.DiagramPreview preview = new cbit.vcell.client.desktop.biomodel.DiagramPreview(
+				"ModelExplorerReactionDiagramPreview", "Reaction Diagram", reactions, () -> this.opener.accept(info),
+				"No structures", () -> bioModel.getModel().getStructures().length == 0);
+		preview.setOpaque(false);
+		preview.setTitleShown(false); // the section's own title row, with the model's Open, stays over it
+		// the details stay where they were scrolled to: the diagram arriving doesn't scroll them (its pane would, to show itself)
+		java.awt.Point scrolledTo = this.scroll.getViewport().getViewPosition();
+		Component loading = ((BorderLayout) section.getLayout()).getLayoutComponent(BorderLayout.CENTER);
+		if (null != loading) section.remove(loading);
+		section.add(preview, BorderLayout.CENTER);
+		ModelExplorerDetailsPanel.setSectionHeight(section, DIAGRAM_HEIGHT); // the diagram's room, now it's here
+		section.revalidate();
+		section.repaint();
+		preview.refresh(null); // its positions are the model's own, as saved
+		SwingUtilities.invokeLater(() -> SwingUtilities.invokeLater(() -> this.scroll.getViewport().setViewPosition(scrolledTo))); // after its fit
+	}
+
+	private void showDiagramProblem(JPanel section, BioModelInfo info, String why) {
+		if (info != this.diagramFor || !SwingUtilities.isDescendingFrom(section, this)) return;
+		this.stopDiagramLoading();
+		BorderLayout layout = (BorderLayout) section.getLayout();
+		Component loading = layout.getLayoutComponent(BorderLayout.CENTER);
+		if (null != loading) section.remove(loading);
+		JLabel problem = new JLabel("Couldn't load its reaction diagram" + (null == why || why.isBlank() ? "" : ": " + why), SwingConstants.CENTER);
+		problem.setForeground(VCellColors.getDimForeground());
+		section.add(problem, BorderLayout.CENTER);
+		section.revalidate();
+		section.repaint();
+	}
+
+	private static void setSectionHeight(JPanel section, int height) {
+		section.setPreferredSize(new Dimension(100, height));
+		section.setMaximumSize(new Dimension(Integer.MAX_VALUE, height));
+	}
+
+	// Stops waiting to load, and the wheel turning: the model shown has changed, or its diagram is here
+	private void stopDiagramLoading() {
+		if (null != this.diagramPause) this.diagramPause.stop();
+		if (null != this.wheelTurning) this.wheelTurning.stop();
+		this.diagramPause = null;
+		this.wheelTurning = null;
+	}
+
 	// "⌘C" on macOS, "Ctrl+C" elsewhere
 	private static String shortcutText(ShortcutsWizard.Shortcut shortcut) {
 		KeyStroke stroke = ShortcutsWizard.keyStrokeFor(shortcut);
@@ -613,6 +756,11 @@ public class ModelExplorerDetailsPanel extends JPanel {
 		}
 
 		void addText(String label, String value) {
+			this.addText(label, value, null);
+		}
+
+		// As above, the label with an icon before it (an application's, say)
+		void addText(String label, String value, Icon icon) {
 			JTextArea text = new JTextArea(null == value ? "None" : value);
 			text.setEditable(false);
 			text.setLineWrap(true);
@@ -622,7 +770,7 @@ public class ModelExplorerDetailsPanel extends JPanel {
 			text.setFont(UIManager.getFont("Label.font"));
 			ModelExplorerDetailsPanel.this.selectable(text);
 			if (null == value) text.setForeground(VCellColors.getDimForeground());
-			this.addRow(label, text);
+			this.addRow(label, text, icon);
 		}
 
 		void addNote(String note) {
@@ -677,6 +825,10 @@ public class ModelExplorerDetailsPanel extends JPanel {
 		}
 
 		private void addRow(String label, JComponent value) {
+			this.addRow(label, value, null);
+		}
+
+		private void addRow(String label, JComponent value, Icon icon) {
 			GridBagConstraints valueAt = new GridBagConstraints();
 			valueAt.gridy = this.row;
 			valueAt.weightx = 1;
@@ -684,7 +836,7 @@ public class ModelExplorerDetailsPanel extends JPanel {
 			valueAt.anchor = GridBagConstraints.FIRST_LINE_START;
 			valueAt.insets = new Insets(1, 0, 3, 0);
 			if (null != label) {
-				JLabel name = new JLabel(label);
+				JLabel name = new JLabel(label, icon, SwingConstants.LEADING);
 				name.putClientProperty(ROW_LABEL, Boolean.TRUE);
 				name.putClientProperty(COPY_TEXT, label);
 				name.setForeground(VCellColors.getDimForeground());

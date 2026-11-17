@@ -13,6 +13,7 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
@@ -100,6 +101,9 @@ public class ModelExplorerPanel extends JPanel {
 	private final SearchOptionsPanel searchOptions = new SearchOptionsPanel(this.searchPause::restart);
 	private final JToggleButton filtersButton = new JToggleButton();
 	private final JPanel optionsHolder = new JPanel(new BorderLayout());
+	private final JPanel leftColumn = new JPanel(new BorderLayout(0, 8)); // the search, its controls and filters, over the tree
+	private final JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT); // the left column, and the details
+	private int dividerBeforeOptions = -1; // where the divider was before the options widened the left column; -1: they didn't
 	private final JLabel status = new JLabel(" ");
 	private final CardLayout cards = new CardLayout();
 	private final JPanel body = new JPanel(this.cards);
@@ -128,11 +132,11 @@ public class ModelExplorerPanel extends JPanel {
 		this.manager = manager;
 		this.setName("ModelExplorerPanel");
 		this.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-		this.add(this.createTop(), BorderLayout.NORTH);
-		this.add(this.createBody(), BorderLayout.CENTER);
+		this.add(this.createBody(), BorderLayout.CENTER); // the search and its controls head the left column, over the tree
 		this.details.setOpener(manager::openModel);
 		this.details.setImporter(manager::importModel);
 		this.details.setSelector(this::selectModel);
+		this.details.setModelLoader(this::loadBioModel); // for its reaction diagram
 		this.setDocumentManager(null);
 	}
 
@@ -209,17 +213,24 @@ public class ModelExplorerPanel extends JPanel {
 		viewSwitch.add(this.treeViewButton);
 		viewSwitch.add(this.tableViewButton);
 
-		JPanel buttons = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.TRAILING, 6, 0));
+		// under the search: the view, Filters and Refresh at the left, how many are listed at the right
+		JPanel buttons = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEADING, 6, 0));
 		buttons.setOpaque(false);
-		buttons.add(this.status);
 		buttons.add(viewSwitch);
 		buttons.add(this.filtersButton);
 		buttons.add(refresh);
+		JPanel buttonRow = new JPanel(new BorderLayout(8, 0));
+		buttonRow.setOpaque(false);
+		buttonRow.add(buttons, BorderLayout.WEST);
+		buttonRow.add(this.status, BorderLayout.EAST);
 		JPanel searchRow = new JPanel(new BorderLayout(8, 0));
 		searchRow.setOpaque(false);
 		searchRow.add(searchLabel, BorderLayout.WEST);
 		searchRow.add(this.searchField, BorderLayout.CENTER);
-		searchRow.add(buttons, BorderLayout.EAST);
+		JPanel searchRows = new JPanel(new BorderLayout(0, 6));
+		searchRows.setOpaque(false);
+		searchRows.add(searchRow, BorderLayout.NORTH);
+		searchRows.add(buttonRow, BorderLayout.SOUTH);
 
 		this.optionsHolder.setOpaque(false);
 		this.optionsHolder.setBorder(BorderFactory.createCompoundBorder(
@@ -235,7 +246,7 @@ public class ModelExplorerPanel extends JPanel {
 
 		JPanel top = new JPanel(new BorderLayout(0, 8));
 		top.setOpaque(false);
-		top.add(searchRow, BorderLayout.NORTH);
+		top.add(searchRows, BorderLayout.NORTH);
 		top.add(this.optionsHolder, BorderLayout.CENTER);
 		top.add(this.createCompareBar(), BorderLayout.SOUTH);
 		return top;
@@ -321,7 +332,15 @@ public class ModelExplorerPanel extends JPanel {
 		this.views.add(this.createTable(), TABLE);
 		this.views.setMinimumSize(new java.awt.Dimension(220, 100));
 		this.details.setMinimumSize(new java.awt.Dimension(260, 100));
-		JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, this.views, this.details);
+		// the left column: the search, its controls and filters over the tree (or table); the details, the whole right side
+		this.leftColumn.setOpaque(false);
+		this.leftColumn.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 6));
+		this.leftColumn.add(this.createTop(), BorderLayout.NORTH);
+		this.leftColumn.add(this.views, BorderLayout.CENTER);
+		this.leftColumn.setMinimumSize(new java.awt.Dimension(220, 100));
+		JSplitPane split = this.split;
+		split.setLeftComponent(this.leftColumn);
+		split.setRightComponent(this.details);
 		split.setName("ModelExplorerSplit");
 		split.setResizeWeight(0.42);
 		split.setContinuousLayout(true);
@@ -451,6 +470,53 @@ public class ModelExplorerPanel extends JPanel {
 			if (ModelExplorerPanel.versionKey(version).equals(ModelExplorerPanel.versionKey(document))) return true;
 		}
 		return false;
+	}
+
+	// ---- loading a model whole, for its reaction diagram in the details
+
+	private static final int LOADED_MODELS_KEPT = 4;
+	// the last few loaded, so stepping back and forth among them is instant (the document manager keeps their XML)
+	private final Map<String, cbit.vcell.biomodel.BioModel> loadedModels = new java.util.LinkedHashMap<>(8, 0.75f, true) {
+		@Override
+		protected boolean removeEldestEntry(Map.Entry<String, cbit.vcell.biomodel.BioModel> eldest) {
+			return this.size() > LOADED_MODELS_KEPT;
+		}
+	};
+
+	// Fetches the model from the server and reads it, off the event thread (a large model takes seconds)
+	private void loadBioModel(org.vcell.util.document.BioModelInfo info, java.util.function.Consumer<cbit.vcell.biomodel.BioModel> done,
+			java.util.function.Consumer<String> failed) {
+		String key = ModelExplorerPanel.versionKey(info);
+		cbit.vcell.biomodel.BioModel loaded = this.loadedModels.get(key);
+		if (null != loaded) {
+			done.accept(loaded);
+			return;
+		}
+		DocumentManager documentManager = this.documentManager;
+		if (null == documentManager) {
+			failed.accept("not logged in");
+			return;
+		}
+		new SwingWorker<cbit.vcell.biomodel.BioModel, Void>() {
+			@Override
+			protected cbit.vcell.biomodel.BioModel doInBackground() throws Exception {
+				return documentManager.getBioModel(info);
+			}
+
+			@Override
+			protected void done() {
+				try {
+					cbit.vcell.biomodel.BioModel bioModel = this.get();
+					ModelExplorerPanel.this.loadedModels.put(key, bioModel);
+					done.accept(bioModel);
+				} catch (ExecutionException e) {
+					lg.warn("Could not load " + info.getVersion().getName() + " for its reaction diagram", e.getCause());
+					failed.accept(null == e.getCause() || null == e.getCause().getMessage() ? "it couldn't be read" : e.getCause().getMessage());
+				} catch (InterruptedException e) {
+					Thread.currentThread().interrupt();
+				}
+			}
+		}.execute();
 	}
 
 	// ---- building the tree
@@ -595,10 +661,22 @@ public class ModelExplorerPanel extends JPanel {
 
 	// ---- the search options
 
+	// The options under the search, in the left column: widened to show them whole, if need be, and back after
 	private void showOptions(boolean shown) {
 		this.filtersButton.setSelected(shown);
 		this.optionsHolder.setVisible(shown);
 		this.showFiltersChanged();
+		if (shown) {
+			java.awt.Insets column = this.leftColumn.getInsets(); // the options' own width, not the tree's (long names make it wide)
+			int needed = this.optionsHolder.getPreferredSize().width + column.left + column.right + this.split.getInsets().left;
+			if (this.split.getDividerLocation() < needed) {
+				this.dividerBeforeOptions = this.split.getDividerLocation();
+				this.split.setDividerLocation(needed);
+			}
+		} else if (this.dividerBeforeOptions >= 0) {
+			this.split.setDividerLocation(this.dividerBeforeOptions);
+			this.dividerBeforeOptions = -1;
+		}
 		this.revalidate();
 	}
 

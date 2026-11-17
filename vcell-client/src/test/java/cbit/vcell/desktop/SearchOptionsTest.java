@@ -79,6 +79,54 @@ public class SearchOptionsTest {
 	}
 
 	@Test
+	public void narrowsToSpatialOrNonSpatialModels() {
+		BioModelInfo compartmental = this.bioModelWithGeometries("Compartmental", 0);
+		BioModelInfo spatial = this.bioModelWithGeometries("Spatial", 3);
+		BioModelInfo both = this.bioModelWithGeometries("Both", 0, 2); // an application of each kind
+		BioModelInfo physiologyOnly = this.bioModelWithGeometries("Physiology only"); // no applications, so no geometry
+		MathModelInfo spatialMath = new MathModelInfo(this.version("Spatial math", JESSICA, 1, new GroupAccessNone()),
+				new KeyValue(String.valueOf(this.nextKey++)), new MathModelChildSummary(MathType.Deterministic, "cell", 2, new String[0], new String[0], new String[0]), null);
+
+		SearchOptions spatialOnly = this.spaces(SearchOptions.Space.SPATIAL);
+		assertFalse(spatialOnly.accepts(compartmental, NOW));
+		assertTrue(spatialOnly.accepts(spatial, NOW));
+		assertTrue(spatialOnly.accepts(both, NOW));
+		assertFalse(spatialOnly.accepts(physiologyOnly, NOW));
+		assertTrue(spatialOnly.accepts(spatialMath, NOW));
+
+		SearchOptions nonSpatialOnly = this.spaces(SearchOptions.Space.NON_SPATIAL);
+		assertTrue(nonSpatialOnly.accepts(compartmental, NOW));
+		assertFalse(nonSpatialOnly.accepts(spatial, NOW));
+		assertTrue(nonSpatialOnly.accepts(both, NOW));
+		assertTrue(nonSpatialOnly.accepts(physiologyOnly, NOW));
+
+		assertEquals(List.of("Geometry: −Non-spatial"), spatialOnly.describeChanges());
+		assertEquals(1, spatialOnly.changedCount());
+		assertEquals(0, this.spaces(SearchOptions.Space.SPATIAL, SearchOptions.Space.NON_SPATIAL).changedCount());
+	}
+
+	private SearchOptions spaces(SearchOptions.Space... spaces) {
+		return new SearchOptions(EnumSet.allOf(Field.class), Set.of(VCDocumentType.BIOMODEL_DOC, VCDocumentType.MATHMODEL_DOC), "", Saved.ANY_TIME,
+				null, null, EnumSet.allOf(Approach.class), EnumSet.copyOf(List.of(spaces)), EnumSet.allOf(Access.class), Order.BEST_MATCH);
+	}
+
+	// A BioModel with an application for each of these geometry dimensions (0: compartmental)
+	private BioModelInfo bioModelWithGeometries(String name, int... dimensions) {
+		int count = dimensions.length;
+		String[] apps = new String[count];
+		MathType[] types = new MathType[count];
+		String[] geometries = new String[count];
+		for (int index = 0; index < count; index++) {
+			apps[index] = "Application " + index;
+			types[index] = MathType.Deterministic;
+			geometries[index] = "Geometry " + index;
+		}
+		BioModelChildSummary summary = new BioModelChildSummary(apps, types, new String[count], new String[count][0], new String[count][0],
+				new String[0], geometries, dimensions);
+		return new BioModelInfo(this.version(name, JESSICA, 1, new GroupAccessNone()), summary, null);
+	}
+
+	@Test
 	public void narrowsByKindOwnerAndWhenSaved() {
 		BioModelInfo recent = this.bioModel("Recent", JESSICA, 3, new GroupAccessNone(), MathType.Deterministic);
 		MathModelInfo old = this.mathModel("Old", BORIS, 400, MathType.Stochastic);

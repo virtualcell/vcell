@@ -5,13 +5,15 @@ database](VCellDatabase.md)'s BioModels, MathModels and geometries, and the [Bio
 Database](BioModelsNet.md). Its tree has the folders VCell's database tree has always had; selecting
 anything in it shows its details beside it.
 
-Along the top are a **Search** field, a **Filters** button that shows the search options under it
-(where to look for the search text, the kind of model, its modeling approach, permissions, owner,
-when it was saved (in the past week, month or year, or **Between** two dates), and the order), and
-**Refresh**, which reads the database's lists again. Beside them, how many models and geometries are
-listed, and **Tree** and **Table**, which switch between the two views of them.
+The window has two sides. At the top of the left side is a **Search** field; under it, **Tree** and
+**Table**, which switch between the two views of the models, a **Filters** button that shows the
+search options under it (widening the left side to fit them, if need be) (where to look for the
+search text, the kind of model, its modeling approach, whether it's spatial (**Geometry**: a
+BioModel is spatial if any of its applications is), permissions, owner, when it was saved (in the
+past week, month or year, or **Between** two dates), and the order), and **Refresh**, which reads
+the database's lists again; and beside them, how many models and geometries are listed.
 
-At the left, the tree. BioModels and MathModels are listed together, each marked by its icon. Each
+Below them, the tree. BioModels and MathModels are listed together, each marked by its icon. Each
 folder is arranged its own way:
 
 - **My Models**: your models, by name.
@@ -42,13 +44,19 @@ table as they do the tree (the BioModels Database's models are in the tree only)
 stays selected when you switch between the views; opening, the right-click menu and comparing work
 the same in both.
 
-At the right, the details of what's selected:
+The whole right side is the details of what's selected:
 
 - A model or version: its **Document** information (owner, when saved, permissions, VCell ID,
   versions, the VCell version it was saved with, and its description); its **BioModel**
-  (applications and their types), **MathModel** (its kind, geometry and simulations) or **Geometry**
+  (applications, each with the icon VCell's database tree gave it for its approach and whether it's
+  spatial, and its geometry), **MathModel** (its kind, geometry and simulations) or **Geometry**
   (dimension, size, origin, and whether it's analytic or image-based); and its **Publications**,
-  with authors, citation, date, and links to its DOI, PubMed entry and web page.
+  with authors, citation, date, and links to its DOI, PubMed entry and web page. A BioModel's
+  details begin, under its name, with its **Reaction Diagram**, as the model window first shows it:
+  the model is fetched and read when it's selected (VCell's loading wheel turns meanwhile, a few
+  seconds at most for a large model), and the last few are kept, so going back to one is quick.
+  Click the diagram, or **Open BioModel** above it, to open the model (MathModels and geometries
+  have their Open button beside their name).
 - A publication: its details, and the models published with it; click one to select it in the tree,
   or double-click to open it.
 - A folder or owner: how many models it holds, and what the folder is for.

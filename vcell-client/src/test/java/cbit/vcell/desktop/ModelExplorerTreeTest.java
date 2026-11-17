@@ -17,6 +17,7 @@ import javax.swing.tree.TreePath;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.vcell.util.document.BioModelChildSummary.MathType;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.GroupAccess;
 import org.vcell.util.document.GroupAccessAll;
@@ -203,6 +204,17 @@ public class ModelExplorerTreeTest {
 		assertEquals("Choose another BioModel: only models of the same kind can be compared", ModelExplorerTree.whyNotComparable(first, math));
 		assertEquals("That's the same version: choose another BioModel or version", ModelExplorerTree.whyNotComparable(first, first));
 		assertEquals("Select a model to compare with", ModelExplorerTree.whyNotComparable(first, null));
+	}
+
+	@Test
+	public void drawsEachApplicationAsTheDatabaseTreeDid() {
+		assertSame(org.vcell.util.gui.VCellIcons.appDetSpatialIcon, ModelExplorerDetailsPanel.applicationIcon(MathType.Deterministic, 2));
+		assertSame(org.vcell.util.gui.VCellIcons.appDetNonspIcon, ModelExplorerDetailsPanel.applicationIcon(MathType.Deterministic, 0));
+		assertSame(org.vcell.util.gui.VCellIcons.appStoSpatialIcon, ModelExplorerDetailsPanel.applicationIcon(MathType.Stochastic, 3));
+		assertSame(org.vcell.util.gui.VCellIcons.appRbmNonspIcon, ModelExplorerDetailsPanel.applicationIcon(MathType.RuleBased, 0));
+		assertSame(org.vcell.util.gui.VCellIcons.appSpringSaLaDSpatialIcon, ModelExplorerDetailsPanel.applicationIcon(MathType.SpringSaLaD, 3));
+		assertNull(ModelExplorerDetailsPanel.applicationIcon(MathType.Deterministic, -1)); // its geometry unknown: spatial or not, no telling
+		assertNull(ModelExplorerDetailsPanel.applicationIcon(null, 2));
 	}
 
 	@Test

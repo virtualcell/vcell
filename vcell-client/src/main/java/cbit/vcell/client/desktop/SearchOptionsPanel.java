@@ -8,6 +8,7 @@ import cbit.vcell.desktop.SearchOptions.Approach;
 import cbit.vcell.desktop.SearchOptions.Field;
 import cbit.vcell.desktop.SearchOptions.Order;
 import cbit.vcell.desktop.SearchOptions.Saved;
+import cbit.vcell.desktop.SearchOptions.Space;
 import org.vcell.util.document.VCDocument.VCDocumentType;
 import org.vcell.util.gui.GuiUtils;
 
@@ -40,6 +41,7 @@ public class SearchOptionsPanel extends JPanel {
 	private final JSpinner savedFrom = SearchOptionsPanel.dateSpinner("SearchSavedFrom", "Saved on or after");
 	private final JSpinner savedTo = SearchOptionsPanel.dateSpinner("SearchSavedTo", "Saved on or before");
 	private final Map<Approach, JCheckBox> approaches = new EnumMap<>(Approach.class);
+	private final Map<Space, JCheckBox> spaces = new EnumMap<>(Space.class);
 	private final Map<Access, JCheckBox> access = new EnumMap<>(Access.class);
 	private final JComboBox<Order> order = SearchOptionsPanel.choices(Order.values());
 	private final List<List<JCheckBox>> groups = new ArrayList<>(); // each needs one of its boxes checked
@@ -67,12 +69,14 @@ public class SearchOptionsPanel extends JPanel {
 
 		for (Field field : Field.values()) this.fields.put(field, this.checkBox(field.label, "In" + field.name()));
 		for (Approach approach : Approach.values()) this.approaches.put(approach, this.checkBox(approach.label, "Approach" + approach.name()));
+		for (Space space : Space.values()) this.spaces.put(space, this.checkBox(space.label, "Space" + space.name()));
 		for (Access permission : Access.values()) this.access.put(permission, this.checkBox(permission.label, "Access" + permission.name()));
 		this.watch(this.bioModels, "TypeBIOMODEL");
 		this.watch(this.mathModels, "TypeMATHMODEL");
 		this.groups.add(List.copyOf(this.fields.values()));
 		this.groups.add(List.of(this.bioModels, this.mathModels));
 		this.groups.add(List.copyOf(this.approaches.values()));
+		this.groups.add(List.copyOf(this.spaces.values()));
 		this.groups.add(List.copyOf(this.access.values()));
 		this.owner.setName("SearchOwner");
 		// Enter applies what's typed, here as in the date fields, rather than reaching the window's default (opening the
@@ -95,6 +99,7 @@ public class SearchOptionsPanel extends JPanel {
 		this.row(rows, "Search in", SearchOptionsPanel.inRow(this.fields.values().toArray(new JComponent[0])));
 		this.row(rows, "Model type", SearchOptionsPanel.inRow(this.bioModels, this.mathModels));
 		this.row(rows, "Approach", SearchOptionsPanel.inGrid(2, this.approaches.values().toArray(new JComponent[0])));
+		this.row(rows, "Geometry", SearchOptionsPanel.inGrid(2, this.spaces.values().toArray(new JComponent[0])));
 		this.row(rows, "Permissions", SearchOptionsPanel.inGrid(3, this.access.values().toArray(new JComponent[0])));
 		this.row(rows, "Owner", this.owner, this.owner);
 		this.row(rows, "Saved", SearchOptionsPanel.inRow(this.saved, this.savedFrom, new JLabel("and"), this.savedTo), this.saved);
@@ -169,7 +174,8 @@ public class SearchOptionsPanel extends JPanel {
 		if (this.mathModels.isSelected()) types.add(VCDocumentType.MATHMODEL_DOC);
 		return new SearchOptions(SearchOptionsPanel.selected(this.fields, Field.class), types, this.owner.getText(),
 				(Saved) this.saved.getSelectedItem(), SearchOptionsPanel.day(this.savedFrom), SearchOptionsPanel.day(this.savedTo),
-				SearchOptionsPanel.selected(this.approaches, Approach.class), SearchOptionsPanel.selected(this.access, Access.class),
+				SearchOptionsPanel.selected(this.approaches, Approach.class), SearchOptionsPanel.selected(this.spaces, Space.class),
+				SearchOptionsPanel.selected(this.access, Access.class),
 				(Order) this.order.getSelectedItem());
 	}
 
@@ -191,6 +197,7 @@ public class SearchOptionsPanel extends JPanel {
 		this.savedFrom.setValue(SearchOptionsPanel.date(today.minusYears(1)));
 		this.savedTo.setValue(SearchOptionsPanel.date(today));
 		this.approaches.forEach((approach, box) -> box.setSelected(defaults.getApproaches().contains(approach)));
+		this.spaces.forEach((space, box) -> box.setSelected(defaults.getSpaces().contains(space)));
 		this.access.forEach((permission, box) -> box.setSelected(defaults.getAccess().contains(permission)));
 		this.order.setSelectedItem(defaults.getOrder());
 		this.resetting = false;
