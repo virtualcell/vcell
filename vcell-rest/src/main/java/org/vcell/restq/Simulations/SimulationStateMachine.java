@@ -525,7 +525,12 @@ public class SimulationStateMachine {
 
         if (schedulerStatus.isActive()){
             SimulationQueueEntryStatus simQueueEntryStatus = simJobStatus.getSimulationQueueEntryStatus();
-            SimulationExecutionStatus simExeStatus = simJobStatus.getSimulationExecutionStatus();
+            SimulationExecutionStatus oldExeStatus = simJobStatus.getSimulationExecutionStatus();
+            // same as the running status, plus the stop time as end date (as for a failure or an operator scancel),
+            // so the client can show how long the job ran before the user stopped it ("Stopped after")
+            Date stopDate = new Date();
+            SimulationExecutionStatus simExeStatus = new SimulationExecutionStatus(oldExeStatus.getStartDate(), oldExeStatus.getComputeHost(),
+                    stopDate, stopDate, oldExeStatus.hasData(), oldExeStatus.getHtcJobID());
             SimulationJobStatus newJobStatus = new SimulationJobStatus(simJobStatus.getServerID(),simJobStatus.getVCSimulationIdentifier(),jobIndex,simJobStatus.getSubmitDate(),
                     SimulationJobStatus.SchedulerStatus.STOPPED,taskID,SimulationMessage.solverStopped("simulation stopped by user"),simQueueEntryStatus,simExeStatus);
 

@@ -197,15 +197,16 @@ private DurationDisplay getDurationDisplay(Simulation simulation) {
 		}
 		return new DurationDisplay(formatRoughDuration(seconds), "Estimate");
 	}
-	if (simStatus.isCompleted() || simStatus.isFailed()) {
-		// actual duration, from the hand-off to slurm until completion or failure: it includes the time
+	if (simStatus.isCompleted() || simStatus.isFailed() || simStatus.isStopped()) {
+		// actual duration, from the hand-off to slurm until completion, failure or stop: it includes the time
 		// waiting in the slurm queue, preprocessing and postprocessing, which the ETA doesn't;
-		// the server sets the end date on failure too, but a sim that failed before it started
-		// (e.g. too much memory requested) has no start date -> blank
+		// the server sets the end date on failure and stop too, but a sim that failed or was stopped before
+		// it started (e.g. too much memory requested) has no start date -> blank;
+		// older servers set no end date on a user stop -> blank
 		SimulationJobStatus jobStatus = simStatus.getJobStatus(0);
 		if (jobStatus != null && jobStatus.getStartDate() != null && jobStatus.getEndDate() != null) {
 			int seconds = (int)((jobStatus.getEndDate().getTime() - jobStatus.getStartDate().getTime()) / 1000);
-			return new DurationDisplay(formatRoughDuration(seconds), simStatus.isFailed() ? "Failed after" : "Actual");
+			return new DurationDisplay(formatRoughDuration(seconds), simStatus.isFailed() ? "Failed after" : simStatus.isStopped() ? "Stopped after" : "Actual");
 		}
 	}
 	return null;
