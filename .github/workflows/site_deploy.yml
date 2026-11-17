@@ -364,12 +364,28 @@ jobs:
         echo "VCELL_SWVERSION=${VCELL_SWVERSION}" >> $GITHUB_ENV
         echo "KUSTOMIZE_OVERLAY=${KUSTOMIZE_OVERLAY}" >> $GITHUB_ENV
         echo "CONTAINER_IMAGE_TAG=${CONTAINER_IMAGE_TAG}" >> $GITHUB_ENV
+    # A short-lived token from the virtualcell "vcell-deploy" GitHub App, instead of a personal access
+    # token: GITHUB_TOKEN cannot start a workflow in another repository, and the PAT this used
+    # (ACTION_TOKEN) stopped working by 2026-11-17 (401 Bad credentials). The app is installed only on vcell-fluxcd, with
+    # Actions read & write; the token below is scoped to that repository and lasts one hour.
+    - name: Get a token to start the vcell-fluxcd deploy
+      id: deploy-token
+      uses: actions/create-github-app-token@v2
+      with:
+        app-id: ${{ vars.DEPLOY_APP_ID }}
+        private-key: ${{ secrets.DEPLOY_APP_PRIVATE_KEY }}
+        owner: virtualcell
+        repositories: vcell-fluxcd
     - name: Call webhook to deploy to kubernetes cluster (overlay 'prod', 'dev' or 'stage')
+      env:
+        GH_TOKEN: ${{ steps.deploy-token.outputs.token }}
       run: |
-        git_sha=$(git rev-parse --short "$GITHUB_SHA")
         echo '{"ref": "main","inputs":{"overlay": "'${KUSTOMIZE_OVERLAY}'","tag":"'${CONTAINER_IMAGE_TAG}'","swversion": "'${VCELL_SWVERSION}'"}}' >body
-        curl -X POST 'https://api.github.com/repos/virtualcell/vcell-fluxcd/actions/workflows/deploy.yaml/dispatches' \
-          -H 'Authorization: Bearer ${{ secrets.ACTION_TOKEN }}' \
+        # --fail-with-body: a refused dispatch (401, 403, 404, 422) fails this job; before, the job
+        # reported success while nothing was deployed.
+        curl --fail-with-body -sS -X POST 'https://api.github.com/repos/virtualcell/vcell-fluxcd/actions/workflows/deploy.yaml/dispatches' \
+          -H "Authorization: Bearer ${GH_TOKEN}" \
+          -H 'Accept: application/vnd.github+json' \
           -H 'Content-Type: application/json' \
           --data "@body"
 
