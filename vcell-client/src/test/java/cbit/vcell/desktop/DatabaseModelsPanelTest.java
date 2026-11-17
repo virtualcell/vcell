@@ -81,12 +81,12 @@ public class DatabaseModelsPanelTest {
 		this.onEdt(() -> panel.setDocumentManager(this.documentManager(ME)));
 		assertEquals(List.of(mine, shared), this.get(() -> panel.getShown(ModelList.MINE))); // the user's own, and shared with them
 		assertEquals(List.of(), this.get(() -> panel.getShown(ModelList.PUBLISHED)));
-		assertEquals(List.of("Published (0)", "Curated (0)", "Uncurated (0)", "Community (0)", "Personal (2)", "Tutorial (0)"),
+		assertEquals(List.of("Personal (2)", "Published (0)", "Curated (0)", "Uncurated (0)", "Tutorials (0)"),
 				this.get(panel::getTabTitles));
 
 		this.onEdt(() -> panel.setDocumentManager(null)); // logged out: nothing listed, and no counts
 		assertEquals(List.of(), this.get(() -> panel.getShown(ModelList.MINE)));
-		assertEquals(List.of("Published", "Curated", "Uncurated", "Community", "Personal", "Tutorial"), this.get(panel::getTabTitles));
+		assertEquals(List.of("Personal", "Published", "Curated", "Uncurated", "Tutorials"), this.get(panel::getTabTitles));
 	}
 
 	@Test
@@ -102,7 +102,7 @@ public class DatabaseModelsPanelTest {
 		this.onEdt(() -> panel.setSearchText("calcium"));
 		assertEquals(List.of(calcium), this.get(() -> panel.getShown(ModelList.UNCURATED)));
 		assertEquals(List.of(), this.get(() -> panel.getShown(ModelList.MINE)));
-		assertEquals(List.of("Published (0)", "Curated (0)", "Uncurated (1)", "Community (1)", "Personal (0)", "Tutorial (0)"),
+		assertEquals(List.of("Personal (0)", "Published (0)", "Curated (0)", "Uncurated (1)", "Tutorials (0)"),
 				this.get(panel::getTabTitles)); // the counts are of the matches
 
 		this.onEdt(() -> panel.setSearchText("ME")); // an owner's name, ignoring case
@@ -118,24 +118,29 @@ public class DatabaseModelsPanelTest {
 
 		DatabaseModelsPanel panel = this.get(DatabaseModelsPanel::new);
 		this.onEdt(() -> panel.setDocumentManager(this.documentManager(guest)));
-		assertEquals(List.of("Published (0)", "Curated (0)", "Uncurated (0)", "Community (0)", "Tutorial (1)"), this.get(panel::getTabTitles));
+		assertEquals(List.of("Published (0)", "Curated (0)", "Uncurated (0)", "Tutorials (1)"), this.get(panel::getTabTitles));
 
-		this.onEdt(() -> panel.setDocumentManager(this.documentManager(ME))); // someone else logs in: it's back, in its place
-		assertEquals(List.of("Published (0)", "Curated (0)", "Uncurated (0)", "Community (0)", "Personal (0)", "Tutorial (1)"),
+		this.onEdt(() -> panel.setDocumentManager(this.documentManager(ME))); // someone else logs in: it's back, first
+		assertEquals(List.of("Personal (0)", "Published (0)", "Curated (0)", "Uncurated (0)", "Tutorials (1)"),
 				this.get(panel::getTabTitles));
 	}
 
 	@Test
-	public void countsAModelInMoreThanOneCommunityListOnceForCommunity() throws Exception {
-		// one model (one branch): an uncurated public version, and a later published one
-		this.bioModels.add(this.bioModel("Both", SOMEONE_ELSE, new GroupAccessAll(), VersionFlag.Current, false, 9, 1));
-		this.bioModels.add(this.bioModel("Both", SOMEONE_ELSE, new GroupAccessAll(), VersionFlag.Published, true, 9, 2));
+	public void tutorialsCanBeShownElsewhereStillCounted() throws Exception {
+		this.bioModels.add(this.bioModel("Tutorial", TUTORIAL, new GroupAccessAll(), VersionFlag.Current, false));
 		this.bioModels.add(this.bioModel("Other", SOMEONE_ELSE, new GroupAccessAll(), VersionFlag.Current, false));
+		List<String> tutorialsTitles = new java.util.ArrayList<>();
 
 		DatabaseModelsPanel panel = this.get(DatabaseModelsPanel::new);
+		javax.swing.JComponent tutorials = this.get(() -> panel.detachTutorials(tutorialsTitles::add));
 		this.onEdt(() -> panel.setDocumentManager(this.documentManager(ME)));
-		assertEquals(List.of("Published (1)", "Curated (0)", "Uncurated (2)", "Community (2)", "Personal (0)", "Tutorial (0)"),
-				this.get(panel::getTabTitles));
+
+		assertEquals(List.of("Personal (0)", "Published (0)", "Curated (0)", "Uncurated (1)"), this.get(panel::getTabTitles)); // no Tutorials tab
+		assertEquals("Tutorials (1)", tutorialsTitles.get(tutorialsTitles.size() - 1));
+		this.onEdt(() -> panel.setSearchText("other")); // still searched
+		assertEquals("Tutorials (0)", tutorialsTitles.get(tutorialsTitles.size() - 1));
+		assertEquals(List.of(), this.get(() -> panel.getShown(ModelList.TUTORIAL)));
+		assertNull(tutorials.getParent()); // the caller's to place
 	}
 
 	private GroupAccessSome sharedWithMe() {

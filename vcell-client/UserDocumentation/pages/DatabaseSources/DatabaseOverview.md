@@ -8,9 +8,10 @@ BioModel.
 
 ![](../../images/DatabaseSourcesTab.png)
 
-Model repositories accessible through VCell are browsed from the **Welcome window** (**File >
-Welcome Window**); pathways from Pathway Commons are searched from **Pathway > Pathway Lookup** in a
-BioModel's Navigation panel:
+Model repositories accessible through VCell are browsed from the
+[Model Explorer](ModelExplorer.md) (**File > Model Explorer...**), which lists them all in one tree
+with each model's details, and from the **Welcome window** (**File > Welcome Window**); pathways from Pathway Commons are searched from the **Pathway Lookup** tab of a
+BioModel's Pathway Tools window (**Tools > Pathway Tools...**):
 
 - [VCell database (internal)](VCellDatabase.md)
 - ['BioModels Database' repository (external)](BioModelsNet.md)

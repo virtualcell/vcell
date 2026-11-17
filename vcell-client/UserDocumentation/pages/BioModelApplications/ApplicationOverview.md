@@ -47,9 +47,19 @@ network-free applications can be made:
   (compartmental only).
 
 The Application directory displays the Applications associated with the BioModel. The main window
-displays the selected application and provides buttons to create new applications or to delete or
-copy applications. Properties for a selected object (e.g. species, reaction, simulation) are
-displayed in the Properties Pane below the main window.
+lists the applications on the left, with buttons to create new applications or to delete or copy
+applications.
+
+On the right, the **Run Queue** lists the simulation runs requested from this model, the most
+recently dispatched first: each simulation's latest run on the VCell server, and each Quick Run
+started on this computer, with where it runs and its status (a running run shows its progress).
+Double-click a run to open its application's simulations, with that simulation selected. The **View
+Simulation Jobs...** button opens [View Simulation Jobs](../Introduction/ViewSimStatus.md), to
+search all of your jobs on the server, from every model; like Account > View Simulation Jobs, it is
+available while connected.
+
+Properties for a selected object (e.g. species, reaction, simulation) are displayed in the
+Properties Pane below the main window.
 
 **Create** a new application by selecting "Applications" in the left menu. Right click opens a menu
 to create a deterministic, stochastic, or network-free application. Or, use the **New Application**

@@ -17,6 +17,8 @@ import cbit.vcell.model.Structure;
  * What a BioModel's Biochemistry holds, counted as the navigation tree's labels count it: its Physiology (structures,
  * species, molecules, observables, reactions and rules) and its Pathway (the imported pathway objects, and how they're
  * linked to the physiology).
+ * <p><b>Currently unused</b> (since the Biochemistry node was removed, Physiology being top-level): nothing opens the
+ * Biochemistry Summary. Kept for its parts, which may be reused elsewhere.</p>
  */
 public final class BiochemistrySummary {
 	private BiochemistrySummary() {}

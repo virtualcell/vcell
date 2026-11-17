@@ -10,6 +10,8 @@
 
 package cbit.vcell.client.desktop.biomodel;
 
+import javax.swing.JPanel;
+import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -60,6 +62,7 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 	private JButton moreActionsButton = null;
 	// application popup menu items
 	private JPopupMenu appsPopupMenu = null;
+	private final RunQueuePanel runQueuePanel = new RunQueuePanel(this::openRun); // the model window's runs, newest first
 	private JPopupMenu ivjMoreActionsPopupMenu = null;
 	
 	private JMenu menuAppCopyAs = null;
@@ -123,7 +126,8 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 		moreActionsButton.setHorizontalTextPosition(SwingConstants.LEFT);		
 		compareButton = new JButton("Compare...");
 		
-		setLayout(new GridBagLayout());
+		// the applications on the left, the runs requested on the right
+		JPanel applicationsPanel = new JPanel(new GridBagLayout());
 		int gridy = 0;
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.gridx = 0;
@@ -133,53 +137,26 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 		gbc.weightx = 1.0;
 		gbc.gridwidth = 7;
 		gbc.fill = GridBagConstraints.BOTH;
-		add(table.getEnclosingScrollPane(), gbc);
+		table.setName("ApplicationsTable");
+		table.getAccessibleContext().setAccessibleName("Applications");
+		applicationsPanel.add(table.getEnclosingScrollPane(), gbc);
 		
+		// the buttons and search: a row that wraps rather than insisting on its width, which would squeeze the navigation column
 		gridy ++;
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
-		gbc.insets = new Insets(4,4,4,4);
-		gbc.anchor = GridBagConstraints.LINE_END;
-		add(addNewButton, gbc);
-		
-		gbc = new GridBagConstraints();
-		gbc.gridx = 1;
-		gbc.insets = new Insets(4,4,4,4);
-		gbc.gridy = gridy;
-		gbc.anchor = GridBagConstraints.LINE_END;
-		add(deleteButton, gbc);
-		
-		gbc = new GridBagConstraints();
-		gbc.gridx = 2;
-		gbc.insets = new Insets(4,4,4,20);
-		gbc.gridy = gridy;
-		gbc.anchor = GridBagConstraints.LINE_END;
-		add(moreActionsButton, gbc);
-		
-		gbc = new GridBagConstraints();
-		gbc.gridx = 3;
-		gbc.insets = new Insets(4,4,4,20);
-		gbc.gridy = gridy;
-		gbc.anchor = GridBagConstraints.LINE_END;
-		add(compareButton, gbc);
-		
-		gbc = new GridBagConstraints();
-		gbc.gridx = 4;
-		gbc.gridy = gridy;
-		gbc.anchor = GridBagConstraints.LINE_END;
-		gbc.insets = new Insets(4,4,4,4);
-		add(new JLabel("Search "), gbc);
-		
-		gbc = new GridBagConstraints();
-		gbc.gridx = 5;
-		gbc.gridy = gridy;
 		gbc.weightx = 1.0;
-		gbc.gridwidth = 2;
-		gbc.anchor = GridBagConstraints.LINE_START;
+		gbc.gridwidth = 7;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
-		gbc.insets = new Insets(4,4,4,4);
-		add(textFieldSearch, gbc);
+		applicationsPanel.add(org.vcell.util.gui.ButtonRowLayout.withSearch(java.util.List.of(addNewButton, deleteButton, moreActionsButton, compareButton), textFieldSearch), gbc);
+		javax.swing.JSplitPane split = new javax.swing.JSplitPane(javax.swing.JSplitPane.HORIZONTAL_SPLIT, applicationsPanel, runQueuePanel);
+		split.setName("ApplicationsRunQueueSplit");
+		split.setResizeWeight(0.45);
+		split.setContinuousLayout(true);
+		split.setBorder(null);
+		setLayout(new java.awt.BorderLayout());
+		add(split, java.awt.BorderLayout.CENTER);
 						
 		compareButton.setEnabled(false);
 		compareButton.addActionListener(eventHandler);		
@@ -211,6 +188,23 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 	
 	protected void newButtonPressed() {
 		getNewAppPopupMenu().show(addNewButton, 0, addNewButton.getHeight());
+	}
+
+	/** The model window's simulation runs, to list beside the applications. */
+	public void setSimulationRunQueue(cbit.vcell.client.SimulationRunQueue queue) {
+		runQueuePanel.setQueue(queue);
+	}
+
+	// a run's simulation, chosen in its application's Simulations
+	private void openRun(cbit.vcell.client.SimulationRunQueue.Run run) {
+		if (selectionManager == null || !(run.getSimulation().getSimulationOwner() instanceof SimulationContext simulationContext)) return;
+		selectionManager.followHyperlink(new SelectionManager.ActiveView(simulationContext, DocumentEditorTreeFolderClass.SIMULATIONS_NODE,
+				SelectionManager.ActiveViewID.simulations), run.getSimulation());
+	}
+
+	/** The New Application menu (which kind: deterministic, stochastic...), shown at this point of the invoker. */
+	public void showNewApplicationMenu(java.awt.Component invoker, int x, int y) {
+		getNewAppPopupMenu().show(invoker, x, y);
 	}
 
 	private void moreActionsButtonPressed() {

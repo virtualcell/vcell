@@ -116,6 +116,7 @@
   - [Pathway Object Properties Pane](pages/PropertiesPanes/PP_Pathways.md)
   - [Operations on Pathway Entities](pages/PropertiesPanes/GroupOperationsPanel.md)
 - [Database Sources](pages/DatabaseSources/DatabaseOverview.md)
+  - [Model Explorer](pages/DatabaseSources/ModelExplorer.md)
   - [VCell Database](pages/DatabaseSources/VCellDatabase.md)
   - [BioModels Database](pages/DatabaseSources/BioModelsNet.md)
   - [Pathway Commons Database](pages/DatabaseSources/PathwayCommonsPanel.md)

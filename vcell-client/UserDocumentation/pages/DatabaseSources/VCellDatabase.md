@@ -6,15 +6,25 @@ current user by other VCell users and those that are public.
 
 ![](../../images/DatabaseSources.png)
 
-The Virtual Cell Database is browsed from the **VCell Database** tab of the **Welcome window**
-(**File > Welcome Window**). Document windows no longer have a database panel of their own, so parts
-of the description below, written for that panel, may differ from what the Welcome window shows.
+The Virtual Cell Database is browsed from the [Model Explorer](ModelExplorer.md) (**File > Model
+Explorer...**), whose tree has the folders described below, and from the **VCell Database** tab of
+the **Welcome window** (**File > Welcome Window**), whose own tabs are **Personal**, **Published**,
+**Curated** and **Uncurated**; the tutorials' models have a **Tutorials** tab beside it, and the
+BioModels Database a **BMDB** tab. The search field above the tabs searches them all; its
+**Filters** narrow the search (**Reset** puts them back). BMDB lists only the models VCell can
+import, and is searched by their names and IDs only, so on its tab the filters are greyed out.
+Document windows no longer have a database panel of their own, so parts of the description below,
+written for that panel, may differ from what these windows show.
 
 Right-click a model in the Welcome window's **Recent Models** or **VCell Database** lists (or select
-it and press **Shift+F10**) for its menu:
+it and press **Shift+F10**), or in the Model Explorer's tree, for its menu:
 
 - **Open**, and **Export / Save to File...** without opening it.
-- **Compare With** its previous or latest edition, another edition, or another model.
+- **Show in Model Explorer** (in the Welcome window), which opens the Model Explorer with that model
+  selected.
+- **Compare With** its previous or latest edition, another edition, or another model. **Another
+  Model...** opens the [Model Explorer](ModelExplorer.md) at the model, to pick the one to compare it
+  with there.
 - **Copy Name**, and **Copy BioModel ID Number** (or MathModel), which copies just the number in its
   ID, such as 233648465 for biomodel-233648465.
 - For your own models: **Permissions...**, **Archive**, **Publish** and **Delete...** (which asks

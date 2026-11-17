@@ -142,6 +142,25 @@ final class LayoutScaler {
 		if (x != window.getX() || y != window.getY()) window.setLocation(x, y);
 	}
 
+	/**
+	 * The size a window was designed at, before scaling: null if it isn't scaled here. A window resized since its size
+	 * was last applied (by its user, or by code) was resized at the current scale.
+	 */
+	static Dimension designSize(Window window) {
+		WindowSize sizes = LayoutScaler.windowSizes.get(window);
+		if (null == sizes) return null;
+		return window.getSize().equals(sizes.applied()) ? sizes.design() : LayoutScaler.unscaled(window.getSize(), LayoutScaler.scale());
+	}
+
+	/**
+	 * Gives a window, about to be shown at another's (already scaled) size, that one's design size: shown, it keeps its
+	 * size rather than being scaled again, as a window shown for the first time would be.
+	 */
+	static void carryDesignSize(Dimension design, Window window) {
+		if (null == design) return;
+		LayoutScaler.windowSizes.put(window, new WindowSize(design, window.getSize()));
+	}
+
 	private static boolean isMaximized(Window window) {
 		return window instanceof Frame frame && (frame.getExtendedState() & Frame.MAXIMIZED_BOTH) != 0;
 	}

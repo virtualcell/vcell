@@ -6,8 +6,9 @@ current pA, capacitance pF, conductance nS).
 
 ![](../../images/modelUnitMain.png)
 
-Choose the model's units with the **Unit System** list beside the table, under **Mathematics & Units >
-Model Unit System**. Choosing a different unit system converts the model's values to its units. The
+Choose the model's units with the **Unit System** list beside the table, in the **Model Unit
+System** window: open it with the **Model Unit System...** button below the Parameters and Functions
+table (click **Mathematics & Units** in the Navigation panel). Choosing a different unit system converts the model's values to its units. The
 list starts with VCell's own:
 
 - **VCell Default**: the units VCell models start with (um, s, uM.um3 for volume species, molecules

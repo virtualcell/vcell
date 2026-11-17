@@ -9,8 +9,8 @@ into your model - as a way to speed up the process of building a biomodel and, m
 way of annotating vCell entities.
 
 The process begins with a [keyword search](../DatabaseSources/PathwayCommonsPanel.md) in the Pathway
-Commons Database, from **Pathway Lookup** under **Pathway** in the Navigation Panel - which will
-result in a list of pathways.
+Commons Database, from the **Pathway Lookup** tab of the **Pathway Tools** window
+(**Tools > Pathway Tools...** in a BioModel window) - which will result in a list of pathways.
 
 The chosen pathway can be [imported in a table](PathwayImportTable.md) which will display the
 entities (interactions and physical entities) it consists of.
@@ -23,8 +23,9 @@ this point available.
 As a last step, the user can choose which entities will be made part of the biomodel through a
 [linking process](../PropertiesPanes/GroupOperationsPanel.md).
 
-While working on other topics, click at any time on the Pathway tree item or on its children in the
-[Navigation Panel](../Introduction/GeneralNavAndWinSetup.md) to return to displaying pathway
-entities.
-
-![](../../images/PathwayNavigationPanel.png)
+The pathway's views are in the **Pathway Tools** window, beside the model's window, so they can
+stay open while working on other topics: its tabs are the **Pathway Diagram**, **Pathway Objects**,
+**BioPAX Summary**, **BioPAX Tree** and **Pathway Lookup**, and beneath them are the **Object
+Properties** of the chosen pathway object and the **Pathway Preview** of a chosen Lookup result.
+Open it from **Tools > Pathway Tools...**, or by following a link to a pathway object from a
+species or reaction.

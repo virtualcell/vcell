@@ -42,6 +42,8 @@ import org.vcell.util.gui.GuiUtils;
  * The Summary of Mathematics &amp; Units: the model's unit system, the measured physical constants its equations use,
  * and how many parameters and functions it has and where. Each part leads to where it's worked on: the unit system to
  * its tab, the constants to Predefined Expressions, and a group to the Parameters and Functions table showing just it.
+ * <p><b>Currently unused</b> (since Mathematics &amp; Units became a single panel, without tabs): nothing opens the
+ * Mathematics &amp; Units Summary. Kept for its parts, which may be reused elsewhere.</p>
  */
 public class MathematicsSummaryPanel extends JPanel {
 	private static final String[] UNIT_LABELS = { "length", "area", "volume", "time", "volume species substance", "membrane species substance", "lumped reaction substance" };

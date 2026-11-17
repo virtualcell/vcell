@@ -6,6 +6,7 @@ import java.awt.datatransfer.StringSelection;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.function.Consumer;
 
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -63,15 +64,30 @@ public class ListedModelActions {
 	}
 
 	private final TopLevelWindowManager owner;
+	private final Consumer<VCDocumentInfo> compareAnotherModel; // Compare With > Another Model, for the model; null: a picker dialog
 	private ListedModelManager manager = null; // made on first use: it builds database trees of its own
 
 	/** @param owner the window the lists are in, whose dialogs the actions' dialogs belong to */
 	public ListedModelActions(TopLevelWindowManager owner) {
+		this(owner, null);
+	}
+
+	/**
+	 * As above; Compare With > Another Model does <code>compareAnotherModel</code> for the model (the Model Explorer, to
+	 * pick the other model in), rather than ask for the other model in a dialog.
+	 */
+	public ListedModelActions(TopLevelWindowManager owner, Consumer<VCDocumentInfo> compareAnotherModel) {
 		this.owner = owner;
+		this.compareAnotherModel = compareAnotherModel;
 	}
 
 	/** The menu for one listed model; <code>open</code> is how the list opens a model (as a double-click does). */
 	public JPopupMenu createMenu(VCDocumentInfo model, Runnable open) {
+		return this.createMenu(model, open, null);
+	}
+
+	/** As above, with "Show in Model Explorer" after Open, which <code>explore</code> does (none, if null). */
+	public JPopupMenu createMenu(VCDocumentInfo model, Runnable open, Runnable explore) {
 		JPopupMenu menu = new JPopupMenu();
 		menu.setName("ListedModelMenu");
 		Version version = model.getVersion();
@@ -81,6 +97,7 @@ public class ListedModelActions {
 		String typeName = ListedModelActions.documentTypeName(model);
 
 		menu.add(ListedModelActions.item("Open", open));
+		if (null != explore) menu.add(ListedModelActions.item("Show in Model Explorer", explore));
 		menu.add(ListedModelActions.item("Export / Save to File...", () -> this.withListedModel(model).exportDocument()));
 		if (model instanceof GeometryInfo) {
 			menu.add(ListedModelActions.item("Models Using Geometry", () -> this.withListedModel(model).findModelsUsingSelectedGeometry()));
@@ -138,7 +155,8 @@ public class ListedModelActions {
 		JMenuItem anotherEdition = ListedModelActions.item("Another Edition...", () -> this.withListedModel(model).compareAnotherEdition());
 		ListedModelActions.enable(anotherEdition, !otherEditions.isEmpty(), "No other editions");
 		compare.add(anotherEdition);
-		compare.add(ListedModelActions.item("Another Model...", () -> this.withListedModel(model).compareAnotherModel()));
+		compare.add(ListedModelActions.item("Another Model...", null != this.compareAnotherModel ? () -> this.compareAnotherModel.accept(model)
+				: () -> this.withListedModel(model).compareAnotherModel()));
 		return compare;
 	}
 

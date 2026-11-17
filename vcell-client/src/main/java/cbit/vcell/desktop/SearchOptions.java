@@ -13,12 +13,19 @@ import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionFlag;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
 /**
  * The advanced search's options: where the search text is looked for, and which models are listed at all (their kind,
@@ -53,6 +60,17 @@ public final class SearchOptions {
 		}
 	}
 
+	/** Whether a model is spatial: has a geometry of one dimension or more (a BioModel: any of its applications). */
+	public enum Space {
+		SPATIAL("Spatial"), NON_SPATIAL("Non-spatial");
+
+		public final String label;
+
+		Space(String label) {
+			this.label = label;
+		}
+	}
+
 	/** Who may see a model, and whether it was published with a paper (Published) or curated. */
 	public enum Access {
 		PRIVATE("Private"), SHARED("Shared"), PUBLIC("Public"), PUBLISHED("Published"), CURATED("Curated");
@@ -64,9 +82,10 @@ public final class SearchOptions {
 		}
 	}
 
-	/** How recently a model was saved. */
+	/** How recently a model was saved: within a number of days, or between two dates (see getSavedFrom, getSavedTo). */
 	public enum Saved {
-		ANY_TIME("Any time", 0), PAST_WEEK("Past week", 7), PAST_MONTH("Past month", 30), PAST_YEAR("Past year", 365);
+		ANY_TIME("Any time", 0), PAST_WEEK("Past week", 7), PAST_MONTH("Past month", 30), PAST_YEAR("Past year", 365),
+		BETWEEN("Between", 0);
 
 		public final String label;
 		private final int days;
@@ -102,7 +121,9 @@ public final class SearchOptions {
 	private final Set<VCDocumentType> types;
 	private final String owner;
 	private final Saved saved;
+	private final LocalDate savedFrom, savedTo; // Between's dates, both included; either null for no limit that way
 	private final EnumSet<Approach> approaches;
+	private final EnumSet<Space> spaces;
 	private final EnumSet<Access> access;
 	private final Order order;
 
@@ -112,6 +133,23 @@ public final class SearchOptions {
 
 	public SearchOptions(Set<Field> fields, Set<VCDocumentType> types, String owner, Saved saved, Set<Approach> approaches,
 			Set<Access> access, Order order) {
+		this(fields, types, owner, saved, null, null, approaches, access, order);
+	}
+
+	/** As above; for Saved Between, the first and last days a model may have been saved on (null: no limit that way). */
+	public SearchOptions(Set<Field> fields, Set<VCDocumentType> types, String owner, Saved saved, LocalDate savedFrom, LocalDate savedTo,
+			Set<Approach> approaches, Set<Access> access, Order order) {
+		this(fields, types, owner, saved, savedFrom, savedTo, approaches, EnumSet.allOf(Space.class), access, order);
+	}
+
+	/** As above, with whether models are to be spatial, non-spatial or either. */
+	public SearchOptions(Set<Field> fields, Set<VCDocumentType> types, String owner, Saved saved, LocalDate savedFrom, LocalDate savedTo,
+			Set<Approach> approaches, Set<Space> spaces, Set<Access> access, Order order) {
+		this.spaces = spaces.isEmpty() ? EnumSet.noneOf(Space.class) : EnumSet.copyOf(spaces);
+		boolean between = Saved.BETWEEN == saved;
+		boolean backwards = null != savedFrom && null != savedTo && savedFrom.isAfter(savedTo); // the later typed first: the same range
+		this.savedFrom = !between ? null : backwards ? savedTo : savedFrom; // only Between has dates
+		this.savedTo = !between ? null : backwards ? savedFrom : savedTo;
 		this.fields = fields.isEmpty() ? EnumSet.noneOf(Field.class) : EnumSet.copyOf(fields);
 		this.types = Set.copyOf(types);
 		this.owner = null == owner ? "" : owner.strip();
@@ -130,20 +168,24 @@ public final class SearchOptions {
 	public Set<VCDocumentType> getTypes() { return this.types; }
 	public String getOwner() { return this.owner; }
 	public Saved getSaved() { return this.saved; }
+	public LocalDate getSavedFrom() { return this.savedFrom; }
+	public LocalDate getSavedTo() { return this.savedTo; }
 	public Set<Approach> getApproaches() { return EnumSet.copyOf(this.approaches); }
+	public Set<Space> getSpaces() { return this.spaces.isEmpty() ? EnumSet.noneOf(Space.class) : EnumSet.copyOf(this.spaces); }
 	public Set<Access> getAccess() { return EnumSet.copyOf(this.access); }
 	public Order getOrder() { return this.order; }
 
 	@Override
 	public boolean equals(Object other) {
 		return other instanceof SearchOptions that && this.fields.equals(that.fields) && this.types.equals(that.types)
-				&& this.owner.equals(that.owner) && this.saved == that.saved && this.approaches.equals(that.approaches)
+				&& this.owner.equals(that.owner) && this.saved == that.saved && Objects.equals(this.savedFrom, that.savedFrom)
+				&& Objects.equals(this.savedTo, that.savedTo) && this.approaches.equals(that.approaches) && this.spaces.equals(that.spaces)
 				&& this.access.equals(that.access) && this.order == that.order;
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(this.fields, this.types, this.owner, this.saved, this.approaches, this.access, this.order);
+		return Objects.hash(this.fields, this.types, this.owner, this.saved, this.savedFrom, this.savedTo, this.approaches, this.spaces, this.access, this.order);
 	}
 
 	/** How many of the options are narrowed (or reordered) from the defaults. */
@@ -154,9 +196,50 @@ public final class SearchOptions {
 		if (!this.owner.isEmpty()) changed++;
 		if (this.saved != DEFAULTS.saved) changed++;
 		if (!this.approaches.equals(DEFAULTS.approaches)) changed++;
+		if (!this.spaces.equals(DEFAULTS.spaces)) changed++;
 		if (!this.access.equals(DEFAULTS.access)) changed++;
 		if (this.order != DEFAULTS.order) changed++;
 		return changed;
+	}
+
+	/**
+	 * What differs from the defaults, one line an option: "Model type: −MathModels" for a box unchecked (+ for one
+	 * checked), and the new value for the rest. Empty for the defaults.
+	 */
+	public List<String> describeChanges() {
+		List<String> changes = new ArrayList<>();
+		SearchOptions.addChange(changes, "Search in", DEFAULTS.fields, this.fields, field -> field.label);
+		SearchOptions.addChange(changes, "Model type", DEFAULTS.types, this.types, SearchOptions::typeLabel);
+		if (!this.owner.isEmpty()) changes.add("Owner: contains “" + this.owner + "”");
+		if (this.saved != DEFAULTS.saved) changes.add("Saved: " + this.describeSaved());
+		SearchOptions.addChange(changes, "Approach", DEFAULTS.approaches, this.approaches, approach -> approach.label);
+		SearchOptions.addChange(changes, "Geometry", DEFAULTS.spaces, this.spaces, space -> space.label);
+		SearchOptions.addChange(changes, "Permissions", DEFAULTS.access, this.access, permission -> permission.label);
+		if (this.order != DEFAULTS.order) changes.add("Order: " + this.order.label);
+		return changes;
+	}
+
+	// "Category: +Added, −Removed", in the options' own order, if anything was added or removed
+	private static <E> void addChange(List<String> changes, String category, Set<E> defaults, Set<E> chosen, Function<E, String> label) {
+		List<String> differences = new ArrayList<>();
+		for (E value : defaults) if (!chosen.contains(value)) differences.add("−" + label.apply(value));
+		for (E value : chosen) if (!defaults.contains(value)) differences.add("+" + label.apply(value));
+		if (differences.isEmpty()) return;
+		changes.add(category + ": " + String.join(", ", differences));
+	}
+
+	// "Past week"; for Between, "between Mar 1, 2024 and Nov 17, 2026", "since ..." or "until ...", or "any time"
+	private String describeSaved() {
+		if (Saved.BETWEEN != this.saved) return this.saved.label;
+		DateTimeFormatter format = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM);
+		if (null != this.savedFrom && null != this.savedTo) return "between " + format.format(this.savedFrom) + " and " + format.format(this.savedTo);
+		if (null != this.savedFrom) return "since " + format.format(this.savedFrom);
+		if (null != this.savedTo) return "until " + format.format(this.savedTo);
+		return "any time";
+	}
+
+	private static String typeLabel(VCDocumentType type) {
+		return VCDocumentType.BIOMODEL_DOC == type ? "BioModels" : VCDocumentType.MATHMODEL_DOC == type ? "MathModels" : type.name();
 	}
 
 	/** Whether the model passes every option narrowed from the defaults (whatever the search text). */
@@ -168,12 +251,24 @@ public final class SearchOptions {
 			String ownerName = null == version.getOwner() ? "" : version.getOwner().getName();
 			if (!ownerName.toLowerCase(Locale.ROOT).contains(this.owner.toLowerCase(Locale.ROOT))) return false;
 		}
-		if (Saved.ANY_TIME != this.saved) {
+		if (Saved.BETWEEN == this.saved) {
+			if (!this.savedBetween(version.getDate())) return false;
+		} else if (Saved.ANY_TIME != this.saved) {
 			long since = now.getTime() - TimeUnit.DAYS.toMillis(this.saved.days);
 			if (null == version.getDate() || version.getDate().getTime() < since) return false;
 		}
 		if (!this.approaches.equals(DEFAULTS.approaches) && !this.approachesOf(info)) return false;
+		if (!this.spaces.equals(DEFAULTS.spaces) && SearchOptions.spacesOf(info).stream().noneMatch(this.spaces::contains)) return false;
 		return this.access.equals(DEFAULTS.access) || SearchOptions.accessOf(info).stream().anyMatch(this.access::contains);
+	}
+
+	// Saved on a day from savedFrom to savedTo, both included, as days go here (the computer's time zone)
+	private boolean savedBetween(Date saved) {
+		if (null == this.savedFrom && null == this.savedTo) return true;
+		if (null == saved) return false;
+		LocalDate day = saved.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+		if (null != this.savedFrom && day.isBefore(this.savedFrom)) return false;
+		return null == this.savedTo || !day.isAfter(this.savedTo);
 	}
 
 	// Whether any of the model's applications (a MathModel: the model itself) uses an approach asked for
@@ -188,6 +283,25 @@ public final class SearchOptions {
 			if (null != summary.getModelType()) mathTypes.add(summary.getModelType());
 		}
 		return this.approaches.stream().anyMatch(approach -> mathTypes.contains(approach.mathType));
+	}
+
+	/**
+	 * Whether a model is spatial, non-spatial or (a BioModel with both kinds of application) both: by its geometries'
+	 * dimensions, 0 being none. A BioModel with no applications has no geometry: non-spatial.
+	 */
+	static Set<Space> spacesOf(VCDocumentInfo info) {
+		Set<Space> spaces = EnumSet.noneOf(Space.class);
+		if (info instanceof BioModelInfo bioModel) {
+			BioModelChildSummary summary = bioModel.getBioModelChildSummary();
+			int[] dimensions = null == summary ? null : summary.getGeometryDimensions();
+			if (null != dimensions) for (int dimension : dimensions) spaces.add(dimension > 0 ? Space.SPATIAL : Space.NON_SPATIAL);
+		} else if (info instanceof MathModelInfo mathModel && null != mathModel.getMathModelChildSummary()) {
+			spaces.add(mathModel.getMathModelChildSummary().getGeometryDimension() > 0 ? Space.SPATIAL : Space.NON_SPATIAL);
+		} else if (info instanceof cbit.vcell.geometry.GeometryInfo geometry) {
+			spaces.add(geometry.getDimension() > 0 ? Space.SPATIAL : Space.NON_SPATIAL);
+		}
+		if (spaces.isEmpty()) spaces.add(Space.NON_SPATIAL);
+		return spaces;
 	}
 
 	/** Which permission groups the model is in: private, shared or public; and published or curated, if so. */

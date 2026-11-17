@@ -273,12 +273,16 @@ private static String FormatDetails(BioPaxObjectProperty property) {
 private void initialize() {
 	try {
 		table = new ScrollTable();
+		table.setName("BioPaxObjectPropertiesTable");
+		table.getAccessibleContext().setAccessibleName("Pathway object properties");
 		tableModel = new BioPaxObjectPropertiesTableModel(table);
 		table.setModel(tableModel);
 		
 		details = new JTextPane();
 		details.setContentType("text/html");
 		details.setEditable(false);
+		details.setName("BioPaxObjectDetails");
+		details.getAccessibleContext().setAccessibleName("Pathway object details");
 		JScrollPane scrl = new JScrollPane(details); 
 		
 		table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {

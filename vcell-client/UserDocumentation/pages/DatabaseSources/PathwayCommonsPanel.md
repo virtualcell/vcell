@@ -8,10 +8,9 @@ MINT, NCI/Nature PID, Reactome). As of October 2011, Pathway Commons contains 1,
 build and annotate models based on the pathways and their links to terminologies and databases about
 proteins, small molecules, genes, anatomical features, organisms and publications.
 
-To open it, select **Pathway Lookup** under **Pathway** in the tree at the **upper left** of a
-BioModel window; it is also the **Pathway Lookup** tab beside the Pathway Diagram. A previewed
-pathway opens in the **Pathway Preview** tab at the lower right, from which it can be imported into
-the model.
+To open it, choose **Tools > Pathway Tools...** in a BioModel window and click the **Pathway
+Lookup** tab, beside the Pathway Diagram. A previewed pathway opens in the **Pathway Preview** tab
+beneath, from which it can be imported into the model.
 
 ![](../../images/PathwayCommonsPanel.png)
 
