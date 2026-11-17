@@ -12,6 +12,9 @@ import org.vcell.util.document.BioModelChildSummary.MathType;
 import org.vcell.util.document.VCDocument.VCDocumentType;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.Date;
 import java.util.EnumSet;
 import java.util.List;
@@ -45,6 +48,34 @@ public class SearchOptionsTest {
 				EnumSet.allOf(Approach.class), EnumSet.of(Access.PRIVATE, Access.CURATED), Order.NEWEST);
 		assertEquals(List.of("Search in: −Owner, −Description", "Model type: −MathModels", "Owner: contains “bor”",
 				"Saved: Past week", "Permissions: −Shared, −Public, −Published", "Order: Newest"), changed.describeChanges());
+	}
+
+	@Test
+	public void narrowsToModelsSavedBetweenTwoDays() {
+		BioModelInfo threeDaysAgo = this.bioModel("Recent", JESSICA, 3, new GroupAccessNone(), MathType.Deterministic);
+		BioModelInfo longAgo = this.bioModel("Old", JESSICA, 400, new GroupAccessNone(), MathType.Deterministic);
+		LocalDate saved = threeDaysAgo.getVersion().getDate().toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDate();
+
+		SearchOptions thatDayOnly = this.between(saved, saved); // both days included
+		assertTrue(thatDayOnly.accepts(threeDaysAgo, NOW));
+		assertFalse(thatDayOnly.accepts(longAgo, NOW));
+		assertFalse(this.between(saved.plusDays(1), null).accepts(threeDaysAgo, NOW)); // since the day after
+		assertTrue(this.between(null, saved).accepts(longAgo, NOW)); // until then: anything earlier
+		assertTrue(this.between(saved.plusDays(5), saved.minusDays(5)).accepts(threeDaysAgo, NOW)); // typed backwards: the same range
+
+		DateTimeFormatter format = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM);
+		assertEquals(List.of("Saved: between " + format.format(saved.minusDays(5)) + " and " + format.format(saved)),
+				this.between(saved.minusDays(5), saved).describeChanges());
+		assertEquals(1, this.between(null, null).changedCount()); // Between with no dates: still chosen, though it lets everything through
+		assertTrue(this.between(null, null).accepts(longAgo, NOW));
+		// dates mean nothing but for Between
+		assertNull(new SearchOptions(EnumSet.allOf(Field.class), Set.of(VCDocumentType.BIOMODEL_DOC), "", Saved.PAST_WEEK, saved, saved,
+				EnumSet.allOf(Approach.class), EnumSet.allOf(Access.class), Order.BEST_MATCH).getSavedFrom());
+	}
+
+	private SearchOptions between(LocalDate from, LocalDate to) {
+		return new SearchOptions(EnumSet.allOf(Field.class), Set.of(VCDocumentType.BIOMODEL_DOC, VCDocumentType.MATHMODEL_DOC), "",
+				Saved.BETWEEN, from, to, EnumSet.allOf(Approach.class), EnumSet.allOf(Access.class), Order.BEST_MATCH);
 	}
 
 	@Test

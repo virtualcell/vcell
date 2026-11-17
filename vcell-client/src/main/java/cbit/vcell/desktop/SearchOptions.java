@@ -13,6 +13,10 @@ import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionFlag;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.EnumSet;
@@ -67,9 +71,10 @@ public final class SearchOptions {
 		}
 	}
 
-	/** How recently a model was saved. */
+	/** How recently a model was saved: within a number of days, or between two dates (see getSavedFrom, getSavedTo). */
 	public enum Saved {
-		ANY_TIME("Any time", 0), PAST_WEEK("Past week", 7), PAST_MONTH("Past month", 30), PAST_YEAR("Past year", 365);
+		ANY_TIME("Any time", 0), PAST_WEEK("Past week", 7), PAST_MONTH("Past month", 30), PAST_YEAR("Past year", 365),
+		BETWEEN("Between", 0);
 
 		public final String label;
 		private final int days;
@@ -105,6 +110,7 @@ public final class SearchOptions {
 	private final Set<VCDocumentType> types;
 	private final String owner;
 	private final Saved saved;
+	private final LocalDate savedFrom, savedTo; // Between's dates, both included; either null for no limit that way
 	private final EnumSet<Approach> approaches;
 	private final EnumSet<Access> access;
 	private final Order order;
@@ -115,6 +121,16 @@ public final class SearchOptions {
 
 	public SearchOptions(Set<Field> fields, Set<VCDocumentType> types, String owner, Saved saved, Set<Approach> approaches,
 			Set<Access> access, Order order) {
+		this(fields, types, owner, saved, null, null, approaches, access, order);
+	}
+
+	/** As above; for Saved Between, the first and last days a model may have been saved on (null: no limit that way). */
+	public SearchOptions(Set<Field> fields, Set<VCDocumentType> types, String owner, Saved saved, LocalDate savedFrom, LocalDate savedTo,
+			Set<Approach> approaches, Set<Access> access, Order order) {
+		boolean between = Saved.BETWEEN == saved;
+		boolean backwards = null != savedFrom && null != savedTo && savedFrom.isAfter(savedTo); // the later typed first: the same range
+		this.savedFrom = !between ? null : backwards ? savedTo : savedFrom; // only Between has dates
+		this.savedTo = !between ? null : backwards ? savedFrom : savedTo;
 		this.fields = fields.isEmpty() ? EnumSet.noneOf(Field.class) : EnumSet.copyOf(fields);
 		this.types = Set.copyOf(types);
 		this.owner = null == owner ? "" : owner.strip();
@@ -133,6 +149,8 @@ public final class SearchOptions {
 	public Set<VCDocumentType> getTypes() { return this.types; }
 	public String getOwner() { return this.owner; }
 	public Saved getSaved() { return this.saved; }
+	public LocalDate getSavedFrom() { return this.savedFrom; }
+	public LocalDate getSavedTo() { return this.savedTo; }
 	public Set<Approach> getApproaches() { return EnumSet.copyOf(this.approaches); }
 	public Set<Access> getAccess() { return EnumSet.copyOf(this.access); }
 	public Order getOrder() { return this.order; }
@@ -140,13 +158,14 @@ public final class SearchOptions {
 	@Override
 	public boolean equals(Object other) {
 		return other instanceof SearchOptions that && this.fields.equals(that.fields) && this.types.equals(that.types)
-				&& this.owner.equals(that.owner) && this.saved == that.saved && this.approaches.equals(that.approaches)
+				&& this.owner.equals(that.owner) && this.saved == that.saved && Objects.equals(this.savedFrom, that.savedFrom)
+				&& Objects.equals(this.savedTo, that.savedTo) && this.approaches.equals(that.approaches)
 				&& this.access.equals(that.access) && this.order == that.order;
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(this.fields, this.types, this.owner, this.saved, this.approaches, this.access, this.order);
+		return Objects.hash(this.fields, this.types, this.owner, this.saved, this.savedFrom, this.savedTo, this.approaches, this.access, this.order);
 	}
 
 	/** How many of the options are narrowed (or reordered) from the defaults. */
@@ -171,7 +190,7 @@ public final class SearchOptions {
 		SearchOptions.addChange(changes, "Search in", DEFAULTS.fields, this.fields, field -> field.label);
 		SearchOptions.addChange(changes, "Model type", DEFAULTS.types, this.types, SearchOptions::typeLabel);
 		if (!this.owner.isEmpty()) changes.add("Owner: contains “" + this.owner + "”");
-		if (this.saved != DEFAULTS.saved) changes.add("Saved: " + this.saved.label);
+		if (this.saved != DEFAULTS.saved) changes.add("Saved: " + this.describeSaved());
 		SearchOptions.addChange(changes, "Approach", DEFAULTS.approaches, this.approaches, approach -> approach.label);
 		SearchOptions.addChange(changes, "Permissions", DEFAULTS.access, this.access, permission -> permission.label);
 		if (this.order != DEFAULTS.order) changes.add("Order: " + this.order.label);
@@ -187,6 +206,16 @@ public final class SearchOptions {
 		changes.add(category + ": " + String.join(", ", differences));
 	}
 
+	// "Past week"; for Between, "between Mar 1, 2024 and Nov 17, 2026", "since ..." or "until ...", or "any time"
+	private String describeSaved() {
+		if (Saved.BETWEEN != this.saved) return this.saved.label;
+		DateTimeFormatter format = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM);
+		if (null != this.savedFrom && null != this.savedTo) return "between " + format.format(this.savedFrom) + " and " + format.format(this.savedTo);
+		if (null != this.savedFrom) return "since " + format.format(this.savedFrom);
+		if (null != this.savedTo) return "until " + format.format(this.savedTo);
+		return "any time";
+	}
+
 	private static String typeLabel(VCDocumentType type) {
 		return VCDocumentType.BIOMODEL_DOC == type ? "BioModels" : VCDocumentType.MATHMODEL_DOC == type ? "MathModels" : type.name();
 	}
@@ -200,12 +229,23 @@ public final class SearchOptions {
 			String ownerName = null == version.getOwner() ? "" : version.getOwner().getName();
 			if (!ownerName.toLowerCase(Locale.ROOT).contains(this.owner.toLowerCase(Locale.ROOT))) return false;
 		}
-		if (Saved.ANY_TIME != this.saved) {
+		if (Saved.BETWEEN == this.saved) {
+			if (!this.savedBetween(version.getDate())) return false;
+		} else if (Saved.ANY_TIME != this.saved) {
 			long since = now.getTime() - TimeUnit.DAYS.toMillis(this.saved.days);
 			if (null == version.getDate() || version.getDate().getTime() < since) return false;
 		}
 		if (!this.approaches.equals(DEFAULTS.approaches) && !this.approachesOf(info)) return false;
 		return this.access.equals(DEFAULTS.access) || SearchOptions.accessOf(info).stream().anyMatch(this.access::contains);
+	}
+
+	// Saved on a day from savedFrom to savedTo, both included, as days go here (the computer's time zone)
+	private boolean savedBetween(Date saved) {
+		if (null == this.savedFrom && null == this.savedTo) return true;
+		if (null == saved) return false;
+		LocalDate day = saved.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+		if (null != this.savedFrom && day.isBefore(this.savedFrom)) return false;
+		return null == this.savedTo || !day.isAfter(this.savedTo);
 	}
 
 	// Whether any of the model's applications (a MathModel: the model itself) uses an approach asked for

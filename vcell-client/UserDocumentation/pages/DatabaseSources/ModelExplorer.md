@@ -7,9 +7,9 @@ anything in it shows its details beside it.
 
 Along the top are a **Search** field, a **Filters** button that shows the search options under it
 (where to look for the search text, the kind of model, its modeling approach, permissions, owner,
-when it was saved, and the order), and **Refresh**, which reads the database's lists again. Beside
-them, how many models and geometries are listed, and **Tree** and **Table**, which switch between
-the two views of them.
+when it was saved (in the past week, month or year, or **Between** two dates), and the order), and
+**Refresh**, which reads the database's lists again. Beside them, how many models and geometries are
+listed, and **Tree** and **Table**, which switch between the two views of them.
 
 At the left, the tree. BioModels and MathModels are listed together, each marked by its icon. Each
 folder is arranged its own way:
