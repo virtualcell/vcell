@@ -67,14 +67,21 @@ git.
 **In VCell, without building anything:** open the help, choose **Advanced > Show Help from a
 Source Folder...** and pick this `UserDocumentation` folder. The help then shows your copy, as
 VCell will show it, and reloads a second or two after you save a file. A banner names the folder,
-and its **problems** button lists everything below, each with its file and line; click one to open
-the page. **Use Built-in Help** goes back. VCell remembers the folder until you do.
+and a **Problems** tab beside the contents lists everything below, each with its file and line;
+choose one to open the page. **Use Built-in Help** goes back. VCell remembers the folder until you
+do.
 
-The same checks run in `HelpBookTest` (in the Fast group), and in CI. They report a broken link,
-anchor or image, an image name whose case differs from the file (macOS forgives that, but the
-client jar does not), a page nothing links to, a file name with spaces or other characters, a link
-(shortcut) in the folder, raw HTML, a link that is not http, https or mailto, an image that is too
-large, Obsidian-only syntax, and a `HelpIds` constant with no page:
+The same checks run in `HelpBookTest` (in the Fast group), and in CI. They report, as **errors**, a
+broken link, anchor or image, an image name whose case differs from the file (macOS forgives that,
+but the client jar does not), a page nothing links to, a file name with spaces or other characters,
+a link (shortcut) in the folder, raw HTML, a link that is not http, https or mailto, an image too
+large to show, Obsidian-only syntax, and a `HelpIds` constant with no page. Errors fail the test,
+CI and the web export.
+
+They also report two **warnings**, which fail nothing: an image in `images/` that no page shows,
+and an image file over 500 KB. Both still ship inside VCell, so delete or shrink them when you can.
+The Problems tab marks errors with a red cross and warnings with a yellow exclamation mark, and
+the test lists the warnings in its output:
 
 ```bash
 mvn test -pl vcell-client -Dtest='HelpBookTest,HelpSecurityTest'

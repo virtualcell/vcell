@@ -1,6 +1,7 @@
 package org.vcell.documentation;
 
 import cbit.vcell.client.laf.VCellColors;
+import org.vcell.util.gui.VCellIcons;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.client.logicalwindow.LWTopFrame;
@@ -14,6 +15,7 @@ import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
@@ -30,6 +32,7 @@ import javax.swing.JToolBar;
 import javax.swing.JTree;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.UIManager;
@@ -709,7 +712,8 @@ public final class HelpViewer extends JPanel {
 		this.sourceBanner.setVisible(true);
 		this.useBuiltInMenuItem.setEnabled(true);
 		if (this.isShowing()) this.watchTimer.start();
-		if (firstTime && !loaded.problems().isEmpty()) this.showProblems();
+		// open on the problems only for errors; warnings can wait until the author looks
+		if (firstTime && !HelpChecks.errors(loaded.problems()).isEmpty()) this.showProblems();
 	}
 
 	private void useBuiltInHelp() {
@@ -809,9 +813,28 @@ public final class HelpViewer extends JPanel {
 		DefaultListModel<HelpProblem> model = (DefaultListModel<HelpProblem>) this.problemsList.getModel();
 		model.clear();
 		model.addAll(problems);
-		this.problemsLabel.setText(problems.isEmpty() ? "No problems found" : "Choose one to open its page");
+		long warnings = problems.stream().filter(HelpProblem::isWarning).count();
+		long errors = problems.size() - warnings;
+		// our own words, so safe as HTML; two lines, as the panel is narrow
+		String counts = HelpViewer.count(errors, "error") + ", " + HelpViewer.count(warnings, "warning");
+		this.problemsLabel.setText(problems.isEmpty() ? "No problems found"
+				: "<html>" + Character.toUpperCase(counts.charAt(0)) + counts.substring(1) + ".<br>Choose one to open its page.</html>");
 		int index = this.navigationTabs.indexOfComponent(this.problemsPanel);
 		if (index >= 0) this.navigationTabs.setTitleAt(index, problems.isEmpty() ? "Problems" : "Problems (" + problems.size() + ")");
+	}
+
+	/**
+	 * Swing wraps HTML only where a line may break, and a path like
+	 * pages/Introduction/GeneralNavAndWinSetup.md has none, so it would run past the list's edge.
+	 * A zero-width space after each slash lets it wrap there, and shows nothing.
+	 */
+	private static String breakablePaths(String text) {
+		return text.replace("/", "/\u200B");
+	}
+
+	/** "1 error", "36 warnings", "no errors" */
+	private static String count(long count, String noun) {
+		return (count == 0 ? "no" : String.valueOf(count)) + " " + noun + (count == 1 ? "" : "s");
 	}
 
 	private void showProblems() {
@@ -830,23 +853,33 @@ public final class HelpViewer extends JPanel {
 
 	/**
 	 * Three lines per problem: what sort it is, where it is, then the whole message, wrapped to
-	 * the list's width.
+	 * the list's width; beside them VCell's issue icon, a red cross for an error and a yellow
+	 * exclamation mark for a warning, as its issue tables use.
 	 */
 	private static final class ProblemRenderer extends DefaultListCellRenderer {
 		@Override
 		public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 			super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 			if (!(value instanceof HelpProblem problem)) return this;
-			int textWidth = Math.max(120, list.getWidth() - 20);
+			Icon icon = problem.isWarning() ? VCellIcons.issueWarningIcon : VCellIcons.issueErrorIcon;
+			this.setIcon(icon);
+			this.setIconTextGap(6);
+			// the icon beside the first line, not the middle of three
+			this.setVerticalAlignment(SwingConstants.TOP);
+			this.setVerticalTextPosition(SwingConstants.TOP);
+			int textWidth = Math.max(120, list.getWidth() - 20 - icon.getIconWidth() - this.getIconTextGap());
 			String dim = VCellColors.toHtmlColor(isSelected ? this.getForeground() : VCellColors.getDimForeground());
 			String message = problem.message().isEmpty() ? "" : Character.toUpperCase(problem.message().charAt(0)) + problem.message().substring(1);
 			// a table width is in real pixels; Swing scales a CSS width, so text would run past the edge
 			this.setText("<html><table width='" + textWidth + "' cellpadding='0' cellspacing='0' border='0'><tr><td>"
 					+ "<b>" + HelpViewer.escapeHtml(problem.kind().label()) + "</b>"
-					+ "<br><font color='" + dim + "'>" + HelpViewer.escapeHtml(problem.location()).replace(", line ", ", line&nbsp;") + "</font>"
-					+ "<br>" + HelpViewer.escapeHtml(message) + "</td></tr></table></html>");
+					+ "<br><font color='" + dim + "'>" + HelpViewer.breakablePaths(HelpViewer.escapeHtml(problem.location())).replace(", line ", ", line&nbsp;") + "</font>"
+					+ "<br>" + HelpViewer.breakablePaths(HelpViewer.escapeHtml(message)) + "</td></tr></table></html>");
 			this.setToolTipText(null);
 			this.setBorder(BorderFactory.createEmptyBorder(4, 6, 4, 6));
+			// the icon says error or warning only to the eye; say it to a screen reader too
+			this.getAccessibleContext().setAccessibleName((problem.isWarning() ? "Warning: " : "Error: ") + problem.kind().label()
+					+ ", " + problem.location() + ". " + message);
 			return this;
 		}
 	}

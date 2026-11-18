@@ -1,23 +1,20 @@
 package org.vcell.documentation;
 
-import com.vladsch.flexmark.ast.Image;
-import com.vladsch.flexmark.util.ast.Node;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.Random;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -32,8 +29,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @Tag("Fast")
 public class HelpBookTest {
 	private static final File HELP_ROOT = new File("UserDocumentation");
-	/** Images above this make the client jar heavy; DocumentCompiler used the same limit. */
-	private static final long PREFERRED_MAX_IMAGE_BYTES = 500_000;
 
 	private static HelpBook book;
 
@@ -43,9 +38,11 @@ public class HelpBookTest {
 	}
 
 	@Test
-	public void helpSourceHasNoProblems() {
+	public void helpSourceHasNoErrors() {
 		List<HelpProblem> problems = HelpChecks.check(HelpBookTest.book);
-		assertEquals("", problems.stream().map(HelpProblem::toString).collect(Collectors.joining("\n")));
+		// warnings (unused or large images) are worth tidying but fail nothing; list them in the log
+		problems.stream().filter(HelpProblem::isWarning).forEach(System.out::println);
+		assertEquals("", HelpChecks.errors(problems).stream().map(HelpProblem::toString).collect(Collectors.joining("\n")));
 		assertFalse(HelpBookTest.book.getTableOfContents().isEmpty());
 		assertEquals(HelpIds.HOME, HelpBookTest.book.getHomePage().id(), "the first contents entry is the home page");
 	}
@@ -113,25 +110,39 @@ public class HelpBookTest {
 	}
 
 	@Test
-	public void reportsImagesThatAreUnusedOrLarge() throws IOException {
-		Set<String> referenced = new HashSet<>();
-		for (HelpPage page : HelpBookTest.book.getPages()) {
-			for (Node node : page.document().getDescendants()) {
-				if (!(node instanceof Image image)) continue;
-				referenced.add(HelpBook.resolvePath(page.path(), image.getUrl().unescape()));
-			}
+	public void warnsAboutImagesThatAreUnusedOrLarge(@TempDir Path helpRoot) throws IOException {
+		Files.writeString(helpRoot.resolve("toc.md"), "# Help\n\n- [Page](pages/Page.md)\n", StandardCharsets.UTF_8);
+		Files.createDirectories(helpRoot.resolve("pages"));
+		Files.createDirectories(helpRoot.resolve("images"));
+		Files.writeString(helpRoot.resolve("pages/Page.md"), String.join("\n",
+				"# Page", "",
+				"![](../images/Small.png)", "",
+				"![](../images/Large.png)", "",
+				"![](../images/Large.png) again", ""), StandardCharsets.UTF_8);
+		HelpBookTest.writePng(helpRoot.resolve("images/Small.png"), 20, 20);
+		HelpBookTest.writePng(helpRoot.resolve("images/Unused.png"), 20, 20);
+		HelpBookTest.writePng(helpRoot.resolve("images/Large.png"), 600, 600); // random pixels: over 1 MB
+		assertTrue(Files.size(helpRoot.resolve("images/Large.png")) > HelpChecks.LARGE_IMAGE_BYTES);
+
+		// this small help has none of the pages VCell opens by name, so look at the warnings only
+		List<HelpProblem> problems = HelpChecks.check(HelpBook.fromDirectory(helpRoot.toFile()));
+		assertTrue(problems.stream().noneMatch(problem -> problem.kind() == HelpProblem.Kind.IMAGE), problems.toString());
+		List<String> found = problems.stream().filter(HelpProblem::isWarning).map(HelpProblem::toString).toList();
+		// a large image is reported once, where it is first shown, so choosing it opens that page
+		assertEquals(2, found.size(), String.join("\n", found));
+		assertTrue(found.get(0).startsWith("pages/Page.md:5: warning: image '../images/Large.png' is 1,"), found.get(0));
+		assertTrue(found.get(1).startsWith("images/Unused.png: warning: no page shows this image"), found.get(1));
+		// errors come first, so the warnings are the end of the list
+		assertTrue(problems.get(problems.size() - 1).isWarning() && !problems.get(0).isWarning());
+	}
+
+	/** A PNG of random pixels, which PNG can't compress, so its size follows its dimensions. */
+	private static void writePng(Path file, int width, int height) throws IOException {
+		BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+		Random random = new Random(1);
+		for (int y = 0; y < height; y++) {
+			for (int x = 0; x < width; x++) image.setRGB(x, y, random.nextInt(0x1000000));
 		}
-		Set<String> unused = new TreeSet<>();
-		Set<String> large = new TreeSet<>();
-		try (Stream<Path> files = Files.walk(HELP_ROOT.toPath().resolve("images"))) {
-			for (Path file : (Iterable<Path>) files.filter(Files::isRegularFile)::iterator) {
-				String path = HELP_ROOT.toPath().relativize(file).toString().replace(File.separatorChar, '/');
-				if (!referenced.contains(path)) unused.add(path);
-				if (Files.size(file) > PREFERRED_MAX_IMAGE_BYTES) large.add(path + " (" + Files.size(file) + " bytes)");
-			}
-		}
-		// informational, as DocumentCompiler's were: removing images is a content decision
-		if (!unused.isEmpty()) System.out.println("Help images no page uses (" + unused.size() + "): " + unused);
-		if (!large.isEmpty()) System.out.println("Help images over " + PREFERRED_MAX_IMAGE_BYTES + " bytes: " + large);
+		ImageIO.write(image, "png", file.toFile());
 	}
 }

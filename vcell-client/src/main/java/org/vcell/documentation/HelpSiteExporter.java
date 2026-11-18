@@ -56,9 +56,12 @@ public final class HelpSiteExporter {
 	public static void export(File sourceDirectory, Path outputDirectory) throws IOException {
 		HelpBook book = HelpBook.fromDirectory(sourceDirectory);
 		List<HelpProblem> problems = HelpChecks.check(book);
-		if (!problems.isEmpty()) {
-			throw new IOException("help source has problems:\n" + problems.stream().map(HelpProblem::toString).collect(java.util.stream.Collectors.joining("\n")));
+		List<HelpProblem> errors = HelpChecks.errors(problems);
+		if (!errors.isEmpty()) {
+			throw new IOException("help source has problems:\n" + errors.stream().map(HelpProblem::toString).collect(java.util.stream.Collectors.joining("\n")));
 		}
+		// warnings don't stop the export; list them for whoever reads the build log
+		for (HelpProblem problem : problems) System.err.println(problem);
 		HelpRenderer renderer = new HelpRenderer(book, HelpRenderer.Target.WEB, MAX_IMAGE_WIDTH);
 		Files.createDirectories(outputDirectory);
 		Files.writeString(outputDirectory.resolve(STYLESHEET), CSS, StandardCharsets.UTF_8);

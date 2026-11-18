@@ -27,7 +27,9 @@ import java.util.regex.Pattern;
 /**
  * Everything that can be wrong with the help source, as problems an author can fix: broken links,
  * anchors and images, pages nothing links to, odd file names, links (symlinks) in the folder,
- * raw HTML, Obsidian-only syntax, and {@link HelpIds} constants with no page.
+ * raw HTML, Obsidian-only syntax, and {@link HelpIds} constants with no page. Images no page shows,
+ * and image files over {@link #LARGE_IMAGE_BYTES}, are warnings ({@link HelpProblem#isWarning()}):
+ * they ship in VCell without changing what the help shows.
  *
  * <p>HelpBookTest runs these on vcell-client/UserDocumentation, and the help window runs them on a
  * folder an author opens, so both report the same things.
@@ -44,22 +46,41 @@ public final class HelpChecks {
 			new ObsidianSyntax(Pattern.compile("(?<!\\\\)%%"), "a %%comment%%: use <!-- comment -->"),
 			new ObsidianSyntax(Pattern.compile("(?m)\\s\\^[A-Za-z0-9-]+$"), "a ^block-reference: link to a heading instead"));
 
+	/** An image file bigger than this is a warning: the old help compiler's limit, 500 KB. */
+	public static final long LARGE_IMAGE_BYTES = 500_000;
+
 	private HelpChecks() {
 	}
 
-	/** Every problem in the book, loading problems first, then file by file. */
+	/**
+	 * Every problem in the book: errors first (loading problems, then file by file), then
+	 * warnings in the same order.
+	 */
 	public static List<HelpProblem> check(HelpBook book) {
 		List<HelpProblem> problems = new ArrayList<>(book.getProblems());
-		HelpChecks.checkFiles(book, problems);
+		Set<String> shownImages = new HashSet<>();
 		for (HelpPage page : book.getPages()) {
-			HelpChecks.checkPage(book, page, problems);
+			HelpChecks.checkPage(book, page, shownImages, problems);
 		}
+		HelpChecks.checkFiles(book, shownImages, problems);
 		HelpChecks.checkHelpIds(book, problems);
-		return problems;
+		List<HelpProblem> ordered = new ArrayList<>(problems.size());
+		for (HelpProblem problem : problems) if (!problem.isWarning()) ordered.add(problem);
+		for (HelpProblem problem : problems) if (problem.isWarning()) ordered.add(problem);
+		return ordered;
 	}
 
-	/** Files under pages/ and images/ that the help would not read, or that nothing links to. */
-	private static void checkFiles(HelpBook book, List<HelpProblem> problems) {
+	/** Only the errors: what fails HelpBookTest and the web export. */
+	public static List<HelpProblem> errors(List<HelpProblem> problems) {
+		return problems.stream().filter(problem -> !problem.isWarning()).toList();
+	}
+
+	/**
+	 * Files under pages/ and images/ that the help would not read, or that nothing links to.
+	 *
+	 * @param shownImages the images the pages show, as paths from the help root
+	 */
+	private static void checkFiles(HelpBook book, Set<String> shownImages, List<HelpProblem> problems) {
 		List<String> files;
 		try {
 			files = book.getSource().listFiles();
@@ -80,11 +101,15 @@ public final class HelpChecks {
 			}
 			if (path.startsWith("pages/") && path.endsWith(".md") && !pagePaths.contains(path)) {
 				problems.add(HelpProblem.of(HelpProblem.Kind.UNLINKED_PAGE, path, "nothing links to this page; add it to toc.md or link it from a page"));
+				continue;
+			}
+			if (path.startsWith("images/") && !shownImages.contains(path)) {
+				problems.add(HelpProblem.of(HelpProblem.Kind.UNUSED_IMAGE, path, "no page shows this image, but it still ships in VCell; delete it if it is no longer needed"));
 			}
 		}
 	}
 
-	private static void checkPage(HelpBook book, HelpPage page, List<HelpProblem> problems) {
+	private static void checkPage(HelpBook book, HelpPage page, Set<String> shownImages, List<HelpProblem> problems) {
 		boolean hasTitle = false;
 		Set<Integer> htmlLines = new HashSet<>();
 		for (Node node : page.document().getDescendants()) {
@@ -93,10 +118,10 @@ public final class HelpChecks {
 			if (node instanceof HtmlBlock || node instanceof HtmlInline) {
 				if (htmlLines.add(line)) problems.add(new HelpProblem(HelpProblem.Kind.HTML, page.path(), line, "HTML is not shown in the help; use Markdown instead"));
 			} else if (node instanceof Image image) {
-				HelpChecks.checkImage(book, page, line, image.getUrl().unescape(), problems);
+				HelpChecks.checkImage(book, page, line, image.getUrl().unescape(), shownImages, problems);
 			} else if (node instanceof ImageRef imageRef) {
 				Reference reference = HelpChecks.reference(imageRef.isDefined(), imageRef);
-				if (reference != null) HelpChecks.checkImage(book, page, line, reference.getUrl().unescape(), problems);
+				if (reference != null) HelpChecks.checkImage(book, page, line, reference.getUrl().unescape(), shownImages, problems);
 			} else if (node instanceof Link link) {
 				HelpChecks.checkLink(book, page, line, link.getUrl().unescape(), problems);
 			} else if (node instanceof LinkRef linkRef) {
@@ -120,7 +145,11 @@ public final class HelpChecks {
 		return null;
 	}
 
-	private static void checkImage(HelpBook book, HelpPage page, int line, String src, List<HelpProblem> problems) {
+	/**
+	 * An image a page shows. A large one is reported once, where it is first shown, so choosing
+	 * the warning opens a page that shows it.
+	 */
+	private static void checkImage(HelpBook book, HelpPage page, int line, String src, Set<String> shownImages, List<HelpProblem> problems) {
 		if (HelpBook.isExternal(src)) {
 			problems.add(new HelpProblem(HelpProblem.Kind.IMAGE, page.path(), line, "image " + HelpChecks.quoted(src) + " must be a file in the images folder"));
 			return;
@@ -130,8 +159,24 @@ public final class HelpChecks {
 			problems.add(new HelpProblem(HelpProblem.Kind.IMAGE, page.path(), line, "image " + HelpChecks.quoted(src) + " is outside the help folder"));
 			return;
 		}
+		boolean firstTimeShown = shownImages.add(imagePath);
 		String imageProblem = book.imageProblem(imagePath);
-		if (imageProblem != null) problems.add(new HelpProblem(HelpProblem.Kind.IMAGE, page.path(), line, "image " + HelpChecks.quoted(src) + " " + imageProblem));
+		if (imageProblem != null) {
+			problems.add(new HelpProblem(HelpProblem.Kind.IMAGE, page.path(), line, "image " + HelpChecks.quoted(src) + " " + imageProblem));
+			return;
+		}
+		if (!firstTimeShown) return;
+		long bytes = book.getSource().size(imagePath);
+		if (bytes > LARGE_IMAGE_BYTES) {
+			problems.add(new HelpProblem(HelpProblem.Kind.LARGE_IMAGE, page.path(), line, "image " + HelpChecks.quoted(src) + " is "
+					+ HelpChecks.kilobytes(bytes) + ", and every image ships in VCell; keep images under " + HelpChecks.kilobytes(LARGE_IMAGE_BYTES)
+					+ " (crop it, make it smaller, or save it with fewer colours)"));
+		}
+	}
+
+	/** "1,433 KB" */
+	private static String kilobytes(long bytes) {
+		return String.format("%,d KB", (bytes + 500) / 1000);
 	}
 
 	private static void checkLink(HelpBook book, HelpPage page, int line, String href, List<HelpProblem> problems) {
