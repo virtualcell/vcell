@@ -31,6 +31,7 @@ import org.vcell.util.gui.VCellIcons;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.laf.VCellColors;
 import cbit.vcell.clientdb.DocumentManager;
+import cbit.vcell.client.laf.VCellFonts;
 
 /**
  * The Database File Info of the BioModel open in an editor: the same contents tree the database browsers show,
@@ -217,7 +218,7 @@ public class OpenBioModelDatabaseInfoPanel extends JPanel {
 					BorderFactory.createMatteBorder(0, 5, 0, 0, accent),
 					BorderFactory.createEmptyBorder(8, 10, 8, 10)));
 			this.iconLabel.setIcon(icon);
-			this.headlineLabel.setFont(this.headlineLabel.getFont().deriveFont(Font.BOLD));
+			VCellFonts.setStyle(this.headlineLabel, Font.BOLD);
 			this.headlineLabel.setForeground(accent);
 		}
 	}

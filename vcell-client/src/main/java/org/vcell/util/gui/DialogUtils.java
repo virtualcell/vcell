@@ -276,20 +276,6 @@ public class DialogUtils {
         }
     }
 
-
-    /**
-     * get screensize including multi monitor environment
-     *
-     * @return
-     */
-    public static Dimension getScreenSize(){
-        //http://stackoverflow.com/questions/3680221/how-can-i-get-the-monitor-size-in-java
-        GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
-        int width = gd.getDisplayMode().getWidth();
-        int height = gd.getDisplayMode().getHeight();
-        return new Dimension(width, height);
-    }
-
     /**
      * @param jop      non null
      * @param bEnabled set non-cancel button to this state

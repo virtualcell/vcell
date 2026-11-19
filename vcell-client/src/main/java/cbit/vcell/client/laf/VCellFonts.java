@@ -51,8 +51,12 @@ public final class VCellFonts {
 
 	/** What a piece of text is for. Each has a size relative to {@link Category#BODY} and a style. */
 	public enum Category {
+		/** The largest headings: a page's own title */
+		DISPLAY(1.9f, Font.BOLD, "h1.font"),
 		/** Panel and dialog headings */
 		TITLE(1.25f, Font.BOLD, "h2.font"),
+		/** A size larger than ordinary text, bold: the top of a tree, a heading under a title */
+		SUBTITLE(1.15f, Font.BOLD, "h3.font"),
 		/** Section titles, titled borders, emphasized labels */
 		HEADING(1, Font.BOLD, "h4.font"),
 		/** Almost everything: labels, fields, lists, tables, trees, buttons */
@@ -105,6 +109,33 @@ public final class VCellFonts {
 	/** The size of ordinary text, in points. */
 	public static float getSize() {
 		return null == VCellFonts.size ? VCellFonts.themeSize : VCellFonts.size;
+	}
+
+	/**
+	 * A length in ems (multiples of the size of ordinary text), in pixels at the current size: for sizes VCell works
+	 * out as it paints (an icon, a gap drawn by hand). Not for sizes set on components or windows: those are scaled with
+	 * the text already (see {@link #keepSize}), and windows are sized in ems by {@link #sizeWindow}.
+	 */
+	public static int ems(float ems) {
+		return Math.round(VCellFonts.getSize() * ems);
+	}
+
+	/**
+	 * Sizes a window to this many ems (multiples of the size of ordinary text) wide and high, no larger than the usable
+	 * part of its screen, and keeps it that size in ems as the text size changes, until it is resized. Call before or
+	 * after showing it, on the Swing event thread.
+	 */
+	public static void sizeWindow(java.awt.Window window, float widthEms, float heightEms) {
+		LayoutScaler.sizeWindow(window, widthEms, heightEms);
+	}
+
+	/**
+	 * Sizes a window to fit its contents (packs it), no larger than this many ems wide and high (0: no limit beyond the
+	 * screen's), and keeps it fitting them as the text size changes, until it is resized. Call after its contents are
+	 * in place, on the Swing event thread.
+	 */
+	public static void fitWindow(java.awt.Window window, float maxWidthEms, float maxHeightEms) {
+		LayoutScaler.fitWindow(window, maxWidthEms, maxHeightEms);
 	}
 
 	/**
@@ -249,6 +280,15 @@ public final class VCellFonts {
 		Font font = VCellFonts.categoryFonts.get(category);
 		// a plain Font, so a theme update doesn't take it back off a component it was set on
 		return null == font ? new JLabel().getFont() : new PlainFont(font);
+	}
+
+	/**
+	 * How much larger than ordinary text this kind of text is in the current theme (a theme's own heading sizes need
+	 * not match the defaults): for sizing text relative to a font other than the theme's own.
+	 */
+	public static float relativeSize(Category category) {
+		Font font = VCellFonts.categoryFonts.get(category), body = VCellFonts.categoryFonts.get(Category.BODY);
+		return null == font || null == body ? category.relativeSize : font.getSize2D() / body.getSize2D();
 	}
 
 	/** The current font for this kind of text, in another style (Font.PLAIN, BOLD, ITALIC, or BOLD | ITALIC). */

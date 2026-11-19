@@ -342,7 +342,7 @@ public class HistogramPanel extends JPanel {
 		
 	};
 	private void init(){
-		applyButton.setFont(Font.decode("Dialog-BOLD-12"));
+		VCellFonts.setStyle(applyButton, Font.BOLD);
 //		hideButton.setFont(Font.decode("Dialog-10"));
 		setLayout(new HistogramLayoutManager());
 		this.add(getVertSlider());

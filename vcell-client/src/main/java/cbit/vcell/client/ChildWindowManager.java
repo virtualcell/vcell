@@ -32,6 +32,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.client.logicalwindow.LWChildDialog;
 import org.vcell.client.logicalwindow.LWChildFrame;
+import org.vcell.client.logicalwindow.LWSize;
 import org.vcell.client.logicalwindow.LWContainerHandle;
 import org.vcell.client.logicalwindow.LWFrameOrDialog;
 import org.vcell.client.logicalwindow.LWHandle;
@@ -274,6 +275,7 @@ public class ChildWindowManager {
 		private Boolean resizable = null;
 		private Boolean pack = null;
 		private Dimension size = null;
+		private LWSize lwSize = null;
 		private Boolean isCenteredOnParent = true;
 		private boolean detached = false;
 		/** bounds carried across a detach/reattach, which must rebuild the window */
@@ -339,6 +341,10 @@ public class ChildWindowManager {
 			}
 		}
 		
+		/**
+		 * @deprecated a window's preferred size isn't scaled with the text; use {@link #setSize(LWSize)}
+		 */
+		@Deprecated
 		public void setPreferredSize(Dimension preferredSize){
 			this.preferredSize = preferredSize;
 			if (impl!=null){
@@ -362,7 +368,18 @@ public class ChildWindowManager {
 		
 	
 		/**
-		 * @Deprecated -- use layout manager
+		 * Sizes the window in ems, so it grows and shrinks with the text (see {@link LWSize}). Overrides
+		 * {@link #pack()}: use {@link LWSize#fit()} for that.
+		 */
+		public void setSize(LWSize lwSize){
+			this.lwSize = lwSize;
+			if (impl!=null){
+				lwSize.applyTo(impl.self());
+			}
+		}
+
+		/**
+		 * @deprecated a size in pixels; use {@link #setSize(LWSize)}
 		 * @param i
 		 * @param j
 		 */
@@ -375,7 +392,7 @@ public class ChildWindowManager {
 		}
 		
 		/**
-		 * @deprecated -- use layout manager
+		 * @deprecated a size in pixels; use {@link #setSize(LWSize)}
 		 * @param dim
 		 */
 		@Deprecated
@@ -447,6 +464,9 @@ public class ChildWindowManager {
 			}
 			if (size != null){
 				impl.setSize(size);
+			}
+			if (lwSize != null){
+				lwSize.applyTo(impl.self());
 			}
 
 			if (rememberedBounds != null) {

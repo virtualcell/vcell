@@ -355,7 +355,7 @@ public class WelcomePanel extends JPanel {
 
 		@Override
 		public int getIconWidth() {
-			return Math.round(VCellFonts.getSize() * 2.2f);
+			return VCellFonts.ems(2.2f);
 		}
 
 		@Override
@@ -486,7 +486,7 @@ public class WelcomePanel extends JPanel {
 
 		@Override
 		public int getIconWidth() {
-			return Math.round(VCellFonts.getSize() * 1.15f);
+			return VCellFonts.ems(1.15f);
 		}
 
 		@Override

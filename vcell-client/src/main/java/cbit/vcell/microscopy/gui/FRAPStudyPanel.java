@@ -128,6 +128,7 @@ import cbit.vcell.solver.SimulationModelInfo;
 import cbit.vcell.solver.SimulationSymbolTable;
 
 import static cbit.vcell.export.server.ExportEnums.VariableMode.VARIABLE_MULTI;
+import org.vcell.client.logicalwindow.LWSize;
 
 @SuppressWarnings("serial")
 public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
@@ -509,7 +510,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 						if(childWindow == null)
 						{
 							childWindow = ChildWindowManager.findChildWindowManager(FRAPStudyPanel.this).addChildWindow(getSimResultsViewPanel(), Sim2DResultsContextObj, "2D Simulation Results", true);
-							childWindow.setSize(new Dimension(1000,700));
+							childWindow.setSize(LWSize.ems(83, 58));
 						}
 						childWindow.setIsCenteredOnParent();
 						childWindow.show();
@@ -1429,7 +1430,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		JMFPlayer jp = new JMFPlayer(urlStr, fileStr);
 		childWindow = ChildWindowManager.findChildWindowManager(this).addChildWindow(jp, movieContextObj, "VFRAP Movie");
 		jp.setChildWindow(childWindow);
-		childWindow.setPreferredSize(new Dimension(250,500));
+		childWindow.setSize(LWSize.ems(21, 42));
 		childWindow.setIsCenteredOnParent();
 
 		childWindow.show();

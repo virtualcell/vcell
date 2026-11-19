@@ -172,6 +172,7 @@ import cbit.vcell.solvers.MeshDisplayAdapter;
 import cbit.vcell.util.FunctionRangeGenerator;
 import cbit.vcell.util.FunctionRangeGenerator.FunctionStatistics;
 import cbit.vcell.util.FunctionRangeGenerator.VarStatistics;
+import org.vcell.client.logicalwindow.LWSize;
 /**
  * Insert the type's description here.
  * Creation date: (6/11/2004 6:03:07 AM)
@@ -2503,7 +2504,7 @@ private void showKymograph() {
 			
 			ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(PDEDataViewer.this);
 			ChildWindow childWindow = childWindowManager.addChildWindow(kymographPanel, kymographPanel,  title);
-			childWindow.setSize(new Dimension(700,500));
+			childWindow.setSize(LWSize.ems(58, 42));
 			childWindow.show();
 			
 			
@@ -2703,7 +2704,7 @@ private void showTimePlot() {
 //							multiTimePlotHelper.removeallPropertyChangeListeners();
 //						}
 //					});
-					childWindow.setSize(900, 550);
+					childWindow.setSize(LWSize.ems(75, 46));
 					childWindow.setIsCenteredOnParent();
 					childWindow.show();
 				}catch(Exception e){

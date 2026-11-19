@@ -41,6 +41,7 @@ import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationModelInfo;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.util.ColumnDescription;
+import org.vcell.client.logicalwindow.LWSize;
 /**
  * Insert the type's description here.
  * Creation date: (6/11/2004 6:01:46 AM)
@@ -644,7 +645,7 @@ public void showTimePlotMultipleScans(DataManager dataManager) {
 	childWindow.setTitle("Parameter scan results plot for " + titleStr);
 	
 	childWindow.setIsCenteredOnParent();
-	childWindow.setSize(600,600);
+	childWindow.setSize(LWSize.ems(50, 50));
 	childWindow.show();
 }
 

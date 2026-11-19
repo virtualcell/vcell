@@ -12,6 +12,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
 
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.client.laf.VCellFonts;
 
 /**
  * The Parameters and Functions table's Filters: a button that drops down what the table lists, by where entries are
@@ -147,7 +148,7 @@ public class ParametersFilterButton extends JButton {
 	private static JMenuItem heading(String text) {
 		JMenuItem heading = new JMenuItem(text);
 		heading.setEnabled(false);
-		heading.setFont(heading.getFont().deriveFont(java.awt.Font.BOLD));
+		VCellFonts.setStyle(heading, java.awt.Font.BOLD);
 		return heading;
 	}
 

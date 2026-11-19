@@ -22,7 +22,7 @@ import javax.swing.border.LineBorder;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 
-import cbit.vcell.microscopy.gui.VirtualFrapLoader;
+import cbit.vcell.client.laf.VCellFonts;
 
 
 /**
@@ -73,7 +73,7 @@ public class GroupableTableHeader extends JTableHeader {
                 comp.setOpaque(true);
                 // separator lines in the table's background color (white on light themes, as before)
                 comp.setBorder(new LineBorder(null == table ? Color.WHITE : table.getBackground(), 1));
-                comp.setFont(VirtualFrapLoader.defaultFont);
+                comp.setFont(VCellFonts.getFont(VCellFonts.Category.BODY));
                 comp.setHorizontalAlignment(SwingConstants.CENTER);
                 return comp;
             }
