@@ -1,6 +1,6 @@
 package org.vcell.documentation;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Assertions;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -99,11 +99,11 @@ public class HelpCoverageTest {
 				}
 			}
 		}
-		assertEquals("", String.join("\n", missing), "windows with no help page linked");
+		Assertions.assertEquals("", String.join("\n", missing), "windows with no help page linked");
 		// an exemption that matches nothing is stale: the window went away, or was renamed
 		TreeSet<String> stale = new TreeSet<>(HelpCoverageTest.NOT_FOR_READERS.keySet());
 		stale.removeAll(exemptionsUsed);
-		assertEquals(new TreeSet<String>(), stale, "exemptions in NOT_FOR_READERS that match no window");
+		Assertions.assertEquals(new TreeSet<String>(), stale, "exemptions in NOT_FOR_READERS that match no window");
 	}
 
 	private static String exemption(String key) {

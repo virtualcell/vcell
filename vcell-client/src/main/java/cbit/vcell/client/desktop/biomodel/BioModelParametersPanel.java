@@ -519,7 +519,7 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 	private JPanel getModelUnitSystemPanel() {
 		if (modelUnitSystemPanel == null) {
 			modelUnitSystemPanel = new JPanel();
-			HelpContext.setPage(modelUnitSystemPanel, HelpIds.MODEL_UNITS); // the window's "?" and F1
+			HelpContext.setPage(this.modelUnitSystemPanel, HelpIds.MODEL_UNITS); // the window's "?" and F1
 			modelUnitSystemPanel.setLayout(new BorderLayout());
 			
 			modelUnitSystemPanel.add(unitSystemChooserPanel, BorderLayout.WEST); // choosing the units, beside the table of them

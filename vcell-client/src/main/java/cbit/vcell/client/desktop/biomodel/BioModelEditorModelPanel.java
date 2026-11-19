@@ -140,9 +140,9 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 	protected static final String PROPERTY_NAME_BIO_MODEL = "bioModel";
 	/** The help page about the open tab. */
 	String helpPage() {
-		int index = tabbedPane == null ? -1 : tabbedPane.getSelectedIndex();
+		int index = this.tabbedPane == null ? -1 : this.tabbedPane.getSelectedIndex();
 		if (index < 0) return null;
-		String title = tabbedPane.getTitleAt(index);
+		String title = this.tabbedPane.getTitleAt(index);
 		if (ModelPanelTabID.reaction_diagram.name.equals(title)) return HelpIds.REACTION_DIAGRAM;
 		if (ModelPanelTabID.reaction_table.name.equals(title)) return HelpIds.REACTIONS;
 		if (ModelPanelTabID.structure_table.name.equals(title)) return HelpIds.STRUCTURES;

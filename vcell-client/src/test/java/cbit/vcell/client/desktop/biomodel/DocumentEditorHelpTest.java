@@ -1,8 +1,6 @@
 package cbit.vcell.client.desktop.biomodel;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import org.junit.jupiter.api.Assertions;
 
 import java.io.File;
 import java.io.IOException;
@@ -40,7 +38,7 @@ public class DocumentEditorHelpTest {
 			String page = DocumentEditorHelp.pageFor(new ActiveView(null, folder, null));
 			if (page != null && book.findPage(page) == null) missing.add(folder + " -> " + page);
 		}
-		assertEquals(List.of(), missing);
+		Assertions.assertEquals(List.of(), missing);
 	}
 
 	/** Views no page in the model window explains, and why; every other view must name a page. */
@@ -66,21 +64,21 @@ public class DocumentEditorHelpTest {
 			if (DocumentEditorHelp.pageFor(new ActiveView(null, folder, null)) == null) withoutPage.add(folder.name());
 		}
 		// a new view (an ActiveViewID or tree folder) needs a page in DocumentEditorHelp, or a reason in NO_PAGE
-		assertEquals(List.of(), withoutPage);
+		Assertions.assertEquals(List.of(), withoutPage);
 	}
 
 	@Test
 	public void viewsOpenThePageAboutThem() {
-		assertEquals(HelpIds.REACTIONS, DocumentEditorHelp.pageFor(new ActiveView(null, DocumentEditorTreeFolderClass.REACTIONS_NODE, ActiveViewID.reactions)));
-		assertEquals(HelpIds.REACTION_DIAGRAM, DocumentEditorHelp.pageFor(new ActiveView(null, null, ActiveViewID.reaction_diagram)));
-		assertEquals(HelpIds.EVENTS, DocumentEditorHelp.pageFor(new ActiveView(null, DocumentEditorTreeFolderClass.PROTOCOLS_NODE, ActiveViewID.events)));
-		assertEquals(HelpIds.NONSPATIAL_STRUCTURE_MAPPING, DocumentEditorHelp.pageFor(new ActiveView(null, null, ActiveViewID.structure_mapping)),
+		Assertions.assertEquals(HelpIds.REACTIONS, DocumentEditorHelp.pageFor(new ActiveView(null, DocumentEditorTreeFolderClass.REACTIONS_NODE, ActiveViewID.reactions)));
+		Assertions.assertEquals(HelpIds.REACTION_DIAGRAM, DocumentEditorHelp.pageFor(new ActiveView(null, null, ActiveViewID.reaction_diagram)));
+		Assertions.assertEquals(HelpIds.EVENTS, DocumentEditorHelp.pageFor(new ActiveView(null, DocumentEditorTreeFolderClass.PROTOCOLS_NODE, ActiveViewID.events)));
+		Assertions.assertEquals(HelpIds.NONSPATIAL_STRUCTURE_MAPPING, DocumentEditorHelp.pageFor(new ActiveView(null, null, ActiveViewID.structure_mapping)),
 				"with no application, as a compartmental one");
-		assertEquals(HelpIds.MEMBRANE_SPECIFICATIONS, DocumentEditorHelp.pageFor(new ActiveView(null, DocumentEditorTreeFolderClass.SPECIFICATIONS_NODE, ActiveViewID.membrane_setting)));
-		assertEquals(HelpIds.MATH_MODEL_VCML_EDITOR, DocumentEditorHelp.pageFor(new ActiveView(null, DocumentEditorTreeFolderClass.MATH_VCML_NODE, ActiveViewID.math_vcml)));
+		Assertions.assertEquals(HelpIds.MEMBRANE_SPECIFICATIONS, DocumentEditorHelp.pageFor(new ActiveView(null, DocumentEditorTreeFolderClass.SPECIFICATIONS_NODE, ActiveViewID.membrane_setting)));
+		Assertions.assertEquals(HelpIds.MATH_MODEL_VCML_EDITOR, DocumentEditorHelp.pageFor(new ActiveView(null, DocumentEditorTreeFolderClass.MATH_VCML_NODE, ActiveViewID.math_vcml)));
 		// the pathway views are Pathway Tools', which has its own help
-		assertNull(DocumentEditorHelp.pageFor(new ActiveView(null, null, ActiveViewID.pathway_diagram)));
-		assertNull(DocumentEditorHelp.pageFor(null));
+		Assertions.assertNull(DocumentEditorHelp.pageFor(new ActiveView(null, null, ActiveViewID.pathway_diagram)));
+		Assertions.assertNull(DocumentEditorHelp.pageFor(null));
 	}
 
 	@Test
@@ -89,11 +87,11 @@ public class DocumentEditorHelpTest {
 		tabs.addTab("Object Properties", new JPanel());
 		tabs.addTab(DocumentEditor.TAB_TITLE_ANNOTATIONS, new JPanel());
 		tabs.addTab(" " + DocumentEditor.TAB_TITLE_PROBLEMS + " (0 Errors, 0 Warnings) ", new JPanel()); // as the editor titles it
-		assertEquals(HelpIds.PROPERTIES_PANES, DocumentEditorHelp.pageForBottomTab(tabs, null), "nothing selected: the panes' overview");
+		Assertions.assertEquals(HelpIds.PROPERTIES_PANES, DocumentEditorHelp.pageForBottomTab(tabs, null), "nothing selected: the panes' overview");
 		tabs.setSelectedIndex(1);
-		assertEquals(HelpIds.ANNOTATIONS, DocumentEditorHelp.pageForBottomTab(tabs, null));
+		Assertions.assertEquals(HelpIds.ANNOTATIONS, DocumentEditorHelp.pageForBottomTab(tabs, null));
 		tabs.setSelectedIndex(2);
-		assertEquals(HelpIds.PROBLEMS, DocumentEditorHelp.pageForBottomTab(tabs, null));
-		assertNotNull(DocumentEditorHelp.pageForBottomTab(new JTabbedPane(), null));
+		Assertions.assertEquals(HelpIds.PROBLEMS, DocumentEditorHelp.pageForBottomTab(tabs, null));
+		Assertions.assertNotNull(DocumentEditorHelp.pageForBottomTab(new JTabbedPane(), null));
 	}
 }

@@ -511,7 +511,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 						ChildWindow childWindow = ChildWindowManager.findChildWindowManager(FRAPStudyPanel.this).getChildWindowFromContext(Sim2DResultsContextObj);
 						if(childWindow == null)
 						{
-							HelpContext.setPage(getSimResultsViewPanel(), HelpIds.VFRAP_SIMULATION);
+							HelpContext.setPage(FRAPStudyPanel.this.getSimResultsViewPanel(), HelpIds.VFRAP_SIMULATION);
 							childWindow = ChildWindowManager.findChildWindowManager(FRAPStudyPanel.this).addChildWindow(getSimResultsViewPanel(), Sim2DResultsContextObj, "2D Simulation Results", true);
 							childWindow.setSize(LWSize.ems(83, 58));
 						}

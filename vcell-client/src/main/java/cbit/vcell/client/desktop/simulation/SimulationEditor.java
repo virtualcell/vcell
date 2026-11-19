@@ -208,7 +208,7 @@ private void initialize() {
 		setName("SimulationEditor");
 		// its dialog's "?" and F1: NFSim's options have a page of their own
 		HelpContext.setPage(this, () -> {
-			Simulation simulation = getClonedSimulation();
+			Simulation simulation = this.getClonedSimulation();
 			boolean nfsim = simulation != null && simulation.getSolverTaskDescription() != null
 					&& simulation.getSolverTaskDescription().getSolverDescription() == SolverDescription.NFSim;
 			return nfsim ? HelpIds.NFSIM_SIMULATION_EDITOR : HelpIds.SIMULATION_EDITOR;

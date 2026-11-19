@@ -1181,7 +1181,7 @@ private javax.swing.JButton getQuestionButton() {
 
 private void displayHelpInfo()
 {
-	DialogUtils.showInfoDialog(this, "Solver Help", getTornOffSolverTaskDescription().getSolverDescription().getFullDescription(), HelpIds.NUMERICAL_SOLVERS);
+	DialogUtils.showInfoDialog(this, "Solver Help", this.getTornOffSolverTaskDescription().getSolverDescription().getFullDescription(), HelpIds.NUMERICAL_SOLVERS);
 }
 
 private void onPropertyChange_solverDescription() {

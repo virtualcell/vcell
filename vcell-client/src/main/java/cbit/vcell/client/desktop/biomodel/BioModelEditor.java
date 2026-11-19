@@ -153,10 +153,10 @@ public class BioModelEditor extends DocumentEditor {
 	// the panel shown says which of its tabs is open: choosing a tree node alone doesn't say
 	@Override
 	protected String helpPage() {
-		Component top = rightSplitPane.getTopComponent();
+		Component top = this.rightSplitPane.getTopComponent();
 		String page = null;
-		if (top == bioModelEditorModelPanel) page = bioModelEditorModelPanel.helpPage();
-		if (top == bioModelEditorApplicationPanel) page = bioModelEditorApplicationPanel.helpPage();
+		if (top == this.bioModelEditorModelPanel) page = this.bioModelEditorModelPanel.helpPage();
+		if (top == this.bioModelEditorApplicationPanel) page = this.bioModelEditorApplicationPanel.helpPage();
 		return page != null ? page : super.helpPage();
 	}
 
@@ -1062,7 +1062,7 @@ private void setRightTopPanel(Object selectedObject, SimulationContext simulatio
 			return;
 		}
 //		rightBottomTabbedPane.addTab("Network Console", new TabCloseIcon(), getSimulationConsolePanel());
-		rightBottomTabbedPane.addTab(NETWORK_GENERATION_TAB_TITLE, getSimulationConsolePanel());
+		this.rightBottomTabbedPane.addTab(NETWORK_GENERATION_TAB_TITLE, this.getSimulationConsolePanel());
 	}
 }
 

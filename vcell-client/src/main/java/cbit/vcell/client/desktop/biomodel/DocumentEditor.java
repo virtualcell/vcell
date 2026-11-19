@@ -579,8 +579,8 @@ private void initialize() {
 		// a "?" at the end of the tab row opens the page about the open tab: the selected object's properties pane,
 		// the annotations, the problems
 		HelpButton bottomHelp = HelpButton.forPage("RightBottomHelp", "the properties, annotations and problems tabs",
-				() -> DocumentEditorHelp.pageForBottomTab(rightBottomTabbedPane, selectionManager.getSelectedObjects()));
-		rightSplitPane.setBottomComponent(bottomHelp.besideTabs(rightBottomTabbedPane));
+				() -> DocumentEditorHelp.pageForBottomTab(this.rightBottomTabbedPane, this.selectionManager.getSelectedObjects()));
+		this.rightSplitPane.setBottomComponent(bottomHelp.besideTabs(this.rightBottomTabbedPane));
 		// Help > VCell Help: the page about the main view (the tree node, and the tab open in it)
 		HelpContext.setPage(this, this::helpPage);
 		
@@ -635,7 +635,7 @@ private void treeSelectionChanged0(TreeSelectionEvent treeSelectionEvent) {
 
 /** The help page about the main view: the tree node and the tab open in it (Help > VCell Help); null for none. */
 protected String helpPage() {
-	return DocumentEditorHelp.pageFor(selectionManager.getActiveView());
+	return DocumentEditorHelp.pageFor(this.selectionManager.getActiveView());
 }
 
 protected abstract void setRightBottomPanelOnSelection(Object[] selections);

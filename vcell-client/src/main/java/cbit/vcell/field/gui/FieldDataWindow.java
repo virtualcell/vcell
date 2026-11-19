@@ -125,11 +125,11 @@ private void initialize() {
 		setSize(426, 240);
 		setContentPane(getJFrameContentPane());
 		// a menu bar of its own (else macOS shows an empty one): the windows, and VCell Help at the field data page
-		HelpContext.setPage(getJFrameContentPane(), HelpIds.FIELD_DATA);
+		HelpContext.setPage(this.getJFrameContentPane(), HelpIds.FIELD_DATA);
 		javax.swing.JMenuBar menuBar = new javax.swing.JMenuBar();
 		menuBar.add(LWTopFrame.createWindowMenu(true, AppearanceMenus.create(this)));
 		menuBar.add(HelpContext.createHelpMenu());
-		setJMenuBar(menuBar);
+		this.setJMenuBar(menuBar);
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}

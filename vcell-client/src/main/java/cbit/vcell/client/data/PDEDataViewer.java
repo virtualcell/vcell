@@ -2243,14 +2243,14 @@ private void initialize() {
 
 // the help page about the open tab
 private String helpPage() {
-	java.awt.Component shown = getJTabbedPane1().getSelectedComponent();
+	java.awt.Component shown = this.getJTabbedPane1().getSelectedComponent();
 	if (shown == null) return HelpIds.SPATIAL_RESULTS;
-	if (shown == dataProcessingResultsPanel) return HelpIds.POST_PROCESSING_STATISTICS;
-	if (shown == postProcessPdeDataViewerPanel) return HelpIds.POST_PROCESSING_IMAGES;
-	String title = getJTabbedPane1().getTitleAt(getJTabbedPane1().getSelectedIndex());
+	if (shown == this.dataProcessingResultsPanel) return HelpIds.POST_PROCESSING_STATISTICS;
+	if (shown == this.postProcessPdeDataViewerPanel) return HelpIds.POST_PROCESSING_IMAGES;
+	String title = this.getJTabbedPane1().getTitleAt(this.getJTabbedPane1().getSelectedIndex());
 	if (EXPORT_DATA_TABNAME.equals(title)) return HelpIds.EXPORTING_SPATIAL_RESULTS;
-	if (viewDataTabbedPane != null && viewDataTabbedPane.getSelectedIndex() >= 0
-			&& CurrentView.SURFACE_VIEW.title.equals(viewDataTabbedPane.getTitleAt(viewDataTabbedPane.getSelectedIndex()))) {
+	if (this.viewDataTabbedPane != null && this.viewDataTabbedPane.getSelectedIndex() >= 0
+			&& CurrentView.SURFACE_VIEW.title.equals(this.viewDataTabbedPane.getTitleAt(this.viewDataTabbedPane.getSelectedIndex()))) {
 		return HelpIds.SPATIAL_RESULTS_SURFACE_VIEW;
 	}
 	return HelpIds.SPATIAL_RESULTS_SLICE_VIEW;

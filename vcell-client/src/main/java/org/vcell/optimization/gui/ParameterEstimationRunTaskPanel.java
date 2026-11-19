@@ -638,7 +638,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
         CopasiOptimizationMethodType methodType = ((CopasiOptimizationMethodType) optimizationMethodComboBox.getSelectedItem());
         getCopasiOptimizationHelpPanel().refreshSolverInfo(methodType);
         String vcellHelp = "VCell Help";
-        JOptionPane helpPane = new JOptionPane(copasiHelpPanel, JOptionPane.INFORMATION_MESSAGE, JOptionPane.DEFAULT_OPTION,
+        JOptionPane helpPane = new JOptionPane(this.copasiHelpPanel, JOptionPane.INFORMATION_MESSAGE, JOptionPane.DEFAULT_OPTION,
                 null, new Object[]{vcellHelp, "OK"}, "OK");
         JDialog dialog = helpPane.createDialog(this, "Copasi Methods Help Information");
         dialog.setResizable(true);

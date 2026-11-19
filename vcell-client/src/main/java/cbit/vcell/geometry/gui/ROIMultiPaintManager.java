@@ -956,7 +956,7 @@ public static void blur( short[] ins, short[] outs, int width, int height, int r
 
 		okCancelJPanel.add(cancelJButton);
 		okCancelJPanel.add(HelpButton.forPage("GeometryFromImagesHelp", "making a geometry from images", HelpIds.GEOMETRY_FROM_IMAGES));
-		HelpContext.setPage(overlayEditorPanelJAI, HelpIds.GEOMETRY_FROM_IMAGES); // F1
+		HelpContext.setPage(this.overlayEditorPanelJAI, HelpIds.GEOMETRY_FROM_IMAGES); // F1
 
 		jDialog.getContentPane().add(overlayEditorPanelJAI,BorderLayout.CENTER);
 		jDialog.getContentPane().add(okCancelJPanel,BorderLayout.SOUTH);

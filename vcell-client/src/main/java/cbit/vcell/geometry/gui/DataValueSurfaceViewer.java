@@ -1073,7 +1073,7 @@ private void jButtonDSR_ActionPerformed(java.awt.event.ActionEvent actionEvent) 
 	ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(DataValueSurfaceViewer.this);
 	ChildWindow childWindow = childWindowManager.getChildWindowFromContentPane(dsr);
 	if (childWindow==null){
-		HelpContext.setPage(dsr, HelpIds.SPATIAL_RESULTS_ROI_TOOLS);
+		HelpContext.setPage(this.dsr, HelpIds.SPATIAL_RESULTS_ROI_TOOLS);
 		childWindow = childWindowManager.addChildWindow(dsr,dsr,"Define Region Of Interest");
 		childWindow.pack();
 		childWindow.setIsCenteredOnParent();

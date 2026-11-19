@@ -613,7 +613,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 	}
 
 	private JButton getControlsHelpButton() {
-		if (controlsHelpButton == null) controlsHelpButton = GraphPane.createControlsHelpButton(TOOL_BAR_BUTTON_SIZE, HelpIds.REACTION_DIAGRAM);
+		if (this.controlsHelpButton == null) this.controlsHelpButton = GraphPane.createControlsHelpButton(TOOL_BAR_BUTTON_SIZE, HelpIds.REACTION_DIAGRAM);
 		return controlsHelpButton;
 	}
 

@@ -201,7 +201,7 @@ public class FieldDataWindowManager
 
                         ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(getComponent());
                         currentlyViewedEDI = eDI;
-                        HelpContext.setPage(currentlyViewedOutputFunctionViewer, HelpIds.FIELD_DATA);
+                        HelpContext.setPage(FieldDataWindowManager.this.currentlyViewedOutputFunctionViewer, HelpIds.FIELD_DATA);
                         ChildWindow childWindow = childWindowManager.addChildWindow(currentlyViewedOutputFunctionViewer, currentlyViewedEDI, "Field Data Viewer (" + eDI.getName() + ")");
                         childWindow.setSize(LWSize.ems(50, 42));
                         childWindow.setIsCenteredOnParent();

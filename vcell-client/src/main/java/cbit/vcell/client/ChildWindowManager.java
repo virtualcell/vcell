@@ -444,7 +444,7 @@ public class ChildWindowManager {
 						: new NestedMenuBar();
 				mb.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
 				// a "?" at the far right, when a help page explains what the window shows
-				HelpButton help = HelpContext.windowHelpButton(contentPane);
+				HelpButton help = HelpContext.windowHelpButton(this.contentPane);
 				if (help != null) mb.add(help, 0);
 				if (modality == LWModality.MODELESS) {
 					mb.add(createAttachmentMenuItem());

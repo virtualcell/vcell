@@ -1438,7 +1438,7 @@ implements PathwayEditor, ActionBuilder.Generator {
 
 	/** The help page about the open tab (Pathway Tools' Help > VCell Help and "?"). */
 	String helpPage() {
-		int selectedIndex = tabbedPane == null ? -1 : tabbedPane.getSelectedIndex();
+		int selectedIndex = this.tabbedPane == null ? -1 : this.tabbedPane.getSelectedIndex();
 		if (selectedIndex == PathwayPanelTabID.pathway_diagram.ordinal()) return HelpIds.PATHWAY_DIAGRAM;
 		if (selectedIndex == PathwayPanelTabID.pathway_objects.ordinal()) return HelpIds.PATHWAY_OBJECTS;
 		if (selectedIndex == PathwayPanelTabID.biopax_summary.ordinal()) return HelpIds.BIOPAX_SUMMARY;

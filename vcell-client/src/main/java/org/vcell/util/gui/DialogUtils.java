@@ -902,25 +902,25 @@ public class DialogUtils {
      * @param helpPageId a {@link org.vcell.documentation.HelpIds} constant
      */
     public static void showInfoDialog(final Component requester, final String title, final String message, final String helpPageId){
-        checkForNull(requester);
+        DialogUtils.checkForNull(requester);
         Doer doer = () -> {
             JPanel panel = MessagePanelFactory.createSimple(message);
-            showInfoDialogInternal(requester, panel, title, helpPageId);
+            DialogUtils.showInfoDialogInternal(requester, panel, title, helpPageId);
         };
         VCSwingFunction.executeAsRuntimeException(doer);
     }
 
     /** As {@link #showInfoDialog(Component, String, String, String)}, showing a panel. */
     public static void showInfoDialog(final Component requester, final JPanel panel, final String title, final String helpPageId){
-        checkForNull(requester);
-        Doer doer = () -> showInfoDialogInternal(requester, panel, title, helpPageId);
+        DialogUtils.checkForNull(requester);
+        Doer doer = () -> DialogUtils.showInfoDialogInternal(requester, panel, title, helpPageId);
         VCSwingFunction.executeAsRuntimeException(doer);
     }
 
     private static final String VCELL_HELP_OPTION = "VCell Help";
 
     private static void showInfoDialogInternal(final Component requester, final JPanel panel, final String title) {
-        showInfoDialogInternal(requester, panel, title, null);
+        DialogUtils.showInfoDialogInternal(requester, panel, title, null);
     }
 
     // use the public methods above when calling from elsewhere, never directly this
@@ -931,7 +931,7 @@ public class DialogUtils {
                 : new JOptionPane(panel, JOptionPane.INFORMATION_MESSAGE, JOptionPane.DEFAULT_OPTION, null,
                         new Object[]{VCELL_HELP_OPTION, "OK"}, "OK");
         try {
-            showInfoPane(requester, lwParent, pane, title);
+            DialogUtils.showInfoPane(requester, lwParent, pane, title);
         } finally {
             if (helpPageId != null && VCELL_HELP_OPTION.equals(pane.getValue())) HelpViewer.showHelp(helpPageId);
         }

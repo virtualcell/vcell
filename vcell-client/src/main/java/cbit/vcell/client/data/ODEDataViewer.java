@@ -470,10 +470,10 @@ private void initialize() {
 
 // the help page about the open tab: SpringSaLaD's results have a page of their own
 private String helpPage() {
-	javax.swing.JTabbedPane tabs = getJTabbedPane();
+	javax.swing.JTabbedPane tabs = this.getJTabbedPane();
 	int index = tabs.getSelectedIndex();
 	String title = index < 0 ? null : tabs.getTitleAt(index);
-	if (LANGEVIN_CLUSTER_RESULTS_TABNAME.equals(title) || TRAJECTORY_TABNAME.equals(title) || hasLangevinBatchResults) {
+	if (LANGEVIN_CLUSTER_RESULTS_TABNAME.equals(title) || TRAJECTORY_TABNAME.equals(title) || this.hasLangevinBatchResults) {
 		return HelpIds.SPRINGSALAD_RESULTS;
 	}
 	return HelpIds.NONSPATIAL_RESULTS;
