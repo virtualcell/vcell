@@ -9,6 +9,7 @@
  */
 
 package cbit.vcell.graph.gui;
+import org.vcell.documentation.HelpIds;
 import cbit.vcell.client.laf.VCellFonts;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -612,7 +613,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 	}
 
 	private JButton getControlsHelpButton() {
-		if (controlsHelpButton == null) controlsHelpButton = GraphPane.createControlsHelpButton(TOOL_BAR_BUTTON_SIZE);
+		if (controlsHelpButton == null) controlsHelpButton = GraphPane.createControlsHelpButton(TOOL_BAR_BUTTON_SIZE, HelpIds.REACTION_DIAGRAM);
 		return controlsHelpButton;
 	}
 

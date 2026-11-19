@@ -10,6 +10,7 @@
 
 package cbit.vcell.export.gui;
 
+import org.vcell.documentation.HelpIds;
 import cbit.rmi.event.ExportEvent;
 import cbit.vcell.resource.PropertyLoader;
 import org.vcell.util.gui.DefaultScrollTableActionManager;
@@ -501,7 +502,7 @@ private void setExportMonitorTableModel1(ExportMonitorTableModel newValue) {
 		gbc.insets = new Insets(1, 1, 1, 1);
 		p.add(jepPlugin, gbc);
 
-		DialogUtils.showInfoDialog(ExportMonitorPanel.this, p, "ImageJ Export Help");
+		DialogUtils.showInfoDialog(ExportMonitorPanel.this, p, "ImageJ Export Help", HelpIds.IMAGEJ_PLUGIN);
 
 	}
 	private void ImagejButton_ActionPerformed() {

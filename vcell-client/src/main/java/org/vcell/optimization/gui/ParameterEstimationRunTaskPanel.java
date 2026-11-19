@@ -10,6 +10,8 @@
 
 package org.vcell.optimization.gui;
 
+import org.vcell.documentation.HelpViewer;
+import org.vcell.documentation.HelpIds;
 import cbit.vcell.client.laf.CategoryTitledBorder;
 import cbit.plot.Plot2D;
 import cbit.plot.PlotData;
@@ -635,10 +637,14 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
     public void showCopasiMethodHelp() {
         CopasiOptimizationMethodType methodType = ((CopasiOptimizationMethodType) optimizationMethodComboBox.getSelectedItem());
         getCopasiOptimizationHelpPanel().refreshSolverInfo(methodType);
-        JOptionPane helpPane = new JOptionPane(copasiHelpPanel, JOptionPane.INFORMATION_MESSAGE);
+        String vcellHelp = "VCell Help";
+        JOptionPane helpPane = new JOptionPane(copasiHelpPanel, JOptionPane.INFORMATION_MESSAGE, JOptionPane.DEFAULT_OPTION,
+                null, new Object[]{vcellHelp, "OK"}, "OK");
         JDialog dialog = helpPane.createDialog(this, "Copasi Methods Help Information");
         dialog.setResizable(true);
         dialog.setVisible(true);
+        // the methods in VCell's help, with how to choose among them
+        if (vcellHelp.equals(helpPane.getValue())) HelpViewer.showHelp(HelpIds.PARAMETER_ESTIMATION_METHODS);
     }
 
     private void initialize() {

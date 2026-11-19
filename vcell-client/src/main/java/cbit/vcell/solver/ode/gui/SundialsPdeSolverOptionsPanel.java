@@ -10,6 +10,7 @@
 
 package cbit.vcell.solver.ode.gui;
 
+import org.vcell.documentation.HelpIds;
 import cbit.vcell.client.laf.VCellFonts;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -89,7 +90,7 @@ public class SundialsPdeSolverOptionsPanel extends CollapsiblePanel {
 						" option is appropriate are ODE systems resulting from semi-discretized PDEs " +
 						"(i.e., PDEs discretized in space) with advection and di?usion, but with advection dominating over diffusion. " +
 						"Diffusion alone produces pure decay modes, while advection tends to produce undamped oscillatory modes. A mix of" +
-						"the two with advection dominant will have weakly damped oscillatory modes.</html>");	
+						"the two with advection dominant will have weakly damped oscillatory modes.</html>", HelpIds.NUMERICAL_SOLVERS);	
 			}
 			
 		}

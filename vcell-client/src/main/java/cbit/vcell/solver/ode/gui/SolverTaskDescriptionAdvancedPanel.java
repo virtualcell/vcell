@@ -11,6 +11,7 @@
 
 package cbit.vcell.solver.ode.gui;
 
+import org.vcell.documentation.HelpIds;
 import cbit.vcell.client.laf.VCellFonts;
 import cbit.vcell.client.ClientTaskManager;
 import cbit.vcell.client.VCellClient;
@@ -1180,7 +1181,7 @@ private javax.swing.JButton getQuestionButton() {
 
 private void displayHelpInfo()
 {
-	DialogUtils.showInfoDialog(this, "Solver Help", getTornOffSolverTaskDescription().getSolverDescription().getFullDescription());
+	DialogUtils.showInfoDialog(this, "Solver Help", getTornOffSolverTaskDescription().getSolverDescription().getFullDescription(), HelpIds.NUMERICAL_SOLVERS);
 }
 
 private void onPropertyChange_solverDescription() {
@@ -1347,7 +1348,7 @@ private void performSensitivityAnalysisCheckbox_actionPerformed() {
 }
 
 public void showSensitivityAnalysisHelp(){
-	DialogUtils.showInfoDialog(this, "Sensitivity Analysis Help", VCellErrorMessages.SensitivityAnalysis_Help);
+	DialogUtils.showInfoDialog(this, "Sensitivity Analysis Help", VCellErrorMessages.SensitivityAnalysis_Help, HelpIds.NUMERICAL_SOLVERS);
 }
 
 public void setUnitInfo(UnitInfo unitInfo) {

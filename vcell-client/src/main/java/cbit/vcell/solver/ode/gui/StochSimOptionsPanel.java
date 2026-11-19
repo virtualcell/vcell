@@ -10,6 +10,7 @@
 
 package cbit.vcell.solver.ode.gui;
 
+import org.vcell.documentation.HelpIds;
 import cbit.vcell.client.laf.VCellFonts;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -90,11 +91,11 @@ public class StochSimOptionsPanel extends CollapsiblePanel {
 			}  else if (e.getSource() == getTrajectoryButton() || e.getSource() == getMultiRunButton() || e.getSource() == getHistogramButton()) {				
 				setNewOptions();
 			} else if(e.getSource() == getMultiRunHelpButton()) {
-				DialogUtils.showInfoDialogAndResize(StochSimOptionsPanel.this, "Multiple runs of a Non-Spatial stochastic simulation", 
+				DialogUtils.showInfoDialog(StochSimOptionsPanel.this, "Multiple runs of a Non-Spatial stochastic simulation", 
 						"<html><b>Multiple runs of a Non-Spatial stochastic simulation:</b>" +
 						"<br> In order to obtain smooth curves, we run multiple instances of the same stochastic simulation "
 						+ "using a different <b>random seed</b> for each run and then average the results."
-						+ "</html>");
+						+ "</html>", HelpIds.SIMULATION_EDITOR);
 			}
 		}
 		

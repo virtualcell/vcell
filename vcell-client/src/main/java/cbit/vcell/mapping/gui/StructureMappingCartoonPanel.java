@@ -9,6 +9,7 @@
  */
 
 package cbit.vcell.mapping.gui;
+import org.vcell.documentation.HelpIds;
 import java.awt.GridBagConstraints;
 
 import javax.swing.ButtonModel;
@@ -629,7 +630,7 @@ public class StructureMappingCartoonPanel extends DocumentEditorSubPanel impleme
 					ivjJToolBar1.add(getStructureGraphPane().createZoomButton(zoomButton, buttonSize));
 				}
 				ivjJToolBar1.add(javax.swing.Box.createVerticalGlue());
-				ivjJToolBar1.add(GraphPane.createControlsHelpButton(buttonSize));
+				ivjJToolBar1.add(GraphPane.createControlsHelpButton(buttonSize, HelpIds.STRUCTURE_MAPPING));
 				// user code begin {1}
 				// user code end
 			} catch (java.lang.Throwable ivjExc) {
