@@ -15,7 +15,6 @@ import cbit.vcell.client.laf.VCellLookAndFeel;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.GridBagConstraints;
@@ -132,6 +131,7 @@ import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.SymbolTableEntry;
+import org.vcell.client.logicalwindow.LWSize;
 
 @SuppressWarnings("serial")
 public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements Model.Owner {
@@ -2019,7 +2019,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 			panel.add(p, BorderLayout.NORTH);
 			panel.add(reactionCartoonEditorPanel, BorderLayout.CENTER);
 			ChildWindow childWindow = childWindowManager.addChildWindow(panel, reactionCartoonEditorPanel, "model diagram");
-			childWindow.setSize(500, 400);
+			childWindow.setSize(LWSize.ems(42, 33));
 			childWindow.setIsCenteredOnParent();
 			childWindow.addChildWindowListener(new ChildWindowListener() {				
 				public void closing(ChildWindow childWindow) {

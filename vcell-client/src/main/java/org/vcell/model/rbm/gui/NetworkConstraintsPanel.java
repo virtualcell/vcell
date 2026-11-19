@@ -82,6 +82,7 @@ import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.server.bionetgen.BNGExecutorService;
 import cbit.vcell.server.bionetgen.BNGInput;
 import cbit.vcell.solvers.ApplicationMessage;
+import org.vcell.client.logicalwindow.LWSize;
 
 // we should use WindowBuilder Plugin (add it to Eclipse IDE) to speed up panel design
 // can choose absolute layout and place everything exactly as we see fit
@@ -559,10 +560,8 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
         EditConstraintsPanel panel = new EditConstraintsPanel(this);
         ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(this);
         ChildWindow childWindow = childWindowManager.addChildWindow(panel, panel, "Edit / Test Constraints");
-        Dimension dim = new Dimension(320, 330);
-        childWindow.pack();
         panel.setChildWindow(childWindow);
-        childWindow.setPreferredSize(dim);
+        childWindow.setSize(LWSize.ems(27, 27.5f));
         childWindow.showModal();
         int maxIterations;
         int maxMolecules;

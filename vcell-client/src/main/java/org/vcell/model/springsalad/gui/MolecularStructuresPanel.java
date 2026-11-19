@@ -55,6 +55,7 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.vcell.client.logicalwindow.LWSize;
 
 
 @SuppressWarnings("serial")
@@ -977,10 +978,8 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		AddLinkPanel panel = new AddLinkPanel(this);
 		ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(this);
 		ChildWindow childWindow = childWindowManager.addChildWindow(panel, panel, " Add Link ");
-		Dimension dim = new Dimension(320, 330);
-		childWindow.pack();
 		panel.setChildWindow(childWindow);
-		childWindow.setPreferredSize(dim);
+		childWindow.setSize(LWSize.ems(27, 27.5f));
 		childWindow.showModal();
 		if(panel.getButtonPushed() == AddLinkPanel.ActionButtons.Apply) {
 			LinkNode firstMcp = panel.getFirstSiteList().getSelectedValue();

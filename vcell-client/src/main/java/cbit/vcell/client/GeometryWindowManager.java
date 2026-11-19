@@ -26,6 +26,7 @@ import cbit.vcell.client.server.SimStatusEvent;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.solver.VCSimulationIdentifier;
+import org.vcell.client.logicalwindow.LWSize;
 
 /**
  * Insert the type's description here.
@@ -169,7 +170,7 @@ private void showGeometryViewer() {
 	ChildWindow childWindow = childWindowManager.getChildWindowFromContentPane(geoViewer);
 	if (childWindow == null){
 		childWindow = childWindowManager.addChildWindow(geoViewer,geoViewer,geoViewerTitle);
-		childWindow.setSize(600, 600);
+		childWindow.setSize(LWSize.ems(50, 50));
 		childWindow.setIsCenteredOnParent();
 		childWindow.addChildWindowListener(new ChildWindowListener() {
 			public void closing(ChildWindow childWindow) {
@@ -193,7 +194,7 @@ private void showSurfaceViewer() {
 	ChildWindow childWindow = childWindowManager.getChildWindowFromContentPane(surfaceViewer);
 	if (childWindow == null){
 		childWindow = childWindowManager.addChildWindow(surfaceViewer, surfaceViewer, surfaceViewerTitle);
-		childWindow.setSize(600, 600);
+		childWindow.setSize(LWSize.ems(50, 50));
 		childWindow.addChildWindowListener(new ChildWindowListener() {
 			public void closing(ChildWindow childWindow) {
 				getGeometryEditor().setToggleButtonSelected("Surface Viewer", false);

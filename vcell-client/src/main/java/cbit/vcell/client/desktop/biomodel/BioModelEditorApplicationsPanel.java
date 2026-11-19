@@ -12,7 +12,6 @@ package cbit.vcell.client.desktop.biomodel;
 
 import javax.swing.JPanel;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
-import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -55,6 +54,7 @@ import cbit.vcell.xml.Xmlproducer;
 import cbit.xml.merge.XmlTreeDiff;
 import cbit.xml.merge.XmlTreeDiff.DiffConfiguration;
 import cbit.xml.merge.gui.TMLPanel;
+import org.vcell.client.logicalwindow.LWSize;
 
 @SuppressWarnings("serial")
 public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePanel<SimulationContext> {
@@ -260,7 +260,7 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 			ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(this);
 			String title = "comparing application "+simContext1.getName()+" and "+simContext2.getName();
 			ChildWindow childWindow = childWindowManager.addChildWindow(comparePanel, diffTree, title, true);
-			childWindow.setSize(new Dimension(600,600));
+			childWindow.setSize(LWSize.ems(50, 50));
 			childWindow.show();
 		} catch (XmlParseException e) {
 			e.printStackTrace();

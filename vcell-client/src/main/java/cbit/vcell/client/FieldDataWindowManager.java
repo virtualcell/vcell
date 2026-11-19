@@ -51,6 +51,7 @@ import java.lang.reflect.Field;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Vector;
+import org.vcell.client.logicalwindow.LWSize;
 
 public class FieldDataWindowManager
         extends TopLevelWindowManager
@@ -199,7 +200,7 @@ public class FieldDataWindowManager
                         ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(getComponent());
                         currentlyViewedEDI = eDI;
                         ChildWindow childWindow = childWindowManager.addChildWindow(currentlyViewedOutputFunctionViewer, currentlyViewedEDI, "Field Data Viewer (" + eDI.getName() + ")");
-                        childWindow.setSize(600, 500);
+                        childWindow.setSize(LWSize.ems(50, 42));
                         childWindow.setIsCenteredOnParent();
                         childWindow.show();
 
