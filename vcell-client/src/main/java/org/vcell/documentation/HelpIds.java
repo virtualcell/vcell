@@ -118,6 +118,27 @@ public final class HelpIds {
 	// ------------------------------------------------------------------ Virtual FRAP
 	public static final String VIRTUAL_FRAP = "VFrapIntroduction";
 
+	// ------------------------------------------------------------------ linked from windows (see HelpCoverageTest)
+	public static final String OPEN = "Open";
+	public static final String SAVE_AS = "SaveAs";
+	public static final String IMPORT_BNGL = "ImportBNGL";
+	public static final String SPATIAL_RESULTS_PLOTS = "SimResultsKymograph";
+	public static final String SPATIAL_RESULTS_ROI_TOOLS = "SpatialSimResultsDrawingTools";
+	public static final String VFRAP_DEFINING_ROIS = "VFrapDefiningROIs";
+	public static final String VFRAP_SIMULATION = "VFrapSpatialSimulation";
+	public static final String VERSION_MISMATCH = "VersionMismatch";
+	public static final String VCELL_PREFERENCES = "VCellPreferences";
+	public static final String COMPARE_APPLICATIONS = "CompareApplications";
+	public static final String REACTION_SEARCH = "ReactionSearch";
+	public static final String QUICK_FIX = "QuickFixSimulation";
+	public static final String MATH_MODEL = "MathModelOverview";
+	public static final String MATH_MODEL_VCML_EDITOR = "MathModelVCMLEditor";
+	public static final String MEMBRANE_SPECIFICATIONS = "MembraneSpecifications";
+	public static final String LANGEVIN_SOLVER_OPTIONS = "LangevinSolverOptions";
+	public static final String SMOLDYN_SOLVER_OPTIONS = "SmoldynSolverOptions";
+	public static final String MASS_CONSERVATION_REDUCTION = "MassConservationReduction";
+	public static final String SIMULATION_TIME_LIMIT = "SimulationTimeLimit";
+
 	private HelpIds() {
 	}
 }

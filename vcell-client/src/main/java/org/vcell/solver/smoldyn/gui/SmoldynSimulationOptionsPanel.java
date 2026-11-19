@@ -63,7 +63,7 @@ public class SmoldynSimulationOptionsPanel extends CollapsiblePanel {
 			if (source == randomSeedHelpButton) {
 				DialogUtils.showInfoDialog(SmoldynSimulationOptionsPanel.this, "Random Seed", "<html>sequence seed <i>int</i> " +
 						"<br>Seed for random number generator. If this line is not entered, the current " +
-						"time is used as a seed, producing different sequences for each run.</html>", HelpIds.NUMERICAL_SOLVERS);
+						"time is used as a seed, producing different sequences for each run.</html>", HelpIds.SMOLDYN_SOLVER_OPTIONS);
 			} else if (source == accuracyHelpButton) {
 				DialogUtils.showInfoDialog(SmoldynSimulationOptionsPanel.this, "Accuracy", "<html>accuracy <i>float</i> " +
 						"<br>A parameter that determines the quantitative accuracy of the simulation, on a scale from 0 to 10. " +
@@ -71,12 +71,12 @@ public class SmoldynSimulationOptionsPanel extends CollapsiblePanel {
 						"Bimolecular reactions are only checked for pairs of reactants that are both within the same " +
 						"virtual box when accuracy is 0 to 2.99, reactants in nearest neighboring boxes " +
 						"are considered as well when accuracy is 3 to 6.99, and reactants in all types of " +
-						"neighboring boxes are checked when accuracy is 7 to 10.</html>", HelpIds.NUMERICAL_SOLVERS);
+						"neighboring boxes are checked when accuracy is 7 to 10.</html>", HelpIds.SMOLDYN_SOLVER_OPTIONS);
 			} else if (source == smoldynStepMultiplierHelpButton) {
 				DialogUtils.showInfoDialog(SmoldynSimulationOptionsPanel.this, "Step Multiplier", "<html>Step Multiplier <i>integer</i> " +
 						"<br>A parameter that determines the time step multiplier of the Smoldyn simulation, as an integer. " +
 						"High values are less accurate but run faster.  Default value is 1, for default time step. " +
-						"</html>", HelpIds.NUMERICAL_SOLVERS);
+						"</html>", HelpIds.SMOLDYN_SOLVER_OPTIONS);
 //			} else if (source == molPerBoxHelpButton) {
 //				DialogUtils.showInfoDialog(SmoldynSimulationOptionsPanel.this, "<html>molperbox <i>float</i> " +
 //						"<br>Virtual boxes are set up initially so the average number of " +
@@ -90,7 +90,7 @@ public class SmoldynSimulationOptionsPanel extends CollapsiblePanel {
 			} else if (source == gaussianTableSizeHelpButton) {
 				DialogUtils.showInfoDialog(SmoldynSimulationOptionsPanel.this, "Gaussian Table Size", "<html>gauss_table_size <i>int</i> " +
 						"<br>This sets the size of a lookup table that is used to generate Gaussiandistributed random numbers. " +
-						"It needs to be an integer power of 2. The default value is 4096, which should be appropriate for nearly all applications.</html>", HelpIds.NUMERICAL_SOLVERS);
+						"It needs to be an integer power of 2. The default value is 4096, which should be appropriate for nearly all applications.</html>", HelpIds.SMOLDYN_SOLVER_OPTIONS);
 			} else if (source == randomSeedCheckBox) {
 				if(!randomSeedCheckBox.isSelected())
 				{

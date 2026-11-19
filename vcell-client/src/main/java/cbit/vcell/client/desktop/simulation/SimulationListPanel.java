@@ -9,6 +9,7 @@
  */
 
 package cbit.vcell.client.desktop.simulation;
+import org.vcell.documentation.HelpIds;
 import cbit.vcell.client.laf.VCellFonts;
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -240,7 +241,7 @@ private void showHelp() {
 	 message += "expense of slightly longer simulation times, users may now turn off variable reduction. This makes the generated ";
 	 message += "math easier to understand and can avoid occasional numerical simulation issues.";
 //	message = "<html>" + message + "</html>";
-	PopupGenerator.showInfoDialog(this, "Variable reduction by mass conservation", message);
+	DialogUtils.showInfoDialog(this, "Variable reduction by mass conservation", message, HelpIds.MASS_CONSERVATION_REDUCTION);
 }
 
 /**

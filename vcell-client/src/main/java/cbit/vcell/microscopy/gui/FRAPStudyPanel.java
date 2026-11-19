@@ -10,6 +10,8 @@
 
 package cbit.vcell.microscopy.gui;
 
+import org.vcell.documentation.HelpIds;
+import org.vcell.documentation.HelpContext;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
@@ -509,6 +511,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 						ChildWindow childWindow = ChildWindowManager.findChildWindowManager(FRAPStudyPanel.this).getChildWindowFromContext(Sim2DResultsContextObj);
 						if(childWindow == null)
 						{
+							HelpContext.setPage(getSimResultsViewPanel(), HelpIds.VFRAP_SIMULATION);
 							childWindow = ChildWindowManager.findChildWindowManager(FRAPStudyPanel.this).addChildWindow(getSimResultsViewPanel(), Sim2DResultsContextObj, "2D Simulation Results", true);
 							childWindow.setSize(LWSize.ems(83, 58));
 						}
@@ -1428,6 +1431,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			childWindow.close();
 		}
 		JMFPlayer jp = new JMFPlayer(urlStr, fileStr);
+		HelpContext.setPage(jp, HelpIds.VFRAP_SIMULATION);
 		childWindow = ChildWindowManager.findChildWindowManager(this).addChildWindow(jp, movieContextObj, "VFRAP Movie");
 		jp.setChildWindow(childWindow);
 		childWindow.setSize(LWSize.ems(21, 42));

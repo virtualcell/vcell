@@ -1,5 +1,7 @@
 package org.vcell.model.bngl.gui;
 
+import org.vcell.documentation.HelpIds;
+import org.vcell.documentation.HelpContext;
 import cbit.vcell.client.laf.VCellFonts;
 import cbit.vcell.client.laf.VCellColors;
 import java.awt.BorderLayout;
@@ -70,6 +72,7 @@ public class BNGLDebugger extends JFrame implements KeyListener, ActionListener 
     
 	private BNGLDebugger() {
 		initialize();
+		HelpContext.setPage(this.getRootPane(), HelpIds.IMPORT_BNGL); // F1
 	}
 @Deprecated
 	public static final BNGLDebugger getInstance() {

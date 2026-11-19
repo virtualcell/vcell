@@ -577,6 +577,7 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 		}
 		ChildWindow window = childWindowManager.getChildWindowFromContext(UNIT_SYSTEM_WINDOW);
 		if (window == null) {
+			// help: getModelUnitSystemPanel() says the model units page
 			window = childWindowManager.addChildWindow(getModelUnitSystemPanel(), UNIT_SYSTEM_WINDOW, "Model Unit System", true);
 			window.setSize(860, 480);
 			window.setIsCenteredOnParent();

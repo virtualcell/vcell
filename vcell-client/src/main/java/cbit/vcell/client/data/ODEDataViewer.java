@@ -653,6 +653,7 @@ public void showTimePlotMultipleScans(DataManager dataManager) {
 	ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(this);
 	//ChildWindow childWindow = childWindowManager.getChildWindowFromContentPane(panel);
 	
+	HelpContext.setPage(panel, HelpIds.NONSPATIAL_RESULTS);
 	ChildWindow childWindow = childWindowManager.addChildWindow(panel, panel, "");
 	String titleStr = childWindow.getParent().getTitle();
 	titleStr = titleStr.substring(0, titleStr.indexOf("("));

@@ -9,6 +9,8 @@
  */
 
 package cbit.vcell.geometry.gui;
+import org.vcell.documentation.HelpIds;
+import org.vcell.documentation.HelpContext;
 import cbit.vcell.client.laf.VCellFonts;
 import cbit.vcell.client.laf.VCellColors;
 import java.awt.Color;
@@ -1071,6 +1073,7 @@ private void jButtonDSR_ActionPerformed(java.awt.event.ActionEvent actionEvent) 
 	ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(DataValueSurfaceViewer.this);
 	ChildWindow childWindow = childWindowManager.getChildWindowFromContentPane(dsr);
 	if (childWindow==null){
+		HelpContext.setPage(dsr, HelpIds.SPATIAL_RESULTS_ROI_TOOLS);
 		childWindow = childWindowManager.addChildWindow(dsr,dsr,"Define Region Of Interest");
 		childWindow.pack();
 		childWindow.setIsCenteredOnParent();

@@ -1047,6 +1047,7 @@ void plotSpaceStats (TSJobResultsSpaceStats tsjrss) {
 	}
 		
 	ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(PDEDataViewer.this);
+	HelpContext.setPage(plotPane, HelpIds.SPATIAL_RESULTS_PLOTS);
 	ChildWindow childWindow = childWindowManager.addChildWindow(plotPane,plotPane,title);
 	childWindow.setIsCenteredOnParent();
 	childWindow.pack();
@@ -2521,6 +2522,7 @@ private void showKymograph() {
 			}
 			
 			ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(PDEDataViewer.this);
+			HelpContext.setPage(kymographPanel, HelpIds.SPATIAL_RESULTS_PLOTS);
 			ChildWindow childWindow = childWindowManager.addChildWindow(kymographPanel, kymographPanel,  title);
 			childWindow.setSize(LWSize.ems(58, 42));
 			childWindow.show();
@@ -2599,6 +2601,7 @@ private void showSpatialPlot() {
 					String title = createContextTitle(PDEDataViewer.this.isPostProcess(),"Spatial Plot:'"+varName+"' ",getPdeDataContext(),getSimulationModelInfo(),getSimulation());
 					
 					ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(PDEDataViewer.this);
+					HelpContext.setPage(plotPane, HelpIds.SPATIAL_RESULTS_PLOTS);
 					ChildWindow childWindow = childWindowManager.addChildWindow(plotPane,plotPane,title);
 					childWindow.setIsCenteredOnParent();
 					childWindow.pack();
@@ -2699,6 +2702,7 @@ private void showTimePlot() {
 					PdeTimePlotMultipleVariablesPanel pdeTimePlotPanel = new PdeTimePlotMultipleVariablesPanel(multiTimePlotHelper,singlePointSSOnly, singlePointSSOnly2, tsJobResultsNoStats);
 					ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(PDEDataViewer.this);
 					String prefix = "Time Plot ("+getPDEPlotControlPanel1().getPlotVariableJList().getSelectedValue().getVariableType().getTypeName()+") ";
+					HelpContext.setPage(pdeTimePlotPanel, HelpIds.SPATIAL_RESULTS_PLOTS);
 					ChildWindow childWindow = childWindowManager.addChildWindow(pdeTimePlotPanel, pdeTimePlotPanel, createContextTitle(PDEDataViewer.this.isPostProcess(),prefix,getPdeDataContext(),getSimulationModelInfo(),getSimulation()));
 					childWindow.getParent().addWindowListener(new WindowAdapter() {
 						@Override

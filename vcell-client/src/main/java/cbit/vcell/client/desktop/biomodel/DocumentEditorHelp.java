@@ -72,10 +72,12 @@ final class DocumentEditorHelp {
 			case parameter_estimation_parameters, parameter_estimation_experimental_data_import,
 				 parameter_estimation_experimental_data_mapping, parameter_estimation_run_task -> HelpIds.PARAMETER_ESTIMATION_USAGE;
 			case math_geometry -> HelpIds.GEOMETRY;
-			// the pathway views are in the Pathway Tools window, which has its own help; the membrane
-			// specifications, the math model's VCML and annotation, and experimental data have no page yet
-			case pathway, pathway_diagram, pathway_objects, biopax_summary, biopax_tree, pathway_lookup,
-				 membrane_setting, math_annotation, math_vcml, data -> null;
+			case membrane_setting -> HelpIds.MEMBRANE_SPECIFICATIONS;
+			case math_vcml -> HelpIds.MATH_MODEL_VCML_EDITOR;
+			case math_annotation -> HelpIds.MATH_MODEL;
+			// the pathway views are in the Pathway Tools window, which has its own help; experimental data
+			// has no view any more
+			case pathway, pathway_diagram, pathway_objects, biopax_summary, biopax_tree, pathway_lookup, data -> null;
 		};
 	}
 
@@ -98,6 +100,8 @@ final class DocumentEditorHelp {
 			case PROTOCOLS_NODE -> HelpIds.PROTOCOLS;
 			case SIMULATIONS_NODE, MATH_SIMULATIONS_NODE -> HelpIds.SIMULATIONS;
 			case MATH_OUTPUT_FUNCTIONS_NODE -> HelpIds.OUTPUT_FUNCTIONS;
+			case MATH_VCML_NODE -> HelpIds.MATH_MODEL_VCML_EDITOR;
+			case MATH_ANNOTATION_NODE -> HelpIds.MATH_MODEL;
 			case PARAMETER_ESTIMATION_NODE -> HelpIds.PARAMETER_ESTIMATION;
 			default -> null;
 		};

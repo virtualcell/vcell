@@ -9,6 +9,8 @@
  */
 
 package cbit.vcell.client;
+import org.vcell.documentation.HelpIds;
+import org.vcell.documentation.HelpContext;
 import java.awt.BorderLayout;
 
 import javax.swing.JPanel;
@@ -169,6 +171,7 @@ private void showGeometryViewer() {
 	ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(getComponent());
 	ChildWindow childWindow = childWindowManager.getChildWindowFromContentPane(geoViewer);
 	if (childWindow == null){
+		HelpContext.setPage(geoViewer, HelpIds.GEOMETRY);
 		childWindow = childWindowManager.addChildWindow(geoViewer,geoViewer,geoViewerTitle);
 		childWindow.setSize(LWSize.ems(50, 50));
 		childWindow.setIsCenteredOnParent();
@@ -193,6 +196,7 @@ private void showSurfaceViewer() {
 	ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(getComponent());
 	ChildWindow childWindow = childWindowManager.getChildWindowFromContentPane(surfaceViewer);
 	if (childWindow == null){
+		HelpContext.setPage(surfaceViewer, HelpIds.GEOMETRY);
 		childWindow = childWindowManager.addChildWindow(surfaceViewer, surfaceViewer, surfaceViewerTitle);
 		childWindow.setSize(LWSize.ems(50, 50));
 		childWindow.addChildWindowListener(new ChildWindowListener() {

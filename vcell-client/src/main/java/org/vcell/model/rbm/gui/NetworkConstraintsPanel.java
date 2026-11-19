@@ -1,5 +1,7 @@
 package org.vcell.model.rbm.gui;
 
+import org.vcell.documentation.HelpIds;
+import org.vcell.documentation.HelpContext;
 import cbit.vcell.client.laf.VCellColors;
 import java.awt.Component;
 import java.awt.Container;
@@ -559,6 +561,7 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
     private void runBioNetGen() {
         EditConstraintsPanel panel = new EditConstraintsPanel(this);
         ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(this);
+        HelpContext.setPage(panel, HelpIds.NETWORK_SPECIFICATIONS);
         ChildWindow childWindow = childWindowManager.addChildWindow(panel, panel, "Edit / Test Constraints");
         panel.setChildWindow(childWindow);
         childWindow.setSize(LWSize.ems(27, 27.5f));

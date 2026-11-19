@@ -116,7 +116,7 @@ public class SolverTaskDescriptionAdvancedPanel extends javax.swing.JPanel {
 						+ "consistent manner.\n"
 						+ "However, we are allowing our power users to bypass this rule and allow very long simulations "
 						+ "to run indefinitely.\nIf you need to run such a simulation, please contact us at vcell_support@uchc.edu "
-						+ "to be added to the power user list.");
+						+ "to be added to the power user list.", HelpIds.SIMULATION_TIME_LIMIT);
 			}
 		}
 

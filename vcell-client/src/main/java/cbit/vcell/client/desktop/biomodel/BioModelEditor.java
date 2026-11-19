@@ -455,6 +455,7 @@ public void showPathwayTools() {
 			pathwayToolsPanel.setSelectionManager(selectionManager);
 		}
 		getBioModelEditorPathwayDiagramPanel().setBioModel(bioModel);
+		// help: PathwayToolsPanel says the page about its open tab
 		window = childWindowManager.addChildWindow(pathwayToolsPanel, PATHWAY_TOOLS_WINDOW, "Pathway Tools", true);
 		window.setSize(1000, 760);
 		window.setIsCenteredOnParent();

@@ -406,6 +406,7 @@ public class WelcomePanel extends JPanel {
 		this.accountHelp.setPage(HelpIds.LOGIN);
 		this.accountHelp.setLeadingGap(6);
 		this.versionHelp.setLeadingGap(6);
+		this.versionHelp.setPage(HelpIds.VERSION_MISMATCH);
 		this.statusRow.setOpaque(false);
 		this.statusRow.add(this.accountStatus);
 		JPanel accountButtonHolder = new JPanel();

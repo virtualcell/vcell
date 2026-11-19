@@ -10,6 +10,7 @@
 
 package cbit.vcell.client.desktop.mathmodel;
 
+import org.vcell.documentation.HelpIds;
 import java.awt.Component;
 
 import javax.swing.JComponent;
@@ -40,6 +41,13 @@ import cbit.vcell.solver.ode.gui.SimulationSummaryPanel;
  */
 @SuppressWarnings("serial")
 public class MathModelEditor extends DocumentEditor {
+	// the model's own node, and anything else with no page of its own, opens the math model overview
+	@Override
+	protected String helpPage() {
+		String page = super.helpPage();
+		return page != null ? page : HelpIds.MATH_MODEL;
+	}
+
 	private MathModelWindowManager mathModelWindowManager = null;
 	private MathModel mathModel = new MathModel(null);
 	

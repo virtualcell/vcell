@@ -10,6 +10,8 @@
 
 package cbit.vcell.client;
 
+import org.vcell.documentation.HelpIds;
+import org.vcell.documentation.HelpContext;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
@@ -131,6 +133,7 @@ public final void showPreferencesWindow(){
 	ChildWindow childWindow = childWindowManager.getChildWindowFromContext(PREFERENCES_WINDOW);
 	VCellConfigurationPanel vcellConfigurationPanel = new VCellConfigurationPanel(this);
 	if (childWindow==null){
+		HelpContext.setPage(vcellConfigurationPanel, HelpIds.VCELL_PREFERENCES);
 		childWindow = childWindowManager.addChildWindow(vcellConfigurationPanel, PREFERENCES_WINDOW, "View VCell Properties");
 		childWindow.setSize(LWSize.ems(54, 25));
 		childWindow.setResizable(true);

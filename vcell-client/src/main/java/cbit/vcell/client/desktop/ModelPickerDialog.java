@@ -1,5 +1,7 @@
 package cbit.vcell.client.desktop;
 
+import org.vcell.documentation.HelpIds;
+import org.vcell.documentation.HelpContext;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -55,6 +57,7 @@ public class ModelPickerDialog extends JDialog {
 	public ModelPickerDialog(Window owner, String title, String selectLabel, DocumentManager documentManager, VCDocumentType documentType) {
 		super(owner, title, ModalityType.APPLICATION_MODAL);
 		this.setName("ModelPickerDialog");
+		HelpContext.setPage(this.getRootPane(), HelpIds.OPEN); // F1
 		this.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		String typeName = ModelPickerDialog.typeName(documentType);
 		this.searchField = new WelcomePanel.SearchField("Search " + typeName + "s");

@@ -117,7 +117,7 @@ public final class HelpContext {
 	 */
 	public static String pageFor(Window window) {
 		for (Window w = window; w != null; w = w.getOwner()) {
-			Container root = w instanceof RootPaneContainer container ? container.getContentPane() : w;
+			Container root = w instanceof RootPaneContainer container ? container.getRootPane() : w;
 			String pageId = HelpContext.pageWithin(root);
 			if (pageId != null) return pageId;
 		}

@@ -9,6 +9,8 @@
  */
 
 package cbit.vcell.client;
+import org.vcell.documentation.HelpIds;
+import org.vcell.documentation.HelpContext;
 import java.awt.BorderLayout;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -179,6 +181,7 @@ public void addResultsFrame(SimulationWindow simWindow) {
 	ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(getJPanel());
 	ChildWindow childWindow = childWindowManager.getChildWindowFromContext(simWindow);
 	if (childWindow==null){
+		// help: the data viewers (ODEDataViewer, PDEDataViewer) say the page about their open tab
 		childWindow = childWindowManager.addChildWindow(simWindow.getDataViewer(), simWindow);
 		simWindow.setChildWindow(childWindow);
 		childWindow.setIsCenteredOnParent();
@@ -630,6 +633,7 @@ public void showMIRIAMWindow() {
 	if (childWindow==null){
 		MIRIAMAnnotationViewer miriamAnnotationViewer = new MIRIAMAnnotationViewer();
 		miriamAnnotationViewer.setBiomodel(bioModel);
+		HelpContext.setPage(miriamAnnotationViewer, HelpIds.ANNOTATIONS);
 		childWindow = childWindowManager.addChildWindow(miriamAnnotationViewer, MIRIAM_WINDOW, "View/Add/Delete/Edit MIRIAM Annotation");
 		childWindow.setSize(LWSize.ems(50, 33));
 		childWindow.setResizable(true);

@@ -10,6 +10,8 @@
 
 package cbit.vcell.client;
 
+import org.vcell.documentation.HelpIds;
+import org.vcell.documentation.HelpContext;
 import cbit.image.VCImageUncompressed;
 import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.DataJobListenerHolder;
@@ -199,6 +201,7 @@ public class FieldDataWindowManager
 
                         ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(getComponent());
                         currentlyViewedEDI = eDI;
+                        HelpContext.setPage(currentlyViewedOutputFunctionViewer, HelpIds.FIELD_DATA);
                         ChildWindow childWindow = childWindowManager.addChildWindow(currentlyViewedOutputFunctionViewer, currentlyViewedEDI, "Field Data Viewer (" + eDI.getName() + ")");
                         childWindow.setSize(LWSize.ems(50, 42));
                         childWindow.setIsCenteredOnParent();

@@ -10,6 +10,7 @@
 
 package cbit.vcell.client.desktop.biomodel;
 
+import org.vcell.documentation.HelpContext;
 import org.vcell.documentation.HelpIds;
 import cbit.vcell.client.laf.VCellColors;
 import cbit.vcell.client.laf.VCellLookAndFeel;
@@ -2033,6 +2034,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 			JPanel p = new JPanel(new FlowLayout(FlowLayout.LEFT));
 			panel.add(p, BorderLayout.NORTH);
 			panel.add(reactionCartoonEditorPanel, BorderLayout.CENTER);
+			HelpContext.setPage(panel, HelpIds.REACTION_DIAGRAM);
 			ChildWindow childWindow = childWindowManager.addChildWindow(panel, reactionCartoonEditorPanel, "model diagram");
 			childWindow.setSize(LWSize.ems(42, 33));
 			childWindow.setIsCenteredOnParent();

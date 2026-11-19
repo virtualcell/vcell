@@ -1,5 +1,7 @@
 package cbit.vcell.client.desktop.biomodel;
 
+import org.vcell.documentation.HelpIds;
+import org.vcell.documentation.HelpContext;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.FlowLayout;
@@ -54,6 +56,7 @@ public class UnitSystemDialog extends JDialog {
 	private UnitSystemDialog(Window owner, String title, String finishLabel, UnitSystemLibrary library, String suggestedName, ModelUnitSystem startUnits) {
 		super(owner, title, ModalityType.APPLICATION_MODAL);
 		this.setName("UnitSystemDialog");
+		HelpContext.setPage(this.getRootPane(), HelpIds.MODEL_UNITS); // F1
 		this.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		this.library = library;
 		this.finishButton = new JButton(finishLabel);

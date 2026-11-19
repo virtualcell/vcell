@@ -10,6 +10,7 @@
 
 package cbit.vcell.microscopy.gui;
 
+import org.vcell.documentation.HelpContext;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Toolkit;
@@ -383,6 +384,7 @@ public class VirtualFrapMainFrame extends LWTopFrame implements DropTargetListen
     // constructor
     public VirtualFrapMainFrame(LocalWorkspace localWorkspace, FRAPSingleWorkspace frapWorkspace, FRAPBatchRunWorkspace batchRunWorkspace, boolean bStandalone, DocumentWindowManager documentWindowManager) {
         super();
+        HelpContext.setPage(this.getRootPane(), HelpIds.VIRTUAL_FRAP); // F1, as Help > Help Topics
         childWindowManager = new ChildWindowManager(this);
         this.localWorkspace = localWorkspace;
         this.frapWorkspace = frapWorkspace;

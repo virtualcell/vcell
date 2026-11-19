@@ -132,7 +132,7 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 				DialogUtils.showInfoDialog(LangevinOptionsPanel.this, "Set specific seed",
 					"<html>Provide a seed to the Langevin solver's random number generator so exact "
 							+ "trajectories can be reproduced. If this value is not entered, the solver will "
-							+ "generate different sequences for each run.</html>", HelpIds.SIMULATION_EDITOR);
+							+ "generate different sequences for each run.</html>", HelpIds.LANGEVIN_SOLVER_OPTIONS);
 			}
 		}
 		

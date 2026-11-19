@@ -122,6 +122,7 @@ public void addResultsFrame(SimulationWindow simWindow) {
 	ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(getJPanel());
 	ChildWindow childWindow = childWindowManager.getChildWindowFromContext(simWindow);
 	if (childWindow==null){
+		// help: the data viewers (ODEDataViewer, PDEDataViewer) say the page about their open tab
 		childWindow = childWindowManager.addChildWindow(simWindow.getDataViewer(), simWindow, "simulation results for "+simWindow.getSimulation().getName());
 		simWindow.setChildWindow(childWindow);
 		childWindow.setIsCenteredOnParent();
