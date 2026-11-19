@@ -19,7 +19,6 @@ import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import java.awt.Component;
 import java.awt.Container;
-import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
@@ -96,14 +95,15 @@ public class HelpViewerTest {
 			tree.getActionMap().get("showContents").actionPerformed(new ActionEvent(tree, ActionEvent.ACTION_PERFORMED, "escape"));
 			assertEquals(CONTENTS, HelpViewerTest.shown(viewer));
 
-			// a click on an entry opens its page; a click in the empty space below the entries
-			// deselects it again
+			// choosing an entry opens its page; a click in the empty space below the entries
+			// deselects it again (Swing's own tree handling of a press asks the toolkit for the
+			// menu shortcut key, which a headless run refuses, so the press goes to the viewer's
+			// listener alone)
 			tree.setSize(300, 2000);
-			Rectangle firstRow = tree.getRowBounds(0);
-			HelpViewerTest.press(tree, firstRow.x + 5, firstRow.y + firstRow.height / 2);
+			tree.setSelectionRow(0);
 			assertNotNull(tree.getSelectionPath());
 			assertNotEquals(CONTENTS, HelpViewerTest.shown(viewer), "the entry's page is open");
-			HelpViewerTest.press(tree, 20, 1900);
+			HelpViewerTest.pressForViewer(tree, 20, 1900);
 			assertNull(tree.getSelectionPath());
 			assertEquals(CONTENTS, HelpViewerTest.shown(viewer));
 		});
@@ -302,10 +302,17 @@ public class HelpViewerTest {
 		throw new AssertionError("no " + menuText + " > " + itemText);
 	}
 
-	/** A left-button press, as the mouse sends it. */
-	private static void press(Component component, int x, int y) {
-		component.dispatchEvent(new MouseEvent(component, MouseEvent.MOUSE_PRESSED, System.currentTimeMillis(),
-				InputEvent.BUTTON1_DOWN_MASK, x, y, 1, false, MouseEvent.BUTTON1));
+	/**
+	 * A left-button press, given only to the viewer's own mouse listeners: Swing's look-and-feel
+	 * listeners need a display (they ask the toolkit for the menu shortcut key).
+	 */
+	private static void pressForViewer(Component component, int x, int y) {
+		MouseEvent press = new MouseEvent(component, MouseEvent.MOUSE_PRESSED, System.currentTimeMillis(),
+				InputEvent.BUTTON1_DOWN_MASK, x, y, 1, false, MouseEvent.BUTTON1);
+		for (java.awt.event.MouseListener listener : component.getMouseListeners()) {
+			if (listener.getClass().getName().startsWith("javax.swing.")) continue;
+			listener.mousePressed(press);
+		}
 	}
 
 	/** The open pages: every tab but the last, "+", which opens a new one. */
