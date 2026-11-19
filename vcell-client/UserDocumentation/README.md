@@ -49,8 +49,18 @@ reaches without looking for it:
 - **"VCell Help" in an explanation**: VCell's short explanations (a solver's options, the
   diagram controls) end with a button or link to the page that says more.
 
-A view with no page of its own opens the help on its contents. The model window's mapping lives
-in `DocumentEditorHelp`; `DocumentEditorHelpTest` checks every page it names exists.
+The model window's mapping lives in `DocumentEditorHelp`. Two Fast tests keep every window linked
+to a page, so a new window or view fails them until it has one:
+
+- `DocumentEditorHelpTest`: every model-window view and tree node names a page that exists.
+- `HelpCoverageTest`: every window class says its page (`HelpContext.setPage`), and every child
+  window says the page of what it shows just before it opens, or says where that is done with a
+  `// help:` comment. Windows no page should explain (progress popups, developer tools) are
+  listed in the test with the reason.
+
+Where no page exists yet, add one. Pages that start with an **AI-drafted page** note were written
+from the source code and await review by the VCell team
+([#2226](https://github.com/virtualcell/vcell/issues/2226)); remove the note once a page is checked.
 
 ## Contents
 
