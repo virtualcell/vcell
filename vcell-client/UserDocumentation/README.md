@@ -33,6 +33,25 @@ UserDocumentation/
   block. Keep images under about 500 KB. They all ship inside the client.
 - Text in `<!-- ... -->` is a note for authors and never shown.
 
+## Contextual help
+
+VCell opens these pages from its windows, so a page with a `HelpIds` constant is one a reader
+reaches without looking for it:
+
+- **Help > VCell Help** (or **F1**) opens the page about the window in front. In a model window,
+  that is the page about the view open in it: the tree node, and the tab open there, such as
+  *Reactions Table* or *Events*. Code says which page explains a panel with
+  `HelpContext.setPage`.
+- **A small round "?"** opens the page about one part of a window, such as the Object Properties,
+  Annotations and Problems tabs under a model's view (the page follows the open tab and the
+  selected object). Child windows and dialogs with a page get a "?" in their top-right corner,
+  since they have no menu bar.
+- **"VCell Help" in an explanation**: VCell's short explanations (a solver's options, the
+  diagram controls) end with a button or link to the page that says more.
+
+A view with no page of its own opens the help on its contents. The model window's mapping lives
+in `DocumentEditorHelp`; `DocumentEditorHelpTest` checks every page it names exists.
+
 ## Contents
 
 `toc.md` is a nested list of links. Indent two spaces per level. The help opens on these
