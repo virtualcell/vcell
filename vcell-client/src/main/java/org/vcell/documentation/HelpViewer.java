@@ -2,6 +2,7 @@ package org.vcell.documentation;
 
 import cbit.vcell.client.laf.AppearanceMenus;
 import cbit.vcell.client.laf.VCellColors;
+import cbit.vcell.client.laf.VCellFonts;
 import org.vcell.util.gui.VCellIcons;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -64,7 +65,6 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -1452,14 +1452,12 @@ public final class HelpViewer extends JPanel {
 		Color link = VCellColors.getReadableForeground(LIGHT_THEME_LINK);
 		Color rule = VCellColors.blend(background, foreground, 0.25f);
 		Color codeBackground = VCellColors.blend(background, foreground, 0.07f);
-		Font font = UIManager.getFont("Label.font");
-		int size = font != null ? font.getSize() : 13;
 		return "body { background-color: " + VCellColors.toHtmlColor(background) + "; color: " + VCellColors.toHtmlColor(foreground)
 				+ "; margin: 10px 16px 24px 16px; }"
 				+ " p { margin-top: 0px; margin-bottom: 8px; }"
-				+ " h1 { font-size: " + (size + 9) + "pt; margin-top: 4px; margin-bottom: 10px; }"
-				+ " h2 { font-size: " + (size + 4) + "pt; margin-top: 14px; margin-bottom: 6px; }"
-				+ " h3 { font-size: " + (size + 2) + "pt; margin-top: 12px; margin-bottom: 4px; }"
+				+ " h1 { font-size: " + HelpViewer.points(VCellFonts.Category.DISPLAY) + "pt; margin-top: 4px; margin-bottom: 10px; }"
+				+ " h2 { font-size: " + HelpViewer.points(VCellFonts.Category.TITLE) + "pt; margin-top: 14px; margin-bottom: 6px; }"
+				+ " h3 { font-size: " + HelpViewer.points(VCellFonts.Category.SUBTITLE) + "pt; margin-top: 12px; margin-bottom: 4px; }"
 				+ " a { color: " + VCellColors.toHtmlColor(link) + "; }"
 				+ " ul, ol { margin-top: 0px; margin-bottom: 8px; margin-left-ltr: 22px; }"
 				+ " li { margin-bottom: 3px; }"
@@ -1467,6 +1465,10 @@ public final class HelpViewer extends JPanel {
 				+ " code, pre { font-family: Monospaced; background-color: " + VCellColors.toHtmlColor(codeBackground) + "; }"
 				+ " th, td { border: 1px solid " + VCellColors.toHtmlColor(rule) + "; padding: 3px 6px; }"
 				+ " strong { font-weight: bold; } em { font-style: italic; }";
+	}
+
+	private static int points(VCellFonts.Category category) {
+		return VCellFonts.getFont(category).getSize();
 	}
 
 	/** Re-render the open pages when the look and feel (light/dark theme) changes. */

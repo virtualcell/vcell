@@ -1,6 +1,7 @@
 package org.vcell.documentation;
 
 import cbit.vcell.client.laf.VCellColors;
+import cbit.vcell.client.laf.VCellFonts;
 import com.vladsch.flexmark.ast.Heading;
 import com.vladsch.flexmark.util.ast.Node;
 import org.apache.logging.log4j.LogManager;
@@ -27,7 +28,6 @@ import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Component;
 import java.awt.Cursor;
-import java.awt.Font;
 import java.awt.Rectangle;
 import java.awt.event.InputEvent;
 import java.io.IOException;
@@ -358,8 +358,7 @@ final class HelpTab extends JPanel {
 			super(new BorderLayout());
 			this.setName("HelpProblemView");
 			this.setBorder(BorderFactory.createEmptyBorder(14, 18, 14, 18));
-			Font font = UIManager.getFont("Label.font");
-			if (font != null) this.heading.setFont(font.deriveFont(Font.BOLD, font.getSize2D() + 6));
+			VCellFonts.setCategory(this.heading, VCellFonts.Category.TITLE);
 			this.heading.setIconTextGap(8);
 			this.goToButton.setName("HelpGoToProblem");
 			this.goToButton.addActionListener(e -> HelpTab.this.goToProblem());
