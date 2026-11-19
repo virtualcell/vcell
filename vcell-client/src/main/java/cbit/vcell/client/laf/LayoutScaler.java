@@ -27,6 +27,7 @@ final class LayoutScaler {
 	private static final String[] KINDS = {"preferred", "minimum", "maximum"};
 	private static final String BOUNDS = "bounds";
 	private static final int UNBOUNDED = 10_000; // sizes at least this large mean "no limit"; leave them be
+	private static final Dimension NO_LIMIT = new Dimension(0, 0); // a fitted window's limit when only the screen limits it
 
 	// Windows and table columns can't hold client properties; their design and last applied sizes are kept here
 	private static final Map<Window, WindowSize> windowSizes = new WeakHashMap<>();
@@ -125,7 +126,7 @@ final class LayoutScaler {
 			if (!window.isDisplayable() || LayoutScaler.isMaximized(window)) continue;
 			WindowSize sizes = LayoutScaler.windowSizes.get(window);
 			if (null != sizes && sizes.fits() && window.getSize().equals(sizes.applied())) fitting.put(window, sizes.fitLimit());
-			else if (window.getSize().equals(window.getPreferredSize())) packed.add(window);
+			else if (window.getSize().equals(LayoutScaler.withinScreen(window, window.getPreferredSize()))) packed.add(window);
 		}
 		return () -> {
 			for (Window window : Window.getWindows()) {
@@ -133,9 +134,9 @@ final class LayoutScaler {
 				if (fitting.containsKey(window)) {
 					LayoutScaler.fit(window, fitting.get(window));
 				} else if (packed.contains(window)) {
-					window.pack();
-					LayoutScaler.place(window, window.getSize());
-					LayoutScaler.windowSizes.put(window, new WindowSize(LayoutScaler.unscaled(window.getSize(), LayoutScaler.scale()), window.getSize()));
+					// from now on it fits its contents, even if the screen limits it: a size the screen cut short is
+					// not one to scale back down later
+					LayoutScaler.fit(window, NO_LIMIT);
 				} else {
 					LayoutScaler.scaleWindow(window, previousScale);
 				}
@@ -170,13 +171,21 @@ final class LayoutScaler {
 		LayoutScaler.windowSizes.put(window, new WindowSize(design, window.getSize()));
 	}
 
+	// The size, no larger than the usable part of the screen the window is on
+	private static Dimension withinScreen(Window window, Dimension size) {
+		GraphicsConfiguration screen = window.getGraphicsConfiguration();
+		Rectangle bounds = screen.getBounds();
+		Insets insets = Toolkit.getDefaultToolkit().getScreenInsets(screen);
+		return new Dimension(Math.min(size.width, bounds.width - insets.left - insets.right), Math.min(size.height, bounds.height - insets.top - insets.bottom));
+	}
+
 	// Sizes the window, no larger than the usable part of the screen it is on, and keeps it on that screen
 	private static void place(Window window, Dimension size) {
 		GraphicsConfiguration screen = window.getGraphicsConfiguration();
 		Rectangle bounds = screen.getBounds();
 		Insets insets = Toolkit.getDefaultToolkit().getScreenInsets(screen);
-		int width = Math.min(size.width, bounds.width - insets.left - insets.right);
-		int height = Math.min(size.height, bounds.height - insets.top - insets.bottom);
+		Dimension limited = LayoutScaler.withinScreen(window, size);
+		int width = limited.width, height = limited.height;
 		if (width != window.getWidth() || height != window.getHeight()) window.setSize(width, height);
 		int x = Math.max(bounds.x + insets.left, Math.min(window.getX(), bounds.x + bounds.width - insets.right - width));
 		int y = Math.max(bounds.y + insets.top, Math.min(window.getY(), bounds.y + bounds.height - insets.bottom - height));
