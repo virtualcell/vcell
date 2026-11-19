@@ -16,9 +16,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Assertions;
 
 /**
  * Checks the help source in vcell-client/UserDocumentation with {@link HelpChecks}: every link,
@@ -42,8 +40,8 @@ public class HelpBookTest {
 		List<HelpProblem> problems = HelpChecks.check(HelpBookTest.book);
 		// warnings (unused or large images) are worth tidying but fail nothing; list them in the log
 		problems.stream().filter(HelpProblem::isWarning).forEach(System.out::println);
-		assertEquals("", HelpChecks.errors(problems).stream().map(HelpProblem::toString).collect(Collectors.joining("\n")));
-		assertFalse(HelpBookTest.book.getTableOfContents().isEmpty());
+		Assertions.assertEquals("", HelpChecks.errors(problems).stream().map(HelpProblem::toString).collect(Collectors.joining("\n")));
+		Assertions.assertFalse(HelpBookTest.book.getTableOfContents().isEmpty());
 	}
 
 	@Test
@@ -61,51 +59,51 @@ public class HelpBookTest {
 				.filter(problem -> problem.path().equals("pages/Page.md"))
 				.map(HelpProblem::toString)
 				.toList();
-		assertEquals(5, found.size(), String.join("\n", found));
-		assertTrue(found.get(0).startsWith("pages/Page.md:3: "), found.get(0));
+		Assertions.assertEquals(5, found.size(), String.join("\n", found));
+		Assertions.assertTrue(found.get(0).startsWith("pages/Page.md:3: "), found.get(0));
 	}
 
 	@Test
 	public void headingLinksWorkInGitHubAndObsidianForm() {
 		HelpPage definitions = HelpBookTest.book.findPage("Definitions");
-		assertEquals("reaction-rules", HelpBookTest.book.resolveHeadingId(definitions, "reaction-rules"));
-		assertEquals("reaction-rules", HelpBookTest.book.resolveHeadingId(definitions, "Reaction%20Rules"));
-		assertEquals("reaction-rules", HelpBookTest.book.resolveHeadingId(definitions, "reaction rules"));
-		assertEquals(null, HelpBookTest.book.resolveHeadingId(definitions, "No%20Such%20Heading"));
+		Assertions.assertEquals("reaction-rules", HelpBookTest.book.resolveHeadingId(definitions, "reaction-rules"));
+		Assertions.assertEquals("reaction-rules", HelpBookTest.book.resolveHeadingId(definitions, "Reaction%20Rules"));
+		Assertions.assertEquals("reaction-rules", HelpBookTest.book.resolveHeadingId(definitions, "reaction rules"));
+		Assertions.assertEquals(null, HelpBookTest.book.resolveHeadingId(definitions, "No%20Such%20Heading"));
 	}
 
 	@Test
 	public void searchFindsTitleMatchesFirst() {
 		HelpSearch search = new HelpSearch(HelpBookTest.book);
 		List<HelpSearch.Hit> hits = search.search("field data");
-		assertFalse(hits.isEmpty());
-		assertTrue(hits.get(0).page().title().toLowerCase().contains("field data"), hits.get(0).page().title());
-		assertEquals(List.of(), search.search("   "));
-		assertEquals(List.of(), search.search("zzqqxx-no-such-word"));
+		Assertions.assertFalse(hits.isEmpty());
+		Assertions.assertTrue(hits.get(0).page().title().toLowerCase().contains("field data"), hits.get(0).page().title());
+		Assertions.assertEquals(List.of(), search.search("   "));
+		Assertions.assertEquals(List.of(), search.search("zzqqxx-no-such-word"));
 	}
 
 	@Test
 	public void rendersImagesWithSizesAndWebLinksAsHtml() {
 		HelpPage page = HelpBookTest.book.findPage("fieldData");
 		String swingHtml = new HelpRenderer(HelpBookTest.book, HelpRenderer.Target.SWING, 600).renderBody(page);
-		assertTrue(swingHtml.matches("(?s).*<img[^>]* width=\"\\d+\" height=\"\\d+\".*"), swingHtml);
-		assertTrue(swingHtml.contains("<h1><a name="), "Swing headings carry <a name> anchors");
+		Assertions.assertTrue(swingHtml.matches("(?s).*<img[^>]* width=\"\\d+\" height=\"\\d+\".*"), swingHtml);
+		Assertions.assertTrue(swingHtml.contains("<h1><a name="), "Swing headings carry <a name> anchors");
 
 		HelpPage definitionsLinker = HelpBookTest.book.findPage("New");
 		String webHtml = new HelpRenderer(HelpBookTest.book, HelpRenderer.Target.WEB, 600).renderBody(definitionsLinker);
-		assertFalse(webHtml.contains(".md\""), webHtml);
-		assertTrue(webHtml.contains(".html\""), webHtml);
+		Assertions.assertFalse(webHtml.contains(".md\""), webHtml);
+		Assertions.assertTrue(webHtml.contains(".html\""), webHtml);
 	}
 
 	@Test
 	public void resolvesRelativeHrefs() {
-		assertEquals("pages/Physiology/Molecules.md", HelpBook.resolvePath("pages/Introduction/New.md", "../Physiology/Molecules.md#x"));
-		assertEquals("pages/Introduction/New.md", HelpBook.resolvePath("pages/Introduction/New.md", "#section"));
-		assertEquals(null, HelpBook.resolvePath("pages/Introduction/New.md", "https://vcell.org"));
-		assertEquals(null, HelpBook.resolvePath("pages/New.md", "../../outside.md"));
-		assertEquals(null, HelpBook.resolvePath("pages/New.md", "//host/share/x.md"));
-		assertEquals(null, HelpBook.resolvePath("pages/New.md", "..\\..\\outside.md"));
-		assertEquals("../a/B.html#c", HelpRenderer.toHtmlHref("../a/B.md#c"));
+		Assertions.assertEquals("pages/Physiology/Molecules.md", HelpBook.resolvePath("pages/Introduction/New.md", "../Physiology/Molecules.md#x"));
+		Assertions.assertEquals("pages/Introduction/New.md", HelpBook.resolvePath("pages/Introduction/New.md", "#section"));
+		Assertions.assertEquals(null, HelpBook.resolvePath("pages/Introduction/New.md", "https://vcell.org"));
+		Assertions.assertEquals(null, HelpBook.resolvePath("pages/New.md", "../../outside.md"));
+		Assertions.assertEquals(null, HelpBook.resolvePath("pages/New.md", "//host/share/x.md"));
+		Assertions.assertEquals(null, HelpBook.resolvePath("pages/New.md", "..\\..\\outside.md"));
+		Assertions.assertEquals("../a/B.html#c", HelpRenderer.toHtmlHref("../a/B.md#c"));
 	}
 
 	@Test
@@ -121,18 +119,18 @@ public class HelpBookTest {
 		HelpBookTest.writePng(helpRoot.resolve("images/Small.png"), 20, 20);
 		HelpBookTest.writePng(helpRoot.resolve("images/Unused.png"), 20, 20);
 		HelpBookTest.writePng(helpRoot.resolve("images/Large.png"), 600, 600); // random pixels: over 1 MB
-		assertTrue(Files.size(helpRoot.resolve("images/Large.png")) > HelpChecks.LARGE_IMAGE_BYTES);
+		Assertions.assertTrue(Files.size(helpRoot.resolve("images/Large.png")) > HelpChecks.LARGE_IMAGE_BYTES);
 
 		// this small help has none of the pages VCell opens by name, so look at the warnings only
 		List<HelpProblem> problems = HelpChecks.check(HelpBook.fromDirectory(helpRoot.toFile()));
-		assertTrue(problems.stream().noneMatch(problem -> problem.kind() == HelpProblem.Kind.IMAGE), problems.toString());
+		Assertions.assertTrue(problems.stream().noneMatch(problem -> problem.kind() == HelpProblem.Kind.IMAGE), problems.toString());
 		List<String> found = problems.stream().filter(HelpProblem::isWarning).map(HelpProblem::toString).toList();
 		// a large image is reported once, where it is first shown, so choosing it opens that page
-		assertEquals(2, found.size(), String.join("\n", found));
-		assertTrue(found.get(0).startsWith("pages/Page.md:5: warning: image '../images/Large.png' is 1,"), found.get(0));
-		assertTrue(found.get(1).startsWith("images/Unused.png: warning: no page shows this image"), found.get(1));
+		Assertions.assertEquals(2, found.size(), String.join("\n", found));
+		Assertions.assertTrue(found.get(0).startsWith("pages/Page.md:5: warning: image '../images/Large.png' is 1,"), found.get(0));
+		Assertions.assertTrue(found.get(1).startsWith("images/Unused.png: warning: no page shows this image"), found.get(1));
 		// errors come first, so the warnings are the end of the list
-		assertTrue(problems.get(problems.size() - 1).isWarning() && !problems.get(0).isWarning());
+		Assertions.assertTrue(problems.get(problems.size() - 1).isWarning() && !problems.get(0).isWarning());
 	}
 
 	/** A PNG of random pixels, which PNG can't compress, so its size follows its dimensions. */

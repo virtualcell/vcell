@@ -99,7 +99,7 @@ public ClientMDIManager(RequestManager requestManager) {
 	Toolkit.getDefaultToolkit().addAWTEventListener(event -> {
 		if (event.getID() != ComponentEvent.COMPONENT_HIDDEN || !(event.getSource() instanceof LWTopFrame window)) return;
 		if (window instanceof DocumentWindow || window instanceof WelcomeWindow) return;
-		if (getRequestManager() instanceof ClientRequestManager clientRequestManager) clientRequestManager.afterOtherWindowClosed();
+		if (this.getRequestManager() instanceof ClientRequestManager clientRequestManager) clientRequestManager.afterOtherWindowClosed();
 	}, AWTEvent.COMPONENT_EVENT_MASK);
 }
 
@@ -154,7 +154,7 @@ public long closeWindow(String windowID) {
 		}
 	}
 	// others need to know... (e.g. last window was closed)
-	return numberOfDocumentWindowsShowing();
+	return this.numberOfDocumentWindowsShowing();
 }
 
 /**
@@ -162,9 +162,9 @@ public long closeWindow(String windowID) {
  * window don't count: closing the last model window brings back the welcome window, whatever else is open.
  */
 public long numberOfDocumentWindowsShowing() {
-	return getManagersHash().entrySet().stream()
+	return this.getManagersHash().entrySet().stream()
 			.filter(entry -> entry.getValue() instanceof DocumentWindowManager)
-			.filter(entry -> getWindowsHash().get(entry.getKey()) instanceof Window window && window.isVisible())
+			.filter(entry -> this.getWindowsHash().get(entry.getKey()) instanceof Window window && window.isVisible())
 			.count();
 }
 
@@ -293,8 +293,8 @@ public void showWelcomeWindow() {
 		// as tall as it needs, and centered as it is once logged in; it packs again as the model tabs come and go
 		((WelcomePanel) welcomeWindowManager.getComponent()).packAndCenter();
 	}
-	if (null != welcomeHideTimer) welcomeHideTimer.stop(); // asked for again: a model opened earlier no longer takes its place
-	welcomeHideTimer = null;
+	if (null != this.welcomeHideTimer) this.welcomeHideTimer.stop(); // asked for again: a model opened earlier no longer takes its place
+	this.welcomeHideTimer = null;
 	showWindow(WELCOME_WINDOW_ID);
 	((Window) getWindowsHash().get(WELCOME_WINDOW_ID)).toFront();
 }
@@ -304,10 +304,10 @@ public void showWelcomeWindow() {
 // welcome window again ends it, and so does the last model window closing.
 private void hideWelcomeWindowWhenTasksAreDone() {
 	Window welcome = (Window) getWindowsHash().get(WELCOME_WINDOW_ID);
-	if (null != welcomeHideTimer) welcomeHideTimer.stop();
+	if (null != this.welcomeHideTimer) this.welcomeHideTimer.stop();
 	javax.swing.Timer timer = new javax.swing.Timer(200, null);
 	timer.addActionListener(e -> {
-		if (numberOfDocumentWindowsShowing() == 0) { // the model it made way for has closed (or never opened)
+		if (this.numberOfDocumentWindowsShowing() == 0) { // the model it made way for has closed (or never opened)
 			timer.stop();
 			return;
 		}
@@ -318,7 +318,7 @@ private void hideWelcomeWindowWhenTasksAreDone() {
 		timer.stop();
 		if (welcome.isShowing() && !WelcomeWindowManager.isKeptOpen()) welcome.setVisible(false);
 	});
-	welcomeHideTimer = timer;
+	this.welcomeHideTimer = timer;
 	timer.start();
 }
 

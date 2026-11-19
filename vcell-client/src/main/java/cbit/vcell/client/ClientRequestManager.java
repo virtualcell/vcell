@@ -466,8 +466,8 @@ public class ClientRequestManager
 	 * with no window at all.
 	 */
 	void afterOtherWindowClosed() {
-		if (bExiting || bClosingAllWindows) return;
-		ClientMDIManager mdiManager = (ClientMDIManager) getMdiManager();
+		if (this.bExiting || this.bClosingAllWindows) return;
+		ClientMDIManager mdiManager = (ClientMDIManager) this.getMdiManager();
 		if (mdiManager.isAnyWindowShowing()) return;
 		mdiManager.showWelcomeWindow();
 	}
@@ -528,8 +528,8 @@ public class ClientRequestManager
 		} else if (windowManager instanceof WelcomeWindowManager) {
 			// it only hides; with no other window open either, VCell quits (with help still open, say, it comes back
 			// when that closes: see afterOtherWindowClosed)
-			getMdiManager().closeWindow(windowID);
-			if (exitIfLast && !((ClientMDIManager) getMdiManager()).isAnyWindowShowing()) {
+			this.getMdiManager().closeWindow(windowID);
+			if (exitIfLast && !((ClientMDIManager) this.getMdiManager()).isAnyWindowShowing()) {
 				setBExiting(true);
 				exitApplication();
 			}
@@ -537,16 +537,16 @@ public class ClientRequestManager
 		} else if (windowManager instanceof DatabaseWindowManager) {
 			// nothing to check here, just close it; with nothing else open, the welcome window comes back
 			// (afterOtherWindowClosed), as after the last model window
-			getMdiManager().closeWindow(windowID);
+			this.getMdiManager().closeWindow(windowID);
 			return true;
 		} else if (windowManager instanceof TestingFrameworkWindowManager) {
-			getMdiManager().closeWindow(windowID); // as the database window
+			this.getMdiManager().closeWindow(windowID); // as the database window
 			return true;
 		} else if (windowManager instanceof BNGWindowManager) {
-			getMdiManager().closeWindow(windowID); // as the database window
+			this.getMdiManager().closeWindow(windowID); // as the database window
 			return true;
 		} else if (windowManager instanceof FieldDataWindowManager) {
-			getMdiManager().closeWindow(windowID); // as the database window
+			this.getMdiManager().closeWindow(windowID); // as the database window
 			return true;
 		} else {
 			return false;
@@ -2786,7 +2786,7 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 					// user bailed out at some point, we're not gonna exit
 					return;
 				}
-				setBExiting(true); // no bringing back the welcome window as the remaining windows close
+				this.setBExiting(true); // no bringing back the welcome window as the remaining windows close
 			}
 			// ready to exit
 			if (!ClientTaskDispatcher.hasOutstandingTasks()) {

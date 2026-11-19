@@ -31,12 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.prefs.Preferences;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Assertions;
 
 /**
  * The help window with no page open: the page area shows the table of contents, reached from the
@@ -61,15 +56,15 @@ public class HelpViewerTest {
 			String introductionTitle = HelpViewerTest.book.findPage(HelpIds.INTRODUCTION).title();
 			// Help > VCell Help opens here
 			viewer.showTableOfContents();
-			assertEquals(CONTENTS, HelpViewerTest.shown(viewer));
-			assertNull(tree.getSelectionPath());
+			Assertions.assertEquals(CONTENTS, HelpViewerTest.shown(viewer));
+			Assertions.assertNull(tree.getSelectionPath());
 			viewer.showPage(HelpIds.INTRODUCTION);
-			assertEquals(introductionTitle, HelpViewerTest.shown(viewer));
-			assertNotNull(tree.getSelectionPath(), "the open page is selected in the contents");
+			Assertions.assertEquals(introductionTitle, HelpViewerTest.shown(viewer));
+			Assertions.assertNotNull(tree.getSelectionPath(), "the open page is selected in the contents");
 
 			HelpViewerTest.find(viewer, "HelpHome", AbstractButton.class).doClick();
-			assertEquals(CONTENTS, HelpViewerTest.shown(viewer));
-			assertNull(tree.getSelectionPath(), "no page is open, so none is selected");
+			Assertions.assertEquals(CONTENTS, HelpViewerTest.shown(viewer));
+			Assertions.assertNull(tree.getSelectionPath(), "no page is open, so none is selected");
 
 			// a link on the contents page, as the page pane reports a click on it
 			HelpPage target = HelpViewerTest.book.findPage("GeneralNavAndWinSetup");
@@ -77,23 +72,23 @@ public class HelpViewerTest {
 			for (HyperlinkListener listener : page.getHyperlinkListeners()) {
 				listener.hyperlinkUpdate(new HyperlinkEvent(page, HyperlinkEvent.EventType.ACTIVATED, null, target.path()));
 			}
-			assertEquals(target.title(), HelpViewerTest.shown(viewer));
-			assertNotNull(tree.getSelectionPath());
+			Assertions.assertEquals(target.title(), HelpViewerTest.shown(viewer));
+			Assertions.assertNotNull(tree.getSelectionPath());
 
 			HelpViewerTest.find(viewer, "HelpBack", AbstractButton.class).doClick();
-			assertEquals(CONTENTS, HelpViewerTest.shown(viewer), "the contents are a place in the history");
-			assertNull(tree.getSelectionPath());
+			Assertions.assertEquals(CONTENTS, HelpViewerTest.shown(viewer), "the contents are a place in the history");
+			Assertions.assertNull(tree.getSelectionPath());
 			HelpViewerTest.find(viewer, "HelpForward", AbstractButton.class).doClick();
-			assertEquals(target.title(), HelpViewerTest.shown(viewer));
+			Assertions.assertEquals(target.title(), HelpViewerTest.shown(viewer));
 
 			// deselecting the open entry (Cmd/Ctrl-click) leaves no page open
 			tree.clearSelection();
-			assertEquals(CONTENTS, HelpViewerTest.shown(viewer));
+			Assertions.assertEquals(CONTENTS, HelpViewerTest.shown(viewer));
 
 			// so does Escape in the tree
 			viewer.showPage(HelpIds.INTRODUCTION);
 			tree.getActionMap().get("showContents").actionPerformed(new ActionEvent(tree, ActionEvent.ACTION_PERFORMED, "escape"));
-			assertEquals(CONTENTS, HelpViewerTest.shown(viewer));
+			Assertions.assertEquals(CONTENTS, HelpViewerTest.shown(viewer));
 
 			// choosing an entry opens its page; a click in the empty space below the entries
 			// deselects it again (Swing's own tree handling of a press asks the toolkit for the
@@ -101,11 +96,11 @@ public class HelpViewerTest {
 			// listener alone)
 			tree.setSize(300, 2000);
 			tree.setSelectionRow(0);
-			assertNotNull(tree.getSelectionPath());
-			assertNotEquals(CONTENTS, HelpViewerTest.shown(viewer), "the entry's page is open");
+			Assertions.assertNotNull(tree.getSelectionPath());
+			Assertions.assertNotEquals(CONTENTS, HelpViewerTest.shown(viewer), "the entry's page is open");
 			HelpViewerTest.pressForViewer(tree, 20, 1900);
-			assertNull(tree.getSelectionPath());
-			assertEquals(CONTENTS, HelpViewerTest.shown(viewer));
+			Assertions.assertNull(tree.getSelectionPath());
+			Assertions.assertEquals(CONTENTS, HelpViewerTest.shown(viewer));
 		});
 	}
 
@@ -116,28 +111,28 @@ public class HelpViewerTest {
 			JMenuBar menuBar = viewer.createMenuBar(viewer);
 			List<String> menus = new ArrayList<>();
 			for (int index = 0; index < menuBar.getMenuCount(); index++) menus.add(menuBar.getMenu(index).getText());
-			assertEquals(List.of("File", "Go", "View", "Window"), menus);
+			Assertions.assertEquals(List.of("File", "Go", "View", "Window"), menus);
 
 			viewer.showPage(HelpIds.INTRODUCTION);
 			JMenuItem back = HelpViewerTest.item(menuBar, "Go", "Back");
 			JMenuItem home = HelpViewerTest.item(menuBar, "Go", "Home");
-			assertFalse(back.isEnabled(), "nothing to go back to yet");
-			assertNotNull(home.getAccelerator(), "the menu shows Home's shortcut");
+			Assertions.assertFalse(back.isEnabled(), "nothing to go back to yet");
+			Assertions.assertNotNull(home.getAccelerator(), "the menu shows Home's shortcut");
 			home.doClick();
-			assertEquals(CONTENTS, HelpViewerTest.shown(viewer));
-			assertTrue(back.isEnabled(), "the menu item follows the toolbar's Back");
+			Assertions.assertEquals(CONTENTS, HelpViewerTest.shown(viewer));
+			Assertions.assertTrue(back.isEnabled(), "the menu item follows the toolbar's Back");
 			back.doClick();
-			assertNotEquals(CONTENTS, HelpViewerTest.shown(viewer));
+			Assertions.assertNotEquals(CONTENTS, HelpViewerTest.shown(viewer));
 
-			assertFalse(HelpViewerTest.item(menuBar, "View", "Problems").isEnabled(), "problems only for a source folder");
-			assertFalse(HelpViewerTest.item(menuBar, "View", "Use the Built-in Help").isEnabled(), "already the built-in help");
+			Assertions.assertFalse(HelpViewerTest.item(menuBar, "View", "Problems").isEnabled(), "problems only for a source folder");
+			Assertions.assertFalse(HelpViewerTest.item(menuBar, "View", "Use the Built-in Help").isEnabled(), "already the built-in help");
 
 			JTree tree = HelpViewerTest.find(viewer, "HelpContents", JTree.class);
 			int collapsedRows = tree.getRowCount();
 			HelpViewerTest.item(menuBar, "View", "Expand All").doClick();
-			assertTrue(tree.getRowCount() > collapsedRows, "every entry is showing");
+			Assertions.assertTrue(tree.getRowCount() > collapsedRows, "every entry is showing");
 			HelpViewerTest.item(menuBar, "View", "Collapse All").doClick();
-			assertEquals(HelpViewerTest.book.getTableOfContents().size(), tree.getRowCount(), "only the top entries");
+			Assertions.assertEquals(HelpViewerTest.book.getTableOfContents().size(), tree.getRowCount(), "only the top entries");
 		});
 	}
 
@@ -153,7 +148,7 @@ public class HelpViewerTest {
 		// all of them: this small help also lacks the pages VCell opens by name (errors in no page)
 		List<HelpProblem> all = HelpChecks.check(HelpBook.fromDirectory(helpRoot.toFile()));
 		long allErrors = HelpChecks.errors(all).size();
-		assertEquals(2, all.size() - allErrors, "the large and the unused image");
+		Assertions.assertEquals(2, all.size() - allErrors, "the large and the unused image");
 
 		Preferences preferences = Preferences.userNodeForPackage(HelpViewer.class);
 		String savedFolder = preferences.get("sourceFolder", null); // loading a folder remembers it
@@ -170,53 +165,53 @@ public class HelpViewerTest {
 				JList<?> list = HelpViewerTest.find(viewer[0], "HelpProblemList", JList.class);
 				JCheckBox errors = HelpViewerTest.find(viewer[0], "HelpShowErrors", JCheckBox.class);
 				JCheckBox warnings = HelpViewerTest.find(viewer[0], "HelpShowWarnings", JCheckBox.class);
-				assertEquals(2, tabs.getTabCount(), "the folder loaded");
+				Assertions.assertEquals(2, tabs.getTabCount(), "the folder loaded");
 
 				viewer[0].showTableOfContents();
-				assertEquals("Problems (" + allErrors + "/2)", tabs.getTitleAt(1), "errors/warnings, all pages");
-				assertEquals(all.size(), list.getModel().getSize());
+				Assertions.assertEquals("Problems (" + allErrors + "/2)", tabs.getTitleAt(1), "errors/warnings, all pages");
+				Assertions.assertEquals(all.size(), list.getModel().getSize());
 
 				viewer[0].showPage("Broken");
-				assertEquals("Problems (1/1)", tabs.getTitleAt(1), "only this page's: the broken link and the large image");
-				assertEquals(2, list.getModel().getSize());
+				Assertions.assertEquals("Problems (1/1)", tabs.getTitleAt(1), "only this page's: the broken link and the large image");
+				Assertions.assertEquals(2, list.getModel().getSize());
 				errors.doClick();
-				assertEquals(1, list.getModel().getSize(), "errors filtered out");
-				assertTrue(((HelpProblem) list.getModel().getElementAt(0)).isWarning());
-				assertEquals("Problems (1/1)", tabs.getTitleAt(1), "a hidden error still counts");
+				Assertions.assertEquals(1, list.getModel().getSize(), "errors filtered out");
+				Assertions.assertTrue(((HelpProblem) list.getModel().getElementAt(0)).isWarning());
+				Assertions.assertEquals("Problems (1/1)", tabs.getTitleAt(1), "a hidden error still counts");
 				warnings.doClick();
-				assertEquals(0, list.getModel().getSize());
+				Assertions.assertEquals(0, list.getModel().getSize());
 				errors.doClick();
 				warnings.doClick();
 
 				viewer[0].showPage("Clean");
-				assertEquals("Problems (0/0)", tabs.getTitleAt(1));
-				assertEquals(0, list.getModel().getSize());
+				Assertions.assertEquals("Problems (0/0)", tabs.getTitleAt(1));
+				Assertions.assertEquals(0, list.getModel().getSize());
 
 				// choosing a problem shows it in a tab of its own; the next one reuses that tab
 				JTabbedPane pages = HelpViewerTest.find(viewer[0], "HelpPages", JTabbedPane.class);
 				viewer[0].showPage("Broken");
 				int pageTabs = HelpViewerTest.pageTabCount(pages);
 				list.setSelectedIndex(0); // errors come first: the broken link
-				assertEquals(pageTabs + 1, HelpViewerTest.pageTabCount(pages), "a problem tab");
-				assertEquals("Broken link", pages.getTitleAt(pages.getSelectedIndex()));
-				assertEquals(2, list.getModel().getSize(), "the list keeps the page's problems");
+				Assertions.assertEquals(pageTabs + 1, HelpViewerTest.pageTabCount(pages), "a problem tab");
+				Assertions.assertEquals("Broken link", pages.getTitleAt(pages.getSelectedIndex()));
+				Assertions.assertEquals(2, list.getModel().getSize(), "the list keeps the page's problems");
 				list.setSelectedIndex(1);
-				assertEquals(pageTabs + 1, HelpViewerTest.pageTabCount(pages), "the problem tab is reused");
-				assertEquals("Large image file", pages.getTitleAt(pages.getSelectedIndex()));
+				Assertions.assertEquals(pageTabs + 1, HelpViewerTest.pageTabCount(pages), "the problem tab is reused");
+				Assertions.assertEquals("Large image file", pages.getTitleAt(pages.getSelectedIndex()));
 
 				// Go to opens the problem's page in that tab, and Back returns to the problem
 				HelpViewerTest.find((Container) pages.getSelectedComponent(), "HelpGoToProblem", AbstractButton.class).doClick();
-				assertEquals("Broken", HelpViewerTest.shown(viewer[0]));
-				assertEquals("Broken", pages.getTitleAt(pages.getSelectedIndex()));
+				Assertions.assertEquals("Broken", HelpViewerTest.shown(viewer[0]));
+				Assertions.assertEquals("Broken", pages.getTitleAt(pages.getSelectedIndex()));
 				HelpViewerTest.find(viewer[0], "HelpBack", AbstractButton.class).doClick();
-				assertEquals("Large image file", pages.getTitleAt(pages.getSelectedIndex()));
+				Assertions.assertEquals("Large image file", pages.getTitleAt(pages.getSelectedIndex()));
 
 				// a problem on no page (the unused image) can't be gone to
 				viewer[0].showTableOfContents();
 				for (int index = 0; index < list.getModel().getSize(); index++) {
 					if (((HelpProblem) list.getModel().getElementAt(index)).kind() == HelpProblem.Kind.UNUSED_IMAGE) list.setSelectedIndex(index);
 				}
-				assertFalse(HelpViewerTest.find((Container) pages.getSelectedComponent(), "HelpGoToProblem", AbstractButton.class).isEnabled());
+				Assertions.assertFalse(HelpViewerTest.find((Container) pages.getSelectedComponent(), "HelpGoToProblem", AbstractButton.class).isEnabled());
 			});
 		} finally {
 			if (savedFolder == null) preferences.remove("sourceFolder");
@@ -235,17 +230,17 @@ public class HelpViewerTest {
 			// opening the help from VCell: a tab per place, reused when the place is already open
 			viewer.showInTab(HelpTab.Location.contents());
 			viewer.showInTab(HelpTab.Location.page(introduction, null));
-			assertEquals(2, HelpViewerTest.pageTabCount(pages));
-			assertEquals(introduction.title(), HelpViewerTest.shown(viewer));
+			Assertions.assertEquals(2, HelpViewerTest.pageTabCount(pages));
+			Assertions.assertEquals(introduction.title(), HelpViewerTest.shown(viewer));
 			viewer.showInTab(HelpTab.Location.contents());
-			assertEquals(2, HelpViewerTest.pageTabCount(pages), "the contents' tab, again");
-			assertEquals(0, pages.getSelectedIndex());
+			Assertions.assertEquals(2, HelpViewerTest.pageTabCount(pages), "the contents' tab, again");
+			Assertions.assertEquals(0, pages.getSelectedIndex());
 
 			// File > New Tab opens Home, with a history of its own
 			HelpViewerTest.item(menuBar, "File", "New Tab").doClick();
-			assertEquals(3, HelpViewerTest.pageTabCount(pages));
-			assertEquals(CONTENTS, HelpViewerTest.shown(viewer));
-			assertFalse(HelpViewerTest.item(menuBar, "Go", "Back").isEnabled());
+			Assertions.assertEquals(3, HelpViewerTest.pageTabCount(pages));
+			Assertions.assertEquals(CONTENTS, HelpViewerTest.shown(viewer));
+			Assertions.assertFalse(HelpViewerTest.item(menuBar, "Go", "Back").isEnabled());
 
 			// Cmd/Ctrl-click on a link opens it in a new tab behind this one
 			HelpPage target = HelpViewerTest.book.findPage("GeneralNavAndWinSetup");
@@ -254,32 +249,32 @@ public class HelpViewerTest {
 			for (HyperlinkListener listener : page.getHyperlinkListeners()) {
 				listener.hyperlinkUpdate(new HyperlinkEvent(page, HyperlinkEvent.EventType.ACTIVATED, null, target.path(), null, click));
 			}
-			assertEquals(4, HelpViewerTest.pageTabCount(pages));
-			assertEquals(2, pages.getSelectedIndex(), "the new tab opens behind");
-			assertEquals(CONTENTS, HelpViewerTest.shown(viewer));
-			assertEquals(target.title(), pages.getTitleAt(3));
+			Assertions.assertEquals(4, HelpViewerTest.pageTabCount(pages));
+			Assertions.assertEquals(2, pages.getSelectedIndex(), "the new tab opens behind");
+			Assertions.assertEquals(CONTENTS, HelpViewerTest.shown(viewer));
+			Assertions.assertEquals(target.title(), pages.getTitleAt(3));
 
 			// the "+" tab, last, can't be selected; its button opens a new tab before it
 			int last = pages.getTabCount() - 1;
-			assertFalse(pages.isEnabledAt(last));
+			Assertions.assertFalse(pages.isEnabledAt(last));
 			HelpViewerTest.find((Container) pages.getTabComponentAt(last).getParent(), "HelpNewTab", AbstractButton.class).doClick();
-			assertEquals(5, HelpViewerTest.pageTabCount(pages));
-			assertEquals(4, pages.getSelectedIndex(), "the new tab, just before the plus");
+			Assertions.assertEquals(5, HelpViewerTest.pageTabCount(pages));
+			Assertions.assertEquals(4, pages.getSelectedIndex(), "the new tab, just before the plus");
 			HelpViewerTest.item(menuBar, "File", "Close Tab").doClick();
-			assertEquals(4, HelpViewerTest.pageTabCount(pages));
-			assertTrue(pages.getSelectedComponent() instanceof HelpTab, "closing the tab next to the plus selects a page, not the plus");
+			Assertions.assertEquals(4, HelpViewerTest.pageTabCount(pages));
+			Assertions.assertTrue(pages.getSelectedComponent() instanceof HelpTab, "closing the tab next to the plus selects a page, not the plus");
 			pages.setSelectedIndex(2);
 
 			// Go > Show Next Tab, then File > Close Tab
 			HelpViewerTest.item(menuBar, "Go", "Show Next Tab").doClick();
-			assertEquals(target.title(), HelpViewerTest.shown(viewer));
+			Assertions.assertEquals(target.title(), HelpViewerTest.shown(viewer));
 			HelpViewerTest.item(menuBar, "File", "Close Tab").doClick();
-			assertEquals(3, HelpViewerTest.pageTabCount(pages));
+			Assertions.assertEquals(3, HelpViewerTest.pageTabCount(pages));
 
 			// each tab's Back is its own: the Introduction tab has nowhere to go back to
 			pages.setSelectedIndex(1);
-			assertEquals(introduction.title(), HelpViewerTest.shown(viewer));
-			assertFalse(HelpViewerTest.item(menuBar, "Go", "Back").isEnabled());
+			Assertions.assertEquals(introduction.title(), HelpViewerTest.shown(viewer));
+			Assertions.assertFalse(HelpViewerTest.item(menuBar, "Go", "Back").isEnabled());
 		});
 	}
 

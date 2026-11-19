@@ -1288,7 +1288,7 @@ public final class SwingInspector {
 				// a listener assuming a visible popup may object; matching below still gets its chance
 			}
 		}
-		return scanItems(menu, text);
+		return SwingInspector.scanItems(menu, text);
 	}
 
 	private static JMenuItem scanItems(JMenu menu, String text) {

@@ -242,9 +242,9 @@ public abstract class LWTopFrame extends JFrame implements LWContainerHandle {
 			for (JMenuItem mi : activeMenuItems()) {
 				menu.add(mi);
 			}
-			if (!extraItems.isEmpty()) {
+			if (!this.extraItems.isEmpty()) {
 				if (menu.getMenuComponentCount() > 0) menu.addSeparator();
-				for (JMenuItem mi : extraItems) {
+				for (JMenuItem mi : this.extraItems) {
 					menu.add(mi);
 				}
 			}
