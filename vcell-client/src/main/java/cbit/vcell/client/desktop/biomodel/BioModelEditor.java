@@ -98,6 +98,8 @@ public class BioModelEditor extends DocumentEditor {
 	private BioModelEditorTreeModel bioModelEditorTreeModel = null;
 	private BioModelPropertiesPanel bioModelPropertiesPanel = null;	
 	private BioModelEditorAnnotationPanel bioModelEditorAnnotationPanel = null;
+	static final String NETWORK_GENERATION_TAB_TITLE = "Network Generation Status";
+	static final String PATHWAY_PREVIEW_TAB_TITLE = "Pathway Preview";
 	private final OpenBioModelDatabaseInfoPanel openBioModelDatabaseInfoPanel = new OpenBioModelDatabaseInfoPanel(); // the open model's own Database File Info, shown when its root is selected
 	private BioModelEditorApplicationsPanel bioModelEditorApplicationsPanel = null;
 	
@@ -146,6 +148,16 @@ public class BioModelEditor extends DocumentEditor {
 	public BioModelEditor() {
 		super();
 		initialize();
+	}
+
+	// the panel shown says which of its tabs is open: choosing a tree node alone doesn't say
+	@Override
+	protected String helpPage() {
+		Component top = rightSplitPane.getTopComponent();
+		String page = null;
+		if (top == bioModelEditorModelPanel) page = bioModelEditorModelPanel.helpPage();
+		if (top == bioModelEditorApplicationPanel) page = bioModelEditorApplicationPanel.helpPage();
+		return page != null ? page : super.helpPage();
 	}
 
 	public void specialLayout(){
@@ -915,7 +927,7 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 				break;
 			}
 		}
-		String tabTitle = "Pathway Preview";
+		String tabTitle = PATHWAY_PREVIEW_TAB_TITLE;
 		if (rightBottomTabbedPane.getTabCount() == destComponentIndex) {
 			rightBottomTabbedPane.addTab(tabTitle, new TabCloseIcon(), bottomComponent);
 		}
@@ -1049,7 +1061,7 @@ private void setRightTopPanel(Object selectedObject, SimulationContext simulatio
 			return;
 		}
 //		rightBottomTabbedPane.addTab("Network Console", new TabCloseIcon(), getSimulationConsolePanel());
-		rightBottomTabbedPane.addTab("Network Generation Status", getSimulationConsolePanel());
+		rightBottomTabbedPane.addTab(NETWORK_GENERATION_TAB_TITLE, getSimulationConsolePanel());
 	}
 }
 

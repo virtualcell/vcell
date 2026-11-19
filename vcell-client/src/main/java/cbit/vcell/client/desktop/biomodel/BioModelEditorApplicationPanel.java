@@ -136,6 +136,18 @@ public class BioModelEditorApplicationPanel extends DocumentEditorSubPanel {
 		add(tabbedPane, BorderLayout.CENTER);
 	}	
 
+	/** The help page about the open tab, and the tab open inside it. */
+	String helpPage() {
+		java.awt.Component shown = tabbedPane.getSelectedComponent();
+		ActiveView view = null;
+		if (shown == applicationGeometryPanel) view = applicationGeometryPanel.getActiveView();
+		else if (shown == applicationSpecificationsPanel) view = applicationSpecificationsPanel.getActiveView();
+		else if (shown == applicationProtocolsPanel) view = applicationProtocolsPanel.getActiveView();
+		else if (shown == applicationSimulationsPanel) view = applicationSimulationsPanel.getActiveView();
+		else if (shown == parameterEstimationPanel) view = parameterEstimationPanel.getActiveView();
+		return DocumentEditorHelp.pageFor(view);
+	}
+
 	public void tabbedPaneSelectionChanged() {
 		int selectedIndex = tabbedPane.getSelectedIndex();
 		ActiveView activeView = null;

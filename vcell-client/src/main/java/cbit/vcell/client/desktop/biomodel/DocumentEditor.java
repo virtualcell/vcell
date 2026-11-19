@@ -10,6 +10,8 @@
 
 package cbit.vcell.client.desktop.biomodel;
 
+import org.vcell.documentation.HelpButton;
+import org.vcell.documentation.HelpContext;
 import cbit.vcell.client.laf.VCellFonts;
 import cbit.vcell.client.laf.VCellLookAndFeel;
 import java.awt.AWTEvent;
@@ -82,7 +84,7 @@ import cbit.vcell.xml.gui.MiriamTreeModel.LinkNode;
 public abstract class DocumentEditor extends JPanel {
 	public static final String TAB_TITLE_PROBLEMS = "Problems";
 	private static final String TAB_TITLE_OBJECT_PROPERTIES = "Object Properties";
-	private static final String TAB_TITLE_ANNOTATIONS = "Annotations";
+	static final String TAB_TITLE_ANNOTATIONS = "Annotations";
 	protected static final String generalTreeNodeDescription = "Select only one object (e.g. species, reaction, simulation) to view/edit properties.";
 	protected static final String generalTreeNodeDescription2 = "Select only one object (e.g. species, reaction, simulation) to view/edit annotations.";
 	protected static final Logger LG = LogManager.getLogger(DocumentEditor.class);
@@ -574,7 +576,13 @@ private void initialize() {
 		rightBottomTabbedPane.addTab(TAB_TITLE_ANNOTATIONS, rightBottomEmptyAnnotationsPanel);		
 		rightBottomTabbedPane.addTab(TAB_TITLE_PROBLEMS, issuePanel);		
 		rightBottomTabbedPane.setMinimumSize(new java.awt.Dimension(198, 148));		
-		rightSplitPane.setBottomComponent(rightBottomTabbedPane);
+		// a "?" at the end of the tab row opens the page about the open tab: the selected object's properties pane,
+		// the annotations, the problems
+		HelpButton bottomHelp = HelpButton.forPage("RightBottomHelp", "the properties, annotations and problems tabs",
+				() -> DocumentEditorHelp.pageForBottomTab(rightBottomTabbedPane, selectionManager.getSelectedObjects()));
+		rightSplitPane.setBottomComponent(bottomHelp.besideTabs(rightBottomTabbedPane));
+		// Help > VCell Help: the page about the main view (the tree node, and the tab open in it)
+		HelpContext.setPage(this, this::helpPage);
 		
 		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 		splitPane.setDividerLocation(270);
@@ -623,6 +631,11 @@ private void treeSelectionChanged0(TreeSelectionEvent treeSelectionEvent) {
 	}catch (Exception ex){
 		ex.printStackTrace(System.out);
 	}
+}
+
+/** The help page about the main view: the tree node and the tab open in it (Help > VCell Help); null for none. */
+protected String helpPage() {
+	return DocumentEditorHelp.pageFor(selectionManager.getActiveView());
 }
 
 protected abstract void setRightBottomPanelOnSelection(Object[] selections);

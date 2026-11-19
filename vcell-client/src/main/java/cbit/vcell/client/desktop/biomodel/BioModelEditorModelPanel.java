@@ -10,6 +10,7 @@
 
 package cbit.vcell.client.desktop.biomodel;
 
+import org.vcell.documentation.HelpIds;
 import cbit.vcell.client.laf.VCellColors;
 import cbit.vcell.client.laf.VCellLookAndFeel;
 import java.awt.BorderLayout;
@@ -136,6 +137,20 @@ import org.vcell.client.logicalwindow.LWSize;
 @SuppressWarnings("serial")
 public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements Model.Owner {
 	protected static final String PROPERTY_NAME_BIO_MODEL = "bioModel";
+	/** The help page about the open tab. */
+	String helpPage() {
+		int index = tabbedPane == null ? -1 : tabbedPane.getSelectedIndex();
+		if (index < 0) return null;
+		String title = tabbedPane.getTitleAt(index);
+		if (ModelPanelTabID.reaction_diagram.name.equals(title)) return HelpIds.REACTION_DIAGRAM;
+		if (ModelPanelTabID.reaction_table.name.equals(title)) return HelpIds.REACTIONS;
+		if (ModelPanelTabID.structure_table.name.equals(title)) return HelpIds.STRUCTURES;
+		if (ModelPanelTabID.species_table.name.equals(title)) return HelpIds.SPECIES;
+		if (ModelPanelTabID.species_definitions_table.name.equals(title)) return HelpIds.MOLECULES;
+		if (ModelPanelTabID.observables_table.name.equals(title)) return HelpIds.OBSERVABLES;
+		return HelpIds.PHYSIOLOGY;
+	}
+
 	public enum ModelPanelTabID {
 //		structure_diagram("Structure Diagram"),
 		reaction_diagram("Reaction Diagram"),
