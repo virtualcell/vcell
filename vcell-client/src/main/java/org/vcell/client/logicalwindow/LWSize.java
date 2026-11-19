@@ -9,7 +9,13 @@ import java.awt.Window;
  * shrinks with the text size, stays within the usable part of its screen, and keeps its size in ems as the text size
  * changes until its user resizes it. Prefer it to sizes in pixels, which can only be scaled by guessing what they meant.
  * <p>
- * As a rough guide, a pixel size laid out for 12pt text is that many twelfths of an em: 600 pixels is 50 ems.
+ * An em here is the size of ordinary (body) text in pixels, {@link VCellFonts#getSize()}: 13 pixels at the default
+ * size, 18 at 18pt. Headings are bigger, but an em is always the body size. The unit is borrowed from typography (and
+ * CSS), where an em is a font's size; the name is just the letter M spelled out, since in metal type it was about the
+ * width of a capital M. It isn't an abbreviation.
+ * <p>
+ * As a rough guide, a pixel size laid out for 12pt text is that many twelfths of an em: 600 pixels is 50 ems, which is
+ * 650 pixels at the default size and 900 at 18pt.
  */
 public final class LWSize {
 	private final boolean fit;
