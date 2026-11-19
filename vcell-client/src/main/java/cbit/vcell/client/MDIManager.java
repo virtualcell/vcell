@@ -25,7 +25,7 @@ JFrame blockWindow(String windowID);
 
 
 /**
- * @return number of visible windows remaining 
+ * @return the number of model windows still showing
  */
 long closeWindow(String windowID);
 

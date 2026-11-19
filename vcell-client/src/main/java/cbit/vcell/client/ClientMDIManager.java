@@ -10,6 +10,7 @@
 
 package cbit.vcell.client;
 
+import java.awt.AWTEvent;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Frame;
@@ -17,6 +18,7 @@ import java.awt.KeyboardFocusManager;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.Window;
+import java.awt.event.ComponentEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Collection;
@@ -77,6 +79,7 @@ public class ClientMDIManager implements MDIManager {
 	private Map<String, TopLevelWindowManager> managersHash = new HashMap<String, TopLevelWindowManager>();
 	private Map<String,Creator> creators = new HashMap<>();
 	private int numCreatedDocumentWindows = 0;
+	private javax.swing.Timer welcomeHideTimer = null; // see hideWelcomeWindowWhenTasksAreDone
 
 	private WindowAdapter windowListener = new WindowAdapter() {
 		public void windowClosing(WindowEvent e) {
@@ -91,6 +94,13 @@ public class ClientMDIManager implements MDIManager {
  */
 public ClientMDIManager(RequestManager requestManager) {
 	setRequestManager(requestManager);
+	// a window other than a model window or the welcome window (help, the Model Explorer, a tool) closing may leave
+	// nothing showing; hidden or disposed, it is hidden first
+	Toolkit.getDefaultToolkit().addAWTEventListener(event -> {
+		if (event.getID() != ComponentEvent.COMPONENT_HIDDEN || !(event.getSource() instanceof LWTopFrame window)) return;
+		if (window instanceof DocumentWindow || window instanceof WelcomeWindow) return;
+		if (getRequestManager() instanceof ClientRequestManager clientRequestManager) clientRequestManager.afterOtherWindowClosed();
+	}, AWTEvent.COMPONENT_EVENT_MASK);
 }
 
 
@@ -144,15 +154,23 @@ public long closeWindow(String windowID) {
 		}
 	}
 	// others need to know... (e.g. last window was closed)
-	return numberOfWindowsShowing();
+	return numberOfDocumentWindowsShowing();
 }
 
 /**
- * @return number of top level windows, other than the Model Explorer (closing the last model window brings back the
- * welcome window, even with the Model Explorer open)
+ * @return the number of model windows showing (or minimized). Help, the Model Explorer, tool windows and the welcome
+ * window don't count: closing the last model window brings back the welcome window, whatever else is open.
  */
-private long numberOfWindowsShowing( ) {
-	return LWTopFrame.liveWindows().filter(window -> !(window.get() instanceof cbit.vcell.client.desktop.ModelExplorerWindow)).count();
+public long numberOfDocumentWindowsShowing() {
+	return getManagersHash().entrySet().stream()
+			.filter(entry -> entry.getValue() instanceof DocumentWindowManager)
+			.filter(entry -> getWindowsHash().get(entry.getKey()) instanceof Window window && window.isVisible())
+			.count();
+}
+
+/** @return whether any of VCell's top-level windows (model, welcome, help, Model Explorer, tool) is showing or minimized */
+public boolean isAnyWindowShowing() {
+	return LWTopFrame.liveWindows().findAny().isPresent();
 }
 
 /**
@@ -275,16 +293,24 @@ public void showWelcomeWindow() {
 		// as tall as it needs, and centered as it is once logged in; it packs again as the model tabs come and go
 		((WelcomePanel) welcomeWindowManager.getComponent()).packAndCenter();
 	}
+	if (null != welcomeHideTimer) welcomeHideTimer.stop(); // asked for again: a model opened earlier no longer takes its place
+	welcomeHideTimer = null;
 	showWindow(WELCOME_WINDOW_ID);
 	((Window) getWindowsHash().get(WELCOME_WINDOW_ID)).toFront();
 }
 
 // Once the tasks that opened the model are done and their progress dialog has closed: it belongs to the welcome window,
-// and hidden with it rather than closed, it would come back with it later, frozen
+// and hidden with it rather than closed, it would come back with it later, frozen. One wait at a time: showing the
+// welcome window again ends it, and so does the last model window closing.
 private void hideWelcomeWindowWhenTasksAreDone() {
 	Window welcome = (Window) getWindowsHash().get(WELCOME_WINDOW_ID);
+	if (null != welcomeHideTimer) welcomeHideTimer.stop();
 	javax.swing.Timer timer = new javax.swing.Timer(200, null);
 	timer.addActionListener(e -> {
+		if (numberOfDocumentWindowsShowing() == 0) { // the model it made way for has closed (or never opened)
+			timer.stop();
+			return;
+		}
 		if (ClientTaskDispatcher.hasOutstandingTasks()) return;
 		for (Window owned : welcome.getOwnedWindows()) {
 			if (owned.isVisible()) return;
@@ -292,6 +318,7 @@ private void hideWelcomeWindowWhenTasksAreDone() {
 		timer.stop();
 		if (welcome.isShowing() && !WelcomeWindowManager.isKeptOpen()) welcome.setVisible(false);
 	});
+	welcomeHideTimer = timer;
 	timer.start();
 }
 
