@@ -245,8 +245,5 @@ public final class HelpChecks {
 			if (book.findPage(pageId) != null) continue;
 			problems.add(HelpProblem.of(HelpProblem.Kind.MISSING_PAGE_FOR_VCELL, "", "VCell opens a page named " + pageId + " (HelpIds." + field.getName() + "), and the help has none"));
 		}
-		if (!book.getHomePage().id().equals(HelpIds.HOME)) {
-			problems.add(HelpProblem.of(HelpProblem.Kind.MISSING_PAGE_FOR_VCELL, HelpBook.TOC_PATH, "the first page in the contents must be " + HelpIds.HOME + " (the home page)"));
-		}
 	}
 }

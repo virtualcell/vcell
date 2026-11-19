@@ -22,6 +22,7 @@ import org.apache.logging.log4j.Logger;
 import java.awt.Dimension;
 import java.net.URL;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -93,6 +94,41 @@ public final class HelpRenderer {
 			return new RenderedPage(HelpRenderer.notice(page, "it contains something the help does not allow (" + violation + ")"), Map.of());
 		}
 		return new RenderedPage(html, Map.copyOf(images));
+	}
+
+	/**
+	 * The table of contents as a page of its own: the book's title, then its entries as nested
+	 * lists, each linking to its page (a grouping entry, or one whose page is missing, is plain
+	 * text). The in-app viewer resolves the links from the help root; the web copy links to the
+	 * ".html" files. Titles come from toc.md, so they are escaped, and the whole is checked against
+	 * {@link HelpHtmlPolicy} as a page is.
+	 */
+	public String renderContents() {
+		StringBuilder html = new StringBuilder("<h1>").append(HelpRenderer.escape(this.book.getTitle())).append("</h1>\n");
+		this.appendContentsEntries(html, this.book.getTableOfContents());
+		String violation = HelpHtmlPolicy.findViolation(html.toString(), source -> false);
+		if (violation == null) return html.toString();
+		LG.warn("help contents were not shown: " + violation);
+		return "<h1>Contents</h1>\n<p>The contents can't be shown: they contain something the help does not allow ("
+				+ HelpRenderer.escape(violation) + ").</p>\n";
+	}
+
+	private void appendContentsEntries(StringBuilder html, List<HelpTocEntry> entries) {
+		if (entries.isEmpty()) return;
+		html.append("<ul>\n");
+		for (HelpTocEntry entry : entries) {
+			html.append("<li>");
+			String title = HelpRenderer.escape(entry.title());
+			if (entry.pagePath() == null || this.book.getPageByPath(entry.pagePath()) == null) {
+				html.append(title);
+			} else {
+				String href = this.target == Target.WEB ? HelpRenderer.toHtmlHref(entry.pagePath()) : entry.pagePath();
+				html.append("<a href=\"").append(HelpRenderer.escape(href)).append("\">").append(title).append("</a>");
+			}
+			this.appendContentsEntries(html, entry.children());
+			html.append("</li>\n");
+		}
+		html.append("</ul>\n");
 	}
 
 	private String render(HelpPage page, Map<String, ShownImage> images) {

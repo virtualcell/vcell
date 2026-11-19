@@ -35,9 +35,10 @@ UserDocumentation/
 
 ## Contents
 
-`toc.md` is a nested list of links. Indent two spaces per level. The first entry is the home
-page (`HelpIds.HOME`). A page can appear more than once. A page that is not in the contents
-must be linked from a page that is, or the test below fails.
+`toc.md` is a nested list of links. Indent two spaces per level. The help opens on these
+contents (as does its **Home** button), shown as a page with no page selected. A page can appear
+more than once. A page that is not in the contents must be linked from a page that is, or the
+test below fails.
 
 ## Editing in Obsidian
 
@@ -64,11 +65,13 @@ git.
 
 ## Checking your change
 
-**In VCell, without building anything:** open the help, choose **Advanced > Show Help from a
-Source Folder...** and pick this `UserDocumentation` folder. The help then shows your copy, as
+**In VCell, without building anything:** open the help, choose **View > Show Help from a
+Source Folder...** in its menu bar and pick this `UserDocumentation` folder. The help then shows your copy, as
 VCell will show it, and reloads a second or two after you save a file. A banner names the folder,
 and a **Problems** tab beside the contents lists everything below, each with its file and line;
-choose one to open the page. **Use Built-in Help** goes back. VCell remembers the folder until you
+choose one to open the page. The tab counts errors/warnings, as in "Problems (2/36)". With a
+page open it lists only that page's problems; **Home** lists them all. Its **Errors** and
+**Warnings** boxes hide either kind. **Use Built-in Help** goes back. VCell remembers the folder until you
 do.
 
 The same checks run in `HelpBookTest` (in the Fast group), and in CI. They report, as **errors**, a

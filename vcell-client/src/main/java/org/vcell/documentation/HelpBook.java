@@ -165,11 +165,6 @@ public final class HelpBook {
 		return this.pagesByPath.get(path);
 	}
 
-	/** The first page in the table of contents. */
-	public HelpPage getHomePage() {
-		return this.pagesByPath.values().iterator().next();
-	}
-
 	/** @return URL of a file in the help, by path relative to the help root; null when absent or not allowed */
 	public URL getResourceUrl(String path) {
 		return this.source.locate(path);

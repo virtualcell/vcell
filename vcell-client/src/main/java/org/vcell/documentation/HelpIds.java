@@ -8,8 +8,8 @@ package org.vcell.documentation;
  * cannot silently break a Help button.
  */
 public final class HelpIds {
-	/** First page of the contents; what Help &gt; VCell Help opens. */
-	public static final String HOME = "GeneralOverview";
+	/** The introduction to VCell; what the Welcome window's Learn VCell button opens. */
+	public static final String INTRODUCTION = "GeneralOverview";
 	public static final String ANALYTIC_GEOMETRY = "geom_Analytic";
 	public static final String VIRTUAL_FRAP = "VFrapIntroduction";
 

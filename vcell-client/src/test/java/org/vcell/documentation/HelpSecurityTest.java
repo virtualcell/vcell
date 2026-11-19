@@ -413,6 +413,31 @@ public class HelpSecurityTest {
 		assertNull(((JComponent) cell).getClientProperty(BasicHTML.propertyKey), "the contents tree must show it as text");
 	}
 
+	@Test
+	public void contentsPageEscapesTitlesAndLinksOnlyExistingPages(@TempDir Path helpRoot) throws IOException {
+		Files.writeString(helpRoot.resolve("toc.md"), String.join("\n",
+				"# Help", "",
+				"- Group",
+				"  - [Page <object classid=\"javax.swing.JButton\"></object> & more](pages/Page.md)",
+				"  - [Gone](pages/Gone.md)", ""), StandardCharsets.UTF_8);
+		Files.createDirectories(helpRoot.resolve("pages"));
+		Files.writeString(helpRoot.resolve("pages/Page.md"), "# Page\n", StandardCharsets.UTF_8);
+		HelpBook book = HelpBook.fromDirectory(helpRoot.toFile());
+		String title = book.getTableOfContents().get(0).children().get(0).title();
+
+		String swing = new HelpRenderer(book, HelpRenderer.Target.SWING, 700).renderContents();
+		String web = new HelpRenderer(book, HelpRenderer.Target.WEB, 700).renderContents();
+		for (String html : List.of(swing, web)) {
+			assertNull(HelpHtmlPolicy.findViolation(html, source -> false), html);
+			assertFalse(html.contains("<object"), html);
+			assertTrue(html.contains(HelpRenderer.escape(title) + "</a>"), html);
+			assertTrue(html.contains("<li>Group"), "a grouping entry is plain text: " + html);
+			assertTrue(html.contains("<li>Gone"), "a missing page is plain text, not a link: " + html);
+		}
+		assertTrue(swing.contains("<a href=\"pages/Page.md\">"), swing);
+		assertTrue(web.contains("<a href=\"pages/Page.html\">"), web);
+	}
+
 	// ------------------------------------------------------------------------ HTML policy
 
 	@Test

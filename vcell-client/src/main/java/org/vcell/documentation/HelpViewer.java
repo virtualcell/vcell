@@ -1,5 +1,6 @@
 package org.vcell.documentation;
 
+import cbit.vcell.client.laf.AppearanceMenus;
 import cbit.vcell.client.laf.VCellColors;
 import org.vcell.util.gui.VCellIcons;
 import org.apache.logging.log4j.LogManager;
@@ -9,22 +10,24 @@ import org.vcell.util.OperatingSystemInfo;
 import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.GeneralGuiUtils;
-import org.vcell.util.gui.ShortcutsWizard;
 
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.Icon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextField;
@@ -68,6 +71,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.HierarchyEvent;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
@@ -95,7 +100,7 @@ import java.util.stream.Stream;
  * <p>Pages are Markdown (see {@link HelpBook}) rendered on demand. Open one with
  * {@link #showHelp(String)} and a {@link HelpIds} constant.
  *
- * <p><b>Help source folder</b> (Advanced menu): an author can show the help from a folder of
+ * <p><b>Help source folder</b> (View menu): an author can show the help from a folder of
  * help source instead of the built-in copy, to see edits as VCell shows them. The folder is
  * checked when chosen ({@link HelpSource.Folder#open}), reloaded when its files change, and
  * checked with {@link HelpChecks}; a banner names the folder for as long as it is in use, so its
@@ -136,7 +141,6 @@ public final class HelpViewer extends JPanel {
 	/** Reused while open; collectable once closed and unreferenced. */
 	private static WeakReference<HelpWindow> openWindow = null;
 
-	private record Location(String pagePath, String fragment) {}
 
 	private HelpBook book;
 	private HelpRenderer renderer;
@@ -147,8 +151,10 @@ public final class HelpViewer extends JPanel {
 	/** Bumped by every folder load and by going back to the built-in help; a result from an older one is dropped. */
 	private int folderGeneration = 0;
 
-	private final JEditorPane contentPane = new JEditorPane();
-	private final JScrollPane contentScrollPane = new JScrollPane(this.contentPane);
+	/** The open pages, one tab each; see {@link HelpTab}. */
+	private final javax.swing.JTabbedPane pageTabs = new javax.swing.JTabbedPane(javax.swing.JTabbedPane.TOP, javax.swing.JTabbedPane.SCROLL_TAB_LAYOUT);
+	/** The last tab: never selected (it is disabled); its "+" button opens a new tab before it. */
+	private final JPanel newTabPlaceholder = new JPanel();
 	private final JTree contentsTree;
 	private final JList<HelpSearch.Hit> resultsList = new JList<>(new DefaultListModel<>());
 	private final JLabel resultsLabel = new JLabel();
@@ -158,11 +164,24 @@ public final class HelpViewer extends JPanel {
 	/** Contents (or search results) and, while a source folder is shown, its Problems. */
 	private final javax.swing.JTabbedPane navigationTabs = new javax.swing.JTabbedPane();
 	private final JPanel problemsPanel = new JPanel(new BorderLayout());
-	private final JButton backButton = new JButton("Back");
-	private final JButton forwardButton = new JButton("Forward");
-	private final JButton homeButton = new JButton("Home");
-	private final JButton advancedButton = new JButton("Advanced");
-	private final JMenuItem useBuiltInMenuItem = new JMenuItem("Use the Built-in Help");
+	// each command once, shared by its toolbar button and menu item so they enable together
+	private final Action backAction = HelpViewer.action("Back", this::goBack);
+	private final Action forwardAction = HelpViewer.action("Forward", this::goForward);
+	private final Action homeAction = HelpViewer.action("Home", this::showTableOfContents);
+	private final Action searchAction = HelpViewer.action("Search Help", this::focusSearch);
+	private final Action contentsTabAction = HelpViewer.action("Contents", this::showContentsTab);
+	private final Action problemsTabAction = HelpViewer.action("Problems", this::showProblems);
+	private final Action expandAllAction = HelpViewer.action("Expand All", this::expandAllContents);
+	private final Action collapseAllAction = HelpViewer.action("Collapse All", this::collapseAllContents);
+	private final Action chooseFolderAction = HelpViewer.action("Show Help from a Source Folder...", this::chooseSourceFolder);
+	private final Action useBuiltInAction = HelpViewer.action("Use the Built-in Help", this::useBuiltInHelp);
+	private final Action newTabAction = HelpViewer.action("New Tab", this::newTab);
+	private final Action closeTabAction = HelpViewer.action("Close Tab", this::closeTab);
+	private final Action nextTabAction = HelpViewer.action("Show Next Tab", () -> this.selectTab(1));
+	private final Action previousTabAction = HelpViewer.action("Show Previous Tab", () -> this.selectTab(-1));
+	private final JButton backButton = new JButton(this.backAction);
+	private final JButton forwardButton = new JButton(this.forwardAction);
+	private final JButton homeButton = new JButton(this.homeAction);
 	private final Timer searchTimer = new Timer(SEARCH_DELAY_MILLIS, e -> this.runSearch());
 	private final Timer watchTimer = new Timer(WATCH_INTERVAL_MILLIS, e -> this.checkFolderForChanges());
 
@@ -171,11 +190,11 @@ public final class HelpViewer extends JPanel {
 	private final JButton bannerBuiltInButton = new JButton("Use Built-in Help");
 	private final JList<HelpProblem> problemsList = new JList<>(new DefaultListModel<>());
 	private final JLabel problemsLabel = new JLabel();
+	private final JCheckBox showErrorsCheckBox = new JCheckBox("Errors", true);
+	private final JCheckBox showWarningsCheckBox = new JCheckBox("Warnings", true);
+	private List<HelpProblem> allProblems = List.of(); // the folder's, before scope and filters
+	private boolean listingProblems = false; // rebuilding the list: its selection is not the reader's
 
-	private final List<Location> history = new ArrayList<>();
-	private int historyIndex = -1;
-	private HelpPage currentPage = null;
-	private List<String> highlightTerms = List.of();
 	private boolean selectingProgrammatically = false;
 
 	/** The top-level help window: tracked in the Window menu, independent of any document. */
@@ -187,6 +206,7 @@ public final class HelpViewer extends JPanel {
 			this.viewer = viewer;
 			this.setTitle("Virtual Cell Help -- VCell " + VCellSoftwareVersion.fromSystemProperty().getSoftwareVersionString());
 			this.getContentPane().add(viewer);
+			this.setJMenuBar(viewer.createMenuBar(this));
 			this.setPreferredSize(new Dimension(DEFAULT_WIDTH, DEFAULT_HEIGHT));
 			this.pack();
 			GeneralGuiUtils.centerOnScreen(this);
@@ -200,33 +220,29 @@ public final class HelpViewer extends JPanel {
 
 	// ------------------------------------------------------------------------- opening help
 
-	/** Open the help at its first page. */
+	/**
+	 * Open the help on its table of contents, with no page open (Help > VCell Help), in a tab of
+	 * its own: a tab already showing the contents, else a new one.
+	 */
 	public static void showHelp() {
-		HelpViewer.showHelp(HelpIds.HOME);
+		HelpWindow window = HelpViewer.openHelpWindow();
+		if (window == null) return;
+		window.viewer.showInTab(HelpTab.Location.contents());
+		window.setVisible(true);
+		window.toFront();
 	}
 
 	/**
-	 * Open the help at a page, reusing the help window if it is already open.
+	 * Open the help at a page, in a tab of its own (a tab already showing the page, else a new
+	 * one), reusing the help window if it is already open.
 	 *
 	 * @param pageId a {@link HelpIds} constant (a page file name without ".md"); an unknown id
-	 *               opens the first page
+	 *               shows the table of contents
 	 */
 	public static void showHelp(String pageId) {
-		HelpWindow window = HelpViewer.openWindow != null ? HelpViewer.openWindow.get() : null;
-		if (window == null) {
-			HelpBook book;
-			try {
-				book = HelpBook.fromClasspath();
-			} catch (IOException e) {
-				LG.error("help could not be loaded", e);
-				DialogUtils.showErrorDialog(null, "VCell help could not be loaded: " + e.getMessage(), e);
-				return;
-			}
-			window = new HelpWindow(new HelpViewer(book));
-			HelpViewer.openWindow = new WeakReference<>(window);
-			window.viewer.restoreSourceFolder();
-		}
-		window.viewer.showPage(pageId);
+		HelpWindow window = HelpViewer.openHelpWindow();
+		if (window == null) return;
+		window.viewer.showInTab(HelpTab.Location.page(window.viewer.findPage(pageId), null));
 		window.setVisible(true);
 		window.toFront();
 	}
@@ -247,8 +263,8 @@ public final class HelpViewer extends JPanel {
 		splitPane.setDividerLocation(NAVIGATION_WIDTH);
 		splitPane.setResizeWeight(0);
 		this.add(splitPane, BorderLayout.CENTER);
+		// Cmd/Ctrl+W closes a tab here (the window closes with its last), so no close-window shortcut
 		this.installKeyBindings();
-		ShortcutsWizard.addCloseWindowShortcut(this);
 		// watch a source folder only while the help is on screen
 		this.watchTimer.setRepeats(true);
 		this.addHierarchyListener(e -> {
@@ -265,12 +281,12 @@ public final class HelpViewer extends JPanel {
 		JToolBar toolBar = new JToolBar();
 		toolBar.setFloatable(false);
 		String menuKey = HelpViewer.isMac() ? "⌘" : "Ctrl+";
+		this.backButton.setName("HelpBack");
+		this.forwardButton.setName("HelpForward");
 		this.backButton.setToolTipText("Back (" + menuKey + "[ or Alt+Left)");
-		this.backButton.addActionListener(e -> this.goBack());
 		this.forwardButton.setToolTipText("Forward (" + menuKey + "] or Alt+Right)");
-		this.forwardButton.addActionListener(e -> this.goForward());
-		this.homeButton.setToolTipText("Go to the first page of the help");
-		this.homeButton.addActionListener(e -> this.openPage(this.book.getHomePage(), null, List.of()));
+		this.homeButton.setName("HelpHome");
+		this.homeButton.setToolTipText("Show the table of contents, with no page open (" + (HelpViewer.isMac() ? "⇧⌘H" : "Ctrl+Shift+H") + ")");
 		toolBar.add(this.backButton);
 		toolBar.add(this.forwardButton);
 		toolBar.add(this.homeButton);
@@ -309,18 +325,9 @@ public final class HelpViewer extends JPanel {
 		toolBar.add(searchLabel);
 		toolBar.add(this.searchField);
 		toolBar.add(javax.swing.Box.createHorizontalGlue());
-
-		JPopupMenu advancedMenu = new JPopupMenu();
-		JMenuItem chooseFolderItem = new JMenuItem("Show Help from a Source Folder...");
-		chooseFolderItem.addActionListener(e -> this.chooseSourceFolder());
-		this.useBuiltInMenuItem.addActionListener(e -> this.useBuiltInHelp());
-		this.useBuiltInMenuItem.setEnabled(false);
-		advancedMenu.add(chooseFolderItem);
-		advancedMenu.add(this.useBuiltInMenuItem);
-		this.advancedButton.setName("HelpAdvanced");
-		this.advancedButton.setToolTipText("For help authors: show the help from a folder of help source");
-		this.advancedButton.addActionListener(e -> advancedMenu.show(this.advancedButton, 0, this.advancedButton.getHeight()));
-		toolBar.add(this.advancedButton);
+		// enabled once a source folder is shown (View menu)
+		this.useBuiltInAction.setEnabled(false);
+		this.problemsTabAction.setEnabled(false);
 		return toolBar;
 	}
 
@@ -351,6 +358,27 @@ public final class HelpViewer extends JPanel {
 		this.contentsTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 		this.contentsTree.getAccessibleContext().setAccessibleName("Help contents");
 		this.contentsTree.addTreeSelectionListener(e -> this.openSelectedContentsEntry());
+		// a click in the empty space below the entries deselects, leaving no page open (the table
+		// of contents), as a click off a selection does elsewhere; Swing's tree ignores it
+		this.contentsTree.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent e) {
+				if (!SwingUtilities.isLeftMouseButton(e) || e.isPopupTrigger()) return;
+				JTree tree = HelpViewer.this.contentsTree;
+				int lastRow = tree.getRowCount() - 1;
+				Rectangle lastRowBounds = lastRow < 0 ? null : tree.getRowBounds(lastRow);
+				if (lastRowBounds != null && e.getY() < lastRowBounds.y + lastRowBounds.height) return;
+				tree.clearSelection();
+			}
+		});
+		// Escape leaves the open page for the table of contents, as deselecting (Cmd/Ctrl-click) does
+		this.contentsTree.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "showContents");
+		this.contentsTree.getActionMap().put("showContents", new AbstractAction() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				HelpViewer.this.showTableOfContents();
+			}
+		});
 		this.navigationPanel.add(new JScrollPane(this.contentsTree), CONTENTS_CARD);
 
 		this.resultsList.setName("HelpSearchResults");
@@ -373,13 +401,35 @@ public final class HelpViewer extends JPanel {
 		this.problemsList.getAccessibleContext().setAccessibleName("Problems in the help source");
 		this.problemsList.setCellRenderer(new ProblemRenderer());
 		this.problemsList.addListSelectionListener(e -> {
-			if (e.getValueIsAdjusting()) return;
+			if (e.getValueIsAdjusting() || this.listingProblems) return;
 			this.openSelectedProblem();
 		});
-		this.problemsLabel.setBorder(BorderFactory.createEmptyBorder(4, 6, 4, 6));
+		this.problemsList.setToolTipText("Choose one to see it in full; double-click to go to it");
+		// a double-click goes straight to the problem, as the problem tab's Go to button does
+		this.problemsList.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if (e.getClickCount() != 2 || !SwingUtilities.isLeftMouseButton(e)) return;
+				HelpTab tab = HelpViewer.this.selectedTab();
+				if (tab != null && tab.problem() != null) tab.goToProblem();
+			}
+		});
+		this.problemsLabel.setBorder(BorderFactory.createEmptyBorder(4, 6, 0, 6));
 		this.problemsLabel.setLabelFor(this.problemsList);
+		this.showErrorsCheckBox.setName("HelpShowErrors");
+		this.showErrorsCheckBox.setToolTipText("List the errors: what the help shows wrongly, and what fails its checks");
+		this.showErrorsCheckBox.addActionListener(e -> this.listProblems());
+		this.showWarningsCheckBox.setName("HelpShowWarnings");
+		this.showWarningsCheckBox.setToolTipText("List the warnings: worth tidying, but they fail nothing");
+		this.showWarningsCheckBox.addActionListener(e -> this.listProblems());
+		JPanel filters = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEADING, 4, 0));
+		filters.add(this.showErrorsCheckBox);
+		filters.add(this.showWarningsCheckBox);
+		JPanel problemsHeader = new JPanel(new BorderLayout());
+		problemsHeader.add(this.problemsLabel, BorderLayout.NORTH);
+		problemsHeader.add(filters, BorderLayout.SOUTH);
 		this.problemsPanel.setName("HelpProblems");
-		this.problemsPanel.add(this.problemsLabel, BorderLayout.NORTH);
+		this.problemsPanel.add(problemsHeader, BorderLayout.NORTH);
 		JScrollPane problemsScrollPane = new JScrollPane(this.problemsList, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		this.problemsPanel.add(problemsScrollPane, BorderLayout.CENTER);
 		// problems wrap to the list's width, so row heights change with it; the list caches them
@@ -400,41 +450,143 @@ public final class HelpViewer extends JPanel {
 
 	/** The Problems tab is there only while a source folder is shown. */
 	private void setProblemsTabShown(boolean shown) {
+		this.problemsTabAction.setEnabled(shown);
 		int index = this.navigationTabs.indexOfComponent(this.problemsPanel);
 		if (shown && index < 0) {
 			this.navigationTabs.addTab("Problems", this.problemsPanel);
-			this.navigationTabs.setToolTipTextAt(this.navigationTabs.getTabCount() - 1, "What to fix in the help source folder");
+			this.navigationTabs.setToolTipTextAt(this.navigationTabs.getTabCount() - 1, "What to fix in the help source folder (errors/warnings)");
+			this.listProblems();
 		} else if (!shown && index >= 0) {
 			this.navigationTabs.removeTabAt(index);
 		}
 	}
 
 	private JComponent createContentPanel() {
-		this.contentPane.setName("HelpPage");
-		this.contentPane.setEditable(false);
-		this.contentPane.setEditorKit(new SafeHtmlEditorKit());
-		this.contentPane.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
-		this.contentPane.getAccessibleContext().setAccessibleName("Help page");
-		this.contentPane.addHyperlinkListener(e -> {
-			if (e.getEventType() != HyperlinkEvent.EventType.ACTIVATED) return;
-			this.followLink(e.getDescription());
+		this.pageTabs.setName("HelpPages");
+		this.pageTabs.getAccessibleContext().setAccessibleName("Open help pages");
+		JButton plus = HelpViewer.glyphButton(true, "HelpNewTab", "New Tab (" + (HelpViewer.isMac() ? "⌘" : "Ctrl+") + "T)", "New tab");
+		plus.addActionListener(e -> this.newTab());
+		this.pageTabs.addTab("", this.newTabPlaceholder);
+		this.pageTabs.setTabComponentAt(0, plus);
+		this.pageTabs.setEnabledAt(0, false);
+		this.pageTabs.addChangeListener(e -> {
+			// the "+" tab is only ever selected when a tab before it closes: show a page instead
+			if (this.pageTabs.getSelectedComponent() == this.newTabPlaceholder) {
+				List<HelpTab> tabs = this.tabs();
+				if (!tabs.isEmpty()) this.pageTabs.setSelectedComponent(tabs.get(tabs.size() - 1));
+				return;
+			}
+			HelpTab tab = this.selectedTab();
+			if (tab != null) this.syncToTab(tab);
 		});
-		this.contentScrollPane.getVerticalScrollBar().setUnitIncrement(16);
-		return this.contentScrollPane;
+		return this.pageTabs;
 	}
 
+	/** Cmd on macOS, Ctrl elsewhere. */
+	static int menuMask() {
+		try {
+			return Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
+		} catch (java.awt.HeadlessException e) {
+			return InputEvent.CTRL_DOWN_MASK; // no display (tests): as ShortcutsWizard assumes
+		}
+	}
+
+	/** Shortcuts that work with or without the window's menu bar (see {@link #createMenuBar}). */
 	private void installKeyBindings() {
-		int menuMask = Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
+		int menuMask = HelpViewer.menuMask();
 		this.bind("helpBack", this::goBack,
 				KeyStroke.getKeyStroke(KeyEvent.VK_OPEN_BRACKET, menuMask),
 				KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, InputEvent.ALT_DOWN_MASK));
 		this.bind("helpForward", this::goForward,
 				KeyStroke.getKeyStroke(KeyEvent.VK_CLOSE_BRACKET, menuMask),
 				KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, InputEvent.ALT_DOWN_MASK));
-		this.bind("helpFind", () -> {
-			this.searchField.requestFocusInWindow();
-			this.searchField.selectAll();
-		}, KeyStroke.getKeyStroke(KeyEvent.VK_F, menuMask));
+		this.bind("helpFind", this::focusSearch, KeyStroke.getKeyStroke(KeyEvent.VK_F, menuMask));
+		this.bind("helpNewTab", this::newTab, KeyStroke.getKeyStroke(KeyEvent.VK_T, menuMask));
+		this.bind("helpCloseTab", this::closeTab, KeyStroke.getKeyStroke(KeyEvent.VK_W, menuMask));
+	}
+
+	private static Action action(String name, Runnable command) {
+		return new AbstractAction(name) {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				command.run();
+			}
+		};
+	}
+
+	private void focusSearch() {
+		this.searchField.requestFocusInWindow();
+		this.searchField.selectAll();
+	}
+
+	private void showContentsTab() {
+		this.navigationTabs.setSelectedComponent(this.navigationPanel);
+	}
+
+	/** Expands row by row: each expansion adds the rows beneath it, which the loop then reaches. */
+	private void expandAllContents() {
+		for (int row = 0; row < this.contentsTree.getRowCount(); row++) this.contentsTree.expandRow(row);
+	}
+
+	private void collapseAllContents() {
+		for (int row = this.contentsTree.getRowCount() - 1; row >= 0; row--) this.contentsTree.collapseRow(row);
+	}
+
+	// ------------------------------------------------------------------------------ menu bar
+
+	/**
+	 * The help window's menu bar: File (tabs), Go, View (with the help source folder's commands, for authors)
+	 * and VCell's Window menu, with the theme and font as the Welcome and model windows have them. Its
+	 * shortcuts replace the window-wide key bindings for the same keys, so that no key runs a
+	 * command twice (the macOS screen menu bar handles a shortcut itself).
+	 */
+	JMenuBar createMenuBar(Component window) {
+		int menuMask = HelpViewer.menuMask();
+		JMenu file = HelpViewer.menu("File", KeyEvent.VK_F, "HelpFileMenu");
+		file.add(this.menuItem(this.newTabAction, KeyStroke.getKeyStroke(KeyEvent.VK_T, menuMask)));
+		file.add(this.menuItem(this.closeTabAction, KeyStroke.getKeyStroke(KeyEvent.VK_W, menuMask)));
+
+		JMenu go = HelpViewer.menu("Go", KeyEvent.VK_G, "HelpGoMenu");
+		go.add(this.menuItem(this.backAction, KeyStroke.getKeyStroke(KeyEvent.VK_OPEN_BRACKET, menuMask)));
+		go.add(this.menuItem(this.forwardAction, KeyStroke.getKeyStroke(KeyEvent.VK_CLOSE_BRACKET, menuMask)));
+		go.add(this.menuItem(this.homeAction, KeyStroke.getKeyStroke(KeyEvent.VK_H, menuMask | InputEvent.SHIFT_DOWN_MASK)));
+		go.addSeparator();
+		go.add(this.menuItem(this.searchAction, KeyStroke.getKeyStroke(KeyEvent.VK_F, menuMask)));
+		go.addSeparator();
+		go.add(this.menuItem(this.nextTabAction, KeyStroke.getKeyStroke(KeyEvent.VK_CLOSE_BRACKET, menuMask | InputEvent.SHIFT_DOWN_MASK)));
+		go.add(this.menuItem(this.previousTabAction, KeyStroke.getKeyStroke(KeyEvent.VK_OPEN_BRACKET, menuMask | InputEvent.SHIFT_DOWN_MASK)));
+
+		JMenu view = HelpViewer.menu("View", KeyEvent.VK_V, "HelpViewMenu");
+		view.add(this.menuItem(this.contentsTabAction, KeyStroke.getKeyStroke(KeyEvent.VK_1, menuMask)));
+		view.add(this.menuItem(this.problemsTabAction, KeyStroke.getKeyStroke(KeyEvent.VK_2, menuMask)));
+		view.addSeparator();
+		view.add(this.menuItem(this.expandAllAction, null));
+		view.add(this.menuItem(this.collapseAllAction, null));
+		view.addSeparator();
+		view.add(this.menuItem(this.chooseFolderAction, null));
+		view.add(this.menuItem(this.useBuiltInAction, null));
+
+		JMenuBar menuBar = new JMenuBar();
+		menuBar.add(file);
+		menuBar.add(go);
+		menuBar.add(view);
+		menuBar.add(LWTopFrame.createWindowMenu(true, AppearanceMenus.create(window)));
+		return menuBar;
+	}
+
+	private static JMenu menu(String text, int mnemonic, String name) {
+		JMenu menu = new JMenu(text);
+		menu.setMnemonic(mnemonic);
+		menu.setName(name);
+		return menu;
+	}
+
+	private JMenuItem menuItem(Action action, KeyStroke accelerator) {
+		JMenuItem item = new JMenuItem(action);
+		if (accelerator == null) return item;
+		item.setAccelerator(accelerator);
+		this.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).remove(accelerator);
+		return item;
 	}
 
 	private void bind(String actionKey, Runnable action, KeyStroke... keyStrokes) {
@@ -465,74 +617,151 @@ public final class HelpViewer extends JPanel {
 
 	// ---------------------------------------------------------------------------- navigation
 
-	/** Show a page by id, as a new history entry; an unknown id shows the home page. */
-	public void showPage(String pageId) {
-		HelpPage page = this.book.findPage(pageId);
-		if (page == null) {
-			LG.warn("no help page with id '" + pageId + "'; showing the first page");
-			page = this.book.getHomePage();
+	/** The help window, made the first time; null (and the reader told) if the help can't load. */
+	private static HelpWindow openHelpWindow() {
+		HelpWindow window = HelpViewer.openWindow != null ? HelpViewer.openWindow.get() : null;
+		if (window != null) return window;
+		HelpBook book;
+		try {
+			book = HelpBook.fromClasspath();
+		} catch (IOException e) {
+			LG.error("help could not be loaded", e);
+			DialogUtils.showErrorDialog(null, "VCell help could not be loaded: " + e.getMessage(), e);
+			return null;
 		}
-		this.openPage(page, null, List.of());
+		window = new HelpWindow(new HelpViewer(book));
+		HelpViewer.openWindow = new WeakReference<>(window);
+		window.viewer.restoreSourceFolder();
+		return window;
 	}
 
-	private void openPage(HelpPage page, String fragment, List<String> terms) {
-		Location location = new Location(page.path(), fragment);
-		boolean sameAsCurrent = this.historyIndex >= 0 && this.history.get(this.historyIndex).equals(location);
-		if (!sameAsCurrent) {
-			while (this.history.size() > this.historyIndex + 1) this.history.remove(this.history.size() - 1);
-			this.history.add(location);
-			this.historyIndex = this.history.size() - 1;
+	/** Show a page by id in the selected tab, as a new history entry; an unknown id shows the contents. */
+	public void showPage(String pageId) {
+		this.tab().open(HelpTab.Location.page(this.findPage(pageId), null), List.of());
+	}
+
+	/** The page with this id, or null (and a warning) when there is none: the contents are shown. */
+	private HelpPage findPage(String pageId) {
+		HelpPage page = this.book.findPage(pageId);
+		if (page == null) LG.warn("no help page with id '" + pageId + "'; showing the contents");
+		return page;
+	}
+
+	/** Show the table of contents in the selected tab, with no page open, as a new history entry. */
+	public void showTableOfContents() {
+		this.tab().open(HelpTab.Location.contents(), List.of());
+	}
+
+	// ---------------------------------------------------------------------------------- tabs
+
+	/** The selected tab; a new one, at the contents, when none is open. */
+	private HelpTab tab() {
+		HelpTab tab = this.selectedTab();
+		return tab != null ? tab : this.addTab(true);
+	}
+
+	private HelpTab selectedTab() {
+		return this.pageTabs.getSelectedComponent() instanceof HelpTab tab ? tab : null;
+	}
+
+	private List<HelpTab> tabs() {
+		// by tab, not by child component: while a tab closes, its component is still a child
+		List<HelpTab> tabs = new ArrayList<>();
+		for (int index = 0; index < this.pageTabs.getTabCount(); index++) {
+			if (this.pageTabs.getComponentAt(index) instanceof HelpTab tab) tabs.add(tab);
 		}
-		this.highlightTerms = terms;
-		this.display(location);
+		return tabs;
+	}
+
+	private HelpTab addTab(boolean select) {
+		HelpTab tab = new HelpTab(this);
+		// before the "+" tab, always the last
+		this.pageTabs.insertTab("", null, tab, null, this.pageTabs.indexOfComponent(this.newTabPlaceholder));
+		this.pageTabs.setTabComponentAt(this.pageTabs.indexOfComponent(tab), new TabHeader(tab));
+		if (select) this.pageTabs.setSelectedComponent(tab);
+		this.updateTabActions();
+		return tab;
+	}
+
+	/**
+	 * Show a place in a tab of its own, as opening the help from VCell does: the tab already
+	 * there, if one is, so opening the same help twice doesn't pile up tabs; else a new tab.
+	 */
+	void showInTab(HelpTab.Location location) {
+		for (HelpTab tab : this.tabs()) {
+			if (!tab.place().equals(location)) continue;
+			this.pageTabs.setSelectedComponent(tab);
+			return;
+		}
+		this.addTab(true).open(location, List.of());
+	}
+
+	/** A new tab at Home: the table of contents. */
+	private void newTab() {
+		this.addTab(true).open(HelpTab.Location.contents(), List.of());
+	}
+
+	/** Close the selected tab; closing the last one closes the help window. */
+	private void closeTab() {
+		HelpTab tab = this.selectedTab();
+		if (tab != null) this.closeTab(tab);
+	}
+
+	private void closeTab(HelpTab tab) {
+		this.pageTabs.remove(tab);
+		this.updateTabActions();
+		if (!this.tabs().isEmpty()) return;
+		java.awt.Window window = SwingUtilities.getWindowAncestor(this);
+		if (window != null) window.dispatchEvent(new java.awt.event.WindowEvent(window, java.awt.event.WindowEvent.WINDOW_CLOSING));
+	}
+
+	/** Select the next (1) or previous (-1) tab, wrapping around (past the "+" tab). */
+	private void selectTab(int step) {
+		List<HelpTab> tabs = this.tabs();
+		if (tabs.size() < 2) return;
+		int index = Math.max(0, tabs.indexOf(this.selectedTab()));
+		this.pageTabs.setSelectedComponent(tabs.get(Math.floorMod(index + step, tabs.size())));
+	}
+
+	private void updateTabActions() {
+		int count = this.tabs().size();
+		this.nextTabAction.setEnabled(count > 1);
+		this.previousTabAction.setEnabled(count > 1);
+		this.closeTabAction.setEnabled(count > 0);
+	}
+
+	/** A tab showed something new: retitle it, and if it is the selected tab, follow it. */
+	void tabShown(HelpTab tab) {
+		int index = this.pageTabs.indexOfComponent(tab);
+		if (index >= 0) {
+			// the header draws the title, shortened; the tab's own title, which screen readers read, is whole
+			this.pageTabs.setTitleAt(index, tab.fullTitle());
+			this.pageTabs.setToolTipTextAt(index, HelpViewer.plainText(tab.fullTitle()));
+			if (this.pageTabs.getTabComponentAt(index) instanceof TabHeader header) header.refresh();
+		}
+		if (tab == this.selectedTab()) this.syncToTab(tab);
+	}
+
+	/** The contents tree, Back/Forward and the problems pane follow the selected tab. */
+	private void syncToTab(HelpTab tab) {
+		this.selectInContents(tab.currentPage());
+		this.backAction.setEnabled(tab.canGoBack());
+		this.forwardAction.setEnabled(tab.canGoForward());
+		this.listProblems();
 	}
 
 	private void goBack() {
-		if (this.historyIndex <= 0) return;
-		this.historyIndex--;
-		this.highlightTerms = List.of();
-		this.display(this.history.get(this.historyIndex));
+		this.tab().goBack();
 	}
 
 	private void goForward() {
-		if (this.historyIndex >= this.history.size() - 1) return;
-		this.historyIndex++;
-		this.highlightTerms = List.of();
-		this.display(this.history.get(this.historyIndex));
+		this.tab().goForward();
 	}
 
-	private void display(Location location) {
-		HelpPage page = this.book.getPageByPath(location.pagePath());
-		if (page != this.currentPage) {
-			this.currentPage = page;
-			this.loadDocument(page);
-		}
-		this.highlightTerms();
-		this.selectInContents(page);
-		this.backButton.setEnabled(this.historyIndex > 0);
-		this.forwardButton.setEnabled(this.historyIndex < this.history.size() - 1);
-		String fragment = location.fragment();
-		SwingUtilities.invokeLater(() -> this.scrollTo(fragment));
-	}
-
-	private void scrollTo(String fragment) {
-		if (fragment != null) {
-			this.contentPane.scrollToReference(fragment);
-			return;
-		}
-		Highlighter.Highlight[] highlights = this.contentPane.getHighlighter().getHighlights();
-		int offset = highlights.length > 0 ? highlights[0].getStartOffset() : 0;
-		try {
-			Rectangle area = this.contentPane.modelToView2D(offset).getBounds();
-			area.y = Math.max(0, area.y - 40); // a little context above a search match
-			area.height = this.contentScrollPane.getViewport().getHeight();
-			this.contentPane.scrollRectToVisible(offset == 0 ? new Rectangle(0, 0, 1, 1) : area);
-		} catch (BadLocationException e) {
-			this.contentPane.scrollRectToVisible(new Rectangle(0, 0, 1, 1));
-		}
-	}
-
-	private void followLink(String href) {
+	/**
+	 * Follow a link on a tab's page: in that tab, or with Cmd/Ctrl held, in a new tab behind it.
+	 */
+	void followLink(HelpTab tab, String href, boolean inNewTab) {
 		if (href == null || href.isBlank()) return;
 		if (HelpBook.isExternal(href)) {
 			// the renderer writes only allowed links; check again before the OS gets the address
@@ -544,30 +773,141 @@ public final class HelpViewer extends JPanel {
 			return;
 		}
 		String fragment = HelpBook.fragmentOf(href);
-		String targetPath = HelpBook.resolvePath(this.currentPage.path(), href);
+		// the contents' links are relative to the help root, where toc.md is
+		String fromPath = tab.currentPage() != null ? tab.currentPage().path() : HelpBook.TOC_PATH;
+		String targetPath = HelpBook.resolvePath(fromPath, href);
 		HelpPage target = targetPath == null ? null : this.book.getPageByPath(targetPath);
 		if (target == null) {
-			LG.warn("help link '" + href + "' on " + this.currentPage.path() + " does not resolve");
+			LG.warn("help link '" + href + "' on " + fromPath + " does not resolve");
 			return;
 		}
 		String headingId = this.book.resolveHeadingId(target, fragment);
-		this.openPage(target, headingId != null ? headingId : fragment, List.of());
+		HelpTab.Location location = HelpTab.Location.page(target, headingId != null ? headingId : fragment);
+		(inNewTab ? this.addTab(false) : tab).open(location, List.of());
+	}
+
+	/** A tab's heading: its icon and title, and a button that closes it. */
+	private final class TabHeader extends JPanel {
+		private final HelpTab tab;
+		private final JLabel title = new JLabel();
+
+		private TabHeader(HelpTab tab) {
+			super();
+			this.setLayout(new javax.swing.BoxLayout(this, javax.swing.BoxLayout.X_AXIS));
+			this.tab = tab;
+			this.setOpaque(false);
+			// the title comes from the help source: never HTML
+			this.title.putClientProperty("html.disable", Boolean.TRUE);
+			this.title.setAlignmentY(Component.CENTER_ALIGNMENT);
+			JButton close = HelpViewer.glyphButton(false, "HelpCloseTab", "Close Tab (" + (HelpViewer.isMac() ? "⌘" : "Ctrl+") + "W)", "Close tab");
+			close.addActionListener(e -> HelpViewer.this.closeTab(this.tab));
+			this.add(this.title);
+			this.add(javax.swing.Box.createHorizontalStrut(6));
+			this.add(close);
+			this.refresh();
+		}
+
+		private void refresh() {
+			this.title.setText(this.tab.title());
+			this.title.setIcon(this.tab.icon());
+		}
+	}
+
+	/**
+	 * A small square button drawn as a cross (close) or a plus (new tab). A look and feel's own
+	 * button is taller than a tab (Aqua's especially), which pushed the tab's title down; this one
+	 * is no bigger than its glyph. It takes the keyboard focus like any button, and shows a border
+	 * while it has it.
+	 */
+	private static JButton glyphButton(boolean plus, String name, String toolTip, String accessibleName) {
+		int size = 14;
+		Icon glyph = new Icon() {
+			@Override
+			public void paintIcon(Component component, java.awt.Graphics graphics, int x, int y) {
+				java.awt.Graphics2D g = (java.awt.Graphics2D) graphics.create();
+				g.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+				Color color = component.isEnabled() ? UIManager.getColor("Label.foreground") : UIManager.getColor("Label.disabledForeground");
+				g.setColor(color != null ? color : Color.DARK_GRAY);
+				g.setStroke(new java.awt.BasicStroke(1.4f, java.awt.BasicStroke.CAP_ROUND, java.awt.BasicStroke.JOIN_ROUND));
+				int inset = plus ? 3 : 4;
+				int low = inset;
+				int high = size - 1 - inset;
+				if (plus) {
+					int middle = size / 2;
+					g.drawLine(x + middle, y + low, x + middle, y + high);
+					g.drawLine(x + low, y + middle, x + high, y + middle);
+				} else {
+					g.drawLine(x + low, y + low, x + high, y + high);
+					g.drawLine(x + high, y + low, x + low, y + high);
+				}
+				g.dispose();
+			}
+
+			@Override
+			public int getIconWidth() {
+				return size;
+			}
+
+			@Override
+			public int getIconHeight() {
+				return size;
+			}
+		};
+		JButton button = new JButton(glyph);
+		button.setName(name);
+		button.setToolTipText(toolTip);
+		button.getAccessibleContext().setAccessibleName(accessibleName);
+		button.setContentAreaFilled(false);
+		button.setFocusPainted(false);
+		button.setMargin(new java.awt.Insets(0, 0, 0, 0));
+		Dimension exact = new Dimension(size + 2, size + 2);
+		button.setPreferredSize(exact);
+		button.setMinimumSize(exact);
+		button.setMaximumSize(exact);
+		button.setAlignmentY(Component.CENTER_ALIGNMENT);
+		javax.swing.border.Border unfocused = BorderFactory.createEmptyBorder(1, 1, 1, 1);
+		button.setBorder(unfocused);
+		button.addFocusListener(new java.awt.event.FocusAdapter() {
+			@Override
+			public void focusGained(java.awt.event.FocusEvent e) {
+				Color focus = UIManager.getColor("Focus.color");
+				button.setBorder(BorderFactory.createLineBorder(focus != null ? focus : VCellColors.getDimForeground()));
+			}
+
+			@Override
+			public void focusLost(java.awt.event.FocusEvent e) {
+				button.setBorder(unfocused);
+			}
+		});
+		return button;
 	}
 
 	private void openSelectedContentsEntry() {
 		if (this.selectingProgrammatically) return;
 		TreePath selection = this.contentsTree.getSelectionPath();
-		if (selection == null) return;
+		HelpTab tab = this.tab();
+		if (selection == null) {
+			// the open entry was deselected (Cmd/Ctrl-click): no page, so show the contents
+			if (!tab.showsContents()) this.showTableOfContents();
+			return;
+		}
 		Object userObject = ((DefaultMutableTreeNode) selection.getLastPathComponent()).getUserObject();
 		if (!(userObject instanceof HelpTocEntry entry) || entry.pagePath() == null) return;
 		HelpPage page = this.book.getPageByPath(entry.pagePath());
-		if (page == null || page == this.currentPage) return;
-		this.openPage(page, null, List.of());
+		if (page == null || page == tab.currentPage()) return;
+		tab.open(HelpTab.Location.page(page, null), List.of());
 	}
 
-	/** Select the first contents entry for the page (pages may appear more than once). */
+	/**
+	 * Select the first contents entry for the page (pages may appear more than once); none for
+	 * the table of contents, or a page the contents don't list.
+	 */
 	private void selectInContents(HelpPage page) {
 		DefaultMutableTreeNode root = (DefaultMutableTreeNode) this.contentsTree.getModel().getRoot();
+		if (page == null) {
+			this.clearContentsSelection();
+			return;
+		}
 		Enumeration<?> nodes = root.preorderEnumeration();
 		while (nodes.hasMoreElements()) {
 			DefaultMutableTreeNode node = (DefaultMutableTreeNode) nodes.nextElement();
@@ -582,7 +922,16 @@ public final class HelpViewer extends JPanel {
 			}
 			return;
 		}
-		this.contentsTree.clearSelection();
+		this.clearContentsSelection();
+	}
+
+	private void clearContentsSelection() {
+		this.selectingProgrammatically = true;
+		try {
+			this.contentsTree.clearSelection();
+		} finally {
+			this.selectingProgrammatically = false;
+		}
 	}
 
 	// -------------------------------------------------------------------- help source folder
@@ -638,8 +987,9 @@ public final class HelpViewer extends JPanel {
 	 * @param chosenNow true when the author just picked it (a failure is a dialog); false for the
 	 *                  saved folder at start-up or a reload after a change (a failure is shown
 	 *                  in the banner, and the help already on screen stays)
+	 *                  (package-private for HelpViewerTest)
 	 */
-	private void loadSourceFolder(File directory, boolean chosenNow) {
+	void loadSourceFolder(File directory, boolean chosenNow) {
 		// a folder just chosen replaces any load in progress; a reload waits its turn
 		if (this.folderTaskRunning && !chosenNow) return;
 		this.folderTaskRunning = true;
@@ -710,7 +1060,7 @@ public final class HelpViewer extends JPanel {
 				+ "</b>, not the help built into VCell. It reloads when files change.</html>");
 		this.sourceLabel.setToolTipText(loaded.folder().describe());
 		this.sourceBanner.setVisible(true);
-		this.useBuiltInMenuItem.setEnabled(true);
+		this.useBuiltInAction.setEnabled(true);
 		if (this.isShowing()) this.watchTimer.start();
 		// open on the problems only for errors; warnings can wait until the author looks
 		if (firstTime && !HelpChecks.errors(loaded.problems()).isEmpty()) this.showProblems();
@@ -727,10 +1077,15 @@ public final class HelpViewer extends JPanel {
 			LG.warn("could not forget the help source folder", e);
 		}
 		this.sourceBanner.setVisible(false);
-		this.useBuiltInMenuItem.setEnabled(false);
+		this.useBuiltInAction.setEnabled(false);
 		if (this.sourceFolder == null) return;
 		this.sourceFolder = null;
 		this.sourceFolderFingerprint = null;
+		// the built-in help has no problems to show
+		for (HelpTab tab : this.tabs()) {
+			if (tab.problem() != null) this.pageTabs.remove(tab);
+		}
+		this.updateTabActions();
 		this.setProblems(List.of());
 		this.setProblemsTabShown(false);
 		try {
@@ -786,41 +1141,79 @@ public final class HelpViewer extends JPanel {
 	}
 
 	/**
-	 * Show another book (the built-in help or a folder's), keeping the page that is open if the
-	 * new book has it.
+	 * Show another book (the built-in help or a folder's), keeping each tab's page if the new
+	 * book has it.
 	 *
 	 * @param keepScroll true for a reload of the same folder: stay where the author was reading
 	 */
 	private void setBook(HelpBook newBook, boolean keepScroll) {
-		String openPath = this.currentPage == null ? null : this.currentPage.path();
-		int scrollPosition = this.contentScrollPane.getVerticalScrollBar().getValue();
 		this.book = newBook;
 		this.renderer = new HelpRenderer(newBook, HelpRenderer.Target.SWING, MAX_IMAGE_WIDTH);
 		this.search = null;
-		this.contentsTree.setModel(HelpViewer.buildTreeModel(newBook));
-		this.history.clear();
-		this.historyIndex = -1;
-		this.currentPage = null;
-		HelpPage page = openPath == null ? null : newBook.getPageByPath(openPath);
-		this.openPage(page != null ? page : newBook.getHomePage(), null, List.of());
-		if (!this.searchField.getText().isBlank()) this.runSearch();
-		if (keepScroll && page != null) {
-			SwingUtilities.invokeLater(() -> SwingUtilities.invokeLater(() -> this.contentScrollPane.getVerticalScrollBar().setValue(scrollPosition)));
+		// a new model clears the selection, which is not the reader deselecting a page
+		this.selectingProgrammatically = true;
+		try {
+			this.contentsTree.setModel(HelpViewer.buildTreeModel(newBook));
+		} finally {
+			this.selectingProgrammatically = false;
 		}
+		// each tab keeps its place and history: the same page if the new book has it, else the contents
+		for (HelpTab tab : this.tabs()) tab.reload(keepScroll);
+		if (this.tabs().isEmpty()) this.showTableOfContents();
+		if (!this.searchField.getText().isBlank()) this.runSearch();
 	}
 
 	private void setProblems(List<HelpProblem> problems) {
+		this.allProblems = List.copyOf(problems);
+		for (HelpTab tab : this.tabs()) tab.problemsChanged(this.allProblems);
+		this.listProblems();
+	}
+
+	/** Whether the folder still has this problem (one in a tab may since have been fixed). */
+	boolean isReported(HelpProblem problem) {
+		return this.allProblems.contains(problem);
+	}
+
+	/**
+	 * List the problems in scope (the selected tab's page's; all of them for the contents; for a
+	 * problem tab, those listed when it opened) that the Errors and Warnings boxes let through, with
+	 * the problem tab's problem selected. The tab counts the scope's errors and warnings
+	 * ("Problems (2/36)") whatever the boxes, so a hidden error is still counted.
+	 */
+	private void listProblems() {
+		HelpTab tab = this.selectedTab();
+		String scopePath = tab == null ? null
+				: tab.problem() != null ? tab.place().problemScope()
+				: tab.currentPage() != null ? tab.currentPage().path() : null;
+		List<HelpProblem> inScope = scopePath == null ? this.allProblems
+				: this.allProblems.stream().filter(problem -> problem.path().equals(scopePath)).toList();
+		long warnings = inScope.stream().filter(HelpProblem::isWarning).count();
+		long errors = inScope.size() - warnings;
+		List<HelpProblem> shown = inScope.stream()
+				.filter(problem -> problem.isWarning() ? this.showWarningsCheckBox.isSelected() : this.showErrorsCheckBox.isSelected())
+				.toList();
+
+		HelpProblem selected = tab == null ? null : tab.problem();
 		DefaultListModel<HelpProblem> model = (DefaultListModel<HelpProblem>) this.problemsList.getModel();
-		model.clear();
-		model.addAll(problems);
-		long warnings = problems.stream().filter(HelpProblem::isWarning).count();
-		long errors = problems.size() - warnings;
-		// our own words, so safe as HTML; two lines, as the panel is narrow
-		String counts = HelpViewer.count(errors, "error") + ", " + HelpViewer.count(warnings, "warning");
-		this.problemsLabel.setText(problems.isEmpty() ? "No problems found"
-				: "<html>" + Character.toUpperCase(counts.charAt(0)) + counts.substring(1) + ".<br>Choose one to open its page.</html>");
+		this.listingProblems = true;
+		try {
+			model.clear();
+			model.addAll(shown);
+			if (selected != null && shown.contains(selected)) this.problemsList.setSelectedValue(selected, true);
+			else this.problemsList.clearSelection();
+		} finally {
+			this.listingProblems = false;
+		}
+
+		this.showErrorsCheckBox.setText("Errors (" + errors + ")");
+		this.showWarningsCheckBox.setText("Warnings (" + warnings + ")");
+		String scope = scopePath == null ? "All pages" : "This page (Home shows all)";
+		String status = !inScope.isEmpty() && shown.isEmpty() ? "None of the ticked kinds."
+				: inScope.isEmpty() ? (scopePath == null ? "No problems found." : "No problems on this page.") : "";
+		// our own words, so safe as HTML
+		this.problemsLabel.setText(status.isEmpty() ? scope : "<html>" + scope + "<br>" + status + "</html>");
 		int index = this.navigationTabs.indexOfComponent(this.problemsPanel);
-		if (index >= 0) this.navigationTabs.setTitleAt(index, problems.isEmpty() ? "Problems" : "Problems (" + problems.size() + ")");
+		if (index >= 0) this.navigationTabs.setTitleAt(index, "Problems (" + errors + "/" + warnings + ")");
 	}
 
 	/**
@@ -832,23 +1225,30 @@ public final class HelpViewer extends JPanel {
 		return text.replace("/", "/\u200B");
 	}
 
-	/** "1 error", "36 warnings", "no errors" */
-	private static String count(long count, String noun) {
-		return (count == 0 ? "no" : String.valueOf(count)) + " " + noun + (count == 1 ? "" : "s");
-	}
-
 	private void showProblems() {
 		this.setProblemsTabShown(true);
 		this.navigationTabs.setSelectedComponent(this.problemsPanel);
 		if (this.problemsList.getModel().getSize() > 0) this.problemsList.requestFocusInWindow();
 	}
 
+	/**
+	 * Show the chosen problem in a tab: the tab already showing it; else the selected tab when it
+	 * shows a problem (so stepping through the list doesn't open a tab for each); else a new tab.
+	 */
 	private void openSelectedProblem() {
 		HelpProblem problem = this.problemsList.getSelectedValue();
 		if (problem == null) return;
-		HelpPage page = this.book.getPageByPath(problem.path());
-		if (page == null || page == this.currentPage) return;
-		this.openPage(page, null, List.of());
+		for (HelpTab tab : this.tabs()) {
+			if (!problem.equals(tab.problem())) continue;
+			this.pageTabs.setSelectedComponent(tab);
+			return;
+		}
+		HelpTab selected = this.selectedTab();
+		String scopePath = selected == null ? null
+				: selected.problem() != null ? selected.place().problemScope()
+				: selected.currentPage() != null ? selected.currentPage().path() : null;
+		HelpTab tab = selected != null && selected.problem() != null ? selected : this.addTab(true);
+		tab.open(HelpTab.Location.problem(problem, scopePath), List.of());
 	}
 
 	/**
@@ -874,7 +1274,7 @@ public final class HelpViewer extends JPanel {
 			this.setText("<html><table width='" + textWidth + "' cellpadding='0' cellspacing='0' border='0'><tr><td>"
 					+ "<b>" + HelpViewer.escapeHtml(problem.kind().label()) + "</b>"
 					+ "<br><font color='" + dim + "'>" + HelpViewer.breakablePaths(HelpViewer.escapeHtml(problem.location())).replace(", line ", ", line&nbsp;") + "</font>"
-					+ "<br>" + HelpViewer.breakablePaths(HelpViewer.escapeHtml(message)) + "</td></tr></table></html>");
+					+ "</td></tr></table></html>");
 			this.setToolTipText(null);
 			this.setBorder(BorderFactory.createEmptyBorder(4, 6, 4, 6));
 			// the icon says error or warning only to the eye; say it to a screen reader too
@@ -906,7 +1306,7 @@ public final class HelpViewer extends JPanel {
 	 * objects for {@code <object>} tags and live controls for forms. The renderer never writes
 	 * these tags; this keeps a slip there harmless.
 	 */
-	private static final class SafeHtmlEditorKit extends HTMLEditorKit {
+	static final class SafeHtmlEditorKit extends HTMLEditorKit {
 		private static final Set<HTML.Tag> BLOCKED_TAGS = Set.of(HTML.Tag.OBJECT, HTML.Tag.APPLET, HTML.Tag.INPUT,
 				HTML.Tag.SELECT, HTML.Tag.TEXTAREA, HTML.Tag.FRAME, HTML.Tag.FRAMESET, HTML.Tag.ISINDEX);
 		private final ViewFactory viewFactory = new HTMLFactory() {
@@ -925,7 +1325,7 @@ public final class HelpViewer extends JPanel {
 			}
 		};
 
-		private SafeHtmlEditorKit() {
+		SafeHtmlEditorKit() {
 			this.setAutoFormSubmission(false);
 		}
 
@@ -943,10 +1343,8 @@ public final class HelpViewer extends JPanel {
 		model.clear();
 		if (query.isBlank()) {
 			this.navigationCards.show(this.navigationPanel, CONTENTS_CARD);
-			if (!this.highlightTerms.isEmpty()) {
-				this.highlightTerms = List.of();
-				this.highlightTerms();
-			}
+			HelpTab tab = this.selectedTab();
+			if (tab != null) tab.clearHighlights();
 			return;
 		}
 		if (this.search == null) this.search = new HelpSearch(this.book);
@@ -973,7 +1371,7 @@ public final class HelpViewer extends JPanel {
 	private void openSelectedResult() {
 		HelpSearch.Hit hit = this.resultsList.getSelectedValue();
 		if (hit == null) return;
-		this.openPage(hit.page(), null, HelpSearch.terms(this.searchField.getText()));
+		this.tab().open(HelpTab.Location.page(hit.page(), null), HelpSearch.terms(this.searchField.getText()));
 	}
 
 	/** Two lines per result: the page title, then where it sits in the contents. */
@@ -995,36 +1393,38 @@ public final class HelpViewer extends JPanel {
 
 	// ------------------------------------------------------------------------------ rendering
 
-	private void loadDocument(HelpPage page) {
-		this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-		try {
-			HTMLEditorKit editorKit = (HTMLEditorKit) this.contentPane.getEditorKit();
-			StyleSheet styleSheet = new StyleSheet();
-			styleSheet.addStyleSheet(editorKit.getStyleSheet()); // never modify the kit's shared default
-			styleSheet.addRule(this.themeCss());
-			HTMLDocument document = new HTMLDocument(styleSheet);
-			// no document base: the renderer gives images absolute URLs it has checked, and nothing
-			// else on the page may load anything
-			document.putProperty("IgnoreCharsetDirective", Boolean.TRUE);
-			HelpRenderer.RenderedPage rendered = this.renderer.renderPage(page);
-			// Swing's ImageView takes images from this cache when the document has one, and then
-			// never fetches or decodes anything itself; an image missing from it is not shown
-			document.putProperty("imageCache", this.decodeImages(rendered));
-			String html = "<html><body>" + rendered.html() + "</body></html>";
-			editorKit.read(new StringReader(html), document, 0);
-			this.contentPane.setDocument(document);
-			this.contentPane.getAccessibleContext().setAccessibleDescription(page.title());
-		} catch (IOException | BadLocationException e) {
-			LG.error("help page " + page.path() + " could not be shown", e);
-			this.contentPane.setText("<html><body><p>This help page could not be shown: "
-					+ HelpViewer.escapeHtml(String.valueOf(e.getMessage())) + "</p></body></html>");
-		} finally {
-			this.setCursor(Cursor.getDefaultCursor());
-		}
+	HelpBook book() {
+		return this.book;
+	}
+
+	HelpRenderer renderer() {
+		return this.renderer;
+	}
+
+	/**
+	 * A document for the page area, styled for the current theme.
+	 *
+	 * @param bodyHtml HTML from {@link HelpRenderer}, which has checked it
+	 * @param images   the only images it may show, already decoded
+	 */
+	HTMLDocument newDocument(JEditorPane pane, String bodyHtml, java.util.Hashtable<java.net.URL, java.awt.Image> images) throws IOException, BadLocationException {
+		HTMLEditorKit editorKit = (HTMLEditorKit) pane.getEditorKit();
+		StyleSheet styleSheet = new StyleSheet();
+		styleSheet.addStyleSheet(editorKit.getStyleSheet()); // never modify the kit's shared default
+		styleSheet.addRule(this.themeCss());
+		HTMLDocument document = new HTMLDocument(styleSheet);
+		// no document base: the renderer gives images absolute URLs it has checked, and nothing
+		// else on the page may load anything
+		document.putProperty("IgnoreCharsetDirective", Boolean.TRUE);
+		// Swing's ImageView takes images from this cache when the document has one, and then
+		// never fetches or decodes anything itself; an image missing from it is not shown
+		document.putProperty("imageCache", images);
+		editorKit.read(new StringReader("<html><body>" + bodyHtml + "</body></html>"), document, 0);
+		return document;
 	}
 
 	/** The page's images decoded at their shown size, within the per-page budgets. */
-	private java.util.Hashtable<java.net.URL, java.awt.Image> decodeImages(HelpRenderer.RenderedPage rendered) {
+	java.util.Hashtable<java.net.URL, java.awt.Image> decodeImages(HelpRenderer.RenderedPage rendered) {
 		java.util.Hashtable<java.net.URL, java.awt.Image> cache = new java.util.Hashtable<>();
 		long pixels = 0;
 		for (java.util.Map.Entry<String, HelpRenderer.ShownImage> entry : rendered.images().entrySet()) {
@@ -1045,23 +1445,6 @@ public final class HelpViewer extends JPanel {
 		return cache;
 	}
 
-	private void highlightTerms() {
-		Highlighter highlighter = this.contentPane.getHighlighter();
-		highlighter.removeAllHighlights();
-		if (this.highlightTerms.isEmpty()) return;
-		Highlighter.HighlightPainter painter = new DefaultHighlighter.DefaultHighlightPainter(VCellColors.getMatchHighlightBackground());
-		try {
-			String text = this.contentPane.getDocument().getText(0, this.contentPane.getDocument().getLength()).toLowerCase(Locale.ROOT);
-			for (String term : this.highlightTerms) {
-				for (int index = text.indexOf(term); index >= 0; index = text.indexOf(term, index + term.length())) {
-					highlighter.addHighlight(index, index + term.length(), painter);
-				}
-			}
-		} catch (BadLocationException e) {
-			LG.warn("could not highlight search terms", e);
-		}
-	}
-
 	/** Page styling from the current look and feel, so dark themes get a dark page. */
 	private String themeCss() {
 		Color background = HelpViewer.uiColor("EditorPane.background", Color.WHITE);
@@ -1080,20 +1463,19 @@ public final class HelpViewer extends JPanel {
 				+ " a { color: " + VCellColors.toHtmlColor(link) + "; }"
 				+ " ul, ol { margin-top: 0px; margin-bottom: 8px; margin-left-ltr: 22px; }"
 				+ " li { margin-bottom: 3px; }"
+				+ " ul ul, ol ol, ul ol, ol ul { margin-bottom: 0px; }"
 				+ " code, pre { font-family: Monospaced; background-color: " + VCellColors.toHtmlColor(codeBackground) + "; }"
 				+ " th, td { border: 1px solid " + VCellColors.toHtmlColor(rule) + "; padding: 3px 6px; }"
 				+ " strong { font-weight: bold; } em { font-style: italic; }";
 	}
 
-	/** Re-render the open page when the look and feel (light/dark theme) changes. */
+	/** Re-render the open pages when the look and feel (light/dark theme) changes. */
 	@Override
 	public void updateUI() {
 		super.updateUI();
-		if (this.currentPage == null) return;
-		HelpPage page = this.currentPage;
+		if (this.pageTabs == null) return; // called by the constructor, before there are tabs
 		SwingUtilities.invokeLater(() -> {
-			this.loadDocument(page);
-			this.highlightTerms();
+			for (HelpTab tab : this.tabs()) tab.rerender();
 		});
 	}
 

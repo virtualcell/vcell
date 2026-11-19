@@ -65,7 +65,7 @@ public final class HelpSiteExporter {
 		HelpRenderer renderer = new HelpRenderer(book, HelpRenderer.Target.WEB, MAX_IMAGE_WIDTH);
 		Files.createDirectories(outputDirectory);
 		Files.writeString(outputDirectory.resolve(STYLESHEET), CSS, StandardCharsets.UTF_8);
-		Files.writeString(outputDirectory.resolve("index.html"), HelpSiteExporter.indexHtml(book), StandardCharsets.UTF_8);
+		Files.writeString(outputDirectory.resolve("index.html"), HelpSiteExporter.indexHtml(book, renderer), StandardCharsets.UTF_8);
 		for (HelpPage page : book.getPages()) {
 			Path pageFile = outputDirectory.resolve(HelpRenderer.toHtmlHref(page.path()));
 			Files.createDirectories(pageFile.getParent());
@@ -85,28 +85,10 @@ public final class HelpSiteExporter {
 				+ body + "</body>\n</html>\n";
 	}
 
-	private static String indexHtml(HelpBook book) {
-		StringBuilder list = new StringBuilder();
-		HelpSiteExporter.appendEntries(list, book.getTableOfContents());
-		return HelpSiteExporter.pageHtml(book.getTitle(), "", "<h1>" + HelpSiteExporter.escape(book.getTitle()) + "</h1>\n" + list)
+	/** The contents, as the help window shows them when no page is open. */
+	private static String indexHtml(HelpBook book, HelpRenderer renderer) {
+		return HelpSiteExporter.pageHtml(book.getTitle(), "", renderer.renderContents())
 				.replace("<nav><a href=\"index.html\">VCell Help contents</a></nav>\n", "");
-	}
-
-	private static void appendEntries(StringBuilder html, List<HelpTocEntry> entries) {
-		if (entries.isEmpty()) return;
-		html.append("<ul>\n");
-		for (HelpTocEntry entry : entries) {
-			html.append("<li>");
-			if (entry.pagePath() == null) {
-				html.append(HelpSiteExporter.escape(entry.title()));
-			} else {
-				html.append("<a href=\"").append(HelpRenderer.toHtmlHref(entry.pagePath())).append("\">")
-						.append(HelpSiteExporter.escape(entry.title())).append("</a>");
-			}
-			HelpSiteExporter.appendEntries(html, entry.children());
-			html.append("</li>\n");
-		}
-		html.append("</ul>\n");
 	}
 
 	/**

@@ -44,7 +44,6 @@ public class HelpBookTest {
 		problems.stream().filter(HelpProblem::isWarning).forEach(System.out::println);
 		assertEquals("", HelpChecks.errors(problems).stream().map(HelpProblem::toString).collect(Collectors.joining("\n")));
 		assertFalse(HelpBookTest.book.getTableOfContents().isEmpty());
-		assertEquals(HelpIds.HOME, HelpBookTest.book.getHomePage().id(), "the first contents entry is the home page");
 	}
 
 	@Test
@@ -137,7 +136,7 @@ public class HelpBookTest {
 	}
 
 	/** A PNG of random pixels, which PNG can't compress, so its size follows its dimensions. */
-	private static void writePng(Path file, int width, int height) throws IOException {
+	static void writePng(Path file, int width, int height) throws IOException {
 		BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 		Random random = new Random(1);
 		for (int y = 0; y < height; y++) {

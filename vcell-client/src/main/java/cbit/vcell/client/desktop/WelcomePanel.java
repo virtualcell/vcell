@@ -11,6 +11,7 @@ import cbit.vcell.desktop.RecentModelsPanel;
 import cbit.vcell.desktop.SearchOptions;
 import org.vcell.api.server.ClientServerManager.VersionMismatch;
 import org.vcell.api.server.ConnectionStatus;
+import org.vcell.documentation.HelpIds;
 import org.vcell.documentation.HelpViewer;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDocument.VCDocumentType;
@@ -777,8 +778,8 @@ public class WelcomePanel extends JPanel {
 
 		JButton learn = new JButton("Learn VCell");
 		learn.setName("WelcomeLearn");
-		learn.setToolTipText("Opens VCell's help, as Help > VCell Help does");
-		learn.addActionListener(e -> HelpViewer.showHelp()); // as Help > VCell Help does
+		learn.setToolTipText("Opens VCell's help at its introduction");
+		learn.addActionListener(e -> HelpViewer.showHelp(HelpIds.INTRODUCTION));
 
 		// the help on a line of its own, at the right, under the checkbox: beside it, the two widen the window
 		JPanel learnRow = new JPanel(new BorderLayout());
