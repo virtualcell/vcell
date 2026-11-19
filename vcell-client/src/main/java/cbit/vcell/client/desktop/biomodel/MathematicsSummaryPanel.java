@@ -189,7 +189,7 @@ public class MathematicsSummaryPanel extends JPanel {
 	private JPanel buildUnitSystem() {
 		JPanel panel = new JPanel(new GridBagLayout());
 		this.unitSystemLabel.setName("SummaryUnitSystemName");
-		this.unitSystemLabel.setFont(this.unitSystemLabel.getFont().deriveFont(Font.BOLD));
+		VCellFonts.setStyle(this.unitSystemLabel, Font.BOLD);
 		GridBagConstraints nameCell = MathematicsSummaryPanel.cell(0, 0);
 		nameCell.gridwidth = 2;
 		panel.add(this.unitSystemLabel, nameCell);

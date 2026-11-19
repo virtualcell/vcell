@@ -30,6 +30,7 @@ import javax.swing.tree.AbstractLayoutCache;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreePath;
+import cbit.vcell.client.laf.VCellFonts;
 
 /**
  * The navigation column's look: each row a rounded rectangle the column's full width, rather than a tree line with
@@ -416,7 +417,7 @@ public final class NavigationTreeStyle {
 	/** A level's type: the model a size larger and bold, its sections bold, theirs plain, and deeper rows italic. */
 	static java.awt.Font fontFor(java.awt.Font base, int level) {
 		return switch (level) {
-			case 0 -> base.deriveFont(java.awt.Font.BOLD, base.getSize2D() + 2);
+			case 0 -> base.deriveFont(java.awt.Font.BOLD, (float) Math.round(base.getSize2D() * VCellFonts.relativeSize(VCellFonts.Category.SUBTITLE)));
 			case 1 -> base.deriveFont(java.awt.Font.BOLD);
 			case 2 -> base.deriveFont(java.awt.Font.PLAIN);
 			default -> base.deriveFont(java.awt.Font.ITALIC);

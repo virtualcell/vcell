@@ -282,6 +282,15 @@ public final class VCellFonts {
 		return null == font ? new JLabel().getFont() : new PlainFont(font);
 	}
 
+	/**
+	 * How much larger than ordinary text this kind of text is in the current theme (a theme's own heading sizes need
+	 * not match the defaults): for sizing text relative to a font other than the theme's own.
+	 */
+	public static float relativeSize(Category category) {
+		Font font = VCellFonts.categoryFonts.get(category), body = VCellFonts.categoryFonts.get(Category.BODY);
+		return null == font || null == body ? category.relativeSize : font.getSize2D() / body.getSize2D();
+	}
+
 	/** The current font for this kind of text, in another style (Font.PLAIN, BOLD, ITALIC, or BOLD | ITALIC). */
 	public static Font getFont(Category category, int style) {
 		Font font = VCellFonts.getFont(category);

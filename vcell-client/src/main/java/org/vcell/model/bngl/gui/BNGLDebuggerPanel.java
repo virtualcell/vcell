@@ -127,8 +127,8 @@ public class BNGLDebuggerPanel extends JPanel {
 			getBnglPanel().setCursor(lineNumber, columnNumber);
 			getBnglPanel().getLineNumberPanel().setErrorLine(lineNumber);
 		}
-		Font font = new Font("monospaced", Font.PLAIN, 3);
-		String pre = "<html><font face=\"" + font.getFamily() + "\" size=\"" + font.getSize() + "\"> " + exceptionText + "</font></html>";
+		Font font = VCellFonts.getFont(VCellFonts.Category.MONOSPACED);
+		String pre = "<html><span style=\"font-family: " + font.getFamily() + "; font-size: " + font.getSize() + "pt\"> " + exceptionText + "</span></html>";
 		exceptionTextArea.setText(pre);
 		
 //		SwingUtilities.invokeLater(new Runnable() {
