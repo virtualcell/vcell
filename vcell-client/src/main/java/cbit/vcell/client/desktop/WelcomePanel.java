@@ -11,6 +11,8 @@ import cbit.vcell.desktop.RecentModelsPanel;
 import cbit.vcell.desktop.SearchOptions;
 import org.vcell.api.server.ClientServerManager.VersionMismatch;
 import org.vcell.api.server.ConnectionStatus;
+import org.vcell.documentation.HelpButton;
+import org.vcell.documentation.HelpContext;
 import org.vcell.documentation.HelpIds;
 import org.vcell.documentation.HelpViewer;
 import org.vcell.util.document.User;
@@ -83,7 +85,7 @@ public class WelcomePanel extends JPanel {
 	private final JButton accountButton = new JButton(); // Log Out; Go Back, to the login choices, for a guest or offline
 	private final JButton signUpButton = new JButton("Sign Up"); // for a guest
 	private final Component signUpGap = Box.createHorizontalStrut(6);
-	private final HelpButton accountHelp = new HelpButton("WelcomeAccountHelp", "About logging in"); // beside the heading, or who is logged in
+	private final HelpButton accountHelp = new HelpButton("WelcomeAccountHelp", "logging in"); // beside the heading, or who is logged in
 	private final JPanel headingRow = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0)); // over the login choices: a prompt to pick one
 	private final JPanel statusRow = new JPanel(new FlowLayout(FlowLayout.TRAILING, 0, 0)); // who is logged in
 	private final JCheckBox keepOpen = new JCheckBox("Keep this window open after opening a model");
@@ -94,7 +96,7 @@ public class WelcomePanel extends JPanel {
 	private boolean loginOptionsDismissed = false; // "Use Offline": a "Go Back" button in their place
 	private final CautionIcon caution = new CautionIcon();
 	private final JLabel versionNotice = new JLabel("Version mismatch", this.caution, SwingConstants.LEADING);
-	private final HelpButton versionHelp = new HelpButton("WelcomeVersionHelp", "About the version mismatch");
+	private final HelpButton versionHelp = new HelpButton("WelcomeVersionHelp", "the version mismatch");
 	private final JPanel versionMismatchPanel = new JPanel(new GridBagLayout()); // when this VCell isn't the server's
 	private final JPanel header = new JPanel(new BorderLayout(14, 0));
 	private final FlowLayout versionMismatchLayout = new FlowLayout(FlowLayout.CENTER, 0, 0);
@@ -115,6 +117,7 @@ public class WelcomePanel extends JPanel {
 		this.databaseModels.setMenuMaker(manager::createModelMenu);
 		this.bioModelsNetPanel.setDocumentWindowManager(manager);
 		this.setName("WelcomePanel");
+		HelpContext.setPage(this, HelpIds.INTRODUCTION); // Help > VCell Help, as Learn VCell
 		this.logo.setName("WelcomeLogo");
 		this.logo.getAccessibleContext().setAccessibleName("VCell");
 		this.setBorder(BorderFactory.createEmptyBorder(18, 22, 16, 22));
@@ -305,7 +308,7 @@ public class WelcomePanel extends JPanel {
 		if (null == mismatch) return;
 		String server = mismatch.server().getVersionNumber() + " (build " + mismatch.server().getBuildNumber() + ")";
 		String client = mismatch.client().getVersionNumber() + " (build " + mismatch.client().getBuildNumber() + ")";
-		this.versionHelp.setHelp("<html>The latest VCell version is " + server + "; this is " + client + ".<br>"
+		this.versionHelp.setExplanation("<html>The latest VCell version is " + server + "; this is " + client + ".<br>"
 				+ "Until you upgrade, some features will be unavailable.</html>");
 		long start = System.currentTimeMillis();
 		this.cautionPulse = new Timer(40, e -> { // three slow pulses, then steady
@@ -399,7 +402,10 @@ public class WelcomePanel extends JPanel {
 		this.signUpGap.setVisible(false);
 		// who is logged in (with what logging in does, on a help icon beside it), and the buttons below, their own
 		// widths, all at the right
-		this.accountHelp.setHelp("<html>You stay logged in, even when VCell restarts, until you log out.</html>");
+		this.accountHelp.setExplanation("<html>You stay logged in, even when VCell restarts, until you log out.</html>");
+		this.accountHelp.setPage(HelpIds.LOGIN);
+		this.accountHelp.setLeadingGap(6);
+		this.versionHelp.setLeadingGap(6);
 		this.statusRow.setOpaque(false);
 		this.statusRow.add(this.accountStatus);
 		JPanel accountButtonHolder = new JPanel();
@@ -428,72 +434,6 @@ public class WelcomePanel extends JPanel {
 		section.add(this.headingRow, BorderLayout.NORTH);
 		section.add(this.account, BorderLayout.CENTER);
 		return section;
-	}
-
-	/**
-	 * A small "?" that shows its help (HTML) as its tooltip, and in a popup under it when clicked; clicking it again, or
-	 * anywhere else, closes the popup.
-	 */
-	private static final class HelpButton extends JButton {
-		private final JLabel text = new JLabel();
-		private final JPopupMenu popup = new JPopupMenu();
-		private long hiddenAt = 0; // when the popup last closed
-
-		HelpButton(String name, String accessibleName) {
-			super(new HelpIcon());
-			this.setName(name);
-			this.getAccessibleContext().setAccessibleName(accessibleName);
-			this.setBorder(BorderFactory.createEmptyBorder(0, 6, 0, 0));
-			this.setContentAreaFilled(false);
-			this.setFocusPainted(false);
-			this.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-			this.text.setBorder(BorderFactory.createEmptyBorder(6, 8, 6, 8));
-			this.popup.setName(name + "Popup");
-			this.popup.add(this.text);
-			this.popup.addPopupMenuListener(new PopupMenuListener() {
-				@Override public void popupMenuWillBecomeVisible(PopupMenuEvent e) {}
-				@Override public void popupMenuWillBecomeInvisible(PopupMenuEvent e) { HelpButton.this.hiddenAt = System.currentTimeMillis(); }
-				@Override public void popupMenuCanceled(PopupMenuEvent e) {}
-			});
-			this.addActionListener(e -> { // a click shows it too, for those who don't wait for the tooltip
-				// the press of a click on the button while it shows closes it; the click is done then, not to open it again
-				if (System.currentTimeMillis() - this.hiddenAt < 300) return;
-				this.popup.show(this, 0, this.getHeight());
-			});
-		}
-
-		void setHelp(String html) {
-			this.text.setText(html);
-			this.setToolTipText(html);
-		}
-	}
-
-	// A small circled question mark, about as tall as the text, in the dim text color
-	private static final class HelpIcon implements Icon {
-		@Override
-		public void paintIcon(Component c, Graphics g, int x, int y) {
-			Graphics2D g2 = (Graphics2D) g.create();
-			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-			g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-			int size = this.getIconWidth();
-			g2.setColor(VCellColors.getDimForeground());
-			g2.setStroke(new BasicStroke(Math.max(1f, size / 14f)));
-			g2.drawOval(x, y, size - 1, size - 1);
-			g2.setFont(c.getFont().deriveFont(Font.BOLD, size * 0.7f));
-			FontMetrics metrics = g2.getFontMetrics();
-			g2.drawString("?", x + (size - metrics.stringWidth("?")) / 2f, y + (size - metrics.getHeight()) / 2f + metrics.getAscent());
-			g2.dispose();
-		}
-
-		@Override
-		public int getIconWidth() {
-			return VCellFonts.ems(1.15f);
-		}
-
-		@Override
-		public int getIconHeight() {
-			return this.getIconWidth();
-		}
 	}
 
 	// The login choices, or who is logged in; the new model buttons and whether the window stays open only once the

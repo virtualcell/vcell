@@ -14,6 +14,10 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
 import org.vcell.client.logicalwindow.LWTopFrame;
+import org.vcell.documentation.HelpContext;
+import org.vcell.documentation.HelpIds;
+
+import cbit.vcell.client.laf.AppearanceMenus;
 
 import cbit.vcell.client.ChildWindowManager;
 import cbit.vcell.client.FieldDataWindowManager;
@@ -120,6 +124,12 @@ private void initialize() {
 		setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
 		setSize(426, 240);
 		setContentPane(getJFrameContentPane());
+		// a menu bar of its own (else macOS shows an empty one): the windows, and VCell Help at the field data page
+		HelpContext.setPage(getJFrameContentPane(), HelpIds.FIELD_DATA);
+		javax.swing.JMenuBar menuBar = new javax.swing.JMenuBar();
+		menuBar.add(LWTopFrame.createWindowMenu(true, AppearanceMenus.create(this)));
+		menuBar.add(HelpContext.createHelpMenu());
+		setJMenuBar(menuBar);
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}

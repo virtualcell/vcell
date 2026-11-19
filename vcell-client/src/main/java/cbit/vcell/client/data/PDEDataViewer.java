@@ -10,6 +10,8 @@
 
 package cbit.vcell.client.data;
 
+import org.vcell.documentation.HelpContext;
+import org.vcell.documentation.HelpIds;
 import cbit.vcell.client.laf.VCellFonts;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -2231,10 +2233,26 @@ private void initialize() {
 		setLayout(new java.awt.BorderLayout());
 		setSize(725, 569);
 		add(getJTabbedPane1(), "Center");
+		HelpContext.setPage(this, this::helpPage); // Help > VCell Help, and the results window's "?"
 		initConnections();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
+}
+
+// the help page about the open tab
+private String helpPage() {
+	java.awt.Component shown = getJTabbedPane1().getSelectedComponent();
+	if (shown == null) return HelpIds.SPATIAL_RESULTS;
+	if (shown == dataProcessingResultsPanel) return HelpIds.POST_PROCESSING_STATISTICS;
+	if (shown == postProcessPdeDataViewerPanel) return HelpIds.POST_PROCESSING_IMAGES;
+	String title = getJTabbedPane1().getTitleAt(getJTabbedPane1().getSelectedIndex());
+	if (EXPORT_DATA_TABNAME.equals(title)) return HelpIds.EXPORTING_SPATIAL_RESULTS;
+	if (viewDataTabbedPane != null && viewDataTabbedPane.getSelectedIndex() >= 0
+			&& CurrentView.SURFACE_VIEW.title.equals(viewDataTabbedPane.getTitleAt(viewDataTabbedPane.getSelectedIndex()))) {
+		return HelpIds.SPATIAL_RESULTS_SURFACE_VIEW;
+	}
+	return HelpIds.SPATIAL_RESULTS_SLICE_VIEW;
 }
 
 /**

@@ -10,6 +10,8 @@
 
 package cbit.vcell.client.desktop.biomodel;
 
+import org.vcell.documentation.HelpContext;
+import org.vcell.documentation.HelpIds;
 import cbit.vcell.client.laf.VCellFonts;
 import cbit.vcell.client.laf.VCellColors;
 import java.awt.BorderLayout;
@@ -517,6 +519,7 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 	private JPanel getModelUnitSystemPanel() {
 		if (modelUnitSystemPanel == null) {
 			modelUnitSystemPanel = new JPanel();
+			HelpContext.setPage(modelUnitSystemPanel, HelpIds.MODEL_UNITS); // the window's "?" and F1
 			modelUnitSystemPanel.setLayout(new BorderLayout());
 			
 			modelUnitSystemPanel.add(unitSystemChooserPanel, BorderLayout.WEST); // choosing the units, beside the table of them

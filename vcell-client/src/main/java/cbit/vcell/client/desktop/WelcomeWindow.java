@@ -9,6 +9,7 @@ import org.vcell.api.server.ConnectionStatus;
 import org.vcell.client.logicalwindow.LWTopFrame;
 import org.vcell.util.gui.VCellIcons;
 
+import org.vcell.documentation.HelpContext;
 import javax.swing.*;
 
 /** The welcome window's frame: the welcome panel, a File menu for new models, and the Window menu. */
@@ -48,6 +49,7 @@ public class WelcomeWindow extends LWTopFrame implements TopLevelWindow {
 		JMenuBar menuBar = new JMenuBar();
 		menuBar.add(file);
 		menuBar.add(createWindowMenu(true, AppearanceMenus.create(this))); // the theme and font, as a model window has
+		menuBar.add(HelpContext.createHelpMenu()); // VCell Help opens the introduction, as Learn VCell
 		return menuBar;
 	}
 
