@@ -75,8 +75,42 @@ final class LayoutScaler {
 		if (component instanceof JSplitPane splitPane) LayoutScaler.scaleDivider(splitPane);
 	}
 
-	// A window's size as designed (for DESIGN_SIZE text) and as last set here
-	private record WindowSize(Dimension design, Dimension applied) {}
+	// A window's size as designed (for DESIGN_SIZE text) and as last set here. A window declared to fit its contents
+	// has a limit (design pixels; 0 for none in that direction) and is packed again, not scaled, as the text changes.
+	private record WindowSize(Dimension design, Dimension applied, Dimension fitLimit) {
+		WindowSize(Dimension design, Dimension applied) {
+			this(design, applied, null);
+		}
+
+		boolean fits() {
+			return null != this.fitLimit;
+		}
+	}
+
+	/** Sizes the window in ems of ordinary text, and keeps it so as the text size changes (see VCellFonts.sizeWindow). */
+	static void sizeWindow(Window window, float widthEms, float heightEms) {
+		LayoutScaler.applyWindowSize(window, LayoutScaler.designPixels(widthEms, heightEms));
+	}
+
+	/** Packs the window, within a limit in ems, and keeps it fitting as the text size changes (see VCellFonts.fitWindow). */
+	static void fitWindow(Window window, float maxWidthEms, float maxHeightEms) {
+		LayoutScaler.fit(window, LayoutScaler.designPixels(maxWidthEms, maxHeightEms));
+	}
+
+	// Ems are multiples of the text size, so a length in ems is that many DESIGN_SIZE pixels as designed
+	private static Dimension designPixels(float widthEms, float heightEms) {
+		return new Dimension(Math.round(widthEms * DESIGN_SIZE), Math.round(heightEms * DESIGN_SIZE));
+	}
+
+	private static void fit(Window window, Dimension limit) {
+		window.pack();
+		Dimension max = (Dimension) LayoutScaler.scaled(limit, LayoutScaler.scale());
+		Dimension size = window.getSize();
+		if (max.width > 0) size.width = Math.min(size.width, max.width);
+		if (max.height > 0) size.height = Math.min(size.height, max.height);
+		LayoutScaler.place(window, size);
+		LayoutScaler.windowSizes.put(window, new WindowSize(LayoutScaler.unscaled(window.getSize(), LayoutScaler.scale()), window.getSize(), limit));
+	}
 
 	/**
 	 * Notes how every window is sized before the scale changes, and returns what resizes them once the change has
@@ -86,13 +120,19 @@ final class LayoutScaler {
 	static Runnable prepareWindowsForScaleChange() {
 		float previousScale = LayoutScaler.scale();
 		Set<Window> packed = new HashSet<>();
+		Map<Window, Dimension> fitting = new WeakHashMap<>(); // windows declared to fit their contents, and their limits
 		for (Window window : Window.getWindows()) {
-			if (window.isDisplayable() && !LayoutScaler.isMaximized(window) && window.getSize().equals(window.getPreferredSize())) packed.add(window);
+			if (!window.isDisplayable() || LayoutScaler.isMaximized(window)) continue;
+			WindowSize sizes = LayoutScaler.windowSizes.get(window);
+			if (null != sizes && sizes.fits() && window.getSize().equals(sizes.applied())) fitting.put(window, sizes.fitLimit());
+			else if (window.getSize().equals(window.getPreferredSize())) packed.add(window);
 		}
 		return () -> {
 			for (Window window : Window.getWindows()) {
 				if (!window.isDisplayable()) continue;
-				if (packed.contains(window)) {
+				if (fitting.containsKey(window)) {
+					LayoutScaler.fit(window, fitting.get(window));
+				} else if (packed.contains(window)) {
 					window.pack();
 					LayoutScaler.place(window, window.getSize());
 					LayoutScaler.windowSizes.put(window, new WindowSize(LayoutScaler.unscaled(window.getSize(), LayoutScaler.scale()), window.getSize()));
@@ -109,6 +149,7 @@ final class LayoutScaler {
 	private static void scaleShownWindow(Window window) {
 		if (window.getWidth() <= 0) return;
 		WindowSize sizes = LayoutScaler.windowSizes.get(window);
+		if (null != sizes && sizes.fits() && window.getSize().equals(sizes.applied())) return; // already fitted at this scale
 		if (null == sizes || !window.getSize().equals(sizes.applied())) sizes = new WindowSize(window.getSize(), null);
 		LayoutScaler.applyWindowSize(window, sizes.design());
 	}
