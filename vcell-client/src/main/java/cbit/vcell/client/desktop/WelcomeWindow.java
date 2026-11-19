@@ -23,7 +23,7 @@ public class WelcomeWindow extends LWTopFrame implements TopLevelWindow {
 		this.setName("WelcomeWindow");
 		this.setTitle("Welcome to Virtual Cell \u2014 Version " + DocumentWindowAboutBox.getVERSION_NO() + " (build " + DocumentWindowAboutBox.getBUILD_NO() + ")");
 		this.setIconImage(VCellIcons.getJFrameImageIcon());
-		// closing goes to the request manager, which hides it, or quits VCell if no model window is open
+		// closing goes to the request manager, which hides it, or quits VCell if no other window is open
 		this.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 		this.getContentPane().add(manager.getComponent());
 		this.setJMenuBar(this.createMenuBar());
@@ -49,6 +49,12 @@ public class WelcomeWindow extends LWTopFrame implements TopLevelWindow {
 		menuBar.add(file);
 		menuBar.add(createWindowMenu(true, AppearanceMenus.create(this))); // the theme and font, as a model window has
 		return menuBar;
+	}
+
+	// as the request manager decides: with no other window showing, closing the welcome window quits
+	@Override
+	public boolean closingQuits() {
+		return LWTopFrame.liveWindows().allMatch(window -> window.get() == this);
 	}
 
 	@Override
