@@ -617,6 +617,11 @@ public final class HelpViewer extends JPanel {
 
 	// ---------------------------------------------------------------------------- navigation
 
+	/** Whether this is the help's own window (F1 there is left to it). */
+	static boolean isHelpWindow(java.awt.Window window) {
+		return window instanceof HelpWindow;
+	}
+
 	/** The help window, made the first time; null (and the reader told) if the help can't load. */
 	private static HelpWindow openHelpWindow() {
 		HelpWindow window = HelpViewer.openWindow != null ? HelpViewer.openWindow.get() : null;
