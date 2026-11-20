@@ -7,6 +7,7 @@ import cbit.vcell.message.VCMessagingException;
 import cbit.vcell.message.VCellTopic;
 import cbit.vcell.message.messages.StatusMessage;
 import cbit.vcell.parser.ExpressionBindingException;
+import cbit.vcell.server.HtcJobID;
 import cbit.vcell.server.SimulationJobStatus;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationIdentifier;
@@ -241,8 +242,20 @@ public class SimulationStateMachineTest {
         WorkerEvent acceptedWorker = createWorkerEvent(new ChangedStateValues(simID, null, WorkerEvent.JOB_ACCEPTED, taskID, "Worker just got accepted"));
         stateMachine.onWorkerEvent(acceptedWorker, simulationDB, testMessageSession);
         SimulationJobStatus jobStatus = getLatestJobSubmission();
-        Assertions.assertTrue(jobStatus.getSchedulerStatus().isDispatched(), "Job recently got accepted, only works if previous state was waiting.");
+        Assertions.assertTrue(jobStatus.getSchedulerStatus().isDispatched(), "Job recently got accepted, works if previous state was waiting, queued or dispatched.");
         Assertions.assertTrue(getClientTopicMessage().getSchedulerStatus().isDispatched());
+
+        // the real path: onDispatch() already set DISPATCHED when the submit service sends ACCEPTED with the slurm job id
+        DispatcherTestUtils.insertOrUpdateStatus(simKey, jobIndex, taskID, testUser, SimulationJobStatus.SchedulerStatus.DISPATCHED, simulationDB);
+        WorkerEvent acceptedWithHtcJobID = createWorkerEvent(new ChangedStateValues(simID, null, WorkerEvent.JOB_ACCEPTED, taskID, "Worker just got accepted"));
+        // any slurm job number different from the one DispatcherTestUtils puts in the mock status (2), so we can tell they apart
+        acceptedWithHtcJobID.setHtcJobID(new HtcJobID("2710593", HtcJobID.BatchSystemType.SLURM));
+        stateMachine.onWorkerEvent(acceptedWithHtcJobID, simulationDB, testMessageSession);
+        jobStatus = getLatestJobSubmission();
+        Assertions.assertTrue(jobStatus.getSchedulerStatus().isDispatched(), "Accepted while dispatched stays dispatched.");
+        Assertions.assertNotNull(jobStatus.getSimulationExecutionStatus().getHtcJobID(), "The slurm job id must be kept.");
+        Assertions.assertEquals(2710593L, jobStatus.getSimulationExecutionStatus().getHtcJobID().getJobNumber(), "The slurm job id must be kept.");
+        Assertions.assertEquals(2710593L, getClientTopicMessage().getSimulationExecutionStatus().getHtcJobID().getJobNumber(), "The client gets the slurm job id too.");
 
         DispatcherTestUtils.insertOrUpdateStatus(simulationDB);
         stateMachine.onWorkerEvent(acceptedWorker, simulationDB, testMessageSession);

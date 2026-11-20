@@ -188,9 +188,11 @@ public class SimulationStateMachine {
 
         if (workerEvent.isAcceptedEvent()) {
             //
-            // job message accepted by HtcSimulationWorker and sent to Scheduler (PBS/SGE/SLURM) (with a htcJobID) ... previous state should be "WAITING"
+            // job message accepted by HtcSimulationWorker and sent to Scheduler (PBS/SGE/SLURM) (with a htcJobID)
+            // previous state is normally "DISPATCHED": onDispatch() sets it before the submit service even sees the task,
+            // and this is the only event that carries the slurm job id (htcJobID), so it must not be ignored then
             //
-            if (oldSchedulerStatus.isWaiting() || oldSchedulerStatus.isQueued()) {
+            if (oldSchedulerStatus.isWaiting() || oldSchedulerStatus.isQueued() || oldSchedulerStatus.isDispatched()) {
                 // new queue status
                 SimulationQueueEntryStatus newQueueStatus = new SimulationQueueEntryStatus(queueDate, queuePriority, SimulationQueueID.QUEUE_ID_NULL);
 
