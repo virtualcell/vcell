@@ -1412,20 +1412,48 @@ public final class HelpViewer extends JPanel {
 	 * @param bodyHtml HTML from {@link HelpRenderer}, which has checked it
 	 * @param images   the only images it may show, already decoded
 	 */
-	HTMLDocument newDocument(JEditorPane pane, String bodyHtml, java.util.Hashtable<java.net.URL, java.awt.Image> images) throws IOException, BadLocationException {
+	/**
+	 * @param pagePath where the page is, relative to the help root, for its relative links (see
+	 *                 {@link #inertBase})
+	 */
+	HTMLDocument newDocument(JEditorPane pane, String pagePath, String bodyHtml, java.util.Hashtable<java.net.URL, java.awt.Image> images) throws IOException, BadLocationException {
 		HTMLEditorKit editorKit = (HTMLEditorKit) pane.getEditorKit();
 		StyleSheet styleSheet = new StyleSheet();
 		styleSheet.addStyleSheet(editorKit.getStyleSheet()); // never modify the kit's shared default
 		styleSheet.addRule(this.themeCss());
 		HTMLDocument document = new HTMLDocument(styleSheet);
-		// no document base: the renderer gives images absolute URLs it has checked, and nothing
-		// else on the page may load anything
+		// the renderer gives images absolute URLs it has checked, and nothing else on the page may
+		// load anything; the base only lets Swing resolve the page's relative links quietly
+		document.setBase(HelpViewer.inertBase(pagePath));
 		document.putProperty("IgnoreCharsetDirective", Boolean.TRUE);
 		// Swing's ImageView takes images from this cache when the document has one, and then
 		// never fetches or decodes anything itself; an image missing from it is not shown
 		document.putProperty("imageCache", images);
 		editorKit.read(new StringReader("<html><body>" + bodyHtml + "</body></html>"), document, 0);
 		return document;
+	}
+
+	/** Opens nothing: a help page loads nothing through its base address. */
+	private static final java.net.URLStreamHandler LOADS_NOTHING = new java.net.URLStreamHandler() {
+		@Override
+		protected java.net.URLConnection openConnection(java.net.URL url) throws IOException {
+			throw new IOException("help pages load nothing through their base address: " + url);
+		}
+	};
+
+	/**
+	 * A base address for a page that only resolves its relative links. Swing makes a URL of each
+	 * link's href against the document's base whenever the pointer moves over or clicks it; with
+	 * no base, every relative link threw (and Swing swallowed) a MalformedURLException, which
+	 * stops a debugger set to break on exceptions. Links are followed by their href text
+	 * ({@link HelpTab}), never this URL, and the "vcellhelp" scheme's handler opens nothing.
+	 */
+	static java.net.URL inertBase(String pagePath) {
+		try {
+			return new java.net.URL(null, "vcellhelp:/" + pagePath, HelpViewer.LOADS_NOTHING);
+		} catch (java.net.MalformedURLException e) {
+			return null; // no base: relative links still work, by their href text
+		}
 	}
 
 	/** The page's images decoded at their shown size, within the per-page budgets. */

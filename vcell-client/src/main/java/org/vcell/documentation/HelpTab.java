@@ -253,7 +253,7 @@ final class HelpTab extends JPanel {
 
 	private void loadContents() {
 		try {
-			this.pagePane.setDocument(this.viewer.newDocument(this.pagePane, this.viewer.renderer().renderContents(), new java.util.Hashtable<>()));
+			this.pagePane.setDocument(this.viewer.newDocument(this.pagePane, HelpBook.TOC_PATH, this.viewer.renderer().renderContents(), new java.util.Hashtable<>()));
 			this.pagePane.getAccessibleContext().setAccessibleDescription("Help contents");
 		} catch (IOException | BadLocationException e) {
 			LG.error("help contents could not be shown", e);
@@ -265,7 +265,7 @@ final class HelpTab extends JPanel {
 		this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		try {
 			HelpRenderer.RenderedPage rendered = this.viewer.renderer().renderPage(page);
-			this.pagePane.setDocument(this.viewer.newDocument(this.pagePane, rendered.html(), this.viewer.decodeImages(rendered)));
+			this.pagePane.setDocument(this.viewer.newDocument(this.pagePane, page.path(), rendered.html(), this.viewer.decodeImages(rendered)));
 			this.pagePane.getAccessibleContext().setAccessibleDescription(page.title());
 		} catch (IOException | BadLocationException e) {
 			LG.error("help page " + page.path() + " could not be shown", e);

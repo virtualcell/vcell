@@ -48,6 +48,38 @@ public class HelpViewerTest {
 		HelpViewerTest.book = HelpBook.fromDirectory(new File("UserDocumentation"));
 	}
 
+	/**
+	 * Swing makes a URL of a link's href against the page's base whenever the pointer moves over
+	 * it; a relative link with no base threw a MalformedURLException each time (swallowed, but it
+	 * stops a debugger). Every link on a deep page resolves, and the base opens nothing.
+	 */
+	@Test
+	public void relativeLinksResolveWithoutLoadingAnything() throws Exception {
+		SwingUtilities.invokeAndWait(() -> {
+			HelpViewer viewer = new HelpViewer(HelpViewerTest.book);
+			viewer.showPage(HelpIds.STOCHASTIC_HISTOGRAMS); // pages/BioModelApplications/Simulations/Results/Nonspatial/
+			for (boolean contents : new boolean[]{false, true}) {
+				if (contents) viewer.showTableOfContents();
+				javax.swing.text.html.HTMLDocument document = (javax.swing.text.html.HTMLDocument) HelpViewerTest.page(viewer).getDocument();
+				java.net.URL base = document.getBase();
+				Assertions.assertNotNull(base);
+				int links = 0;
+				for (javax.swing.text.html.HTMLDocument.Iterator it = document.getIterator(javax.swing.text.html.HTML.Tag.A); it.isValid(); it.next()) {
+					Object href = it.getAttributes().getAttribute(javax.swing.text.html.HTML.Attribute.HREF);
+					if (href == null) continue;
+					links++;
+					try {
+						new java.net.URL(base, href.toString()); // as HTMLEditorKit.LinkController does
+					} catch (java.net.MalformedURLException e) {
+						Assertions.fail("link " + href + " does not resolve: " + e.getMessage());
+					}
+				}
+				Assertions.assertTrue(links > 0, "the page has links to check");
+				Assertions.assertThrows(IOException.class, () -> base.openConnection(), "nothing loads through the base");
+			}
+		});
+	}
+
 	@Test
 	public void showsTheContentsWhenNoPageIsOpen() throws Exception {
 		SwingUtilities.invokeAndWait(() -> {
