@@ -1,0 +1,168 @@
+{
+ "vcell_fenics": {
+  "schema": 1,
+  "status": "completed",
+  "times": [
+   0.0,
+   0.1,
+   0.2
+  ],
+  "planned_times": [
+   0.0,
+   0.1,
+   0.2
+  ],
+  "segments": [
+   {
+    "index": 0,
+    "t0": 0.0,
+    "count": 3,
+    "motion": "none",
+    "prefix": ""
+   }
+  ],
+  "domains": {
+   "nuc_dom": {
+    "kind": "volume",
+    "dim": 2,
+    "gdim": 2,
+    "mesh": "mesh/nuc_dom.vtu",
+    "n_points": 82,
+    "n_cells": 128,
+    "cell_type": 5,
+    "adjacent": null
+   },
+   "cyto_dom": {
+    "kind": "volume",
+    "dim": 2,
+    "gdim": 2,
+    "mesh": "mesh/cyto_dom.vtu",
+    "n_points": 306,
+    "n_cells": 503,
+    "cell_type": 5,
+    "adjacent": null
+   },
+   "ext_dom": {
+    "kind": "volume",
+    "dim": 2,
+    "gdim": 2,
+    "mesh": "mesh/ext_dom.vtu",
+    "n_points": 318,
+    "n_cells": 521,
+    "cell_type": 5,
+    "adjacent": null
+   },
+   "pm_dom": {
+    "kind": "membrane",
+    "dim": 1,
+    "gdim": 2,
+    "mesh": "mesh/pm_dom.vtu",
+    "n_points": 75,
+    "n_cells": 75,
+    "cell_type": 3,
+    "adjacent": {
+     "compartments": [
+      "cyto_dom",
+      "ext_dom"
+     ],
+     "maps": {
+      "cyto_dom": "pm_dom/_adjacent/cyto_dom",
+      "ext_dom": "pm_dom/_adjacent/ext_dom"
+     },
+     "version": 1
+    }
+   },
+   "ne_dom": {
+    "kind": "membrane",
+    "dim": 1,
+    "gdim": 2,
+    "mesh": "mesh/ne_dom.vtu",
+    "n_points": 34,
+    "n_cells": 34,
+    "cell_type": 3,
+    "adjacent": {
+     "compartments": [
+      "cyto_dom",
+      "nuc_dom"
+     ],
+     "maps": {
+      "cyto_dom": "ne_dom/_adjacent/cyto_dom",
+      "nuc_dom": "ne_dom/_adjacent/nuc_dom"
+     },
+     "version": 1
+    }
+   }
+  },
+  "variables": [
+   {
+    "name": "s_nuc",
+    "domain": "nuc_dom",
+    "path": "nuc_dom/s_nuc",
+    "stats": "stats/nuc_dom/s_nuc",
+    "assoc": "point",
+    "element": "P1"
+   },
+   {
+    "name": "s_cyto",
+    "domain": "cyto_dom",
+    "path": "cyto_dom/s_cyto",
+    "stats": "stats/cyto_dom/s_cyto",
+    "assoc": "point",
+    "element": "P1"
+   },
+   {
+    "name": "s_ext",
+    "domain": "ext_dom",
+    "path": "ext_dom/s_ext",
+    "stats": "stats/ext_dom/s_ext",
+    "assoc": "point",
+    "element": "P1"
+   },
+   {
+    "name": "R",
+    "domain": "pm_dom",
+    "path": "pm_dom/R",
+    "stats": "stats/pm_dom/R",
+    "assoc": "point",
+    "element": "P1"
+   }
+  ],
+  "solver": {
+   "version": "0.1.1",
+   "dolfinx": "0.10.0",
+   "mpi_ranks": 1,
+   "options": {
+    "h": 0.2,
+    "dt": 0.1,
+    "t_final": 0.2,
+    "output_times": [
+     0.0,
+     0.1,
+     0.2
+    ],
+    "fe_degree": 1,
+    "time_integration": "backward_euler",
+    "rtol": 1e-06,
+    "atol": 1e-08
+   },
+   "overrides": {}
+  },
+  "source": {
+   "kind": "vcell-yaml",
+   "file": "cross_validation/nucleus_math.yaml",
+   "sim_key": null,
+   "job_index": null,
+   "task_id": null
+  },
+  "updated": "2026-10-07T20:58:16+00:00",
+  "profile": "fixed",
+  "progress": 1.0,
+  "message": null,
+  "stats_columns": [
+   "mean",
+   "total",
+   "min",
+   "max"
+  ]
+ }
+}
