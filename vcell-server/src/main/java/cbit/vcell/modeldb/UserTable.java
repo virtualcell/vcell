@@ -143,14 +143,22 @@ public String getPreparedSQLUpdateList() {
 			notify + "=?";
 }
 
+/**
+ * The concatenated SQL these statements replaced always quoted these columns, so a null was stored as the text
+ * "null" (which also satisfies the NOT NULL constraints). Keep storing exactly that.
+ */
+private static String asStoredText(String value) {
+	return String.valueOf(value);
+}
+
 public Object[] getSQLUpdateParameters(UserInfo userInfo) {
 	return new Object[] {
 			userInfo.digestedPassword0.getString(),
-			userInfo.email,
-			userInfo.wholeName,
+			UserTable.asStoredText(userInfo.email),
+			UserTable.asStoredText(userInfo.wholeName),
 			userInfo.title,
 			userInfo.company,
-			userInfo.country,
+			UserTable.asStoredText(userInfo.country),
 			userInfo.notify ? UserTable.NOTIFY_TRUE : UserTable.NOTIFY_FALSE
 	};
 }
@@ -169,13 +177,13 @@ public Object[] getSQLValueParameters(KeyValue key, UserInfo userInfo) {
 	String digestedPassword = userInfo.digestedPassword0.getString();
 	return new Object[] {
 			new java.math.BigDecimal(key.toString()),
-			userInfo.userid,
+			UserTable.asStoredText(userInfo.userid),
 			digestedPassword, // the PASSWORD column gets the digest too; need this for now
-			userInfo.email,
-			userInfo.wholeName,
+			UserTable.asStoredText(userInfo.email),
+			UserTable.asStoredText(userInfo.wholeName),
 			userInfo.title,
 			userInfo.company,
-			userInfo.country,
+			UserTable.asStoredText(userInfo.country),
 			userInfo.notify ? UserTable.NOTIFY_TRUE : UserTable.NOTIFY_FALSE,
 			digestedPassword
 	};

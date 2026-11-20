@@ -52,6 +52,20 @@ public class UserSqlBindingTest {
 	}
 
 	@Test
+	public void testMissingRequiredTextStoredAsBefore() {
+		// the concatenated SQL stored a null email/name/country as the text "null"; registrations without
+		// those claims relied on it to satisfy the NOT NULL constraints
+		UserInfo userInfo = hostileUserInfo();
+		userInfo.email = null;
+		userInfo.wholeName = null;
+		userInfo.title = null;
+		Object[] params = UserTable.table.getSQLValueParameters(new KeyValue("100"), userInfo);
+		assertEquals("null", params[3]);
+		assertEquals("null", params[4]);
+		assertEquals(null, params[5]);
+	}
+
+	@Test
 	public void testSqlLiteralDoublesQuotes() {
 		assertEquals("'O''Brien'", DbDriver.sqlLiteral("O'Brien"));
 		assertEquals("'x'', EMAIL=(SELECT 1), TITLE='''", DbDriver.sqlLiteral("x', EMAIL=(SELECT 1), TITLE='"));
