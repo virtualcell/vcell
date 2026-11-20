@@ -4,12 +4,18 @@ import java.awt.Dimension;
 import java.awt.GraphicsEnvironment;
 import java.awt.Rectangle;
 
+import javax.swing.JComponent;
+import javax.swing.JMenuBar;
 import javax.swing.WindowConstants;
+
+import org.vcell.documentation.HelpContext;
+import org.vcell.documentation.HelpIds;
 
 import org.vcell.client.logicalwindow.LWTopFrame;
 import org.vcell.util.gui.VCellIcons;
 
 import cbit.vcell.client.ModelExplorerWindowManager;
+import cbit.vcell.client.laf.AppearanceMenus;
 
 /**
  * The Model Explorer's frame. One of VCell's windows, so the dialogs it opens (comparing models, permissions, deleting)
@@ -27,6 +33,13 @@ public class ModelExplorerWindow extends LWTopFrame {
 		this.setIconImage(VCellIcons.getJFrameImageIcon());
 		this.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
 		this.getContentPane().add(manager.getComponent());
+		// a menu bar of its own (else macOS shows an empty one): the windows, and VCell Help, which opens at the Model
+		// Explorer's page
+		HelpContext.setPage((JComponent) this.getContentPane(), HelpIds.MODEL_EXPLORER);
+		JMenuBar menuBar = new JMenuBar();
+		menuBar.add(LWTopFrame.createWindowMenu(true, AppearanceMenus.create(this)));
+		menuBar.add(HelpContext.createHelpMenu());
+		this.setJMenuBar(menuBar);
 		// most of the screen, up to a comfortable size, centered
 		Rectangle screen = GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
 		Dimension size = new Dimension(Math.min(1200, screen.width * 9 / 10), Math.min(800, screen.height * 9 / 10));

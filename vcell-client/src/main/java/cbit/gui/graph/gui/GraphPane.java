@@ -9,6 +9,8 @@
  */
 
 package cbit.gui.graph.gui;
+import java.awt.BorderLayout;
+import org.vcell.documentation.HelpViewer;
 import org.vcell.util.gui.VCellIcons;
 import cbit.vcell.client.laf.VCellFonts;
 import java.awt.AWTEvent;
@@ -398,12 +400,22 @@ public class GraphPane extends JPanel implements GraphListener, MouseListener, S
 
 	/** A "?" button, the given size, that shows how to zoom and pan a diagram; for a diagram's toolbar. */
 	public static JButton createControlsHelpButton(Dimension size) {
+		return GraphPane.createControlsHelpButton(size, null);
+	}
+
+	/**
+	 * A "?" button, the given size, that shows how to zoom and pan a diagram, with a link to the help page about the
+	 * diagram; for a diagram's toolbar.
+	 *
+	 * @param helpPageId a {@link org.vcell.documentation.HelpIds} constant, or null for no link
+	 */
+	public static JButton createControlsHelpButton(Dimension size, String helpPageId) {
 		JButton button = GraphPane.createToolBarButton(size);
 		button.setName("DiagramControlsHelpButton");
 		button.setText("?");
 		VCellFonts.setCategory(button, VCellFonts.Category.HEADING);
 		button.setToolTipText("How to zoom and pan the diagram");
-		button.addActionListener(e -> GraphPane.showControlsHelp(button));
+		button.addActionListener(e -> GraphPane.showControlsHelp(button, helpPageId));
 		return button;
 	}
 
@@ -418,6 +430,14 @@ public class GraphPane extends JPanel implements GraphListener, MouseListener, S
 
 	/** Shows how to zoom and pan a diagram, in a pop-up below {@code invoker} (a help button, say). */
 	public static void showControlsHelp(Component invoker) {
+		GraphPane.showControlsHelp(invoker, null);
+	}
+
+	/**
+	 * Shows how to zoom and pan a diagram, in a pop-up below {@code invoker} (a help button, say), ending with a
+	 * "More in VCell Help" link to the help page about the diagram when there is one.
+	 */
+	public static void showControlsHelp(Component invoker, String helpPageId) {
 		String key = KeyEvent.getModifiersExText(Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx());
 		String[][] controls = {
 				{"Zoom in or out", key + " + scroll wheel (zooms around the pointer)"},
@@ -432,8 +452,29 @@ public class GraphPane extends JPanel implements GraphListener, MouseListener, S
 		JLabel label = new JLabel(html.append("</table></html>").toString());
 		label.setBorder(BorderFactory.createEmptyBorder(8, 10, 8, 10));
 		JPopupMenu popup = new JPopupMenu();
-		popup.add(label);
+		popup.setName("DiagramControlsHelpPopup");
+		if (helpPageId == null) {
+			popup.add(label);
+			popup.show(invoker, 0, invoker.getHeight());
+			return;
+		}
+		JButton more = new JButton("More in VCell Help");
+		more.setName("DiagramControlsHelpMore");
+		more.addActionListener(e -> {
+			popup.setVisible(false);
+			HelpViewer.showHelp(helpPageId);
+		});
+		JPanel moreRow = new JPanel(new BorderLayout());
+		moreRow.setOpaque(false);
+		moreRow.setBorder(BorderFactory.createEmptyBorder(0, 10, 8, 10));
+		moreRow.add(more, BorderLayout.WEST);
+		JPanel content = new JPanel(new BorderLayout());
+		content.setOpaque(false);
+		content.add(label, BorderLayout.CENTER);
+		content.add(moreRow, BorderLayout.SOUTH);
+		popup.add(content);
 		popup.show(invoker, 0, invoker.getHeight());
+		more.requestFocusInWindow();
 	}
 
 	/** Zooms in one step, keeping the middle of the view in place. */

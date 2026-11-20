@@ -10,6 +10,7 @@
 
 package org.vcell.util.gui;
 
+import org.vcell.documentation.HelpViewer;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -894,10 +895,49 @@ public class DialogUtils {
         VCSwingFunction.executeAsRuntimeException(doer);
     }
 
-    // use the public methods above when calling from elsewhere, never directly this
+    /**
+     * A short explanation with a "VCell Help" button beside OK that closes it and opens the help at the page that
+     * says more.
+     *
+     * @param helpPageId a {@link org.vcell.documentation.HelpIds} constant
+     */
+    public static void showInfoDialog(final Component requester, final String title, final String message, final String helpPageId){
+        DialogUtils.checkForNull(requester);
+        Doer doer = () -> {
+            JPanel panel = MessagePanelFactory.createSimple(message);
+            DialogUtils.showInfoDialogInternal(requester, panel, title, helpPageId);
+        };
+        VCSwingFunction.executeAsRuntimeException(doer);
+    }
+
+    /** As {@link #showInfoDialog(Component, String, String, String)}, showing a panel. */
+    public static void showInfoDialog(final Component requester, final JPanel panel, final String title, final String helpPageId){
+        DialogUtils.checkForNull(requester);
+        Doer doer = () -> DialogUtils.showInfoDialogInternal(requester, panel, title, helpPageId);
+        VCSwingFunction.executeAsRuntimeException(doer);
+    }
+
+    private static final String VCELL_HELP_OPTION = "VCell Help";
+
     private static void showInfoDialogInternal(final Component requester, final JPanel panel, final String title) {
+        DialogUtils.showInfoDialogInternal(requester, panel, title, null);
+    }
+
+    // use the public methods above when calling from elsewhere, never directly this
+    private static void showInfoDialogInternal(final Component requester, final JPanel panel, final String title, final String helpPageId) {
         LWContainerHandle lwParent = LWNamespace.findLWOwner(requester);
-        JOptionPane pane = new JOptionPane(panel, JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane pane = helpPageId == null
+                ? new JOptionPane(panel, JOptionPane.INFORMATION_MESSAGE)
+                : new JOptionPane(panel, JOptionPane.INFORMATION_MESSAGE, JOptionPane.DEFAULT_OPTION, null,
+                        new Object[]{VCELL_HELP_OPTION, "OK"}, "OK");
+        try {
+            DialogUtils.showInfoPane(requester, lwParent, pane, title);
+        } finally {
+            if (helpPageId != null && VCELL_HELP_OPTION.equals(pane.getValue())) HelpViewer.showHelp(helpPageId);
+        }
+    }
+
+    private static void showInfoPane(final Component requester, final LWContainerHandle lwParent, final JOptionPane pane, final String title) {
         if(OperatingSystemInfo.getInstance().isMac()){
             //On Mac: problem when one keepOnTop,Modal dialogue shows another keepOnTop,Modal dialogue, second one may go behind initially
             final JDialog dialog = new JDialog(JOptionPane.getRootFrame(), true);

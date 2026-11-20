@@ -1,5 +1,7 @@
 package cbit.vcell.client.desktop;
 
+import org.vcell.documentation.HelpIds;
+import org.vcell.documentation.HelpContext;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -88,6 +90,7 @@ public class DocumentNameDialog extends JDialog {
 	 */
 	public DocumentNameDialog(Window owner, String documentTypeName, String initialName, Collection<String> takenNames) {
 		super(owner, "Save " + documentTypeName + " As", ModalityType.APPLICATION_MODAL);
+		HelpContext.setPage(this.getRootPane(), HelpIds.SAVE_AS); // F1
 		this.documentTypeName = documentTypeName;
 		this.takenNames = new TreeSet<>(String.CASE_INSENSITIVE_ORDER.thenComparing(name -> name));
 		this.takenNames.addAll(takenNames);

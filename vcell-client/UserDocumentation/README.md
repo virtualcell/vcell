@@ -33,6 +33,35 @@ UserDocumentation/
   block. Keep images under about 500 KB. They all ship inside the client.
 - Text in `<!-- ... -->` is a note for authors and never shown.
 
+## Contextual help
+
+VCell opens these pages from its windows, so a page with a `HelpIds` constant is one a reader
+reaches without looking for it:
+
+- **Help > VCell Help** (or **F1**) opens the page about the window in front. In a model window,
+  that is the page about the view open in it: the tree node, and the tab open there, such as
+  *Reactions Table* or *Events*. Code says which page explains a panel with
+  `HelpContext.setPage`.
+- **A small round "?"** opens the page about one part of a window, such as the Object Properties,
+  Annotations and Problems tabs under a model's view (the page follows the open tab and the
+  selected object). Child windows and dialogs with a page get a "?" in their top-right corner,
+  since they have no menu bar.
+- **"VCell Help" in an explanation**: VCell's short explanations (a solver's options, the
+  diagram controls) end with a button or link to the page that says more.
+
+The model window's mapping lives in `DocumentEditorHelp`. Two Fast tests keep every window linked
+to a page, so a new window or view fails them until it has one:
+
+- `DocumentEditorHelpTest`: every model-window view and tree node names a page that exists.
+- `HelpCoverageTest`: every window class says its page (`HelpContext.setPage`), and every child
+  window says the page of what it shows just before it opens, or says where that is done with a
+  `// help:` comment. Windows no page should explain (progress popups, developer tools) are
+  listed in the test with the reason.
+
+Where no page exists yet, add one. Pages that start with an **AI-drafted page** note were written
+from the source code and await review by the VCell team
+([#2226](https://github.com/virtualcell/vcell/issues/2226)); remove the note once a page is checked.
+
 ## Contents
 
 `toc.md` is a nested list of links. Indent two spaces per level. The help opens on these

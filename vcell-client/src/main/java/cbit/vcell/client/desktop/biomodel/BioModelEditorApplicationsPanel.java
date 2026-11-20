@@ -10,6 +10,8 @@
 
 package cbit.vcell.client.desktop.biomodel;
 
+import org.vcell.documentation.HelpIds;
+import org.vcell.documentation.HelpContext;
 import javax.swing.JPanel;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
 import java.awt.GridBagConstraints;
@@ -259,6 +261,7 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 
 			ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(this);
 			String title = "comparing application "+simContext1.getName()+" and "+simContext2.getName();
+			HelpContext.setPage(comparePanel, HelpIds.COMPARE_APPLICATIONS);
 			ChildWindow childWindow = childWindowManager.addChildWindow(comparePanel, diffTree, title, true);
 			childWindow.setSize(LWSize.ems(50, 50));
 			childWindow.show();

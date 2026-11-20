@@ -1,5 +1,7 @@
 package cbit.vcell.client.desktop;
 
+import org.vcell.documentation.HelpIds;
+import org.vcell.documentation.HelpContext;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
@@ -72,6 +74,7 @@ public class QuickFixSimulation extends LWTitledDialog {
 	public QuickFixSimulation(LWContainerHandle lwParent, boolean useFixAll, String message, Collection<SolverDescription> goodSolvers) {
 		// LWTitledDialog is DOCUMENT_MODAL and owned by lwParent; no more super((Window)null) orphan path.
 		super(lwParent, "Unsupported Solver");
+		HelpContext.setPage(this.getRootPane(), HelpIds.QUICK_FIX); // F1
 		selectedSolver = null;
 		closeAction = CloseAction.CANCEL; 
 		

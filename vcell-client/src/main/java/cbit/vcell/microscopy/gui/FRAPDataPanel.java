@@ -10,6 +10,8 @@
 
 package cbit.vcell.microscopy.gui;
 
+import org.vcell.documentation.HelpIds;
+import org.vcell.documentation.HelpContext;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -343,6 +345,7 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 		
 		plotter.setPlot2D(plot2D);
 
+		HelpContext.setPage(plotter, HelpIds.VFRAP_DEFINING_ROIS);
 		ChildWindow plotChildWindow = ChildWindowManager.findChildWindowManager(this).addChildWindow(plotter, plotter, "ROI time course", true);
 		plotChildWindow.setTitle("ROI time course");
 		plotChildWindow.setIsCenteredOnParent();

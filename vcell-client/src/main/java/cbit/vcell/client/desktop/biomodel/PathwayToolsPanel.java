@@ -1,5 +1,8 @@
 package cbit.vcell.client.desktop.biomodel;
 
+import org.vcell.documentation.HelpButton;
+import org.vcell.documentation.HelpContext;
+import org.vcell.documentation.HelpIds;
 import java.awt.BorderLayout;
 
 import javax.swing.JSplitPane;
@@ -39,7 +42,11 @@ public class PathwayToolsPanel extends DocumentEditorSubPanel {
 		this.lowerTabs.setName("PathwayToolsLowerTabs");
 		this.lowerTabs.addTab(PathwayToolsPanel.OBJECT_PROPERTIES, objectProperties);
 		this.lowerTabs.addTab(PathwayToolsPanel.PATHWAY_PREVIEW, pathwayPreview);
-		JSplitPane split = new JSplitPane(JSplitPane.VERTICAL_SPLIT, pathwayPanel, this.lowerTabs);
+		HelpContext.setPage(this, pathwayPanel::helpPage); // the window's "?": the page about the open tab above
+		HelpButton lowerHelp = HelpButton.forPage("PathwayToolsLowerHelp", "the pathway object properties and preview",
+				() -> PathwayToolsPanel.PATHWAY_PREVIEW.equals(this.lowerTabs.getTitleAt(Math.max(0, this.lowerTabs.getSelectedIndex())))
+						? HelpIds.PATHWAY_PREVIEW : HelpIds.PATHWAY_PROPERTIES);
+		JSplitPane split = new JSplitPane(JSplitPane.VERTICAL_SPLIT, pathwayPanel, lowerHelp.besideTabs(this.lowerTabs));
 		split.setName("PathwayToolsSplit");
 		split.setResizeWeight(0.65);
 		split.setContinuousLayout(true);

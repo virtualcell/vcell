@@ -1,5 +1,7 @@
 package cbit.vcell.client.desktop.biomodel.annotations;
 
+import org.vcell.documentation.HelpIds;
+import org.vcell.documentation.HelpContext;
 import cbit.vcell.client.laf.VCellFonts;
 import cbit.vcell.client.laf.VCellColors;
 import cbit.vcell.biomodel.meta.VCMetaDataMiriamManager;
@@ -60,6 +62,7 @@ public class AddAnnotationsPanel extends LWChildDialog implements ActionListener
         // owned modeless child: native+logical owner resolved from the annotations panel, so the OS
         // keeps this window above its owner (replaces the old un-owned JFrame + toFront/alwaysOnTop).
         super(LWNamespace.findLWOwner(annotationsPanel), "Add Annotations");
+        HelpContext.setPage(this.getRootPane(), HelpIds.ANNOTATIONS); // F1
         this.annotationsPanel = annotationsPanel;
         this.jComboBoxURI = JComboBoxURI;
         this.jComboBoxQualifier = (JComboBoxQualifier==null) ? new JComboBox<>(): JComboBoxQualifier;

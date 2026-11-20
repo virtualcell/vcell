@@ -642,6 +642,7 @@ private AsynchClientTask[] showSimulationResults0(final boolean isLocal, final V
 					ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(documentWindowManager.getComponent());
 					ChildWindow childWindow = childWindowManager.getChildWindowFromContext(simWindow);
 					if (childWindow==null){
+						// help: the data viewers (ODEDataViewer, PDEDataViewer) say the page about their open tab
 						childWindow = childWindowManager.addChildWindow(simWindow.getDataViewer(), simWindow);
 						childWindow.pack();
 						childWindow.setIsCenteredOnParent();

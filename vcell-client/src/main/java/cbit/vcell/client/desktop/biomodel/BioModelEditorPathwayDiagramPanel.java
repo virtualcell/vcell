@@ -10,6 +10,7 @@
 
 package cbit.vcell.client.desktop.biomodel;
 
+import org.vcell.documentation.HelpIds;
 import javax.swing.Box;
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -744,7 +745,7 @@ implements PathwayEditor, ActionBuilder.Generator {
 		layoutToolBar.add(graphPane.createZoomButton(GraphPane.ZoomButton.FIT, TOOLBAR_BUTTON_SIZE), afterZoomOut);
 		layoutToolBar.add(graphPane.createZoomButton(GraphPane.ZoomButton.ACTUAL_SIZE, TOOLBAR_BUTTON_SIZE), afterZoomOut + 1);
 		layoutToolBar.add(Box.createHorizontalGlue());
-		layoutToolBar.add(GraphPane.createControlsHelpButton(TOOLBAR_BUTTON_SIZE));
+		layoutToolBar.add(GraphPane.createControlsHelpButton(TOOLBAR_BUTTON_SIZE, HelpIds.PATHWAY_DIAGRAM));
 		pathwayGraphModel = new PathwayGraphModel();
 		pathwayGraphModel.addPropertyChangeListener(eventHandler);
 		graphPane.setGraphModel(pathwayGraphModel);
@@ -1433,5 +1434,16 @@ implements PathwayEditor, ActionBuilder.Generator {
 			tabbedPane.setSelectedIndex(PathwayPanelTabID.pathway_lookup.ordinal());
 			break;
 		}
+	}
+
+	/** The help page about the open tab (Pathway Tools' Help > VCell Help and "?"). */
+	String helpPage() {
+		int selectedIndex = this.tabbedPane == null ? -1 : this.tabbedPane.getSelectedIndex();
+		if (selectedIndex == PathwayPanelTabID.pathway_diagram.ordinal()) return HelpIds.PATHWAY_DIAGRAM;
+		if (selectedIndex == PathwayPanelTabID.pathway_objects.ordinal()) return HelpIds.PATHWAY_OBJECTS;
+		if (selectedIndex == PathwayPanelTabID.biopax_summary.ordinal()) return HelpIds.BIOPAX_SUMMARY;
+		if (selectedIndex == PathwayPanelTabID.biopax_tree.ordinal()) return HelpIds.BIOPAX_TREE;
+		if (selectedIndex == PathwayPanelTabID.pathway_lookup.ordinal()) return HelpIds.PATHWAY_COMMONS;
+		return HelpIds.PATHWAYS;
 	}
 }

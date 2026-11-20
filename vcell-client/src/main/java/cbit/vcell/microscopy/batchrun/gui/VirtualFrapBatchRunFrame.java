@@ -10,6 +10,7 @@
 
 package cbit.vcell.microscopy.batchrun.gui;
 
+import org.vcell.documentation.HelpContext;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.datatransfer.DataFlavor;
@@ -286,6 +287,7 @@ public class VirtualFrapBatchRunFrame extends LWTopFrame implements DropTargetLi
 	  public VirtualFrapBatchRunFrame(LocalWorkspace localWorkspace, FRAPBatchRunWorkspace batchRunWorkspace)
 	  {
 	    super();
+	    HelpContext.setPage(this.getRootPane(), HelpIds.VIRTUAL_FRAP); // F1, as Help > Help Topics
 	    this.localWorkspace = localWorkspace;
 	    this.batchRunWorkspace = batchRunWorkspace;
 	    childWindowManager = new ChildWindowManager(this);

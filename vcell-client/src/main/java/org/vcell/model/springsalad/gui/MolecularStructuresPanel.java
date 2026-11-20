@@ -1,5 +1,7 @@
 package org.vcell.model.springsalad.gui;
 
+import org.vcell.documentation.HelpIds;
+import org.vcell.documentation.HelpContext;
 import cbit.vcell.client.laf.VCellColors;
 import cbit.gui.ScopedExpression;
 import cbit.vcell.client.ChildWindowManager;
@@ -977,6 +979,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 	private void addLinkActionPerformed() {
 		AddLinkPanel panel = new AddLinkPanel(this);
 		ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(this);
+		HelpContext.setPage(panel, HelpIds.SPRINGSALAD_SPECIES_SPECIFICATIONS);
 		ChildWindow childWindow = childWindowManager.addChildWindow(panel, panel, " Add Link ");
 		panel.setChildWindow(childWindow);
 		childWindow.setSize(LWSize.ems(27, 27.5f));

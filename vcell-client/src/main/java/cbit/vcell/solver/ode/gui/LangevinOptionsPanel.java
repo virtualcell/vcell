@@ -1,5 +1,6 @@
 package cbit.vcell.solver.ode.gui;
 
+import org.vcell.documentation.HelpIds;
 import cbit.vcell.client.laf.VCellFonts;
 import cbit.vcell.client.laf.VCellColors;
 import java.awt.*;
@@ -128,10 +129,10 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 					randomSeedTextField.setText("");
 				}
 			} else if(e.getSource() == randomSeedHelpButton) {
-				DialogUtils.showInfoDialogAndResize(LangevinOptionsPanel.this, "Set specific seed",
+				DialogUtils.showInfoDialog(LangevinOptionsPanel.this, "Set specific seed",
 					"<html>Provide a seed to the Langevin solver's random number generator so exact "
 							+ "trajectories can be reproduced. If this value is not entered, the solver will "
-							+ "generate different sequences for each run.</html>");
+							+ "generate different sequences for each run.</html>", HelpIds.LANGEVIN_SOLVER_OPTIONS);
 			}
 		}
 		

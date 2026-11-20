@@ -9,6 +9,8 @@
  */
 
 package cbit.vcell.client.data;
+import org.vcell.documentation.HelpContext;
+import org.vcell.documentation.HelpIds;
 import java.util.HashMap;
 import java.util.Hashtable;
 
@@ -459,10 +461,22 @@ private void initialize() {
 		setLayout(new java.awt.BorderLayout());
 		setSize(720, 548);
 		add(getJTabbedPane(), "Center");
+		HelpContext.setPage(this, this::helpPage); // Help > VCell Help, and the results window's "?"
 		initConnections();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
+}
+
+// the help page about the open tab: SpringSaLaD's results have a page of their own
+private String helpPage() {
+	javax.swing.JTabbedPane tabs = this.getJTabbedPane();
+	int index = tabs.getSelectedIndex();
+	String title = index < 0 ? null : tabs.getTitleAt(index);
+	if (LANGEVIN_CLUSTER_RESULTS_TABNAME.equals(title) || TRAJECTORY_TABNAME.equals(title) || this.hasLangevinBatchResults) {
+		return HelpIds.SPRINGSALAD_RESULTS;
+	}
+	return HelpIds.NONSPATIAL_RESULTS;
 }
 
 /**
@@ -639,6 +653,7 @@ public void showTimePlotMultipleScans(DataManager dataManager) {
 	ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(this);
 	//ChildWindow childWindow = childWindowManager.getChildWindowFromContentPane(panel);
 	
+	HelpContext.setPage(panel, HelpIds.NONSPATIAL_RESULTS);
 	ChildWindow childWindow = childWindowManager.addChildWindow(panel, panel, "");
 	String titleStr = childWindow.getParent().getTitle();
 	titleStr = titleStr.substring(0, titleStr.indexOf("("));

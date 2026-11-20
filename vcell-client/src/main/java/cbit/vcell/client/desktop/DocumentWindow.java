@@ -34,7 +34,8 @@ import org.vcell.api.messaging.RemoteProxyVCellConnectionFactory;
 import org.vcell.api.server.ConnectionStatus;
 import org.vcell.api.server.Reconnector;
 import org.vcell.client.logicalwindow.LWTopFrame;
-import org.vcell.documentation.HelpViewer;
+import org.vcell.documentation.HelpContext;
+import org.vcell.documentation.HelpIds;
 import org.vcell.util.UtilCancelException;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDocument;
@@ -210,8 +211,6 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
                     DocumentWindow.this.invokeOnlinePublish();
                 if (e.getSource() == DocumentWindow.this.getJMenuItemEmailSupport())
                     DocumentWindow.this.emailSupport(e);
-                if (e.getSource() == DocumentWindow.this.getNewHelpMenuItem())
-                    DocumentWindow.this.showVCellHelpWindow();
                 if (e.getSource() == DocumentWindow.this.getLogOutMenuItem()){
                     DocumentWindow.this.getWindowManager().getRequestManager().logOut(DocumentWindow.this.getWindowManager());
                 }
@@ -325,10 +324,6 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
         }
     }
 
-
-    private void showVCellHelpWindow() {
-        HelpViewer.showHelp();
-    }
 
     private void emailSupport(java.awt.event.ActionEvent arg1) {
         try {
@@ -833,9 +828,8 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
     private javax.swing.JMenuItem getNewHelpMenuItem() {
         if (this.newHelpMenuItem == null) {
             try {
-                this.newHelpMenuItem = new javax.swing.JMenuItem();
-                this.newHelpMenuItem.setName("newHelpMenuItem");
-                this.newHelpMenuItem.setText("VCell Help");
+                // opens at the page about what the window shows (or the child window in front), F1
+                this.newHelpMenuItem = HelpContext.createHelpMenuItem();
             } catch (java.lang.Throwable ivjExc) {
                 this.handleException(ivjExc);
             }
@@ -1552,7 +1546,6 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
         this.getGrantPermissionsToVCellSupportMenuItem().addActionListener(this.ivjEventHandler);
 
         this.getJMenuItemEmailSupport().addActionListener(this.ivjEventHandler);
-        this.getNewHelpMenuItem().addActionListener(this.ivjEventHandler);
 //	getRunBNGMenuItem().addActionListener(ivjEventHandler);
         this.getRunVFrapItem().addActionListener(this.ivjEventHandler);
         this.getViewJobsMenuItem().addActionListener(this.ivjEventHandler);
@@ -2003,6 +1996,7 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
         DocumentWindowManager dwm = this.getWindowManager();
         ViewJobsPanel panel = new ViewJobsPanel(dwm);
         panel.setPreferredSize(new Dimension(1000, 600));
+        HelpContext.setPage(panel, HelpIds.SIMULATION_JOBS); // F1
 
         if (this.viewSpeciesDialog != null) {        // uncomment these 3 lines to allow only one instance of the dialog
             this.viewSpeciesDialog.dispose();
@@ -2033,6 +2027,7 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
         DocumentWindowManager dwm = this.getWindowManager();
         ExportedDataViewer exportedDataViewer = new ExportedDataViewer();
         exportedDataViewer.setPreferredSize(new Dimension(1030, 590));
+        HelpContext.setPage(exportedDataViewer, HelpIds.EXPORTED_DATA_VIEWER); // F1
 
         if (this.viewSpeciesDialog != null) {        // uncomment these 3 lines to allow only one instance of the dialog
             this.viewSpeciesDialog.dispose();

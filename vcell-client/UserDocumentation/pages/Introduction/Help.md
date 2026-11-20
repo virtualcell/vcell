@@ -6,6 +6,12 @@ The **Help** Menu bar option provides information of the currently launched VCel
 
 Clicking the Help menu shows the possible menu item selections. Selecting
 
+- **VCell Help** (or pressing **F1**) - opens this help at the page about what you are looking at:
+  the part of the model you have open (for example the Reactions table, or an application's
+  Events), or the window in front, such as simulation results or the Model Explorer. Where no page
+  covers it, the help opens on its contents. A small round **?** beside part of a window, or in the
+  corner of a window that has no menu bar, opens the page about that part.
+
 - **VCell Website** - launches a separate web browser that goes to the Virtual Cell web page.
 
 - **VCell Open Discussion Forum** - launches a separate web browser that goes to the VCell Google

@@ -1,5 +1,7 @@
 package cbit.vcell.client;
 
+import org.vcell.documentation.HelpButton;
+import org.vcell.documentation.HelpContext;
 import cbit.vcell.client.laf.NestedMenuBar;
 import cbit.vcell.client.laf.VCellFonts;
 import java.awt.BorderLayout;
@@ -440,8 +442,11 @@ public class ChildWindowManager {
 				JMenuBar mb = (detached || modality != LWModality.MODELESS)
 						? LWNamespace.createRightSideIconMenuBar()
 						: new NestedMenuBar();
+				mb.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
+				// a "?" at the far right, when a help page explains what the window shows
+				HelpButton help = HelpContext.windowHelpButton(this.contentPane);
+				if (help != null) mb.add(help, 0);
 				if (modality == LWModality.MODELESS) {
-					mb.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
 					mb.add(createAttachmentMenuItem());
 				}
 				cp.add(mb,BorderLayout.NORTH);

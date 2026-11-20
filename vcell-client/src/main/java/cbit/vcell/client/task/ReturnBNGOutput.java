@@ -10,6 +10,8 @@
 
 package cbit.vcell.client.task;
 
+import org.vcell.documentation.HelpIds;
+import org.vcell.documentation.HelpContext;
 import java.text.DecimalFormat;
 import java.util.Hashtable;
 
@@ -110,6 +112,7 @@ private void validateConstraints(BNGOutputSpec outputSpec) {
 	}
 	ValidateConstraintsPanel panel = new ValidateConstraintsPanel(owner, showStoichiometryTable);
 	ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(owner);
+	HelpContext.setPage(panel, HelpIds.NETWORK_SPECIFICATIONS);
 	ChildWindow childWindow = childWindowManager.addChildWindow(panel, panel, "Apply the new constraints?");
 	panel.setChildWindow(childWindow);
 	childWindow.setSize(size);
