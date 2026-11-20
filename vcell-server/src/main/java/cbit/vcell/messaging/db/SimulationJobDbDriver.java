@@ -646,11 +646,11 @@ public List<SimulationJobStatusPersistent> getSimulationJobStatus(Connection con
  	}
 
 	if (simStatusQuerySpec.computeHost != null && simStatusQuerySpec.computeHost.length()>0){
- 		conditions.add("lower(" + jobTable.computeHost.getQualifiedColName() + ")='" + simStatusQuerySpec.computeHost.toLowerCase() + "'");
+ 		conditions.add("lower(" + jobTable.computeHost.getQualifiedColName() + ")=" + DbDriver.sqlLiteral(simStatusQuerySpec.computeHost.toLowerCase()));
 	}
 
 	if (simStatusQuerySpec.serverId!=null && simStatusQuerySpec.serverId.length()>0){
-		conditions.add("lower(" + jobTable.serverID.getQualifiedColName() + ")='" + simStatusQuerySpec.serverId + "'");
+		conditions.add("lower(" + jobTable.serverID.getQualifiedColName() + ")=" + DbDriver.sqlLiteral(simStatusQuerySpec.serverId));
 	}
 	
 	if (simStatusQuerySpec.hasData!=null){
@@ -664,7 +664,7 @@ public List<SimulationJobStatusPersistent> getSimulationJobStatus(Connection con
 	} // else all records.
 	
 	if (simStatusQuerySpec.userid!=null && simStatusQuerySpec.userid.length()>0){
-		conditions.add(UserTable.table.userid.getQualifiedColName() + "='" + simStatusQuerySpec.userid + "'");
+		conditions.add(UserTable.table.userid.getQualifiedColName() + "=" + DbDriver.sqlLiteral(simStatusQuerySpec.userid));
 	}
 
 /**
@@ -770,11 +770,11 @@ public List<SimpleJobStatusPersistent> getSimpleJobStatus(Connection con, Simple
  	}
 
 	if (simStatusQuerySpec.computeHost != null && simStatusQuerySpec.computeHost.length()>0){
- 		conditions.add("lower(" + jobTable.computeHost.getQualifiedColName() + ")='" + simStatusQuerySpec.computeHost.toLowerCase() + "'");
+ 		conditions.add("lower(" + jobTable.computeHost.getQualifiedColName() + ")=" + DbDriver.sqlLiteral(simStatusQuerySpec.computeHost.toLowerCase()));
 	}
 
 	if (simStatusQuerySpec.serverId!=null && simStatusQuerySpec.serverId.length()>0){
-		conditions.add("lower(" + jobTable.serverID.getQualifiedColName() + ")='" + simStatusQuerySpec.serverId + "'");
+		conditions.add("lower(" + jobTable.serverID.getQualifiedColName() + ")=" + DbDriver.sqlLiteral(simStatusQuerySpec.serverId));
 	}
 	
 	if (simStatusQuerySpec.hasData!=null){
@@ -788,7 +788,7 @@ public List<SimpleJobStatusPersistent> getSimpleJobStatus(Connection con, Simple
 	} // else all records.
 	
 	if (simStatusQuerySpec.userid!=null && simStatusQuerySpec.userid.length()>0){
-		conditions.add(UserTable.table.userid.getQualifiedColName() + "='" + simStatusQuerySpec.userid + "'");
+		conditions.add(UserTable.table.userid.getQualifiedColName() + "=" + DbDriver.sqlLiteral(simStatusQuerySpec.userid));
 	}
 
 /**

@@ -124,56 +124,61 @@ public final static String getCreateVCellSupportUserSQL(KeyFactory keyFactory) {
 }
 
 	/**
- * This method was created in VisualAge.
- * @return java.lang.String
- * @param key KeyValue
- * @param modelName java.lang.String
+ * SET clause for an account update, with a {@code ?} for every caller-supplied value;
+ * bind {@link #getSQLUpdateParameters(UserInfo)} to it.
  */
-public String getSQLUpdateList(UserInfo userInfo) {
-	StringBuffer buffer = new StringBuffer();
-	buffer.append(digestPW+"='"+userInfo.digestedPassword0.getString()+"',");
-	buffer.append(email+"='"+userInfo.email+"',");
-	buffer.append(dbWholeName+"='"+userInfo.wholeName+"',");
-	buffer.append(lastName+"=NULL"+",");
-	buffer.append(title+"="+(userInfo.title==null?"NULL":"'"+userInfo.title+"'")+",");
-	buffer.append(companyName+"="+(userInfo.company==null?"NULL":"'"+userInfo.company+"'")+",");
-	buffer.append(address1+"=NULL"+",");
-	buffer.append(address2+"=NULL"+",");
-	buffer.append(city+"=NULL"+",");
-	buffer.append(state+"=NULL"+",");
-	buffer.append(country+"='"+userInfo.country+"',");
-	buffer.append(zip+"=NULL"+",");
-	buffer.append(notify+"='"+(userInfo.notify?UserTable.NOTIFY_TRUE:UserTable.NOTIFY_FALSE)+"'");
-	return buffer.toString();
+public String getPreparedSQLUpdateList() {
+	return	digestPW + "=?," +
+			email + "=?," +
+			dbWholeName + "=?," +
+			lastName + "=NULL," +
+			title + "=?," +
+			companyName + "=?," +
+			address1 + "=NULL," +
+			address2 + "=NULL," +
+			city + "=NULL," +
+			state + "=NULL," +
+			country + "=?," +
+			zip + "=NULL," +
+			notify + "=?";
 }
+
+public Object[] getSQLUpdateParameters(UserInfo userInfo) {
+	return new Object[] {
+			userInfo.digestedPassword0.getString(),
+			userInfo.email,
+			userInfo.wholeName,
+			userInfo.title,
+			userInfo.company,
+			userInfo.country,
+			userInfo.notify ? UserTable.NOTIFY_TRUE : UserTable.NOTIFY_FALSE
+	};
+}
+
 /**
- * This method was created in VisualAge.
- * @return java.lang.String
- * @param key KeyValue
- * @param modelName java.lang.String
+ * VALUES list for a new account, in {@link #getSQLColumnList()} order, with a {@code ?} for every
+ * caller-supplied value; bind {@link #getSQLValueParameters(KeyValue, UserInfo)} to it.
  */
-public String getSQLValueList(KeyValue key, UserInfo userInfo) {
-	StringBuffer buffer = new StringBuffer();
-	buffer.append("(");
-	buffer.append(key.toString()+",");
-	buffer.append("'"+userInfo.userid+"',");
-	buffer.append("'"+userInfo.digestedPassword0.getString()+"',");//need this for now
-	buffer.append("'"+userInfo.email+"',");
-	buffer.append("'"+userInfo.wholeName+"',");
-	buffer.append("NULL,");
-	buffer.append((userInfo.title==null?"NULL":"'"+userInfo.title+"'")+",");
-	buffer.append((userInfo.company==null?"NULL":"'"+userInfo.company+"'")+",");
-	buffer.append("NULL,");
-	buffer.append("NULL,");
-	buffer.append("NULL,");
-	buffer.append("NULL,");
-	buffer.append("'"+userInfo.country+"',");
-	buffer.append("NULL,");
-	buffer.append("'"+(userInfo.notify?UserTable.NOTIFY_TRUE:UserTable.NOTIFY_FALSE)+"',");
-	buffer.append(VersionTable.formatDateToOracle(new java.util.Date())+",");
-	buffer.append("'"+userInfo.digestedPassword0.getString()+"'");
-	buffer.append(")");
-	return buffer.toString();
+public String getPreparedSQLValueList() {
+	// id, userid, password, email, firstname, lastname, title, companyname,
+	// address1, address2, city, state, country, zip, notify, insertDate, digestpw
+	return "(?,?,?,?,?,NULL,?,?,NULL,NULL,NULL,NULL,?,NULL,?," + VersionTable.formatDateToOracle(new java.util.Date()) + ",?)";
+}
+
+public Object[] getSQLValueParameters(KeyValue key, UserInfo userInfo) {
+	String digestedPassword = userInfo.digestedPassword0.getString();
+	return new Object[] {
+			new java.math.BigDecimal(key.toString()),
+			userInfo.userid,
+			digestedPassword, // the PASSWORD column gets the digest too; need this for now
+			userInfo.email,
+			userInfo.wholeName,
+			userInfo.title,
+			userInfo.company,
+			userInfo.country,
+			userInfo.notify ? UserTable.NOTIFY_TRUE : UserTable.NOTIFY_FALSE,
+			digestedPassword
+	};
 }
 /**
  * This method was created in VisualAge.
