@@ -460,6 +460,18 @@ public class ClientRequestManager
 		}
 	}
 
+	/**
+	 * After a window other than a model window or the welcome window closes (help, the Model Explorer, a tool window):
+	 * with nothing left showing, back to the welcome window, as after the last model window, rather than VCell running
+	 * with no window at all.
+	 */
+	void afterOtherWindowClosed() {
+		if (this.bExiting || this.bClosingAllWindows) return;
+		ClientMDIManager mdiManager = (ClientMDIManager) this.getMdiManager();
+		if (mdiManager.isAnyWindowShowing()) return;
+		mdiManager.showWelcomeWindow();
+	}
+
 	public boolean closeWindow(final java.lang.String windowID, final boolean exitIfLast) {
 		// called from DocumentWindow or from DatabaseWindow
 		final TopLevelWindowManager windowManager = getMdiManager().getWindowManager(windowID);
@@ -514,44 +526,27 @@ public class ClientRequestManager
 				return true;
 			}
 		} else if (windowManager instanceof WelcomeWindowManager) {
-			// it only hides; with no model window open either, VCell quits
-			long openWindows = getMdiManager().closeWindow(windowID);
-			if (exitIfLast && (openWindows == 0)) {
+			// it only hides; with no other window open either, VCell quits (with help still open, say, it comes back
+			// when that closes: see afterOtherWindowClosed)
+			this.getMdiManager().closeWindow(windowID);
+			if (exitIfLast && !((ClientMDIManager) this.getMdiManager()).isAnyWindowShowing()) {
 				setBExiting(true);
 				exitApplication();
 			}
 			return true;
 		} else if (windowManager instanceof DatabaseWindowManager) {
-			// nothing to check here, just close it
-			long openWindows = getMdiManager().closeWindow(windowID);
-			if (exitIfLast && (openWindows == 0)) {
-				setBExiting(true);
-				exitApplication();
-			}
+			// nothing to check here, just close it; with nothing else open, the welcome window comes back
+			// (afterOtherWindowClosed), as after the last model window
+			this.getMdiManager().closeWindow(windowID);
 			return true;
 		} else if (windowManager instanceof TestingFrameworkWindowManager) {
-			// nothing to check here, just close it
-			long openWindows = getMdiManager().closeWindow(windowID);
-			if (exitIfLast && (openWindows == 0)) {
-				setBExiting(true);
-				exitApplication();
-			}
+			this.getMdiManager().closeWindow(windowID); // as the database window
 			return true;
 		} else if (windowManager instanceof BNGWindowManager) {
-			// nothing to check here, just close it
-			long openWindows = getMdiManager().closeWindow(windowID);
-			if (exitIfLast && (openWindows == 0)) {
-				setBExiting(true);
-				exitApplication();
-			}
+			this.getMdiManager().closeWindow(windowID); // as the database window
 			return true;
 		} else if (windowManager instanceof FieldDataWindowManager) {
-			// nothing to check here, just close it
-			long openWindows = getMdiManager().closeWindow(windowID);
-			if (exitIfLast && (openWindows == 0)) {
-				setBExiting(true);
-				exitApplication();
-			}
+			this.getMdiManager().closeWindow(windowID); // as the database window
 			return true;
 		} else {
 			return false;
@@ -2791,6 +2786,7 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 					// user bailed out at some point, we're not gonna exit
 					return;
 				}
+				this.setBExiting(true); // no bringing back the welcome window as the remaining windows close
 			}
 			// ready to exit
 			if (!ClientTaskDispatcher.hasOutstandingTasks()) {

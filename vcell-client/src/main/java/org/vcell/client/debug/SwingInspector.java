@@ -1275,23 +1275,20 @@ public final class SwingInspector {
 		return null;
 	}
 
-	/** Find a direct child item by text, firing lazy-population MenuListeners if needed. */
+	/** Find a direct child item by text, first firing the menu's MenuListeners as opening it would. */
 	private static JMenuItem childItem(JMenu menu, String text) {
-		JMenuItem hit = scanItems(menu, text);
-		if (hit == null && menu.getMenuListeners().length > 0) {
-			// menus populated on menuSelected (e.g. recent-file lists) are empty
-			// until "opened"; fire their listeners the way opening them would
-			javax.swing.event.MenuEvent ev = new javax.swing.event.MenuEvent(menu);
-			for (javax.swing.event.MenuListener l : menu.getMenuListeners()) {
-				try {
-					l.menuSelected(ev);
-				} catch (RuntimeException e) {
-					// a listener assuming a visible popup may object; matching below still gets its chance
-				}
+		// menus built on menuSelected (recent-file lists, the Window menu) are empty until opened, or hold what they
+		// held when last opened (a Window menu offering Quit VCell before another window opened); fire their
+		// listeners every time, the way opening them would, so the items matched are the ones a user would see
+		javax.swing.event.MenuEvent ev = new javax.swing.event.MenuEvent(menu);
+		for (javax.swing.event.MenuListener l : menu.getMenuListeners()) {
+			try {
+				l.menuSelected(ev);
+			} catch (RuntimeException e) {
+				// a listener assuming a visible popup may object; matching below still gets its chance
 			}
-			hit = scanItems(menu, text);
 		}
-		return hit;
+		return SwingInspector.scanItems(menu, text);
 	}
 
 	private static JMenuItem scanItems(JMenu menu, String text) {

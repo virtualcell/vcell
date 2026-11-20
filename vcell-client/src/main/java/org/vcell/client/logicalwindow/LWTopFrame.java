@@ -18,6 +18,7 @@ import java.util.stream.Stream;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.SwingUtilities;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 
@@ -82,7 +83,7 @@ public abstract class LWTopFrame extends JFrame implements LWContainerHandle {
 	/**
 	 * @param bTextMenu if true, make top menu item text; if false, use icon
 	 * @param extraItems items listed after the open windows, below a separator
-	 * @return Window menu for adding a JMenuBar
+	 * @return Window menu for adding a JMenuBar; it ends with Close Window, for the window it is in
 	 */
 	public static JMenu createWindowMenu(boolean bTextMenu, List<JMenuItem> extraItems) {
 		JMenu mnWindow = new JMenu( );
@@ -103,6 +104,11 @@ public abstract class LWTopFrame extends JFrame implements LWContainerHandle {
 	@Override
 	public Window getWindow() {
 		return this;
+	}
+
+	/** Whether closing this window would quit VCell: its Window menu then offers Quit VCell rather than Close Window. */
+	public boolean closingQuits() {
+		return false;
 	}
 
 	@Override
@@ -236,11 +242,26 @@ public abstract class LWTopFrame extends JFrame implements LWContainerHandle {
 			for (JMenuItem mi : activeMenuItems()) {
 				menu.add(mi);
 			}
-			if (extraItems.isEmpty()) return;
-			if (menu.getMenuComponentCount() > 0) menu.addSeparator();
-			for (JMenuItem mi : extraItems) {
-				menu.add(mi);
+			if (!this.extraItems.isEmpty()) {
+				if (menu.getMenuComponentCount() > 0) menu.addSeparator();
+				for (JMenuItem mi : this.extraItems) {
+					menu.add(mi);
+				}
 			}
+			Window window = SwingUtilities.getWindowAncestor(menu);
+			if (null == window) return;
+			if (menu.getMenuComponentCount() > 0) menu.addSeparator();
+			menu.add(Activator.closeItem(window));
+		}
+
+		// Closes the window as its title bar's close button does, so it goes through the same checks (saving a model,
+		// what to show once it has gone); named for what that will do
+		private static JMenuItem closeItem(Window window) {
+			boolean quits = window instanceof LWTopFrame top && top.closingQuits();
+			JMenuItem close = new JMenuItem(quits ? "Quit VCell" : "Close Window");
+			close.setName("CloseWindowMenuItem");
+			close.addActionListener(e -> window.dispatchEvent(new WindowEvent(window, WindowEvent.WINDOW_CLOSING)));
+			return close;
 		}
 
 		@Override

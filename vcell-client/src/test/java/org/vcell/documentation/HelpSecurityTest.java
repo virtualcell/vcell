@@ -26,13 +26,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.zip.CRC32;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Assertions;
 
 /**
  * Help from a folder an author picks is untrusted: these tests build hostile help folders and
@@ -111,16 +105,16 @@ public class HelpSecurityTest {
 				"Plain text stays.", "")));
 		for (HelpRenderer.Target target : HelpRenderer.Target.values()) {
 			String html = HelpSecurityTest.render(book, target);
-			assertFalse(html.toLowerCase().contains("evil"), target + ": " + html);
+			Assertions.assertFalse(html.toLowerCase().contains("evil"), target + ": " + html);
 			for (String tag : List.of("<object", "<param", "<form", "<input", "<script", "<link", "<base", "<style", "<iframe", "<!--", "file:")) {
-				assertFalse(html.toLowerCase().contains(tag), target + " contains " + tag + ": " + html);
+				Assertions.assertFalse(html.toLowerCase().contains(tag), target + " contains " + tag + ": " + html);
 			}
-			assertTrue(html.contains("Plain text stays."), html);
-			assertNull(HelpHtmlPolicy.findViolation(html, source -> false), html);
+			Assertions.assertTrue(html.contains("Plain text stays."), html);
+			Assertions.assertNull(HelpHtmlPolicy.findViolation(html, source -> false), html);
 		}
 		String problems = HelpSecurityTest.problems(book);
-		assertTrue(problems.contains("pages/Page.md:3: HTML is not shown"), problems);
-		assertFalse(problems.contains(":17:"), "an HTML comment is a fine author note: " + problems);
+		Assertions.assertTrue(problems.contains("pages/Page.md:3: HTML is not shown"), problems);
+		Assertions.assertFalse(problems.contains(":17:"), "an HTML comment is a fine author note: " + problems);
 	}
 
 	// ----------------------------------------------------------------------------- links
@@ -139,29 +133,29 @@ public class HelpSecurityTest {
 		for (HelpRenderer.Target target : HelpRenderer.Target.values()) {
 			String html = HelpSecurityTest.render(book, target);
 			List<String> hrefs = HelpSecurityTest.all(HREF, html);
-			assertEquals(List.of("https://vcell.org", "HTTP://vcell.org/x?a=1&amp;b=2", "mailto:help@vcell.org",
+			Assertions.assertEquals(List.of("https://vcell.org", "HTTP://vcell.org/x?a=1&amp;b=2", "mailto:help@vcell.org",
 					"https://vcell.org/auto", "mailto:help@vcell.org", "#page"), hrefs, target + ": " + html);
-			assertTrue(html.contains(">a<") || html.contains("a "), "a refused link keeps its text: " + html);
+			Assertions.assertTrue(html.contains(">a<") || html.contains("a "), "a refused link keeps its text: " + html);
 		}
 		String problems = HelpSecurityTest.problems(book);
 		for (String refused : List.of("javascript:alert(1)", "file:///etc/passwd", "smb://evil.example/share", "vbscript:x", "javascript:alert(2)")) {
-			assertTrue(problems.contains(refused), refused + " not reported in:\n" + problems);
+			Assertions.assertTrue(problems.contains(refused), refused + " not reported in:\n" + problems);
 		}
-		assertTrue(problems.contains("broken link '../../../outside.md'"), problems);
+		Assertions.assertTrue(problems.contains("broken link '../../../outside.md'"), problems);
 	}
 
 	@Test
 	public void externalLinkRules() {
 		for (String allowed : List.of("https://vcell.org", "http://vcell.org/a?b=c#d", "HTTPS://VCELL.ORG", "mailto:help@vcell.org",
 				"mailto:help@vcell.org?subject=VCell%20help&body=Hello")) {
-			assertTrue(HelpBook.isAllowedExternalLink(allowed), allowed);
+			Assertions.assertTrue(HelpBook.isAllowedExternalLink(allowed), allowed);
 		}
 		for (String refused : List.of("javascript:alert(1)", "file:///etc/passwd", "file://server/share", "smb://host/share",
 				"https://user:pass@evil.example/", "https:///nohost", "https://evil.example/a b", "https://evil.example/\u0000",
 				"https://evil.example\\@good.example", "ms-msdt:/id", "data:text/html,x", "mailto:", "//evil.example/x", "",
 				"mailto:?attach=~/.ssh/id_rsa", "mailto:x@vcell.org?attach=/etc/passwd&body=hi", "mailto:x@vcell.org?subject=a%26attach=b",
 				"https://evil.example/\u202Egpj.exe", "https://\u00E9vil.example/", "https://evil.example/\u200B")) {
-			assertFalse(HelpBook.isAllowedExternalLink(refused), refused);
+			Assertions.assertFalse(HelpBook.isAllowedExternalLink(refused), refused);
 		}
 	}
 
@@ -182,17 +176,17 @@ public class HelpSecurityTest {
 
 		String swingHtml = HelpSecurityTest.render(book, HelpRenderer.Target.SWING);
 		List<String> swingSources = HelpSecurityTest.all(SRC, swingHtml);
-		assertEquals(1, swingSources.size(), swingHtml);
-		assertEquals(root.toRealPath().resolve("images/ok.png").toUri().toURL().toExternalForm(), swingSources.get(0));
-		assertTrue(swingHtml.contains("[remote]") && swingHtml.contains("[linked]"), "refused images show their alt text: " + swingHtml);
+		Assertions.assertEquals(1, swingSources.size(), swingHtml);
+		Assertions.assertEquals(root.toRealPath().resolve("images/ok.png").toUri().toURL().toExternalForm(), swingSources.get(0));
+		Assertions.assertTrue(swingHtml.contains("[remote]") && swingHtml.contains("[linked]"), "refused images show their alt text: " + swingHtml);
 
 		String webHtml = HelpSecurityTest.render(book, HelpRenderer.Target.WEB);
-		assertEquals(List.of("../images/ok.png"), HelpSecurityTest.all(SRC, webHtml), webHtml);
+		Assertions.assertEquals(List.of("../images/ok.png"), HelpSecurityTest.all(SRC, webHtml), webHtml);
 
 		String problems = HelpSecurityTest.problems(book);
-		assertTrue(problems.contains("images/linked.png: this file is a link"), problems);
-		assertTrue(problems.contains("image 'https://evil.example/track.png' must be a file"), problems);
-		assertTrue(problems.contains("image '../images/OK.png' is missing"), "case must match exactly: " + problems);
+		Assertions.assertTrue(problems.contains("images/linked.png: this file is a link"), problems);
+		Assertions.assertTrue(problems.contains("image 'https://evil.example/track.png' must be a file"), problems);
+		Assertions.assertTrue(problems.contains("image '../images/OK.png' is missing"), "case must match exactly: " + problems);
 	}
 
 	@Test
@@ -202,11 +196,11 @@ public class HelpSecurityTest {
 		Files.write(root.resolve("images/wide.png"), HelpSecurityTest.pngClaiming(20_000, 10));
 		Files.writeString(root.resolve("images/text.png"), "not an image");
 		HelpBook book = HelpSecurityTest.book(root);
-		assertTrue(book.imageProblem("images/bomb.png").contains("too large"), book.imageProblem("images/bomb.png"));
-		assertTrue(book.imageProblem("images/wide.png").contains("too large"));
-		assertNotNull(book.imageProblem("images/text.png"));
+		Assertions.assertTrue(book.imageProblem("images/bomb.png").contains("too large"), book.imageProblem("images/bomb.png"));
+		Assertions.assertTrue(book.imageProblem("images/wide.png").contains("too large"));
+		Assertions.assertNotNull(book.imageProblem("images/text.png"));
 		String html = HelpSecurityTest.render(book, HelpRenderer.Target.SWING);
-		assertFalse(html.contains("<img"), html);
+		Assertions.assertFalse(html.contains("<img"), html);
 	}
 
 	// ----------------------------------------------------------------------- files, paths
@@ -223,59 +217,59 @@ public class HelpSecurityTest {
 		Files.createSymbolicLink(root.resolve("pages/Linked.md"), secret);
 		HelpBook book = HelpSecurityTest.book(root);
 
-		assertEquals(Set.of("pages/Page.md"), book.getPages().stream().map(HelpPage::path).collect(Collectors.toSet()));
+		Assertions.assertEquals(Set.of("pages/Page.md"), book.getPages().stream().map(HelpPage::path).collect(Collectors.toSet()));
 		for (HelpPage page : book.getPages()) {
-			assertFalse(HelpBook.plainText(page).contains("SECRET"));
+			Assertions.assertFalse(HelpBook.plainText(page).contains("SECRET"));
 		}
 		String problems = HelpSecurityTest.problems(book);
-		assertTrue(problems.contains("pages/Linked.md: this file is a link"), problems);
-		assertTrue(problems.contains("toc.md:7: entry 'pages/CON.md': page names may only use"), problems);
+		Assertions.assertTrue(problems.contains("pages/Linked.md: this file is a link"), problems);
+		Assertions.assertTrue(problems.contains("toc.md:7: entry 'pages/CON.md': page names may only use"), problems);
 	}
 
 	@Test
 	public void allowedPaths() {
 		for (String allowed : List.of("toc.md", "pages/Intro/New.md", "images/a_b-c.png", "pages/a/b/c/d/e/f/g.md")) {
-			assertTrue(HelpSource.isAllowedPath(allowed), allowed);
+			Assertions.assertTrue(HelpSource.isAllowedPath(allowed), allowed);
 		}
 		for (String refused : List.of("", "/etc/passwd", "pages/../toc.md", "pages/./x.md", "pages//x.md", "pages/x.md/",
 				"pages/My Page.md", "pages/x.tar.gz", "pages/.hidden.md", "pages\\x.md", "C:/x.md", "pages/CON.md",
 				"pages/con.txt", "pages/Lpt1.md", "pages/Ünïcode.md", "a/b/c/d/e/f/g/h/i.md", "pages/" + "x".repeat(101) + ".md")) {
-			assertFalse(HelpSource.isAllowedPath(refused), refused);
+			Assertions.assertFalse(HelpSource.isAllowedPath(refused), refused);
 		}
 	}
 
 	@Test
 	public void folderMustLookLikeHelpSource(@TempDir Path workspace) throws IOException {
-		assertThrows(HelpSource.FolderException.class, () -> HelpSource.Folder.open(null));
-		assertThrows(HelpSource.FolderException.class, () -> HelpSource.Folder.open(workspace.resolve("missing").toFile()));
+		Assertions.assertThrows(HelpSource.FolderException.class, () -> HelpSource.Folder.open(null));
+		Assertions.assertThrows(HelpSource.FolderException.class, () -> HelpSource.Folder.open(workspace.resolve("missing").toFile()));
 		Path file = Files.writeString(workspace.resolve("file.md"), "x");
-		assertThrows(HelpSource.FolderException.class, () -> HelpSource.Folder.open(file.toFile()));
+		Assertions.assertThrows(HelpSource.FolderException.class, () -> HelpSource.Folder.open(file.toFile()));
 		Path noToc = Files.createDirectories(workspace.resolve("noToc/pages"));
-		assertThrows(HelpSource.FolderException.class, () -> HelpSource.Folder.open(noToc.getParent().toFile()));
+		Assertions.assertThrows(HelpSource.FolderException.class, () -> HelpSource.Folder.open(noToc.getParent().toFile()));
 		Path noPages = Files.createDirectories(workspace.resolve("noPages"));
 		Files.writeString(noPages.resolve("toc.md"), "# Help\n");
-		assertThrows(HelpSource.FolderException.class, () -> HelpSource.Folder.open(noPages.toFile()));
+		Assertions.assertThrows(HelpSource.FolderException.class, () -> HelpSource.Folder.open(noPages.toFile()));
 		Path linkedToc = Files.createDirectories(workspace.resolve("linkedToc/pages"));
 		Files.createSymbolicLink(linkedToc.getParent().resolve("toc.md"), noPages.resolve("toc.md"));
-		assertThrows(HelpSource.FolderException.class, () -> HelpSource.Folder.open(linkedToc.getParent().toFile()));
+		Assertions.assertThrows(HelpSource.FolderException.class, () -> HelpSource.Folder.open(linkedToc.getParent().toFile()));
 		Path linkedPages = Files.createDirectories(workspace.resolve("linkedPages"));
 		Files.writeString(linkedPages.resolve("toc.md"), "# Help\n");
 		Files.createSymbolicLink(linkedPages.resolve("pages"), noToc);
-		assertThrows(HelpSource.FolderException.class, () -> HelpSource.Folder.open(linkedPages.toFile()));
-		assertThrows(HelpSource.FolderException.class, () -> HelpSource.Folder.open(new java.io.File("\\\\server\\share")));
+		Assertions.assertThrows(HelpSource.FolderException.class, () -> HelpSource.Folder.open(linkedPages.toFile()));
+		Assertions.assertThrows(HelpSource.FolderException.class, () -> HelpSource.Folder.open(new java.io.File("\\\\server\\share")));
 
 		Path valid = HelpSecurityTest.helpFolder(Files.createDirectories(workspace.resolve("valid")), "# Page\n");
-		assertEquals(valid.toRealPath(), HelpSource.Folder.open(valid.toFile()).getRoot());
+		Assertions.assertEquals(valid.toRealPath(), HelpSource.Folder.open(valid.toFile()).getRoot());
 		// a folder reached through a link is fine: it is resolved once, then held to its real path
 		Path alias = Files.createSymbolicLink(workspace.resolve("alias"), valid);
-		assertEquals(valid.toRealPath(), HelpSource.Folder.open(alias.toFile()).getRoot());
+		Assertions.assertEquals(valid.toRealPath(), HelpSource.Folder.open(alias.toFile()).getRoot());
 	}
 
 	@Test
 	public void emptyContentsIsRefused(@TempDir Path root) throws IOException {
 		Files.writeString(root.resolve("toc.md"), "# Help\n\nNo list here.\n");
 		Files.createDirectories(root.resolve("pages"));
-		assertThrows(IOException.class, () -> HelpSecurityTest.book(root));
+		Assertions.assertThrows(IOException.class, () -> HelpSecurityTest.book(root));
 	}
 
 	@Test
@@ -285,11 +279,11 @@ public class HelpSecurityTest {
 		Files.write(root.resolve("images/screen.gif"), HelpSecurityTest.gifWithLogicalScreen(30_000, 30_000));
 		HelpBook book = HelpSecurityTest.book(root);
 		HelpRenderer.RenderedPage rendered = new HelpRenderer(book, HelpRenderer.Target.SWING, 720).renderPage(book.findPage("Page"));
-		assertEquals(2, rendered.images().size(), "twelve references to one image are one image: " + rendered.images());
+		Assertions.assertEquals(2, rendered.images().size(), "twelve references to one image are one image: " + rendered.images());
 		for (HelpRenderer.ShownImage shown : rendered.images().values()) {
 			java.awt.image.BufferedImage image = book.readDisplayImage(shown.path(), shown.width(), shown.height());
-			assertNotNull(image, shown.path());
-			assertTrue(image.getWidth() <= 2 * shown.width() && image.getHeight() <= 2 * shown.height(),
+			Assertions.assertNotNull(image, shown.path());
+			Assertions.assertTrue(image.getWidth() <= 2 * shown.width() && image.getHeight() <= 2 * shown.height(),
 					shown.path() + " decoded at " + image.getWidth() + " x " + image.getHeight() + " for " + shown);
 		}
 	}
@@ -313,11 +307,11 @@ public class HelpSecurityTest {
 		} catch (IOException | java.nio.file.InvalidPathException e) {
 			return; // a file system that refuses such names cannot be attacked this way
 		}
-		HelpSource.FolderException failure = assertThrows(HelpSource.FolderException.class, () -> HelpSource.Folder.open(folder.toFile()));
-		assertTrue(failure.getMessage().contains("<html>"), "the message quotes the path: " + failure.getMessage());
+		HelpSource.FolderException failure = Assertions.assertThrows(HelpSource.FolderException.class, () -> HelpSource.Folder.open(folder.toFile()));
+		Assertions.assertTrue(failure.getMessage().contains("<html>"), "the message quotes the path: " + failure.getMessage());
 		String shown = HelpViewer.plainText(failure.getMessage());
-		assertFalse(shown.contains("<"), shown);
-		assertNull(new JLabel(shown).getClientProperty(BasicHTML.propertyKey));
+		Assertions.assertFalse(shown.contains("<"), shown);
+		Assertions.assertNull(new JLabel(shown).getClientProperty(BasicHTML.propertyKey));
 	}
 
 	@Test
@@ -331,7 +325,7 @@ public class HelpSecurityTest {
 			return; // not a POSIX file system
 		}
 		try {
-			assertTrue(HelpSecurityTest.problems(HelpSecurityTest.book(root)).contains("can't be read"));
+			Assertions.assertTrue(HelpSecurityTest.problems(HelpSecurityTest.book(root)).contains("can't be read"));
 		} finally {
 			Files.setPosixFilePermissions(locked, java.nio.file.attribute.PosixFilePermissions.fromString("rwx------"));
 		}
@@ -351,11 +345,11 @@ public class HelpSecurityTest {
 		Files.writeString(root.resolve("pages/Home.md"), "# Home\n");
 		HelpBook book = HelpSecurityTest.book(root);
 		String problems = HelpSecurityTest.problems(book);
-		assertTrue(problems.contains("pages/Page.md: this page has too much markup"), problems);
-		assertTrue(problems.contains("the help as a whole is over"), problems);
+		Assertions.assertTrue(problems.contains("pages/Page.md: this page has too much markup"), problems);
+		Assertions.assertTrue(problems.contains("the help as a whole is over"), problems);
 		long nodes = 0;
 		for (HelpPage page : book.getPages()) for (com.vladsch.flexmark.util.ast.Node node : page.document().getDescendants()) nodes++;
-		assertTrue(nodes <= HelpBook.MAX_BOOK_NODES, nodes + " nodes");
+		Assertions.assertTrue(nodes <= HelpBook.MAX_BOOK_NODES, nodes + " nodes");
 	}
 
 	@Test
@@ -364,7 +358,7 @@ public class HelpSecurityTest {
 		for (int i = 0; i < 1_500; i++) page.append("## Heading ").append(i).append("\n\n");
 		for (int i = 0; i < 1_500; i++) page.append("[x](#Heading%20").append(i).append(") [y](#nowhere-").append(i).append(")\n");
 		HelpSecurityTest.helpFolder(root, page.toString());
-		assertTimeoutPreemptively(Duration.ofSeconds(5), () -> {
+		Assertions.assertTimeoutPreemptively(Duration.ofSeconds(5), () -> {
 			HelpBook book = HelpSecurityTest.book(root);
 			HelpSecurityTest.problems(book);
 			HelpSecurityTest.render(book, HelpRenderer.Target.SWING);
@@ -377,8 +371,8 @@ public class HelpSecurityTest {
 		HelpSecurityTest.helpFolder(root, "# Page\n\nSee [big](Big.md).\n");
 		Files.writeString(root.resolve("pages/Big.md"), "# Big\n\n" + "word ".repeat((int) (HelpSource.MAX_PAGE_BYTES / 5) + 10));
 		HelpBook book = HelpSecurityTest.book(root);
-		assertNull(book.findPage("Big"));
-		assertTrue(HelpSecurityTest.problems(book).contains("pages/Big.md: this page could not be read"), HelpSecurityTest.problems(book));
+		Assertions.assertNull(book.findPage("Big"));
+		Assertions.assertTrue(HelpSecurityTest.problems(book).contains("pages/Big.md: this page could not be read"), HelpSecurityTest.problems(book));
 	}
 
 	@Test
@@ -391,12 +385,12 @@ public class HelpSecurityTest {
 				+ "\n\n" + "![](".repeat(10_000) + "\n\n" + "<".repeat(40_000) + "\n";
 		HelpSecurityTest.helpFolder(root, nasty.substring(0, (int) Math.min(nasty.length(), HelpSource.MAX_PAGE_BYTES - 1)));
 		Files.writeString(root.resolve("toc.md"), deepContents.toString());
-		assertTimeoutPreemptively(Duration.ofSeconds(20), () -> {
+		Assertions.assertTimeoutPreemptively(Duration.ofSeconds(20), () -> {
 			HelpBook book = HelpSecurityTest.book(root);
-			assertTrue(HelpSecurityTest.problems(book).contains("nest deeper than"), HelpSecurityTest.problems(book));
+			Assertions.assertTrue(HelpSecurityTest.problems(book).contains("nest deeper than"), HelpSecurityTest.problems(book));
 			for (HelpRenderer.Target target : HelpRenderer.Target.values()) {
 				String html = HelpSecurityTest.render(book, target);
-				assertNull(HelpHtmlPolicy.findViolation(html, source -> true), html.substring(0, Math.min(500, html.length())));
+				Assertions.assertNull(HelpHtmlPolicy.findViolation(html, source -> true), html.substring(0, Math.min(500, html.length())));
 			}
 			new HelpSearch(book).search("a");
 		});
@@ -408,23 +402,48 @@ public class HelpSecurityTest {
 	public void contentsTitlesAreNeverRenderedAsHtml() {
 		String title = "<html><object classid=\"javax.swing.JButton\"><param name=\"text\" value=\"INJECTED\"></object>";
 		JLabel ordinary = new JLabel(title);
-		assertNotNull(ordinary.getClientProperty(BasicHTML.propertyKey), "a plain Swing label would render this as HTML");
+		Assertions.assertNotNull(ordinary.getClientProperty(BasicHTML.propertyKey), "a plain Swing label would render this as HTML");
 		Component cell = new HelpViewer.PlainTextTreeCellRenderer().getTreeCellRendererComponent(new JTree(), title, false, false, true, 0, false);
-		assertNull(((JComponent) cell).getClientProperty(BasicHTML.propertyKey), "the contents tree must show it as text");
+		Assertions.assertNull(((JComponent) cell).getClientProperty(BasicHTML.propertyKey), "the contents tree must show it as text");
+	}
+
+	@Test
+	public void contentsPageEscapesTitlesAndLinksOnlyExistingPages(@TempDir Path helpRoot) throws IOException {
+		Files.writeString(helpRoot.resolve("toc.md"), String.join("\n",
+				"# Help", "",
+				"- Group",
+				"  - [Page <object classid=\"javax.swing.JButton\"></object> & more](pages/Page.md)",
+				"  - [Gone](pages/Gone.md)", ""), StandardCharsets.UTF_8);
+		Files.createDirectories(helpRoot.resolve("pages"));
+		Files.writeString(helpRoot.resolve("pages/Page.md"), "# Page\n", StandardCharsets.UTF_8);
+		HelpBook book = HelpBook.fromDirectory(helpRoot.toFile());
+		String title = book.getTableOfContents().get(0).children().get(0).title();
+
+		String swing = new HelpRenderer(book, HelpRenderer.Target.SWING, 700).renderContents();
+		String web = new HelpRenderer(book, HelpRenderer.Target.WEB, 700).renderContents();
+		for (String html : List.of(swing, web)) {
+			Assertions.assertNull(HelpHtmlPolicy.findViolation(html, source -> false), html);
+			Assertions.assertFalse(html.contains("<object"), html);
+			Assertions.assertTrue(html.contains(HelpRenderer.escape(title) + "</a>"), html);
+			Assertions.assertTrue(html.contains("<li>Group"), "a grouping entry is plain text: " + html);
+			Assertions.assertTrue(html.contains("<li>Gone"), "a missing page is plain text, not a link: " + html);
+		}
+		Assertions.assertTrue(swing.contains("<a href=\"pages/Page.md\">"), swing);
+		Assertions.assertTrue(web.contains("<a href=\"pages/Page.html\">"), web);
 	}
 
 	// ------------------------------------------------------------------------ HTML policy
 
 	@Test
 	public void htmlPolicyRefusesWhatTheRendererShouldNeverWrite() {
-		assertNull(HelpHtmlPolicy.findViolation("<h1 id=\"x\">T</h1>\n<p>a &lt;b&gt; <a href=\"../a/B.md#c\">l</a></p>", source -> false));
-		assertNull(HelpHtmlPolicy.findViolation("<img src=\"file:/x.png\" alt=\"\" width=\"4\" height=\"3\" />", "file:/x.png"::equals));
+		Assertions.assertNull(HelpHtmlPolicy.findViolation("<h1 id=\"x\">T</h1>\n<p>a &lt;b&gt; <a href=\"../a/B.md#c\">l</a></p>", source -> false));
+		Assertions.assertNull(HelpHtmlPolicy.findViolation("<img src=\"file:/x.png\" alt=\"\" width=\"4\" height=\"3\" />", "file:/x.png"::equals));
 		for (String bad : List.of(
 				"<object classid=\"javax.swing.JButton\"></object>", "<p onclick=\"x\">a</p>", "<a href=\"javascript:x\">a</a>",
 				"<a href=\"&#106;avascript:x\">a</a>", "<a href=\"//evil.example/x\">a</a>", "<img src=\"https://evil.example/x.png\" />",
 				"<!-- x -->", "<p>a < b</p>", "<a href='x'>a</a>", "<a href=x>a</a>", "<td align=\"left;color:red\">x</td>",
 				"<code class=\"x\" >y</code>", "<p style=\"x\">a</p>", "</p class=\"x\">", "<ScRiPt>x</ScRiPt>")) {
-			assertNotNull(HelpHtmlPolicy.findViolation(bad, "file:/x.png"::equals), bad);
+			Assertions.assertNotNull(HelpHtmlPolicy.findViolation(bad, "file:/x.png"::equals), bad);
 		}
 	}
 }
