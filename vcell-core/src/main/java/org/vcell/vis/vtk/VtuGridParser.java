@@ -1,4 +1,4 @@
-package org.vcell.client.viz;
+package org.vcell.vis.vtk;
 
 import java.io.ByteArrayInputStream;
 import java.nio.ByteBuffer;
@@ -13,7 +13,9 @@ import org.w3c.dom.NodeList;
 
 /**
  * Parses a VTK XML unstructured-grid file ({@code .vtu}) into flat arrays, for re-serving as the
- * field viewer's JSON grid contract.
+ * field viewer's JSON grid contract, and the geometry on it: locating a lab-frame point in a cell and the
+ * P1 weights there. It lives in vcell-core so the desktop's field viewer and the data server (which locates
+ * points in a moving FEniCSx mesh next to the bundle) run the same code, and agree to the bit.
  * <p>
  * This is deliberately NOT a general VTU reader. It exists for the producers that write the same
  * restricted form: the server's Python VTK service ({@code pythonVtk/.../vtkService.py,
@@ -25,36 +27,36 @@ import org.w3c.dom.NodeList;
  * (UInt32 here, UInt64 tolerated). ASCII data arrays are also accepted for robustness. Anything
  * else (appended data, compression, multiple pieces) is rejected loudly rather than half-read.
  */
-final class VtuGridParser {
+public final class VtuGridParser {
 
 	/** One parsed unstructured grid: points as x,y,z triples, cells as point-index lists. */
-	static final class VtuGrid {
-		final double[] points; // 3 per point
-		final int[][] cells;
-		final int[] cellTypes; // VTK cell type per cell
+	public static final class VtuGrid {
+		public final double[] points; // 3 per point
+		public final int[][] cells;
+		public final int[] cellTypes; // VTK cell type per cell
 		/**
 		 * Faces of each {@link #VTK_POLYHEDRON} cell — Chombo writes its cut cells that way, since a
 		 * polyhedron keeps the faces it shares with its neighbours instead of re-triangulating them.
 		 * {@code null} when the grid has no polyhedra, and {@code null} at every non-polyhedral cell.
 		 */
-		final int[][][] cellFaces;
+		public final int[][][] cellFaces;
 
-		VtuGrid(double[] points, int[][] cells, int[] cellTypes) {
+		public VtuGrid(double[] points, int[][] cells, int[] cellTypes) {
 			this(points, cells, cellTypes, null);
 		}
 
-		VtuGrid(double[] points, int[][] cells, int[] cellTypes, int[][][] cellFaces) {
+		public VtuGrid(double[] points, int[][] cells, int[] cellTypes, int[][][] cellFaces) {
 			this.points = points;
 			this.cells = cells;
 			this.cellTypes = cellTypes;
 			this.cellFaces = cellFaces;
 		}
 
-		int[][] facesOf(int cell) {
+		public int[][] facesOf(int cell) {
 			return cellFaces == null ? null : cellFaces[cell];
 		}
 
-		int numPoints() {
+		public int numPoints() {
 			return points.length / 3;
 		}
 
@@ -67,7 +69,7 @@ final class VtuGridParser {
 		 * ignored. A mesh with depth (a 3D surface or volume mesh) holds a point in a polygon only in the
 		 * polygon's own plane, horizontal ones included.
 		 */
-		boolean isFlat() {
+		public boolean isFlat() {
 			Boolean f = flat;
 			if (f == null) {
 				boolean same = true;
@@ -80,7 +82,7 @@ final class VtuGridParser {
 		}
 
 		/** The grid's point locator, built on first use and kept with the grid (a moved mesh is another grid). */
-		CellLocator locator() {
+		public CellLocator locator() {
 			CellLocator l = locator;
 			if (l == null) {
 				synchronized (this) {
@@ -94,7 +96,7 @@ final class VtuGridParser {
 		}
 
 		/** h̄: the mean over cells of the cell's diameter (its longest vertex-to-vertex distance); 0 for no cells. */
-		double meanCellDiameter() {
+		public double meanCellDiameter() {
 			double h = meanDiameter;
 			if (Double.isNaN(h)) {
 				double sum = 0;
@@ -126,7 +128,7 @@ final class VtuGridParser {
 	 * An axis along which the mesh has no extent (z of a 2D mesh) gets one bucket and bounds nothing: a flat
 	 * mesh's polygons ignore z, and its line cells test z themselves.
 	 */
-	static final class CellLocator {
+	public static final class CellLocator {
 		private final VtuGrid grid;
 		private final double[] lo = new double[3];
 		private final double[] hi = new double[3];
@@ -139,7 +141,7 @@ final class VtuGridParser {
 		private final int[] start;
 		private final int[] items;
 
-		CellLocator(VtuGrid grid) {
+		public CellLocator(VtuGrid grid) {
 			this.grid = grid;
 			int nc = grid.cells.length;
 			double[] p = grid.points;
@@ -240,7 +242,7 @@ final class VtuGridParser {
 		}
 
 		/** The cell containing the point, or -1: the same answer as {@link VtuGridParser#locateCell}. */
-		int locate(double x, double y, double z) {
+		public int locate(double x, double y, double z) {
 			double[] q = { x, y, z };
 			int b = 0;
 			for (int a = 2; a >= 0; a--) {
@@ -269,19 +271,19 @@ final class VtuGridParser {
 	}
 
 	/** a straight segment: FEniCSx writes a 2D membrane (a curve) as line cells */
-	static final int VTK_LINE = 3;
+	public static final int VTK_LINE = 3;
 	private static final int VTK_TRIANGLE = 5;
 	private static final int VTK_POLYGON = 7;
 	private static final int VTK_QUAD = 9;
 	private static final int VTK_TETRA = 10;
 	private static final int VTK_VOXEL = 11;
-	static final int VTK_POLYHEDRON = 42;
+	public static final int VTK_POLYHEDRON = 42;
 
 	/**
 	 * Per-cell measure — length for line cells, area for polygons (in the plane or on a surface in
 	 * 3D), volume for 3D cells — for measure-weighted statistics over body-fitted meshes.
 	 */
-	static double[] cellMeasures(VtuGrid grid) {
+	public static double[] cellMeasures(VtuGrid grid) {
 		double[] measures = new double[grid.cells.length];
 		for (int c = 0; c < grid.cells.length; c++) {
 			int[] cell = grid.cells[c];
@@ -387,7 +389,7 @@ final class VtuGridParser {
 	 * voxels test by bounds; tets by barycentric signs. Surface and line cells use a relative
 	 * tolerance, since a lab-frame point is rarely exactly on a membrane.
 	 */
-	static int locateCell(VtuGrid grid, double x, double y, double z) {
+	public static int locateCell(VtuGrid grid, double x, double y, double z) {
 		for (int c = 0; c < grid.cells.length; c++) {
 			if (contains(grid, c, x, y, z)) {
 				return c;
@@ -400,7 +402,7 @@ final class VtuGridParser {
 	 * {@link #locateCell} through the grid's {@link CellLocator}: the same cell, found by testing only the
 	 * cells near the point. Every located point on the server goes through this.
 	 */
-	static int locate(VtuGrid grid, double x, double y, double z) {
+	public static int locate(VtuGrid grid, double x, double y, double z) {
 		return grid.locator().locate(x, y, z);
 	}
 
@@ -428,7 +430,7 @@ final class VtuGridParser {
 	 * linear along a line, barycentric in a triangle (in its own plane) or a tetrahedron, and the plain
 	 * vertex average for any other cell type. The weights sum to 1.
 	 */
-	static double[] vertexWeights(VtuGrid grid, int c, double x, double y, double z) {
+	public static double[] vertexWeights(VtuGrid grid, int c, double x, double y, double z) {
 		int[] cell = grid.cells[c];
 		double[] p = grid.points;
 		double[] w = new double[cell.length];
@@ -483,7 +485,7 @@ final class VtuGridParser {
 	 * membrane probe snaps; the diameter bound keeps a click far from the membrane from snapping to it.
 	 * Other cell types are skipped: a volume cell either contains the point or it doesn't.
 	 */
-	static double[] nearestOnMesh(VtuGrid grid, double x, double y, double z) {
+	public static double[] nearestOnMesh(VtuGrid grid, double x, double y, double z) {
 		double[] p = grid.points;
 		double[] q = { x, y, z };
 		double best = Double.POSITIVE_INFINITY;
@@ -737,7 +739,7 @@ final class VtuGridParser {
 	private VtuGridParser() {
 	}
 
-	static VtuGrid parse(byte[] vtuFileBytes) throws Exception {
+	public static VtuGrid parse(byte[] vtuFileBytes) throws Exception {
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		dbf.setNamespaceAware(false);
 		dbf.setExpandEntityReferences(false);

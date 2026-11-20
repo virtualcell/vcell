@@ -2543,6 +2543,47 @@ public org.vcell.solver.fenics.FenicsSamples getFenicsBundleSamples(VCDataIdenti
 	}
 }
 
+/**
+ * Lab-frame points located in a moving FEniCSx mesh row by row, with the located cells' vertices, their positions
+ * and some arrays' values there ({@link org.vcell.solver.fenics.FenicsBundle#locate}): a desktop drawing a kymograph
+ * or probe of a moving run is sent those instead of every row's whole positions and values. Files are read exactly
+ * as {@link #getFenicsBundleFile} reads them (same location rules, same refusals); the reply covers the longest
+ * prefix of {@code rows} within {@link org.vcell.solver.fenics.FenicsBundle#MAX_SAMPLE_VALUES} values sent and
+ * {@link org.vcell.solver.fenics.FenicsBundle#MAX_LOCATE_WORK} of work (values decoded, cells sorted).
+ */
+public org.vcell.solver.fenics.FenicsLocatedSamples getFenicsBundleLocatedSamples(VCDataIdentifier vcdID, String meshPath, String coordsPath, String[] arrayPaths, double[] points, boolean snap, int[] rows) throws DataAccessException {
+	return getFenicsBundleLocatedSamples(vcdID, meshPath, coordsPath, arrayPaths, points, snap, rows,
+			org.vcell.solver.fenics.FenicsBundle.MAX_SAMPLE_VALUES, org.vcell.solver.fenics.FenicsBundle.MAX_LOCATE_WORK);
+}
+
+/** {@link #getFenicsBundleLocatedSamples(VCDataIdentifier, String, String, String[], double[], boolean, int[])} with budgets */
+public org.vcell.solver.fenics.FenicsLocatedSamples getFenicsBundleLocatedSamples(VCDataIdentifier vcdID, String meshPath, String coordsPath, String[] arrayPaths, double[] points, boolean snap, int[] rows, long maxValues, long maxWork) throws DataAccessException {
+	try {
+		return org.vcell.solver.fenics.FenicsBundle.locate(fenicsBundleStore(vcdID), meshPath, coordsPath, arrayPaths, points, snap, rows, maxValues, maxWork);
+	} catch (IOException e) {
+		throw new DataAccessException("locating points in FEniCSx results of " + vcdID.getID() + ": " + e.getMessage(), e);
+	}
+}
+
+/** the bundle of {@code vcdID}, its files read as {@link #getFenicsBundleFile} reads them */
+private org.vcell.solver.fenics.BundleStore fenicsBundleStore(VCDataIdentifier vcdID) {
+	return new org.vcell.solver.fenics.BundleStore() {
+		@Override
+		public byte[] read(String relativePath) throws IOException {
+			try {
+				return getFenicsBundleFile(vcdID, relativePath);
+			} catch (DataAccessException e) {
+				throw new IOException(e.getMessage(), e);
+			}
+		}
+
+		@Override
+		public String describe() {
+			return "FEniCSx results of " + vcdID.getID();
+		}
+	};
+}
+
 public byte[] getFenicsBundleFile(VCDataIdentifier vcdID, String relativePath) throws DataAccessException {
 	if (!(vcdID instanceof VCSimulationDataIdentifier)) {
 		throw new DataAccessException("FEniCSx results are simulation data; got " + vcdID);
