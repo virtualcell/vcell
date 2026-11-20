@@ -1135,7 +1135,8 @@ public class SedMLImporter {
 		String sedmlOriginalModelLanguage = mm.getLanguage();
 		String modelXML = this.resolver.getXMLStringRepresentationOfModel(mm); // source with all the changes applied
 		if (modelXML == null) {
-			throw new RuntimeException("Resolver could not find model: "+mm.getId());
+			throw new RuntimeException("Resolver could not find model: " + mm.getId()
+					+ ", source: " + mm.getSourceAsString());
 		}
 		String bioModelName = this.bioModelBaseName + "_" + this.sedmlContainer.getFileName() + "_" + sedmlOriginalModelId.string();
 		try {
