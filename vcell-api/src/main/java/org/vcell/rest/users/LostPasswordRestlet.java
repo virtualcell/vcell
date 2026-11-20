@@ -15,9 +15,7 @@ import org.restlet.data.Method;
 import org.restlet.data.Reference;
 import org.restlet.data.Status;
 import org.restlet.representation.Representation;
-import org.vcell.rest.VCellApiApplication;
 import org.vcell.util.BeanUtils;
-import org.vcell.util.TokenMangler;
 import org.vcell.util.document.UserInfo;
 import org.vcell.util.document.UserLoginInfo.DigestedPassword;
 
@@ -33,32 +31,10 @@ public final class LostPasswordRestlet extends Restlet {
 	@Override
 	public void handle(Request request, Response response) {
 		if (request.getMethod().equals(Method.POST)){
-			lg.info("in LostPasswordRestlet.handle()");
-			String userid = request.getEntityAsText();
-			if (userid==null || userid.length()==0) {
-				response.setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
-				response.setEntity("expecting username in body", MediaType.TEXT_PLAIN);
-				return;
-			}
-			// first line of defense against sql insertion attacks.
-			if (!TokenMangler.fixTokenStrict(userid).equals(userid)) {
-				response.setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
-				response.setEntity("unexpected characters in userid '"+userid+"'", MediaType.TEXT_PLAIN);
-				return;
-			}
-			
-			try {
-				VCellApiApplication vcellApiApplication = (VCellApiApplication)getApplication();
-				vcellApiApplication.getRestDatabaseService().sendLostPassword(userid);
-			} catch (Exception e) {
-				lg.error(e.getMessage(), e);
-				response.setStatus(Status.SERVER_ERROR_INTERNAL);
-				response.setEntity("we failed to send a verification email for account '"+userid+"': "+e.getMessage(), MediaType.TEXT_PLAIN);
-				return;
-			}
-
-			response.setStatus(Status.SUCCESS_ACCEPTED);
-			response.setEntity("we sent you a lost password email, please follow the link in that email", MediaType.TEXT_PLAIN);
+			// Retired: it reset any named account's password without authentication and emailed the new one in clear text.
+			lg.info("refused retired LostPasswordRestlet request");
+			response.setStatus(Status.CLIENT_ERROR_GONE);
+			response.setEntity("Legacy password reset is no longer available; sign in to VCell and use account recovery to claim your username.", MediaType.TEXT_PLAIN);
 		}
 	}
 }
