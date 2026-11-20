@@ -304,8 +304,26 @@ void deleteVersionable(User user, VersionableType versionableType, KeyValue key,
 }
 
 
-UserRegistrationResults userRegistrationOP(User user, UserRegistrationOP userRegistrationOP, boolean bEnableRetry) 
+/**
+ * A user may read or change only their own account row (GHSA-9hpw-2h4g-fjhj).
+ */
+static void requireOwnAccount(User user, KeyValue accountKey) {
+	if (user != null && user.getID() != null && user.getID().equals(accountKey)) return;
+	throw new PermissionException("user " + (user == null ? null : user.getName()) + " may not access account " + accountKey);
+}
+
+UserRegistrationResults userRegistrationOP(User user, UserRegistrationOP userRegistrationOP, boolean bEnableRetry)
 throws java.sql.SQLException, DataAccessException, DependencyException, PermissionException  {
+
+	String operationType = userRegistrationOP.getOperationType();
+	if (UserRegistrationOP.USERREGOP_GETINFO.equals(operationType)) {
+		DBTopLevel.requireOwnAccount(user, userRegistrationOP.getUserKey());
+	} else if (UserRegistrationOP.USERREGOP_UPDATE.equals(operationType)) {
+		// the UPDATE statement is keyed by userInfo.id, so check that as well as the op's key
+		UserInfo updatedUserInfo = userRegistrationOP.getUserInfo();
+		DBTopLevel.requireOwnAccount(user, userRegistrationOP.getUserKey());
+		DBTopLevel.requireOwnAccount(user, updatedUserInfo == null ? null : updatedUserInfo.id);
+	}
 
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
