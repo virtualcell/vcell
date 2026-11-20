@@ -22,6 +22,8 @@ import org.vcell.rest.VCellApiApplication;
 import org.vcell.rest.VCellApiApplication.AuthenticationPolicy;
 import org.vcell.rest.server.RestDatabaseService;
 import org.vcell.util.CompressionUtils;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.PermissionException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserLoginInfo;
@@ -31,6 +33,7 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 public final class RpcRestlet extends Restlet {
 	private static Logger lg = LogManager.getLogger(RpcRestlet.class);
@@ -59,6 +62,30 @@ public final class RpcRestlet extends Restlet {
 	public RpcRestlet(Context context,RestDatabaseService restDatabaseService) {
 		super(context);
 		this.restDatabaseService = restDatabaseService;
+	}
+
+	/**
+	 * The service methods take the acting user as an ordinary argument that the client serializes. Never
+	 * trust it: refuse a user other than the one the access token belongs to, and replace the client's copy
+	 * with the database's, so a client can neither act as another account nor forge special claims
+	 * (GHSA-9hpw-2h4g-fjhj).
+	 */
+	private Object[] bindUserArguments(Object[] clientArgs, User authenticatedUser) throws DataAccessException {
+		if (clientArgs == null) return null;
+		Object[] boundArgs = clientArgs.clone();
+		User rpcCaller = null;
+		for (int i = 0; i < boundArgs.length; i++) {
+			if (!(boundArgs[i] instanceof User clientUser)) continue;
+			boolean bSameUser = Objects.equals(authenticatedUser.getID(), clientUser.getID())
+					&& Objects.equals(authenticatedUser.getName(), clientUser.getName());
+			if (!bSameUser) {
+				throw new PermissionException("rpc user argument '" + clientUser.getName()
+						+ "' does not match authenticated user '" + authenticatedUser.getName() + "'");
+			}
+			if (rpcCaller == null) rpcCaller = this.restDatabaseService.getRpcCaller(authenticatedUser);
+			boundArgs[i] = rpcCaller;
+		}
+		return boundArgs;
 	}
 
 	@Override
@@ -163,7 +190,7 @@ public final class RpcRestlet extends Restlet {
 				}else if(vcellapiRpcRequest.methodName != null && vcellapiRpcRequest.methodName.equals("getSpecialUsers")) {
 					serializableResultObject = restDatabaseService.getSpecialUsers(vcellUser);
 				}else {
-					Object[] arglist = vcellapiRpcRequest.args;
+					Object[] arglist = this.bindUserArguments(vcellapiRpcRequest.args, vcellUser);
 					String[] specialProperties = rpcBody.specialProperties;
 					Object[] specialValues = rpcBody.specialValues;
 					VCRpcRequest vcRpcRequest = new VCRpcRequest(vcellUser, st, method, arglist);
