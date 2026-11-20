@@ -146,7 +146,7 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 				e.getSource() == getJTextFieldIntervalSpring() ||
 				e.getSource() == getNumPartitionsXTextField() ||
 				e.getSource() == getNumPartitionsYTextField() ||
-				e.getSource() == getNumPartitionsXTextField() ||
+				e.getSource() == getNumPartitionsZTextField() ||
 				e.getSource() == getRandomSeedTextField() ) {
 				setNewOptions();
 			} else if(e.getSource() == getTotalNumberOfJobsJTextField()) {
