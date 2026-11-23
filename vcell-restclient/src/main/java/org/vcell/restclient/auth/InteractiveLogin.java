@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 import java.net.*;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
@@ -311,12 +312,13 @@ public class InteractiveLogin {
         JButton cancelButton = new JButton("Cancel");
         cancelButton.addActionListener(event -> onCancel.run());
 
-        Object[] message = {
+        List<Object> message = new ArrayList<>(Arrays.asList(
                 "VCell could not open your web browser. To log in, open this address in your browser:",
                 addressField,
-                "VCell continues by itself once you have logged in."
-        };
-        JOptionPane optionPane = new JOptionPane(message, JOptionPane.INFORMATION_MESSAGE, JOptionPane.DEFAULT_OPTION,
+                "VCell continues by itself once you have logged in."));
+        String packageHint = SystemBrowser.missingPackageHint();
+        if (packageHint != null) message.add(packageHint);
+        JOptionPane optionPane = new JOptionPane(message.toArray(), JOptionPane.INFORMATION_MESSAGE, JOptionPane.DEFAULT_OPTION,
                 null, new Object[]{copyButton, cancelButton}, copyButton);
 
         JDialog loginAddressWindow = new JDialog((Frame) null, "Log In to VCell", false);

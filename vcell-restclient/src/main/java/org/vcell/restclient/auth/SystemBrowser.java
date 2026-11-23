@@ -1,8 +1,11 @@
 package org.vcell.restclient.auth;
 
 import java.awt.Desktop;
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
@@ -25,6 +28,29 @@ public final class SystemBrowser {
         if (SystemBrowser.openWithDesktop(uri)) return true;
         if (!SystemBrowser.isFreedesktopPlatform()) return false;
         return SystemBrowser.openWithXdgOpen(uri);
+    }
+
+    /**
+     * Which package would let {@link #open} work next time, for when it just failed; null off Linux and the BSDs.
+     * Without xdg-open, that is xdg-utils. With it, gvfs-backends makes {@link Desktop} able to browse.
+     */
+    public static String missingPackageHint() {
+        if (!SystemBrowser.isFreedesktopPlatform()) return null;
+        if (!SystemBrowser.isOnPath("xdg-open")) {
+            return "To let VCell open your browser itself, install the xdg-utils package.";
+        }
+        return "To let VCell open your browser itself, install the gvfs-backends package\n"
+                + "(named gvfs on Fedora and Arch).";
+    }
+
+    private static boolean isOnPath(String program) {
+        String path = System.getenv("PATH");
+        if (path == null) return false;
+        for (String directory : path.split(File.pathSeparator)) {
+            if (directory.isEmpty()) continue;
+            if (Files.isExecutable(Path.of(directory, program))) return true;
+        }
+        return false;
     }
 
     /** Bring VCell back in front of the browser, where the platform allows it. */
