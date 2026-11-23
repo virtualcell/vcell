@@ -1,11 +1,8 @@
 package org.vcell.restclient.auth;
 
 import java.awt.Desktop;
-import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
@@ -30,29 +27,6 @@ public final class SystemBrowser {
         return SystemBrowser.openWithXdgOpen(uri);
     }
 
-    /**
-     * Which package would let {@link #open} work next time, for when it just failed; null off Linux and the BSDs.
-     * Without xdg-open, that is xdg-utils. With it, gvfs-backends makes {@link Desktop} able to browse.
-     */
-    public static String missingPackageHint() {
-        if (!SystemBrowser.isFreedesktopPlatform()) return null;
-        if (!SystemBrowser.isOnPath("xdg-open")) {
-            return "To let VCell open your browser itself, install the xdg-utils package.";
-        }
-        return "To let VCell open your browser itself, install the gvfs-backends package\n"
-                + "(named gvfs on Fedora and Arch).";
-    }
-
-    private static boolean isOnPath(String program) {
-        String path = System.getenv("PATH");
-        if (path == null) return false;
-        for (String directory : path.split(File.pathSeparator)) {
-            if (directory.isEmpty()) continue;
-            if (Files.isExecutable(Path.of(directory, program))) return true;
-        }
-        return false;
-    }
-
     /** Bring VCell back in front of the browser, where the platform allows it. */
     public static void requestForeground() {
         if (!Desktop.isDesktopSupported()) return;
@@ -65,6 +39,23 @@ public final class SystemBrowser {
         } catch (Exception e) {
             System.err.println("failed to request foreground: " + e.getMessage());
         }
+    }
+
+    /** Linux and the BSDs, where desktops follow freedesktop.org and provide xdg-open. */
+    public static boolean isFreedesktopPlatform() {
+        String osName = System.getProperty("os.name", "").toLowerCase(Locale.ROOT);
+        return !osName.startsWith("windows") && !osName.startsWith("mac");
+    }
+
+    /** What VCell could find out about opening a browser here, for a report to VCell support. */
+    public static String describeBrowserSupport() {
+        boolean desktopSupported = Desktop.isDesktopSupported();
+        boolean browseSupported = desktopSupported && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE);
+        return "VCell could not open a web browser to log in."
+                + " Desktop supported: " + desktopSupported
+                + ", BROWSE supported: " + browseSupported
+                + ", desktop: " + System.getenv("XDG_CURRENT_DESKTOP")
+                + ", session type: " + System.getenv("XDG_SESSION_TYPE");
     }
 
     private static boolean openWithDesktop(URI uri) {
@@ -101,11 +92,5 @@ public final class SystemBrowser {
         if (exitCode == 0) return true;
         System.err.println("xdg-open failed with exit code " + exitCode);
         return false;
-    }
-
-    /** Linux and the BSDs, where desktops follow freedesktop.org and provide xdg-open. */
-    private static boolean isFreedesktopPlatform() {
-        String osName = System.getProperty("os.name", "").toLowerCase(Locale.ROOT);
-        return !osName.startsWith("windows") && !osName.startsWith("mac");
     }
 }

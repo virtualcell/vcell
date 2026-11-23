@@ -26,13 +26,13 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 import java.net.*;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 public class InteractiveLogin {
     public final static String authClientID = "cjoWhd7W8A8znf7Z7vizyvKJCiqTgRtf";
@@ -40,6 +40,14 @@ public class InteractiveLogin {
 
     /** Queued in place of a redirect URI when the user cancels; redirect URIs always start with a path. */
     private static final String LOGIN_CANCELLED = "login cancelled";
+
+    /** What the login window's Contact VCell button does, given the window to own any dialog; null hides it. */
+    private static volatile Consumer<Component> contactVCellAction = null;
+
+    /** Set by the desktop client, so the login window can offer to contact VCell. */
+    public static void setContactVCellAction(Consumer<Component> action) {
+        InteractiveLogin.contactVCellAction = action;
+    }
 
 
 
@@ -302,7 +310,7 @@ public class InteractiveLogin {
         addressField.getAccessibleContext().setAccessibleName("Login address");
         InteractiveLogin.selectFromStart(addressField);
 
-        JButton copyButton = new JButton("Copy Address");
+        JButton copyButton = new JButton("Copy Link");
         copyButton.addActionListener(event -> {
             StringSelection address = new StringSelection(authRequestURI.toString());
             Toolkit.getDefaultToolkit().getSystemClipboard().setContents(address, null);
@@ -312,16 +320,35 @@ public class InteractiveLogin {
         JButton cancelButton = new JButton("Cancel");
         cancelButton.addActionListener(event -> onCancel.run());
 
-        List<Object> message = new ArrayList<>(Arrays.asList(
-                "VCell could not open your web browser. To log in, open this address in your browser:",
-                addressField,
-                "VCell continues by itself once you have logged in."));
-        String packageHint = SystemBrowser.missingPackageHint();
-        if (packageHint != null) message.add(packageHint);
-        JOptionPane optionPane = new JOptionPane(message.toArray(), JOptionPane.INFORMATION_MESSAGE, JOptionPane.DEFAULT_OPTION,
-                null, new Object[]{copyButton, cancelButton}, copyButton);
-
         JDialog loginAddressWindow = new JDialog((Frame) null, "Log In to VCell", false);
+
+        JPanel message = new JPanel();
+        message.setLayout(new BoxLayout(message, BoxLayout.Y_AXIS));
+        InteractiveLogin.addLine(message, new JLabel("VCell was not able to open your web browser."));
+        InteractiveLogin.addGap(message);
+        InteractiveLogin.addLine(message, new JLabel("If you paste the following link into your browser, VCell can complete its login procedure:"));
+        InteractiveLogin.addLine(message, addressField);
+        boolean isLinux = SystemBrowser.isFreedesktopPlatform();
+        if (isLinux) {
+            InteractiveLogin.addGap(message);
+            InteractiveLogin.addLine(message, new JLabel("You may be missing a system library necessary for VCell to open a web browser."));
+            InteractiveLogin.addLine(message, new JLabel("Try to install the following packages:"));
+            InteractiveLogin.addIndentedLine(message, new JLabel("<html>Debian based systems: <code>gvfs-backends</code>, <code>xdg-utils</code></html>"));
+            InteractiveLogin.addIndentedLine(message, new JLabel("<html>Fedora / Arch based: <code>gvfs</code>, <code>xdg-utils</code></html>"));
+        }
+        Consumer<Component> contactAction = InteractiveLogin.contactVCellAction;
+        if (contactAction != null) {
+            JButton contactButton = new JButton("Contact VCell");
+            contactButton.addActionListener(event -> contactAction.accept(loginAddressWindow));
+            InteractiveLogin.addGap(message);
+            InteractiveLogin.addLine(message, new JLabel(isLinux
+                    ? "If adding the packages does not fix the problem, please contact VCell here:"
+                    : "If this keeps happening, please contact VCell here:"));
+            InteractiveLogin.addLine(message, contactButton);
+        }
+
+        JOptionPane optionPane = new JOptionPane(message, JOptionPane.WARNING_MESSAGE, JOptionPane.DEFAULT_OPTION,
+                null, new Object[]{copyButton, cancelButton}, copyButton);
         loginAddressWindow.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         loginAddressWindow.addWindowListener(new WindowAdapter() {
             @Override
@@ -335,6 +362,23 @@ public class InteractiveLogin {
         loginAddressWindow.setLocationRelativeTo(null);
         loginAddressWindow.setVisible(true);
         return loginAddressWindow;
+    }
+
+    private static void addLine(JPanel panel, JComponent line) {
+        line.setAlignmentX(Component.LEFT_ALIGNMENT);
+        // only the link field widens with the window; a button keeps its own size
+        int maximumWidth = line instanceof JTextField ? Integer.MAX_VALUE : line.getPreferredSize().width;
+        line.setMaximumSize(new Dimension(maximumWidth, line.getPreferredSize().height));
+        panel.add(line);
+    }
+
+    private static void addIndentedLine(JPanel panel, JComponent line) {
+        line.setBorder(BorderFactory.createEmptyBorder(0, 16, 0, 0));
+        InteractiveLogin.addLine(panel, line);
+    }
+
+    private static void addGap(JPanel panel) {
+        panel.add(Box.createVerticalStrut(12));
     }
 
     /** Select all of the field's text with the caret at the start, so it shows the address's beginning. */
