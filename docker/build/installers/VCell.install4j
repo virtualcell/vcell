@@ -40,7 +40,7 @@
         <entry>langevin_x64</entry>
       </macAdditionalBinaries>
     </codeSigning>
-    <jreBundles jdkProviderId="JBR" release="17/17.0.7-b1000.6" />
+    <jreBundles jdkProviderId="Corretto" release="17/17.0.21.1.2" />
   </application>
   <files keepModificationTimes="true" globalExcludeSuffixes=".svn,.DS_Store">
     <filesets>
@@ -1564,7 +1564,7 @@ if (context.isUnattended()) {
         <entry filesetId="1119" />
         <entry filesetId="1121" />
       </exclude>
-      <jreBundle jdkProviderId="JBR" release="17/latest" usePack200="false" overrideJdkRelease="true" />
+      <jreBundle jdkProviderId="Corretto" release="17/17.0.21.1.2" usePack200="false" overrideJdkRelease="true" />
     </macosFolder>
     <windows name="Windows ${compiler:vcellVersion} ${compiler:Site} 64 Bit" id="349" mediaFileName="${compiler:sys.shortName}_${compiler:sys.platform}_${compiler:sys.version}_64bit" installDir="VCell_${compiler:Site}" downloadURL="${compiler:updateSiteBaseUrl}" customInstallBaseDir="${installer:sys.userHome}\AppData\Local\Programs" architecture="64">
       <excludedLaunchers>
