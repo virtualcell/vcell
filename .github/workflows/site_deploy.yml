@@ -26,11 +26,25 @@ jobs:
   build:
     name: Build client installers
     runs-on: ubuntu-24.04
+    outputs:
+      installer_media_ids: ${{ steps.media.outputs.ids }}
     steps:
     - name: checkout tag
       uses: actions/checkout@v4
       with:
         ref: ${{ github.event.inputs.vcell_version }}.${{ github.event.inputs.vcell_build }}
+    - name: list the tag's non-mac installer media
+      id: media
+      # This workflow runs from master, but every installer script runs from the tag. Building the
+      # media the tag's VCell.install4j defines (its <buildIds>), not a list fixed here, keeps
+      # older tags deployable after media are added or dropped (e.g. the 32-bit media, 450/547).
+      # Mac (105) has its own job.
+      run: |
+        ids=$(grep -o '<mediaSet refId="[0-9]*"' docker/build/installers/VCell.install4j \
+              | grep -o '[0-9][0-9]*' | grep -vx 105 | jq -R 'tonumber' | jq -sc .)
+        echo "installer media: $ids"
+        [ "$ids" != "[]" ] || { echo "no installer media found in VCell.install4j"; exit 1; }
+        echo "ids=$ids" >> "$GITHUB_OUTPUT"
     - name: setup global environment variables
       run: |
         echo "VCELL_VERSION=${{ github.event.inputs.vcell_version }}" >> $GITHUB_ENV
@@ -90,9 +104,9 @@ jobs:
         path: docker/swarm/${{ env.VCELL_CONFIG_FILE_NAME }}
         retention-days: 1
 
-  # Build the five install4j media (Windows 64/32, Linux 64/32, macOS) in parallel — one per runner —
-  # instead of serially in a single clientgen container. Each job produces its installer plus a
-  # updates_<platform>.xml fragment; the combine job fans them back into one updates.xml.
+  # Build the install4j media in parallel — one per runner — instead of serially in a single
+  # clientgen container. Each job produces its installer plus a updates_<platform>.xml fragment;
+  # the combine job fans them back into one updates.xml.
   build_installer_other:
     name: Build installer (media ${{ matrix.build_id }})
     runs-on: ubuntu-24.04
@@ -101,9 +115,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # non-mac install4j build ids: 349=win64, 450=win32, 652=linux64, 547=linux32
-        # (mac 105 is its own job so notarize can start as soon as it finishes)
-        build_id: [349, 450, 652, 547]
+        # the tag's non-mac install4j build ids: 349=win64, 652=linux64 (older tags also have
+        # 450=win32 and 547=linux32); mac 105 is its own job so notarize can start as soon as it
+        # finishes
+        build_id: ${{ fromJSON(needs.build.outputs.installer_media_ids) }}
     steps:
     - name: checkout tag
       uses: actions/checkout@v4
