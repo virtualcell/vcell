@@ -6,7 +6,9 @@ import cbit.vcell.client.desktop.biomodel.BioModelsNetPanel;
 import cbit.vcell.client.laf.VCellColors;
 import cbit.vcell.client.laf.VCellFonts;
 import cbit.vcell.clientdb.DocumentManager;
+import cbit.vcell.desktop.BioModelLoader;
 import cbit.vcell.desktop.DatabaseModelsPanel;
+import cbit.vcell.desktop.ModelExplorerDetailsPanel;
 import cbit.vcell.desktop.RecentModelsPanel;
 import cbit.vcell.desktop.SearchOptions;
 import org.vcell.api.server.ClientServerManager.VersionMismatch;
@@ -56,6 +58,9 @@ public class WelcomePanel extends JPanel {
 	// last) with any less
 	private static final int NESTED_TABS_MARGIN = 26;
 	private String tutorialsTabTitle = "Tutorials"; // with its count, once logged in
+	private JComponent tutorials = null; // the Tutorials tab: the database panel's list, shown here
+	private final BioModelLoader bioModelLoader = new BioModelLoader(() -> this.documentManager); // for the details' reaction diagram
+	private final WelcomeDetailsSide detailsSide; // at the window's right edge: the selected model's details, as the Model Explorer shows them
 	private final JPanel modelsArea = new JPanel(new BorderLayout(0, 8)); // one search, over all the tabs, and the tabs; only when logged in
 	private final SearchField searchField = new SearchField("Search models");
 	private final Timer searchPause = new Timer(150, e -> this.search()); // searching once typing pauses, not at each key
@@ -141,7 +146,41 @@ public class WelcomePanel extends JPanel {
 		this.add(this.createFooter(), BorderLayout.SOUTH);
 		this.recentModels.setOpener(manager::openModel);
 		this.recentModels.setMenuMaker(manager::createModelMenu);
+		this.detailsSide = this.createDetailsSide();
 		this.updateConnectionStatus(null, null);
+	}
+
+	/** What the welcome window holds: this panel, and at its right the strip that opens the selected model's details. */
+	public JComponent createWindowContent() {
+		return WelcomeDetailsSide.besideWelcome(this, this.detailsSide);
+	}
+
+	// The selected model's details, following the selection in whichever tab shows
+	private WelcomeDetailsSide createDetailsSide() {
+		ModelExplorerDetailsPanel details = new ModelExplorerDetailsPanel();
+		details.setOpener(this.manager::openModel);
+		details.setImporter(info -> BioModelsNetPanel.importModel(info, this.manager));
+		details.setModelLoader(this.bioModelLoader);
+		WelcomeDetailsSide side = new WelcomeDetailsSide(details, this::selectedModel, () -> {
+			Window window = SwingUtilities.getWindowAncestor(this);
+			if (null != window) this.fittedWidth = window.getWidth(); // sized here, not by its user
+		});
+		this.recentModels.addSelectionListener(side::selectionChanged);
+		this.databaseModels.addSelectionListener(side::selectionChanged); // the Tutorials list's too
+		this.bioModelsNetPanel.addSelectionListener(side::selectionChanged);
+		this.modelTabs.addChangeListener(e -> side.selectionChanged());
+		side.setAvailable(false); // until someone logs in
+		return side;
+	}
+
+	// The model (or BioModels Database model) selected in the tab showing, or null
+	private Object selectedModel() {
+		Component tab = this.modelTabs.getSelectedComponent();
+		if (tab == this.recentModels) return this.recentModels.getSelectedModel();
+		if (tab == this.databaseModels) return this.databaseModels.getSelectedModel();
+		if (tab == this.bioModelsNetPanel) return this.bioModelsNetPanel.getSelectedModel();
+		if (null != tab && tab == this.tutorials) return this.databaseModels.getSelectedTutorial();
+		return null;
 	}
 
 	/**
@@ -185,6 +224,7 @@ public class WelcomePanel extends JPanel {
 		DocumentManager current = ConnectionStatus.CONNECTED == state ? documentManager : reconnecting ? this.documentManager : null;
 		if (current != this.documentManager) { // status updates come often; only a new login changes the lists
 			this.documentManager = current;
+			this.bioModelLoader.clear();
 			this.recentModels.setDocumentManager(current);
 			this.databaseModels.setDocumentManager(current);
 			if (null != current) this.chooseModelTabs();
@@ -192,6 +232,7 @@ public class WelcomePanel extends JPanel {
 		if (this.modelsArea.isVisible() != (null != current)) {
 			if (null == current) this.showSearchOptions(false); // logged out: the header, with the ways to log in
 			this.modelsArea.setVisible(null != current);
+			this.detailsSide.setAvailable(null != current);
 			this.packWindow();
 		}
 	}
@@ -569,12 +610,12 @@ public class WelcomePanel extends JPanel {
 		this.modelTabs.addTab("Recent Models", this.recentModels);
 		this.modelTabs.addTab("VCell Database", this.databaseModels);
 		this.modelTabs.addTab("BMDB", null, this.bioModelsNetPanel, "The BioModels Database: EBI's curated models, to import");
-		JComponent tutorials = this.databaseModels.detachTutorials(title -> {
+		this.tutorials = this.databaseModels.detachTutorials(title -> {
 			int index = this.modelTabs.indexOfTab(this.tutorialsTabTitle);
 			this.tutorialsTabTitle = title;
 			if (index >= 0) this.modelTabs.setTitleAt(index, title);
 		});
-		this.modelTabs.addTab(this.tutorialsTabTitle, null, tutorials, "Models that VCell's tutorials use");
+		this.modelTabs.addTab(this.tutorialsTabTitle, null, this.tutorials, "Models that VCell's tutorials use");
 		// the filters as the tab showing takes them: BMDB has only the search text to go by
 		this.searchOptions.setResetBelow(true); // by the Filters button: the options open upward from it
 		this.modelTabs.addChangeListener(e -> this.showFiltersForTab());

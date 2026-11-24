@@ -13,7 +13,6 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
@@ -55,6 +54,7 @@ import cbit.vcell.client.laf.VCellFonts;
 import cbit.vcell.clientdb.DatabaseEvent;
 import cbit.vcell.clientdb.DatabaseListener;
 import cbit.vcell.clientdb.DocumentManager;
+import cbit.vcell.desktop.BioModelLoader;
 import cbit.vcell.desktop.ModelExplorerDetailsPanel;
 import cbit.vcell.desktop.ModelExplorerTableModel;
 import cbit.vcell.desktop.ModelExplorerTree;
@@ -96,6 +96,7 @@ public class ModelExplorerPanel extends JPanel {
 	private final JToggleButton tableViewButton = new JToggleButton("Table");
 	private boolean tableShown = false;
 	private final ModelExplorerDetailsPanel details = new ModelExplorerDetailsPanel();
+	private final BioModelLoader bioModelLoader = new BioModelLoader(() -> this.documentManager); // for the details' reaction diagram
 	private final WelcomePanel.SearchField searchField = new WelcomePanel.SearchField("Search models, geometries and the BioModels Database");
 	private final Timer searchPause = new Timer(200, e -> this.rebuild());
 	private final SearchOptionsPanel searchOptions = new SearchOptionsPanel(this.searchPause::restart);
@@ -136,7 +137,7 @@ public class ModelExplorerPanel extends JPanel {
 		this.details.setOpener(manager::openModel);
 		this.details.setImporter(manager::importModel);
 		this.details.setSelector(this::selectModel);
-		this.details.setModelLoader(this::loadBioModel); // for its reaction diagram
+		this.details.setModelLoader(this.bioModelLoader); // for its reaction diagram
 		this.setDocumentManager(null);
 	}
 
@@ -145,6 +146,7 @@ public class ModelExplorerPanel extends JPanel {
 		if (documentManager == this.documentManager) return;
 		if (null != this.documentManager) this.documentManager.removeDatabaseListener(this.databaseListener);
 		this.documentManager = documentManager;
+		this.bioModelLoader.clear();
 		if (null != documentManager) documentManager.addDatabaseListener(this.databaseListener);
 		this.cards.show(this.body, null == documentManager ? LOGGED_OUT : TREE);
 		if (null == documentManager) this.stopComparison();
@@ -470,53 +472,6 @@ public class ModelExplorerPanel extends JPanel {
 			if (ModelExplorerPanel.versionKey(version).equals(ModelExplorerPanel.versionKey(document))) return true;
 		}
 		return false;
-	}
-
-	// ---- loading a model whole, for its reaction diagram in the details
-
-	private static final int LOADED_MODELS_KEPT = 4;
-	// the last few loaded, so stepping back and forth among them is instant (the document manager keeps their XML)
-	private final Map<String, cbit.vcell.biomodel.BioModel> loadedModels = new java.util.LinkedHashMap<>(8, 0.75f, true) {
-		@Override
-		protected boolean removeEldestEntry(Map.Entry<String, cbit.vcell.biomodel.BioModel> eldest) {
-			return this.size() > LOADED_MODELS_KEPT;
-		}
-	};
-
-	// Fetches the model from the server and reads it, off the event thread (a large model takes seconds)
-	private void loadBioModel(org.vcell.util.document.BioModelInfo info, java.util.function.Consumer<cbit.vcell.biomodel.BioModel> done,
-			java.util.function.Consumer<String> failed) {
-		String key = ModelExplorerPanel.versionKey(info);
-		cbit.vcell.biomodel.BioModel loaded = this.loadedModels.get(key);
-		if (null != loaded) {
-			done.accept(loaded);
-			return;
-		}
-		DocumentManager documentManager = this.documentManager;
-		if (null == documentManager) {
-			failed.accept("not logged in");
-			return;
-		}
-		new SwingWorker<cbit.vcell.biomodel.BioModel, Void>() {
-			@Override
-			protected cbit.vcell.biomodel.BioModel doInBackground() throws Exception {
-				return documentManager.getBioModel(info);
-			}
-
-			@Override
-			protected void done() {
-				try {
-					cbit.vcell.biomodel.BioModel bioModel = this.get();
-					ModelExplorerPanel.this.loadedModels.put(key, bioModel);
-					done.accept(bioModel);
-				} catch (ExecutionException e) {
-					lg.warn("Could not load " + info.getVersion().getName() + " for its reaction diagram", e.getCause());
-					failed.accept(null == e.getCause() || null == e.getCause().getMessage() ? "it couldn't be read" : e.getCause().getMessage());
-				} catch (InterruptedException e) {
-					Thread.currentThread().interrupt();
-				}
-			}
-		}.execute();
 	}
 
 	// ---- building the tree

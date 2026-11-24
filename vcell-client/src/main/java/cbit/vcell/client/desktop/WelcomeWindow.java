@@ -26,7 +26,7 @@ public class WelcomeWindow extends LWTopFrame implements TopLevelWindow {
 		this.setIconImage(VCellIcons.getJFrameImageIcon());
 		// closing goes to the request manager, which hides it, or quits VCell if no other window is open
 		this.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-		this.getContentPane().add(manager.getComponent());
+		this.getContentPane().add(((WelcomePanel) manager.getComponent()).createWindowContent()); // with the model details strip at its right
 		this.setJMenuBar(this.createMenuBar());
 		this.childWindowManager = new ChildWindowManager(this);
 	}

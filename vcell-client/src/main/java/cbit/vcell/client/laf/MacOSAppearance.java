@@ -77,6 +77,23 @@ final class MacOSAppearance {
 	}
 
 	/**
+	 * Forgets the controls Aqua has had macOS draw. Aqua keeps each one it paints (a button at a size, in a state) in the
+	 * JDK's ImageCache, keyed without the appearance, so after a switch the controls painted before it come back in the
+	 * old appearance: white buttons in a dark theme (any of them painted again at the same size and state). Both the
+	 * JetBrains Runtime VCell ships with and a stock OpenJDK do this. Needs --add-exports java.desktop/sun.awt.image=ALL-UNNAMED,
+	 * as VCell's launchers give it; without that, logs and leaves them.
+	 */
+	static void forgetPaintedControls() {
+		try {
+			Class<?> imageCache = Class.forName("sun.awt.image.ImageCache");
+			Object cache = imageCache.getMethod("getInstance").invoke(null);
+			imageCache.getMethod("flush").invoke(cache);
+		} catch (Throwable e) {
+			lg.warn("Could not clear Aqua's painted controls; some may keep the previous appearance until resized", e);
+		}
+	}
+
+	/**
 	 * FlatLaf gives each window its own appearance on macOS, which overrides the application's, and leaves it in
 	 * place when another theme takes over; this sets every window's to dark or light instead. Call it after the
 	 * windows' UI has been updated for the new theme.

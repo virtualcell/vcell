@@ -304,6 +304,9 @@ public class ModelExplorerDetailsPanel extends JPanel {
 	 */
 	public interface ModelLoader {
 		void load(BioModelInfo info, Consumer<cbit.vcell.biomodel.BioModel> done, Consumer<String> failed);
+
+		/** Why no model can be loaded now, shown in the diagram's place without trying (null: they can be). */
+		default String unavailable() { return null; }
 	}
 
 	/** How a BioModel's reaction diagram is loaded (none: no Reaction Diagram section). */
@@ -598,6 +601,15 @@ public class ModelExplorerDetailsPanel extends JPanel {
 		titleRow.add(GuiUtils.createBoldJLabel("Reaction Diagram"), BorderLayout.WEST);
 		titleRow.add(open, BorderLayout.EAST); // the model's Open: at the top of the diagram, which opening shows
 		section.add(titleRow, BorderLayout.NORTH);
+		String unavailable = this.modelLoader.unavailable();
+		if (null != unavailable) { // known not to load (a guest): say why, rather than trying and showing an error
+			JLabel warning = new JLabel("<html><div style='text-align:center'>" + unavailable + "</div></html>", SwingConstants.CENTER);
+			warning.setName("ModelExplorerReactionDiagramUnavailable");
+			warning.setForeground(VCellColors.getWarningForeground());
+			ModelExplorerDetailsPanel.copyable(warning, unavailable);
+			section.add(warning, BorderLayout.CENTER);
+			return section;
+		}
 		section.add(loading, BorderLayout.CENTER);
 		this.wheelTurning = wheel.animate(loading);
 		this.wheelTurning.start();
