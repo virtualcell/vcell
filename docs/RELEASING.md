@@ -216,6 +216,9 @@ is not transcribed to the website until prod rolls.
 
 ## Release-cut procedure
 
+For a fix to a vulnerability, follow [`SECURITY-FIXES.md`](SECURITY-FIXES.md) instead: it releases
+to production before the fix reaches `master`.
+
 When a new build is tagged (`MAJOR.MINOR.PATCH.BUILD`), the release
 manager performs the following steps. All steps happen in the `vcell`
 repo unless otherwise noted.
