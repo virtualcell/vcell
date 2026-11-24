@@ -7,18 +7,25 @@ name: Regression
 # Runs when:
 #   * in the merge queue (the authoritative gate before landing on master),
 #   * nightly on master (drift backstop),
-#   * on demand via "Run workflow" (all groups or a single one, any ref).
+#   * on demand via "Run workflow" (all groups or a single one, any ref),
+#   * on every pull request - but there ONLY "regression-gate" runs, and it
+#     passes at once without running any tests (see below).
 #
-# Deliberately does NOT run on pull_request events. "regression-gate" is a
-# required status check enforced by the merge queue on its temporary merge
-# commit (the merge_group event below). Because no pull_request trigger produces
-# it, GitHub does not "expect" it on the PR itself, so a PR can enter the queue
-# as soon as the fast lane (build / CI-Test-group-Fast / CI-Test-group-Quarkus)
-# and review pass; the queue then runs this suite and blocks the merge if it
-# fails. (Previously a `pull_request: [ready_for_review]` trigger made GitHub
-# expect the gate on every PR, but it only fired on a draft->ready transition -
-# so PRs opened directly as ready were blocked forever with no way to run it.)
-# For an ad-hoc pre-queue check, use "Run workflow" on the PR branch.
+# Why the pull_request trigger. "regression-gate" is a required status check,
+# and GitHub only admits a PR to the merge queue once EVERY required check has
+# reported on the PR's head commit. Without a pull_request trigger nothing ever
+# reports it there, so enqueueing fails with 'Required status check
+# "regression-gate" is expected.' and the only way to merge is an admin bypass.
+# That is what happened from 2026-07-24 to 2026-11-23: the queue never ran once
+# (zero merge_group runs) and every merge to master bypassed it. (An earlier
+# claim here that GitHub does not "expect" a check no PR trigger produces was
+# wrong.)
+#
+# So on a pull_request the shard jobs are skipped and regression-gate succeeds
+# immediately - it marks the PR as eligible, it does not test it. The suite runs
+# for real on the queue's merge commit (merge_group), and regression-gate there
+# is what blocks a failing PR from landing. For an ad-hoc pre-queue check, use
+# "Run workflow" on the PR branch.
 #
 # The slow groups are single parameterized tests iterating over the whole VCML
 # model suite, so they are SHARDED across parallel runners: each shard runs a
@@ -35,6 +42,9 @@ name: Regression
 
 on:
   merge_group:
+  # Only to report regression-gate on the PR so it may enter the queue; see the header.
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
   schedule:
     # nightly full regression on master (07:00 UTC)
     - cron: '0 7 * * *'
@@ -76,6 +86,8 @@ jobs:
   # ---------------------------------------------------------------------------
   prepare-regression:
     name: prepare regression matrix
+    # Not on pull_request: there only regression-gate runs (see the header).
+    if: ${{ github.event_name != 'pull_request' }}
     runs-on: ubuntu-22.04
     outputs:
       matrix: ${{ steps.compute.outputs.matrix }}
@@ -138,6 +150,7 @@ jobs:
     name: CI-Test-group-${{ matrix.name }}
     runs-on: ubuntu-22.04
     needs: prepare-regression
+    if: ${{ github.event_name != 'pull_request' }}
     strategy:
       matrix: ${{ fromJSON(needs.prepare-regression.outputs.matrix) }}
       fail-fast: false
@@ -224,6 +237,12 @@ jobs:
       - name: Verify all regression shards passed
         shell: bash
         run: |
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            # Marks the PR eligible for the merge queue; the suite runs there, on the
+            # merge commit, and this same job then reports its real result.
+            echo "pull_request: regression runs in the merge queue, not here."
+            exit 0
+          fi
           result="${{ needs.regression-tests.result }}"
           echo "regression-tests result: $result"
           if [ "$result" != "success" ]; then

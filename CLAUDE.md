@@ -166,11 +166,18 @@ npm run build_prod # Production build
 GitHub Actions, split by concern:
 
 - **`ci.yml`** (fast lane, ~4 min) — every push + merge queue: `build` (compile + Docker image test + Python package tests), `CI-Test-group-Fast` (JUnit class-level parallel, sharded core/other), `CI-Test-group-Quarkus`.
-- **`regression.yml`** (~9 min) — heavy integration suites (MathGen/SBML/SEDML_*/BSTS), sharded, gated by `regression-gate`. Runs on: the **merge queue** (`merge_group`) — the authoritative gate before landing — the **nightly** schedule, and manual **`workflow_dispatch`** (any ref; with an `include-slow` option for the slow cases the merge gate skips). Deliberately **NOT** on `pull_request` events: because no PR trigger produces `regression-gate`, GitHub doesn't expect it on the PR, so a PR enters the queue once the fast lane + review pass and the queue runs regression on the merge commit. For an ad-hoc pre-queue run, `gh workflow run regression.yml --ref <pr-branch>`.
+- **`regression.yml`** (~9 min) — heavy integration suites (MathGen/SBML/SEDML_*/BSTS), sharded, gated by `regression-gate`. Runs on: the **merge queue** (`merge_group`) — the authoritative gate before landing — the **nightly** schedule, and manual **`workflow_dispatch`** (any ref; with an `include-slow` option for the slow cases the merge gate skips). It also runs on `pull_request`, but there **only `regression-gate` runs, and it passes without testing anything**: GitHub admits a PR to the merge queue only once every required check, `regression-gate` included, has reported on the PR. The suite itself runs in the queue, on the merge commit. (Without that trigger the queue refused every PR and never ran once, 2026-07-24 → 2026-11-23; every merge was an admin bypass.) For an ad-hoc pre-queue run, `gh workflow run regression.yml --ref <pr-branch>`.
 - **`cd.yml`** — Docker push to `ghcr.io` on release.
 - **`codeql-analysis.yml`** — security scan on push/PR to `master`.
 
 **`master` protection** (a ruleset): 1 required review; required checks `build` / `CI-Test-group-Fast` / `CI-Test-group-Quarkus` / `regression-gate`; a merge queue that runs the full suite before landing; force-pushes blocked.
+
+**Adding a PR to the queue from the CLI:** once all four required checks have passed on the PR, `gh pr merge <n>` (no method flag; the queue merges with a merge commit) adds it to the queue. While any is still pending, `gh` falls back to auto-merge, which is disabled in this repo, and fails. Then use the web UI's "Merge when ready" button, or wait. The GraphQL equivalent:
+
+```bash
+id=$(gh api graphql -f query='{repository(owner:"virtualcell",name:"vcell"){pullRequest(number:<n>){id}}}' --jq .data.repository.pullRequest.id)
+gh api graphql -f query='mutation($id:ID!){enqueuePullRequest(input:{pullRequestId:$id}){mergeQueueEntry{state position}}}' -F id=$id
+```
 
 **After an admin-merge to `master`** (`gh pr merge --admin`, used to bypass the 1-review requirement when no reviewer is available): the merge queue is skipped, so `regression.yml` does **not** run automatically (only `CI` + `CodeQL` do). **Manually kick it off:**
 
