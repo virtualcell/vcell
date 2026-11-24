@@ -79,9 +79,9 @@ CLIENTGEN_TAG="${VCELL_VERSION_NUMBER}.${VCELL_BUILD_NUMBER}"
 
 VCELL_DEPLOY_SECRETS_DIR=$(grep VCELL_DEPLOY_SECRETS_DIR "$local_config_file" | cut -d"=" -f2)
 
-# which install4j media (build ids) to generate; default = all five platforms. The CD-sites
+# which install4j media (build ids) to generate; default = all three platforms. The CD-sites
 # workflow sets this to a single id per matrix job so each installer builds on its own runner.
-BUILD_IDS="${BUILD_IDS:-349 450 652 547 105}"
+BUILD_IDS="${BUILD_IDS:-349 652 105}"
 
 echo "sudo docker run --rm ... ${VCELL_REPO_NAMESPACE}/vcell-clientgen:${CLIENTGEN_TAG}"
 
