@@ -30,11 +30,11 @@ import org.vcell.restclient.CustomApiClientCode;
 import org.vcell.restclient.CustomObjectMapper;
 import org.vcell.restclient.api.*;
 import org.vcell.restclient.auth.InteractiveLogin;
+import org.vcell.restclient.auth.SystemBrowser;
 import org.vcell.restclient.model.AccesTokenRepresentationRecord;
 import org.vcell.restclient.model.UserIdentityJSONSafe;
 import org.vcell.api.types.utils.DTOModelTransformerV0;
 
-import java.awt.*;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -251,22 +251,12 @@ public class VCellApiClient implements AutoCloseable {
 //		httpRequestBuilder.method("GET");
 		String logoutPath = "";
 
-		if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-            try {
-                Desktop.getDesktop().browse(URI.create("https://dev-dzhx7i2db3x3kkvq.us.auth0.com/oidc/logout"));
-				if (Desktop.getDesktop().isSupported(Desktop.Action.APP_REQUEST_FOREGROUND)) {
-					try {
-						Desktop.getDesktop().requestForeground(true);
-					} catch (Exception e) {
-						lg.error("requestForeground failed", e);
-					}
-				} else {
-					lg.warn("APP_REQUEST_FOREGROUND not supported");
-				}
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
+		URI logoutURI = URI.create(InteractiveLogin.authDomain + "/oidc/logout");
+		if (!SystemBrowser.open(logoutURI)) {
+			lg.warn("Could not open a browser to end the Auth0 session at " + logoutURI);
+			return;
 		}
+		SystemBrowser.requestForeground();
 	}
 
 	public FieldDataResourceApi getFieldDataApi(){

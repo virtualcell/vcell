@@ -743,6 +743,18 @@ public class DialogUtils {
      * (including sending an error report, where offered) are unchanged.
      */
     public static void showErrorDialog(final Component requester, final String message, final Throwable exception, final ErrorContext errorContext, final ErrorAction errorAction){
+        DialogUtils.showErrorDialog(requester, message, exception, errorContext, errorAction, false);
+    }
+
+    /**
+     * As {@link #showErrorDialog(Component, String, Throwable, ErrorContext)}, but always offering to send the error
+     * report to VCell, for when the user asked to contact VCell about {@code exception}.
+     */
+    public static void showErrorReportDialog(final Component requester, final String message, final Throwable exception, final ErrorContext errorContext){
+        DialogUtils.showErrorDialog(requester, message, exception, errorContext, null, true);
+    }
+
+    private static void showErrorDialog(final Component requester, final String message, final Throwable exception, final ErrorContext errorContext, final ErrorAction errorAction, final boolean offerErrorReport){
         checkForNull(requester);
         // An error dialog must not be the one window the user cannot find. Without an
         // owner AWT downgrades DOCUMENT_MODAL to modeless, so the dialog would neither
@@ -751,7 +763,7 @@ public class DialogUtils {
 
         Doer doer = () -> {
             String errMsg = message;
-            boolean sendErrorReport = false;
+            boolean sendErrorReport = offerErrorReport;
             if(errMsg == null || errMsg.trim().length() == 0){
                 errMsg = "Virtual Cell has encountered a problem. Please tell Virtual Cell about this problem to help improve Virtual Cell.";
                 if(exception != null){

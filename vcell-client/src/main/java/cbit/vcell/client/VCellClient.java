@@ -27,6 +27,8 @@ import org.vcell.api.messaging.RemoteProxyVCellConnectionFactory;
 import org.vcell.api.server.ClientServerManager;
 import org.vcell.api.server.ClientServerManager.InteractiveContextDefaultProvider;
 import org.vcell.api.utils.Auth0ConnectionUtils;
+import org.vcell.restclient.auth.InteractiveLogin;
+import org.vcell.restclient.auth.SystemBrowser;
 import org.vcell.util.VCellThreadChecker;
 import org.vcell.util.document.VCDocument;
 
@@ -196,6 +198,10 @@ private void setStatusUpdater(StatusUpdater newStatusUpdater) {
 
 public void startClient(final VCDocument startupDoc, final ClientServerInfo clientServerInfo) {
 	VCellLookAndFeel.initializeVCellLookAndFeel();
+	// when login cannot open a browser, its window offers to report that to VCell
+	InteractiveLogin.setContactVCellAction(owner -> DialogUtils.showErrorReportDialog(owner,
+			"VCell could not open your web browser to log in.",
+			new Exception(SystemBrowser.describeBrowserSupport()), null));
 
 	Hashtable<String, Object> hash = new Hashtable<String, Object>();	
 	AsynchClientTask task1  = new AsynchClientTask("Starting Virtual Cell", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
