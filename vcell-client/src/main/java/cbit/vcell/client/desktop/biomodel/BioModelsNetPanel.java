@@ -441,6 +441,18 @@ TODO:
 		ClientTaskDispatcher.dispatch(documentWindowManager.getComponent(), new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2}, false);
 	}
 	
+	/** Called whenever the tree's selection changes. */
+	public void addSelectionListener(Runnable listener) {
+		this.tree.getSelectionModel().addTreeSelectionListener(e -> listener.run());
+	}
+
+	/** The BioModels Database model selected in the tree, or null. */
+	public BioModelsNetModelInfo getSelectedModel() {
+		Object selected = this.tree.getLastSelectedPathComponent();
+		if (!(selected instanceof BioModelNode node)) return null;
+		return node.getUserObject() instanceof BioModelsNetModelInfo info ? info : null;
+	}
+
 	public void treeSelectionChanged() {
 		importButton.setEnabled(false);
 		

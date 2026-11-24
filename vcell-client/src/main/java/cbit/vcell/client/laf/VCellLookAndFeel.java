@@ -200,6 +200,7 @@ public class VCellLookAndFeel {
 			private static void performAdditionalMacSetup(){
 				boolean dark = VCellColors.isDarkTheme();
 				MacOSAppearance.setDark(dark);
+				MacOSAppearance.forgetPaintedControls(); // or controls painted before come back in the old appearance
 				VCellLookAndFeel.matchAquaTabTitles(dark);
 			}
 		};

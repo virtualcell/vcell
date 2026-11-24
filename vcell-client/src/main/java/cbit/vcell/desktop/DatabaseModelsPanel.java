@@ -128,6 +128,11 @@ public class DatabaseModelsPanel extends JPanel {
 		return current instanceof ModelListView view ? view.list.getSelectedValue() : null;
 	}
 
+	/** The model selected in the Tutorials list, wherever it shows (see detachTutorials), or null. */
+	public VCDocumentInfo getSelectedTutorial() {
+		return this.views.get(ModelList.TUTORIAL).list.getSelectedValue();
+	}
+
 	/** Called whenever a list's selection, or the list showing, changes. */
 	public void addSelectionListener(Runnable listener) {
 		for (ModelListView view : this.views.values()) {
