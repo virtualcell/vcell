@@ -167,7 +167,7 @@ java.desktop/sun.font=ALL-UNNAMED
       <splashScreen show="true" bitmapFile="${compiler:vcell5SplashScreenPngFilePath}" textOverlay="true" />
       <java mainClass="cbit.vcell.client.VCellClientMain" vmParameters="&quot;-Dvcell.installDir=${launcher:sys.launcherDirectory}&quot;">
         <classPath>
-          <variable name="vcellClasspathColonSep" separator=":" useRelativePrefix="true" relativePrefix="lib" />
+          <scanDirectory location="lib" failOnError="false" />
         </classPath>
         <nativeLibraryDirectories>
           <directory name="nativelibs/win64" />
@@ -207,7 +207,7 @@ java.desktop/sun.font=ALL-UNNAMED
       <splashScreen show="true" bitmapFile="${compiler:vcell5SplashScreenPngFilePath}" textOverlay="true" />
       <java mainClass="cbit.vcell.client.VCellClientMain" vmParameters="&quot;-Dvcell.installDir=${launcher:sys.launcherDirectory}&quot;">
         <classPath>
-          <variable name="vcellClasspathColonSep" separator=":" useRelativePrefix="true" relativePrefix="lib" />
+          <scanDirectory location="lib" failOnError="false" />
         </classPath>
         <nativeLibraryDirectories>
           <directory name="nativelibs/win32" />
