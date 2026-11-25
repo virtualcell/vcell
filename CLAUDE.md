@@ -9,7 +9,9 @@ Computational cell biology simulation platform (since 1997). Java monorepo with 
 ## Build & Test
 
 **Full instructions: [docs/BUILDING.md](docs/BUILDING.md).** Read it before debugging a
-build or test failure in a fresh checkout or worktree.
+build or test failure in a fresh checkout or worktree. Building or checking a **Docker image**
+(including the `vcell-rest`/`vcell-exporter` two-build trap) or dry-running the installers:
+the `build` skill, [.claude/skills/build/SKILL.md](.claude/skills/build/SKILL.md).
 
 Two steps, in this order — the Python packages **first**, then Maven:
 
