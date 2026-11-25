@@ -13,6 +13,12 @@ build or test failure in a fresh checkout or worktree. Building or checking a **
 (including the `vcell-rest`/`vcell-exporter` two-build trap) or dry-running the installers:
 the `build` skill, [.claude/skills/build/SKILL.md](.claude/skills/build/SKILL.md).
 
+**Cutting a release or deploying to a site** (alpha/dev, test/stage, rel/prod): the `deploy`
+skill, [.claude/skills/deploy/SKILL.md](.claude/skills/deploy/SKILL.md), which runs the gated
+scripts in [tools/release/](tools/release/). Version and CHANGELOG conventions:
+[docs/RELEASING.md](docs/RELEASING.md). "A release" is a PATCH bump, and the `CHANGELOG.md`
+section lands on master before the tag.
+
 Two steps, in this order — the Python packages **first**, then Maven:
 
 ```bash
