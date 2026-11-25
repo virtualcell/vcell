@@ -67,4 +67,9 @@ ENV JAVA_DEFAULT_OPTS="\
 ENV JAVA_APP_JAR="/deployments/quarkus-run.jar"
 
 # exec so java is PID 1 and receives SIGTERM from Kubernetes directly.
-ENTRYPOINT [ "sh", "-c", "exec java $JAVA_OPTS $JAVA_DEFAULT_OPTS $JAVA_OPTS_APPEND -jar \"$JAVA_APP_JAR\" \"$@\"", "--" ]
+# bash, NOT sh: on this Ubuntu base sh is dash, which silently drops environment variables whose
+# names are not shell identifiers. The deployments pass secrets as dotted Quarkus property names
+# (quarkus.datasource.oracle.password, quarkus.oidc.credentials.secret, ... from rest-secrets);
+# under sh the app started without them (ORA-01005 "null password given" on dev, 8.3.4.01).
+# bash passes them through, as the ubi8 image's run-java.sh, a bash script, did.
+ENTRYPOINT [ "bash", "-c", "exec java $JAVA_OPTS $JAVA_DEFAULT_OPTS $JAVA_OPTS_APPEND -jar \"$JAVA_APP_JAR\" \"$@\"", "--" ]
