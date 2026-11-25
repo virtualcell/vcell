@@ -72,7 +72,7 @@ renderer is ever swapped in.
   volume rendering).
 - **Hard constraint:** cross-platform (Windows x64, Linux x64, macOS x64 **and
   Apple Silicon arm64**) with **minimal native-packaging burden**. VCell ships via
-  install4j across all five media; every native GPU/binding dependency reintroduces
+  install4j across all three media; every native GPU/binding dependency reintroduces
   exactly that packaging/QA cost.
 
 ---
