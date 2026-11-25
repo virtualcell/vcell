@@ -23,6 +23,18 @@ set -ux
 				    "VCell_${vcell_siteCamel}_unix_latest_64bit.sh";
 			then echo "failed to create symbolic link for Linux64 installer"; exit 1; fi
 
+			# The 32-bit installers were dropped. Their old "latest" URLs, which are still in
+			# bookmarks and old copies of the download page, serve the 64-bit installer instead,
+			# as updates.xml does for existing 32-bit installs (combine_updates.sh). Linux "32"
+			# was already a 64-bit build; the Windows one needs 64-bit Windows.
+			if ! ln -sf "VCell_${vcell_siteCamel}_windows-x64_${version}_64bit.exe" \
+				    "VCell_${vcell_siteCamel}_windows-x32_latest_32bit.exe";
+			then echo "failed to create symbolic link for the retired Win32 installer URL"; exit 1; fi
+
+			if ! ln -sf "VCell_${vcell_siteCamel}_unix_${version}_64bit.sh" \
+				    "VCell_${vcell_siteCamel}_unix_latest_32bit.sh";
+			then echo "failed to create symbolic link for the retired Linux32 installer URL"; exit 1; fi
+
 			popd || (echo "pop failed"; exit 1)
 
 echo "exited normally"
