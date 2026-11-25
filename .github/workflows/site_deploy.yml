@@ -152,6 +152,10 @@ jobs:
         name: deploy-config
         path: docker/swarm
     - name: build one installer media
+      # install4j looks up the Corretto JRE versions through the GitHub API; authenticate it so the
+      # lookup isn't subject to the anonymous rate limit. generate_installers.sh forwards this by name.
+      env:
+        INSTALL4J_ADD_VM_PARAMS: -Dinstall4j.githubToken=${{ secrets.GITHUB_TOKEN }}
       run: |
         cd docker/swarm
         echo "${{ secrets.GITHUB_TOKEN }}" | sudo docker login ghcr.io -u ${{ github.actor }} --password-stdin
@@ -206,6 +210,10 @@ jobs:
         name: deploy-config
         path: docker/swarm
     - name: build the mac installer
+      # install4j looks up the Corretto JRE versions through the GitHub API; authenticate it so the
+      # lookup isn't subject to the anonymous rate limit. generate_installers.sh forwards this by name.
+      env:
+        INSTALL4J_ADD_VM_PARAMS: -Dinstall4j.githubToken=${{ secrets.GITHUB_TOKEN }}
       run: |
         cd docker/swarm
         echo "${{ secrets.GITHUB_TOKEN }}" | sudo docker login ghcr.io -u ${{ github.actor }} --password-stdin

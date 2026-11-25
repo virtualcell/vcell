@@ -87,6 +87,7 @@ echo "sudo docker run --rm ... ${VCELL_REPO_NAMESPACE}/vcell-clientgen:${CLIENTG
 
 echo "sudo docker run --rm \\"
 echo "    -e BUILD_IDS=\"$BUILD_IDS\" \\"
+echo "    -e INSTALL4J_ADD_VM_PARAMS \\"
 echo "    -e compiler_updateSiteBaseUrl=$VCELL_UPDATE_SITE \\"
 echo "    -e compiler_Site=$VCELL_SITE_CAMEL \\"
 echo "    -e compiler_vcellVersion=$VCELL_VERSION_NUMBER \\"
@@ -109,8 +110,12 @@ echo "    ${VCELL_REPO_NAMESPACE}/vcell-clientgen:${CLIENTGEN_TAG}"
 
 
 
-if ! sudo docker run --rm \
+# INSTALL4J_ADD_VM_PARAMS (optional) carries -Dinstall4j.githubToken=... from CD-sites, so install4j's
+# GitHub lookup of the Corretto JRE versions is authenticated. Forwarded by name, never by value: the
+# command line above is echoed into the build log.
+if ! sudo --preserve-env=INSTALL4J_ADD_VM_PARAMS docker run --rm \
     -e BUILD_IDS="$BUILD_IDS" \
+    -e INSTALL4J_ADD_VM_PARAMS \
     -e compiler_updateSiteBaseUrl="$VCELL_UPDATE_SITE" \
     -e compiler_Site="$VCELL_SITE_CAMEL" \
     -e compiler_vcellVersion="$VCELL_VERSION_NUMBER" \
