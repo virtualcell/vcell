@@ -16,9 +16,13 @@ draft autonomously; execute only after sign-off.
 `MAJOR.MINOR.PATCH.BUILD` — `docs/RELEASING.md` is authoritative.
 
 - Current latest: `gh release list --repo virtualcell/vcell --limit 1` (or `git tag --sort=-creatordate | head -1`).
-- Bugfix-only release → bump PATCH, reset BUILD to `01` (e.g. 8.0.4.01 → 8.0.5.01).
-- New backwards-compatible feature → bump MINOR.
-- Iterating on an already-cut line (another build of the same fixes/features) → increment BUILD only.
+- **"Cut a release" means a PATCH release**: bump PATCH, reset BUILD to `01`
+  (e.g. 8.3.3.06 → 8.3.4.01). That holds whether it contains fixes, features, or both. Don't
+  deliberate, and don't propose MINOR because the release has a new feature.
+- MINOR is a **public release event** (a version announced to users, with its own narrative in
+  `release-notes/major/`), and MAJOR is rare. Bump either only when told to.
+- Another build of a line that is already cut (rebuilding the same content, e.g. after a
+  failed image build) → increment BUILD only.
 - The version lives ONLY in the git tag / GitHub release — there is no version file in the repo.
 
 ## Site mapping
