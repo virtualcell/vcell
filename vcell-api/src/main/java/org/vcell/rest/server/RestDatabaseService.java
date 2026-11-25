@@ -73,6 +73,27 @@ public class RestDatabaseService {
 
 	}
 
+	private record CachedRpcCaller(SpecialUser user, long expiresAtMS) {}
+	private static final long RPC_CALLER_CACHE_MS = 60_000;
+	private final ConcurrentHashMap<KeyValue, CachedRpcCaller> rpcCallerCache = new ConcurrentHashMap<>();
+
+	/**
+	 * The user an RPC acts as, read from the database (with its real special claims) rather than taken from
+	 * the client's serialized arguments, which could carry forged claims. Cached briefly per user.
+	 */
+	public SpecialUser getRpcCaller(User authenticatedUser) throws DataAccessException {
+		long nowMS = System.currentTimeMillis();
+		CachedRpcCaller cachedCaller = this.rpcCallerCache.get(authenticatedUser.getID());
+		if (cachedCaller != null && cachedCaller.expiresAtMS() > nowMS) return cachedCaller.user();
+
+		SpecialUser databaseUser = this.localAdminDbServer.getUser(authenticatedUser.getName());
+		if (databaseUser == null || !authenticatedUser.getID().equals(databaseUser.getID())) {
+			throw new PermissionException("authenticated user '" + authenticatedUser.getName() + "' not found");
+		}
+		this.rpcCallerCache.put(authenticatedUser.getID(), new CachedRpcCaller(databaseUser, nowMS + RestDatabaseService.RPC_CALLER_CACHE_MS));
+		return databaseUser;
+	}
+
 	public SpecialUser.SPECIAL_CLAIM[] getSpecialClaims(User user) throws DataAccessException {
 		SpecialUser userWithClaims = localAdminDbServer.getUser(user.getName());
 		return userWithClaims.getMySpecials();

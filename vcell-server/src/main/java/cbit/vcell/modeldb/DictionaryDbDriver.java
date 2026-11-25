@@ -304,7 +304,7 @@ public class DictionaryDbDriver {
 //		for (int i = 0; i < matchSearchFormalSpeciesType.getMatchCriterias().length; i++) {
 //			sql+=
 //			(i>0?" OR ":"") +
-//			" LOWER("+SpeciesContextModelTable.table.name.getQualifiedColName()+") LIKE " + "'" + matchSearchFormalSpeciesType.getMatchCriterias()[i] + "'" + " ESCAPE '"+BeanUtils.SQL_ESCAPE_CHARACTER+"'";
+//			" LOWER("+SpeciesContextModelTable.table.name.getQualifiedColName()+") LIKE " + DbDriver.sqlLiteral(matchSearchFormalSpeciesType.getMatchCriterias()[i]) + " ESCAPE '"+BeanUtils.SQL_ESCAPE_CHARACTER+"'";
 //		}
 //		sql+=")";
 
@@ -315,7 +315,7 @@ public class DictionaryDbDriver {
                         "SELECT UNIQUE " + BioModelTable.table.id.getQualifiedColName() +
                         " FROM " + BioModelTable.table.getTableName() + "," + SpeciesContextModelTable.table.getTableName() +
                         " WHERE " + BioModelTable.table.modelRef.getQualifiedColName() + " = " + SpeciesContextModelTable.table.modelRef.getQualifiedColName() +
-                        " AND " + " LOWER(" + SpeciesContextModelTable.table.name.getQualifiedColName() + ") LIKE " + "'" + matchSearchFormalSpeciesType.getMatchCriterias()[i] + "'" + " ESCAPE '" + BeanUtils.SQL_ESCAPE_CHARACTER + "'";
+                        " AND " + " LOWER(" + SpeciesContextModelTable.table.name.getQualifiedColName() + ") LIKE " + DbDriver.sqlLiteral(matchSearchFormalSpeciesType.getMatchCriterias()[i]) + " ESCAPE '" + BeanUtils.SQL_ESCAPE_CHARACTER + "'";
             }
             try {
                 stmt = con.createStatement();
@@ -426,16 +426,16 @@ public class DictionaryDbDriver {
                 likeConditions.add(" UPPER(" + CompoundTable.table.id.getQualifiedColName() + ") = " + likeString);
             }
             if((restrictSearch & FormalSpeciesType.COMPOUND_ALIAS) != 0){
-                likeConditions.add(" UPPER(" + CompoundAliasTable.table.name.getQualifiedColName() + ") LIKE " + "'" + likeString + "'" + " ESCAPE '/'");
+                likeConditions.add(" UPPER(" + CompoundAliasTable.table.name.getQualifiedColName() + ") LIKE " + DbDriver.sqlLiteral(likeString) + " ESCAPE '/'");
             }
             if((restrictSearch & FormalSpeciesType.COMPOUND_KEGGID) != 0){
-                likeConditions.add(" UPPER(" + CompoundTable.table.keggID.getQualifiedColName() + ") LIKE " + "'" + likeString + "'" + " ESCAPE '/'");
+                likeConditions.add(" UPPER(" + CompoundTable.table.keggID.getQualifiedColName() + ") LIKE " + DbDriver.sqlLiteral(likeString) + " ESCAPE '/'");
             }
             if((restrictSearch & FormalSpeciesType.COMPOUND_CASID) != 0){
-                likeConditions.add(" UPPER(" + CompoundTable.table.casID.getQualifiedColName() + ") LIKE " + "'" + likeString + "'" + " ESCAPE '/'");
+                likeConditions.add(" UPPER(" + CompoundTable.table.casID.getQualifiedColName() + ") LIKE " + DbDriver.sqlLiteral(likeString) + " ESCAPE '/'");
             }
             if((restrictSearch & FormalSpeciesType.COMPOUND_FORMULA) != 0){
-                likeConditions.add(" UPPER(" + CompoundTable.table.formula.getQualifiedColName() + ") LIKE " + "'" + likeString + "'" + " ESCAPE '/'");
+                likeConditions.add(" UPPER(" + CompoundTable.table.formula.getQualifiedColName() + ") LIKE " + DbDriver.sqlLiteral(likeString) + " ESCAPE '/'");
             }
 
         } else if(speciesType.equals(FormalSpeciesType.enzyme)){
@@ -444,20 +444,20 @@ public class DictionaryDbDriver {
                 likeConditions.add(" UPPER(" + EnzymeTable.table.id.getQualifiedColName() + ") = " + likeString);
             }
             if((restrictSearch & FormalSpeciesType.ENZYME_ALIAS) != 0){
-                likeConditions.add(" UPPER(" + EnzymeAliasTable.table.name.getQualifiedColName() + ") LIKE " + "'" + likeString + "'" + " ESCAPE '/'");
+                likeConditions.add(" UPPER(" + EnzymeAliasTable.table.name.getQualifiedColName() + ") LIKE " + DbDriver.sqlLiteral(likeString) + " ESCAPE '/'");
             }
             if((restrictSearch & FormalSpeciesType.ENZYME_SYSNAME) != 0){
-                likeConditions.add(" UPPER(" + EnzymeTable.table.sysname.getQualifiedColName() + ") LIKE " + "'" + likeString + "'" + " ESCAPE '/'");
+                likeConditions.add(" UPPER(" + EnzymeTable.table.sysname.getQualifiedColName() + ") LIKE " + DbDriver.sqlLiteral(likeString) + " ESCAPE '/'");
             }
             if((restrictSearch & FormalSpeciesType.ENZYME_ECNUMBER) != 0){
-                likeConditions.add(" UPPER(" + EnzymeTable.table.ecNumber.getQualifiedColName() + ") LIKE " + "'" + likeString + "'" + " ESCAPE '/'");
+                likeConditions.add(" UPPER(" + EnzymeTable.table.ecNumber.getQualifiedColName() + ") LIKE " + DbDriver.sqlLiteral(likeString) + " ESCAPE '/'");
             }
             //if((restrictSearch & FormalSpeciesType.ENZYME_ECNUMBER) != 0){likeConditions.add(" UPPER("+EnzymeTable.table.ecNumber.getQualifiedColName() + ") LIKE " + "'EC "+likeString+"'");}
             if((restrictSearch & FormalSpeciesType.ENZYME_REACTION) != 0){
-                likeConditions.add(" UPPER(" + EnzymeTable.table.reaction.getQualifiedColName() + ") LIKE " + "'" + likeString + "'" + " ESCAPE '/'");
+                likeConditions.add(" UPPER(" + EnzymeTable.table.reaction.getQualifiedColName() + ") LIKE " + DbDriver.sqlLiteral(likeString) + " ESCAPE '/'");
             }
             if((restrictSearch & FormalSpeciesType.ENZYME_CASID) != 0){
-                likeConditions.add(" UPPER(" + EnzymeTable.table.casID.getQualifiedColName() + ") LIKE " + "'" + likeString + "'" + " ESCAPE '/'");
+                likeConditions.add(" UPPER(" + EnzymeTable.table.casID.getQualifiedColName() + ") LIKE " + DbDriver.sqlLiteral(likeString) + " ESCAPE '/'");
             }
 
         } else if(speciesType.equals(FormalSpeciesType.protein)){
@@ -466,22 +466,22 @@ public class DictionaryDbDriver {
                 likeConditions.add(" UPPER(" + ProteinTable.table.id.getQualifiedColName() + ") = " + likeString);
             }
             if((restrictSearch & FormalSpeciesType.PROTEIN_ALIAS) != 0){
-                likeConditions.add(" UPPER(" + ProteinAliasTable.table.name.getQualifiedColName() + ") LIKE " + "'" + likeString + "'" + " ESCAPE '/'");
+                likeConditions.add(" UPPER(" + ProteinAliasTable.table.name.getQualifiedColName() + ") LIKE " + DbDriver.sqlLiteral(likeString) + " ESCAPE '/'");
             }
             if((restrictSearch & FormalSpeciesType.PROTEIN_ACCESSION) != 0){
-                likeConditions.add(" UPPER(" + ProteinTable.table.accessionNumber.getQualifiedColName() + ") LIKE " + "'" + likeString + "'" + " ESCAPE '/'");
+                likeConditions.add(" UPPER(" + ProteinTable.table.accessionNumber.getQualifiedColName() + ") LIKE " + DbDriver.sqlLiteral(likeString) + " ESCAPE '/'");
             }
             if((restrictSearch & FormalSpeciesType.PROTEIN_SWISSPROTID) != 0){
-                likeConditions.add(" UPPER(" + ProteinTable.table.swissProtEntryName.getQualifiedColName() + ") LIKE " + "'" + likeString + "'" + " ESCAPE '/'");
+                likeConditions.add(" UPPER(" + ProteinTable.table.swissProtEntryName.getQualifiedColName() + ") LIKE " + DbDriver.sqlLiteral(likeString) + " ESCAPE '/'");
             }
             if((restrictSearch & FormalSpeciesType.PROTEIN_ORGANISM) != 0){
-                likeConditions.add(" UPPER(" + ProteinTable.table.organism.getQualifiedColName() + ") LIKE " + "'" + likeString + "'" + " ESCAPE '/'");
+                likeConditions.add(" UPPER(" + ProteinTable.table.organism.getQualifiedColName() + ") LIKE " + DbDriver.sqlLiteral(likeString) + " ESCAPE '/'");
             }
             if((restrictSearch & FormalSpeciesType.PROTEIN_KEYWORD) != 0){
-                likeConditions.add(" UPPER(" + ProteinTable.table.keywords.getQualifiedColName() + ") LIKE " + "'" + likeString + "'" + " ESCAPE '/'");
+                likeConditions.add(" UPPER(" + ProteinTable.table.keywords.getQualifiedColName() + ") LIKE " + DbDriver.sqlLiteral(likeString) + " ESCAPE '/'");
             }
             if((restrictSearch & FormalSpeciesType.PROTEIN_DESCR) != 0){
-                likeConditions.add(" UPPER(" + ProteinTable.table.description.getQualifiedColName() + ") LIKE " + "'" + likeString + "'" + " ESCAPE '/'");
+                likeConditions.add(" UPPER(" + ProteinTable.table.description.getQualifiedColName() + ") LIKE " + DbDriver.sqlLiteral(likeString) + " ESCAPE '/'");
             }
         } else {
             throw new RuntimeException(speciesType.getName() + " Unsupported");

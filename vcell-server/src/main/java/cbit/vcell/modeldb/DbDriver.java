@@ -4828,6 +4828,53 @@ public abstract class DbDriver {
     }
 
 
+    /**
+     * Runs an update whose values are bind parameters ({@code ?}), one per element of {@code params}
+     * in order. Use for anything a caller supplies; never concatenate such values into the SQL.
+     * A null parameter binds as a VARCHAR null.
+     */
+    public static int updateBoundSQL(Connection con, String sql, UpdateExpectation updateExpectation, Object... params) throws SQLException{
+        if(sql == null || con == null){
+            throw new IllegalArgumentException("Improper parameters for DbDriver.updateBoundSQL");
+        }
+        if(lg.isTraceEnabled()){
+            lg.trace("DbDriver.updateBoundSQL(): " + sql);
+        }
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            DbDriver.bindParameters(ps, params);
+            int numRowsChanged = ps.executeUpdate();
+            if(numRowsChanged != 1){
+                Level logLevel = (updateExpectation == UpdateExpectation.ROW_UPDATE_IS_POSSIBLE) ? Level.TRACE : Level.ERROR;
+                lg.log(logLevel, numRowsChanged + " records changed: " + sql, new StackTraceGenerationException());
+            }
+            return numRowsChanged;
+        }
+    }
+
+    /**
+     * A caller-supplied string as a quoted SQL string literal, with embedded quotes doubled (standard SQL,
+     * valid for Oracle and for Postgres with standard_conforming_strings); {@code NULL} for null.
+     * For SQL that is still assembled as text; prefer bind parameters ({@link #updateBoundSQL}) in new code.
+     */
+    public static String sqlLiteral(String value){
+        if(value == null) return "NULL";
+        return "'" + value.replace("'", "''") + "'";
+    }
+
+    /**
+     * Binds {@code params} to the statement's {@code ?} placeholders in order; a null binds as a VARCHAR null.
+     */
+    public static void bindParameters(PreparedStatement ps, Object... params) throws SQLException{
+        for(int i = 0; i < params.length; i++){
+            if(params[i] == null){
+                ps.setNull(i + 1, Types.VARCHAR);
+                continue;
+            }
+            ps.setObject(i + 1, params[i]);
+        }
+    }
+
+
     public static int updatePreparedCleanSQL(Connection con, String sql, String data) throws SQLException{
         if(sql == null || con == null || data == null){
             throw new IllegalArgumentException("Improper parameters for DbDriver.updatePreparedCleanSQL");
