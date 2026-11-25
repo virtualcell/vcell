@@ -15,6 +15,9 @@
 # build) or in a fan-in CI job after the per-platform installers were built in parallel on
 # separate runners.
 #
+# It also refreshes every entry's fileSize/md5Sum/sha256Sum, and md5sums/sha256sums, from the
+# installer files themselves (see below), so it must run after the mac .dmg is notarized.
+#
 # usage: combine_updates.sh [dir]      (dir defaults to the current directory)
 #
 set -euo pipefail
@@ -60,4 +63,42 @@ redirect_entry "$OUTDIR/updates_linux64.xml" 547 \
   >>"$OUTDIR/updates.xml"
 sed -n -e "3,${mac64c}p"         "$OUTDIR/updates_mac64.xml"   >>"$OUTDIR/updates.xml"
 
-echo "combine_updates.sh: wrote $OUTDIR/updates.xml"
+# install4j writes fileSize/md5Sum/sha256Sum (and md5sums/sha256sums) when it builds a media file,
+# but the mac .dmg is changed afterwards: the notarize job staples the notarization ticket to it.
+# The published entries then describe a file that no longer exists (8.1.8.07: 3,727 bytes short,
+# both checksums wrong). And each per-media CI artifact carries its own md5sums/sha256sums, so when
+# they are merged only one platform's survive. Recompute both from the installers in OUTDIR, as
+# they will be published.
+file_size() { stat -c %s "$1" 2>/dev/null || stat -f %z "$1"; }
+file_md5() { if command -v md5sum >/dev/null; then md5sum "$1" | cut -d' ' -f1; else md5 -q "$1"; fi; }
+file_sha256() { if command -v sha256sum >/dev/null; then sha256sum "$1" | cut -d' ' -f1; else shasum -a 256 "$1" | cut -d' ' -f1; fi; }
+
+installers=$(sed -n -e 's/.* fileName="\([^"]*\)".*/\1/p' "$OUTDIR/updates.xml" | sort -u)
+: >"$OUTDIR/md5sums.new"
+: >"$OUTDIR/sha256sums.new"
+for name in $installers; do
+  if [[ ! -f "$OUTDIR/$name" ]]; then
+    echo "combine_updates.sh: installer $OUTDIR/$name named in updates.xml is missing" >&2
+    exit 1
+  fi
+  size=$(file_size "$OUTDIR/$name")
+  md5=$(file_md5 "$OUTDIR/$name")
+  sha256=$(file_sha256 "$OUTDIR/$name")
+  echo "$md5 *$name" >>"$OUTDIR/md5sums.new"
+  echo "$sha256 *$name" >>"$OUTDIR/sha256sums.new"
+  for xml in "$OUTDIR"/updates.xml "$OUTDIR"/updates_win64.xml "$OUTDIR"/updates_linux64.xml "$OUTDIR"/updates_mac64.xml; do
+    awk -v name="$name" -v size="$size" -v md5="$md5" -v sha256="$sha256" '
+      index($0, "fileName=\"" name "\"") {
+        sub(/fileSize="[0-9]*"/, "fileSize=\"" size "\"")
+        sub(/md5Sum="[0-9a-f]*"/, "md5Sum=\"" md5 "\"")
+        sub(/sha256Sum="[0-9a-f]*"/, "sha256Sum=\"" sha256 "\"")
+      }
+      { print }' "$xml" >"$xml.new"
+    mv "$xml.new" "$xml"
+  done
+  echo "combine_updates.sh: $name  $size bytes  sha256 $sha256"
+done
+mv "$OUTDIR/md5sums.new" "$OUTDIR/md5sums"
+mv "$OUTDIR/sha256sums.new" "$OUTDIR/sha256sums"
+
+echo "combine_updates.sh: wrote $OUTDIR/updates.xml, md5sums, sha256sums"

@@ -235,7 +235,7 @@ jobs:
         pattern: installers-*
         path: generated_installers
         merge-multiple: true
-    - name: reconstruct combined updates.xml
+    - name: reconstruct combined updates.xml; refresh sizes and checksums after notarization
       run: |
         chmod +x docker/build/installers/combine_updates.sh
         ./docker/build/installers/combine_updates.sh generated_installers
