@@ -40,8 +40,9 @@ jobs:
       # older tags deployable after media are added or dropped (e.g. the 32-bit media, 450/547).
       # Mac (105) has its own job.
       run: |
-        ids=$(grep -o '<mediaSet refId="[0-9]*"' docker/build/installers/VCell.install4j \
-              | grep -o '[0-9][0-9]*' | grep -vx 105 | jq -R 'tonumber' | jq -sc .)
+        ids=$(python3 -c 'import sys, xml.etree.ElementTree as ET; [print(m.get("refId")) for b in ET.parse(sys.argv[1]).iter("buildIds") for m in b.iter("mediaSet")]' \
+                docker/build/installers/VCell.install4j \
+              | grep -vx 105 | jq -R 'tonumber' | jq -sc .)
         echo "installer media: $ids"
         [ "$ids" != "[]" ] || { echo "no installer media found in VCell.install4j"; exit 1; }
         echo "ids=$ids" >> "$GITHUB_OUTPUT"
