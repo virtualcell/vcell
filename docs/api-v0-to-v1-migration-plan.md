@@ -465,6 +465,10 @@ serialization.
 9. Anonymous access vs the guest account (#2220), since it decides how public endpoints are
    authorized.
 10. Where `HealthService` and the admin reports live after the `api` pod is gone.
+12. **vcell-ai is a v0 and v1 client** (found 2026-11-27, `../vcell-ai` `backend/app/services/`):
+    it calls `/api/v0/biomodel`, `/api/v0/biomodel/{id}/…` (8 call sites) and `/api/v0/publication`,
+    and `/api/v1/users/*` and `/api/v1/publications`, forwarding the user's Auth0 token. The inventory's
+    caller list missed it; v0 retirement must include it.
 11. **The direct-connect developer client** (`vcell-admin/.../standalone/VCellClientDevMain.java`):
     it runs the desktop wired straight to the backend (database and remote files), bypassing the API,
     for debugging. Decide whether to keep supporting this pattern (and how it is secured and kept

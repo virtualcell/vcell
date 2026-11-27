@@ -511,3 +511,81 @@ each cause maps to its own problem type and status.
 
 Spectral enforces: every `4xx`/`5xx` response uses `application/problem+json`, and every operation
 documents at least one error response (§4).
+
+## 10. Authorization (D-19)
+
+Authorization follows the OWASP API Security Top 10, whose first and fifth risks are **broken
+object-level authorization** (a caller passes an id that is not theirs and gets the object) and
+**broken function-level authorization** (a caller reaches an operation meant for others). Both have
+occurred in VCell's legacy API.
+
+### 10.1 Two layers, both deny-by-default
+
+1. **Function level: who may call this operation at all.** Declared on every endpoint: public
+   (anonymous allowed), authenticated, a role, or a token scope (§8.2). An endpoint without an
+   explicit declaration refuses every call, and a build check (ArchUnit, §4.1) fails if any resource
+   method lacks one.
+2. **Object level: may this caller act on this object.** Checked **every time an id arrives**, by
+   one central policy; never re-implemented in an endpoint.
+
+### 10.2 One `AccessPolicy`
+
+- A single Java policy component (`canRead`, `canWrite`, `canShare`, `canPublish`, …) used by every
+  `/api/v2` endpoint, over VCell's existing model: **owner**, **`GroupAccess`** (*All* = public,
+  *None* = private, *Some* = shared with named users) and roles.
+- List queries apply the same rules as filters, so a list and a direct fetch cannot disagree.
+- Curation status (`versionFlag`: Current, Archived, Published) is **not** access control; it
+  restricts changes (e.g. a published model cannot be deleted), separately.
+- External engines (Zanzibar/OpenFGA, OPA) were considered and are not needed for VCell's
+  ownership-plus-sharing model.
+
+### 10.3 Rules
+
+| Object | Read | Change |
+|---|---|---|
+| Model documents (BioModel, MathModel, Geometry, Image) | owner; group members if shared; anyone if public | owner only |
+| **Simulation results** | **inherit** the read access of the simulation's documents: public and published models' results are readable by anyone, including anonymous callers; private results by the owner and group | — |
+| Exports, jobs, runs | their creator | their creator |
+| Field data | owner, and those it is shared with | owner |
+| Publications | anyone | curator / publication editor role |
+| Admin operations | admin role | admin role |
+
+- **Group sharing is read-only.** Group members can read a shared document; only the owner changes
+  it.
+- **Anonymous callers** see public and published objects only, under the strictest rate tier
+  (§8.3). The shared `vcellguest` account is retired in `/api/v2` (D-18, #2220).
+- **Not visible → `404`; visible but not allowed → `403`** (§9.2), so ids reveal nothing.
+- **Token scopes and object rules both apply** (§8.2): a scope limits what a token may do, the
+  policy limits which objects.
+
+### 10.4 Identifiers
+
+Models, simulations and other existing objects keep their **numeric ids** for now (they are cited in
+papers and links). Because they are sequential, authorization never relies on an id being hard to
+guess, and the pattern monitoring of §8.5 watches for enumeration.
+
+### 10.5 Audit and tests
+
+Writes are audited (§7.5). Every endpoint's access-matrix test (§3.1) is its rule in executable form.
+
+### 10.6 Open: where roles come from
+
+Today roles come from two places that disagree: Auth0 token roles (`user`, `curator`, `owner`,
+`admin`) and VCell database claims (`admins`, `powerUsers`, `publicationEditors`, `vcellSupport`).
+VCell's Auth0 tenant is also becoming single sign-on for other applications (vcell-ai), which
+changes the trade-off:
+
+- **(a) VCell's database is the source; Auth0 proves identity only.** A Quarkus
+  `SecurityIdentityAugmentor` adds the database roles to each request. Other applications that need
+  VCell roles ask VCell server-side (for example `GET /api/v2/users/me`, which returns the caller's
+  VCell user and roles).
+- **(b) Auth0 is the source.** Roles travel as token claims to every application, which needs no
+  lookup; the database claims are dropped or synchronized.
+- **(c) The database is the source, and an Auth0 Action copies the roles into the token at login.**
+  One source of truth, and applications can read roles from the token; roles change only at the next
+  login.
+
+Facts for the decision (2026-11-27): vcell-ai keeps its own application roles (admin, budgets) in its
+own Supabase and reads **no** VCell roles or role claims. It forwards the user's Auth0 token to
+VCell's API, and VCell decides object access from the mapped VCell user. So any of (a)–(c) works for
+vcell-ai today; the choice matters for future applications that want VCell roles.
