@@ -61,3 +61,51 @@ drop or reject it.
 Why: a `POST` that only reads gives up HTTP caching (finished simulations and published models never
 change), automatic retries, shareable links, and the read/write distinction that ingress logging and
 rate limiting rely on. Generated clients and users also assume a `POST` may change something.
+
+## 2. Representations
+
+### 2.1 Wire types live in one shared DTO module (D-5)
+
+The contract is **code-first**: Java records in a shared DTO module are the source of truth, and the
+OpenAPI spec (`tools/openapi.yaml`) is generated from them. Design-first (hand-written spec,
+generated code) was considered and not chosen, because the server and its main client are both Java
+and generated Java models are verbose, mutable and churn with generator upgrades.
+
+| Module | Java package | Contents | May depend on |
+|---|---|---|---|
+| **`vcell-api-dto`** | `org.vcell.api.dto` (sub-packages per resource family) | Java records only: the request and response bodies of every `/api/v1` endpoint | Jackson and MicroProfile OpenAPI **annotations** only. No VCell module. |
+| **`vcell-api-mapping`** | `org.vcell.api.mapping` | Mappers between DTOs and VCell domain objects, in both directions | `vcell-api-dto` and the domain modules (vcell-core, …) |
+
+Rules:
+
+1. **Every `/api/v1` request and response body is a type from `vcell-api-dto`.** Resources never
+   return domain objects, and never declare records of their own.
+2. **No domain type in a DTO**, not even as a field: no `KeyValue`, `User`, `Expression`,
+   `BigString`, `VersionFlag`. Identifiers are strings, expressions are strings, enums are DTO enums
+   with stable wire values. The build enforces the dependency rule (Maven enforcer or an ArchUnit
+   test), so a domain import fails the build.
+3. **Both ends use the same mappers.** The server (vcell-rest) maps domain → DTO and the desktop maps
+   DTO → domain with the same `vcell-api-mapping` classes, so the two directions cannot drift.
+4. **Each mapper has a DB-free round-trip test** (domain → DTO → domain, and DTO → domain → DTO where
+   both directions exist), in `vcell-api-mapping`.
+5. **The generated spec is the reviewed contract.** Every PR that changes the API includes the
+   regenerated `tools/openapi.yaml`, and the reviewer reviews its diff as the contract change.
+6. **Clients.** TypeScript (webapp-ng), Python (`python-restclient`) and pyvcell are generated from the
+   spec. The Java client uses the `vcell-api-dto` records directly rather than generating a second
+   Java model (target: openapi-generator schema/import mappings with model generation off; see
+   open items).
+
+**Package names are chosen for clarity, not to mirror vcell-core.** vcell-core's packages
+(`cbit.vcell.*`, `org.vcell.*`, mixed) are historical, and renaming them wholesale would be
+disruptive. The DTO and mapping modules get clean, consistent names of their own; the mapping
+module is the one place that bridges the two naming worlds.
+
+These modules replace v1's records scattered across `vcell-rest` (`models/`, `handlers/`,
+`handlers/dto/`, `Simulations/`) and the generated Java models in `vcell-restclient`. The v0
+equivalents (`vcell-api-types`, `DTOModelTransformerV0`) retire with v0.
+
+_Open:_
+- _DTO type naming (proposed: bare nouns within `org.vcell.api.dto`, e.g. `BioModelSummary`,
+  `SimulationStatus`; today's code mixes `*Representation`, `*Rep`, `*Record`, `*Dto` and bare names)._
+- _A spike to confirm the generated Java client can use the shared records (schema/import mappings);
+  fallback is a small hand-written Java client over the same records._
