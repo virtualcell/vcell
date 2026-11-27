@@ -16,6 +16,53 @@ followed by flat Keep-a-Changelog categories. API consumers should scan
 
 _(Release-manager scratchpad. Populated at release-cut time.)_
 
+## [8.3.5.01] - 2026-11-27
+
+**Highlights.** A security update for the server's legacy RPC interface, plus two server fixes and two
+field-viewer improvements for FEniCSx results. The data service no longer stalls on every request when
+the archive storage stops responding. A service whose message broker is gone for good now restarts
+instead of carrying on with a dead consumer. The field viewer plots moving-mesh FEniCSx results with a
+few kilobytes per time point instead of whole rows, and evaluates membrane functions of the
+neighbouring compartments' values.
+
+### Security
+- The legacy RPC interface (`/api/v0/rpc`) invokes only the methods each service queue lists. See
+  advisory GHSA-x4wv-f67j-f8gg. Fixed in 8.3.5.01 and in 8.1.9.02 (production, released 2026-11-27).
+  (#2251)
+
+### Added
+- Field viewer: kymographs and probes of a **moving (ALE) FEniCSx mesh** are located on the data server,
+  which returns only the located cells' vertices and values: about 0.7 MB instead of 37 MB for a
+  151-row, 9-segment run. The desktop falls back to whole rows against an older data server.
+  `VtuGridParser` moves to vcell-core so both sides run the same code. (#2173)
+- Field viewer: FEniCSx **membrane functions of the adjacent volume variables** (`X_INSIDE`,
+  `X_OUTSIDE`, or a plain name held by one side), using the membrane-to-volume point maps written by
+  vcell-fenics 0.1.2 and newer. Results from older vcell-fenics are refused with a message to re-run.
+  (#2174)
+
+### Fixed
+- Data service: opening a simulation's results no longer checks the archive (secondary) storage when the
+  results are on primary storage. When an archive storage node stopped responding (2026-11-25/26), every
+  request that missed the cache, including the health check, waited on it, and all data-service threads
+  stalled until it recovered. Results that really are on archive storage still wait on it. (#2247)
+- Messaging: a service whose consumer session is lost (the broker went away and failover gave up)
+  escalates to the watchdog instead of quietly ending its consumer thread. submit, sched, data and db
+  exit so Kubernetes restarts them, rather than staying Ready with nothing consuming. (#2033, closes #2031)
+
+### Removed
+- Amplistor, the retired object store: the simulation-data fallback, `AmplistorUtils`, the
+  `vcell.amplistor.*` properties, and the database-backup uploads. The desktop client no longer sends
+  connection and startup error messages to the old Amplistor log namespace over plain HTTP.
+  `SimulationData.AmplistorHelper` is renamed `SimDataFileLocator`. (#2249)
+
+### Changed (build and CI)
+- CI: the `should-run` gate and CodeQL's language filter no longer skip the lane, or a language, on
+  large diffs. `printf | grep -q` under `pipefail` returned SIGPIPE's 141 and read as "no match". (#2250)
+
+### Notes for API consumers
+No `/api/v1` changes. The legacy RPC interface now refuses method names that no VCell client sends.
+A new data-server RPC, `getFenicsBundleLocatedSamples`, is used by the desktop field viewer. (#2173)
+
 ## [8.2.0.16] - 2026-10-07
 
 **Highlights.** The field viewer shows VCell functions of a FEniCSx simulation (expressions of its
