@@ -465,3 +465,7 @@ serialization.
 9. Anonymous access vs the guest account (#2220), since it decides how public endpoints are
    authorized.
 10. Where `HealthService` and the admin reports live after the `api` pod is gone.
+11. **The direct-connect developer client** (`vcell-admin/.../standalone/VCellClientDevMain.java`):
+    it runs the desktop wired straight to the backend (database and remote files), bypassing the API,
+    for debugging. Decide whether to keep supporting this pattern (and how it is secured and kept
+    working as RPC goes away) or to remove it formally. _Raised 2026-11-27, for later discussion._
