@@ -51,7 +51,7 @@ public class TestBlobRpcMessages {
 	        // create N comsumers
 	        MyRpcServer myRpcServer = new MyRpcServer();
 	        for (int i=0;i<NUM_COMSUMERS;i++){
-	        	VCRpcMessageHandler rpcMessageHandler = new VCRpcMessageHandler(myRpcServer, VCellTestQueue.JimQueue);
+	        	VCRpcMessageHandler rpcMessageHandler = new VCRpcMessageHandler(myRpcServer, VCellTestQueue.JimQueue, java.util.Set.of("concat"));
 				VCQueueConsumer rpcConsumer = new VCQueueConsumer(VCellTestQueue.JimQueue, rpcMessageHandler, null, "Queue["+VCellTestQueue.JimQueue.getName()+"] ==== RPC Consumer Thread "+i, 1);
 	        	messagingService.addMessageConsumer(rpcConsumer);
 	        }

@@ -1,19 +1,33 @@
 package cbit.vcell.message;
 
 import java.io.Serializable;
+import java.util.Set;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.vcell.util.PermissionException;
 
 public class VCRpcMessageHandler implements VCQueueConsumer.QueueListener {
 	public static final Logger lg = LogManager.getLogger(VCRpcMessageHandler.class);
 
 	private Object serviceImplementation = null;
 	private VCellQueue queue = null;
+	private final Set<String> allowedMethods;
 
+	/**
+	 * A handler for one of the service queues, invoking only the methods {@link RpcMethodAllowlist} lists for it.
+	 */
 	public VCRpcMessageHandler(Object serviceImplementation, VCellQueue queue) {
+		this(serviceImplementation, queue, RpcMethodAllowlist.forQueue(queue));
+	}
+
+	/**
+	 * @param allowedMethods the method names a request may invoke on {@code serviceImplementation}
+	 */
+	public VCRpcMessageHandler(Object serviceImplementation, VCellQueue queue, Set<String> allowedMethods) {
 		this.serviceImplementation = serviceImplementation;
 		this.queue = queue;
+		this.allowedMethods = Set.copyOf(allowedMethods);
 	}
 	
 	public void onQueueMessage(VCMessage rpcVCMessage, VCMessageSession session) {
@@ -32,6 +46,9 @@ public class VCRpcMessageHandler implements VCQueueConsumer.QueueListener {
 			//
 			// invoke the local RPC implementation and collect either the return value or the exception that was thrown
 			//
+			if (!allowedMethods.contains(vcRpcRequest.getMethodName())) {
+				throw new PermissionException("rpc method '" + vcRpcRequest.getMethodName() + "' is not available on " + queue.getName());
+			}
 			returnValue = (Serializable) vcRpcRequest.rpc(serviceImplementation);
 		} catch (Exception ex) {
 			lg.error(ex.getMessage(), ex);
