@@ -175,7 +175,6 @@ public class VCellClientMain implements Callable<Integer> {
             new LibraryLoaderThread(true).start();
 
         } catch (Exception exception) {
-            ErrorUtils.sendRemoteLogMessage(csInfo.getUserLoginInfo(), csInfo + "\nvcell startup failed\n\n" + exception.getMessage());
             JOptionPane.showMessageDialog(null, exception.getMessage(), "Fatal Error", JOptionPane.OK_OPTION);
             System.err.println("Exception occurred in main() of VCellApplication");
             exception.printStackTrace(System.out);
