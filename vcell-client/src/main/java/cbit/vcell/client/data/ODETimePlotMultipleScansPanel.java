@@ -10,6 +10,7 @@
 
 package cbit.vcell.client.data;
 
+import cbit.vcell.client.laf.VCellFonts;
 import java.awt.BorderLayout;
 import java.awt.geom.Point2D;
 import java.util.Arrays;
@@ -54,12 +55,7 @@ public class ODETimePlotMultipleScansPanel extends JPanel {
 	private String[] variableNames = null;
 	private String xVarColumnName;
 
-/**
- * Insert the method's description here.
- * Creation date: (10/17/2005 11:30:45 PM)
- * @param simulation cbit.vcell.solver.Simulation
- * @param vcDataManager cbit.vcell.client.server.VCDataManager
- */
+
 public ODETimePlotMultipleScansPanel(String[] varnames, Simulation arg_simulation, DataManager arg_dataManager,String xVarColumnName) {
 	variableNames = varnames;
 	simulation = arg_simulation;
@@ -89,7 +85,7 @@ private void initialize()  {
 	
 	plotPane = new PlotPane();
 	plotPane.getPlot2DDataPanel1().setXVarName(xVarColumnName);
-	plotPane.getPlot2DDataPanel1().setSimulation(simulation);
+	//plotPane.getPlot2DDataPanel1().setSimulation(simulation);
 	add(plotPane, BorderLayout.CENTER);
 	
 	JPanel parameterPanel = new JPanel();
@@ -157,6 +153,7 @@ private void initialize()  {
 	System.out.println("HDF5frm"+scanParams+" "+values);
 	ScanChoicesTableModel tm = new ScanChoicesTableModel(values, scanParams);
 	scanChoiceTable = new JTable(tm);
+	VCellFonts.followRowHeight(scanChoiceTable);
 	
 	scanChoiceTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 	JScrollPane scr = new JScrollPane(scanChoiceTable, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);

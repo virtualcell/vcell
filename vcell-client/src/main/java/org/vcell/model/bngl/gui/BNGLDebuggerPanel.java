@@ -1,5 +1,8 @@
 package org.vcell.model.bngl.gui;
 
+import cbit.vcell.client.laf.VCellFonts;
+import cbit.vcell.client.laf.VCellColors;
+import cbit.vcell.client.laf.VCellLookAndFeel;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -46,10 +49,10 @@ public class BNGLDebuggerPanel extends JPanel {
 	
 	private void initialize(){
 
-		getBnglPanel().getTextPane().setFont(new Font("monospaced", Font.PLAIN, 12));
+		VCellFonts.setCategory(getBnglPanel().getTextPane(), VCellFonts.Category.MONOSPACED);
 
-		getBnglPanel().getLineNumberPanel().setForeground(java.awt.Color.gray);
-		getBnglPanel().getLineNumberPanel().setBackground(java.awt.Color.white);
+		getBnglPanel().getLineNumberPanel().setForeground(VCellColors.getReadableForeground(java.awt.Color.gray));
+		getBnglPanel().getLineNumberPanel().setBackground(VCellLookAndFeel.getContentBackground());
 		
 		JPanel upperPanel = new JPanel();
 		upperPanel.setLayout(new BorderLayout());
@@ -124,8 +127,8 @@ public class BNGLDebuggerPanel extends JPanel {
 			getBnglPanel().setCursor(lineNumber, columnNumber);
 			getBnglPanel().getLineNumberPanel().setErrorLine(lineNumber);
 		}
-		Font font = new Font("monospaced", Font.PLAIN, 3);
-		String pre = "<html><font face=\"" + font.getFamily() + "\" size=\"" + font.getSize() + "\"> " + exceptionText + "</font></html>";
+		Font font = VCellFonts.getFont(VCellFonts.Category.MONOSPACED);
+		String pre = "<html><span style=\"font-family: " + font.getFamily() + "; font-size: " + font.getSize() + "pt\"> " + exceptionText + "</span></html>";
 		exceptionTextArea.setText(pre);
 		
 //		SwingUtilities.invokeLater(new Runnable() {

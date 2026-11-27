@@ -9,6 +9,8 @@
  */
 
 package cbit.vcell.client.desktop.simulation;
+import org.vcell.documentation.HelpIds;
+import cbit.vcell.client.laf.VCellFonts;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
@@ -239,7 +241,7 @@ private void showHelp() {
 	 message += "expense of slightly longer simulation times, users may now turn off variable reduction. This makes the generated ";
 	 message += "math easier to understand and can avoid occasional numerical simulation issues.";
 //	message = "<html>" + message + "</html>";
-	PopupGenerator.showInfoDialog(this, "Variable reduction by mass conservation", message);
+	DialogUtils.showInfoDialog(this, "Variable reduction by mass conservation", message, HelpIds.MASS_CONSERVATION_REDUCTION);
 }
 
 /**
@@ -574,9 +576,8 @@ private JButton getMassConservationModelReductionHelpButton() {
 	if(massConservationModelReductionHelpButton == null) {
 		massConservationModelReductionHelpButton = new JButton("  ?  ");
 		massConservationModelReductionHelpButton.setVisible(true);
-		Font font = massConservationModelReductionHelpButton.getFont().deriveFont(Font.BOLD);
 		Border border = BorderFactory.createEmptyBorder(1, 1, 1, 1);
-		massConservationModelReductionHelpButton.setFont(font);
+		VCellFonts.setCategory(massConservationModelReductionHelpButton, VCellFonts.Category.HEADING);
 		massConservationModelReductionHelpButton.setBorder(border);
 		massConservationModelReductionHelpButton.setFocusPainted(false);
 		massConservationModelReductionHelpButton.setFocusable(false);
@@ -983,6 +984,23 @@ private void initConnections() throws java.lang.Exception {
 	getScrollPaneTable().setDefaultRenderer(String.class, renderer);
 	getScrollPaneTable().setDefaultRenderer(SolverDescription.class, renderer);
 	getScrollPaneTable().setDefaultEditor(OutputTimeSpec.class, new DefaultCellEditor(new JTextField()));
+	// Duration column (SpringSaLaD applications only): rough duration, tooltip says whether it is an estimate or actual
+	getScrollPaneTable().setDefaultRenderer(SimulationListTableModel.DurationDisplay.class, new DefaultScrollTableCellRenderer() {
+		@Override
+		public Component getTableCellRendererComponent(JTable table,
+				Object value, boolean isSelected, boolean hasFocus, int row,
+				int column) {
+			super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+			if (value instanceof SimulationListTableModel.DurationDisplay durationDisplay) {
+				setText(durationDisplay.text());
+				setToolTipText(durationDisplay.toolTip());
+			} else {
+				setText("");
+				setToolTipText(null);	// the renderer is reused for every cell: don't keep another row's tooltip
+			}
+			return this;
+		}
+	});
 	getScrollPaneTable().setDefaultRenderer(SimulationStatus.class, new DefaultScrollTableCellRenderer() {
 		@Override
 		public Component getTableCellRendererComponent(JTable table,
@@ -1398,7 +1416,7 @@ private void stopSimulations() {
 	private javax.swing.JButton getMoreActionsButton() {
 		if (moreActionsButton == null) {
 			try {
-				moreActionsButton = new JButton("More Actions", new DownArrowIcon());
+				moreActionsButton = DownArrowIcon.keepPushButtonLook(new JButton("More Actions", new DownArrowIcon()));
 				moreActionsButton.setHorizontalTextPosition(SwingConstants.LEFT);
 				moreActionsButton.setName("MoreActionsButton");
 			} catch (java.lang.Throwable ivjExc) {

@@ -1,5 +1,6 @@
 package cbit.plot.gui;
 
+import cbit.vcell.client.laf.VCellColors;
 import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.parser.Expression;
@@ -76,18 +77,18 @@ public class ClusterDataPanel extends AbstractDataPanel {
 
             if (column == 0) {
                 unit = "seconds";
-                text = "<html>" + name + "<font color=\"#8B0000\"> [" + unit + "]</font></html>";
+                text = "<html>" + name + "<font color=\"" + VCellColors.toHtmlColor(VCellColors.getWarningForeground()) + "\"> [" + unit + "]</font></html>";
                 tooltip = "Simulation time";
             } else {
                 switch (mode) {
                     case COUNTS:
                         unit = "molecules";
-                        text = "<html>" + name + "<font color=\"#8B0000\"> [" + unit + "]</font></html>";
+                        text = "<html>" + name + "<font color=\"" + VCellColors.toHtmlColor(VCellColors.getWarningForeground()) + "\"> [" + unit + "]</font></html>";
                         tooltip = "<html>Number of clusters made of <b>" + name + "</b> " + unit + "</html>";
                         break;
                     case MASS:
                         unit = "molecules";
-                        text = "<html>" + name + "<font color=\"#8B0000\"> [" + unit + "]</font></html>";
+                        text = "<html>" + name + "<font color=\"" + VCellColors.toHtmlColor(VCellColors.getWarningForeground()) + "\"> [" + unit + "]</font></html>";
                         tooltip = "<html>Cluster size <b>" + name + "</b><br>" +
                                 "Total molecules = " + name + " × (cluster count)</html>";
                         break;
@@ -96,7 +97,7 @@ public class ClusterDataPanel extends AbstractDataPanel {
                         if (stat != null) {
                             unit = stat.unit();
                             text = "<html>" + stat.fullName() +
-                                    "<font color=\"#8B0000\"> [" + unit + "]</font></html>";
+                                    "<font color=\"" + VCellColors.toHtmlColor(VCellColors.getWarningForeground()) + "\"> [" + unit + "]</font></html>";
                             tooltip = "<html>" + stat.description() + "</html>";
                         }
                         break;

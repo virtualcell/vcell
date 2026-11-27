@@ -27,21 +27,19 @@ macCodeSignKeystore_pswd=`cat $macCodeSignKeystore_pswdfile`
 $INSTALL4JC -L $Install4J_product_key
 
 #
-# Which install4j media (build ids) to generate. Defaults to all five supported platforms.
+# Which install4j media (build ids) to generate. Defaults to all three supported platforms.
 # Set BUILD_IDS to a subset (e.g. "349") to build a single installer per invocation, so the
 # CD-sites workflow can fan the platforms out across parallel runners/containers. Each media is a
 # separate install4jc process — the historical reason the builds were kept separate was to avoid
 # random threading failures when building them concurrently in one install4j run.
 #
-BUILD_IDS="${BUILD_IDS:-349 450 652 547 105}"
+BUILD_IDS="${BUILD_IDS:-349 652 105}"
 
 # map install4j build id -> platform suffix used in the updates_<suffix>.xml fragment name
 media_suffix() {
 	case "$1" in
 		349) echo win64   ;;   # Windows 64-bit
-		450) echo win32   ;;   # Windows 32-bit
 		652) echo linux64 ;;   # Linux 64-bit
-		547) echo linux32 ;;   # Linux 32-bit
 		105) echo mac64   ;;   # macOS 64-bit
 		*)   echo "" ;;
 	esac
@@ -84,12 +82,11 @@ done
 
 #
 # Reconstruct the combined updates.xml (used by the VCell client to detect if an update is needed)
-# only when all five per-platform fragments are present, i.e. a full single-container build. When
+# only when all three per-platform fragments are present, i.e. a full single-container build. When
 # BUILD_IDS is a subset (parallel/sharded build), the fan-in CD job runs combine_updates.sh after
 # gathering every platform's fragment.
 #
-if [ -f /outputdir/updates_win64.xml ]   && [ -f /outputdir/updates_win32.xml ] && \
-   [ -f /outputdir/updates_linux64.xml ] && [ -f /outputdir/updates_linux32.xml ] && \
+if [ -f /outputdir/updates_win64.xml ] && [ -f /outputdir/updates_linux64.xml ] && \
    [ -f /outputdir/updates_mac64.xml ]; then
 	/config/combine_updates.sh /outputdir
 fi

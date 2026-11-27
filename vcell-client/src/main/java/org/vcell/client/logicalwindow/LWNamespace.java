@@ -1,5 +1,6 @@
 package org.vcell.client.logicalwindow;
 
+import cbit.vcell.client.laf.NestedMenuBar;
 import java.awt.Component;
 import java.awt.ComponentOrientation;
 import java.awt.Container;
@@ -7,9 +8,11 @@ import java.awt.Dialog;
 import java.awt.Dialog.ModalityType;
 import java.awt.Dimension;
 import java.awt.Frame;
-import java.awt.GraphicsDevice;
+import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsEnvironment;
 import java.awt.Insets;
+import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.awt.Window;
 import java.util.Objects;
 
@@ -220,22 +223,19 @@ public interface LWNamespace {
      * @return new menu bar
      */
     public static JMenuBar createRightSideIconMenuBar() {
-        JMenuBar mb = new JMenuBar();
+        JMenuBar mb = new NestedMenuBar();
         mb.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
         mb.add(LWTopFrame.createWindowMenu(false));
         return mb;
     }
 
     /**
-     * get screensize including multi monitor environment
-     *
-     * @return
+     * The usable size of the main screen: without the menu bar, Dock or taskbar.
      */
     public static Dimension getScreenSize() {
-        //http://stackoverflow.com/questions/3680221/how-can-i-get-the-monitor-size-in-java
-        GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
-        int width = gd.getDisplayMode().getWidth();
-        int height = gd.getDisplayMode().getHeight();
-        return new Dimension(width, height);
+        GraphicsConfiguration screen = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
+        Rectangle bounds = screen.getBounds();
+        Insets insets = Toolkit.getDefaultToolkit().getScreenInsets(screen);
+        return new Dimension(bounds.width - insets.left - insets.right, bounds.height - insets.top - insets.bottom);
     }
 }

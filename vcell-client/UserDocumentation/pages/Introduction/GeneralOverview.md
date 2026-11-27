@@ -1,0 +1,21 @@
+# Introduction
+
+The Virtual Cell Modeling and Simulation Framework (**VCell**) was developed by the National
+Resource for Cell Analysis and Modeling. This unique software platform has been designed to model
+cell biological processes, through describing and processing biochemical and electrophysiological
+data of individual reactions; commonly, the model is built based on associated experimental
+microscopic image data that describes the model's subcellular locations. Cell physiological events
+can then be simulated within the empirically derived geometries, thus facilitating the direct
+comparison of model predictions with experiment.
+
+VCell consists of both a biological and a mathematical framework. As described in the
+[Overview](General.md), users can create biological models from which the software will generate the
+mathematical code needed to run simulations. Mathematicians may opt to use the math framework, based
+on the Virtual Cell Markup Language (**VCML**), for creating their own mathematical descriptions.
+
+Models can be reused, updated, and made available to the scientific community. In addition, models
+may also be privately shared amongst collaborating groups. The data from simulations are stored on
+the Virtual Cell database server and are easily exported in a variety of formats. Access to the
+Virtual Cell modeling software is available as a desktop application written in java, with certain
+features available through a REST API. The Virtual Cell has been developed using the latest
+supported Java technology.

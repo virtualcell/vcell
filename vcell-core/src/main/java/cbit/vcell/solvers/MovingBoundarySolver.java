@@ -165,7 +165,7 @@ protected void initialize() throws SolverException {
 		MovingBoundaryFileWriter mbfw = new MovingBoundaryFileWriter(pw, simTask, resampledGeometry, bMessaging, getBaseName()) ;
 		mbfw.write();
 	} catch (Exception e) {
-		throw new SolverException("Can't open input file "+ inputFilename, e);
+		throw new SolverException("Can't write the Moving Boundary input file " + inputFilename + ": " + e.getMessage(), e);
 	}
 
 	setMathExecutable(new MathExecutable(getMathExecutableCommand(),getSaveDirectory()));

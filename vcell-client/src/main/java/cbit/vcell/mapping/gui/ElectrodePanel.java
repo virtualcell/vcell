@@ -10,6 +10,7 @@
 
 package cbit.vcell.mapping.gui;
 
+import cbit.vcell.client.laf.VCellColors;
 import java.awt.GridBagConstraints;
 
 import cbit.vcell.client.PopupGenerator;
@@ -422,7 +423,7 @@ private javax.swing.JLabel getFeatureValueLabel() {
 			ivjFeatureValueLabel = new javax.swing.JLabel();
 			ivjFeatureValueLabel.setName("FeatureValueLabel");
 			ivjFeatureValueLabel.setText("not set");
-			ivjFeatureValueLabel.setForeground(java.awt.Color.blue);
+			ivjFeatureValueLabel.setForeground(VCellColors.getValueForeground());
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}

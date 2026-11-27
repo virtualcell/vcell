@@ -13,6 +13,8 @@ package cbit.vcell.client;
 import cbit.util.xml.VCLogger;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.client.desktop.NetworkProxyPreferences;
+import cbit.vcell.client.laf.VCellFonts;
+import cbit.vcell.client.laf.VCellLookAndFeel;
 import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.client.server.DynamicClientProperties;
 import org.vcell.api.messaging.RemoteProxyVCellConnectionFactory;
@@ -92,6 +94,10 @@ public class VCellClientMain implements Callable<Integer> {
         java.security.Security.setProperty("networkaddress.cache.ttl", "30");
         java.security.Security.setProperty("networkaddress.cache.negative.ttl", "0");
 
+        // Screen menu bar, title bar appearance, Linux font smoothing; the JDK only reads these before AWT starts
+        VCellLookAndFeel.setPlatformProperties();
+        VCellFonts.restore();
+
         System.out.println("starting with arguments " + Arrays.asList(args));
         int exitCode = 1;
         try {
@@ -169,7 +175,6 @@ public class VCellClientMain implements Callable<Integer> {
             new LibraryLoaderThread(true).start();
 
         } catch (Exception exception) {
-            ErrorUtils.sendRemoteLogMessage(csInfo.getUserLoginInfo(), csInfo + "\nvcell startup failed\n\n" + exception.getMessage());
             JOptionPane.showMessageDialog(null, exception.getMessage(), "Fatal Error", JOptionPane.OK_OPTION);
             System.err.println("Exception occurred in main() of VCellApplication");
             exception.printStackTrace(System.out);

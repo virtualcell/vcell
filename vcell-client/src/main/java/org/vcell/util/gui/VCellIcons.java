@@ -202,6 +202,7 @@ public abstract class VCellIcons {
 
     // model
     public final static Icon tableIcon = getScaledIcon(makeIcon("/icons/table_icon.gif"));
+    public final static Icon pathwayLookupIcon = getScaledIcon(makeIcon("/icons/search_icon.gif"));
     public final static Icon structureIcon = getScaledIcon(makeIcon("/images/bioModel_16x16.gif"));
     public final static Icon diagramIcon = getScaledIcon(makeIcon("/icons/diagram_icon.gif"));
     public final static Icon modelCuratedIcon = makeIcon("/icons/curatedComponent.png");

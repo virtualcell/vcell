@@ -56,7 +56,7 @@ VERBS = {
     "menu":                 ("menu",                 []),
 }
 
-# DocumentCompiler.MAX_IMG_FILE_SIZE - a help image above this fails the doc build.
+# HelpBookTest.PREFERRED_MAX_IMAGE_BYTES - help images above this are reported as too large.
 MAX_HELP_IMAGE_BYTES = 500000
 
 # Verbs the robot driver replaces outright. Everything else already acts through a model

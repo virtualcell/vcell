@@ -72,7 +72,7 @@ renderer is ever swapped in.
   volume rendering).
 - **Hard constraint:** cross-platform (Windows x64, Linux x64, macOS x64 **and
   Apple Silicon arm64**) with **minimal native-packaging burden**. VCell ships via
-  install4j across all five media; every native GPU/binding dependency reintroduces
+  install4j across all three media; every native GPU/binding dependency reintroduces
   exactly that packaging/QA cost.
 
 ---
@@ -140,11 +140,11 @@ canonicalized.
 `SimulationData.getLangevinFile(type)`, which resolves
 `baseNameWithoutExt + type.suffix() + type.extension()` (e.g.
 `SimID_<key>_0__Avg.ida`) as a **flat, canonically-named file in the user dir**
-(`amplistorHelper.getFile(name)`). The viewer file is in a subfolder and is not a
+(`fileLocator.getFile(name)`). The viewer file is in a subfolder and is not a
 known `LangevinFileType`, so it is simply never referenced.
 
 **The one real retention risk is archival, not the SLURM job.** VCell moves old sim
-data to secondary/amplistor and prunes the primary using **flat canonical
+data to secondary storage and prunes the primary using **flat canonical
 filenames** (`getFile(name)` / `createCanonicalSimZipFileName`). A `_FOLDER`
 subdirectory is not a canonical flat file, so it would not be archived and would be
 lost when the primary dir is pruned. Fresh sims have the file; archived ones may not.

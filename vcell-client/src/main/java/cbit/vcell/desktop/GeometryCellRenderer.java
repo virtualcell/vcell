@@ -9,6 +9,7 @@
  */
 
 package cbit.vcell.desktop;
+import cbit.vcell.client.laf.VCellColors;
 import javax.swing.JLabel;
 import javax.swing.JTree;
 
@@ -45,10 +46,10 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 			String label = (String)node.getUserObject();
 			String qualifier = "";
 			if (sessionUser != null && sessionUser.getName().contentEquals(label)) {
-				String colorString = (sel)?"white":"#8B0000";
+				String colorString = (sel)?"white":VCellColors.toHtmlColor(VCellColors.getWarningForeground());
 				qualifier = "<font color=\""+colorString+"\">" + label + "</font>"; 
 			} else {
-				String colorString = (sel)?"white":"black";
+				String colorString = (sel)?"white":VCellColors.toHtmlColor(getTextNonSelectionColor());
 				qualifier = "<font color=\""+colorString+"\">" + label + "</font>"; 
 			}
 			component.setToolTipText(label);

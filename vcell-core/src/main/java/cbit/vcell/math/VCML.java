@@ -102,6 +102,8 @@ public class VCML {
 	public final static String VelocityX				= "VelocityX";
 	public final static String VelocityY				= "VelocityY";
 	public final static String VelocityZ				= "VelocityZ";
+	// a moving membrane's species are densities carried by (and diluted with) its velocity (vcell-fenics ADR 014)
+	public final static String Dilution				= "Dilution";
 	public final static String PositionX				= "PositionX";
 	public final static String PositionY				= "PositionY";
 	public final static String PositionZ				= "PositionZ";

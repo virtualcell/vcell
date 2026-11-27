@@ -10,6 +10,8 @@
 
 package cbit.vcell.client.desktop.geometry;
 
+import org.vcell.documentation.HelpContext;
+import org.vcell.documentation.HelpIds;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
@@ -37,6 +39,7 @@ class IvjEventHandler implements java.awt.event.ActionListener {
 public GeometryEditor() {
 	super();
 	initialize();
+	HelpContext.setPage(this, HelpIds.GEOMETRY); // Help > VCell Help in a geometry's window
 }
 /**
  * connEtoC1:  (geoEditorToggleButton.action.actionPerformed(java.awt.event.ActionEvent) --> GeometryEditor.showGeometryEditor(Z)V)

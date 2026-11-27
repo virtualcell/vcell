@@ -1,0 +1,81 @@
+# SpringSaLaD Application
+
+A SpringSaLaD application adds coarse-grained molecular structure detail to the Sites and Links of a
+Molecule, and defines and runs simulations with the Langevin solver. It is created over an existing
+rule-based physiology - see [Introduction to SpringSaLaD Modeling](SpringSaLaDTheory.md) for what
+the framework represents.
+
+When using SpringSaLaD Applications, it is important to be aware that:
+
+- The Langevin solver can be used with any Rule-based model that obeys the limitations described
+  below.
+- The Langevin solver performs a stochastic simulation, so simulation results will vary by run.
+- The complexity of calculations makes it practical only for a small number of particles.
+
+Using a SpringSaLaD application currently imposes the following requirements and limitations:
+
+- To support a SpringSaLaD Application, the Physiology must have exactly 3 structures: 2
+  compartments specifically named "Intracellular" and "Extracellular", separated by a membrane named
+  "Membrane".
+- Every site must be assigned the following attributes: a radius, a diffusion rate, a position, a
+  colour, and links to the other sites it is bound to within the molecule. Initial default values
+  are assigned.
+- The reaction rules in the Physiology must obey several syntax restrictions not required of other
+  rule-base Applications.
+
+![](../../images/SS_general.png)
+
+**Creating the application.** Right-click **Applications** in the model tree and choose **New
+Application > SpringSaLaD**. Unlike other spatial applications, it does not ask for a geometry: it
+builds one, a 3D analytic geometry of two subdomains, and maps all three Structures into it.
+
+**The geometry it builds.** A 100 nm cube with the membrane 90 nm up, written as two expressions on
+the Geometry Definition tab:
+
+- **Intracellular** = **(z \&lt; 0.09)** - everything below the membrane. The value is in microns,
+  and the form matters: the solver input writer parses this expression and needs it to be exactly "z
+  \&lt; number".
+- **Extracellular** = **1.0** - everything else.
+
+To change the size of the box, press **Edit Domain...** and set the extent, then move the membrane
+by editing the Intracellular expression to match. The two are independent: the extent says how tall
+the box is, the expression says where inside it the membrane sits. A box where the domain is set to
+z=0.4 um with Intracellular = (z \&lt; 0.2) gives 200 nm of Intracellular and 200 nm Extracellular.
+
+**Specifications.** Three tabs, of which two are specific to a SpringSaLaD Application:
+
+- [Molecular Structures](../BioModelApplications/Specifications/SSSpeciesSpecifications.md) - the
+  site geometry: where each site is initially located, how big it is, how fast it diffuses, what
+  colour it is drawn in, and how sites are linked together. It is also possible to add additional
+  structural sites.
+- [Reaction](../BioModelApplications/Specifications/SSReactionsSpecifications.md) - which of the
+  five SpringSaLaD subtypes VCell has recognized each reaction rule as, and whether it is enabled in
+  this application.
+- **Species** - initial conditions. Switch the table to **Number of Particles** if you want to say
+  "20 molecules" rather than a concentration; SpringSaLaD counts particles.
+
+**Solver options.** On a simulation, press **Edit** and open the **Solver** tab. The integrator is
+LangevinNoVis, and the Langevin Options Panel below it carries everything the simulation needs that
+a deterministic one does not:
+
+- **Time Step (Default)** - the integration step. Values in the 1-10 ns range are usual.
+- **Spring Interval** - the step used for spring relaxation, normally left at the default.
+- **Image Interval** - how often a full snapshot of every particle position is stored. This is what
+  the [3D Trajectory viewer](SSResults.md) plays back, and it is separate from the output interval
+  that provides numerical results.
+- **Output Interval** - how frequently the simulation results are sampled.
+- **Partitions number**, X, Y and Z - space is divided into boxes so that collision detection only
+  has to compare neighbors. There is one rule to respect: **a partition must be larger than the
+  diameter of the largest site**. With a 100 nm box and 10 partitions the cells are 10 nm across,
+  which is fine for sites of radius 2 nm and not fine for sites of radius 6.
+- **Single Trajectory** or **Multiple Runs** - one run, or N independent runs whose average and
+  spread are the result. Total Num. Of Jobs is N; Num. Concurrent Jobs is how many run at once in
+  parallel (maximum parallel simulations is 50).
+- **Set a seed to Langevin random number generator** - fix the seed and a run is reproducible, which
+  is the only way to compare two versions of a model change by change.
+
+![](../../images/SS_solver.png)
+
+**Running it.** A SpringSaLaD simulation runs on the server like any other, and also runs locally
+through **Native Quick Run**, which uses the Langevin solver bundled with the client and saves
+nothing to the database - useful for a short run while the model is still being built.

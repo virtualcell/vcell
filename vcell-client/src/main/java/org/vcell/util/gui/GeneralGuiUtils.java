@@ -10,26 +10,15 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.GraphicsEnvironment;
-import java.awt.HeadlessException;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.Toolkit;
 import java.awt.Window;
-import java.awt.event.ActionEvent;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.WindowEvent;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.InputMap;
-import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
-import javax.swing.KeyStroke;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -38,46 +27,6 @@ import java.util.ArrayList;
 
 public class GeneralGuiUtils {
     private static final Logger lg = LogManager.getLogger(GeneralGuiUtils.class);
-
-    public static final KeyStroke CLOSE_WINDOW_KEY_STROKE;
-
-    static{ //allow initialization in headless environment
-        KeyStroke ks;
-        try {   // TODO: Try with getMenuShortcutKeyMaskEx()
-            ks = KeyStroke.getKeyStroke(KeyEvent.VK_W, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
-        } catch(HeadlessException he){
-            ks = KeyStroke.getKeyStroke(KeyEvent.VK_W, InputEvent.CTRL_DOWN_MASK);
-        }
-        CLOSE_WINDOW_KEY_STROKE = ks;
-    }
-
-    public static void addCloseWindowKeyboardAction(JComponent jComponent){
-        //@SuppressWarnings("serial")
-        Action winCloseAction = new AbstractAction() {
-            @Override
-            public synchronized void actionPerformed(ActionEvent e){
-                Window window;
-                if(e.getSource() == null) return;
-                if(e.getSource() instanceof Window win){
-                    window = win;
-                } else if(e.getSource() instanceof Component comp){
-                    window = (Window) GeneralGuiUtils.findTypeParentOfComponent(comp, Window.class);
-                } else {
-                    window = null;
-                }
-
-                if(window != null){
-                    window.dispatchEvent(new WindowEvent(window, java.awt.event.WindowEvent.WINDOW_CLOSING));
-                }
-            }
-        };
-
-        final String winCloseInputMapAction = "winCloseAction";
-        InputMap inputMap = jComponent.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-        if(inputMap.get(CLOSE_WINDOW_KEY_STROKE) != null) return;
-        inputMap.put(CLOSE_WINDOW_KEY_STROKE, winCloseInputMapAction);
-        jComponent.getActionMap().put(winCloseInputMapAction, winCloseAction);
-    }
 
     public static void attemptMaximize(Frame frame){
         Class<? extends Frame> clazz = frame.getClass();

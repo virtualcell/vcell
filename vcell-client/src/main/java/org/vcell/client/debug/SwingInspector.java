@@ -1275,23 +1275,20 @@ public final class SwingInspector {
 		return null;
 	}
 
-	/** Find a direct child item by text, firing lazy-population MenuListeners if needed. */
+	/** Find a direct child item by text, first firing the menu's MenuListeners as opening it would. */
 	private static JMenuItem childItem(JMenu menu, String text) {
-		JMenuItem hit = scanItems(menu, text);
-		if (hit == null && menu.getMenuListeners().length > 0) {
-			// menus populated on menuSelected (e.g. recent-file lists) are empty
-			// until "opened"; fire their listeners the way opening them would
-			javax.swing.event.MenuEvent ev = new javax.swing.event.MenuEvent(menu);
-			for (javax.swing.event.MenuListener l : menu.getMenuListeners()) {
-				try {
-					l.menuSelected(ev);
-				} catch (RuntimeException e) {
-					// a listener assuming a visible popup may object; matching below still gets its chance
-				}
+		// menus built on menuSelected (recent-file lists, the Window menu) are empty until opened, or hold what they
+		// held when last opened (a Window menu offering Quit VCell before another window opened); fire their
+		// listeners every time, the way opening them would, so the items matched are the ones a user would see
+		javax.swing.event.MenuEvent ev = new javax.swing.event.MenuEvent(menu);
+		for (javax.swing.event.MenuListener l : menu.getMenuListeners()) {
+			try {
+				l.menuSelected(ev);
+			} catch (RuntimeException e) {
+				// a listener assuming a visible popup may object; matching below still gets its chance
 			}
-			hit = scanItems(menu, text);
 		}
-		return hit;
+		return SwingInspector.scanItems(menu, text);
 	}
 
 	private static JMenuItem scanItems(JMenu menu, String text) {
@@ -1887,6 +1884,34 @@ public final class SwingInspector {
 		return (value == null) ? null : String.valueOf(value);
 	}
 
+	/** Each piece of text a list item's renderer draws (for one drawn in parts: a name over its details, say). */
+	static List<String> listItemParts(JList<?> list, int index) {
+		List<String> parts = new ArrayList<>();
+		ListCellRenderer<? super Object> renderer = castListRenderer(list);
+		if (renderer == null || index < 0 || index >= list.getModel().getSize()) {
+			return parts;
+		}
+		try {
+			collectRenderedParts(renderer.getListCellRendererComponent(castList(list), list.getModel().getElementAt(index), index, false, false), parts);
+		} catch (RuntimeException e) {
+			// a renderer that can't draw it offscreen: no parts to match on
+		}
+		return parts;
+	}
+
+	private static void collectRenderedParts(Component c, List<String> parts) {
+		String text = c instanceof JLabel ? ((JLabel) c).getText()
+				: c instanceof AbstractButton ? ((AbstractButton) c).getText()
+				: c instanceof JTextComponent ? ((JTextComponent) c).getText() : null;
+		if (text != null && !text.isBlank()) {
+			parts.add(stripHtml(text).strip());
+		} else if (c instanceof Container) {
+			for (Component kid : ((Container) c).getComponents()) {
+				collectRenderedParts(kid, parts);
+			}
+		}
+	}
+
 	@SuppressWarnings("unchecked")
 	private static ListCellRenderer<? super Object> castListRenderer(JList<?> l) {
 		return (ListCellRenderer<? super Object>) l.getCellRenderer();
@@ -1936,6 +1961,13 @@ public final class SwingInspector {
 					if (label != null && label.equalsIgnoreCase(wanted[w])) {
 						indices[w] = i;
 						break;
+					}
+				}
+				// an item drawn in parts (a name over details, say) also matches on any one part: the name alone
+				for (int i = 0; indices[w] < 0 && i < list.getModel().getSize(); i++) {
+					String wantedItem = wanted[w];
+					if (listItemParts(list, i).stream().anyMatch(part -> part.equalsIgnoreCase(wantedItem))) {
+						indices[w] = i;
 					}
 				}
 				if (indices[w] < 0) {
@@ -2527,8 +2559,8 @@ public final class SwingInspector {
 	/**
 	 * As above, but scaled and named.
 	 *
-	 * <p>Scaling belongs here rather than in a caller because the help system caps images at
-	 * {@code DocumentCompiler.MAX_IMG_FILE_SIZE} (500KB), and a full-size capture of a
+	 * <p>Scaling belongs here rather than in a caller because the help system wants images under
+	 * 500KB ({@code HelpBookTest.PREFERRED_MAX_IMAGE_BYTES}), and a full-size capture of a
 	 * maximised window blows past that. Doing it in Java keeps documentation capture free of
 	 * platform image tools.
 	 *

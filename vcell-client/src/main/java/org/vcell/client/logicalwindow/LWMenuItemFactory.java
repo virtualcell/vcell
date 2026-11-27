@@ -1,5 +1,6 @@
 package org.vcell.client.logicalwindow;
 
+import cbit.vcell.client.laf.VCellFonts;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -42,12 +43,10 @@ public class LWMenuItemFactory {
 			addActionListener(this);
 			switch (handle.getLWModality()) {
 			case MODELESS:
-				Font pf = getFont( ).deriveFont(Font.PLAIN);
-				setFont(pf);
+				VCellFonts.setStyle(this, Font.PLAIN);
 				break;
 			case PARENT_ONLY:
-				Font bf = getFont( ).deriveFont(Font.BOLD);
-				setFont(bf);
+				VCellFonts.setStyle(this, Font.BOLD);
 				break;
 			}
 		}

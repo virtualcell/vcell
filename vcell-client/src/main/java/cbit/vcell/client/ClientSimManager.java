@@ -59,6 +59,7 @@ import org.vcell.util.document.LocalVCDataIdentifier;
 import org.vcell.util.document.User;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.GeneralGuiUtils;
+import org.vcell.util.gui.ShortcutsWizard;
 
 import java.awt.*;
 import java.awt.event.WindowAdapter;
@@ -164,6 +165,7 @@ private void initHash(Simulation[] simulations) {
 				simStatus = getDocumentWindowManager().getRequestManager().getServerSimulationStatus(simulations[i].getSimulationInfo());
 				if (simStatus != null) {
 					simHash.setSimulationStatus(simulations[i], simStatus);
+					getDocumentWindowManager().getSimulationRunQueue().serverStatus(simulations[i], simStatus); // a run from before: listed
 				} else {
 					simHash.setSimulationStatus(simulations[i], SimulationStatus.newNeverRan(simulations[i].getJobCount()));
 				}
@@ -640,6 +642,7 @@ private AsynchClientTask[] showSimulationResults0(final boolean isLocal, final V
 					ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(documentWindowManager.getComponent());
 					ChildWindow childWindow = childWindowManager.getChildWindowFromContext(simWindow);
 					if (childWindow==null){
+						// help: the data viewers (ODEDataViewer, PDEDataViewer) say the page about their open tab
 						childWindow = childWindowManager.addChildWindow(simWindow.getDataViewer(), simWindow);
 						childWindow.pack();
 						childWindow.setIsCenteredOnParent();
@@ -669,7 +672,7 @@ private AsynchClientTask[] showSimulationResults0(final boolean isLocal, final V
 						viewer.setDataViewerManager(documentWindowManager);
 						
 						SimulationWindow newWindow = new SimulationWindow(vcSimulationIdentifier, sim, getSimWorkspace().getSimulationOwner(), viewer);						
-						GeneralGuiUtils.addCloseWindowKeyboardAction(newWindow.getDataViewer());
+						ShortcutsWizard.addCloseWindowShortcut(newWindow.getDataViewer());
 						documentWindowManager.addResultsFrame(newWindow);
 						setFinalWindow(hashTable, viewer); 
 						newWindow.setLocalState(localState);
@@ -737,6 +740,7 @@ void updateStatusFromServer(Simulation simulation) {
 
 	// update cache
 	simHash.setSimulationStatus(simulation,newStatus);
+	getDocumentWindowManager().getSimulationRunQueue().serverStatus(simulation, newStatus);
 	
 	System.out.println("---ClientSimManager.updateStatusFromServer[newStatus=" + newStatus + "], simulation="+simulation.toString());
 	if (oldStatus!=newStatus){
@@ -750,6 +754,7 @@ void updateStatusFromServer(Simulation simulation) {
 public void updateStatusFromStartRequest(final Simulation simulation, SimulationStatus newStatusFromServer) {
 	// asynchronous call - from start request worker thread
 	simHash.setSimulationStatus(simulation,newStatusFromServer);
+	getDocumentWindowManager().getSimulationRunQueue().serverStatus(simulation, newStatusFromServer);
 	int simIndex = getSimWorkspace().getSimulationIndex(simulation);
 	getSimWorkspace().firePropertyChange(SimulationWorkspace.PROPERTY_NAME_SIMULATION_STATUS, -1, simIndex);
 }
@@ -757,6 +762,7 @@ public void updateStatusFromStartRequest(final Simulation simulation, Simulation
 public void updateStatusFromStopRequest(final Simulation simulation, SimulationStatus newStatusFromServer) {
 	// asynchronous call - from stop request worker thread
 	simHash.setSimulationStatus(simulation,newStatusFromServer);
+	getDocumentWindowManager().getSimulationRunQueue().serverStatus(simulation, newStatusFromServer);
 	int simIndex = getSimWorkspace().getSimulationIndex(simulation);
 	getSimWorkspace().firePropertyChange(SimulationWorkspace.PROPERTY_NAME_SIMULATION_STATUS, -1, simIndex);
 }
@@ -892,6 +898,10 @@ public void runQuickSimulation(final Simulation originalSimulation, ViewerType v
 					}
 				}
 			}
+			// listed in the window's run queue, from now until it ends
+			final SimulationRunQueue runQueue = getDocumentWindowManager().getSimulationRunQueue();
+			final SimulationRunQueue.Run queuedRun = runQueue.localRunStarted(originalSimulation);
+			hashTable.put(H_QUEUED_LOCAL_RUN, queuedRun);
 			solver.addSolverListener(new SolverListener() {
 				/** what a running solver last said it was doing: its phase ("solving 37%"), or the generic text */
 				private String runningMessage = "Running...";
@@ -914,6 +924,7 @@ public void runQuickSimulation(final Simulation originalSimulation, ViewerType v
 					getClientTaskStatusSupport().setMessage(runningMessage);
 					int progress = (int)(event.getProgress() * 100);
 					getClientTaskStatusSupport().setProgress(progress);
+					runQueue.localProgress(queuedRun, event.getProgress(), runningMessage);
 				}
 				public void solverPrinted(SolverEvent event) {
 					getClientTaskStatusSupport().setMessage(runningMessage);
@@ -925,6 +936,7 @@ public void runQuickSimulation(final Simulation originalSimulation, ViewerType v
 					getClientTaskStatusSupport().setMessage(event.getSimulationMessage().getDisplayMessage());
 				}
 			});
+			try { // its end, however it comes, is the queued run's too
 			solver.startSolver();
 
 			int sleepInterval = 500;
@@ -961,6 +973,14 @@ public void runQuickSimulation(final Simulation originalSimulation, ViewerType v
 					if(solverStatus.getStatus() == SolverStatus.SOLVER_RUNNING) {
 					}
 				}		
+			}
+			runQueue.localEnded(queuedRun, true, null);
+			} catch (UserCancelException cancel) {
+				runQueue.localEnded(queuedRun, false, null); // stopped
+				throw cancel;
+			} catch (Exception failure) {
+				runQueue.localEnded(queuedRun, false, failure.getMessage() == null ? failure.getClass().getSimpleName() : failure.getMessage());
+				throw failure;
 			}
 			
 			ArrayList<AnnotatedFunction> outputFunctionsList = getSimWorkspace().getSimulationOwner().getOutputFunctionContext().getOutputFunctionsList();
@@ -1146,6 +1166,7 @@ private void showFenicsServerResults(Simulation simulation) {
 }
 
 private static final String H_FENICS_BUNDLE = "fenicsBundleDirectory";
+private static final String H_QUEUED_LOCAL_RUN = "queuedLocalRun"; // the quick run's entry in the window's run queue
 private static final String H_FENICS_SIMKEY = "fenicsSimKey";
 
 /**

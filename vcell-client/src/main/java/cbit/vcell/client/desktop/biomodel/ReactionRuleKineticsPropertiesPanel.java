@@ -1,5 +1,9 @@
 package cbit.vcell.client.desktop.biomodel;
 
+import cbit.vcell.client.laf.CategoryTitledBorder;
+import cbit.vcell.client.laf.VCellFonts;
+import cbit.vcell.client.laf.VCellColors;
+import cbit.vcell.client.laf.VCellLookAndFeel;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -173,23 +177,22 @@ public class ReactionRuleKineticsPropertiesPanel extends DocumentEditorSubPanel 
 		try {
 			setName("KineticsTypeTemplatePanel");
 			setLayout(new GridBagLayout());
-			setBackground(Color.white);
+			setBackground(VCellLookAndFeel.getContentBackground());
 
 			isReversibleCheckBox = new JCheckBox("Reversible");
 			isReversibleCheckBox.setHorizontalTextPosition(SwingConstants.LEFT);
 			isReversibleCheckBox.addActionListener(eventHandler);
 			isReversibleCheckBox.setEnabled(true);
-			isReversibleCheckBox.setBackground(Color.white);
+			isReversibleCheckBox.setBackground(VCellLookAndFeel.getContentBackground());
 //			isReversibleCheckBox.setHorizontalTextPosition(SwingConstants.LEFT);
 
 			Border border = BorderFactory.createLineBorder(Color.gray);
 			Border loweredEtchedBorder = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
 			Border loweredBevelBorder = BorderFactory.createLoweredBevelBorder();
 
-			TitledBorder annotationBorder = BorderFactory.createTitledBorder(loweredEtchedBorder, " Annotation and Pathway Links ");
+			TitledBorder annotationBorder = new CategoryTitledBorder(loweredEtchedBorder, " Annotation and Pathway Links ", VCellFonts.Category.HEADING);
 			annotationBorder.setTitleJustification(TitledBorder.LEFT);
 			annotationBorder.setTitlePosition(TitledBorder.TOP);
-			annotationBorder.setTitleFont(getFont().deriveFont(Font.BOLD));
 			
 			nameTextField = new JTextField();
 			nameTextField.setEditable(false);
@@ -229,7 +232,7 @@ public class ReactionRuleKineticsPropertiesPanel extends DocumentEditorSubPanel 
 			add(p, gbc);
 			
 			p.setLayout(new GridBagLayout());
-			p.setBackground(Color.white);
+			p.setBackground(VCellLookAndFeel.getContentBackground());
 			int gridyy = 0;
 			gbc = new java.awt.GridBagConstraints();
 			gbc.gridx = 0; 
@@ -551,7 +554,7 @@ public class ReactionRuleKineticsPropertiesPanel extends DocumentEditorSubPanel 
 					name = name.substring(name.indexOf("#")+1);
 				}
 				JLabel label = new JLabel("<html><u>" + name + "</u></html>");
-				label.setForeground(Color.blue);
+				label.setForeground(VCellColors.getValueForeground());
 				label.addMouseListener(new MouseAdapter() {
 					public void mouseClicked(MouseEvent e) {
 						if (e.getClickCount() == 2) {

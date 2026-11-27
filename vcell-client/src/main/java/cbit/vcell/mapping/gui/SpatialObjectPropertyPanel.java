@@ -10,6 +10,7 @@
 
 package cbit.vcell.mapping.gui;
 
+import cbit.vcell.client.laf.VCellLookAndFeel;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
@@ -92,7 +93,7 @@ private void initialize() {
 		setName("SpatialObjectPropertyPanel");
 		setLayout(new java.awt.BorderLayout());
 		setSize(572, 196);
-		setBackground(Color.white);
+		setBackground(VCellLookAndFeel.getContentBackground());
 		
 		this.topPanel = new JPanel();
 		topPanel.setName("TopPanel");
@@ -104,7 +105,7 @@ private void initialize() {
 //		topPanel.add(optionsTitle, BorderLayout.NORTH);
 		
 		this.optionsPanel = new JPanel();
-		optionsPanel.setBackground(Color.lightGray.brighter());
+		optionsPanel.setBackground(VCellLookAndFeel.getContentBackground());
 		optionsPanel.setName("OptionsPanel");
 		optionsPanel.setLayout(new FlowLayout());
 		topPanel.add(optionsPanel,BorderLayout.CENTER);
@@ -171,7 +172,7 @@ void setSpatialObject(SpatialObject newValue) {
 			checkbox.addActionListener(actionListener);
 			checkbox.setText(category.description);
 			checkbox.setSelected(spatialObject.isQuantityCategoryEnabled(category));
-			checkbox.setBackground(Color.lightGray.brighter());
+			checkbox.setBackground(VCellLookAndFeel.getContentBackground());
 			// TODO: disable features not supported yet
 			if(spatialObject instanceof SurfaceRegionObject) {
 				if(category.xmlName.contentEquals(QuantityCategory.SurfaceDistanceMap.xmlName)) {

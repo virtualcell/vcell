@@ -8,7 +8,9 @@ import org.vcell.util.OperatingSystemInfo;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.awt.event.WindowEvent;
 import java.lang.reflect.InvocationTargetException;
 import java.util.EnumMap;
 import java.util.Hashtable;
@@ -30,10 +32,15 @@ import java.util.function.Consumer;
  * 1) Create an instance using the constructor
  * 2) Use the Action subclass to create wrapped, "asynch" actions to perform on keybind press.
  * 3) Call the desired methods of the object instance with the wrapped actions to set up the desired bindings.
+ * <br/>
+ * It is also where VCell's shortcuts are defined: a menu item takes its accelerator from
+ * <code>ShortcutsWizard.keyStrokeFor(Shortcut)</code>, and <code>addCloseWindowShortcut</code> adds the close-window
+ * binding to a component without replacing its other bindings, as the constructor would.
  */
 public class ShortcutsWizard {
 	@MagicConstant(flagsFromClass = java.awt.event.InputEvent.class)
-	private static final int menuKeyMaskCode = Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
+	private static final int menuKeyMaskCode = ShortcutsWizard.lookUpMenuKeyMask();
+	private static final String CLOSE_WINDOW_ACTION_KEY = "winCloseAction";
 
 	private static final OperatingSystemInfo operatingSystemInfo = OperatingSystemInfo.getInstance();
 
@@ -41,14 +48,69 @@ public class ShortcutsWizard {
 	private final Map<FocusCondition, InputMap> inputMapMapping;
 	private final ActionMap actionMap;
 
-	private enum KeybindEncoding {
-		KEYBIND_COPY(KeyEvent.VK_C),
-		KEYBIND_PASTE(KeyEvent.VK_V),
-		KEYBIND_SELECT_ALL(KeyEvent.VK_A);
+	/** VCell's keyboard shortcuts; each is a key pressed with the platform's menu modifier (Cmd on macOS, Ctrl elsewhere). */
+	public enum Shortcut {
+		COPY(KeyEvent.VK_C),
+		PASTE(KeyEvent.VK_V),
+		SELECT_ALL(KeyEvent.VK_A),
+		SAVE(KeyEvent.VK_S),
+		SAVE_AS(KeyEvent.VK_S, InputEvent.SHIFT_DOWN_MASK),
+		CLOSE_WINDOW(KeyEvent.VK_W);
 
 		public final int keyEventCode;
-		KeybindEncoding(int keyEventCode){
+		@MagicConstant(flagsFromClass = java.awt.event.InputEvent.class)
+		public final int extraModifiers; // held along with the menu modifier
+		Shortcut(int keyEventCode){
+			this(keyEventCode, 0);
+		}
+		Shortcut(int keyEventCode, int extraModifiers){
 			this.keyEventCode = keyEventCode;
+			this.extraModifiers = extraModifiers;
+		}
+	}
+
+	/**
+	 * The key stroke for a shortcut, as pressed: what a <code>JMenuItem</code> takes as its accelerator.
+	 * @param shortcut the shortcut wanted
+	 * @return the shortcut's key with the platform's menu modifier and its own extra modifiers
+	 */
+	public static KeyStroke keyStrokeFor(Shortcut shortcut){
+		return KeyStroke.getKeyStroke(shortcut.keyEventCode, ShortcutsWizard.menuKeyMaskCode | shortcut.extraModifiers);
+	}
+
+	/**
+	 * Lets the close-window shortcut close the window holding the given component, by sending that window a
+	 * window-closing event (so it closes as its close button would). Unlike the constructor, this keeps the
+	 * component's other bindings; it does nothing if the component already binds the shortcut.
+	 * @param jComponent the component whose window the shortcut should close, while focus is inside it
+	 */
+	public static void addCloseWindowShortcut(JComponent jComponent){
+		KeyStroke closeWindowKeyStroke = ShortcutsWizard.keyStrokeFor(Shortcut.CLOSE_WINDOW);
+		InputMap inputMap = jComponent.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+		if (inputMap.get(closeWindowKeyStroke) != null) return;
+		inputMap.put(closeWindowKeyStroke, ShortcutsWizard.CLOSE_WINDOW_ACTION_KEY);
+		jComponent.getActionMap().put(ShortcutsWizard.CLOSE_WINDOW_ACTION_KEY, new AbstractAction() {
+			@Override
+			public void actionPerformed(ActionEvent e){
+				Window window = ShortcutsWizard.windowOf(e.getSource());
+				if (window == null) return;
+				window.dispatchEvent(new WindowEvent(window, WindowEvent.WINDOW_CLOSING));
+			}
+		});
+	}
+
+	private static Window windowOf(Object eventSource){
+		if (eventSource instanceof Window window) return window;
+		if (eventSource instanceof Component component) return SwingUtilities.getWindowAncestor(component);
+		return null;
+	}
+
+	// the menu modifier needs a display to look up; without one (tests, servers), assume Ctrl
+	private static int lookUpMenuKeyMask(){
+		try {
+			return Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
+		} catch (HeadlessException headlessException) {
+			return InputEvent.CTRL_DOWN_MASK;
 		}
 	}
 
@@ -192,7 +254,7 @@ public class ShortcutsWizard {
 	 *                     and no object will be created.
 	 */
 	public <T extends AbstractButton> T configureCopy(final Action actionToTakeOnCopy, final FocusCondition focusCondition, Class<T> typeToCreate) {
-		return this.performMapping(KeybindEncoding.KEYBIND_COPY, actionToTakeOnCopy, focusCondition, typeToCreate, "Copy");
+		return this.performMapping(Shortcut.COPY, actionToTakeOnCopy, focusCondition, typeToCreate, "Copy");
 	}
 
 	/**
@@ -221,7 +283,7 @@ public class ShortcutsWizard {
 	 * @param focusCondition the degree of focus the object should have to trigger the action on paste
 	 */
 	public <T extends AbstractButton> T configurePaste(final Action actionToTakeOnPaste, final FocusCondition focusCondition){
-		return this.performMapping(KeybindEncoding.KEYBIND_PASTE, actionToTakeOnPaste, focusCondition, null, null);
+		return this.performMapping(Shortcut.PASTE, actionToTakeOnPaste, focusCondition, null, null);
 	}
 
 	/**
@@ -232,7 +294,7 @@ public class ShortcutsWizard {
 	 *                     and no object will be created.
 	 */
 	public <T extends AbstractButton> T configurePaste(final Action actionToTakeOnPaste, final FocusCondition focusCondition, Class<T> buttonType){
-		return this.performMapping(KeybindEncoding.KEYBIND_PASTE, actionToTakeOnPaste, focusCondition, buttonType, "Paste");
+		return this.performMapping(Shortcut.PASTE, actionToTakeOnPaste, focusCondition, buttonType, "Paste");
 	}
 
 	/**
@@ -261,7 +323,7 @@ public class ShortcutsWizard {
 	 * @param focusCondition the degree of focus the object should have to trigger the action on select-all
 	 */
 	public <T extends AbstractButton> T configureSelectAll(final Action actionToTakeOnSelectAll, final FocusCondition focusCondition) {
-		return this.performMapping(KeybindEncoding.KEYBIND_SELECT_ALL, actionToTakeOnSelectAll, focusCondition, null, null);
+		return this.performMapping(Shortcut.SELECT_ALL, actionToTakeOnSelectAll, focusCondition, null, null);
 	}
 
 	/**
@@ -272,7 +334,7 @@ public class ShortcutsWizard {
 	 *                     and no object will be created.
 	 */
 	public <T extends AbstractButton> T configureSelectAll(final Action actionToTakeOnSelectAll, final FocusCondition focusCondition, Class<T> buttonType) {
-		return this.performMapping(KeybindEncoding.KEYBIND_SELECT_ALL, actionToTakeOnSelectAll, focusCondition, buttonType, "Select All");
+		return this.performMapping(Shortcut.SELECT_ALL, actionToTakeOnSelectAll, focusCondition, buttonType, "Select All");
 	}
 
 	/*   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *\
@@ -288,7 +350,7 @@ public class ShortcutsWizard {
 	 * @param buttonText the text to display on the button.
 	 * @return the created button; if null is passed into <code>buttonType</code>, no object will be created and <code>null</code> will be returned.
 	 */
-	private <T extends AbstractButton> T performMapping(final KeybindEncoding triggerKey, final Action actionToTakeOnSelectAll, final FocusCondition focusCondition, final Class<T> buttonType, final String buttonText){
+	private <T extends AbstractButton> T performMapping(final Shortcut triggerKey, final Action actionToTakeOnSelectAll, final FocusCondition focusCondition, final Class<T> buttonType, final String buttonText){
 		/*
 		 The problem on macOS is that for whatever reason, the actual
 		 "pressing" of the standard copy/paste keybinds don't work correctly.
@@ -296,7 +358,7 @@ public class ShortcutsWizard {
 		 A better long-term solution would be desireable.
 		 */
 		T button = this.createButton(buttonType, buttonText, actionToTakeOnSelectAll);
-		KeyStroke copyKeyStroke = KeyStroke.getKeyStroke(triggerKey.keyEventCode, ShortcutsWizard.menuKeyMaskCode, ShortcutsWizard.operatingSystemInfo.isMac());
+		KeyStroke copyKeyStroke = KeyStroke.getKeyStroke(triggerKey.keyEventCode, ShortcutsWizard.menuKeyMaskCode | triggerKey.extraModifiers, ShortcutsWizard.operatingSystemInfo.isMac());
 		this.inputMapMapping.get(focusCondition).put(copyKeyStroke, triggerKey.name());
 		this.actionMap.put(triggerKey.name(), actionToTakeOnSelectAll.getWrappedAction());
 		return button;

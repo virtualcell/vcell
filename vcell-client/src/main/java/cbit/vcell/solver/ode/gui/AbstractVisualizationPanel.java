@@ -1,5 +1,6 @@
 package cbit.vcell.solver.ode.gui;
 
+import cbit.vcell.client.laf.VCellFonts;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -213,7 +214,7 @@ public abstract class AbstractVisualizationPanel extends DocumentEditorSubPanel 
             bottomLabel.setForeground(Color.blue);
             bottomLabel.setPreferredSize(new Dimension(44, 20));
             bottomLabel.setMinimumSize(new Dimension(44, 20));
-            bottomLabel.setFont(new Font("dialog", Font.PLAIN, 12));
+            VCellFonts.setCategory(bottomLabel, VCellFonts.Category.BODY);
         }
         return bottomLabel;
     }

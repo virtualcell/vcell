@@ -10,6 +10,8 @@
 
 package cbit.vcell.microscopy.gui;
 
+import org.vcell.documentation.HelpIds;
+import org.vcell.documentation.HelpContext;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
@@ -128,6 +130,7 @@ import cbit.vcell.solver.SimulationModelInfo;
 import cbit.vcell.solver.SimulationSymbolTable;
 
 import static cbit.vcell.export.server.ExportEnums.VariableMode.VARIABLE_MULTI;
+import org.vcell.client.logicalwindow.LWSize;
 
 @SuppressWarnings("serial")
 public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
@@ -508,8 +511,9 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 						ChildWindow childWindow = ChildWindowManager.findChildWindowManager(FRAPStudyPanel.this).getChildWindowFromContext(Sim2DResultsContextObj);
 						if(childWindow == null)
 						{
+							HelpContext.setPage(FRAPStudyPanel.this.getSimResultsViewPanel(), HelpIds.VFRAP_SIMULATION);
 							childWindow = ChildWindowManager.findChildWindowManager(FRAPStudyPanel.this).addChildWindow(getSimResultsViewPanel(), Sim2DResultsContextObj, "2D Simulation Results", true);
-							childWindow.setSize(new Dimension(1000,700));
+							childWindow.setSize(LWSize.ems(83, 58));
 						}
 						childWindow.setIsCenteredOnParent();
 						childWindow.show();
@@ -1427,9 +1431,10 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			childWindow.close();
 		}
 		JMFPlayer jp = new JMFPlayer(urlStr, fileStr);
+		HelpContext.setPage(jp, HelpIds.VFRAP_SIMULATION);
 		childWindow = ChildWindowManager.findChildWindowManager(this).addChildWindow(jp, movieContextObj, "VFRAP Movie");
 		jp.setChildWindow(childWindow);
-		childWindow.setPreferredSize(new Dimension(250,500));
+		childWindow.setSize(LWSize.ems(21, 42));
 		childWindow.setIsCenteredOnParent();
 
 		childWindow.show();

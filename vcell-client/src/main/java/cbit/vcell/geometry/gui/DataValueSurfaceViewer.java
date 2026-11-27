@@ -9,6 +9,10 @@
  */
 
 package cbit.vcell.geometry.gui;
+import org.vcell.documentation.HelpIds;
+import org.vcell.documentation.HelpContext;
+import cbit.vcell.client.laf.VCellFonts;
+import cbit.vcell.client.laf.VCellColors;
 import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.event.ActionEvent;
@@ -745,8 +749,8 @@ private javax.swing.JLabel getJLabelDirections() {
 			ivjJLabelDirections = new javax.swing.JLabel();
 			ivjJLabelDirections.setName("JLabelDirections");
 			ivjJLabelDirections.setText(DIRECTIONS_INFO_TEXT);
-			ivjJLabelDirections.setForeground(Color.blue);
-			ivjJLabelDirections.setFont(ivjJLabelDirections.getFont().deriveFont(ivjJLabelDirections.getFont().getSize2D() - 1));
+			ivjJLabelDirections.setForeground(VCellColors.getValueForeground());
+			VCellFonts.setCategory(ivjJLabelDirections, VCellFonts.Category.CAPTION);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -835,6 +839,7 @@ private javax.swing.JTable getScrollPaneTable() {
 	if (ivjScrollPaneTable == null) {
 		try {
 			ivjScrollPaneTable = new javax.swing.JTable();
+			VCellFonts.followRowHeight(ivjScrollPaneTable);
 			ivjScrollPaneTable.setName("ScrollPaneTable");
 			getJScrollPane1().setColumnHeaderView(ivjScrollPaneTable.getTableHeader());
 //			getJScrollPane1().getViewport().setBackingStoreEnabled(true);
@@ -1068,6 +1073,7 @@ private void jButtonDSR_ActionPerformed(java.awt.event.ActionEvent actionEvent) 
 	ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(DataValueSurfaceViewer.this);
 	ChildWindow childWindow = childWindowManager.getChildWindowFromContentPane(dsr);
 	if (childWindow==null){
+		HelpContext.setPage(this.dsr, HelpIds.SPATIAL_RESULTS_ROI_TOOLS);
 		childWindow = childWindowManager.addChildWindow(dsr,dsr,"Define Region Of Interest");
 		childWindow.pack();
 		childWindow.setIsCenteredOnParent();

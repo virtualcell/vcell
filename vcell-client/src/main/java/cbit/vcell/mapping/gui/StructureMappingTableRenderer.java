@@ -10,6 +10,7 @@
 
 package cbit.vcell.mapping.gui;
 
+import cbit.vcell.client.laf.VCellColors;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
@@ -154,7 +155,7 @@ public class StructureMappingTableRenderer extends DefaultScrollTableCellRendere
 			if (structureMappingTableModel.isSubdomainColumn(column)) { // can be null
 				if (value == null) {
 					setText("Unmapped");
-					setForeground(Color.red);
+					setForeground(VCellColors.getErrorForeground());
 					setIcon(null);
 				} else {
 					if (value instanceof GeometryClass) {

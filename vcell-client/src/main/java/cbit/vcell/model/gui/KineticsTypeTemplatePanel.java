@@ -10,7 +10,8 @@
 
 package cbit.vcell.model.gui;
 
-import java.awt.Color;
+import cbit.vcell.client.laf.VCellFonts;
+import cbit.vcell.client.laf.VCellLookAndFeel;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -187,7 +188,7 @@ private void initialize() {
 	try {
 		setName("KineticsTypeTemplatePanel");
 		setLayout(new java.awt.GridBagLayout());
-		setBackground(Color.white);
+		setBackground(VCellLookAndFeel.getContentBackground());
 
 		int gridy = 0;
 		
@@ -200,7 +201,7 @@ private void initialize() {
 			gbc.fill = GridBagConstraints.HORIZONTAL;
 			JLabel label = new JLabel("<html><u>View only. Edit properties in Physiology</u></html>");
 			label.setHorizontalAlignment(SwingConstants.CENTER);
-			label.setFont(label.getFont().deriveFont(Font.BOLD));
+			VCellFonts.setCategory(label, VCellFonts.Category.HEADING);
 			add(label, gbc);
 		}
 		

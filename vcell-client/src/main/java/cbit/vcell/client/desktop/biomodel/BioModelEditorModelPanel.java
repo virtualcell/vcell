@@ -10,10 +10,13 @@
 
 package cbit.vcell.client.desktop.biomodel;
 
+import org.vcell.documentation.HelpContext;
+import org.vcell.documentation.HelpIds;
+import cbit.vcell.client.laf.VCellColors;
+import cbit.vcell.client.laf.VCellLookAndFeel;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.GridBagConstraints;
@@ -130,10 +133,25 @@ import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.SymbolTableEntry;
+import org.vcell.client.logicalwindow.LWSize;
 
 @SuppressWarnings("serial")
 public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements Model.Owner {
 	protected static final String PROPERTY_NAME_BIO_MODEL = "bioModel";
+	/** The help page about the open tab. */
+	String helpPage() {
+		int index = this.tabbedPane == null ? -1 : this.tabbedPane.getSelectedIndex();
+		if (index < 0) return null;
+		String title = this.tabbedPane.getTitleAt(index);
+		if (ModelPanelTabID.reaction_diagram.name.equals(title)) return HelpIds.REACTION_DIAGRAM;
+		if (ModelPanelTabID.reaction_table.name.equals(title)) return HelpIds.REACTIONS;
+		if (ModelPanelTabID.structure_table.name.equals(title)) return HelpIds.STRUCTURES;
+		if (ModelPanelTabID.species_table.name.equals(title)) return HelpIds.SPECIES;
+		if (ModelPanelTabID.species_definitions_table.name.equals(title)) return HelpIds.MOLECULES;
+		if (ModelPanelTabID.observables_table.name.equals(title)) return HelpIds.OBSERVABLES;
+		return HelpIds.PHYSIOLOGY;
+	}
+
 	public enum ModelPanelTabID {
 //		structure_diagram("Structure Diagram"),
 		reaction_diagram("Reaction Diagram"),
@@ -613,17 +631,17 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 	}
 	
 	private void initialize(){
-		newButton = new JButton("New");
+		newButton = DownArrowIcon.keepPushButtonLook(new JButton("New")); // gets the menu arrow when there's more than one structure
 		newButton.setName("ModelNewButton");
-		newButton2 = new JButton("New Rule");
+		newButton2 = DownArrowIcon.keepPushButtonLook(new JButton("New Rule")); // gets the menu arrow when there's more than one structure
 		newButton2.setName("ModelNewRuleButton");
 		newMemButton = new JButton("New Membrane");
 		newMemButton.setName("ModelNewMembraneButton");
 		deleteButton = new JButton("Delete");
 		deleteButton.setName("ModelDeleteButton");
-		duplicateButton = new JButton("Duplicate");
+		duplicateButton = DownArrowIcon.keepPushButtonLook(new JButton("Duplicate")); // gets the menu arrow when there's more than one structure
 		duplicateButton.setName("ModelDuplicateButton");
-		pathwayButton = new JButton("Pathway Links", new DownArrowIcon());
+		pathwayButton = DownArrowIcon.keepPushButtonLook(new JButton("Pathway Links", new DownArrowIcon()));
 		pathwayButton.setName("ModelPathwayLinksButton");
 		pathwayButton.setHorizontalTextPosition(SwingConstants.LEFT);
 		textFieldSearch = new JTextField();
@@ -662,75 +680,9 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 //		cartoonEditorPanel  = new CartoonEditorPanelFixed();
 //		cartoonEditorPanel.getStructureCartoon().addPropertyChangeListener(eventHandler);
 		
-		/* button panel */
-		buttonPanel = new JPanel();
-		buttonPanel.setLayout(new GridBagLayout());
-		GridBagConstraints gbc = new GridBagConstraints();
-		gbc.gridx = 0;
-		gbc.gridy = 0;
-		gbc.insets = new Insets(4,4,4,4);
-		gbc.anchor = GridBagConstraints.LINE_END;
-		buttonPanel.add(newButton, gbc);
-		
-		gbc = new GridBagConstraints();
-		gbc.gridx = 1;
-		gbc.gridy = 0;
-		gbc.insets = new Insets(4,4,4,4);
-		gbc.anchor = GridBagConstraints.LINE_END;
-		buttonPanel.add(newButton2, gbc);
-		
-		gbc = new GridBagConstraints();
-		gbc.gridx = 2;
-		gbc.gridy = 0;
-		gbc.insets = new Insets(4,4,4,4);
-		gbc.anchor = GridBagConstraints.LINE_END;
-		buttonPanel.add(newMemButton, gbc);
-
-		gbc = new GridBagConstraints();
-		gbc.gridx = 3;
-		gbc.insets = new Insets(4,4,4,4);
-		gbc.gridy = 0;
-		gbc.anchor = GridBagConstraints.LINE_END;
-		buttonPanel.add(duplicateButton, gbc);
-				
-		gbc = new GridBagConstraints();
-		gbc.gridx = 4;
-		gbc.insets = new Insets(4,4,4,4);
-		gbc.gridy = 0;
-		gbc.anchor = GridBagConstraints.LINE_END;
-		buttonPanel.add(deleteButton, gbc);
-				
-		gbc = new GridBagConstraints();
-		gbc.gridx = 5;
-		gbc.insets = new Insets(4,4,4,4);
-		gbc.gridy = 0;
-		gbc.anchor = GridBagConstraints.LINE_END;
-		buttonPanel.add(pathwayButton, gbc);
-
-		gbc = new GridBagConstraints();
-		gbc.gridx = 6;
-		gbc.gridy = 0;
-		gbc.weightx = 0.5;
-		gbc.fill = GridBagConstraints.HORIZONTAL;
-		gbc.insets = new Insets(4,4,4,4);
-		buttonPanel.add(Box.createRigidArea(new Dimension(5,5)), gbc);		
-
-		gbc = new GridBagConstraints();
-		gbc.gridx = 7;
-		gbc.gridy = 0;
-		gbc.anchor = GridBagConstraints.LINE_END;
-		gbc.insets = new Insets(4,4,4,4);
-		buttonPanel.add(new JLabel("Search "), gbc);
-
-		gbc = new GridBagConstraints();
-		gbc.gridx = 8;
-		gbc.gridy = 0;
-		gbc.weightx = 1.5;
-		gbc.anchor = GridBagConstraints.LINE_START;
-		gbc.fill = GridBagConstraints.HORIZONTAL;
-		gbc.insets = new Insets(4,4,4,4);
-		buttonPanel.add(textFieldSearch, gbc);
-		/* button panel */
+		/* button panel: a row that wraps rather than insisting on its width, which would squeeze the navigation column */
+		buttonPanel = org.vcell.util.gui.ButtonRowLayout.withSearch(
+				java.util.List.of(newButton, newButton2, newMemButton, duplicateButton, deleteButton, pathwayButton), textFieldSearch);
 		
 		tabbedPane = new JTabbedPaneEnhanced();
 		tabbedPane.setName("ModelTabbedPane");
@@ -822,7 +774,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 								tooltip.append("<li>" + ro.getBioPaxObject() + "</li>");
 							}
 							if (!isSelected) {
-								setForeground(Color.blue);
+								setForeground(VCellColors.getValueForeground());
 							}
 							String finalName = null;
 							BioPaxObject bioPaxObject = relationshipSet.iterator().next().getBioPaxObject();
@@ -849,7 +801,6 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		};
 		// Annotations icon column renderer
 		DefaultScrollTableCellRenderer annotationTableCellRenderer = new DefaultScrollTableCellRenderer() {
-			final Color lightBlueBackground = new Color(214, 234, 248);
 			@Override
 			public Component getTableCellRendererComponent(JTable table,
 					Object value, boolean isSelected, boolean hasFocus,
@@ -870,7 +821,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 					}
 					if (entity != null) {
 						if(isSelected) {
-							setBackground(lightBlueBackground);
+							setBackground(VCellColors.getSoftSelectionBackground());
 						}
 						Identifiable identifiable = AnnotationsPanel.getIdentifiable(entity);
 						String freeText = bioModel.getVCMetaData().getFreeTextAnnotation(identifiable);
@@ -1452,6 +1403,62 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 	}
 	
 	Object newObject;
+	// where a New's own choices (which compartment, say) drop down: under the button, or where a "+" asked from
+	private java.awt.Component newMenuInvoker = null;
+	private java.awt.Point newMenuAt = null;
+
+	private void showChoiceMenu(JPopupMenu menu, JButton button) {
+		if (newMenuInvoker != null && newMenuAt != null) {
+			menu.show(newMenuInvoker, newMenuAt.x, newMenuAt.y);
+		} else {
+			menu.show(button, 0, button.getHeight());
+		}
+	}
+
+	/**
+	 * The current tab's New, asked for from elsewhere (the navigation tree's "+" on its row): run at once when there's
+	 * one (a new species, say), offered as a choice when there are several (a compartment or a membrane). Any choice of
+	 * its own (which compartment) drops down at the same place.
+	 */
+	public void showNewMenu(java.awt.Component invoker, int x, int y) {
+		List<JButton> choices = new ArrayList<>();
+		for (JButton button : new JButton[] { newButton, newMemButton, newButton2 }) {
+			if (button.isVisible() && button.isEnabled()) choices.add(button);
+		}
+		if (choices.isEmpty()) { // e.g. species, before there's a compartment to put them in
+			JPopupMenu none = new JPopupMenu();
+			JMenuItem item = new JMenuItem("Add a compartment first, in Structures");
+			item.setEnabled(false);
+			none.add(item);
+			none.show(invoker, x, y);
+			return;
+		}
+		if (choices.size() == 1) {
+			runNew(choices.get(0), invoker, x, y);
+			return;
+		}
+		JPopupMenu menu = new JPopupMenu();
+		menu.setName("NewChoiceMenu");
+		for (JButton button : choices) {
+			JMenuItem item = new JMenuItem(button.getText());
+			item.setName("NewChoice_" + button.getText().replaceAll("[^A-Za-z]", ""));
+			item.addActionListener(e -> runNew(button, invoker, x, y));
+			menu.add(item);
+		}
+		menu.show(invoker, x, y);
+	}
+
+	private void runNew(JButton button, java.awt.Component invoker, int x, int y) {
+		newMenuInvoker = invoker;
+		newMenuAt = new java.awt.Point(x, y);
+		try {
+			button.doClick(0); // as the button would: its own choices drop down where asked
+		} finally {
+			newMenuInvoker = null;
+			newMenuAt = null;
+		}
+	}
+
 	private void newButtonPressed() throws ModelException, PropertyVetoException {
 		newObject = null;
 		computeCurrentSelectedTable();
@@ -1472,7 +1479,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 						}
 					});
 				}
-				menu.show(newButton, 0, newButton.getHeight());
+				showChoiceMenu(menu, newButton);
 			}
 		} else if (currentSelectedTable == molecularTypeTable) {
 			if(bioModel.getModel().getRbmModelContainer() != null) {
@@ -1524,7 +1531,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 							}
 						});
 					}
-					menu.show(newButton, 0, newButton.getHeight());
+					showChoiceMenu(menu, newButton);
 				}
 			}
 		} else if (currentSelectedTable == structuresTable) {
@@ -1592,7 +1599,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 						}
 					});
 				}
-				menu.show(newButton2, 0, newButton2.getHeight());
+				showChoiceMenu(menu, newButton2);
 			}
 		}
 	}
@@ -2027,8 +2034,9 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 			JPanel p = new JPanel(new FlowLayout(FlowLayout.LEFT));
 			panel.add(p, BorderLayout.NORTH);
 			panel.add(reactionCartoonEditorPanel, BorderLayout.CENTER);
+			HelpContext.setPage(panel, HelpIds.REACTION_DIAGRAM);
 			ChildWindow childWindow = childWindowManager.addChildWindow(panel, reactionCartoonEditorPanel, "model diagram");
-			childWindow.setSize(500, 400);
+			childWindow.setSize(LWSize.ems(42, 33));
 			childWindow.setIsCenteredOnParent();
 			childWindow.addChildWindowListener(new ChildWindowListener() {				
 				public void closing(ChildWindow childWindow) {
@@ -2063,6 +2071,9 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 			return;
 		}		
 		switch (folderClass) {
+		case MODEL_NODE: // Physiology has no diagram node: it opens on the diagram
+			selectTab(ModelPanelTabID.reaction_diagram);
+			break;
 		case REACTIONS_NODE:
 			selectTab(ModelPanelTabID.reaction_table);
 			break;
@@ -2246,7 +2257,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 				}
 				
 			});
-			setBackground(Color.white);
+			setBackground(VCellLookAndFeel.getContentBackground());
 		}
 
 		void setModel(Model model) {			

@@ -1,5 +1,8 @@
 package org.vcell.model.rbm.gui;
 
+import org.vcell.documentation.HelpIds;
+import org.vcell.documentation.HelpContext;
+import cbit.vcell.client.laf.VCellColors;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -81,6 +84,7 @@ import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.server.bionetgen.BNGExecutorService;
 import cbit.vcell.server.bionetgen.BNGInput;
 import cbit.vcell.solvers.ApplicationMessage;
+import org.vcell.client.logicalwindow.LWSize;
 
 // we should use WindowBuilder Plugin (add it to Eclipse IDE) to speed up panel design
 // can choose absolute layout and place everything exactly as we see fit
@@ -497,9 +501,9 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
                 text6 = fieldSimulationContext.getMostRecentlyCreatedOutputSpec().getBNGReactions().length + "";
             }
             if (fieldSimulationContext.isInsufficientIterations()) {
-                text7 = "<font color=#8C001A>" + SimulationContext.IssueInsufficientIterations + "</font>";
+                text7 = "<font color=" + VCellColors.toHtmlColor(VCellColors.getWarningForeground()) + ">" + SimulationContext.IssueInsufficientIterations + "</font>";
             } else if (fieldSimulationContext.isInsufficientMaxMolecules()) {
-                text7 = "<font color=#8C001A>" + SimulationContext.IssueInsufficientMolecules + "</font>";
+                text7 = "<font color=" + VCellColors.toHtmlColor(VCellColors.getWarningForeground()) + ">" + SimulationContext.IssueInsufficientMolecules + "</font>";
             }
 
         } else {
@@ -557,11 +561,10 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
     private void runBioNetGen() {
         EditConstraintsPanel panel = new EditConstraintsPanel(this);
         ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(this);
+        HelpContext.setPage(panel, HelpIds.NETWORK_SPECIFICATIONS);
         ChildWindow childWindow = childWindowManager.addChildWindow(panel, panel, "Edit / Test Constraints");
-        Dimension dim = new Dimension(320, 330);
-        childWindow.pack();
         panel.setChildWindow(childWindow);
-        childWindow.setPreferredSize(dim);
+        childWindow.setSize(LWSize.ems(27, 27.5f));
         childWindow.showModal();
         int maxIterations;
         int maxMolecules;

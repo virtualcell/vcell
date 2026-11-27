@@ -108,7 +108,15 @@ jobs:
           fi
           if [ -n "${base}" ]; then
             changed="$(git diff --name-only "${base}" HEAD)"
-            if [ -n "${changed}" ] && ! printf '%s\n' "${changed}" | grep -qvE '(^docs/|^release-notes/|\.md$)'; then
+            # The in-app help is Markdown but it is part of the client, not documentation:
+            # the client renders it and HelpBookTest (Fast) checks its links, images and the
+            # page ids code opens, so a change to it must run the lane.
+            help_source='^vcell-client/UserDocumentation/(toc\.md$|pages/)'
+            # Here-strings, not `printf | grep -q`: under pipefail, grep -q exits at its first
+            # match, printf then dies of SIGPIPE on a long list, and the pipeline's 141 reads as
+            # "no match". A 2,400-file update from master was skipped as docs-only that way.
+            if [ -n "${changed}" ] && ! grep -qvE '(^docs/|^release-notes/|\.md$)' <<< "${changed}" \
+               && ! grep -qE "${help_source}" <<< "${changed}"; then
               decide false "only documentation changed ($(printf '%s\n' "${changed}" | tr '\n' ' '))"
             fi
           fi

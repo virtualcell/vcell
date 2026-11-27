@@ -145,6 +145,11 @@
 		  <artifactId>jaxb-impl</artifactId>
 		  <version>${jaxb-impl.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.jetbrains</groupId>
+			<artifactId>annotations</artifactId>
+			<version>${jetbrains-annotations.version}</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<plugins>

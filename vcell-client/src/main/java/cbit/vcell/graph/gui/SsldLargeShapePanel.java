@@ -16,7 +16,7 @@ public class SsldLargeShapePanel extends JPanel {
     private int zoomFactor = DefaultZoomFactor;
 
     // by default the shapes are editable and their border and text is black / gray, aso
-    // otherwise they are a shade of brown, very much alike the DefaultScrollTableCellRenderer.uneditableForeground
+    // otherwise they are a shade of brown, very much alike the VCellColors.getUneditableForeground()
     private boolean editable = true;
 
 

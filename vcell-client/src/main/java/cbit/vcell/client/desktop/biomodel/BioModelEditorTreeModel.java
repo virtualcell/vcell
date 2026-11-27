@@ -53,16 +53,20 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel implements 
 		};
 	private BioModelNode modelNode = new BioModelNode(bioModelChildFolderNodes[0], true);
 	private BioModelNode applicationsNode = new BioModelNode(bioModelChildFolderNodes[1], true);	
-	private BioModelNode bioModelParametersNode = new BioModelNode(bioModelChildFolderNodes[2], false);
-	private BioModelNode pathwayNode = new BioModelNode(bioModelChildFolderNodes[3], true);
+	private BioModelNode bioModelParametersNode = new BioModelNode(bioModelChildFolderNodes[2], false); // one panel: no children, so no chevron
 //	private BioModelNode dataNode = new BioModelNode(bioModelChildFolderNodes[4], false);
-	private BioModelNode  bioModelChildNodes[] = {
+	// the model's own node is the root; under it, Mathematics & Units (model-wide: its parameters span the Physiology and
+	// the Applications), the Physiology, then its Applications. The pathway has no node: its views are in the Pathway
+	// Tools window (Tools > Pathway Tools)
+	private BioModelNode  bioModelChildNodes[] = { // in the order they're listed under the model
+			bioModelParametersNode,
 			modelNode,
 			applicationsNode,
-			bioModelParametersNode,
-			pathwayNode,
 //			dataNode,
 	};
+
+	// Mathematics & Units has no children: one panel, its parameters and functions (VCell's predefined ones among them)
+
 	@Deprecated
 	List<BioModelNode> annotationNodes = new ArrayList<BioModelNode>();
 	List<BioModelNode> childApplicationsNodeList = new ArrayList<BioModelNode>();
@@ -70,7 +74,7 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel implements 
 	// Model	
 	private DocumentEditorTreeFolderNode modelChildFolderNodes[] = {			
 //			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.STRUCTURE_DIAGRAM_NODE, true),
-			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.REACTION_DIAGRAM_NODE, true),
+			// no Reaction Diagram node: Physiology itself opens on the diagram
 			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.REACTIONS_NODE, true),			
 			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.STRUCTURES_NODE, true),
 			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.SPECIES_NODE, true),
@@ -78,15 +82,13 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel implements 
 			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.OBSERVABLES_NODE, true),
 		};	
 //	private BioModelNode structureDiagramNode = new BioModelNode(modelChildFolderNodes[0], false); 
-	private BioModelNode reactionDiagramNode = new BioModelNode(modelChildFolderNodes[0], false); 
-	private BioModelNode reactionsNode = new BioModelNode(modelChildFolderNodes[1], false); 
-	private BioModelNode structuresNode = new BioModelNode(modelChildFolderNodes[2], false); 
-	private BioModelNode speciesNode = new BioModelNode(modelChildFolderNodes[3], false); 
-	private BioModelNode molecularTypeNode = new BioModelNode(modelChildFolderNodes[4], false); 
-	private BioModelNode observablesNode = new BioModelNode(modelChildFolderNodes[5], false); 
+	private BioModelNode reactionsNode = new BioModelNode(modelChildFolderNodes[0], false); 
+	private BioModelNode structuresNode = new BioModelNode(modelChildFolderNodes[1], false); 
+	private BioModelNode speciesNode = new BioModelNode(modelChildFolderNodes[2], false); 
+	private BioModelNode molecularTypeNode = new BioModelNode(modelChildFolderNodes[3], false); 
+	private BioModelNode observablesNode = new BioModelNode(modelChildFolderNodes[4], false); 
 	private BioModelNode modelChildNodes[] = new BioModelNode[] {
 //			structureDiagramNode,
-			reactionDiagramNode,
 			reactionsNode,
 			structuresNode,
 			speciesNode,
@@ -94,23 +96,7 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel implements 
 			observablesNode,
 	};
 	
-	// Pathway	
-	private DocumentEditorTreeFolderNode pathwayChildFolderNodes[] = {			
-			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.PATHWAY_DIAGRAM_NODE, true),
-			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.PATHWAY_OBJECTS_NODE, true),
-			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.BIOPAX_SUMMARY_NODE, true),			
-			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.BIOPAX_TREE_NODE, true),			
-		};	
-	private BioModelNode pathwayDiagramNode = new BioModelNode(pathwayChildFolderNodes[0], false); 
-	private BioModelNode pathwayObjectsNode = new BioModelNode(pathwayChildFolderNodes[1], false); 
-	private BioModelNode biopaxSummaryNode = new BioModelNode(pathwayChildFolderNodes[2], false); 
-	private BioModelNode pathwayChildNodes[] = new BioModelNode[] {
-			pathwayDiagramNode,
-			pathwayObjectsNode,
-			biopaxSummaryNode,
-	};
-
-	private BioModelNode defaultSelectModelNode = reactionDiagramNode;
+	private BioModelNode defaultSelectModelNode = modelNode; // Physiology, which opens on the reaction diagram
 		
 	public BioModelEditorTreeModel(JTree tree) {
 		super(tree);
@@ -119,9 +105,6 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel implements 
 		}
 		for (BioModelNode bioModeNode : modelChildNodes) {
 			modelNode.add(bioModeNode);
-		}
-		for (BioModelNode bioModeNode : pathwayChildNodes) {
-			pathwayNode.add(bioModeNode);
 		}
 	}
 	

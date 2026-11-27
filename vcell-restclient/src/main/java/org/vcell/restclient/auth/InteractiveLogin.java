@@ -14,22 +14,40 @@ import com.nimbusds.openid.connect.sdk.op.OIDCProviderMetadata;
 import com.nimbusds.openid.connect.sdk.token.OIDCTokens;
 import com.sun.net.httpserver.HttpServer;
 import net.minidev.json.JSONObject;
+import org.vcell.util.UserCancelException;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.datatransfer.StringSelection;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.reflect.InvocationTargetException;
 import java.net.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 public class InteractiveLogin {
     public final static String authClientID = "cjoWhd7W8A8znf7Z7vizyvKJCiqTgRtf";
     public final static String authDomain = "https://dev-dzhx7i2db3x3kkvq.us.auth0.com";
+
+    /** Queued in place of a redirect URI when the user cancels; redirect URIs always start with a path. */
+    private static final String LOGIN_CANCELLED = "login cancelled";
+
+    /** What the login window's Contact VCell button does, given the window to own any dialog; null hides it. */
+    private static volatile Consumer<Component> contactVCellAction = null;
+
+    /** Set by the desktop client, so the login window can offer to contact VCell. */
+    public static void setContactVCellAction(Consumer<Component> action) {
+        InteractiveLogin.contactVCellAction = action;
+    }
 
 
 
@@ -69,6 +87,11 @@ public class InteractiveLogin {
      */
 
     public static AuthApiClient login(URI authServerUri, URI apiBaseUri, boolean ignoreSSLCertProblems) throws URISyntaxException, IOException, ParseException {
+        return login(authServerUri, apiBaseUri, ignoreSSLCertProblems, false);
+    }
+
+    /** As {@link #login(URI, URI, boolean)}, but opening the authorization server's sign-up screen if {@code signUp}. */
+    public static AuthApiClient login(URI authServerUri, URI apiBaseUri, boolean ignoreSSLCertProblems, boolean signUp) throws URISyntaxException, IOException, ParseException {
         URI successRedirectURI = new URI(apiBaseUri+( apiBaseUri.getHost().equals("localhost")?  "" : "/login_success"));
 
         // Retrieve OpenID Provider Metadata
@@ -106,30 +129,17 @@ public class InteractiveLogin {
         Scope scope = new Scope("openid", "email", "profile", "offline_access"); //, "email"); //, "profile", "offline_access");
 
         CodeVerifier codeVerifier = new CodeVerifier();
-        URI authRequestURI = getAuthRequestURI(oidcProviderMetadata, redirectURI, new ClientID(authClientID), scope, state, codeVerifier, apiBaseUri);
+        URI authRequestURI = getAuthRequestURI(oidcProviderMetadata, redirectURI, new ClientID(authClientID), scope, state, codeVerifier, apiBaseUri, signUp);
 
         final AuthorizationResponse authorizationResponse;
-        if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-            // set up web server to receive redirect and send URL to system browser - will be redirected back to http://localhost:9999/oidc_test_callback
-            System.out.println("launched browser with login window, will intercept the authentication response sent to local web server");
-            authorizationResponse = getAuthorizationResponseAutomated(callbackServer, callback_endpoint_path, authRequestURI, successRedirectURI);
-            if (authorizationResponse != null) {
-                if (Desktop.getDesktop().isSupported(Desktop.Action.APP_REQUEST_FOREGROUND)) {
-                    System.out.println("requesting foreground");
-                    try {
-                        Desktop.getDesktop().requestForeground(true);
-                        System.out.println("foreground requested");
-                    } catch (Exception e) {
-                        System.err.println("failed to request foreground: " + e.getMessage());
-                    }
-                } else {
-                    System.err.println("foreground not supported");
-                }
-            }
-        } else {
-            // manual copy/paste of redirect URL into browser, and copy/paste of redirect URL back into console
+        if (GraphicsEnvironment.isHeadless()) {
+            // no window to show the login address in, so copy/paste it and the redirect URL through the console
             callbackServer.stop(0);   // nothing will call back into it on this path
             authorizationResponse = getAuthorizationResponseManual(authRequestURI);
+        } else {
+            // the browser is redirected back to the local web server, however the login page was opened
+            authorizationResponse = getAuthorizationResponseAutomated(callbackServer, callback_endpoint_path, authRequestURI, successRedirectURI);
+            SystemBrowser.requestForeground();
         }
 
         OIDCTokens oidcTokens = exchangeCodeForTokens(authorizationResponse, oidcProviderMetadata.getTokenEndpointURI(), new ClientID(authClientID), scope, redirectURI, codeVerifier);
@@ -177,6 +187,9 @@ public class InteractiveLogin {
         // read code from console
         try (BufferedReader br = new BufferedReader(new InputStreamReader(System.in))) {
             String authorizationResponseURL = br.readLine();
+            if (authorizationResponseURL == null) {
+                throw new IOException("No redirect URL was entered on the console, so the login could not finish.");
+            }
             authorizationResponse = AuthorizationResponse.parse(URI.create(authorizationResponseURL));
         }
         return authorizationResponse;
@@ -204,6 +217,7 @@ public class InteractiveLogin {
     private static AuthorizationResponse getAuthorizationResponseAutomated(HttpServer httpServer, String callback_endpoint_path, URI authRequestURI, URI successRedirectURI) throws IOException, ParseException {
         AuthorizationResponse authorizationResponse;
         final BlockingQueue<String> authorizationCodeURIQueue = new LinkedBlockingQueue<>(1);
+        JDialog loginAddressWindow = null;
 
         InetSocketAddress addr = httpServer.getAddress();
         int localHttpServerPort = addr.getPort();
@@ -216,7 +230,7 @@ public class InteractiveLogin {
             });
             httpServer.createContext(callback_endpoint_path, exchange -> {
                 System.out.println("received redirect URI with authorization code from web server");
-                authorizationCodeURIQueue.add(exchange.getRequestURI().toString());
+                authorizationCodeURIQueue.offer(exchange.getRequestURI().toString());
                 System.out.println("added redirect URI to queue");
                 // redirect the user to https://vcellapi-test.cam.uchc.edu with a 303 status
                 exchange.getResponseHeaders().add("Location", String.valueOf(successRedirectURI));
@@ -238,11 +252,18 @@ public class InteractiveLogin {
 
             // open browser to authRequestURI
             System.out.println("opening browser to "+authRequestURI);
-            Desktop.getDesktop().browse(authRequestURI);
+            if (!SystemBrowser.open(authRequestURI)) {
+                System.out.println("no browser could be opened, showing the login address instead");
+                loginAddressWindow = InteractiveLogin.showLoginAddress(authRequestURI,
+                        () -> authorizationCodeURIQueue.offer(InteractiveLogin.LOGIN_CANCELLED));
+            }
 
             System.out.println("waiting up to 10 minutes for authorization code from web server via queue");
             // wait for authorization response from web server
             String authorizationCodeURI = authorizationCodeURIQueue.poll(600, TimeUnit.SECONDS); // wait for server to process the request
+            if (InteractiveLogin.LOGIN_CANCELLED.equals(authorizationCodeURI)) {
+                throw UserCancelException.CANCEL_GENERIC;
+            }
             System.out.println("authorization code " + authorizationCodeURI + " received from web server via queue");
             if (authorizationCodeURI == null) {
                 String message = "If you desire to login, please click Account -> Login, for the login window has expired.";
@@ -255,11 +276,115 @@ public class InteractiveLogin {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         } finally {
+            if (loginAddressWindow != null) EventQueue.invokeLater(loginAddressWindow::dispose);
             System.out.println("shutting down http server");
             httpServer.stop(0);
             System.out.println("shut down http server");
         }
         return authorizationResponse;
+    }
+
+    /**
+     * Show the login address in a window, for when no browser could be opened. The user opens it in a browser
+     * themselves; the redirect still reaches the local web server, so there is nothing to paste back.
+     * Closing or cancelling the window runs {@code onCancel}. The caller disposes the window.
+     */
+    private static JDialog showLoginAddress(URI authRequestURI, Runnable onCancel) throws InterruptedException {
+        AtomicReference<JDialog> loginAddressWindow = new AtomicReference<>();
+        Runnable createWindow = () -> loginAddressWindow.set(InteractiveLogin.createLoginAddressWindow(authRequestURI, onCancel));
+        if (EventQueue.isDispatchThread()) {
+            createWindow.run();
+            return loginAddressWindow.get();
+        }
+        try {
+            EventQueue.invokeAndWait(createWindow);
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException("Could not show the login address", e.getCause());
+        }
+        return loginAddressWindow.get();
+    }
+
+    private static JDialog createLoginAddressWindow(URI authRequestURI, Runnable onCancel) {
+        JTextField addressField = new JTextField(authRequestURI.toString(), 40);
+        addressField.setEditable(false);
+        addressField.getAccessibleContext().setAccessibleName("Login address");
+        InteractiveLogin.selectFromStart(addressField);
+
+        JButton copyButton = new JButton("Copy Link");
+        copyButton.addActionListener(event -> {
+            StringSelection address = new StringSelection(authRequestURI.toString());
+            Toolkit.getDefaultToolkit().getSystemClipboard().setContents(address, null);
+            addressField.requestFocusInWindow();
+            InteractiveLogin.selectFromStart(addressField);
+        });
+        JButton cancelButton = new JButton("Cancel");
+        cancelButton.addActionListener(event -> onCancel.run());
+
+        JDialog loginAddressWindow = new JDialog((Frame) null, "Log In to VCell", false);
+
+        JPanel message = new JPanel();
+        message.setLayout(new BoxLayout(message, BoxLayout.Y_AXIS));
+        InteractiveLogin.addLine(message, new JLabel("VCell was not able to open your web browser."));
+        InteractiveLogin.addGap(message);
+        InteractiveLogin.addLine(message, new JLabel("If you paste the following link into your browser, VCell can complete its login procedure:"));
+        InteractiveLogin.addLine(message, addressField);
+        boolean isLinux = SystemBrowser.isFreedesktopPlatform();
+        if (isLinux) {
+            InteractiveLogin.addGap(message);
+            InteractiveLogin.addLine(message, new JLabel("You may be missing a system library necessary for VCell to open a web browser."));
+            InteractiveLogin.addLine(message, new JLabel("Try to install the following packages:"));
+            InteractiveLogin.addIndentedLine(message, new JLabel("<html>Debian based systems: <code>gvfs-backends</code>, <code>xdg-utils</code></html>"));
+            InteractiveLogin.addIndentedLine(message, new JLabel("<html>Fedora / Arch based: <code>gvfs</code>, <code>xdg-utils</code></html>"));
+        }
+        Consumer<Component> contactAction = InteractiveLogin.contactVCellAction;
+        if (contactAction != null) {
+            JButton contactButton = new JButton("Contact VCell");
+            contactButton.addActionListener(event -> contactAction.accept(loginAddressWindow));
+            InteractiveLogin.addGap(message);
+            InteractiveLogin.addLine(message, new JLabel(isLinux
+                    ? "If adding the packages does not fix the problem, please contact VCell here:"
+                    : "If this keeps happening, please contact VCell here:"));
+            InteractiveLogin.addLine(message, contactButton);
+        }
+
+        JOptionPane optionPane = new JOptionPane(message, JOptionPane.WARNING_MESSAGE, JOptionPane.DEFAULT_OPTION,
+                null, new Object[]{copyButton, cancelButton}, copyButton);
+        loginAddressWindow.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+        loginAddressWindow.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent event) {
+                onCancel.run();
+            }
+        });
+        loginAddressWindow.setContentPane(optionPane);
+        loginAddressWindow.getRootPane().setDefaultButton(copyButton);
+        loginAddressWindow.pack();
+        loginAddressWindow.setLocationRelativeTo(null);
+        loginAddressWindow.setVisible(true);
+        return loginAddressWindow;
+    }
+
+    private static void addLine(JPanel panel, JComponent line) {
+        line.setAlignmentX(Component.LEFT_ALIGNMENT);
+        // only the link field widens with the window; a button keeps its own size
+        int maximumWidth = line instanceof JTextField ? Integer.MAX_VALUE : line.getPreferredSize().width;
+        line.setMaximumSize(new Dimension(maximumWidth, line.getPreferredSize().height));
+        panel.add(line);
+    }
+
+    private static void addIndentedLine(JPanel panel, JComponent line) {
+        line.setBorder(BorderFactory.createEmptyBorder(0, 16, 0, 0));
+        InteractiveLogin.addLine(panel, line);
+    }
+
+    private static void addGap(JPanel panel) {
+        panel.add(Box.createVerticalStrut(12));
+    }
+
+    /** Select all of the field's text with the caret at the start, so it shows the address's beginning. */
+    private static void selectFromStart(JTextField field) {
+        field.setCaretPosition(field.getText().length());
+        field.moveCaretPosition(0);
     }
 
     private static void pingHttpServer(URL url, String expectedPingResponse) throws IOException, InterruptedException {
@@ -302,7 +427,7 @@ public class InteractiveLogin {
      * @throws ParseException
      */
     private static URI getAuthRequestURI(OIDCProviderMetadata oidcProviderMetadata, URI redirectURI, ClientID clientID,
-                                         Scope scope, State state, CodeVerifier codeVerifier, URI audience) throws URISyntaxException, IOException, ParseException {
+                                         Scope scope, State state, CodeVerifier codeVerifier, URI audience, boolean signUp) throws URISyntaxException, IOException, ParseException {
         // Create the authorization request
         URI authorizationEndpoint = oidcProviderMetadata.getAuthorizationEndpointURI();
 
@@ -314,10 +439,10 @@ public class InteractiveLogin {
                 .customParameter("prompt", "select_account")
                 .state(state)
                 .scope(scope) // Add any other required scopes
-                .codeChallenge(codeVerifier, CodeChallengeMethod.S256)
-                .build();
-
-        return authorizationRequest.toURI();
+                .codeChallenge(codeVerifier, CodeChallengeMethod.S256);
+        // Auth0's hosted login opens on its sign-up screen rather than its log-in screen
+        if (signUp) authorizationRequest.customParameter("screen_hint", "signup");
+        return authorizationRequest.build().toURI();
     }
 
     /**

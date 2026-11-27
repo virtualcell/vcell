@@ -1,5 +1,9 @@
 package cbit.vcell.client;
 
+import org.vcell.documentation.HelpButton;
+import org.vcell.documentation.HelpContext;
+import cbit.vcell.client.laf.NestedMenuBar;
+import cbit.vcell.client.laf.VCellFonts;
 import java.awt.BorderLayout;
 import java.awt.RenderingHints;
 import java.awt.Graphics2D;
@@ -30,6 +34,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.client.logicalwindow.LWChildDialog;
 import org.vcell.client.logicalwindow.LWChildFrame;
+import org.vcell.client.logicalwindow.LWSize;
 import org.vcell.client.logicalwindow.LWContainerHandle;
 import org.vcell.client.logicalwindow.LWFrameOrDialog;
 import org.vcell.client.logicalwindow.LWHandle;
@@ -38,7 +43,7 @@ import org.vcell.client.logicalwindow.LWNamespace;
 import org.vcell.client.logicalwindow.LWTitledDialog;
 import org.vcell.client.logicalwindow.LWTraits;
 import org.vcell.client.logicalwindow.LWTraits.InitialPosition;
-import org.vcell.util.gui.GeneralGuiUtils;
+import org.vcell.util.gui.ShortcutsWizard;
 import org.vcell.util.ProgrammingException;
 import org.vcell.util.gui.GuiUtils;
 
@@ -272,10 +277,12 @@ public class ChildWindowManager {
 		private Boolean resizable = null;
 		private Boolean pack = null;
 		private Dimension size = null;
+		private LWSize lwSize = null;
 		private Boolean isCenteredOnParent = true;
 		private boolean detached = false;
 		/** bounds carried across a detach/reattach, which must rebuild the window */
 		private Rectangle rememberedBounds = null;
+		private java.awt.Dimension rememberedDesignSize = null; // the remembered window's size before text-size scaling
 		private LWModality shownModality = null;
 		
 		
@@ -336,6 +343,10 @@ public class ChildWindowManager {
 			}
 		}
 		
+		/**
+		 * @deprecated a window's preferred size isn't scaled with the text; use {@link #setSize(LWSize)}
+		 */
+		@Deprecated
 		public void setPreferredSize(Dimension preferredSize){
 			this.preferredSize = preferredSize;
 			if (impl!=null){
@@ -359,7 +370,18 @@ public class ChildWindowManager {
 		
 	
 		/**
-		 * @Deprecated -- use layout manager
+		 * Sizes the window in ems, so it grows and shrinks with the text (see {@link LWSize}). Overrides
+		 * {@link #pack()}: use {@link LWSize#fit()} for that.
+		 */
+		public void setSize(LWSize lwSize){
+			this.lwSize = lwSize;
+			if (impl!=null){
+				lwSize.applyTo(impl.self());
+			}
+		}
+
+		/**
+		 * @deprecated a size in pixels; use {@link #setSize(LWSize)}
 		 * @param i
 		 * @param j
 		 */
@@ -372,7 +394,7 @@ public class ChildWindowManager {
 		}
 		
 		/**
-		 * @deprecated -- use layout manager
+		 * @deprecated a size in pixels; use {@link #setSize(LWSize)}
 		 * @param dim
 		 */
 		@Deprecated
@@ -419,9 +441,12 @@ public class ChildWindowManager {
 				// then the way back to it.
 				JMenuBar mb = (detached || modality != LWModality.MODELESS)
 						? LWNamespace.createRightSideIconMenuBar()
-						: new JMenuBar();
+						: new NestedMenuBar();
+				mb.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
+				// a "?" at the far right, when a help page explains what the window shows
+				HelpButton help = HelpContext.windowHelpButton(this.contentPane);
+				if (help != null) mb.add(help, 0);
 				if (modality == LWModality.MODELESS) {
-					mb.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
 					mb.add(createAttachmentMenuItem());
 				}
 				cp.add(mb,BorderLayout.NORTH);
@@ -445,12 +470,17 @@ public class ChildWindowManager {
 			if (size != null){
 				impl.setSize(size);
 			}
+			if (lwSize != null){
+				lwSize.applyTo(impl.self());
+			}
 
 			if (rememberedBounds != null) {
 				// coming back from a detach/reattach: keep the window exactly where the user
 				// had it rather than re-centring it on the parent.
 				impl.self().setBounds(rememberedBounds);
+				VCellFonts.carryDesignSize(rememberedDesignSize, impl.self()); // its size is already scaled
 				rememberedBounds = null;
+				rememberedDesignSize = null;
 			} else if (isCenteredOnParent != null) {
 				impl.setLocationRelativeTo(impl.getParent());
 			}
@@ -508,6 +538,7 @@ public class ChildWindowManager {
 			}
 			boolean wasVisible = impl.isVisible();
 			rememberedBounds = impl.self().getBounds();
+			rememberedDesignSize = VCellFonts.designSize(impl.self()); // so the new window isn't scaled to the text size again
 			// take the content pane back BEFORE disposing, so it is never disposed with the window
 			impl.getContentPane().remove(contentPane);
 			dispose();
@@ -581,7 +612,7 @@ public class ChildWindowManager {
 	public ChildWindowManager(JFrame parent){
 		this.parent = parent;
 		owner = LWNamespace.findLWOwner(parent);
-		GeneralGuiUtils.addCloseWindowKeyboardAction(this.parent.getRootPane());
+		ShortcutsWizard.addCloseWindowShortcut(this.parent.getRootPane());
 	}
 	
 	public ChildWindow addChildWindow(Container contentPane, Object contextObject, String title){

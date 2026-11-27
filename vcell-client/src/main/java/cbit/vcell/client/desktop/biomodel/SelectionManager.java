@@ -25,8 +25,10 @@ public class SelectionManager {
 		pathway,
 		model,	
 		
+		mathematics_summary,
 		parameters_functions,
 		predefined_symbols,
+		model_unit_system,
 		
 		data,	
 		applications,	
@@ -42,6 +44,7 @@ public class SelectionManager {
 		pathway_objects,
 		biopax_summary,
 		biopax_tree,
+		pathway_lookup,
 		
 		geometry_definition,
 		structure_mapping,

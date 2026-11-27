@@ -427,16 +427,9 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 			}
 			if (hash.containsKey(TASK_ABORTED_BY_ERROR)) {
 				// something went wrong
-				StringBuffer allCausesErrorMessageSB = new StringBuffer();
 				Throwable causeError = (Throwable)hash.get(TASK_ABORTED_BY_ERROR);
 				lg.error(causeError);
-				do{
-					// API exception is complicated, and would be confusing for end users
-					if (!(causeError.getClass() == ApiException.class)){
-						allCausesErrorMessageSB.append(causeError.getClass().getSimpleName()).append("-").append(causeError.getMessage() == null || causeError.getMessage().length() == 0 ? "" : causeError.getMessage());
-						allCausesErrorMessageSB.append("\n");
-					}
-				}while((causeError = causeError.getCause()) != null);
+				String allCausesErrorMessage = ClientTaskDispatcher.describeFailure(causeError);
 				if (requester == null) {
 					System.out.println("ClientTaskDispatcher.dispatch(), requester is null, dialog has no parent, please try best to fix it!!!");
 					Thread.dumpStack();
@@ -452,7 +445,7 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 						lg.info("Unexpected " + STACK_TRACE_ARRAY + " obj " + obj);
 					}
 				}
-				PopupGenerator.showErrorDialog(requester, allCausesErrorMessageSB.toString(), (Throwable)hash.get(TASK_ABORTED_BY_ERROR));
+				PopupGenerator.showErrorDialog(requester, allCausesErrorMessage, (Throwable)hash.get(TASK_ABORTED_BY_ERROR));
 			} else if (hash.containsKey(TASK_ABORTED_BY_USER)) {
 				// depending on where user canceled we might want to automatically start a new job
 				dispatchFollowUp(hash);
@@ -697,6 +690,20 @@ private static StringBuilder initStringBuilder(AsynchClientTask currentTask) {
 	StringBuilder sb = new StringBuilder();
 	sb.append("Data error for task " + currentTask.getTaskName() + '\n');
 	return sb;
+}
+
+/**
+ * The message an aborted task chain shows: each cause in turn, as "ClassName-message" lines (an ApiException's own
+ * line is left out: it is complicated, and would be confusing for end users).
+ */
+public static String describeFailure(Throwable failure) {
+	StringBuilder allCauses = new StringBuilder();
+	for (Throwable cause = failure; cause != null; cause = cause.getCause()) {
+		if (cause.getClass() == ApiException.class) continue;
+		String message = cause.getMessage() == null ? "" : cause.getMessage();
+		allCauses.append(cause.getClass().getSimpleName()).append("-").append(message).append("\n");
+	}
+	return allCauses.toString();
 }
 
 //package

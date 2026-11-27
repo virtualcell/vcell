@@ -10,6 +10,7 @@
 
 package cbit.vcell.solver.ode.gui;
 
+import cbit.vcell.client.laf.VCellColors;
 import cbit.plot.Plot2D;
 import cbit.plot.PlotData;
 import cbit.plot.SingleXPlot2D;
@@ -296,8 +297,7 @@ private javax.swing.JLabel getCurLabel() {
 			ivjCurLabel = new javax.swing.JLabel();
 			ivjCurLabel.setName("CurLabel");
 			ivjCurLabel.setText("Value");
-			ivjCurLabel.setBackground(java.awt.Color.lightGray);
-			ivjCurLabel.setForeground(java.awt.Color.black);
+			ivjCurLabel.setBackground(VCellColors.getSubtleBackground());
 			ivjCurLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
 			// user code begin {1}
 			// user code end
@@ -342,7 +342,6 @@ private javax.swing.JLabel getJLabelSensitivityParameter() {
 			ivjJLabelSensitivityParameter = new javax.swing.JLabel();
 			ivjJLabelSensitivityParameter.setName("JLabelSensitivityParameter");
 			ivjJLabelSensitivityParameter.setText(" ");
-			ivjJLabelSensitivityParameter.setForeground(java.awt.Color.black);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -456,7 +455,6 @@ private javax.swing.JLabel getMaxLabel() {
 			ivjMaxLabel.setName("MaxLabel");
 			ivjMaxLabel.setText("1");
 			ivjMaxLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-			ivjMaxLabel.setForeground(java.awt.Color.black);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -479,8 +477,7 @@ private javax.swing.JLabel getMinLabel() {
 			ivjMinLabel = new javax.swing.JLabel();
 			ivjMinLabel.setName("MinLabel");
 			ivjMinLabel.setText("0");
-			ivjMinLabel.setBackground(java.awt.Color.lightGray);
-			ivjMinLabel.setForeground(java.awt.Color.black);
+			ivjMinLabel.setBackground(VCellColors.getSubtleBackground());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -769,6 +766,11 @@ private void initConnections() throws java.lang.Exception {
 		public Component getListCellRendererComponent(JList list, Object value,
 				int index, boolean isSelected, boolean cellHasFocus) {
 			super.getListCellRendererComponent(list,value,index,isSelected,cellHasFocus);
+			if (isSelected) {
+				// plain Colors: Synth themes (Nimbus) repaint a UIResource background with the label's own
+				setBackground(new Color(list.getSelectionBackground().getRGB()));
+				setForeground(new Color(list.getSelectionForeground().getRGB()));
+			}
 			ODEDataInterface mdi = getMyDataInterface();
 			if (mdi == null) {
 				return this;
@@ -795,12 +797,11 @@ private void initConnections() throws java.lang.Exception {
 					tooltipString = varName;
 				}
 				setToolTipText(tooltipString);
-				if (cd instanceof ODESolverResultSetColumnDescription odeSolverResultSetColumnDescription) {
-					if (odeSolverResultSetColumnDescription.isTrivial()) {
-						setForeground(Color.gray);
-					} else {
-						setForeground(Color.black);
-					}
+				// dim trivial species halfway toward the background (gray on a white list, as before); others keep the theme's text color
+				if (!isSelected && cd instanceof ODESolverResultSetColumnDescription odeSolverResultSetColumnDescription
+						&& odeSolverResultSetColumnDescription.isTrivial()) {
+					Color fg = list.getForeground(), bg = list.getBackground();
+					setForeground(new Color((fg.getRed() + bg.getRed()) / 2, (fg.getGreen() + bg.getGreen()) / 2, (fg.getBlue() + bg.getBlue()) / 2));
 				}
 //			setOpaque(true);
 			}

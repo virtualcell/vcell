@@ -10,6 +10,7 @@
 
 package cbit.vcell.geometry.gui;
 
+import cbit.vcell.client.laf.VCellFonts;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
@@ -341,7 +342,7 @@ public class HistogramPanel extends JPanel {
 		
 	};
 	private void init(){
-		applyButton.setFont(Font.decode("Dialog-BOLD-12"));
+		VCellFonts.setStyle(applyButton, Font.BOLD);
 //		hideButton.setFont(Font.decode("Dialog-10"));
 		setLayout(new HistogramLayoutManager());
 		this.add(getVertSlider());
@@ -358,7 +359,7 @@ public class HistogramPanel extends JPanel {
 //		this.add(moveScrollBar);
 //		moveScrollBar.setOrientation(JScrollBar.HORIZONTAL);
 		getHorzOffsetSlider().setEnabled(false);
-		titleJLabel.setFont(titleJLabel.getFont().deriveFont(Font.BOLD,16f));
+		VCellFonts.setCategory(titleJLabel, VCellFonts.Category.TITLE);
 		
 		getVertSlider().setToolTipText("Scale pixel 'count' display");
 		getHorzScaleSlider().setToolTipText("Zoom pixel 'value' display");

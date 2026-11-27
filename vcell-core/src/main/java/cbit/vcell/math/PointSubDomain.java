@@ -97,7 +97,7 @@ public boolean compareEqual(Matchable object) {
 		if (!super.compareEqual0(other)){
 			return false;
 		}
-		if (!Compare.isEqualFields(this,other)) {
+		if (Compare.hasNonEqualFields(this, other)) {
 			return false;
 		}
 		return true;

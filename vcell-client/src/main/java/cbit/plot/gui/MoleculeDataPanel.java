@@ -1,5 +1,6 @@
 package cbit.plot.gui;
 
+import cbit.vcell.client.laf.VCellColors;
 import cbit.vcell.client.data.ODEDataViewer;
 import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.math.ReservedVariable;
@@ -34,6 +35,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import cbit.vcell.client.laf.VCellFonts;
 
 public class MoleculeDataPanel extends AbstractDataPanel {
 
@@ -80,15 +82,15 @@ public class MoleculeDataPanel extends AbstractDataPanel {
             JLabel lbl = (JLabel) c;
             Object id = table.getColumnModel().getColumn(column).getIdentifier();
             if (!(id instanceof MoleculeColumnInfo)) {      // time column w. unit in dark red
-                lbl.setText("<html><center>" +"time" +"<br/><font size='2'>" +
-                            "<font color='#8B0000'> [seconds]</font></font>" + "</center></html>");
+                lbl.setText("<html><center>" +"time" +"<br/>" + MoleculeDataPanel.captionStart() +
+                            "<font color='" + VCellColors.toHtmlColor(VCellColors.getWarningForeground()) + "'> [seconds]</font></span>" + "</center></html>");
                 return lbl;
             }
             MoleculeColumnInfo info = (MoleculeColumnInfo) id;
             String statLabel = "<b>" + info.subStatistic.uiLabel + "</b>";  // Statistic label (bold)
-            String unit = "<font color=\"#8B0000\"> [molecules]</font>";    // Unit in dark red
+            String unit = "<font color=\"" + VCellColors.toHtmlColor(VCellColors.getWarningForeground()) + "\"> [molecules]</font>";    // Unit in dark red
             lbl.setText("<html><center>" + info.entityName + "<br/>" +
-                        "<font size='2'>" + statLabel + unit + "</font></center></html>"
+                        MoleculeDataPanel.captionStart() + statLabel + unit + "</span></center></html>"
             );
             return lbl;
         }
@@ -364,4 +366,9 @@ public class MoleculeDataPanel extends AbstractDataPanel {
         }
     }
 
+
+    // Opens the smaller text of a column heading's second line, at the current caption size; closed by </span>
+    private static String captionStart() {
+        return "<span style='font-size: " + VCellFonts.getFont(VCellFonts.Category.CAPTION).getSize() + "pt'>";
+    }
 }

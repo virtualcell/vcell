@@ -25,13 +25,11 @@ import {HeroComponent} from './components/hero/hero.component';
 import {HomeContentComponent} from './components/home-content/home-content.component';
 import {LoadingComponent} from './components/loading/loading.component';
 import {AuthHttpInterceptor, AuthModule} from '@auth0/auth0-angular';
-import { environment as env} from '../environments/environment';
+import { siteOrigin } from './site-origin';
 import {PublicationListComponent} from './components/publication-list/publication-list.component';
 import {PublicationEditComponent} from './components/publication-edit/publication-edit.component';
 import {ApiModule, Configuration as ApiConfiguration} from "./core/modules/openapi";
 import {VcellIdentityComponent} from "./components/vcell-identity/vcell-identity.component";
-import {BaseuriConfigService} from "./config/baseuri-config.service";
-import {BaseuriConfig} from "./config/baseuri-config";
 import {MatCardModule} from "@angular/material/card";
 import {MatCheckboxModule} from "@angular/material/checkbox";
 import {LoginSuccessComponent} from "./pages/login-success/login-success.component";
@@ -45,7 +43,7 @@ const { domain, clientId, errorPath } = auth_config as {
 
 export function apiConfigFactory() {
   return new ApiConfiguration({
-    basePath: env.auth.authorizationParams.audience,
+    basePath: siteOrigin,
   });
 }
 
@@ -76,13 +74,13 @@ export function apiConfigFactory() {
       clientId: auth_config.clientId,
       authorizationParams: {
         scope: 'openid profile email offline_access',
-        audience: env.auth.authorizationParams.audience,
+        audience: siteOrigin,
         redirect_uri: window.location.origin,
         prompt: "select_account"
       },
       errorPath: auth_config.errorPath,
       httpInterceptor: {
-        allowedList: env.httpInterceptor.allowedList
+        allowedList: [`${siteOrigin}/api/*`]
       }
     }),
     BrowserAnimationsModule,
@@ -121,7 +119,6 @@ export function apiConfigFactory() {
     {
       provide: ApiConfiguration,
       useFactory: apiConfigFactory,
-      deps: [BaseuriConfigService]
     }
 
   ],

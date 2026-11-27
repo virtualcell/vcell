@@ -10,6 +10,9 @@
 
 package org.vcell.optimization.gui;
 
+import cbit.vcell.client.laf.VCellFonts;
+import cbit.vcell.client.laf.VCellColors;
+import cbit.vcell.client.laf.VCellLookAndFeel;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -116,7 +119,7 @@ public class CopasiOptimizationMethodsHelpPanel extends JPanel
 		if(contentPanel == null)
 		{
 			contentPanel = new JPanel(new GridBagLayout());
-			contentPanel.setBackground(Color.white);
+			contentPanel.setBackground(VCellLookAndFeel.getContentBackground());
 			int gridy = 0;
 			GridBagConstraints gbc = new GridBagConstraints();
 			gbc.gridx = 0; 
@@ -124,7 +127,7 @@ public class CopasiOptimizationMethodsHelpPanel extends JPanel
 			gbc.insets = new java.awt.Insets(0, 4, 10, 4);
 			gbc.anchor = GridBagConstraints.CENTER;
 			JLabel copasiOptLabel = new JLabel("COPASI Optimizatin Methods");
-			copasiOptLabel.setFont(new Font("Tahoma", Font.BOLD, 13));
+			VCellFonts.setCategory(copasiOptLabel, VCellFonts.Category.HEADING);
 			contentPanel.add(new JLabel("COPASI Optimizatin Methods"), gbc);
 
 			for(int i=0; i<CopasiOptimizationMethodType.values().length; i++)
@@ -152,7 +155,7 @@ public class CopasiOptimizationMethodsHelpPanel extends JPanel
 			
 			infoTextPane.setCaretPosition(0);
 			infoTextPane.setEditable(false);
-			infoTextPane.setFont(infoTextPane.getFont().deriveFont(Font.BOLD));
+			VCellFonts.setCategory(infoTextPane, VCellFonts.Category.HEADING);
 			infoTextPane.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
 			infoTextPane.setPreferredSize(new Dimension(520,400));
 			
@@ -235,11 +238,11 @@ public class CopasiOptimizationMethodsHelpPanel extends JPanel
 		{
 			if(methodStr.equals(methods[i].getDisplayName()))
 			{
-				methodLabels[i].setColor(Color.red);
+				methodLabels[i].setColor(VCellColors.getErrorForeground());
 			}
 			else
 			{
-				methodLabels[i].setColor(Color.blue);
+				methodLabels[i].setColor(VCellColors.getValueForeground());
 			}
 		}
 	}

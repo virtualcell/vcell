@@ -242,6 +242,11 @@
 					<groupId>org.jdom</groupId>
 					<artifactId>jdom2</artifactId>
 				</exclusion>
+				<exclusion>
+					<!-- JNA 3.0.9 (Intel-only native lib) shadows modern net.java.dev.jna:jna; breaks on arm64 -->
+					<groupId>com.sun.jna</groupId>
+					<artifactId>jna</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 		<!-- see https://github.com/SemsProject/CombineArchive for more information -->
@@ -412,9 +417,9 @@
 		    <version>${commons-pool2.version}</version>
 		</dependency>
 		<dependency>
-			<!-- Tagged fork under the virtualcell org, see jhdf.version in the parent pom -->
-			<groupId>com.github.virtualcell</groupId>
-			<artifactId>vcell-jhdf</artifactId>
+			<!-- Upstream master commit built by JitPack, see jhdf.version in the parent pom -->
+			<groupId>com.github.jamesmudd</groupId>
+			<artifactId>jhdf</artifactId>
 			<version>${jhdf.version}</version>
 			<exclusions>
 				<exclusion>

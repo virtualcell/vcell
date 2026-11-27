@@ -95,7 +95,9 @@ jobs:
 
           selected=""
           consider() {
-            if printf '%s\n' "${changed}" | grep -qE "$2"; then
+            # A here-string, not `printf | grep -q`: under pipefail a long list makes printf die
+            # of SIGPIPE after grep's first match, and the 141 reads as "no files changed".
+            if grep -qE "$2" <<< "${changed}"; then
               selected="${selected:+${selected},}\"$1\""
               echo "::notice::CodeQL $1: runs"
             else

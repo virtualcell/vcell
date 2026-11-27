@@ -10,7 +10,8 @@
 
 package cbit.vcell.client.task;
 
-import java.awt.Dimension;
+import org.vcell.documentation.HelpIds;
+import org.vcell.documentation.HelpContext;
 import java.text.DecimalFormat;
 import java.util.Hashtable;
 
@@ -27,6 +28,7 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.TaskCallbackMessage;
 import cbit.vcell.mapping.TaskCallbackMessage.TaskCallbackStatus;
 import cbit.vcell.server.bionetgen.BNGExecutorService;
+import org.vcell.client.logicalwindow.LWSize;
 
 public class ReturnBNGOutput extends AsynchClientTask {
 	private static final String message = "Return BioNetGen output to requester...";
@@ -102,18 +104,18 @@ public void run(Hashtable<String, Object> hashTable) throws Exception {
 
 private void validateConstraints(BNGOutputSpec outputSpec) {
 	NetworkConstraints nc = owner.getSimulationContext().getNetworkConstraints();
-	Dimension dim = new Dimension(380, 210);
+	LWSize size = LWSize.ems(32, 17.5f);
 	boolean showStoichiometryTable = false;
 	if(nc.isStoichiometryDifferent()) {
 		showStoichiometryTable = true;
-		dim = new Dimension(380, 310);	// make it larger to accommodate the table
+		size = LWSize.ems(32, 26);	// make it larger to accommodate the table
 	}
 	ValidateConstraintsPanel panel = new ValidateConstraintsPanel(owner, showStoichiometryTable);
 	ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(owner);
+	HelpContext.setPage(panel, HelpIds.NETWORK_SPECIFICATIONS);
 	ChildWindow childWindow = childWindowManager.addChildWindow(panel, panel, "Apply the new constraints?");
-	childWindow.pack();
 	panel.setChildWindow(childWindow);
-	childWindow.setPreferredSize(dim);
+	childWindow.setSize(size);
 	childWindow.showModal();
 	if(panel.getButtonPushed() == ValidateConstraintsPanel.ActionButtons.Apply) {
 		System.out.println("pressed APPLY from task");

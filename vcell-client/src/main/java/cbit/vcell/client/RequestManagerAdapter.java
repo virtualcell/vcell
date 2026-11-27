@@ -62,6 +62,8 @@ public class RequestManagerAdapter implements RequestManager {
 	@Override
 	public void exportDocument(TopLevelWindowManager manager, FileFilter forceFileFilter) {}
 	@Override
+	public void exportDocumentOfferingSave(DocumentWindowManager manager) {}
+	@Override
 	public AsynchMessageManager getAsynchMessageManager() { return null; }
 	@Override
 	public ConnectionStatus getConnectionStatus() { return null; }

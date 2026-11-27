@@ -10,6 +10,8 @@
 
 package cbit.vcell.microscopy.gui;
 
+import cbit.vcell.client.laf.CategoryTitledBorder;
+import cbit.vcell.client.laf.VCellFonts;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -55,7 +57,7 @@ public class FRAPParametersPanel_NotUsed extends JPanel {
 		setLayout(gridBagLayout);
 
 		final JPanel panel = new JPanel();
-		panel.setBorder(new TitledBorder(new EtchedBorder(Color.gray, Color.lightGray), "Initial FRAP Model Parameters", TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, new Font("", Font.BOLD, 12), null));
+		panel.setBorder(new CategoryTitledBorder(new EtchedBorder(Color.gray, Color.lightGray), "Initial FRAP Model Parameters", TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, VCellFonts.Category.HEADING));
 		final GridBagLayout gridBagLayout_1 = new GridBagLayout();
 		gridBagLayout_1.columnWidths = new int[] {7,0,0};
 		gridBagLayout_1.rowHeights = new int[] {0,7,7,7,7,0,7,7};
@@ -69,7 +71,7 @@ public class FRAPParametersPanel_NotUsed extends JPanel {
 		gridBagConstraints.gridx = 1;
 
 		estimationPanel = new FRAPEstimationPanel_NotUsed();
-		estimationPanel.setBorder(new TitledBorder(new EtchedBorder(Color.gray, Color.lightGray), "FRAP Model Parameter Assistant (Select 'Estimation Method')", TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, new Font("", Font.BOLD, 12), null));
+		estimationPanel.setBorder(new CategoryTitledBorder(new EtchedBorder(Color.gray, Color.lightGray), "FRAP Model Parameter Assistant (Select 'Estimation Method')", TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, VCellFonts.Category.HEADING));
 		estimationPanel.addPropertyChangeListener(
 			new PropertyChangeListener(){
 				public void propertyChange(PropertyChangeEvent evt) {

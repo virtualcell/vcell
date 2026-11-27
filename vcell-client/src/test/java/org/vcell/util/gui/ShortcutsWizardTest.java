@@ -4,11 +4,18 @@ import cbit.vcell.client.task.AsynchClientTask;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 
 import javax.swing.*;
+import java.awt.GraphicsEnvironment;
+import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
@@ -131,5 +138,71 @@ public class ShortcutsWizardTest {
 		ShortcutsWizard.Action action = this.shortcutsWizard.createAction("test", AsynchClientTask.TASKTYPE_SWING_BLOCKING, e -> ignored.add(true));
 		this.shortcutsWizard.configureSelectAll(action);
 		Assertions.assertEquals(1, actionMap.size());
+	}
+
+	@Test
+	public void testKeyStrokesUseTheMenuModifier() {
+		KeyStroke save = ShortcutsWizard.keyStrokeFor(ShortcutsWizard.Shortcut.SAVE);
+		KeyStroke saveAs = ShortcutsWizard.keyStrokeFor(ShortcutsWizard.Shortcut.SAVE_AS);
+		KeyStroke closeWindow = ShortcutsWizard.keyStrokeFor(ShortcutsWizard.Shortcut.CLOSE_WINDOW);
+
+		Assertions.assertEquals(KeyEvent.VK_S, save.getKeyCode());
+		Assertions.assertEquals(KeyEvent.VK_S, saveAs.getKeyCode());
+		Assertions.assertEquals(KeyEvent.VK_W, closeWindow.getKeyCode());
+		int menuModifier = ShortcutsWizardTest.heldKeys(save);
+		Assertions.assertTrue(menuModifier == InputEvent.META_DOWN_MASK || menuModifier == InputEvent.CTRL_DOWN_MASK,
+				"Save is the menu modifier alone, Cmd or Ctrl: " + save);
+		Assertions.assertEquals(menuModifier | InputEvent.SHIFT_DOWN_MASK, ShortcutsWizardTest.heldKeys(saveAs), "Save As adds Shift");
+		Assertions.assertEquals(menuModifier, ShortcutsWizardTest.heldKeys(closeWindow));
+		Assertions.assertFalse(save.isOnKeyRelease(), "a menu accelerator fires on press");
+	}
+
+	// KeyStroke reports old- and new-style modifier bits together; keep only the new-style ones
+	private static int heldKeys(KeyStroke keyStroke) {
+		int newStyleModifiers = InputEvent.META_DOWN_MASK | InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK | InputEvent.ALT_DOWN_MASK;
+		return keyStroke.getModifiers() & newStyleModifiers;
+	}
+
+	@Test
+	public void testCloseWindowShortcutKeepsOtherBindings() {
+		JPanel panel = new JPanel();
+		KeyStroke existing = KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0);
+		panel.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(existing, "refresh");
+		panel.getActionMap().put("refresh", new AbstractAction() {
+			@Override
+			public void actionPerformed(ActionEvent e) {}
+		});
+
+		ShortcutsWizard.addCloseWindowShortcut(panel);
+		ShortcutsWizard.addCloseWindowShortcut(panel); // a second call adds nothing
+
+		InputMap inputMap = panel.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+		Assertions.assertEquals("refresh", inputMap.get(existing));
+		Object closeKey = inputMap.get(ShortcutsWizard.keyStrokeFor(ShortcutsWizard.Shortcut.CLOSE_WINDOW));
+		Assertions.assertNotNull(closeKey);
+		Assertions.assertNotNull(panel.getActionMap().get(closeKey));
+		Assertions.assertEquals(2, inputMap.size());
+	}
+
+	@Test
+	public void testCloseWindowShortcutClosesItsWindow() {
+		Assumptions.assumeFalse(GraphicsEnvironment.isHeadless(), "needs a display to make a window");
+		JFrame frame = new JFrame();
+		JPanel panel = new JPanel();
+		frame.setContentPane(panel);
+		List<WindowEvent> closingEvents = new ArrayList<>();
+		frame.addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent e) {
+				closingEvents.add(e);
+			}
+		});
+		ShortcutsWizard.addCloseWindowShortcut(panel);
+
+		Object closeKey = panel.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).get(ShortcutsWizard.keyStrokeFor(ShortcutsWizard.Shortcut.CLOSE_WINDOW));
+		panel.getActionMap().get(closeKey).actionPerformed(new ActionEvent(panel, ActionEvent.ACTION_PERFORMED, "close"));
+
+		Assertions.assertEquals(1, closingEvents.size(), "the panel's window was asked to close, as its close button would");
+		frame.dispose();
 	}
 }

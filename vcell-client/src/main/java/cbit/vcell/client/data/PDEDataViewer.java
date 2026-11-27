@@ -10,6 +10,9 @@
 
 package cbit.vcell.client.data;
 
+import org.vcell.documentation.HelpContext;
+import org.vcell.documentation.HelpIds;
+import cbit.vcell.client.laf.VCellFonts;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
@@ -171,6 +174,7 @@ import cbit.vcell.solvers.MeshDisplayAdapter;
 import cbit.vcell.util.FunctionRangeGenerator;
 import cbit.vcell.util.FunctionRangeGenerator.FunctionStatistics;
 import cbit.vcell.util.FunctionRangeGenerator.VarStatistics;
+import org.vcell.client.logicalwindow.LWSize;
 /**
  * Insert the type's description here.
  * Creation date: (6/11/2004 6:03:07 AM)
@@ -1043,6 +1047,7 @@ void plotSpaceStats (TSJobResultsSpaceStats tsjrss) {
 	}
 		
 	ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(PDEDataViewer.this);
+	HelpContext.setPage(plotPane, HelpIds.SPATIAL_RESULTS_PLOTS);
 	ChildWindow childWindow = childWindowManager.addChildWindow(plotPane,plotPane,title);
 	childWindow.setIsCenteredOnParent();
 	childWindow.pack();
@@ -1571,7 +1576,7 @@ private javax.swing.JPanel getJPanelLoctionLabels() {
 			localSimLogFilePathTextField.setEnabled(true);
 			localSimLogFilePathTextField.setHorizontalAlignment(SwingConstants.CENTER);
 			localSimLogFilePathTextField.setBorder(null);
-			localSimLogFilePathTextField.setFont(locationLabel.getFont().deriveFont(Font.BOLD));
+			VCellFonts.setCategory(localSimLogFilePathTextField, VCellFonts.Category.HEADING);
 			locationLabelsPanel.add(localSimLogFilePathTextField);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
@@ -1686,6 +1691,7 @@ private JButton getPlotButton() {
 			plotButton = new JButton("Plot");
 			plotButton.setHorizontalTextPosition(SwingConstants.LEFT);
 			plotButton.setIcon(new DownArrowIcon());
+			DownArrowIcon.keepPushButtonLook(plotButton);
 			plotButton.addActionListener(ivjEventHandler);
 			plotButton.setEnabled(false);
 		} catch (java.lang.Throwable ivjExc) {
@@ -1701,6 +1707,7 @@ private JButton getROIButton() {
 			roiButton = new JButton("ROI");
 			roiButton.setHorizontalTextPosition(SwingConstants.LEFT);
 			roiButton.setIcon(new DownArrowIcon());
+			DownArrowIcon.keepPushButtonLook(roiButton);
 			roiButton.addActionListener(ivjEventHandler);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
@@ -2227,10 +2234,26 @@ private void initialize() {
 		setLayout(new java.awt.BorderLayout());
 		setSize(725, 569);
 		add(getJTabbedPane1(), "Center");
+		HelpContext.setPage(this, this::helpPage); // Help > VCell Help, and the results window's "?"
 		initConnections();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
+}
+
+// the help page about the open tab
+private String helpPage() {
+	java.awt.Component shown = this.getJTabbedPane1().getSelectedComponent();
+	if (shown == null) return HelpIds.SPATIAL_RESULTS;
+	if (shown == this.dataProcessingResultsPanel) return HelpIds.POST_PROCESSING_STATISTICS;
+	if (shown == this.postProcessPdeDataViewerPanel) return HelpIds.POST_PROCESSING_IMAGES;
+	String title = this.getJTabbedPane1().getTitleAt(this.getJTabbedPane1().getSelectedIndex());
+	if (EXPORT_DATA_TABNAME.equals(title)) return HelpIds.EXPORTING_SPATIAL_RESULTS;
+	if (this.viewDataTabbedPane != null && this.viewDataTabbedPane.getSelectedIndex() >= 0
+			&& CurrentView.SURFACE_VIEW.title.equals(this.viewDataTabbedPane.getTitleAt(this.viewDataTabbedPane.getSelectedIndex()))) {
+		return HelpIds.SPATIAL_RESULTS_SURFACE_VIEW;
+	}
+	return HelpIds.SPATIAL_RESULTS_SLICE_VIEW;
 }
 
 /**
@@ -2499,8 +2522,9 @@ private void showKymograph() {
 			}
 			
 			ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(PDEDataViewer.this);
+			HelpContext.setPage(kymographPanel, HelpIds.SPATIAL_RESULTS_PLOTS);
 			ChildWindow childWindow = childWindowManager.addChildWindow(kymographPanel, kymographPanel,  title);
-			childWindow.setSize(new Dimension(700,500));
+			childWindow.setSize(LWSize.ems(58, 42));
 			childWindow.show();
 			
 			
@@ -2577,6 +2601,7 @@ private void showSpatialPlot() {
 					String title = createContextTitle(PDEDataViewer.this.isPostProcess(),"Spatial Plot:'"+varName+"' ",getPdeDataContext(),getSimulationModelInfo(),getSimulation());
 					
 					ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(PDEDataViewer.this);
+					HelpContext.setPage(plotPane, HelpIds.SPATIAL_RESULTS_PLOTS);
 					ChildWindow childWindow = childWindowManager.addChildWindow(plotPane,plotPane,title);
 					childWindow.setIsCenteredOnParent();
 					childWindow.pack();
@@ -2677,6 +2702,7 @@ private void showTimePlot() {
 					PdeTimePlotMultipleVariablesPanel pdeTimePlotPanel = new PdeTimePlotMultipleVariablesPanel(multiTimePlotHelper,singlePointSSOnly, singlePointSSOnly2, tsJobResultsNoStats);
 					ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(PDEDataViewer.this);
 					String prefix = "Time Plot ("+getPDEPlotControlPanel1().getPlotVariableJList().getSelectedValue().getVariableType().getTypeName()+") ";
+					HelpContext.setPage(pdeTimePlotPanel, HelpIds.SPATIAL_RESULTS_PLOTS);
 					ChildWindow childWindow = childWindowManager.addChildWindow(pdeTimePlotPanel, pdeTimePlotPanel, createContextTitle(PDEDataViewer.this.isPostProcess(),prefix,getPdeDataContext(),getSimulationModelInfo(),getSimulation()));
 					childWindow.getParent().addWindowListener(new WindowAdapter() {
 						@Override
@@ -2700,7 +2726,7 @@ private void showTimePlot() {
 //							multiTimePlotHelper.removeallPropertyChangeListeners();
 //						}
 //					});
-					childWindow.setSize(900, 550);
+					childWindow.setSize(LWSize.ems(75, 46));
 					childWindow.setIsCenteredOnParent();
 					childWindow.show();
 				}catch(Exception e){
@@ -3267,7 +3293,7 @@ private BitSet calcInDomainBitSet(){
 }
 
 private void calcAutoAllTimes() throws Exception {
-	HashSet<String> stateVarNames = null;
+	Set<String> stateVarNames = null;
 	Variable theVariable = null;
 	boolean bStateVar = true;
 	boolean isFieldData = getPdeDataContext().getVCDataIdentifier() instanceof ExternalDataIdentifier || getPdeDataContext().getVCDataIdentifier() instanceof MergedDataInfo;

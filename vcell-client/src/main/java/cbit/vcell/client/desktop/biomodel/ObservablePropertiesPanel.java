@@ -10,6 +10,10 @@
 
 package cbit.vcell.client.desktop.biomodel;
 
+import cbit.vcell.client.laf.CategoryTitledBorder;
+import cbit.vcell.client.laf.VCellFonts;
+import cbit.vcell.client.laf.VCellColors;
+import cbit.vcell.client.laf.VCellLookAndFeel;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -433,10 +437,9 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		Border loweredEtchedBorder = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
 		Border loweredBevelBorder = BorderFactory.createLoweredBevelBorder();
 
-		TitledBorder annotationBorder = BorderFactory.createTitledBorder(loweredEtchedBorder, " Annotation ");
+		TitledBorder annotationBorder = new CategoryTitledBorder(loweredEtchedBorder, " Annotation ", VCellFonts.Category.HEADING);
 		annotationBorder.setTitleJustification(TitledBorder.LEFT);
 		annotationBorder.setTitlePosition(TitledBorder.TOP);
-		annotationBorder.setTitleFont(getFont().deriveFont(Font.BOLD));
 		
 		shapePanel = new LargeShapePanel() {
 			@Override
@@ -501,7 +504,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 			}
 		};
 		shapePanel.setBorder(border);
-		shapePanel.setBackground(Color.white);
+		shapePanel.setBackground(VCellColors.getShapeCanvasBackground());
 		shapePanel.setLayout(null);
 		shapePanel.setZoomFactor(-1);
 		shapePanel.setEditable(true);
@@ -720,7 +723,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		setName("ObservablePropertiesPanel");
 		setLayout(new BorderLayout());
 		add(containerOfScrollPanel, BorderLayout.CENTER);
-		setBackground(Color.white);
+		setBackground(VCellLookAndFeel.getContentBackground());
 		
 //		annotationTextArea.addFocusListener(eventHandler);
 //		annotationTextArea.addMouseListener(eventHandler);

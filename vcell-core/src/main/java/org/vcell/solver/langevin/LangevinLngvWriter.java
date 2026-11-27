@@ -924,7 +924,7 @@ public class LangevinLngvWriter {
 			ParticleProperties pp = entry.getKey();
 			SubDomain subDomain = entry.getValue();
 			
-			ArrayList<ParticleInitialCondition> particleInitialConditions = pp.getParticleInitialConditions();
+			List<ParticleInitialCondition> particleInitialConditions = pp.getParticleInitialConditions();
 			Variable var = pp.getVariable();
 			if(!(var instanceof ParticleSpeciesPattern)) {
 				continue;

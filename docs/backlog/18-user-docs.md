@@ -1,7 +1,7 @@
 # Group: User Documentation & Materials — 9 issues
 
-In-app help (`vcell-client/UserDocumentation/`, compiled to JavaHelp and to HTML at
-vcell.org/webstart), plus website integration and the VCML specification.
+In-app help (`vcell-client/UserDocumentation/`, Markdown shown by the client's help viewer and
+exported to HTML at vcell.org/webstart), plus website integration and the VCML specification.
 
 **Epic:** `#1031` (enhance user docs and training, 4/9 done, two of its remaining items point at
 the separate `virtualcell/usermaterials` repo).

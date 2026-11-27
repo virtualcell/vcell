@@ -2696,6 +2696,9 @@ private Element getXML(MembraneSubDomain param) throws XmlParseException{
 	membrane.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
 	membrane.setAttribute(XMLTags.InsideCompartmentTag, mangle(param.getInsideCompartment().getName()));
 	membrane.setAttribute(XMLTags.OutsideCompartmentTag, mangle(param.getOutsideCompartment().getName()));
+	if (param.isDilution()) {
+		membrane.setAttribute(XMLTags.DilutionAttrTag, "true");
+	}
 	
 	//Add boundaryType subelements
 	Element boundary;

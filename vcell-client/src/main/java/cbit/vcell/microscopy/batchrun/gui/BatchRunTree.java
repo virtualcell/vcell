@@ -10,6 +10,7 @@
 
 package cbit.vcell.microscopy.batchrun.gui;
 
+import cbit.vcell.client.laf.VCellFonts;
 import java.awt.Font;
 import java.io.File;
 import java.util.ArrayList;
@@ -42,7 +43,7 @@ public class BatchRunTree extends JTree {
 	    setModel(treeModel);
 	    //selection model
 	    getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
-	    setFont(new Font("Tahoma", Font.PLAIN, 11));
+	    VCellFonts.setCategory(this, VCellFonts.Category.BODY);
  
     }
 

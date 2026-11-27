@@ -10,6 +10,7 @@
 
 package cbit.vcell.simdata.gui;
 
+import cbit.vcell.client.laf.VCellFonts;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -266,7 +267,7 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 		pointJList.setVisibleRowCount(3);
 		pointJList.setBackground(getBackground());
 		pointJList.setSelectionBackground(getBackground());
-		pointJList.setSelectionForeground(Color.black);
+		pointJList.setSelectionForeground(pointJList.getForeground());
 		
 		plotPane = new PlotPane();
 		double[][] plotDatas = tsJobResultsNoStats.getTimesAndValuesForVariable(varName);
@@ -291,7 +292,7 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 		setLayout(new GridBagLayout());		
 		
 		JLabel label = new JLabel("Selected Points");
-		label.setFont(label.getFont().deriveFont(Font.BOLD));
+		VCellFonts.setCategory(label, VCellFonts.Category.HEADING);
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = 0;
@@ -323,7 +324,7 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 		add(sp, gbc);
 		
 		label = new JLabel("Y Axis");
-		label.setFont(label.getFont().deriveFont(Font.BOLD));
+		VCellFonts.setCategory(label, VCellFonts.Category.HEADING);
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0; 
 		gbc.gridy = 2;

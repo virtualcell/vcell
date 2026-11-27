@@ -42,7 +42,6 @@ import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.solvers.FVSolverStandalone;
 import cbit.vcell.solvers.MembraneElement;
 import cbit.vcell.solvers.mb.MovingBoundaryReader;
-import cbit.vcell.util.AmplistorUtils;
 import cbit.vcell.util.EventRateLimiter;
 import cbit.vcell.xml.XmlParseException;
 import com.google.inject.Inject;
@@ -3374,17 +3373,18 @@ private File getPrimaryUserDir(User user, boolean bVerify) throws FileNotFoundEx
 	return null;
 }
 
-private File getSecondaryUserDir(User user) throws FileNotFoundException {
-	File userDir = getUserDirectoryName(secondaryRootDirectory, user);
-	if (userDir.exists()){
-		if (userDir.isDirectory()){
-			return userDir;
-		}else{
-			throw new FileNotFoundException("file " + userDir.getPath() + " is not a directory");
-		}
-	}else{
+/**
+ * The user's directory on secondary (archive) storage, or null when no secondary root is configured.
+ * Deliberately not checked on disk: secondary storage is an older NFS server that can stop responding
+ * for many minutes, and a check here would make every request wait on it, including requests whose
+ * data is on primary. Callers try primary first and touch this directory only on a miss; a directory
+ * that does not exist simply finds no files there.
+ */
+private File getSecondaryUserDir(User user) {
+	if (secondaryRootDirectory == null){
 		return null;
 	}
+	return getUserDirectoryName(secondaryRootDirectory, user);
 }
 
 public VCData getVCData(VCDataIdentifier vcdID) throws DataAccessException, IOException {
@@ -3408,8 +3408,7 @@ public VCData getVCData(VCDataIdentifier vcdID) throws DataAccessException, IOEx
 			}
 		} else {  // assume vcdID instanceof cbit.vcell.solver.SimulationInfo or a test adapter
 			VCMongoMessage.sendTrace("DataSetControllerImpl.getVCData("+vcdID.getID()+") : creating new SimulationData : <<BEGIN>>");
-			SimulationData.SimDataAmplistorInfo simDataAmplistorInfo = AmplistorUtils.getSimDataAmplistorInfoFromPropertyLoader();
-			vcData = new SimulationData(vcdID, getPrimaryUserDir(vcdID.getOwner(), false), getSecondaryUserDir(vcdID.getOwner()),simDataAmplistorInfo);
+			vcData = new SimulationData(vcdID, getPrimaryUserDir(vcdID.getOwner(), false), getSecondaryUserDir(vcdID.getOwner()));
 			VCMongoMessage.sendTrace("DataSetControllerImpl.getVCData("+vcdID.getID()+") : creating new SimulationData : <<END>>");
 		}
 		if(cacheTable0 != null){
@@ -4181,7 +4180,7 @@ if (name.toUpperCase().contains("SIZE")){
 			VCData vcData = getVCData(vcdID);
 			if(vcData instanceof SimulationData) {
 				SimulationData simData = (SimulationData)vcData;
-				File file = simData.amplistorHelper.getNFSimOutputFile();
+				File file = simData.fileLocator.getNFSimOutputFile();
 				if(!file.exists()) {
 					return null;
 				}

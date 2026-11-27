@@ -198,7 +198,12 @@ public class ResourceUtil {
 	 * otherwise the local solvers directory itself (e.g. a solver launched through docker).
 	 */
 	public static File getSolverLibraryDirectory(String executablePath) throws IOException {
-		File localSolversDirectory = getLocalSolversDirectory().getCanonicalFile();
+		return getSolverLibraryDirectory(executablePath, getLocalSolversDirectory());
+	}
+
+	/** As {@link #getSolverLibraryDirectory(String)}, for a given local solvers directory. */
+	static File getSolverLibraryDirectory(String executablePath, File localSolversDirectory) throws IOException {
+		localSolversDirectory = localSolversDirectory.getCanonicalFile();
 		File executableDirectory = new File(executablePath).getCanonicalFile().getParentFile();
 		for (File dir = executableDirectory; dir != null; dir = dir.getParentFile()) {
 			if (dir.equals(localSolversDirectory)) {
@@ -217,9 +222,13 @@ public class ResourceUtil {
 	 * @throws IOException if more than one subdirectory has the executable
 	 */
 	public static File findSolverExecutable(String basename) throws IOException {
+		return findSolverExecutable(basename, getLocalSolversDirectory());
+	}
+
+	/** As {@link #findSolverExecutable(String)}, in a given local solvers directory. */
+	static File findSolverExecutable(String basename, File localSolversDirectory) throws IOException {
 		OperatingSystemInfo osi = OperatingSystemInfo.getInstance( );
 		String name = basename + osi.getExeBitSuffix();
-		File localSolversDirectory = getLocalSolversDirectory();
 		File[] subdirectories = localSolversDirectory.listFiles(File::isDirectory);
 		File found = null;
 		if (subdirectories != null) {

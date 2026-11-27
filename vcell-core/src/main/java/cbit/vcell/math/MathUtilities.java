@@ -235,9 +235,9 @@ public static Expression substituteModelParameters(Expression exp, SymbolTable s
  */
 public static MathDescription[] getCanonicalMathDescriptions(MathDescription referenceMathDesc, MathDescription testMathDesc) throws MathException, ExpressionException {
 	MathSymbolTableFactory mathSymbolTableFactory = SimulationSymbolTable.createMathSymbolTableFactory();
-	HashSet<String> indepVarNames1 = referenceMathDesc.getStateVariableNames();
-	HashSet<String> indepVarNames2 = testMathDesc.getStateVariableNames();
-	HashSet<String> unionOfVarNames = new HashSet<>(indepVarNames1);
+	Set<String> indepVarNames1 = referenceMathDesc.getStateVariableNames();
+	Set<String> indepVarNames2 = testMathDesc.getStateVariableNames();
+	Set<String> unionOfVarNames = new HashSet<>(indepVarNames1);
 	unionOfVarNames.addAll(indepVarNames2);
 	Map<String, Variable.Domain> indepVars1 = referenceMathDesc.getStateVariables().stream().filter(v -> v.getDomain() != null).collect(Collectors.toMap(v -> v.getName(), v -> v.getDomain()));
 	Map<String, Variable.Domain> indepVars2 = testMathDesc.getStateVariables().stream().filter(v -> v.getDomain() != null).collect(Collectors.toMap(v -> v.getName(), v -> v.getDomain()));
@@ -392,7 +392,7 @@ public static MathDescription[] getCanonicalMathDescriptions(MathDescription ref
 		//  e.g. Function depVar = K0 + K1*indepVar1 + K2*indepVar2 + ... + Kn*indepVarN
 		// if it doesn't fit this form, then math's are not equivalent.
 		//
-		HashSet<String> stateVarSet = newMath.getStateVariableNames();
+		Set<String> stateVarSet = newMath.getStateVariableNames();
 		// Build the list of variables to be added
 		ArrayList<Function> varsToAdd = new ArrayList<Function>();
 		for (Variable var : newMath.getVariableList()){
