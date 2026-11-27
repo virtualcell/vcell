@@ -12,7 +12,6 @@ package cbit.vcell.modeldb;
 
 import cbit.sql.Field;
 import cbit.vcell.resource.PropertyLoader;
-import cbit.vcell.util.AmplistorUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.db.ConnectionFactory;
@@ -23,7 +22,6 @@ import org.vcell.util.document.KeyValue;
 
 import java.io.*;
 import java.math.BigDecimal;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -116,9 +114,9 @@ public class DBBackupAndClean {
 	}
 	
 	private static void usageExit(){
-		lg.info(DBBackupAndClean.class.getName()+" "+OP_BACKUP+          " dbHostName vcellSchema password dbSrvcName workingDir exportDir {amplistorUser amplistorPasswd}");
-		System.out.println(DBBackupAndClean.class.getName()+" "+OP_CLEAN+           " dbHostName vcellSchema password dbSrvcName workingDir exportDir {amplistorUser amplistorPasswd}");
-		System.out.println(DBBackupAndClean.class.getName()+" "+OP_CLEAN_AND_BACKUP+" dbHostName vcellSchema password dbSrvcName workingDir exportDir {amplistorUser amplistorPasswd}");
+		lg.info(DBBackupAndClean.class.getName()+" "+OP_BACKUP+          " dbHostName vcellSchema password dbSrvcName workingDir exportDir");
+		System.out.println(DBBackupAndClean.class.getName()+" "+OP_CLEAN+           " dbHostName vcellSchema password dbSrvcName workingDir exportDir");
+		System.out.println(DBBackupAndClean.class.getName()+" "+OP_CLEAN_AND_BACKUP+" dbHostName vcellSchema password dbSrvcName workingDir exportDir");
 		System.out.println(DBBackupAndClean.class.getName()+" "+OP_IMPORT+" importServerName dumpFileHostPrefix vcellSchema password importSrvcName workingDir exportDir");
 		System.out.println(DBBackupAndClean.class.getName()+" "+OP_DELSIMSDISK2+     " dbHostName vcellSchema password/pwdfile dbSrvcName tmpDir usersDir {thisUserOnly}");
 		     System.out.println("     (exmpl: "+DBBackupAndClean.class.getName()+" "+OP_DELSIMSDISK2+" vcell-oracle vcell vcpassword/pwdfile ORCLPDB1 /tmp /share/apps/vcell3/users"+")");
@@ -368,7 +366,6 @@ public class DBBackupAndClean {
 		File workingDir;
 		File exportDir;
 		String thisUserOnly;
-//		AmplistorCredential amplistorCredential;
 		
 		File localDMPFile = null;
 		File remoteZipFile = null;
@@ -377,7 +374,6 @@ public class DBBackupAndClean {
 		Boolean bExportSucceed = null;
 		Boolean bCompressSucceed = null;
 		Boolean bRobocopySucceed = null;
-		Boolean bAmplistorSucceed = null;
 
 		ArrayList<String> infoList = new ArrayList<String>();
 		ArrayList<Exception> errorList = new ArrayList<Exception>();
@@ -402,9 +398,6 @@ public class DBBackupAndClean {
 					throw new IllegalArgumentException(e.getMessage(), e);
 				}
 			}
-//			if(args.length == 8){
-//				amplistorCredential = new AmplistorCredential(args[6], args[7]);
-//			}
 			
 			if(!workingDir.exists()){
 				throw new IllegalArgumentException("Working directory"+workingDir.getAbsolutePath()+" does not exist");
@@ -417,9 +410,6 @@ public class DBBackupAndClean {
 			remoteZipFile = new File(exportDir,localDMPFile.getName()+".zip");
 			remoteDMPFile =  new File(exportDir,localDMPFile.getName());	
 		}
-	}
-	private static String getAmplistorDBBackupURL(){
-		return AmplistorUtils.DEFAULT_AMPLI_VCELL_VCDBBACKUP_URL;
 	}
 	private static void tryExport(DBBackupHelper dbBackupHelper){
 		try{
@@ -568,37 +558,6 @@ public class DBBackupAndClean {
 
 	}
 	
-	private static void tryAmplistor(DBBackupHelper dbBackupHelper){
-		if(!Boolean.TRUE.equals(dbBackupHelper.bExportSucceed)){
-			return;
-		}
-//		if(dbBackupHelper.amplistorCredential == null){
-//			return;
-//		}
-		try{
-			if(dbBackupHelper.bCompressSucceed && dbBackupHelper.remoteZipFile.exists()){
-				AmplistorUtils.uploadFile(new URL(getAmplistorDBBackupURL()),dbBackupHelper.remoteZipFile, null/*dbBackupHelper.amplistorCredential*/);
-			}else if(dbBackupHelper.bRobocopySucceed && dbBackupHelper.remoteDMPFile.exists()){
-				AmplistorUtils.uploadFile(new URL(getAmplistorDBBackupURL()),dbBackupHelper.remoteDMPFile, null/*dbBackupHelper.amplistorCredential*/);
-			}else if(dbBackupHelper.bExportSucceed && dbBackupHelper.localDMPFile.exists()){
-				AmplistorUtils.uploadFile(new URL(getAmplistorDBBackupURL()),dbBackupHelper.localDMPFile, null/*dbBackupHelper.amplistorCredential*/);
-			}else{
-				throw new Exception(
-					"Unkown state \n"+
-				"bCompressSucceed="+dbBackupHelper.bCompressSucceed+" reoteCompressExists="+dbBackupHelper.remoteZipFile.exists()+"\n"+
-				"bRobocopySucceed="+dbBackupHelper.bRobocopySucceed+" remoteDMPExists="+dbBackupHelper.remoteDMPFile.exists()+"\n"+
-				"bExportSucceed="+dbBackupHelper.bExportSucceed+" localExportExists="+dbBackupHelper.localDMPFile.exists()+"\n"
-				);
-			}
-			dbBackupHelper.bAmplistorSucceed = true;
-			dbBackupHelper.infoList.add("Amplistor xfer succeeded");
-		}catch(Exception e){
-			dbBackupHelper.bAmplistorSucceed = false;
-			dbBackupHelper.errorList.add(e);
-		}
-
-	}
-	
 	private static void tryCleanup(DBBackupHelper dbBackupHelper){
 		String errorStr = null;
 		if((errorStr = deleteBackup(dbBackupHelper.localDMPFile)) != null){dbBackupHelper.errorList.add(new Exception(errorStr));}
@@ -617,7 +576,6 @@ public class DBBackupAndClean {
 		if(infoSB.length() != 0){
 			try{
 				writeFile(dbBackupHelper.workingDir, baseFileName, infoSB.toString(), false, dbBackupHelper.exportDir);
-				AmplistorUtils.uploadString(getAmplistorDBBackupURL()+getErrorInfoFile(dbBackupHelper.workingDir, baseFileName, false).getName(), null/*dbBackupHelper.amplistorCredential*/,infoSB.toString());
 			}catch(Exception e){
 				dbBackupHelper.errorList.add(e);
 			}
@@ -638,7 +596,6 @@ public class DBBackupAndClean {
 		tryExport(dbBackupHelper);
 		tryCompress(dbBackupHelper);
 		tryRobocopy(dbBackupHelper);
-		tryAmplistor(dbBackupHelper);
 		tryCleanup(dbBackupHelper);
 	}
 //	private static File findExecutableOnPath(String executableName)   
@@ -1616,11 +1573,6 @@ lg.info("Del sim simcount="+deleteTheseSims.size());
 			cleanupDatabase(con, logStringBuffer, connectionFactory.getDatabaseSyntax());
 
 			writeFile(dbBackupHelper.workingDir, baseFileName, logStringBuffer.toString(), false, dbBackupHelper.exportDir);
-			
-			File remoteCleanfile = getErrorInfoFile(dbBackupHelper.exportDir, baseFileName, false);
-			if(remoteCleanfile.exists()){
-				AmplistorUtils.uploadFile(new URL(getAmplistorDBBackupURL()), remoteCleanfile, null/*dbBackupHelper.amplistorCredential*/);
-			}
 
 
 		}catch(Exception e){

@@ -42,7 +42,6 @@ import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.solvers.FVSolverStandalone;
 import cbit.vcell.solvers.MembraneElement;
 import cbit.vcell.solvers.mb.MovingBoundaryReader;
-import cbit.vcell.util.AmplistorUtils;
 import cbit.vcell.util.EventRateLimiter;
 import cbit.vcell.xml.XmlParseException;
 import com.google.inject.Inject;
@@ -3368,8 +3367,7 @@ public VCData getVCData(VCDataIdentifier vcdID) throws DataAccessException, IOEx
 			}
 		} else {  // assume vcdID instanceof cbit.vcell.solver.SimulationInfo or a test adapter
 			VCMongoMessage.sendTrace("DataSetControllerImpl.getVCData("+vcdID.getID()+") : creating new SimulationData : <<BEGIN>>");
-			SimulationData.SimDataAmplistorInfo simDataAmplistorInfo = AmplistorUtils.getSimDataAmplistorInfoFromPropertyLoader();
-			vcData = new SimulationData(vcdID, getPrimaryUserDir(vcdID.getOwner(), false), getSecondaryUserDir(vcdID.getOwner()),simDataAmplistorInfo);
+			vcData = new SimulationData(vcdID, getPrimaryUserDir(vcdID.getOwner(), false), getSecondaryUserDir(vcdID.getOwner()));
 			VCMongoMessage.sendTrace("DataSetControllerImpl.getVCData("+vcdID.getID()+") : creating new SimulationData : <<END>>");
 		}
 		if(cacheTable0 != null){
@@ -4141,7 +4139,7 @@ if (name.toUpperCase().contains("SIZE")){
 			VCData vcData = getVCData(vcdID);
 			if(vcData instanceof SimulationData) {
 				SimulationData simData = (SimulationData)vcData;
-				File file = simData.amplistorHelper.getNFSimOutputFile();
+				File file = simData.fileLocator.getNFSimOutputFile();
 				if(!file.exists()) {
 					return null;
 				}

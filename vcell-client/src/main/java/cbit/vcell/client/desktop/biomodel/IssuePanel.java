@@ -74,7 +74,6 @@ import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
-import cbit.vcell.resource.ErrorUtils;
 import cbit.vcell.solver.OutputFunctionContext.OutputFunctionIssueSource;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationOwner;
@@ -124,7 +123,7 @@ public class IssuePanel extends DocumentEditorSubPanel {
 									URI uri = new URI(url);
 									Desktop.getDesktop().browse(uri);
 								} catch (URISyntaxException | IOException e1) {
-									ErrorUtils.sendRemoteLogMessage(null, "Can't open IssuePanel URI "  + url + ' ' +e1.getMessage());
+									System.err.println("Can't open IssuePanel URI "  + url + ' ' +e1.getMessage());
 								}
 							}
 						}

@@ -471,14 +471,12 @@ private VCellConnection connectToServer(InteractiveClientServerContext requester
 	} catch (ConnectionException cexc) {
 		String msg = badConnectMessage(badConnStr) + "\n" + cexc.getMessage();
 		lg.error(cexc);
-		ErrorUtils.sendRemoteLogMessage(getClientServerInfo().getUserLoginInfo(),msg);
 		if (reconnectStat != ReconnectStatus.SUBSEQUENT) {
 			requester.showConnectWarning(msg);
 		}
 	} catch (Exception exc) {
 		lg.error(exc.getMessage(), exc);
 		String msg = "Exception: "+exc.getMessage() + "\n\n" + badConnectMessage(badConnStr);
-		ErrorUtils.sendRemoteLogMessage(getClientServerInfo().getUserLoginInfo(),msg);
 		requester.showErrorDialog(msg);
 	}
 

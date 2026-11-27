@@ -1,7 +1,6 @@
 package cbit.vcell.resource;
 
 import cbit.vcell.client.server.ClientServerInfo;
-import cbit.vcell.util.AmplistorUtils;
 import com.google.gson.Gson;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -14,27 +13,18 @@ import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.util.StackTraceUtils;
-import org.vcell.util.document.UserLoginInfo;
-import org.vcell.util.document.VCellSoftwareVersion;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
 
 public class ErrorUtils {
 
     private final static Logger lg = LogManager.getLogger(ErrorUtils.class);
 
     private static boolean bDebugMode = false;
-    private static UserLoginInfo loginInfo = null;
     private static ClientServerInfo clientServerInfo = null;
 
     public static void setDebug(boolean isDebug){
         bDebugMode = isDebug;
-    }
-
-    public static void setLoginInfo(UserLoginInfo loginInfo){
-        ErrorUtils.loginInfo = loginInfo;
     }
 
     public static void setClientServerInfo(ClientServerInfo clientServerInfo){
@@ -327,28 +317,6 @@ public class ErrorUtils {
             }
         } catch(IOException e){
             throw new RuntimeException(e);
-        }
-    }
-
-    public static void sendRemoteLogMessage(UserLoginInfo argUserLoginInfo, final String message){
-        final UserLoginInfo userLoginInfo = argUserLoginInfo != null ? argUserLoginInfo : ErrorUtils.loginInfo;
-        if(!ErrorUtils.bDebugMode && userLoginInfo != null){
-            new Thread(new Runnable() {
-                @Override
-                public void run(){
-                    try {
-                        final String formattedMessage = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(Calendar.getInstance().getTime()) + "\n" +
-                                "vers='" + VCellSoftwareVersion.fromSystemProperty().getSoftwareVersionString() + "' java='" + userLoginInfo.getJava_version() + "' os='" + userLoginInfo.getOs_name() + "' osvers='" + userLoginInfo.getOs_version() + "' arch='" + userLoginInfo.getOs_arch() + "'\n" +
-                                message;
-                        AmplistorUtils.uploadString(AmplistorUtils.DEFAULT_PROXY_AMPLI_VCELL_LOGS_URL + userLoginInfo.getUserName() + "_" + System.currentTimeMillis(), null, formattedMessage);
-                    } catch(Exception e){
-                        lg.error("Failed to upload message to Amplistor " + AmplistorUtils.DEFAULT_PROXY_AMPLI_VCELL_LOGS_URL + " : " + message, e);
-                        //ignore
-                    }
-                }
-            }).start();
-        } else {
-            System.err.println("Remote log message: " + message);
         }
     }
 

@@ -20,25 +20,17 @@ import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
 import cbit.vcell.resource.PropertyLoader;
-import cbit.vcell.simdata.SimulationData;
-import cbit.vcell.simdata.SimulationData.SimDataAmplistorInfo;
-import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.server.SimulationMessage;
 import cbit.vcell.solver.server.SolverEvent;
 import cbit.vcell.solver.server.SolverListener;
 import cbit.vcell.solvers.HTCSolver;
-import cbit.vcell.util.AmplistorUtils;
 import cbit.vcell.xml.XmlHelper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.util.ApplicationTerminator;
 import org.vcell.util.FileUtils;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.User;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 /**
@@ -190,83 +182,6 @@ public class SolverPreprocessor  {
 			lg.debug("mongo shutdown " + elapsed + "seconds ");
 		}
 		System.exit(systemReturnCode);
-	}
-
-	public static void downloadFiles(SimDataAmplistorInfo simDataAmplistorInfo,ArrayList<String> fileNames,User user,File destinationUserDir) throws Exception{
-		String amplistorUserPath = simDataAmplistorInfo.getAmplistorVCellUsersRootPath()+"/"+user.getName();
-		for(String fileName:fileNames){
-			File destinationFile = new File(destinationUserDir,fileName);
-			if(!destinationFile.exists()){
-				try {
-					AmplistorUtils.getObjectDataPutInFile(amplistorUserPath+"/"+fileName, simDataAmplistorInfo.getAmplistorCredential(), destinationFile);
-				} catch (Exception e) {
-					lg.error(e.getMessage(), e);
-					//ignore
-				}
-			}
-
-		}
-	}
-	
-	public static ArrayList<String> getAllMatchingSimData(SimDataAmplistorInfo simDataAmplistorInfo,KeyValue simKey,User user) throws FileNotFoundException,Exception{
-		String match = Simulation.createSimulationID(simKey);
-		String amplistorUserPath = simDataAmplistorInfo.getAmplistorVCellUsersRootPath()+"/"+user.getName();
-		AmplistorUtils.AmplistorFileNameMatcher simidFilter = new AmplistorUtils.AmplistorFileNameMatcher() {
-			@Override
-			public boolean accept(String fileName) {
-				return fileName.startsWith(match);
-			}
-		};
-		ArrayList<String> matchedFileNames = AmplistorUtils.listDir(amplistorUserPath, simidFilter,simDataAmplistorInfo.getAmplistorCredential());
-		return matchedFileNames;
-	}
-
-
-	private static void recoverLastSimulationData(SimulationTask simTask,File userDir, Logger lg){
-		SimulationData.SimDataAmplistorInfo simDataAmplistorInfo = AmplistorUtils.getSimDataAmplistorInfoFromPropertyLoader();
-		if(simDataAmplistorInfo != null){
-			try{
-				long startTime = 0;
-				if (lg.isInfoEnabled( )) {
-					startTime = System.currentTimeMillis();
-				}
-				if(SimulationData.AmplistorHelper.hasLogFileAnywhere(simDataAmplistorInfo, simTask.getSimKey(),simTask.getUser(),simTask.getSimulationJob().getJobIndex(), userDir)){
-					//Get back all data since we are "restarting" a simulation
-					ArrayList<String> amplistorList = getAllMatchingSimData(simDataAmplistorInfo, simTask.getSimKey(),simTask.getUser());
-					if(amplistorList.size() > 0){
-//						Collections.sort(amplistorList, new Comparator<String> () {
-//						    public int compare(String a, String b) {
-//						        return a.compareToIgnoreCase(b);
-//						    }
-//						});
-//						//remove all sim zip file names except the last (latest) sim zip file
-//						while(true){
-//							boolean bDeleted = false;
-//							for (int i = 0; i < amplistorList.size(); i++) {
-//								if(amplistorList.get(i).endsWith(SimDataConstants.ZIPFILE_EXTENSION)){
-//									if(i < (amplistorList.size()-1) && amplistorList.get(i+1).endsWith(SimDataConstants.ZIPFILE_EXTENSION)){
-//										amplistorList.remove(i);
-//										bDeleted = true;
-//										break;
-//									}
-//								}
-//							}
-//							if(!bDeleted){
-//								break;
-//							}
-//						}
-						downloadFiles(simDataAmplistorInfo, amplistorList,simTask.getUser(), userDir);
-					}
-				}
-				if (lg.isInfoEnabled( )) {
-					lg.info("amplistor preprocess data restore time="+((System.currentTimeMillis()-startTime)/1000)+" seconds");
-				}
-			}catch(Exception e){
-				//ignore, try to run sim
-				lg.info("recoverLastSimulationData  exception " + e.getMessage(), e);
-			}
-		}
-
 	}
 
 }

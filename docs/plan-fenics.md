@@ -161,7 +161,7 @@ As built:
 - The FEniCSx image properties are **optional** in `SlurmProxy`: a site without them refuses the
   solver. So they are not added to `HtcSimulationWorker`'s required list.
 - The server-side bundle cleanup is in `DBBackupAndClean.deleteFileAndLink` and `ResultSetCrawler`.
-  `AmplistorUtils` (legacy object store) is untouched.
+  (The legacy Amplistor object store it also used to clean has since been removed.)
 - The vcell-fenics image is now **multi-arch** (linux/amd64 + linux/arm64, native arm64 runner),
   so Apple-silicon desktops run it natively. The SIF stays amd64.
 

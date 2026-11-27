@@ -298,7 +298,7 @@ public class HybridSolverTester {
 			SimulationData simData = null;
 			DataOperationResults.DataProcessingOutputInfo dataProcessingOutputInfo = null;
 			try{
-				simData = new SimulationData(vcSimulationDataIdentifier, userSimDataDir, null, null);
+				simData = new SimulationData(vcSimulationDataIdentifier, userSimDataDir, null);
 				Hdf5DataProcessingReaderPure hdf5DataProcessingReaderPure = new Hdf5DataProcessingReaderPure();
 				dataProcessingOutputInfo = hdf5DataProcessingReaderPure.getDataProcessingOutput(new DataOperation.DataProcessingOutputInfoOP(vcSimulationDataIdentifier, true, null), new File(userSimDataDir,SimulationData.createCanonicalPostProcessFileName(vcSimulationDataIdentifier)));
 			}catch(FileNotFoundException e){

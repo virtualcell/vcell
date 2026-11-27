@@ -50,7 +50,7 @@ public class SimulationDataSecondaryStorageTest {
         writeLog(primary);
         File secondary = new UnreachableDir(tmp.resolve("secondary").toFile());
 
-        SimulationData.AmplistorHelper helper = new SimulationData.AmplistorHelper(simDataId(), primary, secondary, null);
+        SimulationData.SimDataFileLocator helper = new SimulationData.SimDataFileLocator(simDataId(), primary, secondary);
 
         assertEquals(primary, helper.getLogFile().getParentFile());
     }
@@ -61,7 +61,7 @@ public class SimulationDataSecondaryStorageTest {
         File secondary = Files.createDirectory(tmp.resolve("secondary")).toFile();
         writeLog(secondary);
 
-        SimulationData.AmplistorHelper helper = new SimulationData.AmplistorHelper(simDataId(), primary, secondary, null);
+        SimulationData.SimDataFileLocator helper = new SimulationData.SimDataFileLocator(simDataId(), primary, secondary);
 
         assertEquals(secondary, helper.getLogFile().getParentFile());
     }
@@ -72,7 +72,7 @@ public class SimulationDataSecondaryStorageTest {
         File secondary = tmp.resolve("no-such-user-dir").toFile();
 
         FileNotFoundException e = assertThrows(FileNotFoundException.class,
-                () -> new SimulationData.AmplistorHelper(simDataId(), primary, secondary, null));
+                () -> new SimulationData.SimDataFileLocator(simDataId(), primary, secondary));
         assertTrue(e.getMessage().contains("not exist in primary"), e.getMessage());
     }
 }

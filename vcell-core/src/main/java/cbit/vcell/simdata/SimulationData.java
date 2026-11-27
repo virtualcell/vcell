@@ -34,8 +34,6 @@ import cbit.vcell.solvers.CartesianMeshChombo;
 import cbit.vcell.solvers.CartesianMeshChombo.FeaturePhaseVol;
 import cbit.vcell.solvers.CartesianMeshMovingBoundary;
 import cbit.vcell.solvers.FunctionFileGenerator;
-import cbit.vcell.util.AmplistorUtils;
-import cbit.vcell.util.AmplistorUtils.AmplistorCredential;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 import org.apache.commons.compress.archivers.zip.ZipFile;
@@ -50,8 +48,6 @@ import org.vcell.vis.io.MovingBoundarySimFiles;
 import org.vcell.vis.io.VCellSimFiles;
 
 import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.nio.file.Files;
 import java.util.*;
 import java.util.zip.ZipEntry;
@@ -64,24 +60,23 @@ public class SimulationData extends VCData {
 		COMSOL
 	}
 
-	public static class AmplistorHelper{
+	/**
+	 * Finds a simulation's files: on primary storage, or else on secondary (archive) storage.
+	 */
+	public static class SimDataFileLocator{
 		private File userDirectory;
 		private VCDataIdentifier ahvcDataId;
 		private KeyValue simulationKey;
 		private int jobIndex = 0;
-		private TreeSet<String> amplistorNotfoundSet = new TreeSet<String>();
 		boolean bNonSpatial = false;
 		private SolverDataType solverDataType = null;
 
-		SimDataAmplistorInfo simDataAmplistorInfo;
-		public AmplistorHelper(VCDataIdentifier argVCDataID, File primaryUserDir, File secondaryUserDir,SimDataAmplistorInfo simDataAmplistorInfo) throws FileNotFoundException{
-			this.simDataAmplistorInfo = simDataAmplistorInfo;
+		public SimDataFileLocator(VCDataIdentifier argVCDataID, File primaryUserDir, File secondaryUserDir) throws FileNotFoundException{
 			if(primaryUserDir == null || !primaryUserDir.exists() || !primaryUserDir.isDirectory()){
 				throw new FileNotFoundException("PrimaryUserDir required and it must exist and be a directory");
 			}
 			// secondaryUserDir is not checked here: it is on slower archive storage and is only
 			// consulted below when the log file is not on primary (see DataSetControllerImpl.getSecondaryUserDir).
-//			this.amplistorVCellUsersRootPath = amplistorVCellUserRootPath;
 			String logFileName = null;
 			String logFileNameOldStyle = null;
 			if(argVCDataID instanceof VCSimulationDataIdentifier){
@@ -98,7 +93,7 @@ public class SimulationData extends VCData {
 				logFileName = createCanonicalSimLogFileName(simulationKey, 0, false);
 				logFileNameOldStyle = createCanonicalSimLogFileName(((ExternalDataIdentifier)argVCDataID).getKey(), 0, true);
 			}else{
-				throw new IllegalArgumentException("AmplistorHelper unexpected VCDataIdentifier type "+argVCDataID.getClass().getName());
+				throw new IllegalArgumentException("SimDataFileLocator unexpected VCDataIdentifier type "+argVCDataID.getClass().getName());
 			}
 			boolean bNotFound = false;
 			if(new File(primaryUserDir,logFileName).exists()){
@@ -113,27 +108,12 @@ public class SimulationData extends VCData {
 			}else if(secondaryUserDir != null && new File(secondaryUserDir,logFileNameOldStyle).exists()){
 				this.userDirectory = secondaryUserDir;
 				this.ahvcDataId = convertVCDataIDToOldStyle(argVCDataID);
-			}else if(simDataAmplistorInfo != null && simDataAmplistorInfo.getAmplistorVCellUsersRootPath() != null){
-				try{
-					if(amplistorFileExists(simDataAmplistorInfo,argVCDataID.getOwner().getName(), logFileName)){
-						this.userDirectory = primaryUserDir;//use primary by default for amplistor
-						this.ahvcDataId = argVCDataID;
-					}else if(amplistorFileExists(simDataAmplistorInfo,argVCDataID.getOwner().getName(), logFileNameOldStyle)){
-						this.userDirectory = primaryUserDir;//use primary by default for amplistor
-						this.ahvcDataId = convertVCDataIDToOldStyle(argVCDataID);
-					}else{
-						bNotFound = true;
-					}
-				}catch(Exception e){
-					bNotFound = true;
-					lg.error(e.getMessage(), e);
-			}
 			}else{
 				bNotFound = true;
 			}
 			if(bNotFound){
 				throw new FileNotFoundException(
-					"simulation data for [" + argVCDataID + "] newStyle="+logFileName+" oldStyle="+logFileNameOldStyle+" not exist in primary " + primaryUserDir + " dir or secondary " + secondaryUserDir+" dir or Archive server.");
+					"simulation data for [" + argVCDataID + "] newStyle="+logFileName+" oldStyle="+logFileNameOldStyle+" not exist in primary " + primaryUserDir + " dir or secondary " + secondaryUserDir+" dir.");
 			}else{
 				FileInputStream fis = null;
 				try{
@@ -159,20 +139,6 @@ public class SimulationData extends VCData {
 			}
 
 		}
-		public static boolean hasLogFileAnywhere(SimDataAmplistorInfo simDataAmplistorInfo,KeyValue simKey,User user,int jobIndex,File destinationUserDir) throws Exception{
-			HttpURLConnection urlCon = null;
-			try{
-				String simLogFileName = SimulationData.createCanonicalSimLogFileName(simKey, jobIndex, false);
-				File logfile = new File(destinationUserDir,simLogFileName);
-				if(logfile.exists()){
-					return true;
-				}
-				return amplistorFileExists(simDataAmplistorInfo, user.getName(), simLogFileName);
-			}finally{
-				if(urlCon != null){try{urlCon.disconnect();}catch(Exception e){lg.error(e.getMessage(), e);}}
-			}
-		}
-
 		public boolean isNonSpatial(){
 			return bNonSpatial;
 		}
@@ -186,10 +152,6 @@ public class SimulationData extends VCData {
 			}
 		}
 
-		private static boolean amplistorFileExists(SimDataAmplistorInfo simDataAmplistorInfo,String userid,String fileName) throws Exception{
-			String urlStr = simDataAmplistorInfo.getAmplistorVCellUsersRootPath()+"/"+userid+"/"+fileName;
-			return AmplistorUtils.bFileExists(new URL(urlStr), simDataAmplistorInfo.getAmplistorCredential());
-		}
 		public VCDataIdentifier getVCDataiDataIdentifier(){
 			return ahvcDataId;
 		}
@@ -234,7 +196,6 @@ public class SimulationData extends VCData {
 				meshFileName = createSimIDWithJobIndex(getsimulationKey(), getJobIndex(), isOldStyle()) + ".comsoldat";
 			}
 			if(isNonSpatial()){
-				//this never exists, no need to look up in amplistor
 				return getLocalFilePath(meshFileName);
 			}
 			return getFile(meshFileName);
@@ -242,7 +203,6 @@ public class SimulationData extends VCData {
 		public File getZipFile(boolean bHDF5,Integer zipIndex){
 			String zipFileName = SimulationData.createCanonicalSimZipFileName(getsimulationKey(),zipIndex,getJobIndex(), isOldStyle(),bHDF5);
 			if(isNonSpatial() || (zipIndex == null && !isOldStyle()) || (zipIndex != null && isOldStyle())){
-				//this never exists, no need to look up in amplistor
 				return getLocalFilePath(zipFileName);
 			}
 			return getFile(zipFileName);
@@ -254,29 +214,10 @@ public class SimulationData extends VCData {
 			return getFile(SimulationData.createCanonicalResampleFileName(simResampleInfoProvider,fieldFunctionArguments));
 		}
 		public File getFile(String fileName){
-			File file = getLocalFilePath(fileName);
-			xferAmplistor(file);
-			return file;
+			return getLocalFilePath(fileName);
 		}
 		public File getLocalFilePath(String fileName){
 			return new File(userDirectory,fileName);
-		}
-		private void xferAmplistor(File file){
-			if(simDataAmplistorInfo != null && !amplistorNotfoundSet.contains(file.getName()) && !file.exists()){//we may have already xferred it
-				try{
-					AmplistorUtils.getObjectDataPutInFile(
-						simDataAmplistorInfo.amplistorVCellUsersRootPath+"/"+getVCDataiDataIdentifier().getOwner().getName()+"/"+file.getName(),
-						simDataAmplistorInfo.amplistorCredential,
-						file);
-				} catch (FileNotFoundException e) {
-					amplistorNotfoundSet.add(file.getName());
-					if (getVCDataiDataIdentifier() != null && getVCDataiDataIdentifier().getOwner() != null) {
-						lg.warn("FileNotFoundException: SimulationData.AmplistorHelper.xferAmplistor(...) " + (getVCDataiDataIdentifier().getOwner().getName() + "/" + file.getName()) + ".  This may not be an error.");
-					}
-				} catch (Exception e){
-					lg.error(e.getMessage(), e);
-				}
-			}
 		}
 		private boolean isOldStyle(){
 			return getVCDataiDataIdentifier() instanceof VCSimulationDataIdentifierOldStyle;
@@ -288,7 +229,7 @@ public class SimulationData extends VCData {
 
 	private final static long SizeInBytes = 2000;  // a guess
 
-	AmplistorHelper amplistorHelper;
+	SimDataFileLocator fileLocator;
 	private VCDataIdentifier vcDataId = null;
 
 	private int chomboFileIterationIndices[] = null;
@@ -327,27 +268,13 @@ public class SimulationData extends VCData {
 
 
 	private static Logger lg = LogManager.getLogger(SimulationData.class);
-	public static class SimDataAmplistorInfo {
-		private String amplistorVCellUsersRootPath;
-		private AmplistorCredential amplistorCredential;
-		public SimDataAmplistorInfo(String amplistorVCellUsersRootPath,AmplistorCredential amplistorCredential) {
-			this.amplistorVCellUsersRootPath = amplistorVCellUsersRootPath;
-			this.amplistorCredential = amplistorCredential;
-		}
-		public String getAmplistorVCellUsersRootPath() {
-			return amplistorVCellUsersRootPath;
-		}
-		public AmplistorCredential getAmplistorCredential() {
-			return amplistorCredential;
-		}
-	}
 
 
 
-public SimulationData(VCDataIdentifier argVCDataID, File primaryUserDir, File secondaryUserDir,SimDataAmplistorInfo simDataAmplistorInfo) throws IOException, DataAccessException {
+public SimulationData(VCDataIdentifier argVCDataID, File primaryUserDir, File secondaryUserDir) throws IOException, DataAccessException {
 	VCMongoMessage.sendTrace("SimulationData.SimulationData() <<ENTER>>");
-	amplistorHelper = new AmplistorHelper(argVCDataID, primaryUserDir, secondaryUserDir,simDataAmplistorInfo);
-	this.vcDataId = amplistorHelper.getVCDataiDataIdentifier();
+	fileLocator = new SimDataFileLocator(argVCDataID, primaryUserDir, secondaryUserDir);
+	this.vcDataId = fileLocator.getVCDataiDataIdentifier();
 	VCMongoMessage.sendTrace("SimulationData.SimulationData() getting var and function identifiers");
 	getVarAndFunctionDataIdentifiers(null);
 	VCMongoMessage.sendTrace("SimulationData.SimulationData() <<EXIT>>");
@@ -617,7 +544,7 @@ private synchronized File getFirstJobFunctionsFile() throws FileNotFoundExceptio
 		return getJobFunctionsFile();
 	}
 	// always use the functions file from the first simulation in the scan
-	File functionsFile = amplistorHelper.getFunctionsFile(true);
+	File functionsFile = fileLocator.getFunctionsFile(true);
 	if (functionsFile.exists()){
 		return functionsFile;
 	}else{
@@ -628,7 +555,7 @@ private synchronized File getFirstJobFunctionsFile() throws FileNotFoundExceptio
 @Override
 public synchronized File getJobFunctionsFile() throws FileNotFoundException {
 	File functionsFile = null;
-	functionsFile = amplistorHelper.getFunctionsFile(false);
+	functionsFile = fileLocator.getFunctionsFile(false);
 	if (functionsFile.exists()){
 		return functionsFile;
 	}else{
@@ -679,7 +606,7 @@ public File getLogFilePrivate() throws FileNotFoundException {
 }
 
 private synchronized File getMembraneMeshMetricsFile() throws FileNotFoundException {
-	File meshMetricsFile = amplistorHelper.getMeshMetricsFile();
+	File meshMetricsFile = fileLocator.getMeshMetricsFile();
 	VCMongoMessage.sendTrace("SimulationData.getMembraneMeshMetricsFile() <<ENTER>> calling meshMetricsFile.exists()");
 	if (meshMetricsFile.exists()){
 		VCMongoMessage.sendTrace("SimulationData.getMembraneMeshMetricsFile() <<ENTER>> file found");
@@ -742,12 +669,12 @@ public synchronized CartesianMesh getMesh() throws DataAccessException, MathExce
 
 private synchronized File getMeshFile() throws FileNotFoundException {
 	VCMongoMessage.sendTrace("SimulationData.getMeshFile() <<BEGIN>>");
-	File meshFile = amplistorHelper.getMeshFile(false);
+	File meshFile = fileLocator.getMeshFile(false);
 	if (meshFile.exists()){
 		VCMongoMessage.sendTrace("SimulationData.getMeshFile() <<EXIT-meshfile>>");
 		return meshFile;
 	}else{
-		meshFile = amplistorHelper.getMeshFile(true);
+		meshFile = fileLocator.getMeshFile(true);
 		if(meshFile.exists()){
 			return meshFile;
 		}
@@ -824,7 +751,7 @@ public synchronized ODEDataBlock getODEDataBlock() throws DataAccessException, I
 		// add to it the Langevin file type suffix and extension
 		String ourFilename = baseNameWithoutExt + type.suffix() + type.extension();
 
-		File odeFile = amplistorHelper.getFile(ourFilename);
+		File odeFile = fileLocator.getFile(ourFilename);
 		if (!odeFile.exists()) {
 			return null;
 		}
@@ -852,7 +779,7 @@ public synchronized ODEDataBlock getODEDataBlock() throws DataAccessException, I
 			return null;
 		}
 		String base = baseFilename.substring(0, dotIndex);
-		File sub = amplistorHelper.getFile(
+		File sub = fileLocator.getFile(
 				base + "_FOLDER" + File.separator + "viewer_files" + File.separator + base + "_VIEW_Run0.txt");
 		return (sub != null && sub.exists()) ? sub : null;
 	}
@@ -883,7 +810,7 @@ public synchronized ODEDataBlock getODEDataBlock() throws DataAccessException, I
 			return null;
 		}
 		String base = baseFilename.substring(0, dotIndex);
-		File sub = amplistorHelper.getFile(base + "_FOLDER" + File.separator + "data"
+		File sub = fileLocator.getFile(base + "_FOLDER" + File.separator + "data"
 				+ File.separator + "Run0" + File.separator + "SiteIDs.csv");
 		return (sub != null && sub.exists()) ? sub : null;
 	}
@@ -894,7 +821,7 @@ private synchronized File getODEDataFile() throws DataAccessException {
 	if (dataFilenames == null) {
 		throw new DataAccessException("ODE data filename not read from logfile");
 	}
-	File odeFile = amplistorHelper.getFile(dataFilenames[0]);
+	File odeFile = fileLocator.getFile(dataFilenames[0]);
 	if (odeFile.exists()) {
 		return odeFile;
 	}
@@ -928,7 +855,7 @@ private synchronized File getParticleDataFile(double time) throws DataAccessExce
 	Integer index = pdeDataMap.get(time);
 	if (index != null) {
 		String pfName = particleFilenames[index];
-		File particleFile = amplistorHelper.getLocalFilePath(pfName);
+		File particleFile = fileLocator.getLocalFilePath(pfName);
 		if (particleFile.exists()){
 			return particleFile;
 		}
@@ -936,7 +863,7 @@ private synchronized File getParticleDataFile(double time) throws DataAccessExce
 	return null;
 	/*
 	File simFile = getPDEDataFile(time);
-	File particleFile = amplistorHelper.getLocalFilePath(simFile.getName() + PARTICLE_DATA_EXTENSION);
+	File particleFile = fileLocator.getLocalFilePath(simFile.getName() + PARTICLE_DATA_EXTENSION);
 	if (particleFile.exists()){
 		return particleFile;
 	}else{
@@ -956,10 +883,10 @@ private synchronized void indexPDEdataTimes( ) throws DataAccessException {
 	for (int i=0;i<dataTimes.length;i++){
 		pdeDataMap.put(dataTimes[i], i);
 	}
-	KeyValue kv = amplistorHelper.getsimulationKey();
-	int jobIndex = amplistorHelper.getJobIndex();
+	KeyValue kv = fileLocator.getsimulationKey();
+	int jobIndex = fileLocator.getJobIndex();
 	String firstParticleFile = createCanonicalSmoldynOutputFileName(kv, jobIndex, 1);
-	File f = amplistorHelper.getFile(firstParticleFile);
+	File f = fileLocator.getFile(firstParticleFile);
 	if (f != null) {
 		particleFilenames = new String[dataLength];
 		for (int i = 0; i < dataLength; i++) {
@@ -976,7 +903,7 @@ private synchronized File getPDEDataFile(double time) throws DataAccessException
 	Integer index = pdeDataMap.get(time);
 	if (index != null) {
 		String dataFileName = FilenameUtils.getName( dataFilenames[index]);
-			return amplistorHelper.getLocalFilePath(dataFileName);
+			return fileLocator.getLocalFilePath(dataFileName);
 		}
 	throw new DataAccessException("data at time="+time+" not found");
 }
@@ -993,7 +920,7 @@ private synchronized DataSet getPDEDataSet(File pdeFile, double time) throws Dat
 	}
 
 	try {
-		dataSet.read(pdeFile, zipFile, amplistorHelper.solverDataType);
+		dataSet.read(pdeFile, zipFile, fileLocator.solverDataType);
 	} catch (IOException ex) {
 		throw new DataAccessException("data at time="+time+" read error",ex);
 	}
@@ -1029,7 +956,7 @@ private synchronized File getPDEDataZipFile(double time) throws DataAccessExcept
 	Integer index = pdeDataMap.get(time);
 	if (index != null) {
 		String zipFileName = FilenameUtils.getName(zipFilenames[index]);
-			File zipFile = amplistorHelper.getFile(zipFileName);//new File(userDirectory,zipFileName);
+			File zipFile = fileLocator.getFile(zipFileName);//new File(userDirectory,zipFileName);
 			if (zipFile.exists()) {
 				return zipFile;
 			} else {
@@ -1099,7 +1026,7 @@ public synchronized SimDataBlock getSimDataBlock(OutputContext outputContext, St
 		throw new DataAccessException("data not found for variable " + varName);
 	}
 	final String varNameInDataSet = dsi.getQualifiedName();
-	double data[] = dataSet.getData(varNameInDataSet, zipFile, time, amplistorHelper.solverDataType);
+	double data[] = dataSet.getData(varNameInDataSet, zipFile, time, fileLocator.solverDataType);
 	int varTypeInt = dataSet.getVariableTypeInteger(varNameInDataSet);
 	VariableType variableType = null;
 	try {
@@ -1204,7 +1131,7 @@ synchronized double[][][] getSimDataTimeSeries0(
 			}
 			tempSimDataFileNames[i] = dataFilenames[i];
 		} else {
-			tempSimDataFileNames[i] = amplistorHelper.getFile(dataFilenames[i]).getName();//userDirectory.getAbsolutePath()+"\\"+dataFilenames[i];//getPDEDataFile(dataTimes[i]).getAbsolutePath();
+			tempSimDataFileNames[i] = fileLocator.getFile(dataFilenames[i]).getName();//userDirectory.getAbsolutePath()+"\\"+dataFilenames[i];//getPDEDataFile(dataTimes[i]).getAbsolutePath();
 		}
 
 	}
@@ -1706,11 +1633,11 @@ private synchronized void readMesh(File meshFile,File membraneMeshMetricsFile) t
 		//byte[] byteArray = BeanUtils.toSerialized(mesh);
 		//mesh = (CartesianMeshChombo) BeanUtils.fromSerialized(byteArray);
 	}
-	else if (amplistorHelper.solverDataType == SolverDataType.MBSData)
+	else if (fileLocator.solverDataType == SolverDataType.MBSData)
 	{
 		mesh = CartesianMeshMovingBoundary.readMeshFile(meshFile);
 	}
-//	else if (amplistorHelper.solverDataType == SolverDataType.COMSOL)
+//	else if (fileLocator.solverDataType == SolverDataType.COMSOL)
 //	{
 //		mesh = new CartesianMeshCOMSOL();
 //	}
@@ -1727,18 +1654,18 @@ public static class CartesianMeshCOMSOL extends CartesianMesh {
 }
 
 public boolean isChombo() throws FileNotFoundException{
-	return !amplistorHelper.isNonSpatial() && getMeshFile().getName().endsWith(SimDataConstants.DATA_PROCESSING_OUTPUT_EXTENSION_HDF5);
+	return !fileLocator.isNonSpatial() && getMeshFile().getName().endsWith(SimDataConstants.DATA_PROCESSING_OUTPUT_EXTENSION_HDF5);
 }
 
 @Override
 public boolean isMovingBoundary() throws FileNotFoundException{
-	return !amplistorHelper.isNonSpatial() && getMeshFile().getName().endsWith(SimDataConstants.MOVINGBOUNDARY_OUTPUT_EXTENSION);
+	return !fileLocator.isNonSpatial() && getMeshFile().getName().endsWith(SimDataConstants.MOVINGBOUNDARY_OUTPUT_EXTENSION);
 }
 
 
 @Override
 public boolean isComsol() throws FileNotFoundException{
-	return !amplistorHelper.isNonSpatial() && getMeshFile().getName().endsWith(SimDataConstants.COMSOL_OUTPUT_EXTENSION);
+	return !fileLocator.isNonSpatial() && getMeshFile().getName().endsWith(SimDataConstants.COMSOL_OUTPUT_EXTENSION);
 }
 
 private synchronized void refreshLogFile() throws DataAccessException {
@@ -1926,40 +1853,40 @@ public boolean isPostProcessing(OutputContext outputContext,String varName) thro
 }
 
 public File getDataProcessingOutputSourceFileHDF5(){
-	return amplistorHelper.getPostProcessFile();
+	return fileLocator.getPostProcessFile();
 }
 public File getFieldDataFile(SimResampleInfoProvider simResampleInfoProvider,FieldFunctionArguments fieldFunctionArguments) throws ExpressionException {
-	return amplistorHelper.getFieldDataFile(simResampleInfoProvider,fieldFunctionArguments);
+	return fileLocator.getFieldDataFile(simResampleInfoProvider,fieldFunctionArguments);
 }
 public File getMeshFile(boolean bHDF5){
-	return amplistorHelper.getMeshFile(bHDF5);
+	return fileLocator.getMeshFile(bHDF5);
 }
 public File getFunctionsFile(boolean bFirst){
-	return amplistorHelper.getFunctionsFile(bFirst);
+	return fileLocator.getFunctionsFile(bFirst);
 }
 public File getZipFile(boolean bHDF5,Integer zipIndex){
-	return amplistorHelper.getZipFile(bHDF5, zipIndex);
+	return fileLocator.getZipFile(bHDF5, zipIndex);
 }
 public File getSubdomainFile(){
-	return amplistorHelper.getSubdomainFile();
+	return fileLocator.getSubdomainFile();
 }
 public File getLogFile(){
-	return amplistorHelper.getLogFile();
+	return fileLocator.getLogFile();
 }
 public File getSmoldynOutputFile(int timeIndex){
-	return amplistorHelper.getSmoldynOutputFile(timeIndex);
+	return fileLocator.getSmoldynOutputFile(timeIndex);
 }
 
 private void findChomboFeatureVolFile(ChomboFiles chomboFiles, VCSimulationDataIdentifier vcDataID, String subDomain, int ivol, int timeIndex)
 {
 	String expectedFile = vcDataID.getID()+String.format("%06d", timeIndex)+".feature_"+subDomain+".vol" + ivol + ".hdf5";
-	File file = amplistorHelper.getFile(expectedFile);
+	File file = fileLocator.getFile(expectedFile);
 	if (file.exists()){
 		chomboFiles.addDataFile(subDomain, ivol, timeIndex, file);
 	}else{
 		// I changed the file name
 		expectedFile = vcDataID.getID()+String.format("%06d", timeIndex)+"_"+subDomain+"_vol" + ivol + ".hdf5";
-	  file = amplistorHelper.getFile(expectedFile);
+	  file = fileLocator.getFile(expectedFile);
 	  if (file.exists()){
 			chomboFiles.addDataFile(subDomain, ivol, timeIndex, file);
 	  }
@@ -1981,12 +1908,12 @@ public ChomboFiles getChomboFiles() throws IOException, XmlParseException, Expre
 	VCSimulationDataIdentifier vcDataID = (VCSimulationDataIdentifier)getVcDataId();
 
 	String expectedMeshfile = vcDataID.getID()+".mesh.hdf5";
-	File meshFile = amplistorHelper.getFile(expectedMeshfile);
+	File meshFile = fileLocator.getFile(expectedMeshfile);
 
 	ChomboFiles chomboFiles = new ChomboFiles(vcDataID.getSimulationKey(), vcDataID.getJobIndex(), meshFile);
 
 	String simtaskFilePath = vcDataID.getID()+"_0.simtask.xml";
-	File simtaskFile = amplistorHelper.getFile(simtaskFilePath);
+	File simtaskFile = fileLocator.getFile(simtaskFilePath);
 	if (!simtaskFile.exists()){
 		throw new RuntimeException("Chombo dataset mission .simtask.xml file, please rerun");
 	}
@@ -2053,7 +1980,7 @@ public VCellSimFiles getVCellSimFiles() throws FileNotFoundException, DataAccess
 
 @Override
 public MovingBoundarySimFiles getMovingBoundarySimFiles() throws FileNotFoundException, DataAccessException {
-	File movingBoundaryOutputFile = amplistorHelper.getMovingBoundaryOutputFile(); //retrieveExistingFile(SimFileTypeStandard.MovingBoundaryOutputFile);
+	File movingBoundaryOutputFile = fileLocator.getMovingBoundaryOutputFile(); //retrieveExistingFile(SimFileTypeStandard.MovingBoundaryOutputFile);
 	VCSimulationDataIdentifier vcSimDataID = (VCSimulationDataIdentifier)vcDataId;
 	MovingBoundarySimFiles movingBoundarySimFiles = new MovingBoundarySimFiles(vcSimDataID.getSimulationKey(),vcSimDataID.getJobIndex(),movingBoundaryOutputFile);
 	return movingBoundarySimFiles;
@@ -2062,9 +1989,9 @@ public MovingBoundarySimFiles getMovingBoundarySimFiles() throws FileNotFoundExc
 
 @Override
 public ComsolSimFiles getComsolSimFiles() throws FileNotFoundException, DataAccessException {
-	File comsolOutputFile = amplistorHelper.getComsolOutputFile(); //retrieveExistingFile(SimFileTypeStandard.MovingBoundaryOutputFile);
-	File simTaskXMLFile = amplistorHelper.getSimTaskXMLFile();
-	File logFile = amplistorHelper.getLogFile();
+	File comsolOutputFile = fileLocator.getComsolOutputFile(); //retrieveExistingFile(SimFileTypeStandard.MovingBoundaryOutputFile);
+	File simTaskXMLFile = fileLocator.getSimTaskXMLFile();
+	File logFile = fileLocator.getLogFile();
 	VCSimulationDataIdentifier vcSimDataID = (VCSimulationDataIdentifier)vcDataId;
 	ComsolSimFiles comsolSimFiles = new ComsolSimFiles(vcSimDataID.getSimulationKey(),vcSimDataID.getJobIndex(),comsolOutputFile,simTaskXMLFile,logFile);
 	return comsolSimFiles;
