@@ -71,7 +71,7 @@ Two endpoints replace the RPC, each with one response type (style guide §1.3). 
 
 | Purpose | Read (`GET`, cacheable) | Query (`POST`, for inputs that do not fit a URL, §1.2) |
 |---|---|---|
-| Time series at points (C1, C2, C3, C9) | `GET /api/v2/datasets/{datasetId}/time-series?variable=…&point=x,y[,z]&from=…&to=…&every=…` | `POST /api/v2/datasets/{datasetId}/time-series/query` with a `TimeSeriesQuery` |
+| Time series at points (C1, C2, C3, C9) | `GET /api/v2/datasets/{datasetId}/time-series?variable=…&point=…&from=…&to=…&every=…` | `POST /api/v2/datasets/{datasetId}/time-series/query` with a `TimeSeriesQuery` |
 | Region statistics over time (C4, C5, C6) | `GET /api/v2/datasets/{datasetId}/region-statistics?variable=…&subdomain=…&from=…&to=…` | `POST /api/v2/datasets/{datasetId}/region-statistics/query` with a `RegionStatisticsQuery` |
 
 Both answer JSON for small results and the binary form (§2.4) for large ones, by `Accept`.
@@ -101,7 +101,8 @@ discriminated union (`PointSpec`, §1.3):
 - The response echoes, per point, what it resolved to (mesh, element, position, as a tuple of the
   same dimension). A point that cannot be resolved (outside the domain) gets a **per-point status**,
   not a failed request (§9.5).
-- In `GET` URLs a coordinate is one parameter value, `point=x,y[,z]`; points repeat (§1.2).
+- In `GET` URLs a coordinate is one parameter value, `point=x`, `point=x,y` or `point=x,y,z` to
+  match the dataset's dimension; points repeat (§1.2).
 
 **P-2. Regions: by name, or by number within a named mesh.** `RegionSpec` is a discriminated union,
 from most to least stable:
