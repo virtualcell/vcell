@@ -172,3 +172,64 @@ drifts from the code (`tools/validate-openapi-spec.sh`). These rules build on th
 _State on 2026-11-27: 51 of the spec's 60 operations are called through the generated client in
 some test; cross-user and anonymous cases exist in some classes but not as a per-endpoint matrix; no
 response validation against the spec yet._
+
+## 4. Tooling: rules as code
+
+Every rule in this guide that a tool can check is checked by one, so it does not depend on a
+reviewer (human or AI) remembering it. Tools are established, widely used projects; versions are
+pinned.
+
+### 4.1 Which tool enforces which rule
+
+| Rule | Tool | Where it runs |
+|---|---|---|
+| §1.1 nouns not verbs; §1.2 no `GET` body; §1.3 discriminated `oneOf`, mode-flag review; §2.1 named DTO schemas; §3.1 documented 401/404; operationId casing | **Spectral** with `tools/spectral/vcell-api-v1.spectral.yaml` | Fast lane, on `tools/openapi.yaml` |
+| D-15 compatibility (no silent breaking change, including when restyling existing endpoints) | **oasdiff**: PR spec vs master spec; a breaking change needs an explicit label | Fast lane |
+| §3.1.4 responses match the spec | **swagger-request-validator** (RestAssured filter) in the HTTP tests; **Schemathesis** (spec-driven generated requests) against a test deployment | Quarkus tests; nightly |
+| §2.1 `vcell-api-dto` has no domain dependency; resources return only DTOs; no records in vcell-rest; mappers only in `vcell-api-mapping` | **ArchUnit** tests, and **Maven Enforcer** `bannedDependencies` | Fast lane |
+| Java compatibility of `vcell-api-dto` for the desktop | **japicmp** (or Revapi) against the previous release | Fast lane |
+| SQL built by concatenation, reflective dispatch on caller input, other VCell-specific bans | **Semgrep** (VCell rules in the repo) and **SpotBugs + FindSecBugs**; **CodeQL** already runs | Fast lane (Semgrep), CI-full (SpotBugs) |
+| Compile-time bug patterns, nullness | **Error Prone** (+ **NullAway** in new modules) | build |
+| Workflows and scripts | **actionlint** (runs ShellCheck on `run:` blocks), **ShellCheck** on `tools/` and `docker/` scripts | Fast lane |
+| Dockerfiles | **hadolint** | Fast lane |
+| Vulnerable software in images (e.g. an old JRE) | **Trivy** on the built images | CI-full |
+| Secrets committed by mistake | **gitleaks** | Fast lane |
+| Python (pyvcell, python-restclient, utilities) | **ruff** (lint + format), **mypy** strict | per package |
+| TypeScript (webapp-ng, webapp-viewer) | **ESLint** with `typescript-eslint` strict-type-checked and `angular-eslint`; `tsc --strict` | per package |
+| Kubernetes manifests (vcell-fluxcd) | **kubeconform**, **kube-linter** | vcell-fluxcd CI |
+
+### 4.2 Rollout on legacy code
+
+- **Baseline, then hold the line.** Each tool records today's findings as a baseline and fails only
+  on new ones, so new code meets the rules immediately and the backlog shrinks over time without
+  blocking work.
+- **New modules have no baseline.** `vcell-api-dto`, `vcell-api-mapping` and new vcell-rest
+  endpoints must pass every check from their first commit.
+- **Fast checks run in the Fast lane** (seconds each: Spectral, oasdiff, ArchUnit, Semgrep,
+  actionlint, ShellCheck); slower ones (SpotBugs, Schemathesis, Trivy) run in CI-full or nightly.
+- **The same checks run locally**: a pre-commit configuration for the fast ones, and Claude Code
+  hooks that run the relevant linter after each edit.
+
+### 4.3 Spectral ruleset
+
+`tools/spectral/vcell-api-v1.spectral.yaml` extends Spectral's recommended OpenAPI rules with the
+guide's rules. Rules for questions still open in this guide (path casing, array encoding) are in the
+file, commented out, until decided.
+
+```bash
+npx @stoplight/spectral-cli@6.13.1 lint tools/openapi.yaml \
+    --ruleset tools/spectral/vcell-api-v1.spectral.yaml
+```
+
+First run against master's spec (2026-11-27, 52 paths, 60 operations):
+
+| Finding | Count | Notes |
+|---|---|---|
+| `vcell-path-no-verbs` (error) | 17 | `Simulation/{simID}/startSimulation`, `stopSimulation`; `fieldData/analyzeFile`, `copyModelsFieldData`, `createFromFile`, `createFromSimulation`, `delete/{fieldDataID}`, `save`; `optimization/{optId}/stop`; `publications/{id}/publish`; `solver/getFVSolverInput`, `getFVSolverInputFromVCML`; `users/forgotLegacyPassword`, `mapUser`, `processMagicLink`, `requestRecoveryEmail`, `unmapUser/{userName}` |
+| `vcell-documents-404-for-path-ids` (warn) | 6 | e.g. `GET /bioModel/{bioModelID}/summary`, `GET /publications/{id}` |
+| `vcell-operation-id-camel` (warn) | 11 | mostly acronyms (`getVCML`, `getFVSolverInput`, `IDs`); decide whether acronyms are allowed (D-17) |
+| `vcell-boolean-query-param-review` (info) | 4 | `includePublicAndShared` on the four summary lists: a filter, acceptable |
+| Spectral built-ins | 144 | operations without a tag (60) or description (44); security scope declarations (33, a SmallRye output detail); unused components (6); one malformed `termsOfService` |
+
+Already compliant: no `GET` has a body, no `oneOf` lacks a discriminator, no request or response
+uses an inline schema, and every secured operation documents 401.
