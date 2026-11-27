@@ -241,7 +241,7 @@ public class VCMessagingServiceArtemisTest {
 		String previousBlobProperty = System.getProperty(PropertyLoader.jmsBlobMessageUseMongo);
 		System.setProperty(PropertyLoader.jmsBlobMessageUseMongo, "false");
 		VCellQueue rpcQueue = new VCellQueue("artemis.test.rpc");
-		VCRpcMessageHandler handler = new VCRpcMessageHandler(new EchoService(), rpcQueue);
+		VCRpcMessageHandler handler = new VCRpcMessageHandler(new EchoService(), rpcQueue, java.util.Set.of("echo"));
 		VCQueueConsumer responder = new VCQueueConsumer(rpcQueue, handler, null, "echo responder", 1);
 		service.addMessageConsumer(responder);
 		VCMessageSession producer = service.createProducerSession();
