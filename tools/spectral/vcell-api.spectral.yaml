@@ -160,12 +160,43 @@ rules:
             - required: ["500"]
             - required: ["503"]
 
-  # ---------------------------------------------------------------- OPEN in the guide (not enforced yet)
-  # Path casing (D-1 sub-question: lowerCamel vs kebab-case, plural vs singular):
-  # vcell-path-casing:
-  #   given: "$.paths[*]~"
-  #   then: { function: pattern, functionOptions: { match: "^(/([a-z][a-z0-9-]*|\\{[a-zA-Z]+\\}))+$" } }
-  # Array query-parameter encoding (guide §1.2, "exact array encoding still to agree"):
-  # vcell-array-query-style:
-  #   given: "$.paths[*][*].parameters[?(@.in == 'query' && @.schema && @.schema.type == 'array')]"
-  #   then: { field: explode, function: truthy }
+  # ---------------------------------------------------------------- §1.4 naming
+  vcell-path-casing:
+    description: "Path segments are lowercase kebab-case; path parameters are camelCase (guide §1.4)."
+    message: "Path {{property}}: use lowercase kebab-case segments and {camelCase} parameters."
+    severity: error
+    given: "$.paths[*]~"
+    then:
+      function: pattern
+      functionOptions:
+        match: "^(/([a-z0-9]+(-[a-z0-9]+)*|\\{[a-z][a-zA-Z0-9]*\\}))+$"
+
+  vcell-path-param-descriptive:
+    description: "Path parameters are descriptive, never a bare {id} (guide §1.4)."
+    message: "Path {{property}} uses a bare {id}; name it ({bioModelId}, {simulationId})."
+    severity: warn
+    given: "$.paths[*]~"
+    then:
+      function: pattern
+      functionOptions:
+        notMatch: "\\{id\\}"
+
+  # ---------------------------------------------------------------- §1.2 array encoding
+  vcell-array-query-repeated:
+    description: "Array query parameters are repeated parameters (style form, explode true) (guide §1.2)."
+    severity: error
+    given: "$.paths[*][*].parameters[?(@.in == 'query' && @.schema && @.schema.type == 'array')]"
+    then:
+      - field: explode
+        function: enumeration
+        functionOptions: { values: [true] }
+      - field: style
+        function: enumeration
+        functionOptions: { values: ["form"] }
+
+# ---------------------------------------------------------------- listed named actions (guide §1.1)
+# A named action listed in the guide is exempted from vcell-path-no-verbs with an override, e.g.:
+# overrides:
+#   - files: ["tools/openapi.yaml#/paths/~1api~1v2~1users~1{userId}~1recover"]
+#     rules: { vcell-path-no-verbs: "off" }
+# Add one entry per row of the guide's §1.1 table, and no others.

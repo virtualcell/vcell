@@ -34,13 +34,20 @@ changes before anything else: starting a simulation creates a **run**
 (`POST /simulations/{id}/runs`); an export is an **export job** (`POST /exports`, then
 `GET /exports/{id}`); sharing changes an **access setting** (`PUT /biomodels/{id}/access`).
 
-_Open: whether a named action (`POST /{resource}/{id}/{action}`) is ever allowed when no natural
-resource exists, and if so, how exceptions are listed._
+**Named actions are allowed only as listed exceptions.** When an operation has no natural resource, it
+may be a named action, written `POST /{resource}/{resourceId}/{action}` (a slash, never Google's
+`:action` form). Each one is listed below with its reason, and Spectral's verb rule accepts only the
+listed paths (§4.3). Prefer a resource first; an action added because it was quicker is not a reason.
+
+| Path | Reason |
+|---|---|
+| _(none yet)_ | |
 
 ### 1.2 Queries use `GET` (D-3, D-11)
 
-Queries use `GET` with query parameters. Arrays are passed as repeated parameters
-(`?id=1&id=2`); _the exact array encoding is still to agree_.
+Queries use `GET` with query parameters. **Arrays are repeated parameters** (`?id=1&id=2`: OpenAPI
+`style: form`, `explode: true`, the default), never comma-joined lists, which break on values that
+contain commas and need client-side configuration.
 
 A query may use `POST` to a dedicated query resource (`POST /{collection}/search` or similar)
 **only** when at least one of these holds:
@@ -80,6 +87,21 @@ Why: the legacy RPC interface packs unrelated operations into operation objects
 (`doDataOperation`, `getTimeSeriesValues`, `doTestSuiteOP`). Their responses change shape with the
 request, which generated clients cannot type, reviewers cannot reason about, and caches and rate
 limits cannot tell apart.
+
+### 1.4 Naming
+
+| Element | Convention | Example |
+|---|---|---|
+| Collections | plural nouns | `/api/v2/biomodels`, `/simulations` |
+| Path segments | lowercase; **kebab-case** for several words | `/field-data`, `/simulations/{simulationId}/runs` |
+| Path parameters | descriptive **camelCase**, never a bare `{id}` | `{bioModelId}`, `{simulationId}` |
+| Query parameters and JSON fields | **camelCase** | `?includeShared=true`, `"simulationId": "123"` |
+| `operationId`s | camelCase, verb + noun, unique and stable | `listBioModels`, `getBioModelVcml` |
+| **Acronyms, everywhere** (paths, fields, operationIds, DTO class names) | **written as words** | `Vcml`, `Sbml`, `Omex`, `FvSolverInput`, `simulationIds` (not `VCML`, `IDs`) |
+
+Acronyms are written as words because generators split names on capitals: `getVCML` becomes
+`get_v_c_m_l` in some Python clients, `getVcml` becomes `get_vcml` predictably. This follows
+Google's API and Java style guides and Microsoft's REST guidelines.
 
 ## 2. Representations
 
@@ -123,9 +145,22 @@ They are built for `/api/v2`, and replace v1's records scattered across `vcell-r
 `handlers/dto/`, `Simulations/`) and the generated Java models in `vcell-restclient`. The v0
 equivalents (`vcell-api-types`, `DTOModelTransformerV0`) retire with v0.
 
+**DTO names** are bare nouns, with a suffix only for a distinct role:
+
+| Role | Name |
+|---|---|
+| full representation | `BioModel` |
+| list item | `BioModelSummary` |
+| request bodies | `BioModelCreate`, `BioModelUpdate` |
+| query body (a `POST` query, §1.2) | `TimeSeriesQuery` |
+
+No `Dto`, `Rep`, `Record` or `Representation` suffixes; the package says they are DTOs. **Simple names
+are unique across all of `vcell-api-dto`** (an ArchUnit test checks this), because SmallRye names
+schemas by simple class name and two `Status` records in different sub-packages would collide in the
+spec. In `vcell-api-mapping`, where a DTO and a domain class share a name, one of them is written
+fully qualified.
+
 _Open:_
-- _DTO type naming (proposed: bare nouns within `org.vcell.api.dto`, e.g. `BioModelSummary`,
-  `SimulationStatus`; today's code mixes `*Representation`, `*Rep`, `*Record`, `*Dto` and bare names)._
 - _A spike to confirm the generated Java client can use the shared records (schema/import mappings);
   fallback is a small hand-written Java client over the same records._
 
@@ -213,8 +248,8 @@ pinned.
 ### 4.3 Spectral ruleset
 
 `tools/spectral/vcell-api.spectral.yaml` extends Spectral's recommended OpenAPI rules with the
-guide's rules. Rules for questions still open in this guide (path casing, array encoding) are in the
-file, commented out, until decided.
+guide's rules. Rules for questions still open in this guide are kept in the file, commented out, until decided;
+listed named actions (§1.1) are exempted from the verb rule by `overrides` entries.
 
 ```bash
 npx @stoplight/spectral-cli@6.13.1 lint tools/openapi.yaml \
@@ -228,12 +263,14 @@ endpoints are not fixed in place; the list shows what their `/api/v2` equivalent
 |---|---|---|
 | `vcell-path-no-verbs` (error) | 17 | `Simulation/{simID}/startSimulation`, `stopSimulation`; `fieldData/analyzeFile`, `copyModelsFieldData`, `createFromFile`, `createFromSimulation`, `delete/{fieldDataID}`, `save`; `optimization/{optId}/stop`; `publications/{id}/publish`; `solver/getFVSolverInput`, `getFVSolverInputFromVCML`; `users/forgotLegacyPassword`, `mapUser`, `processMagicLink`, `requestRecoveryEmail`, `unmapUser/{userName}` |
 | `vcell-documents-404-for-path-ids` (warn) | 6 | e.g. `GET /bioModel/{bioModelID}/summary`, `GET /publications/{id}` |
-| `vcell-operation-id-camel` (warn) | 11 | mostly acronyms (`getVCML`, `getFVSolverInput`, `IDs`); decide whether acronyms are allowed (D-17) |
+| `vcell-operation-id-camel` (warn) | 11 | acronyms written in capitals (`getVCML`, `getFVSolverInput`, `IDs`); §1.4 writes them as words |
 | `vcell-boolean-query-param-review` (info) | 4 | `includePublicAndShared` on the four summary lists: a filter, acceptable |
 | `vcell-operation-summary` (warn) | 17 | operations without a `summary` (§5.2) |
 | `vcell-tag-not-class-name` (warn) | 59 | every tag is a class name ("Bio Model Resource"); §5.1 |
 | `vcell-error-is-problem-json` (error) | 179 | every v1 error response is `application/json` (`VCellHTTPError`), not Problem Details; §9 |
 | `vcell-documents-error-responses` (warn) | 3 | operations that document no error response; §9.3 |
+| `vcell-path-casing` (error) | 34 | capitalised or camelCase segments (`Simulation`, `bioModel`, `fieldData`) and parameters (`{simID}`); §1.4 |
+| `vcell-path-param-descriptive` (warn) | 8 | bare `{id}` parameters; §1.4 |
 | Spectral built-ins | 144 | operations without a tag (60) or description (44); security scope declarations (33, a SmallRye output detail); unused components (6); one malformed `termsOfService` |
 
 Already compliant: no `GET` has a body, no `oneOf` lacks a discriminator, no request or response
@@ -599,6 +636,12 @@ it does not carry VCell roles.
 5. **Optional later:** if an application genuinely needs VCell roles inside its tokens (for example,
    one that cannot call VCell), an Auth0 Action may copy them from VCell at login. VCell's database
    stays the source; the copy is only as fresh as the token.
+
+**No superuser role.** Auth0's `owner` role was apparently meant as a superuser above admin; a single
+all-powerful role is avoided. Roles stay narrow (least privilege), and an operation that needs more
+than admin gets a **specific permission** (for example `canEditPublishedModel`), granted to the few
+who need it. Emergency access belongs outside the application (database or cluster access, with an
+audit trail).
 
 Tests set roles in the test database (as `TestEndpointUtils` already creates users), not in the
 Keycloak dev-service configuration.
