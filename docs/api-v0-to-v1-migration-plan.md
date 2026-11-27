@@ -181,8 +181,8 @@ question (#2220): (a) anonymous access for public data, retire `vcellguest`; (b)
 account on v1.
 
 **D-19. Authorization model for data and documents.** Agree, per resource family, who may read: owner,
-group members (`GroupAccess`), public, anonymous. Simulation results especially need an explicit rule
-(the private security report has the specifics). Also the role source: Auth0 `roles` claim
+group members (`GroupAccess`), public, anonymous. Simulation results especially need an explicit rule.
+Also the role source: Auth0 `roles` claim
 (`curator`, `owner`, `admin`) vs database `SPECIAL_CLAIM`s (`admins`, `powerUsers`,
 `publicationEditors`, `vcellSupport`) — one source, or a defined mapping.
 
@@ -266,10 +266,10 @@ and low-risk first; keep the old server path until telemetry says it is unused.
    class (user / guest / anonymous), outcome, duration and reply size; log the same for each non-RPC
    v0 route. Add a client-version header to the desktop's v0 and v1 requests (none is sent today) and
    log it. Without this, no switch-off date is defensible.
-2. **Harden v0 while it lives.** Replace "any public method of the implementation" with an explicit
-   per-destination allowlist matching inv §3 (live methods plus the retired-but-supported ones in
-   inv §3.2), and handle the privately reported issues through the advisory process
-   (`SECURITY-FIXES.md`), not through this plan's PRs.
+2. **Harden v0 while it lives.** _Done in 8.1.9.02 and 8.3.5.01:_ RPC dispatch accepts only the
+   methods listed per service queue (`RpcMethodAllowlist`, covering live methods and the
+   retired-but-supported ones in inv §3.2). Further hardening follows `SECURITY-FIXES.md`, not this
+   plan's PRs.
 3. **Small v0 fixes** found in the inventory (inv §8): reconcile the guest allowlists, drop dead
    client stubs, fix the dead webapp-ng `/mathmodel` link, bound the event deque. Each independent.
 4. **Correct #2220's table** (v1 SBML/OMEX/BNGL/diagram downloads are 501 stubs).

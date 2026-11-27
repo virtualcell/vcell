@@ -10,11 +10,10 @@ Line numbers are for `master` at the commit above. "Desktop" means the Java clie
 mode (`vcell-client` + `vcell-apiclient`); standalone mode runs everything in-process and does not
 touch `/api/v0`.
 
-Security note: a security review of the RPC surface was done alongside this inventory. Per
-[`SECURITY-FIXES.md`](https://github.com/virtualcell/vcell/blob/docs/security-fixes/docs/SECURITY-FIXES.md)
-(branch `docs/security-fixes`), its findings are reported privately and are deliberately not recorded
-here. Where a finding affects the plan, the plan states the neutral requirement (for example, an
-explicit per-destination method allowlist) without describing the weakness.
+Security note: security-relevant issues are handled through the process in `SECURITY-FIXES.md`
+(branch `docs/security-fixes`, #2239) and are not recorded in this inventory. Where security affects
+the design, the plan and the style guide state the requirement (for example, the authorization rules
+in the style guide §10).
 
 ---
 
@@ -102,7 +101,7 @@ Rpc{Data,Db,Sim}ServerProxy.rpc()      RpcRestlet.handle()  POST /api/v0/rpc    
    - Commented-out special cases for `getVCInfoContainer`, `getBioModelXML`, `getMathModelXML`
      (`:212-217`).
 7. Otherwise `bindUserArguments` (`:102-118`) replaces every top-level `User` argument with the
-   database's `SpecialUser` for the caller and refuses a different user (GHSA-9hpw-2h4g-fjhj), then
+   database's `SpecialUser` for the caller and refuses a different user, then
    forwards over JMS (`:227-234`). The backend checks again in `VCRpcRequest.verifyUserArguments`
    (`:137-145`).
 8. The reply is re-serialized with `DTOModelTransformerV0.toCompressedSerialized`
@@ -298,7 +297,7 @@ Routed in `vcell-api/.../rest/VCellApiApplication.java:280-331`, under prefix `/
 | `/publication`, `/publication/{id}` | `Publication(s)ServerResource` | optional | public web, vcell.org links | `GET /api/v1/publications`, `/publications/{id}` |
 | `/health?check=sim\|all` | `HealthRestlet`, `HealthService` | none | Nagios / Better Stack canary (`docs/sim-monitor-warning-2026-06-01.md`); `HealthService` saves and runs a canary model through `DatabaseServerImpl` and the dispatcher | none |
 | `/admin/stats` | `AdminStatsRestlet` | required, admin claim | admins | `GET /api/v1/admin/usage` (PDF, different report; `@RolesAllowed("user")`) |
-| `/admin/jobs` | `AdminJobsRestlet` | see private report | `docker/swarm/vcell-admin` CLI (`cli.py:184-189`), `docker/README.md:98` | none |
+| `/admin/jobs` | `AdminJobsRestlet` | — | `docker/swarm/vcell-admin` CLI (`cli.py:184-189`), `docker/README.md:98` | none |
 | `/n5data/{simid}/export`, `/n5data/{simid}/info` | `N5ExportRestlet`, `N5GetInfoRestlet` | optional | none found; `N5Service.exportToN5` body is commented out | `POST /api/v1/export/N5` |
 | `/scripts`, `/webapp` | static directories | none | old AngularJS UI (`vcell-api/webapp/`) | webapp-ng |
 
@@ -408,7 +407,7 @@ Issue #2184 proposes the next port (simulation start/stop), and notes the two co
 | Large binary payloads | `getSimDataBlock`, `getODEData`, `getMesh`, `getTimeSeriesValues`, VTU, Langevin and FEniCSx reads. The FEniCSx work showed per-call overhead matters (201 sequential RPCs per kymograph before batching, 53.9 MB moved cold before server-side sampling) and introduced reply caps answered as prefixes. JSON number arrays would multiply size and parse time. |
 | Backward compatibility | Prod runs 8.1.x (`vc8.1-prod`), dev runs master (8.3.x). The client warns on a MAJOR/MINOR/PATCH mismatch but keeps working (`ClientServerManager.java:299-330`), so old installers keep calling v0 indefinitely. No client version is sent on RPC requests, so who still calls what is not measurable today. |
 | Guest / public access | Shared `vcellguest` account with a legacy token, two allowlists; #2220 proposes anonymous access instead. v1 already has an anonymous identity for public reads. |
-| Authorization of data reads | Must be designed explicitly for v1 (see the plan's design questions). Details in the private report. |
+| Authorization of data reads | Must be designed explicitly for v1 (see the plan's design questions). See the style guide §10. |
 | Rate limiting and abuse | Public v0 resources are crawled (#1967, #2106, the 2026-11-08 outage); robots.txt is served by the webapp since #2030; ingress limits only cover v0 sbml/omex. vcell-rest has no limits of its own. |
 | JMS | RPC rides ActiveMQ Classic `activemqint`. Artemis is the destination (`docs/MESSAGING.md`); do not invest in Classic-side machinery. vcell-rest speaks AMQP only. |
 | Memory | The api pod buffers every RPC reply; the data pod has an 8 GB limit, rest 1 GB, api 2–4 GB (vcell-fluxcd `kustomize/base/*.yaml`, prod overlay differs). |
