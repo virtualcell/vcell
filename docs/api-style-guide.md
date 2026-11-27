@@ -323,3 +323,112 @@ Spectral enforces: an `@Tag` on every operation that is declared at the top leve
 - **Capability discovery** (D-16): a version endpoint (replacing `/api/v0/swversion`) reports the
   API versions and optional capabilities the server offers, so a new client can fall back against an
   older server (prod lags master).
+
+## 7. Observability
+
+Every `/api/v2` endpoint gets the same observability from one shared implementation, not per-endpoint
+code. It builds on what the cluster already runs: structured ECS JSON logs collected into Loki, and
+Prometheus.
+
+### 7.1 One structured log line per request
+
+A single JAX-RS filter writes, for every request:
+
+| Field | Notes |
+|---|---|
+| method, **route template** | `/simulations/{id}/runs`, never the raw path |
+| status, duration, response bytes | |
+| caller class | anonymous / user / admin / automation (§8.1) |
+| user id | the VCell user, when authenticated |
+| client name and version | from the client-version header (§6.3) |
+| request id, trace id | §7.2 |
+
+Questions such as "who is crawling the data endpoints" or "which client versions still call v1"
+are then one LogQL query.
+
+### 7.2 Request ids and tracing
+
+- Accept a W3C `traceparent` (or create one) and return the request id in a response header and in
+  **every error body**, so a user's support message can quote it.
+- **OpenTelemetry** (`quarkus-opentelemetry`) instruments HTTP, REST clients, JDBC and AMQP
+  messaging, and adds trace and span ids to the logs. Traces go to Tempo (Grafana stack).
+- Sampling: a small fraction of requests, plus **every error and every slow request** (tail
+  sampling in the OpenTelemetry collector).
+- The legacy JMS services (data, db, sched) receive the trace context as a message property, so one
+  trace spans the API call and the backend work it waited on.
+
+### 7.3 Metrics
+
+- **Micrometer → Prometheus** (`quarkus-micrometer-registry-prometheus`): request rate, errors and
+  duration per route template and status; JVM and connection-pool metrics; domain metrics where they
+  matter (bytes served per data endpoint, queue depth, job duration).
+- **Labels are route templates, methods and status codes, never ids or user names**, so the number
+  of series stays bounded.
+- Alerts at least on: 5xx rate, p95 latency per route, out-of-memory pod restarts.
+
+### 7.4 Health
+
+SmallRye Health **liveness** and **readiness** checks that test real dependencies (database reachable,
+message consumers alive), so Kubernetes restarts a pod that is up but not working (#2032).
+
+### 7.5 Hygiene
+
+- Never log tokens, passwords, or request bodies containing personal data.
+- Log levels mean the same everywhere: `ERROR` needs attention, `WARN` is unexpected but handled,
+  `INFO` is the per-request line and lifecycle events, `DEBUG` is off in production.
+- **Writes are audited:** who changed what, when, and through which client, kept separately from
+  debug logs.
+
+## 8. Automated and agentic clients
+
+Scripts, pipelines and AI agents use the API in patterns people don't: parallel fan-out, retry loops,
+breadth-first crawling, and casual use of expensive computations, often with a person's own
+credentials. They are welcome as clients; the API makes them **identifiable, bounded and
+observable**.
+
+### 8.1 Identification
+
+- Automation uses **its own credentials**: Auth0 machine-to-machine clients or personal access
+  tokens, separate from interactive login, with a claim that marks them as automation. The caller
+  class in §7.1 comes from this.
+- Every client sends the client-version header (§6.3); anonymous clients without one get the
+  strictest limits (§8.3).
+
+### 8.2 Scopes and least privilege
+
+- Automation tokens are **read-only unless a write scope is granted explicitly**.
+- Destructive or publicly visible actions (delete, publish, share, start large runs) need a scope
+  that is never a default, or an interactive token. _To agree with D-18 and D-19._
+
+### 8.3 Rate, quota and cost limits
+
+- **Token-bucket limits per identity and per caller class**, with expensive endpoints weighted by
+  cost (a kymograph costs more than a status read), and **concurrency limits** on heavy work.
+- Over the limit: `429 Too Many Requests` with `Retry-After`. Limits are published in
+  `RateLimit-Policy` / `RateLimit` response headers so a well-behaved client can pace itself.
+- Coarse per-IP limits at the ingress; per-identity and cost limits in the application.
+- Anonymous access has the strictest tier.
+- Every collection is paginated with a bounded page size, and every data read has size caps
+  (D-10, D-11); no single request or crawl can walk an unbounded collection.
+
+### 8.4 Safe retries
+
+- `POST`s that create work (runs, exports, jobs) accept an **`Idempotency-Key`** header; a retry with
+  the same key returns the original result instead of starting the work twice.
+- Finished, immutable results carry `ETag` and `Cache-Control`, so repeated reads are cheap.
+
+### 8.5 Watching for patterns
+
+Dashboards and alerts per identity and caller class, on the §7.1 log line: distinct resources touched
+per hour, fan-out, error ratio, compute cost. For example, more than N distinct simulations read per
+hour by one identity is an alert, which would have flagged the November 2026 crawl of public
+simulation data on its first day.
+
+### 8.6 A sanctioned path
+
+- A documented bulk-data route (exports, Zenodo archives) and a published usage policy, with
+  `robots.txt` (and `ai.txt`) for the public pages, so large-scale readers have a legitimate option.
+- Good operation descriptions (§5) so agents call the API correctly.
+- _Proposed:_ a small, scoped MCP server over `/api/v2` (through pyvcell) as the supported way for LLM
+  agents to work with VCell: a known, observable entry point instead of agents improvising against
+  raw endpoints.
