@@ -9,6 +9,7 @@
  */
 package cbit.vcell.solver.ode.gui;
 
+import cbit.vcell.client.laf.VCellFonts;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
@@ -31,7 +32,6 @@ import javax.swing.Timer;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Font;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -62,6 +62,16 @@ public class SpringSaladViewerPanel extends JPanel {
 
 	public SpringSaladViewerPanel() {
 		super(new BorderLayout());
+		// Names, not layout positions, are how the debug bridge and recorded UI scripts
+		// address these controls - see tools/debug-bridge. They are inert at runtime.
+		setName("SpringSaladViewerPanel");
+		canvas.setName("SpringSaladViewerCanvas");
+		speciesPanel.setName("SpringSaladSpeciesPanel");
+		frameSlider.setName("SpringSaladFrameSlider");
+		playButton.setName("SpringSaladPlayButton");
+		saveMovieButton.setName("SpringSaladSaveMovieButton");
+		speedCombo.setName("SpringSaladSpeedCombo");
+		readout.setName("SpringSaladReadout");
 		timer = new Timer(100, e -> advanceFrame());
 		speedCombo.setSelectedIndex(2); // 10 fps
 		applySpeed();
@@ -73,7 +83,7 @@ public class SpringSaladViewerPanel extends JPanel {
 		sceneToggles.setLayout(new BoxLayout(sceneToggles, BoxLayout.Y_AXIS));
 		sceneToggles.setBorder(BorderFactory.createEmptyBorder(4, 6, 6, 4));
 		JLabel sceneTitle = new JLabel("Scene");
-		sceneTitle.setFont(sceneTitle.getFont().deriveFont(Font.BOLD));
+		VCellFonts.setCategory(sceneTitle, VCellFonts.Category.HEADING);
 		sceneTitle.setAlignmentX(LEFT_ALIGNMENT);
 		sceneToggles.add(sceneTitle);
 		sceneToggles.add(sceneToggle("Links", true, canvas::setShowLinks));
@@ -117,6 +127,7 @@ public class SpringSaladViewerPanel extends JPanel {
 		transportRight.add(speedCombo);
 
 		JButton reset = new JButton("Reset view");
+		reset.setName("SpringSaladResetViewButton");
 		reset.addActionListener(e -> canvas.resetView());
 		transportRight.add(reset);
 
@@ -228,6 +239,7 @@ public class SpringSaladViewerPanel extends JPanel {
 
 	private JCheckBox sceneToggle(String label, boolean initial, java.util.function.Consumer<Boolean> apply) {
 		JCheckBox box = new JCheckBox(label, initial);
+		box.setName("SpringSaladToggle" + label.replace(" ", ""));
 		box.setAlignmentX(LEFT_ALIGNMENT);
 		box.addActionListener(e -> apply.accept(box.isSelected()));
 		return box;

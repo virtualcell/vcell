@@ -10,6 +10,8 @@
 
 package cbit.vcell.dictionary.db;
 
+import cbit.vcell.modeldb.DbDriver;
+
 import java.util.Vector;
 
 import org.vcell.util.document.KeyValue;
@@ -217,11 +219,11 @@ public String getSQLReactionQuery(cbit.vcell.model.ReactionQuerySpec rqs) {
 	if(repWildCard == null){
 		if(reactantWildCard != null){
 			nameConditionR = rpNameCondition +
-			" AND " + "LOWER(" + CompoundAliasTable.table.name.getQualifiedColName() + ") LIKE LOWER('"+reactantWildCard+"')" +
+			" AND " + "LOWER(" + CompoundAliasTable.table.name.getQualifiedColName() + ") LIKE LOWER("+DbDriver.sqlLiteral(reactantWildCard)+")" +
 			" AND " + EnzymeReactionTable.table.type.getQualifiedColName()+"="+"'"+REACANT_TYPE_REACTANT+"'";
 		}else if(productWildCard != null){
 			nameConditionP = rpNameCondition +
-			" AND " + "LOWER(" + CompoundAliasTable.table.name.getQualifiedColName() + ") LIKE LOWER('"+productWildCard+"')" +
+			" AND " + "LOWER(" + CompoundAliasTable.table.name.getQualifiedColName() + ") LIKE LOWER("+DbDriver.sqlLiteral(productWildCard)+")" +
 			" AND " + EnzymeReactionTable.table.type.getQualifiedColName()+"="+"'"+REACANT_TYPE_PRODUCT+"'";
 		}
 	}
@@ -250,7 +252,7 @@ public String getSQLReactionQuery(cbit.vcell.model.ReactionQuerySpec rqs) {
 			" AND " +
 			EnzymeAliasTable.table.preferred.getQualifiedColName()+"="+"'T'" +
 			" AND " +
-			"LOWER(" + EnzymeAliasTable.table.name.getQualifiedColName() + ") LIKE LOWER('"+(repWildCard != null?repWildCard:enzymeWildCard)+"')";
+			"LOWER(" + EnzymeAliasTable.table.name.getQualifiedColName() + ") LIKE LOWER("+DbDriver.sqlLiteral(repWildCard != null?repWildCard:enzymeWildCard)+")";
 	}
 
 	if(enzymeRef != null || typeWildCard != null){
@@ -266,7 +268,7 @@ public String getSQLReactionQuery(cbit.vcell.model.ReactionQuerySpec rqs) {
 	//
 	if(repWildCard != null){
 		nameConditionWild =
-			rpNameCondition +" AND " + "LOWER(" + CompoundAliasTable.table.name.getQualifiedColName() + ") LIKE LOWER('"+repWildCard+"')" +
+			rpNameCondition +" AND " + "LOWER(" + CompoundAliasTable.table.name.getQualifiedColName() + ") LIKE LOWER("+DbDriver.sqlLiteral(repWildCard)+")" +
 			" UNION " +
 			nameConditionE;
 	}

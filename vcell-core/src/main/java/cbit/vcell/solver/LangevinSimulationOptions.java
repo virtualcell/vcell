@@ -27,9 +27,7 @@ import cbit.vcell.math.VCML;
 
 public class LangevinSimulationOptions implements Serializable, Matchable, VetoableChangeListener {
 
-	public final static int DefaultNumberOfConcurrentJobs = 20;	// used for multiple runs on the cluster
-	public final static int DefaultTotalNumberOfJobs = 20;
-	public final static int MaxNumberOfConcurrentJobs = 20;
+	public final static int DefaultTotalNumberOfJobs = 20;		// arbitrary number of simulations (excluding the watchdog)
 	public final static int MaxTotalNumberOfJobs = 200;			// arbitrary limit to prevent excessive use of cluster resources
 
 	public final static String Partition_Nx = "Partition Nx: ";
@@ -51,7 +49,7 @@ public class LangevinSimulationOptions implements Serializable, Matchable, Vetoa
 
 	// both initialized to 1 - only one job will be run on the cluster
 	protected int totalNumberOfJobs	= 1;			// how many jobs will be run on the cluster
-	protected int numberOfConcurrentJobs = 1;		// how many instances of the solver may run concurrently on the cluster
+//	protected int numberOfConcurrentJobs = 1;		// how many instances of the solver may run concurrently on the cluster
 //	@Deprecated
 	protected int numOfParallelLocalRuns = 1;		// replaced by numberOfConcurrentJobs but kept for backward compatibility
 
@@ -72,7 +70,7 @@ public class LangevinSimulationOptions implements Serializable, Matchable, Vetoa
 		randomSeed = langevinSimulationOptions.randomSeed;
 //		numOfParallelLocalRuns = langevinSimulationOptions.numOfParallelLocalRuns;
 		totalNumberOfJobs = langevinSimulationOptions.totalNumberOfJobs;
-		numberOfConcurrentJobs = langevinSimulationOptions.numberOfConcurrentJobs;
+//		numberOfConcurrentJobs = langevinSimulationOptions.numberOfConcurrentJobs;
 		intervalSpring = langevinSimulationOptions.intervalSpring;
 		intervalImage = langevinSimulationOptions.intervalImage;
 		npart[0] = langevinSimulationOptions.npart[0];
@@ -96,9 +94,9 @@ public class LangevinSimulationOptions implements Serializable, Matchable, Vetoa
 		if(totalNumberOfJobs != langevinSimulationOptions.totalNumberOfJobs) {
 			return false;
 		}
-		if(numberOfConcurrentJobs != langevinSimulationOptions.numberOfConcurrentJobs) {
-			return false;
-		}
+//		if(numberOfConcurrentJobs != langevinSimulationOptions.numberOfConcurrentJobs) {
+//			return false;
+//		}
 		if(intervalSpring != langevinSimulationOptions.intervalSpring) {
 			return false;
 		}
@@ -121,9 +119,9 @@ public class LangevinSimulationOptions implements Serializable, Matchable, Vetoa
 	public int getTotalNumberOfJobs() {
 		return totalNumberOfJobs;
 	}
-	public int getNumberOfConcurrentJobs() {	// // can be between 0 and totalNumberOfJobs-1
-		return numberOfConcurrentJobs;
-	}
+//	public int getNumberOfConcurrentJobs() {	// // can be between 0 and totalNumberOfJobs-1
+//		return numberOfConcurrentJobs;
+//	}
 
 	public double getIntervalSpring() {
 		return intervalSpring;
@@ -148,9 +146,9 @@ public class LangevinSimulationOptions implements Serializable, Matchable, Vetoa
 public final void setTotalNumberOfJobs(int newValue) {
 	this.totalNumberOfJobs = newValue;
 }
-	public final void setNumberOfConcurrentJobs(int newValue) {
-		this.numberOfConcurrentJobs = newValue;
-	}
+//	public final void setNumberOfConcurrentJobs(int newValue) {
+//		this.numberOfConcurrentJobs = newValue;
+//	}
 	public final void setIntervalSpring(double newValue) {
 		this.intervalSpring = newValue;
 	}
@@ -213,7 +211,7 @@ public final void setTotalNumberOfJobs(int newValue) {
 		buffer.append("\t\t" + VCML.LangevinSimulationOptions_Partition_Nx + " " + npart[0] + "\n");
 		buffer.append("\t\t" + VCML.LangevinSimulationOptions_Partition_Ny + " " + npart[1] + "\n");
 		buffer.append("\t\t" + VCML.LangevinSimulationOptions_Partition_Nz + " " + npart[2] + "\n");
-		buffer.append("\t\t" + VCML.LangevinSimulationOptions_numberOfConcurrentJobs + " " + numberOfConcurrentJobs + "\n");
+//		buffer.append("\t\t" + VCML.LangevinSimulationOptions_numberOfConcurrentJobs + " " + numberOfConcurrentJobs + "\n");
 		buffer.append("\t\t" + VCML.LangevinSimulationOptions_totalNumberOfJobs + " " + totalNumberOfJobs + "\n");
 		buffer.append("\t" + VCML.EndBlock + "\n");
 		return buffer.toString();
@@ -244,7 +242,8 @@ public final void setTotalNumberOfJobs(int newValue) {
 				totalNumberOfJobs = Integer.parseInt(token);
 			} else if(token.equalsIgnoreCase(VCML.LangevinSimulationOptions_numberOfConcurrentJobs)) {
 				token = tokens.nextToken();
-				numberOfConcurrentJobs = Integer.parseInt(token);
+				// numberOfConcurrentJobs may be present in some old VCML files, but is not in use anymore
+				// read and discard
 			} else if(token.equalsIgnoreCase(VCML.LangevinSimulationOptions_intervalSpring)) {
 				token = tokens.nextToken();
 				intervalSpring = Double.parseDouble(token);

@@ -26,8 +26,16 @@
   .canvas-box { position: relative; width: 100%; max-width: 960px; aspect-ratio: 4 / 3;
                 max-height: calc(100dvh - 170px); min-height: 160px; min-width: 240px;
                 background: #12121a; border-radius: 6px; overflow: hidden; }
+  /*
+    The pointer says what a press does: the open hand where a drag rotates or pans and a click probes, a
+    crosshair while clicks place line vertices (the Line tool, .drawing-line) or add points (+ Add points,
+    .adding-probes), and the closed hand during a drag in any mode (.dragging, set by viewer.js once the
+    pointer has really moved: a bare :active would show it for every click, a vertex or a point included).
+  */
   .canvas-box canvas { display: block; width: 100%; height: 100%; cursor: grab; touch-action: none; }
-  .canvas-box canvas:active { cursor: grabbing; }
+  .canvas-box .notice { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+                        padding: 24px 32px; color: #e8e8ee; font: 15px/1.6 system-ui, sans-serif; text-align: center;
+                        white-space: pre-wrap; overflow-wrap: anywhere; }
   .controls { display: flex; align-items: center; gap: 10px; font: 12px/1.4 ui-monospace, monospace;
               width: 100%; max-width: 960px; flex-wrap: wrap; }
   .controls[hidden] { display: none; }
@@ -35,6 +43,10 @@
   .controls select { font: 12px ui-monospace, monospace; max-width: 260px; }
   .readout { flex: 1 1 auto; opacity: .8; }
   .toggle { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+  .toggle[hidden] { display: none; }
+  .particle-legend { display: inline-flex; gap: 8px; font-size: 12px; opacity: .85; }
+  .particle-legend .swatch { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 3px;
+                             border: 1px solid #0006; vertical-align: -1px; }
   .readout em { color: #2a7; font-style: normal; }
   .status { font: 12px/1.4 ui-monospace, monospace; opacity: .7; }
   .status.err { color: #c0392b; opacity: 1; white-space: pre-wrap; }
@@ -51,6 +63,60 @@
   .plot-panel .curve-dot { fill: #2a7; stroke: none; }
   .plot-panel .axis { stroke: currentColor; stroke-opacity: .3; vector-effect: non-scaling-stroke; }
   .plot-panel .lbl { font: 11px ui-monospace, monospace; fill: currentColor; fill-opacity: .7; }
+  /* probes: markers over the canvas, drawn in page coordinates projected from the camera */
+  .canvas-box .overlay { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  .overlay .marker circle { stroke-width: 2; }
+  .overlay .marker text { font: 600 11px ui-monospace, monospace; fill: #fff; paint-order: stroke;
+                          stroke: #000; stroke-width: 3px; stroke-opacity: .7; }
+  button[aria-pressed=true] { background: #2a7; color: #fff; border-color: #2a7; }
+  .probe-list { list-style: none; margin: 0 0 4px; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 14px;
+                font: 12px/1.6 ui-monospace, monospace; }
+  .probe-list li { display: inline-flex; align-items: center; gap: 5px; }
+  .probe-list .swatch { display: inline-block; width: 10px; height: 10px; border-radius: 50%; }
+  .probe-list .value { opacity: .75; }
+  .probe-list .outside { opacity: .6; font-style: italic; }
+  .probe-list button { font: 11px ui-monospace, monospace; padding: 0 4px; line-height: 1.4; }
+  .probe-panel svg { height: 240px; cursor: crosshair; }
+  .probe-panel .trace { fill: none; stroke-width: 2; vector-effect: non-scaling-stroke; }
+  .probe-panel .grid { stroke: currentColor; stroke-opacity: .08; }
+  .probe-panel .time-cursor { stroke: currentColor; stroke-opacity: .5; stroke-dasharray: 3 3; }
+  .probe-panel .title { font: 11px ui-monospace, monospace; fill: currentColor; fill-opacity: .8; }
+  /* the kymograph: an image of the variable along a line (x) over time (y), with a line profile below */
+  .canvas-box.drawing-line canvas, .canvas-box.adding-probes canvas { cursor: crosshair; }
+  .canvas-box.dragging canvas { cursor: grabbing; }
+  .overlay .kymo-line { fill: none; stroke: #fff; stroke-width: 2; }
+  .overlay .kymo-line.occluded { stroke-dasharray: 5 4; stroke-opacity: .7; }
+  .overlay .kymo-line-under { fill: none; stroke: #000; stroke-opacity: .55; stroke-width: 4; }
+  .overlay .kymo-vertex { fill: #fff; stroke: #000; stroke-opacity: .6; stroke-width: 1; }
+  .overlay .kymo-start { stroke: #fff; stroke-width: 3; }
+  .overlay .kymo-line.draft { stroke-dasharray: 2 3; }
+  .kymo-panel .plot-head .tools { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .kymo-panel .plot-head input[type=number] { width: 7em; font: 12px ui-monospace, monospace; }
+  .kymo-panel .kymo-coords { display: flex; align-items: center; gap: 6px; font: 12px/1.4 ui-monospace, monospace;
+                             margin: 2px 0 4px; }
+  .kymo-panel .kymo-coords input { flex: 1 1 auto; font: 12px ui-monospace, monospace; min-width: 0; }
+  .kymo-panel .note { font: 12px/1.4 ui-monospace, monospace; opacity: .75; min-height: 1.4em; }
+  .kymo-panel .note.warn { color: #d70; opacity: 1; }
+  .kymo-panel .stale { font: 11px ui-monospace, monospace; padding: 0 6px; border-radius: 9px;
+                       background: #d70; color: #fff; border: none; cursor: pointer; }
+  .kymo-panel .kymo-plot { position: relative; height: 260px; }
+  .kymo-panel .kymo-plot svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  /* gaps (no data: outside the variable's domain) are transparent pixels over this hatch */
+  .kymo-panel .kymo-plot canvas { position: absolute; image-rendering: pixelated; cursor: crosshair; touch-action: none;
+    background: repeating-linear-gradient(45deg, #9a9aa3 0 3px, #c8c8cf 3px 6px); }
+  .kymo-panel .no-data { fill: url(#kymoHatch); }
+  .kymo-panel .time-cursor { stroke: #fff; stroke-width: 1.5; stroke-dasharray: 4 3; pointer-events: none; }
+  .kymo-panel .time-cursor-under { stroke: #000; stroke-opacity: .6; stroke-width: 3.5; pointer-events: none; }
+  .kymo-panel .space-cursor { stroke: #fff; stroke-width: 1.5; stroke-dasharray: 4 3; pointer-events: none; }
+  .kymo-panel .space-cursor-under { stroke: #000; stroke-opacity: .6; stroke-width: 3.5; pointer-events: none; }
+  .kymo-panel .cross-marker { stroke: currentColor; stroke-opacity: .5; stroke-dasharray: 3 3; }
+  .kymo-panel .profile .dot { fill: #07c; }
+  .kymo-panel .kymo-plot canvas:focus-visible { outline: 2px solid #07c; outline-offset: 2px; }
+  .kymo-panel .profile { height: 170px; }
+  .kymo-panel .profile .trace { fill: none; stroke: #07c; stroke-width: 2; vector-effect: non-scaling-stroke; }
+  .kymo-panel .grid { stroke: currentColor; stroke-opacity: .08; }
+  .kymo-panel .title { font: 11px ui-monospace, monospace; fill: currentColor; fill-opacity: .8; }
+  .kymo-panel .readout { font: 12px/1.4 ui-monospace, monospace; min-height: 1.4em; opacity: .85; }
 </style>
 </head>
 <body>
@@ -59,16 +125,62 @@
   <span class="name" id="runName"></span><span class="id" id="runId"></span>
 </div>
 
-<div class="canvas-box"><canvas id="canvas" tabindex="0"></canvas></div>
+<div class="canvas-box"><canvas id="canvas" tabindex="0"></canvas><svg class="overlay" id="overlay" aria-hidden="true"></svg></div>
 
 <div class="controls" id="dataControls" hidden>
   <label for="variable">Variable</label>
   <select id="variable" disabled></select>
   <label for="time">Time</label>
   <input id="time" type="range" min="0" max="0" step="1" value="0" disabled>
+  <button id="addProbes" type="button" disabled aria-pressed="false" title="Each click adds a probe instead of replacing them (shift-click does the same)">＋ Add points</button>
+  <button id="lineTool" type="button" disabled aria-pressed="false" title="Draw a line for a kymograph: click to add vertices, Enter or double-click to finish, Backspace removes the last, Esc cancels">╱ Line</button>
   <button id="statsBtn" type="button" disabled title="min / mean / max over space, per variable, over time">Stats</button>
+  <button id="refreshBtn" type="button" disabled title="Fetch output times written since the page loaded (automatic every 10 s while the run is in progress)">Refresh</button>
+  <span class="readout" id="runStatus"></span>
   <span class="readout" id="dataReadout"></span>
-  <span class="readout pick" id="pickReadout" title="value under the mouse — click to plot over time"></span>
+  <span class="readout pick" id="pickReadout" title="value under the mouse — click to probe it over time, shift-click to add a probe"></span>
+</div>
+
+<div class="plot-panel probe-panel" id="probePanel" hidden>
+  <div class="plot-head">
+    <span id="probeTitle"></span>
+    <span>
+      <button id="probeCsv" type="button" title="Save the traces as CSV: one row per time, one column per probe">CSV</button>
+      <button id="probeClear" type="button" title="Remove every probe">Clear</button>
+    </span>
+  </div>
+  <ul class="probe-list" id="probeList"></ul>
+  <svg id="probeSvg" aria-label="time courses at the probes"></svg>
+</div>
+
+<div class="plot-panel kymo-panel" id="kymoPanel" hidden>
+  <div class="plot-head">
+    <span id="kymoTitle"></span>
+    <span class="tools">
+      <button id="kymoStale" class="stale" type="button" hidden title="The run has new output times since this kymograph was computed">stale – recompute</button>
+      <select id="kymoRange" title="Colour range: the kymograph's own min and max, the 3D view's range at the current time, or your own">
+        <option value="all" selected>All (kymograph)</option>
+        <option value="view">3D view (current time)</option>
+        <option value="user">User</option>
+      </select>
+      <input id="kymoMin" type="number" step="any" hidden aria-label="colour range minimum">
+      <input id="kymoMax" type="number" step="any" hidden aria-label="colour range maximum">
+      <button id="kymoSamplesCsv" type="button" disabled title="Save the samples as CSV: arc length, point, volume index, membrane index, in domain">Samples CSV</button>
+      <button id="kymoMatrixCsv" type="button" disabled title="Save the kymograph as CSV: the arc lengths, then one row per time">Matrix CSV</button>
+      <button id="kymoDesktopCsv" type="button" disabled title="Save the kymograph resampled as the desktop's kymograph resamples it (raw values, nearest neighbour, evenly spaced), to compare with its Copy output">Desktop CSV</button>
+      <button id="kymoPng" type="button" disabled title="Save the kymograph image as PNG">PNG</button>
+      <button id="kymoProfileCsv" type="button" disabled title="Save the line scan as CSV: the value at each sample at the crosshair's time">Line scan CSV</button>
+      <button id="kymoTimeCsv" type="button" disabled title="Save the time series as CSV: the value at each time at the crosshair's distance">Time series CSV</button>
+      <button id="kymoClose" type="button" title="Remove the line">✕</button>
+    </span>
+  </div>
+  <label class="kymo-coords">Line <input id="lineCoords" type="text" spellcheck="false" autocomplete="off"
+    placeholder="x,y,z; x,y,z; …" title="The line's vertices, in µm. Edit and press Enter to redraw it"></label>
+  <div class="note" id="kymoNote"></div>
+  <div class="kymo-plot" id="kymoPlot"><canvas id="kymoCanvas" width="1" height="1" tabindex="0" aria-label="kymograph: click or drag to move the crosshair, arrow keys to step it"></canvas><svg id="kymoSvg" aria-label="kymograph axes"></svg></div>
+  <div class="readout" id="kymoReadout"></div>
+  <svg class="profile" id="kymoProfile" aria-label="line scan at the crosshair's time"></svg>
+  <svg class="profile" id="kymoTimePlot" aria-label="time series at the crosshair's distance"></svg>
 </div>
 
 <div class="plot-panel" id="plotPanel" hidden>
@@ -89,6 +201,10 @@
     <option value="2">Z</option>
   </select>
   <input id="slicePos" type="range" min="0" max="100" step="1" value="50" disabled>
+  <select id="cutMode" disabled title="How the slice cuts the mesh: through the cells (a flat cross-section of the field), or at whole cells (every cell the plane touches kept intact, so the cut face shows the mesh's own elements)">
+    <option value="smooth" selected>Cut through cells</option>
+    <option value="cells">Whole cells</option>
+  </select>
   <span class="readout" id="sliceReadout"></span>
   <span class="readout" id="cropStats"
         title="display-mesh statistics: integrated over the smoothed (deformed) mesh shown on screen — self-consistent with the display; the /stats curves are solver-grid statistics (uniform voxel volumes, the solver's own bookkeeping); the two converge as the mesh refines"></span>
@@ -101,6 +217,16 @@
   <button id="smoothingReset" type="button" disabled>Reset</button>
   <label class="toggle"><input id="colorbar" type="checkbox" checked disabled> Color bar</label>
   <label class="toggle"><input id="axes" type="checkbox" checked disabled> Axes</label>
+  <label class="toggle" id="particlesToggle" hidden
+         title="molecule positions of a hybrid PDE/particle run, at the shown time (at most 20,000 per species are drawn)"><input
+         id="particles" type="checkbox" checked disabled> Particles <span class="particle-legend" id="particleLegend"></span></label>
+  <label class="toggle">Mesh
+    <select id="meshStyle" disabled title="Show the mesh: its triangles' edges over the colored surface, or edges only (m cycles)">
+      <option value="surface" selected>Surface</option>
+      <option value="edges">Surface + edges</option>
+      <option value="wireframe">Wireframe</option>
+    </select>
+  </label>
 </div>
 
 <div class="status" id="status">loading…</div>

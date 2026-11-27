@@ -9,6 +9,7 @@
  */
 
 package cbit.vcell.constraints.gui;
+import cbit.vcell.client.laf.VCellColors;
 import cbit.vcell.constraints.GeneralConstraint;
 /**
  * Insert the type's description here.
@@ -55,16 +56,16 @@ public java.awt.Component getTableCellRendererComponent(javax.swing.JTable table
 			setForeground(java.awt.Color.white);
 			setBackground(java.awt.Color.red);
 		}else{
-			setForeground(java.awt.Color.red);
-			setBackground(java.awt.Color.white);
+			setForeground(VCellColors.getErrorForeground());
+			setBackground(table.getBackground());
 		}
 	} else {
 		if (isSelected){
 			setForeground(java.awt.Color.white);
 			setBackground(java.awt.Color.blue.darker().darker());
 		}else{
-			setForeground(java.awt.Color.black);
-			setBackground(java.awt.Color.white);
+			setForeground(table.getForeground());
+			setBackground(table.getBackground());
 		}
 	}
 	return this;

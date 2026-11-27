@@ -15,6 +15,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serial;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 
 
 /**
@@ -52,7 +53,7 @@ public class BigString implements Serializable {
      */
     private void deflate() throws java.io.IOException{
         if(compressedStrBytes == null){
-            byte[] strBytes = str.getBytes();
+            byte[] strBytes = str.getBytes(StandardCharsets.UTF_8);
             compressedStrBytes = CompressionUtils.compress(strBytes);
             //		System.out.println("Deflating big string: " + strBytes.length + "/" + compressedStrBytes.length);
         }
@@ -87,7 +88,7 @@ public class BigString implements Serializable {
      * Creation date: (9/13/2004 9:46:15 AM)
      */
     private void inflate() throws java.io.IOException{
-        str = new String(CompressionUtils.uncompress(compressedStrBytes));
+        str = new String(CompressionUtils.uncompress(compressedStrBytes), StandardCharsets.UTF_8);
     }
 
     @Serial

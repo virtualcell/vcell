@@ -19,23 +19,8 @@ public class VtkServicePython extends VtkService {
 	}
 
 	@Override
-	public void writeChomboMembraneVtkGridAndIndexData(VisMesh visMesh, String domainName, File vtkFile, File indexFile) throws IOException, InterruptedException {
-		writeVtkGridAndIndexData(MeshType.chombomembrane, visMesh, domainName, vtkFile, indexFile);
-	}
-
-	@Override
-	public void writeChomboVolumeVtkGridAndIndexData(VisMesh visMesh, String domainName, File vtkFile, File indexFile) throws IOException, InterruptedException {
-		writeVtkGridAndIndexData(MeshType.chombovolume, visMesh, domainName, vtkFile, indexFile);
-	}
-
-	@Override
 	public void writeFiniteVolumeSmoothedVtkGridAndIndexData(VisMesh visMesh, String domainName, File vtkFile, File indexFile) throws IOException, InterruptedException {
 		writeVtkGridAndIndexData(MeshType.finitevolume, visMesh, domainName, vtkFile, indexFile);
-	}
-
-	@Override
-	public void writeMovingBoundaryVtkGridAndIndexData(VisMesh visMesh, String domainName, File vtkFile, File indexFile) throws IOException, InterruptedException {
-		writeVtkGridAndIndexData(MeshType.movingboundary, visMesh, domainName, vtkFile, indexFile);
 	}
 
 	@Override

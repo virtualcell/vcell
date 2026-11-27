@@ -5,10 +5,10 @@
 #SBATCH -J V_TEST2_999999999_0_0
 #SBATCH -o /share/apps/vcell3/htclogs/V_TEST2_999999999_0_.slurm.log
 #SBATCH -e /share/apps/vcell3/htclogs/V_TEST2_999999999_0_.slurm.log
-#SBATCH --ntasks=3			# number of concurrent tasks
+#SBATCH --ntasks=4			# number of concurrent tasks (including 1 watchdog)
 #SBATCH --cpus-per-task=1
 #SBATCH --mem-per-cpu=4096M
-#SBATCH --nodes=1
+#SBATCH --nodes=1			# number of nodes to request from slurm
 #SBATCH --time=14-09:36:00		# timeout for the entire job
 #SBATCH --no-kill
 #SBATCH --no-requeue
@@ -24,9 +24,9 @@ SIM_OWNER_NAME=danv
 SIM_OWNER_ID=26766043
 VC_JOB_ID=0
 VC_TASK_ID=0
-TOTAL_JOBS=8            # to be set by generator to lso.getTotalNumberOfJobs()
+TOTAL_JOBS=8      # total number of simulations (excluding the watchdog)
 JOB_TIMEOUT_SECONDS=345600  # per-job timeout (seconds), adjust per generator
-WATCHDOG_TICK_SECONDS=60  # watchdog tick interval (seconds)
+WATCHDOG_TICK_SECONDS=30  # watchdog tick interval (seconds)
 WATCHDOG_TIMEOUT_SECONDS=600  # watchdog timeout (seconds)
 LOG_FILE="/share/apps/vcell3/htclogs/V_TEST2_999999999_0_.submit.log"
 MESSAGING_CONFIG_FILE="/share/apps/vcell3/users/danv/SimID_999999999_0_.langevinMessagingConfig"
@@ -101,6 +101,7 @@ container_env+="--env secondary_datadir_external=/share/apps/vcell7/users "
 container_env+="--env htclogdir_external=/share/apps/vcell3/htclogs "
 container_env+="--env softwareVersion=Rel_Version_8.0.5_build_01 "
 container_env+="--env serverid=TEST2 "
+container_env+="--env TMPDIR=/solvertmp "
 
 # Full solver command
 solver_sif=/share/apps/vcell3/singularityImages/ghcr.io_virtualcell_vcell-batch_singularity_8.0.5.01.img
@@ -191,9 +192,9 @@ LOG_DIR="/simdata/${SIM_OWNER_NAME}"    # on singularity, each solver instance w
 declare -A job_pid_map
 job_pids=()
 running_jobs=0
-max_concurrent_jobs=${SLURM_NTASKS:-4}    # actually these are tasks
+max_concurrent_jobs=$(( ${SLURM_NTASKS:-4} - 1 ))  # actually these are concurrent simulation runs
 echo "max_concurrent_jobs: ${max_concurrent_jobs}" >> "${LOG_FILE}"
-echo "TOTAL_JOBS to launch: ${TOTAL_JOBS}" >> "${LOG_FILE}"
+echo "TOTAL_JOBS to launch: ${TOTAL_JOBS}" >> "${LOG_FILE}"  # total number of simulation runs
 echo "WATCHDOG_TICK_SECONDS: ${WATCHDOG_TICK_SECONDS}" >> "${LOG_FILE}"
 echo "WATCHDOG_TIMEOUT_SECONDS: ${WATCHDOG_TIMEOUT_SECONDS}" >> "${LOG_FILE}"
 
@@ -201,14 +202,16 @@ echo "WATCHDOG_TIMEOUT_SECONDS: ${WATCHDOG_TIMEOUT_SECONDS}" >> "${LOG_FILE}"
 # watchdog solver invocation (monitors the other jobs and sends progress messages)
 # timeouts early if no jobs is being launched, does not timeout once in main loop
 echo "Starting watchdog job at $(date)" >> "${LOG_FILE}"
+CUTOFF_TIME=$(date +%s)   # log files older than this are stale
 ${slurm_prefix} ${solver_container_prefix} \
         langevin_x64 watchdog \
         "${INPUT_DIR}/SimID_${SIM_KEY}_0_.langevinInput" \
         ${TOTAL_JOBS} \
+        --max-concurrent-jobs="${max_concurrent_jobs}" \
+        --watchdog-cutoff="${CUTOFF_TIME}" \
         --watchdog-tick="${WATCHDOG_TICK_SECONDS}" \
         --watchdog-timeout="${WATCHDOG_TIMEOUT_SECONDS}" \
-#        --output-log="${LOG_DIR}/SimID_${SIM_KEY}_0_W.log" \
-        --vc-print-status="${INPUT_DIR}/SimID_${SIM_KEY}_0_.langevinMessagingConfig" &
+        --vc-send-status-config="${INPUT_DIR}/SimID_${SIM_KEY}_0_.langevinMessagingConfig" &
 watchdog_pid=$!
 sleep 1
 if ! kill -0 $watchdog_pid 2>/dev/null; then
@@ -218,6 +221,8 @@ if ! kill -0 $watchdog_pid 2>/dev/null; then
     callExitProcessor $watchdog_exit_code
     exit $watchdog_exit_code
 fi
+
+echo "Watchdog running in the background, continue script execution." >> "${LOG_FILE}"
 
 finished_jobs=0           # messaging counters
 last_notify_time=0
@@ -244,14 +249,18 @@ for ((i = 0; i < TOTAL_JOBS; i++)); do
 
     # wait for a finished task before launching a new one if we hit the concurrency limit
     while (( running_jobs >= max_concurrent_jobs )); do
-        # Check watchdog health
-        if ! kill -0 $watchdog_pid 2>/dev/null; then
-            echo "Watchdog died unexpectedly at $(date)" >> "${LOG_FILE}"
+        # Check watchdog health; exit code 0 means it saw all runs at 100% and finished normally
+        if [[ -n "${watchdog_pid}" ]] && ! kill -0 $watchdog_pid 2>/dev/null; then
             wait $watchdog_pid
             watchdog_exit=$?
-            callExitProcessor $watchdog_exit
-            echo "Watchdog failed; exiting $watchdog_exit" | tee -a "${LOG_FILE}"
-            exit $watchdog_exit
+            if [[ $watchdog_exit -ne 0 ]]; then
+                echo "Watchdog died unexpectedly at $(date)" >> "${LOG_FILE}"
+                callExitProcessor $watchdog_exit
+                echo "Watchdog failed; exiting $watchdog_exit" | tee -a "${LOG_FILE}"
+                exit $watchdog_exit
+            fi
+            echo "Watchdog finished normally at $(date)" >> "${LOG_FILE}"
+            watchdog_pid=""          # it's gone, don't check it again
         fi
         for idx in "${!job_pids[@]}"; do
             pid="${job_pids[$idx]}"
@@ -261,7 +270,7 @@ for ((i = 0; i < TOTAL_JOBS; i++)); do
                 exit_code=$?
                 if [[ $exit_code -ne 0 ]]; then
                   callExitProcessor $exit_code
-                  echo "Simulation failed; exiting ${stat}" | tee -a "${LOG_FILE}"
+                  echo "Simulation failed; exiting ${exit_code}" | tee -a "${LOG_FILE}"
                   exit $exit_code
                 fi
                 job_index=${job_pid_map[$pid]:-unknown}  # retrieve original task index
@@ -301,7 +310,7 @@ for pid in "${job_pids[@]}"; do
     exit_code=$?
     if [[ $exit_code -ne 0 ]]; then
       callExitProcessor $exit_code
-      echo "Simulation failed; exiting ${stat}" | tee -a "${LOG_FILE}"
+      echo "Simulation failed; exiting ${exit_code}" | tee -a "${LOG_FILE}"
       exit $exit_code
     fi
     job_index=${job_pid_map[$pid]:-unknown}
@@ -325,7 +334,25 @@ for pid in "${job_pids[@]}"; do
 #      echo "progress notification sent, ${progress} done" >> "${LOG_FILE}"
 #    fi
 done
-echo "Batch job completed at $(date)" >> "${LOG_FILE}"
+echo "All simulations finished at $(date)" >> "${LOG_FILE}"
+# the watchdog exits by itself once it sees all runs at 100%; it may be asleep for up to one adaptive tick
+# (max 120 s), so we wait a bit longer than that, then kill it if it's still alive
+# a non-zero watchdog exit here is only logged: all simulations succeeded, only progress reporting was affected
+WATCHDOG_FINAL_WAIT_SECONDS=150
+if [[ -n "${watchdog_pid}" ]]; then
+    for ((t = 0; t < WATCHDOG_FINAL_WAIT_SECONDS; t++)); do
+        if ! kill -0 $watchdog_pid 2>/dev/null; then break; fi
+        sleep 1
+    done
+    if kill -0 $watchdog_pid 2>/dev/null; then
+        echo "Watchdog still running after ${WATCHDOG_FINAL_WAIT_SECONDS} seconds, killing it" >> "${LOG_FILE}"
+        kill $watchdog_pid 2>/dev/null
+    fi
+    wait $watchdog_pid
+    watchdog_exit=$?
+    echo "Watchdog finished with exit code ${watchdog_exit} at $(date)" >> "${LOG_FILE}"
+    watchdog_pid=""
+fi
 
 # ----------------------------------------------------------------------------------------------
 # postprocess solver invocation (runs after all simulations finish)
@@ -336,16 +363,11 @@ timeout "${JOB_TIMEOUT_SECONDS}s" \
         "${INPUT_DIR}/SimID_${SIM_KEY}_0_.langevinInput" \
         ${TOTAL_JOBS} \
         --output-log="${LOG_DIR}/SimID_${SIM_KEY}_0_P.log"
-#        --output-log="${LOG_DIR}/SimID_${SIM_KEY}_0_P.log" \
-#        --vc-print-status &
-
-last_pid=$!
-wait $last_pid
-exit_code=$?
-echo "Task 'Last' with PID $last_pid finished with exit code $exit_code at $(date)" >> "${LOG_FILE}"
+exit_code=$?        # postprocess runs in the foreground, its exit status is available right away
+echo "Postprocess finished with exit code $exit_code at $(date)" >> "${LOG_FILE}"
 if [[ $exit_code -ne 0 ]]; then
   callExitProcessor $exit_code
-  echo "Postprocessor failed; exiting ${stat}" | tee -a "${LOG_FILE}"
+  echo "Postprocessor failed; exiting ${exit_code}" | tee -a "${LOG_FILE}"
   exit $exit_code
 fi
 timepoint=$(date +%s)

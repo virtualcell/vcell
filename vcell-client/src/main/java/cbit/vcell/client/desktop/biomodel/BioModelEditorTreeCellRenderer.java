@@ -10,6 +10,7 @@
 
 package cbit.vcell.client.desktop.biomodel;
 
+import cbit.vcell.client.laf.VCellColors;
 import java.awt.Component;
 import java.awt.Font;
 
@@ -52,10 +53,9 @@ public class BioModelEditorTreeCellRenderer extends DocumentEditorTreeCellRender
                         int row,
                         boolean hasFocus) {
 		super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
-		if (regularFont == null) {
-			regularFont = getFont();
-			boldFont = regularFont.deriveFont(Font.BOLD);
-		}
+		// from the tree, whose font follows size changes
+		regularFont = tree.getFont().deriveFont(Font.PLAIN);
+		boldFont = tree.getFont().deriveFont(Font.BOLD);
 		Font font = regularFont;
 		Icon icon = null;
     	String labelText = null;
@@ -67,11 +67,11 @@ public class BioModelEditorTreeCellRenderer extends DocumentEditorTreeCellRender
 			String text = ln.getText();
 			String qualifier = ln.getMiriamQualifier().getDescription();
 			if (link != null) {
-				String colorString = (sel)?"white":"blue";
+				String colorString = (sel)?"white":VCellColors.toHtmlColor(VCellColors.getValueForeground());
 				toolTipPrefix = "double-click to open link " + link;
 				labelText = "<html>"+qualifier+"&nbsp;<font color=\""+colorString+"\"><a href=" + link + ">" + text + "</a></font></html>";
 			}else{
-				String colorString = (sel)?"white":"black";
+				String colorString = (sel)?"white":VCellColors.toHtmlColor(getTextNonSelectionColor());
 				labelText = "<html>"+qualifier+"&nbsp;<font color=\""+colorString+"\">" + text + "</font></html>";
 			}
 		} else if (value instanceof BioModelNode) {
@@ -121,6 +121,9 @@ public class BioModelEditorTreeCellRenderer extends DocumentEditorTreeCellRender
 	    		}
 	    		DocumentEditorTreeFolderClass folderClass = folder.getFolderClass();
 	    		switch(folderClass) {
+	    		case MODEL_NODE: // Physiology opens on the Reaction Diagram, which has no node of its own: its icon says where it went
+	    			icon = VCellIcons.diagramIcon;
+	    			break;
 //	    		case PATHWAY_NODE:
 //	    			if (bioModel == null) {
 //	    				labelText = folder.getName() + "(00000)";
@@ -192,6 +195,11 @@ public class BioModelEditorTreeCellRenderer extends DocumentEditorTreeCellRender
 	    		case REACTION_DIAGRAM_NODE:
 	    			icon = VCellIcons.diagramIcon;
 	    			break;
+	    		case PARAMETERS_FUNCTIONS_NODE:
+	    		case PREDEFINED_SYMBOLS_NODE:
+	    		case MODEL_UNIT_SYSTEM_NODE:
+	    			icon = VCellIcons.tableIcon;
+	    			break;
 //	    		case STRUCTURE_DIAGRAM_NODE:
 //	    			icon = VCellIcons.structureIcon;
 //	    			break;
@@ -250,6 +258,9 @@ public class BioModelEditorTreeCellRenderer extends DocumentEditorTreeCellRender
 	    			break;
 	    		case BIOPAX_TREE_NODE:
 	    			icon = VCellIcons.tableIcon;
+	    			break;
+	    		case PATHWAY_LOOKUP_NODE:
+	    			icon = VCellIcons.pathwayLookupIcon;
 	    			break;
 	    		}
 	    	}

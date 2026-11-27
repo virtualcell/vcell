@@ -10,6 +10,7 @@
 
 package cbit.vcell.geometry.gui;
 
+import cbit.vcell.client.laf.VCellFonts;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
@@ -74,7 +75,7 @@ public class HistogramPanel extends JPanel {
 	private JLabel stretchJLabel = new JLabel("zoom");
 	private JLabel moveJLabel = new JLabel("scroll");
 	private JLabel titleJLabel = new JLabel("Histogram Tool");
-	private JButton applyButton = new JButton("Apply...");
+	private JButton applyButton = new JButton("Apply...");		// named in the constructor
 //	private JButton hideButton = new JButton("Hide");
 //	private JScrollBar moveScrollBar = new JScrollBar();
 		
@@ -341,7 +342,7 @@ public class HistogramPanel extends JPanel {
 		
 	};
 	private void init(){
-		applyButton.setFont(Font.decode("Dialog-BOLD-12"));
+		VCellFonts.setStyle(applyButton, Font.BOLD);
 //		hideButton.setFont(Font.decode("Dialog-10"));
 		setLayout(new HistogramLayoutManager());
 		this.add(getVertSlider());
@@ -358,7 +359,7 @@ public class HistogramPanel extends JPanel {
 //		this.add(moveScrollBar);
 //		moveScrollBar.setOrientation(JScrollBar.HORIZONTAL);
 		getHorzOffsetSlider().setEnabled(false);
-		titleJLabel.setFont(titleJLabel.getFont().deriveFont(Font.BOLD,16f));
+		VCellFonts.setCategory(titleJLabel, VCellFonts.Category.TITLE);
 		
 		getVertSlider().setToolTipText("Scale pixel 'count' display");
 		getHorzScaleSlider().setToolTipText("Zoom pixel 'value' display");
@@ -371,6 +372,10 @@ public class HistogramPanel extends JPanel {
 //				firePropertyChange(HISTOGRAM_HIDE_ACTION, null, null);
 //			}
 //		});
+		// Named so a script can address the histogram and its Apply. "Apply..." alone is
+		// not distinctive, and the panel itself had no name at all.
+		setName("HistogramPanel");
+		applyButton.setName("HistogramApplyButton");
 		applyButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				firePropertyChange(HISTOGRAM_APPLY_ACTION, null, null);
@@ -695,6 +700,25 @@ public class HistogramPanel extends JPanel {
 
 	public boolean isSelectionEmpty(){
 		return pixelListSelectionModel.isSelectionEmpty();
+	}
+
+	/**
+	 * Select a range of pixel VALUES, as a completed drag across the histogram does.
+	 *
+	 * <p>The gesture the tutorials describe is "drag across the bright end of the
+	 * histogram", but what the gesture MEANS is a range of intensities: this panel's
+	 * horizontal axis is pixel value, and its selection model is indexed by it. Stating the
+	 * range directly is the same statement without the coordinates, which is what makes
+	 * thresholding reachable from a script - unlike the paint and eraser tools, which
+	 * really are per-pixel and have no such equivalent.
+	 *
+	 * <p>Fires the same property change a real drag fires on mouse release, so the editor
+	 * highlights the pixels and enables Apply exactly as it would.
+	 */
+	public void selectPixelRange(int lowPixelValue, int highPixelValue){
+		pixelListSelectionModel.setSelectionInterval(lowPixelValue, highPixelValue);
+		firePropertyChange(HistogramPanel.HISTOGRAM_SELECT_PROPERTY, null, pixelListSelectionModel);
+		repaint();
 	}
 	private UserPreferences userPreferences;
 	public void setUserPreferences(UserPreferences userPreferences){

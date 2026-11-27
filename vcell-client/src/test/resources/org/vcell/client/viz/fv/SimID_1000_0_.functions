@@ -1,0 +1,9 @@
+##---------------------------------------------
+##  SimID_1000_0_.functions
+##---------------------------------------------
+
+cell::Size_cell; vcRegionVolume('cell'); ; Volume_Region_VariableType; false
+cell::A_conc; (0.001660538783162726 * A); ; Volume_VariableType; false
+cell::vobj_cell0_size; vcRegionVolume('cell'); ; Volume_Region_VariableType; false
+cell::J_convert; (0.001660538783162726 * A); ; Volume_VariableType; false
+

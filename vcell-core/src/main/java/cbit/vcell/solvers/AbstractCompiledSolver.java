@@ -11,23 +11,18 @@
 package cbit.vcell.solvers;
 
 import cbit.vcell.messaging.server.SimulationTask;
-import cbit.vcell.resource.OperatingSystemInfo;
+import org.vcell.util.OperatingSystemInfo;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.solver.*;
 import cbit.vcell.solver.server.SimulationMessage;
 import cbit.vcell.solver.server.SolverStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.vcell.util.document.User;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Vector;
 
@@ -74,6 +69,14 @@ public abstract class AbstractCompiledSolver extends AbstractSolver implements j
      * @return cbit.vcell.solvers.ApplicationMessage
      */
     protected abstract ApplicationMessage getApplicationMessage(String message);
+
+    /**
+     * The status message a progress message becomes: by default just the number; a solver that names
+     * its phase overrides this ({@link SimulationMessage#solverProgressPhase}).
+     */
+    protected SimulationMessage getProgressMessage(ApplicationMessage progressMessage) {
+        return SimulationMessage.solverProgress(progressMessage.getProgress());
+    }
 
     /**
      * Insert the method's description here.
@@ -126,7 +129,7 @@ public abstract class AbstractCompiledSolver extends AbstractSolver implements j
             } else {
                 switch (appMessage.getMessageType()) {
                     case ApplicationMessage.PROGRESS_MESSAGE: {
-                        fireSolverProgress(appMessage.getProgress());
+                        fireSolverProgress(appMessage.getProgress(), getProgressMessage(appMessage));
                         break;
                     }
                     case ApplicationMessage.DATA_MESSAGE: {
@@ -285,7 +288,8 @@ public abstract class AbstractCompiledSolver extends AbstractSolver implements j
 //
 ////		System.out.println("-----Setting executable "+LD_LIB_PATH+" to "+newLD_LIB_PATH);
 //            getMathExecutable().addEnvironmentVariable(LD_LIB_PATH, newLD_LIB_PATH);
-            getMathExecutable().addEnvironmentVariable("LD_LIBRARY_PATH", ResourceUtil.getLocalSolversDirectory().getCanonicalPath());
+            getMathExecutable().addEnvironmentVariable("LD_LIBRARY_PATH",
+                    ResourceUtil.getSolverLibraryDirectory(getMathExecutable().getCommandArray()[0]).getCanonicalPath());
         }else if (OperatingSystemInfo.getInstance().isMac()) {
     		getMathExecutable().addEnvironmentVariable("HDF5_DISABLE_VERSION_CHECK", "1");
     	}

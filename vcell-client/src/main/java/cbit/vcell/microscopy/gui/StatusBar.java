@@ -55,7 +55,6 @@ public class StatusBar extends JPanel implements Runnable
 
     msg.setMinimumSize(new Dimension(300, 20));
     msg.setSize(new Dimension(300, 20));
-    msg.setForeground(Color.black);
 
     setLayout(new GridLayout(1,3));
 

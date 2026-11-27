@@ -280,17 +280,13 @@ public class UsersResource {
             @APIResponse(responseCode = "401", description = "Need to login to Auth0"),
             @APIResponse(responseCode = "500", description = "Internal Error")
     })
-    public void forgotLegacyPassword(@QueryParam("userID") String userID) throws DataAccessWebException, NotAuthenticatedWebException {
+    public void forgotLegacyPassword(@QueryParam("userID") String userID) throws NotAuthenticatedWebException, PermissionWebException {
         if(securityIdentity.isAnonymous()){
             throw new NotAuthenticatedWebException("securityIdentity is missing jwt");
         }
-        try {
-            userRestService.sendOldLegacyPassword(userID);
-        } catch (DataAccessException e){
-            throw new DataAccessWebException(e.getMessage(), e);
-        } catch (SQLException e) {
-            throw new RuntimeWebException(e.getMessage(), e);
-        }
+        // Retired: it reset any named account's legacy password and emailed the new one in clear text.
+        // Users who cannot remember their legacy password claim their username through requestRecoveryEmail.
+        throw new PermissionWebException("Legacy password reset is no longer available; use account recovery to claim your VCell username.");
     }
     
 

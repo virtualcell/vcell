@@ -1,0 +1,120 @@
+{
+ "vcell_fenics": {
+  "domains": {
+   "cyto_dom": {
+    "cell_type": 5,
+    "dim": 2,
+    "gdim": 2,
+    "kind": "volume",
+    "mesh": "mesh/cyto_dom.vtu",
+    "n_cells": 281,
+    "n_points": 172
+   },
+   "ext_dom": {
+    "cell_type": 5,
+    "dim": 2,
+    "gdim": 2,
+    "kind": "volume",
+    "mesh": "mesh/ext_dom.vtu",
+    "n_cells": 479,
+    "n_points": 290
+   },
+   "mem_dom": {
+    "cell_type": 3,
+    "dim": 1,
+    "gdim": 2,
+    "kind": "membrane",
+    "mesh": "mesh/mem_dom.vtu",
+    "n_cells": 61,
+    "n_points": 61
+   }
+  },
+  "message": null,
+  "planned_times": [
+   0.0,
+   0.09999999999999999,
+   0.19999999999999998,
+   0.3
+  ],
+  "profile": "fixed",
+  "progress": 1.0,
+  "schema": 1,
+  "segments": [
+   {
+    "count": 4,
+    "index": 0,
+    "motion": "none",
+    "prefix": "",
+    "t0": 0.0
+   }
+  ],
+  "solver": {
+   "dolfinx": "0.10.0",
+   "mpi_ranks": 1,
+   "options": {
+    "atol": 1e-08,
+    "dt": 0.09999999999999999,
+    "fe_degree": 1,
+    "h": 0.2,
+    "output_times": [
+     0.0,
+     0.09999999999999999,
+     0.19999999999999998,
+     0.3
+    ],
+    "rtol": 1e-06,
+    "t_final": 0.3,
+    "time_integration": "backward_euler"
+   },
+   "overrides": {},
+   "version": "0.0.0"
+  },
+  "source": {
+   "file": "receptor_math.yaml",
+   "job_index": null,
+   "kind": "vcell-yaml",
+   "sim_key": null,
+   "task_id": null
+  },
+  "stats_columns": [
+   "mean",
+   "total",
+   "min",
+   "max"
+  ],
+  "status": "completed",
+  "times": [
+   0.0,
+   0.09999999999999999,
+   0.19999999999999998,
+   0.3
+  ],
+  "updated": "2026-09-29T07:04:07+00:00",
+  "variables": [
+   {
+    "assoc": "point",
+    "domain": "cyto_dom",
+    "element": "P1",
+    "name": "s_cyto",
+    "path": "cyto_dom/s_cyto",
+    "stats": "stats/cyto_dom/s_cyto"
+   },
+   {
+    "assoc": "point",
+    "domain": "ext_dom",
+    "element": "P1",
+    "name": "s_ext",
+    "path": "ext_dom/s_ext",
+    "stats": "stats/ext_dom/s_ext"
+   },
+   {
+    "assoc": "point",
+    "domain": "mem_dom",
+    "element": "P1",
+    "name": "R",
+    "path": "mem_dom/R",
+    "stats": "stats/mem_dom/R"
+   }
+  ]
+ }
+}

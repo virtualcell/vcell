@@ -10,6 +10,9 @@
 
 package cbit.vcell.microscopy.gui;
 
+import cbit.vcell.client.laf.CategoryTitledBorder;
+import cbit.vcell.client.laf.VCellFonts;
+import cbit.vcell.client.laf.VCellColors;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -98,12 +101,14 @@ public class DiffRateHelpPanel extends JPanel
 		gridBagConstraints_15.gridy = 3;
 		gridBagConstraints_15.gridx = 0;
 		add(freeDiffRatePanel, gridBagConstraints_15);
-		freeDiffRatePanel.setBorder(new TitledBorder(new EtchedBorder(), "Expected free diffusion rate: ", TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, new Font("", Font.BOLD, 11), Color.blue));
+		CategoryTitledBorder freeDiffRateBorder = new CategoryTitledBorder(new EtchedBorder(), "Expected free diffusion rate: ", TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, VCellFonts.Category.HEADING);
+		freeDiffRateBorder.setTitleColor(Color.blue);
+		freeDiffRatePanel.setBorder(freeDiffRateBorder);
 		
 		
 		JLabel estimationBasedOnLabel = new JLabel("Estimation based on GFP (Diffusion rate of 15 um2/s,  molecular weight of 27 kD).");
-		estimationBasedOnLabel.setFont(new Font("", Font.ITALIC, 12));
-		estimationBasedOnLabel.setForeground(Color.blue);
+		VCellFonts.setCategory(estimationBasedOnLabel, VCellFonts.Category.BODY, Font.ITALIC);
+		estimationBasedOnLabel.setForeground(VCellColors.getValueForeground());
 		GridBagConstraints gridBagConstraints = new GridBagConstraints();
 		gridBagConstraints.anchor = GridBagConstraints.WEST;
 		gridBagConstraints.gridwidth = 7;

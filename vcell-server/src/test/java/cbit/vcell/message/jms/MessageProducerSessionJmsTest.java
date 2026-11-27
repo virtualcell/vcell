@@ -323,6 +323,44 @@ public class MessageProducerSessionJmsTest {
 		}
 	}
 
+	/**
+	 * An RPC must take its reply off the shared reply queue for good. Each RPC receives on a
+	 * transacted session of its own; closing that session without a commit rolled the receive back,
+	 * so every reply went back onto the reply queue, where no consumer would ever select it again,
+	 * and stayed there for its whole time to live (the data server's client timeout, 20 minutes).
+	 * Once the broker's page of the queue (maxPageSize, 200) was full of these orphans, a new
+	 * reply was reached only by the 30 s expiry sweep: on the dev site a FEniCSx kymograph's
+	 * 201 sequential bundle reads ran at ~100 ms each for ~170 rows and then one per 30 s.
+	 */
+	@Test
+	public void sequentialRpcsLeaveNoRepliesBehind() throws Exception {
+		String previous = setBlobProperty();
+		VCellQueue rpcQueue = new VCellQueue("MessageProducerSessionJmsTestRpcQueue-sequential");
+		VCQueueConsumer responder = startEchoResponder(rpcQueue);
+		VCMessageSession producerSession = service.createProducerSession();
+		try {
+			long slowest = 0;
+			for (int i = 0; i < 260; i++) {
+				long start = System.nanoTime();
+				assertEquals("r" + i, producerSession.sendRpcMessage(rpcQueue, echoRequest("r" + i),
+						true, 20000L, null, null, null));
+				slowest = Math.max(slowest, (System.nanoTime() - start) / 1_000_000);
+				if (i == 0) {
+					assertEquals(0, service.messagesOnTemporaryQueues(),
+							"the first RPC's reply must not go back onto the reply queue");
+				}
+			}
+			assertEquals(0, service.messagesOnTemporaryQueues(),
+					"every reply an RPC received must be gone from the reply queue");
+			assertTrue(slowest < 5000, "no RPC should wait for the broker's expiry sweep; the slowest took "
+					+ slowest + " ms");
+		} finally {
+			producerSession.close();
+			service.removeMessageConsumer(responder);
+			restoreBlobProperty(previous);
+		}
+	}
+
 	private static VCRpcRequest echoRequest(String payload) {
 		return new VCRpcRequest(new User("testuser", new KeyValue("1")),
 				VCRpcRequest.RpcServiceType.TESTING_SERVICE, "echo", new Object[] { payload });
@@ -649,6 +687,17 @@ public class MessageProducerSessionJmsTest {
 			broker.setUseShutdownHook(false);
 			broker.start();
 			broker.waitUntilStarted();
+		}
+
+		/** messages waiting on the broker's temporary queues (the RPC reply queues) */
+		long messagesOnTemporaryQueues() throws Exception {
+			long count = 0;
+			org.apache.activemq.broker.region.RegionBroker region =
+					(org.apache.activemq.broker.region.RegionBroker) broker.getRegionBroker();
+			for (org.apache.activemq.broker.region.Destination d : region.getTempQueueRegion().getDestinationMap().values()) {
+				count += d.getDestinationStatistics().getMessages().getCount();
+			}
+			return count;
 		}
 
 		void stopBroker() throws Exception {

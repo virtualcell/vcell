@@ -158,8 +158,17 @@ protected void fireSolverPrinted(double timepoint) {
  * Method to support listener events.
  */
 protected void fireSolverProgress(double progress) {
+	fireSolverProgress(progress, SimulationMessage.solverProgress(progress));
+}
+
+
+/**
+ * Progress with a message of the solver's own, e.g. the phase it is in
+ * ({@link SimulationMessage#solverProgressPhase}).
+ */
+protected void fireSolverProgress(double progress, SimulationMessage message) {
 	// Create event
-	SolverEvent event = new SolverEvent(this, SolverEvent.SOLVER_PROGRESS, SimulationMessage.solverProgress(progress), progress, getCurrentTime(), null);
+	SolverEvent event = new SolverEvent(this, SolverEvent.SOLVER_PROGRESS, message, progress, getCurrentTime(), null);
 	VCMongoMessage.sendSolverEvent(event);
 	// Guaranteed to return a non-null array
 	Object[] listeners = listenerList.getListenerList();

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<MovingBoundarySetup>
+  <problem>
+    <xLimits>
+      <low>-1.5</low>
+      <high>1.5</high>
+    </xLimits>
+    <yLimits>
+      <low>-1.5</low>
+      <high>1.5</high>
+    </yLimits>
+    <numNodesX>12</numNodesX>
+    <numNodesY>12</numNodesY>
+    <frontToNodeRatio>1.0</frontToNodeRatio>
+    <redistributionMode>2</redistributionMode>
+    <redistributionVersion>2</redistributionVersion>
+    <redistributionFrequency>5</redistributionFrequency>
+    <extrapolationMethod>1</extrapolationMethod>
+    <maxTime>0.2</maxTime>
+    <timeStep>0.1</timeStep>
+    <outputTimeStep>0.1</outputTimeStep>
+    <levelFunction>(((x ^ 2.0) + (y ^ 2.0)) - (1.0 ^ 2.0))</levelFunction>
+    <frontVelocityFunctionX>(normalX * C)</frontVelocityFunctionX>
+    <frontVelocityFunctionY>(normalY * C)</frontVelocityFunctionY>
+    <physiology>
+      <subdomain name="subdomain1" type="volume">
+        <species name="C" type="volume">
+          <initial value="C_init_uM">1.0</initial>
+          <source value="0.0">0.0</source>
+          <diffusion value="C_diffusionRate">1.0</diffusion>
+        </species>
+      </subdomain>
+    </physiology>
+  </problem>
+  <report>
+    <deleteExisting mode="HARDCODED">1</deleteExisting>
+    <outputFilePrefix>SimID_1737498523_0_</outputFilePrefix>
+    <datasetName mode="HARDCODED">10</datasetName>
+    <annotation>
+      <series mode="HARDCODED">spatial convergence</series>
+    </annotation>
+    <timeReport>
+      <startTime>0</startTime>
+      <interval>0.1</interval>
+    </timeReport>
+  </report>
+  <progress>
+    <percent mode="HARDCODED">5</percent>
+    <estimateProgress mode="HARDCODED">true</estimateProgress>
+  </progress>
+  <trace>
+    <level mode="HARDCODED">warn</level>
+  </trace>
+  <matlabDebug mode="HARDCODED">false</matlabDebug>
+</MovingBoundarySetup>

@@ -16,6 +16,821 @@ followed by flat Keep-a-Changelog categories. API consumers should scan
 
 _(Release-manager scratchpad. Populated at release-cut time.)_
 
+## [8.2.0.16] - 2026-10-07
+
+**Highlights.** The field viewer shows VCell functions of a FEniCSx simulation (expressions of its
+variables, position and time), not only the variables the solver stores. Functions can be drawn,
+probed and plotted as kymographs like any other variable.
+
+### Added
+- Field viewer: functions of a FEniCSx run are listed and can be drawn, probed and plotted as
+  kymographs. Their definitions come from the open document's simulation, with the job's constants and
+  parameter-scan values substituted. Each function is evaluated at the mesh vertices from the stored
+  variables there, the vertex position (the row's position on a moving mesh) and the row's time, then
+  interpolated, which is what the 3D view draws. A function's variables are read through the data
+  server's sampling (#2169) where available. (#2171)
+- Refused with a message: functions of normals, region sizes, field data, gradients, region variables or
+  other domains' variables; membrane functions of adjacent volume variables; and statistics of a
+  function. (#2171)
+
+## [8.2.0.15] - 2026-10-07
+
+**Highlights.** Kymographs and time series of server-run FEniCSx results are read on the data server: it
+sends only the values at the points being plotted, not every field at every saved time. A kymograph of a
+200-time-point 3D simulation now needs 2 requests and about 0.1 MB instead of 201 requests and 54 MB.
+This build also carries 8.2.0.14's batched reads (8.2.0.14 was tagged but not deployed).
+
+### Added
+- Data server: `getFenicsBundleSamples` returns the values of several arrays of a FEniCSx results bundle
+  at given mesh points and saved times (up to 8 MB, 16 arrays, 64 K points and 1,000 times per call).
+  (#2169)
+
+### Changed
+- Field viewer: volume and membrane kymographs, probe time series and remeshed runs of server-run FEniCSx
+  results are sampled on the data server. Values are bit-identical to reading whole fields. Moving (ALE)
+  meshes, local runs and older data servers fall back to batched reads (#2166), then to one request per
+  file. (#2169)
+
+## [8.2.0.14] - 2026-10-07
+
+**Highlights.** The field viewer reads a server-run FEniCSx result in a few batched requests instead of
+one request per saved time. A kymograph of a 200-time-point 3D simulation now makes 7 requests to the
+data server instead of 201.
+
+### Changed
+- Data server: new `getFenicsBundleFiles` returns several files of a FEniCSx results bundle in one reply
+  (up to 8 MB and 256 files per call). (#2166)
+- Field viewer: kymographs, time series, moving-mesh coordinates and statistics of server-run FEniCSx
+  results prefetch their rows in batches. A client talking to an older data server falls back to one
+  request per file. (#2166)
+- The client's FEniCSx bundle cache is bounded: 512 MB by default, set by
+  `-Dvcell.fenics.bundleCacheMB`. (#2166)
+
+## [8.2.0.13] - 2026-10-06
+
+**Highlights.** Requests to the server no longer slow to one every 30 seconds after heavy use. Since
+8.0.10.01 every reply was rolled back onto a shared reply queue instead of consumed; once about 200 had
+piled up, each request waited for the message broker's 30-second expiry sweep. A field-viewer kymograph
+of a 200-time-point FEniCSx simulation took 20 minutes; any client making many requests in a row was
+affected.
+
+### Fixed
+- Server RPC: the reply to each request is committed when received, so it is consumed rather than
+  rolled back onto the shared reply queue when the request's session closes. The orphaned replies lived
+  for the data server's client timeout (20 minutes) and, once a page of the queue (ActiveMQ
+  `maxPageSize`, 200) was full of them, a reply was only reached at the broker's 30 s expiry sweep.
+  Regression from 8.0.10.01 (per-RPC JMS sessions). (#2163)
+
+## [8.2.0.12] - 2026-10-05
+
+**Highlights.** The field viewer opens stored Chombo results — 2D and 3D, volume and membrane variables,
+with 3D membranes drawn and probed as surfaces — which until now failed on the server. It also draws the
+molecules of hybrid PDE/particle simulations over their fields, both for VCell's finite-volume hybrid runs
+(with "save particle files" on) and for results bundles that record particles. The finite-volume solver is
+updated to vcell-fvsolver 0.10.8, which saves the particle positions at every output time.
+
+### Added
+- Field viewer: the molecules of hybrid PDE/particle runs are drawn over the fields, follow the time
+  slider, are hidden beyond a cut, and can be toggled. Results bundles that record particles are supported
+  (#2160), and so are finite-volume hybrid runs saved with "save particle files", local or on the server
+  (#2161).
+
+### Fixed
+- Field viewer: Chombo results display. Their volume meshes (voxels and cut cells) and membrane meshes
+  (lines in 2D, triangles in 3D) are written in Java on the desktop and the data server alike; the Python
+  VTK service they needed is not configured on the data server. A 3D membrane is reported as 3D, so it is
+  drawn and probed as a surface rather than flattened. (#2157)
+- Chombo results open: the solver's average statistic, named `mean`, was rejected and stopped every Chombo
+  result from opening (#1894, fixed in #2157).
+- Hybrid runs with a Smoldyn step multiplier greater than 1 wrote particle files at the wrong times; the
+  output cadence now counts Smoldyn steps (#2161).
+
+### Changed
+- Desktop and batch use vcell-fvsolver v0.10.8 (FiniteVolume_x64, smoldyn_x64): hybrid runs save the
+  molecules' positions at every PDE output time when VCell asks for particle files
+  (virtualcell/vcell-fvsolver#27).
+
+## [8.2.0.11] - 2026-10-02
+
+**Highlights.** Moving Boundary simulations can now be run locally from the desktop (the blue quick-run
+button), and their results open in the field viewer ("View in 3D") — for local runs and, with this
+release's data server, for server runs, which until now failed with an HTTP 500. Moving Boundary time
+series and kymographs in the field viewer are much faster and no longer fail with "busy".
+
+### Added
+- Moving Boundary simulations run locally. The solver was marked server-only in 2018; the desktop has
+  shipped `MovingBoundary_x64` from `virtualcell/vcell-mbsolver` for macOS, Linux and Windows since
+  8.2.0.08. (#2155)
+
+### Fixed
+- The field viewer shows Moving Boundary results. Their mesh files are now written in Java on the desktop
+  and the data server alike; the Python VTK service they needed was not configured on the data server,
+  and does not ship with the desktop. A local run's data is found without server-only properties. (#2155)
+- Moving Boundary results no longer decode the whole result file to read the mesh dimensions on every
+  request: about 1.1 s → 23 ms per saved time, so a probe time series over 386 times takes 9 s instead of
+  8 minutes. (#2155)
+- The field viewer no longer answers "busy" when a probe time series and a kymograph are requested
+  together: one extra heavy request waits up to 30 s for the running one, and the viewer retries a busy
+  probe series once. (#2155)
+
+## [8.2.0.10] - 2026-10-01
+
+**Highlights.** Saving a model from Windows no longer corrupts non-ASCII text. The Windows client decoded
+models from the server in the platform charset, so every open-and-save doubled any non-ASCII annotation
+text (μ, superscripts, accented letters); one model's 308-character note had grown to 11.8 MB and could no
+longer be saved (HTTP 413). The field viewer's kymographs gain the desktop's two crosshairs and linked
+line plots, and draw faster.
+
+### Fixed
+- The desktop client decodes models it loads from or saves to the server as UTF-8. On Windows it used the
+  platform charset (windows-1252), adding one layer of mojibake to non-ASCII text on every open-and-save.
+  `BigString`, `XmlUtil.getXMLString`, `FileUtils.readFileToString` and `ExternalDocInfo.getReader` also use
+  UTF-8 now. (#2151)
+- All desktop launchers run Java with `-Dfile.encoding=UTF-8`, so the client behaves the same on Windows as
+  on macOS and Linux. (#2150)
+
+### Added
+- Field-viewer kymographs have a time crosshair and a space crosshair, as in the desktop: below the image,
+  the variable along the line at the crosshair's time and over time at its position. Click or drag to move
+  them, arrow keys step one sample or one time; both plots export as CSV. (#2148)
+
+### Changed
+- Field-viewer kymographs read the mesh and variable list once per dataset and keep the last few results,
+  so repeating a line, exporting it or stepping in time no longer recomputes it; slow requests are logged
+  with per-stage timings. The pointer is a crosshair in point and line modes, a hand only for rotate/pan.
+  (#2148)
+
+### Notes for API consumers
+- No `/api/` changes in this build.
+
+## [8.2.0.09] - 2026-10-01
+
+**Highlights.** FEniCSx runs say what they are doing. Instead of sitting at 0% while the mesh is built and
+the solver compiles, a FEniCSx simulation shows its phase: loading model, meshing, compiling, solving with
+a percentage, then writing results, both in the desktop's run dialog and in the simulation list for runs on
+the server.
+
+### Changed
+- FEniCSx simulations report their phase (loading model, meshing, compiling, solving N%, writing results)
+  in the local run dialog and in the simulation list's status for server runs (single-job simulations;
+  parameter scans keep the overall percent). Needs vcell-fenics 0.1.1 or later; an older solver image still
+  shows plain progress. (#2147, virtualcell/vcell-fenics#209)
+- The desktop's default FEniCSx image is `vcell-fenics:0.1.1`.
+
+### Fixed
+- A running simulation's status updates when its solver enters a new phase without its progress changing
+  (VCell had ignored such updates). (#2147)
+
+### Notes for API consumers
+- No `/api/` changes in this build.
+
+## [8.2.0.08] - 2026-10-01
+
+**Highlights.** VCell's native solvers now come from their own repositories (vcell-fvsolver, vcell-ode,
+vcell-stochastic, vcell-nfsim, vcell-mbsolver, vcell-hy3s, vcell-chombo) instead of the old combined
+vcell-solvers build. On the desktop, every solver runs natively on Apple-silicon Macs, and the Hybrid
+solvers, MovingBoundary and Chombo are available on more platforms. On the cluster, each solver runs from
+its own repository's container image.
+
+### Added
+- The desktop build downloads each native solver from its own repository's release, for Linux, macOS and
+  Windows, and checks each download against its sha256. The macOS solvers are universal, so they run
+  natively on Apple silicon instead of under Rosetta.
+- More solvers run locally: the three Hybrid solvers (Euler, Milstein, adaptive Milstein) on all three
+  platforms, MovingBoundary on Linux and Windows as well as macOS, and Chombo on Linux and macOS.
+- SlurmProxy chooses each solver's container image from a table of solver families (fenics, fvsolver, ode,
+  stochastic, nfsim, mbsolver, hy3s, chombo, the legacy solvers image, batch), configured per site by
+  `VCELL_HTC_VCELL<FAMILY>_APPTAINER_IMAGE` / `_SOLVER_LIST`. Moving a solver to its own image is a
+  configuration change. Solver containers get `TMPDIR=/solvertmp`. (#2131)
+
+### Changed
+- `localsolvers/<os>/` holds one subdirectory per solver repository, with the libraries that repository
+  bundles, so one solver's libraries can no longer replace another's. A Linux run's library path is only its
+  solver's directory. Developers: delete the old flat files in `localsolvers/<os>/` once. (#2142)
+- Langevin is downloaded like the other solvers, with checksums, for all three platforms on every build OS.
+  (#2142)
+- The `vcell-batch` image is Java only: a Java 17 runtime on Debian, the VCell jars, `langevin_x64` and the
+  pre/post-processor and messaging scripts. It no longer builds on the vcell-solvers image (1.36 GB to
+  232 MB), and its entrypoint no longer runs native solvers, which run from their own images. (#2144)
+- The submit service no longer requires the legacy `VCELL_HTC_VCELLSOLVERS_*` pair, so a site that has moved
+  every solver to its own image can drop it. (#2143)
+
+### Fixed
+- HybridMilstein and HybridMilAdaptive ran the Hybrid_EM executable; each now runs its own. (#2142)
+- Hybrid solvers on the cluster report their status: the input file names the message broker in the form
+  the solver uses (`host:restport`). (#2142)
+- A Langevin job on the cluster sends its final progress and COMPLETED messages; the batch image's
+  entrypoint had refused the `/bin/bash` command that sends them. (#2144)
+- Fixes in the new solver releases, among them:
+  - IDA could not parse any input (vcell-ode 0.9.5);
+  - events triggered with a delay were reported "missed" and aborted the run when due before an event
+    already waiting (vcell-ode 0.9.6; found by the SBML test-suite regression);
+  - every MovingBoundary run exited with code 6 after writing its output (vcell-mbsolver 1.0.5);
+  - the two Milstein Hybrid solvers crashed on their first stochastic step (vcell-hy3s 1.0.0);
+  - FiniteVolume results on arm64 differed from x86_64 by up to 2.5% (vcell-fvsolver 0.10.6).
+
+### Notes for API consumers
+- No `/api/` changes in this build.
+- Deploy sites: `submit.env` gains optional per-family `VCELL_HTC_VCELL<FAMILY>_APPTAINER_IMAGE` /
+  `_SOLVER_LIST` pairs; existing settings keep working unchanged.
+
+## [8.2.0.07] - 2026-09-29
+
+**Highlights.** Clearer Langevin (SpringSaLaD) simulation panels for single and multiple runs. (#2117)
+
+### Changed
+- The Langevin panels use one consistent terminology, show an icon that tells a single run from multiple
+  runs, and tell the user about concurrent runs.
+- Uses the latest Langevin solver.
+
+## [8.2.0.06] - 2026-09-29
+
+**Highlights.** The browser field viewer gains the desktop's time plots and
+kymographs. Click several points to plot a time course at each, or draw a line
+to see a kymograph: the variable along the line at every saved time. They work
+for finite-volume, FEniCSx, Chombo and MovingBoundary results, and along
+membranes. On finite-volume runs a kymograph matches the desktop's value for
+value.
+
+### Added
+- The field viewer plots time courses at several points at once. Click to place a probe, and shift-click
+  (or use **＋ Add points**) to add more, up to 12. Each probe gets its own coloured trace in one plot, and a
+  marker in the 3D view. The plot has labelled axes and a time cursor that follows the slider. Probes stay in
+  place when you switch variable, and export as CSV. This works for finite-volume, FEniCSx and
+  MovingBoundary runs.
+- The field viewer draws kymographs of finite-volume runs. Press **╱ Line** and click two or more points in the
+  view (Enter or a double-click finishes), or type the vertices. The kymograph shows the variable along the
+  line (across) at every saved time (down), sampled exactly as the desktop kymograph samples it: one sample per
+  voxel crossed, two at each membrane. Voxels outside the variable's compartment are hatched gaps. It has a
+  colour bar, a time cursor that follows the slider, and a line profile at the current time. Click it to go
+  to that time, shift-click to probe that point. Export the samples or the matrix as CSV, the desktop-style
+  resampling as CSV, or the image as PNG.
+- Kymographs also work for FEniCSx runs, in 2D and 3D, and for Chombo 2D runs. The line is sampled evenly
+  (two samples per mesh cell, on average), and FEniCSx values are interpolated between mesh vertices, so the
+  kymograph is smooth. A line through two compartments shows the other one as a gap. On a FEniCSx run whose
+  mesh moves, the line stays fixed in place (labelled "fixed line (lab frame)"), so the moving boundary shows
+  as the edge of the gaps.
+- Kymographs of MovingBoundary runs. The line stays fixed in place while the boundary moves (labelled "fixed
+  line (lab frame)"): each point on it reads whichever mesh cell holds it at each time, and is a gap while the
+  domain is elsewhere, so the kymograph shows the boundary moving past the line.
+- Chombo 3D runs can be probed and can have kymographs: clicks now pick through their voxels and cut cells.
+- Kymographs along a membrane, for FEniCSx 2D runs. On a membrane variable, **╱ Line** draws a curve along the
+  membrane: click on or beside it, and the curve follows the membrane between your clicks (the shorter way
+  round; click on the far side to go the other way). The kymograph has one sample per mesh vertex on the curve,
+  at distances measured along the membrane.
+- The field viewer shows membrane variables of finite-volume runs, on the membrane itself (a surface in 3D, a curve
+  in 2D), and they can be probed, plotted in Stats, and have kymographs along the membrane. A membrane kymograph is
+  the desktop's: one sample per membrane element, the same elements, distances and values. In 3D it lies in the
+  crop's cut plane, as the desktop's lies in its slice: turn the crop on and click along the membrane at the cut.
+- Clicking a 3D FEniCSx membrane places a probe on it.
+
+### Changed
+- The field viewer finds the mesh cell under a point much faster on body-fitted runs (FEniCSx, Chombo,
+  MovingBoundary), which speeds up probes on large meshes.
+
+### Fixed
+- Opening the field viewer on a domain (`?domain=`) without naming a variable now shows one of that domain's
+  variables, instead of failing with "/field failed: 400".
+- A probe on a 3D FEniCSx membrane no longer reads a horizontal membrane triangle lying above or below the
+  clicked point; it moves onto the membrane surface as it does elsewhere.
+
+### Notes for API consumers
+- No `/api/` changes in this build. The field viewer's loopback server (in the desktop client) gains
+  `/timeseries?points=` and `/kymograph`.
+
+## [8.2.0.05] - 2026-09-29
+
+**Highlights.** The field viewer tells you when your browser can't run it,
+and which browsers can, instead of failing with a cryptic error. It needs a
+current Safari (26 or later), Chrome or Edge (137 or later), or Firefox.
+
+### Fixed
+- The field viewer says when a browser can't run it. That applies to Safari 18 and earlier, Chrome and Edge
+  before 137, and older Firefox, which lack WebAssembly JSPI. The message names the browsers that work and
+  gives the page address to copy into one. Before, the page failed with "undefined is not a constructor
+  (evaluating 'new WebAssembly.Suspending…')".
+
+### Notes for API consumers
+- No `/api/` changes in this build.
+
+## [8.2.0.04] - 2026-09-28
+
+**Highlights.** FEniCSx solves models with any number of compartments and
+membranes: a nucleus inside a cytosol inside extracellular space, organelles,
+or two cells touching. On a nucleus–cytosol–extracellular model with nuclear
+transport and a plasma-membrane receptor it matches the finite-volume solver
+to 0.1% in the nucleus and 0.05% in the cytosol, converging as the mesh
+refines. In a survey of public BioModels, 26% of the saved spatial
+applications now run on FEniCSx, up from 8% in the first survey.
+
+### Added
+- FEniCSx solves **multi-compartment models**: any number of compartments and
+  membranes, species and membrane species on each, and well-mixed species or a
+  membrane potential on any of them. (vcell-fenics #206)
+- FEniCSx runs geometries whose **subvolumes touch the domain boundary** (a
+  half cell on a symmetry plane, a cell cut by the box), in 2D and 3D, and
+  analytic geometries where three compartments meet. (vcell-fenics #204, #206)
+- FEniCSx runs **membrane species beside a compartment without species** (a
+  receptor binding an extracellular ligand, with nothing modeled inside the
+  cell). (vcell-fenics #203)
+
+### Changed
+- The default FEniCSx image is `sha-7790431`, for the desktop quick run and
+  the cluster.
+- FEniCSx applies VCell's per-face boundary values to each compartment's own
+  share of a box face, and ignores values for faces a compartment does not
+  touch. (vcell-fenics #206, #207)
+
+### Notes for API consumers
+- No `/api/` changes in this build.
+
+## [8.2.0.03] - 2026-09-27
+
+**Highlights.** FEniCSx runs VCell's electrophysiology models: a membrane
+potential with voltage-gated channels, non-diffusing species (buffers, gating
+variables), region sizes, and time-dependent stimuli. On a Hodgkin–Huxley
+model it reproduces the finite-volume solver's repetitive firing: the same
+action potentials, and the membrane potential to 0.1 mV between spikes.
+
+### Added
+- FEniCSx solves **non-diffusing species** (VCell's ODE species in a spatial
+  application: immobile buffers, ER-bound states, channel gating variables),
+  and **region sizes** (`vcRegionVolume`, `vcRegionArea`). (vcell-fenics #201,
+  #202)
+
+### Changed
+- The default FEniCSx image is `sha-8360060`, for the desktop quick run and
+  the cluster.
+- FEniCSx follows a **time-dependent stimulus** (expressions using time) in
+  two-compartment models. It honors VCell's per-face boundary values when
+  every face holds the same value, which is a reservoir on the outer wall.
+
+### Fixed
+- FEniCSx no longer returns wrong results for models with a **FastSystem**
+  (VCell's rapid-equilibrium reduction, e.g. fast calcium buffering). It
+  refuses them with a message saying why; they need one of VCell's
+  finite-volume solvers.
+- A membrane ODE's kinetics (a channel gating variable) were ignored in
+  models with membrane species.
+
+### Notes for API consumers
+- No `/api/` changes in this build.
+
+## [8.2.0.02] - 2026-09-27
+
+**Highlights.** FEniCSx and the browser field viewer are **on by default** from
+this build. The FEniCSx solver it ships (`sha-b90ea72`) covers much more than
+8.2.0.01's:
+- two-compartment models with any number of species in each;
+- membrane species coupled to both compartments, such as receptor–ligand binding;
+- well-mixed species and the membrane potential (VCell's region variables);
+- a more robust 3D remesh for moving boundaries.
+
+The field viewer refreshes while a job is running.
+
+### Added
+- The field viewer has a refresh button and refreshes itself while the job is
+  running, so a running simulation's results fill in without reloading the
+  page. (#2108)
+- FEniCSx solves **region variables** (well-mixed species, and the membrane
+  potential), one value per region, in two-compartment models with or without
+  membrane species. (vcell-fenics #197, #198, #200)
+
+### Changed
+- FEniCSx and the browser field viewer are **on by default**:
+  `vcell.fenics.enabled` and `vcell.fieldViewer.enabled` now default to true,
+  and the installer's `vmoptions.txt` lists both (as `true`), so either can be
+  turned off there with `=false`. (#2110)
+- The default FEniCSx image is `sha-b90ea72`, for the desktop quick run and the
+  cluster (`htc_vcellfenics_apptainer_image`). It passes through:
+  - `sha-479d653`: the 3D remesh fallback (#2109);
+  - `sha-ca4604f`: several species per compartment and membrane species coupled
+    to both compartments (#2111);
+  - `sha-b90ea72`: region variables, and an exact interface-flux Jacobian that
+    tightens mass conservation in two-compartment models.
+
+### Fixed
+- A 3D moving-boundary run on FEniCSx could fail at a remesh on Linux ("Netgen
+  could not tetrahedralize the surface", then "boundary mesh is overlapping")
+  when Netgen returned a partial volume mesh. The remesh now falls back
+  through coarser surfaces and rejects incomplete fills. (vcell-fenics #180,
+  through #2109)
+
+### Notes for API consumers
+- No `/api/` changes in this build.
+
+## [8.2.0.01] - 2026-09-25
+
+**Highlights.** The first build of the 8.2 line, which brings FEniCSx, a
+finite-element solver, into VCell. Rather than a Cartesian grid, it solves on a
+mesh that follows the cell's shape. It covers fixed geometries, moving
+boundaries in 2D and 3D, and segmented image geometries, and its results open
+in a browser field viewer. **All of it is off by default in this build:** the
+solver needs `vcell.fenics.enabled=true` and the viewer
+`vcell.fieldViewer.enabled=true`. Without them this build behaves like
+8.1.8.04, whose server fixes it includes: BioNetGen on the server, and a 404
+instead of a 500 for a BNGL download of a BioModel with no applications.
+
+### Added
+- FEniCSx solver, gated off by default (`vcell.fenics.enabled`). It is
+  registered as a VCell solver and takes the SimulationTask VCell hands its
+  solvers. It runs spatial deterministic models on body-fitted
+  finite-element meshes and writes a results bundle (VTU meshes and zarr
+  fields). (#2084, #2085)
+- Desktop quick run of FEniCSx in Docker, with progress reporting. (#2086)
+- FEniCSx on the cluster: SlurmProxy routes FEniCSx jobs to their own
+  Apptainer image, selected by an optional solver list, and a site without that
+  configuration refuses the job. Single rank for now. Sim-data cleanup removes
+  FEniCSx result bundles, which are directories. (#2089)
+- Browser field viewer for FEniCSx results, which are point data on
+  body-fitted meshes, gated by `vcell.fieldViewer.enabled`. Includes a results
+  bundle reader and remote viewing of cluster runs through the data server.
+  (#2087, #2088, #2090)
+- Moving boundaries on FEniCSx:
+  - It is offered for moving-boundary applications, and the viewer follows
+    the moving mesh. (#2093)
+  - In 3D, `MembraneSubDomain` carries a Z velocity (VCML, XML `<Velocity><Z>`,
+    math comparison), math generation produces it on 3D geometries, and the
+    kinematics table shows the Z components. (#2097)
+- Image-based (segmented) geometries on FEniCSx, realized as smoothed,
+  body-fitted meshes. (#2094)
+- Field viewer:
+  - a Mesh selector (surface, surface + edges, wireframe; the `m` key cycles
+    it) (#2096);
+  - a whole-cells slice mode that shows the mesh's own elements (#2098);
+  - point pick with a time course on 3D body-fitted meshes (#2099);
+  - pan in 3D with shift-, right- or middle-drag, with rotation staying centred
+    on the scene after a pan (#2100).
+
+### Changed
+- The native Moving Boundary solver is refused for 3D geometries with an error
+  issue. It writes a 2D input only, and previously ran anyway. (#2097)
+- FEniCSx refuses unsupported geometries before the run, and shows the
+  solver's own error line when a run fails. (#2091)
+- Rule-based help pages describe molecule, observable and species-pattern
+  depictions with the current colors, and there is a new SpringSaLaD
+  definition. (#2101)
+
+### Fixed
+- The server image includes BioNetGen and full Perl. Rule-based requests on the
+  server failed with `Can't open perl script ".../bionetgen/BNG2.pl"`: network
+  generation during math generation, and the BNGL download. (#2102)
+- `/api/v0/biomodel/{id}/biomodel.bngl` returns 404 for a BioModel with no
+  applications instead of a 500 ("Index 0 out of bounds for length 0"), and
+  unexpected export failures are logged with their stack trace. (#2104)
+- A FEniCSx segfault meshing 3D image geometries on Linux, through the default
+  image `sha-cf08ec2`. (#2095)
+
+### Notes for API consumers
+- No `/api/v1/` schema changes in this build.
+- `/api/v0/biomodel/{id}/biomodel.bngl` now answers 404, not 500, for a BioModel
+  with no applications.
+
+## [8.1.8.06] - 2026-10-06
+
+**Highlights.** Requests to the server no longer slow to one every 30 seconds after heavy use. Built from
+the `vc8.1-prod` release branch; the only change from 8.1.8.05.
+
+### Fixed
+- Server RPC: the reply to each request is committed when received, so it is consumed rather than
+  rolled back onto the shared reply queue when the request's session closes. Once about 200 unconsumed
+  replies had piled up, every request waited for the message broker's 30 s expiry sweep, for up to
+  20 minutes. Regression from 8.0.10.01. (#2163, cherry-picked in #2164)
+
+### Notes for API consumers
+- No `/api/v1/` schema changes in this build.
+
+## [8.1.8.05] - 2026-10-01
+
+**Highlights.** Saving a model from Windows no longer corrupts non-ASCII text in
+annotations (μ, superscripts, accented letters). Built from the `vc8.1-prod`
+release branch.
+
+### Fixed
+- The desktop client decodes models it loads from or saves to the server as
+  UTF-8. On Windows it used the platform charset (windows-1252), so every
+  open-and-save doubled non-ASCII annotation text, until a model could no
+  longer be saved (HTTP 413). `BigString`, `XmlUtil.getXMLString`,
+  `FileUtils.readFileToString` and `ExternalDocInfo.getReader` also use UTF-8.
+  (#2151, cherry-picked in #2153)
+- All desktop launchers run Java with `-Dfile.encoding=UTF-8`. (#2150, backported
+  in #2153)
+
+### Notes for API consumers
+- No `/api/v1/` schema changes in this build.
+
+## [8.1.8.04] - 2026-09-25
+
+**Highlights.** Downloading BNGL for a BioModel with no applications returns a
+clear 404 instead of a server error. Built from the `vc8.1-prod` release
+branch.
+
+### Fixed
+- `/api/v0/biomodel/{id}/biomodel.bngl` returns 404 ("BioModel … has no
+  applications; BNGL is exported per application") instead of a 500 ("Index 0
+  out of bounds for length 0"), and unexpected failures are logged with their
+  stack trace. (#2104, cherry-picked in #2105)
+
+### Notes for API consumers
+- No `/api/v1/` schema changes in this build.
+
+## [8.1.8.03] - 2026-09-25
+
+**Highlights.** Rule-based models work on the server again: math generation
+and BNGL download no longer fail looking for BioNetGen. Built from the
+`vc8.1-prod` release branch.
+
+### Fixed
+- The server image includes BioNetGen and full Perl. No server image had carried
+  BioNetGen, so network generation during math generation and the BNGL download
+  failed with `Can't open perl script ".../bionetgen/BNG2.pl"`. (#2102,
+  cherry-picked in #2103)
+
+### Notes for API consumers
+- No `/api/v1/` schema changes in this build.
+
+## [8.1.8.02] - 2026-09-25
+
+**Highlights.** Updated help for rule-based modeling. Built from the
+`vc8.1-prod` release branch (8.1.8.01 plus the help updates).
+
+### Changed
+- The rule-based help pages describe molecule, observable and species-pattern
+  depictions with the current colors. The Species Properties Pane page states
+  that composite species need explicit states and bonds, and there is a new
+  SpringSaLaD definition. (#2101)
+
+### Notes for API consumers
+- No `/api/v1/` schema changes in this build.
+
+## [8.1.8.01] - 2026-09-21
+
+**Highlights.** More room for multi-run simulations: up to 50 concurrent runs.
+The Simulation Properties Panel shows the run limits and quotas that apply.
+
+### Changed
+- The maximum number of concurrent runs is raised to 50 (51 including the
+  watchdog), and it is no longer user-editable. (#2080)
+- The Simulation Properties Panel shows multi-run information: the number of
+  concurrent runs and the nodes used. (#2080)
+
+### Fixed
+- A regression in single-run log management. (#2080)
+
+### Notes for API consumers
+- No `/api/v1/` schema changes in this build.
+
+## [8.1.7.01] - 2026-09-16
+
+**Highlights.** Smart copy and paste reaches the Initial Conditions panel and
+works for parameter scans in Math Overrides, with a clearer confirmation
+dialog.
+
+### Added
+- Smart copy/paste by keybinding in the Initial Conditions panel. (#2042)
+
+### Changed
+- In Math Overrides, parameter scans copy and paste correctly, and the smart
+  copy/paste confirmation dialog is clearer. (#2042)
+
+### Notes for API consumers
+- No `/api/v1/` schema changes in this build.
+
+## [8.1.6.02] - 2026-09-07
+
+**Highlights.** The same release as 8.1.6.01, rebuilt on a supported base
+image. **Use this build rather than 8.1.6.01**, whose server images cannot be
+built at all.
+
+### Fixed
+- Internal: the `admin` and `clientgen` images build again. Both were based on
+  Debian 11 (bullseye), whose LTS ended on 2026-08-31; its final security index
+  expired at 21:13 UTC on 2026-09-07, part-way through the 8.1.6.01 release, and
+  `apt` refuses an expired index rather than quietly using a stale one. Both
+  images now build on Debian 12 (bookworm), whose security suite is current.
+  Disabling the expiry check was the alternative and was not taken: it would
+  keep building against a suite that will never receive another update.
+  `clientgen` produces the desktop installers, so without this the next release
+  would have stalled the same way with no warning. (#2075)
+
+### Notes for API consumers
+No changes from 8.1.6.01.
+
+## [8.1.6.01] - 2026-09-07
+
+**Highlights.** SpringSaLaD has user documentation for the first time. VCell
+has been able to build and run SpringSaLaD models for over a year — a
+particle-based application, the Langevin solver, a molecular structure editor
+and a 3D trajectory viewer — with nothing in the help explaining any of it.
+Six help pages now cover it, including two errors that are hard to get past
+without knowing what they mean. Alongside that, three fixes to things that
+told you the wrong story: a progress bar that never moved, an error that named
+the wrong cause, and a species name VCell accepted and then could not read.
+
+### Added
+- SpringSaLaD user documentation — six pages in the help, reachable from
+  Rule-Based Features and from Specifications. They cover the modelling
+  framework, creating a SpringSaLaD application and the geometry it builds for
+  you, laying out a molecule's sites and the springs between them, the five
+  reaction subtypes, reading results and the 3D trajectory viewer, and `.ssld`
+  import and export. Two explanations are worth knowing about in advance,
+  because both are errors you meet before you meet the concept: what *"the
+  forward rate Kf is too large"* means and what to do about it, and the fact
+  that a transition condition changes name between SpringSaLaD and VCell —
+  SpringSaLaD's "None" is VCell's **Any**, and its "Free" is VCell's
+  **Unbound**. (#2073, #2060)
+
+### Fixed
+- The progress dialog now advances while a time course is retrieved from a
+  spatial simulation. The server was computing the progress and sending it, and
+  the client was dropping it: the listener that receives those events was
+  registered after the call that waits for them, not before. The dialog had sat
+  at zero ever since that call became a blocking one. (#2066)
+- A failure retrieving time-series data now reports what actually went wrong.
+  The failure was recorded and the task chain carried on, so the next step ran
+  against a result that was never produced and the error you saw was an
+  unrelated `NullPointerException` in a plotting step — with the real cause
+  gone. Cancelling the retrieval did the same thing. (#2065, #2063)
+- A SpringSaLaD site's Y or Z position can be set to a value equal to its X.
+  All three coordinate fields compared against X, so an edit to Y or Z was
+  silently discarded whenever the two happened to match — no error, no change,
+  the old value still in the cell. Sites are routinely laid out along an axis
+  with x = 0, which made "put this site at z = 0" impossible. (#2073)
+
+### Changed
+- A species name must be one the expression parser can read. Name checking
+  accepted any Unicode letter while the parser accepts only `a-z`, `A-Z` and
+  `_`, so a name such as `PROTEÍNA_A` was accepted and saved, and the
+  application then failed to generate math with an error naming an expression
+  and nothing pointing at the species. The check now uses one definition of a
+  legal identifier, shared with the grammar, and suggests a replacement name.
+  **Models already saved with such a name still open** — refusing them would
+  take away the only way to rename the species — and report the offending name
+  as a problem instead. (#2064, #2062)
+- Internal: all ten outdated tutorial documents on vcell.org, and the
+  standalone SpringSaLaD guide, are now reproduced as scripts that drive a real
+  client, so it is visible when a documented workflow stops working. Six
+  documentation findings were filed from them. (#2067, #2073, #2069)
+- Internal: UI interactions can be recorded as replayable scripts, for demos
+  and for scaffolding help pages. (#2059)
+- Internal: CI decides whether to run the test lanes by looking at everything a
+  branch changed, rather than only its most recent commit — which had let a
+  branch skip lanes its earlier commits needed. (#2061)
+
+### Notes for API consumers
+No API changes. One behaviour change worth noting for anything that creates
+model symbols programmatically: a name containing non-ASCII letters is now
+rejected at creation with a `ModelPropertyVetoException` naming a legal
+replacement, where it was previously accepted and failed later during math
+generation. Reading such a name back from VCML or the database still succeeds.
+
+## [8.1.5.01] - 2026-09-03
+
+**Highlights.** Saving a model no longer fails because the connection to the
+server was recycled underneath it. A user reported being unable to save a
+biomodel at all, with an error mentioning "GOAWAY received"; nothing was wrong
+on the server, and nothing was wrong with her model.
+
+### Fixed
+- Saving a biomodel no longer fails with `IOException: … GOAWAY received`. Web
+  servers routinely close a connection after it has served enough requests,
+  expecting the client to open a new one — but saving used a connection mode in
+  which the client would not retry, so a save that happened to land on one of
+  those closures failed outright. Every save and delete the desktop client
+  performs was affected, not just biomodels. If you saw this, check whether the
+  model was in fact saved before saving again: the server may have completed the
+  save and only the reply was lost. (#2052, #2051)
+
+### Changed
+- Internal: the build no longer asks for two artifacts that exist in no
+  repository. They are declared by a transaction library we depend on, have
+  never been fetchable, and worked only because every repository reported them
+  missing in the same way. On 2026-08-27 one reported them differently and no
+  module could build. (#2054, #2041)
+- Internal: `vcell-restclient`'s tests now run in CI. The fast lane lists its
+  modules explicitly and that one was in none of them, so its tests reported as
+  passing without executing. (#2052)
+
+### Notes for API consumers
+No API changes. The desktop client now speaks HTTP/1.1 to `/api/v1/` rather than
+HTTP/2, and retries a request interrupted by a connection closure. This is a
+temporary measure: Java 24 and later retry such requests correctly on their own,
+and the workaround is removed when VCell ships on that runtime.
+
+## [8.1.4.01] - 2026-09-02
+
+**Highlights.** SpringSaLaD runs get the processors they were asked for. The
+background process that watches a run was quietly taking one of the simulation
+slots, and the whole batch was pinned to a single machine, which capped it at
+about 20 simulations at once however many were requested.
+
+### Fixed
+- A SpringSaLaD batch no longer loses one simulation slot to its own watchdog.
+  The number of parallel tasks requested from the cluster counted only the
+  simulations, but the watchdog runs as a task too — so a run asking for four
+  parallel simulations got three. The request now accounts for it, and the batch
+  script derives the simulation count from what was actually allocated. (#2049)
+- A SpringSaLaD run can use more than one machine. The batch requested exactly
+  one node regardless of size, so concurrency was capped at roughly 20
+  simulations no matter what was asked for; the number of nodes is now computed
+  from the concurrency requested. (#2049)
+- Runs asking for fewer simulations than the concurrency limit no longer request
+  resources they cannot use — concurrency is clamped to the number of
+  simulations in the run. (#2049)
+- A test-site prefix (`V_TEST2_`) was hard-coded into the generated batch script
+  when clearing a run's log, so on any other site it truncated a path that did
+  not correspond to the running job. The prefix now comes from the job. (#2049)
+
+### Changed
+- New optional setting `vcell.slurm.langevin.maxNumConcurrentTasks` caps parallel
+  tasks for a SpringSaLaD batch, counting the watchdog. Defaults to 31 — 30
+  simulations plus the watchdog, which is two nodes — and is unset in every
+  deployment, so behaviour is the default unless someone tunes it. (#2049)
+
+### Notes for API consumers
+No API changes.
+
+## [8.1.3.01] - 2026-09-02
+
+**Highlights.** Two things that made VCell unusable for the people who hit them.
+A user with a large model could not list their models at all — not one row
+missing, the whole listing failed — and a reaction parameter could vanish from
+the math overrides table with no error and no way to tell why, purely because of
+what it was named. Alongside those, simulation results windows can now be
+detached, so they can be minimized and moved out of the way on a small screen.
+
+### Added
+- Simulation results windows can be detached from their document window. A
+  detached window gets a taskbar or dock entry, minimizes, and can be stacked
+  freely, at the cost of no longer being kept in front of the model it belongs
+  to; "Reattach" puts it back. Attached remains the default. Results windows are
+  held in front of their document window by the operating system, which is what
+  keeps them from hiding behind it — but it also means they cannot be minimized
+  at all, and on a small screen there is nowhere to move them to. (#2045)
+
+### Fixed
+- Listing biomodels no longer fails because one model has many simulations. The
+  listing gathered each model's simulation keys into a single string inside the
+  database, which Oracle caps at 4000 bytes; roughly 400 simulations on one model
+  exceeded it and returned a 500 for the entire request, so an affected user could
+  not see any of their models. The keys are now collected without that limit.
+  (#2048, #2036)
+- A reaction's local parameter no longer disappears from a simulation's math
+  overrides because of its name. Parameters were matched against the list of
+  reserved physical constants by substring, so a parameter called `kon_R_R_in`
+  was discarded as if it were `_R_`, the gas constant. Any name containing `_R_`,
+  `_T_`, `_F_` or `_PI_` was affected. (#2043)
+- A detached or reattached window stays where you put it, instead of jumping back
+  onto the document window. (#2045)
+
+### Changed
+- Internal: the build declares UTF-8 source encoding. Without it the compiler used
+  the platform default, so on Windows five files failed to compile and 109 more
+  compiled to the wrong characters — including text VCell displays — with no
+  warning. Released builds were never affected, since they are built on Linux.
+  (#2047, #2046)
+- Internal: the `scijava` Maven repository is no longer used. It served exactly one
+  artifact, now vendored in the tree. While it was returning 503s for the metadata
+  files Maven generates, builds failed on artifacts it had nothing to do with.
+  (#2037)
+
+### Notes for API consumers
+No API changes. `GET /api/v0/biomodel` and `GET /api/v1/bioModel` return the same
+shape as before; they simply no longer fail when a model has many simulations.
+
+## [8.1.2.01] - 2026-08-28
+
+**Highlights.** A large geometry image no longer costs far more memory than it
+should. A 62-megapixel image had taken two production API pods down, and the cause
+was the same inflated pixel array being held twice over and never released; it is
+now held once, and softly, so the collector can reclaim it.
+
+### Fixed
+- A geometry no longer pins a second copy of its image's pixels in memory.
+  `GeometrySpec` cached the same inflated array the image already caches, so the
+  pixels stayed reachable for as long as the geometry did — 62 MB per geometry at
+  the size that took down two production API pods. (#2026, #2021)
+
+### Changed
+- Inflated image pixels are now held softly, so the heap can reclaim them and
+  re-inflate on demand. Geometry images compress 50–100× (median 73.6× measured
+  across the VCML corpus), so keeping the inflated form resident cost far more than
+  rebuilding it. Under the shape of the incident — 11 images reachable at once in a
+  256 MB heap — this is the difference between running out of memory at the ninth
+  image and completing all eleven. (#2027, #2021)
+- SpringSaLaD simulations run on the Langevin 1.4.13 solver. (#2002)
+- Security: dependency updates closing 4 Maven advisories (jsoup, jose4j, and the
+  removal of an unused htmlunit) and 166 Python advisories, by dropping Jupyter as a
+  runtime dependency of three packages. (#2018, #2019)
+
+### Added
+- Geometry surface generation is pinned by golden tests, including fixtures taken
+  from real corpus models, so a change in generated surfaces has to be deliberate.
+  (#2028, #2029)
+
+### Notes for API consumers
+No API changes.
+
 ## [8.1.1.01] - 2026-08-21
 
 **Highlights.** When VCell hits an error and you agree to send a report, that

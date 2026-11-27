@@ -36,7 +36,6 @@ import org.vcell.util.document.UserInfo;
 
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.solver.SimulationInfo;
-import cbit.vcell.util.AmplistorUtils;
 
 
 /**
@@ -101,11 +100,7 @@ public class ResultSetCrawler {
 				ExternalDataIdentifier[] extDataIDArr = adminDbTopLevel.getExternalDataIdentifiers(user,true);
 
 				// scan this user directory
-				AmplistorUtils.AmplistorCredential amplistorCredential = null;
-//				if (ampliCredName != null && ampliCredPassword != null){
-//					new AmplistorUtils.AmplistorCredential(ampliCredName, ampliCredPassword);
-//				}
-				scanUserDirectory(userDir, extDataIDArr, simulationInfos, outputDir, bScanOnly, amplistorCredential);
+				scanUserDirectory(userDir, extDataIDArr, simulationInfos, outputDir, bScanOnly);
 			} catch (Exception ex) {
 				lg.error(ex.getMessage(), ex);
 			}
@@ -163,7 +158,7 @@ private static List<File> getDirectoriesToScan(HashMap<String,User> usersToScan,
  * Insert the method's description here.
  * Creation date: (2/2/01 3:40:29 PM)
  */
-private static void scanUserDirectory(File userDir, ExternalDataIdentifier[] extDataIDArr, SimulationInfo[] simulationInfos, File outputDir, final boolean bScanOnly,AmplistorUtils.AmplistorCredential amplistorCredential) throws Exception {
+private static void scanUserDirectory(File userDir, ExternalDataIdentifier[] extDataIDArr, SimulationInfo[] simulationInfos, File outputDir, final boolean bScanOnly) throws Exception {
 	File outputFile = null;
 	java.io.PrintWriter writer = null;
 	try {
@@ -186,30 +181,6 @@ private static void scanUserDirectory(File userDir, ExternalDataIdentifier[] ext
 			referencedKeys.add(simulationInfo.getSimulationVersion().getVersionKey());
 		}
 		
-		if(amplistorCredential != null){
-			try{
-				if(bScanOnly){
-					ArrayList<String> shouldBeDeleted =
-						AmplistorUtils.deleteSimFilesNotInHash(AmplistorUtils.DEFAULT_AMPLI_SERVICE_VCELL_URL+userDir.getName(), referencedKeys,bScanOnly,amplistorCredential);
-					for(String fileName:shouldBeDeleted){
-						pw.println("Should delete Amplistor "+fileName);
-						if (lg.isTraceEnabled()) lg.trace("Should delete Amplistor "+fileName);					
-					}
-				}else{
-					ArrayList<String> wasDeleted =
-						AmplistorUtils.deleteSimFilesNotInHash(AmplistorUtils.DEFAULT_AMPLI_SERVICE_VCELL_URL+userDir.getName(), referencedKeys,bScanOnly,amplistorCredential);
-					for(String fileName:wasDeleted){
-						pw.println("deleted Amplistor "+fileName);
-						if (lg.isTraceEnabled()) lg.trace("deleted Amplistor "+fileName);					
-						
-					}
-				}
-			}catch(Exception e){
-				if (lg.isTraceEnabled()) lg.trace("Amplistor delete failed url="+AmplistorUtils.DEFAULT_AMPLI_SERVICE_VCELL_URL+userDir.getName()+" : "+e.getMessage());
-				pw.println("Amplistor delete failed url="+AmplistorUtils.DEFAULT_AMPLI_SERVICE_VCELL_URL+userDir.getName()+" : "+e.getMessage());
-			}
-		}
-
 		final HashMap<KeyValue,Integer> deletedKeyMap = new HashMap<KeyValue,Integer>();
 				
 		//
@@ -240,6 +211,10 @@ private static void scanUserDirectory(File userDir, ExternalDataIdentifier[] ext
 	        					}else{
 	        						pw.println("deleted file("+simKey+":"+count+") " + file.getPath());
 	        						if (lg.isTraceEnabled()) lg.trace("deleted file("+simKey+":"+count+") " + file.getPath());
+	        						if (file.isDirectory() && file.getName().endsWith(cbit.vcell.simdata.SimDataConstants.FENICS_BUNDLE_EXTENSION)) {
+	        							// a FEniCSx results bundle is a directory tree; File.delete() fails on it
+	        							org.vcell.util.FileUtils.deleteDirectoryContents(file, true, null);
+	        						}
 	        						file.delete();
 	        					}
 	        				}

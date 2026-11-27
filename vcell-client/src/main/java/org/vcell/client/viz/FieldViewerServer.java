@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -75,8 +76,11 @@ public final class FieldViewerServer {
 	/** VTK_VOXEL: the cell type {@link CartesianMeshMapping} emits for 3D volume domains. */
 	private static final int VTK_VOXEL = 11;
 
-	/** VTK_QUAD: the in-plane cell type it emits for 2D volume domains. */
+	/** VTK_QUAD: the in-plane cell type it emits for 2D volume domains, and for the faces of a 3D membrane. */
 	private static final int VTK_QUAD = 9;
+
+	/** VTK_LINE: the cell type of a 2D membrane, one segment per membrane element. */
+	private static final int VTK_LINE = 3;
 
 	private static final String INDEX_HTML = "index.html";
 
@@ -102,6 +106,12 @@ public final class FieldViewerServer {
 	 */
 	private static final Map<String, DataSource> dataSources = new ConcurrentHashMap<>();
 
+	/**
+	 * FEniCSx results bundles, keyed like {@link #dataSources}. They are read straight from their
+	 * directory, not through a {@link VCDataManager}: a bundle is not a VCell dataset.
+	 */
+	private static final Map<String, FenicsBundleViews.BundleSource> bundleSources = new ConcurrentHashMap<>();
+
 	/** Grid construction is the expensive step and depends only on the mesh, so cache per sim+domain. */
 	private static final Map<String, VisMesh> meshCache = new HashMap<>();
 
@@ -116,6 +126,29 @@ public final class FieldViewerServer {
 		volatile VtuMode vtuMode;
 		volatile boolean vtuModeResolved;
 		volatile VtuVarInfo[] vtuVarInfos;
+		/** the membrane domains with membrane elements, read once from the mesh */
+		volatile List<String> membraneDomains;
+		/*
+		 * A run's mesh and variables do not change while it is registered, and for a run on the data server each
+		 * read is a round trip carrying the whole mesh (about 0.6 MB for 101 × 101 × 36). They were read again by
+		 * every request, up to three times by one kymograph; now once per dataset (see solverMesh, visMesh and
+		 * dataIdentifiers). The saved times are still read per request: a running simulation adds to them.
+		 */
+		/** the solver's mesh, read once */
+		volatile cbit.vcell.solvers.CartesianMesh solverMesh;
+		/** the solver's mesh with its domains named, built once from {@link #solverMesh} */
+		volatile org.vcell.vis.vcell.CartesianMesh visMesh;
+		/** the run's variables and functions, read once (the viewer always asks with an empty output context) */
+		volatile DataIdentifier[] dataIdentifiers;
+		/** the last few kymographs' time series ({@link #kymographSeries}), most recently used last */
+		final Map<String, double[][]> kymographSeries = new java.util.LinkedHashMap<>(8, 0.75f, true) {
+			private static final long serialVersionUID = 1L;
+
+			@Override
+			protected boolean removeEldestEntry(Map.Entry<String, double[][]> eldest) {
+				return size() > KYMOGRAPH_SERIES_KEPT;
+			}
+		};
 
 		DataSource(VCSimulationDataIdentifier vcdID, VCDataManager dataManager, SubdomainInfo subdomainInfo,
 				String simName) {
@@ -139,13 +172,13 @@ public final class FieldViewerServer {
 
 	/**
 	 * Detected from the mesh type the data manager returns rather than from the simulation, so it
-	 * works identically for a re-opened remote run where only the data still exists. Both solvers
-	 * are server-only, so these paths always reach the data over the remote seam, where the
-	 * server-side Python VTK service that writes the .vtu is available.
+	 * works identically for a re-opened remote run where only the data still exists. Chombo runs
+	 * only on the server, where its .vtu is written by the Python VTK service; MovingBoundary also
+	 * runs locally (a desktop quick run), and its .vtu is written in pure Java on either side.
 	 */
 	private static VtuMode vtuMode(DataSource source) throws Exception {
 		if (!source.vtuModeResolved) {
-			Object mesh = source.dataManager.getMesh(source.vcdID);
+			Object mesh = solverMesh(source);
 			source.vtuMode = mesh instanceof CartesianMeshMovingBoundary ? VtuMode.TIME_VARYING
 					: mesh instanceof CartesianMeshChombo ? VtuMode.STATIC : null;
 			source.vtuModeResolved = true;
@@ -171,6 +204,154 @@ public final class FieldViewerServer {
 		}
 	}
 
+	/** Raised when a heavy job is already running; reported as 503 so the viewer retries. */
+	private static final class BusyException extends RuntimeException {
+		private static final long serialVersionUID = 1L;
+
+		BusyException(String message) {
+			super(message);
+		}
+	}
+
+	/**
+	 * Raised when a kymograph would return more values than {@link #maxKymographValues()}; a 400 whose JSON
+	 * also carries {@code suggestedTstep}, the smallest stride over the saved times that fits.
+	 */
+	static final class TooManyValuesException extends IllegalArgumentException {
+		private static final long serialVersionUID = 1L;
+		final int suggestedTstep;
+
+		TooManyValuesException(String message, int suggestedTstep) {
+			super(message);
+			this.suggestedTstep = suggestedTstep;
+		}
+	}
+
+	/**
+	 * Heavy jobs run one at a time: a kymograph, and a multi-point time series on Chombo or MovingBoundary
+	 * (which reads every saved time over the remote seam). One more may wait for its turn, up to
+	 * {@link #heavyWaitMillis()}, in {@link #HEAVY_JOB_WAITER}; any other gets a 503 at once, so a long job
+	 * cannot pile work up behind it. One waiter is enough for what the viewer itself sends together — a
+	 * variable switch asks for the probes' series and the kymograph at the same moment — which used to
+	 * fail one of the two with "busy".
+	 */
+	static final Semaphore HEAVY_JOBS = new Semaphore(1);
+
+	/** the one request allowed to wait for {@link #HEAVY_JOBS} */
+	static final Semaphore HEAVY_JOB_WAITER = new Semaphore(1);
+
+	/** How long a heavy request waits for the running one before a 503 ({@code vcell.fieldViewer.heavyWaitMillis}). */
+	static long heavyWaitMillis() {
+		return Long.getLong("vcell.fieldViewer.heavyWaitMillis", 30_000L);
+	}
+
+	private interface HeavyJob {
+		String run() throws Exception;
+	}
+
+	private static String heavy(HeavyJob job) throws Exception {
+		return heavy(job, null);
+	}
+
+	/** {@link #heavy(HeavyJob)}, noting on {@code timer} the moment the job starts. */
+	private static String heavy(HeavyJob job, StageTimer timer) throws Exception {
+		if (!HEAVY_JOBS.tryAcquire()) {
+			if (!HEAVY_JOB_WAITER.tryAcquire()) {
+				throw new BusyException("the field viewer is busy with another kymograph or time series; try again");
+			}
+			try {
+				if (!HEAVY_JOBS.tryAcquire(heavyWaitMillis(), java.util.concurrent.TimeUnit.MILLISECONDS)) {
+					throw new BusyException("the field viewer is busy with another kymograph or time series; try again");
+				}
+			} finally {
+				HEAVY_JOB_WAITER.release();
+			}
+		}
+		try {
+			if (timer != null) {
+				timer.lap("acquire");
+			}
+			return job.run();
+		} finally {
+			HEAVY_JOBS.release();
+		}
+	}
+
+	/** How many kymographs' time series each dataset keeps ({@link #kymographSeries}). */
+	static final int KYMOGRAPH_SERIES_KEPT = 4;
+
+	/** How many kymograph time-series jobs have been run, not answered from memory ({@link #kymographSeries}); for tests. */
+	static final java.util.concurrent.atomic.AtomicInteger kymographJobsRun = new java.util.concurrent.atomic.AtomicInteger();
+
+	/**
+	 * One kymograph's values: {@code timesAndValues} (row 0 the times, row 1 + i the values at sample i) of ONE
+	 * {@link TimeSeriesJobSpec} over the samples' volume indices, with their membrane-crossing indices when not
+	 * null, or over membrane indices for a membrane variable.
+	 * <p>
+	 * The job reads every returned saved time, twice with membrane crossings (once more for the values at the
+	 * crossings): that is nearly all of a kymograph's time, about 1 s for 101 times of a 101 × 101 × 36 run read
+	 * locally. So the last few are kept per dataset, keyed by everything the job depends on, the number of saved
+	 * times included (a running simulation's next time makes a new job). The viewer asks for the same series
+	 * again for its desktop CSV ({@code raw=1}: the same values, gaps kept), on a variable switched back to, and on
+	 * a line redrawn; those are now answered from memory.
+	 */
+	private static double[][] kymographSeries(DataSource source, String varName, int[] indices, int[] crossingIndices,
+			boolean membrane, double[] allTimes, int tstep) throws Exception {
+		String key = (membrane ? "membrane " : "volume ") + varName + " tstep=" + tstep + " times=" + allTimes.length
+				+ " last=" + allTimes[allTimes.length - 1] + " indices=" + Arrays.toString(indices)
+				+ " crossings=" + Arrays.toString(crossingIndices);
+		synchronized (source.kymographSeries) {
+			double[][] kept = source.kymographSeries.get(key);
+			if (kept != null) {
+				return kept;
+			}
+		}
+		TimeSeriesJobSpec spec = new TimeSeriesJobSpec(new String[] { varName }, new int[][] { indices },
+				crossingIndices != null ? new int[][] { crossingIndices } : null, allTimes[0], tstep,
+				allTimes[allTimes.length - 1], VCDataJobID.createVCDataJobID(source.vcdID.getOwner(), true));
+		TSJobResultsNoStats results = (TSJobResultsNoStats) source.dataManager
+				.getTimeSeriesValues(emptyOutputContext(), source.vcdID, spec);
+		kymographJobsRun.incrementAndGet();
+		double[][] timesAndValues = results.getTimesAndValuesForVariable(varName);
+		synchronized (source.kymographSeries) {
+			source.kymographSeries.put(key, timesAndValues);
+		}
+		return timesAndValues;
+	}
+
+	/** Samples × returned times per kymograph; {@code -Dvcell.fieldViewer.maxKymographValues} overrides it. */
+	static final int DEFAULT_MAX_KYMOGRAPH_VALUES = 500_000;
+
+	static int maxKymographValues() {
+		return Integer.getInteger("vcell.fieldViewer.maxKymographValues", DEFAULT_MAX_KYMOGRAPH_VALUES);
+	}
+
+	/** How many of {@code nTimes} saved times a stride of {@code tstep} returns: indices 0, k, 2k, … as {@link TimeSeriesJobSpec} steps. */
+	static int strideCount(int nTimes, int tstep) {
+		return (nTimes - 1) / tstep + 1;
+	}
+
+	/**
+	 * Refuses a kymograph of {@code nSamples} over the times a stride returns when that is more values than
+	 * the limit, suggesting the smallest stride that fits.
+	 */
+	static void checkValueLimit(int nSamples, int nTimes, int tstep) {
+		int limit = maxKymographValues();
+		if ((long) nSamples * strideCount(nTimes, tstep) <= limit) {
+			return;
+		}
+		if (nSamples > limit) {
+			throw new IllegalArgumentException("the line has " + nSamples + " samples, more than the limit of "
+					+ limit + " values per kymograph; draw a shorter line");
+		}
+		int k = Math.max(tstep + 1, (int) Math.ceil((double) nSamples * nTimes / limit));
+		while ((long) nSamples * strideCount(nTimes, k) > limit) {
+			k++;
+		}
+		throw new TooManyValuesException(nSamples + " samples × " + strideCount(nTimes, tstep) + " times is more than "
+				+ limit + " values; use tstep=" + k, k);
+	}
+
 	private FieldViewerServer() {
 	}
 
@@ -179,9 +360,9 @@ public final class FieldViewerServer {
 	// ---------------------------------------------------------------------
 
 	/**
-	 * Whether the browser-based 3D field viewer is switched on. Off unless
-	 * {@code -Dvcell.fieldViewer.enabled=true} is set, which an installed client can carry in its
-	 * {@code vmoptions.txt}. Gates both this server and the "View in 3D" button that opens it.
+	 * Whether the browser-based 3D field viewer is switched on. On by default;
+	 * {@code -Dvcell.fieldViewer.enabled=false}, which an installed client can carry in its
+	 * {@code vmoptions.txt}, turns it off. Gates both this server and the "View in 3D" button that opens it.
 	 */
 	public static boolean isEnabled() {
 		return PropertyLoader.getBooleanProperty(PropertyLoader.fieldViewerEnabled,
@@ -199,6 +380,20 @@ public final class FieldViewerServer {
 			LG.debug("field viewer is disabled ({}=false)", PropertyLoader.fieldViewerEnabled);
 			return -1;
 		}
+		return startServer();
+	}
+
+	/**
+	 * Start the server for viewing FEniCSx results, which have no other viewer in VCell: allowed
+	 * whenever the FEniCSx solver itself is switched on, whether or not the "View in 3D" button is.
+	 *
+	 * @return the listening port, or -1 if the server could not be started
+	 */
+	public static synchronized int startForFenics() {
+		return startServer();
+	}
+
+	private static synchronized int startServer() {
 		if (server != null) {
 			return server.getAddress().getPort();
 		}
@@ -217,13 +412,16 @@ public final class FieldViewerServer {
 		s.createContext("/field", wrap(FieldViewerServer::handleField));
 		s.createContext("/timeseries", wrap(FieldViewerServer::handleTimeSeries));
 		s.createContext("/stats", wrap(FieldViewerServer::handleStats));
+		s.createContext("/kymograph", wrap(FieldViewerServer::handleKymograph));
+		s.createContext("/particles", wrap(FieldViewerServer::handleParticles));
 		Path viewerRoot = staticRoot();
 		if (viewerRoot != null) {
 			// least-specific context: the data routes above still win, this catches the rest
 			s.createContext("/", ex -> serveStatic(ex, viewerRoot));
 			LG.info("field viewer page served from {}", viewerRoot);
 		}
-		s.setExecutor(Executors.newFixedThreadPool(2, r -> {
+		// four threads: a heavy job (one at a time, see HEAVY_JOBS) must not starve the viewer's other requests
+		s.setExecutor(Executors.newFixedThreadPool(4, r -> {
 			Thread t = new Thread(r, "vcell-field-viewer");
 			t.setDaemon(true);
 			return t;
@@ -266,6 +464,19 @@ public final class FieldViewerServer {
 			return null;
 		}
 		return dir.toAbsolutePath().normalize();
+	}
+
+	/**
+	 * The viewer page URL for a dataset, as a results window opens it: this server's own page when it
+	 * serves one (same origin as the data), else {@link PropertyLoader#fieldViewerUrl} (a developer's
+	 * viewer), with the dataset in the query.
+	 */
+	public static String viewerUrl(int port, String simKey, int jobIndex) {
+		String viewer = isServingViewerPage() ? "http://127.0.0.1:" + port + "/"
+				: PropertyLoader.getProperty(PropertyLoader.fieldViewerUrl, "http://localhost:4400/");
+		return viewer + (viewer.contains("?") ? "&" : "?")
+				+ "base=" + java.net.URLEncoder.encode("http://127.0.0.1:" + port, StandardCharsets.UTF_8)
+				+ "&sim=" + java.net.URLEncoder.encode(simKey, StandardCharsets.UTF_8) + "&job=" + jobIndex;
 	}
 
 	/** True when the page is served from this server, so callers can point the browser at us. */
@@ -326,7 +537,10 @@ public final class FieldViewerServer {
 			server = null;
 		}
 		meshCache.clear();
+		domainIndexCache.clear();
+		mbGridCache.clear();
 		dataSources.clear();
+		bundleSources.clear();
 	}
 
 	// ---------------------------------------------------------------------
@@ -335,6 +549,10 @@ public final class FieldViewerServer {
 
 	/** {@code /info?sim=<simKey>&job=<n>} — the variables, times and domains available for a run. */
 	private static String handleInfo(HttpExchange ex) throws Exception {
+		FenicsBundleViews.BundleSource bundle = bundleSourceFor(query(ex));
+		if (bundle != null) {
+			return FenicsBundleViews.info(bundle);
+		}
 		DataSource source = sourceFor(query(ex));
 		VCSimulationDataIdentifier vcdID = source.vcdID;
 		VtuMode vtuMode = vtuMode(source);
@@ -343,8 +561,9 @@ public final class FieldViewerServer {
 		}
 
 		double[] times = source.dataManager.getDataSetTimes(vcdID);
-		DataIdentifier[] ids = source.dataManager.getDataIdentifiers(emptyOutputContext(), vcdID);
-		List<String> domains = readMesh(source).getVolumeDomainNames();
+		DataIdentifier[] ids = dataIdentifiers(source);
+		List<String> domains = new ArrayList<>(readMesh(source).getVolumeDomainNames());
+		domains.addAll(membraneDomains(source)); // after the volume domains, so the first is still a volume
 
 		StringBuilder sb = new StringBuilder(1024);
 		sb.append("{\"simId\":\"").append(jsonEscape(vcdID.getID())).append('"');
@@ -363,20 +582,81 @@ public final class FieldViewerServer {
 		}
 		sb.append("],\"variables\":[");
 		boolean first = true;
-		for (DataIdentifier id : ids) {
-			if (!id.getVariableType().equals(cbit.vcell.math.VariableType.VOLUME)) {
-				continue; // the viewer renders volume fields on the whole-voxel grid
+		// volume variables are drawn on the whole-voxel grid, membrane variables on their membrane's faces (a
+		// surface of quads in 3D, a curve of segments in 2D); region variables (one value per region) are not listed
+		for (boolean membrane : new boolean[] { false, true }) {
+			for (DataIdentifier id : ids) {
+				if (!id.getVariableType().equals(membrane ? cbit.vcell.math.VariableType.MEMBRANE : cbit.vcell.math.VariableType.VOLUME)) {
+					continue;
+				}
+				if (!first) {
+					sb.append(',');
+				}
+				first = false;
+				sb.append("{\"name\":\"").append(jsonEscape(id.getName())).append('"');
+				sb.append(",\"domain\":\"").append(jsonEscape(id.getDomain() == null ? "" : id.getDomain().getName())).append('"');
+				sb.append(",\"isFunction\":").append(id.isFunction());
+				sb.append(membrane ? ",\"membrane\":true}" : "}");
 			}
-			if (!first) {
-				sb.append(',');
-			}
-			first = false;
-			sb.append("{\"name\":\"").append(jsonEscape(id.getName())).append('"');
-			sb.append(",\"domain\":\"").append(jsonEscape(id.getDomain() == null ? "" : id.getDomain().getName())).append('"');
-			sb.append(",\"isFunction\":").append(id.isFunction()).append('}');
 		}
-		sb.append("]}");
+		sb.append(']');
+		List<String> particleSpecies = fvParticleSpecies(source);
+		if (!particleSpecies.isEmpty()) {
+			// a hybrid run saved with particle files: the viewer offers a particle layer, fetched from /particles
+			sb.append(",\"particleSpecies\":[");
+			for (int i = 0; i < particleSpecies.size(); i++) {
+				sb.append(i > 0 ? "," : "").append('"').append(jsonEscape(particleSpecies.get(i))).append('"');
+			}
+			sb.append(']');
+		}
+		sb.append('}');
 		return sb.toString();
+	}
+
+	/** {@code A(solution)} → {@code A}: the particle data's species key without the solution state */
+	static String particleDisplayName(String key) {
+		String solution = "(solution)";
+		return key.endsWith(solution) ? key.substring(0, key.length() - solution.length()) : key;
+	}
+
+	/** a finite-volume run's particle positions at one saved time, grouped by display name, flat x,y,z */
+	private static Map<String, double[]> fvParticles(DataSource source, double time) throws Exception {
+		cbit.vcell.simdata.ParticleDataBlock block = source.dataManager.getParticleDataBlock(source.vcdID, time);
+		Map<String, List<org.vcell.util.Coordinate>> grouped = new java.util.TreeMap<>();
+		for (String key : block.getSpecies()) {
+			grouped.computeIfAbsent(particleDisplayName(key), k -> new ArrayList<>()).addAll(block.getCoordinates(key));
+		}
+		Map<String, double[]> out = new java.util.LinkedHashMap<>();
+		for (Map.Entry<String, List<org.vcell.util.Coordinate>> e : grouped.entrySet()) {
+			double[] xyz = new double[3 * e.getValue().size()];
+			int k = 0;
+			for (org.vcell.util.Coordinate c : e.getValue()) {
+				xyz[k++] = c.getX();
+				xyz[k++] = c.getY();
+				xyz[k++] = c.getZ();
+			}
+			out.put(e.getKey(), xyz);
+		}
+		return out;
+	}
+
+	/**
+	 * The particle species of a finite-volume run that saved particle files (hybrid runs with VCell's "save
+	 * particle files" option): those present at the first or the last saved time, sorted. Empty otherwise.
+	 */
+	private static List<String> fvParticleSpecies(DataSource source) {
+		try {
+			if (!source.dataManager.getParticleDataExists(source.vcdID)) {
+				return List.of();
+			}
+			double[] times = source.dataManager.getDataSetTimes(source.vcdID);
+			java.util.TreeSet<String> names = new java.util.TreeSet<>(fvParticles(source, times[0]).keySet());
+			names.addAll(fvParticles(source, times[times.length - 1]).keySet());
+			return new ArrayList<>(names);
+		} catch (Exception e) {
+			LG.warn("could not read the particle data of " + source.vcdID.getID(), e);
+			return List.of();
+		}
 	}
 
 	/**
@@ -389,6 +669,10 @@ public final class FieldViewerServer {
 	 * that costs a round trip, rather than assuming it never changes.
 	 */
 	private static String handleGrid(HttpExchange ex) throws Exception {
+		FenicsBundleViews.BundleSource bundle = bundleSourceFor(query(ex));
+		if (bundle != null) {
+			return FenicsBundleViews.grid(bundle, query(ex));
+		}
 		Map<String, String> q = query(ex);
 		DataSource source = sourceFor(q);
 		VtuMode gridVtuMode = vtuMode(source);
@@ -407,9 +691,14 @@ public final class FieldViewerServer {
 		List<VisPoint> points = visMesh.getPoints();
 		Cells cells = new Cells(visMesh);
 
+		boolean membrane = isMembraneDomain(source, domain);
 		StringBuilder sb = new StringBuilder(32 * points.size() + 32 * cells.size() + 512);
 		sb.append("{\"geometryId\":\"").append(jsonEscape(geometryId(source, domain))).append('"');
-		sb.append(",\"dimension\":").append(cells.vtkCellType == VTK_QUAD ? 2 : 3);
+		sb.append(",\"dimension\":").append(cells.dimension);
+		if (membrane) {
+			// the membrane's faces, drawn as they are: no smoothing (that is the voxel grid's), one value per face
+			sb.append(",\"membrane\":true");
+		}
 		sb.append(",\"numPoints\":").append(points.size());
 		sb.append(",\"points\":[");
 		for (int i = 0; i < points.size(); i++) {
@@ -437,9 +726,11 @@ public final class FieldViewerServer {
 		}
 		sb.append(']');
 		sb.append(",\"domain\":\"").append(jsonEscape(domain)).append('"');
-		sb.append(",\"sinc\":{\"iterations\":").append(SINC_ITERATIONS)
-			.append(",\"feature_angle\":").append(SINC_FEATURE_ANGLE)
-			.append(",\"pass_band\":").append(SINC_PASS_BAND).append('}');
+		if (!membrane) {
+			sb.append(",\"sinc\":{\"iterations\":").append(SINC_ITERATIONS)
+				.append(",\"feature_angle\":").append(SINC_FEATURE_ANGLE)
+				.append(",\"pass_band\":").append(SINC_PASS_BAND).append('}');
+		}
 		sb.append('}');
 		return sb.toString();
 	}
@@ -453,9 +744,10 @@ public final class FieldViewerServer {
 	 * mesh, whose boundary cells are true cut polygons. These handlers reach it through the
 	 * VTU-era {@link VCDataManager} methods, which are already time-indexed for MovingBoundary
 	 * and already pair each mesh with a per-cell value array by shared ordinal — and which work
-	 * against today's deployed servers with no interface changes (MovingBoundary is server-only,
-	 * so the data always arrives over this remote seam; the server side runs the Python VTK
-	 * service that writes the .vtu). {@link VtuGridParser} converts those bytes to the viewer's
+	 * against today's deployed servers with no interface changes. The data arrives over the remote
+	 * seam for a server run and from the desktop's own data set controller for a local quick run;
+	 * either way the .vtu is written by the pure-Java writer ({@code org.vcell.vis.vtk.VtuWriter}),
+	 * so no Python is needed. {@link VtuGridParser} converts those bytes to the viewer's
 	 * JSON contract; the geometryId carries the time index, which is what tells the viewer to
 	 * re-fetch geometry as time moves.
 	 */
@@ -468,6 +760,8 @@ public final class FieldViewerServer {
 			sb.append(",\"simName\":\"").append(jsonEscape(source.simName)).append('"');
 		}
 		sb.append(",\"jobIndex\":").append(vcdID.getJobIndex());
+		// which body-fitted mode: the viewer's tools differ (a static mesh or one per time; voxels and polyhedra in 3D)
+		sb.append(",\"solver\":\"").append(mode == VtuMode.STATIC ? "Chombo" : "MovingBoundary").append('"');
 		sb.append(",\"times\":");
 		appendDoubles(sb, times, times.length);
 		List<String> domains = vtuDomains(source);
@@ -576,8 +870,7 @@ public final class FieldViewerServer {
 	 */
 	private static VtuGridParser.VtuGrid chomboToPhysical(VtuGridParser.VtuGrid grid,
 			DataSource source) throws Exception {
-		cbit.vcell.solvers.CartesianMesh mesh =
-				(cbit.vcell.solvers.CartesianMesh) source.dataManager.getMesh(source.vcdID);
+		cbit.vcell.solvers.CartesianMesh mesh = solverMesh(source);
 		double[] origin = { mesh.getOrigin().getX(), mesh.getOrigin().getY(), mesh.getOrigin().getZ() };
 		double[] extent = { mesh.getExtent().getX(), mesh.getExtent().getY(), mesh.getExtent().getZ() };
 		int[] n = { mesh.getSizeX(), mesh.getSizeY(), mesh.getSizeZ() };
@@ -612,7 +905,8 @@ public final class FieldViewerServer {
 		}
 		StringBuilder sb = new StringBuilder(32 * grid.numPoints() + 32 * grid.cells.length + 512);
 		sb.append("{\"geometryId\":\"").append(jsonEscape(vtuGeometryId(source, domain, mode, timeIndex))).append('"');
-		sb.append(",\"dimension\":").append(threeD ? 3 : 2).append(",\"bodyFitted\":true");
+		// the embedding dimension, not the cell dimension: a membrane of a 3D run is a surface in 3D
+		sb.append(",\"dimension\":").append(threeD || spansZ(grid) ? 3 : 2).append(",\"bodyFitted\":true");
 		sb.append(",\"timeIndex\":").append(timeIndex);
 		sb.append(",\"numPoints\":").append(grid.numPoints());
 		sb.append(",\"points\":");
@@ -730,6 +1024,11 @@ public final class FieldViewerServer {
 	 * each saved time's own body-fitted mesh; STATIC locates it once in the one embedded-boundary
 	 * mesh. Times where the point lies outside the domain (for a moving boundary: the boundary has
 	 * moved past it) serialize as {@code null} — a physically meaningful gap, not missing data.
+	 * <p>
+	 * {@code &points=x,y,z;…} asks for several points in the same single pass over the times (the
+	 * multi-point response, {@link PointSeries#json}): each time's values cross the remote seam once,
+	 * however many points read them. {@code &snap=nearest} moves a point that misses a membrane variable's mesh
+	 * (a Chombo membrane: lines in 2D, a triangulated surface in 3D) onto it, within one cell diameter.
 	 */
 	private static String handleTimeSeriesVtu(DataSource source, Map<String, String> q,
 			VtuMode mode) throws Exception {
@@ -741,51 +1040,84 @@ public final class FieldViewerServer {
 		if (domain.isEmpty()) {
 			domain = vtuDomains(source).get(0);
 		}
-		if (q.get("x") == null || q.get("y") == null) {
+		String pointsParam = q.get("points");
+		if (pointsParam == null && (q.get("x") == null || q.get("y") == null)) {
 			throw new IllegalArgumentException(
 					"a body-fitted time series is addressed by lab-frame point: 'x' and 'y' are required"
 							+ " ('cell' ordinals are per-mesh, not solver raster indices)");
 		}
-		double x = Double.parseDouble(q.get("x"));
-		double y = Double.parseDouble(q.get("y"));
-		double z = q.get("z") != null ? Double.parseDouble(q.get("z")) : 0;
 		VtuVarInfo varInfo = vtuVarInfoFor(source, varName);
-
 		double[] times = source.dataManager.getDataSetTimes(source.vcdID);
 		if (times == null || times.length == 0) {
 			throw new IllegalArgumentException("run " + source.vcdID.getID() + " has no saved times");
 		}
-		double[] values = new double[times.length];
-		int inside = 0;
-		int staticCell = mode == VtuMode.STATIC
-				? VtuGridParser.locateCell(mbGrid(source, domain, 0), x, y, z)
-				: -1;
-		for (int i = 0; i < times.length; i++) {
-			int cell = staticCell;
-			if (mode == VtuMode.TIME_VARYING) {
-				VtuGridParser.VtuGrid grid = mbGrid(source, domain, i);
-				cell = VtuGridParser.locateCell(grid, x, y, z);
+		// a click almost never lands exactly on a membrane (Chombo's lines or surface triangles): it snaps onto it
+		boolean snap = "nearest".equals(q.get("snap"))
+				&& varInfo.variableDomain == cbit.vcell.math.VariableType.VariableDomain.VARIABLEDOMAIN_MEMBRANE;
+		final String dom = domain;
+		PointSeries.Rows rows = new PointSeries.Rows() {
+			@Override
+			public VtuGridParser.VtuGrid grid(int row) throws Exception {
+				// a Chombo mesh is static; a MovingBoundary mesh is a different geometry at every saved time
+				return mbGrid(source, dom, mode == VtuMode.TIME_VARYING ? row : 0);
 			}
-			if (cell < 0) {
-				values[i] = Double.NaN; // serializes as null: the point is outside the domain
-				continue;
+
+			@Override
+			public double[] values(int row) throws Exception {
+				return source.dataManager.getVtuMeshData(emptyOutputContext(), source.vcdID, varInfo, times[row]);
 			}
-			inside++;
-			values[i] = source.dataManager.getVtuMeshData(emptyOutputContext(), source.vcdID,
-					varInfo, times[i])[cell];
+		};
+		if (pointsParam != null) {
+			VtuGridParser.VtuGrid first = rows.grid(0);
+			// a 2D point may leave out z: it takes the plane of a 2D mesh (a 3D run's membrane surface has none)
+			double[][] points = PointSeries.parsePoints(pointsParam, isVolume3D(first) || spansZ(first) ? null : first.points[2]);
+			PointSeries.Result r = PointSeries.sample(times.length, points, rows, PointSeries.Location.CELL, snap);
+			return PointSeries.json(varName, domain, times, PointSeries.Location.CELL, PointSeries.series(points, r));
 		}
+		double x = Double.parseDouble(q.get("x"));
+		double y = Double.parseDouble(q.get("y"));
+		double z = q.get("z") != null ? Double.parseDouble(q.get("z")) : 0;
+		PointSeries.Result r = PointSeries.sample(times.length, new double[][] { { x, y, z } }, rows,
+				PointSeries.Location.CELL, snap);
+		double[] values = r.values[0];
 
 		StringBuilder sb = new StringBuilder(32 * times.length + 256);
 		sb.append("{\"name\":\"").append(jsonEscape(varName)).append('"');
 		sb.append(",\"domain\":\"").append(jsonEscape(domain)).append('"');
 		sb.append(",\"x\":").append(x).append(",\"y\":").append(y);
-		sb.append(",\"insideCount\":").append(inside);
+		sb.append(",\"insideCount\":").append(r.insideCount[0]);
 		sb.append(",\"times\":");
 		appendDoubles(sb, times, times.length);
 		sb.append(",\"values\":");
 		appendDoubles(sb, values, values.length);
 		sb.append('}');
 		return sb.toString();
+	}
+
+	/**
+	 * True when the grid's points do not all share one z: a mesh embedded in 3D, such as the membrane surface of a
+	 * 3D Chombo run (triangles only, so not {@link #isVolume3D}). A 2D run's grid lies in one plane.
+	 */
+	private static boolean spansZ(VtuGridParser.VtuGrid grid) {
+		for (int i = 5; i < grid.points.length; i += 3) {
+			if (grid.points[i] != grid.points[2]) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * True when the grid has volume cells: tets (10), voxels (11), hexes (12), wedges (13), pyramids
+	 * (14) or polyhedra (42). A 2D run's grid has only polygons.
+	 */
+	private static boolean isVolume3D(VtuGridParser.VtuGrid grid) {
+		for (int type : grid.cellTypes) {
+			if (type >= 10 && type <= 14 || type == VtuGridParser.VTK_POLYHEDRON) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -901,6 +1233,10 @@ public final class FieldViewerServer {
 	 * real hazard once vertices move over time, so the pairing is explicit.
 	 */
 	private static String handleField(HttpExchange ex) throws Exception {
+		FenicsBundleViews.BundleSource bundle = bundleSourceFor(query(ex));
+		if (bundle != null) {
+			return FenicsBundleViews.field(bundle, query(ex));
+		}
 		Map<String, String> q = query(ex);
 		DataSource source = sourceFor(q);
 		VtuMode fieldVtuMode = vtuMode(source);
@@ -913,6 +1249,7 @@ public final class FieldViewerServer {
 			throw new IllegalArgumentException("missing required query parameter 'var'");
 		}
 		double time = parseTime(q, source);
+		checkVariableFitsDomain(source, varName, domain);
 		Cells cells = new Cells(grid(source, domain));
 
 		// each cell carries the mesh's global index of the element it came from, which is the
@@ -957,20 +1294,30 @@ public final class FieldViewerServer {
 	 * the solver's global volume index.
 	 */
 	private static String handleTimeSeries(HttpExchange ex) throws Exception {
+		FenicsBundleViews.BundleSource bundle = bundleSourceFor(query(ex));
+		if (bundle != null) {
+			return FenicsBundleViews.timeSeries(bundle, query(ex));
+		}
 		Map<String, String> q = query(ex);
 		DataSource source = sourceFor(q);
 		VtuMode tsMode = vtuMode(source);
 		if (tsMode != null) {
-			return handleTimeSeriesVtu(source, q, tsMode);
+			// several points read every saved time over the remote seam: a heavy job
+			return q.get("points") != null ? heavy(() -> handleTimeSeriesVtu(source, q, tsMode))
+					: handleTimeSeriesVtu(source, q, tsMode);
 		}
 		String domain = domainOf(q, source);
 		String varName = q.get("var");
 		if (varName == null || varName.isEmpty()) {
 			throw new IllegalArgumentException("missing required query parameter 'var'");
 		}
+		if (q.get("points") != null) {
+			return isMembraneDomain(source, domain) ? handleTimeSeriesMembranePoints(source, domain, varName, q.get("points"))
+					: handleTimeSeriesPoints(source, domain, varName, q.get("points"));
+		}
 		String cellParam = q.get("cell");
 		if (cellParam == null || cellParam.isEmpty()) {
-			throw new IllegalArgumentException("missing required query parameter 'cell'");
+			throw new IllegalArgumentException("missing required query parameter 'cell' (or 'points')");
 		}
 		Cells cells = new Cells(grid(source, domain));
 		int cell = Integer.parseInt(cellParam);
@@ -1006,22 +1353,594 @@ public final class FieldViewerServer {
 	}
 
 	/**
+	 * {@code /timeseries?…&points=x,y,z;…} for a finite-volume run: each lab-frame point maps to the
+	 * voxel containing it exactly as the desktop's point selections do
+	 * ({@code SpatialSelectionVolume.getIndex(0)}: {@link cbit.vcell.solvers.CartesianMesh#getFractionalCoordinateIndex}
+	 * rounded to a {@code CoordinateIndex}, then its volume index), and every point inside the domain is
+	 * answered by ONE {@link TimeSeriesJobSpec}, as the desktop's multi-point time plot is.
+	 * <p>
+	 * The raw data array covers the whole mesh, so a point in another compartment would read that
+	 * compartment's numbers; it is masked instead (its values are null and {@code inDomain} false), using
+	 * the domain's own cells — the same set {@code /grid} serves. A point outside the mesh has
+	 * {@code volumeIndex} -1; {@code cell} is the point's cell in {@code /grid}'s list, -1 outside it.
+	 */
+	private static String handleTimeSeriesPoints(DataSource source, String domain, String varName,
+			String pointsParam) throws Exception {
+		cbit.vcell.solvers.CartesianMesh mesh = solverMesh(source);
+		VisMesh visMesh = grid(source, domain);
+		// a 2D point may leave out z: it takes the plane the served grid lies in
+		Double planeZ = mesh.getGeometryDimension() < 3 ? visMesh.getPoints().get(0).getZ() : null;
+		double[][] points = PointSeries.parsePoints(pointsParam, planeZ);
+		DomainIndex domainIndex = domainIndex(source, domain);
+
+		int n = points.length;
+		int[] volumeIndex = new int[n];
+		int[] cell = new int[n];
+		// in-domain voxels, each once: two probes in one voxel share a column of the job
+		Map<Integer, Integer> column = new java.util.LinkedHashMap<>();
+		for (int p = 0; p < n; p++) {
+			volumeIndex[p] = volumeIndexAt(mesh, points[p]);
+			cell[p] = volumeIndex[p] >= 0 ? domainIndex.cellOf(volumeIndex[p]) : -1;
+			if (cell[p] >= 0) {
+				column.putIfAbsent(volumeIndex[p], column.size());
+			}
+		}
+
+		double[] times = source.dataManager.getDataSetTimes(source.vcdID);
+		if (times == null || times.length == 0) {
+			throw new IllegalArgumentException("run " + source.vcdID.getID() + " has no saved times");
+		}
+		double[][] timesAndValues = null;
+		if (!column.isEmpty()) {
+			int[] indices = column.keySet().stream().mapToInt(Integer::intValue).toArray();
+			TimeSeriesJobSpec spec = new TimeSeriesJobSpec(new String[] { varName }, new int[][] { indices },
+					null, times[0], 1, times[times.length - 1],
+					VCDataJobID.createVCDataJobID(source.vcdID.getOwner(), true));
+			TSJobResultsNoStats results = (TSJobResultsNoStats) source.dataManager
+					.getTimeSeriesValues(emptyOutputContext(), source.vcdID, spec);
+			// row 0 is the times, row 1 + k the values at indices[k]
+			timesAndValues = results.getTimesAndValuesForVariable(varName);
+			times = timesAndValues[0];
+		}
+		PointSeries.Series[] series = new PointSeries.Series[n];
+		for (int p = 0; p < n; p++) {
+			double[] values;
+			if (cell[p] >= 0) {
+				values = timesAndValues[1 + column.get(volumeIndex[p])];
+			} else {
+				values = new double[times.length];
+				Arrays.fill(values, Double.NaN);
+			}
+			series[p] = new PointSeries.Series(points[p], cell[p], volumeIndex[p], null, cell[p] >= 0, null, values);
+		}
+		return PointSeries.json(varName, domain, times, PointSeries.Location.CELL, series);
+	}
+
+	/**
+	 * {@code /timeseries?…&points=x,y,z;…} for a finite-volume membrane variable: each point snaps to the nearest
+	 * membrane face of the domain (the faces {@code /grid} serves, within one face diameter: a click almost never
+	 * lands exactly on a membrane), whose membrane element it reads, and every point that found one is answered
+	 * by ONE {@link TimeSeriesJobSpec} over their membrane indices, as the desktop's time plot of membrane points
+	 * is. A point with no face near it is a gap ({@code inDomain} false). Each series gives the face's
+	 * {@code cell} in {@code /grid}'s list, its {@code membraneIndex}, and where the point {@code snapped} to.
+	 */
+	private static String handleTimeSeriesMembranePoints(DataSource source, String domain, String varName,
+			String pointsParam) throws Exception {
+		checkVariableFitsDomain(source, varName, domain);
+		VisMesh visMesh = grid(source, domain);
+		Cells cells = new Cells(visMesh);
+		List<VisPoint> visPoints = visMesh.getPoints();
+		double[] xyz = new double[3 * visPoints.size()];
+		for (int i = 0; i < visPoints.size(); i++) {
+			xyz[3 * i] = visPoints.get(i).getX();
+			xyz[3 * i + 1] = visPoints.get(i).getY();
+			xyz[3 * i + 2] = visPoints.get(i).getZ();
+		}
+		int[][] faces = new int[cells.size()][];
+		int[] types = new int[cells.size()];
+		for (int c = 0; c < faces.length; c++) {
+			faces[c] = cells.pointIndices.get(c).stream().mapToInt(Integer::intValue).toArray();
+			types[c] = cells.vtkCellType;
+		}
+		VtuGridParser.VtuGrid membrane = new VtuGridParser.VtuGrid(xyz, faces, types);
+		Double planeZ = cells.dimension < 3 ? xyz[2] : null;
+		double[][] points = PointSeries.parsePoints(pointsParam, planeZ);
+
+		int n = points.length;
+		int[] cell = new int[n];
+		double[][] snapped = new double[n][];
+		Map<Integer, Integer> column = new java.util.LinkedHashMap<>();
+		for (int p = 0; p < n; p++) {
+			double[] near = VtuGridParser.nearestOnMesh(membrane, points[p][0], points[p][1], points[p][2]);
+			cell[p] = near == null ? -1 : (int) near[3];
+			if (near != null) {
+				snapped[p] = new double[] { near[0], near[1], near[2] };
+				column.putIfAbsent(cells.globalIndices[cell[p]], column.size());
+			}
+		}
+		double[] times = source.dataManager.getDataSetTimes(source.vcdID);
+		if (times == null || times.length == 0) {
+			throw new IllegalArgumentException("run " + source.vcdID.getID() + " has no saved times");
+		}
+		double[][] timesAndValues = null;
+		if (!column.isEmpty()) {
+			int[] indices = column.keySet().stream().mapToInt(Integer::intValue).toArray();
+			TimeSeriesJobSpec spec = new TimeSeriesJobSpec(new String[] { varName }, new int[][] { indices },
+					null, times[0], 1, times[times.length - 1],
+					VCDataJobID.createVCDataJobID(source.vcdID.getOwner(), true));
+			TSJobResultsNoStats results = (TSJobResultsNoStats) source.dataManager
+					.getTimeSeriesValues(emptyOutputContext(), source.vcdID, spec);
+			timesAndValues = results.getTimesAndValuesForVariable(varName);
+			times = timesAndValues[0];
+		}
+		PointSeries.Series[] series = new PointSeries.Series[n];
+		for (int p = 0; p < n; p++) {
+			double[] values;
+			Integer membraneIndex = null;
+			if (cell[p] >= 0) {
+				membraneIndex = cells.globalIndices[cell[p]];
+				values = timesAndValues[1 + column.get(membraneIndex)];
+			} else {
+				values = new double[times.length];
+				Arrays.fill(values, Double.NaN);
+			}
+			series[p] = new PointSeries.Series(points[p], cell[p], null, membraneIndex, cell[p] >= 0, snapped[p], values);
+		}
+		return PointSeries.json(varName, domain, times, PointSeries.Location.CELL, series);
+	}
+
+	/**
+	 * The volume index of the voxel containing a lab-frame point, or -1 outside the mesh. VCell's
+	 * Cartesian mesh is node-centred (element i at {@code origin + i·extent/(N−1)}), so this rounds the
+	 * fractional index, as the desktop does.
+	 */
+	static int volumeIndexAt(cbit.vcell.solvers.CartesianMesh mesh, double[] point) {
+		double[] origin = { mesh.getOrigin().getX(), mesh.getOrigin().getY(), mesh.getOrigin().getZ() };
+		double[] extent = { mesh.getExtent().getX(), mesh.getExtent().getY(), mesh.getExtent().getZ() };
+		int[] size = { mesh.getSizeX(), mesh.getSizeY(), mesh.getSizeZ() };
+		for (int axis = 0; axis < 3; axis++) {
+			// an axis the mesh doesn't resolve (z in 2D) doesn't bound the point
+			double slack = 1e-9 * extent[axis];
+			if (size[axis] > 1 && (point[axis] < origin[axis] - slack || point[axis] > origin[axis] + extent[axis] + slack)) {
+				return -1;
+			}
+		}
+		org.vcell.util.CoordinateIndex ci = mesh.getCoordinateIndexFromFractionalIndex(
+				mesh.getFractionalCoordinateIndex(new org.vcell.util.Coordinate(point[0], point[1], point[2])));
+		int[] index = { ci.x, ci.y, ci.z };
+		for (int axis = 0; axis < 3; axis++) {
+			if (index[axis] < 0 || index[axis] >= size[axis]) {
+				return -1;
+			}
+		}
+		return mesh.getVolumeIndex(ci);
+	}
+
+	/**
+	 * The cells of one domain of a finite-volume run, as {@code /grid} serves them, indexed by the
+	 * solver's volume index: which voxels are in the domain (the mask), and each one's position in the
+	 * served list.
+	 */
+	private static final class DomainIndex {
+		final java.util.BitSet inDomain = new java.util.BitSet();
+		private final Map<Integer, Integer> cellByVolumeIndex = new HashMap<>();
+
+		DomainIndex(Cells cells) {
+			for (int c = 0; c < cells.size(); c++) {
+				inDomain.set(cells.globalIndices[c]);
+				cellByVolumeIndex.put(cells.globalIndices[c], c);
+			}
+		}
+
+		/** the served cell holding volume index {@code v}, or -1 when the voxel is not in the domain */
+		int cellOf(int v) {
+			return inDomain.get(v) ? cellByVolumeIndex.get(v) : -1;
+		}
+	}
+
+	/** Per sim+domain, like {@link #meshCache}; dropped with it. */
+	private static final Map<String, DomainIndex> domainIndexCache = new HashMap<>();
+
+	/**
+	 * {@code /kymograph?sim=&job=&domain=&var=<name>&path=x1,y1,z1;x2,y2,z2[;…][&tstep=k][&raw=1]} — one
+	 * variable's values along a polyline at every saved time (every {@code tstep}-th), rows = times, as the
+	 * desktop's kymograph shows them.
+	 * <p>
+	 * A FEniCSx bundle or a run served through the VTU seam (Chombo, MovingBoundary) is sampled evenly
+	 * ({@link BodyFittedKymograph}; a MovingBoundary line is a fixed lab-frame line through each time's mesh).
+	 * For finite volume, the samples are the desktop's ({@link FvLineSampler}): one per voxel the
+	 * line crosses, two at each membrane crossing. The values come from ONE {@link TimeSeriesJobSpec} over
+	 * all samples with the membrane-crossing indices, exactly as {@code KymographPanel.initDataManagerVariable}
+	 * builds it, so the two samples at a crossing carry the {@code _INSIDE}/{@code _OUTSIDE} membrane values.
+	 * The job runs next to the reader: only samples × times values travel.
+	 * <p>
+	 * Samples outside the variable's domain are gaps (null), since the raw array would give another
+	 * compartment's numbers there; {@code raw=1} keeps the raw values, as the desktop shows them. A heavy job
+	 * ({@link #heavy}), refused over {@link #maxKymographValues()} with a suggested {@code tstep}.
+	 */
+	private static String handleKymograph(HttpExchange ex) throws Exception {
+		Map<String, String> q = query(ex);
+		StageTimer timer = new StageTimer(LG, "kymograph sim=" + q.get("sim") + " job=" + q.getOrDefault("job", "0")
+				+ " domain=" + q.get("domain") + " var=" + q.get("var") + " path=" + q.get("path")
+				+ (q.containsKey("tstep") ? " tstep=" + q.get("tstep") : ""));
+		String json = kymograph(q, timer);
+		timer.done(json.length() + " chars");
+		return json;
+	}
+
+	private static String kymograph(Map<String, String> q, StageTimer timer) throws Exception {
+		int tstep = parseTstep(q);
+		FenicsBundleViews.BundleSource bundle = bundleSourceFor(q);
+		if (bundle != null) {
+			return heavy(() -> FenicsBundleViews.kymograph(bundle, q, tstep), timer);
+		}
+		DataSource source = sourceFor(q);
+		VtuMode mode = vtuMode(source);
+		timer.lap("source");
+		if (mode != null) {
+			return heavy(() -> vtuKymograph(source, q, mode, tstep, timer), timer);
+		}
+		String domain = domainOf(q, source);
+		timer.lap("domain");
+		String varName = q.get("var");
+		if (varName == null || varName.isEmpty()) {
+			throw new IllegalArgumentException("missing required query parameter 'var'");
+		}
+		DataIdentifier variable = null;
+		for (DataIdentifier id : dataIdentifiers(source)) {
+			if (id.getName().equals(varName)) {
+				variable = id;
+			}
+		}
+		if (variable == null) {
+			throw new IllegalArgumentException("unknown variable '" + varName + "'");
+		}
+		timer.lap("variable");
+		cbit.vcell.math.VariableType type = variable.getVariableType();
+		if (type.equals(cbit.vcell.math.VariableType.MEMBRANE)) {
+			// a curve along the membrane, as the desktop selects and samples it
+			String membraneDomain = variable.getDomain() != null ? variable.getDomain().getName() : domain;
+			if (!isMembraneDomain(source, membraneDomain)) {
+				throw new IllegalArgumentException("'" + varName + "' is a membrane variable; its domain is not a membrane");
+			}
+			return heavy(() -> fvMembraneKymograph(source, membraneDomain, varName, q.get("path"), q.get("plane"), tstep,
+					timer), timer);
+		}
+		if (type.equals(cbit.vcell.math.VariableType.MEMBRANE_REGION)) {
+			throw new IllegalArgumentException("a kymograph of a membrane region variable is not supported ('" + varName
+					+ "' has one value per membrane region)");
+		}
+		if (!type.equals(cbit.vcell.math.VariableType.VOLUME)) {
+			throw new IllegalArgumentException("a kymograph needs a volume variable; '" + varName + "' is "
+					+ type.getTypeName());
+		}
+		boolean raw = "1".equals(q.get("raw")) || "true".equalsIgnoreCase(q.get("raw"));
+		final String dom = domain;
+		return heavy(() -> fvKymograph(source, dom, varName, q.get("path"), tstep, raw, timer), timer);
+	}
+
+	/** {@code tstep}, the stride over the saved times: 1 when absent. */
+	private static int parseTstep(Map<String, String> q) {
+		String param = q.get("tstep");
+		if (param == null || param.isEmpty()) {
+			return 1;
+		}
+		int tstep;
+		try {
+			tstep = Integer.parseInt(param.trim());
+		} catch (NumberFormatException e) {
+			throw new IllegalArgumentException("malformed 'tstep' '" + param + "'");
+		}
+		if (tstep < 1) {
+			throw new IllegalArgumentException("'tstep' must be at least 1");
+		}
+		return tstep;
+	}
+
+	/**
+	 * {@code /kymograph} for a run served through the VTU seam: evenly spaced samples along the line
+	 * ({@link BodyFittedKymograph}), each reading the value of the cell holding it, one {@code getVtuMeshData}
+	 * per returned time for all samples. Chombo's mesh is static, so the samples are located once. A
+	 * MovingBoundary mesh differs per saved time, so the samples are located again at every time: a fixed
+	 * lab-frame line the moving boundary passes through. {@code raw} is finite-volume only and ignored here.
+	 */
+	private static String vtuKymograph(DataSource source, Map<String, String> q, VtuMode mode, int tstep, StageTimer timer)
+			throws Exception {
+		String varName = q.get("var");
+		if (varName == null || varName.isEmpty()) {
+			throw new IllegalArgumentException("missing required query parameter 'var'");
+		}
+		String domain = q.getOrDefault("domain", "");
+		if (domain.isEmpty()) {
+			domain = vtuDomains(source).get(0);
+		}
+		VtuVarInfo varInfo = vtuVarInfoFor(source, varName);
+		if (varInfo.bMeshVariable || varInfo.dataType != VtuVarInfo.DataType.CellData) {
+			throw new IllegalArgumentException("a kymograph needs a cell-data variable; '" + varName + "' is not one");
+		}
+		if (varInfo.variableDomain == cbit.vcell.math.VariableType.VariableDomain.VARIABLEDOMAIN_MEMBRANE) {
+			throw new IllegalArgumentException("membrane kymographs are not supported yet ('" + varName
+					+ "' is a membrane variable)");
+		}
+		double[] times = source.dataManager.getDataSetTimes(source.vcdID);
+		if (times == null || times.length == 0) {
+			throw new IllegalArgumentException("run " + source.vcdID.getID() + " has no saved times");
+		}
+		final String dom = domain;
+		PointSeries.Rows rows = new PointSeries.Rows() {
+			@Override
+			public VtuGridParser.VtuGrid grid(int row) throws Exception {
+				return mbGrid(source, dom, mode == VtuMode.TIME_VARYING ? row : 0);
+			}
+
+			@Override
+			public double[] values(int row) throws Exception {
+				return source.dataManager.getVtuMeshData(emptyOutputContext(), source.vcdID, varInfo, times[row]);
+			}
+		};
+		VtuGridParser.VtuGrid first = rows.grid(0);
+		timer.lap("grid");
+		double[][] path = BodyFittedKymograph.parsePath(q.get("path"), isVolume3D(first) ? null : first.points[2]);
+		int n = BodyFittedKymograph.sampleCount(q.get("samples"), FvLineSampler.length(path), first.meanCellDiameter());
+		String json = BodyFittedKymograph.json(varName, domain, PointSeries.Location.CELL, path, n, times, tstep, rows,
+				mode == VtuMode.TIME_VARYING);
+		timer.lap("rows[" + n + " samples × " + strideCount(times.length, tstep) + " times]");
+		return json;
+	}
+
+	private static String fvKymograph(DataSource source, String domain, String varName, String pathParam,
+			int tstep, boolean raw, StageTimer timer) throws Exception {
+		cbit.vcell.solvers.CartesianMesh mesh = solverMesh(source);
+		timer.lap("mesh");
+		boolean flat = mesh.getGeometryDimension() < 3;
+		// a 2D path lies in the plane the served grid lies in; its vertices may leave out z
+		Double planeZ = flat ? grid(source, domain).getPoints().get(0).getZ() : null;
+		double[][] path = PointSeries.parsePoints(pathParam, planeZ, "path", FvLineSampler.MAX_PATH_VERTICES, "path vertices");
+		if (flat) {
+			for (double[] v : path) {
+				v[2] = planeZ;
+			}
+		}
+		path = FvLineSampler.checkPath(mesh, path);
+		FvLineSampler.Samples samples = FvLineSampler.sample(mesh, path);
+		int n = samples.size();
+		timer.lap("sample");
+
+		double[] allTimes = source.dataManager.getDataSetTimes(source.vcdID);
+		if (allTimes == null || allTimes.length == 0) {
+			throw new IllegalArgumentException("run " + source.vcdID.getID() + " has no saved times");
+		}
+		timer.lap("times");
+		checkValueLimit(n, allTimes.length, tstep);
+		// row 0 the times, row 1 + i the values at sample i
+		double[][] timesAndValues = kymographSeries(source, varName, samples.volumeIndex(), samples.membraneIndex(), false,
+				allTimes, tstep);
+		timer.lap("timeseries[" + n + " samples, " + (samples.membraneIndex() != null ? "with" : "no") + " crossings]");
+		double[] times = timesAndValues[0];
+		int[] timeIndices = new int[times.length];
+		for (int r = 0, k = 0; r < times.length; r++) {
+			while (k < allTimes.length - 1 && allTimes[k] != times[r]) {
+				k++;
+			}
+			timeIndices[r] = k;
+		}
+
+		DomainIndex domainIndex = domainIndex(source, domain);
+		timer.lap("domainIndex");
+		boolean[] inDomain = new boolean[n];
+		int[] cell = new int[n];
+		for (int i = 0; i < n; i++) {
+			cell[i] = domainIndex.cellOf(samples.volumeIndex()[i]);
+			inDomain[i] = cell[i] >= 0;
+		}
+		double[][] values = new double[times.length][n];
+		for (int r = 0; r < times.length; r++) {
+			for (int i = 0; i < n; i++) {
+				values[r][i] = raw || inDomain[i] ? timesAndValues[1 + i][r] : Double.NaN;
+			}
+		}
+		int[] membraneIndex = samples.membraneIndex();
+		if (membraneIndex == null) {
+			membraneIndex = new int[n];
+			Arrays.fill(membraneIndex, -1);
+		}
+		String json = fvKymographJson(varName, domain, samples.sampling().json, ",\"raw\":" + raw, path,
+				FvLineSampler.length(path), times, timeIndices, samples.arcLength(), samples.points(), samples.volumeIndex(),
+				membraneIndex, inDomain, cell, values);
+		timer.lap("json");
+		return json;
+	}
+
+	/**
+	 * {@code /kymograph} of a finite-volume membrane variable: a curve along the membrane between the picks,
+	 * selected and sampled as the desktop does ({@link FvMembraneCurve}: one sample per membrane element, arc
+	 * length along the membrane), in the only slice of a 2D run or, in 3D, the slice normal to {@code plane}
+	 * nearest the first pick. The values come from ONE {@link TimeSeriesJobSpec} over the samples' membrane
+	 * indices, as {@code KymographPanel} builds it for a membrane variable (no crossing indices).
+	 */
+	private static String fvMembraneKymograph(DataSource source, String domain, String varName, String pathParam,
+			String planeParam, int tstep, StageTimer timer) throws Exception {
+		cbit.vcell.solvers.CartesianMesh mesh = solverMesh(source);
+		timer.lap("mesh");
+		boolean flat = mesh.getGeometryDimension() < 3;
+		Double planeZ = flat ? grid(source, domain).getPoints().get(0).getZ() : null;
+		double[][] path = BodyFittedKymograph.parsePath(pathParam, planeZ);
+		int axis = flat ? org.vcell.util.Coordinate.Z_AXIS : FvMembraneCurve.axisOf(planeParam);
+		DomainIndex domainIndex = domainIndex(source, domain);
+		FvMembraneCurve curve = FvMembraneCurve.select(mesh, domainIndex.inDomain, path, axis, BodyFittedKymograph.MAX_SAMPLES,
+				flat ? planeZ : 0);
+		int n = curve.size();
+		timer.lap("curve");
+
+		double[] allTimes = source.dataManager.getDataSetTimes(source.vcdID);
+		if (allTimes == null || allTimes.length == 0) {
+			throw new IllegalArgumentException("run " + source.vcdID.getID() + " has no saved times");
+		}
+		timer.lap("times");
+		checkValueLimit(n, allTimes.length, tstep);
+		double[][] timesAndValues = kymographSeries(source, varName, curve.membraneIndex, null, true, allTimes, tstep);
+		timer.lap("timeseries[" + n + " samples]");
+		double[] times = timesAndValues[0];
+		int[] timeIndices = new int[times.length];
+		for (int r = 0, k = 0; r < times.length; r++) {
+			while (k < allTimes.length - 1 && allTimes[k] != times[r]) {
+				k++;
+			}
+			timeIndices[r] = k;
+		}
+		int[] volumeIndex = new int[n];
+		Arrays.fill(volumeIndex, -1);
+		boolean[] inDomain = new boolean[n];
+		Arrays.fill(inDomain, true);
+		int[] cell = new int[n];
+		double[][] values = new double[times.length][n];
+		for (int i = 0; i < n; i++) {
+			cell[i] = domainIndex.cellOf(curve.membraneIndex[i]); // the sample's face in /grid's list
+			for (int r = 0; r < times.length; r++) {
+				values[r][i] = timesAndValues[1 + i][r];
+			}
+		}
+		StringBuilder extra = new StringBuilder();
+		if (!flat) {
+			extra.append(",\"slice\":{\"axis\":\"").append("xyz".charAt(curve.normalAxis)).append("\",\"index\":")
+					.append(curve.slice).append('}');
+		}
+		// the curve as the viewer draws it: the desktop's points and snapped picks, mapped onto the drawn membrane faces
+		extra.append(",\"drawnPath\":[");
+		for (int k = 0; k < curve.drawnWaypoints.length; k++) {
+			extra.append(k > 0 ? "," : "");
+			appendDoubles(extra, curve.drawnWaypoints[k], 3);
+		}
+		extra.append("],\"drawnPoints\":[");
+		for (int i = 0; i < n; i++) {
+			for (int a = 0; a < 3; a++) {
+				extra.append(i > 0 || a > 0 ? "," : "").append(curve.drawnPoints[i][a]);
+			}
+		}
+		extra.append(']');
+		String json = fvKymographJson(varName, domain, "membrane", extra.toString(), curve.waypoints, curve.arcLength[n - 1],
+				times, timeIndices, curve.arcLength, curve.points, volumeIndex, curve.membraneIndex, inDomain, cell, values);
+		timer.lap("json");
+		return json;
+	}
+
+	/**
+	 * A finite-volume kymograph response ({@code location: "cell"}).
+	 *
+	 * @param extra more top-level fields, as {@code ,"key":value…} (or empty)
+	 * @param values {@code values[row][sample]}, NaN for a gap
+	 */
+	private static String fvKymographJson(String varName, String domain, String sampling, String extra, double[][] path,
+			double pathLength, double[] times, int[] timeIndices, double[] arcLength, double[][] points, int[] volumeIndex,
+			int[] membraneIndex, boolean[] inDomain, int[] cell, double[][] values) {
+		int n = arcLength.length;
+		double min = Double.POSITIVE_INFINITY;
+		double max = Double.NEGATIVE_INFINITY;
+		for (double[] row : values) {
+			for (double v : row) {
+				if (Double.isFinite(v)) {
+					min = Math.min(min, v);
+					max = Math.max(max, v);
+				}
+			}
+		}
+		if (min > max) { // no value: the line lies outside the domain
+			min = 0;
+			max = 0;
+		}
+
+		StringBuilder sb = new StringBuilder(512 + 64 * n + 20 * n * times.length);
+		sb.append("{\"name\":\"").append(jsonEscape(varName)).append('"');
+		sb.append(",\"domain\":\"").append(jsonEscape(domain)).append('"');
+		sb.append(",\"location\":\"cell\"");
+		sb.append(",\"sampling\":\"").append(sampling).append('"');
+		sb.append(extra);
+		sb.append(",\"path\":[");
+		for (int v = 0; v < path.length; v++) {
+			sb.append(v > 0 ? "," : "");
+			appendDoubles(sb, path[v], 3);
+		}
+		sb.append("],\"pathLength\":").append(pathLength);
+		sb.append(",\"times\":");
+		appendDoubles(sb, times, times.length);
+		sb.append(",\"timeIndices\":").append(Arrays.toString(timeIndices).replace(" ", ""));
+		sb.append(",\"samples\":{\"arcLength\":");
+		appendDoubles(sb, arcLength, n);
+		sb.append(",\"points\":[");
+		for (int i = 0; i < n; i++) {
+			double[] p = points[i];
+			sb.append(i > 0 ? "," : "");
+			for (int a = 0; a < 3; a++) {
+				sb.append(a > 0 ? "," : "").append(p[a]);
+			}
+		}
+		sb.append("],\"volumeIndex\":").append(Arrays.toString(volumeIndex).replace(" ", ""));
+		sb.append(",\"membraneIndex\":").append(Arrays.toString(membraneIndex).replace(" ", ""));
+		sb.append(",\"inDomain\":").append(Arrays.toString(inDomain).replace(" ", ""));
+		// the sample's voxel (or membrane face) in /grid's list, -1 outside the domain: the viewer probes a sample there
+		sb.append(",\"cell\":").append(Arrays.toString(cell).replace(" ", ""));
+		sb.append("},\"values\":[");
+		for (int r = 0; r < times.length; r++) {
+			sb.append(r > 0 ? "," : "");
+			appendDoubles(sb, values[r], n);
+		}
+		sb.append("],\"range\":[").append(min).append(',').append(max).append("]}");
+		return sb.toString();
+	}
+
+	private static synchronized DomainIndex domainIndex(DataSource source, String domain) throws Exception {
+		String key = source.vcdID.getID() + "/" + domain;
+		DomainIndex cached = domainIndexCache.get(key);
+		if (cached == null) {
+			cached = new DomainIndex(new Cells(grid(source, domain)));
+			domainIndexCache.put(key, cached);
+		}
+		return cached;
+	}
+
+	/**
 	 * {@code /stats?sim=<simKey>&job=<n>[&var=<a,b,c>]} — min, max and spatial mean per saved time
-	 * for the named volume variables (default: all of them), each computed over its own domain.
+	 * for the named volume and membrane variables (default: all of them), each computed over its own domain.
 	 * <p>
 	 * This is the aggregation the issue insists must NOT happen client-side: computing these curves
 	 * in the browser would mean pulling every timestep of every selected variable. One
 	 * {@link TimeSeriesJobSpec} with {@code calcSpaceStats} carries all the variables, so the
 	 * reduction runs next to the reader in a single pass.
 	 */
+	/**
+	 * {@code /particles}: the molecule positions of a hybrid PDE/particle run at one time: a results bundle's
+	 * particles extension ({@link FenicsBundleViews#particles}), or a finite-volume run's particle files
+	 * ({@code <base>_<NNN>.smoldynOutput}, through the data manager, so local and server runs alike). For any
+	 * other run it is a bad request; the viewer only asks when {@code /info} lists {@code particleSpecies}.
+	 */
+	private static String handleParticles(HttpExchange ex) throws Exception {
+		Map<String, String> q = query(ex);
+		FenicsBundleViews.BundleSource bundle = bundleSourceFor(q);
+		if (bundle != null) {
+			return FenicsBundleViews.particles(bundle, q);
+		}
+		DataSource source = sourceFor(q); // an unknown dataset is a 404, as on the other routes
+		if (vtuMode(source) != null || !source.dataManager.getParticleDataExists(source.vcdID)) {
+			throw new IllegalArgumentException("this run has no particle positions (hybrid runs save them with "
+					+ "the simulation's \"save particle files\" option)");
+		}
+		double[] times = source.dataManager.getDataSetTimes(source.vcdID);
+		int row = timeIndexFor(source, q);
+		return FenicsBundleViews.particlesJson(times[row], row, fvParticles(source, times[row]), FenicsBundleViews.maxParticles(q));
+	}
+
 	private static String handleStats(HttpExchange ex) throws Exception {
+		FenicsBundleViews.BundleSource bundle = bundleSourceFor(query(ex));
+		if (bundle != null) {
+			return FenicsBundleViews.stats(bundle, query(ex));
+		}
 		Map<String, String> q = query(ex);
 		DataSource source = sourceFor(q);
 		VtuMode statsMode = vtuMode(source);
 		if (statsMode != null) {
 			return handleStatsVtu(source, q, statsMode);
 		}
-		DataIdentifier[] ids = source.dataManager.getDataIdentifiers(emptyOutputContext(), source.vcdID);
+		DataIdentifier[] ids = dataIdentifiers(source);
 		Set<String> requested = null;
 		String varParam = q.get("var");
 		if (varParam != null && !varParam.isEmpty()) {
@@ -1029,7 +1948,9 @@ public final class FieldViewerServer {
 		}
 		List<DataIdentifier> chosen = new ArrayList<>();
 		for (DataIdentifier id : ids) {
-			if (!id.getVariableType().equals(cbit.vcell.math.VariableType.VOLUME)) {
+			// volume variables over their voxels, membrane variables over their membrane elements (area-weighted)
+			if (!id.getVariableType().equals(cbit.vcell.math.VariableType.VOLUME)
+					&& !id.getVariableType().equals(cbit.vcell.math.VariableType.MEMBRANE)) {
 				continue;
 			}
 			if (requested == null || requested.contains(id.getName())) {
@@ -1037,7 +1958,7 @@ public final class FieldViewerServer {
 			}
 		}
 		if (chosen.isEmpty()) {
-			throw new IllegalArgumentException("no volume variables match " + varParam);
+			throw new IllegalArgumentException("no volume or membrane variables match " + varParam);
 		}
 		double[] times = source.dataManager.getDataSetTimes(source.vcdID);
 		if (times == null || times.length == 0) {
@@ -1106,11 +2027,50 @@ public final class FieldViewerServer {
 		if (domain == null || domain.isEmpty()) {
 			return domains.get(0);
 		}
-		if (!domains.contains(domain)) {
+		if (!domains.contains(domain) && !membraneDomains(source).contains(domain)) {
 			// an unknown name otherwise yields an empty mesh and a confusing NPE downstream
-			throw new IllegalArgumentException("unknown volume domain '" + domain + "'; this run has " + domains);
+			throw new IllegalArgumentException("unknown domain '" + domain + "'; this run has " + domains
+					+ " and the membranes " + membraneDomains(source));
 		}
 		return domain;
+	}
+
+	/** The run's membrane domains that have membrane elements, in the subdomain file's order. */
+	private static List<String> membraneDomains(DataSource source) throws Exception {
+		List<String> cached = source.membraneDomains;
+		if (cached == null) {
+			org.vcell.vis.vcell.CartesianMesh mesh = readMesh(source);
+			List<String> out = new ArrayList<>();
+			for (String name : mesh.getMembraneDomainNames()) {
+				if (!mesh.getMembraneElements(name).isEmpty()) {
+					out.add(name);
+				}
+			}
+			source.membraneDomains = cached = List.copyOf(out);
+		}
+		return cached;
+	}
+
+	private static boolean isMembraneDomain(DataSource source, String domain) throws Exception {
+		return membraneDomains(source).contains(domain);
+	}
+
+	/**
+	 * Refuses a variable on the other kind of domain: a membrane variable's values are indexed by membrane
+	 * element and a volume variable's by voxel, so reading one through the other's cells gives nonsense.
+	 */
+	private static void checkVariableFitsDomain(DataSource source, String varName, String domain) throws Exception {
+		boolean membraneDomain = isMembraneDomain(source, domain);
+		for (DataIdentifier id : dataIdentifiers(source)) {
+			if (id.getName().equals(varName)) {
+				boolean membraneVariable = id.getVariableType().equals(cbit.vcell.math.VariableType.MEMBRANE);
+				if (membraneVariable != membraneDomain) {
+					throw new IllegalArgumentException("'" + varName + "' is a " + (membraneVariable ? "membrane" : "volume")
+							+ " variable, but '" + domain + "' is a " + (membraneDomain ? "membrane" : "volume") + " domain");
+				}
+				return;
+			}
+		}
 	}
 
 	/**
@@ -1131,11 +2091,16 @@ public final class FieldViewerServer {
 	private static final class Cells {
 		final int vtkCellType;
 		final List<List<Integer>> pointIndices;
+		/** the solver's index of each cell's element: a volume index, or a membrane index on a membrane domain */
 		final int[] globalIndices;
+		/** the mesh's dimension: a 3D membrane's quads are 3D, a 2D domain's quads 2D */
+		final int dimension;
 
 		Cells(VisMesh visMesh) {
+			dimension = visMesh.getDimension();
 			List<VisVoxel> voxels = visMesh.getVisVoxels();
 			List<org.vcell.vis.vismesh.thrift.VisPolygon> polygons = visMesh.getPolygons();
+			List<org.vcell.vis.vismesh.thrift.VisLine> lines = visMesh.getVisLines();
 			if (voxels != null && !voxels.isEmpty()) {
 				vtkCellType = VTK_VOXEL;
 				pointIndices = new ArrayList<>(voxels.size());
@@ -1151,6 +2116,14 @@ public final class FieldViewerServer {
 				for (int c = 0; c < polygons.size(); c++) {
 					pointIndices.add(polygons.get(c).getPointIndices());
 					globalIndices[c] = polygons.get(c).getFiniteVolumeIndex().getGlobalIndex();
+				}
+			} else if (lines != null && !lines.isEmpty()) {
+				vtkCellType = VTK_LINE;
+				pointIndices = new ArrayList<>(lines.size());
+				globalIndices = new int[lines.size()];
+				for (int c = 0; c < lines.size(); c++) {
+					pointIndices.add(List.of(lines.get(c).getP1(), lines.get(c).getP2()));
+					globalIndices[c] = lines.get(c).getFiniteVolumeIndex().getGlobalIndex();
 				}
 			} else {
 				throw new IllegalArgumentException("mesh has neither voxels nor polygons; "
@@ -1187,10 +2160,52 @@ public final class FieldViewerServer {
 		LG.debug("field viewer dataset registered: {}", vcdID.getID());
 	}
 
+	/**
+	 * Make a FEniCSx results bundle available to the viewer, under the simulation key and job the
+	 * viewer URL names. It is read from its directory on every request, so a bundle still being
+	 * written can be viewed.
+	 */
+	public static void registerBundle(String simKey, int jobIndex, java.io.File bundleDir, String simName) {
+		registerBundle(simKey, jobIndex, org.vcell.solver.fenics.BundleStore.directory(bundleDir), simName);
+	}
+
+	/** A bundle read through any store, e.g. from the data server for a cluster run (cached). */
+	public static void registerBundle(String simKey, int jobIndex, org.vcell.solver.fenics.BundleStore store, String simName) {
+		registerBundle(simKey, jobIndex, store, simName, FenicsFunctions.NONE);
+	}
+
+	/**
+	 * A bundle with its simulation, whose VCell functions the viewer then offers alongside the bundle's stored
+	 * variables, evaluated from them ({@link FenicsFunctions}).
+	 */
+	public static void registerBundle(String simKey, int jobIndex, org.vcell.solver.fenics.BundleStore store, String simName,
+			cbit.vcell.solver.Simulation simulation) {
+		registerBundle(simKey, jobIndex, store, simName, FenicsFunctions.fromSimulation(simulation, jobIndex));
+	}
+
+	static void registerBundle(String simKey, int jobIndex, org.vcell.solver.fenics.BundleStore store, String simName,
+			FenicsFunctions functions) {
+		bundleSources.put(simKey + ":" + jobIndex, new FenicsBundleViews.BundleSource(simKey, jobIndex, store, simName, functions));
+		LG.debug("field viewer FEniCSx bundle registered: {} job {} from {}", simKey, jobIndex, store.describe());
+	}
+
+	public static void unregisterBundle(String simKey, int jobIndex) {
+		bundleSources.remove(simKey + ":" + jobIndex);
+	}
+
+	private static FenicsBundleViews.BundleSource bundleSourceFor(Map<String, String> q) {
+		String sim = q.get("sim");
+		if (sim == null || sim.isEmpty()) {
+			return null;
+		}
+		return bundleSources.get(sim + ":" + (q.containsKey("job") ? q.get("job") : "0"));
+	}
+
 	/** Drop a dataset, so later requests fail cleanly rather than serving results nobody is viewing. */
 	public static synchronized void unregister(VCSimulationDataIdentifier vcdID) {
 		if (dataSources.remove(key(vcdID)) != null) {
 			meshCache.keySet().removeIf(cached -> cached.startsWith(vcdID.getID() + "/"));
+			domainIndexCache.keySet().removeIf(cached -> cached.startsWith(vcdID.getID() + "/"));
 			mbGridCache.keySet().removeIf(cached -> cached.startsWith(vcdID.getID() + "/"));
 		}
 	}
@@ -1222,7 +2237,37 @@ public final class FieldViewerServer {
 	 * {@link CartesianMeshBuilder} bridges.
 	 */
 	private static org.vcell.vis.vcell.CartesianMesh readMesh(DataSource source) throws Exception {
-		return CartesianMeshBuilder.fromSolverMesh(source.dataManager.getMesh(source.vcdID), source.subdomainInfo);
+		org.vcell.vis.vcell.CartesianMesh mesh = source.visMesh;
+		if (mesh == null) {
+			mesh = CartesianMeshBuilder.fromSolverMesh(solverMesh(source), source.subdomainInfo);
+			source.visMesh = mesh;
+		}
+		return mesh;
+	}
+
+	/** The solver's mesh, read from the data manager once per dataset ({@link DataSource#solverMesh}). */
+	private static cbit.vcell.solvers.CartesianMesh solverMesh(DataSource source) throws Exception {
+		cbit.vcell.solvers.CartesianMesh mesh = source.solverMesh;
+		if (mesh == null) {
+			mesh = source.dataManager.getMesh(source.vcdID);
+			source.solverMesh = mesh;
+		}
+		return mesh;
+	}
+
+	/**
+	 * The run's variables and functions, read from the data manager once per dataset
+	 * ({@link DataSource#dataIdentifiers}); an empty answer, as from a run with no output yet, is not kept.
+	 */
+	private static DataIdentifier[] dataIdentifiers(DataSource source) throws Exception {
+		DataIdentifier[] ids = source.dataIdentifiers;
+		if (ids == null) {
+			ids = source.dataManager.getDataIdentifiers(emptyOutputContext(), source.vcdID);
+			if (ids != null && ids.length > 0) {
+				source.dataIdentifiers = ids;
+			}
+		}
+		return ids;
 	}
 
 	private static synchronized VisMesh grid(DataSource source, String domainName) throws Exception {
@@ -1231,7 +2276,8 @@ public final class FieldViewerServer {
 		if (cached != null) {
 			return cached;
 		}
-		VisMesh visMesh = new CartesianMeshMapping().fromMeshData(readMesh(source), domainName, true);
+		VisMesh visMesh = new CartesianMeshMapping().fromMeshData(readMesh(source), domainName,
+				!isMembraneDomain(source, domainName));
 		meshCache.put(key, visMesh);
 		return visMesh;
 	}
@@ -1275,6 +2321,12 @@ public final class FieldViewerServer {
 			} catch (NoSuchDatasetException e) {
 				respond(ex, 404, "application/json",
 						("{\"error\":\"" + jsonEscape(e.getMessage()) + "\"}").getBytes(StandardCharsets.UTF_8));
+			} catch (BusyException e) {
+				respond(ex, 503, "application/json",
+						("{\"error\":\"" + jsonEscape(e.getMessage()) + "\",\"busy\":true}").getBytes(StandardCharsets.UTF_8));
+			} catch (TooManyValuesException e) {
+				respond(ex, 400, "application/json", ("{\"error\":\"" + jsonEscape(e.getMessage())
+						+ "\",\"suggestedTstep\":" + e.suggestedTstep + "}").getBytes(StandardCharsets.UTF_8));
 			} catch (IllegalArgumentException e) {
 				// a malformed request, not a server fault - report it as such and don't log a stack trace
 				respond(ex, 400, "application/json",
@@ -1298,7 +2350,7 @@ public final class FieldViewerServer {
 	}
 
 	/** JSON has no NaN or Infinity literal, so non-finite values (blanked cells) go out as null. */
-	private static void appendDoubles(StringBuilder sb, double[] values, int count) {
+	static void appendDoubles(StringBuilder sb, double[] values, int count) {
 		sb.append('[');
 		for (int i = 0; i < count; i++) {
 			if (i > 0) {
@@ -1335,7 +2387,7 @@ public final class FieldViewerServer {
 		return java.net.URLDecoder.decode(s, StandardCharsets.UTF_8);
 	}
 
-	private static String jsonEscape(String s) {
+	static String jsonEscape(String s) {
 		return String.valueOf(s).replace("\\", "\\\\").replace("\"", "\\\"");
 	}
 }

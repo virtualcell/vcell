@@ -221,6 +221,16 @@ public void finalize() {
  * Creation date: (10/22/2002 4:34:39 PM)
  * @return java.lang.String
  */
+public String[] getCommandArray() {
+	return command.clone();
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (10/22/2002 4:34:39 PM)
+ * @return java.lang.String
+ */
 public String getCommand() {
 	StringBuffer commandLine = new StringBuffer();
 	for (int i = 0; i < command.length; i ++) {

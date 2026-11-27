@@ -73,6 +73,20 @@ public cbit.vcell.simdata.SpringSaladTrajectory getLangevinTrajectory(VCDataIden
 	return (cbit.vcell.simdata.SpringSaladTrajectory)rpc("getLangevinTrajectory",new Object[]{userLoginInfo.getUser(), vcdID});
 }
 
+public byte[] getFenicsBundleFile(VCDataIdentifier vcdID, String relativePath) throws org.vcell.util.DataAccessException {
+	return (byte[])rpc("getFenicsBundleFile",new Object[]{userLoginInfo.getUser(), vcdID, relativePath});
+}
+
+/** a data server older than this call answers "No such method: getFenicsBundleSamples(...)" */
+public org.vcell.solver.fenics.FenicsSamples getFenicsBundleSamples(VCDataIdentifier vcdID, String[] arrayPaths, int[] indices, int[] rows) throws org.vcell.util.DataAccessException {
+	return (org.vcell.solver.fenics.FenicsSamples)rpc("getFenicsBundleSamples",new Object[]{userLoginInfo.getUser(), vcdID, arrayPaths, indices, rows});
+}
+
+/** a data server older than this call answers "No such method: getFenicsBundleFiles(...)" */
+public byte[][] getFenicsBundleFiles(VCDataIdentifier vcdID, String[] relativePaths) throws org.vcell.util.DataAccessException {
+	return (byte[][])rpc("getFenicsBundleFiles",new Object[]{userLoginInfo.getUser(), vcdID, relativePaths});
+}
+
 public ParticleDataBlock getParticleDataBlock(VCDataIdentifier vcdID, double time) throws org.vcell.util.DataAccessException {
 	return (ParticleDataBlock)rpc("getParticleDataBlock",new Object[]{userLoginInfo.getUser(), vcdID,time});
 }

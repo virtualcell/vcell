@@ -10,6 +10,7 @@
 
 package cbit.vcell.field.gui;
 
+import cbit.vcell.client.laf.VCellFonts;
 import cbit.vcell.client.*;
 import cbit.vcell.client.TopLevelWindowManager.FDSimBioModelInfo;
 import cbit.vcell.client.TopLevelWindowManager.FDSimMathModelInfo;
@@ -368,7 +369,7 @@ public class FieldDataGUIPanel extends JPanel {
         if (ivjJPanel1 == null) {
             org.vcell.util.gui.TitledBorderBean ivjLocalBorder;
             ivjLocalBorder = new org.vcell.util.gui.TitledBorderBean();
-            ivjLocalBorder.setTitleFont(new java.awt.Font("Arial", 1, 14));
+            ivjLocalBorder.setTitleCategory(VCellFonts.Category.HEADING);
             ivjLocalBorder.setTitle("Create New Field Data");
             ivjJPanel1 = new javax.swing.JPanel();
             ivjJPanel1.setName("JPanel1");

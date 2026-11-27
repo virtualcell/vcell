@@ -11,6 +11,8 @@
 
 package cbit.vcell.solver.ode.gui;
 
+import org.vcell.documentation.HelpIds;
+import cbit.vcell.client.laf.VCellFonts;
 import cbit.vcell.client.ClientTaskManager;
 import cbit.vcell.client.VCellClient;
 import cbit.vcell.client.task.AsynchClientTask;
@@ -114,7 +116,7 @@ public class SolverTaskDescriptionAdvancedPanel extends javax.swing.JPanel {
 						+ "consistent manner.\n"
 						+ "However, we are allowing our power users to bypass this rule and allow very long simulations "
 						+ "to run indefinitely.\nIf you need to run such a simulation, please contact us at vcell_support@uchc.edu "
-						+ "to be added to the power user list.");
+						+ "to be added to the power user list.", HelpIds.SIMULATION_TIME_LIMIT);
 			}
 		}
 
@@ -341,7 +343,7 @@ private javax.swing.DefaultComboBoxModel<String> createSolverComboBoxModel(Solve
 	if(getSolverTaskDescription() != null) {
 		MathDescription mathDescription = getSolverTaskDescription().getSimulation().getMathDescription();
 		for (SolverDescription sd : SolverDescription.getSupportingSolverDescriptions(mathDescription)) {
-			if (!sd.deprecated) {
+			if (sd.isOffered()) {
 				fieldSolverComboBoxModel.addElement(sd.getDisplayLabel());
 			}
 		}
@@ -399,7 +401,7 @@ private javax.swing.JLabel getJLabelTitle() {
 			ivjJLabelTitle.setBorder(BorderFactory.createEmptyBorder(10, 0, 8, 0));
 			ivjJLabelTitle.setText("Choose solver algorithm and fine-tune time conditions:");
 			ivjJLabelTitle.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-			ivjJLabelTitle.setFont(ivjJLabelTitle.getFont().deriveFont(java.awt.Font.BOLD));
+			VCellFonts.setCategory(ivjJLabelTitle, VCellFonts.Category.HEADING);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -514,6 +516,7 @@ private javax.swing.JPanel getSolverPanel() {
 			constraintsSolverComboBox.gridx = 1; constraintsSolverComboBox.gridy = 0;
 			constraintsSolverComboBox.fill = java.awt.GridBagConstraints.HORIZONTAL;
 			constraintsSolverComboBox.anchor = java.awt.GridBagConstraints.EAST;
+			constraintsSolverComboBox.weightx = 1; // takes the spare width, and gives it up first
 			constraintsSolverComboBox.insets = new java.awt.Insets(4, 4, 4, 4);
 			ivjSolverPanel.add(getSolverComboBox(), constraintsSolverComboBox);
 
@@ -538,7 +541,14 @@ private javax.swing.JPanel getSolverPanel() {
 private javax.swing.JComboBox getSolverComboBox() {
 	if (ivjSolverComboBox == null) {
 		try {
-			ivjSolverComboBox = new javax.swing.JComboBox();
+			// solver names are long; let the list narrow (truncating the shown name) rather than crowd out its label
+			// and help button when the panel is narrower than the longest name
+			ivjSolverComboBox = new javax.swing.JComboBox() {
+				@Override
+				public java.awt.Dimension getMinimumSize() {
+					return new java.awt.Dimension(0, super.getMinimumSize().height);
+				}
+			};
 			ivjSolverComboBox.setName("SolverComboBox");
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
@@ -726,9 +736,8 @@ private CollapsiblePanel getGeneralOptionsPanel() {
 		generalOptionsPanel.getContentPanel().add(timeoutDisabledCheckBox, gbc);
 
 		timeoutDisabledHelpButton = new JButton("<html><b>&nbsp;&nbsp;?&nbsp;&nbsp;</b></html>");
-		Font font = timeoutDisabledHelpButton.getFont().deriveFont(Font.BOLD);
 		Border border = BorderFactory.createEmptyBorder(1, 1, 1, 1);
-		timeoutDisabledHelpButton.setFont(font);
+		VCellFonts.setCategory(timeoutDisabledHelpButton, VCellFonts.Category.HEADING);
 		timeoutDisabledHelpButton.setBorder(border);
 		gbc_1 = new java.awt.GridBagConstraints();
 		gbc_1.anchor = GridBagConstraints.WEST;
@@ -780,10 +789,9 @@ private CollapsiblePanel getSensitivityAnalysisPanel() {
 		sensitivityAnalysisComboBox = new javax.swing.JComboBox();
 		performSensitivityAnalysisCheckBox = new JCheckBox("Perform sensitivity analysis");
 		sensitivityAnalysisHelpButton = new JButton(" ? ");
-		Font font = sensitivityAnalysisHelpButton.getFont().deriveFont(Font.BOLD);
 		Border border = BorderFactory.createEmptyBorder(1, 1, 1, 1);
 		sensitivityAnalysisHelpButton.setBorder(border);
-		sensitivityAnalysisHelpButton.setFont(font);
+		VCellFonts.setCategory(sensitivityAnalysisHelpButton, VCellFonts.Category.HEADING);
 
 		sensitivityAnalysisCollapsiblePanel = new CollapsiblePanel("Local Sensitivity Analysis", false);
 		sensitivityAnalysisCollapsiblePanel.getContentPanel().setLayout(new GridBagLayout());
@@ -1162,7 +1170,7 @@ private javax.swing.JButton getQuestionButton() {
 			ivjQuestionButton = new javax.swing.JButton();
 			ivjQuestionButton.setName("QuestionButton");
 			ivjQuestionButton.setText("?");
-			ivjQuestionButton.setFont(new Font("SansSerif", Font.BOLD, 12));
+			VCellFonts.setCategory(ivjQuestionButton, VCellFonts.Category.HEADING);
 
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
@@ -1173,7 +1181,7 @@ private javax.swing.JButton getQuestionButton() {
 
 private void displayHelpInfo()
 {
-	DialogUtils.showInfoDialog(this, "Solver Help", getTornOffSolverTaskDescription().getSolverDescription().getFullDescription());
+	DialogUtils.showInfoDialog(this, "Solver Help", this.getTornOffSolverTaskDescription().getSolverDescription().getFullDescription(), HelpIds.NUMERICAL_SOLVERS);
 }
 
 private void onPropertyChange_solverDescription() {
@@ -1340,7 +1348,7 @@ private void performSensitivityAnalysisCheckbox_actionPerformed() {
 }
 
 public void showSensitivityAnalysisHelp(){
-	DialogUtils.showInfoDialog(this, "Sensitivity Analysis Help", VCellErrorMessages.SensitivityAnalysis_Help);
+	DialogUtils.showInfoDialog(this, "Sensitivity Analysis Help", VCellErrorMessages.SensitivityAnalysis_Help, HelpIds.NUMERICAL_SOLVERS);
 }
 
 public void setUnitInfo(UnitInfo unitInfo) {

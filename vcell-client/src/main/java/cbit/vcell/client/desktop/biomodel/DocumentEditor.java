@@ -10,9 +10,12 @@
 
 package cbit.vcell.client.desktop.biomodel;
 
+import org.vcell.documentation.HelpButton;
+import org.vcell.documentation.HelpContext;
+import cbit.vcell.client.laf.VCellFonts;
+import cbit.vcell.client.laf.VCellLookAndFeel;
 import java.awt.AWTEvent;
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Frame;
 import java.awt.GridBagConstraints;
@@ -43,6 +46,7 @@ import javax.swing.ToolTipManager;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
@@ -60,18 +64,13 @@ import org.vcell.util.gui.VCellIcons;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.constants.GuiConstants;
-import cbit.vcell.client.desktop.DatabaseWindowPanel;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderNode;
 import cbit.vcell.client.desktop.biomodel.IssueManager.IssueEvent;
 import cbit.vcell.client.desktop.biomodel.IssueManager.IssueEventListener;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
 import cbit.vcell.client.desktop.mathmodel.MathModelEditor;
-import org.vcell.api.server.ConnectionStatus;
-import cbit.vcell.desktop.BioModelMetaDataPanel;
 import cbit.vcell.desktop.BioModelNode;
-import cbit.vcell.desktop.GeometryMetaDataPanel;
-import cbit.vcell.desktop.MathModelMetaDataPanel;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.resource.PropertyLoader;
@@ -85,7 +84,7 @@ import cbit.vcell.xml.gui.MiriamTreeModel.LinkNode;
 public abstract class DocumentEditor extends JPanel {
 	public static final String TAB_TITLE_PROBLEMS = "Problems";
 	private static final String TAB_TITLE_OBJECT_PROPERTIES = "Object Properties";
-	private static final String TAB_TITLE_ANNOTATIONS = "Annotations";
+	static final String TAB_TITLE_ANNOTATIONS = "Annotations";
 	protected static final String generalTreeNodeDescription = "Select only one object (e.g. species, reaction, simulation) to view/edit properties.";
 	protected static final String generalTreeNodeDescription2 = "Select only one object (e.g. species, reaction, simulation) to view/edit annotations.";
 	protected static final Logger LG = LogManager.getLogger(DocumentEditor.class);
@@ -112,6 +111,7 @@ public abstract class DocumentEditor extends JPanel {
 	protected IvjEventHandler eventHandler = new IvjEventHandler();
 	
 	protected JTree documentEditorTree = null;
+	private final JPanel treeFooter = new JPanel(new BorderLayout()); // under the tree, across its width
 	protected SelectionManager selectionManager = new SelectionManager();
 	protected IssueManager issueManager = new IssueManager();
 
@@ -130,12 +130,7 @@ public abstract class DocumentEditor extends JPanel {
 	private JMenuItem deleteMenuItem;
 	private JMenuItem copyNameMenuItem;
 	
-	protected DatabaseWindowPanel databaseWindowPanel = null;
-	protected JTabbedPane leftBottomTabbedPane = null;
 	protected JSplitPane rightSplitPane = null;
-	protected BioModelMetaDataPanel bioModelMetaDataPanel = null;
-	protected MathModelMetaDataPanel mathModelMetaDataPanel = null;
-	protected GeometryMetaDataPanel geometryMetaDataPanel = null;
 	
 	protected JTabbedPane rightBottomTabbedPane = null;
 	protected JPanel rightBottomEmptyPanel = null;
@@ -281,14 +276,20 @@ public abstract class DocumentEditor extends JPanel {
 			}
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
-			if (evt.getSource() == selectionManager) {
-				if (evt.getPropertyName().equals(SelectionManager.PROPERTY_NAME_SELECTED_OBJECTS)) {			
-					onSelectedObjectsChange();
-				} else if (evt.getPropertyName().equals(SelectionManager.PROPERTY_NAME_ACTIVE_VIEW)) {
-					onActiveViewChange();
-				} else if(evt.getPropertyName().equals(SelectionManager.PROPERTY_NAME_SELECTED_PANEL)) {
-					setRightBottomPanelOnSelection(new Object[] {evt.getNewValue()});
-				}
+			if (DocumentEditor.this.selectionManager != evt.getSource()) return;
+			String propertyName = evt.getPropertyName();
+			if (propertyName.startsWith(SelectionManager.PROPERTY_NAME_SELECTED_OBJECTS)) {
+				String suffix = propertyName.substring(SelectionManager.PROPERTY_NAME_SELECTED_OBJECTS.length()).strip();
+				if (!suffix.startsWith("(") || !suffix.endsWith(")")) return;
+				DocumentEditor.this.onSelectedObjectsChange();
+			} else if (propertyName.startsWith(SelectionManager.PROPERTY_NAME_ACTIVE_VIEW)) {
+				String suffix = propertyName.substring(SelectionManager.PROPERTY_NAME_ACTIVE_VIEW.length()).strip();
+				if (!suffix.startsWith("(") || !suffix.endsWith(")")) return;
+				DocumentEditor.this.onActiveViewChange();
+			} else if (propertyName.startsWith(SelectionManager.PROPERTY_NAME_SELECTED_PANEL)) {
+				String suffix = propertyName.substring(SelectionManager.PROPERTY_NAME_SELECTED_PANEL.length()).strip();
+				if (!suffix.startsWith("(") || !suffix.endsWith(")")) return;
+				DocumentEditor.this.setRightBottomPanelOnSelection(new Object[]{evt.getNewValue()});
 			}
 		};
 		
@@ -457,6 +458,22 @@ private void documentEditor_eventDispatched(AWTEvent event) {
 /**
  * Initialize the class.
  */
+/**
+ * Puts this under the navigation tree, as wide as the tree (the model window's button to the Model Explorer); null for
+ * nothing there.
+ */
+public void setTreeFooter(javax.swing.JComponent footer) {
+	treeFooter.removeAll();
+	treeFooter.setVisible(null != footer);
+	if (null != footer) {
+		treeFooter.setBorder(javax.swing.BorderFactory.createCompoundBorder(
+				javax.swing.BorderFactory.createMatteBorder(1, 0, 0, 0, javax.swing.UIManager.getColor("Separator.foreground")),
+				javax.swing.BorderFactory.createEmptyBorder(4, 4, 4, 4)));
+		treeFooter.add(footer, BorderLayout.CENTER);
+	}
+	treeFooter.revalidate();
+}
+
 private void initialize() {
 	try {
 		setLayout(new BorderLayout());
@@ -487,36 +504,32 @@ private void initialize() {
 				Object object = path.getLastPathComponent();
 				return (object instanceof BioModelNode) && (((BioModelNode)object).getUserObject() instanceof SimulationContext);
 			}
+
+			@Override
+			public void updateUI() { // the navigation column's rows, again whenever the theme changes
+				super.updateUI();
+				NavigationTreeStyle.install(this);
+			}
+
+			@Override
+			public void setCellRenderer(TreeCellRenderer renderer) { // each window's renderer, drawn in a row's rectangle
+				super.setCellRenderer(NavigationTreeStyle.wrap(renderer));
+			}
 			
 		};
 		documentEditorTree.setEditable(true);
-		documentEditorTree.setLargeModel(true);
 		documentEditorTreeCellEditor = new DocumentEditorTreeCellEditor(documentEditorTree);
 		documentEditorTree.setCellEditor(documentEditorTreeCellEditor);
 		documentEditorTree.setName("bioModelEditorTree");
 		ToolTipManager.sharedInstance().registerComponent(documentEditorTree);
-		int rowHeight = documentEditorTree.getRowHeight();
-		if(rowHeight < 10) { 
-			rowHeight = 20; 
-		}
-		documentEditorTree.setRowHeight(rowHeight + 2);
 		documentEditorTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 		
-		JSplitPane leftSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-		databaseWindowPanel = new DatabaseWindowPanel(false, false);
-		leftBottomTabbedPane  = new JTabbedPaneEnhanced();
-		leftBottomTabbedPane.setName("LeftBottomTabbedPane");
-		leftBottomTabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
-		leftBottomTabbedPane.addTab("VCell DB", databaseWindowPanel);
-		
-		JScrollPane treePanel = new javax.swing.JScrollPane(documentEditorTree);	
-		leftSplitPane.setTopComponent(treePanel);
-		leftBottomTabbedPane.setMinimumSize(new java.awt.Dimension(198, 148));
-		leftSplitPane.setBottomComponent(leftBottomTabbedPane);
-		leftSplitPane.setResizeWeight(0.5);
-		leftSplitPane.setDividerLocation(300);
-		leftSplitPane.setDividerSize(8);
-		leftSplitPane.setOneTouchExpandable(true);
+		JScrollPane treePanel = new javax.swing.JScrollPane(documentEditorTree); // databases are browsed from the welcome window and Model Explorer
+		JPanel leftColumn = new JPanel(new BorderLayout()); // the tree, and under it what the window puts there (see setTreeFooter)
+		leftColumn.add(treePanel, BorderLayout.CENTER);
+		treeFooter.setName("DocumentEditorTreeFooter");
+		treeFooter.setVisible(false);
+		leftColumn.add(treeFooter, BorderLayout.SOUTH);
 
 		rightSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
 		rightSplitPane.setResizeWeight(0.7);
@@ -525,7 +538,7 @@ private void initialize() {
 		rightSplitPane.setOneTouchExpandable(true);
 		
 		rightBottomEmptyPanel = new JPanel(new GridBagLayout());
-		rightBottomEmptyPanel.setBackground(Color.white);
+		rightBottomEmptyPanel.setBackground(VCellLookAndFeel.getContentBackground());
 		rightBottomEmptyPanel.setName("ObjectProperties");
 		treeNodeDescriptionLabel = new JLabel(generalTreeNodeDescription);
 		GridBagConstraints gbc = new GridBagConstraints();
@@ -539,7 +552,7 @@ private void initialize() {
 		rightBottomEmptyPanel.add(treeNodeDescriptionLabel, gbc);
 
 		rightBottomEmptyAnnotationsPanel = new JPanel(new GridBagLayout());
-		rightBottomEmptyAnnotationsPanel.setBackground(Color.white);
+		rightBottomEmptyAnnotationsPanel.setBackground(VCellLookAndFeel.getContentBackground());
 		rightBottomEmptyAnnotationsPanel.setName("Annotations");
 		treeNodeDescriptionLabel2 = new JLabel(generalTreeNodeDescription2);
 		gbc = new GridBagConstraints();
@@ -563,14 +576,20 @@ private void initialize() {
 		rightBottomTabbedPane.addTab(TAB_TITLE_ANNOTATIONS, rightBottomEmptyAnnotationsPanel);		
 		rightBottomTabbedPane.addTab(TAB_TITLE_PROBLEMS, issuePanel);		
 		rightBottomTabbedPane.setMinimumSize(new java.awt.Dimension(198, 148));		
-		rightSplitPane.setBottomComponent(rightBottomTabbedPane);
+		// a "?" at the end of the tab row opens the page about the open tab: the selected object's properties pane,
+		// the annotations, the problems
+		HelpButton bottomHelp = HelpButton.forPage("RightBottomHelp", "the properties, annotations and problems tabs",
+				() -> DocumentEditorHelp.pageForBottomTab(this.rightBottomTabbedPane, this.selectionManager.getSelectedObjects()));
+		this.rightSplitPane.setBottomComponent(bottomHelp.besideTabs(this.rightBottomTabbedPane));
+		// Help > VCell Help: the page about the main view (the tree node, and the tab open in it)
+		HelpContext.setPage(this, this::helpPage);
 		
 		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 		splitPane.setDividerLocation(270);
 		splitPane.setOneTouchExpandable(true);
-		splitPane.setResizeWeight(0.3);
+		splitPane.setResizeWeight(0); // the navigation column keeps its width: the window's resizing is the right side's
 		splitPane.setDividerSize(8);
-		splitPane.setLeftComponent(leftSplitPane);
+		splitPane.setLeftComponent(leftColumn);
 		splitPane.setRightComponent(rightSplitPane);
 		
 		add(splitPane, BorderLayout.CENTER);
@@ -578,16 +597,9 @@ private void initialize() {
 		issueManager.addIssueEventListener(eventHandler);
 		selectionManager.addPropertyChangeListener(eventHandler);
 		
-		databaseWindowPanel.setSelectionManager(selectionManager);
 		documentEditorTree.addTreeSelectionListener(eventHandler);
 		documentEditorTree.addMouseListener(eventHandler);
 		
-		bioModelMetaDataPanel = new BioModelMetaDataPanel();
-		bioModelMetaDataPanel.setSelectionManager(selectionManager);
-		mathModelMetaDataPanel = new MathModelMetaDataPanel();
-		mathModelMetaDataPanel.setSelectionManager(selectionManager);
-		geometryMetaDataPanel = new GeometryMetaDataPanel();
-		geometryMetaDataPanel.setSelectionManager(selectionManager);
 		issuePanel.setSelectionManager(selectionManager);
 		issuePanel.setIssueManager(issueManager);
 	} catch (java.lang.Throwable ivjExc) {
@@ -619,6 +631,11 @@ private void treeSelectionChanged0(TreeSelectionEvent treeSelectionEvent) {
 	}catch (Exception ex){
 		ex.printStackTrace(System.out);
 	}
+}
+
+/** The help page about the main view: the tree node and the tab open in it (Help > VCell Help); null for none. */
+protected String helpPage() {
+	return DocumentEditorHelp.pageFor(this.selectionManager.getActiveView());
 }
 
 protected abstract void setRightBottomPanelOnSelection(Object[] selections);
@@ -885,18 +902,6 @@ private JPopupMenu getPopupMenu() {
 	return popupMenu;
 }
 
-private ConnectionStatus connectionStatus = null;
-public void updateConnectionStatus(ConnectionStatus newValue) {
-	if (connectionStatus == newValue 
-			|| connectionStatus != null && connectionStatus.equals(newValue)) {
-		return;
-	}
-	connectionStatus = newValue;
-	databaseWindowPanel.updateConnectionStatus(connectionStatus);
-	if (connectionStatus.getStatus() == ConnectionStatus.CONNECTED) {
-		databaseWindowPanel.getDatabaseWindowManager().initializeAll();
-	}
-}
 public SelectionManager getSelectionManager() { return selectionManager; }
 
 public final JTabbedPane getRightBottomTabbedPane() {

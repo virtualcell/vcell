@@ -1125,7 +1125,6 @@ private javax.swing.JLabel getSelectedFilamentLabel() {
 			ivjSelectedFilamentLabel = new javax.swing.JLabel();
 			ivjSelectedFilamentLabel.setName("SelectedFilamentLabel");
 			ivjSelectedFilamentLabel.setText("Selected Curve Filament Name");
-			ivjSelectedFilamentLabel.setForeground(java.awt.Color.black);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {

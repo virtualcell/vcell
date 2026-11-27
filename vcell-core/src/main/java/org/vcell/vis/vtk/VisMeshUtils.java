@@ -72,6 +72,16 @@ public class VisMeshUtils {
 		}
 	}
 
+	static void writeMovingBoundaryIndexData(File movingBoundaryIndexFile, MovingBoundaryIndexData movingBoundaryIndexData) throws IOException {
+		try {
+			TSerializer serializer = new TSerializer(new TBinaryProtocol.Factory());
+			byte[] blob = serializer.serialize(movingBoundaryIndexData);
+			FileUtils.writeByteArrayToFile(movingBoundaryIndexFile, blob);
+		} catch (TException e) {
+			throw new IOException("error writing MovingBoundaryIndexData to file "+movingBoundaryIndexFile.getPath()+": "+e.getMessage(),e);
+		}
+	}
+
 	static void writeVisMesh(File visMeshFile, VisMesh visMesh) throws IOException  {
 		try {
 			TSerializer serializer = new TSerializer(new TBinaryProtocol.Factory());

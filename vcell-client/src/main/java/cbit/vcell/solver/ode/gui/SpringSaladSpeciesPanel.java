@@ -9,6 +9,7 @@
  */
 package cbit.vcell.solver.ode.gui;
 
+import cbit.vcell.client.laf.VCellFonts;
 import cbit.vcell.simdata.SpringSaladTrajectory;
 import cbit.vcell.solver.ode.gui.SpringSaladSpeciesLegend.SiteType;
 
@@ -25,7 +26,6 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Font;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -60,7 +60,7 @@ public class SpringSaladSpeciesPanel extends JPanel {
 		setBorder(BorderFactory.createEmptyBorder(4, 6, 4, 4));
 
 		JLabel title = new JLabel("Species");
-		title.setFont(title.getFont().deriveFont(Font.BOLD));
+		VCellFonts.setCategory(title, VCellFonts.Category.HEADING);
 		title.setBorder(BorderFactory.createEmptyBorder(0, 0, 4, 0));
 		add(title, BorderLayout.NORTH);
 
@@ -74,8 +74,10 @@ public class SpringSaladSpeciesPanel extends JPanel {
 
 		JPanel buttons = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 2));
 		JButton all = new JButton("All");
+		all.setName("SpringSaladSpeciesAllButton");
 		all.addActionListener(e -> setAll(true));
 		JButton none = new JButton("None");
+		none.setName("SpringSaladSpeciesNoneButton");
 		none.addActionListener(e -> setAll(false));
 		buttons.add(all);
 		buttons.add(none);
@@ -109,7 +111,9 @@ public class SpringSaladSpeciesPanel extends JPanel {
 	/** A species header whose checkbox toggles all of that species' site types at once. */
 	private Component speciesHeader(String speciesName, List<SiteType> members) {
 		JCheckBox box = new JCheckBox(speciesName, true);
-		box.setFont(box.getFont().deriveFont(Font.BOLD));
+		// Named per species, so a script can address one species rather than a row index
+		box.setName("SpringSaladSpeciesHeader_" + speciesName);
+		VCellFonts.setCategory(box, VCellFonts.Category.HEADING);
 		box.setAlignmentX(LEFT_ALIGNMENT);
 		box.addActionListener(e -> {
 			for (SiteType siteType : members) {
@@ -134,6 +138,9 @@ public class SpringSaladSpeciesPanel extends JPanel {
 		String tip = String.format("%s, radius %.4g (%d sites)",
 				siteType.getColorName(), siteType.getRadius(), siteType.getSiteCount());
 		JCheckBox box = new JCheckBox("", true);
+		// The label beside this box is a separate JLabel, so the checkbox itself has no
+		// text at all; its site-type key is the only durable way to address it.
+		box.setName("SpringSaladSite_" + siteType.getKey());
 		box.setToolTipText(tip);
 		box.addActionListener(e -> {
 			onVisibilityChanged.accept(siteType.getKey(), box.isSelected());

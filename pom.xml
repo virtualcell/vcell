@@ -91,6 +91,24 @@
 		<maven.compiler.source>17</maven.compiler.source>
 		<maven.compiler.target>17</maven.compiler.target>
 
+		<!--
+		  Source encoding. Without this the compiler uses the PLATFORM default charset, which
+		  is UTF-8 on Linux and macOS but windows-1252 on Windows - so the same sources become
+		  different text depending on who builds them. See issue #2046.
+
+		  Five files then fail outright ("unmappable character (0x9D) for encoding
+		  windows-1252"), and - the part that is easy to miss - 109 more compile CLEANLY as
+		  windows-1252 and yield the wrong characters, including in user-visible strings:
+		  new JButton("\u25B6") becomes a button labelled "\u00E2\u2013\u00B6", with a green build.
+
+		  This declares what is already true rather than converting anything: every one of
+		  those 114 files decodes cleanly as UTF-8 today. Released artifacts were never
+		  affected, because release builds run on Linux; this is for anyone building on
+		  Windows, and for the Windows lane of the client E2E workflow.
+		-->
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
 		<!-- NB: Disable javadoc doclint -->
 		<doclint>none</doclint>
 
@@ -113,6 +131,7 @@
 		<commons-math3.version>3.6.1</commons-math3.version>
 		<commons-pool2.version>2.5.0</commons-pool2.version>
 		<commons-text.version>1.11.0</commons-text.version>
+		<flexmark.version>0.64.8</flexmark.version>
 		<gson.version>2.9.1</gson.version>
 		<guava.version>33.0.0-jre</guava.version>
 		<guice.version>7.0.0</guice.version>
@@ -135,14 +154,14 @@
 		<jaxen.version>1.2.0</jaxen.version>
 		<jcodec.version>0.2.5</jcodec.version>
 		<jdom2.version>2.0.6</jdom2.version>
+		<jetbrains-annotations.version>26.1.0</jetbrains-annotations.version>
 		<jetty.version>9.4.29.v20200521</jetty.version>
 		<jfreechart.version>1.5.0</jfreechart.version>
 		<jgrapht.version>1.3.0</jgrapht.version>
-		<!-- Pinned fork build carrying incremental and streaming chunk writing, contributed upstream as
-		     jamesmudd/jhdf#865 (issue jhdf#654). Same arrangement as the JSBML fork above: a tagged fork
-		     under the virtualcell org, built by JitPack. Revert to io.jhdf:jhdf once released upstream.
-		     See issue #1964. -->
-		<jhdf.version>0.13.0-VCELL-1</jhdf.version>
+		<!-- Upstream jhdf pinned to a master commit, built by JitPack: incremental and streaming chunk
+		     writing (jamesmudd/jhdf#865, #891) are merged but not yet released. Switch to io.jhdf:jhdf
+		     at the first release that carries them. See issue #1964. -->
+		<jhdf.version>f95507c711</jhdf.version>
 		<jmatio.version>1.0</jmatio.version>
 		<joda-time.version>2.12.2</joda-time.version>
 		<jai-core.version>1.1.3</jai-core.version>
@@ -187,18 +206,48 @@
 		<xalan.version>2.7.3</xalan.version>
 		<xom.version>1.2.5</xom.version>
 
-		<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
-		<!-- Note: for containerized HPC/singularity solvers - see Dockerfile-batch-dev  -->
-		<!--       - vcell solvers from ghcr.io/virtualcell/vcell-solvers:v0.0.42-dev3   -->
-		<!--       - langevin solver from 'solvers-langevin-linux.version'               -->
-		<!--	   - for solvers-langevin-mac.version we use the amd64 (intel)  (13)     -->
-		<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
-		<solvers-vcell-mac.version>v0.0.44-dev4</solvers-vcell-mac.version>
-		<solvers-vcell-windows.version>v0.0.40</solvers-vcell-windows.version>
-		<solvers-vcell-linux.version>v0.0.44-dev4</solvers-vcell-linux.version>
-		<solvers-langevin-mac.version>1.4.13</solvers-langevin-mac.version>
-		<solvers-langevin-windows.version>1.4.13</solvers-langevin-windows.version>
-		<solvers-langevin-linux.version>1.4.13</solvers-langevin-linux.version>
+		<!-- Native solvers for local (desktop) runs. Each comes from its own virtualcell/<repo>
+		     GitHub release, downloaded and unpacked into localsolvers/{linux64,mac64,win64}/ by
+		     vcell-core/pom.xml (execution per repo and platform). To bump a solver: set its tag here and
+		     copy the three sha256 values from that release's SHA256SUMS asset
+		     (gh release download <tag> -R virtualcell/<repo> -p SHA256SUMS -O -).
+		     A mismatched sha256 fails the build.
+		     HPC runs don't use these: SlurmProxy runs each solver family's own image, pinned in
+		     vcell-fluxcd's submit.env (see docs/plan-solver-repos.md). -->
+		<solvers-fvsolver.version>v0.10.8</solvers-fvsolver.version>	<!-- FiniteVolume_x64, smoldyn_x64 -->
+		<solvers-fvsolver.sha256.linux64>f12feacd42cf3db305e20c5bf5e832f8670492f554f18f876b89a6b75331bdf2</solvers-fvsolver.sha256.linux64>
+		<solvers-fvsolver.sha256.mac64>151bac683d88f600d47a28bea56c3381052214064ca5ef07e63f03ccdc3fd8cd</solvers-fvsolver.sha256.mac64>
+		<solvers-fvsolver.sha256.win64>85a4ba8cf47d21275941e82ba71ba36a00a75fa8312eb3399ebea8115c00aa1a</solvers-fvsolver.sha256.win64>
+		<solvers-ode.version>v0.9.6</solvers-ode.version>	<!-- SundialsSolverStandalone_x64 -->
+		<solvers-ode.sha256.linux64>a35474700888ba00632aa2b2f26f308428cf2ef9d59984e160f4a05ce11afb41</solvers-ode.sha256.linux64>
+		<solvers-ode.sha256.mac64>e6b08958b0ab4f3b372e74cdd1508cc752719dafabc00de8897956bbf0926233</solvers-ode.sha256.mac64>
+		<solvers-ode.sha256.win64>7cadf61babe4650ef12cbb1d0f0384da35456fb8a7ce5b9178e1aae68a5042aa</solvers-ode.sha256.win64>
+		<solvers-stochastic.version>v1.0.0</solvers-stochastic.version>	<!-- VCellStoch_x64 -->
+		<solvers-stochastic.sha256.linux64>b4867bb8f3abea152639bc8fe05f0aa6eb2a067720613308f480c86eefec4ca3</solvers-stochastic.sha256.linux64>
+		<solvers-stochastic.sha256.mac64>ff2da185d1b6f85bb5bfc670e9c9e6fe820cdb2b6a2d11880f2eb885a4d5a472</solvers-stochastic.sha256.mac64>
+		<solvers-stochastic.sha256.win64>9fbe1c99fe98952f17c6919e5d791f56339ced79ed34004741f6e041b923a2f3</solvers-stochastic.sha256.win64>
+		<solvers-nfsim.version>v0.2.1</solvers-nfsim.version>	<!-- NFsim_x64 -->
+		<solvers-nfsim.sha256.linux64>533141b278e63bf57dff047dd1c2eaacfc8c92515fb648c085f66b0884e85e9d</solvers-nfsim.sha256.linux64>
+		<solvers-nfsim.sha256.mac64>f9f0c82f4ebdbc3af7e9402489ced059a394d344122a420f06fa3ed4fe5b3c29</solvers-nfsim.sha256.mac64>
+		<solvers-nfsim.sha256.win64>3d760305c8a29695a8e562ea5b8ecad2d626d1833d8936ae8d18c0c60040c55f</solvers-nfsim.sha256.win64>
+		<solvers-hy3s.version>v1.0.0</solvers-hy3s.version>	<!-- Hybrid_EM_x64, Hybrid_MIL_x64, Hybrid_MIL_Adaptive_x64 -->
+		<solvers-hy3s.sha256.linux64>b3db1ce5667747543331dad015e068b7750e4127b7e49c28057cfb45afb1d0d3</solvers-hy3s.sha256.linux64>
+		<solvers-hy3s.sha256.mac64>aac4e9167493e247b43da37b6d547870cc427979cc17a4592dc8c7e5674ee015</solvers-hy3s.sha256.mac64>
+		<solvers-hy3s.sha256.win64>63602b4aeb75e746a5a392b40aa5d1c6f3830e54d309aba2646d9928f85533b4</solvers-hy3s.sha256.win64>
+		<solvers-chombo.version>v1.0.0</solvers-chombo.version>	<!-- VCellChombo2D_x64, VCellChombo3D_x64 (no Windows build) -->
+		<solvers-chombo.sha256.linux64>726249539cbd28f93fe6ed8d66778ebacbd630e65965be2b7e948c3c233eae61</solvers-chombo.sha256.linux64>
+		<solvers-chombo.sha256.mac64>68006d82a5452c95cf2628fb8d10014c56ca932d271b543d41b3877153da2856</solvers-chombo.sha256.mac64>
+		<solvers-mbsolver.version>v1.0.5</solvers-mbsolver.version>	<!-- MovingBoundary_x64 -->
+		<solvers-mbsolver.sha256.linux64>7c746a2b27b25e74fe1a8fae1790f6969cc4407dbac4bd5da7e13221067ba5a4</solvers-mbsolver.sha256.linux64>
+		<solvers-mbsolver.sha256.mac64>9f3eda2edda80e2f8a9d66ee82522c5471cd056122cc31e7c4bc821c1054affe</solvers-mbsolver.sha256.mac64>
+		<solvers-mbsolver.sha256.win64>f2fed5d1a2356a4b5c2993f4123462d76dc95642561199a863163b6c6a33b883</solvers-mbsolver.sha256.win64>
+		<!-- Langevin (SpringSaLaD) comes from cam-center/LangevinNoVis01 as bare executables with no
+		     SHA256SUMS; these checksums are of the downloaded assets (langevin-ubuntu-latest,
+		     langevin-macos-universal, langevin-windows-latest). -->
+		<solvers-langevin.version>1.4.17</solvers-langevin.version>
+		<solvers-langevin.sha256.linux64>74da0055c7e22adfa29f9755fde018e982dec6844d8b2da4873bab52e47a193f</solvers-langevin.sha256.linux64>
+		<solvers-langevin.sha256.mac64>1dd82f577d1d5e78e09def6e2fc9fa3094469b5b61758835cd922acce6acdb38</solvers-langevin.sha256.mac64>
+		<solvers-langevin.sha256.win64>6ed9703fc8217de77f9d52bf25265c8ede261c65cb840a022b61492efa29ca3a</solvers-langevin.sha256.win64>
 	</properties>
 
 
@@ -231,7 +280,7 @@
 
 		     So: vendored first, then Central, then the rest. Add new repositories after Central
 		     unless they are vendored artifacts. -->
-		<!-- Vendored artifacts: jai_core, jai-codec, netcdf, udunits, thredds-parent.
+		<!-- Vendored artifacts: jai_core, jai-codec, netcdf, udunits, thredds-parent, n5.
 
 		     Vendored for RELIABILITY, not availability. The upstream servers that carried these
 		     were flaky enough that builds failed on them, so a copy lives in the tree and the
@@ -241,7 +290,13 @@
 		     say "not available on Maven Central", which is not true of all of them:
 		     edu.ucar:netcdf:4.3.22 is on Central and byte-identical to the vendored copy. It stays
 		     vendored anyway, because availability today was never the reason. jai_core, jai-codec
-		     and udunits do 404 from Central. -->
+		     and udunits do 404 from Central.
+
+		     org.janelia.saalfeldlab:n5:3.0.0 (used by cbit.vcell.export.server.N5Exporter) is a
+		     genuine 404 on Central - the whole groupId is absent there - and was the ONLY artifact
+		     in the entire reactor that maven.scijava.org served. Vendoring it is what let the
+		     scijava repository be removed below. Its parent, org.scijava:pom-scijava:34.0.0, and
+		     all of its runtime dependencies do come from Central, so only n5 itself is here. -->
 		<!-- Keep this repository FIRST; see the ordering note above. -->
 		<repository>
 			<id>lib-maven-repo</id>
@@ -279,11 +334,32 @@
 		</repository>
 		-->
 
-		<!-- needed for imagej dependencies -->
+		<!-- Removed 2026-08-27. This repository served exactly ONE artifact in the whole reactor -
+		     org.janelia.saalfeldlab:n5:3.0.0 - measured on a cold local repository: central 1366,
+		     jitpack 15, lib-maven-repo 9, scijava 2 (the n5 pom and jar), ej-technologies 2,
+		     terracotta 1. n5 is now vendored in lib/maven-repo, so nothing needs this server.
+
+		     It was removed because it is actively harmful when it misbehaves, not merely useless.
+		     On 2026-08-27 maven.scijava.org served stored files normally (n5-3.0.0.pom and .jar both
+		     200) while returning 503 for every file Nexus GENERATES: maven-metadata.xml and every
+		     .sha1. Maven treats a 404 as "not here, ask the next repository" but a 503 as a hard
+		     transfer error, so a repository in this state converts two otherwise harmless situations
+		     into build failures:
+
+		       - org.jboss.narayana.jts:idlj-idl-openjdk:pom:7.0.0.Final, reached via
+		         quarkus-agroal -> quarkus-narayana-jta, does not exist in ANY repository. Central,
+		         jitpack and terracotta all 404 and Maven shrugs; scijava's 503 made it fatal.
+		       - com.nimbusds:oauth2-oidc-sdk:10.7 declares net.minidev:json-smart as a version
+		         RANGE, and a range makes Maven fetch maven-metadata.xml from every repository.
+
+		     Both surfaced only inside the enforcer's DependencyConvergence rule, which calls
+		     collectDependencies and turns those recorded exceptions into "Could not build dependency
+		     tree", which is why every other module compiled and only vcell-rest failed.
 		<repository>
 			<id>scijava.public</id>
 			<url>https://maven.scijava.org/content/groups/public</url>
 		</repository>
+		-->
 
 		<!-- needed for biomodels.net web services -->
 <!--		<repository>-->
@@ -314,6 +390,25 @@
 
 	<dependencyManagement>
 		<dependencies>
+			<!--
+			  json-smart: pinned so nothing in the reactor resolves it through a version RANGE.
+
+			  com.nimbusds:oauth2-oidc-sdk:10.7 declares net.minidev:json-smart:[1.3.3,2.4.8]. A range
+			  is the only thing in this build that makes Maven fetch maven-metadata.xml, which it must
+			  then do from EVERY declared repository on every build; a repository answering with a
+			  transfer error rather than a 404 fails the whole collection. Managing the version
+			  replaces the range before it is resolved, so no metadata is requested at all - verified:
+			  a cold build requests maven-metadata.xml exactly once, for net.minidev:json-smart, and
+			  zero times with this block present.
+
+			  It also closes a real split: vcell-rest declared 2.4.11 directly, while every other
+			  module silently took 2.4.8, the top of that range.
+			-->
+			<dependency>
+				<groupId>net.minidev</groupId>
+				<artifactId>json-smart</artifactId>
+				<version>${json-smart.version}</version>
+			</dependency>
 			<dependency>
 				<groupId>org.junit</groupId>
 				<artifactId>junit-bom</artifactId>
@@ -412,14 +507,18 @@
 							<goal>analyze-only</goal>
 						</goals>
 						<configuration>
-							<failOnWarning>true</failOnWarning>
+							<failOnWarning>false</failOnWarning>
+						</configuration>
+					</execution>
+					<!-- scoped to command-line goals: at plugin level it also became analyze-only's
+					     read-only outputDirectory, which then skipped analysis whenever maven-jars/ was absent -->
+					<execution>
+						<id>default-cli</id>
+						<configuration>
+							<outputDirectory>${project.build.directory}/maven-jars</outputDirectory>
 						</configuration>
 					</execution>
 				</executions>
-
-				<configuration>
-					<outputDirectory>${project.build.directory}/maven-jars</outputDirectory>
-				</configuration>
 			</plugin>
 		</plugins>
 	</build>

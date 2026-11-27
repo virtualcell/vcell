@@ -113,17 +113,35 @@ public class BiomodelBNGLServerResource extends AbstractServerResource implement
 			PrintWriter pw = new PrintWriter(bnglStringWriter);
 			String biomodelVCML = restDatabaseService.query(bmsr,vcellUser);
 			BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(biomodelVCML));
-			SimulationContext chosenSimContext = bioModel.getSimulationContext(0);
+			SimulationContext chosenSimContext = applicationForBngl(bioModel, biomodelid);
 			RbmNetworkGenerator.writeBngl(chosenSimContext, pw, false, true);
 			String resultString = bnglStringWriter.toString();
 			return resultString;
 			
+		} catch (ResourceException e) {
+			throw e; // already carries its status (e.g. 404 for a BioModel without applications)
 		} catch (PermissionException e) {
 			lg.error(e);
 			throw new ResourceException(Status.CLIENT_ERROR_UNAUTHORIZED, "permission denied to requested resource");
 		} catch (Exception e){
-			throw new ResourceException(Status.SERVER_ERROR_INTERNAL, e.getMessage());
+			lg.error("BNGL export of biomodel " + biomodelid + " failed", e);
+			throw new ResourceException(Status.SERVER_ERROR_INTERNAL, e.getMessage(), e);
 		}
+	}
+
+	/**
+	 * BNGL is written per application: seed species amounts and compartment sizes come from the
+	 * application's specifications (the desktop exporter asks for one). This endpoint takes the first.
+	 * A BioModel with no applications has nothing to export, which is the client's to know, not a server
+	 * error; getSimulationContext(0) on it threw "Index 0 out of bounds for length 0", reported as a 500.
+	 */
+	static SimulationContext applicationForBngl(BioModel bioModel, String biomodelid) {
+		SimulationContext[] applications = bioModel.getSimulationContexts();
+		if (applications == null || applications.length == 0) {
+			throw new ResourceException(Status.CLIENT_ERROR_NOT_FOUND,
+					"BioModel " + biomodelid + " has no applications; BNGL is exported per application");
+		}
+		return applications[0];
 	}
 
 

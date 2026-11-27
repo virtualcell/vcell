@@ -7,13 +7,8 @@ import org.vcell.util.Displayable;
 import org.vcell.util.Matchable;
 
 public interface ModelProcess extends BioModelEntityObject, Displayable, Matchable {
-
-	String getName();
-
 	boolean containsSearchText(String lowerCaseSearchText);
 
-	Structure getStructure();
-	
 	ModelProcessDynamics getDynamics();
 	
 	Integer getNumParticipants();

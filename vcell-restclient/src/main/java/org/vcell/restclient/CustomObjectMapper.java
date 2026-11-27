@@ -12,6 +12,7 @@ import org.apache.commons.lang.RandomStringUtils;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 
 public class CustomObjectMapper extends ObjectMapper {
@@ -39,7 +40,7 @@ public class CustomObjectMapper extends ObjectMapper {
     @Override
     public <T> T readValue(InputStream src, Class<T> valueType) throws IOException {
         if (valueType == String.class){
-            return valueType.cast(new String(src.readAllBytes()));
+            return valueType.cast(new String(src.readAllBytes(), StandardCharsets.UTF_8));
         } else if (valueType == File.class) {
             File randomTmpFile = File.createTempFile("tmp-file-" + RandomStringUtils.randomAlphabetic(5), ".tmp");
             FileUtils.copyInputStreamToFile(src, randomTmpFile);
@@ -51,7 +52,7 @@ public class CustomObjectMapper extends ObjectMapper {
     @Override
     public <T> T readValue(InputStream src, TypeReference<T> valueTypeRef) throws IOException {
         if (valueTypeRef.getType() == String.class){
-            return (T) new String(src.readAllBytes());
+            return (T) new String(src.readAllBytes(), StandardCharsets.UTF_8);
         } else if (valueTypeRef.getType() == File.class) {
             File randomTmpFile = File.createTempFile("tmp-file-" + RandomStringUtils.randomAlphabetic(5), ".tmp");
             FileUtils.copyInputStreamToFile(src, randomTmpFile);

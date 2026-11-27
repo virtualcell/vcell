@@ -2033,6 +2033,10 @@ paths:
           description: Need to login to Auth0
         "403":
           description: Not Allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
         "500":
           description: Internal Error
       security:

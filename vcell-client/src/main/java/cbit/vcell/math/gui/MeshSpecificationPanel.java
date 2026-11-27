@@ -9,6 +9,7 @@
  */
 
 package cbit.vcell.math.gui;
+import cbit.vcell.client.laf.VCellColors;
 import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.event.ItemEvent;
@@ -190,7 +191,7 @@ private javax.swing.JTextField getGeometrySizeTextField() {
 		try {
 			ivjGeometrySizeTextField = new javax.swing.JTextField();
 			ivjGeometrySizeTextField.setName("GeometrySizeTextField");
-			ivjGeometrySizeTextField.setForeground(java.awt.Color.blue);
+			ivjGeometrySizeTextField.setForeground(VCellColors.getValueForeground());
 			ivjGeometrySizeTextField.setEditable(false);
 			// user code begin {1}
 			// user code end
@@ -552,7 +553,7 @@ private void initialize() {
 		gbc.weightx = 1.0;
 		gbc.gridwidth = 2;
 		gbc.insets = new java.awt.Insets(4, 4, 1, 4);
-		totalSizeTextField.setForeground(Color.blue);
+		totalSizeTextField.setForeground(VCellColors.getValueForeground());
 		getContentPanel().add(totalSizeTextField, gbc);
 		
 		//
@@ -578,7 +579,7 @@ private void initialize() {
 		gbc.weightx = 1.0;
 		gbc.gridwidth = 2;
 		gbc.insets = new java.awt.Insets(4, 4, 1, 4);
-		ivjDxTextField.setForeground(Color.blue);
+		ivjDxTextField.setForeground(VCellColors.getValueForeground());
 		getContentPanel().add(ivjDxTextField, gbc);
 		
 		//
@@ -597,7 +598,7 @@ private void initialize() {
 		gbc.weightx = 1.0;
 		gbc.gridwidth = 2;
 		gbc.insets = new java.awt.Insets(4, 4, 1, 4);
-		ivjDyTextField.setForeground(Color.blue);
+		ivjDyTextField.setForeground(VCellColors.getValueForeground());
 		getContentPanel().add(ivjDyTextField, gbc);
 		
 		//
@@ -616,7 +617,7 @@ private void initialize() {
 		gbc.weightx = 1.0;
 		gbc.gridwidth = 2;
 		gbc.insets = new java.awt.Insets(4, 4, 1, 4);
-		ivjDzTextField.setForeground(Color.blue);
+		ivjDzTextField.setForeground(VCellColors.getValueForeground());
 		getContentPanel().add(ivjDzTextField, gbc);
 		
 		initConnections();		

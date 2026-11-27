@@ -10,6 +10,7 @@
 
 package cbit.vcell.microscopy.gui;
 
+import org.vcell.documentation.HelpContext;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Toolkit;
@@ -49,12 +50,12 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.undo.UndoableEdit;
 
 import org.vcell.client.logicalwindow.LWTopFrame;
-import org.vcell.documentation.VcellHelpViewer;
-import org.vcell.util.gui.GeneralGuiUtils;
+import org.vcell.documentation.HelpIds;
+import org.vcell.documentation.HelpViewer;
+import org.vcell.util.gui.ShortcutsWizard;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.ChildWindowManager;
-import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.TopLevelWindowManager;
 import cbit.vcell.client.UserMessage;
@@ -84,8 +85,6 @@ import cbit.vcell.resource.VCellConfiguration;
 @SuppressWarnings("serial")
 public class VirtualFrapMainFrame extends LWTopFrame implements DropTargetListener, TopLevelWindow {
     private final ChildWindowManager childWindowManager;
-
-    private final static String HELP_VIEWER_CONTEXT_OBJECT = "Help Viewer Context Object";
 
     //the application has one local workspace and one FRAP workspace
     private LocalWorkspace localWorkspace = null;
@@ -129,7 +128,7 @@ public class VirtualFrapMainFrame extends LWTopFrame implements DropTargetListen
     private static final JMenuItem menuOpen = new JMenuItem(OPEN_ACTION_COMMAND, 'O');
     private static final JMenuItem menuExit = new JMenuItem(EXIT_ACTION_COMMAND, 'X');
     private static final JMenuItem msave = new JMenuItem(SAVE_ACTION_COMMAND, 'S');
-    private static final JMenuItem mclose = new JMenuItem(CLOSE_ACTION_COMMAND, GeneralGuiUtils.CLOSE_WINDOW_KEY_STROKE.getKeyChar());
+    private static final JMenuItem mclose = new JMenuItem(CLOSE_ACTION_COMMAND, ShortcutsWizard.keyStrokeFor(ShortcutsWizard.Shortcut.CLOSE_WINDOW).getKeyChar());
     private static final JMenuItem msaveas = new JMenuItem(SAVEAS_ACTION_COMMAND);
     private static final JMenuItem msaveasMat = new JMenuItem(SAVEAS_MATLAB_COMMAND);
     private static final JMenuItem mHelpTopics = new JMenuItem(HELPTOPICS_ACTION_COMMAND);
@@ -296,19 +295,7 @@ public class VirtualFrapMainFrame extends LWTopFrame implements DropTargetListen
                         }
                     }
                 } else if (arg.equals(HELPTOPICS_ACTION_COMMAND)) {
-                    ChildWindow helpViewerWindow = childWindowManager.getChildWindowFromContext(HELP_VIEWER_CONTEXT_OBJECT);
-                    if (helpViewerWindow == null) {
-                        VcellHelpViewer hviewer = new VcellHelpViewer(VcellHelpViewer.VFRAP_DOC_URL);
-                        helpViewerWindow = getChildWindowManager().addChildWindow(hviewer, HELP_VIEWER_CONTEXT_OBJECT, "Virtual FRAP Help", false);
-                        GeneralGuiUtils.addCloseWindowKeyboardAction(hviewer);
-                        helpViewerWindow.setIsCenteredOnParent();
-                        helpViewerWindow.setPreferredSize(new Dimension(VcellHelpViewer.DEFAULT_HELP_DIALOG_WIDTH, VcellHelpViewer.DEFAULT_HELP_DIALOG_HEIGHT));
-                        helpViewerWindow.pack();
-                        helpViewerWindow.show();
-                    } else {
-                        helpViewerWindow.show();
-                    }
-
+                    HelpViewer.showHelp(HelpIds.VIRTUAL_FRAP);
                 } else if (arg.equals(ABOUT_ACTION_COMMAND)) {
                     DocumentWindow.showAboutBox(VirtualFrapMainFrame.this);
                 } else if (arg.equals(UNDO_ACTION_COMMAND)) {
@@ -397,6 +384,7 @@ public class VirtualFrapMainFrame extends LWTopFrame implements DropTargetListen
     // constructor
     public VirtualFrapMainFrame(LocalWorkspace localWorkspace, FRAPSingleWorkspace frapWorkspace, FRAPBatchRunWorkspace batchRunWorkspace, boolean bStandalone, DocumentWindowManager documentWindowManager) {
         super();
+        HelpContext.setPage(this.getRootPane(), HelpIds.VIRTUAL_FRAP); // F1, as Help > Help Topics
         childWindowManager = new ChildWindowManager(this);
         this.localWorkspace = localWorkspace;
         this.frapWorkspace = frapWorkspace;
@@ -534,7 +522,7 @@ public class VirtualFrapMainFrame extends LWTopFrame implements DropTargetListen
 
         mclose.addActionListener(menuHandler);
         fileMenu.add(mclose);
-        mclose.setAccelerator(GeneralGuiUtils.CLOSE_WINDOW_KEY_STROKE);
+        mclose.setAccelerator(ShortcutsWizard.keyStrokeFor(ShortcutsWizard.Shortcut.CLOSE_WINDOW));
 
         fileMenu.addSeparator();
 

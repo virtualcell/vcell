@@ -10,6 +10,8 @@
 
 package org.vcell.solver.nfsim.gui;
 
+import org.vcell.documentation.HelpIds;
+import cbit.vcell.client.laf.VCellFonts;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -81,7 +83,7 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 		public void actionPerformed(ActionEvent e) {
 			Object source = e.getSource();
 			if (source == observableComputationHelpButton) {
-				DialogUtils.showInfoDialogAndResize(NFSimSimulationOptionsPanel.this, "Compute observables at output times only", 
+				DialogUtils.showInfoDialog(NFSimSimulationOptionsPanel.this, "Compute observables at output times only", 
 						"<html><b>NFSim option</b> -notf" +
 						"<br> By default, observables are calculated on-the-fly, updating all observables at each simulation step. "
 						+ "This is necessary when rates of reactions depend on Observables. "
@@ -90,9 +92,9 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 						+ "This will allow simulations to <b>run faster</b> if the number of simulation steps between each output "
 						+ "step is greater than the number of molecules in the system. This may or may not be true for your simulation, "
 						+ "so you should try turning on or off this option to see which is more efficient."
-						+ "</html>");
+						+ "</html>", HelpIds.NFSIM_SIMULATION_EDITOR);
 			} else if (source == moleculeDistanceHelpButton) {
-				DialogUtils.showInfoDialogAndResize(NFSimSimulationOptionsPanel.this, "Distance of neighboring molecules from the site of the reaction", 
+				DialogUtils.showInfoDialog(NFSimSimulationOptionsPanel.this, "Distance of neighboring molecules from the site of the reaction", 
 						"<html><b>NFSim option</b> -utl <i>int</i> " +
 						"<br> The universal traversal limit (UTL) sets the distance neighboring molecules have to be to the site of the reaction "
 						+ "to be updated. The default UTL is set to the size of the largest reactant pattern, which is guaranteed to produce correct "
@@ -104,9 +106,9 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 						+ "make sure that pattern can always be matched is low. This will happen, for instance, when many molecules are connected "
 						+ "to a single hub molecule. "
 						+ "<br><br> NFSim option -utl [integer] Default: the size of the largest reactant pattern in the rule-set."
-						+ "</html>");
+						+ "</html>", HelpIds.NFSIM_SIMULATION_EDITOR);
 			} else if (source == aggregateBookkeepingHelpButton) {
-				DialogUtils.showInfoDialogAndResize(NFSimSimulationOptionsPanel.this, "Turn on aggregate bookkeeping", 
+				DialogUtils.showInfoDialog(NFSimSimulationOptionsPanel.this, "Turn on aggregate bookkeeping", 
 						"<html><b>NFSim option</b> -cb "
 						+ "<br> NFsim by default tracks individual molecule agents, not complete molecular complexes. This is useful and makes "
 						+ "simulations very fast, but is not always appropriate. For example, in some systems it is necessary to block "
@@ -116,40 +118,40 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 						+ "to check if any two molecules are connected. The trade-off is that there is an overhead involved with maintaining "
 						+ "the bookkeeping system with a cost that depends on the size of the molecular complexes that can form."
 						+ "<br><br> NFSim option -cb Default: off"
-						+ "</html>");
+						+ "</html>", HelpIds.NFSIM_SIMULATION_EDITOR);
 			} else if (source == maxMoleculesPerTypeHelpButton) {
-				DialogUtils.showInfoDialogAndResize(NFSimSimulationOptionsPanel.this, "Maximal number of molecules per Molecular Type", 
+				DialogUtils.showInfoDialog(NFSimSimulationOptionsPanel.this, "Maximal number of molecules per Molecular Type", 
 						"<html><b>NFSim option</b> -gml <i>int</i> "
 						+ "<br> To prevent your computer from running out of memory in case you accidentally create too many molecules, "
 						+ "NFsim sets a default limit of 100,000 molecules of any particular Molecule Type from being created. If the limit "
 						+ "is exceeded, NFsim just stops running gracefully, thereby potentially saving your computer."
 						+ "<br><br> NFSim option: -gml [limit] Default: 100,000"
-						+ "</html>");
+						+ "</html>", HelpIds.NFSIM_SIMULATION_EDITOR);
 			} else if (source == equilibrateTimeHelpButton) {
-				DialogUtils.showInfoDialogAndResize(NFSimSimulationOptionsPanel.this, "Equilibrate for a set time", 
+				DialogUtils.showInfoDialog(NFSimSimulationOptionsPanel.this, "Equilibrate for a set time", 
 						"<html><b>NFSim option</b> -eq <i>time</i> "
 						+ "<br>Equilibrate the system for a set time before the simulation begins for the amount of time given. This operates "
 						+ "exactly like a normal simulation, except that the simulation time is set to zero immediately after the equilibration "
 						+ "phase and no output during equilibration is generated."
-						+ "</html>");
+						+ "</html>", HelpIds.NFSIM_SIMULATION_EDITOR);
 			} else 	if (source == randomSeedHelpButton) {
-				DialogUtils.showInfoDialogAndResize(NFSimSimulationOptionsPanel.this, "Set specific seed", 
+				DialogUtils.showInfoDialog(NFSimSimulationOptionsPanel.this, "Set specific seed", 
 						"<html><b>NFSim option</b> -seed <i>integer</i> "
 						+ "<br>Provide a seed to NFsim's random number generator so exact trajectories can be reproduced. If this line is not "
 						+ "entered, the current time is used as a seed, producing different sequences for each run."
-						+ "</html>");
+						+ "</html>", HelpIds.NFSIM_SIMULATION_EDITOR);
 			} else if (source == preventIntraBondsHelpButton) {
-				DialogUtils.showInfoDialogAndResize(NFSimSimulationOptionsPanel.this, "Prevent intra-molecular bonds from forming", 
+				DialogUtils.showInfoDialog(NFSimSimulationOptionsPanel.this, "Prevent intra-molecular bonds from forming", 
 						"<html><b>NFSim option</b> -bscb"
 						+ "<br> Block same complex binding throughout the entire system. This prevents intra-molecular bonds from forming, "
 						+ "but requires complex bookkeeping to be turned on."
-						+ "</html>");
+						+ "</html>", HelpIds.NFSIM_SIMULATION_EDITOR);
 			} else if (source == matchComplexesHelpButton) {
-				DialogUtils.showInfoDialogAndResize(NFSimSimulationOptionsPanel.this, "Match complexes with product patterns", 
+				DialogUtils.showInfoDialog(NFSimSimulationOptionsPanel.this, "Match complexes with product patterns", 
 						"<html><b>NFSim option</b> -pcmatch"
 						+ "<br> Match generated complexes to the rule product patterns, "
 						+ "could detect impossible combinations."
-						+ "</html>");
+						+ "</html>", HelpIds.NFSIM_SIMULATION_EDITOR);
 
 // ----------------------------------------------------------------------------------------------------------
 			} else if (source == observableComputationCheckBox) {
@@ -302,54 +304,53 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 	private void initialize() {
 		
 		randomSeedHelpButton = new JButton(" ? ");
-		Font font = randomSeedHelpButton.getFont().deriveFont(Font.BOLD);
 		Border border = BorderFactory.createEmptyBorder(1, 1, 1, 1);
 
 		observableComputationCheckBox = new JCheckBox("Compute observables at output times only.");
 		observableComputationTextField = new JTextField();
 		observableComputationHelpButton = new JButton(" ? ");
-		observableComputationHelpButton.setFont(font);
+		VCellFonts.setCategory(observableComputationHelpButton, VCellFonts.Category.HEADING);
 		observableComputationHelpButton.setBorder(border);
 		
 		moleculeDistanceCheckBox = new JCheckBox("Set distance to molecules that may be updated:");
 		moleculeDistanceTextField = new JTextField(NFsimSimulationOptions.DefaultDistanceToMolecules+"");
 		moleculeDistanceHelpButton = new JButton(" ? ");
-		moleculeDistanceHelpButton.setFont(font);
+		VCellFonts.setCategory(moleculeDistanceHelpButton, VCellFonts.Category.HEADING);
 		moleculeDistanceHelpButton.setBorder(border);
 		
 		aggregateBookkeepingCheckBox = new JCheckBox("Turn on aggregate bookkeeping.");
 		aggregateBookkeepingTextField = new JTextField();
 		aggregateBookkeepingHelpButton = new JButton(" ? ");
-		aggregateBookkeepingHelpButton.setFont(font);
+		VCellFonts.setCategory(aggregateBookkeepingHelpButton, VCellFonts.Category.HEADING);
 		aggregateBookkeepingHelpButton.setBorder(border);
 		
 		maxMoleculesPerTypeCheckBox = new JCheckBox("Set the max. number of Molecules per Type.");
 		maxMoleculesPerTypeTextField = new JTextField();
 		maxMoleculesPerTypeHelpButton = new JButton(" ? ");
-		maxMoleculesPerTypeHelpButton.setFont(font);
+		VCellFonts.setCategory(maxMoleculesPerTypeHelpButton, VCellFonts.Category.HEADING);
 		maxMoleculesPerTypeHelpButton.setBorder(border);
 		
 		equilibrateTimeCheckBox = new JCheckBox("Equilibrate for a set time.");
 		equilibrateTimeTextField = new JTextField();
 		equilibrateTimeHelpButton = new JButton(" ? ");
-		equilibrateTimeHelpButton.setFont(font);
+		VCellFonts.setCategory(equilibrateTimeHelpButton, VCellFonts.Category.HEADING);
 		equilibrateTimeHelpButton.setBorder(border);
 		
 		randomSeedCheckBox = new JCheckBox("Set a seed to NFsim random number generator.");
 		randomSeedTextField = new JTextField();
-		randomSeedHelpButton.setFont(font);
+		VCellFonts.setCategory(randomSeedHelpButton, VCellFonts.Category.HEADING);
 		randomSeedHelpButton.setBorder(border);
 		
 		preventIntraBondsCheckBox = new JCheckBox("Prevent intra-molecular bonds from forming.");
 		preventIntraBondsTextField = new JTextField();
 		preventIntraBondsHelpButton = new JButton(" ? ");
-		preventIntraBondsHelpButton.setFont(font);
+		VCellFonts.setCategory(preventIntraBondsHelpButton, VCellFonts.Category.HEADING);
 		preventIntraBondsHelpButton.setBorder(border);
 		
 		matchComplexesCheckBox = new JCheckBox("Match generated complexes to products.");
 		matchComplexesTextField = new JTextField();
 		matchComplexesHelpButton = new JButton(" ? ");
-		matchComplexesHelpButton.setFont(font);
+		VCellFonts.setCategory(matchComplexesHelpButton, VCellFonts.Category.HEADING);
 		matchComplexesHelpButton.setBorder(border);
 
 		getContentPanel().setLayout(new GridBagLayout());		

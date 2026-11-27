@@ -9,6 +9,8 @@
  */
 
 package cbit.vcell.client.desktop.simulation;
+import org.vcell.documentation.HelpIds;
+import cbit.vcell.client.laf.VCellFonts;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
@@ -21,6 +23,7 @@ import java.awt.event.MouseListener;
 import java.beans.PropertyVetoException;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -46,7 +49,10 @@ import javax.swing.border.Border;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.TableCellEditor;
 
+import cbit.vcell.client.ClientRequestManager;
 import cbit.vcell.solver.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.NumberUtils;
 import org.vcell.util.document.User;
 import org.vcell.util.gui.DefaultScrollTableActionManager;
@@ -79,6 +85,7 @@ import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.solver.SimulationOwner.UnitInfo;
 import cbit.vcell.solver.SolverDescription.SolverFeature;
+import org.vcell.solver.fenics.FenicsDocker;
 
 /**
  * Insert the type's description here.
@@ -87,6 +94,9 @@ import cbit.vcell.solver.SolverDescription.SolverFeature;
  */
 @SuppressWarnings("serial")
 public class SimulationListPanel extends DocumentEditorSubPanel {
+
+	private static final Logger lg = LogManager.getLogger(SimulationListPanel.class);
+
 	private static final Date FINITEVOLUME_CUTTOFF = getFiniteVolumeMissingDataRegenerateDate();
 
 //	private static final String QUICK_RUN_PYTHON_TOOL_TIP = "Python Quick Run";
@@ -231,7 +241,7 @@ private void showHelp() {
 	 message += "expense of slightly longer simulation times, users may now turn off variable reduction. This makes the generated ";
 	 message += "math easier to understand and can avoid occasional numerical simulation issues.";
 //	message = "<html>" + message + "</html>";
-	PopupGenerator.showInfoDialog(this, "Variable reduction by mass conservation", message);
+	DialogUtils.showInfoDialog(this, "Variable reduction by mass conservation", message, HelpIds.MASS_CONSERVATION_REDUCTION);
 }
 
 /**
@@ -497,6 +507,9 @@ private javax.swing.JToolBar getToolBar() {
 //			quickPythonRunButton.addActionListener(ivjEventHandler);
 
 			quickNativeRunButton = new JButton("", VCellIcons.odeQuickRunIcon);
+			// Runs the simulation on this machine, without saving the document to the
+			// database - which is what lets a scripted tutorial actually produce results.
+			quickNativeRunButton.setName("QuickRunButton");
 			quickNativeRunButton.setToolTipText(QUICK_RUN_NATIVE_TOOL_TIP);
 			quickNativeRunButton.addActionListener(ivjEventHandler);
 
@@ -563,9 +576,8 @@ private JButton getMassConservationModelReductionHelpButton() {
 	if(massConservationModelReductionHelpButton == null) {
 		massConservationModelReductionHelpButton = new JButton("  ?  ");
 		massConservationModelReductionHelpButton.setVisible(true);
-		Font font = massConservationModelReductionHelpButton.getFont().deriveFont(Font.BOLD);
 		Border border = BorderFactory.createEmptyBorder(1, 1, 1, 1);
-		massConservationModelReductionHelpButton.setFont(font);
+		VCellFonts.setCategory(massConservationModelReductionHelpButton, VCellFonts.Category.HEADING);
 		massConservationModelReductionHelpButton.setBorder(border);
 		massConservationModelReductionHelpButton.setFocusPainted(false);
 		massConservationModelReductionHelpButton.setFocusable(false);
@@ -770,7 +782,7 @@ private JSortTable getScrollPaneTable() {
 //				}
 //			};
 			ivjScrollPaneTable = new JSortTable();
-			ivjScrollPaneTable.setName("ScrollPaneTable");
+			ivjScrollPaneTable.setName("SimulationsTable");
 			ivjScrollPaneTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_NEXT_COLUMN);
 			ivjScrollPaneTable.setModel(getSimulationListTableModel1());
 			ivjScrollPaneTable.setScrollTableActionManager(new DefaultScrollTableActionManager(ivjScrollPaneTable) {
@@ -854,11 +866,16 @@ private Object getSimulationStatusDisplay(int row) {
 							  && simStatus.getProgress() != null && simStatus.getProgress().doubleValue() >= 0;
 	if (displayProgress){
 		double progress = simStatus.getProgress().doubleValue() / simulation.getJobCount();
+		lg.info(" ===== Progress: " + progress + ", Jobs Total: " + simulation.getJobCount() + ", Jobs Done: " + simStatus.numberOfJobsDone());
+
 		JProgressBar progressBar = new JProgressBar();
 		progressBar.setStringPainted(true);
 		progressBar.setValue((int)(progress * 100));
+		String phase = simStatus.runningPhaseDisplay();
 		if (simStatus.isFailed()) {
 			progressBar.setString("one or more jobs failed");
+		} else if (phase != null) {
+			progressBar.setString(phase); // the solver's phase: "meshing", "solving 37%"
 		} else {
 			progressBar.setString(NumberUtils.formatNumber(progress * 100, 4) + "%");
 		}
@@ -911,6 +928,8 @@ private void initConnections() throws java.lang.Exception {
 				setText(value+"");
 			}
 			boolean bFinitVolumeRerun = false;
+			boolean bLangevinSimulation = false;
+			String langevinToolTipExtension = "";
 			if (value instanceof SolverDescription) {
 				SolverDescription solverDescription = (SolverDescription) value;
 				try{
@@ -927,8 +946,22 @@ private void initConnections() throws java.lang.Exception {
 							}
 						}
 					}
-				}catch(Exception e){
-					//ignore, let table cell render anyway
+
+					if (solverDescription.isLangevinSolver()) {		// icon indicating Langevin single run / multi run
+						Simulation sim = (Simulation) getSimulationListTableModel1().getValueAt(row);
+						SolverTaskDescription std = sim.getSolverTaskDescription();
+						LangevinSimulationOptions lso = std.getLangevinSimulationOptions();
+						int totalJobs = lso.getTotalNumberOfJobs();
+						if (totalJobs == 1) {
+							setIcon(isSelected ? VCellIcons.singleRunNegativeIcon : VCellIcons.singleRunIcon);
+							langevinToolTipExtension = " (single run)";
+						} else {
+							setIcon(isSelected ? VCellIcons.multiRunNegativeIcon : VCellIcons.multiRunIcon );
+							langevinToolTipExtension = " (batch run)";
+						}
+						bLangevinSimulation = true;
+					}
+				} catch(Exception e) {		// ignore, let table cell render anyway
 					e.printStackTrace();
 				}
 				setText(solverDescription.getShortDisplayLabel());
@@ -936,9 +969,11 @@ private void initConnections() throws java.lang.Exception {
 			} else {
 				setToolTipText(getText());
 			}
-			if(bFinitVolumeRerun){
+			if(bFinitVolumeRerun) {
 				setText(getText()+(bFinitVolumeRerun?"(*)":""));
 				setToolTipText(getToolTipText()+(bFinitVolumeRerun?" (data regenerated using FiniteVolumeStandalone)":""));
+			} else if(bLangevinSimulation) {
+				setToolTipText(getToolTipText()+langevinToolTipExtension);
 			}
 			return this;
 		}
@@ -949,6 +984,23 @@ private void initConnections() throws java.lang.Exception {
 	getScrollPaneTable().setDefaultRenderer(String.class, renderer);
 	getScrollPaneTable().setDefaultRenderer(SolverDescription.class, renderer);
 	getScrollPaneTable().setDefaultEditor(OutputTimeSpec.class, new DefaultCellEditor(new JTextField()));
+	// Duration column (SpringSaLaD applications only): rough duration, tooltip says whether it is an estimate or actual
+	getScrollPaneTable().setDefaultRenderer(SimulationListTableModel.DurationDisplay.class, new DefaultScrollTableCellRenderer() {
+		@Override
+		public Component getTableCellRendererComponent(JTable table,
+				Object value, boolean isSelected, boolean hasFocus, int row,
+				int column) {
+			super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+			if (value instanceof SimulationListTableModel.DurationDisplay durationDisplay) {
+				setText(durationDisplay.text());
+				setToolTipText(durationDisplay.toolTip());
+			} else {
+				setText("");
+				setToolTipText(null);	// the renderer is reused for every cell: don't keep another row's tooltip
+			}
+			return this;
+		}
+	});
 	getScrollPaneTable().setDefaultRenderer(SimulationStatus.class, new DefaultScrollTableCellRenderer() {
 		@Override
 		public Component getTableCellRendererComponent(JTable table,
@@ -1063,6 +1115,25 @@ private boolean canQuickRun(SolverTaskDescription taskDesc) {
 //		quickPythonRunButton.setToolTipText("Not supported by selected solver");
 		quickNativeRunButton.setToolTipText("Not supported by selected solver");
 		return false;
+	}else if (taskDesc.getSolverDescription().isFenicsSolver()) {
+		// FEniCSx runs in the local Docker image, not a native executable (docs/plan-fenics.md)
+		if (!SolverDescription.isFenicsEnabled()) {
+			quickNativeRunButton.setToolTipText("Not supported by selected solver");
+			return false;
+		}
+		if (taskDesc.getSimulation().getJobCount() > 1) {
+			quickNativeRunButton.setToolTipText("FEniCSx quick run does not support parameter scans");
+			return false;
+		}
+		try {
+			FenicsDocker.find();
+		} catch (FileNotFoundException e) {
+			System.err.println("SimulationListPanel.canQuickRun(): " + e.getMessage());
+			quickNativeRunButton.setToolTipText("FEniCSx quick run needs Docker Desktop (https://www.docker.com/products/docker-desktop/)");
+			return false;
+		}
+		quickNativeRunButton.setToolTipText(QUICK_RUN_NATIVE_TOOL_TIP);
+		return true;
 	}else if(taskDesc.getSimulation().getJobCount() > 1){
 //		System.err.println("SimulationListPanel.canQuickRun(): parameter scan, local solver not supported");
 ////		quickPythonRunButton.setToolTipText("Not supported for parameter scans");
@@ -1099,6 +1170,10 @@ private boolean canQuickRun(SolverTaskDescription taskDesc) {
 private boolean canServerRun(SolverTaskDescription taskDesc) {
 	if(taskDesc.getSolverDescription().isComsolSolver()) {
 		System.err.println("SimulationListPanel.canServerRun(): quick run solver only, server run not supported");
+		getRunButton().setToolTipText("Not supported by selected solver");
+		return false;
+	}
+	if(taskDesc.getSolverDescription().isFenicsSolver() && !SolverDescription.isFenicsEnabled()) {
 		getRunButton().setToolTipText("Not supported by selected solver");
 		return false;
 	}
@@ -1341,7 +1416,7 @@ private void stopSimulations() {
 	private javax.swing.JButton getMoreActionsButton() {
 		if (moreActionsButton == null) {
 			try {
-				moreActionsButton = new JButton("More Actions", new DownArrowIcon());
+				moreActionsButton = DownArrowIcon.keepPushButtonLook(new JButton("More Actions", new DownArrowIcon()));
 				moreActionsButton.setHorizontalTextPosition(SwingConstants.LEFT);
 				moreActionsButton.setName("MoreActionsButton");
 			} catch (java.lang.Throwable ivjExc) {
@@ -1396,7 +1471,7 @@ private void stopSimulations() {
 		}
 		if (solverDescription.equals(SolverDescription.Langevin)) {
 			LangevinSimulationOptions lso = selectedSim.getSolverTaskDescription().getLangevinSimulationOptions();
-			if(lso == null || lso.getNumberOfConcurrentJobs() > 1 || lso.getTotalNumberOfJobs() > 1) {
+			if(lso == null || lso.getTotalNumberOfJobs() > 1) {
 				DialogUtils.showErrorDialog(SimulationListPanel.this, "Concurrent Jobs not supported for Quick Run. ");
 				return;
 			}

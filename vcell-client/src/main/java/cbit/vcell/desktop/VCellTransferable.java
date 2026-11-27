@@ -25,47 +25,46 @@ import cbit.vcell.parser.SymbolTableEntry;
  */
 public class VCellTransferable extends SimpleTransferable {
 
-	public static final DataFlavor REACTION_SPECIES_ARRAY_FLAVOR = 
-			new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType+"; class="+ReactionSpeciesCopy.class.getName(),"ReactionSpeciesArray");
-	public static final DataFlavor RESOLVED_VALUES_FLAVOR =
-		new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType+"; class="+ResolvedValuesSelection.class.getName(),"ResolvedValues");
-	public static class ResolvedValuesSelection{
-		private SymbolTableEntry[] primarySymbolTableEntries;
-		private SymbolTableEntry[] alternateSymbolTableEntries;
-		private Expression[] expressionValues;
-		private String stringRepresentation;
+	public static final DataFlavor REACTION_SPECIES_ARRAY_FLAVOR    = new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType + "; class=" + ReactionSpeciesCopy.class.getName(),"ReactionSpeciesArray");
+	public static final DataFlavor RESOLVED_VALUES_FLAVOR           = new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType + "; class=" + ResolvedValuesSelection.class.getName(),"ResolvedValues");
 
-		public ResolvedValuesSelection(
-			SymbolTableEntry[] argPrimarySymbolTableEntries,
-			SymbolTableEntry[] argAlternateSymbolTableEntries,
-			Expression[] argExpressionValues,String argStringRep){
-				
-			if (argPrimarySymbolTableEntries.length != argExpressionValues.length ||
-				(argAlternateSymbolTableEntries != null && argAlternateSymbolTableEntries.length != argExpressionValues.length)){
+
+	public static class ResolvedValuesSelection {
+		private final SymbolTableEntry[] primarySymbolTableEntries;
+		private final SymbolTableEntry[] alternateSymbolTableEntries;
+		private final Object[] values;
+		private final String stringRepresentation;
+
+		public ResolvedValuesSelection(SymbolTableEntry[] primarySymbolTableEntries,
+		                               SymbolTableEntry[] alternateSymbolTableEntries,
+		                               Object[] values,
+		                               String stringRep){
+			if (primarySymbolTableEntries.length != values.length ||
+				(alternateSymbolTableEntries != null && alternateSymbolTableEntries.length != values.length)){
 				throw new IllegalArgumentException("symbol array length must equal data array length");
 			}
-			for(int i=0;i<argExpressionValues.length;i+= 1){
-				if (argExpressionValues[i] == null){
+			for (Object argExpressionValue : values) {
+				if (argExpressionValue == null) {
 					throw new IllegalArgumentException("copied values cannot be null.");
 				}
 			}
-			primarySymbolTableEntries = argPrimarySymbolTableEntries;
-			alternateSymbolTableEntries = argAlternateSymbolTableEntries;
-			expressionValues = argExpressionValues;
-			stringRepresentation = argStringRep;
+			this.primarySymbolTableEntries = primarySymbolTableEntries;
+			this.alternateSymbolTableEntries = alternateSymbolTableEntries;
+			this.values = values;
+			this.stringRepresentation = stringRep;
 		}
 
 		public SymbolTableEntry[] getPrimarySymbolTableEntries(){
-			return primarySymbolTableEntries;
+			return this.primarySymbolTableEntries;
 		}
 		public SymbolTableEntry[] getAlternateSymbolTableEntries(){
-			return alternateSymbolTableEntries;
+			return this.alternateSymbolTableEntries;
 		}
-		public Expression[] getExpressionValues(){
-			return expressionValues;
+		public Object[] getValues(){
+			return this.values;
 		}
 		public String toString() {
-			return stringRepresentation;
+			return this.stringRepresentation;
 		}
 	}
 

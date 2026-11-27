@@ -107,6 +107,25 @@ public class PropertyLoader {
 	public static final String htc_vcellbatch_apptainer_image = 	record("vcell.htc.vcellbatch.apptainer.image",ValueType.GEN);
 	public static final String htc_vcellbatch_solver_list = 	record("vcell.htc.vcellbatch.solver.list",ValueType.GEN);
 	public static final String htc_vcellopt_apptainer_image = 	record("vcell.htc.vcellopt.apptainer.image",ValueType.GEN);
+	/** FEniCSx solver image (docs/plan-fenics.md): oras://ghcr.io/virtualcell/vcell-fenics_singularity:<tag>; optional, like its solver list */
+	public static final String htc_vcellfenics_apptainer_image = 	record("vcell.htc.vcellfenics.apptainer.image",ValueType.GEN);
+	public static final String htc_vcellfenics_solver_list = 	record("vcell.htc.vcellfenics.solver.list",ValueType.GEN);
+	/*
+	 * Per-repo solver images (docs/plan-solver-repos.md, PR B1), each optional like fenics: a family whose image
+	 * is unset or whose list is empty is skipped. SlurmProxy searches them in the order of SolverImageFamily.FAMILIES.
+	 */
+	public static final String htc_vcellode_apptainer_image = 	record("vcell.htc.vcellode.apptainer.image",ValueType.GEN);
+	public static final String htc_vcellode_solver_list = 	record("vcell.htc.vcellode.solver.list",ValueType.GEN);
+	public static final String htc_vcellstochastic_apptainer_image = 	record("vcell.htc.vcellstochastic.apptainer.image",ValueType.GEN);
+	public static final String htc_vcellstochastic_solver_list = 	record("vcell.htc.vcellstochastic.solver.list",ValueType.GEN);
+	public static final String htc_vcellnfsim_apptainer_image = 	record("vcell.htc.vcellnfsim.apptainer.image",ValueType.GEN);
+	public static final String htc_vcellnfsim_solver_list = 	record("vcell.htc.vcellnfsim.solver.list",ValueType.GEN);
+	public static final String htc_vcellmbsolver_apptainer_image = 	record("vcell.htc.vcellmbsolver.apptainer.image",ValueType.GEN);
+	public static final String htc_vcellmbsolver_solver_list = 	record("vcell.htc.vcellmbsolver.solver.list",ValueType.GEN);
+	public static final String htc_vcellhy3s_apptainer_image = 	record("vcell.htc.vcellhy3s.apptainer.image",ValueType.GEN);
+	public static final String htc_vcellhy3s_solver_list = 	record("vcell.htc.vcellhy3s.solver.list",ValueType.GEN);
+	public static final String htc_vcellchombo_apptainer_image = 	record("vcell.htc.vcellchombo.apptainer.image",ValueType.GEN);
+	public static final String htc_vcellchombo_solver_list = 	record("vcell.htc.vcellchombo.solver.list",ValueType.GEN);
 	public static final String htc_singularity_imagedir = 		record("vcell.htc.singularity.imagedir",ValueType.GEN);
 
 	public static final String slurm_cmd_sbatch				= record("vcell.slurm.cmd.sbatch",ValueType.GEN);
@@ -135,6 +154,7 @@ public class PropertyLoader {
 	public static final String slurm_langevin_timeoutPerTaskSeconds = record("vcell.slurm.langevin.timeoutPerTaskSeconds",ValueType.GEN);
 	public static final String slurm_langevin_batchMemoryLimitPerTaskMB = record("vcell.slurm.langevin.batchMemoryLimitPerTaskMB",ValueType.GEN);
 	public static final String slurm_langevin_memoryBlockSizeMB = record("vcell.slurm.langevin.memoryBlockSizeMB",ValueType.GEN);
+	public static final String slurm_langevin_maxNumConcurrentTasks = record("vcell.slurm.langevin.maxNumConcurrentTasks",ValueType.GEN);
 	public static final String slurm_langevin_watchdogTimeoutSeconds = record("vcell.slurm.langevin.watchdogTimeoutSeconds",ValueType.GEN);
 	public static final String slurm_langevin_watchdogTickSeconds = record("vcell.slurm.langevin.watchdogTickSeconds",ValueType.GEN);
 
@@ -301,10 +321,6 @@ public class PropertyLoader {
 //	public static final String VCellChomboExecutable2D = record("vcell.chombo.executable.2d",ValueType.EXE);
 //	public static final String VCellChomboExecutable3D = record("vcell.chombo.executable.3d",ValueType.EXE);
 
-	public static final String amplistorVCellServiceURL = record("vcell.amplistor.vcellserviceurl",ValueType.GEN);
-	public static final String amplistorVCellServiceUser = record("vcell.amplistor.vcellservice.user",ValueType.GEN);
-	public static final String amplistorVCellServicePassword = record("vcell.amplistor.vcellservice.password",ValueType.GEN);
-
 	public static final String installationRoot = record("vcell.installDir",ValueType.DIR);
 	public static final String vcellDownloadDir = record("vcell.downloadDir",ValueType.URL);
 	public static final String autoflushStandardOutAndErr = record("vcell.autoflushlog",ValueType.GEN);
@@ -327,12 +343,21 @@ public class PropertyLoader {
 	public static final boolean enableSpringSaLaD_default_value = true;
 
 	/**
+	 * FEniCSx finite-element solver (docs/plan-fenics.md). On by default; -Dvcell.fenics.enabled=false
+	 * (an installed client's vmoptions.txt, or VCELL_FENICS_ENABLED for a service) hides it.
+	 */
+	public static final String fenicsEnabled = record("vcell.fenics.enabled", ValueType.BOOL);
+	public static final boolean fenicsEnabled_default_value = true;
+	/** The FEniCSx solver image a desktop quick run uses (default: FenicsDocker.DEFAULT_IMAGE). */
+	public static final String fenicsImage = record("vcell.fenics.image", ValueType.GEN);
+
+	/**
 	 * Browser-based 3D field viewer (the loopback field server + the "View in 3D" button on the
-	 * PDE results panel). Off by default; enable for testing with -Dvcell.fieldViewer.enabled=true,
-	 * which an installed client can carry in its vmoptions.txt.
+	 * PDE results panel). On by default; -Dvcell.fieldViewer.enabled=false (an installed client's
+	 * vmoptions.txt) turns it off.
 	 */
 	public static final String fieldViewerEnabled = record("vcell.fieldViewer.enabled", ValueType.BOOL);
-	public static final boolean fieldViewerEnabled_default_value = false;
+	public static final boolean fieldViewerEnabled_default_value = true;
 	/** Port for the loopback field server; any free port is used if this one is taken. */
 	public static final String fieldViewerPort = record("vcell.fieldViewer.port", ValueType.GEN);
 	/** Where the browser-based viewer page is served from. */

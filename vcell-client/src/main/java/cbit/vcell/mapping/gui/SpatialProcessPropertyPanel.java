@@ -10,6 +10,7 @@
 
 package cbit.vcell.mapping.gui;
 
+import cbit.vcell.client.laf.VCellLookAndFeel;
 import java.awt.BorderLayout;
 import java.awt.Color;
 
@@ -64,10 +65,10 @@ private void handleException(Throwable exception) {
  */
 private void initialize() {
 	try {
-		setName("SpatialObjectPropertyPanel");
+		setName("SpatialProcessPropertyPanel");
 		setLayout(new java.awt.BorderLayout());
 		setSize(572, 196);
-		setBackground(Color.white);
+		setBackground(VCellLookAndFeel.getContentBackground());
 		
 		this.topPanel = new JPanel();
 		topPanel.setName("TopPanel");
@@ -147,7 +148,7 @@ private SpatialProcessParameterTableModel getSpatialProcessParameterTableModel()
 private JSortTable getScrollTable() {
 	if (scrollPaneTable == null){
 		scrollPaneTable = new JSortTable();
-		scrollPaneTable.setName("SortTable");
+		scrollPaneTable.setName("SpatialProcessParametersTable");
 	}
 	return scrollPaneTable;
 }

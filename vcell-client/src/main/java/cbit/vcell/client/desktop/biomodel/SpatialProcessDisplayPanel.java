@@ -47,6 +47,9 @@ public class SpatialProcessDisplayPanel extends BioModelEditorApplicationRightSi
 		
 	private void initialize() {
 		setName("SpatialProcessDisplayPanel");
+		table.setName("SpatialProcessesTable");
+		addNewButton.setName("SpatialProcessNewButton");
+		deleteButton.setName("SpatialProcessDeleteButton");
 		setLayout(new GridBagLayout());
 
 		int gridy = 0;
@@ -74,6 +77,7 @@ public class SpatialProcessDisplayPanel extends BioModelEditorApplicationRightSi
 		gbc.anchor = GridBagConstraints.LINE_END;
 		add(addNewButton, gbc);
 		addNewButton.setIcon(new DownArrowIcon());
+		DownArrowIcon.keepPushButtonLook(addNewButton);
 		addNewButton.setHorizontalTextPosition(SwingConstants.LEFT);
 		addNewButton.addMouseListener(new MouseAdapter() {
 			public void mousePressed(MouseEvent e) {

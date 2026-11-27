@@ -11,6 +11,8 @@
 package cbit.vcell.client.desktop.biomodel;
 
 import java.awt.Window;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 
 import org.vcell.util.Matchable;
@@ -23,8 +25,10 @@ public class SelectionManager {
 		pathway,
 		model,	
 		
+		mathematics_summary,
 		parameters_functions,
 		predefined_symbols,
+		model_unit_system,
 		
 		data,	
 		applications,	
@@ -40,6 +44,7 @@ public class SelectionManager {
 		pathway_objects,
 		biopax_summary,
 		biopax_tree,
+		pathway_lookup,
 		
 		geometry_definition,
 		structure_mapping,
@@ -209,10 +214,10 @@ public class SelectionManager {
 			this.activeView = newActiveView;
 			
 			if (newActiveView != oldActiveView){
-				firePropertyChange(PROPERTY_NAME_ACTIVE_VIEW, oldActiveView, newActiveView);
+				firePropertyChange(this.timestampPropertyName(PROPERTY_NAME_ACTIVE_VIEW), oldActiveView, newActiveView);
 			}
 			//if (newSelection != oldSelection){
-				firePropertyChange(PROPERTY_NAME_SELECTED_OBJECTS, oldSelection, newSelection);
+				firePropertyChange(this.timestampPropertyName(PROPERTY_NAME_SELECTED_OBJECTS), oldSelection, newSelection);
 			//}
 		}finally{
 			bBusy = false;
@@ -245,6 +250,10 @@ public class SelectionManager {
 	
 	public AnnotationNavigator getAnnotationNavigator(Object entity) {
 		return new AnnotationNavigator(entity);
+	}
+
+	private String timestampPropertyName(String propertyName) {
+		return String.format("%s (%s: %s)", propertyName, this.getClass().getSimpleName(), LocalDateTime.now().atZone(ZoneId.systemDefault()));
 	}
 
 //	private void show() {

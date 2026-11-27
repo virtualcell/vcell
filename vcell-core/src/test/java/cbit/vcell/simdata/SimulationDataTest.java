@@ -10,7 +10,6 @@
 
 package cbit.vcell.simdata;
 
-import cbit.vcell.util.AmplistorUtils;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.vcell.util.document.KeyValue;
@@ -74,8 +73,7 @@ public static void main(String[] args) {
 	int runs = 0;
 	while (true) {
 		try {
-			SimulationData.SimDataAmplistorInfo simDataAmplistorInfo = AmplistorUtils.getSimDataAmplistorInfoFromPropertyLoader();
-			simData1 = new SimulationData(vcData1, userFile, null, simDataAmplistorInfo);
+			simData1 = new SimulationData(vcData1, userFile, null);
 			double a[] = simData1.getDataTimes();
 			if (a == null) {
 				continue;

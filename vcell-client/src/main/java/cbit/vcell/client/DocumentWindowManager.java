@@ -35,6 +35,13 @@ import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.xml.merge.XmlTreeDiff;
 
 public abstract class DocumentWindowManager extends TopLevelWindowManager implements java.awt.event.ActionListener, DataViewerManager {
+
+	private final SimulationRunQueue simulationRunQueue = new SimulationRunQueue(); // this window's simulation runs, newest first
+
+	/** The simulation runs requested from this window: on the server, and on this computer. */
+	public SimulationRunQueue getSimulationRunQueue() {
+		return this.simulationRunQueue;
+	}
 	
 	/**
 	 * identifying string, for hashtable passing, et. al

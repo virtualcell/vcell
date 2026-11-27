@@ -10,6 +10,9 @@
 
 package cbit.vcell.client.data;
 
+import org.vcell.documentation.HelpContext;
+import org.vcell.documentation.HelpIds;
+import cbit.vcell.client.laf.VCellFonts;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
@@ -171,6 +174,7 @@ import cbit.vcell.solvers.MeshDisplayAdapter;
 import cbit.vcell.util.FunctionRangeGenerator;
 import cbit.vcell.util.FunctionRangeGenerator.FunctionStatistics;
 import cbit.vcell.util.FunctionRangeGenerator.VarStatistics;
+import org.vcell.client.logicalwindow.LWSize;
 /**
  * Insert the type's description here.
  * Creation date: (6/11/2004 6:03:07 AM)
@@ -239,10 +243,32 @@ public class PDEDataViewer extends DataViewer implements DataJobListenerHolder {
 	public static class TimeSeriesDataRetrievalTask extends AsynchClientTask {
 		private DataJobListenerHolder dataJobListenerHolder;
 		private PDEDataContext myPDEDataContext;
+		private final boolean bRecordFailureInHashtable;
+
+		/**
+		 * Retrieve time series data. A failure aborts the task chain and is reported by
+		 * ClientTaskDispatcher: a UserCancelException quietly, anything else as an error dialog
+		 * naming the real cause.
+		 */
 		public TimeSeriesDataRetrievalTask(String title,DataJobListenerHolder dataJobListenerHolder,PDEDataContext myPDEDataContext) {
+			this(title, dataJobListenerHolder, myPDEDataContext, false);
+		}
+
+		/**
+		 * As the constructor, except that a failure is recorded under
+		 * {@link PDEDataViewer#StringKey_timeSeriesJobException} and the task chain continues, for
+		 * a caller that reports the failure in its own UI. Only KymographPanel does this; every
+		 * other caller wants the chain to stop (see issue #2063).
+		 */
+		public static TimeSeriesDataRetrievalTask recordingFailure(String title,DataJobListenerHolder dataJobListenerHolder,PDEDataContext myPDEDataContext) {
+			return new TimeSeriesDataRetrievalTask(title, dataJobListenerHolder, myPDEDataContext, true);
+		}
+
+		private TimeSeriesDataRetrievalTask(String title,DataJobListenerHolder dataJobListenerHolder,PDEDataContext myPDEDataContext,boolean bRecordFailureInHashtable) {
 			super(title, AsynchClientTask.TASKTYPE_NONSWING_BLOCKING);
 			this.dataJobListenerHolder=dataJobListenerHolder;
 			this.myPDEDataContext=myPDEDataContext;
+			this.bRecordFailureInHashtable=bRecordFailureInHashtable;
 		}
 	
 		@Override
@@ -250,10 +276,14 @@ public class PDEDataViewer extends DataViewer implements DataJobListenerHolder {
 			DataJobListener djl = null;
 			try {
 				TimeSeriesJobSpec timeSeriesJobSpec = (TimeSeriesJobSpec)hashTable.get(StringKey_timeSeriesJobSpec);
-				TimeSeriesJobResults timeSeriesJobResults = myPDEDataContext.getTimeSeriesValues(timeSeriesJobSpec);
-				hashTable.put(StringKey_timeSeriesJobResults, timeSeriesJobResults);
+				// Register before the call, not after: getTimeSeriesValues() blocks, and the server
+				// fires the DATA_PROGRESS events for this job while it runs. Registering afterwards
+				// (as this did once getTimeSeriesValues became a blocking rpc) meant the progress
+				// was computed, sent and then dropped, and the dialog never advanced.
 				djl = new TimeSeriesDataJobListener(timeSeriesJobSpec.getVcDataJobID(), hashTable, getClientTaskStatusSupport());
 				dataJobListenerHolder.addDataJobListener(djl);
+				TimeSeriesJobResults timeSeriesJobResults = myPDEDataContext.getTimeSeriesValues(timeSeriesJobSpec);
+				hashTable.put(StringKey_timeSeriesJobResults, timeSeriesJobResults);
 //				while (true) {
 //					Throwable timeSeriesJobFailed = (Throwable)hashTable.get(StringKey_timeSeriesJobException);
 //					if (timeSeriesJobFailed != null) {
@@ -276,6 +306,14 @@ public class PDEDataViewer extends DataViewer implements DataJobListenerHolder {
 //					}
 //				}
 			} catch (Exception exception) {
+				// Recording the failure and returning normally leaves the next task to run against a
+				// null result. Four of the six callers never read the key, so a retrieval failure -
+				// or a cancellation - surfaced as an NPE in an unrelated plotting task and the real
+				// cause was lost (issue #2063). Failing the chain is the default; a caller that
+				// reports failures itself asks for the old behaviour via recordingFailure().
+				if (!bRecordFailureInHashtable) {
+					throw exception;
+				}
 				hashTable.put(StringKey_timeSeriesJobException,exception);
 			} finally {
 				if(djl != null){dataJobListenerHolder.removeDataJobListener(djl);}
@@ -1009,6 +1047,7 @@ void plotSpaceStats (TSJobResultsSpaceStats tsjrss) {
 	}
 		
 	ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(PDEDataViewer.this);
+	HelpContext.setPage(plotPane, HelpIds.SPATIAL_RESULTS_PLOTS);
 	ChildWindow childWindow = childWindowManager.addChildWindow(plotPane,plotPane,title);
 	childWindow.setIsCenteredOnParent();
 	childWindow.pack();
@@ -1537,7 +1576,7 @@ private javax.swing.JPanel getJPanelLoctionLabels() {
 			localSimLogFilePathTextField.setEnabled(true);
 			localSimLogFilePathTextField.setHorizontalAlignment(SwingConstants.CENTER);
 			localSimLogFilePathTextField.setBorder(null);
-			localSimLogFilePathTextField.setFont(locationLabel.getFont().deriveFont(Font.BOLD));
+			VCellFonts.setCategory(localSimLogFilePathTextField, VCellFonts.Category.HEADING);
 			locationLabelsPanel.add(localSimLogFilePathTextField);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
@@ -1652,6 +1691,7 @@ private JButton getPlotButton() {
 			plotButton = new JButton("Plot");
 			plotButton.setHorizontalTextPosition(SwingConstants.LEFT);
 			plotButton.setIcon(new DownArrowIcon());
+			DownArrowIcon.keepPushButtonLook(plotButton);
 			plotButton.addActionListener(ivjEventHandler);
 			plotButton.setEnabled(false);
 		} catch (java.lang.Throwable ivjExc) {
@@ -1667,6 +1707,7 @@ private JButton getROIButton() {
 			roiButton = new JButton("ROI");
 			roiButton.setHorizontalTextPosition(SwingConstants.LEFT);
 			roiButton.setIcon(new DownArrowIcon());
+			DownArrowIcon.keepPushButtonLook(roiButton);
 			roiButton.addActionListener(ivjEventHandler);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
@@ -2193,10 +2234,26 @@ private void initialize() {
 		setLayout(new java.awt.BorderLayout());
 		setSize(725, 569);
 		add(getJTabbedPane1(), "Center");
+		HelpContext.setPage(this, this::helpPage); // Help > VCell Help, and the results window's "?"
 		initConnections();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
+}
+
+// the help page about the open tab
+private String helpPage() {
+	java.awt.Component shown = this.getJTabbedPane1().getSelectedComponent();
+	if (shown == null) return HelpIds.SPATIAL_RESULTS;
+	if (shown == this.dataProcessingResultsPanel) return HelpIds.POST_PROCESSING_STATISTICS;
+	if (shown == this.postProcessPdeDataViewerPanel) return HelpIds.POST_PROCESSING_IMAGES;
+	String title = this.getJTabbedPane1().getTitleAt(this.getJTabbedPane1().getSelectedIndex());
+	if (EXPORT_DATA_TABNAME.equals(title)) return HelpIds.EXPORTING_SPATIAL_RESULTS;
+	if (this.viewDataTabbedPane != null && this.viewDataTabbedPane.getSelectedIndex() >= 0
+			&& CurrentView.SURFACE_VIEW.title.equals(this.viewDataTabbedPane.getTitleAt(this.viewDataTabbedPane.getSelectedIndex()))) {
+		return HelpIds.SPATIAL_RESULTS_SURFACE_VIEW;
+	}
+	return HelpIds.SPATIAL_RESULTS_SLICE_VIEW;
 }
 
 /**
@@ -2465,8 +2522,9 @@ private void showKymograph() {
 			}
 			
 			ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(PDEDataViewer.this);
+			HelpContext.setPage(kymographPanel, HelpIds.SPATIAL_RESULTS_PLOTS);
 			ChildWindow childWindow = childWindowManager.addChildWindow(kymographPanel, kymographPanel,  title);
-			childWindow.setSize(new Dimension(700,500));
+			childWindow.setSize(LWSize.ems(58, 42));
 			childWindow.show();
 			
 			
@@ -2543,6 +2601,7 @@ private void showSpatialPlot() {
 					String title = createContextTitle(PDEDataViewer.this.isPostProcess(),"Spatial Plot:'"+varName+"' ",getPdeDataContext(),getSimulationModelInfo(),getSimulation());
 					
 					ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(PDEDataViewer.this);
+					HelpContext.setPage(plotPane, HelpIds.SPATIAL_RESULTS_PLOTS);
 					ChildWindow childWindow = childWindowManager.addChildWindow(plotPane,plotPane,title);
 					childWindow.setIsCenteredOnParent();
 					childWindow.pack();
@@ -2634,10 +2693,8 @@ private void showTimePlot() {
 
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				Exception timeSeriesJobFailed = (Exception)hashTable.get(PDEDataViewer.StringKey_timeSeriesJobException);
-				if(timeSeriesJobFailed != null) {
-					throw timeSeriesJobFailed;
-				}
+				// no need to check StringKey_timeSeriesJobException: TimeSeriesDataRetrievalTask now
+				// throws, so this task does not run at all if the retrieval failed
 				TSJobResultsNoStats tsJobResultsNoStats = (TSJobResultsNoStats)hashTable.get(StringKey_timeSeriesJobResults);
 				//Make independent Plotviewer that is unaffected by changes (time,var,paramscan) in 'this' PDEDataviewer except to pass-thru OutputContext changes
 				PdeTimePlotMultipleVariablesPanel.MultiTimePlotHelper multiTimePlotHelper = (PdeTimePlotMultipleVariablesPanel.MultiTimePlotHelper)hashTable.get(MULTITPHELPER_TASK_KEY);
@@ -2645,6 +2702,7 @@ private void showTimePlot() {
 					PdeTimePlotMultipleVariablesPanel pdeTimePlotPanel = new PdeTimePlotMultipleVariablesPanel(multiTimePlotHelper,singlePointSSOnly, singlePointSSOnly2, tsJobResultsNoStats);
 					ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(PDEDataViewer.this);
 					String prefix = "Time Plot ("+getPDEPlotControlPanel1().getPlotVariableJList().getSelectedValue().getVariableType().getTypeName()+") ";
+					HelpContext.setPage(pdeTimePlotPanel, HelpIds.SPATIAL_RESULTS_PLOTS);
 					ChildWindow childWindow = childWindowManager.addChildWindow(pdeTimePlotPanel, pdeTimePlotPanel, createContextTitle(PDEDataViewer.this.isPostProcess(),prefix,getPdeDataContext(),getSimulationModelInfo(),getSimulation()));
 					childWindow.getParent().addWindowListener(new WindowAdapter() {
 						@Override
@@ -2668,7 +2726,7 @@ private void showTimePlot() {
 //							multiTimePlotHelper.removeallPropertyChangeListeners();
 //						}
 //					});
-					childWindow.setSize(900, 550);
+					childWindow.setSize(LWSize.ems(75, 46));
 					childWindow.setIsCenteredOnParent();
 					childWindow.show();
 				}catch(Exception e){
@@ -3235,7 +3293,7 @@ private BitSet calcInDomainBitSet(){
 }
 
 private void calcAutoAllTimes() throws Exception {
-	HashSet<String> stateVarNames = null;
+	Set<String> stateVarNames = null;
 	Variable theVariable = null;
 	boolean bStateVar = true;
 	boolean isFieldData = getPdeDataContext().getVCDataIdentifier() instanceof ExternalDataIdentifier || getPdeDataContext().getVCDataIdentifier() instanceof MergedDataInfo;

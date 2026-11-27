@@ -38,11 +38,16 @@ public final class Auth0ConnectionUtils {
     }
 
     public void auth0SignIn(boolean isGuest) throws ApiException {
+        this.auth0SignIn(isGuest, false);
+    }
+
+    /** As {@link #auth0SignIn(boolean)}, but signing up first, in the browser, if {@code signUp} (not for a guest). */
+    public void auth0SignIn(boolean isGuest, boolean signUp) throws ApiException {
         try{
             boolean bIgnoreHostMismatch = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreHostMismatch, false);
             boolean bIgnoreCertProblems = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreCertProblems, false);
             boolean ignoreSSLCertProblems = bIgnoreCertProblems || bIgnoreHostMismatch;
-            if (!isGuest) vcellApiClient.authenticate(ignoreSSLCertProblems);
+            if (!isGuest) vcellApiClient.authenticate(ignoreSSLCertProblems, signUp);
             else vcellApiClient.createDefaultQuarkusClient(ignoreSSLCertProblems);
         } catch (ApiException | URISyntaxException | IOException | ParseException e){
             throw new RuntimeException(e);

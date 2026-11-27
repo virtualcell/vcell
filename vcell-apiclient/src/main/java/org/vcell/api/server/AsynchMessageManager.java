@@ -9,6 +9,7 @@
  */
 
 package org.vcell.api.server;
+import org.vcell.util.document.User;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -134,13 +135,18 @@ private void poll( )  {
 		    begin = System.currentTimeMillis();
     	}
 	    synchronized (this) {
+	    	if (!bPoll.get()) return; // stopped since this poll began
 	    	if (!clientServerManager.isStatusConnected()) {
 	    		clientServerManager.attemptReconnect( );
 	    		return;
 	    	}
 		    pollTime = BASE_POLL_SECONDS;
 	    	queuedEvents = clientServerManager.getMessageEvents();
-			try{
+			// exports are for users logged in: a guest isn't, so asking would fail (401) every poll, and every third
+			// failure drops the connection to reconnect
+			if (User.isGuest(clientServerManager.getClientServerInfo().getUsername())) {
+				lastPollEpochSecond = Instant.now().getEpochSecond();
+			} else try{
 				List<org.vcell.restclient.model.ExportEvent> setOfExports = clientServerManager.getVCellApiClient().getExportApi().exportStatus(lastPollEpochSecond);
 				List<ExportEvent> exportEvents = setOfExports.stream().map(DtoModelTransforms::dtoToExportEvent).toList();
 				queuedEvents = Stream.concat(exportEvents.stream(), Stream.of(queuedEvents)).toArray(MessageEvent[]::new);
@@ -171,11 +177,11 @@ private void poll( )  {
 			);
 	    }
     } catch (Exception exc) {
-	    System.out.println(">> polling failure << " + exc.getMessage());
+	    lg.warn("Polling the server failed ({} in a row)", failureCount + 1, exc);
 	    pollTime = ATTEMPT_POLL_SECONDS;
 	    failureCount ++;
-	    if (failureCount % 3 == 0) {
-	    	bPoll.set(false);
+	    // unless polling was stopped meanwhile (a logout, say), which wants no reconnecting
+	    if (failureCount % 3 == 0 && bPoll.getAndSet(false)) {
 	    	clientServerManager.setDisconnected();
 	    }
     }

@@ -1,0 +1,155 @@
+<SimulationTask xmlns="http://sourceforge.net/projects/vcell/vcml" TaskId="0" JobIndex="0" isPowerUser="false">
+  <MathDescription Name="Copy of 3D pde_generated">
+    <Constant Name="_F_">96485.3321</Constant>
+    <Constant Name="_F_nmol_">9.64853321E-5</Constant>
+    <Constant Name="_K_GHK_">1.0E-9</Constant>
+    <Constant Name="_N_pmol_">6.02214179E11</Constant>
+    <Constant Name="_PI_">3.141592653589793</Constant>
+    <Constant Name="_R_">8314.46261815</Constant>
+    <Constant Name="_T_">300.0</Constant>
+    <Constant Name="AreaPerUnitArea_pm">1.0</Constant>
+    <Constant Name="AreaPerUnitVolume_nm">1.0</Constant>
+    <Constant Name="C_cyt_diffusionRate">10.0</Constant>
+    <Constant Name="C_cyt_init_uM">0.0</Constant>
+    <Constant Name="K_millivolts_per_volt">1000.0</Constant>
+    <Constant Name="Kf">2.0</Constant>
+    <Constant Name="kfl">2.0</Constant>
+    <Constant Name="KMOLE">0.001660538783162726</Constant>
+    <Constant Name="Kr">1000.0</Constant>
+    <Constant Name="netValence">1.0</Constant>
+    <Constant Name="Ran_cyt_diffusionRate">10.0</Constant>
+    <Constant Name="Ran_cyt_init_uM">0.0</Constant>
+    <Constant Name="RanC_cyt_diffusionRate">10.0</Constant>
+    <Constant Name="RanC_nuc_diffusionRate">10.0</Constant>
+    <Constant Name="RanC_nuc_init_uM">4.5E-4</Constant>
+    <Constant Name="s2_init_molecules_um_2">0.0</Constant>
+    <Constant Name="Voltage_nm">0.0</Constant>
+    <Constant Name="Voltage_pm">0.0</Constant>
+    <Constant Name="VolumePerUnitVolume_cyt">1.0</Constant>
+    <Constant Name="VolumePerUnitVolume_EC">1.0</Constant>
+    <Constant Name="VolumePerUnitVolume_nuc">1.0</Constant>
+    <VolumeVariable Name="C_cyt" Domain="subdomain1" />
+    <VolumeVariable Name="Ran_cyt" Domain="subdomain1" />
+    <VolumeVariable Name="RanC_cyt" Domain="subdomain1" />
+    <VolumeVariable Name="RanC_nuc" Domain="subdomain1" />
+    <Function Name="J_flux0" Domain="subdomain1">(kfl * (RanC_cyt - RanC_nuc))</Function>
+    <Function Name="J_r0" Domain="subdomain1">((Kf * RanC_cyt) - ((Kr * Ran_cyt) * C_cyt))</Function>
+    <Function Name="K_s2_total" Domain="subdomain0_subdomain1_membrane">(AreaPerUnitArea_pm * s2_init_molecules_um_2)</Function>
+    <Function Name="KFlux_nm_cyt" Domain="subdomain1">(AreaPerUnitVolume_nm / VolumePerUnitVolume_cyt)</Function>
+    <Function Name="KFlux_nm_nuc" Domain="subdomain1">(AreaPerUnitVolume_nm / VolumePerUnitVolume_nuc)</Function>
+    <Function Name="RanC_cyt_init_uM" Domain="subdomain1">(1.0 + x)</Function>
+    <Function Name="s2" Domain="subdomain0_subdomain1_membrane">(K_s2_total / AreaPerUnitArea_pm)</Function>
+    <Function Name="Size_cyt" Domain="subdomain1">(VolumePerUnitVolume_cyt * vcRegionVolume('subdomain1'))</Function>
+    <Function Name="Size_EC" Domain="subdomain0">(VolumePerUnitVolume_EC * vcRegionVolume('subdomain0'))</Function>
+    <Function Name="Size_nm" Domain="subdomain1">(AreaPerUnitVolume_nm * vcRegionVolume('subdomain1'))</Function>
+    <Function Name="Size_nuc" Domain="subdomain1">(VolumePerUnitVolume_nuc * vcRegionVolume('subdomain1'))</Function>
+    <Function Name="Size_pm" Domain="subdomain0_subdomain1_membrane">(AreaPerUnitArea_pm * vcRegionArea('subdomain0_subdomain1_membrane'))</Function>
+    <Function Name="sobj_subdomain11_subdomain00_size" Domain="subdomain0_subdomain1_membrane">vcRegionArea('subdomain0_subdomain1_membrane')</Function>
+    <Function Name="vobj_subdomain00_size" Domain="subdomain0">vcRegionVolume('subdomain0')</Function>
+    <Function Name="vobj_subdomain11_size" Domain="subdomain1">vcRegionVolume('subdomain1')</Function>
+    <CompartmentSubDomain Name="subdomain1">
+      <BoundaryType Boundary="Xm" Type="Flux" />
+      <BoundaryType Boundary="Xp" Type="Flux" />
+      <BoundaryType Boundary="Ym" Type="Flux" />
+      <BoundaryType Boundary="Yp" Type="Flux" />
+      <BoundaryType Boundary="Zm" Type="Value" />
+      <BoundaryType Boundary="Zp" Type="Value" />
+      <PdeEquation Name="RanC_cyt" SolutionType="Unknown">
+        <Rate>( - J_r0 - (KFlux_nm_cyt * J_flux0))</Rate>
+        <Diffusion>RanC_cyt_diffusionRate</Diffusion>
+        <Initial>RanC_cyt_init_uM</Initial>
+      </PdeEquation>
+      <PdeEquation Name="Ran_cyt" SolutionType="Unknown">
+        <Rate>J_r0</Rate>
+        <Diffusion>Ran_cyt_diffusionRate</Diffusion>
+        <Initial>Ran_cyt_init_uM</Initial>
+      </PdeEquation>
+      <PdeEquation Name="C_cyt" SolutionType="Unknown">
+        <Rate>J_r0</Rate>
+        <Diffusion>C_cyt_diffusionRate</Diffusion>
+        <Initial>C_cyt_init_uM</Initial>
+      </PdeEquation>
+      <PdeEquation Name="RanC_nuc" SolutionType="Unknown">
+        <Rate>(KFlux_nm_nuc * J_flux0)</Rate>
+        <Diffusion>RanC_nuc_diffusionRate</Diffusion>
+        <Initial>RanC_nuc_init_uM</Initial>
+      </PdeEquation>
+    </CompartmentSubDomain>
+    <CompartmentSubDomain Name="subdomain0">
+      <BoundaryType Boundary="Xm" Type="Flux" />
+      <BoundaryType Boundary="Xp" Type="Flux" />
+      <BoundaryType Boundary="Ym" Type="Flux" />
+      <BoundaryType Boundary="Yp" Type="Flux" />
+      <BoundaryType Boundary="Zm" Type="Value" />
+      <BoundaryType Boundary="Zp" Type="Value" />
+    </CompartmentSubDomain>
+    <MembraneSubDomain Name="subdomain0_subdomain1_membrane" InsideCompartment="subdomain1" OutsideCompartment="subdomain0">
+      <BoundaryType Boundary="Xm" Type="Value" />
+      <BoundaryType Boundary="Xp" Type="Value" />
+      <BoundaryType Boundary="Ym" Type="Value" />
+      <BoundaryType Boundary="Yp" Type="Value" />
+      <BoundaryType Boundary="Zm" Type="Value" />
+      <BoundaryType Boundary="Zp" Type="Value" />
+      <JumpCondition Name="RanC_cyt">
+        <InFlux>0.0</InFlux>
+        <OutFlux>0.0</OutFlux>
+      </JumpCondition>
+      <JumpCondition Name="Ran_cyt">
+        <InFlux>0.0</InFlux>
+        <OutFlux>0.0</OutFlux>
+      </JumpCondition>
+      <JumpCondition Name="C_cyt">
+        <InFlux>0.0</InFlux>
+        <OutFlux>0.0</OutFlux>
+      </JumpCondition>
+      <JumpCondition Name="RanC_nuc">
+        <InFlux>0.0</InFlux>
+        <OutFlux>0.0</OutFlux>
+      </JumpCondition>
+    </MembraneSubDomain>
+    <Version Name="Copy of 3D pde_generated" KeyValue="252546358" BranchId="90911392" Archived="0" Date="08-Feb-2023 01:54:34" FromVersionable="false">
+      <Owner Name="schaff" Identifier="17" />
+      <GroupAccess Type="1" />
+    </Version>
+  </MathDescription>
+  <Simulation Name="Copy of Simulation7">
+    <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Sundials Stiff PDE Solver (Variable Time Step)">
+      <TimeBound StartTime="0.0" EndTime="0.01" />
+      <TimeStep DefaultTime="0.05" MinTime="0.0" MaxTime="0.1" />
+      <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-7" />
+      <OutputOptions OutputTimeStep="0.005" />
+      <SundialsSolverOptions>
+        <maxOrderAdvection>2</maxOrderAdvection>
+      </SundialsSolverOptions>
+      <NumberProcessors>1</NumberProcessors>
+    </SolverTaskDescription>
+    <MathOverrides />
+    <MeshSpecification>
+      <Size X="51" Y="51" Z="1" />
+    </MeshSpecification>
+    <Version Name="temp simulation" KeyValue="1585623750" BranchId="1" Archived="1" Date="19-Aug-2024 15:56:29" FromVersionable="false">
+      <Owner Name="temp" Identifier="123" />
+      <GroupAccess Type="1" />
+    </Version>
+  </Simulation>
+  <Geometry Name="Geometry1608955162" Dimension="2">
+    <Extent X="10.0" Y="10.0" Z="10.0" />
+    <Origin X="0.0" Y="0.0" Z="0.0" />
+    <SubVolume Name="subdomain1" Handle="1" Type="Analytical" KeyValue="90911384">
+      <AnalyticExpression>((((x - 5.0) ^ 2.0) + ((y - 5.0) ^ 2.0)) &lt; (3.0 ^ 2.0))</AnalyticExpression>
+    </SubVolume>
+    <SubVolume Name="subdomain0" Handle="0" Type="Analytical" KeyValue="90911385">
+      <AnalyticExpression>1.0</AnalyticExpression>
+    </SubVolume>
+    <SurfaceClass Name="subdomain0_subdomain1_membrane" SubVolume1Ref="subdomain0" SubVolume2Ref="subdomain1" KeyValue="90911386" />
+    <SurfaceDescription NumSamplesX="101" NumSamplesY="101" NumSamplesZ="1" CutoffFrequency="0.3">
+      <VolumeRegion Name="subdomain00" RegionID="0" SubVolume="subdomain0" Size="71.91" Unit="um2" />
+      <VolumeRegion Name="subdomain11" RegionID="1" SubVolume="subdomain1" Size="28.09" Unit="um2" />
+      <MembraneRegion Name="membrane_subdomain00_subdomain11" VolumeRegion1="subdomain11" VolumeRegion2="subdomain00" Size="18.835817392831714" Unit="um" />
+    </SurfaceDescription>
+    <Version Name="Geometry1608955162" KeyValue="90911380" BranchId="90911381" Archived="0" Date="09-Sep-2014 10:53:18" FromVersionable="false">
+      <Owner Name="schaff" Identifier="17" />
+      <GroupAccess Type="1" />
+    </Version>
+  </Geometry>
+</SimulationTask>

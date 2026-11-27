@@ -77,18 +77,12 @@ public class SBMLTestSuiteTest {
 		faults.put(40, FAULT.ALGEBRAIC_RULES);
 		faults.put(46, FAULT.COMPARTMENT_1D);
 		faults.put(47, FAULT.COMPARTMENT_1D);
-		faults.put(48, FAULT.COMPARTMENT_0D);
-		faults.put(49, FAULT.COMPARTMENT_0D);
-		faults.put(50, FAULT.COMPARTMENT_0D);
 		faults.put(51, FAULT.STRUCTURE_SIZE_IN_RATE_RULE);
 		faults.put(52, FAULT.STRUCTURE_SIZE_IN_RATE_RULE);
 		faults.put(53, FAULT.STRUCTURE_SIZE_IN_RATE_RULE);
 		faults.put(96, FAULT.COMPARTMENT_1D);
-		faults.put(97, FAULT.COMPARTMENT_0D);
 		faults.put(99, FAULT.COMPARTMENT_1D);
-		faults.put(100, FAULT.COMPARTMENT_0D);
 		faults.put(102, FAULT.COMPARTMENT_1D);
-		faults.put(103, FAULT.COMPARTMENT_0D);
 		faults.put(104, FAULT.STRUCTURE_SIZE_IN_RATE_RULE);
 		faults.put(105, FAULT.STRUCTURE_SIZE_IN_RATE_RULE);
 		faults.put(106, FAULT.STRUCTURE_SIZE_IN_RATE_RULE);
@@ -218,11 +212,8 @@ public class SBMLTestSuiteTest {
 
 		faults.put(153, FAULT.COMPARTMENT_1D);
 		faults.put(154, FAULT.COMPARTMENT_1D);
-		faults.put(155, FAULT.COMPARTMENT_0D);
-		faults.put(156, FAULT.COMPARTMENT_0D);
 		faults.put(182, FAULT.ALGEBRAIC_RULES);
 		faults.put(184, FAULT.ALGEBRAIC_RULES);
-		faults.put(201, FAULT.XOR_MISSING);
 		faults.put(205, FAULT.COMPARTMENT_DIM_MISSING);
 		faults.put(206, FAULT.COMPARTMENT_1D);
 		faults.put(207, FAULT.COMPARTMENT_1D);
@@ -241,56 +232,27 @@ public class SBMLTestSuiteTest {
 		faults.put(235, FAULT.COMPARTMENT_1D);
 		faults.put(236, FAULT.COMPARTMENT_1D);
 		faults.put(237, FAULT.COMPARTMENT_1D);
-		faults.put(238, FAULT.COMPARTMENT_0D);
-		faults.put(239, FAULT.COMPARTMENT_0D);
-		faults.put(240, FAULT.COMPARTMENT_0D);
-		faults.put(241, FAULT.COMPARTMENT_0D);
-		faults.put(242, FAULT.COMPARTMENT_0D);
-		faults.put(243, FAULT.COMPARTMENT_0D);
-		faults.put(244, FAULT.COMPARTMENT_0D);
-		faults.put(245, FAULT.COMPARTMENT_0D);
-		faults.put(246, FAULT.COMPARTMENT_0D);
-		faults.put(247, FAULT.COMPARTMENT_0D);
 		faults.put(254, FAULT.COMPARTMENT_1D);
 		faults.put(255, FAULT.COMPARTMENT_1D);
 		faults.put(256, FAULT.COMPARTMENT_1D);
-		faults.put(257, FAULT.COMPARTMENT_0D);
-		faults.put(258, FAULT.COMPARTMENT_0D);
-		faults.put(259, FAULT.COMPARTMENT_0D);
 		faults.put(261, FAULT.COMPARTMENT_1D);
-		faults.put(262, FAULT.COMPARTMENT_0D);
 		faults.put(264, FAULT.COMPARTMENT_1D);
-		faults.put(265, FAULT.COMPARTMENT_0D);
 		faults.put(267, FAULT.COMPARTMENT_1D);
-		faults.put(268, FAULT.COMPARTMENT_0D);
-		faults.put(279, FAULT.XOR_MISSING);
 		faults.put(281, FAULT.COMPARTMENT_1D);
 		faults.put(283, FAULT.COMPARTMENT_1D);
 		faults.put(285, FAULT.COMPARTMENT_1D);
 		faults.put(320, FAULT.COMPARTMENT_1D);
-		faults.put(321, FAULT.COMPARTMENT_0D);
 		faults.put(323, FAULT.COMPARTMENT_1D);
-		faults.put(324, FAULT.COMPARTMENT_0D);
 		faults.put(326, FAULT.COMPARTMENT_1D);
-		faults.put(327, FAULT.COMPARTMENT_0D);
 		faults.put(361, FAULT.COMPARTMENT_1D);
-		faults.put(362, FAULT.COMPARTMENT_0D);
 		faults.put(364, FAULT.COMPARTMENT_1D);
-		faults.put(365, FAULT.COMPARTMENT_0D);
 		faults.put(367, FAULT.COMPARTMENT_1D);
-		faults.put(368, FAULT.COMPARTMENT_0D);
 		faults.put(418, FAULT.COMPARTMENT_1D);
-		faults.put(419, FAULT.COMPARTMENT_0D);
 		faults.put(421, FAULT.COMPARTMENT_1D);
-		faults.put(422, FAULT.COMPARTMENT_0D);
 		faults.put(424, FAULT.COMPARTMENT_1D);
-		faults.put(425, FAULT.COMPARTMENT_0D);
 		faults.put(486, FAULT.COMPARTMENT_1D);
 		faults.put(487, FAULT.COMPARTMENT_1D);
 		faults.put(488, FAULT.COMPARTMENT_1D);
-		faults.put(489, FAULT.COMPARTMENT_0D);
-		faults.put(490, FAULT.COMPARTMENT_0D);
-		faults.put(491, FAULT.COMPARTMENT_0D);
 		faults.put(531, FAULT.ALGEBRAIC_RULES);
 		faults.put(532, FAULT.ALGEBRAIC_RULES);
 		faults.put(533, FAULT.ALGEBRAIC_RULES);
@@ -303,10 +265,10 @@ public class SBMLTestSuiteTest {
 		faults.put(540, FAULT.ALGEBRAIC_RULES);
 		faults.put(541, FAULT.ALGEBRAIC_RULES);
 		faults.put(542, FAULT.ALGEBRAIC_RULES);
-		faults.put(543, FAULT.COMPARTMENT_0D);
+		faults.put(543, FAULT.ALGEBRAIC_RULES);
 		faults.put(544, FAULT.ALGEBRAIC_RULES);
 		faults.put(545, FAULT.ALGEBRAIC_RULES);
-		faults.put(546, FAULT.COMPARTMENT_0D);
+		faults.put(546, FAULT.ALGEBRAIC_RULES);
 		faults.put(547, FAULT.ALGEBRAIC_RULES);
 		faults.put(548, FAULT.ALGEBRAIC_RULES);
 		faults.put(549, FAULT.ALGEBRAIC_RULES);
@@ -401,8 +363,6 @@ public class SBMLTestSuiteTest {
 		faults.put(943, FAULT.DELAY);
 		faults.put(945, FAULT.STRUCTURE_SIZE_IN_ASSIGNMENT_RULE);
 		faults.put(947, FAULT.STRUCTURE_SIZE_IN_ASSIGNMENT_RULE);
-		faults.put(957, FAULT.XOR_MISSING);
-		faults.put(958, FAULT.XOR_MISSING);
 		faults.put(959, FAULT.INCONSISTENT_UNIT_SYSTEM);
 		faults.put(960, FAULT.AVOGADRO);
 		faults.put(961, FAULT.AVOGADRO);
@@ -438,10 +398,6 @@ public class SBMLTestSuiteTest {
 		faults.put(1198, FAULT.STRUCTURE_SIZE_IN_RATE_RULE);
 		faults.put(1103, FAULT.OVERDETERMINED_SYSTEM);
 		faults.put(1108, FAULT.ALGEBRAIC_RULES);
-		faults.put(1112, FAULT.XOR_MISSING);
-		faults.put(1113, FAULT.XOR_MISSING);
-		faults.put(1114, FAULT.XOR_MISSING);
-		faults.put(1115, FAULT.XOR_MISSING);
 		faults.put(1121, FAULT.AVOGADRO);
 		faults.put(1124, FAULT.COMP_PACKAGE);
 		faults.put(1125, FAULT.COMP_PACKAGE);
@@ -556,9 +512,11 @@ public class SBMLTestSuiteTest {
 		faults.put(967, FAULT.EVENT_PRIORITY_ORDERING); // TODO: multiple events ordered by priority - same priority - crazy test case - mismatch (also Java Heap Space)
 		faults.put(969, FAULT.STOCH_INIT_ASSIGN_AND_VALUE); // TODO: initial assigment should override stoichiometry
 		faults.put(971, FAULT.STOCH_INIT_ASSIGN_AND_VALUE); // TODO: initial assigment should override stoichiometry
-		faults.put(975, FAULT.MODEL_CONVERSION_FACTOR); // TODO: implement or reject as not supported - model conversion factor ???
-		faults.put(976, FAULT.MODEL_CONVERSION_FACTOR); // TODO: implement or reject as not supported - model conversion factor ???
-		faults.put(977, FAULT.SPECIES_CONVERSION_FACTOR); // TODO: implement or reject as not supported - model conversion factor ???
+		faults.put(957, FAULT.ARCCOT_CONVENTION); // arccot(-0.1): SBML reads atan(1/x) = -1.47, VCell's acot is pi/2 - atan(x) = 1.67
+		faults.put(958, FAULT.ARCCOT_CONVENTION);
+		faults.put(975, FAULT.MODEL_CONVERSION_FACTOR); // refused at import: conversion factors are not supported
+		faults.put(976, FAULT.MODEL_CONVERSION_FACTOR); // refused at import: conversion factors are not supported
+		faults.put(977, FAULT.SPECIES_CONVERSION_FACTOR); // refused at import: conversion factors are not supported
 		faults.put(978, FAULT.EVENT_CORNER_CASES); // TODO: Several events conspire within the same time step to trigger three events multiple times, with different outcomes.
 		faults.put(995, FAULT.EVENT_INITIAL_VALUE); // TODO: Several events conspire within the same time step to trigger three events multiple times, with different outcomes.
 		faults.put(996, FAULT.EVENT_INITIAL_VALUE); // TODO: Several events conspire within the same time step to trigger three events multiple times, with different outcomes.
@@ -639,6 +597,7 @@ public class SBMLTestSuiteTest {
 //		STRUCTURE_SIZE_IN_BIOEVENT,
 		STOICHIOMETRY_IN_EXPRESSION,
 		REACTION_RATE_IN_EXPRESSION,	// <ci> naming a reaction, which SBML defines as that reaction's rate
+		ARCCOT_CONVENTION,		// VCell's acot (range (0, pi)) differs from SBML's arccot for negative arguments
 		FAST_SYSTEM_INCOMPATIBILITY,
 		NONCONSTANT_COMPARTMENT,
 		NONNUMERIC_STOICIOMETRY_MATH,

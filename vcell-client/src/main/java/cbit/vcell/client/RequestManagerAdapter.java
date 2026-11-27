@@ -5,6 +5,7 @@ import java.util.Hashtable;
 
 import javax.swing.filechooser.FileFilter;
 
+import cbit.vcell.server.ServerInfo;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.MathModelInfo;
@@ -60,6 +61,8 @@ public class RequestManagerAdapter implements RequestManager {
 	public void exitApplication() {}
 	@Override
 	public void exportDocument(TopLevelWindowManager manager, FileFilter forceFileFilter) {}
+	@Override
+	public void exportDocumentOfferingSave(DocumentWindowManager manager) {}
 	@Override
 	public AsynchMessageManager getAsynchMessageManager() { return null; }
 	@Override
@@ -132,6 +135,10 @@ public class RequestManagerAdapter implements RequestManager {
 	public boolean isDifferentFromBlank(VCDocument.VCDocumentType documentType,VCDocument vcDocument) {return false;}
 	@Override
 	public ClientServerInfo getClientServerInfo() {return null;}
+	@Override
+	public ServerInfo getServerInfo() {
+		return null;
+	}
 
 	@Override
 	public VtkManager getVtkManager(OutputContext outputContext, VCDataIdentifier vcDataID) throws DataAccessException { return null;}

@@ -159,8 +159,10 @@ private void initialize() {
 		}
 
 		firstSiteList = new JList<LinkNode>(firstSiteListModel);
+		firstSiteList.setName("FirstSiteList");
 		firstSiteList.setCellRenderer(firstSiteCellRenderer);
 		secondSiteList = new JList<LinkNode>(secondSiteListModel);
+		secondSiteList.setName("SecondSiteList");
 		secondSiteList.setCellRenderer(secondSiteCellRenderer);
 		firstSiteList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		secondSiteList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);

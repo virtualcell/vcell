@@ -3,14 +3,14 @@
 ## Problem
 
 SLURM jobs on the mantis cluster run VCell workloads inside Apptainer
-containers. Four container images are used:
+containers:
 
 | Image | Purpose | Version tracks |
 |-------|---------|---------------|
 | vcell-opt | Parameter estimation (COPASI) | VCell release tag |
-| vcell-batch | Batch solvers (Langevin, RK, etc.) | VCell release tag |
-| vcell-solvers | Native solvers (CombinedSundials, CVODE, NFSim, etc.) | Independent (e.g. v0.8.2) |
-| vcell-fvsolver | Finite volume solvers (Smoldyn, SundialsPDE, etc.) | Independent (e.g. 0.9.7) |
+| vcell-batch | VCell's Java tools: pre/post-processors, the Java ODE solvers (RK, Adams-Moulton, ...), Langevin, `Send*Msg`. Java only: a JRE on Debian, no native solvers | VCell release tag |
+| vcell-<repo> | One image per native solver repo (fvsolver, ode, stochastic, nfsim, mbsolver, hy3s, chombo, fenics); see "Solver image families" below | That repo's release (e.g. vcell-ode 0.9.5) |
+| vcell-solvers | Legacy: all native solvers in one image. Optional; a site that has moved every solver to its own family drops it | Independent (e.g. v0.8.2) |
 
 Previously, every SLURM job invocation ran:
 
@@ -172,14 +172,62 @@ htc_vcellopt_apptainer_image=oras://ghcr.io/virtualcell/vcell-opt_singularity:7.
 htc_vcellbatch_apptainer_image=oras://ghcr.io/virtualcell/vcell-batch_singularity:7.7.0.71
 htc_vcellsolvers_apptainer_image=oras://ghcr.io/virtualcell/vcell-solvers_singularity:v0.8.2
 htc_vcellfvsolver_apptainer_image=oras://ghcr.io/virtualcell/vcell-fvsolver_singularity:0.9.7
+htc_vcellfenics_apptainer_image=oras://ghcr.io/virtualcell/vcell-fenics_singularity:0.2.0
+htc_vcellfenics_solver_list=FEniCSx
 ```
+
+The FEniCSx pair is optional in `SlurmProxy`: a site that sets neither simply cannot run
+FEniCSx (the job is refused, not run in another image). Unlike vcell-solvers and vcell-fvsolver,
+its SIF needs no manual bootstrap: the vcell-fenics repository's `container` workflow publishes
+`oras://ghcr.io/virtualcell/vcell-fenics_singularity:{sha-<commit>,latest}` (amd64, the cluster's
+architecture) on every push to its `main`, alongside the multi-arch Docker image the desktop
+client pulls. Pin a `sha-` tag here rather than `latest`, so a vcell-fenics merge cannot change what
+a deployed site runs.
 
 These flow through `docker-compose.yml` → `Dockerfile-service-dev` (run as `submit`)
 → Java system properties → `PropertyLoader` → `SlurmProxy.java`.
 
-The solver-to-container mapping in `SlurmProxy.java` (lines 728-737)
-maps each solver name to the appropriate `*_apptainer_image` property,
-then derives the local SIF filename from that ORAS URL.
+### Solver image families
+
+`SlurmProxy.generateScript` picks the solver's image from an ordered table of **solver families**
+(`SolverImageFamily.FAMILIES`). Each family is a pair of properties,
+`htc_vcell<family>_apptainer_image` and `htc_vcell<family>_solver_list` (a comma-separated list of
+`SolverDescription` names), set in the environment as `VCELL_HTC_VCELL<FAMILY>_APPTAINER_IMAGE` and
+`VCELL_HTC_VCELL<FAMILY>_SOLVER_LIST`:
+
+| order | family | image (from each solver repo) |
+|---|---|---|
+| 1 | `fenics` | `vcell-fenics_singularity` |
+| 2 | `fvsolver` | `vcell-fvsolver_singularity` |
+| 3 | `ode` | `vcell-ode_singularity` |
+| 4 | `stochastic` | `vcell-stochastic_singularity` |
+| 5 | `nfsim` | `vcell-nfsim_singularity` |
+| 6 | `mbsolver` | `vcell-mbsolver_singularity` |
+| 7 | `hy3s` | `vcell-hy3s_singularity` |
+| 8 | `chombo` | `vcell-chombo_singularity` |
+| 9 | `solvers` | legacy `vcell-solvers_singularity` (the fallback) |
+| 10 | `batch` | `vcell-batch_singularity` (the Java solvers) |
+
+- The first family, in this order, whose list names the solver wins; its SIF path is derived from the
+  ORAS URL as above.
+- A family whose image is unset or whose list is empty is skipped, so a site configures only the
+  families it runs. (`HtcSimulationWorker` still requires the `fvsolver` list and the `batch` pair at
+  startup. The legacy `solvers` pair is optional, so a site that has moved every solver to its own
+  family can drop it.)
+- A solver named on more than one list is not an error: the first family wins and a warning is logged.
+- A solver on no configured list is refused (`solverName=... not in vcellfenics_solverList=[...] or ...`).
+
+Moving a solver to its own image is configuration only: add the family's image and list, and take
+the solver's name off `VCELL_HTC_VCELLSOLVERS_SOLVER_LIST` (or `..._VCELLFVSOLVER_...`). For example:
+
+```
+VCELL_HTC_VCELLODE_APPTAINER_IMAGE=oras://ghcr.io/virtualcell/vcell-ode_singularity:0.9.5
+VCELL_HTC_VCELLODE_SOLVER_LIST=CVODE,IDA,CombinedSundials
+```
+
+Every solver and batch container gets `--env TMPDIR=/solvertmp`, the Slurm tmp dir bound into the
+container, so temporary files (and vcell-fenics' JIT cache) don't land in the small `/tmp` of
+`--containall`. The vcell-batch image already sets the same `TMPDIR` in its Dockerfile.
 
 ## Atomic write
 

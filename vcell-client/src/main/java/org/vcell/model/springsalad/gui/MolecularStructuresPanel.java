@@ -1,5 +1,8 @@
 package org.vcell.model.springsalad.gui;
 
+import org.vcell.documentation.HelpIds;
+import org.vcell.documentation.HelpContext;
+import cbit.vcell.client.laf.VCellColors;
 import cbit.gui.ScopedExpression;
 import cbit.vcell.client.ChildWindowManager;
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
@@ -15,7 +18,7 @@ import cbit.vcell.mapping.*;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.mapping.gui.LinkSpecsTableModel;
 import cbit.vcell.mapping.gui.MolecularTypeSpecsTableModel;
-import cbit.vcell.mapping.gui.SpeciesContextSpecsTableModel;
+import cbit.vcell.mapping.gui.SpeciesContextSpecTableModel;
 import cbit.vcell.mapping.gui.StructureMappingTableRenderer.TextIcon;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.RbmModelContainer;
@@ -26,7 +29,6 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.units.VCUnitDefinition;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.vcell.model.rbm.LinkNode;
-import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.Coordinate;
@@ -36,7 +38,6 @@ import org.vcell.util.gui.ScrollTable.ScrollTableBooleanCellRenderer;
 import org.vcell.util.gui.sorttable.SortTableModel;
 import org.vcell.util.springsalad.Colors;
 import org.vcell.util.springsalad.NamedColor;
-import org.vcell.util.ColorUtil;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -53,10 +54,10 @@ import java.awt.event.FocusListener;
 import java.beans.PropertyChangeListener;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.vcell.client.logicalwindow.LWSize;
 
 
 @SuppressWarnings("serial")
@@ -69,7 +70,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 	private MolecularInternalLinkSpec fieldMolecularInternalLinkSpec;
 
 	private EditorScrollTable speciesContextSpecsTable = null;
-	private SpeciesContextSpecsTableModel speciesContextSpecsTableModel = null;
+	private SpeciesContextSpecTableModel speciesContextSpecTableModel = null;
 	private SmallShapeManager shapeManager = new SmallShapeManager(false, false, false, false);
 
 	private EditorScrollTable molecularTypeSpecsTable = null;
@@ -195,7 +196,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 			if (e.getSource() == getSpeciesContextSpecsTable().getSelectionModel()) {
 				System.out.println("valueChanged: speciesContextSpecsTableModel");
 				int row = getSpeciesContextSpecsTable().getSelectedRow();
-				SpeciesContextSpec scsSelected = speciesContextSpecsTableModel.getValueAt(row);
+				SpeciesContextSpec scsSelected = speciesContextSpecTableModel.getValueAt(row);
 				setSpeciesContextSpec(scsSelected);
 
 				ArrayList<Object> selectedObjects = new ArrayList<Object>();
@@ -267,9 +268,13 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 	private void initialize() {
 		try {
 			addStructuralSiteButton = new JButton("Add Structural Site");
+			addStructuralSiteButton.setName("AddStructuralSiteButton");
 			deleteStructuralSiteButton = new JButton("Delete Structural Site");
+			deleteStructuralSiteButton.setName("DeleteStructuralSiteButton");
 			addLinkButton = new JButton("Add Link");
+			addLinkButton.setName("AddLinkButton");
 			deleteLinkButton = new JButton("Delete Link");
+			deleteLinkButton.setName("DeleteLinkButton");
 
 			addStructuralSiteButton.setEnabled(false);
 			deleteStructuralSiteButton.setEnabled(false);
@@ -379,20 +384,20 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 					defaultToolTipText = getText();
 					setToolTipText(defaultToolTipText);
 				} else if (value instanceof ScopedExpression) {
-					SpeciesContextSpec scSpec = speciesContextSpecsTableModel.getValueAt(row);
+					SpeciesContextSpec scSpec = speciesContextSpecTableModel.getValueAt(row);
 					VCUnitDefinition unit = null;
-					if (table.getColumnName(column).equals(SpeciesContextSpecsTableModel.ColumnType.COLUMN_INITIAL.label)) {
+					if (table.getColumnName(column).equals(SpeciesContextSpecTableModel.ColumnType.INITIAL_CONDITION.label)) {
 						SpeciesContextSpecParameter initialConditionParameter = scSpec.getInitialConditionParameter();
 						unit = initialConditionParameter.getUnitDefinition();
-					} else if (table.getColumnName(column).equals(SpeciesContextSpecsTableModel.ColumnType.COLUMN_DIFFUSION.label)) {
+					} else if (table.getColumnName(column).equals(SpeciesContextSpecTableModel.ColumnType.DIFFUSION_CONSTANT.label)) {
 						SpeciesContextSpecParameter diffusionParameter = scSpec.getDiffusionParameter();
 						unit = diffusionParameter.getUnitDefinition();
 					}
 					if (unit != null) {
 						setHorizontalTextPosition(JLabel.LEFT);
-						setIcon(new TextIcon("[" + unit.getSymbolUnicode() + "]", DefaultScrollTableCellRenderer.uneditableForeground));
+						setIcon(new TextIcon("[" + unit.getSymbolUnicode() + "]", VCellColors.getUneditableForeground()));
 					}
-					int rgb = 0x00ffffff & DefaultScrollTableCellRenderer.uneditableForeground.getRGB();
+					int rgb = 0x00ffffff & VCellColors.getUneditableForeground().getRGB();
 					defaultToolTipText = "<html>" + StringEscapeUtils.escapeHtml4(getText()) + " <font color=#" + Integer.toHexString(rgb) + "> [" + unit.getSymbolUnicode() + "] </font></html>";
 					setToolTipText(defaultToolTipText);
 					if(unit != null) {
@@ -416,8 +421,8 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 				super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 				if (table.getModel() instanceof VCellSortTableModel<?>) {
 					Object selectedObject = null;
-					if (table.getModel() == speciesContextSpecsTableModel) {
-						selectedObject = speciesContextSpecsTableModel.getValueAt(row);
+					if (table.getModel() == speciesContextSpecTableModel) {
+						selectedObject = speciesContextSpecTableModel.getValueAt(row);
 					}
 					if (selectedObject != null) {
 						if(selectedObject instanceof SpeciesContextSpec) {
@@ -445,7 +450,6 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		
 		// The Structures combobox cell renderer in the MolecularTypeSpecsTable
 		DefaultScrollTableCellRenderer structuresTableCellRenderer = new DefaultScrollTableCellRenderer() {
-			final Color lightBlueBackground = new Color(214, 234, 248);
 			@Override
 			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
 					int row, int column) {
@@ -526,7 +530,6 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 
 			// The NamedColor combobox cell renderer in the MolecularTypeSpecsTable
 		DefaultScrollTableCellRenderer namedColorTableCellRenderer = new DefaultScrollTableCellRenderer() {
-			final Color lightBlueBackground = new Color(214, 234, 248);
 			@Override
 			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
 														   int row, int column) {
@@ -666,7 +669,6 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		linksPanel.add(linksScrollPane, gbc);
 
 		DefaultScrollTableCellRenderer linkSpecsTableCellRenderer = new DefaultScrollTableCellRenderer() {
-			final Color lightBlueBackground = new Color(214, 234, 248);
 			@Override
 			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
 															   int row, int column) {
@@ -755,9 +757,9 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 			try {
 				speciesContextSpecsTable = new EditorScrollTable();
 				speciesContextSpecsTable.setName("spceciesContextSpecsTable");
-				speciesContextSpecsTableModel = new SpeciesContextSpecsTableModel(speciesContextSpecsTable, this);
-				speciesContextSpecsTableModel.setEditable(false);
-				speciesContextSpecsTable.setModel(speciesContextSpecsTableModel);
+				speciesContextSpecTableModel = new SpeciesContextSpecTableModel(speciesContextSpecsTable, this);
+				speciesContextSpecTableModel.setEditable(false);
+				speciesContextSpecsTable.setModel(speciesContextSpecTableModel);
 //				speciesContextSpecsTable.setScrollTableActionManager(new InternalScrollTableActionManager(speciesContextSpecsTable));
 				speciesContextSpecsTable.setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
 			} catch (java.lang.Throwable ivjExc) {
@@ -787,7 +789,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 			m.removePropertyChangeListener(eventHandler);
 			m.addPropertyChangeListener(eventHandler);
 		}
-		speciesContextSpecsTableModel.setSimulationContext(simulationContext);
+		speciesContextSpecTableModel.setSimulationContext(simulationContext);
 		molecularTypeSpecsTableModel.setSimulationContext(simulationContext);
 		linkSpecsTableModel.setSimulationContext(simulationContext);
 		updateInterface();
@@ -837,7 +839,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 	
 	public void setIssueManager(IssueManager issueManager) {
 		super.setIssueManager(issueManager);
-		speciesContextSpecsTableModel.setIssueManager(issueManager);
+		speciesContextSpecTableModel.setIssueManager(issueManager);
 	}
 
 	private void updateInterface() {
@@ -869,7 +871,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 
 	@Override
 	protected void onSelectedObjectsChange(Object[] selectedObjects) {
-		setTableSelections(selectedObjects, speciesContextSpecsTable, speciesContextSpecsTableModel);
+		setTableSelections(selectedObjects, speciesContextSpecsTable, speciesContextSpecTableModel);
 	}
 
 	private void changeSpeciesContextSpec() {
@@ -977,11 +979,10 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 	private void addLinkActionPerformed() {
 		AddLinkPanel panel = new AddLinkPanel(this);
 		ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(this);
+		HelpContext.setPage(panel, HelpIds.SPRINGSALAD_SPECIES_SPECIFICATIONS);
 		ChildWindow childWindow = childWindowManager.addChildWindow(panel, panel, " Add Link ");
-		Dimension dim = new Dimension(320, 330);
-		childWindow.pack();
 		panel.setChildWindow(childWindow);
-		childWindow.setPreferredSize(dim);
+		childWindow.setSize(LWSize.ems(27, 27.5f));
 		childWindow.showModal();
 		if(panel.getButtonPushed() == AddLinkPanel.ActionButtons.Apply) {
 			LinkNode firstMcp = panel.getFirstSiteList().getSelectedValue();

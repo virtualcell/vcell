@@ -86,6 +86,10 @@ public interface SimDataConstants {
 	public static final String LANGEVIN_OUTPUT_FILE_EXTENSION = ".ida";
 	public static final String LANGEVIN_OUTPUT_LOG_EXTENSION = ".log";
 
+	public static final String FENICS_MESSAGINGCONFIG_FILE_EXTENSION = ".fenicsMessagingConfig";
+	/** the FEniCSx results bundle is the directory {@code <SimID_..._>.fenics/} (a zarr v2 group) */
+	public static final String FENICS_BUNDLE_EXTENSION = ".fenics";
+
 	public static final String SMOLDYN_INPUT_FILE_EXTENSION = ".smoldynInput";
 	public static final String SMOLDYN_OUTPUT_FILE_EXTENSION = ".smoldynOutput";
 	public static final String SMOLDYN_HIGH_RES_VOLUME_SAMPLES_EXTENSION = ".hrvs";

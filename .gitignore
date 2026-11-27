@@ -25,7 +25,6 @@ ziptool
 .vagrant
 /update/
 /.checksums
-vcell-client/UserDocumentation/originalXML/helpSearchConfig.txt
 *.iml
 .metadata/
 .jython_cache
@@ -124,6 +123,11 @@ stdOut.txt
 # need this file for testing
 !python-utils/tests/fixtures/modeldb-206365-outputs.zip
 
+# The vendored Maven repository is source, not build output. Without this the blanket
+# *.jar above silently swallows the jar of anything vendored here - which is exactly how
+# a vendored artifact ends up as a pom and a checksum with no jar behind them.
+!lib/maven-repo/**/*.jar
+
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 
@@ -213,7 +217,6 @@ run_sim.sh
 
 remove_temp.sh
 
-vcell-client/UserDocumentation/originalXML/helpSearchConfig.txt
 .vscode/launch.json
 .vscode/settings.json
 
@@ -265,3 +268,8 @@ active_users*.csv
 
 # backlog tooling output
 obsolescence-sweep.json
+
+# Obsidian, used to edit the in-app help: share the vault's link settings, not each person's layout
+vcell-client/UserDocumentation/.obsidian/*
+!vcell-client/UserDocumentation/.obsidian/app.json
+vcell-client/UserDocumentation/.trash/

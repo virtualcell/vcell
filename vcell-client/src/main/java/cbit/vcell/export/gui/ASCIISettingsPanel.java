@@ -10,6 +10,7 @@
 
 package cbit.vcell.export.gui;
 
+import cbit.vcell.client.laf.VCellFonts;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
@@ -306,7 +307,7 @@ private javax.swing.JButton getJButtonOK() {
 		try {
 			ivjJButtonOK = new javax.swing.JButton();
 			ivjJButtonOK.setName("JButtonOK");
-			ivjJButtonOK.setFont(new java.awt.Font("dialog", 1, 12));
+			VCellFonts.setCategory(ivjJButtonOK, VCellFonts.Category.HEADING);
 			ivjJButtonOK.setText("OK");
 			ivjJButtonOK.setMaximumSize(new java.awt.Dimension(100, 50));
 			// user code begin {1}

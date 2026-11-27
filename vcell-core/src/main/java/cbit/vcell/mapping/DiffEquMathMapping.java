@@ -1688,8 +1688,8 @@ public class DiffEquMathMapping extends AbstractMathMapping {
             for(SurfaceRegionObject surfaceRegionObject : memSubdomainContext.surfaceRegionObjects){
                 if(surfaceRegionObject.isQuantityCategoryEnabled(QuantityCategory.SurfaceVelocity)){
                     int dim = simContext.getGeometry().getDimension();
-                    if(dim != 2){
-                        throw new MappingException("Membrane Velocity only supported for 2D geometries");
+                    if(dim != 2 && dim != 3){
+                        throw new MappingException("Membrane Velocity only supported for 2D and 3D geometries");
                     }
                     if(simContext.getGeometry().getDimension() >= 1){
                         SpatialQuantity velXQuantity = surfaceRegionObject.getSpatialQuantity(QuantityCategory.SurfaceVelocity, QuantityComponent.X);
@@ -1704,8 +1704,7 @@ public class DiffEquMathMapping extends AbstractMathMapping {
                     if(simContext.getGeometry().getDimension() == 3){
                         SpatialQuantity velZQuantity = surfaceRegionObject.getSpatialQuantity(QuantityCategory.SurfaceVelocity, QuantityComponent.Z);
                         Expression velZExp = new Expression(velZQuantity, simContext.getNameScope());
-                        //memSubDomain.setVelocityZ(getIdentifierSubstitutions(velZExp, velZQuantity.getUnitDefinition(), surfaceClass));
-                        throw new MappingException("Membrane Velocity not supported for 2D problems");
+                        memSubDomain.setVelocityZ(getIdentifierSubstitutions(velZExp, velZQuantity.getUnitDefinition(), surfaceClass));
                     }
                 }
             }
@@ -2068,6 +2067,16 @@ public class DiffEquMathMapping extends AbstractMathMapping {
             if(subDomain1.getFastSystem() != null){
                 // constructor calls the 'refresh' method which constructs dependency matrix, dependent/independent vars and pseudoconstants, etc.
                 new FastSystemAnalyzer(subDomain1.getFastSystem(), mathDesc);
+            }
+        }
+
+        //
+        // a moving membrane's species are carried by its velocity and dilute as it stretches (vcell-fenics ADR 014):
+        // stated only where it matters, a moving membrane with equations, so every other model's math is unchanged
+        //
+        for(SubDomain subDomain1 : Collections.list(mathDesc.getSubDomains())){
+            if(subDomain1 instanceof MembraneSubDomain membrane && membrane.isMoving() && !membrane.getEquationCollection().isEmpty()){
+                membrane.setDilution(true);
             }
         }
 

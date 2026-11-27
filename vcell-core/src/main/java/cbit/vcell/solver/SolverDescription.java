@@ -18,6 +18,7 @@ import java.util.*;
 import org.apache.commons.io.IOUtils;
 
 import cbit.vcell.math.ProblemRequirements;
+import cbit.vcell.resource.PropertyLoader;
 
 
 /**
@@ -145,7 +146,7 @@ public enum SolverDescription {
 
 	   MovingBoundary(TimeStep.VARIABLE,ErrorTol.NO,TimeSpecCreated.DEFAULT,"Moving","Moving Boundary","MovingB",
 		  SolverLongDesc.MB,1,SupportedTimeSpec.DEFAULT_UNIFORM,
-		  new SolverFeature[]{SolverFeature.Feature_Spatial, SolverFeature.Feature_Moving, SolverFeature.Feature_Deterministic, SolverFeature.Feature_ServerOnly},
+		  new SolverFeature[]{SolverFeature.Feature_Spatial, SolverFeature.Feature_Moving, SolverFeature.Feature_Deterministic},
 		  SolverExecutable.MOVING_B, "KISAO",false),
 	   
        VCellPetsc(TimeStep.CONSTANT, ErrorTol.NO, TimeSpecCreated.DEFAULT, "Hybrid Implicit","Finite Volume-Particle Hybrid, Implicit (Experimental)","VCellPetsc",
@@ -153,6 +154,17 @@ public enum SolverDescription {
 	      new SolverFeature[]{SolverFeature.Feature_Spatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_Hybrid, SolverFeature.Feature_SerialParameterScans, SolverFeature.Feature_RandomVariables, SolverFeature.Feature_StopAtSpatiallyUniform, SolverFeature.Feature_VolumeRegionEquations, SolverFeature.Feature_RegionSizeFunctions, SolverFeature.Feature_PostProcessingBlock},
 	      SolverExecutable.FiniteVolume_PETSc, "KISAO", false),
 	   
+	   // FEniCSx finite-element solver (virtualcell/vcell-fenics): runs in a container, reads the
+	   // SimulationTask XML directly, writes a VTU + zarr results bundle. No native executable.
+	   // Offered unless vcell.fenics.enabled=false - see docs/plan-fenics.md.
+	   FEniCSx(TimeStep.CONSTANT, ErrorTol.NO, TimeSpecCreated.UNIFORM, "FEniCSx", "FEniCSx Finite Element (Experimental)", "FEniCSx",
+	      SolverLongDesc.FENICSX, 1, SupportedTimeSpec.DEFAULT_EXPLICIT_UNIFORM,
+	      // Feature_Moving: it also runs VCell moving-boundary math (2D and 3D, one moving membrane; diffusing
+	      // species in any compartment and on that membrane, which dilute with it) on a mesh that follows the
+	      // membrane - see docs/plan-fenics.md M1-M5 and vcell-fenics ADR 013/014.
+	      new SolverFeature[]{SolverFeature.Feature_Spatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_Moving},
+	      null, "KISAO", false),
+
    ;
 
 	public interface SupportedProblemRequirements {
@@ -729,6 +741,29 @@ public enum SolverDescription {
 	public boolean isLangevinSolver()
 	{
 		return this == Langevin;
+	}
+
+	public boolean isFenicsSolver()
+	{
+		return this == FEniCSx;
+	}
+
+	/**
+	 * FEniCSx is offered unless {@code vcell.fenics.enabled} is false (it is on by default) - see
+	 * docs/plan-fenics.md.
+	 */
+	public static boolean isFenicsEnabled()
+	{
+		return PropertyLoader.getBooleanProperty(PropertyLoader.fenicsEnabled, PropertyLoader.fenicsEnabled_default_value);
+	}
+
+	/**
+	 * @return whether this solver may be offered to the user: not deprecated, and not a solver
+	 * whose integration is switched off.
+	 */
+	public boolean isOffered()
+	{
+		return !deprecated && (!isFenicsSolver() || isFenicsEnabled());
 	}
 
 	public boolean isDeprecated() {

@@ -10,7 +10,7 @@
 
 package cbit.vcell.message.server.dispatcher;
 
-import cbit.vcell.resource.OperatingSystemInfo;
+import org.vcell.util.OperatingSystemInfo;
 import cbit.vcell.resource.EnvironmentConfigProvider;
 import cbit.vcell.resource.PropertyLoader;
 import com.google.inject.Guice;

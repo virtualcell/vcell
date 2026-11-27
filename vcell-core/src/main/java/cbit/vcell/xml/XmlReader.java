@@ -4230,6 +4230,7 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
 
         MembraneSubDomain subDomain = new MembraneSubDomain(insideRef, outsideRef, surfaceClass.getName());
         transcribeComments(param, subDomain);
+        subDomain.setDilution(Boolean.parseBoolean(param.getAttributeValue(XMLTags.DilutionAttrTag)));
 
         //Process BoundaryConditions
         Iterator<Element> iterator = param.getChildren(XMLTags.BoundaryTypeTag, vcNamespace).iterator();
@@ -4364,6 +4365,7 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
         Element velElem = param.getChild(XMLTags.VelocityTag, vcNamespace);
         setMembraneSubdomainVelocity(velElem, XMLTags.XAttrTag, subDomain::setVelocityX);
         setMembraneSubdomainVelocity(velElem, XMLTags.YAttrTag, subDomain::setVelocityY);
+        setMembraneSubdomainVelocity(velElem, XMLTags.ZAttrTag, subDomain::setVelocityZ);
 
         return subDomain;
     }
@@ -4491,6 +4493,10 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
             }
         }
 
+        // A model saved before the identifier rule was enforced may hold a name the expression
+        // parser cannot read (#2062). It must still open, so relax the lexicon check for the read
+        // and let Model/SpeciesContext.gatherIssues() report the name instead.
+        newmodel.setRestoringFromPersistedContent(true);
         try {
             //Set attributes
             newmodel.setName(unMangle(param.getAttributeValue(XMLTags.NameAttrTag)));
@@ -4604,6 +4610,8 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
             throw new XmlParseException(e);
         } catch(ModelException e){
             lg.error(e);
+        } finally {
+            newmodel.setRestoringFromPersistedContent(false);
         }
 
         // model param expresions are not bound when they are read in, since they could be functions of each other or structures/speciesContexts.
@@ -6704,10 +6712,10 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
         if(temp != null) {
             lo.setTotalNumberOfJobs(Integer.parseInt(temp));
         }
-        temp = langevinSimulationOptionsElement.getChildText(XMLTags.LangevinSO_numberOfConcurrentJobs, vcNamespace);
-        if(temp != null) {
-            lo.setNumberOfConcurrentJobs(Integer.parseInt(temp));
-        }
+//        temp = langevinSimulationOptionsElement.getChildText(XMLTags.LangevinSO_numberOfConcurrentJobs, vcNamespace);
+//        if(temp != null) {
+//            lo.setNumberOfConcurrentJobs(Integer.parseInt(temp));
+//        }
         temp = langevinSimulationOptionsElement.getChildText(XMLTags.LangevinSO_randomSeed, vcNamespace);
         if(temp != null) {
             lo.setRandomSeed(new BigInteger(temp));
@@ -6963,7 +6971,8 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
         }
         //---try to create the speciesContext---
         SpeciesContext speciecontext = null;
-        speciecontext = new SpeciesContext(key, name, specieref, structureref, sp);
+        // persisted content: an illegal name is reported by gatherIssues, not thrown here (#2062)
+        speciecontext = SpeciesContext.fromPersistedContent(key, name, specieref, structureref, sp);
         try {
             speciecontext.setSbmlName(sbmlName);
         } catch(PropertyVetoException e){        // can't happen here, whatever we saved must have been correct

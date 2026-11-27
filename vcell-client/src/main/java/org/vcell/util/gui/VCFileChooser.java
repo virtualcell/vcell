@@ -14,7 +14,7 @@ import java.awt.Frame;
 
 import javax.swing.SwingUtilities;
 
-import cbit.vcell.resource.OperatingSystemInfo;
+import org.vcell.util.OperatingSystemInfo;
 /**
  * Insert the type's description here.
  * Creation date: (9/20/2004 4:26:26 PM)

@@ -118,6 +118,8 @@ public class BioModelEditorApplicationPanel extends DocumentEditorSubPanel {
 		applicationSimulationsPanel = new ApplicationSimulationsPanel();
 		parameterEstimationPanel = new ParameterEstimationPanel();
 		tabbedPane = new JTabbedPaneEnhanced();
+		// named so the debug bridge and recorded UI scripts can address it; inert at runtime
+		tabbedPane.setName("ApplicationTabbedPane");
 		tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 		appPanelTabs[ApplicationPanelTabID.geometry.ordinal()] = new ApplicationPanelTab(ApplicationPanelTabID.geometry, applicationGeometryPanel, VCellIcons.geometryIcon);
 		appPanelTabs[ApplicationPanelTabID.settings.ordinal()] = new ApplicationPanelTab(ApplicationPanelTabID.settings, applicationSpecificationsPanel, VCellIcons.settingsIcon);
@@ -133,6 +135,18 @@ public class BioModelEditorApplicationPanel extends DocumentEditorSubPanel {
 		setLayout(new BorderLayout());
 		add(tabbedPane, BorderLayout.CENTER);
 	}	
+
+	/** The help page about the open tab, and the tab open inside it. */
+	String helpPage() {
+		java.awt.Component shown = this.tabbedPane.getSelectedComponent();
+		ActiveView view = null;
+		if (shown == this.applicationGeometryPanel) view = this.applicationGeometryPanel.getActiveView();
+		else if (shown == this.applicationSpecificationsPanel) view = this.applicationSpecificationsPanel.getActiveView();
+		else if (shown == this.applicationProtocolsPanel) view = this.applicationProtocolsPanel.getActiveView();
+		else if (shown == this.applicationSimulationsPanel) view = this.applicationSimulationsPanel.getActiveView();
+		else if (shown == this.parameterEstimationPanel) view = this.parameterEstimationPanel.getActiveView();
+		return DocumentEditorHelp.pageFor(view);
+	}
 
 	public void tabbedPaneSelectionChanged() {
 		int selectedIndex = tabbedPane.getSelectedIndex();

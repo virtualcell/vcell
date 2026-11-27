@@ -44,6 +44,7 @@ container_env+="--env secondary_datadir_external=/share/apps/vcell7/users "
 container_env+="--env htclogdir_external=/share/apps/vcell3/htclogs "
 container_env+="--env softwareVersion=Rel_Version_7.6.0_build_28 "
 container_env+="--env serverid=REL "
+container_env+="--env TMPDIR=/solvertmp "
 solver_sif=/share/apps/vcell3/singularityImages/ghcr.io_virtualcell_vcell-solvers_singularity_v0.8.1.2.img
 if [ ! -f "$solver_sif" ]; then
     echo "ERROR: missing SIF $solver_sif" >&2

@@ -10,6 +10,9 @@
 
 package cbit.vcell.geometry.gui;
 
+import org.vcell.documentation.HelpButton;
+import org.vcell.documentation.HelpContext;
+import org.vcell.documentation.HelpIds;
 import cbit.image.*;
 import cbit.vcell.VirtualMicroscopy.Image.ImageStatistics;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
@@ -36,7 +39,7 @@ import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.gui.InitialConditionsPanel;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.render.Vect3d;
-import cbit.vcell.resource.OperatingSystemInfo;
+import org.vcell.util.OperatingSystemInfo;
 import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.solvers.CartesianMesh;
 import org.apache.commons.io.FilenameUtils;
@@ -952,6 +955,8 @@ public static void blur( short[] ins, short[] outs, int width, int height, int r
 		this.overlayEditorPanelJAI.scaleToolButton.setVisible(bFieldData);
 
 		okCancelJPanel.add(cancelJButton);
+		okCancelJPanel.add(HelpButton.forPage("GeometryFromImagesHelp", "making a geometry from images", HelpIds.GEOMETRY_FROM_IMAGES));
+		HelpContext.setPage(this.overlayEditorPanelJAI, HelpIds.GEOMETRY_FROM_IMAGES); // F1
 
 		jDialog.getContentPane().add(overlayEditorPanelJAI,BorderLayout.CENTER);
 		jDialog.getContentPane().add(okCancelJPanel,BorderLayout.SOUTH);

@@ -102,6 +102,68 @@ public cbit.vcell.parser.LambdaFunction[] getFunctions() {
 
 
 /**
+ * The SBML L3V2 MathML operators VCell has no function for, written with ones it has (MathML 2.0 semantics):
+ * quotient(x,y) is the integer part of x/y (truncated toward zero), rem(x,y) is x - y*quotient(x,y),
+ * implies(a,b) is !a || b, and xor of any number of arguments and max/min of other than two fold into pairs.
+ */
+private SimpleNode getL3v2MathNode(String operation, java.util.List<?> children, String timeSymbol) throws ExpressionException {
+	java.util.List<Expression> args = new java.util.ArrayList<>();
+	for (int i = 1; i < children.size(); i++) {
+		args.add(new Expression(getRootNode((Element)children.get(i), timeSymbol)));
+	}
+	Expression result;
+	switch (operation) {
+		case "quotient":
+		case "rem": {
+			if (args.size() != 2) throw new ExpressionException(operation + " takes two arguments, got " + args.size());
+			Expression ratio = Expression.div(args.get(0), args.get(1));
+			Expression quotient = new Expression("(((__x >= 0) * floor(__x)) + ((__x < 0) * ceil(__x)))");
+			quotient.substituteInPlace(new Expression("__x"), ratio);
+			result = operation.equals("quotient") ? quotient
+					: Expression.add(args.get(0), Expression.negate(Expression.mult(args.get(1), quotient)));
+			break;
+		}
+		case "implies": {
+			if (args.size() != 2) throw new ExpressionException("implies takes two arguments, got " + args.size());
+			result = new Expression("(!(__a) || (__b))");
+			result.substituteInPlace(new Expression("__a"), args.get(0));
+			result.substituteInPlace(new Expression("__b"), args.get(1));
+			break;
+		}
+		case MathMLTags.XOR: {
+			if (args.isEmpty()) {
+				result = new Expression(0.0);
+				break;
+			}
+			result = args.get(args.size() - 1);
+			for (int i = args.size() - 2; i >= 0; i--) {
+				Expression pair = new Expression("(((__a) && !(__b)) || (!(__a) && (__b)))");
+				pair.substituteInPlace(new Expression("__a"), args.get(i));
+				pair.substituteInPlace(new Expression("__b"), result);
+				result = pair;
+			}
+			// a single argument is itself: make it a truth value like the others
+			if (args.size() == 1) {
+				result = new Expression("((__a) != 0)");
+				result.substituteInPlace(new Expression("__a"), args.get(0));
+			}
+			break;
+		}
+		default: { // max, min
+			if (args.isEmpty()) throw new ExpressionException(operation + " needs at least one argument");
+			result = args.get(args.size() - 1);
+			for (int i = args.size() - 2; i >= 0; i--) {
+				Expression pair = new Expression(operation + "(__a, __b)");
+				pair.substituteInPlace(new Expression("__a"), args.get(i));
+				pair.substituteInPlace(new Expression("__b"), result);
+				result = pair;
+			}
+		}
+	}
+	return result.getRootNode();
+}
+
+/**
  * Insert the method's description here.
  * Creation date: (2/11/2002 2:33:36 PM)
  * @return cbit.vcell.parser.SimpleNode
@@ -124,6 +186,18 @@ private SimpleNode getRootNode(Element nodeMathML, String timeSymbol) throws Exp
 		Element operation = (Element)children.get(0); 
 		SimpleNode vcellOperationNode = null;
 
+		// an n-ary operator with no arguments is its identity (SBML L3): plus() = 0, times() = 1, and() = true,
+		// or() = false; VCell has no empty operator node
+		if (children.size() == 1) {
+			String name = operation.getName();
+			if (name.equals(MathMLTags.PLUS) || name.equals(MathMLTags.OR)) {
+				return new ASTFloatNode(0.0);
+			}
+			if (name.equals(MathMLTags.TIMES) || name.equals(MathMLTags.AND)) {
+				return new ASTFloatNode(1.0);
+			}
+		}
+
 		if (operation.getName().equals(MathMLTags.EQUAL) ||
 			operation.getName().equals(MathMLTags.NOT_EQUAL) ||
 			operation.getName().equals(MathMLTags.GREATER) ||
@@ -141,26 +215,12 @@ private SimpleNode getRootNode(Element nodeMathML, String timeSymbol) throws Exp
 		} else if (operation.getName().equals(MathMLTags.OR)){
 			vcellOperationNode = new ASTOrNode();
 		} else if (operation.getName().equals(MathMLTags.XOR)){
-			// XOR(A,B) --> OR(AND(A,NOT(B)),AND(NOT(A),B))
-			// NOT(B)
-			ASTNotNode notNode = new ASTNotNode();
-			notNode.jjtAddChild(getRootNode((Element)children.get(2), timeSymbol));
-			// AND(A,NOT(B))
-			ASTAndNode andNode1 = new ASTAndNode();
-			andNode1.jjtAddChild(getRootNode((Element)children.get(1), timeSymbol));
-			andNode1.jjtAddChild(notNode);
-			// NOT(A)
-			ASTNotNode notNode2 = new ASTNotNode();
-			notNode2.jjtAddChild(getRootNode((Element)children.get(1), timeSymbol));
-			// AND(NOT(A),B)
-			ASTAndNode andNode2 = new ASTAndNode();
-			andNode2.jjtAddChild(notNode2);
-			andNode2.jjtAddChild(getRootNode((Element)children.get(2), timeSymbol));
-			// OR(AND(A,NOT(B)),AND(NOT(A),B))
-			ASTOrNode orNode = new ASTOrNode();
-			orNode.jjtAddChild(andNode1);
-			orNode.jjtAddChild(andNode2);
-			return orNode;
+			// n-ary: true when an odd number of its arguments are (folded as xor(A,xor(B,...)))
+			return getL3v2MathNode(MathMLTags.XOR, children, timeSymbol);
+		} else if (operation.getName().equals("quotient") || operation.getName().equals("rem")
+				|| operation.getName().equals("implies")
+				|| ((operation.getName().equals(MathMLTags.MAX) || operation.getName().equals(MathMLTags.MIN)) && children.size() != 3)){
+			return getL3v2MathNode(operation.getName(), children, timeSymbol);
 		} else if (operation.getName().equals(MathMLTags.NOT)){
 			vcellOperationNode = new ASTNotNode();
 		} else if (operation.getName().equals(MathMLTags.PLUS)){

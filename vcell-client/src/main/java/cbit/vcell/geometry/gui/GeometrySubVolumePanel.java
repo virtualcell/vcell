@@ -38,7 +38,8 @@ import javax.swing.border.EtchedBorder;
 import org.vcell.client.logicalwindow.LWContainerHandle;
 import org.vcell.client.logicalwindow.LWNamespace;
 import org.vcell.client.logicalwindow.LWTitledDialog;
-import org.vcell.documentation.VcellHelpViewer;
+import org.vcell.documentation.HelpIds;
+import org.vcell.documentation.HelpViewer;
 import org.vcell.util.Coordinate;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.UserCancelException;
@@ -433,7 +434,7 @@ public static AnalyticSubVolume createAnalyticSubVolume(Component requester,int 
 			
 			{
 				JButton helpButton = new JButton("Help");
-				helpButton.addActionListener( ae -> { VcellHelpViewer.showStandaloneViewer();} ); 
+				helpButton.addActionListener(ae -> HelpViewer.showHelp(HelpIds.ANALYTIC_GEOMETRY));
 				addCancelJPanel.add(helpButton);
 			}
 			
@@ -551,7 +552,7 @@ private ScrollTable getScrollPaneTable() {
 	if (ivjScrollPaneTable == null) {
 		try {
 			ivjScrollPaneTable = new ScrollTable();
-			ivjScrollPaneTable.setName("ScrollPaneTable");
+			ivjScrollPaneTable.setName("SubVolumesTable");
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}

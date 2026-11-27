@@ -4465,6 +4465,24 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
         }
     }
 
+    private transient boolean restoringFromPersistedContent = false;
+
+    /**
+     * While true, {@link #validateNamingConflicts} skips the check that a symbol name is a legal
+     * expression identifier. Naming <em>conflicts</em> are still checked.
+     *
+     * Until the ASCII fix in {@link TokenMangler}, that check passed any name built from Unicode
+     * letters, so models were saved holding names such as PROTE&Iacute;NA_A that the expression
+     * parser cannot read (issue #2062). Those models are already unrunnable; refusing to load them
+     * would also take away the user's only way to rename the species, so a read from VCML or the
+     * database restores the name as saved and SpeciesContext.gatherIssues() reports it instead.
+     *
+     * Set only for the duration of a read, and always cleared in a finally block.
+     */
+    public void setRestoringFromPersistedContent(boolean restoring){
+        this.restoringFromPersistedContent = restoring;
+    }
+
     /**
      * if newSTE is null, then newName is the proposed name of a reaction
      * else newSTE is the symbol to be added.
@@ -4480,7 +4498,11 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
         if(newSymbolName.length() < 1){
             throw new ModelPropertyVetoException(symbolDescription + " name is empty (zero length).", e);
         }
-        if(!newSymbolName.equals(TokenMangler.fixTokenStrict(newSymbolName))){
+        // One definition of "legal identifier" for the whole model, shared with the expression
+        // grammar - see TokenMangler.isValidExpressionIdentifier. This used to be spelled
+        // "equals(fixTokenStrict(name))", which was correct in shape but inherited the mangler's
+        // Unicode-wide notion of a letter and so let unparseable names through (#2062).
+        if(!restoringFromPersistedContent && !TokenMangler.isValidExpressionIdentifier(newSymbolName)){
             throw new ModelPropertyVetoException(symbolDescription + " '" + newSymbolName + "' not legal identifier, try '" + TokenMangler.fixTokenStrict(newSymbolName) + "'.", e);
         }
 

@@ -1,0 +1,362 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--This biomodel was generated in VCML Version Rel_Version_8.0.26_build_01-->
+<vcml xmlns="http://sourceforge.net/projects/vcell/vcml" Version="Rel_Version_8.0.26_build_01">
+  <BioModel Name="Moving_Boundary_Test_6-2">
+    <Model Name="model">
+      <ModelParameters>
+        <Parameter Name="v" Role="user defined" Unit="um.s-1">0.1</Parameter>
+      </ModelParameters>
+      <Compound Name="s0" />
+      <Compound Name="s1" />
+      <Compound Name="s3" />
+      <Compound Name="s2" />
+      <Compound Name="s4" />
+      <Feature Name="out" KeyValue="323695758" />
+      <Feature Name="in" KeyValue="323695756" />
+      <Membrane PositiveFeature="in" MembraneVoltage="Voltage_m0" Name="m0" KeyValue="323695760" />
+      <LocalizedCompound Name="U" CompoundRef="s0" Structure="in" OverrideName="true" KeyValue="323695762" />
+      <LocalizedCompound Name="R" CompoundRef="s1" Structure="m0" OverrideName="true" KeyValue="323695763" />
+      <LocalizedCompound Name="R_in" CompoundRef="s3" Structure="in" OverrideName="true" KeyValue="323695764" />
+      <LocalizedCompound Name="u_m" CompoundRef="s2" Structure="m0" OverrideName="true" KeyValue="323695765" />
+      <LocalizedCompound Name="u_in" CompoundRef="s4" Structure="in" OverrideName="true" KeyValue="323695766" />
+      <SimpleReaction Structure="in" Name="r0" Reversible="true" FluxOption="MolecularOnly" KeyValue="323695767">
+        <Reactant LocalizedCompoundRef="U" Stoichiometry="1" KeyValue="323695768" />
+        <Kinetics KineticsType="MassAction">
+          <Parameter Name="J" Role="reaction rate" Unit="uM.s-1">(Kf * U)</Parameter>
+          <Parameter Name="Kf" Role="forward rate constant" Unit="s-1">k</Parameter>
+          <Parameter Name="Kr" Role="reverse rate constant" Unit="uM.s-1">0.0</Parameter>
+          <Parameter Name="k" Role="user defined" Unit="s-1">0.0</Parameter>
+        </Kinetics>
+      </SimpleReaction>
+      <SimpleReaction Structure="m0" Name="r1" Reversible="true" FluxOption="MolecularOnly" KeyValue="323695769">
+        <Product LocalizedCompoundRef="R" Stoichiometry="1" KeyValue="323695770" />
+        <Modifier LocalizedCompoundRef="U" />
+        <Kinetics KineticsType="GeneralKinetics">
+          <Parameter Name="J" Role="reaction rate" Unit="molecules.um-2.s-1">(k1 * U)</Parameter>
+          <Parameter Name="I" Role="inward current density" Unit="pA.um-2">0.0</Parameter>
+          <Parameter Name="netValence" Role="net charge valence" Unit="1">1.0</Parameter>
+          <Parameter Name="k1" Role="user defined" Unit="molecules.um-2.s-1.uM-1">1.0</Parameter>
+        </Kinetics>
+      </SimpleReaction>
+      <SimpleReaction Structure="m0" Name="r2" Reversible="true" FluxOption="MolecularOnly" KeyValue="323695772">
+        <Product LocalizedCompoundRef="R_in" Stoichiometry="1" KeyValue="323695773" />
+        <Modifier LocalizedCompoundRef="R" />
+        <Kinetics KineticsType="GeneralKinetics">
+          <Parameter Name="J" Role="reaction rate" Unit="molecules.um-2.s-1">(kon_R_R_in * (R - R_in))</Parameter>
+          <Parameter Name="I" Role="inward current density" Unit="pA.um-2">0.0</Parameter>
+          <Parameter Name="netValence" Role="net charge valence" Unit="1">1.0</Parameter>
+          <Parameter Name="kon_R_R_in" Role="user defined" Unit="tbd">1000.0</Parameter>
+        </Kinetics>
+      </SimpleReaction>
+      <SimpleReaction Structure="m0" Name="r3" Reversible="true" FluxOption="MolecularOnly" KeyValue="323695775">
+        <Product LocalizedCompoundRef="u_m" Stoichiometry="1" KeyValue="323695776" />
+        <Modifier LocalizedCompoundRef="U" />
+        <Kinetics KineticsType="GeneralKinetics">
+          <Parameter Name="J" Role="reaction rate" Unit="molecules.um-2.s-1">(kon_U_u_m * (U - u_m))</Parameter>
+          <Parameter Name="I" Role="inward current density" Unit="pA.um-2">0.0</Parameter>
+          <Parameter Name="netValence" Role="net charge valence" Unit="1">1.0</Parameter>
+          <Parameter Name="kon_U_u_m" Role="user defined" Unit="tbd">1000.0</Parameter>
+        </Kinetics>
+      </SimpleReaction>
+      <SimpleReaction Structure="m0" Name="r4" Reversible="true" FluxOption="MolecularOnly" KeyValue="323695778">
+        <Product LocalizedCompoundRef="u_in" Stoichiometry="1" KeyValue="323695779" />
+        <Modifier LocalizedCompoundRef="u_m" />
+        <Kinetics KineticsType="GeneralKinetics">
+          <Parameter Name="J" Role="reaction rate" Unit="molecules.um-2.s-1">(kon_u_m_u_in * (u_m - u_in))</Parameter>
+          <Parameter Name="I" Role="inward current density" Unit="pA.um-2">0.0</Parameter>
+          <Parameter Name="netValence" Role="net charge valence" Unit="1">1.0</Parameter>
+          <Parameter Name="kon_u_m_u_in" Role="user defined" Unit="tbd">1000.0</Parameter>
+        </Kinetics>
+      </SimpleReaction>
+      <Diagram Name="c0" Structure="in">
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="u_m" LocationX="55" LocationY="54" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="r0" LocationX="55" LocationY="104" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="r1" LocationX="61" LocationY="200" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="R" LocationX="57" LocationY="129" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="R_in" LocationX="101" LocationY="172" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="U" LocationX="100" LocationY="100" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="r2" LocationX="35" LocationY="173" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="r3" LocationX="58" LocationY="100" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="u_in" LocationX="100" LocationY="37" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="r4" LocationX="16" LocationY="37" />
+      </Diagram>
+      <Diagram Name="m0" Structure="m0">
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="u_m" LocationX="55" LocationY="54" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="r0" LocationX="55" LocationY="104" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="r1" LocationX="61" LocationY="200" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="R" LocationX="57" LocationY="129" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="R_in" LocationX="101" LocationY="172" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="U" LocationX="100" LocationY="100" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="r2" LocationX="35" LocationY="173" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="r3" LocationX="58" LocationY="100" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="u_in" LocationX="100" LocationY="37" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="r4" LocationX="16" LocationY="37" />
+      </Diagram>
+      <Diagram Name="c0" Structure="out">
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="u_m" LocationX="55" LocationY="54" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="r0" LocationX="55" LocationY="104" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="r1" LocationX="61" LocationY="200" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="R" LocationX="57" LocationY="129" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="R_in" LocationX="101" LocationY="172" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="U" LocationX="100" LocationY="100" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="r2" LocationX="35" LocationY="173" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="r3" LocationX="58" LocationY="100" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="u_in" LocationX="100" LocationY="37" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="r4" LocationX="16" LocationY="37" />
+      </Diagram>
+      <Version Name="model" KeyValue="323695749" BranchId="322481405" Archived="0" Date="31-Aug-2026 19:08:38" FromVersionable="false">
+        <Owner Name="boris" Identifier="21" />
+        <GroupAccess Type="1" />
+      </Version>
+      <ModelUnitSystem VolumeSubstanceUnit="uM.um3" MembraneSubstanceUnit="molecules" LumpedReactionSubstanceUnit="molecules" VolumeUnit="um3" AreaUnit="um2" LengthUnit="um" TimeUnit="s" />
+    </Model>
+    <SimulationSpec Name="Application0" Stochastic="false" UseConcentration="true" SpringSaLaD="false" RuleBased="false" MassConservationModelReduction="false" InsufficientIterations="false" InsufficientMaxMolecules="false" CharacteristicSize="0.0024">
+      <NetworkConstraints RbmMaxIteration="1" RbmMaxMoleculesPerSpecies="10" RbmSpeciesLimit="800" RbmReactionsLimit="2500" />
+      <Annotation />
+      <Geometry Name="Geometry355463926" Dimension="1">
+        <Extent X="1.2" Y="10.0" Z="10.0" />
+        <Origin X="0.0" Y="0.0" Z="0.0" />
+        <SubVolume Name="in" Handle="1" Type="Analytical" KeyValue="322481394">
+          <AnalyticExpression>(x &lt; 1.0)</AnalyticExpression>
+        </SubVolume>
+        <SubVolume Name="out" Handle="0" Type="Analytical" KeyValue="322481395">
+          <AnalyticExpression>1.0</AnalyticExpression>
+        </SubVolume>
+        <SurfaceClass Name="in_out_membrane" SubVolume1Ref="in" SubVolume2Ref="out" KeyValue="322481396" />
+        <SurfaceDescription NumSamplesX="50" NumSamplesY="1" NumSamplesZ="1" CutoffFrequency="0.3">
+          <VolumeRegion Name="in0" RegionID="0" SubVolume="in" Size="0.9918367346938776" Unit="um" />
+          <VolumeRegion Name="out1" RegionID="1" SubVolume="out" Size="0.20816326530612242" Unit="um" />
+          <MembraneRegion Name="membrane_in0_out1" VolumeRegion1="out1" VolumeRegion2="in0" Size="1.0" Unit="1" />
+        </SurfaceDescription>
+        <Version Name="Geometry355463926" KeyValue="322481390" BranchId="322481391" Archived="0" Date="18-Aug-2026 19:12:34" FromVersionable="false">
+          <Owner Name="boris" Identifier="21" />
+          <GroupAccess Type="1" />
+        </Version>
+      </Geometry>
+      <GeometryContext>
+        <FeatureMapping Feature="out" GeometryClass="out" SubVolume="out" Size="50000.0" VolumePerUnitVolume="1.0">
+          <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+        </FeatureMapping>
+        <FeatureMapping Feature="in" GeometryClass="in" SubVolume="in" Size="50000.0" VolumePerUnitVolume="1.0">
+          <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+        </FeatureMapping>
+        <MembraneMapping Membrane="m0" Size="6563.0" AreaPerUnitArea="1.0" CalculateVoltage="false" SpecificCapacitance="1.0" InitialVoltage="0.0" GeometryClass="in_out_membrane">
+          <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+        </MembraneMapping>
+      </GeometryContext>
+      <ReactionContext>
+        <LocalizedCompoundSpec LocalizedCompoundRef="U" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>1.0</InitialConcentration>
+          <Diffusion>0.1</Diffusion>
+          <Velocity X="v" />
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="R_in" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>1.0</InitialConcentration>
+          <Diffusion>1000.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="u_in" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>1.0</InitialConcentration>
+          <Diffusion>1000.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="R" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>1.0</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="u_m" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>0.0</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <ReactionSpec ReactionStepRef="r0" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="r1" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="r2" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="r3" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="r4" ReactionMapping="included" />
+      </ReactionContext>
+      <MathDescription Name="Application0_generated">
+        <Constant Name="_F_">96485.3321</Constant>
+        <Constant Name="_F_nmol_">9.64853321E-5</Constant>
+        <Constant Name="_K_GHK_">1.0E-9</Constant>
+        <Constant Name="_N_pmol_">6.02214179E11</Constant>
+        <Constant Name="_PI_">3.141592653589793</Constant>
+        <Constant Name="_R_">8314.46261815</Constant>
+        <Constant Name="_T_">300.0</Constant>
+        <Constant Name="AreaPerUnitArea_m0">1.0</Constant>
+        <Constant Name="k">0.0</Constant>
+        <Constant Name="k1">1.0</Constant>
+        <Constant Name="K_millivolts_per_volt">1000.0</Constant>
+        <Constant Name="KMOLE">0.001660538783162726</Constant>
+        <Constant Name="kon_R_R_in">1000.0</Constant>
+        <Constant Name="kon_u_m_u_in">1000.0</Constant>
+        <Constant Name="kon_U_u_m">1000.0</Constant>
+        <Constant Name="Kr">0.0</Constant>
+        <Constant Name="netValence_r1">1.0</Constant>
+        <Constant Name="netValence_r2">1.0</Constant>
+        <Constant Name="netValence_r3">1.0</Constant>
+        <Constant Name="netValence_r4">1.0</Constant>
+        <Constant Name="R_in_diffusionRate">1000.0</Constant>
+        <Constant Name="R_in_init_uM">1.0</Constant>
+        <Constant Name="R_init_molecules_um_2">1.0</Constant>
+        <Constant Name="U_diffusionRate">0.1</Constant>
+        <Constant Name="u_in_diffusionRate">1000.0</Constant>
+        <Constant Name="u_in_init_uM">1.0</Constant>
+        <Constant Name="U_init_uM">1.0</Constant>
+        <Constant Name="u_m_init_molecules_um_2">0.0</Constant>
+        <Constant Name="UnitFactor_uM_um3_molecules_neg_1">(1.0 * pow(KMOLE,1.0))</Constant>
+        <Constant Name="v">0.1</Constant>
+        <Constant Name="Voltage_m0">0.0</Constant>
+        <Constant Name="VolumePerUnitVolume_in">1.0</Constant>
+        <Constant Name="VolumePerUnitVolume_out">1.0</Constant>
+        <MembraneVariable Name="R" Domain="in_out_membrane" />
+        <VolumeVariable Name="R_in" Domain="in" />
+        <VolumeVariable Name="U" Domain="in" />
+        <VolumeVariable Name="u_in" Domain="in" />
+        <MembraneVariable Name="u_m" Domain="in_out_membrane" />
+        <Function Name="J_r0" Domain="in">(Kf * U)</Function>
+        <Function Name="J_r1" Domain="in_out_membrane">(k1 * U)</Function>
+        <Function Name="J_r2" Domain="in_out_membrane">(kon_R_R_in * (R - R_in))</Function>
+        <Function Name="J_r3" Domain="in_out_membrane">(kon_U_u_m * (U - u_m))</Function>
+        <Function Name="J_r4" Domain="in_out_membrane">(kon_u_m_u_in * (u_m - u_in))</Function>
+        <Function Name="Kf" Domain="in">k</Function>
+        <Function Name="KFlux_m0_in" Domain="in_out_membrane">(AreaPerUnitArea_m0 / VolumePerUnitVolume_in)</Function>
+        <Function Name="Size_in" Domain="in">(VolumePerUnitVolume_in * vcRegionVolume('in'))</Function>
+        <Function Name="Size_m0" Domain="in_out_membrane">(AreaPerUnitArea_m0 * vcRegionArea('in_out_membrane'))</Function>
+        <Function Name="Size_out" Domain="out">(VolumePerUnitVolume_out * vcRegionVolume('out'))</Function>
+        <Function Name="sobj_out1_in0_size" Domain="in_out_membrane">vcRegionArea('in_out_membrane')</Function>
+        <Function Name="U_velocityX" Domain="in">v</Function>
+        <Function Name="vobj_in0_size" Domain="in">vcRegionVolume('in')</Function>
+        <Function Name="vobj_out1_size" Domain="out">vcRegionVolume('out')</Function>
+        <CompartmentSubDomain Name="in">
+          <BoundaryType Boundary="Xm" Type="Flux" />
+          <BoundaryType Boundary="Xp" Type="Flux" />
+          <BoundaryType Boundary="Ym" Type="Value" />
+          <BoundaryType Boundary="Yp" Type="Value" />
+          <BoundaryType Boundary="Zm" Type="Value" />
+          <BoundaryType Boundary="Zp" Type="Value" />
+          <PdeEquation Name="U" SolutionType="Unknown">
+            <Rate>- J_r0</Rate>
+            <Diffusion>U_diffusionRate</Diffusion>
+            <Initial>U_init_uM</Initial>
+            <Velocity X="U_velocityX" />
+          </PdeEquation>
+          <PdeEquation Name="R_in" SolutionType="Unknown">
+            <Rate>0.0</Rate>
+            <Diffusion>R_in_diffusionRate</Diffusion>
+            <Initial>R_in_init_uM</Initial>
+          </PdeEquation>
+          <PdeEquation Name="u_in" SolutionType="Unknown">
+            <Rate>0.0</Rate>
+            <Diffusion>u_in_diffusionRate</Diffusion>
+            <Initial>u_in_init_uM</Initial>
+          </PdeEquation>
+        </CompartmentSubDomain>
+        <CompartmentSubDomain Name="out">
+          <BoundaryType Boundary="Xm" Type="Flux" />
+          <BoundaryType Boundary="Xp" Type="Flux" />
+          <BoundaryType Boundary="Ym" Type="Value" />
+          <BoundaryType Boundary="Yp" Type="Value" />
+          <BoundaryType Boundary="Zm" Type="Value" />
+          <BoundaryType Boundary="Zp" Type="Value" />
+        </CompartmentSubDomain>
+        <MembraneSubDomain Name="in_out_membrane" InsideCompartment="in" OutsideCompartment="out">
+          <BoundaryType Boundary="Xm" Type="Value" />
+          <BoundaryType Boundary="Xp" Type="Value" />
+          <BoundaryType Boundary="Ym" Type="Value" />
+          <BoundaryType Boundary="Yp" Type="Value" />
+          <BoundaryType Boundary="Zm" Type="Value" />
+          <BoundaryType Boundary="Zp" Type="Value" />
+          <OdeEquation Name="R" SolutionType="Unknown">
+            <Rate>J_r1</Rate>
+            <Initial>R_init_molecules_um_2</Initial>
+          </OdeEquation>
+          <OdeEquation Name="u_m" SolutionType="Unknown">
+            <Rate>J_r3</Rate>
+            <Initial>u_m_init_molecules_um_2</Initial>
+          </OdeEquation>
+          <JumpCondition Name="U">
+            <InFlux>0.0</InFlux>
+            <OutFlux>0.0</OutFlux>
+          </JumpCondition>
+          <JumpCondition Name="R_in">
+            <InFlux>(KFlux_m0_in * UnitFactor_uM_um3_molecules_neg_1 * J_r2)</InFlux>
+            <OutFlux>0.0</OutFlux>
+          </JumpCondition>
+          <JumpCondition Name="u_in">
+            <InFlux>(KFlux_m0_in * UnitFactor_uM_um3_molecules_neg_1 * J_r4)</InFlux>
+            <OutFlux>0.0</OutFlux>
+          </JumpCondition>
+        </MembraneSubDomain>
+        <Version Name="Application0_generated" KeyValue="323695747" BranchId="322481402" Archived="0" Date="31-Aug-2026 19:08:38" FromVersionable="false">
+          <Owner Name="boris" Identifier="21" />
+          <GroupAccess Type="1" />
+        </Version>
+      </MathDescription>
+      <Simulation Name="Simulation0">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Sundials Stiff PDE Solver (Variable Time Step)">
+          <TimeBound StartTime="0.0" EndTime="1.0" />
+          <TimeStep DefaultTime="0.05" MinTime="0.0" MaxTime="0.1" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-7" />
+          <OutputOptions OutputTimeStep="0.05" />
+          <SundialsSolverOptions>
+            <maxOrderAdvection>2</maxOrderAdvection>
+          </SundialsSolverOptions>
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides />
+        <MeshSpecification>
+          <Size X="1201" Y="1" Z="1" />
+        </MeshSpecification>
+        <Version Name="Simulation0" KeyValue="323697825" BranchId="323697826" Archived="0" Date="31-Aug-2026 19:39:55" FromVersionable="false">
+          <Owner Name="boris" Identifier="21" />
+          <GroupAccess Type="1" />
+        </Version>
+      </Simulation>
+      <SpatialObjects>
+        <SpatialObject Name="vobj_in0" Type="Volume" subVolume="in" regionId="0">
+          <QuantityCategoryList>
+            <QuantityCategory Name="VolumeCentroid" Enabled="false" />
+            <QuantityCategory Name="InteriorVelocity" Enabled="false" />
+            <QuantityCategory Name="VolumeRegionSize" Enabled="true" />
+          </QuantityCategoryList>
+        </SpatialObject>
+        <SpatialObject Name="vobj_out1" Type="Volume" subVolume="out" regionId="1">
+          <QuantityCategoryList>
+            <QuantityCategory Name="VolumeCentroid" Enabled="false" />
+            <QuantityCategory Name="InteriorVelocity" Enabled="false" />
+            <QuantityCategory Name="VolumeRegionSize" Enabled="true" />
+          </QuantityCategoryList>
+        </SpatialObject>
+        <SpatialObject Name="sobj_out1_in0" Type="Surface" subVolumeInside="out" regionIdInside="1" subVolumeOutside="in" regionIdOutside="0">
+          <QuantityCategoryList>
+            <QuantityCategory Name="SurfaceNormal" Enabled="false" />
+            <QuantityCategory Name="SurfaceVelocity" Enabled="false" />
+            <QuantityCategory Name="DistanceToSurface" Enabled="false" />
+            <QuantityCategory Name="DirectionToSurface" Enabled="false" />
+            <QuantityCategory Name="SurfaceSize" Enabled="true" />
+          </QuantityCategoryList>
+        </SpatialObject>
+      </SpatialObjects>
+      <Version Name="Application0" KeyValue="323695785" BranchId="322481419" Archived="0" Date="31-Aug-2026 19:08:39" FromVersionable="false">
+        <Owner Name="boris" Identifier="21" />
+        <GroupAccess Type="1" />
+      </Version>
+      <MicroscopeMeasurement Name="fluor">
+        <ConvolutionKernel Type="ProjectionZKernel" />
+      </MicroscopeMeasurement>
+    </SimulationSpec>
+    <Version Name="Moving_Boundary_Test_6-2" KeyValue="323697828" BranchId="322481429" Archived="0" Date="31-Aug-2026 19:39:55" FromVersionable="false">
+      <Owner Name="boris" Identifier="21" />
+      <GroupAccess Type="1" />
+    </Version>
+    <pathwayModel>
+      <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bp="http://www.biopax.org/release/biopax-level3.owl#" version="3.0" />
+    </pathwayModel>
+    <relationshipModel>
+      <RMNS version="3.0" />
+    </relationshipModel>
+    <vcmetadata>
+      <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" />
+      <nonrdfAnnotationList />
+      <uriBindingList />
+    </vcmetadata>
+  </BioModel>
+</vcml>

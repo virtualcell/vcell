@@ -9,6 +9,7 @@
  */
 
 package org.vcell.optimization.gui;
+import org.vcell.documentation.HelpIds;
 import java.io.File;
 import java.text.ParseException;
 
@@ -472,7 +473,7 @@ private void showHelp(ParseException e) {
 		"<li>Each sucessive row represents data at a time point.</li>"+
 		"</ul>" +
 		"</html>";
-	DialogUtils.showInfoDialog(this, message);
+	DialogUtils.showInfoDialog(this, "Time Series Data Format", message, HelpIds.PARAMETER_ESTIMATION_USAGE);
 }
 
 

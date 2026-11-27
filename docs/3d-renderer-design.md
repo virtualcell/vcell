@@ -1,8 +1,8 @@
 # VCell 3D Field Visualization — Design & Decision Record
 
 **Status: exploratory.** Nothing described here is committed to a roadmap. The code that exists is
-behind `vcell.fieldViewer.enabled`, which defaults to false, so none of it is reachable in a normal
-client. This document records what has been measured, what has been decided, and what is still open,
+behind `vcell.fieldViewer.enabled`, which has defaulted to **true** since 2026-09-26 (it was false
+before; `-Dvcell.fieldViewer.enabled=false` turns it off). This document records what has been measured, what has been decided, and what is still open,
 so the reasoning survives whether or not the approach ships.
 
 ## Scope, and why this is a separate document
@@ -100,6 +100,43 @@ Expect the **wire format**, not the endpoint decomposition, to be what ALE actua
 ALE fresh coordinates are needed every frame, so the geometry/field split buys much less, and JSON
 floats stop being defensible for tens of thousands of values per frame. XDMF already expresses
 shared-topology-per-segment natively, so the server has a source format that matches the structure.
+
+#### Particles of hybrid PDE/particle runs
+
+A results bundle can carry molecule positions next to its fields: a root `.zattrs` key `particles`,
+`{"schema": 1, "species": {name: {"xyz": path, "count": path}}}`. Per species there are two arrays,
+stored like the field arrays (float64, one row per chunk), so `FenicsBundle` reads them with the same
+row reader:
+
+- `xyz`: `(T, cap, 3)` lab-frame positions, NaN past each row's count;
+- `count`: `(T, 1)`, the molecules in each row.
+
+Rows are global output rows. Hybrid PDE/particle co-simulations write this (viva-pde-particle's
+`SpatialRecorder`, which records Smoldyn's molecules alongside the PDE fields). A bundle without the key
+has none, and a newer extension schema is ignored, so the fields stay viewable.
+
+The server lists the species in `/info` (`particleSpecies`). `/particles?time=&max=` returns each
+species' positions at one time, evenly strided down to at most `max` per species (default 20,000), with
+the molecule count. When the run has species, the viewer shows a **Particles** toggle with a
+colour-keyed legend and draws each species as point sprites over the field. It refetches positions per
+time step, and hides the molecules beyond an active cut, as the mesh there is.
+
+**Finite-volume hybrid runs.** vcell-fvsolver with embedded Smoldyn saves positions when the
+simulation's *save particle files* option is on (`SmoldynSimulationOptions.saveParticleFiles`). It
+writes one `SimID_<key>_<job>__<NNN>.smoldynOutput` per saved time, with `species(state) x y z` per
+molecule, and NNN is the time's 1-based index in the log. VCell already reads these for any run
+(`ParticleDataBlock` via `DataSetController.getParticleDataExists` / `getParticleDataBlock`, local and
+remote), so the viewer server serves them through the data manager:
+- `/info` lists their species, with the `(solution)` state dropped;
+- `/particles` returns the positions.
+
+With a Smoldyn step multiplier k > 1, the `listmols` cadence VCell wrote (counted in PDE steps while
+Smoldyn counts its own) put the files at the wrong times. `SmoldynFileWriter` now counts Smoldyn steps,
+and vcell-fvsolver (virtualcell/vcell-fvsolver#27) writes the files itself at each output time.
+
+**Drawing.** Molecules are drawn in an overlay renderer (layer 1, sharing the field's camera). Most of
+them sit inside the volume, where the opaque field surface would hide them. The cut still hides the
+molecules beyond it.
 
 ### Mode B — `webapp-ng` as an independent web client
 

@@ -100,10 +100,10 @@ public SpecialUser getUserFromUserid(Connection con, String userid) throws SQLEx
 	public boolean removeUserIdentity(Connection con, User user, String authSubject, String authIssuer) throws SQLException {
 		String sql = "DELETE FROM " + UserIdentityTable.table.getTableName() +
 				" WHERE " +
-					UserIdentityTable.authSubject + " = " + "'"+authSubject+"'" + " AND " +
-					UserIdentityTable.authIssuer + " = " + "'"+authIssuer+"'" + " AND " +
+					UserIdentityTable.authSubject + " = ? AND " +
+					UserIdentityTable.authIssuer + " = ? AND " +
 					UserIdentityTable.userRef + " = " + user.getID().toString();
-		int numRowsDeleted = DbDriver.updateCleanSQL(con, sql, DbDriver.UpdateExpectation.ROW_UPDATE_IS_POSSIBLE);
+		int numRowsDeleted = DbDriver.updateBoundSQL(con, sql, DbDriver.UpdateExpectation.ROW_UPDATE_IS_POSSIBLE, authSubject, authIssuer);
 		return numRowsDeleted > 0;
 	}
 
@@ -126,10 +126,9 @@ public SpecialUser getUserFromUserid(Connection con, String userid) throws SQLEx
 				" VALUES (" +
 				keyFactory.nextSEQ() + "," +
 				user.getID().toString() + "," +
-				"'"+authSubject+"'" + "," +
-				"'"+authIssuer+"'" + "," +
+				"?,?," +
 				"CURRENT_TIMESTAMP)";
-		DbDriver.updateCleanSQL(con, sql, DbDriver.UpdateExpectation.ROW_UPDATE_IS_EXPECTED);
+		DbDriver.updateBoundSQL(con, sql, DbDriver.UpdateExpectation.ROW_UPDATE_IS_EXPECTED, authSubject, authIssuer);
 	}
 
 	public List<UserIdentity> getUserIdentitiesFromSubjectAndIssuer(Connection con, String subject, String issuer) throws SQLException {
@@ -149,16 +148,18 @@ public SpecialUser getUserFromUserid(Connection con, String userid) throws SQLEx
 				" ON " + UserIdentityTable.table.userRef.getUnqualifiedColName()+"="+userTable.id.getQualifiedColName() +
 				" LEFT JOIN " + SpecialUsersTable.table.getTableName() +
 				" ON " + SpecialUsersTable.table.userRef.getQualifiedColName()+"="+userTable.id.getQualifiedColName() +
-				" WHERE " + UserIdentityTable.authSubject.getUnqualifiedColName() + " = '" + subject + "'" +
-				" AND " + UserIdentityTable.authIssuer.getUnqualifiedColName() + " = '" + issuer + "'";
+				" WHERE " + UserIdentityTable.authSubject.getUnqualifiedColName() + " = ?" +
+				" AND " + UserIdentityTable.authIssuer.getUnqualifiedColName() + " = ?";
 
 		if (lg.isTraceEnabled()) {
 			lg.trace(sql);
 		}
-		stmt = con.createStatement();
+		PreparedStatement pstmt = con.prepareStatement(sql);
+		stmt = pstmt;
 		HashMap<BigDecimal, UserIdentityBuilder> userIdentities = new HashMap<>();
 		try {
-			rset = stmt.executeQuery(sql);
+			DbDriver.bindParameters(pstmt, subject, issuer);
+			rset = pstmt.executeQuery();
 			while (rset.next()) {
 				BigDecimal userKey = rset.getBigDecimal(UserIdentityTable.userRef.getUnqualifiedColName());
 				String claim = rset.getString(SpecialUsersTable.table.special.getUnqualifiedColName());
@@ -272,14 +273,16 @@ public User getUserFromUseridAndPassword(Connection con, String userid, UserLogi
 	}
 	sql = 	"SELECT " + UserTable.table.id + ","+UserTable.table.digestPW+","+UserTable.table.password+
 			" FROM " + userTable.getTableName() + 
-			" WHERE " + UserTable.table.userid + " = '" + userid + "'";
-			
+			" WHERE " + UserTable.table.userid + " = ?";
+
 	//lg.info(sql);
-	
+
 	User user = null;
 	try {
-		stmt = con.createStatement();
-		rset = stmt.executeQuery(sql);
+		PreparedStatement pstmt = con.prepareStatement(sql);
+		stmt = pstmt;
+		DbDriver.bindParameters(pstmt, userid);
+		rset = pstmt.executeQuery();
 		if (rset.next()) {
 			boolean bUserAuthenticated = false;
 			KeyValue userKey = new KeyValue(rset.getBigDecimal(UserTable.table.id.toString()));
@@ -307,10 +310,12 @@ public User getUserFromUseridAndPassword(Connection con, String userid, UserLogi
 					//lookup administrator password and match for any user
 					rset.close();
 					sql = "SELECT "+UserTable.table.digestPW +" FROM "+userTable.getTableName()+" WHERE "+UserTable.table.id +" = "+PropertyLoader.ADMINISTRATOR_ID;
-					ResultSet adminRset = stmt.executeQuery(sql);
-					if(adminRset.next()){
-						String adminDBDigestPassword = adminRset.getString(UserTable.table.digestPW.toString());
-						bUserAuthenticated = digestedPassword.equals(UserLoginInfo.DigestedPassword.createAlreadyDigested(adminDBDigestPassword));
+					try (Statement adminStmt = con.createStatement()) {
+						ResultSet adminRset = adminStmt.executeQuery(sql);
+						if(adminRset.next()){
+							String adminDBDigestPassword = adminRset.getString(UserTable.table.digestPW.toString());
+							bUserAuthenticated = digestedPassword.equals(UserLoginInfo.DigestedPassword.createAlreadyDigested(adminDBDigestPassword));
+						}
 					}
 					if (lg.isInfoEnabled()) {
 						lg.info("userid " + userid + " master password check returns " + bUserAuthenticated); 
@@ -332,11 +337,13 @@ public User getUserFromUseridAndPassword(Connection con, String userid, UserLogi
 }
 public UserLoginInfo.DigestedPassword updatePasswords(Connection con,KeyValue id,String clearTextPassword) throws SQLException{
 	UserLoginInfo.DigestedPassword dbDigestedPassword = new UserLoginInfo.DigestedPassword(clearTextPassword);
-	DbDriver.updateCleanSQL(
+	DbDriver.updateBoundSQL(
 			con,"UPDATE " + userTable.getTableName() +
-			" SET " + 
-				userTable.digestPW.getUnqualifiedColName()+" = '" + dbDigestedPassword.getString() + "',"+
-				userTable.password.getUnqualifiedColName()+" = '" + clearTextPassword +"' WHERE " + userTable.id + " = " + id);
+			" SET " +
+				userTable.digestPW.getUnqualifiedColName()+" = ?,"+
+				userTable.password.getUnqualifiedColName()+" = ? WHERE " + userTable.id + " = " + id,
+			DbDriver.UpdateExpectation.ROW_UPDATE_IS_EXPECTED,
+			dbDigestedPassword.getString(), clearTextPassword);
 
 	return dbDigestedPassword;
 }
@@ -467,8 +474,8 @@ private void insertUserInfoSQL(Connection con, KeyFactory keyFactory, KeyValue k
 	String sql;
 	sql = "INSERT INTO " + userTable.getTableName() + " " +
 			userTable.getSQLColumnList() + " VALUES " +
-			userTable.getSQLValueList(key, userInfo);
-	DbDriver.updateCleanSQL(con,sql);
+			userTable.getPreparedSQLValueList();
+	DbDriver.updateBoundSQL(con, sql, DbDriver.UpdateExpectation.ROW_UPDATE_IS_EXPECTED, userTable.getSQLValueParameters(key, userInfo));
 	
 	sql = "INSERT INTO " + UserStatTable.table.getTableName() + " " +
 		UserStatTable.table.getSQLColumnList() + " VALUES " +
@@ -526,12 +533,12 @@ private void updateUserInfoSQL(Connection con, UserInfo userInfo) throws SQLExce
 
 	String sql;
 	sql =	"UPDATE " + userTable.getTableName() +
-			" SET "   + userTable.getSQLUpdateList(userInfo) + 
+			" SET "   + userTable.getPreparedSQLUpdateList() +
 			" WHERE " + userTable.id     + " = " + userInfo.id;
 
 //lg.info(sql);
-			
-	DbDriver.updateCleanSQL(con,sql);
+
+	DbDriver.updateBoundSQL(con, sql, DbDriver.UpdateExpectation.ROW_UPDATE_IS_EXPECTED, userTable.getSQLUpdateParameters(userInfo));
 }
 
 public void updateUserStat(Connection con,KeyFactory keyFactory, UserLoginInfo userLoginInfo) throws SQLException {
@@ -636,13 +643,15 @@ public ApiAccessToken getApiAccessToken(Connection con, DatabaseSyntax dbSyntax,
 	sql = 	"SELECT " + userTable.userid.getUnqualifiedColName()+", "+tokenTable.getTableName()+".* " + 
 			" FROM " + userTable.getTableName() + ", " + tokenTable.getTableName() + 
 			" WHERE " + userTable.id.getQualifiedColName() + " = " + tokenTable.userref +
-			" AND " + tokenTable.accesstoken + " = '" + accessToken + "'";
-			
+			" AND " + tokenTable.accesstoken + " = ?";
+
 	//lg.info(sql);
-	stmt = con.createStatement();
+	PreparedStatement pstmt = con.prepareStatement(sql);
+	stmt = pstmt;
 	ApiAccessToken apiAccessToken = null;
 	try {
-		rset = stmt.executeQuery(sql);
+		DbDriver.bindParameters(pstmt, accessToken);
+		rset = pstmt.executeQuery();
 		if (rset.next()) {
 			apiAccessToken = tokenTable.getApiAccessToken(rset,dbSyntax);
 		}
@@ -664,13 +673,15 @@ public ApiClient getApiClient(Connection con, String clientId) throws SQLExcepti
 	
 	sql = 	"SELECT " + clientTable.getTableName()+".* " + 
 			" FROM " + clientTable.getTableName() + 
-			" WHERE " + clientTable.clientId + " = '" + clientId + "'";
-			
+			" WHERE " + clientTable.clientId + " = ?";
+
 	//lg.info(sql);
-	stmt = con.createStatement();
+	PreparedStatement pstmt = con.prepareStatement(sql);
+	stmt = pstmt;
 	ApiClient apiClient = null;
 	try {
-		rset = stmt.executeQuery(sql);
+		DbDriver.bindParameters(pstmt, clientId);
+		rset = pstmt.executeQuery();
 		if (rset.next()) {
 			apiClient = clientTable.getApiClient(rset);
 		}

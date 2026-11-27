@@ -251,17 +251,11 @@ public class SolverHandler {
 					Expression exp = new ExpressionMathMLParser(null).fromMathML(math, "t");
 					if (exp.infix().equals(range.getId().string())) {
 						String targetID = sbmlSupport.getIdFromXPathIdentifer(starget);
-						Enumeration<String> overridesHashKeys = tempSimulation.getMathOverrides().getOverridesHashKeys();
-						boolean found = false;
-						while(overridesHashKeys.hasMoreElements()) {
-							String candidate = overridesHashKeys.nextElement();
-							if(candidate.equals(targetID)) {
-								targetIdSet.add(targetID);
-								found = true;
-								break;
-							}
+						for (String candidate : tempSimulation.getMathOverrides().getOverrideKeys()){
+							if (!candidate.equals(targetID)) continue;
+							targetIdSet.add(targetID);
+							break;
 						}
-//						assert found == true;
 					}
 				}
                 this.taskToChangeTargetMap.put(rt, targetIdSet);

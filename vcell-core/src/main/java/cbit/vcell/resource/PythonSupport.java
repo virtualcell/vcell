@@ -1,5 +1,6 @@
 package cbit.vcell.resource;
 
+import org.vcell.util.OperatingSystemInfo;
 import org.vcell.util.exe.Executable;
 import org.vcell.util.exe.ExecutableException;
 import org.vcell.util.exe.IExecutable;

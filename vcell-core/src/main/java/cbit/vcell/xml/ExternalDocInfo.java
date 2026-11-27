@@ -12,9 +12,11 @@ package cbit.vcell.xml;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
 
 import org.jdom2.Document;
 import org.vcell.util.document.VCDocument;
@@ -140,7 +142,7 @@ public XMLSource createXMLSource() throws Exception {
 public Reader getReader() {
 	if (file!=null){
 		try {
-			return new FileReader(file);
+			return new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8);
 		} catch (FileNotFoundException e) {
 			throw new RuntimeException(e.getMessage(),e);
 		}

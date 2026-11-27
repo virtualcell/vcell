@@ -23,7 +23,6 @@ import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.simdata.*;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
-import cbit.vcell.util.AmplistorUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.util.*;
@@ -171,11 +170,9 @@ private File[] getParticleFiles(ExportSpecs exportSpecs,User user,DataServerImpl
 //	}
 	
 	final VCDataIdentifier vcdID = exportSpecs.getVCDataIdentifier();
-	SimulationData.SimDataAmplistorInfo simDataAmplistorInfo = AmplistorUtils.getSimDataAmplistorInfoFromPropertyLoader();
 	SimulationData simData = new SimulationData(vcdID,
 			new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirInternalProperty),vcdID.getOwner().getName()),
-			new File(PropertyLoader.getProperty(PropertyLoader.primarySimDataDirInternalProperty,null),vcdID.getOwner().getName()),
-			simDataAmplistorInfo);
+			new File(PropertyLoader.getProperty(PropertyLoader.primarySimDataDirInternalProperty,null),vcdID.getOwner().getName()));
 		
 	File logFile = simData.getLogFile();
 	if(!logFile.exists()){
@@ -222,11 +219,9 @@ private File[] getParticleFiles(ExportSpecs exportSpecs,User user,DataServerImpl
 //	final File visitSmoldynScriptTempDir = PropertyLoader.getSystemTemporaryDirectory();
 //
 //	//-----Get all data (from archive if necessary)
-//	SimulationData.SimDataAmplistorInfo simDataAmplistorInfo = AmplistorUtils.getSimDataAmplistorInfoFromPropertyLoader();
 //	SimulationData simData = new SimulationData(vcdID,
 //			new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirInternalProperty),vcdID.getOwner().getName()),
-//			new File(PropertyLoader.getProperty(PropertyLoader.primarySimDataDirInternalProperty,null),vcdID.getOwner().getName()),
-//			simDataAmplistorInfo);
+//			new File(PropertyLoader.getProperty(PropertyLoader.primarySimDataDirInternalProperty,null),vcdID.getOwner().getName()));
 //		
 //	File logFile = simData.getLogFile();
 //	if(!logFile.exists()){

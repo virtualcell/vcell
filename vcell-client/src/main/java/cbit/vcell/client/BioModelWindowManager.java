@@ -9,6 +9,8 @@
  */
 
 package cbit.vcell.client;
+import org.vcell.documentation.HelpIds;
+import org.vcell.documentation.HelpContext;
 import java.awt.BorderLayout;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -52,6 +54,7 @@ import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.xml.gui.MIRIAMAnnotationViewer;
+import org.vcell.client.logicalwindow.LWSize;
 /**
  * Insert the type's description here.
  * Creation date: (5/5/2004 1:17:07 PM)
@@ -178,6 +181,7 @@ public void addResultsFrame(SimulationWindow simWindow) {
 	ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(getJPanel());
 	ChildWindow childWindow = childWindowManager.getChildWindowFromContext(simWindow);
 	if (childWindow==null){
+		// help: the data viewers (ODEDataViewer, PDEDataViewer) say the page about their open tab
 		childWindow = childWindowManager.addChildWindow(simWindow.getDataViewer(), simWindow);
 		simWindow.setChildWindow(childWindow);
 		childWindow.setIsCenteredOnParent();
@@ -322,6 +326,11 @@ public ApplicationComponents getApplicationComponents(SimulationContext simulati
  */
 private BioModelEditor getBioModelEditor() {
 	return bioModelEditor;
+}
+
+/** Opens the Pathway Tools window: the pathway's diagram, objects, BioPAX views and Lookup (Tools > Pathway Tools). */
+public void showPathwayTools() {
+	getBioModelEditor().showPathwayTools();
 }
 
 
@@ -624,8 +633,9 @@ public void showMIRIAMWindow() {
 	if (childWindow==null){
 		MIRIAMAnnotationViewer miriamAnnotationViewer = new MIRIAMAnnotationViewer();
 		miriamAnnotationViewer.setBiomodel(bioModel);
+		HelpContext.setPage(miriamAnnotationViewer, HelpIds.ANNOTATIONS);
 		childWindow = childWindowManager.addChildWindow(miriamAnnotationViewer, MIRIAM_WINDOW, "View/Add/Delete/Edit MIRIAM Annotation");
-		childWindow.setSize(600,400);
+		childWindow.setSize(LWSize.ems(50, 33));
 		childWindow.setResizable(true);
 	}
 	else {
@@ -642,7 +652,7 @@ public boolean hasBlankDocument() {
 
 @Override
 public void updateConnectionStatus(ConnectionStatus connStatus) {
-	bioModelEditor.updateConnectionStatus(connStatus);	
+	// nothing in the window depends on the connection since its database browser moved to the welcome window
 }
 
 public DataImporter getPathwayImporter() { return pathwayImporter; }

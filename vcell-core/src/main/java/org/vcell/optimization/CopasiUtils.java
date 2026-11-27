@@ -10,7 +10,7 @@ import cbit.vcell.modelopt.ParameterEstimationTask;
 import cbit.vcell.modelopt.ReferenceDataMappingSpec;
 import cbit.vcell.opt.*;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.resource.OperatingSystemInfo;
+import org.vcell.util.OperatingSystemInfo;
 import cbit.vcell.resource.PropertyLoader;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Files;
@@ -27,7 +27,6 @@ import org.vcell.util.PythonUtils;
 
 import javax.xml.stream.XMLStreamException;
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;

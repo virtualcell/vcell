@@ -30,13 +30,13 @@ jobs:
 
       - name: build documentation for web help
         run: |
-          mvn clean install -DskipTests
+          mvn --batch-mode -pl vcell-client -am install -DskipTests -Pweb-help
 
       - name: Deploy Web Help
         run: |
           set -ux
           ssh-keyscan $VCELL_MANAGER_NODE >> ~/.ssh/known_hosts
-          webhelp_local_dir="vcell-client/target/classes/vcellDoc"
+          webhelp_local_dir="vcell-client/target/webhelp"
           ssh_user=${{ secrets.CD_FULL_USER }}
           webhelp_deploy_dir="${VCELL_WEBHELP_REMOTE_DIR}"
           manager_node="${VCELL_MANAGER_NODE}"
@@ -44,20 +44,16 @@ jobs:
             echo "Error: VCELL_WEBHELP_REMOTE_DIR or manager_node is not set."
             exit 1;
           fi
-          if ! rsync -r "${webhelp_local_dir}/topics" "$ssh_user@$manager_node:${webhelp_deploy_dir}";
+          # index.html, help.css, pages/ and images/ (HelpSiteExporter output)
+          if ! rsync -r "${webhelp_local_dir}/" "$ssh_user@$manager_node:${webhelp_deploy_dir}";
           then
-            echo "failed to copy html files in topic directory to webhelp deploy directory";
+            echo "failed to copy web help to the webhelp deploy directory";
             exit 1;
-          fi
-          if ! scp "${webhelp_local_dir}/VCellHelpTOC.html" "$ssh_user@$manager_node:${webhelp_deploy_dir}/index.html";
-          then
-            echo "failed to index.html to webhelp deploy directory";
-             exit 1;
           fi
 
       - name: Setup tmate session 3
         uses: mxschmitt/action-tmate@v3
         if: ${{ failure() }}
         with:
-          limit-access-to-actor: false
+          limit-access-to-actor: true
 

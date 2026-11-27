@@ -13,9 +13,12 @@ package cbit.vcell.resource;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.util.FileUtils;
+import org.vcell.util.OperatingSystemInfo;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.logging.NoLogging;
+
+import cbit.vcell.simdata.SimDataConstants;
 
 import java.io.*;
 import java.util.Collection;
@@ -82,7 +85,7 @@ public class ResourceUtil {
 		File find(String executableName) throws UserCancelException;
 	}
 
-	public static String getExecutableName(String baseName,boolean useBitSuffix,OperatingSystemInfo osi){
+	public static String getExecutableName(String baseName, boolean useBitSuffix, OperatingSystemInfo osi){
 		if (useBitSuffix) {
 			return baseName + osi.getExeBitSuffix();
 		}else {
@@ -189,10 +192,57 @@ public class ResourceUtil {
 		}
 	}
 
+	/**
+	 * The library directory for a solver run: the executable's own directory when it lies inside the
+	 * local solvers directory (its solver repo's subdirectory, holding the libraries that repo bundles),
+	 * otherwise the local solvers directory itself (e.g. a solver launched through docker).
+	 */
+	public static File getSolverLibraryDirectory(String executablePath) throws IOException {
+		return getSolverLibraryDirectory(executablePath, getLocalSolversDirectory());
+	}
+
+	/** As {@link #getSolverLibraryDirectory(String)}, for a given local solvers directory. */
+	static File getSolverLibraryDirectory(String executablePath, File localSolversDirectory) throws IOException {
+		localSolversDirectory = localSolversDirectory.getCanonicalFile();
+		File executableDirectory = new File(executablePath).getCanonicalFile().getParentFile();
+		for (File dir = executableDirectory; dir != null; dir = dir.getParentFile()) {
+			if (dir.equals(localSolversDirectory)) {
+				return executableDirectory;
+			}
+		}
+		return localSolversDirectory;
+	}
+
+	/**
+	 * Each solver repo unpacks into its own subdirectory of the local solvers directory
+	 * ({@code localsolvers/<os>/<repo>/}), next to the libraries it bundles, so solvers never share
+	 * or overwrite each other's libraries. Look for the executable in those subdirectories; if
+	 * none has it, return the flat path (an older flat install, or a server building a command
+	 * whose path SlurmProxy strips to the bare name anyway).
+	 * @throws IOException if more than one subdirectory has the executable
+	 */
 	public static File findSolverExecutable(String basename) throws IOException {
+		return findSolverExecutable(basename, getLocalSolversDirectory());
+	}
+
+	/** As {@link #findSolverExecutable(String)}, in a given local solvers directory. */
+	static File findSolverExecutable(String basename, File localSolversDirectory) throws IOException {
 		OperatingSystemInfo osi = OperatingSystemInfo.getInstance( );
 		String name = basename + osi.getExeBitSuffix();
-		return new File(getLocalSolversDirectory(),name);
+		File[] subdirectories = localSolversDirectory.listFiles(File::isDirectory);
+		File found = null;
+		if (subdirectories != null) {
+			for (File subdirectory : subdirectories) {
+				File candidate = new File(subdirectory, name);
+				if (candidate.isFile()) {
+					if (found != null) {
+						throw new IOException("solver executable " + name + " found in both " + found.getParent() + " and " + subdirectory);
+					}
+					found = candidate;
+				}
+			}
+		}
+		return (found != null) ? found : new File(localSolversDirectory, name);
 	}
 	/**
 	 * determine java version from system property
@@ -325,6 +375,14 @@ public class ResourceUtil {
 						File[] links = file.listFiles();
 						for (int i = 0; i < links.length; i++) {
 							links[i].delete();
+						}
+					}
+					if(file.isDirectory() && file.getName().endsWith(SimDataConstants.FENICS_BUNDLE_EXTENSION)) {
+						// a FEniCSx results bundle is a directory tree (VTU meshes + zarr chunks)
+						try {
+							FileUtils.deleteDirectoryContents(file, true, null);
+						} catch (IOException e) {
+							logger.warn("could not delete FEniCSx results bundle " + file + ": " + e.getMessage());
 						}
 					}
 					file.delete();

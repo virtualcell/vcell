@@ -15,6 +15,7 @@ package cbit.xml.merge.gui;
  * Creation date: (7/27/2000 6:30:41 PM)
  * @author: 
  */
+import cbit.vcell.client.laf.VCellColors;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JTree;
@@ -70,17 +71,17 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 					break;
 				case NodeInfo.STATUS_NEW:
 					component.setIcon(this.fieldNewAttributeIcon);
-					component.setForeground(java.awt.Color.blue);
+					component.setForeground(VCellColors.getValueForeground());
 					setToolTipText("New " + nodeInfo.getName());
 					break;
 				case NodeInfo.STATUS_REMOVED:
 					component.setIcon(this.fieldRemovedAttributeIcon);
-					component.setForeground(java.awt.Color.red);
+					component.setForeground(VCellColors.getErrorForeground());
 					setToolTipText("Removed " + nodeInfo.getName());
 					break;
 				case NodeInfo.STATUS_CHANGED:
 					component.setIcon(this.fieldChangedAttributeIcon);
-					component.setForeground(java.awt.Color.gray);
+					component.setForeground(VCellColors.getDimForeground());
 					setToolTipText("Altered " + nodeInfo.getName());
 					break;
 				default:
@@ -96,17 +97,17 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 					break;
 				case NodeInfo.STATUS_NEW:
 					component.setIcon(this.fieldNewFolderIcon);
-					component.setForeground(java.awt.Color.blue);
+					component.setForeground(VCellColors.getValueForeground());
 					setToolTipText("New " + nodeInfo.getName());
 					break;
 				case NodeInfo.STATUS_REMOVED:
 					component.setIcon(this.fieldRemovedFolderIcon);
-					component.setForeground(java.awt.Color.red);
+					component.setForeground(VCellColors.getErrorForeground());
 					setToolTipText("Removed " + nodeInfo.getName());
 					break;
 				case NodeInfo.STATUS_CHANGED:
 					component.setIcon(this.fieldChangedFolderIcon);
-					component.setForeground(java.awt.Color.gray);
+					component.setForeground(VCellColors.getDimForeground());
 					setToolTipText("Altered " + nodeInfo.getName());
 					break;
 				default:

@@ -9,7 +9,15 @@ Computational cell biology simulation platform (since 1997). Java monorepo with 
 ## Build & Test
 
 **Full instructions: [docs/BUILDING.md](docs/BUILDING.md).** Read it before debugging a
-build or test failure in a fresh checkout or worktree.
+build or test failure in a fresh checkout or worktree. Building or checking a **Docker image**
+(including the `vcell-rest`/`vcell-exporter` two-build trap) or dry-running the installers:
+the `build` skill, [.claude/skills/build/SKILL.md](.claude/skills/build/SKILL.md).
+
+**Cutting a release or deploying to a site** (alpha/dev, test/stage, rel/prod): the `deploy`
+skill, [.claude/skills/deploy/SKILL.md](.claude/skills/deploy/SKILL.md), which runs the gated
+scripts in [tools/release/](tools/release/). Version and CHANGELOG conventions:
+[docs/RELEASING.md](docs/RELEASING.md). "A release" is a PATCH bump, and the `CHANGELOG.md`
+section lands on master before the tag.
 
 Two steps, in this order — the Python packages **first**, then Maven:
 
@@ -106,6 +114,12 @@ Config: `vcell-rest/src/main/resources/application.properties`
 - **OpenAPI:** SmallRye OpenAPI at `/openapi`, Swagger UI at `/q/swagger-ui/`
 - **Tests:** `@QuarkusTest` with Keycloak + PostgreSQL testcontainers
 
+## Issues
+
+**Filing a GitHub issue? Read [docs/ISSUES.md](docs/ISSUES.md) first.** Every issue must be added to the
+"vcell development" project with Issue type, Status, Simplicity, Importance and Priority set; Priority is
+Importance + the Simplicity number, and new issues default to Pool.
+
 ## Messaging
 
 **Full picture: [docs/MESSAGING.md](docs/MESSAGING.md).** Read it before changing anything under
@@ -178,8 +192,9 @@ Normal team merges go through the queue and gate on regression automatically —
 
 After major changes (especially removing/renaming user-facing features):
 
-- [ ] Check `vcell-client/UserDocumentation/` for references to changed features. This is an ad-hoc XML format compiled into JavaHelp (in-app help) and HTML published at https://vcell.org/webstart/VCell_Tutorials/VCell_Help/index.html. Update documentation to stay consistent with code.
+- [ ] Check `vcell-client/UserDocumentation/` for references to changed features. The help is Markdown (see its `README.md`), shown in-app by `org.vcell.documentation.HelpViewer` and exported as HTML to https://vcell.org/webstart/VCell_Tutorials/VCell_Help/index.html. Update documentation to stay consistent with code; `HelpBookTest` (Fast) checks links, images and `HelpIds`.
 - [ ] After regenerating OpenAPI clients (`tools/openapi-clients.sh`), compile downstream: `mvn compile test-compile -pl vcell-rest -am`
+- [ ] After changing a desktop client screen, audit its keyboard use in each of its states: `tools/debug-bridge/bridge.sh focusorder <window>` should report `0 issues` (tab order, unreachable or nameless controls). See the `swing-debug` skill.
 
 ## Conventions
 

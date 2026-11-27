@@ -202,6 +202,7 @@ public abstract class VCellIcons {
 
     // model
     public final static Icon tableIcon = getScaledIcon(makeIcon("/icons/table_icon.gif"));
+    public final static Icon pathwayLookupIcon = getScaledIcon(makeIcon("/icons/search_icon.gif"));
     public final static Icon structureIcon = getScaledIcon(makeIcon("/images/bioModel_16x16.gif"));
     public final static Icon diagramIcon = getScaledIcon(makeIcon("/icons/diagram_icon.gif"));
     public final static Icon modelCuratedIcon = makeIcon("/icons/curatedComponent.png");
@@ -226,6 +227,11 @@ public abstract class VCellIcons {
     public final static Icon statusDetailscon = makeIcon("/icons/sim_status_details.gif");
     public final static Icon odeQuickRunIcon = makeIcon("/icons/ode_quick_run.png");
     public final static Icon pythonQuickRunIcon = makeIcon("/icons/python_quick_run.png");
+
+    public final static Icon singleRunIcon = makeIcon("/svg/single-run.png");
+    public final static Icon multiRunIcon = makeIcon("/svg/multi-run.png");
+    public final static Icon singleRunNegativeIcon = makeIcon("/svg/single-run-negative.png");
+    public final static Icon multiRunNegativeIcon = makeIcon("/svg/multi-run-negative.png");
 
     // rate and assignment rules
     public final static Icon ruleRateIcon = makeIcon("/icons/ruleRate.png");

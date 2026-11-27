@@ -2696,6 +2696,9 @@ private Element getXML(MembraneSubDomain param) throws XmlParseException{
 	membrane.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
 	membrane.setAttribute(XMLTags.InsideCompartmentTag, mangle(param.getInsideCompartment().getName()));
 	membrane.setAttribute(XMLTags.OutsideCompartmentTag, mangle(param.getOutsideCompartment().getName()));
+	if (param.isDilution()) {
+		membrane.setAttribute(XMLTags.DilutionAttrTag, "true");
+	}
 	
 	//Add boundaryType subelements
 	Element boundary;
@@ -2757,6 +2760,7 @@ private Element getXML(MembraneSubDomain param) throws XmlParseException{
 	Mutable<Element> velocity = new MutableObject<>();
 	addVelocityMaybe(velocity, XMLTags.XAttrTag,param.getVelocityX()); 
 	addVelocityMaybe(velocity, XMLTags.YAttrTag,param.getVelocityY()); 
+	addVelocityMaybe(velocity, XMLTags.ZAttrTag,param.getVelocityZ());
 	if (velocity.getValue() != null ) {
 		membrane.addContent(velocity.getValue());
 	}
@@ -4864,9 +4868,9 @@ private Element getXML(LangevinSimulationOptions lso) {
 	e.setText(String.valueOf(lso.getTotalNumberOfJobs()));
 	lsoe.addContent(e);
 
-	e = new Element(XMLTags.LangevinSO_numberOfConcurrentJobs);
-	e.setText(String.valueOf(lso.getNumberOfConcurrentJobs()));
-	lsoe.addContent(e);
+//	e = new Element(XMLTags.LangevinSO_numberOfConcurrentJobs);
+//	e.setText(String.valueOf(lso.getNumberOfConcurrentJobs()));
+//	lsoe.addContent(e);
 
 	if(lso.getRandomSeed() != null) {
 		e = new Element(XMLTags.LangevinSO_randomSeed);

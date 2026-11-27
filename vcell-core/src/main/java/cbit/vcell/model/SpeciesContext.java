@@ -71,14 +71,42 @@ public class SpeciesContext implements Cacheable, Matchable, Relatable, Editable
 	// store SBML unit for speciesContext from SBML species.
 //	private transient VCUnitDefinition sbmlSpeciesUnit = null;
 
+	/** False only while a persisted name is being restored - see {@link #fromPersistedContent}. */
+	private transient boolean checkNameIsIdentifier = true;
+
 	
 public SpeciesContext(KeyValue key, String name, Species species, Structure structure, SpeciesPattern speciesPattern) {
+	this(key, name, species, structure, speciesPattern, true);
+}
+
+/**
+ * Rebuild a species context from persisted content (VCML or the database).
+ *
+ * Names are only checked against the expression-identifier rule for edits the user makes now.
+ * Models saved before that rule was enforced may hold a name the expression parser cannot read
+ * (see issue #2062); such a model must still open, so this entry point relaxes the check and
+ * {@link #gatherIssues} reports the offending name instead, giving the user something to act on.
+ */
+public static SpeciesContext fromPersistedContent(KeyValue key, String name, Species species, Structure structure, SpeciesPattern speciesPattern) {
+	return new SpeciesContext(key, name, species, structure, speciesPattern, false);
+}
+
+/** @see #fromPersistedContent(KeyValue, String, Species, Structure, SpeciesPattern) */
+public static SpeciesContext fromPersistedContent(KeyValue key, String name, Species species, Structure structure) {
+	return fromPersistedContent(key, name, species, structure, null);
+}
+
+private SpeciesContext(KeyValue key, String name, Species species, Structure structure, SpeciesPattern speciesPattern, boolean checkNameIsIdentifier) {
 	this.key = key;
 	addVetoableChangeListener(this);
+	this.checkNameIsIdentifier = checkNameIsIdentifier;
 	try {
 		setName(name);
 	}catch (PropertyVetoException e){
 		throw new RuntimeException(e.getMessage(), e);
+	}finally {
+		// only construction may relax the rule; any later rename is validated normally
+		this.checkNameIsIdentifier = true;
 	}
 	this.species = species;
 	setStructure(structure);
@@ -359,12 +387,19 @@ public void vetoableChange(PropertyChangeEvent e) throws PropertyVetoException {
 			if (newName.length()<1){
 				throw new PropertyVetoException("species context name is zero length",e);
 			}
-			if (!Character.isJavaIdentifierStart(newName.charAt(0))){
-				throw new PropertyVetoException("species context name '"+newName+"' can't start with a '"+newName.charAt(0)+"'",e);
-			}
-			for (int i=1;i<newName.length();i++){
-				if (!Character.isJavaIdentifierPart(newName.charAt(i))){
-					throw new PropertyVetoException("species context name '"+newName+"' can't include a '"+newName.charAt(i)+"'",e);
+			// The rule is TokenMangler's ASCII identifier rule, not Character.isJavaIdentifier*:
+			// the latter accepts any Unicode letter, so a name like PROTEINA_A with an accent used
+			// to be accepted here and then failed to parse during math generation, leaving the
+			// application with no generated math and an error that named an expression rather than
+			// the species (issue #2062).
+			if (checkNameIsIdentifier){
+				int illegalAt = TokenMangler.indexOfFirstIllegalIdentifierChar(newName);
+				if (illegalAt >= 0){
+					char illegalChar = newName.charAt(illegalAt);
+					String what = (illegalAt == 0)
+						? "species context name '"+newName+"' can't start with a '"+illegalChar+"'"
+						: "species context name '"+newName+"' can't include a '"+illegalChar+"'";
+					throw new PropertyVetoException(what+" - "+TokenMangler.IDENTIFIER_RULE_DESCRIPTION,e);
 				}
 			}	
 		} else if(e.getPropertyName().equals("sbmlName")) {
@@ -470,6 +505,13 @@ public boolean hasSpeciesPattern() {
 
 public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 	issueContext = issueContext.newChildContext(ContextType.SpeciesContext, this);
+	// A name restored from a model saved before the identifier rule was enforced (see #2062).
+	// Math generation will fail on it, so say so here rather than at generation time, where the
+	// error names an expression and not the species.
+	if(getName() != null && !TokenMangler.isValidExpressionIdentifier(getName())) {
+		String msg = "Species '"+getName()+"' cannot be used to generate math: "+TokenMangler.IDENTIFIER_RULE_DESCRIPTION+". Rename it.";
+		issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
+	}
 	if(species == null) {
 		issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Species is null", Issue.SEVERITY_WARNING));
 	} else {

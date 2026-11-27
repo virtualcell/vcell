@@ -41,7 +41,7 @@ cd vcell
 
 ### Building, testing and running VCell on the command line
 - This VCell GitHub project includes all Java/Python source code required to build both the VCell client and the VCell Server.  
-- The simulation solver source code is available as a separate project as [vcell-solvers](https://github.com/virtualcell/vcell-solvers).
+- The native simulation solvers each live in their own repository ([vcell-fvsolver](https://github.com/virtualcell/vcell-fvsolver), [vcell-ode](https://github.com/virtualcell/vcell-ode), [vcell-stochastic](https://github.com/virtualcell/vcell-stochastic), [vcell-nfsim](https://github.com/virtualcell/vcell-nfsim), [vcell-hy3s](https://github.com/virtualcell/vcell-hy3s), [vcell-chombo](https://github.com/virtualcell/vcell-chombo), [vcell-mbsolver](https://github.com/virtualcell/vcell-mbsolver)); the build downloads their release binaries into `localsolvers/` (see [localsolvers/README.md](localsolvers/README.md)).
 - Requirements:  Git, Maven, Poetry, Python 3.10, Java 17
 
 #### Build Java and Python

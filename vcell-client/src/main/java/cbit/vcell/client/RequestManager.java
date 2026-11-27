@@ -14,6 +14,7 @@ import java.util.Hashtable;
 
 import javax.swing.filechooser.FileFilter;
 
+import cbit.vcell.server.ServerInfo;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.*;
 import org.vcell.util.document.VCDocument.VCDocumentType;
@@ -118,6 +119,9 @@ void exitApplication();
  * Comment
  */
 void exportDocument(TopLevelWindowManager manager,FileFilter forceFileFilter);
+
+/** Export / Save to File from a model's window, first offering to save unsaved changes to the database. */
+void exportDocumentOfferingSave(DocumentWindowManager manager);
 
 /**
  * Insert the method's description here.
@@ -326,6 +330,8 @@ void accessPermissions(Component requester, VCDocument vcDocument);
 boolean isDifferentFromBlank(VCDocumentType documentType, VCDocument vcDocument);
 
 ClientServerInfo getClientServerInfo();
+
+ServerInfo getServerInfo();
 
 void logOut(TopLevelWindowManager requester);
 }

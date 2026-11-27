@@ -10,6 +10,7 @@
 
 package org.vcell.util.gui;
 
+import org.vcell.documentation.HelpViewer;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -64,7 +65,7 @@ import com.centerkey.utils.BareBonesBrowserLaunch;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.client.server.UserPreferences;
-import cbit.vcell.resource.OperatingSystemInfo;
+import org.vcell.util.OperatingSystemInfo;
 
 /**
  * Insert the type's description here.
@@ -274,20 +275,6 @@ public class DialogUtils {
             }
             showErrorDialog(requester, msg, e);
         }
-    }
-
-
-    /**
-     * get screensize including multi monitor environment
-     *
-     * @return
-     */
-    public static Dimension getScreenSize(){
-        //http://stackoverflow.com/questions/3680221/how-can-i-get-the-monitor-size-in-java
-        GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
-        int width = gd.getDisplayMode().getWidth();
-        int height = gd.getDisplayMode().getHeight();
-        return new Dimension(width, height);
     }
 
     /**
@@ -722,7 +709,52 @@ public class DialogUtils {
         }
     }
 
+    /**
+     * Something the user can do about an error, offered in its dialog under the message: a sentence saying what and
+     * why, and a button that closes the dialog, then runs <code>action</code> once it has gone.
+     */
+    public record ErrorAction(String explanation, String buttonLabel, Runnable action) {}
+
+    // the error's own panel, with the action's explanation and button in a row under it
+    private static JComponent withErrorAction(JComponent messagePanel, ErrorAction errorAction, Runnable onChosen) {
+        JLabel explanation = new JLabel("<html>" + errorAction.explanation() + "</html>"); // wraps to the dialog's width
+        JButton actionButton = new JButton(errorAction.buttonLabel());
+        actionButton.setName("ErrorActionButton");
+        actionButton.getAccessibleContext().setAccessibleDescription(errorAction.explanation());
+        actionButton.addActionListener(e -> onChosen.run());
+        JPanel actionRow = new JPanel(new BorderLayout(12, 0));
+        actionRow.setOpaque(false);
+        actionRow.setBorder(BorderFactory.createEmptyBorder(12, 0, 0, 0));
+        actionRow.add(explanation, BorderLayout.CENTER);
+        actionRow.add(actionButton, BorderLayout.EAST);
+        JPanel withAction = new JPanel(new BorderLayout());
+        withAction.setOpaque(false);
+        withAction.add(messagePanel, BorderLayout.CENTER);
+        withAction.add(actionRow, BorderLayout.SOUTH);
+        return withAction;
+    }
+
     public static void showErrorDialog(final Component requester, final String message, final Throwable exception, final ErrorContext errorContext){
+        showErrorDialog(requester, message, exception, errorContext, null);
+    }
+
+    /**
+     * As the other <code>showErrorDialog</code>s, plus an optional action offered under the message; its own buttons
+     * (including sending an error report, where offered) are unchanged.
+     */
+    public static void showErrorDialog(final Component requester, final String message, final Throwable exception, final ErrorContext errorContext, final ErrorAction errorAction){
+        DialogUtils.showErrorDialog(requester, message, exception, errorContext, errorAction, false);
+    }
+
+    /**
+     * As {@link #showErrorDialog(Component, String, Throwable, ErrorContext)}, but always offering to send the error
+     * report to VCell, for when the user asked to contact VCell about {@code exception}.
+     */
+    public static void showErrorReportDialog(final Component requester, final String message, final Throwable exception, final ErrorContext errorContext){
+        DialogUtils.showErrorDialog(requester, message, exception, errorContext, null, true);
+    }
+
+    private static void showErrorDialog(final Component requester, final String message, final Throwable exception, final ErrorContext errorContext, final ErrorAction errorAction, final boolean offerErrorReport){
         checkForNull(requester);
         // An error dialog must not be the one window the user cannot find. Without an
         // owner AWT downgrades DOCUMENT_MODAL to modeless, so the dialog would neither
@@ -731,7 +763,7 @@ public class DialogUtils {
 
         Doer doer = () -> {
             String errMsg = message;
-            boolean sendErrorReport = false;
+            boolean sendErrorReport = offerErrorReport;
             if(errMsg == null || errMsg.trim().length() == 0){
                 errMsg = "Virtual Cell has encountered a problem. Please tell Virtual Cell about this problem to help improve Virtual Cell.";
                 if(exception != null){
@@ -760,11 +792,25 @@ public class DialogUtils {
                 dialogMessagePanel.add(sp, BorderLayout.NORTH);
             }
 
-            JOptionPane pane = new JOptionPane(dialogMessagePanel, JOptionPane.ERROR_MESSAGE, dialogMessagePanel.optionType());
+            boolean[] actionChosen = { false };
+            JComponent paneMessage = dialogMessagePanel;
+            JOptionPane pane = new JOptionPane(null, JOptionPane.ERROR_MESSAGE, dialogMessagePanel.optionType());
+            if (errorAction != null) {
+                paneMessage = DialogUtils.withErrorAction(dialogMessagePanel, errorAction, () -> {
+                    actionChosen[0] = true;
+                    pane.setValue(JOptionPane.CLOSED_OPTION); // closes the dialog, as its own buttons do
+                });
+            }
+            pane.setMessage(paneMessage);
             JDialog dialog = new LWTitledOptionPaneDialog(lwParent, "Error", pane);
             dialog.setResizable(true);
             try {
                 dialog.setVisible(true);
+                if (actionChosen[0]) {
+                    dialog.dispose();
+                    errorAction.action().run(); // once the dialog has gone, before this call returns
+                    return;
+                }
                 if(goingToEmail){
                     Object ro = pane.getValue();
                     Integer reply = CastingUtils.downcast(Integer.class, ro);
@@ -861,10 +907,49 @@ public class DialogUtils {
         VCSwingFunction.executeAsRuntimeException(doer);
     }
 
-    // use the public methods above when calling from elsewhere, never directly this
+    /**
+     * A short explanation with a "VCell Help" button beside OK that closes it and opens the help at the page that
+     * says more.
+     *
+     * @param helpPageId a {@link org.vcell.documentation.HelpIds} constant
+     */
+    public static void showInfoDialog(final Component requester, final String title, final String message, final String helpPageId){
+        DialogUtils.checkForNull(requester);
+        Doer doer = () -> {
+            JPanel panel = MessagePanelFactory.createSimple(message);
+            DialogUtils.showInfoDialogInternal(requester, panel, title, helpPageId);
+        };
+        VCSwingFunction.executeAsRuntimeException(doer);
+    }
+
+    /** As {@link #showInfoDialog(Component, String, String, String)}, showing a panel. */
+    public static void showInfoDialog(final Component requester, final JPanel panel, final String title, final String helpPageId){
+        DialogUtils.checkForNull(requester);
+        Doer doer = () -> DialogUtils.showInfoDialogInternal(requester, panel, title, helpPageId);
+        VCSwingFunction.executeAsRuntimeException(doer);
+    }
+
+    private static final String VCELL_HELP_OPTION = "VCell Help";
+
     private static void showInfoDialogInternal(final Component requester, final JPanel panel, final String title) {
+        DialogUtils.showInfoDialogInternal(requester, panel, title, null);
+    }
+
+    // use the public methods above when calling from elsewhere, never directly this
+    private static void showInfoDialogInternal(final Component requester, final JPanel panel, final String title, final String helpPageId) {
         LWContainerHandle lwParent = LWNamespace.findLWOwner(requester);
-        JOptionPane pane = new JOptionPane(panel, JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane pane = helpPageId == null
+                ? new JOptionPane(panel, JOptionPane.INFORMATION_MESSAGE)
+                : new JOptionPane(panel, JOptionPane.INFORMATION_MESSAGE, JOptionPane.DEFAULT_OPTION, null,
+                        new Object[]{VCELL_HELP_OPTION, "OK"}, "OK");
+        try {
+            DialogUtils.showInfoPane(requester, lwParent, pane, title);
+        } finally {
+            if (helpPageId != null && VCELL_HELP_OPTION.equals(pane.getValue())) HelpViewer.showHelp(helpPageId);
+        }
+    }
+
+    private static void showInfoPane(final Component requester, final LWContainerHandle lwParent, final JOptionPane pane, final String title) {
         if(OperatingSystemInfo.getInstance().isMac()){
             //On Mac: problem when one keepOnTop,Modal dialogue shows another keepOnTop,Modal dialogue, second one may go behind initially
             final JDialog dialog = new JDialog(JOptionPane.getRootFrame(), true);

@@ -20,6 +20,7 @@ import org.apache.commons.math3.random.RandomDataGenerator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.util.Compare;
+import org.vcell.util.ConfigurationException;
 
 import cbit.vcell.math.Action;
 import cbit.vcell.math.JumpProcess;
@@ -108,6 +109,18 @@ public class NetCDFWriter {
 		}
 	
 		return true;
+	}
+
+	/**
+	 * The JMS_BROKER value for the Hy3S solvers: the REST messaging endpoint as {@code host:restport}, the same
+	 * form {@link cbit.vcell.solver.server.SolverFileWriter} writes for the other solvers. The Hy3S solvers from
+	 * virtualcell/vcell-hy3s report status through the curl/REST bridge; the legacy AMQP form
+	 * {@code failover:(tcp://host:port)} only suited the old precompiled vcell-solvers binaries.
+	 */
+	static String jmsBrokerUrl() throws ConfigurationException {
+		String jmshost = PropertyLoader.getRequiredProperty(PropertyLoader.jmsSimHostExternal);
+		String jmsrestport = PropertyLoader.getRequiredProperty(PropertyLoader.jmsSimRestPortExternal);
+		return jmshost + ":" + jmsrestport;
 	}
 
 	/**
@@ -256,21 +269,7 @@ public class NetCDFWriter {
 				// write jms info
 				if (bMessaging) {
 					ArrayChar.D1 jmsString = new ArrayChar.D1(stringLen.getLength());
-					String jmshost = PropertyLoader.getRequiredProperty(PropertyLoader.jmsSimHostExternal);
-					
-					//
-					// Used for new REST HTTP messaging api (USE THIS WHEN Hyrbid Solvers are compiled).
-					//
-					//String jmsrestport = PropertyLoader.getRequiredProperty(PropertyLoader.jmsRestPortExternal);
-					//String jmsurl = jmshost+":"+jmsrestport;
-					
-					//
-					// connect to messaging using legacy AMQP protocol instead of new REST api.  Needed for legacy pre-compiled solvers.
-					//
-					String jmsport = PropertyLoader.getRequiredProperty(PropertyLoader.jmsSimPortExternal);
-					String jmsurl = "failover:(tcp://"+jmshost+":"+jmsport+")";
-					
-					
+					String jmsurl = jmsBrokerUrl();
 					jmsString.setString(jmsurl);
 					ncfile.write("JMS_BROKER", jmsString);
 					jmsString.setString(PropertyLoader.getRequiredProperty(PropertyLoader.jmsUser));

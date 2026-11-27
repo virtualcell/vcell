@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--This biomodel was generated in VCML Version unknown-->
+<vcml xmlns="http://sourceforge.net/projects/vcell/vcml" Version="unknown">
+  <BioModel Name="hybrid">
+    <Model Name="hybrid">
+      <Compound Name="A">
+        <Annotation>A</Annotation>
+      </Compound>
+      <Compound Name="B">
+        <Annotation>B</Annotation>
+      </Compound>
+      <Feature Name="cell" />
+      <LocalizedCompound Name="A" CompoundRef="A" Structure="cell" OverrideName="true" />
+      <LocalizedCompound Name="B" CompoundRef="B" Structure="cell" OverrideName="true" />
+      <SimpleReaction Structure="cell" Name="a_to_b" Reversible="true" FluxOption="MolecularOnly">
+        <Reactant LocalizedCompoundRef="A" Stoichiometry="1" />
+        <Product LocalizedCompoundRef="B" Stoichiometry="1" />
+        <Kinetics KineticsType="MassAction">
+          <Parameter Name="J" Role="reaction rate" Unit="uM.s-1">((Kf * A) - (Kr * B))</Parameter>
+          <Parameter Name="Kf" Role="forward rate constant" Unit="s-1">1.0</Parameter>
+          <Parameter Name="Kr" Role="reverse rate constant" Unit="s-1">0.0</Parameter>
+        </Kinetics>
+      </SimpleReaction>
+      <SimpleReaction Structure="cell" Name="b_to_a" Reversible="true" FluxOption="MolecularOnly">
+        <Reactant LocalizedCompoundRef="B" Stoichiometry="1" />
+        <Product LocalizedCompoundRef="A" Stoichiometry="1" />
+        <Kinetics KineticsType="MassAction">
+          <Parameter Name="J" Role="reaction rate" Unit="uM.s-1">((Kf * B) - (Kr * A))</Parameter>
+          <Parameter Name="Kf" Role="forward rate constant" Unit="s-1">0.5</Parameter>
+          <Parameter Name="Kr" Role="reverse rate constant" Unit="s-1">0.0</Parameter>
+        </Kinetics>
+      </SimpleReaction>
+      <Diagram Name="cell" Structure="cell" />
+      <ModelUnitSystem VolumeSubstanceUnit="uM.um3" MembraneSubstanceUnit="molecules" LumpedReactionSubstanceUnit="molecules" VolumeUnit="um3" AreaUnit="um2" LengthUnit="um" TimeUnit="s" />
+    </Model>
+    <SimulationSpec Name="hybrid" Stochastic="true" UseConcentration="true" SpringSaLaD="false" RuleBased="false" MassConservationModelReduction="true" InsufficientIterations="false" InsufficientMaxMolecules="false" CharacteristicSize="0.048100335073972135">
+      <NetworkConstraints RbmMaxIteration="1" RbmMaxMoleculesPerSpecies="10" RbmSpeciesLimit="800" RbmReactionsLimit="2500" />
+      <Annotation />
+      <Geometry Name="hybrid_box" Dimension="3">
+        <Extent X="10.0" Y="10.0" Z="1.0" />
+        <Origin X="0.0" Y="0.0" Z="0.0" />
+        <SubVolume Name="cell" Handle="0" Type="Analytical">
+          <AnalyticExpression>1.0</AnalyticExpression>
+        </SubVolume>
+        <SurfaceDescription NumSamplesX="101" NumSamplesY="101" NumSamplesZ="101" CutoffFrequency="0.3">
+          <VolumeRegion Name="cell0" RegionID="0" SubVolume="cell" Size="100.0" Unit="um3" />
+        </SurfaceDescription>
+      </Geometry>
+      <GeometryContext>
+        <FeatureMapping Feature="cell" GeometryClass="cell" SubVolume="cell" Size="1.0" VolumePerUnitVolume="1.0">
+          <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+        </FeatureMapping>
+      </GeometryContext>
+      <ReactionContext>
+        <LocalizedCompoundSpec LocalizedCompoundRef="A" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>0.0</InitialConcentration>
+          <Diffusion>1.0</Diffusion>
+          <Boundaries Xm="0.0" Xp="0.0" Ym="0.0" Yp="0.0" Zm="0.0" Zp="0.0" />
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="B" ForceConstant="false" WellMixed="false" ForceContinuous="true">
+          <InitialConcentration>0.2</InitialConcentration>
+          <Diffusion>1.0</Diffusion>
+          <Boundaries Xm="0.0" Xp="0.0" Ym="0.0" Yp="0.0" Zm="0.0" Zp="0.0" />
+        </LocalizedCompoundSpec>
+        <ReactionSpec ReactionStepRef="a_to_b" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="b_to_a" ReactionMapping="included" />
+      </ReactionContext>
+      <MathDescription Name="dummy_math_description">
+        <Constant Name="B_boundaryYp">0.0</Constant>
+        <Constant Name="B_boundaryYm">0.0</Constant>
+        <Function Name="A_conc" Domain="cell">(UnitFactor_uM_um3_molecules_neg_1 * A)</Function>
+        <Function Name="vobj_cell0_size" Domain="cell">vcRegionVolume('cell')</Function>
+        <Constant Name="A_conc_boundaryZp">0.0</Constant>
+        <Constant Name="A_init_uM">0.0</Constant>
+        <Constant Name="B_boundaryXm">0.0</Constant>
+        <Constant Name="B_boundaryXp">0.0</Constant>
+        <Constant Name="KMOLE">0.001660538783162726</Constant>
+        <Constant Name="A_conc_init_uM">0.0</Constant>
+        <Constant Name="_T_">300.0</Constant>
+        <Constant Name="A_conc_boundaryZm">0.0</Constant>
+        <Constant Name="Kf_a_to_b">1.0</Constant>
+        <Constant Name="A_diffusionRate">1.0</Constant>
+        <Function Name="J_a_to_b" Domain="cell">((Kf_a_to_b * A_conc) - (Kr_a_to_b * B))</Function>
+        <Constant Name="A_conc_boundaryYp">0.0</Constant>
+        <Constant Name="A_boundaryXm">0.0</Constant>
+        <Constant Name="_N_pmol_">6.02214179E11</Constant>
+        <VolumeParticleVariable Name="A" Domain="cell" />
+        <VolumeVariable Name="B" Domain="cell" />
+        <Constant Name="A_conc_diffusionRate">1.0</Constant>
+        <Function Name="Size_cell" Domain="cell">(VolumePerUnitVolume_cell * vcRegionVolume('cell'))</Function>
+        <Constant Name="A_conc_boundaryYm">0.0</Constant>
+        <Constant Name="A_boundaryXp">0.0</Constant>
+        <Constant Name="K_millivolts_per_volt">1000.0</Constant>
+        <Constant Name="Kr_a_to_b">0.0</Constant>
+        <Constant Name="B_diffusionRate">1.0</Constant>
+        <Constant Name="A_conc_boundaryXp">0.0</Constant>
+        <Constant Name="A_boundaryYp">0.0</Constant>
+        <Constant Name="A_boundaryYm">0.0</Constant>
+        <Function Name="J_b_to_a" Domain="cell">((Kf_b_to_a * B) - (Kr_b_to_a * A_conc))</Function>
+        <Constant Name="B_init_uM">0.2</Constant>
+        <Constant Name="B_boundaryZp">0.0</Constant>
+        <Constant Name="UnitFactor_uM_um3_molecules_neg_1">(1.0 * pow(KMOLE,1.0))</Constant>
+        <Constant Name="B_boundaryZm">0.0</Constant>
+        <Constant Name="A_conc_boundaryXm">0.0</Constant>
+        <Constant Name="_F_nmol_">9.64853321E-5</Constant>
+        <Constant Name="_PI_">3.141592653589793</Constant>
+        <Constant Name="_R_">8314.46261815</Constant>
+        <Constant Name="VolumePerUnitVolume_cell">1.0</Constant>
+        <Constant Name="_K_GHK_">1.0E-9</Constant>
+        <Constant Name="A_boundaryZm">0.0</Constant>
+        <Constant Name="A_boundaryZp">0.0</Constant>
+        <Constant Name="_F_">96485.3321</Constant>
+        <Constant Name="Kr_b_to_a">0.0</Constant>
+        <Constant Name="UnitFactor_molecules_uM_neg_1_um_neg_3">(1.0 * pow(KMOLE,-1.0))</Constant>
+        <Constant Name="Kf_b_to_a">0.5</Constant>
+        <CompartmentSubDomain Name="cell">
+          <BoundaryType Boundary="Xm" Type="Flux" />
+          <BoundaryType Boundary="Xp" Type="Flux" />
+          <BoundaryType Boundary="Ym" Type="Flux" />
+          <BoundaryType Boundary="Yp" Type="Flux" />
+          <BoundaryType Boundary="Zm" Type="Flux" />
+          <BoundaryType Boundary="Zp" Type="Flux" />
+          <PdeEquation Name="B" SolutionType="Unknown">
+            <Boundaries Xm="B_boundaryXm" Xp="B_boundaryXp" Ym="B_boundaryYm" Yp="B_boundaryYp" Zm="B_boundaryZm" Zp="B_boundaryZp" />
+            <Rate>(J_a_to_b - J_b_to_a)</Rate>
+            <Diffusion>B_diffusionRate</Diffusion>
+            <Initial>B_init_uM</Initial>
+          </PdeEquation>
+          <ParticleJumpProcess Name="a_to_b">
+            <SelectedParticle Name="A" />
+            <MacroscopicRateConstant>Kf_a_to_b</MacroscopicRateConstant>
+            <Effect VarName="A" Operation="destroy" />
+          </ParticleJumpProcess>
+          <ParticleJumpProcess Name="a_to_b_reverse">
+            <MacroscopicRateConstant>((Kr_a_to_b * UnitFactor_molecules_uM_neg_1_um_neg_3) * B)</MacroscopicRateConstant>
+            <Effect VarName="A" Operation="create" />
+          </ParticleJumpProcess>
+          <ParticleJumpProcess Name="b_to_a">
+            <MacroscopicRateConstant>((Kf_b_to_a * UnitFactor_molecules_uM_neg_1_um_neg_3) * B)</MacroscopicRateConstant>
+            <Effect VarName="A" Operation="create" />
+          </ParticleJumpProcess>
+          <ParticleJumpProcess Name="b_to_a_reverse">
+            <SelectedParticle Name="A" />
+            <MacroscopicRateConstant>Kr_b_to_a</MacroscopicRateConstant>
+            <Effect VarName="A" Operation="destroy" />
+          </ParticleJumpProcess>
+          <ParticleProperties Name="A">
+            <ParticleInitialConcentration>
+              <ParticleDistribution>(A_init_uM * UnitFactor_molecules_uM_neg_1_um_neg_3)</ParticleDistribution>
+            </ParticleInitialConcentration>
+            <ParticleDiffusion>A_diffusionRate</ParticleDiffusion>
+          </ParticleProperties>
+        </CompartmentSubDomain>
+      </MathDescription>
+      <Simulation Name="sim">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Finite Volume Standalone, Regular Grid">
+          <TimeBound StartTime="0.0" EndTime="1.0" />
+          <TimeStep DefaultTime="0.01" MinTime="0.0" MaxTime="0.1" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-7" />
+          <OutputOptions OutputTimeStep="0.1" />
+          <SmoldynSimulationOptions>
+            <Accuracy>10.0</Accuracy>
+            <RandomSeed>1</RandomSeed>
+            <HighResolutionSample>true</HighResolutionSample>
+            <saveParticleFiles>false</saveParticleFiles>
+            <gaussianTableSize>4096</gaussianTableSize>
+            <SmoldynStepMultiplier>1</SmoldynStepMultiplier>
+          </SmoldynSimulationOptions>
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides />
+        <MeshSpecification>
+          <Size X="11" Y="11" Z="3" />
+        </MeshSpecification>
+      </Simulation>
+      <SpatialObjects>
+        <SpatialObject Name="vobj_cell0" Type="Volume" subVolume="cell" regionId="0">
+          <QuantityCategoryList>
+            <QuantityCategory Name="VolumeCentroid" Enabled="false" />
+            <QuantityCategory Name="InteriorVelocity" Enabled="false" />
+            <QuantityCategory Name="VolumeRegionSize" Enabled="true" />
+          </QuantityCategoryList>
+        </SpatialObject>
+      </SpatialObjects>
+      <MicroscopeMeasurement Name="fluor">
+        <ConvolutionKernel Type="ProjectionZKernel" />
+      </MicroscopeMeasurement>
+    </SimulationSpec>
+    <pathwayModel>
+      <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bp="http://www.biopax.org/release/biopax-level3.owl#" version="3.0" />
+    </pathwayModel>
+    <relationshipModel>
+      <RMNS version="3.0" />
+    </relationshipModel>
+    <vcmetadata>
+      <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" />
+      <nonrdfAnnotationList>
+        <nonrdfAnnotation vcid="Species(B)">
+          <freetext>B</freetext>
+        </nonrdfAnnotation>
+        <nonrdfAnnotation vcid="Species(A)">
+          <freetext>A</freetext>
+        </nonrdfAnnotation>
+      </nonrdfAnnotationList>
+      <uriBindingList />
+    </vcmetadata>
+  </BioModel>
+</vcml>

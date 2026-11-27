@@ -10,6 +10,8 @@
 
 package cbit.vcell.solver.ode.gui;
 
+import org.vcell.documentation.HelpIds;
+import cbit.vcell.client.laf.VCellFonts;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -89,11 +91,11 @@ public class StochSimOptionsPanel extends CollapsiblePanel {
 			}  else if (e.getSource() == getTrajectoryButton() || e.getSource() == getMultiRunButton() || e.getSource() == getHistogramButton()) {				
 				setNewOptions();
 			} else if(e.getSource() == getMultiRunHelpButton()) {
-				DialogUtils.showInfoDialogAndResize(StochSimOptionsPanel.this, "Multiple runs of a Non-Spatial stochastic simulation", 
+				DialogUtils.showInfoDialog(StochSimOptionsPanel.this, "Multiple runs of a Non-Spatial stochastic simulation", 
 						"<html><b>Multiple runs of a Non-Spatial stochastic simulation:</b>" +
 						"<br> In order to obtain smooth curves, we run multiple instances of the same stochastic simulation "
 						+ "using a different <b>random seed</b> for each run and then average the results."
-						+ "</html>");
+						+ "</html>", HelpIds.SIMULATION_EDITOR);
 			}
 		}
 		
@@ -585,11 +587,10 @@ public class StochSimOptionsPanel extends CollapsiblePanel {
 		if (multiRunHelpButton == null) {
 			try {
 				multiRunHelpButton = new javax.swing.JButton();
-				Font font = multiRunHelpButton.getFont().deriveFont(Font.BOLD);
 				Border border = BorderFactory.createEmptyBorder(1, 1, 1, 1);
 				multiRunHelpButton.setName("MultiRunHelp");
 				multiRunHelpButton.setText("  ?  ");
-				multiRunHelpButton.setFont(font);
+				VCellFonts.setCategory(multiRunHelpButton, VCellFonts.Category.HEADING);
 				multiRunHelpButton.setBorder(border);
 				multiRunHelpButton.setEnabled(true);
 			} catch (java.lang.Throwable ivjExc) {

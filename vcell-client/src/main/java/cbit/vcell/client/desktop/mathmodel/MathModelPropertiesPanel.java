@@ -10,8 +10,9 @@
 
 package cbit.vcell.client.desktop.mathmodel;
 
+import cbit.vcell.client.laf.VCellFonts;
+import cbit.vcell.client.laf.VCellLookAndFeel;
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Desktop;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -137,7 +138,7 @@ private void initialize() {
 		applicationsPanel.initialize();
 		
 		setLayout(new GridBagLayout());
-		setBackground(Color.white);
+		setBackground(VCellLookAndFeel.getContentBackground());
 		int gridy = 0;
 		GridBagConstraints gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 0; 
@@ -147,7 +148,7 @@ private void initialize() {
 		gbc.insets = new Insets(10, 4, 4, 4);
 		JLabel label = new JLabel("Saved MathModel Info");
 		label.setHorizontalAlignment(SwingConstants.CENTER);
-		label.setFont(label.getFont().deriveFont(Font.BOLD));
+		VCellFonts.setCategory(label, VCellFonts.Category.HEADING);
 		add(label, gbc);
 
 		gridy ++;

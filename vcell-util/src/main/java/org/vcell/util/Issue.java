@@ -164,6 +164,10 @@ public class Issue implements java.io.Serializable, Matchable {
 
 		OUTPUTFUNCTIONCONTEXT_FUNCTION_EXPBINDING,
 		Smoldyn_Geometry_3DWarning,
+		FEniCSx_Geometry_NotSupported,
+		MovingBoundary_Dimension_NotSupported,
+		MovingBoundary_MembraneSpecies_NotSupported,
+		MovingBoundary_Geometry_NotSupported,
 
 		Microscope_Measurement_ProjectionZKernel_Geometry_3DWarning,
 

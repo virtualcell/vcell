@@ -95,7 +95,7 @@ public class LoadFRAPData_MultiFilePanel extends JPanel implements ActionListene
 		JPanel rightPanel = new JPanel(new BorderLayout());
 		JPanel fileTextPanel = new JPanel(new BorderLayout());
 		fileTextPanel.add(scroll, BorderLayout.CENTER);
-		fileTextPanel.setBorder(new TitledBorder(new EtchedBorder(),"Files to be input:", TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION, new Font("Tahoma", Font.PLAIN, 11)));
+		fileTextPanel.setBorder(new TitledBorder(new EtchedBorder(),"Files to be input:", TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION));
 		rightPanel.add(fileTextPanel, BorderLayout.CENTER);
 		JPanel p2 = new JPanel(new BorderLayout());
 		p2.add(new JLabel(" "), BorderLayout.WEST);

@@ -15,8 +15,13 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
 
 import org.vcell.db.DatabaseSyntax;
 import org.vcell.util.DataAccessException;
@@ -225,15 +230,9 @@ public String getSQLValueList(BioModelMetaData bioModelMetaData, String serialBM
 public String getPreparedStatement_BioModelReps(String conditions, OrderBy orderBy, int startRow, int numRows, DatabaseSyntax dbSyntax){
 
 	BioModelTable bmTable = BioModelTable.table;
-	BioModelSimulationLinkTable bmsimTable = BioModelSimulationLinkTable.table;
-	BioModelSimContextLinkTable bmscTable = BioModelSimContextLinkTable.table;
 	GroupTable groupTable = GroupTable.table;
 	UserTable userTable = UserTable.table;
 
-	String concat_function_name = (dbSyntax==DatabaseSyntax.ORACLE) ? "listagg" : "string_agg";
-	String concat_second_arg = (dbSyntax==DatabaseSyntax.ORACLE) ? ", ','" : ", ','";
-	String string_cast = (dbSyntax==DatabaseSyntax.ORACLE) ? "" : "::varchar(255)";
-	
 	String subquery = 			
 		"select " +
 		    bmTable.id.getQualifiedColName()+", "+
@@ -245,22 +244,14 @@ public String getPreparedStatement_BioModelReps(String conditions, OrderBy order
 		    bmTable.versionBranchID.getQualifiedColName()+", "+
 		    bmTable.modelRef.getQualifiedColName()+", "+
 		    bmTable.ownerRef.getQualifiedColName()+", "+
-		    UserTable.table.userid.getQualifiedColName()+", "+
+		    UserTable.table.userid.getQualifiedColName()+" "+
 		
-		   "(select '['||"+concat_function_name+"("+"SQ1_"+bmsimTable.simRef.getQualifiedColName()+string_cast+concat_second_arg+")||']' "+
-		   "   from "+bmsimTable.getTableName()+" SQ1_"+bmsimTable.getTableName()+" "+
-		   "   where SQ1_"+bmsimTable.bioModelRef.getQualifiedColName()+" = "+bmTable.id.getQualifiedColName()+") simKeys,  "+
-		
-		   "(select '['||"+concat_function_name+"("+"SQ2_"+bmscTable.simContextRef.getQualifiedColName()+string_cast+concat_second_arg+")||']' "+
-		   "   from "+bmscTable.getTableName()+"  SQ2_"+bmscTable.getTableName()+" "+
-		   "   where SQ2_"+bmscTable.bioModelRef.getQualifiedColName()+ " = " + bmTable.id.getQualifiedColName()+") simContextKeys,  "+
-		
-		   "(select '['||"+concat_function_name+"(SQ3_"+groupTable.userRef.getQualifiedColName()+string_cast+"||':'||SQ3_"+userTable.userid.getQualifiedColName()+concat_second_arg+")||']'  "+
-	   	   "   from "+groupTable.getTableName()+" SQ3_"+groupTable.getTableName()+", "+
-		   "        "+userTable.getTableName()+"  SQ3_"+userTable.getTableName()+" "+
-		   "   where SQ3_"+groupTable.groupid.getQualifiedColName()+" = "+bmTable.privacy.getQualifiedColName()+" "+
-		   "   and   SQ3_"+userTable.id.getQualifiedColName()+" = "+groupTable.userRef.getQualifiedColName()+" "+
-		   "   and   "+bmTable.privacy.getQualifiedColName()+" > 1) groupMembers "+
+		// issue #2036: simKeys, simContextKeys and groupMembers used to be three correlated LISTAGG
+		// subqueries in this select list. Oracle LISTAGG returns VARCHAR2, capped at 4000 bytes, so
+		// ONE model with enough simulations raised ORA-01489 and failed the ENTIRE listing - the user
+		// could not see any of their models. They are now batch-fetched as raw rows and grouped in
+		// Java by attachChildKeys(), which has no length limit. Same approach already taken for the
+		// vcInfoContainer path (see stitchSimKeys, issue #1746).
 		
 		"from "+bmTable.getTableName()+", "+userTable.getTableName()+", "+groupTable.getTableName()+" "+
 		"where "+bmTable.ownerRef.getQualifiedColName()+" = "+userTable.id.getQualifiedColName()+" "+
@@ -342,7 +333,33 @@ public void setPreparedStatement_BioModelReps(PreparedStatement stmt, User user,
 	}
 }
 
-public BioModelRep getBioModelRep(User user, ResultSet rset, DatabaseSyntax dbSyntax) throws IllegalArgumentException, SQLException {
+/**
+ * One row of the BioModelRep listing, scalars only.
+ *
+ * The child key lists are deliberately NOT read here: they are no longer columns of the query.
+ * Rows are collected first, then attachChildKeys() fetches every row's children in a few
+ * batched queries. See the note in getPreparedStatement_BioModelReps and issue #2036.
+ */
+public static final class BioModelRepRow {
+	private final KeyValue bmKey;
+	private final String name;
+	private final int privacy;
+	private final int versionFlag;
+	private final Date date;
+	private final String annot;
+	private final BigDecimal branchID;
+	private final KeyValue modelRef;
+	private final User owner;
+
+	private BioModelRepRow(KeyValue bmKey, String name, int privacy, int versionFlag, Date date,
+			String annot, BigDecimal branchID, KeyValue modelRef, User owner) {
+		this.bmKey = bmKey; this.name = name; this.privacy = privacy; this.versionFlag = versionFlag;
+		this.date = date; this.annot = annot; this.branchID = branchID; this.modelRef = modelRef;
+		this.owner = owner;
+	}
+}
+
+public BioModelRepRow getBioModelRepRow(ResultSet rset, DatabaseSyntax dbSyntax) throws IllegalArgumentException, SQLException {
 	KeyValue bmKey = new KeyValue(rset.getBigDecimal(table.id.toString()));
 	String name = rset.getString(table.name.toString());
 	int privacy = rset.getInt(table.privacy.toString());
@@ -354,50 +371,99 @@ public BioModelRep getBioModelRep(User user, ResultSet rset, DatabaseSyntax dbSy
 	KeyValue ownerRef = new KeyValue(rset.getBigDecimal(table.ownerRef.toString()));
 	String ownerName = rset.getString(UserTable.table.userid.toString());
 	User owner = new User(ownerName,ownerRef);
-	
-	String simKeysString = rset.getString("simKeys");
-	if (simKeysString == null){
-		simKeysString = "[]";
-	}
-	ArrayList<KeyValue> simKeyList = new ArrayList<KeyValue>();
-	String[] simKeys = simKeysString.replace("[", "").replace("]", "").split(",");
-	for (String simKey : simKeys) {
-		if (simKey!=null && simKey.length()>0){
-			simKeyList.add(new KeyValue(simKey));
-		}
-	}
-	KeyValue[] simKeyArray = simKeyList.toArray(new KeyValue[0]);
+	return new BioModelRepRow(bmKey,name,privacy,versionFlag,date,annot,branchID,modelRef,owner);
+}
 
-	String simContextsString = rset.getString("simContextKeys");
-	if (simContextsString == null){
-		simContextsString = "[]";
+/**
+ * issue #2036 (ORA-01489 fix): attach each row's simulation keys, simulation-context keys and
+ * group members by batch-fetching raw rows and grouping them in Java.
+ *
+ * Replaces three correlated LISTAGG subqueries. Besides removing the 4000-byte VARCHAR2 cap
+ * that failed the whole listing for one oversized model, this runs O(N/1000) grouped queries
+ * instead of evaluating three subqueries per row.
+ *
+ * BioModelRep's child arrays are final, so the reps are constructed here - once, with
+ * everything - rather than mutated after the fact.
+ */
+public static BioModelRep[] attachChildKeys(Connection con, DatabaseSyntax dbSyntax, List<BioModelRepRow> rows) throws SQLException {
+	if (rows == null || rows.isEmpty()) {
+		return new BioModelRep[0];
 	}
-	ArrayList<KeyValue> simContextKeyList = new ArrayList<KeyValue>();
-	String[] simContextKeys = simContextsString.replace("[", "").replace("]", "").split(",");
-	for (String simContextKey : simContextKeys) {
-		if (simContextKey!=null && simContextKey.length()>0){
-			simContextKeyList.add(new KeyValue(simContextKey));
-		}
-	}
-	KeyValue[] simContextKeyArray = simContextKeyList.toArray(new KeyValue[0]);
+	BioModelSimulationLinkTable bmsimTable = BioModelSimulationLinkTable.table;
+	BioModelSimContextLinkTable bmscTable = BioModelSimContextLinkTable.table;
+	GroupTable groupTable = GroupTable.table;
+	UserTable userTable = UserTable.table;
 
-	String groupMembers = rset.getString("groupMembers");
-	if (groupMembers == null){
-		groupMembers = "[]";
-	}
-	ArrayList<User> groupUsers = new ArrayList<User>();
-	String[] groupUserStrings = groupMembers.replace("[", "").replace("]", "").split(",");
-	for (String groupUserString : groupUserStrings) {
-		if (groupUserString!=null && groupUserString.length()>0){
-			String[] groupUserTokens = groupUserString.split(":");
-			KeyValue groupUserKey = new KeyValue(groupUserTokens[0]);
-			String  groupUserid = groupUserTokens[1];
-			groupUsers.add(new User(groupUserid,groupUserKey));
+	LinkedHashSet<String> bmIds = new LinkedHashSet<String>();
+	LinkedHashSet<String> groupIds = new LinkedHashSet<String>();
+	for (BioModelRepRow row : rows) {
+		bmIds.add(row.bmKey.toString());
+		// groupMembers was gated on privacy > 1 in the old subquery; keep that
+		if (row.privacy > 1) {
+			groupIds.add(Integer.toString(row.privacy));
 		}
 	}
-	User[] groupUserArray = groupUsers.toArray(new User[0]);
-		
-	
-	return new BioModelRep(bmKey,name,privacy,versionFlag,groupUserArray,date,annot,branchID,modelRef,owner,simKeyArray,simContextKeyArray);
+
+	Map<String,List<KeyValue>> simKeysByBm = fetchKeysByParent(con, bmsimTable.getTableName(),
+			bmsimTable.bioModelRef.getUnqualifiedColName(), bmsimTable.simRef.getUnqualifiedColName(), bmIds);
+	Map<String,List<KeyValue>> simCtxKeysByBm = fetchKeysByParent(con, bmscTable.getTableName(),
+			bmscTable.bioModelRef.getUnqualifiedColName(), bmscTable.simContextRef.getUnqualifiedColName(), bmIds);
+
+	Map<String,List<User>> groupUsersByGroupId = new HashMap<String,List<User>>();
+	List<String> groupIdList = new ArrayList<String>(groupIds);
+	for (int start = 0; start < groupIdList.size(); start += IN_LIST_CHUNK) {
+		List<String> chunk = groupIdList.subList(start, Math.min(start+IN_LIST_CHUNK, groupIdList.size()));
+		String sql = "SELECT G."+groupTable.groupid.getUnqualifiedColName()+" GROUPID_, "+
+				"G."+groupTable.userRef.getUnqualifiedColName()+" USERREF_, "+
+				"U."+userTable.userid.getUnqualifiedColName()+" USERID_ "+
+				"FROM "+groupTable.getTableName()+" G, "+userTable.getTableName()+" U "+
+				"WHERE U."+userTable.id.getUnqualifiedColName()+" = G."+groupTable.userRef.getUnqualifiedColName()+" "+
+				"AND G."+groupTable.groupid.getUnqualifiedColName()+" IN ("+String.join(",", chunk)+")";
+		try (Statement stmt = con.createStatement(); ResultSet rset = stmt.executeQuery(sql)) {
+			while (rset.next()) {
+				String groupId = rset.getBigDecimal("GROUPID_").toBigInteger().toString();
+				KeyValue userKey = new KeyValue(rset.getBigDecimal("USERREF_"));
+				String userid = rset.getString("USERID_");
+				groupUsersByGroupId.computeIfAbsent(groupId, k -> new ArrayList<User>()).add(new User(userid, userKey));
+			}
+		}
+	}
+
+	BioModelRep[] reps = new BioModelRep[rows.size()];
+	for (int i = 0; i < rows.size(); i++) {
+		BioModelRepRow row = rows.get(i);
+		String bmId = row.bmKey.toString();
+		List<KeyValue> simKeys = simKeysByBm.get(bmId);
+		List<KeyValue> simCtxKeys = simCtxKeysByBm.get(bmId);
+		List<User> groupUsers = (row.privacy > 1) ? groupUsersByGroupId.get(Integer.toString(row.privacy)) : null;
+		reps[i] = new BioModelRep(row.bmKey, row.name, row.privacy, row.versionFlag,
+				groupUsers == null ? new User[0] : groupUsers.toArray(new User[0]),
+				row.date, row.annot, row.branchID, row.modelRef, row.owner,
+				simKeys == null ? new KeyValue[0] : simKeys.toArray(new KeyValue[0]),
+				simCtxKeys == null ? new KeyValue[0] : simCtxKeys.toArray(new KeyValue[0]));
+	}
+	return reps;
+}
+
+/** Oracle caps a literal IN list at 1000 entries, so parent ids are fetched in chunks. */
+private static final int IN_LIST_CHUNK = 1000;
+
+private static Map<String,List<KeyValue>> fetchKeysByParent(Connection con, String tableName,
+		String parentCol, String childCol, LinkedHashSet<String> parentIds) throws SQLException {
+	Map<String,List<KeyValue>> byParent = new HashMap<String,List<KeyValue>>();
+	List<String> idList = new ArrayList<String>(parentIds);
+	for (int start = 0; start < idList.size(); start += IN_LIST_CHUNK) {
+		List<String> chunk = idList.subList(start, Math.min(start+IN_LIST_CHUNK, idList.size()));
+		String sql = "SELECT "+parentCol+", "+childCol+" FROM "+tableName+
+				" WHERE "+parentCol+" IN ("+String.join(",", chunk)+")";
+		try (Statement stmt = con.createStatement(); ResultSet rset = stmt.executeQuery(sql)) {
+			while (rset.next()) {
+				String parent = rset.getBigDecimal(parentCol).toBigInteger().toString();
+				byParent.computeIfAbsent(parent, k -> new ArrayList<KeyValue>())
+						.add(new KeyValue(rset.getBigDecimal(childCol)));
+			}
+		}
+	}
+	return byParent;
 }
 }

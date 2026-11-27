@@ -59,7 +59,7 @@ import org.vcell.util.gui.CollapsiblePanel;
 import org.vcell.util.gui.VCellIcons;
 
 import cbit.vcell.biomodel.meta.VCMetaDataMiriamManager;
-import cbit.vcell.client.DocumentWindowManager;
+import cbit.vcell.client.TopLevelWindowManager;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.BioModelNode;
@@ -161,8 +161,9 @@ public class BioModelsNetPanel extends DocumentEditorSubPanel {
 				});
 				rootNode.removeAllChildren();
 				for (BioModelsNetModelInfo bioModelsNetInfo : infoList) {
-					boolean bAddNode = true;
-					if (searchText != null) {
+					// only the models VCell can import: the others could only be listed greyed out
+					boolean bAddNode = bioModelsNetInfo.isSupported();
+					if (bAddNode && searchText != null) {
 						String lowerCaseSearchText = searchText.toLowerCase();
 						if (lowerCaseSearchText.length() > 0) {
 							bAddNode = bioModelsNetInfo.getId().toLowerCase().contains(lowerCaseSearchText) 
@@ -189,8 +190,9 @@ public class BioModelsNetPanel extends DocumentEditorSubPanel {
 		}
 	}
 	
-	private DocumentWindowManager documentWindowManager = null;
+	private TopLevelWindowManager documentWindowManager = null; // the window a model is imported from: a model window, or the welcome window
 	private JTextField searchTextField;
+	private CollapsiblePanel searchPanel;
 	private JButton searchButton = null;
 	private JButton showAllButton = null;
 	private JButton importButton = null;
@@ -200,7 +202,19 @@ public class BioModelsNetPanel extends DocumentEditorSubPanel {
 	public static final String BIOMODELINFO_ELEMENT_NAME = "BioModelInfo";
 	public static final String ID_ATTRIBUTE_NAME = "ID";
 	public static final String MODELNAME_ATTRIBUTE_NAME = "Name";
+	/**
+	 * Whether the client predicts this archive will OPEN. Derived from the nightly baseline
+	 * and kept in step by {@code BioModelsNetInfoTest}; see {@link BioModelsNetModelInfo}.
+	 */
 	public static final String SUPPORTED_ATTRIBUTE_NAME = "Supported";
+	/**
+	 * Optional. When true the model is treated as unsupported however {@code Supported} reads,
+	 * because it takes long enough that offering it would waste the user's time.
+	 *
+	 * <p>Present on three rows -- BIOMD0000000235, 255 and 595 -- which are the first three of
+	 * the eleven the nightly excludes for the same reason in {@code NightlyBMDB_CLI.yml}. The
+	 * two lists have never been reconciled, so this one is stale rather than wrong.
+	 */
 	public static final String SLOW_ATTRIBUTE_NAME = "Slow";
 
 
@@ -229,7 +243,32 @@ public class BioModelsNetPanel extends DocumentEditorSubPanel {
 		initialize();
 	}
 	
-	private ExternalDocInfo download(String name, String id) throws Exception {
+	/**
+	 * Downloads a BioModels Database model's SBML and opens it, as a new BioModel in a window of its own; for the Model
+	 * Explorer, as this panel's Import does.
+	 */
+	public static void importModel(BioModelsNetModelInfo info, TopLevelWindowManager requester) {
+		String name = info.getName();
+		String id = info.getId();
+		AsynchClientTask download = new AsynchClientTask("Importing " + name, AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				ExternalDocInfo externalDocInfo = BioModelsNetPanel.download(name, id);
+				if (externalDocInfo != null) hashTable.put("externalDocInfo", externalDocInfo);
+			}
+		};
+		AsynchClientTask open = new AsynchClientTask("Opening", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				ExternalDocInfo externalDocInfo = (ExternalDocInfo) hashTable.get("externalDocInfo");
+				if (externalDocInfo == null) return;
+				requester.getRequestManager().openDocument(externalDocInfo, requester, true);
+			}
+		};
+		ClientTaskDispatcher.dispatch(requester.getComponent(), new Hashtable<String, Object>(), new AsynchClientTask[] {download, open}, false);
+	}
+
+	private static ExternalDocInfo download(String name, String id) throws Exception {
 		String simDataDir = ResourceUtil.getLocalRootDir().getAbsolutePath();		// C:\Users\vasilescu\.vcell\simdata
 		String tempDir = simDataDir + File.separator + "temp";
 		String destDirectory = tempDir + File.separator + id;
@@ -402,6 +441,18 @@ TODO:
 		ClientTaskDispatcher.dispatch(documentWindowManager.getComponent(), new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2}, false);
 	}
 	
+	/** Called whenever the tree's selection changes. */
+	public void addSelectionListener(Runnable listener) {
+		this.tree.getSelectionModel().addTreeSelectionListener(e -> listener.run());
+	}
+
+	/** The BioModels Database model selected in the tree, or null. */
+	public BioModelsNetModelInfo getSelectedModel() {
+		Object selected = this.tree.getLastSelectedPathComponent();
+		if (!(selected instanceof BioModelNode node)) return null;
+		return node.getUserObject() instanceof BioModelsNetModelInfo info ? info : null;
+	}
+
 	public void treeSelectionChanged() {
 		importButton.setEnabled(false);
 		
@@ -452,7 +503,7 @@ TODO:
 		         }
 		     }
 		 });
-		CollapsiblePanel searchPanel = new CollapsiblePanel("Search", false);
+		searchPanel = new CollapsiblePanel("Search", false);
 		searchPanel.getContentPanel().setLayout(new GridBagLayout());
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.gridx = 0;
@@ -504,11 +555,26 @@ TODO:
 		add(importButton, gbc);
 	}
 
-	public void setDocumentWindowManager(DocumentWindowManager newValue) {
+	/** Shows only the models whose ID, name or link contains the text (all of them, for none), as its own search does. */
+	public void setSearchText(String searchText) {
+		treeModel.setSearchText(null == searchText || searchText.isBlank() ? null : searchText.strip());
+	}
+
+	/** Leaves out its own search, for a window whose one search covers this panel and others. */
+	public void hideSearch() {
+		searchPanel.setVisible(false);
+	}
+
+	public void setDocumentWindowManager(TopLevelWindowManager newValue) {
 		this.documentWindowManager = newValue;
 	}
 	
-	private List<BioModelsNetModelInfo> readVCellCompatibleBioModels_ID_Name_Hash() throws IOException, DataConversionException {
+	/** The BioModels Database's models, as VCell lists them (with whether VCell can import each). */
+	public static List<BioModelsNetModelInfo> readModels() throws IOException, DataConversionException {
+		return BioModelsNetPanel.readVCellCompatibleBioModels_ID_Name_Hash();
+	}
+
+	private static List<BioModelsNetModelInfo> readVCellCompatibleBioModels_ID_Name_Hash() throws IOException, DataConversionException {
 		List<BioModelsNetModelInfo> vcellCompatibleBioModelsList = new ArrayList<BioModelsNetModelInfo>();
 
 		final String BIOMODELSNET_INFO_FILENAME_ALT = "/bioModelsNetInfo.xml";
@@ -524,7 +590,7 @@ TODO:
 //		if (tableInputStream==null){
 //			tableInputStream = getClass().getResourceAsStream(BIOMODELSNET_INFO_FILENAME_ALT);
 //		}
-		InputStream tableInputStream = getClass().getResourceAsStream(BIOMODELSNET_INFO_FILENAME_ALT);
+		InputStream tableInputStream = BioModelsNetPanel.class.getResourceAsStream(BIOMODELSNET_INFO_FILENAME_ALT);
 		if (tableInputStream==null){
 			throw new FileNotFoundException(BIOMODELSNET_INFO_FILENAME_ALT + " not found");
 		}

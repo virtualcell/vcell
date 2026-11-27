@@ -10,7 +10,8 @@
 
 package cbit.vcell.model.gui;
 
-import java.awt.Color;
+import cbit.vcell.client.laf.VCellFonts;
+import cbit.vcell.client.laf.VCellLookAndFeel;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -140,6 +141,9 @@ private ScrollTable getScrollPaneTable() {
 	if (ivjScrollPaneTable == null) {
 		try {
 			ivjScrollPaneTable = new ScrollTable();
+			// The reaction's rate law and its constants live here; named so a script can
+			// set them by parameter name rather than by row position.
+			ivjScrollPaneTable.setName("KineticsParametersTable");
 			ivjScrollPaneTable.setModel(getParameterTableModel());
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
@@ -184,7 +188,7 @@ private void initialize() {
 	try {
 		setName("KineticsTypeTemplatePanel");
 		setLayout(new java.awt.GridBagLayout());
-		setBackground(Color.white);
+		setBackground(VCellLookAndFeel.getContentBackground());
 
 		int gridy = 0;
 		
@@ -197,7 +201,7 @@ private void initialize() {
 			gbc.fill = GridBagConstraints.HORIZONTAL;
 			JLabel label = new JLabel("<html><u>View only. Edit properties in Physiology</u></html>");
 			label.setHorizontalAlignment(SwingConstants.CENTER);
-			label.setFont(label.getFont().deriveFont(Font.BOLD));
+			VCellFonts.setCategory(label, VCellFonts.Category.HEADING);
 			add(label, gbc);
 		}
 		
@@ -284,7 +288,7 @@ private javax.swing.JComboBox getKineticsTypeComboBox() {
 	if (kineticsTypeComboBox == null) {
 		try {
 			kineticsTypeComboBox = new javax.swing.JComboBox();
-			kineticsTypeComboBox.setName("JComboBox1");
+			kineticsTypeComboBox.setName("KineticsTypeComboBox");
 			kineticsTypeComboBox.setRenderer(new DefaultListCellRenderer() {
 				private final static String MU = "\u03BC";
 				private final static String MICROMOLAR = MU+"M";

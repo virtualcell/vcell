@@ -1,7 +1,6 @@
 package org.jlibsedml.execution;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URI;
 import java.nio.file.FileSystems;
 import java.util.List;
@@ -19,7 +18,17 @@ public class ArchiveModelResolver implements IModelResolver {
     }
     public String getModelXMLFor(URI modelURI) {
         List<IModelContent> children = ac.getModelFiles();
-    	String modelStr = modelURI.toString().replace(SPACE_URI_ESCAPE_SEQUENCE, " ");
+        // VCML sources exported by VCell append an application XPath after '#'.
+        // Resolve the containing document here: ZIP entry names do not include
+        // URI fragments. Keep the caller's URI intact for application selection.
+        String modelStr = modelURI.toString();
+        int fragmentIndex = modelStr.indexOf('#');
+        if (fragmentIndex >= 0) {
+            modelStr = modelStr.substring(0, fragmentIndex);
+        }
+        // Strip before decoding: an encoded %23 belongs to the filename, not
+        // the fragment. Retain the existing space decoding behavior otherwise.
+        modelStr = modelStr.replace(SPACE_URI_ESCAPE_SEQUENCE, " ");
     	// try direct match first
         for (IModelContent imc: children) {
             String modelElementStr = imc.getName();

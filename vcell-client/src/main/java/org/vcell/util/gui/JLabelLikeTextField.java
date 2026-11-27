@@ -10,7 +10,7 @@
 
 package org.vcell.util.gui;
 
-import java.awt.Color;
+import cbit.vcell.client.laf.VCellLookAndFeel;
 
 import javax.swing.JTextField;
 import javax.swing.UIManager;
@@ -25,7 +25,7 @@ public class JLabelLikeTextField extends JTextField {
 		setEditable(false);
 		setBorder(null);
 		setForeground(UIManager.getColor("Label.foreground"));
-		setBackground(Color.white);
+		setBackground(VCellLookAndFeel.getContentBackground());
 		setFont(UIManager.getFont("Label.font"));
 	}
 }

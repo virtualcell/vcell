@@ -19,14 +19,8 @@ show_help() {
 	echo "    SendStartingMsg              requires all --msg- and --msg-job options below  (except --msg-job-errmsg)"
 	echo ""
 	echo "  Solver Commands - see https://github.com/virtualcell or http://vcell.org"
-	echo "    FiniteVolume_x64"
-	echo "    FiniteVolume_PETSc_x64"
-	echo "    MovingBoundary_x64"
-	echo "    NFsim_x64"
-	echo "    smoldyn_x64"
-	echo "    SundialsSolverStandalone_x64"
-	echo "    VCellStoch_x64"
 	echo "    langevin_x64"
+	echo "    (native solvers run from their own images: ghcr.io/virtualcell/vcell-<repo>)"
 	echo ""
 	echo "  [OPTIONS]"
 	echo "    -h | --help                  show this message"
@@ -169,37 +163,14 @@ arguments=${arguments//$secondary_datadir_external/$secondary_datadir_internal}
 arguments=${arguments//$htclogdir_external/$htclogdir_internal}
 
 case $command in
-	FiniteVolume_x64)
-		/vcellbin/FiniteVolume_x64 $arguments
-		exit $?
-		;;
-	FiniteVolume_PETSc_x64)
-		/vcellbin/FiniteVolume_PETSc_x64 $arguments
-		exit $?
-		;;
-	MovingBoundary_x64)
-		/vcellbin/MovingBoundary_x64 $arguments
-		exit $?
-		;;
-	NFsim_x64)
-		/vcellbin/NFsim_x64 $arguments
-		exit $?
-		;;
-	smoldyn_x64)
-		/vcellbin/smoldyn_x64 $arguments
-		exit $?
-		;;
-	SundialsSolverStandalone_x64)
-		/vcellbin/SundialsSolverStandalone_x64 $arguments
-		exit $?
-		;;
-	VCellStoch_x64)
-		/vcellbin/VCellStoch_x64 $arguments
-		exit $?
-		;;
 	langevin_x64)
 		/vcellbin/langevin_x64 $arguments
 		exit $?
+		;;
+	/bin/bash|bash)
+		# SlurmProxy's Langevin job sends its final progress and COMPLETED messages with
+		# "${solver_container_prefix} /bin/bash -c \"curl ...\"" (langevinFixture.slurm.sub)
+		exec /bin/bash "$@"
 		;;
 	JavaPreprocessor64)
 		/vcellscripts/JavaPreprocessor64 $arguments

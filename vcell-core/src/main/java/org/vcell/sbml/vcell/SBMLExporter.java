@@ -40,6 +40,7 @@ import cbit.vcell.mapping.spatial.SpatialObject.SpatialQuantity;
 import cbit.vcell.mapping.spatial.processes.SpatialProcess;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.*;
+import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.model.*;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Kinetics.KineticsParameter;
@@ -276,11 +277,13 @@ public class SBMLExporter {
 
 	/**
 	 * @param ctx
-	 * @return true if ctx spatial and not stochastic
+	 * @return true if ctx is spatial and deterministic, or spatial stochastic (particles, or a PDE/particle hybrid;
+	 * each species' representation is written as a vcell annotation)
 	 */
 	private static boolean validSpatial(SimulationContext ctx) {
 		boolean isSpatial = ctx.getGeometry().getDimension() > 0;
-		return isSpatial && ctx.getApplicationType()==Application.NETWORK_DETERMINISTIC;
+		return isSpatial && (ctx.getApplicationType()==Application.NETWORK_DETERMINISTIC
+				|| ctx.getApplicationType()==Application.NETWORK_STOCHASTIC);
 	}
 
 
@@ -1152,9 +1155,19 @@ private void addSpecies() throws XMLStreamException, SbmlException {
 
 		// Get the speciesContextSpec in the simContext corresponding to the 'speciesContext'; and extract its initial concentration value.
 		SpeciesContextSpec vcSpeciesContextsSpec = getSelectedSimContext().getReactionContext().getSpeciesContextSpec(vcSpeciesContext);
-		if (bSpatial && vcSpeciesContextsSpec.isWellMixed()) {
+		boolean bSpatialStochastic = bSpatial && getSelectedSimContext().isStoch();
+		if (bSpatial && (vcSpeciesContextsSpec.isWellMixed() || bSpatialStochastic)) {
 			Element speciesContextSpecSettingsElement = new Element(XMLTags.SBML_VCELL_SpeciesContextSpecSettingsTag, sbml_vcml_ns);
-			speciesContextSpecSettingsElement.setAttribute(XMLTags.SBML_VCELL_SpeciesContextSpecSettingsTag_wellmixedAttr, "true", sbml_vcml_ns);
+			if (vcSpeciesContextsSpec.isWellMixed()) {
+				speciesContextSpecSettingsElement.setAttribute(XMLTags.SBML_VCELL_SpeciesContextSpecSettingsTag_wellmixedAttr, "true", sbml_vcml_ns);
+			}
+			if (bSpatialStochastic) {
+				// in a spatial stochastic application a species is particles unless forced continuous (clamped species
+				// are always continuous); write it explicitly, since an absent representation means continuous
+				boolean bParticle = !vcSpeciesContextsSpec.isForceContinuous() && !vcSpeciesContextsSpec.isClamped();
+				speciesContextSpecSettingsElement.setAttribute(XMLTags.SBML_VCELL_SpeciesContextSpecSettingsTag_representationAttr,
+						bParticle ? XMLTags.SBML_VCELL_Representation_particle : XMLTags.SBML_VCELL_Representation_continuous, sbml_vcml_ns);
+			}
 			sbmlSpecies.getAnnotation().appendNonRDFAnnotation(XmlUtil.xmlToString(speciesContextSpecSettingsElement));
 		}
 		// since we are setting the substance units for species to 'molecule' or 'item', a unit that is originally in uM (or molecules/um2),
@@ -1166,7 +1179,10 @@ private void addSpecies() throws XMLStreamException, SbmlException {
 		if (initialConcentrationParameter.getExpression() == null) {
 			try {
 				getSelectedSimContext().convertSpeciesIniCondition(true);
-			} catch (MappingException | PropertyVetoException e) {
+				// a stochastic application with initial counts must now also say it uses concentrations, or math
+				// generated from this context (the round-trip validation) looks for the counts just cleared
+				getSelectedSimContext().setUsingConcentration(true, false);
+			} catch (MappingException | PropertyVetoException | MatrixException | ModelException | MathException | ExpressionException e) {
 				// TODO Auto-generated catch block
 				throw new RuntimeException(e.getMessage(), e);
 			}
@@ -2653,9 +2669,8 @@ public static void validateSimulationContextSupport(SimulationContext simulation
 				break;
 			}
 			case NETWORK_STOCHASTIC: {
-				if (simulationContext.getGeometry().getDimension() > 0) {
-					applicationTypeErrorMessage = "Application '" + simulationContext.getName() + "' is a spatial stochastic application, SBML Export is not supported";
-				}
+				// spatial stochastic applications (Smoldyn particles, or PDE/particle hybrids) are exported with each
+				// species' representation (continuous or particle) in a vcell annotation
 				break;
 			}
 			case RULE_BASED_STOCHASTIC: {

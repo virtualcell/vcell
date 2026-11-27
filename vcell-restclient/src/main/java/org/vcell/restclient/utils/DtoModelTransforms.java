@@ -252,6 +252,12 @@ public class DtoModelTransforms {
         String[] scNames = dto.getSimulationContextNames() == null ? new String[0]
                 : dto.getSimulationContextNames().toArray(new String[0]);
         int n = scNames.length;
+        // The schema lists each array twice: under the summary's field names (geoNames, geoDims, scAnnots) and under its
+        // getters' (geometryNames, geometryDimensions, simulationContextAnnotations). The server's JSON has the getters'
+        // names, as with simulationContextNames above; read those, and the fields' if a server ever sends them instead.
+        List<String> geometryNames = firstPresent(dto.getGeometryNames(), dto.getGeoNames());
+        List<Integer> geometryDimensions = firstPresent(dto.getGeometryDimensions(), dto.getGeoDims());
+        List<String> annotations = firstPresent(dto.getSimulationContextAnnotations(), dto.getScAnnots());
 
         BioModelChildSummary.MathType[] mathTypes = new BioModelChildSummary.MathType[n];
         String[] scAnnotations = new String[n];
@@ -261,9 +267,9 @@ public class DtoModelTransforms {
         String[][] simAnnots = new String[n][];
         for (int i = 0; i < n; i++){
             mathTypes[i] = elem(dto.getAppTypes(), i) != null ? dtoToBioModelMathType(dto.getAppTypes().get(i)) : null;
-            scAnnotations[i] = strElem(dto.getScAnnots(), i);
-            geoNames[i] = strElem(dto.getGeoNames(), i);
-            Integer dim = elem(dto.getGeoDims(), i);
+            scAnnotations[i] = strElem(annotations, i);
+            geoNames[i] = strElem(geometryNames, i);
+            Integer dim = elem(geometryDimensions, i);
             geoDims[i] = dim != null ? dim : 0;
             List<String> sn = elem(dto.getSimNames(), i);
             List<String> sa = elem(dto.getSimAnnots(), i);
@@ -276,6 +282,13 @@ public class DtoModelTransforms {
         }
         String[] simKeys = dto.getSimKeys() == null ? new String[0] : dto.getSimKeys().toArray(new String[0]);
         return new BioModelChildSummary(scNames, mathTypes, scAnnotations, simNames, simAnnots, simKeys, geoNames, geoDims);
+    }
+
+    /** The first of these lists that isn't missing or empty (null if none is). */
+    @SafeVarargs
+    private static <T> List<T> firstPresent(List<T>... lists){
+        for (List<T> list : lists) if (list != null && !list.isEmpty()) return list;
+        return null;
     }
 
     /** null-safe indexed access into a possibly-null list. */

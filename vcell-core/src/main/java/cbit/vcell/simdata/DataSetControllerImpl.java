@@ -42,7 +42,6 @@ import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.solvers.FVSolverStandalone;
 import cbit.vcell.solvers.MembraneElement;
 import cbit.vcell.solvers.mb.MovingBoundaryReader;
-import cbit.vcell.util.AmplistorUtils;
 import cbit.vcell.util.EventRateLimiter;
 import cbit.vcell.xml.XmlParseException;
 import com.google.inject.Inject;
@@ -2460,6 +2459,126 @@ public LangevinBatchResultSet getLangevinBatchResultSet(VCDataIdentifier vcdID) 
 	}
 }
 
+/**
+ * One file of a FEniCSx results bundle, {@code SimID_<key>_<job>_.fenics/<relativePath>}, found in the
+ * owner's primary then secondary user directory. The bundle has no VCell .log, so it is located
+ * directly rather than through {@link SimulationData}. The path must be a plain relative path that
+ * stays inside the bundle and names a regular file (no links); anything else is refused.
+ *
+ * @return the file's bytes, or null if the bundle or the file does not exist (yet)
+ */
+/** the most file bytes one {@link #getFenicsBundleFiles} reply carries (it always carries at least one file) */
+public static final int MAX_FENICS_BUNDLE_BATCH_BYTES = 8 * 1024 * 1024;
+
+/** the most paths one {@link #getFenicsBundleFiles} call may ask for */
+public static final int MAX_FENICS_BUNDLE_BATCH_PATHS = 256;
+
+/**
+ * Several files of a FEniCSx results bundle in one call, each as {@link #getFenicsBundleFile} reads it
+ * (null when absent). Answers a prefix of the paths: it stops adding files once the reply holds
+ * {@link #MAX_FENICS_BUNDLE_BATCH_BYTES} (a reply always holds the first file), so a large mesh or
+ * chunk cannot make one RPC reply unboundedly large; the caller asks again for the rest.
+ */
+public byte[][] getFenicsBundleFiles(VCDataIdentifier vcdID, String[] relativePaths) throws DataAccessException {
+	return getFenicsBundleFiles(vcdID, relativePaths, MAX_FENICS_BUNDLE_BATCH_BYTES);
+}
+
+/** {@link #getFenicsBundleFiles(VCDataIdentifier, String[])} with a byte budget of {@code maxBytes} */
+public byte[][] getFenicsBundleFiles(VCDataIdentifier vcdID, String[] relativePaths, long maxBytes) throws DataAccessException {
+	if (relativePaths == null || relativePaths.length == 0) {
+		return new byte[0][];
+	}
+	if (relativePaths.length > MAX_FENICS_BUNDLE_BATCH_PATHS) {
+		throw new DataAccessException("at most " + MAX_FENICS_BUNDLE_BATCH_PATHS + " bundle files per call, got " + relativePaths.length);
+	}
+	java.util.List<byte[]> files = new java.util.ArrayList<>();
+	long bytes = 0;
+	for (String relativePath : relativePaths) {
+		if (!files.isEmpty() && bytes >= maxBytes) {
+			break;
+		}
+		byte[] file = getFenicsBundleFile(vcdID, relativePath);
+		if (file != null && !files.isEmpty() && bytes + file.length > maxBytes) {
+			break; // the next call carries it
+		}
+		files.add(file);
+		bytes += file == null ? 0 : file.length;
+	}
+	return files.toArray(new byte[0][]);
+}
+
+/**
+ * Some values of some arrays of a FEniCSx results bundle ({@link org.vcell.solver.fenics.FenicsBundle#gather}),
+ * read here and decoded here, so a desktop drawing a kymograph or a probe is sent its vertices' values instead
+ * of whole rows. Files are read exactly as {@link #getFenicsBundleFile} reads them (same location rules, same
+ * refusals), and the reply covers the longest prefix of {@code rows} within
+ * {@link org.vcell.solver.fenics.FenicsBundle#MAX_SAMPLE_VALUES} values.
+ */
+public org.vcell.solver.fenics.FenicsSamples getFenicsBundleSamples(VCDataIdentifier vcdID, String[] arrayPaths, int[] indices, int[] rows) throws DataAccessException {
+	return getFenicsBundleSamples(vcdID, arrayPaths, indices, rows, org.vcell.solver.fenics.FenicsBundle.MAX_SAMPLE_VALUES);
+}
+
+/** {@link #getFenicsBundleSamples(VCDataIdentifier, String[], int[], int[])} with a budget of {@code maxValues} */
+public org.vcell.solver.fenics.FenicsSamples getFenicsBundleSamples(VCDataIdentifier vcdID, String[] arrayPaths, int[] indices, int[] rows, long maxValues) throws DataAccessException {
+	org.vcell.solver.fenics.BundleStore bundle = new org.vcell.solver.fenics.BundleStore() {
+		@Override
+		public byte[] read(String relativePath) throws IOException {
+			try {
+				return getFenicsBundleFile(vcdID, relativePath);
+			} catch (DataAccessException e) {
+				throw new IOException(e.getMessage(), e);
+			}
+		}
+
+		@Override
+		public String describe() {
+			return "FEniCSx results of " + vcdID.getID();
+		}
+	};
+	try {
+		return org.vcell.solver.fenics.FenicsBundle.gather(bundle, arrayPaths, indices, rows, maxValues);
+	} catch (IOException e) {
+		throw new DataAccessException("sampling FEniCSx results of " + vcdID.getID() + ": " + e.getMessage(), e);
+	}
+}
+
+public byte[] getFenicsBundleFile(VCDataIdentifier vcdID, String relativePath) throws DataAccessException {
+	if (!(vcdID instanceof VCSimulationDataIdentifier)) {
+		throw new DataAccessException("FEniCSx results are simulation data; got " + vcdID);
+	}
+	VCSimulationDataIdentifier simID = (VCSimulationDataIdentifier) vcdID;
+	org.vcell.solver.fenics.BundleStore.checkRelativePath(relativePath);
+	String bundleName = SimulationData.createSimIDWithJobIndex(simID.getSimulationKey(), simID.getJobIndex(), false)
+			+ SimDataConstants.FENICS_BUNDLE_EXTENSION;
+	try {
+		for (File root : new File[] { primaryRootDirectory, secondaryRootDirectory }) {
+			if (root == null) {
+				continue;
+			}
+			java.nio.file.Path bundle = new File(getUserDirectoryName(root, vcdID.getOwner()), bundleName).toPath();
+			if (!java.nio.file.Files.isDirectory(bundle, java.nio.file.LinkOption.NOFOLLOW_LINKS)) {
+				continue;
+			}
+			java.nio.file.Path realBundle = bundle.toRealPath();
+			java.nio.file.Path file = realBundle.resolve(relativePath).normalize();
+			if (!file.startsWith(realBundle)) {
+				throw new DataAccessException("bundle path '" + relativePath + "' escapes the results bundle");
+			}
+			if (!java.nio.file.Files.exists(file, java.nio.file.LinkOption.NOFOLLOW_LINKS)) {
+				return null; // e.g. a chunk not yet written by a running simulation
+			}
+			if (!java.nio.file.Files.isRegularFile(file, java.nio.file.LinkOption.NOFOLLOW_LINKS)
+					|| !file.toRealPath().startsWith(realBundle)) {
+				throw new DataAccessException("bundle path '" + relativePath + "' is not a file of the results bundle");
+			}
+			return java.nio.file.Files.readAllBytes(file);
+		}
+		return null;
+	} catch (IOException e) {
+		throw new DataAccessException("reading FEniCSx results " + bundleName + "/" + relativePath + ": " + e.getMessage(), e);
+	}
+}
+
 public SpringSaladTrajectory getLangevinTrajectory(VCDataIdentifier vcdID) throws DataAccessException {
 	if (lg.isTraceEnabled()) lg.trace("DataSetControllerImpl.getLangevinTrajectory()");
 	try {
@@ -3213,17 +3332,18 @@ private File getPrimaryUserDir(User user, boolean bVerify) throws FileNotFoundEx
 	return null;
 }
 
-private File getSecondaryUserDir(User user) throws FileNotFoundException {
-	File userDir = getUserDirectoryName(secondaryRootDirectory, user);
-	if (userDir.exists()){
-		if (userDir.isDirectory()){
-			return userDir;
-		}else{
-			throw new FileNotFoundException("file " + userDir.getPath() + " is not a directory");
-		}
-	}else{
+/**
+ * The user's directory on secondary (archive) storage, or null when no secondary root is configured.
+ * Deliberately not checked on disk: secondary storage is an older NFS server that can stop responding
+ * for many minutes, and a check here would make every request wait on it, including requests whose
+ * data is on primary. Callers try primary first and touch this directory only on a miss; a directory
+ * that does not exist simply finds no files there.
+ */
+private File getSecondaryUserDir(User user) {
+	if (secondaryRootDirectory == null){
 		return null;
 	}
+	return getUserDirectoryName(secondaryRootDirectory, user);
 }
 
 public VCData getVCData(VCDataIdentifier vcdID) throws DataAccessException, IOException {
@@ -3247,8 +3367,7 @@ public VCData getVCData(VCDataIdentifier vcdID) throws DataAccessException, IOEx
 			}
 		} else {  // assume vcdID instanceof cbit.vcell.solver.SimulationInfo or a test adapter
 			VCMongoMessage.sendTrace("DataSetControllerImpl.getVCData("+vcdID.getID()+") : creating new SimulationData : <<BEGIN>>");
-			SimulationData.SimDataAmplistorInfo simDataAmplistorInfo = AmplistorUtils.getSimDataAmplistorInfoFromPropertyLoader();
-			vcData = new SimulationData(vcdID, getPrimaryUserDir(vcdID.getOwner(), false), getSecondaryUserDir(vcdID.getOwner()),simDataAmplistorInfo);
+			vcData = new SimulationData(vcdID, getPrimaryUserDir(vcdID.getOwner(), false), getSecondaryUserDir(vcdID.getOwner()));
 			VCMongoMessage.sendTrace("DataSetControllerImpl.getVCData("+vcdID.getID()+") : creating new SimulationData : <<END>>");
 		}
 		if(cacheTable0 != null){
@@ -3768,7 +3887,9 @@ public ComsolSimFiles getComsolSimFiles(VCDataIdentifier vcdataID) throws DataAc
 				throw new RuntimeException("only time index 0 supported for chombo vtk mesh files");
 			}
 			ChomboVtkFileWriter chomboVTKFileWriter = new ChomboVtkFileWriter();
-			File primaryDirectory = getPrimaryUserDir(vcdataID.getOwner(), false);
+			File primaryDirectory = (vcdataID instanceof LocalVCDataIdentifier local)
+					? local.getLocalDirectory() // a desktop (quick) run: its own directory
+					: getPrimaryUserDir(vcdataID.getOwner(), false);
 			VtuFileContainer vtuFiles = chomboVTKFileWriter.getEmptyVtuMeshFiles(chomboFiles, primaryDirectory);
 			return vtuFiles;
 		}catch (Exception e){
@@ -3793,7 +3914,9 @@ public ComsolSimFiles getComsolSimFiles(VCDataIdentifier vcdataID) throws DataAc
 	public VtuFileContainer getEmptyVtuMeshFiles(MovingBoundarySimFiles movingBoundarySimFiles, VCDataIdentifier vcdataID, int timeIndex) throws DataAccessException {
 		try {
 			MovingBoundaryVtkFileWriter movingBoundaryVtkFileWriter = new MovingBoundaryVtkFileWriter();
-			File primaryDirectory = PropertyLoader.getRequiredDirectory(PropertyLoader.primarySimDataDirInternalProperty);
+			File primaryDirectory = (vcdataID instanceof LocalVCDataIdentifier local)
+					? local.getLocalDirectory() // a desktop (quick) run: no server data directory
+					: PropertyLoader.getRequiredDirectory(PropertyLoader.primarySimDataDirInternalProperty);
 			VtuFileContainer vtuFiles = movingBoundaryVtkFileWriter.getEmptyVtuMeshFiles(movingBoundarySimFiles, timeIndex, primaryDirectory);
 			return vtuFiles;
 		}catch (Exception e){
@@ -3842,7 +3965,10 @@ public ComsolSimFiles getComsolSimFiles(VCDataIdentifier vcdataID) throws DataAc
 				throw new DataAccessException("data for dataset "+vcdataID+" not found at time "+time);
 			}
 			ChomboVtkFileWriter chomboVTKFileWriter = new ChomboVtkFileWriter();
-			double[] vtuData = chomboVTKFileWriter.getVtuMeshData(chomboFiles, outputContext, getUserDataDirectory(vcdataID), time, var, timeIndex);
+			File userDataDirectory = (vcdataID instanceof LocalVCDataIdentifier local)
+					? local.getLocalDirectory() // a desktop (quick) run: no server data directory
+					: getUserDataDirectory(vcdataID);
+			double[] vtuData = chomboVTKFileWriter.getVtuMeshData(chomboFiles, outputContext, userDataDirectory, time, var, timeIndex);
 			return vtuData;
 		}catch (Exception e){
 			throw new DataAccessException("failed to retrieve VTK files: "+e.getMessage(),e);
@@ -3866,7 +3992,10 @@ public ComsolSimFiles getComsolSimFiles(VCDataIdentifier vcdataID) throws DataAc
 			SimDataBlock simDataBlock = getSimDataBlock(outputContext, vcdataID, var.name, time);
 			double[] volumeVarData = simDataBlock.getData();
 			MovingBoundaryVtkFileWriter movingBoundaryVtkFileWriter = new MovingBoundaryVtkFileWriter();
-			double[] vtuData = movingBoundaryVtkFileWriter.getVtuMeshData(movingBoundarySimFiles, volumeVarData, getUserDataDirectory(vcdataID), var, timeIndex);
+			File userDataDirectory = (vcdataID instanceof LocalVCDataIdentifier local)
+					? local.getLocalDirectory() // a desktop (quick) run: no server data directory
+					: getUserDataDirectory(vcdataID);
+			double[] vtuData = movingBoundaryVtkFileWriter.getVtuMeshData(movingBoundarySimFiles, volumeVarData, userDataDirectory, var, timeIndex);
 			return vtuData;
 		}catch (Exception e){
 			throw new DataAccessException("failed to retrieve VTK files: "+e.getMessage(),e);
@@ -4010,7 +4139,7 @@ if (name.toUpperCase().contains("SIZE")){
 			VCData vcData = getVCData(vcdID);
 			if(vcData instanceof SimulationData) {
 				SimulationData simData = (SimulationData)vcData;
-				File file = simData.amplistorHelper.getNFSimOutputFile();
+				File file = simData.fileLocator.getNFSimOutputFile();
 				if(!file.exists()) {
 					return null;
 				}

@@ -10,6 +10,8 @@
 
 package cbit.vcell.client.desktop.biomodel;
 
+import cbit.vcell.client.laf.VCellColors;
+import cbit.vcell.client.laf.VCellLookAndFeel;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -271,12 +273,16 @@ private static String FormatDetails(BioPaxObjectProperty property) {
 private void initialize() {
 	try {
 		table = new ScrollTable();
+		table.setName("BioPaxObjectPropertiesTable");
+		table.getAccessibleContext().setAccessibleName("Pathway object properties");
 		tableModel = new BioPaxObjectPropertiesTableModel(table);
 		table.setModel(tableModel);
 		
 		details = new JTextPane();
 		details.setContentType("text/html");
 		details.setEditable(false);
+		details.setName("BioPaxObjectDetails");
+		details.getAccessibleContext().setAccessibleName("Pathway object details");
 		JScrollPane scrl = new JScrollPane(details); 
 		
 		table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
@@ -314,7 +320,7 @@ private void initialize() {
 //		add(table.getEnclosingScrollPane(), BorderLayout.CENTER);
 //		add(details, BorderLayout.CENTER);
 		add(splitPane, BorderLayout.CENTER);
-		setBackground(Color.white);
+		setBackground(VCellLookAndFeel.getContentBackground());
 		
 		table.addMouseListener(new MouseAdapter() {
 			@Override
@@ -371,7 +377,7 @@ private void initialize() {
 						BioModelEntityObject bioModelEntityObject = property.bioModelEntityObject;
 						if (bioModelEntityObject != null) {
 							if (!isSelected) {
-								setForeground(Color.blue);
+								setForeground(VCellColors.getValueForeground());
 							}
 							setText("<html><u>" + text + "</u></html>");
 						}
@@ -381,7 +387,7 @@ private void initialize() {
 							if(url != null){
 								setToolTipText(url);
 								if (!isSelected) {
-									setForeground(Color.blue);
+									setForeground(VCellColors.getValueForeground());
 								}
 								setText("<html><u>" + text + "</u></html>");
 							}
@@ -390,7 +396,7 @@ private void initialize() {
 							if(url.contains("kineticLaw")) {
 								setToolTipText(url);
 								if (!isSelected) {
-									setForeground(Color.blue);
+									setForeground(VCellColors.getValueForeground());
 								}
 								if(url.contains("http")) {
 									setText("<html><u>" + text + "</u></html>");
@@ -606,8 +612,8 @@ protected void refreshInterface() {
 						str1 = str1.substring(str1.lastIndexOf('#')+1);
 						System.out.println(str1);
 						SBOTerm sboT = SBOListEx.sboMap.get(str1);
-						sDetails += "<font color=\"#660000\"><b>" + sboT.getName() + "</b></font>" + "  " + 
-						"<font color=\"#006600\">" + sboT.getDescription() + "</font>";
+						sDetails += "<font color=\"" + VCellColors.toHtmlColor(VCellColors.getWarningForeground()) + "\"><b>" + sboT.getName() + "</b></font>" + "  " + 
+						"<font color=\"" + VCellColors.toHtmlColor(VCellColors.getReadableForeground(new java.awt.Color(0x006600))) + "\">" + sboT.getDescription() + "</font>";
 						sDetails += "<br>";
 					}
 					
@@ -630,8 +636,8 @@ protected void refreshInterface() {
 							// str1 is an SBO id, for example "SBO:0000064"
 							SBOTerm sboT = SBOListEx.sboMap.get(str1);
 							sDetails += sboT.getSymbol() + "   (" + sboT.getName() + ")" + 
-							"<font color=\"#660000\"><b>" + str2 + str3 + "</b></font>" + "  " + 
-							"<font color=\"#006600\">" + sboT.getDescription() + "</font>";
+							"<font color=\"" + VCellColors.toHtmlColor(VCellColors.getWarningForeground()) + "\"><b>" + str2 + str3 + "</b></font>" + "  " + 
+							"<font color=\"" + VCellColors.toHtmlColor(VCellColors.getReadableForeground(new java.awt.Color(0x006600))) + "\">" + sboT.getDescription() + "</font>";
 						} else {
 							sDetails = klProperty.getIDShort() + "  " + klProperty.getTypeLabel();
 						}

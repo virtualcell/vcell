@@ -45,6 +45,9 @@ import cbit.vcell.solver.server.*;
 import cbit.vcell.util.ColumnDescription;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.vcell.client.viz.FieldViewerServer;
+import org.vcell.solver.fenics.FenicsDocker;
+import org.vcell.solver.fenics.FenicsSolver;
 import org.vcell.solver.smoldyn.SmoldynFileWriter;
 import org.vcell.solver.smoldyn.SmoldynSolver;
 import org.vcell.util.*;
@@ -56,6 +59,7 @@ import org.vcell.util.document.LocalVCDataIdentifier;
 import org.vcell.util.document.User;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.GeneralGuiUtils;
+import org.vcell.util.gui.ShortcutsWizard;
 
 import java.awt.*;
 import java.awt.event.WindowAdapter;
@@ -161,6 +165,7 @@ private void initHash(Simulation[] simulations) {
 				simStatus = getDocumentWindowManager().getRequestManager().getServerSimulationStatus(simulations[i].getSimulationInfo());
 				if (simStatus != null) {
 					simHash.setSimulationStatus(simulations[i], simStatus);
+					getDocumentWindowManager().getSimulationRunQueue().serverStatus(simulations[i], simStatus); // a run from before: listed
 				} else {
 					simHash.setSimulationStatus(simulations[i], SimulationStatus.newNeverRan(simulations[i].getJobCount()));
 				}
@@ -200,8 +205,16 @@ public void showSimulationResults(OutputContext outputContext, Simulation[] simu
 	Vector<Simulation> v = new Vector<>();
     for (Simulation simulation : simulations) {
         if (simulation.getSimulationInfo() != null && getSimulationStatus(simulation).getHasData()) {
+            if (simulation.getSolverTaskDescription().getSolverDescription().isFenicsSolver()) {
+                // FEniCSx results are a results bundle, not a VCell dataset: they open in the field viewer
+                showFenicsServerResults(simulation);
+                continue;
+            }
             v.add(simulation);
         }
+    }
+    if (v.isEmpty()) {
+        return;
     }
 	final Simulation[] simsToShow = v.toArray(Simulation[]::new);
 	Hashtable<String, Object> hashTable = new Hashtable<String, Object>();
@@ -629,6 +642,7 @@ private AsynchClientTask[] showSimulationResults0(final boolean isLocal, final V
 					ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(documentWindowManager.getComponent());
 					ChildWindow childWindow = childWindowManager.getChildWindowFromContext(simWindow);
 					if (childWindow==null){
+						// help: the data viewers (ODEDataViewer, PDEDataViewer) say the page about their open tab
 						childWindow = childWindowManager.addChildWindow(simWindow.getDataViewer(), simWindow);
 						childWindow.pack();
 						childWindow.setIsCenteredOnParent();
@@ -658,7 +672,7 @@ private AsynchClientTask[] showSimulationResults0(final boolean isLocal, final V
 						viewer.setDataViewerManager(documentWindowManager);
 						
 						SimulationWindow newWindow = new SimulationWindow(vcSimulationIdentifier, sim, getSimWorkspace().getSimulationOwner(), viewer);						
-						GeneralGuiUtils.addCloseWindowKeyboardAction(newWindow.getDataViewer());
+						ShortcutsWizard.addCloseWindowShortcut(newWindow.getDataViewer());
 						documentWindowManager.addResultsFrame(newWindow);
 						setFinalWindow(hashTable, viewer); 
 						newWindow.setLocalState(localState);
@@ -726,6 +740,7 @@ void updateStatusFromServer(Simulation simulation) {
 
 	// update cache
 	simHash.setSimulationStatus(simulation,newStatus);
+	getDocumentWindowManager().getSimulationRunQueue().serverStatus(simulation, newStatus);
 	
 	System.out.println("---ClientSimManager.updateStatusFromServer[newStatus=" + newStatus + "], simulation="+simulation.toString());
 	if (oldStatus!=newStatus){
@@ -739,6 +754,7 @@ void updateStatusFromServer(Simulation simulation) {
 public void updateStatusFromStartRequest(final Simulation simulation, SimulationStatus newStatusFromServer) {
 	// asynchronous call - from start request worker thread
 	simHash.setSimulationStatus(simulation,newStatusFromServer);
+	getDocumentWindowManager().getSimulationRunQueue().serverStatus(simulation, newStatusFromServer);
 	int simIndex = getSimWorkspace().getSimulationIndex(simulation);
 	getSimWorkspace().firePropertyChange(SimulationWorkspace.PROPERTY_NAME_SIMULATION_STATUS, -1, simIndex);
 }
@@ -746,6 +762,7 @@ public void updateStatusFromStartRequest(final Simulation simulation, Simulation
 public void updateStatusFromStopRequest(final Simulation simulation, SimulationStatus newStatusFromServer) {
 	// asynchronous call - from stop request worker thread
 	simHash.setSimulationStatus(simulation,newStatusFromServer);
+	getDocumentWindowManager().getSimulationRunQueue().serverStatus(simulation, newStatusFromServer);
 	int simIndex = getSimWorkspace().getSimulationIndex(simulation);
 	getSimWorkspace().firePropertyChange(SimulationWorkspace.PROPERTY_NAME_SIMULATION_STATUS, -1, simIndex);
 }
@@ -867,6 +884,10 @@ public void runQuickSimulation(final Simulation originalSimulation, ViewerType v
 			if (solver == null) {
 				throw new RuntimeException("null solver");
 			}
+			if (solver instanceof FenicsSolver) {
+				hashTable.put(H_FENICS_BUNDLE, ((FenicsSolver) solver).getBundleDirectory());
+				hashTable.put(H_FENICS_SIMKEY, simTask.getSimKey().toString());
+			}
 			// check if spatial stochastic simulation (smoldyn solver) has data processing instructions with field data - need to access server for field data, so cannot do local simulation run. 
 			if (solver instanceof SmoldynSolver) {
 				DataProcessingInstructions dpi = simulation.getDataProcessingInstructions();
@@ -877,7 +898,13 @@ public void runQuickSimulation(final Simulation originalSimulation, ViewerType v
 					}
 				}
 			}
+			// listed in the window's run queue, from now until it ends
+			final SimulationRunQueue runQueue = getDocumentWindowManager().getSimulationRunQueue();
+			final SimulationRunQueue.Run queuedRun = runQueue.localRunStarted(originalSimulation);
+			hashTable.put(H_QUEUED_LOCAL_RUN, queuedRun);
 			solver.addSolverListener(new SolverListener() {
+				/** what a running solver last said it was doing: its phase ("solving 37%"), or the generic text */
+				private String runningMessage = "Running...";
 				public void solverStopped(SolverEvent event) {
 					getClientTaskStatusSupport().setMessage(event.getSimulationMessage().getDisplayMessage());
 				}
@@ -892,12 +919,15 @@ public void runQuickSimulation(final Simulation originalSimulation, ViewerType v
 					}
 				}
 				public void solverProgress(SolverEvent event) {
-					getClientTaskStatusSupport().setMessage("Running...");
+					// a solver that names no phase (or no longer: its final 100%) keeps the text it had
+					runningMessage = SimulationMessage.describeSolverProgress(event.getSimulationMessage(), event.getProgress(), runningMessage);
+					getClientTaskStatusSupport().setMessage(runningMessage);
 					int progress = (int)(event.getProgress() * 100);
 					getClientTaskStatusSupport().setProgress(progress);
+					runQueue.localProgress(queuedRun, event.getProgress(), runningMessage);
 				}
 				public void solverPrinted(SolverEvent event) {
-					getClientTaskStatusSupport().setMessage("Running...");
+					getClientTaskStatusSupport().setMessage(runningMessage);
 				}
 				public void solverFinished(SolverEvent event) {
 					getClientTaskStatusSupport().setMessage(event.getSimulationMessage().getDisplayMessage());
@@ -906,6 +936,7 @@ public void runQuickSimulation(final Simulation originalSimulation, ViewerType v
 					getClientTaskStatusSupport().setMessage(event.getSimulationMessage().getDisplayMessage());
 				}
 			});
+			try { // its end, however it comes, is the queued run's too
 			solver.startSolver();
 
 			int sleepInterval = 500;
@@ -943,6 +974,14 @@ public void runQuickSimulation(final Simulation originalSimulation, ViewerType v
 					}
 				}		
 			}
+			runQueue.localEnded(queuedRun, true, null);
+			} catch (UserCancelException cancel) {
+				runQueue.localEnded(queuedRun, false, null); // stopped
+				throw cancel;
+			} catch (Exception failure) {
+				runQueue.localEnded(queuedRun, false, failure.getMessage() == null ? failure.getClass().getSimpleName() : failure.getMessage());
+				throw failure;
+			}
 			
 			ArrayList<AnnotatedFunction> outputFunctionsList = getSimWorkspace().getSimulationOwner().getOutputFunctionContext().getOutputFunctionsList();
 			OutputContext outputContext = new OutputContext(outputFunctionsList.toArray(new AnnotatedFunction[outputFunctionsList.size()]));
@@ -966,6 +1005,15 @@ public void runQuickSimulation(final Simulation originalSimulation, ViewerType v
 			}
 		}
 	};
+	if (originalSimulation.getSolverTaskDescription().getSolverDescription().isFenicsSolver()) {
+		// FEniCSx runs in Docker and writes a results bundle, not a VCell dataset: make sure the image is
+		// here, run, and say where the bundle is (the field viewer opens it in PR V3 of docs/plan-fenics.md)
+		taskList.add(prepareFenicsImageTask());
+		taskList.add(runSimTask);
+		taskList.add(reportFenicsBundleTask());
+		ClientTaskDispatcher.dispatch(documentWindowManager.getComponent(), new Hashtable<String, Object>(), taskList.toArray(new AsynchClientTask[0]), true, true, null);
+		return;
+	}
 	taskList.add(stashBioModelTask);
 	taskList.add(runSimTask);
 
@@ -1088,10 +1136,104 @@ public void runQuickSimulation(final Simulation originalSimulation, ViewerType v
 }
 
 
+/**
+ * Opens a cluster-run FEniCSx simulation's results bundle in the browser field viewer, reading it from
+ * the data server file by file (docs/plan-fenics.md, V5). Job 0; a parameter scan's other jobs are
+ * registered too, so the viewer's job parameter can reach them.
+ */
+private void showFenicsServerResults(Simulation simulation) {
+	try {
+		VCDataManager dataManager = ((ClientRequestManager) getDocumentWindowManager().getRequestManager())
+				.getClientServerManager().getVCDataManager();
+		VCSimulationIdentifier vcSimID = simulation.getSimulationInfo().getAuthoritativeVCSimulationIdentifier();
+		String simKey = vcSimID.getSimulationKey().toString();
+		for (int job = 0; job < simulation.getJobCount(); job++) {
+			VCSimulationDataIdentifier vcdID = new VCSimulationDataIdentifier(vcSimID, job);
+			FieldViewerServer.registerBundle(simKey, job,
+					org.vcell.solver.fenics.BundleStore.cached(new org.vcell.solver.fenics.DataServerBundleStore(dataManager, vcdID)),
+					simulation.getName(), simulation);
+		}
+		int port = FieldViewerServer.startForFenics();
+		if (port < 0) {
+			PopupGenerator.showErrorDialog(getDocumentWindowManager(), "Could not start the FEniCSx results viewer (see the log).");
+			return;
+		}
+		DialogUtils.browserLauncher(getDocumentWindowManager().getComponent(), FieldViewerServer.viewerUrl(port, simKey, 0),
+				"Failed to open the FEniCSx results viewer.");
+	} catch (Exception e) {
+		PopupGenerator.showErrorDialog(getDocumentWindowManager(), "Could not open the FEniCSx results: " + e.getMessage(), e);
+	}
+}
+
+private static final String H_FENICS_BUNDLE = "fenicsBundleDirectory";
+private static final String H_QUEUED_LOCAL_RUN = "queuedLocalRun"; // the quick run's entry in the window's run queue
+private static final String H_FENICS_SIMKEY = "fenicsSimKey";
+
+/**
+ * Checks that Docker is usable and the FEniCSx solver image is present, pulling it (about 1.3 GB, once)
+ * if not.
+ */
+private AsynchClientTask prepareFenicsImageTask() {
+	return new AsynchClientTask("preparing the FEniCSx solver image", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			FenicsDocker docker = FenicsDocker.find();
+			if (!docker.isDaemonRunning()) {
+				throw new RuntimeException("Docker is installed but not running. Start Docker Desktop and run the simulation again.");
+			}
+			String image = FenicsDocker.image();
+			if (docker.localImagePlatform(image).isEmpty()) {
+				getClientTaskStatusSupport().setMessage("Downloading the FEniCSx solver image (first run only)...");
+				docker.pull(image, line -> getClientTaskStatusSupport().setMessage("Downloading the FEniCSx solver image: " + line),
+						() -> getClientTaskStatusSupport().isInterrupted());
+			}
+		}
+	};
+}
+
+private AsynchClientTask reportFenicsBundleTask() {
+	return new AsynchClientTask("FEniCSx results", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			File bundle = (File) hashTable.get(H_FENICS_BUNDLE);
+			if (bundle == null || !bundle.isDirectory()) {
+				throw new RuntimeException("The FEniCSx solver finished but wrote no results" + (bundle == null ? "" : " to '" + bundle + "'"));
+			}
+			// FEniCSx results are point data on body-fitted meshes, which only the browser field viewer
+			// draws (the Swing results viewer is Cartesian-only)
+			String simKey = (String) hashTable.get(H_FENICS_SIMKEY);
+			Simulation[] sims = (Simulation[]) hashTable.get("simsArray");
+			String simName = sims != null && sims.length > 0 ? sims[0].getName() : null;
+			FieldViewerServer.registerBundle(simKey, 0, org.vcell.solver.fenics.BundleStore.directory(bundle), simName,
+					sims != null && sims.length > 0 ? sims[0] : null);
+			int port = FieldViewerServer.startForFenics();
+			if (port < 0) {
+				PopupGenerator.showInfoDialog(getDocumentWindowManager(),
+						"FEniCSx simulation finished, but the results viewer could not be started (see the log).\n\n"
+						+ "Results bundle (VTU meshes + zarr fields):\n" + bundle.getAbsolutePath());
+				return;
+			}
+			DialogUtils.browserLauncher(getDocumentWindowManager().getComponent(), FieldViewerServer.viewerUrl(port, simKey, 0),
+					"Failed to open the FEniCSx results viewer. Results bundle: " + bundle.getAbsolutePath());
+		}
+	};
+}
+
 public static Solver createQuickRunSolver(File directory, SimulationTask simTask) throws SolverException, IOException {
 	SolverDescription solverDescription = simTask.getSimulation().getSolverTaskDescription().getSolverDescription();
 	if (solverDescription == null) {
 		throw new IllegalArgumentException("SolverDescription cannot be null");
+	}
+
+	// ----- FEniCSx runs in the local Docker image (pulled by prepareFenicsImageTask), not a native executable
+	if (solverDescription.isFenicsSolver()) {
+		FenicsSolver fenicsSolver = (FenicsSolver) SolverFactory.createSolver(directory, simTask, false);
+		FenicsDocker docker = FenicsDocker.find();
+		String image = FenicsDocker.image();
+		String platform = docker.localImagePlatform(image).orElseThrow(
+				() -> new SolverException("the FEniCSx solver image " + image + " has not been downloaded"));
+		fenicsSolver.configureDocker(docker, image, platform);
+		return fenicsSolver;
 	}
 	
 	// ----- 'FiniteVolume, Regular Grid' solver (semi-implicit) solver is not supported for quick run; throw exception.

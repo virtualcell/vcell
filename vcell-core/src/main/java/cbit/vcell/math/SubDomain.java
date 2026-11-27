@@ -11,6 +11,7 @@
 package cbit.vcell.math;
 import java.io.Serializable;
 import java.util.*;
+import java.util.stream.Stream;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -573,6 +574,14 @@ public Enumeration<Equation> getEquations() {
 	return equationList.elements();
 }
 
+public List<Equation> getEquationList() {
+	return Collections.unmodifiableList(equationList);
+}
+
+public Stream<Equation> getEquationStream() {
+	return equationList.stream();
+}
+
 /**
  * @return equations as unmodifiable collection
  */
@@ -663,12 +672,12 @@ public VarIniCondition getVarIniCondition(int index)
  * Get a variable initial condition from list by varaible's name.
  * Creation date: (6/27/2006 10:42:24 AM)
  * @return cbit.vcell.math.VarIniCondition
- * @param varName java.lang.String
+ * @param var the {@link Variable} to find ini condition for
  */
 public VarIniCondition getVarIniCondition(Variable var) 
 {
 	for (VarIniCondition vic : listOfVarIniConditions){
-		if (vic.getVar() == var){
+		if (vic.getVar().compareEqual(var)){
 			return vic;
 		}
 	}

@@ -286,4 +286,54 @@
 
     </dependencies>
 
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <systemPropertyVariables>
+                        <!-- The Java version VCell SHIPS, which is what decides whether the issue
+                             #2051 retry workaround is still required. Deliberately NOT the JDK a
+                             developer happens to build with: HttpClientRetryWorkaroundTest asks for
+                             the workaround to be removed once the SHIPPED runtime reaches 24, and
+                             keying that off the local JDK would fail the build for anyone on a newer
+                             one while CI, on the shipped version, stayed green. -->
+                        <vcell.shipped.java.target>${maven.compiler.target}</vcell.shipped.java.target>
+                    </systemPropertyVariables>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>default-test</id>
+                        <configuration>
+                            <excludes>
+                                <exclude>**/*CharsetTest.java</exclude>
+                            </excludes>
+                        </configuration>
+                    </execution>
+                    <!-- *CharsetTest classes run in their own fork whose DEFAULT charset is
+                         windows-1252, as on a Windows desktop client (Java 17 there defaults to the
+                         ANSI code page, not UTF-8). The default charset is fixed at JVM start, so
+                         this is the only way to catch a byte<->String conversion that forgot to name
+                         its charset. -->
+                    <execution>
+                        <id>windows-1252-default-charset</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <argLine>-Dfile.encoding=windows-1252</argLine>
+                            <includes>
+                                <include>**/*CharsetTest.java</include>
+                            </includes>
+                            <systemPropertyVariables>
+                                <vcell.test.windows1252Fork>true</vcell.test.windows1252Fork>
+                            </systemPropertyVariables>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
 </project>

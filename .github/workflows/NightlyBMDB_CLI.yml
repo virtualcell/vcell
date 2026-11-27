@@ -194,6 +194,14 @@ jobs:
                   echo "Skipping ${file_name} - too slow or otherwise misbehaved"
                   continue
                   ;;
+                # Results vary from run to run on unchanged code and corpus, so no single
+                # documented outcome holds (#2077, #2005). A SKIP row that still runs counts
+                # as "changed", so they must be kept out of the run, not just marked SKIP.
+                # Remove from this list once the baseline can accept more than one outcome.
+                547|613|1065)
+                  echo "Skipping ${file_name} - result varies from run to run (#2077)"
+                  continue
+                  ;;
               esac
 
               if [ $((number % ${{ strategy.job-total }})) -eq $((MOD_VALUE + 0)) ]; then

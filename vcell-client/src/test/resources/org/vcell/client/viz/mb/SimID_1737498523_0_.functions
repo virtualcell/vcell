@@ -1,0 +1,17 @@
+##---------------------------------------------
+##  /Users/jimschaff/.vcell/simdata/temp/SimID_1737498523_0_.functions
+##---------------------------------------------
+
+subdomain1::Size_c0; vcRegionVolume('subdomain1'); ; Volume_Region_VariableType; false
+subdomain0::Size_c1; vcRegionVolume('subdomain0'); ; Volume_Region_VariableType; false
+subdomain0_subdomain1_membrane::Size_m0; vcRegionArea('subdomain0_subdomain1_membrane'); ; Membrane_Region_VariableType; false
+subdomain0_subdomain1_membrane::sobj_subdomain11_subdomain00_normalX; normalX(); ; Membrane_VariableType; false
+subdomain0_subdomain1_membrane::sobj_subdomain11_subdomain00_normalY; normalY(); ; Membrane_VariableType; false
+subdomain0_subdomain1_membrane::sobj_subdomain11_subdomain00_size; vcRegionArea('subdomain0_subdomain1_membrane'); ; Membrane_Region_VariableType; false
+subdomain0_subdomain1_membrane::sobj_subdomain11_subdomain00_velX; (normalX() * C); ; Membrane_VariableType; false
+subdomain0_subdomain1_membrane::sobj_subdomain11_subdomain00_velY; (normalY() * C); ; Membrane_VariableType; false
+subdomain0_subdomain1_membrane::sproc_0.velocityX; (normalX() * C); ; Membrane_VariableType; false
+subdomain0_subdomain1_membrane::sproc_0.velocityY; (normalY() * C); ; Membrane_VariableType; false
+subdomain0::vobj_subdomain00_size; vcRegionVolume('subdomain0'); ; Volume_Region_VariableType; false
+subdomain1::vobj_subdomain11_size; vcRegionVolume('subdomain1'); ; Volume_Region_VariableType; false
+

@@ -9,18 +9,18 @@
  */
 
 package cbit.vcell.solver.ode.gui;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
+import cbit.vcell.client.laf.VCellColors;
+import cbit.vcell.client.laf.VCellLookAndFeel;
+import java.awt.*;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.beans.PropertyVetoException;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-import java.util.Locale;
 
+import cbit.vcell.client.RequestManager;
+import cbit.vcell.client.TopLevelWindowManager;
+import cbit.vcell.client.desktop.DocumentWindow;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.server.ServerInfo;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 
 import javax.swing.JFrame;
@@ -33,6 +33,7 @@ import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.solver.*;
 import org.vcell.chombo.ChomboSolverSpec;
 import org.vcell.model.rbm.MolecularType;
+import org.vcell.model.ssld.SsldUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
@@ -56,6 +57,8 @@ public class SimulationSummaryPanel extends DocumentEditorSubPanel {
 
 	private Simulation fieldSimulation = null;
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
+	private ServerInfo serverInfo = null;
+
 //	private JLabel labelSimKey = null;
 	private JLabel ivjJLabel11 = null;
 	private JLabel ivjJLabel12 = null;
@@ -159,14 +162,16 @@ private void displayMesh() {
     	boolean isSpatial = getSimulation().isSpatial();
     	getJLabel11().setVisible(isSpatial);
     	getJLabelMesh().setVisible(isSpatial);
+		labelMeshRefinementTitle.setToolTipText(null);	// langevin only for now, we reset it here
     	labelMeshRefinementTitle.setVisible(isSpatial);
-			getJLabelMeshRefinement().setVisible(isSpatial);
-			labelFinestMeshTitle.setVisible(isSpatial);
-			labelFinestMesh.setVisible(isSpatial);
-			labelRefinementRoiTitle.setVisible(isSpatial);
-			labelRefinementRoi.setVisible(isSpatial);
-			labelViewLevelMeshTitle.setVisible(isSpatial);
-			labelViewLevelMesh.setVisible(isSpatial);
+		getJLabelMeshRefinement().setToolTipText(null);	// langevin only for now, we reset it here
+		getJLabelMeshRefinement().setVisible(isSpatial);
+		labelFinestMeshTitle.setVisible(isSpatial);
+		labelFinestMesh.setVisible(isSpatial);
+		labelRefinementRoiTitle.setVisible(isSpatial);
+		labelRefinementRoi.setVisible(isSpatial);
+		labelViewLevelMeshTitle.setVisible(isSpatial);
+		labelViewLevelMesh.setVisible(isSpatial);
 			
       if (getSimulation()!=null && getSimulation().getMeshSpecification() != null) {
 				ISize samplingSize = getSimulation().getMeshSpecification().getSamplingSize();
@@ -196,10 +201,11 @@ private void displayMesh() {
 				}getJLabel11().setText(labelName);
 				getJLabelMesh().setText(labelText);
 
-        ChomboSolverSpec chomboSolverSpec = getSimulation().getSolverTaskDescription().getChomboSolverSpec();
+        		ChomboSolverSpec chomboSolverSpec = getSimulation().getSolverTaskDescription().getChomboSolverSpec();
 				if (getSimulation().getSolverTaskDescription().getSolverDescription().isChomboSolver()) {
 					int numRefinementLevels = chomboSolverSpec.getNumRefinementLevels();				
 					labelMeshRefinementTitle.setVisible(true);
+					labelMeshRefinementTitle.setText("Mesh Refinement:");	// multi-use now, must be set explicitly
 					getJLabelMeshRefinement().setVisible(true);
 					labelFinestMeshTitle.setVisible(true);
 					labelFinestMesh.setVisible(true);
@@ -229,11 +235,44 @@ private void displayMesh() {
 						labelViewLevelMeshTitle.setVisible(false);
 						labelViewLevelMesh.setVisible(false);
 					}
-        } else {
-        	labelMeshRefinementTitle.setVisible(false);
-        	getJLabelMeshRefinement().setVisible(false);
-        	labelFinestMesh.setVisible(false);
-        	labelFinestMeshTitle.setVisible(false);
+				// hijacking the mesh refinement label to display langevin specific concurrent run info
+        		} else if(getSimulation().getSolverTaskDescription().getSolverDescription().isLangevinSolver()) {
+					LangevinSimulationOptions lso = getSimulation().getSolverTaskDescription().getLangevinSimulationOptions();
+					if(lso.getTotalNumberOfJobs() > 1) {
+						ServerInfo si = getServerInfo();
+						int timeoutPerTaskSeconds = si != null ? si.getTimeoutPerTaskSeconds() : ServerInfo.VCELL_SLURM_LANGEVIN_TIMEOUTPERTASKSECONDS;
+						int timeoutDays = timeoutPerTaskSeconds / 86400;
+						int maxNumConcurrentTasks = si != null ? si.getMaxNumConcurrentTasks() : ServerInfo.VCELL_SLURM_LANGEVIN_MAXNUMCONCURRENTTASKS;		// concurrent sims + watchdog
+						int maxNumConcurrentSimulations = maxNumConcurrentTasks - 1;	// concurrent sims only
+
+						labelMeshRefinementTitle.setVisible(true);
+						labelMeshRefinementTitle.setText(SsldUtils.ConcurrentWallsLabel);
+						labelMeshRefinementTitle.setToolTipText(SsldUtils.ConcurrentWallsLabelToolTip);
+						getJLabelMeshRefinement().setVisible(true);
+						getJLabelMeshRefinement().setText(SsldUtils.langevinFormatConcurrentWallsText(timeoutDays, maxNumConcurrentSimulations));
+						getJLabelMeshRefinement().setToolTipText(SsldUtils.ConcurrentWallsLabelToolTip);
+						labelFinestMesh.setVisible(false);
+						labelFinestMeshTitle.setVisible(false);
+						labelRefinementRoiTitle.setVisible(false);
+						labelRefinementRoi.setVisible(false);
+						labelViewLevelMeshTitle.setVisible(false);
+						labelViewLevelMesh.setVisible(false);
+					} else {
+						labelMeshRefinementTitle.setVisible(false);
+						getJLabelMeshRefinement().setVisible(false);
+						labelFinestMesh.setVisible(false);
+						labelFinestMeshTitle.setVisible(false);
+						labelRefinementRoiTitle.setVisible(false);
+						labelRefinementRoi.setVisible(false);
+						labelViewLevelMeshTitle.setVisible(false);
+						labelViewLevelMesh.setVisible(false);
+					}
+
+				}else {		// not chombo, not langevin
+        			labelMeshRefinementTitle.setVisible(false);
+        			getJLabelMeshRefinement().setVisible(false);
+        			labelFinestMesh.setVisible(false);
+        			labelFinestMeshTitle.setVisible(false);
 					labelRefinementRoiTitle.setVisible(false);
 					labelRefinementRoi.setVisible(false);
 					labelViewLevelMeshTitle.setVisible(false);
@@ -287,10 +326,14 @@ private void displayOther() {
  */
 private void displayOverrides() {
 	try {
-		getMathOverridesPanel1().setMathOverrides(getSimulation().getMathOverrides());
+		if (getSimulation().getSimulationOwner() instanceof SimulationContext simContext){
+			getMathOverridesPanel1().setMath(getSimulation().getMathOverrides(), simContext.getMostRecentlyCreatedMathMapping().getMathSymbolMapping());
+		} else {
+			getMathOverridesPanel1().setMath(getSimulation().getMathOverrides(), null);
+		}
 	} catch (Exception exc) {
 		exc.printStackTrace(System.out);
-		getMathOverridesPanel1().setMathOverrides(null);
+		getMathOverridesPanel1().setMath(null, null);
 	}
 }
 
@@ -343,9 +386,11 @@ private void displayTask() {
 		getJLabel10().setText("Sensitivity Analysis");
 		getJLabel10().setEnabled(true);
 		getJLabel20().setEnabled(false);
+		getJLabel20().setToolTipText(null);		// used only for Langevin so far, so we reset it here
 		getJLabel21().setEnabled(false);
 		getJLabel20().setVisible(false);
 		getJLabel21().setVisible(false);
+		getJLabel21().setToolTipText(null);		// used only for Langevin so far, so we reset it here
 		if (solverDescription.equals(SolverDescription.StochGibson)) {
 			getJLabel12().setEnabled(false);
 			getJLabelTimestep().setText("");
@@ -368,15 +413,23 @@ private void displayTask() {
 			getJLabel10().setEnabled(true);
 			getJLabelSensitivity().setText(str);
 			int tot = lso.getTotalNumberOfJobs();
-			int conc = lso.getNumberOfConcurrentJobs();
 			if(tot == 1) {
-				getJLabel20().setText("Single run.");
+				getJLabel20().setText(SsldUtils.LangevinSingleRunInfoLabel);
+				getJLabel20().setToolTipText(SsldUtils.LangevinSingleRunInfoLabelToolTip);
 				getJLabel21().setText("");
+				getJLabel21().setToolTipText(SsldUtils.LangevinSingleRunInfoLabelToolTip);
 				getJLabel21().setEnabled(false);
 				getJLabel21().setVisible(false);
 			} else {
-				getJLabel20().setText("Batch run:");
-				getJLabel21().setText(conc + " concurrent runs / " + tot + " total runs");
+				ServerInfo si = getServerInfo();
+				int maxNumConcurrentTasks = si != null ? si.getMaxNumConcurrentTasks() : ServerInfo.VCELL_SLURM_LANGEVIN_MAXNUMCONCURRENTTASKS;		// concurrent sims + watchdog
+				int concurrentSimulations = Math.min(tot, maxNumConcurrentTasks - 1);	// concurrent sims only
+				// number of nodes needed - computed based on concurrentSimulations + 1 watchdog
+				int nodes = (int)Math.ceil((concurrentSimulations+1) / ServerInfo.VCELL_SLURM_MAX_JOBS_PER_NODE);
+				getJLabel20().setText(SsldUtils.LangevinBatchRunInfoLabel);
+				getJLabel20().setToolTipText(SsldUtils.langevinFormatConcurrentSimulationsToolTip(tot, concurrentSimulations, nodes));
+				getJLabel21().setText(SsldUtils.langevinFormatBatchRunSummary2(tot, concurrentSimulations, nodes));
+				getJLabel21().setToolTipText(SsldUtils.langevinFormatConcurrentSimulationsToolTip(tot, concurrentSimulations, nodes));
 				getJLabel21().setEnabled(true);
 				getJLabel21().setVisible(true);
 			}
@@ -665,7 +718,7 @@ private javax.swing.JLabel getJLabelRelTolValue() {
 	if (labelRelTolValue == null) {
 		try {
 			labelRelTolValue = new javax.swing.JLabel();
-			labelRelTolValue.setForeground(java.awt.Color.blue);
+			labelRelTolValue.setForeground(VCellColors.getValueForeground());
 			labelRelTolValue.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
 			labelRelTolValue.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
 		} catch (java.lang.Throwable ivjExc) {
@@ -679,7 +732,7 @@ private javax.swing.JLabel getJLabelAbsTolValue() {
 	if (labelAbsTolValue == null) {
 		try {
 			labelAbsTolValue = new javax.swing.JLabel();
-			labelAbsTolValue.setForeground(java.awt.Color.blue);
+			labelAbsTolValue.setForeground(VCellColors.getValueForeground());
 			labelAbsTolValue.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
@@ -696,7 +749,7 @@ private javax.swing.JLabel getJLabelGeometrySize() {
 		try {
 			ivjJLabelGeometrySize = new javax.swing.JLabel();
 			ivjJLabelGeometrySize.setName("JLabelGeometrySize");
-			ivjJLabelGeometrySize.setForeground(java.awt.Color.blue);
+			ivjJLabelGeometrySize.setForeground(VCellColors.getValueForeground());
 			ivjJLabelGeometrySize.setVisible(false);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
@@ -715,7 +768,7 @@ private javax.swing.JLabel getJLabelMesh() {
 		try {
 			ivjJLabelMesh = new javax.swing.JLabel();
 			ivjJLabelMesh.setName("JLabelMesh");
-			ivjJLabelMesh.setForeground(java.awt.Color.blue);
+			ivjJLabelMesh.setForeground(VCellColors.getValueForeground());
 			ivjJLabelMesh.setVisible(false);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
@@ -734,7 +787,7 @@ private javax.swing.JLabel getJLabelOutput() {
 		try {
 			ivjJLabelOutput = new javax.swing.JLabel();
 			ivjJLabelOutput.setName("JLabelOutput");
-			ivjJLabelOutput.setForeground(java.awt.Color.blue);
+			ivjJLabelOutput.setForeground(VCellColors.getValueForeground());
 			ivjJLabelOutput.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
@@ -752,7 +805,7 @@ private javax.swing.JLabel getJLabelSensitivity() {
 		try {
 			ivjJLabelSensitivity = new javax.swing.JLabel();
 			ivjJLabelSensitivity.setName("JLabelSensitivity");
-			ivjJLabelSensitivity.setForeground(java.awt.Color.blue);
+			ivjJLabelSensitivity.setForeground(VCellColors.getValueForeground());
 			ivjJLabelSensitivity.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
@@ -770,7 +823,7 @@ private javax.swing.JLabel getJLabelTimestep() {
 		try {
 			ivjJLabelTimestep = new javax.swing.JLabel();
 			ivjJLabelTimestep.setName("JLabelTimestep");
-			ivjJLabelTimestep.setForeground(java.awt.Color.blue);
+			ivjJLabelTimestep.setForeground(VCellColors.getValueForeground());
 			ivjJLabelTimestep.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
@@ -796,7 +849,7 @@ private javax.swing.JLabel getJLabelTimestep() {
 			try {
 				ivjJLabel21 = new javax.swing.JLabel("");
 				ivjJLabel21.setName("JLabel21");
-				ivjJLabel21.setForeground(java.awt.Color.blue);
+				ivjJLabel21.setForeground(VCellColors.getValueForeground());
 				ivjJLabel21.setVisible(false);
 			} catch (java.lang.Throwable ivjExc) {
 				handleException(ivjExc);
@@ -816,7 +869,7 @@ private javax.swing.JTextArea getJTextAreaDescription() {
 		try {
 			ivjJTextAreaDescription = new javax.swing.JTextArea();
 			ivjJTextAreaDescription.setName("JTextAreaDescription");
-			ivjJTextAreaDescription.setForeground(java.awt.Color.blue);
+			ivjJTextAreaDescription.setForeground(VCellColors.getValueForeground());
 			ivjJTextAreaDescription.setRows(3);
 			ivjJTextAreaDescription.setLineWrap(true);
 			ivjJTextAreaDescription.setWrapStyleWord(true);
@@ -1137,7 +1190,7 @@ private void initialize() {
 		constraints.gridwidth = GridBagConstraints.REMAINDER;
 		constraints.insets = new Insets(4, 4, 4, 4);
 		labelFinestMesh = new JLabel();
-		labelFinestMesh.setForeground(java.awt.Color.blue);
+		labelFinestMesh.setForeground(VCellColors.getValueForeground());
 		add(labelFinestMesh, constraints);
 		
 		gridy ++;
@@ -1171,7 +1224,7 @@ private void initialize() {
 		gbc.gridwidth = GridBagConstraints.REMAINDER;
 		gbc.insets = new Insets(4, 4, 4, 4);
 		labelViewLevelMesh = new JLabel();
-		labelViewLevelMesh.setForeground(Color.blue);
+		labelViewLevelMesh.setForeground(VCellColors.getValueForeground());
 		add(labelViewLevelMesh, gbc);
 		
 		gridy ++;
@@ -1236,7 +1289,7 @@ private void refreshDisplay() {
 		getJLabelMesh().setText("");
 		getJLabelRelTolValue().setText("");
 		getJLabelAbsTolValue().setText("");
-		getMathOverridesPanel1().setMathOverrides(null);
+		getMathOverridesPanel1().setMath(null, null);
 		getJLabelMeshRefinement().setText("");
 	} else {
 		displayAnnotation();
@@ -1245,7 +1298,7 @@ private void refreshDisplay() {
 		displayOverrides();
 		displayOther();
 	
-		getJTextAreaDescription().setBackground(java.awt.Color.white);
+		getJTextAreaDescription().setBackground(VCellLookAndFeel.getContentBackground());
 		getJTextAreaDescription().setEditable(true);
 //		String key = "";
 //		if (fieldSimulation.getKey() != null) {
@@ -1321,7 +1374,7 @@ private javax.swing.JLabel getJLabelMeshRefinement() {
 		try {
 			meshRefinementLabel = new javax.swing.JLabel();
 			meshRefinementLabel.setText(" ");
-			meshRefinementLabel.setForeground(java.awt.Color.blue);
+			meshRefinementLabel.setForeground(VCellColors.getValueForeground());
 			meshRefinementLabel.setVisible(false);
 			// user code begin {1}
 			// user code end
@@ -1339,7 +1392,7 @@ private javax.swing.JLabel getRefinementRoi() {
 		try {
 			labelRefinementRoi = new javax.swing.JLabel();
 			labelRefinementRoi.setText(" ");
-			labelRefinementRoi.setForeground(java.awt.Color.blue);
+			labelRefinementRoi.setForeground(VCellColors.getValueForeground());
 			labelRefinementRoi.setVisible(false);
 			// user code begin {1}
 			// user code end
@@ -1371,12 +1424,40 @@ private javax.swing.JLabel getJLabelNumProcessors() {
 			jlabelNumProcessors = new javax.swing.JLabel();
 			jlabelNumProcessors.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
 			jlabelNumProcessors.setName("JLabelNumProcessors");
-			jlabelNumProcessors.setForeground(java.awt.Color.blue);
+			jlabelNumProcessors.setForeground(VCellColors.getValueForeground());
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
 	}
 	return jlabelNumProcessors;
+}
+
+private RequestManager getRequestManager() {
+	Component c = this;
+	while (c != null && !(c instanceof Window)) {
+		c = c.getParent();
+	}
+	if (c instanceof DocumentWindow) {
+		try {
+			DocumentWindow dw = (DocumentWindow) c;
+			TopLevelWindowManager tlwm = dw.getTopLevelWindowManager();
+			RequestManager rm = tlwm.getRequestManager();
+			return rm;
+		} catch(Exception e) {
+			return null;
+		}
+	}
+	return null;
+}
+private ServerInfo getServerInfo() {
+	if (serverInfo == null) {
+		RequestManager rm = getRequestManager();
+		if (rm == null) {
+			return null;
+		}
+		serverInfo = rm.getServerInfo();
+	}
+	return serverInfo;
 }
 
 
