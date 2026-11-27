@@ -1,18 +1,18 @@
-# `/api/v1` style guide
+# VCell REST API style guide (`/api/v2`)
 
 Status: **in progress**, started 2026-11-27. These rules are decided by the lead architect, one
 design question at a time; the questions and their options are in
 [`api-v0-to-v1-migration-plan.md`](api-v0-to-v1-migration-plan.md) §3 (D-1 to D-24). Each rule
 below names the question it settles. Questions not listed here are still open.
 
-Every new `/api/v1` endpoint is reviewed against this guide.
+Every `/api/v2` endpoint is reviewed against this guide (§6).
 
 ## Scope
 
-**The guide applies to existing `/api/v1` endpoints as well as new ones** (D-1). Existing endpoints
-that are inconsistent with it are brought into line. Each change to an existing endpoint needs a
-transition plan, because webapp-ng, pyvcell and the desktop call these endpoints; that plan follows
-the compatibility rules (D-15, still open).
+**The guide defines `/api/v2`** (§6). Endpoints are designed to it from the start; existing
+`/api/v1` endpoints that are inconsistent with it (D-1) are not restyled in place but get guide-conformant
+`/api/v2` equivalents, and `/api/v1` is frozen and retired (§6.2). The `/api/v0` RPC functionality moves
+straight to `/api/v2`, so nothing is ported twice.
 
 ## 1. Resources and URLs
 
@@ -92,12 +92,12 @@ and generated Java models are verbose, mutable and churn with generator upgrades
 
 | Module | Java package | Contents | May depend on |
 |---|---|---|---|
-| **`vcell-api-dto`** | `org.vcell.api.dto` (sub-packages per resource family) | Java records only: the request and response bodies of every `/api/v1` endpoint | Jackson and MicroProfile OpenAPI **annotations** only. No VCell module. |
+| **`vcell-api-dto`** | `org.vcell.api.dto` (sub-packages per resource family) | Java records only: the request and response bodies of every `/api/v2` endpoint | Jackson and MicroProfile OpenAPI **annotations** only. No VCell module. |
 | **`vcell-api-mapping`** | `org.vcell.api.mapping` | Mappers between DTOs and VCell domain objects, in both directions | `vcell-api-dto` and the domain modules (vcell-core, …) |
 
 Rules:
 
-1. **Every `/api/v1` request and response body is a type from `vcell-api-dto`.** Resources never
+1. **Every `/api/v2` request and response body is a type from `vcell-api-dto`.** Resources never
    return domain objects, and never declare records of their own.
 2. **No domain type in a DTO**, not even as a field: no `KeyValue`, `User`, `Expression`,
    `BigString`, `VersionFlag`. Identifiers are strings, expressions are strings, enums are DTO enums
@@ -119,7 +119,7 @@ Rules:
 disruptive. The DTO and mapping modules get clean, consistent names of their own; the mapping
 module is the one place that bridges the two naming worlds.
 
-These modules replace v1's records scattered across `vcell-rest` (`models/`, `handlers/`,
+They are built for `/api/v2`, and replace v1's records scattered across `vcell-rest` (`models/`, `handlers/`,
 `handlers/dto/`, `Simulations/`) and the generated Java models in `vcell-restclient`. The v0
 equivalents (`vcell-api-types`, `DTOModelTransformerV0`) retire with v0.
 
@@ -183,7 +183,7 @@ pinned.
 
 | Rule | Tool | Where it runs |
 |---|---|---|
-| §1.1 nouns not verbs; §1.2 no `GET` body; §1.3 discriminated `oneOf`, mode-flag review; §2.1 named DTO schemas; §3.1 documented 401/404; operationId casing | **Spectral** with `tools/spectral/vcell-api-v1.spectral.yaml` | Fast lane, on `tools/openapi.yaml` |
+| §1.1 nouns not verbs; §1.2 no `GET` body; §1.3 discriminated `oneOf`, mode-flag review; §2.1 named DTO schemas; §3.1 documented 401/404; operationId casing | **Spectral** with `tools/spectral/vcell-api.spectral.yaml` | Fast lane, on `tools/openapi.yaml` |
 | D-15 compatibility (no silent breaking change, including when restyling existing endpoints) | **oasdiff**: PR spec vs master spec; a breaking change needs an explicit label | Fast lane |
 | §3.1.4 responses match the spec | **swagger-request-validator** (RestAssured filter) in the HTTP tests; **Schemathesis** (spec-driven generated requests) against a test deployment | Quarkus tests; nightly |
 | §2.1 `vcell-api-dto` has no domain dependency; resources return only DTOs; no records in vcell-rest; mappers only in `vcell-api-mapping` | **ArchUnit** tests, and **Maven Enforcer** `bannedDependencies` | Fast lane |
@@ -203,8 +203,8 @@ pinned.
 - **Baseline, then hold the line.** Each tool records today's findings as a baseline and fails only
   on new ones, so new code meets the rules immediately and the backlog shrinks over time without
   blocking work.
-- **New modules have no baseline.** `vcell-api-dto`, `vcell-api-mapping` and new vcell-rest
-  endpoints must pass every check from their first commit.
+- **New code has no baseline.** `vcell-api-dto`, `vcell-api-mapping` and every `/api/v2` endpoint
+  must pass every check from its first commit. The frozen `/api/v1` keeps a baseline.
 - **Fast checks run in the Fast lane** (seconds each: Spectral, oasdiff, ArchUnit, Semgrep,
   actionlint, ShellCheck); slower ones (SpotBugs, Schemathesis, Trivy) run in CI-full or nightly.
 - **The same checks run locally**: a pre-commit configuration for the fast ones, and Claude Code
@@ -212,16 +212,17 @@ pinned.
 
 ### 4.3 Spectral ruleset
 
-`tools/spectral/vcell-api-v1.spectral.yaml` extends Spectral's recommended OpenAPI rules with the
+`tools/spectral/vcell-api.spectral.yaml` extends Spectral's recommended OpenAPI rules with the
 guide's rules. Rules for questions still open in this guide (path casing, array encoding) are in the
 file, commented out, until decided.
 
 ```bash
 npx @stoplight/spectral-cli@6.13.1 lint tools/openapi.yaml \
-    --ruleset tools/spectral/vcell-api-v1.spectral.yaml
+    --ruleset tools/spectral/vcell-api.spectral.yaml
 ```
 
-First run against master's spec (2026-11-27, 52 paths, 60 operations):
+First run against master's `/api/v1` spec (2026-11-27, 52 paths, 60 operations). Under §6 these
+endpoints are not fixed in place; the list shows what their `/api/v2` equivalents must do differently.
 
 | Finding | Count | Notes |
 |---|---|---|
@@ -229,7 +230,96 @@ First run against master's spec (2026-11-27, 52 paths, 60 operations):
 | `vcell-documents-404-for-path-ids` (warn) | 6 | e.g. `GET /bioModel/{bioModelID}/summary`, `GET /publications/{id}` |
 | `vcell-operation-id-camel` (warn) | 11 | mostly acronyms (`getVCML`, `getFVSolverInput`, `IDs`); decide whether acronyms are allowed (D-17) |
 | `vcell-boolean-query-param-review` (info) | 4 | `includePublicAndShared` on the four summary lists: a filter, acceptable |
+| `vcell-operation-summary` (warn) | 17 | operations without a `summary` (§5.2) |
+| `vcell-tag-not-class-name` (warn) | 59 | every tag is a class name ("Bio Model Resource"); §5.1 |
 | Spectral built-ins | 144 | operations without a tag (60) or description (44); security scope declarations (33, a SmallRye output detail); unused components (6); one malformed `termsOfService` |
 
 Already compliant: no `GET` has a body, no `oneOf` lacks a discriminator, no request or response
 uses an inline schema, and every secured operation documents 401.
+
+## 5. Documentation
+
+The published spec is read by people (Swagger UI) as much as by generators. It must be navigable.
+
+### 5.1 Groups are resource families, named for users
+
+- **Each resource class carries an `@Tag`** with a user-facing name and a one-sentence
+  description. Never the default derived from the Java class name ("Bio Model Resource").
+- **Tags are declared once at the top level of the spec, in a deliberate order:** core documents
+  first, admin last. Proposed order: *BioModels, MathModels, Geometries, Images, Simulations,
+  Simulation data, Exports, Field data, Publications, Optimization, Users & accounts, Admin.*
+- **Exactly one tag per operation.**
+
+### 5.2 Every operation is self-describing
+
+- A **`summary`** of 3–6 words (shown in the collapsed list) and a **`description`** (shown when
+  expanded): what it does, who may call it (the access matrix, §3.1), size limits, and anything
+  non-obvious (for a `POST` query, which §1.2 condition applies).
+- `operationId`s are stable and readable: they are method names in four generated clients (D-17).
+- Deprecated operations say what replaces them (§6.1).
+
+### 5.3 Swagger UI configuration
+
+```properties
+quarkus.swagger-ui.doc-expansion=none                # start collapsed
+quarkus.swagger-ui.filter=true                       # search box
+quarkus.swagger-ui.operations-sorter=method
+quarkus.swagger-ui.default-models-expand-depth=-1    # hide the full schema list
+quarkus.swagger-ui.deep-linking=true                 # links to one operation
+quarkus.swagger-ui.display-operation-id=true         # the generated-client method name
+# tags-sorter is NOT set, so the declared tag order (5.1) is kept
+```
+
+A second level of grouping (`x-tagGroups`, e.g. "Models" → BioModels, MathModels, Geometries,
+Images) is shown by Redoc or Scalar, which read the same spec; one of them may be published next to
+Swagger UI as the browsable reference.
+
+### 5.4 Audiences
+
+Admin and internal operations are in the `Admin` tag, last, or filtered out of the public document
+with a SmallRye `OASFilter`; the generated clients may use the full document.
+
+The spec's `info` block is real: actual terms of service (or none), and a working contact address.
+
+Spectral enforces: an `@Tag` on every operation that is declared at the top level, a `summary` and a
+`description` on every operation (§4).
+
+## 6. Versioning
+
+### 6.1 Within a major version: additive only
+
+- **Allowed without a new version:** new endpoints; new optional request fields and parameters; new
+  response fields; new enum values, provided clients tolerate unknown ones.
+- **Not allowed:** removing or renaming paths, fields or enum values; making something required;
+  changing a type or a meaning. **oasdiff** fails the build on these (§4.1).
+- **A necessary break is done per endpoint by expand, migrate, contract:** add the new form beside
+  the old; mark the old `deprecated: true` in the spec and send `Deprecation` (RFC 9745) and
+  `Sunset` (RFC 8594) response headers naming the replacement; move the clients; remove the old form
+  when telemetry shows it unused by supported clients.
+- **Generated clients tolerate additions** (D-15). The Python generators (in-repo and pyvcell) are
+  configured to ignore unknown response fields, and the TypeScript and Java clients likewise, so an
+  additive change never breaks a client. Without this, every addition is a breaking change.
+- `info.version` versions the API contract (semantic: minor for additions, major only with a new path
+  version), separately from the VCell build version. API changes are listed under "Notes for API
+  consumers" in CHANGELOG.md.
+
+### 6.2 Major versions: `/api/v2` is the clean break
+
+- A major version is a new path prefix. It is rare and deliberate; after `/api/v2` the expectation is
+  additive evolution (§6.1), not `/api/v3`.
+- **`/api/v2` is the API this guide defines.** `/api/v1` is frozen: security and correctness fixes
+  only, no new endpoints. Each v1 endpoint gets a v2 equivalent when its area is worked on; v1 is
+  retired by telemetry (§6.3), as v0 is. v1 and v2 run side by side in vcell-rest during the
+  transition.
+- The `/api/v0` RPC functionality (the migration plan) is built directly in `/api/v2`.
+
+### 6.3 Long-lived clients
+
+- **Every client sends its version** on each request (a header such as `VCell-Client-Version`),
+  and the server logs it with the endpoint. Desktop installers live in the field for years; this is
+  the evidence for removing anything.
+- **A published supported-version policy:** the oldest desktop and pyvcell versions the server
+  serves, and a clear error (not a failure deep in a call) for older ones.
+- **Capability discovery** (D-16): a version endpoint (replacing `/api/v0/swversion`) reports the
+  API versions and optional capabilities the server offers, so a new client can fall back against an
+  older server (prod lags master).

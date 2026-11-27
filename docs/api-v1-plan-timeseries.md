@@ -1,8 +1,12 @@
 # Taking apart `getTimeSeriesValues`: detailed plan
 
+> **Decided 2026-11-27: the target is `/api/v2`,** not `/api/v1` (style guide §6). `/api/v1` is frozen;
+> wherever this document says "v1" for new endpoints, read "v2". The style guide is
+> [`api-style-guide.md`](api-style-guide.md).
+
 Status: **draft for discussion**, 2026-11-27. First catch-all RPC worked through under the style
 guide's rule §1.3 ("one endpoint, one purpose, one response type",
-[`api-v1-style-guide.md`](api-v1-style-guide.md)). Endpoint shapes below are **PROPOSED — needs
+[`api-style-guide.md`](api-style-guide.md)). Endpoint shapes below are **PROPOSED — needs
 agreement**; paths are placeholders.
 
 ## 1. What the RPC does today

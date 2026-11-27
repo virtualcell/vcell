@@ -1,5 +1,9 @@
 # Migrating `/api/v0` (RPC and legacy resources) to `/api/v1`: plan
 
+> **Decided 2026-11-27: the target is `/api/v2`,** not `/api/v1` (style guide §6). `/api/v1` is frozen;
+> wherever this document says "v1" for new endpoints, read "v2". The style guide is
+> [`api-style-guide.md`](api-style-guide.md).
+
 Status: **draft for discussion**, 2026-11-27. Nothing here is agreed. Inventory and evidence:
 [`api-v0-rpc-inventory.md`](api-v0-rpc-inventory.md) (section numbers below like "inv §3.1" refer
 to it).
@@ -273,7 +277,7 @@ and low-risk first; keep the old server path until telemetry says it is unused.
 ### Phase 1 — Design agreement (gate)
 
 1. Walk through §3 with the lead architect; record each decision.
-2. Produce a short **API style guide** (`docs/api-v1-style-guide.md` or similar) from the decisions,
+2. Produce a short **API style guide** (`docs/api-style-guide.md` or similar) from the decisions,
    with one worked example endpoint written against it.
 3. Agree the candidate grouping in §4, the scope cuts (D-21), and D-22 (where server code runs).
 4. Agree the phase order below (or change it).

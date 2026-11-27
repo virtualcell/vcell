@@ -1,8 +1,8 @@
-# Spectral ruleset for /api/v1 (tools/openapi.yaml): the machine-checkable rules of
-# docs/api-v1-style-guide.md. Each rule names the guide section it enforces.
+# Spectral ruleset for the VCell REST API (tools/openapi.yaml): the machine-checkable rules of
+# docs/api-style-guide.md. Each rule names the guide section it enforces.
 #
 #   npx @stoplight/spectral-cli@6.13.1 lint tools/openapi.yaml \
-#       --ruleset tools/spectral/vcell-api-v1.spectral.yaml
+#       --ruleset tools/spectral/vcell-api.spectral.yaml
 #
 # Only DECIDED rules are errors or warnings. Rules for questions still open in the guide are
 # listed at the bottom, commented out, until decided.
@@ -98,6 +98,37 @@ rules:
       function: casing
       functionOptions:
         type: camel
+
+  # ---------------------------------------------------------------- §5 documentation
+  vcell-operation-summary:
+    description: "Every operation has a short summary for the collapsed Swagger list (guide §5.2)."
+    severity: warn
+    given: "$.paths[*][get,put,post,patch,delete]"
+    then:
+      field: summary
+      function: truthy
+
+  vcell-one-tag-per-operation:
+    description: "Exactly one tag per operation (guide §5.1)."
+    severity: warn
+    given: "$.paths[*][get,put,post,patch,delete].tags"
+    then:
+      function: length
+      functionOptions:
+        min: 1
+        max: 1
+
+  vcell-tag-not-class-name:
+    description: "Tags are user-facing resource-family names, not Java class names (guide §5.1)."
+    message: "Tag '{{value}}' looks like a Java class name; use an @Tag with a user-facing name."
+    severity: warn
+    given: "$.paths[*][get,put,post,patch,delete].tags[*]"
+    then:
+      function: pattern
+      functionOptions:
+        notMatch: "Resource$"
+
+  # (operation-tag-defined and operation-description from spectral:oas cover §5.1/§5.2's other checks)
 
   # ---------------------------------------------------------------- OPEN in the guide (not enforced yet)
   # Path casing (D-1 sub-question: lowerCamel vs kebab-case, plural vs singular):
