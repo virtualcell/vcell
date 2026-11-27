@@ -177,7 +177,9 @@ public class VCellApiClient implements AutoCloseable {
 		if (!bSkipSSL){
 			httpClientBuilder.setSSLSocketFactory(sslsf);
 		}
-		httpclient = httpClientBuilder.setRedirectStrategy(new DefaultRedirectStrategy()).build();
+		httpclient = httpClientBuilder.setRedirectStrategy(new DefaultRedirectStrategy())
+				.setDefaultHeaders(ClientIdentification.apacheHeaders())
+				.build();
 		httpClientContext = HttpClientContext.create();
 	}
 	
@@ -226,6 +228,12 @@ public class VCellApiClient implements AutoCloseable {
 			setBasePath(quarkusURL.getPath());
 			setScheme(quarkusURL.getProtocol());
 		}};
+		identify(apiClient);
+	}
+
+	/** Adds the client identification headers to every /api/v1 request, before any existing interceptor. */
+	private static void identify(ApiClient client) {
+		client.setRequestInterceptor(ClientIdentification.withIdentification(client.getRequestInterceptor()));
 	}
 
 	public void authenticate(boolean ignoreSSLCertProblems) throws URISyntaxException, IOException, ParseException, ApiException {
@@ -237,6 +245,7 @@ public class VCellApiClient implements AutoCloseable {
 		apiClient = InteractiveLogin.login(new URI(InteractiveLogin.authDomain + "/authorize"),
 				this.quarkusURL.toURI(), ignoreSSLCertProblems, signUp);
 		apiClient.setScheme(this.quarkusURL.getProtocol());
+		identify(apiClient);
 	}
 
 	public void logOut(){

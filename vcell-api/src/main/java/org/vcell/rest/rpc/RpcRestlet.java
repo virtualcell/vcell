@@ -37,6 +37,9 @@ import java.util.List;
 import java.util.Objects;
 
 public final class RpcRestlet extends Restlet {
+	/** Client identification headers sent by vcell-apiclient (org.vcell.api.client.ClientIdentification). */
+	static final String CLIENT_HEADER = "VCell-Client";
+	static final String CLIENT_VERSION_HEADER = "VCell-Client-Version";
 	private static Logger lg = LogManager.getLogger(RpcRestlet.class);
 	RestDatabaseService restDatabaseService;
 	private static final List<String> vcellguestAllowed;
@@ -152,6 +155,7 @@ public final class RpcRestlet extends Restlet {
 		}else if (req.getMethod().equals(Method.POST)){
 			String destination = null;
 			String method = null;
+			RpcCallTelemetry telemetry = new RpcCallTelemetry();
 			try {
 				VCellApiApplication application = ((VCellApiApplication)getApplication());
 				User vcellUser = application.getVCellUser(req.getChallengeResponse(),AuthenticationPolicy.prohibitInvalidCredentials);
@@ -160,6 +164,9 @@ public final class RpcRestlet extends Restlet {
 				String userkey = vcellUser.getID().toString();
 				destination = request.getHeaders().getFirstValue("Destination");
 				method = request.getHeaders().getFirstValue("Method");
+				telemetry.destination(destination).method(method).user(username, User.isGuest(username))
+						.client(request.getHeaders().getFirstValue(CLIENT_HEADER, true),
+								request.getHeaders().getFirstValue(CLIENT_VERSION_HEADER, true));
 				String returnRequired = request.getHeaders().getFirstValue("ReturnRequired");
 				String timeoutMS = request.getHeaders().getFirstValue("TimeoutMS");
 				String compressed = request.getHeaders().getFirstValue("Compressed");
@@ -172,11 +179,15 @@ public final class RpcRestlet extends Restlet {
 				
 				// The Method header names the method that is invoked; authorize it before touching the body.
 				if (method == null || (User.isGuest(username) && !vcellguestAllowed.contains(method))) {
-					throw new IllegalArgumentException(User.createGuestErrorMessage(method));
+					IllegalArgumentException refused = new IllegalArgumentException(User.createGuestErrorMessage(method));
+					telemetry.rejected(refused);
+					throw refused;
 				}
 
 				req.bufferEntity();
-				Serializable rpcRequestBodyObject = CompressionUtils.fromCompressedSerialized(req.getEntity().getStream().readAllBytes(), RpcRestlet.RPC_BODY_FILTER);
+				byte[] rpcRequestBytes = req.getEntity().getStream().readAllBytes();
+				telemetry.requestBytes(rpcRequestBytes.length);
+				Serializable rpcRequestBodyObject = CompressionUtils.fromCompressedSerialized(rpcRequestBytes, RpcRestlet.RPC_BODY_FILTER);
 
 				if (!(rpcRequestBodyObject instanceof VCellApiRpcBody)) {
 					throw new RuntimeException("expecting post content of type VCellApiRpcBody");
@@ -234,9 +245,13 @@ public final class RpcRestlet extends Restlet {
 							queue, vcRpcRequest, rpcBody.returnedRequired, specialProperties, specialValues, new UserLoginInfo(username));
 				}
 				byte[] serializedResultObject = DTOModelTransformerV0.toCompressedSerialized(serializableResultObject);
+				telemetry.replyBytes(serializedResultObject.length).succeeded();
 				response.setStatus(Status.SUCCESS_OK, "rpc method="+method+" succeeded");
 				response.setEntity(new ByteArrayRepresentation(serializedResultObject));
 			} catch (Exception e) {
+				if (telemetry.isUnset()) {
+					telemetry.failed(e.getCause() != null ? e.getCause() : e);
+				}
 				lg.error("internal error invoking "+destination+":"+method+"(): "+e.getMessage(), e);
 				response.setStatus(Status.SERVER_ERROR_INTERNAL);
 				if(e.getCause() instanceof ServerRejectedSaveException) {//send back actual exception, client needs specific cause
@@ -250,6 +265,8 @@ public final class RpcRestlet extends Restlet {
 					}
 				}
 				response.setEntity("internal error invoking "+destination+":"+method+"(): "+e.getMessage(), MediaType.TEXT_PLAIN);
+			} finally {
+				telemetry.log();
 			}
 		}
 	}
