@@ -291,7 +291,7 @@ public class StochtestRunService {
 						}
 					}		
 				}
-				SimulationData simData = new SimulationData(simTask.getSimulationJob().getVCDataIdentifier(), destDir, null, null);
+				SimulationData simData = new SimulationData(simTask.getSimulationJob().getVCDataIdentifier(), destDir, null);
 				ODEDataBlock odeDataBlock = simData.getODEDataBlock();
 				ODESimData odeSimData = odeDataBlock.getODESimData();
 				timeSeriesMultitrialData.addDataSet(odeSimData,trialIndex);
