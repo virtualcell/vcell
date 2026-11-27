@@ -79,9 +79,8 @@ public class SimulationData extends VCData {
 			if(primaryUserDir == null || !primaryUserDir.exists() || !primaryUserDir.isDirectory()){
 				throw new FileNotFoundException("PrimaryUserDir required and it must exist and be a directory");
 			}
-			if(secondaryUserDir != null && (!secondaryUserDir.exists() || !secondaryUserDir.isDirectory())){
-				throw new FileNotFoundException("If secondaryUserDir defined it must exist and be a directory");
-			}
+			// secondaryUserDir is not checked here: it is on slower archive storage and is only
+			// consulted below when the log file is not on primary (see DataSetControllerImpl.getSecondaryUserDir).
 //			this.amplistorVCellUsersRootPath = amplistorVCellUserRootPath;
 			String logFileName = null;
 			String logFileNameOldStyle = null;
