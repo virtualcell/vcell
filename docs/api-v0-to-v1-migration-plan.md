@@ -79,9 +79,9 @@ casing (lowerCamel today, `Simulation` capitalized); whether to fix existing inc
 of this work or leave existing endpoints alone.
 
 **D-2. Identifiers.** _Decided 2026-11-27:_ simulation results are addressed by the **requested
-simulation**, `/api/v2/simulations/{simulationId}/jobs/{jobIndex}/…`; the server resolves where the data
+simulation**, `/api/v2/data/simulations/{simulationId}/jobs/{jobIndex}/…` (the data area, D-22); the server resolves where the data
 is stored (`parentSimRef`, owner directory), and access follows the reachability rule (style guide
-§10.4). Field data has the same sub-resources under `/api/v2/field-data/{fieldDataId}/…`. Merged
+§10.4). Field data has the same sub-resources under `/api/v2/data/field-data/{fieldDataId}/…`. Merged
 (comparison) datasets are not a URL resource: clients read each dataset; a server-side comparison, if
 ever needed, is a `POST` query naming several datasets. Results carry an `ETag` from the version of the
 results that answered (re-running a simulation replaces its results under the same id).
@@ -210,6 +210,42 @@ mounts `/simdata`; data reads would move data-pod memory and caching load into r
 today); (c) the data service becomes its own HTTP service behind the ingress, with vcell-rest only
 authorizing (the capability-token idea in `docs/3d-renderer-design.md`, "geometry-server spike").
 This decision drives Phase 3 effort more than any other.
+
+_Direction (2026-11-27): **API areas, routed by path prefix.**_ The v2 data endpoints are served by a
+data-serving deployable, and the API is divided into a small number of **areas**, each a path prefix
+that the ingress routes with a plain prefix rule:
+
+| Area | Prefix | Contents |
+|---|---|---|
+| core | `/api/v2/…` | documents, simulations (as documents and runs), users, publications, … |
+| data | `/api/v2/data/…` | reads of simulation results and field data: `simulations/{simulationId}/jobs/{jobIndex}/info`, `…/time-series`, `…/region-statistics`, field values; exports (`/api/v2/data/exports`) |
+
+Rules:
+- **An area names a stable domain, not a deployment.** `data` means "reads of results and field data"
+  and stays true wherever it is implemented; names like `dataserver` or `exporter` are not used.
+- **Areas are few and decided explicitly**; each new prefix is a long-lived contract decision.
+- **One version for the whole API** (`/api/v2/<area>/…`), not per area.
+- **Areas link to each other:** the simulation resource (core) carries a link to its results (data), so
+  clients do not assemble the second URL.
+- **All areas share one contract** (`tools/openapi.yaml`), the DTO and mapping modules, the
+  `AccessPolicy` and auth. A CI check compares the ingress prefix rules with the spec so routing and
+  contract cannot drift.
+
+This is the API-group pattern (Kubernetes `/apis/<group>/<version>/…`; service-per-host APIs at Google
+and AWS), and it avoids routing nested resource paths (`/simulations/{id}/jobs/{n}/…`) with ingress
+regexes or forwarding them internally from `rest`.
+
+_Existing example:_ the **export service** already works this way. Export moved from the JMS-backed
+data path to a Quarkus service (vcell-fluxcd "Make Export Request go to Export Pod", 2026-02-04):
+`vcell-exporter` is vcell-rest built with `vcell.exporter=true` (beans switched by `@IfBuildProperty`),
+runs as the `export` deployment with the `/simdata`, `/simdata_secondary`, `/exportdir` and
+`/n5DataDir` mounts and the same JWT validation, is routed by the ingress rule `/api/v1/export` ahead
+of `/api/v1/` → `rest`, and its endpoints are in the single `tools/openapi.yaml`.
+
+_Still to decide in the pilot:_ how the data deployable is produced (build-time bean switching as the
+exporter does, whose test profile sets `vcell.exporter=true` so tests cover one configuration, or
+separate modules over a shared core library so each deployable's wiring is tested as shipped); and
+whether the JMS export path (`ExportRequestListenerMQ`) is still in use.
 
 ### 3.6 Quality requirements
 

@@ -67,8 +67,9 @@ its result by event._
 ## 3. Decomposition (decided 2026-11-27)
 
 Two endpoints replace the RPC, each with one response type (style guide §1.3). Paths follow §1.4 and
-D-2: a simulation's results are under `/api/v2/simulations/{simulationId}/jobs/{jobIndex}` (written
-`{job}` below), and field data has the same sub-resources under `/api/v2/field-data/{fieldDataId}`.
+D-2 and D-22: a simulation's results are in the **data area**, under
+`/api/v2/data/simulations/{simulationId}/jobs/{jobIndex}` (written `{job}` below), and field data has
+the same sub-resources under `/api/v2/data/field-data/{fieldDataId}`.
 Access follows the reachability rule (style guide §10.4); the server resolves where the data is stored
 (including `parentSimRef`).
 
