@@ -1,0 +1,202 @@
+# Spectral ruleset for the VCell REST API (tools/openapi.yaml): the machine-checkable rules of
+# docs/api-style-guide.md. Each rule names the guide section it enforces.
+#
+#   npx @stoplight/spectral-cli@6.13.1 lint tools/openapi.yaml \
+#       --ruleset tools/spectral/vcell-api.spectral.yaml
+#
+# Only DECIDED rules are errors or warnings. Rules for questions still open in the guide are
+# listed at the bottom, commented out, until decided.
+
+extends: [["spectral:oas", "recommended"]]
+
+rules:
+
+  # ---------------------------------------------------------------- §1.1 nouns, not verbs
+  vcell-path-no-verbs:
+    description: "Paths name resources; HTTP methods carry the verb (guide §1.1)."
+    message: "Path has a verb segment: {{property}}. Model the action as the resource it creates or changes."
+    severity: error
+    given: "$.paths[*]~"
+    then:
+      function: pattern
+      functionOptions:
+        # a path segment that is a verb, or a verb followed by a capitalised noun (startSimulation)
+        notMatch: "/\\/(get|create|delete|remove|update|save|start|stop|submit|list|find|do|add|set|copy|analyze|process|publish|request|forgot|map|unmap|recover|retrieve|fetch|upload|download|run|cancel|send|register|login|logout)([A-Z_-][A-Za-z0-9_-]*)?(\\/|$)/"
+
+  # ---------------------------------------------------------------- §1.2 queries use GET
+  vcell-get-no-request-body:
+    description: "A GET never has a request body (guide §1.2)."
+    severity: error
+    given: "$.paths[*].get"
+    then:
+      field: requestBody
+      function: falsy
+
+  # ---------------------------------------------------------------- §1.3 one purpose, one response
+  vcell-oneof-needs-discriminator:
+    description: "Variants of one concept are a discriminated union (guide §1.3)."
+    message: "oneOf without a discriminator: clients cannot tell the variants apart."
+    severity: warn
+    given: "$..[?(@ && @.oneOf)]"
+    then:
+      field: discriminator
+      function: truthy
+
+  vcell-boolean-query-param-review:
+    description: "No mode flags that change what is computed or the response shape (guide §1.3)."
+    message: "Boolean query parameter '{{value}}': check it is a filter, not a mode flag."
+    severity: info
+    given: "$.paths[*][*].parameters[?(@.in == 'query' && @.schema && @.schema.type == 'boolean')]"
+    then:
+      field: name
+      function: falsy
+
+  # ---------------------------------------------------------------- §2.1 named DTOs
+  vcell-response-uses-named-schema:
+    description: "Response bodies are named DTOs from vcell-api-dto, not inline objects (guide §2.1)."
+    message: "Inline object schema in a response; use a named component (a vcell-api-dto record)."
+    severity: warn
+    resolved: false
+    given: "$.paths[*][*].responses[*].content[*].schema"
+    then:
+      field: properties
+      function: falsy
+
+  vcell-request-uses-named-schema:
+    description: "Request bodies are named DTOs from vcell-api-dto, not inline objects (guide §2.1)."
+    message: "Inline object schema in a request body; use a named component (a vcell-api-dto record)."
+    severity: warn
+    resolved: false
+    given: "$.paths[*][*].requestBody.content[?(@property == 'application/json')].schema"
+    then:
+      field: properties
+      function: falsy
+
+  # ---------------------------------------------------------------- §3 testing / error cases
+  vcell-documents-404-for-path-ids:
+    description: "An operation on an identified resource documents 404 (guide §3.1)."
+    severity: warn
+    given: "$.paths[?(@property.match(/\\{[^}]+\\}/))][get,put,patch,delete]"
+    then:
+      field: "responses.404"
+      function: truthy
+
+  vcell-secured-operation-documents-401:
+    description: "A secured operation documents 401 (guide §3.1, access matrix)."
+    severity: warn
+    given: "$.paths[*][?(@ && @.security && @.security.length > 0)]"
+    then:
+      field: "responses.401"
+      function: truthy
+
+  # ---------------------------------------------------------------- generated-client method names (D-17)
+  vcell-operation-id-camel:
+    description: "operationIds become method names in four generated clients."
+    severity: warn
+    given: "$.paths[*][*].operationId"
+    then:
+      function: casing
+      functionOptions:
+        type: camel
+
+  # ---------------------------------------------------------------- §5 documentation
+  vcell-operation-summary:
+    description: "Every operation has a short summary for the collapsed Swagger list (guide §5.2)."
+    severity: warn
+    given: "$.paths[*][get,put,post,patch,delete]"
+    then:
+      field: summary
+      function: truthy
+
+  vcell-one-tag-per-operation:
+    description: "Exactly one tag per operation (guide §5.1)."
+    severity: warn
+    given: "$.paths[*][get,put,post,patch,delete].tags"
+    then:
+      function: length
+      functionOptions:
+        min: 1
+        max: 1
+
+  vcell-tag-not-class-name:
+    description: "Tags are user-facing resource-family names, not Java class names (guide §5.1)."
+    message: "Tag '{{value}}' looks like a Java class name; use an @Tag with a user-facing name."
+    severity: warn
+    given: "$.paths[*][get,put,post,patch,delete].tags[*]"
+    then:
+      function: pattern
+      functionOptions:
+        notMatch: "Resource$"
+
+  # (operation-tag-defined and operation-description from spectral:oas cover §5.1/§5.2's other checks)
+
+  # ---------------------------------------------------------------- §9 errors (RFC 9457)
+  vcell-error-is-problem-json:
+    description: "Error responses are RFC 9457 Problem Details (guide §9)."
+    message: "Error response {{property}} must use application/problem+json."
+    severity: error
+    given: "$.paths[*][get,put,post,patch,delete].responses[?(@property.match(/^[45]/))]"
+    then:
+      field: "content.application/problem+json"
+      function: truthy
+
+  vcell-documents-error-responses:
+    description: "Every operation documents at least one error response (guide §9.3)."
+    severity: warn
+    given: "$.paths[*][get,put,post,patch,delete].responses"
+    then:
+      function: schema
+      functionOptions:
+        schema:
+          type: object
+          patternProperties: { "^[45][0-9][0-9]$": {} }
+          minProperties: 1
+          anyOf:
+            - required: ["400"]
+            - required: ["401"]
+            - required: ["403"]
+            - required: ["404"]
+            - required: ["409"]
+            - required: ["500"]
+            - required: ["503"]
+
+  # ---------------------------------------------------------------- §1.4 naming
+  vcell-path-casing:
+    description: "Path segments are lowercase kebab-case; path parameters are camelCase (guide §1.4)."
+    message: "Path {{property}}: use lowercase kebab-case segments and {camelCase} parameters."
+    severity: error
+    given: "$.paths[*]~"
+    then:
+      function: pattern
+      functionOptions:
+        match: "^(/([a-z0-9]+(-[a-z0-9]+)*|\\{[a-z][a-zA-Z0-9]*\\}))+$"
+
+  vcell-path-param-descriptive:
+    description: "Path parameters are descriptive, never a bare {id} (guide §1.4)."
+    message: "Path {{property}} uses a bare {id}; name it ({bioModelId}, {simulationId})."
+    severity: warn
+    given: "$.paths[*]~"
+    then:
+      function: pattern
+      functionOptions:
+        notMatch: "\\{id\\}"
+
+  # ---------------------------------------------------------------- §1.2 array encoding
+  vcell-array-query-repeated:
+    description: "Array query parameters are repeated parameters (style form, explode true) (guide §1.2)."
+    severity: error
+    given: "$.paths[*][*].parameters[?(@.in == 'query' && @.schema && @.schema.type == 'array')]"
+    then:
+      - field: explode
+        function: enumeration
+        functionOptions: { values: [true] }
+      - field: style
+        function: enumeration
+        functionOptions: { values: ["form"] }
+
+# ---------------------------------------------------------------- listed named actions (guide §1.1)
+# A named action listed in the guide is exempted from vcell-path-no-verbs with an override, e.g.:
+# overrides:
+#   - files: ["tools/openapi.yaml#/paths/~1api~1v2~1users~1{userId}~1recover"]
+#     rules: { vcell-path-no-verbs: "off" }
+# Add one entry per row of the guide's §1.1 table, and no others.
