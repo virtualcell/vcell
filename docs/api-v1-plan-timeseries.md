@@ -64,86 +64,146 @@ its result by event._
 | C8 | `PDEDataViewer:3123` | 1 var, **all mesh indices**, stepped times | values | movie export: a whole-field bulk read routed through the time-series call |
 | C9 | `ASCIIExporter:565` (server side, not over RPC) | vars, indices, time window | values | CSV export of time series |
 
-## 3. Proposed decomposition (PROPOSED — needs agreement)
+## 3. Decomposition (decided 2026-11-27)
 
-Four purposes, each with one response type. Under rule §1.3 none of them takes flags that change
-the response.
+Two endpoints replace the RPC, each with one response type (style guide §1.3). Paths follow §1.4;
+`{datasetId}` stands for the dataset identifier, still to be fixed by D-2.
 
-### 3.1 Time series at points (C1, C2, C3, C9)
+| Purpose | Read (`GET`, cacheable) | Query (`POST`, for inputs that do not fit a URL, §1.2) |
+|---|---|---|
+| Time series at points (C1, C2, C3, C9) | `GET /api/v2/datasets/{datasetId}/time-series?variable=…&point=x,y[,z]&from=…&to=…&every=…` | `POST /api/v2/datasets/{datasetId}/time-series/query` with a `TimeSeriesQuery` |
+| Region statistics over time (C4, C5, C6) | `GET /api/v2/datasets/{datasetId}/region-statistics?variable=…&subdomain=…&from=…&to=…` | `POST /api/v2/datasets/{datasetId}/region-statistics/query` with a `RegionStatisticsQuery` |
 
-`GET` (or `POST` query when the point list exceeds URL limits, rule §1.2)
-`/datasets/{id}/timeseries?variable=…&point=…&from=…&to=…&every=…`
+Both answer JSON for small results and the binary form (§2.4) for large ones, by `Accept`.
 
-- Response: times, plus `values[variable][point][time]`. Format per D-6.
-- Points: **open question P-1**, below.
-- Membrane crossing (sampling a volume variable at a membrane point, interpolated across it) becomes
-  a **per-point attribute** of the input, not a parallel array.
-- A kymograph is this endpoint with points along a line (C3). Its line → points construction stays
-  client-side, as in the field viewer, unless P-3 decides otherwise.
+- **Time statistics per point (C7) are dropped from the server API.** Min, max and mean over time at a
+  point are a cheap reduction of a time series; the client computes them (D-4). This removes two of
+  today's four response shapes and the server path that throws "not yet implemented".
+- **Whole-field reads over time (C8) are not a time series.** The movie maker reads the field per
+  time (the "Field values" group, plan §4) or uses an export.
+- **No "background" flag.** A request within the caps (D-10) answers directly; a larger one is a job
+  (D-12). This takes the RPC's progress events off `/api/v0/events`.
 
-### 3.2 Region statistics over time (C4, C5, C6)
+## 4. Decisions
 
-`GET`/`POST` `/datasets/{id}/regionstats?variable=…&region=…&from=…&to=…`
+**P-1. Points are coordinates first, mesh indices as an alternative.** A request's points are a
+discriminated union (`PointSpec`, §1.3):
+- `coordinate`: a tuple whose length equals the dataset's spatial dimension (`[x]`, `[x,y]` or
+  `[x,y,z]`), never padded with zeros. A wrong length is a `400` with a field error. The dataset's
+  metadata (`DatasetInfo`) reports `dimension`, `origin`, `extent` and the length unit. The server
+  locates the point (as the FEniCSx work already does); conversion to VCell's internal 3D
+  `Coordinate` happens once, in `vcell-api-mapping`, using the geometry's convention for the unused
+  axes. Optional `snap` moves a point onto the nearest membrane.
+- `index`: a mesh element (volume or membrane) by number, **qualified by its mesh** (P-2), for the
+  desktop's pickers.
+- `line` (P-3): `start`, `end` (dimension-length tuples) and a sample count.
+- Membrane crossing (a volume variable sampled at a membrane) is an attribute of the point.
+- The response echoes, per point, what it resolved to (mesh, element, position, as a tuple of the
+  same dimension). A point that cannot be resolved (outside the domain) gets a **per-point status**,
+  not a failed request (§9.5).
+- In `GET` URLs a coordinate is one parameter value, `point=x,y[,z]`; points repeat (§1.2).
 
-- Response per variable, per time: min, max, mean, volume- or area-weighted mean, sums; per
-  variable: region size. One fixed shape.
-- Region: **open question P-2**.
+**P-2. Regions: by name, or by number within a named mesh.** `RegionSpec` is a discriminated union,
+from most to least stable:
+- `subdomain` (a subdomain or membrane **name**): survives any topology change; resolved to elements
+  at each time.
+- `meshRegion` (`meshId`, subdomain, `regionIndex`): one numbered connected region within one mesh.
+- `elements` (`meshId`, element kind, index **ranges** `[[start,end], …]`): a drawn ROI.
 
-### 3.3 Time statistics per point (C7): **drop from the server API**
+Every numbered reference (regions, elements, and P-1's `index` points) names the mesh it refers to.
+`DatasetInfo` lists the dataset's meshes: one for a fixed mesh, one per segment for remeshed or
+moving-boundary runs, each with the time range it covers and its regions. A numbered reference used
+over a time range where its mesh does not apply is a `409` (`mesh-changed`), naming the times where
+the mesh changes; numbers are never mapped onto a new mesh silently. Region size is reported per time.
+New kinds of region (a geometric shape, a threshold, a region tracked through topology changes) can be
+added later as further variants (§6.1).
 
-Min, max and mean over time at a point are a cheap reduction of §3.1's result. The client computes
-them (D-4). The combined space-and-time case is §3.2 followed by the same reduction. This removes
-the third and fourth response shapes and the server path that throws "not yet implemented".
+**P-3. Kymographs are time series along a line.** No separate endpoint: the `line` point variant
+makes the server generate the samples and locate them at each time (including on moving meshes); the
+response is the usual `values[variable][point][time]` with the sample positions.
 
-### 3.4 Whole-field reads over time (C8): **not a time-series endpoint**
+**P-4. Statistics, the contract.** Per variable, per time: `min`, `max`, `mean` (unweighted),
+`weightedMean` (weighted by element volume for volume variables, element area for membrane
+variables), `sum`, `integral` (the weighted sum, approximately the total amount), `regionSize` (total
+volume or area), `count` (values used) and `missingCount`; plus the mesh that applied and the unit.
+- A region applies only to elements of its variable's own domain; mixing volume and membrane elements
+  is a `400`.
+- Missing values are skipped and counted; a non-finite input makes the statistic non-finite (style
+  guide §2.3).
+- These are today's definitions (`DataSetControllerImpl.calcSpatialStatsInfo`: element volume or
+  membrane-element area as the weight), now written down.
 
-The movie maker needs the whole field at each of several times. That is the field-values read
-("Field values" group, plan §4) called per time, or an export (`exports` resource). It is not a
-time series at "all points".
+**P-5. Functions.**
+1. **Saved functions** (the simulation's output functions, stored with the model) are requested by
+   name like variables and evaluated on the server, so the `GET` form stays cacheable.
+2. **Unsaved expressions** are accepted only in the `POST` query form (`expressions`), with limits on
+   length, number of arguments and cost (§8.3), and evaluated with VCell's expression engine. This keeps
+   the desktop's "define a function in the viewer and plot it" working; client-side evaluation would
+   need every argument over the whole region for statistics.
+3. Clients may evaluate on their side where it is cheap, as the field viewer does for FEniCSx.
 
-### 3.5 Progress and long requests
+## 5. DTO sketches (`org.vcell.api.dto`, PROPOSED — refined in the pilot)
 
-- A request whose cost is within the caps (D-10) answers synchronously. No progress events.
-- Larger requests become a **job** (D-12): `POST` returns a job, `GET` reports progress, the result
-  is a link. This replaces the "background" flag and the `DataJobEvent` progress path, and takes
-  this RPC's traffic off `/api/v0/events`.
+Records per style guide §2; `Float64` is a `Double` on the wire as in §2.3; `kind` is the
+discriminator of each union.
 
-## 4. Open questions specific to this family
+```java
+// --- dataset metadata
+record DatasetInfo(String datasetId, int dimension, List<Double> origin, List<Double> extent,
+                   String lengthUnit, List<Double> times, List<VariableInfo> variables, List<MeshInfo> meshes) {}
+record VariableInfo(String name, ElementKind domainKind, String domain, String unit, boolean function) {}
+record MeshInfo(String meshId, double fromTime, double toTime, List<RegionInfo> regions) {}
+record RegionInfo(String subdomain, int regionIndex, ElementKind kind, double size) {}
+enum ElementKind { VOLUME, MEMBRANE, UNKNOWN }          // UNKNOWN + @JsonCreator fallback, §2.2
 
-**P-1. How points are named.** (a) Mesh indices, as today: exact, cheap, but they tie every client
-to VCell's mesh numbering and need the mesh first. (b) Coordinates `(x,y,z)`, located on the server
-(the FEniCSx precedent, #2173): mesh-independent, and works for pyvcell and the web viewer without
-a mesh, but needs a locate step and a rule for points outside the domain. (c) Both, as
-alternatives of one input type (a discriminated union, rule §1.3).
+// --- points (P-1, P-3)
+sealed interface PointSpec permits CoordinatePoint, IndexPoint, LinePoints { String kind(); }
+record CoordinatePoint(String kind /* "coordinate" */, List<Double> coordinate, Boolean snap,
+                       Boolean crossMembrane) implements PointSpec {}
+record IndexPoint(String kind /* "index" */, String meshId, ElementKind element, int index,
+                  Integer crossingMembraneIndex) implements PointSpec {}
+record LinePoints(String kind /* "line" */, List<Double> start, List<Double> end, int samples) implements PointSpec {}
 
-**P-2. How a region is named.** (a) An index list. (b) A compact mask (run-length or base64
-bitmap): today's `BitSet`, re-encoded. (c) A named region: a subdomain or membrane, resolved on the
-server. Can be combined with (a) or (b).
+// --- regions (P-2)
+sealed interface RegionSpec permits SubdomainRegion, MeshRegion, ElementRanges { String kind(); }
+record SubdomainRegion(String kind /* "subdomain" */, String subdomain) implements RegionSpec {}
+record MeshRegion(String kind /* "meshRegion" */, String meshId, String subdomain, int regionIndex) implements RegionSpec {}
+record ElementRanges(String kind /* "elements" */, String meshId, ElementKind element,
+                     List<List<Integer>> ranges) implements RegionSpec {}
 
-**P-3. Kymograph on the server?** Keep line → points on the client (one endpoint, §3.1), or add a
-kymograph computation endpoint, as the field viewer moved FEniCSx kymographs server-side for moving
-meshes.
+// --- queries
+record TimeWindow(Double from, Double to, Integer every) {}
+record FunctionDefinition(String name, String expression) {}       // POST only (P-5)
+record TimeSeriesQuery(List<String> variables, List<PointSpec> points, TimeWindow window,
+                       List<FunctionDefinition> expressions) {}
+record RegionStatisticsQuery(List<String> variables, RegionSpec region, TimeWindow window,
+                             List<FunctionDefinition> expressions) {}
 
-**P-4. Weighted statistics definition.** Which weights, volume and area, are part of the contract,
-and how statistics are defined for a region that spans compartments. Document what
-`SpatialStatsInfo` does today.
+// --- results (JSON form; the binary form carries the same data)
+record TimeSeries(List<String> variables, List<Double> times, List<ResolvedPoint> points,
+                  List<List<List<Double>>> values /* [variable][point][time], null where missing */) {}
+record ResolvedPoint(int requestIndex, PointStatus status, String meshId, ElementKind element,
+                     Integer index, List<Double> position) {}
+enum PointStatus { RESOLVED, OUTSIDE_DOMAIN, NOT_IN_VARIABLE_DOMAIN, UNKNOWN }
+record RegionStatistics(List<Double> times, List<VariableStatistics> variables) {}
+record VariableStatistics(String variable, String unit, List<TimeStatistics> perTime) {}
+record TimeStatistics(double time, String meshId, double regionSize, long count, long missingCount,
+                      Double min, Double max, Double mean, Double weightedMean, Double sum, Double integral) {}
+```
 
-**P-5. User functions** (D-9): send expressions with the request, store them per dataset, or
-evaluate on the client. This decides whether §3.1 and §3.2 accept functions at all.
+Problem types this family adds to the catalogue (§9.3): `dimension-mismatch` (400),
+`mixed-element-kinds` (400), `mesh-changed` (409), `expression-rejected` (400), `too-large` (413,
+pointing to the binary form or a job).
 
-## 5. Depends on (plan §3)
+## 6. Depends on (plan §3)
 
-D-2 (dataset identifier), D-6 (binary format for `values`), D-9 (user functions), D-10 (caps and
-partial answers), D-12 (jobs), D-19 (who may read a dataset), D-20 (caching: a finished
-simulation's series never change, so these `GET`s are cacheable).
+D-2 (dataset identifier), D-10 (caps and partial answers), D-12 (jobs), D-19 (who may read a dataset:
+decided, style guide §10), D-20 (caching: a finished simulation's series never change).
 
-## 6. Next steps
+## 7. Next steps
 
-1. Decide P-1 to P-5 and the dependencies above.
-2. Measure request sizes (points × times × variables) for C1–C7 to set the caps (D-10) and decide
-   when a request becomes a job.
-3. Write the DTOs for §3.1 and §3.2 in `vcell-api-dto`, and their mappers in `vcell-api-mapping` from
-   and to `TimeSeriesJobSpec` / `TimeSeriesJobResults`, so the server can reuse
-   `DataSetControllerImpl` unchanged at first.
-4. Equivalence tests: for each caller pattern C1–C7, the new endpoint returns the same numbers as the
-   RPC on the same dataset.
+1. Fix D-2 (the dataset identifier) and the caps (D-10): measure points × times × variables for C1–C7.
+2. Write these DTOs in `vcell-api-dto`, and mappers in `vcell-api-mapping` from and to
+   `TimeSeriesJobSpec` / `TimeSeriesJobResults`, so the server reuses `DataSetControllerImpl` at first.
+3. Equivalence tests: for each caller pattern C1–C7, the new endpoints return the same numbers as the
+   RPC on the same dataset (style guide §3.2).

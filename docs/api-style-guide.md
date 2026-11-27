@@ -47,7 +47,9 @@ listed paths (§4.3). Prefer a resource first; an action added because it was qu
 
 Queries use `GET` with query parameters. **Arrays are repeated parameters** (`?id=1&id=2`: OpenAPI
 `style: form`, `explode: true`, the default), never comma-joined lists, which break on values that
-contain commas and need client-side configuration.
+contain commas and need client-side configuration. **A single coordinate is one value**, written `x,y[,z]` with as many
+components as the dataset has dimensions (`?point=1.0,2.5&point=3.0,4.0`); its commas separate the
+parts of one value, not items of a list, and repeated parameters still carry lists.
 
 A query may use `POST` to a dedicated query resource (`POST /{collection}/search` or similar)
 **only** when at least one of these holds:
