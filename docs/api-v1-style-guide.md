@@ -62,6 +62,25 @@ Why: a `POST` that only reads gives up HTTP caching (finished simulations and pu
 change), automatic retries, shareable links, and the read/write distinction that ingress logging and
 rate limiting rely on. Generated clients and users also assume a `POST` may change something.
 
+### 1.3 One endpoint, one purpose, one response type (D-3, D-12)
+
+A request never selects the operation: no operation-type field, and no mode flags that change what
+is computed or the shape of the response.
+
+- Operations that differ in response, authorization, cost or caller are **separate endpoints**.
+- One concept with variants that share a lifecycle and a response (for example export formats) is
+  **one resource**, whose variant-specific options are a discriminated union (OpenAPI `oneOf` with a
+  `discriminator`).
+- Running work in the background is a **job resource** (D-12), never a flag on a read.
+- An **aggregate view** (one response combining several resources, such as the desktop's
+  `vcInfoContainer`) is allowed only as a named, documented view built for a measured need, and only
+  alongside the per-resource endpoints it combines.
+
+Why: the legacy RPC interface packs unrelated operations into operation objects
+(`doDataOperation`, `getTimeSeriesValues`, `doTestSuiteOP`). Their responses change shape with the
+request, which generated clients cannot type, reviewers cannot reason about, and caches and rate
+limits cannot tell apart.
+
 ## 2. Representations
 
 ### 2.1 Wire types live in one shared DTO module (D-5)
