@@ -128,3 +128,47 @@ _Open:_
   `SimulationStatus`; today's code mixes `*Representation`, `*Rep`, `*Record`, `*Dto` and bare names)._
 - _A spike to confirm the generated Java client can use the shared records (schema/import mappings);
   fallback is a small hand-written Java client over the same records._
+
+## 3. Testing (D-23)
+
+vcell-rest's tests already run against real dependencies (`@QuarkusTest` with Dev Services:
+Keycloak and PostgreSQL in Testcontainers), test through both raw HTTP (RestAssured) and the
+generated Java client, check the database behind a response, and fail CI when the committed spec
+drifts from the code (`tools/validate-openapi-spec.sh`). These rules build on that.
+
+### 3.1 Required for every endpoint
+
+1. **A generated-client test** of its normal behaviour, through the published contract.
+2. **An access-matrix test.** One parameterized test per endpoint, fed by a table of callers
+   (anonymous, owner, another user, a group member where groups apply, admin) and the status each
+   must get. The table is the endpoint's authorization rule (D-19), written down.
+3. **Error-case tests** for invalid input (`400`) and missing resources (`404`), and for size caps
+   where the endpoint has them (D-10). They assert the status and the stable error code (D-14),
+   **not** message text or Java exception class names.
+4. **Responses validated against `tools/openapi.yaml`.** The raw-HTTP tests attach an OpenAPI
+   validation filter (for example `swagger-request-validator`'s RestAssured filter), so every response
+   is checked for field names, required fields, status codes and content types.
+5. **A DB-free round-trip test for each mapper** the endpoint uses, in `vcell-api-mapping`
+   (§2.1 rule 4). These run in milliseconds without Docker.
+
+### 3.2 Additional for data endpoints
+
+6. **An equivalence test** against the RPC method it replaces: the same dataset read both ways
+   returns the same values (exactly for raw data; within a stated tolerance where formats differ).
+7. **Payload-size and latency budgets**, measured against the RPC baseline.
+
+### 3.3 How tests are written
+
+- **One behaviour per test**, named after it (`saveRejectsUnchangedModelWithSameName`), with shared
+  setup in fixtures. A test that checks several behaviours in sequence hides which one broke.
+- **`assertThrows`** for expected failures, never try/catch followed by a forced failure.
+- **No shared static state.** Configuration goes through Quarkus test profiles (`@TestProfile`),
+  not `PropertyLoader` statics or system properties, so results do not depend on test order.
+- **Each test cleans up the data it creates** (as today's `@AfterEach` cleanup does).
+- **Tests against a real deployment** (live data shapes that fixtures miss) are gated on an
+  environment variable, following `LiveVCInfoContainerRoundTripTest`, and never run by default.
+- Manual harnesses do not live in `src/test` (move or delete `ManualTestExport`).
+
+_State on 2026-11-27: 51 of the spec's 60 operations are called through the generated client in
+some test; cross-user and anonymous cases exist in some classes but not as a per-endpoint matrix; no
+response validation against the spec yet._
