@@ -10,6 +10,7 @@
 
 package cbit.vcell.mapping.gui;
 
+import cbit.vcell.client.laf.VCellColors;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.*;
@@ -494,8 +495,8 @@ public class InitialConditionsPanel extends DocumentEditorSubPanel implements Ap
 
 				String symbolUnicode = null == unit ? "1" : unit.getSymbolUnicode();
 	            this.setHorizontalTextPosition(JLabel.LEFT);
-	            this.setIcon(new TextIcon("[" + symbolUnicode + "]", DefaultScrollTableCellRenderer.uneditableForeground));
-                int rgb = 0x00ffffff & DefaultScrollTableCellRenderer.uneditableForeground.getRGB();
+	            this.setIcon(new TextIcon("[" + symbolUnicode + "]", VCellColors.getUneditableForeground()));
+                int rgb = 0x00ffffff & VCellColors.getUneditableForeground().getRGB();
                 return "<html>" + StringEscapeUtils.escapeHtml4(this.getText()) + " <font color=#" + Integer.toHexString(rgb) + "> [" + symbolUnicode + "] </font></html>";
             } else {
                 lg.warn("Unexpected value type provided; unable to correctly process");
@@ -540,7 +541,6 @@ public class InitialConditionsPanel extends DocumentEditorSubPanel implements Ap
     }
 
     protected class RulesTableCellRenderer extends DefaultScrollTableCellRenderer {
-        final Color lightBlueBackground = new Color(214, 234, 248);
 
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
@@ -559,7 +559,7 @@ public class InitialConditionsPanel extends DocumentEditorSubPanel implements Ap
                 return this;
             }
 
-	        if (isSelected) this.setBackground(this.lightBlueBackground);
+	        if (isSelected) this.setBackground(VCellColors.getSoftSelectionBackground());
 
 			String speciesContextName = scs.getSpeciesContext().getName();
 			// Combine both rate rules and assignment rules into a single data structure to look through.
@@ -822,17 +822,25 @@ public class InitialConditionsPanel extends DocumentEditorSubPanel implements Ap
 				// try if localMathVariable is a speciesContext init parameter
 				String initSuffix = DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONC_UNIT_PREFIX + TokenMangler.fixTokenStrict(scs.getInitialConcentrationParameter().getUnitDefinition().getSymbol());
 				localMathVariable = mathSymbolMapping.findVariableByName(mathVariable.getName() + initSuffix);
+				if (null == localMathVariable) return null; // Still couldn't find it
 			}
-			if (null == localMathVariable) return null; // Still couldn't find it
+
 			for (SymbolTableEntry symbolTableEntry : mathSymbolMapping.getBiologicalSymbol(localMathVariable)) {
-				if (symbolTableEntry instanceof SpeciesContext && scs.getSpeciesContext() == symbolTableEntry) {
-					SpeciesContextSpecParameter potentialPasteDestination = scs.getInitialConditionParameter();
-					if (null != potentialPasteDestination) return potentialPasteDestination;
-				} else if (symbolTableEntry instanceof SpeciesContextSpecParameter speciesContextSpecParameter) {
+				if (symbolTableEntry instanceof SpeciesContextSpecParameter speciesContextSpecParameter) {
 					for (SymbolTableEntry parameter : scs.getParameters()) {
 						if (parameter != symbolTableEntry) continue;
 						return speciesContextSpecParameter;
 					}
+				} else if (scs.getSpeciesContext() == symbolTableEntry && symbolTableEntry != null) {
+					SpeciesContextSpecParameter potentialPasteDestination = scs.getInitialConditionParameter();
+					if (null != potentialPasteDestination) return potentialPasteDestination;
+				} else if (
+						symbolTableEntry instanceof AbstractMathMapping.SpeciesAmountParameter speciesAmountParameter
+						&& speciesAmountParameter.getSpeciesContext() == scs.getSpeciesContext()
+						&& InitialConditionsPanel.this.getSimulationContext().isUsingConcentration() != speciesAmountParameter.isUnitless()
+				) {
+					SpeciesContextSpecParameter potentialPasteDestination = scs.getInitialConditionParameter();
+					if (null != potentialPasteDestination) return potentialPasteDestination;
 				}
 			}
 			lg.warn("Was not able to find destination for math variable `{}`.", mathVariable.getName());

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--This biomodel was generated in VCML Version 0.4--><vcml xmlns="http://sourceforge.net/projects/vcell/vcml" Version="0.4"><BioModel Name="Solver Suite 5.2 NEW 2 testbackcompat"><Annotation>cloned from 'Solver Suite 5.2 NEW 2' owned by user frm
+cloned from 'Solver Suite 5.1 (BETA2)' owned by user schaff
+cloned from 'Solver Suite test_with_estimation' owned by user frm
+cloned from 'Solver Suite beta' owned by user anu
+cloned from 'Solver Suite' owned by user schaff
+cloned from 'Site visit ' owned by user les
+</Annotation><Model Name="unnamed"><Annotation>cloned from 'unnamed' owned by user frm
+cloned from 'unnamed' owned by user schaff
+cloned from 'unnamed' owned by user frm
+cloned from 'unnamed' owned by user anu
+cloned from 'unnamed' owned by user schaff
+cloned from 'unnamed' owned by user les
+</Annotation><Compound Name="s0" /><Feature Name="EC" KeyValue="90948019" /><Feature Name="nuc" KeyValue="90948015" /><Feature Name="cyt" KeyValue="90948017" /><Membrane InsideFeature="cyt" OutsideFeature="EC" PositiveFeature="cyt" NegativeFeature="EC" MembraneVoltage="Voltage_pm" Name="pm" KeyValue="90948021" /><Membrane InsideFeature="nuc" OutsideFeature="cyt" PositiveFeature="nuc" NegativeFeature="cyt" MembraneVoltage="Voltage_nm" Name="nm" KeyValue="90948023" /><LocalizedCompound Name="RanC_nuc" CompoundRef="s0" Structure="nuc" OverrideName="true" KeyValue="90948025" /><LocalizedCompound Name="RanC_cyt" CompoundRef="s0" Structure="cyt" OverrideName="true" KeyValue="90948026" /><FluxStep Name="flux0" Structure="nm" FluxOption="MolecularOnly" KeyValue="90948027"><Reactant LocalizedCompoundRef="RanC_cyt" Stoichiometry="0" KeyValue="90948028" /><Product LocalizedCompoundRef="RanC_nuc" Stoichiometry="0" KeyValue="90948029" /><Kinetics KineticsType="GeneralKinetics"><Parameter Name="J" Role="reaction rate" Unit="uM.um.s-1">(kfl * (RanC_cyt - RanC_nuc))</Parameter><Parameter Name="I" Role="inward current density" Unit="pA.um-2">0.0</Parameter><Parameter Name="valence" Role="charge" Unit="1">1.0</Parameter><Parameter Name="kfl" Role="user defined" Unit="um.s-1">2.0</Parameter></Kinetics></FluxStep><Diagram Name="Membrane1" Structure="nm"><LocalizedCompoundShape LocalizedCompoundRef="RanC_cyt" LocationX="99" LocationY="90" /><FluxReactionShape FluxReactionRef="flux0" LocationX="53" LocationY="120" /><LocalizedCompoundShape LocalizedCompoundRef="RanC_nuc" LocationX="97" LocationY="119" /></Diagram><Diagram Name="c0" Structure="EC"><LocalizedCompoundShape LocalizedCompoundRef="RanC_cyt" LocationX="99" LocationY="90" /><FluxReactionShape FluxReactionRef="flux0" LocationX="53" LocationY="120" /><LocalizedCompoundShape LocalizedCompoundRef="RanC_nuc" LocationX="97" LocationY="119" /></Diagram><Diagram Name="c1" Structure="cyt"><LocalizedCompoundShape LocalizedCompoundRef="RanC_cyt" LocationX="99" LocationY="90" /><FluxReactionShape FluxReactionRef="flux0" LocationX="53" LocationY="120" /><LocalizedCompoundShape LocalizedCompoundRef="RanC_nuc" LocationX="97" LocationY="119" /></Diagram><Diagram Name="c2" Structure="nuc"><LocalizedCompoundShape LocalizedCompoundRef="RanC_cyt" LocationX="99" LocationY="90" /><FluxReactionShape FluxReactionRef="flux0" LocationX="53" LocationY="120" /><LocalizedCompoundShape LocalizedCompoundRef="RanC_nuc" LocationX="97" LocationY="119" /></Diagram><Diagram Name="Membrane0" Structure="pm"><LocalizedCompoundShape LocalizedCompoundRef="RanC_cyt" LocationX="99" LocationY="90" /><FluxReactionShape FluxReactionRef="flux0" LocationX="53" LocationY="120" /><LocalizedCompoundShape LocalizedCompoundRef="RanC_nuc" LocationX="97" LocationY="119" /></Diagram><Version Name="unnamed" KeyValue="90948012" BranchId="90938688" Archived="0" Date="10-Sep-2014 18:27:01" FromVersionable="false"><Owner Name="schaff" Identifier="17" /><GroupAccess Type="1" /><Annotation>cloned from 'unnamed' owned by user frm
+cloned from 'unnamed' owned by user schaff
+cloned from 'unnamed' owned by user frm
+cloned from 'unnamed' owned by user anu
+cloned from 'unnamed' owned by user schaff
+cloned from 'unnamed' owned by user les
+</Annotation></Version><ModelUnitSystem VolumeSubstanceUnit="uM.um3" MembraneSubstanceUnit="molecules" LumpedReactionSubstanceUnit="molecules" VolumeUnit="um3" AreaUnit="um2" LengthUnit="um" TimeUnit="s" /></Model><Version Name="Solver Suite 5.2 NEW 2 testbackcompat" KeyValue="90948035" BranchId="90948036" Archived="0" Date="10-Sep-2014 18:27:37" FromVersionable="false"><Owner Name="schaff" Identifier="17" /><GroupAccess Type="1" /><Annotation>cloned from 'Solver Suite 5.2 NEW 2' owned by user frm
+cloned from 'Solver Suite 5.1 (BETA2)' owned by user schaff
+cloned from 'Solver Suite test_with_estimation' owned by user frm
+cloned from 'Solver Suite beta' owned by user anu
+cloned from 'Solver Suite' owned by user schaff
+cloned from 'Site visit ' owned by user les
+</Annotation></Version><pathwayModel><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bp="http://www.biopax.org/release/biopax-level3.owl#" version="3.0" /></pathwayModel><relationshipModel><RMNS version="3.0" /></relationshipModel><vcmetadata><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" /><nonrdfAnnotationList /><uriBindingList /></vcmetadata></BioModel></vcml>

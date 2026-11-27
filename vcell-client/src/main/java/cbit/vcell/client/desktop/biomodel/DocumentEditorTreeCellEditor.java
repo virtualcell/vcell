@@ -106,4 +106,11 @@ public class DocumentEditorTreeCellEditor extends DefaultTreeCellEditor {
 		});
 		return component;
 	}
+
+	// renaming starts from Rename in the right-click menu (or F2), not a pause after clicking: a click on the chosen
+	// section folds or unfolds it
+	@Override
+	protected boolean shouldStartEditingTimer(java.util.EventObject event) {
+		return false;
+	}
 }

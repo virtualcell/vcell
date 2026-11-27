@@ -10,16 +10,18 @@
 
 package org.vcell.optimization.gui;
 
+import org.vcell.documentation.HelpViewer;
+import org.vcell.documentation.HelpIds;
+import cbit.vcell.client.laf.CategoryTitledBorder;
 import cbit.plot.Plot2D;
 import cbit.plot.PlotData;
 import cbit.plot.gui.Plot2DPanel;
 import cbit.vcell.client.ClientRequestManager;
 import cbit.vcell.client.RequestManager;
 import cbit.vcell.client.TopLevelWindowManager;
-import cbit.vcell.client.VCellLookAndFeel;
+import cbit.vcell.client.laf.VCellFonts;
 import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
-import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.client.server.DynamicClientProperties;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
@@ -635,10 +637,14 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
     public void showCopasiMethodHelp() {
         CopasiOptimizationMethodType methodType = ((CopasiOptimizationMethodType) optimizationMethodComboBox.getSelectedItem());
         getCopasiOptimizationHelpPanel().refreshSolverInfo(methodType);
-        JOptionPane helpPane = new JOptionPane(copasiHelpPanel, JOptionPane.INFORMATION_MESSAGE);
+        String vcellHelp = "VCell Help";
+        JOptionPane helpPane = new JOptionPane(this.copasiHelpPanel, JOptionPane.INFORMATION_MESSAGE, JOptionPane.DEFAULT_OPTION,
+                null, new Object[]{vcellHelp, "OK"}, "OK");
         JDialog dialog = helpPane.createDialog(this, "Copasi Methods Help Information");
         dialog.setResizable(true);
         dialog.setVisible(true);
+        // the methods in VCell's help, with how to choose among them
+        if (vcellHelp.equals(helpPane.getValue())) HelpViewer.showHelp(HelpIds.PARAMETER_ESTIMATION_METHODS);
     }
 
     private void initialize() {
@@ -662,7 +668,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
         add(getSolutionPanel(), gbc);
 
         JPanel panel = new JPanel(new BorderLayout());
-        copasiLinkLabel.setFont(new Font("Tahoma", Font.PLAIN, 12));
+        VCellFonts.setCategory(copasiLinkLabel, VCellFonts.Category.BODY);
         panel.add(copasiLinkLabel, BorderLayout.CENTER);
 
         gbc = new GridBagConstraints();
@@ -741,7 +747,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
         if(solverPanel == null) {
             try {
                 solverPanel = new javax.swing.JPanel();
-                solverPanel.setBorder(new TitledBorder(GuiConstants.TAB_PANEL_BORDER, "Supported COPASI Methods", TitledBorder.CENTER, TitledBorder.DEFAULT_POSITION, VCellLookAndFeel.defaultFont.deriveFont(Font.BOLD)));
+                solverPanel.setBorder(new CategoryTitledBorder(GuiConstants.TAB_PANEL_BORDER, "Supported COPASI Methods", TitledBorder.CENTER, TitledBorder.DEFAULT_POSITION, VCellFonts.Category.HEADING));
                 solverPanel.setLayout(new java.awt.GridBagLayout());
 
                 optimizationMethodParameterTable = new ScrollTable();
@@ -841,7 +847,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
         if(solutionPanel == null) {
             try {
                 solutionPanel = new javax.swing.JPanel();
-                solutionPanel.setBorder(new TitledBorder(GuiConstants.TAB_PANEL_BORDER, "Solution", TitledBorder.CENTER, TitledBorder.DEFAULT_POSITION, VCellLookAndFeel.defaultFont.deriveFont(Font.BOLD)));
+                solutionPanel.setBorder(new CategoryTitledBorder(GuiConstants.TAB_PANEL_BORDER, "Solution", TitledBorder.CENTER, TitledBorder.DEFAULT_POSITION, VCellFonts.Category.HEADING));
                 solutionPanel.setLayout(new java.awt.GridBagLayout());
 
                 optimizationSolutionParameterTable = new ScrollTable();

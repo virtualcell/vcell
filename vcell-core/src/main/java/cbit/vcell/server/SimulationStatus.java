@@ -25,8 +25,9 @@ import cbit.vcell.solver.server.SimulationMessage;
  *
  * @author: Ion Moraru
  */
-@SuppressWarnings("serial")
 public class SimulationStatus implements java.io.Serializable {
+    // value before estimatedTimeHash was added; keeps old/new builds compatible (e.g. a new server and an old client)
+    private static final long serialVersionUID = -4164092702545438142L;
     // possible status values
     private static final int UNKNOWN = 0;
     private static final int NEVER_RAN = 1;
@@ -47,6 +48,11 @@ public class SimulationStatus implements java.io.Serializable {
     // actual info
     private int status = UNKNOWN;
     private HashMap<Integer, Double> progressHash = new HashMap<Integer, Double>();
+    // per jobIndex: estimated total duration of the job in seconds, not remaining time!
+    // only the langevin watchdog (batch of runs) sends it; a single langevin run (MySystem) sends
+    // old style progress events without ETA, and so do all the other solvers
+    // only known values are stored (> 0); a missing entry means unknown
+    private HashMap<Integer, Integer> estimatedTimeHash = new HashMap<Integer, Integer>();
     private String details = null;
     private boolean hasData = false;
     private SimulationJobStatus[] jobStatuses = null;
@@ -103,7 +109,19 @@ public class SimulationStatus implements java.io.Serializable {
         this.hasData = oldStatus.hasData;
         this.jobStatuses = oldStatus.jobStatuses;
         this.progressHash = oldStatus.progressHash;
+        this.estimatedTimeHash = oldStatus.estimatedTimeHash;
         this.status = oldStatus.status;
+    }
+
+
+    // Deserialization skips field initializers: an object serialized by a build without estimatedTimeHash
+    // (an older server, in practice only on a developer machine) would leave it null
+    // not called directly, it is a hook that Java serialization looks for by name
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        if(estimatedTimeHash == null){
+            estimatedTimeHash = new HashMap<Integer, Integer>();
+        }
     }
 
 
@@ -218,6 +236,15 @@ public class SimulationStatus implements java.io.Serializable {
      */
     public Double getProgressAt(int index){
         return progressHash.get(index);
+    }
+
+
+    /**
+     * Estimated total duration in seconds of job <index> (from the langevin watchdog, batch runs only), not remaining time.
+     * null = unknown (no ETA yet, a single langevin run, or not a langevin simulation).
+     */
+    public Integer getEstimatedTimeAt(int index){
+        return estimatedTimeHash.get(index);
     }
 
 
@@ -546,6 +573,10 @@ public class SimulationStatus implements java.io.Serializable {
 
         SimulationJobStatus newJobStatus = simJobStatusEvent.getJobStatus();
         Double newProgress = simJobStatusEvent.getProgress();
+        Integer newEstimatedTime = simJobStatusEvent.getEstimatedTime();
+        // only a known ETA is stored (null or 0 = unknown); an event without one (e.g. COMPLETED from the
+        // dispatcher, a single langevin run, or any other solver) keeps the last known value
+        boolean bKnownEstimatedTime = newEstimatedTime != null && newEstimatedTime > 0;
 
         SimulationStatus newSimStatus = null;
         // update when no existing status
@@ -553,6 +584,9 @@ public class SimulationStatus implements java.io.Serializable {
         if(oldStatus == null || oldStatus.getJobStatuses().length == 0){
             newSimStatus = new SimulationStatus(new SimulationJobStatus[]{newJobStatus});
             newSimStatus.progressHash.put(newJobStatus.getJobIndex(), newProgress);
+            if(bKnownEstimatedTime){
+                newSimStatus.estimatedTimeHash.put(newJobStatus.getJobIndex(), newEstimatedTime);
+            }
             return newSimStatus;
         }
 
@@ -565,6 +599,9 @@ public class SimulationStatus implements java.io.Serializable {
             // upper block; event comes from a new submission; discard all old stuff
             newSimStatus = new SimulationStatus(new SimulationJobStatus[]{newJobStatus});
             newSimStatus.progressHash.put(newJobStatus.getJobIndex(), newProgress);
+            if(bKnownEstimatedTime){
+                newSimStatus.estimatedTimeHash.put(newJobStatus.getJobIndex(), newEstimatedTime);
+            }
             return newSimStatus;
         } else if(someOldID - someOldID % SimulationStatus.TASKID_USERINCREMENT > newID){
             // lower block; event comes from an old submission; ignore
@@ -589,6 +626,10 @@ public class SimulationStatus implements java.io.Serializable {
             newSimStatus = new SimulationStatus(newJobStatuses);
             newSimStatus.progressHash.putAll(oldStatus.progressHash);
             newSimStatus.progressHash.put(newJobStatus.getJobIndex(), newProgress);
+            newSimStatus.estimatedTimeHash.putAll(oldStatus.estimatedTimeHash);
+            if(bKnownEstimatedTime){
+                newSimStatus.estimatedTimeHash.put(newJobStatus.getJobIndex(), newEstimatedTime);
+            }
             return newSimStatus;
         }
 
@@ -604,6 +645,10 @@ public class SimulationStatus implements java.io.Serializable {
             newSimStatus = new SimulationStatus(newJobStatuses);
             newSimStatus.progressHash.putAll(oldStatus.progressHash);
             newSimStatus.progressHash.put(newJobStatus.getJobIndex(), newProgress);
+            newSimStatus.estimatedTimeHash.putAll(oldStatus.estimatedTimeHash);
+            if(bKnownEstimatedTime){
+                newSimStatus.estimatedTimeHash.put(newJobStatus.getJobIndex(), newEstimatedTime);
+            }
             return newSimStatus;
         }
 
@@ -611,6 +656,17 @@ public class SimulationStatus implements java.io.Serializable {
 
         // ignore out of order events
         if(!oldJobStatus.isSupercededBy(newJobStatus, oldStatus.progressHash.get(newJobStatus.getJobIndex()), newProgress)){
+            // ... unless the event brings a new ETA: for the langevin watchdog an event is newer when progress went up
+            // OR the ETA changed (it may go up or down). The ETA is refreshed while progress stays the same,
+            // e.g. the first 1% of a 2 week run takes ~3 hours, and a decent ETA exists after seconds.
+            // The job statuses stay the old ones; only the ETA is updated (oldStatus is never modified)
+            if(bKnownEstimatedTime && !newEstimatedTime.equals(oldStatus.estimatedTimeHash.get(newJobStatus.getJobIndex()))){
+                newSimStatus = new SimulationStatus(oldStatus.getJobStatuses());
+                newSimStatus.progressHash.putAll(oldStatus.progressHash);
+                newSimStatus.estimatedTimeHash.putAll(oldStatus.estimatedTimeHash);
+                newSimStatus.estimatedTimeHash.put(newJobStatus.getJobIndex(), newEstimatedTime);
+                return newSimStatus;
+            }
             return oldStatus;
         }
 
@@ -620,6 +676,10 @@ public class SimulationStatus implements java.io.Serializable {
         newSimStatus = new SimulationStatus(newJobStatuses);
         newSimStatus.progressHash.putAll(oldStatus.progressHash);
         newSimStatus.progressHash.put(newJobStatus.getJobIndex(), newProgress);
+        newSimStatus.estimatedTimeHash.putAll(oldStatus.estimatedTimeHash);
+        if(bKnownEstimatedTime){
+            newSimStatus.estimatedTimeHash.put(newJobStatus.getJobIndex(), newEstimatedTime);
+        }
         return newSimStatus;
     }
 }

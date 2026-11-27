@@ -9,12 +9,17 @@
  */
 
 package cbit.vcell.client.desktop.simulation;
+import org.vcell.documentation.HelpContext;
+import org.vcell.documentation.HelpIds;
+import cbit.vcell.solver.SolverDescription;
+import cbit.vcell.client.laf.VCellFonts;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.util.Objects;
 
 import javax.swing.JFrame;
-import javax.swing.JOptionPane;
+
+import cbit.vcell.mapping.MathMapping;
 import org.vcell.util.gui.DialogUtils;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
@@ -201,6 +206,13 @@ private void initialize() {
 		// user code begin {1}
 		// user code end
 		setName("SimulationEditor");
+		// its dialog's "?" and F1: NFSim's options have a page of their own
+		HelpContext.setPage(this, () -> {
+			Simulation simulation = this.getClonedSimulation();
+			boolean nfsim = simulation != null && simulation.getSolverTaskDescription() != null
+					&& simulation.getSolverTaskDescription().getSolverDescription() == SolverDescription.NFSim;
+			return nfsim ? HelpIds.NFSIM_SIMULATION_EDITOR : HelpIds.SIMULATION_EDITOR;
+		});
 		setLayout(new java.awt.BorderLayout());
 		setPreferredSize(new Dimension(547, 530));
 		add(getJTabbedPane1(), "Center");
@@ -244,7 +256,7 @@ public static void main(java.lang.String[] args) {
  * Comment
  */
 private void makeBoldTitle() {
-	getJTabbedPane1().setFont(getJTabbedPane1().getFont().deriveFont(java.awt.Font.BOLD));
+	VCellFonts.setCategory(getJTabbedPane1(), VCellFonts.Category.HEADING);
 }
 
 
@@ -260,7 +272,14 @@ public void prepareToEdit(Simulation simulation, Component parent) throws Chombo
 	try {
 		Simulation clonedSimulation = (Simulation)BeanUtils.cloneSerializable(simulation);
 		clonedSimulation.refreshDependencies();
-		getMathOverridesPanel1().setMathOverrides(clonedSimulation == null ? null : clonedSimulation.getMathOverrides());
+		if (simulation.getSimulationOwner() instanceof SimulationContext simContext) {
+			MathMapping mathMapping = simContext.getMostRecentlyCreatedMathMapping();
+			if (null == mathMapping) simContext.createNewMathMapping();
+			getMathOverridesPanel1().setMath(clonedSimulation.getMathOverrides(), simContext.getMostRecentlyCreatedMathMapping().getMathSymbolMapping());
+		} else {
+			getMathOverridesPanel1().setMath(clonedSimulation.getMathOverrides(), null);
+		}
+
 		getMeshTabPanel().setSimulation(parent, clonedSimulation);
 		SolverTaskDescriptionAdvancedPanel stdap = getSolverTaskDescriptionAdvancedPanel1();
 		{

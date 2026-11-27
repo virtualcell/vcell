@@ -50,6 +50,7 @@ import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.AnnotatedFunction.FunctionCategory;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitSystem;
+import cbit.vcell.biomodel.ModelUnitConverter;
 import cbit.vcell.xml.XMLTags;
 import cbit.vcell.xml.XmlHelper;
 import org.apache.commons.io.FileUtils;
@@ -1951,9 +1952,15 @@ public class SBMLImporter {
 
 
         //
+        // A 0-dimensional compartment holds species by amount; for ODEs it behaves as a volume of its size (1 when
+        // unset), which is what VCell can import. Done before the unit system is made, which reads the dimensions.
+        //
+        List<String> zeroDimensional = treatZeroDimensionalCompartmentsAsVolumes(sbmlModel);
+
+        //
         // create VCell unit system from the SBML model and create the bioModel.
         //
-        final BioModel vcBioModel;
+        BioModel vcBioModel;
         final HashMap<String, VCUnitDefinition> sbmlUnitIdentifierHash = new HashMap<>();
         ModelUnitSystem modelUnitSystem;
         try {
@@ -1984,7 +1991,12 @@ public class SBMLImporter {
         //
         try {
             Geometry geometry = new Geometry(BioModelChildSummary.COMPARTMENTAL_GEO_STR, 0);
-            SimulationContext simulationContext = new SimulationContext(vcBioModel.getModel(), geometry, null, null, Application.NETWORK_DETERMINISTIC);
+            // a spatial model with any species represented as particles imports as a spatial stochastic application
+            // (see applySpeciesRepresentation); it is created stochastic here so that everything mapped onto it
+            // during import (e.g. initial conditions in the SBMLSymbolMapping) stays valid.
+            Application appType = isSpatialModel(sbmlModel) && hasParticleSpecies(sbmlModel)
+                    ? Application.NETWORK_STOCHASTIC : Application.NETWORK_DETERMINISTIC;
+            SimulationContext simulationContext = new SimulationContext(vcBioModel.getModel(), geometry, null, null, appType);
             vcBioModel.addSimulationContext(simulationContext);
             simulationContext.setName(vcBioModel.getSimulationContext(0).getModel().getName());
         } catch(Exception e){        // PropertyVetoException
@@ -2006,12 +2018,51 @@ public class SBMLImporter {
         }
 
         //
+        // SBML L3V2 lets rules, initial assignments and the parts of events leave out their math: such an element has
+        // no effect. Drop them before translation, which expects math wherever these elements appear.
+        //
+        for(String compartment : zeroDimensional){
+            localIssueList.add(new Issue(vcBioModel, issueContext, IssueCategory.SBMLImport_UnsupportedAttributeOrElement,
+                    "compartment '" + compartment + "' has spatial dimension 0; imported as a volume of its size.", Issue.Severity.INFO));
+        }
+        for(String removed : removeElementsWithoutMath(sbmlModel)){
+            localIssueList.add(new Issue(vcBioModel, issueContext, IssueCategory.SBMLImport_UnsupportedAttributeOrElement,
+                    removed + " has no math, so it has no effect (SBML L3V2); ignored.", Issue.Severity.INFO));
+        }
+
+        //
+        // VCell has no symbol for a rate of change: replace each rateOf(x) by x's rate where SBML defines it from the
+        // model (a rate rule, reactions, or none at all). One that cannot be replaced stays, and fails translation.
+        //
+        for(String replaced : replaceRateOf(sbmlModel)){
+            localIssueList.add(new Issue(vcBioModel, issueContext, IssueCategory.SBMLImport_UnsupportedAttributeOrElement,
+                    replaced, Issue.Severity.INFO));
+        }
+
+        //
         // translate read SBML model and import contents into VCell BioModel
         //
         try {
             translateSBMLModel(sbmlModel, vcBioModel, sbmlAnnotationUtil, sbmlUnitIdentifierHash, sbmlSymbolMapping, vcLogger);
         } catch(Exception e){
             throw new SBMLImportException("Failed to translate SBML model into BioModel: " + e.getMessage(), e);
+        }
+
+        //
+        // VCell's spatial stochastic math (Smoldyn, and the PDE/particle hybrid) is only consistent in VCell's default
+        // units: with another length unit the Smoldyn world takes the model's lengths (e.g. dm) while field-dependent
+        // particle creation stays per um3, so it creates almost nothing. Convert such a model to the default units
+        // (geometry included). This replaces the BioModel, so getSymbolMapping() no longer refers to it.
+        //
+        SimulationContext importedSimContext = vcBioModel.getSimulationContext(0);
+        ModelUnitSystem vcellUnitSystem = ModelUnitSystem.createDefaultVCModelUnitSystem();
+        if(importedSimContext.isStoch() && importedSimContext.getGeometry().getDimension() > 0
+                && !vcBioModel.getModel().getUnitSystem().compareEqual(vcellUnitSystem)){
+            try {
+                vcBioModel = ModelUnitConverter.createBioModelWithNewUnitSystem(vcBioModel, vcellUnitSystem);
+            } catch(Exception e){
+                throw new SBMLImportException("Failed to convert spatial stochastic model to VCell units: " + e.getMessage(), e);
+            }
         }
 
         //
@@ -2044,6 +2095,212 @@ public class SBMLImporter {
             }
         }
         return vcBioModel;
+    }
+
+    /**
+     * Makes each 0-dimensional compartment a 3-dimensional one of the same size (1 when its size is unset), and drops
+     * a units attribute of "dimensionless" from it, which a volume cannot have. Species in such a compartment are
+     * held as amounts; in a non-spatial model a volume of that size gives them the same values. Returns their ids.
+     */
+    static List<String> treatZeroDimensionalCompartmentsAsVolumes(org.sbml.jsbml.Model sbmlModel){
+        List<String> converted = new ArrayList<>();
+        if(sbmlModel == null){
+            return converted; // no model: the import reports it
+        }
+        for(int i = 0; i < sbmlModel.getNumCompartments(); i++){
+            Compartment compartment = sbmlModel.getCompartment(i);
+            if(compartment.isSetSpatialDimensions() && compartment.getSpatialDimensions() == 0){
+                compartment.setSpatialDimensions(3);
+                if(!compartment.isSetSize()){
+                    compartment.setSize(1.0);
+                }
+                if(compartment.isSetUnits() && "dimensionless".equals(compartment.getUnits())){
+                    compartment.unsetUnits();
+                }
+                converted.add(compartment.getId());
+            }
+        }
+        return converted;
+    }
+
+    /**
+     * Removes the elements SBML L3V2 lets leave out their math, where a missing math means the element has no effect:
+     * rules, initial assignments, event assignments, an event's delay and priority, and an event whose trigger has no
+     * math (it never fires). Returns a description of each one removed.
+     */
+    static List<String> removeElementsWithoutMath(org.sbml.jsbml.Model sbmlModel){
+        List<String> removed = new ArrayList<>();
+        if(sbmlModel == null){
+            return removed;
+        }
+        for(int i = sbmlModel.getNumRules() - 1; i >= 0; i--){
+            Rule rule = sbmlModel.getRule(i);
+            if(!rule.isSetMath()){
+                String variable = (rule instanceof ExplicitRule) ? " for '" + ((ExplicitRule) rule).getVariable() + "'" : "";
+                removed.add(rule.getElementName() + variable);
+                sbmlModel.getListOfRules().remove(i);
+            }
+        }
+        for(int i = sbmlModel.getNumInitialAssignments() - 1; i >= 0; i--){
+            InitialAssignment initialAssignment = sbmlModel.getInitialAssignment(i);
+            if(!initialAssignment.isSetMath()){
+                removed.add("initialAssignment for '" + initialAssignment.getVariable() + "'");
+                sbmlModel.getListOfInitialAssignments().remove(i);
+            }
+        }
+        for(int i = sbmlModel.getNumEvents() - 1; i >= 0; i--){
+            org.sbml.jsbml.Event event = sbmlModel.getEvent(i);
+            if(event.isSetTrigger() && !event.getTrigger().isSetMath()){
+                removed.add("event '" + event.getId() + "' (its trigger)");
+                sbmlModel.getListOfEvents().remove(i);
+                continue;
+            }
+            if(event.isSetDelay() && !event.getDelay().isSetMath()){
+                removed.add("the delay of event '" + event.getId() + "'");
+                event.unsetDelay();
+            }
+            if(event.isSetPriority() && !event.getPriority().isSetMath()){
+                removed.add("the priority of event '" + event.getId() + "'");
+                event.unsetPriority();
+            }
+            for(int j = event.getNumEventAssignments() - 1; j >= 0; j--){
+                org.sbml.jsbml.EventAssignment assignment = event.getEventAssignment(j);
+                if(!assignment.isSetMath()){
+                    removed.add("eventAssignment for '" + assignment.getVariable() + "' in event '" + event.getId() + "'");
+                    event.getListOfEventAssignments().remove(j);
+                }
+            }
+        }
+        return removed;
+    }
+
+    /**
+     * Replaces each {@code rateOf(x)} csymbol (SBML L3V2) in the model's math by an expression for x's rate of change:
+     * <ul>
+     * <li>the math of x's rate rule;</li>
+     * <li>for a species changed by reactions, the sum of each reaction's stoichiometry times its rate, divided by the
+     * compartment's size unless the species has only substance units;</li>
+     * <li>0 for anything nothing changes continuously (a constant, a kinetic law's local parameter, a variable only
+     * events change).</li>
+     * </ul>
+     * A rateOf this cannot express (x has an assignment rule, or its reactions have a stoichiometry that varies, a
+     * local parameter, or a conversion factor) is left in place, and translation reports it. Returns a description of
+     * each replacement.
+     */
+    static List<String> replaceRateOf(org.sbml.jsbml.Model sbmlModel){
+        List<String> replaced = new ArrayList<>();
+        if(sbmlModel == null){
+            return replaced;
+        }
+        List<MathContainer> containers = new ArrayList<>();
+        for(int i = 0; i < sbmlModel.getNumRules(); i++) containers.add(sbmlModel.getRule(i));
+        for(int i = 0; i < sbmlModel.getNumInitialAssignments(); i++) containers.add(sbmlModel.getInitialAssignment(i));
+        for(int i = 0; i < sbmlModel.getNumReactions(); i++){
+            if(sbmlModel.getReaction(i).isSetKineticLaw()) containers.add(sbmlModel.getReaction(i).getKineticLaw());
+        }
+        for(int i = 0; i < sbmlModel.getNumEvents(); i++){
+            org.sbml.jsbml.Event event = sbmlModel.getEvent(i);
+            if(event.isSetTrigger()) containers.add(event.getTrigger());
+            if(event.isSetDelay()) containers.add(event.getDelay());
+            if(event.isSetPriority()) containers.add(event.getPriority());
+            for(int j = 0; j < event.getNumEventAssignments(); j++) containers.add(event.getEventAssignment(j));
+        }
+        for(MathContainer container : containers){
+            if(container.isSetMath()){
+                KineticLaw kineticLaw = (container instanceof KineticLaw) ? (KineticLaw) container : null;
+                ASTNode math = substituteRateOf(sbmlModel, container.getMath(), kineticLaw, replaced, 0);
+                if(math != container.getMath()){
+                    container.setMath(math);
+                }
+            }
+        }
+        return replaced;
+    }
+
+    private static ASTNode substituteRateOf(org.sbml.jsbml.Model sbmlModel, ASTNode node, KineticLaw kineticLaw,
+                                            List<String> replaced, int depth){
+        if(node.getType() == ASTNode.Type.FUNCTION_RATE_OF && node.getChildCount() == 1 && node.getChild(0).isName()){
+            String sid = node.getChild(0).getName();
+            ASTNode rate = (depth < 8) ? rateOf(sbmlModel, sid, kineticLaw) : null;
+            if(rate != null){
+                replaced.add("rateOf(" + sid + ") is replaced by " + rate.toFormula().replace("\n", " ") + ".");
+                return substituteRateOf(sbmlModel, rate, null, replaced, depth + 1);
+            }
+            return node;
+        }
+        for(int i = 0; i < node.getChildCount(); i++){
+            ASTNode child = node.getChild(i);
+            ASTNode substituted = substituteRateOf(sbmlModel, child, kineticLaw, replaced, depth);
+            if(substituted != child){
+                node.replaceChild(i, substituted);
+            }
+        }
+        return node;
+    }
+
+    /** x's rate of change as math, or null where it cannot be written from the model (see replaceRateOf). */
+    private static ASTNode rateOf(org.sbml.jsbml.Model sbmlModel, String sid, KineticLaw kineticLaw){
+        if(kineticLaw != null && kineticLaw.getLocalParameter(sid) != null){
+            return new ASTNode(0);
+        }
+        Rule rule = sbmlModel.getRuleByVariable(sid);
+        if(rule instanceof RateRule){
+            return rule.isSetMath() ? rule.getMath().clone() : new ASTNode(0);
+        }
+        if(rule != null){
+            return null; // an assignment rule: its derivative is not written here
+        }
+        org.sbml.jsbml.Species species = sbmlModel.getSpecies(sid);
+        if(species == null || species.getBoundaryCondition() || species.getConstant()){
+            return new ASTNode(0);
+        }
+        if(species.isSetConversionFactor() || sbmlModel.isSetConversionFactor()){
+            return null;
+        }
+        List<ASTNode> terms = new ArrayList<>();
+        for(int i = 0; i < sbmlModel.getNumReactions(); i++){
+            org.sbml.jsbml.Reaction reaction = sbmlModel.getReaction(i);
+            double net = 0;
+            boolean involved = false;
+            for(boolean product : new boolean[]{false, true}){
+                ListOf<SpeciesReference> references = product ? reaction.getListOfProducts() : reaction.getListOfReactants();
+                for(SpeciesReference reference : references){
+                    if(!sid.equals(reference.getSpecies())){
+                        continue;
+                    }
+                    boolean assigned = reference.isSetId() && (sbmlModel.getRuleByVariable(reference.getId()) != null
+                            || sbmlModel.getInitialAssignmentBySymbol(reference.getId()) != null);
+                    if(reference.isSetStoichiometryMath() || assigned || (reference.isSetConstant() && !reference.getConstant())){
+                        return null;
+                    }
+                    double stoichiometry = reference.isSetStoichiometry() ? reference.getStoichiometry() : 1.0;
+                    net += product ? stoichiometry : -stoichiometry;
+                    involved = true;
+                }
+            }
+            if(!involved || net == 0){
+                continue;
+            }
+            if(!reaction.isSetKineticLaw() || !reaction.getKineticLaw().isSetMath()){
+                return null;
+            }
+            if(reaction.getKineticLaw().getLocalParameterCount() > 0){
+                return null;
+            }
+            terms.add(ASTNode.times(new ASTNode(net), reaction.getKineticLaw().getMath().clone()));
+        }
+        if(terms.isEmpty()){
+            return new ASTNode(0);
+        }
+        ASTNode amountRate = (terms.size() == 1) ? terms.get(0) : ASTNode.sum(terms.toArray(new ASTNode[0]));
+        if(species.getHasOnlySubstanceUnits()){
+            return amountRate;
+        }
+        org.sbml.jsbml.Compartment compartment = sbmlModel.getCompartment(species.getCompartment());
+        if(compartment == null || !compartment.getConstant()){
+            return null;
+        }
+        return ASTNode.frac(amountRate, new ASTNode(compartment.getId()));
     }
 
     private SBMLDocument readSbmlDocument(File sbmlFile){
@@ -2124,6 +2381,26 @@ public class SBMLImporter {
         }
     }
 
+    /** Packages that change what a model means, which VCell cannot read: declaring one means the model needs it. */
+    private static final List<String> MEANING_CHANGING_PACKAGES = List.of("comp", "multi", "arrays", "distrib");
+
+    /**
+     * The packages among {@link #MEANING_CHANGING_PACKAGES} the document declares a namespace for. jsbml keeps
+     * neither their elements (no plugin is loaded for them) nor the package's {@code required} attribute, so the
+     * namespace is what is left to tell that the model uses one.
+     */
+    static List<String> requiredPackages(SBMLDocument document){
+        List<String> required = new ArrayList<>();
+        for(String uri : document.getDeclaredNamespaces().values()){
+            for(String name : MEANING_CHANGING_PACKAGES){
+                if(uri.startsWith("http://www.sbml.org/sbml/level3/version1/" + name + "/") && !required.contains(name)){
+                    required.add(name);
+                }
+            }
+        }
+        return required;
+    }
+
     private static void validateSBMLPackages(SBMLDocument document, Vector<Issue> localIssueList, IssueContext issueContext){
         int numPackages = 0;
         String msgPackages = "";
@@ -2143,6 +2420,14 @@ public class SBMLImporter {
             if(document.isPackageEnabled("qual")){
                 numPackages++;
                 msgPackages += "'qual', ";
+            }
+            // A package whose jsbml plugin is not loaded (comp, for one) is not "enabled", and its elements are
+            // dropped as unknown: a model that says it requires one would be imported without it and simulate wrongly.
+            for(String name : requiredPackages(document)){
+                if(!msgPackages.contains("'" + name + "'")){
+                    numPackages++;
+                    msgPackages += "'" + name + "', ";
+                }
             }
         } catch(Exception e){
             throw new SBMLImportException("Unable to check the SBML file package requirements.", e);
@@ -2813,6 +3098,22 @@ public class SBMLImporter {
             }
         }
 
+        // Conversion factors scale how reactions change species; VCell has nothing to apply them with, and leaving
+        // them out changes the model's results.
+        if(sbmlModel.isSetConversionFactor()){
+            vcLogger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.UnsupportedConstruct,
+                    "Conversion factors are not handled in the Virtual Cell at this time (the model's conversionFactor '"
+                            + sbmlModel.getConversionFactor() + "')");
+        }
+        for(int i = 0; i < sbmlModel.getNumSpecies(); i++){
+            org.sbml.jsbml.Species species = sbmlModel.getSpecies(i);
+            if(species.isSetConversionFactor()){
+                vcLogger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.UnsupportedConstruct,
+                        "Conversion factors are not handled in the Virtual Cell at this time (species '"
+                                + species.getId() + "' has conversionFactor '" + species.getConversionFactor() + "')");
+            }
+        }
+
         // Check if any of the compartments have spatial dimension 0
         for(int i = 0; i < sbmlModel.getNumCompartments(); i++){
             Compartment comp = sbmlModel.getCompartment(i);
@@ -3031,6 +3332,7 @@ public class SBMLImporter {
         createAssignmentRules(sbmlModel, vcBioModel, sbmlSymbolMapping, localIssueList, issueContext, vcLogger);
         createRateRules(sbmlModel, vcBioModel, sbmlSymbolMapping);
         postProcessing(vcBioModel);
+        applySpeciesRepresentation(sbmlModel, vcBioModel, sbmlSymbolMapping, localIssueList, issueContext);
 
         vcBioModel.refreshDependencies();
 
@@ -3232,6 +3534,82 @@ public class SBMLImporter {
             } catch(Exception e){
                 logger.error("failed to set expression for SBML object " + assignmentRuleTargetSbase + " on vcell object " + assignmentRuleTargetSte);
             }
+        }
+    }
+
+    private static boolean isSpatialModel(org.sbml.jsbml.Model sbmlModel){
+        SpatialModelPlugin mplugin = (SpatialModelPlugin) sbmlModel.getPlugin(SBMLUtils.SBML_SPATIAL_NS_PREFIX);
+        return mplugin != null && mplugin.isSetGeometry();
+    }
+
+    /**
+     * The species' representation from its vcell annotation
+     * (&lt;vcell:SpeciesContextSpecSettings vcell:representation="continuous|particle"/&gt;), or null when absent
+     * (which means continuous).
+     */
+    static String getSpeciesRepresentation(org.sbml.jsbml.Species sbmlSpecies){
+        if(!sbmlSpecies.isSetAnnotation()){
+            return null;
+        }
+        XMLNode speciesNonRdfAnnotation = sbmlSpecies.getAnnotation().getNonRDFannotation();
+        if(speciesNonRdfAnnotation == null){
+            return null;
+        }
+        XMLNode settings = speciesNonRdfAnnotation.getChildElement(XMLTags.SBML_VCELL_SpeciesContextSpecSettingsTag, "*");
+        if(settings == null){
+            return null;
+        }
+        int index = settings.getAttrIndex(XMLTags.SBML_VCELL_SpeciesContextSpecSettingsTag_representationAttr, SBMLUtils.SBML_VCELL_NS);
+        if(index < 0){
+            return null;
+        }
+        String value = settings.getAttrValue(index);
+        if(!value.equals(XMLTags.SBML_VCELL_Representation_continuous) && !value.equals(XMLTags.SBML_VCELL_Representation_particle)){
+            throw new RuntimeException("unexpected value '" + value + "' for " + XMLTags.SBML_VCELL_SpeciesContextSpecSettingsTag + ":"
+                    + XMLTags.SBML_VCELL_SpeciesContextSpecSettingsTag_representationAttr + " of species '" + sbmlSpecies.getId()
+                    + "' (expected '" + XMLTags.SBML_VCELL_Representation_continuous + "' or '" + XMLTags.SBML_VCELL_Representation_particle + "')");
+        }
+        return value;
+    }
+
+    private static boolean hasParticleSpecies(org.sbml.jsbml.Model sbmlModel){
+        for(org.sbml.jsbml.Species sbmlSpecies : sbmlModel.getListOfSpecies()){
+            if(XMLTags.SBML_VCELL_Representation_particle.equals(getSpeciesRepresentation(sbmlSpecies))){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * In a spatial stochastic application (created when a spatial model has 'particle' species), every species not
+     * represented as particles is forced continuous, which makes the application a PDE/particle hybrid. Clamped
+     * species are always continuous. In a non-spatial model the representation is ignored, with a warning.
+     */
+    private static void applySpeciesRepresentation(org.sbml.jsbml.Model sbmlModel, BioModel vcBioModel, SBMLSymbolMapping sbmlSymbolMapping,
+                                                   Vector<Issue> localIssueList, IssueContext issueContext){
+        SimulationContext simContext = vcBioModel.getSimulationContext(0);
+        if(!(simContext.isStoch() && simContext.getGeometry().getDimension() > 0)){
+            if(hasParticleSpecies(sbmlModel)){
+                localIssueList.add(new Issue(vcBioModel, issueContext, IssueCategory.SBMLImport_UnsupportedAttributeOrElement,
+                        "species represented as particles in a non-spatial model: the representation is ignored", Issue.Severity.WARNING));
+            }
+            return;
+        }
+        simContext.fixFlags(); // well-mixed applies to deterministic spatial applications only
+        for(SpeciesContextSpec scs : simContext.getReactionContext().getSpeciesContextSpecs()){
+            SBase sbase = sbmlSymbolMapping.getSBase(scs.getSpeciesContext(), SymbolContext.RUNTIME);
+            if(!(sbase instanceof org.sbml.jsbml.Species)){
+                continue;
+            }
+            org.sbml.jsbml.Species sbmlSpecies = (org.sbml.jsbml.Species) sbase;
+            boolean bParticle = XMLTags.SBML_VCELL_Representation_particle.equals(getSpeciesRepresentation(sbmlSpecies));
+            if(bParticle && scs.isClamped()){
+                localIssueList.add(new Issue(vcBioModel, issueContext, IssueCategory.SBMLImport_RestrictedFeature,
+                        "species '" + sbmlSpecies.getId() + "' is clamped and cannot be particles: it is continuous", Issue.Severity.WARNING));
+                bParticle = false;
+            }
+            scs.setForceContinuous(!bParticle);
         }
     }
 

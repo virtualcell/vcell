@@ -10,6 +10,8 @@
 
 package cbit.vcell.microscopy.batchrun.gui.chooseModelWizard;
 
+import cbit.vcell.client.laf.VCellFonts;
+import cbit.vcell.client.laf.VCellColors;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -42,8 +44,8 @@ public class ModelTypesPanel extends JPanel
 		setLayout(gridBagLayout);
 
 		final JLabel choosePossibleModelLabel = new JLabel();
-		choosePossibleModelLabel.setFont(new Font("", Font.BOLD | Font.ITALIC, 16));
-		choosePossibleModelLabel.setForeground(new Color(0, 0, 128));
+		VCellFonts.setCategory(choosePossibleModelLabel, VCellFonts.Category.TITLE, Font.BOLD | Font.ITALIC);
+		choosePossibleModelLabel.setForeground(VCellColors.getTitleForeground());
 		choosePossibleModelLabel.setText("Choose Possible Models");
 		final GridBagConstraints gridBagConstraints = new GridBagConstraints();
 		gridBagConstraints.anchor = GridBagConstraints.WEST;
@@ -85,8 +87,8 @@ public class ModelTypesPanel extends JPanel
 		add(separator, gridBagConstraints_8);
 		
 		JLabel diffustionOnlyLabel = new JLabel("Diffusion Dominant Models :");
-		diffustionOnlyLabel.setFont(new Font("", Font.BOLD, 12));
-		diffustionOnlyLabel.setForeground(new Color(0, 0, 128));
+		VCellFonts.setCategory(diffustionOnlyLabel, VCellFonts.Category.HEADING);
+		diffustionOnlyLabel.setForeground(VCellColors.getTitleForeground());
 		GridBagConstraints gridBagConstraints_7 = new GridBagConstraints();
 		gridBagConstraints_7.anchor = GridBagConstraints.WEST;
 		gridBagConstraints_7.gridy = 18;
@@ -111,8 +113,8 @@ public class ModelTypesPanel extends JPanel
 		add(diffTwoCheckBox, gridBagConstraints_6);
 		
 		JLabel reactionOnlyLabel = new JLabel("Reaction Dominant Models :");
-		reactionOnlyLabel.setFont(new Font("", Font.BOLD, 12));
-		reactionOnlyLabel.setForeground(new Color(0, 0, 128));
+		VCellFonts.setCategory(reactionOnlyLabel, VCellFonts.Category.HEADING);
+		reactionOnlyLabel.setForeground(VCellColors.getTitleForeground());
 		GridBagConstraints gridBagConstraints_9 = new GridBagConstraints();
 		gridBagConstraints_9.anchor = GridBagConstraints.WEST;
 		gridBagConstraints_9.gridy = 25;

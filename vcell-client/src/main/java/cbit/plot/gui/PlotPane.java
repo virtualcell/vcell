@@ -9,6 +9,8 @@
  */
 
 package cbit.plot.gui;
+import cbit.vcell.client.laf.VCellFonts;
+import cbit.vcell.client.laf.VCellColors;
 import java.awt.BasicStroke;
 import java.awt.CardLayout;
 import java.awt.Color;
@@ -26,10 +28,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.EtchedBorder;
-import javax.swing.border.LineBorder;
 
 import cbit.vcell.client.data.SimulationWorkspaceModelInfo;
 import org.vcell.util.Range;
@@ -251,7 +250,7 @@ private void connEtoM2(java.beans.PropertyChangeEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		getPlot2DDataPanel1().setPlot2D(this.getPlot2D());
+		getPlot2DDataPanel1().setUserFacingPlot(this.getPlot2D());
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -637,7 +636,7 @@ private javax.swing.JLabel getJLabel5() {
 			ivjJLabel5.setText(" ");
 			ivjJLabel5.setForeground(java.awt.Color.blue);
 			ivjJLabel5.setPreferredSize(new java.awt.Dimension(44, 20));
-			ivjJLabel5.setFont(new java.awt.Font("dialog", 0, 12));
+			VCellFonts.setCategory(ivjJLabel5, VCellFonts.Category.BODY);
 			ivjJLabel5.setMinimumSize(new java.awt.Dimension(44, 20));
 			// user code begin {1}
 			// user code end
@@ -764,7 +763,7 @@ private javax.swing.JLabel getJLabelTitle() {
 			ivjJLabelTitle = new javax.swing.JLabel();
 			ivjJLabelTitle.setName("JLabelTitle");
 			ivjJLabelTitle.setText("Title");
-			ivjJLabelTitle.setFont(ivjJLabelTitle.getFont().deriveFont(Font.BOLD));
+			VCellFonts.setCategory(ivjJLabelTitle, VCellFonts.Category.HEADING);
 			ivjJLabelTitle.setBorder(BorderFactory.createEmptyBorder(5, 0, 0, 0));
 			ivjJLabelTitle.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
 			// user code begin {1}
@@ -1339,6 +1338,7 @@ private void updateLegend() {
 		JLabel text = new JLabel();
 		line.setBorder(new EmptyBorder(6,0,0,0));
 		text.setBorder(new EmptyBorder(0,8,6,0));
+		text.setForeground(java.awt.Color.black); // the legend is part of the white plot page in every theme
 		getJPanelPlotLegends().add(line);
 		getJPanelPlotLegends().add(text);
 		text.addMouseListener(ml);
@@ -1384,7 +1384,7 @@ private void updateLegend() {
 		}
 //		shortLabel = "<html>" + shortLabel + "<font color=\"red\">" + " [" + unitSymbol + "] " + "</font></html>";
 		shortLabel = "<html>" + shortLabel + "<font color=\"#8B0000\">" + " [" + unitSymbol + "] " + "</font></html>";
-		tooltipString  = "<html>" + plotLabel + "<font color=\"#0000FF\">" + " " + tooltipString + " " + "</font></html>";
+		tooltipString  = "<html>" + plotLabel + "<font color=\"" + VCellColors.toHtmlColor(VCellColors.getValueForeground()) + "\">" + " " + tooltipString + " " + "</font></html>";
 		
 		((JLabel)legends[2 * i + 1]).setText(shortLabel);
 		((JLabel)legends[2 * i + 1]).setToolTipText(tooltipString);

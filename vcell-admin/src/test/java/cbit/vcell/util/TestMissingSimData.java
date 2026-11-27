@@ -3,7 +3,6 @@ package cbit.vcell.util;
 import java.io.File;
 import java.io.FileWriter;
 import java.math.BigDecimal;
-import java.net.URL;
 import java.rmi.Naming;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -38,13 +37,11 @@ import cbit.vcell.server.VCellConnection;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.ODEDataBlock;
 import cbit.vcell.simdata.SimulationData;
-import cbit.vcell.simdata.SimulationData.SimDataAmplistorInfo;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
-import cbit.vcell.util.AmplistorUtils.AmplistorCredential;
 import cbit.vcell.xml.XmlHelper;
 
 
@@ -722,8 +719,6 @@ public class TestMissingSimData {
 //	}
 	
 	private static void /* Hashtable<KeyValue, Exception>*/ checkDataExists(Connection con,boolean bExistOnly) throws SQLException{
-		AmplistorCredential amplistorCredential = AmplistorUtilsTest.getAmplistorCredential();
-		
 		Statement queryStatement = con.createStatement();
 		Statement updateStatement = con.createStatement();
 		
@@ -764,14 +759,6 @@ public class TestMissingSimData {
 					updatestr = "fileNewParent";
 				}else if(parentsimref != null && new File(primaryDataDir,SimulationData.createCanonicalSimLogFileName(parentsimref, 0, true)).exists()){
 					updatestr = "fileOldParent";
-				}else if(AmplistorUtils.bFileExists(new URL(AmplistorUtils.DEFAULT_AMPLI_SERVICE_VCELL_URL+user.getName()+"/"+filePathNamePrime.getName()), amplistorCredential)){
-					updatestr = "ampliNewPrime";
-				}else if(AmplistorUtils.bFileExists(new URL(AmplistorUtils.DEFAULT_AMPLI_SERVICE_VCELL_URL+user.getName()+"/"+SimulationData.createCanonicalSimLogFileName(simJobSimRef, 0, true)), amplistorCredential)){
-					updatestr = "ampliOldPrime";
-				}else if(parentsimref != null && AmplistorUtils.bFileExists(new URL(AmplistorUtils.DEFAULT_AMPLI_SERVICE_VCELL_URL+user.getName()+"/"+SimulationData.createCanonicalSimLogFileName(parentsimref, 0, false)), amplistorCredential)){
-					updatestr = "ampliNewParent";
-				}else if(parentsimref != null && AmplistorUtils.bFileExists(new URL(AmplistorUtils.DEFAULT_AMPLI_SERVICE_VCELL_URL+user.getName()+"/"+SimulationData.createCanonicalSimLogFileName(parentsimref, 0, true)), amplistorCredential)){
-					updatestr = "ampliOldParent";
 				}else{
 					updatestr = "false";
 				}
@@ -785,8 +772,7 @@ public class TestMissingSimData {
 				VCSimulationIdentifier vcSimulationIdentifier = new VCSimulationIdentifier(simJobSimRef, user);
 				VCSimulationDataIdentifier vcSimulationDataIdentifier = new VCSimulationDataIdentifier(vcSimulationIdentifier,jobIndex);
 				//Try to read log,times and simdata to see if this data is well formed
-				SimDataAmplistorInfo simDataAmplistorInfo = AmplistorUtils.getSimDataAmplistorInfoFromPropertyLoader();
-				SimulationData simData = new SimulationData(vcSimulationDataIdentifier, primaryDataDir, null, simDataAmplistorInfo);
+				SimulationData simData = new SimulationData(vcSimulationDataIdentifier, primaryDataDir, null);
 				double[] dataTimes = simData.getDataTimes();
 				DataIdentifier[] dataIdentifiers = simData.getVarAndFunctionDataIdentifiers(null);
 				DataIdentifier readDataIdentifier = null;

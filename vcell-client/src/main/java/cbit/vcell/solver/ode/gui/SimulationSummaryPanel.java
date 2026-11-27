@@ -9,6 +9,8 @@
  */
 
 package cbit.vcell.solver.ode.gui;
+import cbit.vcell.client.laf.VCellColors;
+import cbit.vcell.client.laf.VCellLookAndFeel;
 import java.awt.*;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -17,6 +19,7 @@ import java.beans.PropertyVetoException;
 import cbit.vcell.client.RequestManager;
 import cbit.vcell.client.TopLevelWindowManager;
 import cbit.vcell.client.desktop.DocumentWindow;
+import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.server.ServerInfo;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 
@@ -323,10 +326,14 @@ private void displayOther() {
  */
 private void displayOverrides() {
 	try {
-		getMathOverridesPanel1().setMathOverrides(getSimulation().getMathOverrides());
+		if (getSimulation().getSimulationOwner() instanceof SimulationContext simContext){
+			getMathOverridesPanel1().setMath(getSimulation().getMathOverrides(), simContext.getMostRecentlyCreatedMathMapping().getMathSymbolMapping());
+		} else {
+			getMathOverridesPanel1().setMath(getSimulation().getMathOverrides(), null);
+		}
 	} catch (Exception exc) {
 		exc.printStackTrace(System.out);
-		getMathOverridesPanel1().setMathOverrides(null);
+		getMathOverridesPanel1().setMath(null, null);
 	}
 }
 
@@ -711,7 +718,7 @@ private javax.swing.JLabel getJLabelRelTolValue() {
 	if (labelRelTolValue == null) {
 		try {
 			labelRelTolValue = new javax.swing.JLabel();
-			labelRelTolValue.setForeground(java.awt.Color.blue);
+			labelRelTolValue.setForeground(VCellColors.getValueForeground());
 			labelRelTolValue.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
 			labelRelTolValue.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
 		} catch (java.lang.Throwable ivjExc) {
@@ -725,7 +732,7 @@ private javax.swing.JLabel getJLabelAbsTolValue() {
 	if (labelAbsTolValue == null) {
 		try {
 			labelAbsTolValue = new javax.swing.JLabel();
-			labelAbsTolValue.setForeground(java.awt.Color.blue);
+			labelAbsTolValue.setForeground(VCellColors.getValueForeground());
 			labelAbsTolValue.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
@@ -742,7 +749,7 @@ private javax.swing.JLabel getJLabelGeometrySize() {
 		try {
 			ivjJLabelGeometrySize = new javax.swing.JLabel();
 			ivjJLabelGeometrySize.setName("JLabelGeometrySize");
-			ivjJLabelGeometrySize.setForeground(java.awt.Color.blue);
+			ivjJLabelGeometrySize.setForeground(VCellColors.getValueForeground());
 			ivjJLabelGeometrySize.setVisible(false);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
@@ -761,7 +768,7 @@ private javax.swing.JLabel getJLabelMesh() {
 		try {
 			ivjJLabelMesh = new javax.swing.JLabel();
 			ivjJLabelMesh.setName("JLabelMesh");
-			ivjJLabelMesh.setForeground(java.awt.Color.blue);
+			ivjJLabelMesh.setForeground(VCellColors.getValueForeground());
 			ivjJLabelMesh.setVisible(false);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
@@ -780,7 +787,7 @@ private javax.swing.JLabel getJLabelOutput() {
 		try {
 			ivjJLabelOutput = new javax.swing.JLabel();
 			ivjJLabelOutput.setName("JLabelOutput");
-			ivjJLabelOutput.setForeground(java.awt.Color.blue);
+			ivjJLabelOutput.setForeground(VCellColors.getValueForeground());
 			ivjJLabelOutput.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
@@ -798,7 +805,7 @@ private javax.swing.JLabel getJLabelSensitivity() {
 		try {
 			ivjJLabelSensitivity = new javax.swing.JLabel();
 			ivjJLabelSensitivity.setName("JLabelSensitivity");
-			ivjJLabelSensitivity.setForeground(java.awt.Color.blue);
+			ivjJLabelSensitivity.setForeground(VCellColors.getValueForeground());
 			ivjJLabelSensitivity.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
@@ -816,7 +823,7 @@ private javax.swing.JLabel getJLabelTimestep() {
 		try {
 			ivjJLabelTimestep = new javax.swing.JLabel();
 			ivjJLabelTimestep.setName("JLabelTimestep");
-			ivjJLabelTimestep.setForeground(java.awt.Color.blue);
+			ivjJLabelTimestep.setForeground(VCellColors.getValueForeground());
 			ivjJLabelTimestep.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
@@ -842,7 +849,7 @@ private javax.swing.JLabel getJLabelTimestep() {
 			try {
 				ivjJLabel21 = new javax.swing.JLabel("");
 				ivjJLabel21.setName("JLabel21");
-				ivjJLabel21.setForeground(java.awt.Color.blue);
+				ivjJLabel21.setForeground(VCellColors.getValueForeground());
 				ivjJLabel21.setVisible(false);
 			} catch (java.lang.Throwable ivjExc) {
 				handleException(ivjExc);
@@ -862,7 +869,7 @@ private javax.swing.JTextArea getJTextAreaDescription() {
 		try {
 			ivjJTextAreaDescription = new javax.swing.JTextArea();
 			ivjJTextAreaDescription.setName("JTextAreaDescription");
-			ivjJTextAreaDescription.setForeground(java.awt.Color.blue);
+			ivjJTextAreaDescription.setForeground(VCellColors.getValueForeground());
 			ivjJTextAreaDescription.setRows(3);
 			ivjJTextAreaDescription.setLineWrap(true);
 			ivjJTextAreaDescription.setWrapStyleWord(true);
@@ -1183,7 +1190,7 @@ private void initialize() {
 		constraints.gridwidth = GridBagConstraints.REMAINDER;
 		constraints.insets = new Insets(4, 4, 4, 4);
 		labelFinestMesh = new JLabel();
-		labelFinestMesh.setForeground(java.awt.Color.blue);
+		labelFinestMesh.setForeground(VCellColors.getValueForeground());
 		add(labelFinestMesh, constraints);
 		
 		gridy ++;
@@ -1217,7 +1224,7 @@ private void initialize() {
 		gbc.gridwidth = GridBagConstraints.REMAINDER;
 		gbc.insets = new Insets(4, 4, 4, 4);
 		labelViewLevelMesh = new JLabel();
-		labelViewLevelMesh.setForeground(Color.blue);
+		labelViewLevelMesh.setForeground(VCellColors.getValueForeground());
 		add(labelViewLevelMesh, gbc);
 		
 		gridy ++;
@@ -1282,7 +1289,7 @@ private void refreshDisplay() {
 		getJLabelMesh().setText("");
 		getJLabelRelTolValue().setText("");
 		getJLabelAbsTolValue().setText("");
-		getMathOverridesPanel1().setMathOverrides(null);
+		getMathOverridesPanel1().setMath(null, null);
 		getJLabelMeshRefinement().setText("");
 	} else {
 		displayAnnotation();
@@ -1291,7 +1298,7 @@ private void refreshDisplay() {
 		displayOverrides();
 		displayOther();
 	
-		getJTextAreaDescription().setBackground(java.awt.Color.white);
+		getJTextAreaDescription().setBackground(VCellLookAndFeel.getContentBackground());
 		getJTextAreaDescription().setEditable(true);
 //		String key = "";
 //		if (fieldSimulation.getKey() != null) {
@@ -1367,7 +1374,7 @@ private javax.swing.JLabel getJLabelMeshRefinement() {
 		try {
 			meshRefinementLabel = new javax.swing.JLabel();
 			meshRefinementLabel.setText(" ");
-			meshRefinementLabel.setForeground(java.awt.Color.blue);
+			meshRefinementLabel.setForeground(VCellColors.getValueForeground());
 			meshRefinementLabel.setVisible(false);
 			// user code begin {1}
 			// user code end
@@ -1385,7 +1392,7 @@ private javax.swing.JLabel getRefinementRoi() {
 		try {
 			labelRefinementRoi = new javax.swing.JLabel();
 			labelRefinementRoi.setText(" ");
-			labelRefinementRoi.setForeground(java.awt.Color.blue);
+			labelRefinementRoi.setForeground(VCellColors.getValueForeground());
 			labelRefinementRoi.setVisible(false);
 			// user code begin {1}
 			// user code end
@@ -1417,7 +1424,7 @@ private javax.swing.JLabel getJLabelNumProcessors() {
 			jlabelNumProcessors = new javax.swing.JLabel();
 			jlabelNumProcessors.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
 			jlabelNumProcessors.setName("JLabelNumProcessors");
-			jlabelNumProcessors.setForeground(java.awt.Color.blue);
+			jlabelNumProcessors.setForeground(VCellColors.getValueForeground());
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}

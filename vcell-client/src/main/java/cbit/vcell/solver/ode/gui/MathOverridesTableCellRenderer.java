@@ -10,6 +10,7 @@
 
 package cbit.vcell.solver.ode.gui;
 
+import cbit.vcell.client.laf.VCellColors;
 import java.awt.Color;
 import java.awt.Component;
 
@@ -51,7 +52,7 @@ public MathOverridesTableModel getMathOverridesTableModel() {
 public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
 	super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 	if (!getMathOverridesTableModel().isDefaultValue(row) && column != MathOverridesTableModel.DEFAULT_COLUMN_INDEX) {
-		setForeground(Color.red);
+		setForeground(VCellColors.getErrorForeground());
 	} else {
 		if (column == MathOverridesTableModel.OVERRIDE_VALUE_COLUMN_INDEX) {
 			setText("");

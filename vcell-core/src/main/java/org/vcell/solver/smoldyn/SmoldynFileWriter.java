@@ -278,7 +278,7 @@ public class SmoldynFileWriter extends SolverFileWriter {
             MembraneSubDomain msd = CastingUtils.downcast(MembraneSubDomain.class, sd);
             if(msd != null){
                 for(ParticleProperties particleProperties : msd.getParticleProperties()){
-                    ArrayList<ParticleInitialCondition> particleInitialConditions = particleProperties.getParticleInitialConditions();
+                    List<ParticleInitialCondition> particleInitialConditions = particleProperties.getParticleInitialConditions();
                     for(ParticleInitialCondition pic : particleInitialConditions){
                         ParticleInitialConditionCount picc = CastingUtils.downcast(ParticleInitialConditionCount.class, pic);
                         if(picc != null && !picc.isUniform()){
@@ -428,7 +428,7 @@ public class SmoldynFileWriter extends SolverFileWriter {
                 continue;
             }
             boolean bkillMol = false;
-            ArrayList<ParticleInitialCondition> iniConditionList = varDomain.getParticleProperties(pv).getParticleInitialConditions();
+            List<ParticleInitialCondition> iniConditionList = varDomain.getParticleProperties(pv).getParticleInitialConditions();
             for(ParticleInitialCondition iniCon : iniConditionList){
                 if(iniCon instanceof ParticleInitialConditionConcentration){
                     try {
@@ -1092,7 +1092,7 @@ public class SmoldynFileWriter extends SolverFileWriter {
             SubDomain subDomain = subDomainEnumeration.nextElement();
 
             for(ParticleProperties particleProperties : subDomain.getParticleProperties()){
-                ArrayList<ParticleInitialCondition> particleInitialConditions = particleProperties.getParticleInitialConditions();
+                List<ParticleInitialCondition> particleInitialConditions = particleProperties.getParticleInitialConditions();
                 String variableName = getVariableName(particleProperties.getVariable(), subDomain);
                 for(ParticleInitialCondition pic : particleInitialConditions){
                     if(pic instanceof ParticleInitialConditionCount){

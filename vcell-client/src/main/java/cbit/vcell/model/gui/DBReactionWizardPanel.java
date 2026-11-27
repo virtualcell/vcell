@@ -10,6 +10,7 @@
 
 package cbit.vcell.model.gui;
 
+import cbit.vcell.client.laf.VCellFonts;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -1784,7 +1785,7 @@ public class DBReactionWizardPanel extends JPanel {
             try {
                 ivjKeggTypeJLabel = new javax.swing.JLabel();
                 ivjKeggTypeJLabel.setName("KeggTypeJLabel");
-                ivjKeggTypeJLabel.setFont(ivjKeggTypeJLabel.getFont().deriveFont(Font.BOLD));
+                VCellFonts.setCategory(ivjKeggTypeJLabel, VCellFonts.Category.HEADING);
                 ivjKeggTypeJLabel.setText("Current: None Specified");
                 ivjKeggTypeJLabel.setEnabled(false);
                 ivjKeggTypeJLabel.setVisible(false);
@@ -1846,7 +1847,7 @@ public class DBReactionWizardPanel extends JPanel {
             try {
                 LineBorderBean ivjLocalBorder8 = new LineBorderBean();
                 TitledBorderBean ivjLocalBorder7 = new TitledBorderBean();
-                ivjLocalBorder7.setTitleFont(getFont().deriveFont(Font.BOLD));
+                ivjLocalBorder7.setTitleCategory(VCellFonts.Category.HEADING);
                 ivjLocalBorder7.setBorder(ivjLocalBorder8);
                 ivjLocalBorder7.setTitleColor(java.awt.Color.black);
                 ivjLocalBorder7.setTitle("2.  Choose a Version of the Selected Reaction");
@@ -2314,7 +2315,7 @@ public class DBReactionWizardPanel extends JPanel {
             try {
                 LineBorderBean ivjLocalBorder6 = new LineBorderBean();
                 TitledBorderBean ivjLocalBorder5 = new TitledBorderBean();
-                ivjLocalBorder5.setTitleFont(getFont().deriveFont(Font.BOLD));
+                ivjLocalBorder5.setTitleCategory(VCellFonts.Category.HEADING);
                 ivjLocalBorder5.setBorder(ivjLocalBorder6);
                 ivjLocalBorder5.setTitleColor(java.awt.Color.black);
                 ivjLocalBorder5.setTitle("1.  Select Reaction");

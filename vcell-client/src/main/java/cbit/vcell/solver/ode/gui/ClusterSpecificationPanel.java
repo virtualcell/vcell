@@ -1,5 +1,6 @@
 package cbit.vcell.solver.ode.gui;
 
+import cbit.vcell.client.laf.VCellColors;
 import cbit.vcell.client.data.ODEDataViewer;
 import cbit.vcell.math.ODESolverResultSetColumnDescription;
 import cbit.vcell.simdata.LangevinSolverResultSet;
@@ -182,7 +183,7 @@ public class ClusterSpecificationPanel extends AbstractSpecificationPanel {
             if (value instanceof ODESolverResultSetColumnDescription cd) {
                 label.setText(cd.getName());
                 if (cd.isTrivial()) {
-                    label.setForeground(Color.GRAY);
+                    label.setForeground(VCellColors.getDimForeground());
                 } else {
                     label.setForeground(isSelected
                             ? list.getSelectionForeground()
@@ -202,10 +203,10 @@ public class ClusterSpecificationPanel extends AbstractSpecificationPanel {
             return switch (mode) {
                 case COUNTS ->
                         "<html>Number of clusters of size <b>" + name +
-                                "</b> <font color=\"#8B0000\">[molecules]</font></html>";
+                                "</b> <font color=\"" + VCellColors.toHtmlColor(VCellColors.getWarningForeground()) + "\">[molecules]</font></html>";
                 case MASS ->
                         "<html>Number of molecules in the clusters of size <b>" + name +
-                                "</b> <font color=\"#8B0000\">[molecules]</font></html>";
+                                "</b> <font color=\"" + VCellColors.toHtmlColor(VCellColors.getWarningForeground()) + "\">[molecules]</font></html>";
                 case MEAN, OVERALL -> {
                     ClusterStatistic stat = ClusterStatistic.fromString(name);
                     if(stat == null) {
@@ -213,7 +214,7 @@ public class ClusterSpecificationPanel extends AbstractSpecificationPanel {
                         yield name; // fallback to just showing the name without tooltip
                     }
                     yield "<html>" + stat.description +
-                            "<font color=\"#8B0000\"> [" + stat.unit + "]</font></html>";
+                            "<font color=\"" + VCellColors.toHtmlColor(VCellColors.getWarningForeground()) + "\"> [" + stat.unit + "]</font></html>";
                 }
             };
         }
@@ -346,7 +347,7 @@ public class ClusterSpecificationPanel extends AbstractSpecificationPanel {
 
     private void updateYAxisLabel(DisplayMode mode) {
         int count = yAxisCounts.getOrDefault(mode, 0);
-        String text = "<html><b>" + YAxisLabelText + "</b><span style='color:#8B0000;'>(" + count + " entries)</span></html>";
+        String text = "<html><b>" + YAxisLabelText + "</b><span style='color:" + VCellColors.toHtmlColor(VCellColors.getWarningForeground()) + ";'>(" + count + " entries)</span></html>";
         yAxisLabel.setText(text);
     }
 

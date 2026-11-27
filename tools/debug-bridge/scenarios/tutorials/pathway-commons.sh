@@ -23,7 +23,10 @@ dismiss OK
 sleep 1
 
 step "Search Pathway Commons for '$QUERY'"
-must tab name=LeftBottomTabbedPane "Pathway Comm" >/dev/null; sleep 2
+# The tutorial's "Pathway Comm" tab in the bottom-left pane is now Pathway > Pathway Lookup
+# in the model navigation tree.
+must expand name=bioModelEditorTree "$(navrow 'Pathway' --exact)" true >/dev/null; sleep 1
+navselect 'Pathway Lookup' --exact; sleep 2
 must settext name=PathwayCommonsSearchTextField "$QUERY" >/dev/null; sleep 1
 must click name=PathwayCommonsSearchButton >/dev/null
 

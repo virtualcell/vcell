@@ -678,6 +678,7 @@ private void initialize() {
 	try {
 		setName("DataSymbolsPanel");
 		addNewButton.setIcon(new DownArrowIcon());
+		DownArrowIcon.keepPushButtonLook(addNewButton);
 		addNewButton.setHorizontalTextPosition(SwingConstants.LEFT);
 		//setSize(456, 539);
 

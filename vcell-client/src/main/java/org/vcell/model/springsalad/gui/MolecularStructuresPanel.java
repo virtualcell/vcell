@@ -1,5 +1,8 @@
 package org.vcell.model.springsalad.gui;
 
+import org.vcell.documentation.HelpIds;
+import org.vcell.documentation.HelpContext;
+import cbit.vcell.client.laf.VCellColors;
 import cbit.gui.ScopedExpression;
 import cbit.vcell.client.ChildWindowManager;
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
@@ -54,6 +57,7 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.vcell.client.logicalwindow.LWSize;
 
 
 @SuppressWarnings("serial")
@@ -391,9 +395,9 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 					}
 					if (unit != null) {
 						setHorizontalTextPosition(JLabel.LEFT);
-						setIcon(new TextIcon("[" + unit.getSymbolUnicode() + "]", DefaultScrollTableCellRenderer.uneditableForeground));
+						setIcon(new TextIcon("[" + unit.getSymbolUnicode() + "]", VCellColors.getUneditableForeground()));
 					}
-					int rgb = 0x00ffffff & DefaultScrollTableCellRenderer.uneditableForeground.getRGB();
+					int rgb = 0x00ffffff & VCellColors.getUneditableForeground().getRGB();
 					defaultToolTipText = "<html>" + StringEscapeUtils.escapeHtml4(getText()) + " <font color=#" + Integer.toHexString(rgb) + "> [" + unit.getSymbolUnicode() + "] </font></html>";
 					setToolTipText(defaultToolTipText);
 					if(unit != null) {
@@ -446,7 +450,6 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		
 		// The Structures combobox cell renderer in the MolecularTypeSpecsTable
 		DefaultScrollTableCellRenderer structuresTableCellRenderer = new DefaultScrollTableCellRenderer() {
-			final Color lightBlueBackground = new Color(214, 234, 248);
 			@Override
 			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
 					int row, int column) {
@@ -527,7 +530,6 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 
 			// The NamedColor combobox cell renderer in the MolecularTypeSpecsTable
 		DefaultScrollTableCellRenderer namedColorTableCellRenderer = new DefaultScrollTableCellRenderer() {
-			final Color lightBlueBackground = new Color(214, 234, 248);
 			@Override
 			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
 														   int row, int column) {
@@ -667,7 +669,6 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		linksPanel.add(linksScrollPane, gbc);
 
 		DefaultScrollTableCellRenderer linkSpecsTableCellRenderer = new DefaultScrollTableCellRenderer() {
-			final Color lightBlueBackground = new Color(214, 234, 248);
 			@Override
 			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
 															   int row, int column) {
@@ -978,11 +979,10 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 	private void addLinkActionPerformed() {
 		AddLinkPanel panel = new AddLinkPanel(this);
 		ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(this);
+		HelpContext.setPage(panel, HelpIds.SPRINGSALAD_SPECIES_SPECIFICATIONS);
 		ChildWindow childWindow = childWindowManager.addChildWindow(panel, panel, " Add Link ");
-		Dimension dim = new Dimension(320, 330);
-		childWindow.pack();
 		panel.setChildWindow(childWindow);
-		childWindow.setPreferredSize(dim);
+		childWindow.setSize(LWSize.ems(27, 27.5f));
 		childWindow.showModal();
 		if(panel.getButtonPushed() == AddLinkPanel.ActionButtons.Apply) {
 			LinkNode firstMcp = panel.getFirstSiteList().getSelectedValue();

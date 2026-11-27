@@ -287,8 +287,10 @@ public class FenicsSolver extends SimpleCompiledSolver {
 
 	/**
 	 * What the FEniCSx moving-boundary path solves (vcell-fenics' simtask checks, mirrored here so the user
-	 * is told before a run): a 2D geometry, one moving membrane, and species only in the compartment it
-	 * encloses.
+	 * is told before a run): a 2D or 3D geometry and one moving membrane. Species may live on the moving
+	 * membrane, carried by it and diluting as it stretches (its math states {@code Dilution}: vcell-fenics
+	 * ADR 014), and in any compartment, each compartment's material at rest; every species must diffuse
+	 * (pure advection needs stabilization).
 	 */
 	private static java.util.List<String> movingBoundaryReasons(cbit.vcell.math.MathDescription math, int dim) {
 		java.util.List<String> reasons = new ArrayList<>();
@@ -306,17 +308,34 @@ public class FenicsSolver extends SimpleCompiledSolver {
 			return reasons;
 		}
 		cbit.vcell.math.MembraneSubDomain front = moving.get(0);
-		if (!front.getEquationCollection().isEmpty()) {
-			reasons.add("The FEniCSx solver does not yet solve species on a moving membrane ('" + front.getName() + "').");
+		java.util.List<String> frontOdes = odeVariables(front);
+		if (!frontOdes.isEmpty()) {
+			reasons.add("The FEniCSx solver solves diffusing species only on a moving membrane (pure advection needs "
+					+ "stabilization); '" + front.getName() + "' has non-diffusing " + String.join(", ", frontOdes) + ".");
+		}
+		boolean frontPdes = front.getEquationCollection().stream().anyMatch(e -> e instanceof cbit.vcell.math.PdeEquation);
+		if (frontPdes && !front.isDilution()) {
+			reasons.add("The species on the moving membrane '" + front.getName() + "' dilute with it, but its math does "
+					+ "not state Dilution: the math predates it; regenerate it with this VCell.");
 		}
 		for (cbit.vcell.math.SubDomain subDomain : java.util.Collections.list(math.getSubDomains())) {
-			if (subDomain instanceof cbit.vcell.math.CompartmentSubDomain compartment
-					&& compartment != front.getInsideCompartment() && !compartment.getEquationCollection().isEmpty()) {
-				reasons.add("The FEniCSx solver solves moving-boundary species inside the moving front ('"
-						+ front.getInsideCompartment().getName() + "') only; '" + compartment.getName() + "' has species.");
+			if (subDomain instanceof cbit.vcell.math.CompartmentSubDomain compartment) {
+				java.util.List<String> odes = odeVariables(compartment);
+				if (!odes.isEmpty()) {
+					reasons.add("The FEniCSx solver solves diffusing species only in a moving-boundary simulation (pure "
+							+ "advection needs stabilization); '" + compartment.getName() + "' has non-diffusing "
+							+ String.join(", ", odes) + ".");
+				}
 			}
 		}
 		return reasons;
+	}
+
+	private static java.util.List<String> odeVariables(cbit.vcell.math.SubDomain subDomain) {
+		return subDomain.getEquationCollection().stream()
+				.filter(e -> e instanceof cbit.vcell.math.OdeEquation)
+				.map(e -> e.getVariable().getName())
+				.toList();
 	}
 
 	/**

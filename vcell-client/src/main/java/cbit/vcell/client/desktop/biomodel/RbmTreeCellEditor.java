@@ -1,6 +1,6 @@
 package cbit.vcell.client.desktop.biomodel;
 
-import java.awt.Color;
+import cbit.vcell.client.laf.VCellLookAndFeel;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -157,7 +157,7 @@ public class RbmTreeCellEditor extends DefaultTreeCellEditor {
 			okButton.setBorder(border);
 						
 			panel.setPreferredSize(preferredSize);
-			panel.setBackground(Color.white);
+			panel.setBackground(VCellLookAndFeel.getContentBackground());
 			panel.setLayout(new GridBagLayout());
 			
 			GridBagConstraints gbc = new GridBagConstraints();

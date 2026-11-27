@@ -16,6 +16,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.PermissionException;
 import org.vcell.util.document.User;
 
 /**
@@ -128,6 +129,21 @@ public String toString() {
 	return "[" + user + "," + requestedServiceType + "," + methodName + "]";
 }
 
+/**
+ * The service methods take the acting user as an ordinary argument, which the caller serializes.
+ * Refuse any {@link User} argument that is not the user this request was issued for, so a request
+ * cannot act on behalf of another account (GHSA-9hpw-2h4g-fjhj).
+ */
+void verifyUserArguments() {
+	if (this.args == null) return;
+	for (Object arg : this.args) {
+		if (!(arg instanceof User argUser)) continue;
+		if (this.user != null && this.user.getID() != null && this.user.getID().equals(argUser.getID())) continue;
+		throw new PermissionException("rpc(method=" + this.methodName + "): user argument '" + argUser.getName()
+				+ "' does not match the requesting user '" + this.getUserName() + "'");
+	}
+}
+
 public final Object rpc(Object rpcServiceImpl) throws DataAccessException, ObjectNotFoundException {
 	String methodName = getMethodName();
 	Object[] arguments = getArguments();
@@ -205,6 +221,7 @@ public final Object rpc(Object rpcServiceImpl) throws DataAccessException, Objec
 			exceptionMessage += ")";
 			throw new DataAccessException(exceptionMessage);
 		}
+		this.verifyUserArguments();
 		beginProcessingTimestampMS = System.currentTimeMillis();
 		Object result = method.invoke(rpcServiceImpl, getArguments());
 		endProcessingTimestampMS = System.currentTimeMillis();

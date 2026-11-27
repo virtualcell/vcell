@@ -11,9 +11,13 @@
 package cbit.vcell.math;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Vector;
+import java.util.stream.Stream;
 
+import org.apache.commons.collections.list.UnmodifiableList;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
@@ -110,6 +114,14 @@ public class FastSystem implements MathObject, Serializable, Matchable {
         return fastInvariantList.elements();
     }
 
+    public List<FastInvariant> getFastInvariantsList(){
+        return Collections.unmodifiableList(fastInvariantList);
+    }
+
+    public Stream<FastInvariant> getFastRateInvariantsStream(){
+        return fastInvariantList.stream();
+    }
+
     /**
      * This method returns the FastRates list.
      * Creation date: (3/2/2001 5:36:48 PM)
@@ -118,6 +130,14 @@ public class FastSystem implements MathObject, Serializable, Matchable {
      */
     public Enumeration<FastRate> getFastRates(){
         return fastRateList.elements();
+    }
+
+    public List<FastRate> getFastRatesList(){
+        return Collections.unmodifiableList(fastRateList);
+    }
+
+    public Stream<FastRate> getFastRatesStream(){
+        return fastRateList.stream();
     }
 
     /**

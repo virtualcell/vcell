@@ -2070,6 +2070,16 @@ public class DiffEquMathMapping extends AbstractMathMapping {
             }
         }
 
+        //
+        // a moving membrane's species are carried by its velocity and dilute as it stretches (vcell-fenics ADR 014):
+        // stated only where it matters, a moving membrane with equations, so every other model's math is unchanged
+        //
+        for(SubDomain subDomain1 : Collections.list(mathDesc.getSubDomains())){
+            if(subDomain1 instanceof MembraneSubDomain membrane && membrane.isMoving() && !membrane.getEquationCollection().isEmpty()){
+                membrane.setDilution(true);
+            }
+        }
+
         mathDesc.refreshDependencies();
 
         if(!mathDesc.isValid()){

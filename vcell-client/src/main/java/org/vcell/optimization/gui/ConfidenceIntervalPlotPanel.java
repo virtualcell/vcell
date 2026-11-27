@@ -10,6 +10,7 @@
 
 package org.vcell.optimization.gui;
 
+import cbit.vcell.client.laf.VCellFonts;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -48,7 +49,7 @@ public class ConfidenceIntervalPlotPanel extends JPanel
 	    
 	    public ConfidenceIntervalTableCellRenderer(int precision) {
 	        super();
-	        setFont(new Font("Arial", Font.PLAIN, 11));
+	        VCellFonts.setCategory(this, VCellFonts.Category.BODY);
 	        //set double precision
 	        format = NumberFormat.getNumberInstance();
 	        format.setMaximumFractionDigits(precision);

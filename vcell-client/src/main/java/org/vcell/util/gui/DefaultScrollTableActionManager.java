@@ -10,6 +10,7 @@
 
 package org.vcell.util.gui;
 
+import cbit.vcell.client.laf.VCellFonts;
 import java.awt.Component;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -208,7 +209,7 @@ public class DefaultScrollTableActionManager implements ScrollTableActionManager
 						textField.setBorder(BorderFactory.createCompoundBorder(new EmptyBorder(2, 4, 2, 4), textField.getBorder()));
 						columnActionComponentList.add(new ColumnActionComponent(c, textField));
 						JLabel label = new JLabel(" (Press Enter to commit) ");
-						label.setFont(label.getFont().deriveFont(label.getFont().getSize2D() - 1));
+						VCellFonts.setCategory(label, VCellFonts.Category.CAPTION);
 						columnMenus[c].add(textField);
 						columnMenus[c].add(label);
 						break;

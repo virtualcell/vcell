@@ -10,6 +10,8 @@
 
 package cbit.vcell.client;
 
+import org.vcell.documentation.HelpIds;
+import org.vcell.documentation.HelpContext;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
@@ -65,6 +67,7 @@ import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solvers.CartesianMesh;
+import org.vcell.client.logicalwindow.LWSize;
 /**
  * Insert the type's description here.
  * Creation date: (5/24/2004 12:53:14 AM)
@@ -130,8 +133,9 @@ public final void showPreferencesWindow(){
 	ChildWindow childWindow = childWindowManager.getChildWindowFromContext(PREFERENCES_WINDOW);
 	VCellConfigurationPanel vcellConfigurationPanel = new VCellConfigurationPanel(this);
 	if (childWindow==null){
+		HelpContext.setPage(vcellConfigurationPanel, HelpIds.VCELL_PREFERENCES);
 		childWindow = childWindowManager.addChildWindow(vcellConfigurationPanel, PREFERENCES_WINDOW, "View VCell Properties");
-		childWindow.setSize(650,300);
+		childWindow.setSize(LWSize.ems(54, 25));
 		childWindow.setResizable(true);
 		vcellConfigurationPanel.setChildWindow(childWindow);
 	}

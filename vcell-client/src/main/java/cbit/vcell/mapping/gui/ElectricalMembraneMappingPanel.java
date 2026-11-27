@@ -9,6 +9,7 @@
  */
 
 package cbit.vcell.mapping.gui;
+import cbit.vcell.client.laf.VCellFonts;
 import java.awt.Font;
 
 import org.vcell.util.gui.ScrollTable;
@@ -279,7 +280,7 @@ private javax.swing.JLabel getJLabel1() {
 			ivjJLabel1 = new javax.swing.JLabel();
 			ivjJLabel1.setName("JLabel1");
 			ivjJLabel1.setText("Membrane Potential Options");
-			ivjJLabel1.setFont(ivjJLabel1.getFont().deriveFont(Font.BOLD));
+			VCellFonts.setCategory(ivjJLabel1, VCellFonts.Category.HEADING);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}

@@ -9,7 +9,7 @@ so getting a live, drivable client takes one command instead of a rediscovered r
 | `bridge.sh` | CLI over the bridge's HTTP endpoints: `tree`, `find`, `menu`, `wait`, `assert`, `shot`, `log`, … URL-encodes arguments, pretty-prints via `jq` when available; `wait`/`assert` exit non-zero on failure so scenarios are plain shell. |
 | `replay.py` | Replay a recorded script (`bridge.sh replay`). Issues each step through the endpoint that already implements that verb, retries a step until it takes, and waits for a window a step opened rather than sleeping. `--from`/`--to` play a slice; `--speed`/`--max-delay` re-time it. |
 | `scenarios/` | Reusable end-to-end scripts built on `bridge.sh` — `smoke.sh` checks bridge, main frame, menus, EDT and screenshots using only semantic selectors; `detach-window.sh` and its recorded twin `detach-window-recorded.sh` drive the modeless-child-window round trip. |
-| `doc-scaffold.py` | Turn a recording plus its captures into a VCell help-page skeleton (`<vcelldoc>` XML for `UserDocumentation/originalXML`). Writes the mechanical parts — ordered steps, image references — and leaves the prose to a person. |
+| `doc-scaffold.py` | Turn a recording plus its captures into a VCell help-page skeleton (a Markdown page for `UserDocumentation/pages`). Writes the mechanical parts — ordered steps, image references — and leaves the prose to a person. |
 | `scenarios/recordings/` | Captured UI scripts. JSON, hand-editable, replayed by `replay.py`. |
 | `scenarios/tutorials/` | The vcell.org tutorial PDFs, as storylines and as scripts that rebuild them. See its [README](scenarios/tutorials/README.md). |
 
@@ -54,6 +54,32 @@ sat:
 
 The application tab strip is the concrete reason for the last one: a spatial application
 shows four tabs and a non-spatial one five, so index 3 is a different tab in each.
+
+## Keyboard checks: run `focusorder` on every screen
+
+```bash
+tools/debug-bridge/bridge.sh focusorder WelcomeWindow     # tab order + audit, one call
+tools/debug-bridge/bridge.sh key name=WelcomeSearch ESCAPE   # a key, inside the client
+```
+
+`focusorder` lists every stop Tab makes in the window, in order, and audits it in the same
+answer — `summary` reads `"12 stops, 0 issues"` when all is well. The issues it reports:
+
+| kind | what it means | usual fix |
+|---|---|---|
+| `unreachable` | a showing, enabled control Tab never reaches | `setFocusable(true)`, or it's inside a container that isn't |
+| `out-of-order` | Tab jumps back up, or leftwards on the same line | Swing orders by **position**: line columns up (`GridBagConstraints.FIRST_LINE_START`), or give the container a focus traversal policy |
+| `hidden` | Tab stops on something not showing | hide the component rather than covering it |
+| `unnamed` | nothing for a screen reader to read | `setText`, `getAccessibleContext().setAccessibleName(...)`, or a `JLabel` with `setLabelFor(field)` |
+
+It works out the order from the window's `FocusTraversalPolicy`, so it needs no OS focus and
+works on a client behind other windows. Run it in **every state** a screen has (logged in and
+out, each tab, a panel open and closed): each state has its own order.
+
+`key` dispatches events inside the client, never real keystrokes, so it can't type into
+whatever else is in front. It runs key bindings exactly as a real key would — so **Enter
+presses the window's default button**: don't send it where that button starts something real
+(a browser login, a save, a purchase).
 
 ## Editing values
 
@@ -125,20 +151,19 @@ bridge.sh record stop
 
 bridge.sh replay scenarios/recordings/my-feature.json --shots /tmp/shots --shot-scale 0.5
 doc-scaffold.py scenarios/recordings/my-feature.json --shots /tmp/shots \
-                --target MyFeature --title "My Feature" --out page.xml
+                --target MyFeature --title "My Feature" --out MyFeature.md
 ```
 
-Then a person copies the captures worth keeping into
-`vcell-client/UserDocumentation/originalXML/topics/image/` under names that mean something,
-updates the `imgReference` targets, writes the prose, and adds a `<tocitem>` to `TOC.xml`.
+Then a person saves the page under `vcell-client/UserDocumentation/pages/<Section>/`, copies
+the captures worth keeping into `vcell-client/UserDocumentation/images/` under names that mean
+something, updates the image links, writes the prose, and adds a line to `toc.md`. See
+`vcell-client/UserDocumentation/README.md`.
 
 Three things this pipeline learned the hard way:
 
 - **`--shot-delay` matters.** `/idle` drains the EDT, but VCell fills many panels from
   background tasks, so an idle EDT does not mean the pixels are final. Captured too early,
   two different steps produce byte-identical images and the page documents the wrong screen.
-- **Scale the captures.** `DocumentCompiler` rejects any image over 500,000 bytes. At
-  `--shot-scale 0.5` a full window lands around 30KB; at full size it will not.
-- **The help build is skipped when it looks done.** The `build-documentation` profile
-  activates only when `target/classes/vcellDoc` is *missing*, so a plain rebuild silently
-  leaves doc changes untested. Remove that directory, or run `DocumentCompiler` directly.
+- **Scale the captures.** Help images should stay under 500,000 bytes (`HelpBookTest`
+  reports larger ones; they all ship in the client jar). At `--shot-scale 0.5` a full window
+  lands around 30KB; at full size it will not.

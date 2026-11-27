@@ -10,6 +10,8 @@
 
 package org.vcell.util.gui;
 
+import cbit.vcell.client.laf.VCellFonts;
+import cbit.vcell.client.laf.VCellColors;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -36,7 +38,6 @@ public abstract class BoxPanel extends JPanel {
 
     private boolean isSelected = false;
     final static private Insets borderInset = new Insets(5, 5, 5, 5);
-    final static private Color borderColor = new Color(166, 166, 255);
     
     public BoxPanel(String title) {
         this.title = title;
@@ -47,7 +48,7 @@ public abstract class BoxPanel extends JPanel {
         gluePanel.setLayout(new BoxLayout(gluePanel, BoxLayout.X_AXIS));
         gluePanel.add(Box.createHorizontalGlue());
         JLabel lblTitle = new JLabel(title);
-        lblTitle.setFont(new Font("Tahoma", Font.BOLD, 13));
+        VCellFonts.setCategory(lblTitle, VCellFonts.Category.HEADING);
 
         JPanel linePanel = new LinePanel();
 
@@ -104,7 +105,7 @@ public abstract class BoxPanel extends JPanel {
 
         public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
             if (isSelected) {
-                g.setColor(borderColor);
+                g.setColor(VCellColors.getLavender());
                 g.drawRect(2, 2, width-5, height-5);
             }
         }

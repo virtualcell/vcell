@@ -74,7 +74,6 @@ import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
-import cbit.vcell.resource.ErrorUtils;
 import cbit.vcell.solver.OutputFunctionContext.OutputFunctionIssueSource;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationOwner;
@@ -103,6 +102,8 @@ public class IssuePanel extends DocumentEditorSubPanel {
 				issueTableModel.setShowWarning(showWarningCheckBox.isSelected());
 		});
 		issueTable = new JSortTable();
+		issueTable.setName("IssueTable");
+		issueTable.getAccessibleContext().setAccessibleName("Problems");
 		issueTableModel = new IssueTableModel(issueTable);
 		issueTable.setModel(issueTableModel);
 		issueTable.addMouseListener(new MouseAdapter() {
@@ -122,7 +123,7 @@ public class IssuePanel extends DocumentEditorSubPanel {
 									URI uri = new URI(url);
 									Desktop.getDesktop().browse(uri);
 								} catch (URISyntaxException | IOException e1) {
-									ErrorUtils.sendRemoteLogMessage(null, "Can't open IssuePanel URI "  + url + ' ' +e1.getMessage());
+									System.err.println("Can't open IssuePanel URI "  + url + ' ' +e1.getMessage());
 								}
 							}
 						}
@@ -224,7 +225,7 @@ public class IssuePanel extends DocumentEditorSubPanel {
 				dis.activateView(selectionManager);
 			}
 			else if (object instanceof Parameter) {
-				followHyperlink(new ActiveView(null, DocumentEditorTreeFolderClass.BIOMODEL_PARAMETERS_NODE, ActiveViewID.parameters_functions),new Object[] {object});
+				followHyperlink(new ActiveView(null, DocumentEditorTreeFolderClass.PARAMETERS_FUNCTIONS_NODE, ActiveViewID.parameters_functions),new Object[] {object});
 			} else if (object instanceof StructureMapping) {
 				StructureMapping structureMapping = (StructureMapping) object;
 				StructureMappingNameScope structureMappingNameScope = (StructureMappingNameScope)structureMapping.getNameScope();

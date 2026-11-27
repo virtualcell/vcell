@@ -10,6 +10,9 @@
 
 package cbit.vcell.client.desktop.biomodel;
 
+import cbit.vcell.client.laf.VCellFonts;
+import cbit.vcell.client.laf.VCellColors;
+import cbit.vcell.client.laf.VCellLookAndFeel;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Desktop;
@@ -154,13 +157,13 @@ private void initialize() {
 		applicationsPanel.initialize();
 //		applicationsPanel.setBackground(Color.white);
 		webLinksPanel = new JPanel();
-		webLinksPanel.setBackground(Color.white);
+		webLinksPanel.setBackground(VCellLookAndFeel.getContentBackground());
 		
 		VCellBasicCellRenderer tempRenderer = new VCellBasicCellRenderer();		// we need it for its icons
 		
 		JPanel mainPanel = new JPanel();
 		mainPanel.setLayout(new GridBagLayout());
-		mainPanel.setBackground(Color.white);
+		mainPanel.setBackground(VCellLookAndFeel.getContentBackground());
 		int gridy = 0;
 		GridBagConstraints gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 0; 
@@ -170,7 +173,7 @@ private void initialize() {
 		gbc.insets = new Insets(10, 4, 4, 4);
 		JLabel label = new JLabel("Saved BioModel Info");
 		label.setHorizontalAlignment(SwingConstants.CENTER);
-		label.setFont(label.getFont().deriveFont(Font.BOLD));
+		VCellFonts.setCategory(label, VCellFonts.Category.HEADING);
 		mainPanel.add(label, gbc);
 		
 		gridy ++;
@@ -401,7 +404,7 @@ private void updateInterface() {
 			String toolTip = null;
 			if (link != null) {
 				toolTip = "double-click to open link " + link;
-				labelText = "<html><b>"+ labelText + "</b>&nbsp;" + "<font color=blue><a href=" + link + ">" + link + "</a></font></html>";
+				labelText = "<html><b>"+ labelText + "</b>&nbsp;" + "<font color=" + VCellColors.toHtmlColor(VCellColors.getValueForeground()) + "><a href=" + link + ">" + link + "</a></font></html>";
 			}
 			JLabel label = new JLabel(labelText);
 			label.addMouseListener(new MouseListener() {				

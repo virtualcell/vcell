@@ -121,7 +121,7 @@ public class LangevinResultsReadTest {
         VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(key, usr);
 
         VCDataIdentifier vCDataIdentifier = new VCSimulationDataIdentifier(vcSimID, 0);
-        VCData vcData = new SimulationData(vCDataIdentifier, primaryDir, localSimDir, null);
+        VCData vcData = new SimulationData(vCDataIdentifier, primaryDir, localSimDir);
         SimulationData simData = (SimulationData)vcData;
         String identifier = simData.getDataIdentifierSafe();
         assertTrue(identifier.equals(SimDataConstants.IDA_DATA_IDENTIFIER), "Langevin simulation should be IDA data");
@@ -167,7 +167,7 @@ public class LangevinResultsReadTest {
         VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(key, usr);
 
         VCDataIdentifier vCDataIdentifier = new VCSimulationDataIdentifier(vcSimID, 0);
-        VCData vcData = new SimulationData(vCDataIdentifier, primaryDir, localSimDir, null);
+        VCData vcData = new SimulationData(vCDataIdentifier, primaryDir, localSimDir);
         SimulationData simData = (SimulationData)vcData;
         String identifier = simData.getDataIdentifierSafe();
         assertFalse(identifier.equals(SimDataConstants.IDA_DATA_IDENTIFIER), "Langevin simulation should not be IDA data");

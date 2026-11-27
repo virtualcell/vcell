@@ -10,6 +10,8 @@
 
 package cbit.vcell.graph.gui;
 
+import org.vcell.documentation.HelpIds;
+import org.vcell.documentation.HelpContext;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
@@ -2941,6 +2943,7 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 		dbrqWiz.setRXPasteInterface(ReactionCartoonTool.this);
 		
 		ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(this.getGraphPane());
+		HelpContext.setPage(dbrqWiz, HelpIds.REACTION_SEARCH);
 		ChildWindow childWindow = childWindowManager.addChildWindow( dbrqWiz, SEARCHABLE_REACTIONS_CONTEXT_OBJECT, "Create Reaction within "+struct.getTypeName()+" '" + struct.getName() + "'" );
 		
 		dbrqWiz.setChildWindow(childWindow); // this is needed so that the wizard can close itself.

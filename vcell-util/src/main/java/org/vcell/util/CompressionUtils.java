@@ -6,6 +6,7 @@ import org.apache.logging.log4j.Logger;
 //import java.io.*;
 import java.io.ByteArrayOutputStream;
 import java.io.ByteArrayInputStream;
+import java.io.ObjectInputFilter;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
@@ -66,6 +67,14 @@ public class CompressionUtils {
     }
 
     public static Serializable fromCompressedSerialized(byte[] objData) throws ClassNotFoundException, IOException{
+        return CompressionUtils.fromCompressedSerialized(objData, null);
+    }
+
+    /**
+     * As {@link #fromCompressedSerialized(byte[])}, but every class in the stream must pass {@code filter}
+     * (null for none). Use a filter for any bytes that came from outside the server.
+     */
+    public static Serializable fromCompressedSerialized(byte[] objData, ObjectInputFilter filter) throws ClassNotFoundException, IOException{
         long before = 0, after;
         boolean traceIsEnabled = lg.isTraceEnabled();
         if(traceIsEnabled) before = System.currentTimeMillis();
@@ -74,6 +83,7 @@ public class CompressionUtils {
         try (ByteArrayInputStream bis = new ByteArrayInputStream(objData)) {
             try (InflaterInputStream iis = new InflaterInputStream(bis)) {
                 try (ObjectInputStream ois = new ObjectInputStream(iis)) {
+                    if (filter != null) ois.setObjectInputFilter(filter);
                     cacheClone = (Serializable) ois.readObject();
                 }
             }

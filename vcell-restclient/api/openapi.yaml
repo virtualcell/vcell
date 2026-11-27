@@ -2120,6 +2120,10 @@ paths:
         "401":
           description: Need to login to Auth0
         "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Not Allowed
         "500":
           description: Internal Error

@@ -10,6 +10,8 @@
 
 package cbit.vcell.client.desktop;
 
+import org.vcell.documentation.HelpContext;
+import org.vcell.documentation.HelpIds;
 import cbit.vcell.client.DatabaseWindowManager;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.resource.PropertyLoader;
@@ -533,6 +535,7 @@ public class ACLEditor extends javax.swing.JPanel {
 	private void initialize() {
 		try {
 			this.setName("ACLEditor");
+			HelpContext.setPage(this, HelpIds.PERMISSIONS); // its dialog's "?" and F1
 			this.setLayout(new java.awt.GridBagLayout());
 			this.setSize(333, 379);
 

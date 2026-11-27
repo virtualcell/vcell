@@ -1,6 +1,6 @@
 package cbit.vcell.desktop;
 
-import cbit.vcell.client.DocumentWindowManager;
+import cbit.vcell.client.TopLevelWindowManager;
 import cbit.vcell.client.VCellClient;
 import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.client.task.AsynchClientTask;
@@ -88,13 +88,25 @@ public class ClientLogin {
 
 
 
+    /** Logs in again, without asking, if the user did not log out last time; otherwise leaves them logged out. */
+    public static AsynchClientTask loginIfStillLoggedIn(){
+        return new AsynchClientTask("Checking Login...", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+            @Override
+            public void run(Hashtable<String, Object> hashTable) throws Exception {
+                hashTable.put("login", !Auth0ConnectionUtils.shouldWeShowLoginPopUp());
+                hashTable.put("guest", false);
+            }
+        };
+    }
+
     public static AsynchClientTask loginWithAuth0(Auth0ConnectionUtils auth0ConnectionUtils){
         AsynchClientTask task = new AsynchClientTask("Login With Auth0...", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
             @Override
             public void run(Hashtable<String, Object> hashTable) throws Exception {
                 if ((boolean)hashTable.get("login")) {
                     boolean isGuest = (boolean)hashTable.get("guest");
-                    auth0ConnectionUtils.auth0SignIn(isGuest);
+                    // a sign-up (from a guest session, say) opens the browser on the sign-up screen, then logs in
+                    auth0ConnectionUtils.auth0SignIn(isGuest, Boolean.TRUE.equals(hashTable.get("signUp")));
                 }
             }
         };
@@ -133,7 +145,7 @@ public class ClientLogin {
                         }
                         Auth0ConnectionUtils.setShowLoginPopUp(false);
                     }
-                    DocumentWindowManager currWindowManager = (DocumentWindowManager)hashTable.get("currWindowManager");
+                    TopLevelWindowManager currWindowManager = (TopLevelWindowManager)hashTable.get("currWindowManager");
                     ClientServerInfo newClientServerInfo = isGuest ?
                             VCellClient.createClientServerInfo(clientServerInfo, User.VCELL_GUEST_NAME)
                             : VCellClient.createClientServerInfo(clientServerInfo, auth0ConnectionUtils.getAuth0MappedUser());

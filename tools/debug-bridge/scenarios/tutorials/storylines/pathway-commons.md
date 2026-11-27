@@ -14,7 +14,8 @@ and link VCell species to pathway entities.
 ## Storyline
 
 1. Open the **Pathway Comm** tab in the Database Navigation pane; type a query and
-   press Search. Green text is the data source, red text the organism.
+   press Search. (That pane is gone: the search is now **Pathway > Pathway Lookup** in
+   the model navigation tree.) Green text is the data source, red text the organism.
 2. `Open Web Link` opens the entry in a browser; `Preview` starts an import.
 3. In the preview, filter entities by `Type` or by name, select the ones wanted, then
    `Import > Selected Only`. `ctrl+a` selects all on a page; multi-page results need

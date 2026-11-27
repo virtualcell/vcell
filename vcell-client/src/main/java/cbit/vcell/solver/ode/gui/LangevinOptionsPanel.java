@@ -1,5 +1,8 @@
 package cbit.vcell.solver.ode.gui;
 
+import org.vcell.documentation.HelpIds;
+import cbit.vcell.client.laf.VCellFonts;
+import cbit.vcell.client.laf.VCellColors;
 import java.awt.*;
 import java.math.BigInteger;
 
@@ -126,10 +129,10 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 					randomSeedTextField.setText("");
 				}
 			} else if(e.getSource() == randomSeedHelpButton) {
-				DialogUtils.showInfoDialogAndResize(LangevinOptionsPanel.this, "Set specific seed",
+				DialogUtils.showInfoDialog(LangevinOptionsPanel.this, "Set specific seed",
 					"<html>Provide a seed to the Langevin solver's random number generator so exact "
 							+ "trajectories can be reproduced. If this value is not entered, the solver will "
-							+ "generate different sequences for each run.</html>");
+							+ "generate different sequences for each run.</html>", HelpIds.LANGEVIN_SOLVER_OPTIONS);
 			}
 		}
 		
@@ -144,7 +147,7 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 				e.getSource() == getJTextFieldIntervalSpring() ||
 				e.getSource() == getNumPartitionsXTextField() ||
 				e.getSource() == getNumPartitionsYTextField() ||
-				e.getSource() == getNumPartitionsXTextField() ||
+				e.getSource() == getNumPartitionsZTextField() ||
 				e.getSource() == getRandomSeedTextField() ) {
 				setNewOptions();
 			} else if(e.getSource() == getTotalNumberOfJobsJTextField()) {
@@ -533,10 +536,9 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 		if(randomSeedHelpButton == null) {
 			Border border = BorderFactory.createEmptyBorder(1, 1, 1, 1);
 			randomSeedHelpButton = new JButton();
-			Font font = randomSeedHelpButton.getFont().deriveFont(Font.BOLD);
 			randomSeedHelpButton.setName("RandomSeedHelpButton");
 			randomSeedHelpButton.setBorder(border);
-			randomSeedHelpButton.setFont(font);
+			VCellFonts.setCategory(randomSeedHelpButton, VCellFonts.Category.HEADING);
 			randomSeedHelpButton.setText("<html><b>&nbsp;&nbsp;?&nbsp;&nbsp;</b></html>");
 		}
 		return randomSeedHelpButton;
@@ -637,7 +639,7 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 				numberOfConcurrentJobsInfoLabel = new javax.swing.JLabel();
 				numberOfConcurrentJobsInfoLabel.setName("NumberOfConcurrentJobsInfoLabel");
 				numberOfConcurrentJobsInfoLabel.setText("");
-				numberOfConcurrentJobsInfoLabel.setForeground(Color.blue);
+				numberOfConcurrentJobsInfoLabel.setForeground(VCellColors.getValueForeground());
 				numberOfConcurrentJobsInfoLabel.setToolTipText(SsldUtils.LangevinConcurrentSimulationsToolTip);
 			} catch (java.lang.Throwable ivjExc) {
 				handleException(ivjExc);

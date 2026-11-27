@@ -200,16 +200,21 @@ public class ExecutableCommand {
 		}
 
 		public void translatePaths(File absPathSource, File absPathTarget){
+			translatePaths(absPathSource.getAbsolutePath(), absPathTarget.getAbsolutePath());
+		}
+
+		// for paths that must keep their exact form, e.g. Unix paths of a cluster while running on Windows
+		public void translatePaths(String pathSource, String pathTarget){
 			for (ExecutableCommand executableCommand : execCommands) {
 				for (int i = 0; i < executableCommand.getCommands().size(); i++) {
 					String cmd = executableCommand.getCommands().get(i);
-					executableCommand.getCommands().set(i, cmd.replace(absPathSource.getAbsolutePath(), absPathTarget.getAbsolutePath()));
+					executableCommand.getCommands().set(i, cmd.replace(pathSource, pathTarget));
 				}
 			}
 			if (exitCodeCommand!=null){
 				for (int i=0; i < exitCodeCommand.getCommands().size(); i++) {
 					String cmd = exitCodeCommand.getCommands().get(i);
-					exitCodeCommand.getCommands().set(i, cmd.replace(absPathSource.getAbsolutePath(), absPathTarget.getAbsolutePath()));
+					exitCodeCommand.getCommands().set(i, cmd.replace(pathSource, pathTarget));
 				}
 			}
 		}

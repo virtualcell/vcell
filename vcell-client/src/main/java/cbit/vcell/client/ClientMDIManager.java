@@ -10,6 +10,7 @@
 
 package cbit.vcell.client;
 
+import java.awt.AWTEvent;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Frame;
@@ -17,6 +18,7 @@ import java.awt.KeyboardFocusManager;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.Window;
+import java.awt.event.ComponentEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Collection;
@@ -43,6 +45,9 @@ import org.vcell.util.gui.GlassPane;
 import org.vcell.util.gui.VCellIcons;
 
 import cbit.vcell.client.desktop.DocumentWindow;
+import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.client.desktop.WelcomePanel;
+import cbit.vcell.client.desktop.WelcomeWindow;
 import cbit.vcell.client.desktop.DocumentWindowAboutBox;
 import cbit.vcell.client.desktop.TestingFrameworkWindow;
 import cbit.vcell.client.desktop.TestingFrameworkWindowPanel;
@@ -63,6 +68,9 @@ public class ClientMDIManager implements MDIManager {
 	public final static String TESTING_FRAMEWORK_WINDOW_ID = "TestingFrameworkWindow";
 //	public final static String BIONETGEN_WINDOW_ID = "BioNetGenWindow";
 	public final static String FIELDDATA_WINDOW_ID = "FieldDataWindow";
+	public final static String WELCOME_WINDOW_ID = "WelcomeWindow";
+	public final static String MODEL_EXPLORER_WINDOW_ID = "ModelExplorerWindow";
+	private cbit.vcell.client.desktop.ModelExplorerWindow modelExplorerWindow = null; // made the first time it is asked for
 	private static interface Creator {
 		void create( );
 	}
@@ -71,6 +79,7 @@ public class ClientMDIManager implements MDIManager {
 	private Map<String, TopLevelWindowManager> managersHash = new HashMap<String, TopLevelWindowManager>();
 	private Map<String,Creator> creators = new HashMap<>();
 	private int numCreatedDocumentWindows = 0;
+	private javax.swing.Timer welcomeHideTimer = null; // see hideWelcomeWindowWhenTasksAreDone
 
 	private WindowAdapter windowListener = new WindowAdapter() {
 		public void windowClosing(WindowEvent e) {
@@ -85,6 +94,13 @@ public class ClientMDIManager implements MDIManager {
  */
 public ClientMDIManager(RequestManager requestManager) {
 	setRequestManager(requestManager);
+	// a window other than a model window or the welcome window (help, the Model Explorer, a tool) closing may leave
+	// nothing showing; hidden or disposed, it is hidden first
+	Toolkit.getDefaultToolkit().addAWTEventListener(event -> {
+		if (event.getID() != ComponentEvent.COMPONENT_HIDDEN || !(event.getSource() instanceof LWTopFrame window)) return;
+		if (window instanceof DocumentWindow || window instanceof WelcomeWindow) return;
+		if (this.getRequestManager() instanceof ClientRequestManager clientRequestManager) clientRequestManager.afterOtherWindowClosed();
+	}, AWTEvent.COMPONENT_EVENT_MASK);
 }
 
 
@@ -138,14 +154,23 @@ public long closeWindow(String windowID) {
 		}
 	}
 	// others need to know... (e.g. last window was closed)
-	return numberOfWindowsShowing();
+	return this.numberOfDocumentWindowsShowing();
 }
 
 /**
- * @return number of top level windows
+ * @return the number of model windows showing (or minimized). Help, the Model Explorer, tool windows and the welcome
+ * window don't count: closing the last model window brings back the welcome window, whatever else is open.
  */
-private long numberOfWindowsShowing( ) {
-	return LWTopFrame.liveWindows().count();
+public long numberOfDocumentWindowsShowing() {
+	return this.getManagersHash().entrySet().stream()
+			.filter(entry -> entry.getValue() instanceof DocumentWindowManager)
+			.filter(entry -> this.getWindowsHash().get(entry.getKey()) instanceof Window window && window.isVisible())
+			.count();
+}
+
+/** @return whether any of VCell's top-level windows (model, welcome, help, Model Explorer, tool) is showing or minimized */
+public boolean isAnyWindowShowing() {
+	return LWTopFrame.liveWindows().findAny().isPresent();
 }
 
 /**
@@ -247,12 +272,78 @@ public DocumentWindow createNewDocumentWindow(final DocumentWindowManager window
 	getRequestManager().updateStatusNow(); // initialize status bar with current status (also syncs all other windows)
 	// done
 	documentWindow.setVisible(true);
+	// a model opened or created from the welcome window takes its place, unless the user keeps it open
+	if (isWelcomeWindowShowing() && !WelcomeWindowManager.isKeptOpen()) hideWelcomeWindowWhenTasksAreDone();
 	// the work area is only inside a realized window now, which is what any child
 	// window of this document needs in order to attach itself
 	windowManager.documentWindowShown();
 	return documentWindow;
 }
 
+
+/** Shows the welcome window, making it the first time. */
+public void showWelcomeWindow() {
+	if (!getWindowsHash().containsKey(WELCOME_WINDOW_ID)) {
+		WelcomeWindowManager welcomeWindowManager = new WelcomeWindowManager(getRequestManager());
+		WelcomeWindow welcomeWindow = new WelcomeWindow(welcomeWindowManager);
+		getWindowsHash().put(WELCOME_WINDOW_ID, welcomeWindow);
+		getManagersHash().put(WELCOME_WINDOW_ID, welcomeWindowManager);
+		welcomeWindow.addWindowListener(windowListener); // closing goes to the request manager
+		welcomeWindowManager.updateConnectionStatus(getRequestManager().getConnectionStatus());
+		// as tall as it needs, and centered as it is once logged in; it packs again as the model tabs come and go
+		((WelcomePanel) welcomeWindowManager.getComponent()).packAndCenter();
+	}
+	if (null != this.welcomeHideTimer) this.welcomeHideTimer.stop(); // asked for again: a model opened earlier no longer takes its place
+	this.welcomeHideTimer = null;
+	showWindow(WELCOME_WINDOW_ID);
+	((Window) getWindowsHash().get(WELCOME_WINDOW_ID)).toFront();
+}
+
+// Once the tasks that opened the model are done and their progress dialog has closed: it belongs to the welcome window,
+// and hidden with it rather than closed, it would come back with it later, frozen. One wait at a time: showing the
+// welcome window again ends it, and so does the last model window closing.
+private void hideWelcomeWindowWhenTasksAreDone() {
+	Window welcome = (Window) getWindowsHash().get(WELCOME_WINDOW_ID);
+	if (null != this.welcomeHideTimer) this.welcomeHideTimer.stop();
+	javax.swing.Timer timer = new javax.swing.Timer(200, null);
+	timer.addActionListener(e -> {
+		if (this.numberOfDocumentWindowsShowing() == 0) { // the model it made way for has closed (or never opened)
+			timer.stop();
+			return;
+		}
+		if (ClientTaskDispatcher.hasOutstandingTasks()) return;
+		for (Window owned : welcome.getOwnedWindows()) {
+			if (owned.isVisible()) return;
+		}
+		timer.stop();
+		if (welcome.isShowing() && !WelcomeWindowManager.isKeptOpen()) welcome.setVisible(false);
+	});
+	this.welcomeHideTimer = timer;
+	timer.start();
+}
+
+/**
+ * Shows the Model Explorer, making it the first time, and selects this model in it (if given one: a model window's, or one
+ * right-clicked in the welcome window).
+ * @return the Model Explorer's manager
+ */
+public ModelExplorerWindowManager showModelExplorer(org.vcell.util.document.VCDocumentInfo model) {
+	if (modelExplorerWindow == null) {
+		ModelExplorerWindowManager manager = new ModelExplorerWindowManager(getRequestManager());
+		modelExplorerWindow = new cbit.vcell.client.desktop.ModelExplorerWindow(manager);
+		manager.updateConnectionStatus(getRequestManager().getConnectionStatus());
+	}
+	modelExplorerWindow.setState(Frame.NORMAL);
+	modelExplorerWindow.setVisible(true);
+	modelExplorerWindow.toFront();
+	modelExplorerWindow.getManager().showModel(model);
+	return modelExplorerWindow.getManager();
+}
+
+public boolean isWelcomeWindowShowing() {
+	TopLevelWindow welcome = getWindowsHash().get(WELCOME_WINDOW_ID);
+	return welcome instanceof Window window && window.isShowing();
+}
 
 /**
  * Insert the method's description here.
@@ -614,6 +705,7 @@ public void updateConnectionStatus(ConnectionStatus connectionStatus) {
 	for (TopLevelWindow window : windowsHash.values()) {
 		window.updateConnectionStatus(connectionStatus);
 	}
+	if (modelExplorerWindow != null) modelExplorerWindow.getManager().updateConnectionStatus(connectionStatus);
 
 	for (TopLevelWindowManager topLevelWindowManager : managersHash.values()) {
 		if (topLevelWindowManager instanceof DocumentWindowManager) {

@@ -10,6 +10,7 @@
 
 package cbit.vcell.export.gui;
 
+import cbit.vcell.client.laf.VCellFonts;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -296,7 +297,7 @@ public class MediaSettingsPanel extends JPanel {
 		movieDurationTextField.setColumns(10);
 		
 		particleModeLabel = new JLabel("Particle info export format:");
-		particleModeLabel.setFont(new Font("Tahoma", Font.BOLD, 11));
+		VCellFonts.setCategory(particleModeLabel, VCellFonts.Category.HEADING);
 		GridBagConstraints gbc_particleModeLabel = new GridBagConstraints();
 		gbc_particleModeLabel.anchor = GridBagConstraints.EAST;
 		gbc_particleModeLabel.insets = new Insets(0, 0, 5, 5);

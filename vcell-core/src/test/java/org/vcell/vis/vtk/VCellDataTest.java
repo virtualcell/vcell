@@ -5,6 +5,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.ResourceLock;
 import org.vcell.util.document.KeyValue;
 import org.vcell.vis.io.CartesianMeshFileReader;
 import org.vcell.vis.io.VCellSimFiles;
@@ -22,6 +23,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Tag("Fast")
+@ResourceLock("vcellGlobalConfig") // sets vcell.vtk.pythonDir, which other tests clear
 public class VCellDataTest {
 
 	private static String previousPythonDir = null;

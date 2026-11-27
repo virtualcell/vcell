@@ -1,5 +1,9 @@
 package cbit.vcell.client.desktop.biomodel.annotations;
 
+import org.vcell.documentation.HelpIds;
+import org.vcell.documentation.HelpContext;
+import cbit.vcell.client.laf.VCellFonts;
+import cbit.vcell.client.laf.VCellColors;
 import cbit.vcell.biomodel.meta.VCMetaDataMiriamManager;
 import cbit.vcell.client.desktop.biomodel.AnnotationsPanel;
 import org.vcell.client.logicalwindow.LWChildDialog;
@@ -58,6 +62,7 @@ public class AddAnnotationsPanel extends LWChildDialog implements ActionListener
         // owned modeless child: native+logical owner resolved from the annotations panel, so the OS
         // keeps this window above its owner (replaces the old un-owned JFrame + toFront/alwaysOnTop).
         super(LWNamespace.findLWOwner(annotationsPanel), "Add Annotations");
+        HelpContext.setPage(this.getRootPane(), HelpIds.ANNOTATIONS); // F1
         this.annotationsPanel = annotationsPanel;
         this.jComboBoxURI = JComboBoxURI;
         this.jComboBoxQualifier = (JComboBoxQualifier==null) ? new JComboBox<>(): JComboBoxQualifier;
@@ -180,7 +185,7 @@ public class AddAnnotationsPanel extends LWChildDialog implements ActionListener
         topPanel.add(new JLabel("<html><b>" + mdt.getDataTypeName() + "</b></html>"), sGbc);
 
         JLabel linkLabel = new JLabel();
-        String s = "<html>" + "URL : " + "&nbsp;<font color=\"" + "blue" + "\"><a href=" + mdt.getDataTypeURL() + ">" + mdt.getDataTypeURL() + "</a></font>&nbsp;&nbsp;" + "</html>";
+        String s = "<html>" + "URL : " + "&nbsp;<font color=\"" + VCellColors.toHtmlColor(VCellColors.getValueForeground()) + "\"><a href=" + mdt.getDataTypeURL() + ">" + mdt.getDataTypeURL() + "</a></font>&nbsp;&nbsp;" + "</html>";
         linkLabel.setToolTipText("Double-click to open link");
         linkLabel.setText(s);
         linkLabel.addMouseListener(new MouseAdapter() {
@@ -545,12 +550,12 @@ public class AddAnnotationsPanel extends LWChildDialog implements ActionListener
 
         if (!SearchElements.isEmpty()) {
             list.setEnabled(true);
-            list.setFont(new Font("TimesRoman",Font.PLAIN,14));
+            VCellFonts.setCategory(list, VCellFonts.Category.BODY);
             for (SearchElement element: SearchElements) {
                 dlm.addElement(element.getEntityName());
             }
         } else {
-            list.setFont(new Font("Arial", Font.BOLD, 16));
+            VCellFonts.setCategory(list, VCellFonts.Category.TITLE);
             dlm.addElement("No matches found");
             list.setEnabled(false);
         }
