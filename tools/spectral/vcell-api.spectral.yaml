@@ -130,6 +130,36 @@ rules:
 
   # (operation-tag-defined and operation-description from spectral:oas cover §5.1/§5.2's other checks)
 
+  # ---------------------------------------------------------------- §9 errors (RFC 9457)
+  vcell-error-is-problem-json:
+    description: "Error responses are RFC 9457 Problem Details (guide §9)."
+    message: "Error response {{property}} must use application/problem+json."
+    severity: error
+    given: "$.paths[*][get,put,post,patch,delete].responses[?(@property.match(/^[45]/))]"
+    then:
+      field: "content.application/problem+json"
+      function: truthy
+
+  vcell-documents-error-responses:
+    description: "Every operation documents at least one error response (guide §9.3)."
+    severity: warn
+    given: "$.paths[*][get,put,post,patch,delete].responses"
+    then:
+      function: schema
+      functionOptions:
+        schema:
+          type: object
+          patternProperties: { "^[45][0-9][0-9]$": {} }
+          minProperties: 1
+          anyOf:
+            - required: ["400"]
+            - required: ["401"]
+            - required: ["403"]
+            - required: ["404"]
+            - required: ["409"]
+            - required: ["500"]
+            - required: ["503"]
+
   # ---------------------------------------------------------------- OPEN in the guide (not enforced yet)
   # Path casing (D-1 sub-question: lowerCamel vs kebab-case, plural vs singular):
   # vcell-path-casing:

@@ -232,6 +232,8 @@ endpoints are not fixed in place; the list shows what their `/api/v2` equivalent
 | `vcell-boolean-query-param-review` (info) | 4 | `includePublicAndShared` on the four summary lists: a filter, acceptable |
 | `vcell-operation-summary` (warn) | 17 | operations without a `summary` (§5.2) |
 | `vcell-tag-not-class-name` (warn) | 59 | every tag is a class name ("Bio Model Resource"); §5.1 |
+| `vcell-error-is-problem-json` (error) | 179 | every v1 error response is `application/json` (`VCellHTTPError`), not Problem Details; §9 |
+| `vcell-documents-error-responses` (warn) | 3 | operations that document no error response; §9.3 |
 | Spectral built-ins | 144 | operations without a tag (60) or description (44); security scope declarations (33, a SmallRye output detail); unused components (6); one malformed `termsOfService` |
 
 Already compliant: no `GET` has a body, no `oneOf` lacks a discriminator, no request or response
@@ -432,3 +434,80 @@ simulation data on its first day.
 - _Proposed:_ a small, scoped MCP server over `/api/v2` (through pyvcell) as the supported way for LLM
   agents to work with VCell: a known, observable entry point instead of agents improvising against
   raw endpoints.
+
+## 9. Errors (D-14)
+
+Errors use **RFC 9457 Problem Details** (`Content-Type: application/problem+json`). They replace v1's
+`VCellHTTPError { exceptionType, message }`, which put Java class names and raw exception messages on
+the wire.
+
+### 9.1 The error body
+
+```json
+{
+  "type": "/api/problems/name-conflict",
+  "title": "A model with this name already exists",
+  "status": 409,
+  "detail": "You already have a BioModel named 'TestBioModel'.",
+  "instance": "/api/v2/biomodels",
+  "requestId": "4bf92f3577b34da6a3ce929d0e0e4736",
+  "errors": [ { "field": "name", "code": "duplicate", "message": "Choose a different name." } ]
+}
+```
+
+| Member | Rule |
+|---|---|
+| `type` | **The machine-readable error kind.** A relative URI `/api/problems/<slug>` from the problem catalogue (§9.3); stable forever once published; clients branch on it. (It may later resolve to a help page.) |
+| `title` | The fixed human-readable label of that type. |
+| `status` | The HTTP status, repeated. |
+| `detail` | Written for the caller and safe to show to a user: **never** SQL, file paths, stack traces, Java class names, or internal host names. |
+| `instance` | The request path. |
+| `requestId` | Extension: the request id (§7.2), so a user's report can be matched to the server log. |
+| `errors[]` | Extension, for validation failures: one entry per offending field (`field`, `code`, `message`). |
+
+The full internal detail (exception, stack trace, cause) goes to the server log only, under the same
+`requestId`.
+
+### 9.2 Status codes
+
+| Status | Use |
+|---|---|
+| `400` | Malformed request **or failed validation**, with `errors[]`. (`422` is not used.) |
+| `401` | Not authenticated, or the token is invalid or expired. |
+| `403` | Authenticated, and the caller **can see** the resource but may not do this to it. |
+| `404` | Not found, **or the caller cannot see it** (a private resource of another user), so its existence is not revealed. |
+| `409` | Conflict: duplicate name, or the resource's state does not allow the operation. |
+| `412` | Precondition failed (`If-Match` with a stale ETag). |
+| `413` | Request or result over the size limits (D-10). |
+| `429` | Rate or cost limit exceeded (§8.3), with `Retry-After`. |
+| `500` | Unexpected server fault: a bug. |
+| `503` | A dependency is unavailable (database, message broker, simulation storage), with `Retry-After`. Clients retry later instead of reporting a bug. |
+
+A domain exception never maps to one status wholesale (v1 sends every `DataAccessException` as `500`);
+each cause maps to its own problem type and status.
+
+### 9.3 The problem catalogue is part of the contract
+
+- Problem types are defined once, in `vcell-api-dto` (a `ProblemType` catalogue with stable slugs,
+  titles and statuses; the `Problem` record is the RFC 9457 body).
+- The spec lists the catalogue, and **every operation documents which problem types it can return**.
+- Adding a problem type is an additive change; renaming or removing one is a breaking change (§6.1).
+
+### 9.4 Mapping, on both ends (§2.1)
+
+- **Server:** one exception mapper in vcell-rest turns domain exceptions into problem types, through
+  `vcell-api-mapping`. It replaces v1's per-type handlers and catch-all.
+- **Desktop:** the same mapping module turns a problem type back into the domain exception the
+  desktop already handles (e.g. `name-conflict` → `ServerRejectedSaveException`), so existing desktop
+  code keeps working while Java class names leave the wire.
+- Python, TypeScript and pyvcell clients branch on `type`.
+
+### 9.5 Logging and batches
+
+- `4xx` are client outcomes, logged at `INFO` (the per-request line, §7.1) or `DEBUG`; `5xx` are logged
+  at `ERROR` with the stack trace and `requestId`.
+- Batch endpoints report results **per item** where items can fail independently, rather than failing
+  the whole batch for one bad item.
+
+Spectral enforces: every `4xx`/`5xx` response uses `application/problem+json`, and every operation
+documents at least one error response (§4).
