@@ -471,5 +471,6 @@ serialization.
     caller list missed it; v0 retirement must include it.
 11. **The direct-connect developer client** (`vcell-admin/.../standalone/VCellClientDevMain.java`):
     it runs the desktop wired straight to the backend (database and remote files), bypassing the API,
-    for debugging. Decide whether to keep supporting this pattern (and how it is secured and kept
-    working as RPC goes away) or to remove it formally. _Raised 2026-11-27, for later discussion._
+    for debugging. **Decided 2026-11-27: retired**, on the schedule in the style guide §11 (developer
+    path is `VCellClientMain` against the dev site or a local stack now; no in-process twins for v2
+    endpoints; deleted when the desktop stops using RPC).

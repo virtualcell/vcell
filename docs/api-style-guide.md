@@ -686,3 +686,45 @@ Keycloak dev-service configuration.
 Facts behind the decision (2026-11-27): vcell-ai keeps its own application roles in Supabase, reads no
 VCell roles or role claims, and forwards the user's Auth0 token to VCell's API, which decides object
 access from the mapped VCell user.
+
+## 11. One path to the server: direct-connect mode is retired
+
+The desktop reaches the server only through the API. **Direct-connect mode is retired** (decided
+2026-11-27).
+
+**What it is.** `VCellClientDevMain` (vcell-admin) runs the desktop with the server classes
+(`DatabaseServerImpl`, `DataSetControllerImpl`) in the same process, talking to Oracle, `/simdata` and
+MongoDB directly with database credentials on the developer's machine. It is served by
+`LocalVCellConnection*` (vcell-server) and by special cases in the API client
+(`ClientServerManager.isVCellClientDevMain()`, `AsynchMessageManager`).
+
+**Why it goes.**
+- It is a **second implementation of every desktop-to-server interface.** Keeping it would mean an
+  in-process twin for every `/api/v2` endpoint, or a development path that behaves differently from
+  production.
+- It **bypasses the API and all authorization**, and needs database credentials on laptops; pointed at
+  the wrong database it is a direct line to production data.
+- **Problems in the API layer** (serialization, authorization, error mapping) never appear in
+  development, because that layer is skipped.
+
+**Schedule.**
+1. **Now:** the documented developer launch path is `VCellClientMain` against the dev site or a local
+   stack (vcell-rest in Quarkus dev mode, or the local stack in `docker/swarm/README_stack_on_mac.md`),
+   with its API base URL configurable. Look-and-feel and font setup lives in `VCellClientMain`.
+   `README.md` is updated to say so. `VCellClientDevMain` keeps working, frozen, while the desktop still
+   uses RPC.
+2. **From the first `/api/v2` endpoint:** no in-process implementations. New endpoints have exactly one
+   implementation, in vcell-rest, and the desktop facades call only the API.
+3. **When the desktop no longer uses RPC:** delete `VCellClientDevMain`, the `isVCellClientDevMain()`
+   branches and `LocalVCellConnection*`.
+
+**What replaces it.**
+- Debugging client and server together: vcell-rest in Quarkus dev mode locally (live reload, debugger
+  attach, database containers), with the desktop pointed at `localhost`.
+- Quick UI work: `VCellClientMain` against the dev site.
+- AI-assisted UI debugging already uses `VCellClientMain` (the swing-debug bridge,
+  `tools/debug-bridge/launch-client.sh`).
+
+**Admin tools are separate.** Server-side tools run by administrators that genuinely need the database
+(for example `MathGenerationDebugger`) may keep direct database access as admin tooling; they are not the
+desktop client and are not covered by this section.
