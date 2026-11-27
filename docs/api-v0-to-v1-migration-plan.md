@@ -242,10 +242,45 @@ runs as the `export` deployment with the `/simdata`, `/simdata_secondary`, `/exp
 `/n5DataDir` mounts and the same JWT validation, is routed by the ingress rule `/api/v1/export` ahead
 of `/api/v1/` → `rest`, and its endpoints are in the single `tools/openapi.yaml`.
 
-_Still to decide in the pilot:_ how the data deployable is produced (build-time bean switching as the
-exporter does, whose test profile sets `vcell.exporter=true` so tests cover one configuration, or
-separate modules over a shared core library so each deployable's wiring is tested as shipped); and
-whether the JMS export path (`ExportRequestListenerMQ`) is still in use.
+_Rationale: one process in development, area deployments in production (a "modular monolith")._ One
+codebase and one process can serve every area, so a developer runs a single Quarkus instance with a
+minimal setup. In production the **same build** runs as several deployments, one per area, each with
+its own CPU, memory and replica count; the area prefixes let the ingress split traffic without
+changing any URL. The split pays off because the areas behave differently: data reads are memory- and
+I/O-heavy, need the NFS mounts and are exposed to storage stalls and scrapers, while core operations
+are small database-bound requests, and sharing one process has let one take the other down (the api
+pod's out-of-memory history, the November 2026 storage stalls). Separate codebases (microservices) were
+not chosen: they add contracts, versions and deployments between parts the team mostly changes
+together.
+
+**How deployables are produced: one image, configured at run time.** No build-time switching (the
+exporter's `@IfBuildProperty(vcell.exporter)` produces two images, cannot run as one development
+instance, and its tests cover only one configuration). Deployments differ only in runtime
+configuration:
+- which areas a pod serves (for example `vcell.api.areas=core`, `=data`; all of them in development); a
+  pod refuses areas it does not serve (`404`), so a misrouted request fails loudly;
+- resource settings: memory, cache sizes, thread pools, size limits;
+- which background work runs (message consumers, schedulers, listeners), switched by runtime settings;
+- which volumes are mounted: core pods do not mount `/simdata`.
+
+**Conditions** (the direction holds only while these do):
+1. **Areas stay independent in code and state.** No area relies on another area's in-memory state
+   (caches, singletons); shared state lives in the database, the broker or storage. Otherwise
+   development (one process) behaves differently from production (split). A startup test per
+   production configuration (`core` only, `data` only) checks that each starts with only its own beans
+   and consumers and refuses other areas; the normal test suite runs all areas together.
+2. **Authorization does not route through another area.** The `AccessPolicy` is a shared library that
+   queries the database directly, so the data area never calls core synchronously to decide access; a
+   core problem must not stall data reads.
+3. **Each split is justified by measurement.** Pods may start identical (every area enabled); a split
+   follows evidence from telemetry (the v0 RPC log line, #2254, and the per-request log line in
+   vcell-rest, style guide §7.1). The first split, data from core, is already justified by this
+   month's incidents.
+
+The exporter can later move to the same model (one image, the `data` area enabled in its deployment,
+the build property removed).
+
+_Still to decide in the pilot:_ whether the JMS export path (`ExportRequestListenerMQ`) is still in use.
 
 ### 3.6 Quality requirements
 
