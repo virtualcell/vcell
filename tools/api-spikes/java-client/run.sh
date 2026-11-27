@@ -7,10 +7,10 @@ here="$(cd "$(dirname "$0")" && pwd)"
 work="$(mktemp -d)"
 cp "$here/spike.yaml" "$here/java-config.yaml" "$work/"
 maps=""
-for n in Curation UserRef Application BioModelSummary BioModel BioModelCreate CsvExport N5Export ExportRequest ExportJob FieldError Problem; do
+for n in Curation UserRef Application BioModelSummary BioModel BioModelCreate CsvExport N5Export ExportRequest ExportJob FieldError Problem TimeSeries; do
   maps="$maps,$n=org.vcell.api.dto.$n"
 done
-maps="${maps#,}"
+maps="${maps#,},Float64=java.lang.Double"
 docker run --rm -v "$work:/w" openapitools/openapi-generator-cli:v7.1.0 generate -g java \
   -i /w/spike.yaml -o /w/client -c /w/java-config.yaml --schema-mappings "$maps" --import-mappings "$maps" >/dev/null
 cp -R "$here/dto/org/vcell/api" "$work/client/src/main/java/org/vcell/"

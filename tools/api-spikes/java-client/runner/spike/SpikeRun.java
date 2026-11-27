@@ -39,6 +39,10 @@ public class SpikeRun {
                 status = 200;
                 body = "{\"bioModelId\":\"43\",\"name\":\"x\",\"owner\":{\"userId\":\"7\",\"userName\":\"s\"},"
                      + "\"savedAt\":\"2026-11-27T15:04:05Z\",\"curation\":\"RETIRED\",\"applications\":[]}";
+            } else if (m.equals("GET") && path.equals("/api/v2/datasets/d1/timeseries")) {
+                status = 200;
+                body = "{\"variable\":\"Ran_cyt\",\"times\":[0.0,0.5],"
+                     + "\"values\":[[1.25,null],[\"NaN\",\"Infinity\"],[\"-Infinity\",2.0]]}";
             } else if (m.equals("GET") && path.equals("/api/v2/biomodels")) {
                 status = 200;
                 body = "[{\"bioModelId\":\"1\",\"name\":\"a\",\"owner\":{\"userId\":\"7\",\"userName\":\"s\"},\"savedAt\":\"2026-01-01T00:00:00Z\",\"curation\":\"CURRENT\"}]";
@@ -105,6 +109,22 @@ public class SpikeRun {
             check("job record deserializes", job.exportId().equals("e-1"), job);
             ExportRequest back = mapper.readValue("{\"format\":\"n5\",\"simulationId\":\"s\",\"compressionLevel\":2}", ExportRequest.class);
             check("discriminated union deserializes to the right record", back instanceof N5Export n && n.compressionLevel() == 2, back);
+
+            org.vcell.restclient.api.SimulationDataApi data = new org.vcell.restclient.api.SimulationDataApi(client);
+            TimeSeries ts = data.getTimeSeries("d1", "Ran_cyt", List.of("1.0,2.5", "3.0,4.0"));
+            List<List<Double>> v = ts.values();
+            check("Float64: finite number", v.get(0).get(0) == 1.25, v);
+            check("Float64: null stays null (missing, guide 2.3)", v.get(0).get(1) == null, v);
+            check("Float64: \"NaN\" string -> Double.NaN", v.get(1).get(0) != null && Double.isNaN(v.get(1).get(0)), v);
+            check("Float64: \"Infinity\" / \"-Infinity\" strings -> +/-Infinity",
+                    v.get(1).get(1) == Double.POSITIVE_INFINITY && v.get(2).get(0) == Double.NEGATIVE_INFINITY, v);
+            check("coordinate tuples sent as repeated point=x,y (guide 1.2)",
+                    lastQuery.get().equals("variable=Ran_cyt&point=1.0%2C2.5&point=3.0%2C4.0")
+                    || lastQuery.get().equals("variable=Ran_cyt&point=1.0,2.5&point=3.0,4.0"), lastQuery.get());
+            String out = mapper.writeValueAsString(new TimeSeries("x", List.of(0.0),
+                    List.of(java.util.Arrays.asList(Double.NaN, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY, null))));
+            check("Java writes non-finite as strings, null as null (valid JSON)",
+                    out.contains("[\"NaN\",\"Infinity\",\"-Infinity\",null]"), out);
 
             try {
                 BioModel r = bioModels.getBioModel("43");

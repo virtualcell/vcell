@@ -224,6 +224,9 @@ contain NaN and ±Infinity). These rules govern how responses represent it.
    returns `null`; genuine non-finite results pass through as above.
 4. **Statistics** skip missing values and report how many they used (`count`, `missingCount`). A
    non-finite input makes the statistic non-finite (`"NaN"`) rather than being silently skipped.
+5. **Non-finite values appear in responses only.** Request bodies and parameters carry finite numbers;
+   a non-finite number in a request is a `400`. (The generated Python client cannot write them
+   correctly; §2.5.)
 
 ### 2.4 Bulk numeric data is binary: Apache Arrow (D-6)
 
@@ -247,6 +250,35 @@ arrays; so does this API.
    a `time` column, and one `float64` column per point (named by the point's index in the request),
    with the request echoed in the stream's schema metadata. _Exact layouts per endpoint are fixed with
    each endpoint's DTOs._
+
+### 2.5 Client behaviour with non-finite values and Arrow (spike, 2026-11-27)
+
+Spikes: `tools/api-spikes/java-client/` (now 20 checks), `tools/api-spikes/python-ts-client/`,
+`tools/api-spikes/arrow/`; each has a `run.sh`.
+
+| Client | Reading `null`, `"NaN"`, `"Infinity"` in a `Float64` field | Writing them |
+|---|---|---|
+| **Java** (generated, shared records, `Float64` mapped onto `Double`) | ✓ `null` → `null`; strings → `Double.NaN`, ±`Infinity` | ✓ writes the strings and `null` (Jackson default) |
+| **Python**, `Float64` as generated (an `anyOf` wrapper) | parses, but non-finite values stay Python **strings** (`'NaN'`), mixed with floats | ✗ broken: numbers become `"0.0"`, `null` becomes `"null"` |
+| **Python**, `Float64` mapped onto `float` (`--schema-mappings Float64=float`) | ✓ strings → real `nan`, ±`inf`; ✗ `null` rejected (the generator drops `nullable` here) | ✗ `to_json()` writes bare `NaN` (invalid JSON); Pydantic's `model_dump_json()` turns non-finite into `null` |
+| **TypeScript** (typescript-angular) | `Float64` is generated as an empty interface `{}`: no type safety | — |
+| **Arrow IPC**, Python (pyarrow 26) ↔ Java (arrow-vector 15) | ✓ both directions: `null` via the validity bitmap stays distinct from NaN; ±Infinity and finite values bit-exact; schema metadata carried | ✓ |
+
+**Rules from it:**
+1. **Numeric arrays of any size use Arrow** (§2.4); the JSON `Float64` form is for small results and
+   statistics. Arrow had no problems in either language.
+2. **Non-finite values appear in responses only** (§2.3 rule 5), so no client has to write them.
+3. **Python client:** `Float64` is mapped onto `float`, and nullable numeric fields get their own
+   schema (or a post-generation fix, as `tools/python-fix.sh` already applies) so `null` is accepted.
+   _Verified in the pilot._
+4. **TypeScript client:** `Float64` is mapped (import mapping) onto a hand-written type
+   `number | "NaN" | "Infinity" | "-Infinity"` with a `toNumber()` helper. _Verified in the pilot._
+5. **Arrow on the JVM** needs `--add-opens=java.base/java.nio=ALL-UNNAMED` (server and desktop
+   launcher).
+6. **Byte order:** IEEE-754 fixes the bit layout of a value, not byte order. Arrow records the
+   writer's byte order in the stream's schema (`endianness`) and readers convert; servers write
+   little-endian. Every platform VCell supports is little-endian; big-endian clients are still handled
+   correctly by Arrow.
 
 ## 3. Testing (D-23)
 
