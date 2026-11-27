@@ -66,13 +66,16 @@ its result by event._
 
 ## 3. Decomposition (decided 2026-11-27)
 
-Two endpoints replace the RPC, each with one response type (style guide §1.3). Paths follow §1.4;
-`{datasetId}` stands for the dataset identifier, still to be fixed by D-2.
+Two endpoints replace the RPC, each with one response type (style guide §1.3). Paths follow §1.4 and
+D-2: a simulation's results are under `/api/v2/simulations/{simulationId}/jobs/{jobIndex}` (written
+`{job}` below), and field data has the same sub-resources under `/api/v2/field-data/{fieldDataId}`.
+Access follows the reachability rule (style guide §10.4); the server resolves where the data is stored
+(including `parentSimRef`).
 
 | Purpose | Read (`GET`, cacheable) | Query (`POST`, for inputs that do not fit a URL, §1.2) |
 |---|---|---|
-| Time series at points (C1, C2, C3, C9) | `GET /api/v2/datasets/{datasetId}/time-series?variable=…&point=…&from=…&to=…&every=…` | `POST /api/v2/datasets/{datasetId}/time-series/query` with a `TimeSeriesQuery` |
-| Region statistics over time (C4, C5, C6) | `GET /api/v2/datasets/{datasetId}/region-statistics?variable=…&subdomain=…&from=…&to=…` | `POST /api/v2/datasets/{datasetId}/region-statistics/query` with a `RegionStatisticsQuery` |
+| Time series at points (C1, C2, C3, C9) | `GET {job}/time-series?variable=…&point=…&from=…&to=…&every=…` | `POST {job}/time-series/query` with a `TimeSeriesQuery` |
+| Region statistics over time (C4, C5, C6) | `GET {job}/region-statistics?variable=…&subdomain=…&from=…&to=…` | `POST {job}/region-statistics/query` with a `RegionStatisticsQuery` |
 
 Both answer JSON for small results and the binary form (§2.4) for large ones, by `Accept`.
 
@@ -150,7 +153,9 @@ discriminator of each union.
 
 ```java
 // --- dataset metadata
-record DatasetInfo(String datasetId, int dimension, List<Double> origin, List<Double> extent,
+// GET {job}/info
+record DatasetInfo(String simulationId, int jobIndex, String dataSimulationId /* holds the data: itself or its parent */,
+                   String resultsVersion /* basis of the ETag */, int dimension, List<Double> origin, List<Double> extent,
                    String lengthUnit, List<Double> times, List<VariableInfo> variables, List<MeshInfo> meshes) {}
 record VariableInfo(String name, ElementKind domainKind, String domain, String unit, boolean function) {}
 record MeshInfo(String meshId, double fromTime, double toTime, List<RegionInfo> regions) {}
@@ -198,12 +203,12 @@ pointing to the binary form or a job).
 
 ## 6. Depends on (plan §3)
 
-D-2 (dataset identifier), D-10 (caps and partial answers), D-12 (jobs), D-19 (who may read a dataset:
+D-2 (identifiers: decided), D-10 (caps and partial answers), D-12 (jobs), D-19 (who may read a dataset:
 decided, style guide §10), D-20 (caching: a finished simulation's series never change).
 
 ## 7. Next steps
 
-1. Fix D-2 (the dataset identifier) and the caps (D-10): measure points × times × variables for C1–C7.
+1. Fix the caps (D-10): measure points × times × variables for C1–C7 (D-2 is decided).
 2. Write these DTOs in `vcell-api-dto`, and mappers in `vcell-api-mapping` from and to
    `TimeSeriesJobSpec` / `TimeSeriesJobResults`, so the server reuses `DataSetControllerImpl` at first.
 3. Equivalence tests: for each caller pattern C1–C7, the new endpoints return the same numbers as the

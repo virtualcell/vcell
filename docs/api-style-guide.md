@@ -709,12 +709,14 @@ occurred in VCell's legacy API.
 | Object | Read | Change |
 |---|---|---|
 | Model documents (BioModel, MathModel, Geometry, Image) | owner; group members if shared; anyone if public | owner only |
-| **Simulation results** | **inherit** the read access of the simulation's documents: public and published models' results are readable by anyone, including anonymous callers; private results by the owner and group | — |
+| **Simulation results** | **reachability** (§10.4): anyone who can read at least one document version that links the simulation, so public and published models' results are readable by anyone, including anonymous callers | — |
 | Exports, jobs, runs | their creator | their creator |
 | Field data | owner, and those it is shared with | owner |
 | Publications | anyone | curator / publication editor role |
 | Admin operations | admin role | admin role |
 
+- **A simulation's results are reached through its documents** (§10.4), not through the simulation's
+  own access fields.
 - **Group sharing is read-only.** Group members can read a shared document; only the owner changes
   it.
 - **Anonymous callers** see public and published objects only, under the strictest rate tier
@@ -723,17 +725,42 @@ occurred in VCell's legacy API.
 - **Token scopes and object rules both apply** (§8.2): a scope limits what a token may do, the
   policy limits which objects.
 
-### 10.4 Identifiers
+### 10.4 Simulation results: access by reachability
+
+VCell's storage makes "the simulation's owner and sharing" the wrong question:
+
+- **Simulations are shared between document versions.** Saves are incremental, so an unchanged
+  simulation is linked (`vc_biomodelsim`, `vc_mathmodelsim`) from several versions of its BioModel or
+  MathModel, and those versions can differ in privacy (v1 published, v2 private).
+- **A simulation's own `privacy` column is not maintained.** Sharing or publishing a document
+  (`groupSetPublic`, `groupAddUser`) updates only the document's row.
+- **Results may belong to another simulation.** A simulation with a `parentSimRef` has no data of its
+  own; it reuses its parent's results (an edit that did not change the math kept them).
+
+**Rule.** A simulation's results are readable by a caller **if the caller can read at least one
+document version (BioModel or MathModel) that links that simulation**, judged by that document's owner,
+`GroupAccess` or public status. The simulation's own `privacy` column is not used. A simulation that no
+document links any more is readable only by its owner and admins.
+
+- **Implementation:** one indexed query in the `AccessPolicy` (a link row joined to a document version
+  the caller can read, for BioModels and MathModels), cached briefly per caller and simulation.
+- **Access is decided on the requested simulation; the data may come from its parent.** A simulation
+  linked from a published model serves its (inherited) results even if the parent is reachable only
+  from private versions: that is what users see today.
+- **Earlier public versions keep their results public.** If v1 of a document is public and v2 private,
+  simulations shared by both stay readable through v1, which really is public.
+
+### 10.5 Identifiers
 
 Models, simulations and other existing objects keep their **numeric ids** for now (they are cited in
 papers and links). Because they are sequential, authorization never relies on an id being hard to
 guess, and the pattern monitoring of §8.5 watches for enumeration.
 
-### 10.5 Audit and tests
+### 10.6 Audit and tests
 
 Writes are audited (§7.5). Every endpoint's access-matrix test (§3.1) is its rule in executable form.
 
-### 10.6 Where roles come from (decided: VCell's database)
+### 10.7 Where roles come from (decided: VCell's database)
 
 Four kinds of authorization fact, each with one home:
 

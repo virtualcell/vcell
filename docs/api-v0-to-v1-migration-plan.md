@@ -78,7 +78,14 @@ mixed style (`/startSimulation`, `/fieldData/delete/{id}`). Sub-questions: plura
 casing (lowerCamel today, `Simulation` capitalized); whether to fix existing inconsistencies as part
 of this work or leave existing endpoints alone.
 
-**D-2. Identifiers.** A simulation dataset is identified today by sim key + owner + job index
+**D-2. Identifiers.** _Decided 2026-11-27:_ simulation results are addressed by the **requested
+simulation**, `/api/v2/simulations/{simulationId}/jobs/{jobIndex}/…`; the server resolves where the data
+is stored (`parentSimRef`, owner directory), and access follows the reachability rule (style guide
+§10.4). Field data has the same sub-resources under `/api/v2/field-data/{fieldDataId}/…`. Merged
+(comparison) datasets are not a URL resource: clients read each dataset; a server-side comparison, if
+ever needed, is a `POST` query naming several datasets. Results carry an `ETag` from the version of the
+results that answered (re-running a simulation replaces its results under the same id).
+_Original question:_ a simulation dataset is identified today by sim key + owner + job index
 (`VCSimulationDataIdentifier`), and field data / merged data by other identifier types. Options:
 (a) `/simulations/{simKey}/jobs/{jobIndex}/…` with owner always resolved server-side; (b) an opaque
 dataset id; (c) separate resource families per identifier type (sim results, field data, merged).
