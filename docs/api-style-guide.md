@@ -568,24 +568,41 @@ guess, and the pattern monitoring of §8.5 watches for enumeration.
 
 Writes are audited (§7.5). Every endpoint's access-matrix test (§3.1) is its rule in executable form.
 
-### 10.6 Open: where roles come from
+### 10.6 Where roles come from (decided: VCell's database)
 
-Today roles come from two places that disagree: Auth0 token roles (`user`, `curator`, `owner`,
-`admin`) and VCell database claims (`admins`, `powerUsers`, `publicationEditors`, `vcellSupport`).
-VCell's Auth0 tenant is also becoming single sign-on for other applications (vcell-ai), which
-changes the trade-off:
+Four kinds of authorization fact, each with one home:
 
-- **(a) VCell's database is the source; Auth0 proves identity only.** A Quarkus
-  `SecurityIdentityAugmentor` adds the database roles to each request. Other applications that need
-  VCell roles ask VCell server-side (for example `GET /api/v2/users/me`, which returns the caller's
-  VCell user and roles).
-- **(b) Auth0 is the source.** Roles travel as token claims to every application, which needs no
-  lookup; the database claims are dropped or synchronized.
-- **(c) The database is the source, and an Auth0 Action copies the roles into the token at login.**
-  One source of truth, and applications can read roles from the token; roles change only at the next
-  login.
+| Kind | Examples | Home |
+|---|---|---|
+| Identity | the person (Auth0 `sub`, email), linked to a VCell user | Auth0, plus VCell's user mapping |
+| **VCell domain roles** | admin, publication editor (curator), support, power user | **VCell's database** |
+| Application roles | vcell-ai's admin and LLM budgets | each application (vcell-ai: its Supabase) |
+| Object access | owner, group sharing, public | VCell's database (`GroupAccess`); never in a token |
 
-Facts for the decision (2026-11-27): vcell-ai keeps its own application roles (admin, budgets) in its
-own Supabase and reads **no** VCell roles or role claims. It forwards the user's Auth0 token to
-VCell's API, and VCell decides object access from the mapped VCell user. So any of (a)–(c) works for
-vcell-ai today; the choice matters for future applications that want VCell roles.
+VCell's Auth0 tenant provides single sign-on for several applications. It **proves identity only**;
+it does not carry VCell roles.
+
+1. **VCell's database is the single source of VCell domain roles.** Today's Auth0 roles are mapped
+   onto the database claims once and then no longer used:
+   - Auth0 `admin` → `admins`; Auth0 `curator` → `publicationEditors`;
+   - Auth0 `owner` is dropped: it is not a VCell role (ownership is per object, §10.3);
+   - `user` is not assigned: it is **derived**, meaning authenticated and linked to a VCell account.
+2. **A Quarkus `SecurityIdentityAugmentor`** loads the caller's roles from the database for each
+   request (cached for about a minute) and adds them to the security identity, so `@RolesAllowed` and
+   the `AccessPolicy` work unchanged. Revoking a role takes effect within the cache lifetime, not at
+   token expiry; that is the main reason for this choice.
+3. **Other applications ask VCell.** `GET /api/v2/users/me` returns the caller's linked VCell user and
+   VCell roles (it replaces v1's `/users/mappedUser`); an application caches the answer for its
+   session.
+4. **Application roles stay in each application.** VCell's database does not hold roles for other
+   applications.
+5. **Optional later:** if an application genuinely needs VCell roles inside its tokens (for example,
+   one that cannot call VCell), an Auth0 Action may copy them from VCell at login. VCell's database
+   stays the source; the copy is only as fresh as the token.
+
+Tests set roles in the test database (as `TestEndpointUtils` already creates users), not in the
+Keycloak dev-service configuration.
+
+Facts behind the decision (2026-11-27): vcell-ai keeps its own application roles in Supabase, reads no
+VCell roles or role claims, and forwards the user's Auth0 token to VCell's API, which decides object
+access from the mapped VCell user.
