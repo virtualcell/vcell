@@ -702,12 +702,12 @@ public class SimulationDispatcher {
 		AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory);
 		SimulationDatabase simulationDatabase = new SimulationDatabaseDirect(adminDbTopLevel, databaseServerImpl, true);
 
-		VCMessagingService vcMessagingServiceInternal = new VCMessagingServiceActiveMQ();
+		VCMessagingService vcMessagingServiceInternal = VCMessagingServiceActiveMQ.createForLongLivedConsumerService();
 		String jmshost_int = PropertyLoader.getRequiredProperty(PropertyLoader.jmsIntHostInternal);
 		int jmsport_int = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.jmsIntPortInternal));
 		vcMessagingServiceInternal.setConfiguration(new ServerMessagingDelegate(), jmshost_int, jmsport_int);
 
-		VCMessagingService vcMessagingServiceSim = new VCMessagingServiceActiveMQ();
+		VCMessagingService vcMessagingServiceSim = VCMessagingServiceActiveMQ.createForLongLivedConsumerService();
 		String jmshost_sim = PropertyLoader.getRequiredProperty(PropertyLoader.jmsSimHostInternal);
 		int jmsport_sim = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.jmsSimPortInternal));
 		vcMessagingServiceSim.setConfiguration(new ServerMessagingDelegate(), jmshost_sim, jmsport_sim);
