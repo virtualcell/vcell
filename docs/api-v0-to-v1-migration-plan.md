@@ -103,7 +103,7 @@ domain-shaped records where they already serialize cleanly (today: `SimulationSt
 (nested in resources vs `handlers/dto`); where the DTO ↔ domain transformers live on the client
 (`DtoModelTransforms`) and on the server.
 
-**D-6. Numeric and binary payloads.** _Decided 2026-11-27: JSON for metadata and small results, Apache Arrow IPC for bulk arrays by content negotiation; non-finite values as the strings `"NaN"`/`"Infinity"`/`"-Infinity"` in JSON (style guide §2.3, §2.4)._ Simulation data is large arrays of doubles. Options:
+**D-6. Numeric and binary payloads.** _Decided 2026-11-27: JSON for metadata and small results; bulk arrays in a binary format chosen in the pilot against the requirements in the style guide §2.4 (candidates: Zarr/N5, Arrow IPC, raw float64 + header); missing values separate from numbers; non-finite values as the strings `"NaN"`/`"Infinity"`/`"-Infinity"` in JSON (§2.3)._ Simulation data is large arrays of doubles. Options:
 (a) JSON arrays (simple, big, slow to parse); (b) `application/octet-stream` raw little-endian
 float64 with metadata in headers or a sibling JSON call; (c) a container format with metadata
 (zarr/N5 chunks — the export path and pyvcell already use N5/zarr; HDF5; Arrow IPC; CBOR/MessagePack);

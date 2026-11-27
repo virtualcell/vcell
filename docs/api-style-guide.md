@@ -228,28 +228,37 @@ contain NaN and ±Infinity). These rules govern how responses represent it.
    a non-finite number in a request is a `400`. (The generated Python client cannot write them
    correctly; §2.5.)
 
-### 2.4 Bulk numeric data is binary: Apache Arrow (D-6)
+### 2.4 Bulk numeric data is binary (D-6)
 
 Measured on one field of 10⁶ doubles (2026-11-27): JSON text is 20.9 MB (9.0 MB gzipped) and takes
 170 ms to parse in Python; binary float64 is 8.0 MB and parses in 9 ms (`struct`), or zero-copy with
-NumPy. Large numeric APIs (Zarr/N5 over HTTP, HSDS, Arrow Flight) use JSON for metadata and binary for
-arrays; so does this API.
+NumPy. Large numeric APIs (Zarr/N5 over HTTP, HSDS, Arrow Flight) use JSON for metadata and binary
+for arrays; so does this API. **The guide sets requirements, not a particular library.**
 
-1. **Metadata and small results are JSON** (mesh information, statistics, a probe of a few points):
-   readable in Swagger and easy in every client, with §2.3's `null` and non-finite strings.
-2. **Bulk numeric arrays are Apache Arrow IPC** (`application/vnd.apache.arrow.stream`): typed,
-   self-describing columns, a validity bitmap for missing values, native NaN and ±Infinity, read
-   directly into NumPy, pandas or Polars, with mature Java and JavaScript libraries.
+1. **Metadata and small results are JSON** (mesh information, statistics, a probe of a few points),
+   with §2.3's `null` and non-finite strings.
+2. **Bulk numeric arrays are binary**, and the binary format must:
+   - carry values as **IEEE-754** with their native NaN and ±Infinity;
+   - represent **missing values separately from the numbers** (a validity mask), never as NaN or a
+     sentinel (§2.3);
+   - be **self-describing**: element type, shape and order, **byte order**, and the request it answers
+     (variables, points, times), so a reader needs no out-of-band convention;
+   - be a **widely used open standard with maintained readers in Java, Python and JavaScript**, and
+     readable straight into NumPy (and pandas or Polars) from pyvcell;
+   - stream or chunk large results, and compress well (byte-shuffled zstd or LZ4, or HTTP
+     `Content-Encoding`).
 3. **One resource, two representations, chosen by `Accept`** (content negotiation, not a second
-   endpoint; §1.3). The JSON and Arrow forms carry the same data and meaning.
-4. **Compression** is negotiated at the HTTP level (`Content-Encoding: zstd` or gzip), or uses Arrow's
-   own LZ4/zstd buffer compression.
-5. **A size threshold:** above a published number of values, the JSON form answers `413` with a problem
-   pointing to the Arrow form, so no client falls into the slow path by accident.
-6. **Arrow layout** for a series (`values[variable][point][time]`) is one record batch per variable:
-   a `time` column, and one `float64` column per point (named by the point's index in the request),
-   with the request echoed in the stream's schema metadata. _Exact layouts per endpoint are fixed with
-   each endpoint's DTOs._
+   endpoint; §1.3). Both carry the same data and meaning.
+4. **A size threshold:** above a published number of values, the JSON form answers `413` with a problem
+   pointing to the binary form.
+5. **The format is chosen in the pilot** (plan Phase 2), against these requirements, from these
+   candidates:
+
+| Candidate | Fit | Notes |
+|---|---|---|
+| **Zarr / N5 chunks** | already used by VCell's exports and by pyvcell | chunked and compressed by design; missing values need a convention (a separate mask array; Zarr's `fill_value` alone is a sentinel) |
+| **Apache Arrow IPC** | meets every requirement out of the box (validity bitmap, native non-finite, byte order recorded, schema metadata) | a new dependency for VCell; spike in §2.5 passed in Java and Python |
+| Raw little-endian float64 + JSON header (and a separate validity bitmask) | simplest to produce | every convention (shape, order, mask, metadata) is VCell's own, so clients write custom readers |
 
 ### 2.5 Client behaviour with non-finite values and Arrow (spike, 2026-11-27)
 
@@ -262,22 +271,22 @@ Spikes: `tools/api-spikes/java-client/` (now 20 checks), `tools/api-spikes/pytho
 | **Python**, `Float64` as generated (an `anyOf` wrapper) | parses, but non-finite values stay Python **strings** (`'NaN'`), mixed with floats | ✗ broken: numbers become `"0.0"`, `null` becomes `"null"` |
 | **Python**, `Float64` mapped onto `float` (`--schema-mappings Float64=float`) | ✓ strings → real `nan`, ±`inf`; ✗ `null` rejected (the generator drops `nullable` here) | ✗ `to_json()` writes bare `NaN` (invalid JSON); Pydantic's `model_dump_json()` turns non-finite into `null` |
 | **TypeScript** (typescript-angular) | `Float64` is generated as an empty interface `{}`: no type safety | — |
-| **Arrow IPC**, Python (pyarrow 26) ↔ Java (arrow-vector 15) | ✓ both directions: `null` via the validity bitmap stays distinct from NaN; ±Infinity and finite values bit-exact; schema metadata carried | ✓ |
+| **Arrow IPC** (one binary candidate), Python (pyarrow 26) ↔ Java (arrow-vector 15) | ✓ both directions: `null` via the validity bitmap stays distinct from NaN; ±Infinity and finite values bit-exact; schema metadata carried | ✓ |
 
 **Rules from it:**
-1. **Numeric arrays of any size use Arrow** (§2.4); the JSON `Float64` form is for small results and
-   statistics. Arrow had no problems in either language.
+1. **Numeric arrays of any size use the binary form** (§2.4); the JSON `Float64` form is for small
+   results and statistics. The binary candidate tested (Arrow) had no problems in either language.
 2. **Non-finite values appear in responses only** (§2.3 rule 5), so no client has to write them.
 3. **Python client:** `Float64` is mapped onto `float`, and nullable numeric fields get their own
    schema (or a post-generation fix, as `tools/python-fix.sh` already applies) so `null` is accepted.
    _Verified in the pilot._
 4. **TypeScript client:** `Float64` is mapped (import mapping) onto a hand-written type
    `number | "NaN" | "Infinity" | "-Infinity"` with a `toNumber()` helper. _Verified in the pilot._
-5. **Arrow on the JVM** needs `--add-opens=java.base/java.nio=ALL-UNNAMED` (server and desktop
-   launcher).
-6. **Byte order:** IEEE-754 fixes the bit layout of a value, not byte order. Arrow records the
-   writer's byte order in the stream's schema (`endianness`) and readers convert; servers write
-   little-endian. Every platform VCell supports is little-endian; big-endian clients are still handled
+5. **If Arrow is chosen:** Arrow Java needs `--add-opens=java.base/java.nio=ALL-UNNAMED` on the JVM
+   (server and desktop launcher).
+6. **Byte order:** IEEE-754 fixes the bit layout of a value, not byte order, so the binary format must
+   record it (§2.4): Arrow records it in the stream's schema (`endianness`), Zarr in the array's
+   `dtype` (`<f8`). Servers write little-endian. Every platform VCell supports is little-endian; big-endian clients are still handled
    correctly by Arrow.
 
 ## 3. Testing (D-23)
