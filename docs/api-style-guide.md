@@ -201,6 +201,53 @@ Not covered by the spike: the server side (SmallRye generating the same spec fro
 including the `oneOf` discriminator) and the Python and TypeScript clients; both are checked in the
 pilot (plan Phase 2).
 
+### 2.3 Missing values and non-finite numbers
+
+Storage does not change: simulation data stays as it is stored (text or binary floats, which may
+contain NaN and ±Infinity). These rules govern how responses represent it.
+
+1. **Missing is `null`.** A value is missing when there is legitimately nothing there: outside the
+   variable's domain, not yet computed in a running simulation, a region that is empty at that time.
+   Never a sentinel number, never zero-filled, never interpolated.
+2. **Non-finite is never "missing".** NaN and ±Infinity mean the math produced a non-finite value,
+   which the caller should see.
+   - **In JSON** they are the strings **`"NaN"`, `"Infinity"`, `"-Infinity"`**, in place: the
+     Protocol Buffers JSON mapping and Zarr convention, and Jackson's default (`WRITE_NAN_AS_STRINGS`).
+     **Never** the bare tokens `NaN`/`Infinity` (not valid JSON; browsers' `JSON.parse` rejects them),
+     and never sentinel numbers.
+   - The spec defines this once, as a reusable schema `Float64` (a number, or one of those three
+     strings), and every numeric-data field uses it.
+   - **In binary responses** (§2.4) they are the native IEEE-754 values; missing values use the
+     format's null mechanism (Arrow's validity bitmap).
+3. **The server tells the two apart where storage does not.** Where stored data uses NaN for "no data"
+   (for example outside a variable's domain), the server, which knows the domain from the mesh,
+   returns `null`; genuine non-finite results pass through as above.
+4. **Statistics** skip missing values and report how many they used (`count`, `missingCount`). A
+   non-finite input makes the statistic non-finite (`"NaN"`) rather than being silently skipped.
+
+### 2.4 Bulk numeric data is binary: Apache Arrow (D-6)
+
+Measured on one field of 10⁶ doubles (2026-11-27): JSON text is 20.9 MB (9.0 MB gzipped) and takes
+170 ms to parse in Python; binary float64 is 8.0 MB and parses in 9 ms (`struct`), or zero-copy with
+NumPy. Large numeric APIs (Zarr/N5 over HTTP, HSDS, Arrow Flight) use JSON for metadata and binary for
+arrays; so does this API.
+
+1. **Metadata and small results are JSON** (mesh information, statistics, a probe of a few points):
+   readable in Swagger and easy in every client, with §2.3's `null` and non-finite strings.
+2. **Bulk numeric arrays are Apache Arrow IPC** (`application/vnd.apache.arrow.stream`): typed,
+   self-describing columns, a validity bitmap for missing values, native NaN and ±Infinity, read
+   directly into NumPy, pandas or Polars, with mature Java and JavaScript libraries.
+3. **One resource, two representations, chosen by `Accept`** (content negotiation, not a second
+   endpoint; §1.3). The JSON and Arrow forms carry the same data and meaning.
+4. **Compression** is negotiated at the HTTP level (`Content-Encoding: zstd` or gzip), or uses Arrow's
+   own LZ4/zstd buffer compression.
+5. **A size threshold:** above a published number of values, the JSON form answers `413` with a problem
+   pointing to the Arrow form, so no client falls into the slow path by accident.
+6. **Arrow layout** for a series (`values[variable][point][time]`) is one record batch per variable:
+   a `time` column, and one `float64` column per point (named by the point's index in the request),
+   with the request echoed in the stream's schema metadata. _Exact layouts per endpoint are fixed with
+   each endpoint's DTOs._
+
 ## 3. Testing (D-23)
 
 vcell-rest's tests already run against real dependencies (`@QuarkusTest` with Dev Services:
