@@ -1,6 +1,7 @@
 package org.vcell.client.viz;
 
 import java.util.List;
+import org.vcell.vis.vtk.VtuGridParser;
 
 /**
  * Time courses at lab-frame points: parsing the {@code points=} list of a {@code /timeseries} request,
@@ -112,6 +113,31 @@ final class PointSeries {
 		 */
 		default void located(VtuGridParser.VtuGrid grid, int row, int[] cells) throws Exception {
 		}
+
+		/**
+		 * Told, before the loop, which points it will locate and whether it snaps them: a source that can locate
+		 * them itself -- a moving mesh located on the data server, next to its point positions -- may do so for
+		 * all its rows here or on the first {@link #grid} call.
+		 */
+		default void willLocate(double[][] points, boolean snap) throws Exception {
+		}
+
+		/**
+		 * Where the points lie in {@link #grid}{@code (row)}, if the source located them itself, by the loop's own
+		 * steps ({@link VtuGridParser#locate}, then {@link VtuGridParser#nearestOnMesh} when snapping) on the row's
+		 * whole mesh; null to have the loop locate them in that grid. When answered, the grid need only hold the
+		 * located cells' vertex positions: the weights and a function's x, y, z read nothing else.
+		 */
+		default Located locatedBySource(int row) throws Exception {
+			return null;
+		}
+	}
+
+	/**
+	 * Points located by a {@link Rows} source: the cell of each ({@code -1} outside), and where a snap moved
+	 * each ({@code snapped[p]}, null where it did not).
+	 */
+	record Located(int[] cells, double[][] snapped) {
 	}
 
 	/** The loop's output, one entry per requested point. */
@@ -150,15 +176,31 @@ final class PointSeries {
 		double[][] weights = new double[n][];
 		VtuGridParser.VtuGrid located = null;
 		int meshes = 0;
+		rows.willLocate(points, snap);
 		for (int row = 0; row < nRows; row++) {
 			VtuGridParser.VtuGrid grid = rows.grid(row);
 			if (grid != located) {
 				located = grid;
 				meshes++;
+				Located bySource = rows.locatedBySource(row);
 				for (int p = 0; p < n; p++) {
 					double x = points[p][0], y = points[p][1], z = points[p][2];
-					int c = VtuGridParser.locate(grid, x, y, z);
-					if (c < 0 && snap) {
+					int c;
+					if (bySource != null) {
+						c = bySource.cells()[p];
+						double[] moved = bySource.snapped()[p];
+						if (moved != null) {
+							x = moved[0];
+							y = moved[1];
+							z = moved[2];
+							if (result.snapped[p] == null) {
+								result.snapped[p] = new double[] { x, y, z };
+							}
+						}
+					} else {
+						c = VtuGridParser.locate(grid, x, y, z);
+					}
+					if (c < 0 && snap && bySource == null) {
 						double[] near = VtuGridParser.nearestOnMesh(grid, x, y, z);
 						if (near != null) {
 							c = (int) near[3];
