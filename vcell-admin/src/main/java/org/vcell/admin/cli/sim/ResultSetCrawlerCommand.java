@@ -31,12 +31,6 @@ public class ResultSetCrawlerCommand implements Callable<Integer> {
     @Option(names = {"--remove"}, description = "remove unreferenced datasets")
     private boolean bRemove = false;
 
-//    @Option(names = {"--amplistor-cred-user"}, description = "Amplistor Credential (username), must have delete permission on Amplistor")
-//    private String amplistorUsername = null;
-//
-//    @Option(names = {"--amplistor-cred-pswd"}, description = "Amplistor Credential (password)")
-//    private String amplistorPassword = null;
-
     @Option(names = {"-h", "--help"}, description = "show this help message and exit", usageHelp = true)
     private boolean help;
 
@@ -57,7 +51,7 @@ public class ResultSetCrawlerCommand implements Callable<Integer> {
                 }
                 ResultSetCrawler resultSetCrawler = cliDatabaseService.getResultSetCrawler();
                 boolean bScanOnly = !bRemove;
-                resultSetCrawler.run(outputDir, bScanOnly, username, startUsername /*, amplistorUsername, amplistorPassword */);
+                resultSetCrawler.run(outputDir, bScanOnly, username, startUsername);
             } catch (RuntimeException e) {
                 e.printStackTrace(System.err);
             }

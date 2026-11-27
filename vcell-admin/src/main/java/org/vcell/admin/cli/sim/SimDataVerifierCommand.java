@@ -50,12 +50,6 @@ public class SimDataVerifierCommand implements Callable<Integer> {
     @Option(names = {"--run-never-ran"}, description = "rerun simulations whose data is lost (default is false)")
     private boolean bRunNeverRan;
 
-//    @Option(names = {"--amplistor-cred-user"}, description = "Amplistor Credential (username), must have delete permission on Amplistor")
-//    private String amplistorUsername;
-//
-//    @Option(names = {"--amplistor-cred-pswd"}, description = "Amplistor Credential (password)")
-//    private String amplistorPassword;
-
     @Option(names = {"-h", "--help"}, description = "show this help message and exit", usageHelp = true)
     private boolean help;
 
@@ -77,7 +71,6 @@ public class SimDataVerifierCommand implements Callable<Integer> {
                 SimDataVerifier simDataVerifier = cliDatabaseService.getSimDataVerifier();
                 simDataVerifier.run(outputDir, bRerunLostData, bRunNeverRan, singleSimID, username, startUsername,
                         bIgnoreTestAccount, modelVisibilities
-//                        , amplistorUsername, amplistorPassword
                         );
             } catch (RuntimeException e) {
                 e.printStackTrace(System.err);
