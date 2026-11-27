@@ -708,7 +708,8 @@ occurred in VCell's legacy API.
 
 | Object | Read | Change |
 |---|---|---|
-| Model documents (BioModel, MathModel, Geometry, Image) | owner; group members if shared; anyone if public | owner only |
+| Model documents (BioModel, MathModel) | owner; group members if shared; anyone if public | owner only |
+| Geometries, images | their own access (as documents) **or** reachability through a linking document (§10.4) | owner only |
 | **Simulation results** | **reachability** (§10.4): anyone who can read at least one document version that links the simulation, so public and published models' results are readable by anyone, including anonymous callers | — |
 | Exports, jobs, runs | their creator | their creator |
 | Field data | owner, and those it is shared with | owner |
@@ -725,7 +726,7 @@ occurred in VCell's legacy API.
 - **Token scopes and object rules both apply** (§8.2): a scope limits what a token may do, the
   policy limits which objects.
 
-### 10.4 Simulation results: access by reachability
+### 10.4 Objects inside documents: access by reachability
 
 VCell's storage makes "the simulation's owner and sharing" the wrong question:
 
@@ -749,6 +750,23 @@ document links any more is readable only by its owner and admins.
   from private versions: that is what users see today.
 - **Earlier public versions keep their results public.** If v1 of a document is public and v2 private,
   simulations shared by both stay readable through v1, which really is public.
+
+**The same rule covers every object that lives inside documents.** Geometries and images are linked
+from BioModels (through their applications) and MathModels, shared across incrementally saved versions,
+and not updated when the parent is shared or published, exactly like simulations. Unlike simulations,
+they are **also standalone documents**: they appear in a user's library and can be shared directly, in
+which case their own `GroupAccess` is maintained. So:
+
+| Object | Readable when |
+|---|---|
+| Simulation (and its results) | the caller can read a document version that links it |
+| **Geometry, image** | the caller can read **the object itself** (owner, its own `GroupAccess`, public) **or** a document version that links it |
+| Any other inner object exposed later (math description, application) | the caller can read a document version that links it |
+
+Changing an object (save, delete, share) is decided on the object itself and its owner only; reaching
+it through someone else's public model never grants a change. The v1 geometry and image endpoints
+(summaries, VCML, delete; image save) are in use by the desktop (`LocalUserMetaDbServerMessaging`), so
+their v2 equivalents follow this table.
 
 ### 10.5 Identifiers
 
