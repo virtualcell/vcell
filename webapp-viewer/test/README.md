@@ -15,6 +15,7 @@ vcell-client's test sources, `org.vcell.client.viz.FieldViewerFixtureServer`. It
 | `fenics2dMembrane` | FEniCSx, a 2D disk in a box with its membrane, a closed curve of line cells (`receptor_2d.fenics`) |
 | `fvHybrid` | finite volume, 3D: a hybrid run saved with "save particle files" (9 × 9 × 5, species A converting to the field B; 196 … 165 molecules at five times, in `SimID_1000_0__00<n>.smoldynOutput`) |
 | `fenicsParticles` | FEniCSx, the 3D receptor bundle with molecule positions added (the bundle's `particles` extension): species A with 12, 8 and 4 molecules at the three times, B with 3 (`receptor_3d_particles.fenics`) |
+| `fenicsNucleus` | FEniCSx, VCell's nucleus model in 2D (`nucleus_2d.fenics`: a nucleus in a cytosol in a 2 × 2 box, the species-less nuclear envelope `ne_dom` and the plasma membrane `pm_dom` with receptors `R`), written with membrane-to-volume point maps; the membrane functions `Jne = 30·(s_cyto − s_nuc)·(1 + s_cyto·s_nuc)` and `Jpm = R·s_ext_OUTSIDE/(1 + s_cyto_INSIDE²) + x` read the adjacent volume values |
 | `movingBoundary` | a stand-in MovingBoundary run (`FakeMovingBoundaryRun`), served through the real VTU seam |
 | `chombo2d` | a stand-in Chombo run (`FakeChomboRun`), 2D: a disk of quads and cut pentagons, through the VTU seam |
 | `chombo3d` | the same, 3D: a ball of voxels with polyhedra at its surface |
@@ -32,7 +33,7 @@ and fails if the console shows an `is not permitted` refusal from the wasm invok
 | `test_fv_membranes.py` | finite-volume membrane variables: drawn on their faces, probed there, curves along them in 2D and in the 3D cut plane, Stats, and the desktop cross-check for membrane curves |
 | `test_chombo_membranes.py` | real Chombo runs: a 3D membrane drawn as a surface in 3D and probed on it, the 3D volume with its cut cells, switching between them, a 2D membrane drawn in the plane |
 | `test_membrane_curves.py` | curves along a 2D FEniCSx membrane: the curve follows the membrane between the snapped picks, the overlay follows its samples, the long way round, the tool off on a 3D membrane surface |
-| `test_fenics_functions.py` | VCell functions of a FEniCSx run: offered next to the stored variables, drawn, kymographed and probed |
+| `test_fenics_functions.py` | VCell functions of a FEniCSx run: offered next to the stored variables, drawn, kymographed and probed; membrane functions of the adjacent volume values, on a membrane with and without species |
 | `test_particles.py` | the particle layer of a hybrid PDE/particle run: offered only when `/info` lists `particleSpecies`, follows the time slider, hides the molecules beyond a cut, toggles |
 
 The desktop cross-check compares the viewer's *Desktop CSV* with the golden files in
