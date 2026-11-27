@@ -133,8 +133,7 @@ Rules:
    regenerated `tools/openapi.yaml`, and the reviewer reviews its diff as the contract change.
 6. **Clients.** TypeScript (webapp-ng), Python (`python-restclient`) and pyvcell are generated from the
    spec. The Java client uses the `vcell-api-dto` records directly rather than generating a second
-   Java model (target: openapi-generator schema/import mappings with model generation off; see
-   open items).
+   Java model (openapi-generator schema/import mappings; verified by the spike in §2.2).
 
 **Package names are chosen for clarity, not to mirror vcell-core.** vcell-core's packages
 (`cbit.vcell.*`, `org.vcell.*`, mixed) are historical, and renaming them wholesale would be
@@ -160,9 +159,47 @@ schemas by simple class name and two `Status` records in different sub-packages 
 spec. In `vcell-api-mapping`, where a DTO and a domain class share a name, one of them is written
 fully qualified.
 
-_Open:_
-- _A spike to confirm the generated Java client can use the shared records (schema/import mappings);
-  fallback is a small hand-written Java client over the same records._
+### 2.2 The Java client uses the shared records (spike, 2026-11-27)
+
+The generated Java client works directly on `vcell-api-dto` records, with no generated Java model and no
+hand patches. Spike: `tools/api-spikes/java-client/` (`run.sh` regenerates, compiles and runs 14 checks
+against a stub server).
+
+**How it is generated:** openapi-generator (the version `vcell-restclient` uses, 7.1.0), Java `native`
+library (Java `HttpClient` + Jackson), with every schema mapped onto its record:
+
+```bash
+--schema-mappings BioModel=org.vcell.api.dto.BioModel,... --import-mappings <same list>
+```
+
+The generator then skips every model ("skipped prior to model processing due to schema mapping") and
+the API methods take and return the records (`org.vcell.api.dto.BioModel getBioModel(String)`). The
+mapping list is produced from the DTO module, not maintained by hand.
+
+**Verified:**
+- records with nested records, lists, enums and `OffsetDateTime` timestamps deserialize;
+- unknown response fields are ignored (the generated client sets `FAIL_ON_UNKNOWN_PROPERTIES=false`),
+  so additive changes do not break it (§6.1);
+- array query parameters go out as repeated parameters (§1.2);
+- a discriminated union (a sealed interface whose records carry the discriminator, with
+  `@JsonTypeInfo`/`@JsonSubTypes`) serializes and deserializes to the right record (§1.3);
+- `application/problem+json` errors arrive as `ApiException` with the status, and the body parses into
+  the `Problem` record (§9).
+
+**Rules that came out of it:**
+1. **DTO enums tolerate values they do not know.** Each DTO enum has an `UNKNOWN` constant and a
+   `@JsonCreator` factory that returns it for an unrecognized value, so an older client survives a new
+   enum value (§6.1). The tolerance lives in the DTO, not in client configuration: the generated
+   `ApiClient.getObjectMapper()` returns a *copy*, so enabling a Jackson feature on it has no effect.
+   The server never sends `UNKNOWN`.
+2. **Absent means null.** Clients omit null fields from request bodies; servers treat an absent field
+   as null.
+3. Cosmetic: the generator names request-body parameters after the mapped class
+   (`orgVcellApiDtoBioModelCreate`). Java callers pass arguments by position, so this is left alone.
+
+Not covered by the spike: the server side (SmallRye generating the same spec from these records,
+including the `oneOf` discriminator) and the Python and TypeScript clients; both are checked in the
+pilot (plan Phase 2).
 
 ## 3. Testing (D-23)
 

@@ -1,0 +1,101 @@
+openapi: 3.0.3
+info: {title: VCell API spike, version: "2.0.0-spike"}
+paths:
+  /api/v2/biomodels/{bioModelId}:
+    get:
+      operationId: getBioModel
+      tags: [BioModels]
+      parameters:
+        - {name: bioModelId, in: path, required: true, schema: {type: string}}
+      responses:
+        "200": {description: ok, content: {application/json: {schema: {$ref: "#/components/schemas/BioModel"}}}}
+        "404": {description: not found, content: {application/problem+json: {schema: {$ref: "#/components/schemas/Problem"}}}}
+  /api/v2/biomodels:
+    get:
+      operationId: listBioModels
+      tags: [BioModels]
+      parameters:
+        - {name: bioModelId, in: query, required: false, schema: {type: array, items: {type: string}}, style: form, explode: true}
+        - {name: includeShared, in: query, required: false, schema: {type: boolean}}
+      responses:
+        "200": {description: ok, content: {application/json: {schema: {type: array, items: {$ref: "#/components/schemas/BioModelSummary"}}}}}
+    post:
+      operationId: createBioModel
+      tags: [BioModels]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: "#/components/schemas/BioModelCreate"}}}}
+      responses:
+        "201": {description: created, content: {application/json: {schema: {$ref: "#/components/schemas/BioModel"}}}}
+        "400": {description: invalid, content: {application/problem+json: {schema: {$ref: "#/components/schemas/Problem"}}}}
+  /api/v2/exports:
+    post:
+      operationId: createExport
+      tags: [Exports]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: "#/components/schemas/ExportRequest"}}}}
+      responses:
+        "202": {description: accepted, content: {application/json: {schema: {$ref: "#/components/schemas/ExportJob"}}}}
+components:
+  schemas:
+    Curation: {type: string, enum: [CURRENT, ARCHIVED, PUBLISHED]}
+    UserRef:
+      type: object
+      required: [userId, userName]
+      properties: {userId: {type: string}, userName: {type: string}}
+    Application:
+      type: object
+      required: [name, geometryDimension]
+      properties: {name: {type: string}, geometryDimension: {type: integer}}
+    BioModelSummary:
+      type: object
+      required: [bioModelId, name, owner, savedAt, curation]
+      properties:
+        bioModelId: {type: string}
+        name: {type: string}
+        owner: {$ref: "#/components/schemas/UserRef"}
+        savedAt: {type: string, format: date-time}
+        curation: {$ref: "#/components/schemas/Curation"}
+    BioModel:
+      type: object
+      required: [bioModelId, name, owner, savedAt, curation, applications]
+      properties:
+        bioModelId: {type: string}
+        name: {type: string}
+        description: {type: string}
+        owner: {$ref: "#/components/schemas/UserRef"}
+        savedAt: {type: string, format: date-time}
+        curation: {$ref: "#/components/schemas/Curation"}
+        applications: {type: array, items: {$ref: "#/components/schemas/Application"}}
+    BioModelCreate:
+      type: object
+      required: [name, vcml]
+      properties: {name: {type: string}, vcml: {type: string}}
+    CsvExport:
+      type: object
+      required: [format, simulationId, variables]
+      properties: {format: {type: string}, simulationId: {type: string}, variables: {type: array, items: {type: string}}}
+    N5Export:
+      type: object
+      required: [format, simulationId, compressionLevel]
+      properties: {format: {type: string}, simulationId: {type: string}, compressionLevel: {type: integer}}
+    ExportRequest:
+      oneOf: [{$ref: "#/components/schemas/CsvExport"}, {$ref: "#/components/schemas/N5Export"}]
+      discriminator:
+        propertyName: format
+        mapping: {csv: "#/components/schemas/CsvExport", n5: "#/components/schemas/N5Export"}
+    ExportJob:
+      type: object
+      required: [exportId, status]
+      properties: {exportId: {type: string}, status: {type: string}}
+    FieldError:
+      type: object
+      properties: {field: {type: string}, code: {type: string}, message: {type: string}}
+    Problem:
+      type: object
+      required: [type, title, status]
+      properties:
+        type: {type: string}
+        title: {type: string}
+        status: {type: integer}
+        detail: {type: string}
+        instance: {type: string}
+        requestId: {type: string}
+        errors: {type: array, items: {$ref: "#/components/schemas/FieldError"}}

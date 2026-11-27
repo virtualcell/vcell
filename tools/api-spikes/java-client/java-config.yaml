@@ -1,0 +1,13 @@
+additionalProperties:
+  groupId: org.vcell
+  artifactId: spike-restclient
+  artifactVersion: 0.0.1
+  apiPackage: org.vcell.restclient.api
+  invokerPackage: org.vcell.restclient
+  modelPackage: org.vcell.restclient.model
+  library: native
+  dateLibrary: java8
+  hideGenerationTimestamp: true
+  openApiNullable: false
+  useGzipFeature: true
+  legacyDiscriminatorBehavior: false
