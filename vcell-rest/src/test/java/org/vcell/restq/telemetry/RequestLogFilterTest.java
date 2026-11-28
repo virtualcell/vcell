@@ -51,7 +51,7 @@ public class RequestLogFilterTest {
 	private ExtLogRecord lineFor(String requestId) throws InterruptedException {
 		for (int i = 0; i < 50; i++) {   // the line is written when the response ends, possibly just after the client returns
 			for (ExtLogRecord r : records) {
-				if (requestId.equals(r.getMdc("request.id"))) return r;
+				if (requestId.equals(r.getMdc("http.request.id"))) return r;
 			}
 			Thread.sleep(20);
 		}
@@ -70,9 +70,10 @@ public class RequestLogFilterTest {
 		assertEquals("/api/v1/publications/{id}", line.getMdc("http.route"), "the template, never the raw path");
 		assertEquals("GET", line.getMdc("http.request.method"));
 		assertEquals(Integer.toString(response.statusCode()), line.getMdc("http.response.status_code"));
-		assertEquals("8.3.5.01", line.getMdc("client.version"));
-		assertEquals("anonymous", line.getMdc("user.class"));
-		assertTrue(Long.parseLong(line.getMdc("http.durationMs")) >= 0);
+		assertEquals("8.3.5.01", line.getMdc("user_agent.version"));
+		assertEquals("vcell-desktop", line.getMdc("user_agent.name"));
+		assertEquals(null, line.getMdc("user.roles"), "anonymous: no user fields");
+		assertTrue(Long.parseLong(line.getMdc("event.duration")) >= 0);
 	}
 
 	@Test
@@ -84,6 +85,6 @@ public class RequestLogFilterTest {
 		ExtLogRecord line = lineFor(id);
 		assertNotNull(line);
 		assertEquals("/api/v1/helloworld", line.getMdc("http.route"));
-		assertEquals("none", line.getMdc("client.version"));
+		assertEquals(null, line.getMdc("user_agent.version"), "absent, not a placeholder");
 	}
 }

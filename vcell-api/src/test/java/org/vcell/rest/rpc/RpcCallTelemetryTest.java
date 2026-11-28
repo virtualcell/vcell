@@ -25,44 +25,57 @@ public class RpcCallTelemetryTest {
 	@Test
 	public void aSuccessfulCallRecordsItsMethodSizesAndClient() {
 		Map<String, String> f = new RpcCallTelemetry().destination("DataRequestQueue").method("getSimDataBlock")
-				.user("alice", false).client("vcell-desktop", "Rel_Version_8.1.9_build_02")
-				.requestBytes(812).replyBytes(4_200_000).succeeded().fields(37);
-		assertEquals("rpc", f.get("event.action"));
-		assertEquals("DataRequestQueue", f.get("rpc.destination"));
+				.user("alice", false).client("vcell-desktop", "Rel_Version_8.1.9_build_02", "Apache-HttpClient/4.5.14 (Java/17)")
+				.requestBytes(812).replyBytes(4_200_000).succeeded().fields(37_000_000L);
+		assertEquals("rpc-call", f.get("event.action"));
+		assertEquals("success", f.get("event.outcome"));
+		assertEquals("37000000", f.get("event.duration"), "ECS event.duration is in nanoseconds");
+		assertFalse(f.containsKey("error.type"));
+		assertEquals("vcell-rpc", f.get("rpc.system"));
+		assertEquals("DataRequestQueue", f.get("rpc.service"));
 		assertEquals("getSimDataBlock", f.get("rpc.method"));
-		assertEquals("ok", f.get("rpc.outcome"));
-		assertFalse(f.containsKey("rpc.errorType"));
-		assertEquals("37", f.get("rpc.durationMs"));
-		assertEquals("812", f.get("rpc.requestBytes"));
-		assertEquals("4200000", f.get("rpc.replyBytes"));
+		assertEquals("812", f.get("http.request.body.bytes"));
+		assertEquals("4200000", f.get("http.response.body.bytes"));
 		assertEquals("alice", f.get("user.name"));
-		assertEquals("user", f.get("user.class"));
-		assertEquals("vcell-desktop", f.get("client.name"));
-		assertEquals("Rel_Version_8.1.9_build_02", f.get("client.version"));
+		assertEquals("user", f.get("user.roles"));
+		assertEquals("vcell-desktop", f.get("user_agent.name"));
+		assertEquals("Rel_Version_8.1.9_build_02", f.get("user_agent.version"));
+		assertEquals("Apache-HttpClient/4.5.14 (Java/17)", f.get("user_agent.original"));
 	}
 
 	@Test
-	public void aGuestRefusalIsRecordedAsRejected() {
+	public void aGuestRefusalIsAFailureWithItsType() {
 		RpcCallTelemetry t = new RpcCallTelemetry().method("saveBioModel").user("vcellguest", true)
 				.rejected(new IllegalArgumentException("guest"));
 		Map<String, String> f = t.fields(1);
-		assertEquals("rejected", f.get("rpc.outcome"));
-		assertEquals("IllegalArgumentException", f.get("rpc.errorType"));
-		assertEquals("guest", f.get("user.class"));
+		assertEquals("failure", f.get("event.outcome"));
+		assertEquals("IllegalArgumentException", f.get("error.type"));
+		assertEquals("guest", f.get("user.roles"));
 		assertFalse(t.isUnset());
 	}
 
 	@Test
-	public void aFailureBeforeAnythingIsKnownStillProducesAWellFormedLine() {
+	public void absentValuesAreOmittedNotPlaceholders() {
 		RpcCallTelemetry t = new RpcCallTelemetry();
 		assertTrue(t.isUnset(), "no outcome recorded yet");
 		Map<String, String> f = t.failed(new IllegalStateException("boom")).fields(5);
-		assertEquals("error", f.get("rpc.outcome"));
-		assertEquals("none", f.get("rpc.method"));
-		assertEquals("none", f.get("client.version"), "an old client sends no version header");
-		assertEquals("anonymous", f.get("user.class"));
-		assertFalse(f.containsKey("rpc.requestBytes"));
+		assertEquals("failure", f.get("event.outcome"));
+		assertFalse(f.containsKey("rpc.method"));
+		assertFalse(f.containsKey("user_agent.version"), "an old client sends no version header");
+		assertFalse(f.containsKey("user.name"), "an anonymous call has no user fields");
+		assertFalse(f.containsKey("user.roles"));
+		assertFalse(f.containsKey("http.request.body.bytes"));
 		f.values().forEach(v -> assertTrue(v != null && !v.isEmpty()));
+	}
+
+	@Test
+	public void callerSuppliedValuesAreCleanedAndCapped() {
+		Map<String, String> f = new RpcCallTelemetry().method("get\r\nForged: line").destination("q")
+				.client("x".repeat(5000), "v\u0000", "ua\nua").succeeded().fields(1);
+		assertEquals("get??Forged: line", f.get("rpc.method"));
+		assertEquals(64, f.get("user_agent.name").length());
+		assertEquals("v?", f.get("user_agent.version"));
+		assertEquals("ua?ua", f.get("user_agent.original"));
 	}
 
 	/** The fields must reach the log event's context, which the JSON layout writes out as fields. */
@@ -71,7 +84,7 @@ public class RpcCallTelemetryTest {
 		CapturingAppender appender = CapturingAppender.attachTo(RpcCallTelemetry.class);
 		try {
 			new RpcCallTelemetry().destination("DbRequestQueue").method("getVCInfoContainer").user("bob", false)
-					.client("vcell-desktop", "8.3.5.01").succeeded().log();
+					.client("vcell-desktop", "8.3.5.01", null).succeeded().log();
 		} finally {
 			appender.detach();
 		}
@@ -80,8 +93,8 @@ public class RpcCallTelemetryTest {
 		assertEquals(RpcCallTelemetry.MESSAGE, event.getMessage().getFormattedMessage());
 		assertEquals(Level.INFO, event.getLevel());
 		assertEquals("getVCInfoContainer", event.getContextData().getValue("rpc.method"));
-		assertEquals("8.3.5.01", event.getContextData().getValue("client.version"));
-		assertTrue(event.getContextData().getValue("rpc.durationMs") != null);
+		assertEquals("8.3.5.01", event.getContextData().getValue("user_agent.version"));
+		assertTrue(event.getContextData().getValue("event.duration") != null);
 	}
 
 	private static final class CapturingAppender extends AbstractAppender {

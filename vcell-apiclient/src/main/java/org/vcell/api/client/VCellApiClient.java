@@ -1,5 +1,6 @@
 package org.vcell.api.client;
 
+import cbit.vcell.resource.ClientIdentification;
 import org.vcell.api.types.rpc.VCellApiRpcBody;
 import org.vcell.api.types.rpc.VCellApiRpcRequest;
 import com.google.gson.Gson;

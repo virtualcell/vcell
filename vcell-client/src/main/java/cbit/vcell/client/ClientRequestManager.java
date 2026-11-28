@@ -2498,7 +2498,8 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 						if (getClientTaskStatusSupport() != null) {
 							getClientTaskStatusSupport().setMessage("downloading data...");
 						}
-						CloseableHttpClient httpclient = HttpClients.createDefault();
+						CloseableHttpClient httpclient = HttpClients.custom()
+								.setDefaultHeaders(cbit.vcell.resource.ClientIdentification.apacheHeaders()).build();
 						httpGetArr[0] = new HttpGet(evt.getLocation());
 						CloseableHttpResponse response = null;
 						try {
