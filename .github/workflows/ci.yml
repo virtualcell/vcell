@@ -89,22 +89,28 @@ jobs:
           # has that the default branch does not - judging a whole branch by its final commit
           # silently skipped the lane for branches whose last commit happened to be docs
           # (issue #2034).
+          #
+          # A topic branch is judged against its merge base with the default branch, on EVERY
+          # push - not against the previous push. With the previous push as base, a docs-only
+          # push that lands while a code push's run is still going cancels that run
+          # (cancel-in-progress) and then skips itself, so the code is never tested; and the
+          # merge to master then skips as "identical tree". Judging the whole branch every time
+          # is also what makes that identical-tree shortcut sound.
           base=""
           before="${GITHUB_EVENT_BEFORE:-}"
-          if [ -n "${before}" ] && [ -n "${before//0/}" ] \
+          if [ "${GITHUB_REF}" != "refs/heads/${DEFAULT_BRANCH}" ] && [ "${GITHUB_EVENT_NAME}" = "push" ] \
+             && git rev-parse -q --verify "origin/${DEFAULT_BRANCH}^{commit}" >/dev/null 2>&1; then
+            # A topic branch, new or not: everything it has that the default branch does not.
+            base="$(git merge-base "origin/${DEFAULT_BRANCH}" HEAD || true)"
+          elif git rev-parse -q --verify "HEAD^2" >/dev/null 2>&1 && [ "${GITHUB_EVENT_NAME}" != "push" ]; then
+            # A merge commit (merge_group): the first parent IS the base, and the diff against
+            # it is exactly the PR's contents.
+            base="HEAD^1"
+          elif [ -n "${before}" ] && [ -n "${before//0/}" ] \
              && git rev-parse -q --verify "${before}^{commit}" >/dev/null 2>&1; then
-            # Push to an existing ref: the previous tip is the most precise base there is.
+            # A push to the default branch: its previous tip.
             # An all-zeros "before" means the ref did NOT exist before, so it is not one.
             base="${before}"
-          elif git rev-parse -q --verify "HEAD^2" >/dev/null 2>&1; then
-            # A merge commit (pull_request, merge_group): the first parent IS the base, and
-            # the diff against it is exactly the PR's contents.
-            base="HEAD^1"
-          elif git rev-parse -q --verify "origin/${DEFAULT_BRANCH}^{commit}" >/dev/null 2>&1; then
-            # A new branch: "before" is all-zeros and HEAD^1 is only the previous COMMIT, which
-            # is what made this skip whole branches. The merge base spans the branch however
-            # many commits it has, and reduces to HEAD^1 for a single-commit branch.
-            base="$(git merge-base "origin/${DEFAULT_BRANCH}" HEAD || true)"
           fi
           if [ -n "${base}" ]; then
             changed="$(git diff --name-only "${base}" HEAD)"
