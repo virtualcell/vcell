@@ -37,7 +37,7 @@ import java.util.List;
 import java.util.Objects;
 
 public final class RpcRestlet extends Restlet {
-	/** Client identification headers sent by vcell-apiclient (org.vcell.api.client.ClientIdentification). */
+	/** Client identification headers sent by the desktop (cbit.vcell.resource.ClientIdentification). */
 	static final String CLIENT_HEADER = "VCell-Client";
 	static final String CLIENT_VERSION_HEADER = "VCell-Client-Version";
 	private static Logger lg = LogManager.getLogger(RpcRestlet.class);
@@ -166,7 +166,8 @@ public final class RpcRestlet extends Restlet {
 				method = request.getHeaders().getFirstValue("Method");
 				telemetry.destination(destination).method(method).user(username, User.isGuest(username))
 						.client(request.getHeaders().getFirstValue(CLIENT_HEADER, true),
-								request.getHeaders().getFirstValue(CLIENT_VERSION_HEADER, true));
+								request.getHeaders().getFirstValue(CLIENT_VERSION_HEADER, true),
+								request.getClientInfo() == null ? null : request.getClientInfo().getAgent());
 				String returnRequired = request.getHeaders().getFirstValue("ReturnRequired");
 				String timeoutMS = request.getHeaders().getFirstValue("TimeoutMS");
 				String compressed = request.getHeaders().getFirstValue("Compressed");
