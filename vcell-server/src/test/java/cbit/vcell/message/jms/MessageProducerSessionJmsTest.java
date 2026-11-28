@@ -46,6 +46,7 @@ import cbit.vcell.message.VCMessage;
 import cbit.vcell.message.VCMessageSelector;
 import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCMessagingException;
+import cbit.vcell.message.VCMessagingInvocationTargetException;
 import cbit.vcell.message.VCQueueConsumer;
 import cbit.vcell.message.VCRpcMessageHandler;
 import cbit.vcell.message.VCRpcRequest;
@@ -256,6 +257,32 @@ public class MessageProducerSessionJmsTest {
 	}
 
 	/** An RPC round trip still works: request out, reply back through the temporary queue. */
+	/**
+	 * The handler invokes only allowlisted methods. A public method of the same service that is not on the
+	 * list must be refused, and the refusal must reach the caller as the RPC's exception.
+	 */
+	@Test
+	public void anRpcForAMethodOutsideTheAllowlistIsRefused() throws Exception {
+		String previous = setBlobProperty();
+		VCellQueue rpcQueue = new VCellQueue("MessageProducerSessionJmsTest.allowlist");
+		VCQueueConsumer responder = startEchoResponder(rpcQueue);
+		VCMessageSession producerSession = service.createProducerSession();
+		try {
+			VCRpcRequest request = new VCRpcRequest(new User("testuser", new KeyValue("1")),
+					VCRpcRequest.RpcServiceType.TESTING_SERVICE, "notRemote", new Object[] { "x" });
+			VCMessagingInvocationTargetException refused = assertThrows(VCMessagingInvocationTargetException.class,
+					() -> producerSession.sendRpcMessage(rpcQueue, request, true, 30000L, null, null, null));
+			assertTrue(refused.getCause() instanceof org.vcell.util.PermissionException,
+					"expected a PermissionException, got " + refused.getCause());
+			assertEquals("hello", producerSession.sendRpcMessage(rpcQueue, echoRequest("hello"), true, 30000L, null, null, null),
+					"an allowlisted method on the same handler still works");
+		} finally {
+			producerSession.close();
+			service.removeMessageConsumer(responder);
+			restoreBlobProperty(previous);
+		}
+	}
+
 	@Test
 	public void rpcRoundTripReturnsTheAnswer() throws Exception {
 		String previous = setBlobProperty();
@@ -368,7 +395,7 @@ public class MessageProducerSessionJmsTest {
 
 	/** Answers RPCs on RPC_QUEUE by echoing the argument back. */
 	private static VCQueueConsumer startEchoResponder(VCellQueue rpcQueue) {
-		VCRpcMessageHandler handler = new VCRpcMessageHandler(new EchoService(), rpcQueue);
+		VCRpcMessageHandler handler = new VCRpcMessageHandler(new EchoService(), rpcQueue, java.util.Set.of("echo"));
 		VCQueueConsumer responder = new VCQueueConsumer(rpcQueue, handler, null, "echo responder", 1);
 		service.addMessageConsumer(responder);
 		return responder;
@@ -377,6 +404,11 @@ public class MessageProducerSessionJmsTest {
 	public static class EchoService {
 		public String echo(String value) {
 			return value;
+		}
+
+		/** Public, but not in the handler's allowlist. */
+		public String notRemote(String value) {
+			throw new AssertionError("a method outside the allowlist was invoked");
 		}
 	}
 

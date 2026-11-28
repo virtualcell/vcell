@@ -37,7 +37,7 @@ public class TestRPC {
 	        // reading message and computing sum
 	        // create N comsumers
 	        MyRpcServer myRpcServer = new MyRpcServer();
-			VCRpcMessageHandler rpcMessageHandler = new VCRpcMessageHandler(myRpcServer, VCellTestQueue.JimQueue);
+			VCRpcMessageHandler rpcMessageHandler = new VCRpcMessageHandler(myRpcServer, VCellTestQueue.JimQueue, java.util.Set.of("add"));
 			VCPooledQueueConsumer pooledQueueConsumer = new VCPooledQueueConsumer(rpcMessageHandler, NUM_THREADS, messagingService.createProducerSession());
 			pooledQueueConsumer.initThreadPool();
 			VCQueueConsumer rpcConsumer = new VCQueueConsumer(VCellTestQueue.JimQueue, pooledQueueConsumer, null, "Queue["+VCellTestQueue.JimQueue.getName()+"] ==== RPC Consumer Master Thread ", 1000);
