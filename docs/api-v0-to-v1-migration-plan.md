@@ -343,7 +343,9 @@ and low-risk first; keep the old server path until telemetry says it is unused.
 1. **Telemetry on v0.** Log one structured line per RPC with destination, method, caller identity
    class (user / guest / anonymous), outcome, duration and reply size; log the same for each non-RPC
    v0 route. Add a client-version header to the desktop's v0 and v1 requests (none is sent today) and
-   log it. Without this, no switch-off date is defensible.
+   log it. Without this, no switch-off date is defensible. _Merged on master (#2254 v0, #2255
+   vcell-rest) and on `vc8.1-prod` (#2256). It reaches users with 8.3.5.02 on dev and R1 on prod
+   (§5.1)._
 2. **Harden v0 while it lives.** _Done in 8.1.9.02 and 8.3.5.01:_ RPC dispatch accepts only the
    methods listed per service queue (`RpcMethodAllowlist`, covering live methods and the
    retired-but-supported ones in inv §3.2). Further hardening follows `SECURITY-FIXES.md`, not this
@@ -408,6 +410,68 @@ machinery (#1979).
 
 The public-pages track (model pages and downloads, publications, health) can run in parallel from
 Phase 2 on, since it has no desktop dependency.
+
+### 5.1 Release plan: rings and cadence
+
+_Agreed with the lead architect, 2026-11-28. The R2/R3 scopes at the end are PROPOSED._
+
+The phases above say what is built and in which order. This section says how the work reaches
+users. Two constraints shape it:
+
+- **The desktop client and the server ship in lockstep.** RPC and Java object serialization tie a
+  downloaded client to its server's version, and each site's installers are built in the same CD
+  run as its server. Every release a user sees is therefore a client-plus-server release.
+- **Production deploys disrupt end users, so they are rare.** Frequent deploys become possible only
+  once the desktop no longer needs v0 (Phase 6) and the REST API keeps old clients working
+  (§6). Until then, the release cadence is part of the plan, not an afterthought.
+
+**Rings.**
+
+| Ring | Site (`vcell_site`) | Who uses it | Role | How it is released |
+|---|---|---|---|---|
+| dev | `alpha`, vcell-dev | a small group of stakeholders and developers with Alpha installers | every phase is proven here first; telemetry from current workflows, by client version | full lockstep releases (server plus Alpha installers, `server_only=false`), batched per milestone; Alpha users install the new client |
+| stage | `test`, vcell-stage | normally idle | rehearsals of prod releases and deploy mechanics | anything, any time |
+| prod | `rel`, vcell | all users | stable service | rare, scheduled lockstep releases with a named scope (R1, R2, …) |
+
+**Rules.**
+
+1. **Nothing reaches prod without the explicit permission of the lead architect (Jim Schaff),
+   asked for first.** This covers every prod release and every server-only prod deploy. Permission
+   for one release doesn't carry over to the next, and no person or automation deploys to prod on
+   its own initiative.
+2. Nothing reaches prod without first running on dev in a full release.
+3. A client that calls a new endpoint ships in the same prod release as the server that provides
+   it. Facades keep their RPC fallback for at least one prod release (§6) as a safety net, not as
+   permission to ship a client ahead of its server.
+4. Server-only deploys are for fixes that change no client-visible contract (8.1.9.02 was one). They
+   don't replace a lockstep release.
+5. No prod release is made just to collect telemetry. Telemetry ships with releases made for other
+   reasons.
+6. Prod fixes land on the prod-line branch (`vc8.1-prod` today) as well as master. A release built
+   from a side branch is merged into the prod-line branch straight away, so the next prod release
+   can't drop it (8.1.9.02 was built from `security/rpc-dispatch-8.1` and merged later in #2257).
+
+**When the telemetry starts counting (Phase 0).**
+
+- **Dev:** from the first full dev release after #2254 and #2255 (8.3.5.02). Alpha clients send
+  `VCell-Client-Version`, so v0 use is broken down by client version from the start. That is enough to
+  check the log fields, rank v0 methods by real use (input to the Phase 2 pilot choice) and see what
+  the current desktop still calls.
+- **Prod:** from R1. The server logs every v0 call from then on, but only clients installed from R1
+  onward identify themselves. Older installs log `client.version=none`, which is itself the measure of
+  the long tail. The Phase 7 thresholds ("no calls from supported versions for N weeks") are counted
+  from R1, so a later R1 means a later earliest v0 switch-off.
+
+**Prod releases.**
+
+- **R1, the next prod release.** It carries what is already on the prod line: the data-service fix
+  for unresponsive archive storage (#2248), the v0 telemetry and client identification (#2256), and the
+  8.1.9.02 RPC fix (#2257), or the same changes by moving prod to the master line. The lead
+  architect decides when. A recurrence of the archive-storage freezes is a reason to bring it forward.
+- **R2 (PROPOSED).** The Phase 2 pilot and the Phase 3 data reads, with the desktop switched to them and
+  its RPC fallback kept.
+- **R3 (PROPOSED).** Phases 4 and 5, including events. The current desktop no longer needs v0
+  (Phase 6). Phase 7 deprecation signals start, and the cadence can loosen.
 
 ---
 
