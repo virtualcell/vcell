@@ -14,6 +14,11 @@
 #      there -- rest, data, api, submit and sched must land elsewhere)
 #   5. the site answers HTTP 200
 #
+# It fails closed: if the cluster cannot be read (no VPN, expired kubeconfig, API server down), it
+# says so and reports NOT VERIFIED. An unreadable cluster used to look like an empty one, and an
+# empty list passed checks 2-4 -- the 8.1.9.03 prod deploy was reported "all deployments on
+# 8.1.9.03" from a laptop that could not reach the cluster at all.
+#
 set -u
 
 VERSION="${1:-}"
@@ -34,6 +39,22 @@ esac
 
 K="kubectl --kubeconfig $KUBECONFIG_PATH --request-timeout=30s -n $NS"
 FAILED=0
+DEPLOY_IMAGES='{range .items[*]}{.metadata.name}{"\t"}{.spec.template.spec.containers[0].image}{"\n"}{end}'
+
+echo "== 0. cluster readable"
+if ! LISTED=$($K get deploy -o jsonpath="$DEPLOY_IMAGES" 2>&1); then
+	echo "   cannot read namespace $NS: $(printf '%s\n' "$LISTED" | tail -1)"
+	echo
+	echo "NOT VERIFIED -- the cluster could not be read (VPN down? kubeconfig expired?); nothing below would mean anything" >&2
+	exit 1
+fi
+VCELL_DEPLOYS=$(printf '%s\n' "$LISTED" | grep -c 'ghcr.io/virtualcell/' || true)
+if [ "$VCELL_DEPLOYS" -eq 0 ]; then
+	echo
+	echo "NOT VERIFIED -- no VCell deployments listed in namespace $NS" >&2
+	exit 1
+fi
+echo "   $VCELL_DEPLOYS VCell deployments in $NS"
 
 echo "== 1. vcell-fluxcd image-tag commit"
 gh api repos/virtualcell/vcell-fluxcd/commits --jq '.[0:5][] | "   \(.commit.committer.date[0:16])  \(.commit.message | split("\n")[0])"' \
@@ -43,8 +64,13 @@ echo "== 2. deployment image tags in $NS"
 # Flux may still be applying the new tags, so give it a bounded chance to catch up.
 OFF=""
 for _ in $(seq 1 15); do
-	OFF=$($K get deploy -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.spec.template.spec.containers[0].image}{"\n"}{end}' 2>/dev/null \
-		| grep 'ghcr.io/virtualcell/' | grep -v ":$VERSION\$" || true)
+	if ! LISTED=$($K get deploy -o jsonpath="$DEPLOY_IMAGES" 2>&1); then
+		OFF="(kubectl failed: $(printf '%s\n' "$LISTED" | tail -1))"
+	elif ! printf '%s\n' "$LISTED" | grep -q 'ghcr.io/virtualcell/'; then
+		OFF="(no VCell deployments listed)"
+	else
+		OFF=$(printf '%s\n' "$LISTED" | grep 'ghcr.io/virtualcell/' | grep -v ":$VERSION\$" || true)
+	fi
 	[ -z "$OFF" ] && break
 	sleep 20
 done
@@ -65,7 +91,8 @@ for _ in $(seq 1 30); do
 	NOT_READY=$($K get pods --field-selector=status.phase=Running -o json 2>/dev/null | python3 -c "
 import sys, json
 try: d = json.load(sys.stdin)
-except Exception: print('unknown'); raise SystemExit
+except Exception: print('unreadable'); raise SystemExit
+if not d.get('items'): print('no-running-pods'); raise SystemExit
 print(','.join(p['metadata']['name'] for p in d.get('items', [])
       if not all(c.get('ready') for c in p['status'].get('containerStatuses', []))))")
 	PENDING=$($K get pods --field-selector=status.phase=Pending -o name 2>/dev/null | tr '\n' ' ')
