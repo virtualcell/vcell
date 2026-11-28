@@ -4,7 +4,9 @@
 > wherever this document says "v1" for new endpoints, read "v2". The style guide is
 > [`api-style-guide.md`](api-style-guide.md).
 
-Status: **draft for discussion**, 2026-11-27. First catch-all RPC worked through under the style
+Status: **in progress**, updated 2026-11-28. §3 (decomposition) and §4 (P-1 to P-5) are **decided**
+(P-1 to P-5 confirmed by the lead architect 2026-11-28); the DTO sketches stay PROPOSED until built.
+This is the style guide's worked example (plan Phase 1 item 2). First catch-all RPC worked through under the style
 guide's rule §1.3 ("one endpoint, one purpose, one response type",
 [`api-style-guide.md`](api-style-guide.md)). Endpoint shapes below are **PROPOSED — needs
 agreement**; paths are placeholders.
@@ -89,6 +91,8 @@ Both answer JSON for small results and the binary form (§2.4) for large ones, b
   (D-12). This takes the RPC's progress events off `/api/v0/events`.
 
 ## 4. Decisions
+
+_Decided 2026-11-28._
 
 **P-1. Points are coordinates first, mesh indices as an alternative.** A request's points are a
 discriminated union (`PointSpec`, §1.3):

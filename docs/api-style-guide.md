@@ -5,6 +5,9 @@ design question at a time; the questions and their options are in
 [`api-v0-to-v1-migration-plan.md`](api-v0-to-v1-migration-plan.md) §3 (D-1 to D-24). Each rule
 below names the question it settles. Questions not listed here are still open.
 
+Implemented so far: client identification (§6.3) and the request log line (§7.1), from 8.3.5.02. No
+`/api/v2` endpoint exists yet, and none of the §4 checks run in CI yet.
+
 Every `/api/v2` endpoint is reviewed against this guide (§6).
 
 ## Scope
@@ -18,7 +21,7 @@ straight to `/api/v2`, so nothing is ported twice.
 
 ### 1.1 Resources are nouns; HTTP methods carry the verb (D-1)
 
-Paths name resources, never actions: `GET /biomodels/{id}`, `DELETE /fielddata/{id}`, not
+Paths name resources, never actions: `GET /biomodels/{bioModelId}`, `DELETE /field-data/{fieldDataId}`, not
 `GET /fieldData/delete/{id}`. The method says what happens:
 
 | Method | Meaning | Properties relied on |
@@ -482,8 +485,10 @@ Spectral enforces: an `@Tag` on every operation that is declared at the top leve
 
 ### 6.3 Long-lived clients
 
-- **Every client sends its version** on each request (a header such as `VCell-Client-Version`),
-  and the server logs it with the endpoint. Desktop installers live in the field for years; this is
+- **Every client identifies itself** on each request with two headers: `VCell-Client` (a name such as
+  `vcell-desktop`) and `VCell-Client-Version` (its version string). The server logs both with the
+  endpoint, as `user_agent.name` and `user_agent.version` (§7.1), and omits them when absent. The
+  desktop has sent them since 8.3.5.02 (#2254). Desktop installers live in the field for years; this is
   the evidence for removing anything.
 - **A published supported-version policy:** the oldest desktop and pyvcell versions the server
   serves, and a clear error (not a failure deep in a call) for older ones.
@@ -503,7 +508,7 @@ A single JAX-RS filter writes, for every request:
 
 | Field | Notes |
 |---|---|
-| method, **route template** | `/simulations/{id}/runs`, never the raw path |
+| method, **route template** | `/simulations/{simulationId}/runs`, never the raw path |
 | status, duration, response bytes | |
 | caller class | anonymous / user / admin / automation (§8.1) |
 | user id | the VCell user, when authenticated |
@@ -513,10 +518,38 @@ A single JAX-RS filter writes, for every request:
 Questions such as "who is crawling the data endpoints" or "which client versions still call v1"
 are then one LogQL query.
 
+**Field names follow Elastic Common Schema (ECS)**, and OpenTelemetry's semantic conventions where ECS
+has none (`http.route`, `rpc.*`). Absent values are omitted, never written as placeholders. Every value
+a caller supplies is made printable and capped in length before it is logged. Implemented in vcell-rest
+(message `http request`) and the legacy RPC endpoint (message `rpc call`); `/api/v2` uses the same.
+
+| Field | HTTP request | Legacy RPC call |
+|---|---|---|
+| `event.action` | `http-request` | `rpc-call` |
+| `event.outcome` | `success` (status < 400), `failure`, `unknown` (connection closed early) | `success`, `failure` |
+| `event.duration` | nanoseconds | nanoseconds |
+| `error.type` | | exception type of a failed or refused call |
+| `http.request.method`, `http.route`, `http.response.status_code` | yes | |
+| `http.request.body.bytes`, `http.response.body.bytes` | response only | both |
+| `http.request.id` | §7.2 | |
+| `rpc.system`, `rpc.service`, `rpc.method` | | `vcell-rpc`, the queue, the method |
+| `user.id` | the authenticated principal | |
+| `user.name` | | the VCell user |
+| `user.roles` | `user` or `admin`; absent for anonymous | `user` or `guest`; absent for anonymous |
+| `user_agent.name`, `user_agent.version` | from `VCell-Client`, `VCell-Client-Version` | same |
+| `user_agent.original` | the `User-Agent` header | same |
+
+_Known gap:_ on `/api/v1`, `user.id` is the Auth0 subject and `admin` comes from the Auth0 role, while v0
+logs the VCell user name. Under §10.7 both become the VCell user and the database role. vcell-rest also
+logs only requests that reach a resource method; unknown paths and requests refused before routing are
+not logged yet.
+
 ### 7.2 Request ids and tracing
 
-- Accept a W3C `traceparent` (or create one) and return the request id in a response header and in
-  **every error body**, so a user's support message can quote it.
+- The request id travels in `X-Request-Id`: accepted from the caller when it is 8–128 characters of
+  `[A-Za-z0-9._-]`, otherwise generated, and always returned (#2255); logged as `http.request.id`.
+  Return it in **every error body** too, so a user's support message can quote it.
+- Accept a W3C `traceparent` (or create one). Not implemented yet.
 - **OpenTelemetry** (`quarkus-opentelemetry`) instruments HTTP, REST clients, JDBC and AMQP
   messaging, and adds trace and span ids to the logs. Traces go to Tempo (Grafana stack).
 - Sampling: a small fraction of requests, plus **every error and every slow request** (tail
@@ -828,11 +861,11 @@ access from the mapped VCell user.
 The desktop reaches the server only through the API. **Direct-connect mode is retired** (decided
 2026-11-27).
 
-**What it is.** `VCellClientDevMain` (vcell-admin) runs the desktop with the server classes
+**What it was.** `VCellClientDevMain` (vcell-admin) ran the desktop with the server classes
 (`DatabaseServerImpl`, `DataSetControllerImpl`) in the same process, talking to Oracle, `/simdata` and
-MongoDB directly with database credentials on the developer's machine. It is served by
+MongoDB directly with database credentials on the developer's machine. It was served by
 `LocalVCellConnection*` (vcell-server) and by special cases in the API client
-(`ClientServerManager.isVCellClientDevMain()`, `AsynchMessageManager`).
+(`ClientServerManager.isVCellClientDevMain()`, now `isLocalConnection()`, and `AsynchMessageManager`).
 
 **Why it goes.**
 - It is a **second implementation of every desktop-to-server interface.** Keeping it would mean an
@@ -850,12 +883,11 @@ desktop no longer uses RPC (step 3), since vcell-server binds it too._
 1. **Now:** the documented developer launch path is `VCellClientMain` against the dev site or a local
    stack (vcell-rest in Quarkus dev mode, or the local stack in `docker/swarm/README_stack_on_mac.md`),
    with its API base URL configurable. Look-and-feel and font setup lives in `VCellClientMain`.
-   `README.md` is updated to say so. `VCellClientDevMain` keeps working, frozen, while the desktop still
-   uses RPC.
+   `README.md` is updated to say so.
 2. **From the first `/api/v2` endpoint:** no in-process implementations. New endpoints have exactly one
    implementation, in vcell-rest, and the desktop facades call only the API.
-3. **When the desktop no longer uses RPC:** delete `VCellClientDevMain`, the `isVCellClientDevMain()`
-   branches and `LocalVCellConnection*`.
+3. **When the desktop no longer uses RPC:** delete `LocalVCellConnection*` and the `isLocalConnection()`
+   branches that only it needs (`VCellClientDevMain` was already deleted on 2026-11-28, #2260).
 
 **What replaces it.**
 - Debugging client and server together: vcell-rest in Quarkus dev mode locally (live reload, debugger

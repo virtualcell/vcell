@@ -95,7 +95,8 @@ vcell.org accordion entry. Lead with the most impactful change.
 - Security-relevant change description. (#PR)
 
 ### Notes for API consumers
-- Schema/endpoint changes in `/api/v1/`, breaking client-generation
+- Schema/endpoint changes in `/api/v1/` or `/api/v2/`, legacy RPC methods refused or retired,
+  breaking client-generation
   diffs, or deprecation timelines for integrators. Use "No
   `/api/v1/` schema changes in this build." when there are none, so
   silence is unambiguous.
@@ -215,6 +216,11 @@ development (e.g., partially complete on a `stage`-deployed build). It
 is not transcribed to the website until prod rolls.
 
 ## Release-cut procedure
+
+Which sites a release goes to, in what order, and who may approve a prod release: see the release
+plan in [`api-v0-to-v1-migration-plan.md`](api-v0-to-v1-migration-plan.md) §5.1 (rings dev, stage and
+prod; prod only with the lead architect's explicit permission; prod-line fixes on `vc8.1-prod` and
+master).
 
 When a new build is tagged (`MAJOR.MINOR.PATCH.BUILD`), the release
 manager performs the following steps. All steps happen in the `vcell`

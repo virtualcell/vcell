@@ -405,13 +405,13 @@ Issue #2184 proposes the next port (simulation start/stop), and notes the two co
 |---|---|
 | Java serialization | Security (deserialization of client-supplied graphs; mitigated by the 2026-11-20 filter) and version coupling (every transported class is wire format). Moving a method to v1 removes both for that method. |
 | Large binary payloads | `getSimDataBlock`, `getODEData`, `getMesh`, `getTimeSeriesValues`, VTU, Langevin and FEniCSx reads. The FEniCSx work showed per-call overhead matters (201 sequential RPCs per kymograph before batching, 53.9 MB moved cold before server-side sampling) and introduced reply caps answered as prefixes. JSON number arrays would multiply size and parse time. |
-| Backward compatibility | Prod runs 8.1.x (`vc8.1-prod`), dev runs master (8.3.x). The client warns on a MAJOR/MINOR/PATCH mismatch but keeps working (`ClientServerManager.java:299-330`), so old installers keep calling v0 indefinitely. No client version is sent on RPC requests, so who still calls what is not measurable today. |
+| Backward compatibility | Prod runs 8.1.x (`vc8.1-prod`), dev runs master (8.3.x). The client warns on a MAJOR/MINOR/PATCH mismatch but keeps working (`ClientServerManager.java:299-330`), so old installers keep calling v0 indefinitely. No client version is sent on RPC requests, so who still calls what is not measurable today. _(Superseded 2026-11-28: RPC calls are logged by method and client version from 8.3.5.02 on dev and R1 on prod; plan Phase 0 item 1.)_ |
 | Guest / public access | Shared `vcellguest` account with a legacy token, two allowlists; #2220 proposes anonymous access instead. v1 already has an anonymous identity for public reads. |
 | Authorization of data reads | Must be designed explicitly for v1 (see the plan's design questions). See the style guide §10. |
 | Rate limiting and abuse | Public v0 resources are crawled (#1967, #2106, the 2026-11-08 outage); robots.txt is served by the webapp since #2030; ingress limits only cover v0 sbml/omex. vcell-rest has no limits of its own. |
 | JMS | RPC rides ActiveMQ Classic `activemqint`. Artemis is the destination (`docs/MESSAGING.md`); do not invest in Classic-side machinery. vcell-rest speaks AMQP only. |
 | Memory | The api pod buffers every RPC reply; the data pod has an 8 GB limit, rest 1 GB, api 2–4 GB (vcell-fluxcd `kustomize/base/*.yaml`, prod overlay differs). |
-| Telemetry | The api access log records `POST /api/v0/rpc` but not the method (it is a header) nor the client version; the method appears only in the response status text and at TRACE. |
+| Telemetry | The api access log records `POST /api/v0/rpc` but not the method (it is a header) nor the client version; the method appears only in the response status text and at TRACE. _(Superseded 2026-11-28: one structured line per RPC call, by method and client version; plan Phase 0 item 1.)_ |
 
 ---
 

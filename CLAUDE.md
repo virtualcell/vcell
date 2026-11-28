@@ -186,7 +186,7 @@ GitHub Actions, split by concern:
 gh workflow run regression.yml --ref master
 ```
 
-Normal team merges go through the queue and gate on regression automatically — this manual step is only needed after an admin (queue-bypassing) merge.
+In practice (2026-11) every merge to `master` has been an admin merge, so the queue has not run (see [docs/api-v0-to-v1-migration-plan.md](docs/api-v0-to-v1-migration-plan.md) §5.1 for the release rules); run regression manually after each merge as above.
 
 ## Validation Checklist
 
