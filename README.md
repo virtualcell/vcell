@@ -88,29 +88,27 @@ Requirements:  IntelliJ, Java 17, Python 3.10 and poetry
   * Follow the instructions above for building Python packages with poetry
   * Start IntelliJ
     * Open Project -> Navigate to vcell folder where VCell was installed and built at the previous step.
-      * Edit Configurations -> "+" Application 
+      * Edit Configurations -> "+" Application
          * Name: VCellClient
-         * -cp <no module> -> choose `vcell-admin`, `Java 17 SDK of vcell-admin module`
-         * Main class: `org.vcell.standalone.VCellClientDevMain`
+         * -cp <no module> -> choose `vcell-client`, `Java 17 SDK of vcell-client module`
+         * Main class: `cbit.vcell.client.VCellClientMain`
+         * Program arguments: `--api-host=vcell-dev.cam.uchc.edu:443` (the dev site; use
+           `localhost:<port>` for a local stack, see below)
          * Modify options -> check `Add VM options`
-         * VM options:
-           ```-Dvcell.installDir=${INSTALL_DIR}
-           -Dlog4j.configurationFile=${INSTALL_DIR}/vcell-cli/src/main/resources/log4j2.xml
-           -Dcli.workingDir=${INSTALL_DIR}/vcell-cli-utils
-           -Dvcell.primarySimdatadir.internal=/path/to/local/simdata
-           -Dvcell.secondarySimdatadir.internal=/path/to/local/simdata
-           -Dvcell.server.dbConnectURL=jdbc:postgresql://localhost:5432/postgres
-           -Dvcell.server.dbDriverName=org.postgresql.Driver
-           -Dvcell.server.dbPassword=dbpassword
-           -Dvcell.server.dbUserid=dbuser
-           -Dvcell.server.id=TEST
-           -Dvcell.softwareVersion=Dev_Version_7.5_build_00
-           -Dvcell.mongodb.host=localhost
-           -Dvcell.mongodb.host.internal=localhost
-           -Dvcell.mongodb.port.internal=27019
-           -Dvcell.mongodb.database=TEST
-           -Dvcell.server.maxJobsPerScan=2
-          ```        
+         * VM options (a subset of what `vcell.sh` passes):
+           ```
+           -Dvcell.installDir=${INSTALL_DIR}
+           -Dvcell.softwareVersion=Dev_Version_8.3_build_00
+           -Dvcell.serverPrefix.v0=/api/v0
+           -Dvcell.serverPrefix.v1=/api/v1
+           -Dvcell.onlineResourcesURL=http://vcell.org
+           ```
+
+  The desktop always reaches the server through the API. The old direct-connect launcher
+  (`VCellClientDevMain`, which ran the server classes in-process against a database) was removed in
+  2026-11; see `docs/api-style-guide.md` §11. To debug the client and server together, run vcell-rest
+  in Quarkus dev mode (`mvn quarkus:dev -pl vcell-rest`) or the local stack in
+  `docker/swarm/README_stack_on_mac.md`, and point `--api-host` at it.
 
 ### VCell client Eclipse setup for Windows and Mac (follow command line instructions first)
 Requirements:  Eclipse IDE for Java Developers and Java 17, Python 3.10 and poetry

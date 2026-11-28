@@ -843,7 +843,10 @@ MongoDB directly with database credentials on the developer's machine. It is ser
 - **Problems in the API layer** (serialization, authorization, error mapping) never appear in
   development, because that layer is skipped.
 
-**Schedule.**
+**Schedule.** _Brought forward 2026-11-28: `VCellClientDevMain` and its Guice module are deleted (nobody
+uses them). The in-process check in the API client is renamed `isLocalConnection()`, because admin tools
+such as `MathGenerationDebugger` still use a local connection. `LocalVCellConnection*` stays until the
+desktop no longer uses RPC (step 3), since vcell-server binds it too._
 1. **Now:** the documented developer launch path is `VCellClientMain` against the dev site or a local
    stack (vcell-rest in Quarkus dev mode, or the local stack in `docker/swarm/README_stack_on_mac.md`),
    with its API base URL configurable. Look-and-feel and font setup lives in `VCellClientMain`.

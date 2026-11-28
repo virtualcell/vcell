@@ -615,4 +615,5 @@ serialization.
     it runs the desktop wired straight to the backend (database and remote files), bypassing the API,
     for debugging. **Decided 2026-11-27: retired**, on the schedule in the style guide §11 (developer
     path is `VCellClientMain` against the dev site or a local stack now; no in-process twins for v2
-    endpoints; deleted when the desktop stops using RPC).
+    endpoints; deleted when the desktop stops using RPC). **Deleted early, 2026-11-28**: the launcher
+    and its Guice module are gone; `LocalVCellConnection*` remains until the RPC goes.
