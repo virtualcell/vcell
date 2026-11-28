@@ -46,7 +46,11 @@ public class ClientServerManager implements ClientServerInterface {
 	private final VCellConnectionFactory vcellConnectionFactory;
 	public final Auth0ConnectionUtils auth0ConnectionUtils;
 
-	public boolean isVCellClientDevMain() {
+	/**
+	 * True when the connection runs the server classes in this process instead of going through the API
+	 * (admin tools such as MathGenerationDebugger). Such connections have no server to poll for events.
+	 */
+	public boolean isLocalConnection() {
 		return !(vcellConnectionFactory instanceof RemoteProxyVCellConnectionFactory);
 	}
 
