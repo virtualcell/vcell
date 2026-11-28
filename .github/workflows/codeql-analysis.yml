@@ -72,14 +72,28 @@ jobs:
           fi
 
           # A merge commit whose tree matches the branch it merged was already analysed there.
+          # Sound only because a pull request is judged by its whole diff (below): the PR's
+          # final run saw every change this merge brings.
           if [ "${GITHUB_REF}" = "refs/heads/master" ] && git rev-parse -q --verify "HEAD^2" >/dev/null 2>&1; then
             if [ "$(git rev-parse "HEAD^{tree}")" = "$(git rev-parse "HEAD^2^{tree}")" ]; then
               all false "merge commit tree is identical to the branch already analysed"
             fi
           fi
 
+          # The base must span EVERYTHING this change brings, never just its latest push. On a
+          # pull_request event github.event.before is the branch's previous tip, so a final push
+          # that touched no Java skipped the Java analysis for the whole PR - and the merge to
+          # master then skipped too, as "already analysed" (#2261: three pom.xml changes, never
+          # analysed). A pull_request checks out the PR's merge commit, whose first parent is
+          # the base branch, so HEAD^1..HEAD is exactly the PR.
           base=""
-          if [ -n "${GITHUB_EVENT_BEFORE:-}" ] && git rev-parse -q --verify "${GITHUB_EVENT_BEFORE}^{commit}" >/dev/null 2>&1; then
+          if [ "${GITHUB_EVENT_NAME}" = "pull_request" ] && git rev-parse -q --verify "HEAD^2" >/dev/null 2>&1; then
+            base="HEAD^1"
+          elif [ "${GITHUB_EVENT_NAME}" = "pull_request" ]; then
+            all true "pull request without a merge commit to compare against"
+          elif [ -n "${GITHUB_EVENT_BEFORE:-}" ] && [ -n "${GITHUB_EVENT_BEFORE//0/}" ] \
+               && git rev-parse -q --verify "${GITHUB_EVENT_BEFORE}^{commit}" >/dev/null 2>&1; then
+            # A push to master: the previous tip of master.
             base="${GITHUB_EVENT_BEFORE}"
           elif git rev-parse -q --verify "HEAD^1" >/dev/null 2>&1; then
             base="HEAD^1"
