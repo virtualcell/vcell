@@ -1,6 +1,7 @@
-package org.vcell.api.client;
+package cbit.vcell.resource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.URI;
@@ -57,5 +58,25 @@ public class ClientIdentificationTest {
 		HttpRequest.Builder builder = HttpRequest.newBuilder(URI.create("https://example.org/api/v1/x"));
 		ClientIdentification.withIdentification(null).accept(builder);
 		assertTrue(builder.build().headers().firstValue(ClientIdentification.CLIENT_HEADER).isPresent());
+	}
+
+	/** A bad -Dvcell.client.name must not make every request fail (java.net.http rejects control characters). */
+	@Test
+	public void aNameWithControlCharactersIsCleaned() {
+		System.setProperty(ClientIdentification.CLIENT_NAME_PROPERTY, "evil\r\nInjected: yes");
+		assertEquals("evil??Injected: yes", ClientIdentification.clientName());
+		HttpRequest.Builder builder = HttpRequest.newBuilder(URI.create("https://example.org/api/v1/x"));
+		ClientIdentification.withIdentification(null).accept(builder);
+		assertEquals("evil??Injected: yes", builder.build().headers().firstValue(ClientIdentification.CLIENT_HEADER).orElse(null));
+	}
+
+	@Test
+	public void cleanKeepsPrintableAsciiAndCapsTheLength() {
+		assertEquals("vcell-desktop", ClientIdentification.clean("  vcell-desktop ", 64));
+		assertEquals("a?b", ClientIdentification.clean("a\u00e9b", 64));
+		assertEquals("abc", ClientIdentification.clean("abcdef", 3));
+		assertNull(ClientIdentification.clean("   ", 64));
+		assertNull(ClientIdentification.clean(null, 64));
+		assertEquals(64, ClientIdentification.clean("x".repeat(10_000), 64).length());
 	}
 }

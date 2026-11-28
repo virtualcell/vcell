@@ -257,7 +257,8 @@ public class ErrorUtils {
             lg.error(e.getMessage(), e);
             throw new RuntimeException(e.getMessage(), e);
         }
-        try (CloseableHttpClient httpClient = HttpClients.custom().setSSLSocketFactory(sslsf).build()) {
+        try (CloseableHttpClient httpClient = HttpClients.custom().setSSLSocketFactory(sslsf)
+                .setDefaultHeaders(ClientIdentification.apacheHeaders()).build()) {
             HttpPost httpPost = new HttpPost("https://" + serverHost + serverPrefixV0 + "/contactus");
             String json = new Gson().toJson(errorReport);
             httpPost.setEntity(new StringEntity(json));
@@ -301,7 +302,8 @@ public class ErrorUtils {
             lg.error(e.getMessage(), e);
             throw new RuntimeException(e.getMessage(), e);
         }
-        try (CloseableHttpClient httpClient = HttpClients.custom().setSSLSocketFactory(sslsf).build()) {
+        try (CloseableHttpClient httpClient = HttpClients.custom().setSSLSocketFactory(sslsf)
+                .setDefaultHeaders(ClientIdentification.apacheHeaders()).build()) {
             HttpPost httpPost = new HttpPost("https://" + serverHost + serverPrefixV0 + "/contactus");
             Gson gson = new Gson();
             ErrorReport errorReport = new ErrorReport(username, message, exceptionMessage, stackTrace, softwareVersion, platform);
