@@ -286,6 +286,18 @@ public class DictionaryDbDriver {
      * @param bOnlyUser boolean
      * @return cbit.vcell.dictionary.DBSpecies[]
      */
+    /**
+     * An ID search's value as a numeric SQL literal. IDs are database keys; anything that is not a number is refused
+     * rather than placed in the query.
+     */
+    static String numericIdLiteral(String id) {
+        try {
+            return new java.math.BigDecimal(id.trim()).toPlainString();
+        } catch (RuntimeException e) {
+            throw new IllegalArgumentException("An ID search needs a numeric ID.");
+        }
+    }
+
     public DBFormalSpecies[] getDatabaseSpecies(Connection con, User user, String likeString, boolean isBound, FormalSpeciesType speciesType, int restrictSearch, int rowLimit, boolean bOnlyUser) throws SQLException{
 
         if(speciesType != null && speciesType.equals(FormalSpeciesType.speciesMatchSearch)){
@@ -423,7 +435,7 @@ public class DictionaryDbDriver {
         if(speciesType.equals(FormalSpeciesType.compound)){
 
             if((restrictSearch & FormalSpeciesType.COMPOUND_ID) != 0){
-                likeConditions.add(" UPPER(" + CompoundTable.table.id.getQualifiedColName() + ") = " + likeString);
+                likeConditions.add(" UPPER(" + CompoundTable.table.id.getQualifiedColName() + ") = " + numericIdLiteral(likeString));
             }
             if((restrictSearch & FormalSpeciesType.COMPOUND_ALIAS) != 0){
                 likeConditions.add(" UPPER(" + CompoundAliasTable.table.name.getQualifiedColName() + ") LIKE " + DbDriver.sqlLiteral(likeString) + " ESCAPE '/'");
@@ -441,7 +453,7 @@ public class DictionaryDbDriver {
         } else if(speciesType.equals(FormalSpeciesType.enzyme)){
 
             if((restrictSearch & FormalSpeciesType.ENZYME_ID) != 0){
-                likeConditions.add(" UPPER(" + EnzymeTable.table.id.getQualifiedColName() + ") = " + likeString);
+                likeConditions.add(" UPPER(" + EnzymeTable.table.id.getQualifiedColName() + ") = " + numericIdLiteral(likeString));
             }
             if((restrictSearch & FormalSpeciesType.ENZYME_ALIAS) != 0){
                 likeConditions.add(" UPPER(" + EnzymeAliasTable.table.name.getQualifiedColName() + ") LIKE " + DbDriver.sqlLiteral(likeString) + " ESCAPE '/'");
@@ -463,7 +475,7 @@ public class DictionaryDbDriver {
         } else if(speciesType.equals(FormalSpeciesType.protein)){
 
             if((restrictSearch & FormalSpeciesType.PROTEIN_ID) != 0){
-                likeConditions.add(" UPPER(" + ProteinTable.table.id.getQualifiedColName() + ") = " + likeString);
+                likeConditions.add(" UPPER(" + ProteinTable.table.id.getQualifiedColName() + ") = " + numericIdLiteral(likeString));
             }
             if((restrictSearch & FormalSpeciesType.PROTEIN_ALIAS) != 0){
                 likeConditions.add(" UPPER(" + ProteinAliasTable.table.name.getQualifiedColName() + ") LIKE " + DbDriver.sqlLiteral(likeString) + " ESCAPE '/'");

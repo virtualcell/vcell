@@ -386,12 +386,40 @@ throws java.sql.SQLException, DataAccessException, DependencyException, Permissi
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
+/**
+ * Whether {@code user} may run test-suite operations other than {@code ModelGeometryOP} (which any user may run: it
+ * finds the geometry of a model application). The testing framework is offered only to the VCell test account; the
+ * administrators are those listed as such in the special-users table, never claims carried by the caller's User.
+ */
+static boolean mayRunTestSuiteOP(User user, TreeMap<SpecialUser.SPECIAL_CLAIM, TreeMap<User, String>> specialUsers) {
+	if (user == null) {
+		return false;
+	}
+	if (user.isTestAccount()) {
+		return true;
+	}
+	TreeMap<User, String> admins = specialUsers == null ? null : specialUsers.get(SpecialUser.SPECIAL_CLAIM.admins);
+	if (admins == null || user.getID() == null) {
+		return false;
+	}
+	for (User admin : admins.keySet()) {
+		if (user.getID().equals(admin.getID())) {
+			return true;
+		}
+	}
+	return false;
+}
+
 TestSuiteOPResults doTestSuiteOP(cbit.vcell.numericstest.TestSuiteOP tsop,User user,boolean bEnableRetry) 
 				throws DataAccessException, java.sql.SQLException, ObjectNotFoundException {
 
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
+		if (!(tsop instanceof cbit.vcell.numericstest.ModelGeometryOP)
+				&& !mayRunTestSuiteOP(user, DbDriver.getSpecialUsers(user, con, conFactory.getDatabaseSyntax()))) {
+			throw new PermissionException("Test suite operations are limited to the VCell test account and administrators.");
+		}
 		TestSuiteOPResults tsor  = DbDriver.testSuiteOP(tsop,con,user,conFactory.getKeyFactory());
 		con.commit();
 		return tsor;

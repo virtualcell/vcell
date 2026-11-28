@@ -237,6 +237,22 @@ protected void executeUpdate(Connection con, String sql) throws SQLException {
 }
 ```
 
+### Caller-supplied values in SQL
+
+Much of `DbDriver` still assembles SQL as text. Any value that comes from a caller (a search string, a name, a
+condition, anything carried in an RPC or REST request) must reach the database in one of these forms, never by
+concatenation:
+
+| Value | How it enters SQL |
+|---|---|
+| Any value, in new code | a `?` placeholder: `DbDriver.updateBoundSQL` / `DbDriver.bindParameters` with a `PreparedStatement` |
+| Text, in code that still builds SQL as a string | `DbDriver.sqlLiteral(value)`: a quoted literal with embedded quotes doubled (`NULL` for null). For `LIKE`, pair it with `ESCAPE '/'` as `DictionaryDbDriver` does |
+| A database key or other number | a `KeyValue`/`BigDecimal`, or a string parsed as a number first (`DictionaryDbDriver.numericIdLiteral`); refuse anything that does not parse |
+| A whole condition or `WHERE` fragment | never from a caller. Build it from structured parameters on the server |
+
+Table, column and keyword text comes only from `Table`/`Field` definitions, never from a request. Each of these rules
+has a Fast test with a hostile value next to the code it protects (`UserSqlBindingTest`, `SearchQueryLiteralTest`).
+
 ## Connection & Transaction Management
 
 ### ConnectionFactory
@@ -341,6 +357,14 @@ Indicates model maturity, **not** access control:
 - `VersionFlag.Published` (3) — published, not deletable, publicly accessible
 
 **Operational tables like `vc_optjob` do not use privacy or curation status.** Access control is enforced at the REST layer by checking the `ownerRef` field.
+
+### Administrative operations
+
+An operation limited to administrators decides that on the server, from the database: the `admins` entries of the
+special-users table (`DbDriver.getSpecialUsers`), matched by user key. The claims on a `User`/`SpecialUser` object that
+arrived with a request are the caller's own statement and are never trusted for this. `DBTopLevel.mayRunTestSuiteOP` is
+the pattern: test-suite operations (other than the geometry lookup any user may run) are allowed for the VCell test
+account, which the desktop's testing framework uses, and for listed administrators.
 
 ## Summary: Creating a New Operational Table
 

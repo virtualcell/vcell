@@ -364,7 +364,7 @@ public String getSQLUserReactionListQuery(ReactionQuerySpec rqs, User user, Data
 			subConditions.append("(");
 			subConditions.append("(vc_reactpart_sub.role = 'reactant' OR vc_reactpart_sub.role = 'flux') AND ");
 			if(bHasLike){
-				subConditions.append("upper("+"vc_modelsc_sub.name"+") LIKE upper('"+reactant_or_flux_likeString+"')");
+				subConditions.append("upper("+"vc_modelsc_sub.name"+") LIKE upper("+DbDriver.sqlLiteral(reactant_or_flux_likeString)+")");
 				if(bHasDBspid){subConditions.append(" OR ");}
 			}
 			if(bHasDBspid){
@@ -385,7 +385,7 @@ public String getSQLUserReactionListQuery(ReactionQuerySpec rqs, User user, Data
 			subConditions.append("(");
 			subConditions.append("vc_reactpart_sub.role = 'catalyst' AND ");
 			if(bHasLike){
-				subConditions.append("upper("+"vc_modelsc_sub.name"+") LIKE upper('"+catalyst_likeString+"')");
+				subConditions.append("upper("+"vc_modelsc_sub.name"+") LIKE upper("+DbDriver.sqlLiteral(catalyst_likeString)+")");
 				if(bHasDBspid){subConditions.append(" OR ");}
 			}
 			if(bHasDBspid){
@@ -406,7 +406,7 @@ public String getSQLUserReactionListQuery(ReactionQuerySpec rqs, User user, Data
 			subConditions.append("(");
 			subConditions.append("vc_reactpart_sub.role = 'product' AND ");
 			if(bHasLike){
-				subConditions.append("upper ("+"vc_modelsc_sub.name"+") LIKE upper('"+product_likeString+"')");
+				subConditions.append("upper ("+"vc_modelsc_sub.name"+") LIKE upper("+DbDriver.sqlLiteral(product_likeString)+")");
 				if(bHasDBspid){subConditions.append(" OR ");}
 			}
 			if(bHasDBspid){
@@ -496,7 +496,7 @@ public String getSQLUserReactionListQuery(ReactionQuerySpec rqs, User user, Data
 		    (typeWildCard != null ? "," + DBSpeciesTable.table.getTableName() + " vc_dbspecies_sub":"") +
 		    " WHERE " +
 		    "(" +
-		    (repWildCard != null ? "upper("+"vc_modelsc_sub.name"+") LIKE upper('"+repWildCard+"')":"") +
+		    (repWildCard != null ? "upper("+"vc_modelsc_sub.name"+") LIKE upper("+DbDriver.sqlLiteral(repWildCard)+")":"") +
 		    (repWildCard != null && typeWildCard != null?" OR  ":"") +
 		    (typeWildCard != null?
 			    "(" +

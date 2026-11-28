@@ -3326,7 +3326,7 @@ public abstract class DbDriver {
                                     " FROM " +
                                     SimContextTable.table.getTableName() + "," + BioModelSimContextLinkTable.table.getTableName() +
                                     " WHERE " +
-                                    SimContextTable.table.name.getQualifiedColName() + " = '" + modelGeometryOP.getBioModelApplicationName() + "'" +
+                                    SimContextTable.table.name.getQualifiedColName() + " = " + sqlLiteral(modelGeometryOP.getBioModelApplicationName()) +
                                     " AND " +
                                     BioModelSimContextLinkTable.table.simContextRef.getQualifiedColName() + " = " + SimContextTable.table.id.getQualifiedColName() +
                                     " AND " +
