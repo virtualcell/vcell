@@ -213,12 +213,15 @@ public class TestEndpointUtils {
         connection.prepareStatement("DELETE FROM VC_MATHMODEL").execute();
         connection.prepareStatement("DELETE FROM VC_MATH").execute();
 
-        connection.prepareStatement("DELETE FROM VC_IMAGE").execute();
-        connection.prepareStatement("DELETE FROM VC_IMAGEDATA").execute();
-        connection.prepareStatement("DELETE FROM VC_IMAGEREGION").execute();
-
-        connection.prepareStatement("DELETE FROM VC_GEOMETRY").execute();
+        // children before parents: geometries reference images (vc_geometry.imageref), region and pixel rows
+        // reference their geometry or image, and both geometries and images reference vc_geomextent
         connection.prepareStatement("DELETE FROM VC_GEOMETRICREGION").execute();
+        connection.prepareStatement("DELETE FROM VC_GEOMETRY").execute();
+
+        connection.prepareStatement("DELETE FROM VC_IMAGEREGION").execute();
+        connection.prepareStatement("DELETE FROM VC_IMAGEDATA").execute();
+        connection.prepareStatement("DELETE FROM VC_IMAGE").execute();
+
         connection.prepareStatement("DELETE FROM VC_GEOMEXTENT").execute();
 
         connection.commit();

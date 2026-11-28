@@ -82,6 +82,32 @@ public class ServerDocumentManager {
     /**
      * ClientDocumentManager constructor comment.
      */
+    /**
+     * An image inserted by the current saveBioModel, kept so that later copies of it in the same document map to the
+     * same row. Holds the submitted object rather than a copy (a geometry image can be tens of megapixels), with the
+     * name and description as submitted, because the insert may rename the object to avoid a name collision.
+     */
+    private static final class InsertedImage {
+        private final VCImage submittedImage;
+        private final String submittedName;
+        private final String submittedDescription;
+        private final VCImage databaseImage;
+
+        private InsertedImage(VCImage submittedImage, String submittedName, String submittedDescription, VCImage databaseImage){
+            this.submittedImage = submittedImage;
+            this.submittedName = submittedName;
+            this.submittedDescription = submittedDescription;
+            this.databaseImage = databaseImage;
+        }
+
+        /** same name and description as submitted, and equal content (extent, size, pixel classes, pixels) */
+        private boolean isCopyOf(VCImage other){
+            return org.vcell.util.Compare.isEqual(submittedName, other.getName())
+                    && org.vcell.util.Compare.isEqual(submittedDescription, other.getDescription())
+                    && submittedImage.compareEqual(other, 3, true);
+        }
+    }
+
     public ServerDocumentManager(DatabaseServerImpl argDbServerImpl){
         this.dbServer = argDbServerImpl;
     }
@@ -782,9 +808,26 @@ public class ServerDocumentManager {
         //    save if necessary (only once) and store saved instance in hashTable
         //
         Hashtable<Versionable, Versionable> memoryToDatabaseHash = new Hashtable<Versionable, Versionable>();
+        //
+        // images inserted by this save, each paired with an unrenamed copy of what was submitted.
+        // VCML inlines a full copy of the geometry (image included) into every application, so one image used by
+        // N applications arrives as N distinct-but-equal VCImage objects; memoryToDatabaseHash is keyed by object
+        // identity (VCImage overrides neither equals nor hashCode) and so cannot see that they are one image.
+        // Without this, each copy of a never-saved image was inserted as its own row, all but the first renamed
+        // with a random suffix (docs/geometry-memory.md section 5.10).
+        //
+        java.util.List<InsertedImage> imagesInsertedThisSave = new java.util.ArrayList<>();
         for(int i = 0; scArray != null && i < scArray.length; i++){
             VCImage memoryImage = scArray[i].getGeometry().getGeometrySpec().getImage();
             if(memoryImage != null){
+                if(!memoryToDatabaseHash.containsKey(memoryImage) && memoryImage.getKey() == null){
+                    for(InsertedImage inserted : imagesInsertedThisSave){
+                        if(inserted.isCopyOf(memoryImage)){
+                            memoryToDatabaseHash.put(memoryImage, inserted.databaseImage);
+                            break;
+                        }
+                    }
+                }
                 if(!memoryToDatabaseHash.containsKey(memoryImage)){
                     //
                     // didn't evaluate this image yet.
@@ -838,6 +881,9 @@ public class ServerDocumentManager {
                         //
                         int count = 0;
                         fixNullImageName(memoryImage);
+                        // later copies are compared with the name as submitted, so taken before any rename below
+                        String submittedName = memoryImage.getName();
+                        String submittedDescription = memoryImage.getDescription();
                         while (dbServer.getDBTopLevel().isNameUsed(user, VersionableType.VCImage, memoryImage.getName(), true)) {
                             try {
                                 memoryImage.setName(TokenMangler.getNextRandomToken(memoryImage.getName()));
@@ -858,6 +904,9 @@ public class ServerDocumentManager {
                             roundtripTimer += l2 - l1;
                         }
                         memoryToDatabaseHash.put(memoryImage, updatedImage);
+                        if(memoryImage.getKey() == null){
+                            imagesInsertedThisSave.add(new InsertedImage(memoryImage, submittedName, submittedDescription, updatedImage));
+                        }
                         bSomethingChanged = true;
                     }
                 }
