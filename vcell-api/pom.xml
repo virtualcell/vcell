@@ -76,13 +76,6 @@
 		<license.copyrightOwners>UConn Health</license.copyrightOwners>
 	</properties>
 
-	<repositories>
-		<repository>
-			<id>maven-restlet</id>
-			<name>Restlet repository</name>
-			<url>https://maven.restlet.talend.com</url>
-		</repository>
-	</repositories>
 
 	<dependencies>
 		<dependency>
