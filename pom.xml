@@ -280,7 +280,7 @@
 
 		     So: vendored first, then Central, then the rest. Add new repositories after Central
 		     unless they are vendored artifacts. -->
-		<!-- Vendored artifacts: jai_core, jai-codec, netcdf, udunits, thredds-parent, n5.
+		<!-- Vendored artifacts: jai_core, jai-codec, netcdf, udunits, thredds-parent, n5, restlet.
 
 		     Vendored for RELIABILITY, not availability. The upstream servers that carried these
 		     were flaky enough that builds failed on them, so a copy lives in the tree and the
@@ -296,7 +296,14 @@
 		     genuine 404 on Central - the whole groupId is absent there - and was the ONLY artifact
 		     in the entire reactor that maven.scijava.org served. Vendoring it is what let the
 		     scijava repository be removed below. Its parent, org.scijava:pom-scijava:34.0.0, and
-		     all of its runtime dependencies do come from Central, so only n5 itself is here. -->
+		     all of its runtime dependencies do come from Central, so only n5 itself is here.
+
+		     org.restlet.jse:* 2.4.3 (org.restlet, ext.crypto/freemarker/gson/json/wadl/xml and
+		     org.restlet.parent; used by vcell-api, the legacy /api/v0 server) was vendored on
+		     2026-11-28 because its ONLY host, maven.restlet.talend.com, stopped resolving in DNS.
+		     Restlet was never on Central. Builds kept passing on warm caches while every cold
+		     build (CodeQL, a fresh machine) failed. The files are the ones that host served, checked
+		     against their downloaded sha1s. Apache 2.0 licensed. They go when vcell-api is retired. -->
 		<!-- Keep this repository FIRST; see the ordering note above. -->
 		<repository>
 			<id>lib-maven-repo</id>

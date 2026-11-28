@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>org.restlet.jse</groupId>
+	<artifactId>org.restlet.parent</artifactId>
+	<version>2.4.3</version>
+	<packaging>pom</packaging>
+
+	<name>Restlet Framework</name>
+	<description>Lightweight RESTful web API framework</description>
+	<url>http://restlet.org</url>
+	<inceptionYear>2005</inceptionYear>
+
+	<scm>
+		<url>https://github.com/restlet/restlet-framework-java</url>
+	</scm>
+
+	<repositories>
+		<repository>
+			<id>maven-central</id>
+			<name>Central Maven repository</name>
+			<url>http://repo1.maven.org/maven2/</url>
+		</repository>
+		<repository>
+			<id>maven2-java</id>
+			<name>Java.net repository</name>
+			<url>http://download.java.net/maven/2</url>
+		</repository>
+        <repository>
+            <id>maven1-java</id>
+            <url>http://download.java.net/maven/1</url>
+            <layout>legacy</layout>
+        </repository>
+		<repository>
+			<id>maven-restlet</id>
+			<name>Restlet repository</name>
+			<url>http://maven.restlet.org</url>
+		</repository>
+	</repositories>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<lib-junit-version>4.11</lib-junit-version>
+		<lib-mongodb-version>2.11.3</lib-mongodb-version>
+		<lib-rome-version>1.0</lib-rome-version>
+		<lib-testng-version>6.8.7</lib-testng-version>
+		<lib-emf-common-version>2.6.0.v20100614-1136</lib-emf-common-version>
+		<lib-emf-ecore-version>2.6.0.v20100614-1136</lib-emf-ecore-version>
+		<lib-emf-ecore-xmi-version>2.5.0.v20100521-1846</lib-emf-ecore-xmi-version>
+		<lib-servlet-version>3.1.0</lib-servlet-version>
+		<lib-fileupload-version>1.3.3</lib-fileupload-version>
+		<lib-freemarker-version>2.3.20</lib-freemarker-version>
+		<lib-gson-version>2.3.1</lib-gson-version>
+		<lib-joda-time-version>2.3</lib-joda-time-version>
+		<lib-guice-version>3.0</lib-guice-version>
+		<lib-javax.inject-version>1</lib-javax.inject-version>
+		<lib-aopalliance-version>1.0</lib-aopalliance-version>
+		<lib-gwt-server-version>2.3.0</lib-gwt-server-version>
+		<lib-codec-version>1.5</lib-codec-version>
+		<lib-httpclient-version>4.5.6</lib-httpclient-version>
+		<lib-httpcore-version>4.4.10</lib-httpcore-version>
+		<lib-httpmime-version>4.5.6</lib-httpmime-version>
+		<lib-jcip-annotations-version>1.0</lib-jcip-annotations-version>
+		<lib-logging-version>1.1.3</lib-logging-version>
+		<lib-mime4j-version>0.7.2</lib-mime4j-version>
+		<lib-jackson-annotations-version>2.9.6</lib-jackson-annotations-version>
+		<lib-jackson-core-version>2.9.6</lib-jackson-core-version>
+		<lib-jackson-csv-version>2.9.6</lib-jackson-csv-version>
+		<lib-jackson-databind-version>2.9.6</lib-jackson-databind-version>
+		<lib-jackson-jaxb-version>2.9.6</lib-jackson-jaxb-version>
+		<lib-jackson-jsonschema-version>2.9.6</lib-jackson-jsonschema-version>
+		<lib-jackson-smile-version>2.9.6</lib-jackson-smile-version>
+		<lib-jackson-xml-version>2.9.6</lib-jackson-xml-version>
+		<lib-jackson-yaml-version>2.9.6</lib-jackson-yaml-version>
+		<lib-snakeyaml-version>1.18</lib-snakeyaml-version>
+		<lib-stax2-version>3.1.4</lib-stax2-version>
+		<lib-woodstock-core-version>4.3.0</lib-woodstock-core-version>
+		<lib-javamail-version>1.4.2</lib-javamail-version>
+		<lib-jaxb-ri-version>2.1.12</lib-jaxb-ri-version>
+		<lib-jaxrs-version>2.0</lib-jaxrs-version>
+		<lib-json-version>20160212</lib-json-version>
+		<lib-lang-version>3.6</lib-lang-version>
+		<lib-resteasy-version>3.6.0.Final</lib-resteasy-version>
+		<lib-simple-xml-version>2.7.3</lib-simple-xml-version>
+		<lib-jetty-client-version>9.4.11.v20180605</lib-jetty-client-version>
+		<lib-jetty-http-version>9.4.11.v20180605</lib-jetty-http-version>
+		<lib-jetty-io-version>9.4.11.v20180605</lib-jetty-io-version>
+		<lib-jetty-server-version>9.4.11.v20180605</lib-jetty-server-version>
+		<lib-jetty-util-version>9.4.11.v20180605</lib-jetty-util-version>
+		<lib-jibx-version>1.2.5</lib-jibx-version>
+		<lib-io-version>2.6</lib-io-version>
+		<lib-lucene-version>4.6.0</lib-lucene-version>
+		<lib-solr-version>7.4.0</lib-solr-version>
+		<lib-solr-common-version>7.4.0</lib-solr-common-version>
+		<lib-tika-version>1.18</lib-tika-version>
+		<lib-tika-parsers-version>1.18</lib-tika-parsers-version>
+		<lib-dbcp-version>1.3</lib-dbcp-version>
+		<lib-oauth-version>20100527</lib-oauth-version>
+		<lib-pool-version>1.5.6</lib-pool-version>
+		<lib-openid4java-version>0.9.6</lib-openid4java-version>
+		<lib-nekohtml-version>1.9.19</lib-nekohtml-version>
+		<lib-guava-version>26.0-jre</lib-guava-version>
+		<lib-raml-version>0.8.7</lib-raml-version>
+		<lib-swagger-annotations-version>1.5.3-M1</lib-swagger-annotations-version>
+		<lib-scala-library-version>2.9.1</lib-scala-library-version>
+		<lib-scalap-version>2.9.1</lib-scalap-version>
+		<lib-swagger-models-version>1.5.3-M1</lib-swagger-models-version>
+		<lib-swagger-core-version>1.5.3-M1</lib-swagger-core-version>
+		<lib-slf4j-version>1.7.2</lib-slf4j-version>
+		<lib-simple-version>5.1.6</lib-simple-version>
+		<lib-cglib-version>2.2</lib-cglib-version>
+		<lib-spring-beans-version>3.2.18.RELEASE</lib-spring-beans-version>
+		<lib-spring-context-version>3.2.18.RELEASE</lib-spring-context-version>
+		<lib-spring-core-version>3.2.18.RELEASE</lib-spring-core-version>
+		<lib-spring-expression-version>3.2.18.RELEASE</lib-spring-expression-version>
+		<lib-spring-web-version>3.2.18.RELEASE</lib-spring-web-version>
+		<lib-spring-webmvc-version>3.2.18.RELEASE</lib-spring-webmvc-version>
+		<lib-thymeleaf-version>2.1.2.RELEASE</lib-thymeleaf-version>
+		<lib-ognl-version>3.2.6</lib-ognl-version>
+		<lib-javassist-version>3.18.1-GA</lib-javassist-version>
+		<lib-collections-version>3.2.1</lib-collections-version>
+		<lib-velocity-version>2.0</lib-velocity-version>
+		<lib-hamcrest-version>1.3</lib-hamcrest-version>
+	</properties>
+
+	<modules>
+		<module>org.restlet.example</module>
+		<module>org.restlet.ext.atom</module>
+		<module>org.restlet.ext.crypto</module>
+		<module>org.restlet.ext.emf</module>
+		<module>org.restlet.ext.fileupload</module>
+		<module>org.restlet.ext.freemarker</module>
+		<module>org.restlet.ext.gson</module>
+		<module>org.restlet.ext.guice</module>
+		<module>org.restlet.ext.gwt</module>
+		<module>org.restlet.ext.html</module>
+		<module>org.restlet.ext.httpclient</module>
+		<module>org.restlet.ext.jaas</module>
+		<module>org.restlet.ext.jackson</module>
+		<module>org.restlet.ext.javamail</module>
+		<module>org.restlet.ext.jaxb</module>
+		<module>org.restlet.ext.jaxrs</module>
+		<module>org.restlet.ext.jetty</module>
+		<module>org.restlet.ext.jibx</module>
+		<module>org.restlet.ext.json</module>
+		<module>org.restlet.ext.lucene</module>
+		<module>org.restlet.ext.nio</module>
+		<module>org.restlet.ext.oauth</module>
+		<module>org.restlet.ext.odata</module>
+		<module>org.restlet.ext.openid</module>
+		<module>org.restlet.ext.platform</module>
+		<module>org.restlet.ext.raml</module>
+		<module>org.restlet.ext.rdf</module>
+		<module>org.restlet.ext.simple</module>
+		<module>org.restlet.ext.slf4j</module>
+		<module>org.restlet.ext.spring</module>
+		<module>org.restlet.ext.swagger</module>
+		<module>org.restlet.ext.thymeleaf</module>
+		<module>org.restlet.ext.velocity</module>
+		<module>org.restlet.ext.wadl</module>
+		<module>org.restlet.ext.xml</module>
+		<module>org.restlet.test</module>
+		<module>org.restlet</module>
+	</modules>
+
+	<licenses>
+		<license>
+			<name>Apache 2.0 license</name>
+			<url>http://www.opensource.org/licenses/apache-2.0</url>
+		</license>
+		<license>
+			<name>LGPL 3.0 license</name>
+			<url>http://www.opensource.org/licenses/lgpl-3.0</url>
+		</license>
+		<license>
+			<name>LGPL 2.1 license</name>
+			<url>http://www.opensource.org/licenses/lgpl-2.1</url>
+		</license>
+		<license>
+			<name>CDDL 1.0 license</name>
+			<url>http://www.opensource.org/licenses/cddl1</url>
+		</license>
+		<license>
+			<name>EPL 1.0 license</name>
+			<url>http://www.opensource.org/licenses/eclipse-1.0</url>
+		</license>
+	</licenses>
+
+	<build>
+		<sourceDirectory>${basedir}/src</sourceDirectory>
+		<resources>
+			<resource>
+				<filtering>false</filtering>
+				<directory>${basedir}/src</directory>
+				<includes>
+					<include>**/*</include>
+				</includes>
+				<excludes>
+					<exclude>**/*.java</exclude>
+					<exclude>**/package.html</exclude>
+				</excludes>
+			</resource>
+		</resources>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>1.5</source>
+					<target>1.5</target>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>
