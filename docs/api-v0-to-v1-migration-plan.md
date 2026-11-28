@@ -4,17 +4,17 @@
 > wherever this document says "v1" for new endpoints, read "v2". The style guide is
 > [`api-style-guide.md`](api-style-guide.md).
 
-Status: **draft for discussion**, 2026-11-27. Nothing here is agreed. Inventory and evidence:
+Status: **in progress**, updated 2026-11-28. Decisions are recorded where they are made: their status in §3.0,
+the rules in the style guide, the release plan in §5.1. Anything marked **PROPOSED** is still open.
+Inventory and evidence:
 [`api-v0-rpc-inventory.md`](api-v0-rpc-inventory.md) (section numbers below like "inv §3.1" refer
 to it).
 
-**Ground rule from the lead architect:** new `/api/v1` endpoints are designed and agreed with him
-before any is built. He has his own design patterns and quality requirements to formalize. So this
-plan:
+**Ground rule from the lead architect:** new `/api/v2` endpoints are designed and agreed with him
+before any is built. So this plan:
 
-- does not fix any path, payload shape, naming, pagination, error model, auth model or DTO
-  convention. Every target below is a candidate, marked **PROPOSED — needs agreement**, with
-  alternatives;
+- leaves conventions to the style guide, which records each as it is decided. Endpoint shapes here are
+  candidates, marked **PROPOSED — needs agreement**;
 - collects every design decision the migration depends on in §3, as open questions with options;
 - puts the design-agreement step (Phase 1) before any endpoint work.
 
@@ -68,6 +68,34 @@ plan:
 the trade-offs visible, not to recommend; where an option is marked "(today)" it is what existing
 v1 endpoints do (inv §5.1). The intent is that the agreed answers become a short API style guide
 (Phase 1 deliverable) that every new endpoint is reviewed against.
+
+### 3.0 Decision status (2026-11-28)
+
+| D | Status | Where |
+|---|---|---|
+| D-1 | decided; existing v1 endpoints are not restyled, they get v2 equivalents | style §1.1, §1.4, §6.2 |
+| D-2 | decided | §3.1 below |
+| D-3 | partly: query shape decided; batch caps open with D-10 | style §1.2, §1.3 |
+| D-4 | open; one case decided (time statistics are computed by the client) | time-series plan §3 |
+| D-5 | decided | style §2.1 |
+| D-6 | decided in principle: bulk data is binary. The wire format is an API-layer choice and can be renegotiated; solver output formats do not change, except behind a server-side translation layer. The format is chosen with the first numeric endpoint | style §2.3–2.5 |
+| D-7, D-8 | open | |
+| D-9 | decided: saved functions by name; unsaved expressions only in the `POST` form | time-series plan §4 |
+| D-10 | open; JSON over a threshold gets 413 | style §2.4 |
+| D-11 | partly: every collection is paginated and bounded; the style is open | style §8.3 |
+| D-12 | partly: background work is a job resource; generic vs per-feature is open | style §1.3 |
+| D-13 | **open** | |
+| D-14 | decided (RFC 9457) | style §9 |
+| D-15 | decided (additive within a version; `/api/v2` is the break) | style §6 |
+| D-16 | direction: a version and capabilities endpoint; its shape is open | style §6.3 |
+| D-17 | decided | style §1.4, §5 |
+| D-18 | partly: anonymous access for public data, `vcellguest` retired in v2; the legacy token is open | style §10.3 |
+| D-19 | decided; roles come from VCell's database | style §10 |
+| D-20 | partly; limits and numbers open | style §8.3–8.4 |
+| D-21 | open | |
+| D-22 | direction recorded (API areas, one image configured at run time); not yet confirmed as decided | §3.5 below |
+| D-23 | decided | style §3 |
+| D-24 | open; needed to call the pilot done | |
 
 ### 3.1 Resource modelling and URLs
 
@@ -343,16 +371,20 @@ and low-risk first; keep the old server path until telemetry says it is unused.
 1. **Telemetry on v0.** Log one structured line per RPC with destination, method, caller identity
    class (user / guest / anonymous), outcome, duration and reply size; log the same for each non-RPC
    v0 route. Add a client-version header to the desktop's v0 and v1 requests (none is sent today) and
-   log it. Without this, no switch-off date is defensible. _Merged on master (#2254 v0, #2255
-   vcell-rest) and on `vc8.1-prod` (#2256). It reaches users with 8.3.5.02 on dev and R1 on prod
-   (§5.1)._
+   log it. Without this, no switch-off date is defensible. _RPC calls and vcell-rest requests: merged
+   on master (#2254, #2255) and `vc8.1-prod` (#2256); live on dev from 8.3.5.02, log lines verified
+   2026-11-28; on prod from R1. Field names follow ECS (style guide §7.1). **Not done:** the non-RPC v0
+   routes (`/events`, `/swversion`, `/biomodel…`, `/publication…`, `/simdata…`, `/health`, `/admin/*`)
+   have no per-route line, and only the desktop identifies itself (not webapp-ng, python-restclient,
+   pyvcell or vcell-ai)._
 2. **Harden v0 while it lives.** _Done in 8.1.9.02 and 8.3.5.01:_ RPC dispatch accepts only the
    methods listed per service queue (`RpcMethodAllowlist`, covering live methods and the
    retired-but-supported ones in inv §3.2). Further hardening follows `SECURITY-FIXES.md`, not this
    plan's PRs.
 3. **Small v0 fixes** found in the inventory (inv §8): reconcile the guest allowlists, drop dead
    client stubs, fix the dead webapp-ng `/mathmodel` link, bound the event deque. Each independent.
-4. **Correct #2220's table** (v1 SBML/OMEX/BNGL/diagram downloads are 501 stubs).
+   _Not started (2026-11-28)._
+4. **Correct #2220's table** (v1 SBML/OMEX/BNGL/diagram downloads are 501 stubs). _Not started (2026-11-28)._
 
 ### Phase 1 — Design agreement (gate)
 
@@ -361,6 +393,13 @@ and low-risk first; keep the old server path until telemetry says it is unused.
    with one worked example endpoint written against it.
 3. Agree the candidate grouping in §4, the scope cuts (D-21), and D-22 (where server code runs).
 4. Agree the phase order below (or change it).
+5. Before the first `/api/v2` commit (style §4.2: new code has no baseline): run Spectral
+   (`tools/spectral/vcell-api.spectral.yaml`), oasdiff and the ArchUnit/Enforcer DTO checks in the Fast
+   lane; create `vcell-api-dto` and `vcell-api-mapping`; add an `/api/v2/` ingress route in vcell-fluxcd
+   (today every overlay routes only `/api/v1/export`, `/api/v1/` and `/api/v0/`).
+
+_Status 2026-11-28: open. Item 2 is mostly done (the style guide, with the time-series plan as its worked
+example). Items 1, 3, 4 and 5 remain._
 
 No endpoint work starts before this phase closes.
 
@@ -370,6 +409,11 @@ Pick one group that exercises the style guide without the hard decisions — can
 Dataset metadata, or Simulation status. Build it end to end: endpoint, DTOs, round-trip test, three
 regenerated clients plus pyvcell, desktop facade switch, RPC stub retired, server handler kept.
 Review the result against the style guide and amend the guide.
+
+A pilot without numeric data (Preferences, say) is fine: the binary wire format (D-6) is an API-layer
+choice, made with the first numeric endpoint at the start of Phase 3 if the pilot has none, and it never
+changes solver output formats (a server-side translation layer converts). A data-area pilot also needs
+the area runtime switch (§3.5, D-22).
 
 ### Phase 3 — Simulation data reads
 
@@ -405,8 +449,9 @@ from supported versions for N weeks) before removing anything.
 
 Remove server handlers for unused methods; rehome `HealthService` and admin reports; put redirects
 (or deliberate 410s) on public v0 URLs per pattern; delete `vcell-api`, the `api` deployment and
-its ingress route (vcell-fluxcd); remove `RpcRestlet`'s deserialization path and the v0 legacy-token
-machinery (#1979).
+its ingress route (vcell-fluxcd); remove `RpcRestlet`'s deserialization path, the `RpcMethodAllowlist`
+entries of deleted handlers, the vendored Restlet 2.4.3 artifacts in `lib/maven-repo/org/restlet` (#2261)
+and the v0 legacy-token machinery (#1979).
 
 The public-pages track (model pages and downloads, publications, health) can run in parallel from
 Phase 2 on, since it has no desktop dependency.
@@ -439,7 +484,9 @@ users. Two constraints shape it:
    asked for first.** This covers every prod release and every server-only prod deploy. Permission
    for one release doesn't carry over to the next, and no person or automation deploys to prod on
    its own initiative.
-2. Nothing reaches prod without first running on dev in a full release.
+2. Nothing reaches prod without first running on dev in a full release. A release built from the
+   prod-line branch cannot run on dev, which runs master; it is rehearsed as a full release on stage
+   instead. (8.1.9.02 went to prod server-only before these rules were written.)
 3. A client that calls a new endpoint ships in the same prod release as the server that provides
    it. Facades keep their RPC fallback for at least one prod release (§6) as a safety net, not as
    permission to ship a client ahead of its server.
@@ -465,9 +512,10 @@ users. Two constraints shape it:
 **Prod releases.**
 
 - **R1, the next prod release.** It carries what is already on the prod line: the data-service fix
-  for unresponsive archive storage (#2248), the v0 telemetry and client identification (#2256), and the
-  8.1.9.02 RPC fix (#2257), or the same changes by moving prod to the master line. The lead
-  architect decides when. A recurrence of the archive-storage freezes is a reason to bring it forward.
+  for unresponsive archive storage (#2248) and the v0 telemetry and client identification (#2256), and it
+  keeps the 8.1.9.02 RPC fix, which is already live (#2257 merged it into the branch). Moving prod to the
+  master line instead is a larger release: it also ships every 8.2.x–8.3.x change and needs its own
+  release narrative. The lead architect decides when. A recurrence of the archive-storage freezes is a reason to bring it forward.
 - **R2 (PROPOSED).** The Phase 2 pilot and the Phase 3 data reads, with the desktop switched to them and
   its RPC fallback kept.
 - **R3 (PROPOSED).** Phases 4 and 5, including events. The current desktop no longer needs v0
@@ -552,7 +600,7 @@ serialization.
 
 ## 8. Testing strategy
 
-- **Per endpoint** (pending D-23): HTTP-level `@QuarkusTest` (authenticated, anonymous, other-user
+- **Per endpoint** (style guide §3): HTTP-level `@QuarkusTest` (authenticated, anonymous, other-user
   denied), generated-client test, DB-free DTO round-trip test both directions.
 - **Equivalence against RPC.** For each ported data method, a test that reads the same dataset
   through the RPC path and the v1 path and compares values (exact for raw data, tolerance where
@@ -586,16 +634,18 @@ serialization.
 | Two state machines diverge further while start/stop is dual-pathed | Resolve in the run-control group (#2184 item 4) |
 | Events: losing or duplicating status events during the switch | Run both paths during transition; cursor-based delivery (D-13) |
 | ActiveMQ Classic work creeping in | Follow `docs/MESSAGING.md`: no new Classic machinery |
+| `/api/v0` runs on Restlet 2.4.3, which has no maintained upstream or Maven repository (vendored, #2261) | No new work in vcell-api beyond fixes; retire on the Phase 7–8 schedule |
 | Disclosure of v0 weaknesses through migration PRs | Security fixes follow `SECURITY-FIXES.md`; plan PRs state neutral requirements only |
 
 ---
 
 ## 10. Decisions needed from the lead architect
 
-1. All of §3 (D-1 to D-24), in particular the four that gate the most work: **D-6** (binary data
-   format), **D-13** (event delivery), **D-19** (authorization model for data reads and the role
-   source), **D-22** (where data-serving code runs).
-2. Whether to restyle existing v1 endpoints to the new guide or leave them (D-1).
+1. All of §3 (D-1 to D-24); status in §3.0. Of the four that gate the most work, D-6 and D-19 are
+   decided, **D-13** (event delivery) is open, and **D-22** (where data-serving code runs) has a
+   direction to confirm.
+2. Whether to restyle existing v1 endpoints to the new guide or leave them (D-1). _Decided: no; they get
+   v2 equivalents (style §6.2)._
 3. The candidate grouping in §4, and the pilot group for Phase 2.
 4. Scope cuts (D-21): testing framework, `getSpecialUsers`, dead stubs.
 5. Phase order, in particular whether dispatch/events (Phase 5) goes before data (Phase 3).
@@ -605,13 +655,13 @@ serialization.
 8. The hosted field viewer: whether it is in scope for this migration, and which of options A–D
    (§7.2) to explore.
 9. Anonymous access vs the guest account (#2220), since it decides how public endpoints are
-   authorized.
+   authorized. _Decided for v2: anonymous access (style §10.3)._
 10. Where `HealthService` and the admin reports live after the `api` pod is gone.
-12. **vcell-ai is a v0 and v1 client** (found 2026-11-27, `../vcell-ai` `backend/app/services/`):
+11. **vcell-ai is a v0 and v1 client** (found 2026-11-27, `../vcell-ai` `backend/app/services/`):
     it calls `/api/v0/biomodel`, `/api/v0/biomodel/{id}/…` (8 call sites) and `/api/v0/publication`,
     and `/api/v1/users/*` and `/api/v1/publications`, forwarding the user's Auth0 token. The inventory's
     caller list missed it; v0 retirement must include it.
-11. **The direct-connect developer client** (`vcell-admin/.../standalone/VCellClientDevMain.java`):
+12. **The direct-connect developer client** (`vcell-admin/.../standalone/VCellClientDevMain.java`):
     it runs the desktop wired straight to the backend (database and remote files), bypassing the API,
     for debugging. **Decided 2026-11-27: retired**, on the schedule in the style guide §11 (developer
     path is `VCellClientMain` against the dev site or a local stack now; no in-process twins for v2
