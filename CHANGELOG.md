@@ -16,6 +16,37 @@ followed by flat Keep-a-Changelog categories. API consumers should scan
 
 _(Release-manager scratchpad. Populated at release-cut time.)_
 
+## [8.3.5.02] - 2026-11-28
+
+**Highlights.** Usage telemetry for planning the move from the legacy API to REST. The server logs one
+structured line per legacy RPC call and one per `/api/v1` request. The desktop client now names itself
+and its version on every API request, so that usage can be counted by client version. There are no
+changes users can see.
+
+### Added
+- Legacy RPC (`/api/v0/rpc`): one `rpc call` log line per call, with structured fields
+  `rpc.destination`, `rpc.method`, `rpc.outcome` (and `rpc.errorType`), `rpc.durationMs`,
+  `rpc.requestBytes`, `rpc.replyBytes`, `user.class` (anonymous / guest / user), `user.name`,
+  `client.name` and `client.version`. (#2254)
+- Desktop client: sends `VCell-Client` and `VCell-Client-Version` headers on every `/api/v0` and
+  `/api/v1` request. (#2254)
+- vcell-rest (`/api/v1`): one `http request` log line per request, with `http.request.method`,
+  `http.route` (the path template, e.g. `/api/v1/publications/{id}`), `http.response.status_code`,
+  `http.durationMs`, `http.response.bytes`, `user.class` (anonymous / user / admin), `user.id`,
+  `client.name`, `client.version` and `request.id`. The request id is taken from `X-Request-Id` when
+  that header is a safe token, otherwise generated, and is returned in the response's `X-Request-Id`
+  header. (#2255)
+
+### Changed
+- Docs: the REST API style guide for `/api/v2` (`docs/api-style-guide.md`), the inventory of v0 RPC
+  methods, and the v0 migration and time-series plans, with a Spectral ruleset and three client spikes
+  under `tools/`. (#2253)
+
+### Notes for API consumers
+No endpoint changes. Responses from `/api/v1` endpoints now carry an `X-Request-Id` header; send your own
+(8 to 128 characters from `[A-Za-z0-9._-]`) to correlate requests with server logs. Clients may
+identify themselves with the `VCell-Client` and `VCell-Client-Version` headers; both are optional.
+
 ## [8.3.5.01] - 2026-11-27
 
 **Highlights.** A security update for the server's legacy RPC interface, plus two server fixes and two
